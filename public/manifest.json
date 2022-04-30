@@ -6,22 +6,22 @@
   "default_locale": "en",
   "description": "__MSG_appDescription__",
   "icons": {
-    "16": "images/logo-icon.png",
-    "19": "images/logo-icon.png",
-    "32": "images/logo-icon.png",
-    "38": "images/logo-icon.png",
-    "48": "images/logo-icon.png",
-    "64": "images/logo-icon.png",
-    "128": "images/logo-icon.png",
-    "512": "images/logo-icon.png"
+    "16": "images/logo-icon-dev.png",
+    "19": "images/logo-icon-dev.png",
+    "32": "images/logo-icon-dev.png",
+    "38": "images/logo-icon-dev.png",
+    "48": "images/logo-icon-dev.png",
+    "64": "images/logo-icon-dev.png",
+    "128": "images/logo-icon-dev.png",
+    "512": "images/logo-icon-dev.png"
   },
   "browser_action": {
     "default_icon": {
-      "16": "images/logo-icon.png",
-      "19": "images/logo-icon.png",
-      "32": "images/logo-icon.png",
-      "48": "images/logo-icon.png",
-      "128": "images/logo-icon.png"
+      "16": "images/logo-icon-dev.png",
+      "19": "images/logo-icon-dev.png",
+      "32": "images/logo-icon-dev.png",
+      "48": "images/logo-icon-dev.png",
+      "128": "images/logo-icon-dev.png"
     },
     "default_title": "NewWallet",
     "default_popup": "popup.html"
