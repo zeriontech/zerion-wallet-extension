@@ -1,0 +1,25 @@
+{
+  "name": "zerion-wallet",
+  "version": "0.0.1",
+  "description": "A web3 wallet extension",
+  "main": "dist/mainfest.json",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/zeriontech/zerion-wallet-extension.git"
+  },
+  "keywords": [
+    "Wallet",
+    "Web3",
+    "Browser",
+    "Wallet"
+  ],
+  "author": "everdimension",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zeriontech/zerion-wallet-extension/issues"
+  },
+  "homepage": "https://github.com/zeriontech/zerion-wallet-extension#readme"
+}
