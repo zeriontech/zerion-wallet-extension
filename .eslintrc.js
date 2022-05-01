@@ -1,15 +1,18 @@
 module.exports = {
-  extends: 'eslint:recommended',
+  extends: ['eslint:recommended'],
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint/eslint-plugin'],
-  parserOptions: {
-    project: './tsconfig.json',
-  },
+  plugins: ['@typescript-eslint'],
   env: { browser: true },
-  rules: {},
+  rules: {
+    'no-console': 'error',
+  },
   overrides: [
     {
       files: ['*.ts', '*.tsx'],
+      extends: ['plugin:@typescript-eslint/recommended'],
+      parserOptions: {
+        project: './tsconfig.json',
+      },
       rules: {
         '@typescript-eslint/ban-ts-comment': 'off',
         '@typescript-eslint/no-unused-vars': 'off', // checked by TypeScript's 'noUnusedLocals'
@@ -25,7 +28,7 @@ module.exports = {
         'postcss.config.js',
         'jest.config.js',
         '*.node.js',
-        './webpack-config/*.js',
+        'webpack.config.js',
       ],
       env: { node: true },
       rules: {
@@ -35,4 +38,3 @@ module.exports = {
     },
   ],
 };
-

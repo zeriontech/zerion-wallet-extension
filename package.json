@@ -12,7 +12,7 @@
     "pretest": "npm run lint",
     "test": "echo \"Error: no test specified\" && exit 1",
     "posttest": "npm run format",
-    "lint": "eslint . --cache --fix --ext .ts,.tsx",
+    "lint": "eslint . --cache --fix --ext .ts,.tsx,.js",
     "format": "prettier --loglevel warn --write \"**/*.{ts,tsx,css,md}\"",
     "prepare": "husky install"
   },
