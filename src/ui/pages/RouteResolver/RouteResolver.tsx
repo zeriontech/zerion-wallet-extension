@@ -1,0 +1,58 @@
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Splash } from 'src/ui/components/Splash';
+import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
+import { getPageTemplateName } from 'src/ui/shared/getPageTemplateName';
+
+const templateName = getPageTemplateName();
+
+export function RouteResolver({
+  children,
+}: React.PropsWithChildren<Record<string, unknown>>) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [ready, setReady] = useState(templateName === '/dialog.html');
+  const { pathname } = location;
+  console.log('RouteResolver', pathname, { templateName });
+
+  useEffect(() => {
+    if (ready) {
+      return;
+    }
+    async function resolve() {
+      await new Promise((r) => setTimeout(r, 300));
+      const isAuthenticated = await accountPublicRPCPort.request(
+        'isAuthenticated'
+      );
+      const existingUser = await accountPublicRPCPort.request(
+        'getExistingUser'
+      );
+      console.log({ isAuthenticated, existingUser });
+
+      if (!isAuthenticated) {
+        if (existingUser) {
+          navigate('/login');
+        } else {
+          console.log('navigating to /');
+          navigate('/');
+        }
+        setReady(true);
+      }
+      const currentWallet = await walletPort.request('getCurrentWallet');
+      console.log({ currentWallet });
+      if (pathname === '/') {
+        if (currentWallet) {
+          navigate('/overview');
+        }
+      }
+      setReady(true);
+    }
+
+    resolve();
+  }, [pathname]);
+
+  if (!ready) {
+    return <Splash />;
+  }
+  return children as React.ReactElement;
+}
