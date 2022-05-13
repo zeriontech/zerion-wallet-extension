@@ -11,6 +11,7 @@ export class PortMessageChannel {
 
   constructor({ name }: { name: string }) {
     this.port = chrome.runtime.connect({ name });
+    this.port.onMessage.addListener(console.log);
   }
 
   request<Method extends string, Params, Result>(

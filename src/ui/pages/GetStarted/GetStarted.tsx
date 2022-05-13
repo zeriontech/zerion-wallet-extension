@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import browser from 'webextension-polyfill';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Route, Routes, useNavigate } from 'react-router-dom';
 import { useMutation } from 'react-query';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -13,6 +13,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
+import { BlockieImg } from 'src/ui/components/BlockieImg';
 
 function DecorativeMessage({
   text,
@@ -80,11 +81,7 @@ function DecorativeMessageDone({ address }: { address: string }) {
               }}
             >
               <HStack gap={12} alignItems="center">
-                <img
-                  src={browser.runtime.getURL('./images/sample-avatar.png')}
-                  style={{ height: 44, width: 44 }}
-                  alt="Address Image"
-                />
+                <BlockieImg address={address} size={44} />
                 <div>
                   <UIText kind="subtitle/l_reg" title={address}>
                     {truncateAddress(address, 8)}
@@ -104,10 +101,7 @@ enum Step {
   done,
 }
 
-export function GetStarted() {
-  console.log(
-    browser.runtime.getURL(require('src/ui/assets/zerion-avatar@2x.png'))
-  );
+function GenerateWallet() {
   const navigate = useNavigate();
   const [steps, setSteps] = useState(() => new Set<Step>());
   const addStep = (step: Step) => setSteps((steps) => new Set(steps).add(step));
@@ -194,17 +188,18 @@ export function GetStarted() {
             ) : null}
           </VStack>
           {data ? (
-            <Button
-              onClick={() => {
-                console.log('savePendingWallet click');
-                walletPort.request('savePendingWallet').then(() => {
-                  console.log('savePendingWallet done, should navigate');
-                  navigate('/overview');
-                });
-              }}
-            >
-              Finish
-            </Button>
+            <VStack gap={4}>
+              <Button
+                onClick={() => {
+                  console.log('savePendingWallet click');
+                  accountPublicRPCPort.request('saveUserAndWallet').then(() => {
+                    navigate('/overview');
+                  });
+                }}
+              >
+                Finish
+              </Button>
+            </VStack>
           ) : (
             <Button
               onClick={() => {
@@ -217,5 +212,67 @@ export function GetStarted() {
         </VStack>
       </PageColumn>
     </div>
+  );
+}
+
+function TitleWithLine({
+  children,
+  lineColor = 'currentcolor',
+  gap = 8,
+}: React.PropsWithChildren<{ lineColor?: string; gap?: number }>) {
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr auto 1fr',
+        gap,
+        alignItems: 'center',
+      }}
+    >
+      <div style={{ height: 1, backgroundColor: lineColor }}></div>
+      {children}
+      <div style={{ height: 1, backgroundColor: lineColor }}></div>
+    </div>
+  );
+}
+
+function Options() {
+  return (
+    <div style={{ flexGrow: 1, backgroundColor: 'var(--background)' }}>
+      <PageColumn>
+        <PageTop />
+        <PageHeading>
+          Introducing{' '}
+          <span style={{ color: 'var(--primary)' }}>Zerion Wallet</span>
+        </PageHeading>
+        <Spacer height={4} />
+        <UIText kind="subtitle/l_reg">Explore All of Web3 on One Place</UIText>
+
+        <Spacer height={32} />
+
+        <Surface padding={16}>
+          <VStack gap={16}>
+            <Button as={Link} to="/get-started/new" size={60}>
+              Create new Wallet
+            </Button>
+            <UIText kind="subtitle/l_reg" color="var(--neutral-500)">
+              <TitleWithLine>or</TitleWithLine>
+            </UIText>
+            <Button kind="regular" as={Link} to="/get-started/new" size={56}>
+              Import existing wallet
+            </Button>
+          </VStack>
+        </Surface>
+      </PageColumn>
+    </div>
+  );
+}
+
+export function GetStarted() {
+  return (
+    <Routes>
+      <Route path="/" element={<Options />} />
+      <Route path="/new" element={<GenerateWallet />} />
+    </Routes>
   );
 }

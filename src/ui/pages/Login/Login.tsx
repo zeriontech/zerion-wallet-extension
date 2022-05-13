@@ -1,6 +1,6 @@
 import React from 'react';
 import { useMutation, useQuery } from 'react-query';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import type { PublicUser } from 'src/background/account/Account';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -67,6 +67,7 @@ export function Login() {
         <VStack gap={16}>
           <VStack gap={4}>
             <input
+              autoFocus={true}
               type="password"
               name="password"
               placeholder="password"
@@ -87,7 +88,8 @@ export function Login() {
               </UIText>
             ) : null}
           </VStack>
-          <Button>Unlock</Button>
+          <Button>{loginMutation.isLoading ? 'Checking...' : 'Unlock'}</Button>
+          {/*<Link to="/create">Or create new account</Link>*/}
         </VStack>
       </form>
       <Spacer height={24} />

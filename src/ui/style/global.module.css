@@ -1,3 +1,11 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Graphik, sans-serif;
+}
+
 :global(#root) {
   height: 100%;
 }

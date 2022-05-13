@@ -25,7 +25,6 @@ export function CreateAccount() {
   return (
     <PageColumn>
       <PageTop />
-      <PageTop />
       <PageHeading>Create Password</PageHeading>
       <UIText kind="caption/reg" color="var(--neutral-500)">
         Protect your wallet by setting a password
@@ -46,6 +45,7 @@ export function CreateAccount() {
         <VStack gap={16}>
           <VStack gap={4}>
             <input
+              autoFocus={true}
               type="password"
               name="password"
               placeholder="password"

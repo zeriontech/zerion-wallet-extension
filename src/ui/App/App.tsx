@@ -16,6 +16,7 @@ import { PersistentStore } from 'src/shared/PersistentStore';
 import { Overview } from 'src/ui/pages/Overview';
 import { RouteResolver } from 'src/ui/pages/RouteResolver';
 import { RequestAccounts } from 'src/ui/pages/RequestAccounts';
+import { SendTransaction } from 'src/ui/pages/SendTransaction';
 import { Login } from '../pages/Login';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { VStack } from '../ui-kit/VStack';
@@ -23,6 +24,7 @@ import { UIText } from '../ui-kit/UIText';
 import { accountPublicRPCPort } from '../shared/channels';
 import { CreateAccount } from '../pages/CreateAccount';
 import { getPageTemplateName } from '../shared/getPageTemplateName';
+import { closeOtherWindows } from '../shared/closeOtherWindows';
 
 const locationStore = new PersistentStore('location', {
   pathname: '/',
@@ -125,11 +127,15 @@ function RequireAuth({ children }: { children: JSX.Element }) {
     () => accountPublicRPCPort.request('getExistingUser')
   );
 
-  if (isAuthenticatedQuery.isLoading || getExistingUserQuery.isLoading) {
+  if (isAuthenticatedQuery.isFetching || getExistingUserQuery.isFetching) {
     return null;
   }
   console.log({ existingUser, isAuthenticated });
-  if (existingUser && !isAuthenticated) {
+  if (!existingUser) {
+    console.log('no user, redirecting to /');
+    return <Navigate to="/" replace={true} />;
+  } else if (!isAuthenticated) {
+    console.log('not authenticated, redirecting to /login?next=...');
     return (
       <Navigate
         to={`/login?next=${encodeURIComponent(
@@ -139,27 +145,23 @@ function RequireAuth({ children }: { children: JSX.Element }) {
       />
     );
   }
-  // if (!auth.user) {
-  //   // Redirect them to the /login page, but save the current location they were
-  //   // trying to go to when they were redirected. This allows us to send them
-  //   // along to that page after they login, which is a nicer user experience
-  //   // than dropping them off on the home page.
-  //   return <Navigate to="/login" state={{ from: location }} replace />;
-  // }
 
   return children;
 }
 
 const template = getPageTemplateName();
 
-function useRedirectToSavedLocation() {
+function useRedirectToSavedLocation({ enabled }: { enabled: boolean }) {
   const navigate = useNavigate();
   const location = useLocation();
   const initialLocationRef = useRef(location.pathname);
-  const [ready, setReady] = useState(template !== '/popup.html');
+  const [ready, setReady] = useState(!enabled || template !== '/popup.html');
   console.log('Views:', location.pathname, { ready });
   useEffect(() => {
     let active = true;
+    if (ready) {
+      return;
+    }
     locationStore.ready().then(() => {
       console.log('locationStore is ready', locationStore.getState());
       if (!active) {
@@ -180,10 +182,10 @@ function useRedirectToSavedLocation() {
 }
 function Views() {
   console.log('Views', window.location.pathname, locationStore.getState());
-  // const { ready } = useRedirectToSavedLocation();
-  // if (!ready) {
-  //   return <span>not ready view</span>;
-  // }
+  const { ready } = useRedirectToSavedLocation({ enabled: false });
+  if (!ready) {
+    return <span>not ready view</span>;
+  }
 
   return (
     <RouteResolver>
@@ -199,6 +201,7 @@ function Views() {
           <Route path="/" element={<Intro />} />
           <Route path="/create-account" element={<CreateAccount />} />
           <Route path="/get-started" element={<GetStarted />} />
+          <Route path="/get-started/*" element={<GetStarted />} />
           <Route path="/login" element={<Login />} />
           <Route path="/hello" element={<View />} />
           <Route
@@ -217,6 +220,14 @@ function Views() {
               </RequireAuth>
             }
           />
+          <Route
+            path="/sendTransaction"
+            element={
+              <RequireAuth>
+                <SendTransaction />
+              </RequireAuth>
+            }
+          />
         </Routes>
       </div>
     </RouteResolver>
@@ -229,8 +240,14 @@ const queryClient = new QueryClient();
 // const baseName = pathParts[1].endsWith('.html')
 //   ? `/${pathParts[1]}`
 //   : undefined;
+const templateName = getPageTemplateName();
 
 export function App() {
+  useEffect(() => {
+    if (templateName === '/popup.html') {
+      closeOtherWindows();
+    }
+  }, []);
   return (
     <QueryClientProvider client={queryClient}>
       <Router>

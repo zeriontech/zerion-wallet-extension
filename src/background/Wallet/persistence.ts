@@ -1,6 +1,16 @@
 import { PersistentStore } from 'src/shared/PersistentStore';
-import { WalletRecord } from './WalletRecord';
+import { get } from '../webapis/storage';
 
-export type WalletStoreState = Record<string, WalletRecord | undefined>;
+type EncryptedWalletRecord = string;
+export type WalletStoreState = Record<
+  string,
+  EncryptedWalletRecord | undefined
+>;
 
 export const walletStore = new PersistentStore<WalletStoreState>('wallet', {});
+
+export async function getWalletTable() {
+  return get<WalletStoreState>('wallet');
+}
+
+Object.assign(window, { walletStore });

@@ -1,5 +1,4 @@
 import React from 'react';
-import browser from 'webextension-polyfill';
 import { useQuery } from 'react-query';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -9,6 +8,7 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { PageHeading } from 'src/ui/components/PageHeading';
+import { BlockieImg } from 'src/ui/components/BlockieImg';
 
 export function Overview() {
   const {
@@ -42,11 +42,7 @@ export function Overview() {
         <Spacer height={8} />
         <Surface style={{ padding: 12 }}>
           <div style={{ display: 'flex', gap: 12 }}>
-            <img
-              src={browser.runtime.getURL('./images/sample-avatar.png')}
-              style={{ height: 44, width: 44 }}
-              alt="Address Image"
-            />
+            <BlockieImg address={wallet.address} size={44} />
             <div>
               <UIText kind="subtitle/l_reg" title={wallet.address}>
                 {truncateAddress(wallet.address, 4)}
@@ -57,10 +53,6 @@ export function Overview() {
             </div>
           </div>
         </Surface>
-
-        <div style={{ borderRadius: 4 }}>
-          Testing <span style={{ color: 'var(--primary)' }}>color</span>
-        </div>
       </PageColumn>
     </div>
   );

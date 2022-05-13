@@ -17,8 +17,8 @@ export function Intro() {
       <div></div>
       <ZerionLogoWide />
       <div style={{ textAlign: 'center' }}>
-        <Button as={Link} to="/create-account">
-          Get Started
+        <Button as={Link} to="/create-account" autoFocus={true}>
+          Get Started...
         </Button>
       </div>
     </div>

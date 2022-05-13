@@ -1,6 +1,9 @@
 import { PortMessageChannel } from 'src/shared/PortMessageChannel';
 import type { Wallet } from 'src/shared/types/Wallet';
 import type { AccountPublicRPC } from 'src/shared/types/AccountPublicRPC';
+import { formatJsonRpcResultForPort } from 'src/shared/formatJsonRpcResultForPort';
+import { formatJsonRpcError } from '@json-rpc-tools/utils';
+import { UserRejected } from 'src/shared/errors/UserRejected';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SomeMethod = (...args: any) => any;
@@ -37,4 +40,14 @@ export const accountPublicRPCPort = new PortMessageChannel({
   name: 'accountPublicRPC',
 }) as RPCPort<AccountPublicRPC>;
 
-export const windowPort = new PortMessageChannel({ name: 'window' });
+class WindowPort extends PortMessageChannel {
+  confirm<T>(windowId: number, result?: T) {
+    return this.port.postMessage(formatJsonRpcResultForPort(windowId, result));
+  }
+
+  reject(windowId: number) {
+    this.port.postMessage(formatJsonRpcError(windowId, new UserRejected()));
+  }
+}
+
+export const windowPort = new WindowPort({ name: 'window' });

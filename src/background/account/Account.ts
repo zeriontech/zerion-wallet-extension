@@ -1,8 +1,10 @@
 import { nanoid } from 'nanoid';
 import EventEmitter from 'events';
 import { generateSalt } from '@metamask/browser-passworder';
-import { get, set } from 'src/background/webapis/storage';
-import { getSHA256HexDigest } from 'src/shared/crypto/getSHA256HexDigest';
+import { get, remove, set } from 'src/background/webapis/storage';
+import { getSHA256HexDigest } from 'src/shared/cryptography/getSHA256HexDigest';
+import { Wallet } from '../Wallet/Wallet';
+import { getWalletTable } from '../Wallet/persistence';
 
 interface User {
   id: string;
@@ -14,17 +16,42 @@ export interface PublicUser {
   id: User['id'];
 }
 
-class Users {
-  async create(id: string, password: string) {
+const TEMPORARY_ID = 'temporary';
+
+export class Account extends EventEmitter {
+  private user: User | null;
+  private encryptionKey: string | null;
+  private wallet: Wallet;
+
+  private static async writeCurrentUser(user: User) {
+    await set('currentUser', user);
+  }
+
+  static async readCurrentUser() {
+    return get<User>('currentUser');
+  }
+
+  private static async removeCurrentUser() {
+    await remove('currentUser');
+  }
+
+  static async ensureUserAndWallet() {
+    const existingUser = await Account.readCurrentUser();
+    const walletTable = await getWalletTable();
+    console.log({ existingUser, walletTable });
+    if (existingUser && !walletTable?.[existingUser.id]) {
+      console.log('will removeCurrentUser');
+      await Account.removeCurrentUser();
+    }
+  }
+
+  static async createUser(password: string): Promise<User> {
+    const id = nanoid();
     const salt = generateSalt();
     const hash = await getSHA256HexDigest(`${salt}:${password}`);
     const record = { id, passwordHash: hash, salt };
-    await set('currentUser', record);
+    // await set('currentUser', record);
     return record;
-  }
-
-  async getUser() {
-    return get<User>('currentUser');
   }
 
   static async verifyPassword(user: User, password: string) {
@@ -32,31 +59,12 @@ class Users {
     const hash = await getSHA256HexDigest(`${salt}:${password}`);
     return hash === user.passwordHash;
   }
-}
-
-const users = new Users();
-
-export class Account extends EventEmitter {
-  // private password: null | string;
-  private user: User | null;
-  private passwordHashed: string | null;
-
-  static async create(password: string) {
-    return users.create(nanoid(), password);
-  }
-
-  static async getUser() {
-    return users.getUser();
-  }
-
-  static async verifyPassword(user: User, password: string) {
-    return Users.verifyPassword(user, password);
-  }
 
   constructor() {
     super();
     this.user = null;
-    this.passwordHashed = null;
+    this.encryptionKey = null;
+    this.wallet = new Wallet(TEMPORARY_ID, null);
   }
 
   async init(user: User, password: string) {
@@ -66,22 +74,36 @@ export class Account extends EventEmitter {
     }
     this.user = user;
     const salt = user.id;
-    this.passwordHashed = await getSHA256HexDigest(`${salt}:${password}`);
-    this.emit('authorized');
+    this.encryptionKey = await getSHA256HexDigest(`${salt}:${password}`);
+    // this.wallet = new Wallet(user.id, this.encryptionKey);
+    await this.wallet.updateId({ params: user.id });
+    await this.wallet.updateEncryptionKey({ params: this.encryptionKey });
+    this.emit('authenticated');
   }
 
   getEncryptionKey() {
-    return this.passwordHashed;
+    return this.encryptionKey;
   }
 
   getUser() {
     return this.user;
   }
+
+  getCurrentWallet() {
+    return this.wallet;
+  }
+
+  async saveUserAndWallet() {
+    if (!this.user || !this.wallet || this.wallet.id === TEMPORARY_ID) {
+      throw new Error('Cannot persist: invalide session state');
+    }
+    await Account.writeCurrentUser(this.user);
+    await this.wallet.savePendingWallet();
+  }
 }
 
 Object.assign(window, {
   getSHA256HexDigest,
-  users,
   // account,
   Account,
 });
@@ -102,7 +124,7 @@ export class AccountPublicRPC {
   }
 
   async getExistingUser(): Promise<PublicUser | null> {
-    const user = await Account.getUser();
+    const user = await Account.readCurrentUser();
     if (user) {
       return { id: user.id };
     }
@@ -115,9 +137,9 @@ export class AccountPublicRPC {
     user: PublicUser;
     password: string;
   }>): Promise<PublicUser | null> {
-    const currentUser = await Account.getUser();
+    const currentUser = await Account.readCurrentUser();
     if (!currentUser || currentUser.id !== user.id) {
-      throw new Error('User not found');
+      throw new Error(`User ${user.id} not found`);
     }
     const canAuthorize = await Account.verifyPassword(currentUser, password);
     if (canAuthorize) {
@@ -131,37 +153,12 @@ export class AccountPublicRPC {
   async createUser({
     params: { password },
   }: PublicMethodParams<{ password: string }>): Promise<PublicUser> {
-    const user = await Account.create(password);
+    const user = await Account.createUser(password);
     await this.account.init(user, password);
     return { id: user.id };
   }
 
-  // async create({
-  //   params: { password },
-  // }: PublicMethodParams<{ password: string }>) {
-  //   return Account.create(password);
-  // }
-  //
-  // async getUser() {
-  //   return Account.getUser();
-  // }
-  //
-  // async verifyPassword({
-  //   params: { user, password },
-  // }: PublicMethodParams<{ user: User; password: string }>) {
-  //   return Users.verifyPassword(user, password);
-  // }
-
-  // init({
-  //   params: { user, password },
-  // }: PublicMethodParams<{ user: User; password: string }>) {
-  //   return
-  //   const passwordIsCorrect = await Account.verifyPassword(user, password);
-  //   if (!passwordIsCorrect) {
-  //     throw new Error('Incorrect password');
-  //   }
-  //   // this.user = user;
-  //   const salt = user.id;
-  //   this.passwordHashed = await getSHA256HexDigest(`${salt}:${password}`);
-  // }
+  async saveUserAndWallet() {
+    this.account.saveUserAndWallet();
+  }
 }

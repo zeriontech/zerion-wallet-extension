@@ -15,12 +15,15 @@ export function RouteResolver({
   const { pathname } = location;
   console.log('RouteResolver', pathname, { templateName });
 
+  const ARTIFICAL_WAIT_TIME = 0;
   useEffect(() => {
     if (ready) {
       return;
     }
     async function resolve() {
-      await new Promise((r) => setTimeout(r, 300));
+      if (ARTIFICAL_WAIT_TIME > 0) {
+        await new Promise((r) => setTimeout(r, 300));
+      }
       const isAuthenticated = await accountPublicRPCPort.request(
         'isAuthenticated'
       );
@@ -37,6 +40,7 @@ export function RouteResolver({
           navigate('/');
         }
         setReady(true);
+        return;
       }
       const currentWallet = await walletPort.request('getCurrentWallet');
       console.log({ currentWallet });
@@ -52,7 +56,7 @@ export function RouteResolver({
   }, [pathname]);
 
   if (!ready) {
-    return <Splash />;
+    return ARTIFICAL_WAIT_TIME > 0 ? <Splash /> : null;
   }
   return children as React.ReactElement;
 }

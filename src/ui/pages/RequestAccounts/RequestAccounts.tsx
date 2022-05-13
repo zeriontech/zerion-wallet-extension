@@ -1,6 +1,5 @@
 import React from 'react';
-import browser from 'webextension-polyfill';
-import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils';
+import { formatJsonRpcError } from '@json-rpc-tools/utils';
 import { useQuery } from 'react-query';
 import { useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -14,6 +13,9 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UserRejected } from 'src/shared/errors/UserRejected';
+import { formatJsonRpcResultForPort } from 'src/shared/formatJsonRpcResultForPort';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { BlockieImg } from 'src/ui/components/BlockieImg';
 
 export function RequestAccounts() {
   const [params] = useSearchParams();
@@ -51,13 +53,7 @@ export function RequestAccounts() {
         }}
       >
         <Media
-          image={
-            <img
-              src={browser.runtime.getURL('./images/sample-avatar.png')}
-              style={{ height: 44, width: 44 }}
-              alt="Address Image"
-            />
-          }
+          image={<BlockieImg address={wallet.address} size={44} />}
           text={
             <UIText kind="caption/reg" color="var(--neutral-500)">
               Wallet
@@ -118,13 +114,13 @@ export function RequestAccounts() {
         <Button
           onClick={() => {
             windowPort.port.postMessage(
-              formatJsonRpcResult(Number(params.get('windowId')), null)
+              formatJsonRpcResultForPort(Number(params.get('windowId')), null)
             );
           }}
         >
           Approve
         </Button>
-        <button
+        <UnstyledButton
           style={{ color: 'var(--primary)' }}
           onClick={() => {
             windowPort.port.postMessage(
@@ -136,7 +132,7 @@ export function RequestAccounts() {
           }}
         >
           Reject
-        </button>
+        </UnstyledButton>
       </VStack>
 
       {/*

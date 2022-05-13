@@ -104,6 +104,12 @@ class NotificationWindow extends EventEmitter {
       this.off('reject', handleReject);
     });
   }
+
+  closeCurrentWindow() {
+    if (this.windowId != null) {
+      windowManager.remove(this.windowId);
+    }
+  }
 }
 
 // Make it a singleton so that windows do not conflict
