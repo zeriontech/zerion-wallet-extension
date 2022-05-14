@@ -11,12 +11,16 @@ import {
 } from 'src/shared/errors/UserRejected';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import type { WalletStoreState } from './persistence';
-import { createEmptyRecord } from './WalletRecord';
+import {
+  ContainerType,
+  createEmptyRecord,
+  WalletContainer,
+} from './WalletRecord';
 import type { WalletRecord } from './WalletRecord';
 import { walletStore } from './persistence';
 
 export interface BareWallet {
-  mnemonic: ethers.Wallet['mnemonic'];
+  mnemonic: ethers.Wallet['mnemonic'] | null;
   privateKey: ethers.Wallet['privateKey'];
   publicKey: ethers.Wallet['publicKey'];
   address: ethers.Wallet['address'];
@@ -33,7 +37,12 @@ function walletToObject(wallet: ethers.Wallet | BareWallet): BareWallet {
 
 function toPlainObject(record: WalletRecord) {
   return {
-    wallet: record.wallet ? walletToObject(record.wallet) : null,
+    walletContainer: record.walletContainer
+      ? {
+          type: record.walletContainer.type,
+          wallet: walletToObject(record.walletContainer.wallet),
+        }
+      : null,
     permissions: record.permissions,
   };
 }
@@ -58,7 +67,7 @@ export class Wallet {
   public id: string;
   private encryptionKey: string | null;
   private walletStore: PersistentStore<WalletStoreState>;
-  private pendingWallet: BareWallet | null = null;
+  private pendingWallet: WalletContainer | null = null;
   // private wallet: ethers.Wallet | null = null;
   private record: WalletRecord | null;
 
@@ -86,15 +95,36 @@ export class Wallet {
       return;
     }
     const data = await decrypt<WalletRecord>(this.encryptionKey, record);
-    if (data.wallet) {
+    if (data.walletContainer) {
       console.log('syncing with data:', data);
-      this.record = {
-        wallet: ethers.Wallet.fromMnemonic(
-          data.wallet.mnemonic.phrase,
-          data.wallet.mnemonic.path
-        ),
-        permissions: data.permissions,
-      };
+      const { type, wallet } = data.walletContainer;
+      if (type === ContainerType.mnemonic) {
+        if (!wallet.mnemonic) {
+          throw new Error(
+            'Mnemonic container is expected to have a wallet with a mnemonic'
+          );
+        }
+        this.record = {
+          walletContainer: {
+            type: ContainerType.mnemonic,
+            wallet: ethers.Wallet.fromMnemonic(
+              wallet.mnemonic.phrase,
+              wallet.mnemonic.path
+            ),
+          },
+          permissions: data.permissions,
+        };
+      } else if (type === ContainerType.privateKey) {
+        this.record = {
+          walletContainer: {
+            type: ContainerType.mnemonic,
+            wallet: new ethers.Wallet(wallet.privateKey),
+          },
+          permissions: data.permissions,
+        };
+      } else {
+        throw new Error(`Unexpected ContainerType: ${type}`);
+      }
     } else {
       this.record = null;
     }
@@ -127,7 +157,19 @@ export class Wallet {
   async generateMnemonic() {
     console.log('generateMnemonic', this.id, this);
     const wallet = ethers.Wallet.createRandom();
-    this.pendingWallet = wallet;
+    this.pendingWallet = {
+      type: ContainerType.mnemonic,
+      wallet,
+    };
+    return wallet;
+  }
+
+  async importPrivateKey({ params: privateKey }: PublicMethodParams<string>) {
+    const wallet = new ethers.Wallet(privateKey);
+    this.pendingWallet = {
+      type: ContainerType.privateKey,
+      wallet,
+    };
     return wallet;
   }
 
@@ -135,7 +177,7 @@ export class Wallet {
     if (!this.id) {
       return null;
     }
-    return this.record?.wallet;
+    return this.record?.walletContainer?.wallet;
     // await this.walletStore.ready();
     // return this.getWalletFromStore();
   }
@@ -149,11 +191,15 @@ export class Wallet {
       throw new Error('Cannot save pending wallet: encryptionKey is null');
     }
     const record = createEmptyRecord();
-    record.wallet = {
-      mnemonic: pendingWallet.mnemonic,
-      privateKey: pendingWallet.privateKey,
-      publicKey: pendingWallet.publicKey,
-      address: pendingWallet.address,
+    const { type, wallet } = pendingWallet;
+    record.walletContainer = {
+      type,
+      wallet: {
+        mnemonic: wallet.mnemonic,
+        privateKey: wallet.privateKey,
+        publicKey: wallet.publicKey,
+        address: wallet.address,
+      },
     };
     this.record = record;
     console.log('saving record');
@@ -203,7 +249,7 @@ export class Wallet {
     if (!this.record) {
       return [];
     }
-    const { wallet } = this.record;
+    const wallet = this.record?.walletContainer?.wallet;
     if (wallet && this.allowedOrigin(context, wallet.address)) {
       return wallet ? [wallet.address] : [];
     } else {
@@ -231,10 +277,10 @@ export class Wallet {
         route: '/requestAccounts',
         search: `?origin=${origin}`,
         onResolve: (result) => {
-          if (!this.record?.wallet) {
+          if (!this.record?.walletContainer) {
             throw new Error('Wallet not found');
           }
-          this.acceptOrigin(origin, this.record.wallet.address);
+          this.acceptOrigin(origin, this.record.walletContainer.wallet.address);
           resolve(result);
         },
         onDismiss: () => {
@@ -248,10 +294,12 @@ export class Wallet {
     params,
     context,
   }: PublicMethodParams<UnsignedTransaction[]>) {
-    if (!this.record?.wallet) {
+    if (!this.record?.walletContainer) {
       throw new Error('Wallet is not initialized');
     }
-    if (!this.allowedOrigin(context, this.record.wallet.address)) {
+    if (
+      !this.allowedOrigin(context, this.record.walletContainer.wallet.address)
+    ) {
       throw new OriginNotAllowed();
     }
     const transaction = params[0];

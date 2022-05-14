@@ -67,6 +67,12 @@ export class Account extends EventEmitter {
     this.wallet = new Wallet(TEMPORARY_ID, null);
   }
 
+  reset() {
+    this.user = null;
+    this.encryptionKey = null;
+    this.wallet = new Wallet(TEMPORARY_ID, null);
+  }
+
   async init(user: User, password: string) {
     const passwordIsCorrect = await Account.verifyPassword(user, password);
     if (!passwordIsCorrect) {
@@ -99,6 +105,10 @@ export class Account extends EventEmitter {
     }
     await Account.writeCurrentUser(this.user);
     await this.wallet.savePendingWallet();
+  }
+
+  logout() {
+    return this.reset();
   }
 }
 
@@ -160,5 +170,9 @@ export class AccountPublicRPC {
 
   async saveUserAndWallet() {
     this.account.saveUserAndWallet();
+  }
+
+  async logout() {
+    return this.account.logout();
   }
 }

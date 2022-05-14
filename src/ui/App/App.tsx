@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { AreaProvider } from 'react-area';
 import { QueryClient, QueryClientProvider, useQuery } from 'react-query';
 import {
   HashRouter as Router,
@@ -25,6 +26,7 @@ import { accountPublicRPCPort } from '../shared/channels';
 import { CreateAccount } from '../pages/CreateAccount';
 import { getPageTemplateName } from '../shared/getPageTemplateName';
 import { closeOtherWindows } from '../shared/closeOtherWindows';
+import { URLBar } from '../components/URLBar';
 
 const locationStore = new PersistentStore('location', {
   pathname: '/',
@@ -47,7 +49,7 @@ function usePersistLocation({ enabled }: { enabled: boolean }) {
     }
     console.log('usePersistLocation, setting', pathname);
     locationStore.setState((s) => ({ ...s, pathname, search }));
-  }, [pathname, search, enabled]);
+  }, [pathname, search, enabled, page]);
 }
 
 function View() {
@@ -73,44 +75,6 @@ function View() {
       </div>
       outlet:
       <Outlet />
-    </div>
-  );
-}
-
-function URLBar() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  return (
-    <div
-      style={{
-        paddingTop: 8,
-        paddingLeft: 8,
-        paddingRight: 8,
-        display: 'flex',
-        alignItems: 'center',
-      }}
-    >
-      <button onClick={() => navigate(-1)} style={{ padding: 8 }}>
-        {'<'}
-      </button>
-
-      <div
-        style={{
-          flexGrow: 1,
-          borderRadius: 1000,
-          background: 'lightgray',
-          padding: 2,
-          paddingLeft: 8,
-          paddingRight: 8,
-          backgroundColor: '#f0f0f0',
-          color: 'black',
-          whiteSpace: 'nowrap',
-          overflowX: 'auto',
-        }}
-      >
-        🌐 {location.pathname}
-        {location.search}
-      </div>
     </div>
   );
 }
@@ -176,7 +140,7 @@ function useRedirectToSavedLocation({ enabled }: { enabled: boolean }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [navigate, ready]);
   usePersistLocation({ enabled: ready });
   return { ready };
 }
@@ -197,6 +161,7 @@ function Views() {
         }}
       >
         <URLBar />
+
         <Routes>
           <Route path="/" element={<Intro />} />
           <Route path="/create-account" element={<CreateAccount />} />
@@ -249,29 +214,31 @@ export function App() {
     }
   }, []);
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <ErrorBoundary
-          renderError={(error) => (
-            <div
-              style={{
-                height: '100%',
-                display: 'grid',
-                placeContent: 'center',
-                textAlign: 'center',
-                padding: 20,
-              }}
-            >
-              <VStack gap={8}>
-                <UIText kind="h/2_med">Oops</UIText>
-                <UIText kind="subtitle/s_reg">{error?.message}</UIText>
-              </VStack>
-            </div>
-          )}
-        >
-          <Views />
-        </ErrorBoundary>
-      </Router>
-    </QueryClientProvider>
+    <AreaProvider>
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <ErrorBoundary
+            renderError={(error) => (
+              <div
+                style={{
+                  height: '100%',
+                  display: 'grid',
+                  placeContent: 'center',
+                  textAlign: 'center',
+                  padding: 20,
+                }}
+              >
+                <VStack gap={8}>
+                  <UIText kind="h/2_med">Oops</UIText>
+                  <UIText kind="subtitle/s_reg">{error?.message}</UIText>
+                </VStack>
+              </div>
+            )}
+          >
+            <Views />
+          </ErrorBoundary>
+        </Router>
+      </QueryClientProvider>
+    </AreaProvider>
   );
 }

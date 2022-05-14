@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import ZerionLogoWide from 'src/ui/assets/zerion-logo-wide.svg';
 import { Button } from 'src/ui/ui-kit/Button';
 
 export function Intro() {
+  const autoFocusRef = useRef<HTMLButtonElement | null>(null);
+  useEffect(() => {
+    autoFocusRef.current?.focus();
+  }, []);
   return (
     <div
       style={{
@@ -17,7 +21,7 @@ export function Intro() {
       <div></div>
       <ZerionLogoWide />
       <div style={{ textAlign: 'center' }}>
-        <Button as={Link} to="/create-account" autoFocus={true}>
+        <Button ref={autoFocusRef} as={Link} to="/create-account">
           Get Started...
         </Button>
       </div>

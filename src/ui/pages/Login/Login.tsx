@@ -73,9 +73,6 @@ export function Login() {
               placeholder="password"
               required={true}
               style={{
-                ['--text-color' as any]: 'var(--neutral-700)',
-                color: 'var(--text-color)',
-
                 backgroundColor: 'var(--neutral-200)',
                 padding: '7px 11px',
                 border: '1px solid var(--neutral-200)',
@@ -89,7 +86,18 @@ export function Login() {
             ) : null}
           </VStack>
           <Button>{loginMutation.isLoading ? 'Checking...' : 'Unlock'}</Button>
-          {/*<Link to="/create">Or create new account</Link>*/}
+          <UIText
+            kind="button/s_reg"
+            color="var(--primary)"
+            style={{ textAlign: 'center' }}
+          >
+            <Link
+              to="/create-account"
+              style={{ color: 'inherit', textDecoration: 'inherit' }}
+            >
+              Or create new account
+            </Link>
+          </UIText>
         </VStack>
       </form>
       <Spacer height={24} />

@@ -4,6 +4,7 @@
 
 body {
   font-family: Graphik, sans-serif;
+  color: 'var(--black)';
 }
 
 :global(#root) {

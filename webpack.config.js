@@ -94,7 +94,13 @@ module.exports = {
         ],
       },
       {
-        test: /\.svg$/,
+        test: /\.svg$/i,
+        type: 'asset',
+        resourceQuery: /url/, // import svgAsUrl from './assets/file.svg?url'
+      },
+      {
+        test: /\.svg$/i,
+        resourceQuery: { not: [/url/] }, // exclude react component if *.svg?url
         use: ['@svgr/webpack'],
       },
       {

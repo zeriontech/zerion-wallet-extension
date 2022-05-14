@@ -46,7 +46,9 @@ export function SendTransaction() {
       <div style={{ display: 'grid', placeItems: 'center' }}>
         <img
           style={{ width: 44, height: 44 }}
-          src={browser.runtime.getURL(require('src/ui/assets/logo-icon.png'))}
+          src={browser.runtime.getURL(
+            require('src/ui/assets/zerion-logo-round@2x.png')
+          )}
         />
         <Spacer height={16} />
         <UIText kind="h/5_med" style={{ textAlign: 'center' }}>

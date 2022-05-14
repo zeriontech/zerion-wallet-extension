@@ -1,16 +1,20 @@
 import React from 'react';
-import { useQuery } from 'react-query';
+import { useMutation, useQuery } from 'react-query';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
-import { walletPort } from 'src/ui/shared/channels';
+import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { PageHeading } from 'src/ui/components/PageHeading';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
+import { useNavigate } from 'react-router-dom';
+import { Background } from 'src/ui/components/Background';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 
 export function Overview() {
+  const navigate = useNavigate();
   const {
     data: wallet,
     isLoading,
@@ -18,6 +22,8 @@ export function Overview() {
   } = useQuery('wallet', () => {
     return walletPort.request('getCurrentWallet');
   });
+  const logout = useMutation(() => accountPublicRPCPort.request('logout'));
+
   if (isError) {
     return <p>Some Error</p>;
   }
@@ -25,7 +31,7 @@ export function Overview() {
     return null;
   }
   return (
-    <div style={{ flexGrow: 1, backgroundColor: 'var(--background)' }}>
+    <Background backgroundColor="var(--background)">
       <PageColumn>
         <PageTop />
         <PageHeading>Summary</PageHeading>
@@ -53,7 +59,19 @@ export function Overview() {
             </div>
           </div>
         </Surface>
+        <div
+          style={{ marginTop: 'auto', paddingBottom: 16, textAlign: 'center' }}
+        >
+          <UnstyledButton
+            onClick={async () => {
+              await logout.mutateAsync();
+              navigate('/login');
+            }}
+          >
+            {logout.isLoading ? 'Locking...' : 'Lock (log out)'}
+          </UnstyledButton>
+        </div>
       </PageColumn>
-    </div>
+    </Background>
   );
 }

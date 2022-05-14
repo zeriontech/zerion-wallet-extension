@@ -81,6 +81,7 @@
     "nanoid": "^3.3.4",
     "normalize.css": "^8.0.1",
     "react": "^18.1.0",
+    "react-area": "^0.1.1-alpha.6",
     "react-dom": "^18.1.0",
     "react-query": "^3.38.0",
     "react-router-dom": "^6.3.0",

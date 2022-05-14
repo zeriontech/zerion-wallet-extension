@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useMemo, useRef } from 'react';
 import { createIcon } from '@download/blockies';
+import { normalizeAddress } from 'src/ui/shared/normalizeAddress';
 
 export function BlockieImg({
   address,
@@ -12,7 +13,7 @@ export function BlockieImg({
   const icon = useMemo(
     () =>
       createIcon({
-        seed: address,
+        seed: normalizeAddress(address),
         size: blocksCount,
         scale: (size / blocksCount) * window.devicePixelRatio,
       }),

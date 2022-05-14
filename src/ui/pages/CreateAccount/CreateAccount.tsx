@@ -1,6 +1,7 @@
 import React from 'react';
 import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
+import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageHeading } from 'src/ui/components/PageHeading';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -25,8 +26,9 @@ export function CreateAccount() {
   return (
     <PageColumn>
       <PageTop />
+      <NavigationTitle title={null} />
       <PageHeading>Create Password</PageHeading>
-      <UIText kind="caption/reg" color="var(--neutral-500)">
+      <UIText kind="subtitle/s_reg" color="var(--neutral-500)">
         Protect your wallet by setting a password
       </UIText>
       <Spacer height={24} />
@@ -51,9 +53,6 @@ export function CreateAccount() {
               placeholder="password"
               required={true}
               style={{
-                ['--text-color' as any]: 'var(--neutral-700)',
-                color: 'var(--text-color)',
-
                 backgroundColor: 'var(--neutral-200)',
                 padding: '7px 11px',
                 border: '1px solid var(--neutral-200)',
