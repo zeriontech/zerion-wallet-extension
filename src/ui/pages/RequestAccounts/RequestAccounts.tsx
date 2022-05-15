@@ -1,5 +1,4 @@
 import React from 'react';
-import { formatJsonRpcError } from '@json-rpc-tools/utils';
 import { useQuery } from 'react-query';
 import { useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -12,8 +11,6 @@ import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Button } from 'src/ui/ui-kit/Button';
-import { UserRejected } from 'src/shared/errors/UserRejected';
-import { formatJsonRpcResultForPort } from 'src/shared/formatJsonRpcResultForPort';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
 
@@ -70,7 +67,7 @@ export function RequestAccounts() {
       <UIText kind="body/s_reg" style={{ textAlign: 'center' }}>
         Only connect to sites that you trust
         <br />
-        By connection, you allow{' '}
+        By connecting, you allow{' '}
         <span style={{ color: 'var(--primary)' }}>{originName}</span> to:
       </UIText>
       <Spacer height={16} />
@@ -113,9 +110,7 @@ export function RequestAccounts() {
       >
         <Button
           onClick={() => {
-            windowPort.port.postMessage(
-              formatJsonRpcResultForPort(Number(params.get('windowId')), null)
-            );
+            windowPort.confirm(Number(params.get('windowId')));
           }}
         >
           Approve
@@ -123,12 +118,7 @@ export function RequestAccounts() {
         <UnstyledButton
           style={{ color: 'var(--primary)' }}
           onClick={() => {
-            windowPort.port.postMessage(
-              formatJsonRpcError(
-                Number(params.get('windowId')),
-                new UserRejected('')
-              )
-            );
+            windowPort.reject(Number(params.get('windowId')));
           }}
         >
           Reject

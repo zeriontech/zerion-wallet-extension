@@ -15,5 +15,5 @@ const provider = new EthereumProvider(connection);
 
 provider.connect();
 
-// window.ethereum = provider;
+window.ethereum = provider;
 window.zerionWallet = provider;

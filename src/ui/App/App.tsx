@@ -27,6 +27,7 @@ import { CreateAccount } from '../pages/CreateAccount';
 import { getPageTemplateName } from '../shared/getPageTemplateName';
 import { closeOtherWindows } from '../shared/closeOtherWindows';
 import { URLBar } from '../components/URLBar';
+import { SwitchEthereumChain } from '../pages/SwitchEthereumChain';
 
 const locationStore = new PersistentStore('location', {
   pathname: '/',
@@ -190,6 +191,14 @@ function Views() {
             element={
               <RequireAuth>
                 <SendTransaction />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/switchEthereumChain"
+            element={
+              <RequireAuth>
+                <SwitchEthereumChain />
               </RequireAuth>
             }
           />

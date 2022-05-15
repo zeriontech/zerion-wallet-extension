@@ -1,1 +1,1 @@
-export const INTERNAL_ORIGIN = `${chrome.runtime.id}/self`;
+export const INTERNAL_ORIGIN = `chrome-extension://${chrome.runtime.id}`;

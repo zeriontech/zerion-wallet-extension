@@ -19,11 +19,15 @@ function ImportForm({ onSubmit }: { onSubmit: (value: string) => void }) {
   return (
     <>
       <UIText kind="subtitle/m_reg" color="var(--neutral-700)">
-        Existing wallets can be imported using either a seed phrase (12 words)
-        or a private key
+        Existing wallets can be imported using either
+        <ul style={{ listStyle: 'circle', paddingLeft: '1em', marginTop: 8 }}>
+          <li>a seed phrase (12 words)</li>
+          <li>or a private key</li>
+        </ul>
       </UIText>
       <Spacer height={24}></Spacer>
       <form
+        style={{ display: 'flex', flexGrow: 1, flexDirection: 'column' }}
         onSubmit={(event) => {
           event.preventDefault();
           const value = new FormData(event.currentTarget).get(
@@ -35,25 +39,23 @@ function ImportForm({ onSubmit }: { onSubmit: (value: string) => void }) {
           onSubmit(value as string);
         }}
       >
-        <VStack gap={12}>
-          <textarea
-            autoFocus={true}
-            name="seedOrPrivateKey"
-            required={true}
-            rows={3}
-            placeholder="Enter seed phrase or a private key"
-            style={{
-              display: 'block',
-              color: 'var(--black)',
-              resize: 'vertical',
-              backgroundColor: 'var(--white)',
-              padding: '7px 11px',
-              border: '1px solid var(--neutral-200)',
-              borderRadius: 8,
-            }}
-          />
-          <Button>Import</Button>
-        </VStack>
+        <textarea
+          autoFocus={true}
+          name="seedOrPrivateKey"
+          required={true}
+          rows={3}
+          placeholder="Enter seed phrase or a private key"
+          style={{
+            display: 'block',
+            color: 'var(--black)',
+            resize: 'vertical',
+            backgroundColor: 'var(--white)',
+            padding: '7px 11px',
+            border: '1px solid var(--neutral-200)',
+            borderRadius: 8,
+          }}
+        />
+        <Button style={{ marginTop: 'auto', marginBottom: 16 }}>Import</Button>
       </form>
     </>
   );
@@ -95,42 +97,43 @@ export function ImportWallet() {
           <UIText kind="h/5_med">Seed Phrase or Private Key</UIText>
           <Spacer height={24}></Spacer>
           {steps.has(Step.loading) ? (
-            <VStack gap={16}>
-              <VStack gap={8}>
-                <DecorativeMessage
-                  text={
-                    <UIText kind="subtitle/m_reg">
-                      Hi 👋 We're generating your wallet and making sure it's
-                      encrypted with your passcode. This should only take a
-                      couple of minutes.
-                    </UIText>
-                  }
-                />
-                {data?.address ? (
-                  <DecorativeMessageDone
-                    messageKind="import"
-                    address={data.address}
-                  />
-                ) : null}
-                {importWallet.isError ? (
-                  <UIText kind="subtitle/m_reg" color="var(--negative-500)">
-                    Could not import wallet
+            <VStack gap={8}>
+              <DecorativeMessage
+                text={
+                  <UIText kind="subtitle/m_reg">
+                    Hi 👋 We're generating your wallet and making sure it's
+                    encrypted with your passcode. This should only take a couple
+                    of minutes.
                   </UIText>
-                ) : null}
-              </VStack>
-              <Button
-                onClick={() => {
-                  accountPublicRPCPort.request('saveUserAndWallet').then(() => {
-                    navigate('/overview');
-                  });
-                }}
-              >
-                {importWallet.isLoading ? 'Recovering...' : 'Finish'}
-              </Button>
+                }
+              />
+              {data?.address ? (
+                <DecorativeMessageDone
+                  messageKind="import"
+                  address={data.address}
+                />
+              ) : null}
+              {importWallet.isError ? (
+                <UIText kind="subtitle/m_reg" color="var(--negative-500)">
+                  Could not import wallet
+                </UIText>
+              ) : null}
             </VStack>
           ) : (
             <ImportForm onSubmit={(key) => importWallet.mutate(key)} />
           )}
+          {steps.has(Step.loading) ? (
+            <Button
+              style={{ marginTop: 'auto', marginBottom: 16 }}
+              onClick={() => {
+                accountPublicRPCPort.request('saveUserAndWallet').then(() => {
+                  navigate('/overview');
+                });
+              }}
+            >
+              {importWallet.isLoading ? 'Recovering...' : 'Finish'}
+            </Button>
+          ) : null}
         </PageColumn>
       </Background>
     </>

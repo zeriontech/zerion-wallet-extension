@@ -11,8 +11,8 @@ export class InvalidParams extends Error {
 export class OriginNotAllowed extends Error {
   code = -32011;
 
-  constructor(message?: string) {
-    super(message || 'Method not allowed for this origin');
+  constructor(origin?: string) {
+    super('Method not allowed for this origin' + (origin ? `: ${origin}` : ''));
   }
 }
 

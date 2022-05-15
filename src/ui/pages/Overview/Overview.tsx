@@ -13,6 +13,10 @@ import { useNavigate } from 'react-router-dom';
 import { Background } from 'src/ui/components/Background';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 
+const chainIdToName: { [key: string]: string } = {
+  '0x89': 'polygon',
+  '0x1': 'ethereum',
+};
 export function Overview() {
   const navigate = useNavigate();
   const {
@@ -24,6 +28,11 @@ export function Overview() {
   });
   const logout = useMutation(() => accountPublicRPCPort.request('logout'));
 
+  const { data: chainId, refetch: refetchChainId } = useQuery(
+    'wallet/chainId',
+    () => walletPort.request('getChainId')
+  );
+  console.log({ chainId });
   if (isError) {
     return <p>Some Error</p>;
   }
@@ -32,7 +41,20 @@ export function Overview() {
   }
   return (
     <Background backgroundColor="var(--background)">
-      <PageColumn>
+      <PageColumn className="fadeIn">
+        <div style={{ position: 'absolute', right: 8, top: 8 }}>
+          <select
+            name="chain"
+            value={chainIdToName[chainId || '0x1']}
+            onChange={(event) => {
+              walletPort.request('switchChain', event.target.value);
+              refetchChainId();
+            }}
+          >
+            <option value="ethereum">Ethereum</option>
+            <option value="polygon">Polygon</option>
+          </select>
+        </div>
         <PageTop />
         <PageHeading>Summary</PageHeading>
         <Spacer height={24} />

@@ -1,5 +1,6 @@
 import React from 'react';
 import browser from 'webextension-polyfill';
+import type { UnsignedTransaction } from 'ethers';
 import { useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -35,6 +36,11 @@ export function SendTransaction() {
   if (!origin) {
     throw new Error('origin get-parameter is required for this view');
   }
+  const transactionString = params.get('transaction');
+  if (!transactionString) {
+    throw new Error('transaction get-parameter is required for this view');
+  }
+  const transaction = JSON.parse(transactionString) as UnsignedTransaction;
   const originName = new URL(origin).hostname;
   const surfaceStyle = {
     padding: '10px 12px',
@@ -59,7 +65,7 @@ export function SendTransaction() {
           {originName}
         </UIText>
         <Spacer height={8} />
-        <NetworkIndicator />
+        <NetworkIndicator chainId={transaction.chainId} />
       </div>
       <Spacer height={24} />
       <Spacer height={16} />

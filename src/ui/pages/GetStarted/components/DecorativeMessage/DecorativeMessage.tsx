@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import browser from 'webextension-polyfill';
+import confetti from 'canvas-confetti';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -31,6 +32,7 @@ export function DecorativeMessage({
           textAlign: 'center',
           display: 'flex',
           alignItems: 'center',
+          boxShadow: '0px 4px 12px -4px rgba(0, 0, 0, 0.16)',
         }}
       >
         <img
@@ -51,12 +53,63 @@ export function DecorativeMessage({
 export function DecorativeMessageDone({
   address,
   messageKind = 'new',
+  confettiOriginY = 0.75,
 }: {
   address: string;
   messageKind?: 'import' | 'new';
+  confettiOriginY?: number;
 }) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  useEffect(() => {
+    function fire(confettiInstance: confetti.CreateTypes) {
+      confettiInstance({
+        disableForReducedMotion: true,
+        particleCount: 150,
+        startVelocity: 30,
+        angle: 50,
+        spread: 50,
+        origin: { x: 0.6, y: confettiOriginY },
+      });
+      confettiInstance({
+        disableForReducedMotion: true,
+        particleCount: 150,
+        startVelocity: 25,
+        decay: 0.9,
+        angle: 130,
+        spread: 50,
+        origin: { x: 0.6, y: confettiOriginY },
+      });
+    }
+
+    if (!canvasRef.current) {
+      return;
+    }
+
+    const customConfetti = confetti.create(canvasRef.current, {
+      useWorker: true,
+      resize: true,
+    });
+    Object.assign(window, { customConfetti });
+
+    const timerId = setTimeout(() => {
+      fire(customConfetti);
+    }, 300);
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, []);
   return (
     <>
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: -1,
+          width: '100%',
+          height: '100%',
+        }}
+      ></canvas>
       <DecorativeMessage
         text={
           <UIText kind="h/6_med">

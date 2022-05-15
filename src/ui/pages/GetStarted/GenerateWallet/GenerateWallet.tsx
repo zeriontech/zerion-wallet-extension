@@ -74,21 +74,13 @@ export function GenerateWallet() {
               />
             ) : null}
             {data?.address ? (
-              <DecorativeMessageDone address={data.address} />
+              <DecorativeMessageDone
+                address={data.address}
+                confettiOriginY={0.87}
+              />
             ) : null}
           </VStack>
-          {data ? (
-            <Button
-              onClick={() => {
-                console.log('savePendingWallet click');
-                accountPublicRPCPort.request('saveUserAndWallet').then(() => {
-                  navigate('/overview');
-                });
-              }}
-            >
-              Finish
-            </Button>
-          ) : (
+          {data ? null : (
             <Button
               onClick={() => {
                 generateMnemonics();
@@ -98,6 +90,19 @@ export function GenerateWallet() {
             </Button>
           )}
         </VStack>
+        {data ? (
+          <Button
+            style={{ marginTop: 'auto', marginBottom: 16 }}
+            onClick={() => {
+              console.log('savePendingWallet click');
+              accountPublicRPCPort.request('saveUserAndWallet').then(() => {
+                navigate('/overview');
+              });
+            }}
+          >
+            Finish
+          </Button>
+        ) : null}
       </PageColumn>
     </Background>
   );

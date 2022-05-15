@@ -71,6 +71,7 @@ export class Account extends EventEmitter {
     this.user = null;
     this.encryptionKey = null;
     this.wallet = new Wallet(TEMPORARY_ID, null);
+    this.emit('reset');
   }
 
   async init(user: User, password: string) {

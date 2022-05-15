@@ -1,4 +1,5 @@
 import { ethers, UnsignedTransaction } from 'ethers';
+import { createNanoEvents, Emitter } from 'nanoevents';
 import { produce } from 'immer';
 import { encrypt, decrypt } from '@metamask/browser-passworder';
 import { notificationWindow } from 'src/background/NotificationWindow/NotificationWindow';
@@ -12,12 +13,15 @@ import {
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import type { WalletStoreState } from './persistence';
 import {
-  ContainerType,
+  SeedType,
   createEmptyRecord,
   WalletContainer,
+  MnemonicWalletContainer,
+  PrivateKeyWalletContainer,
 } from './WalletRecord';
 import type { WalletRecord } from './WalletRecord';
 import { walletStore } from './persistence';
+import { Store } from 'store-unit';
 
 export interface BareWallet {
   mnemonic: ethers.Wallet['mnemonic'] | null;
@@ -39,7 +43,7 @@ function toPlainObject(record: WalletRecord) {
   return {
     walletContainer: record.walletContainer
       ? {
-          type: record.walletContainer.type,
+          ...record.walletContainer,
           wallet: walletToObject(record.walletContainer.wallet),
         }
       : null,
@@ -63,15 +67,26 @@ type PublicMethodParams<T = undefined> = T extends undefined
       context?: Partial<ChannelContext>;
     };
 
+interface WalletEvents {
+  recordUpdated: () => void;
+  chainChanged: (chainId: string) => void;
+}
+
 export class Wallet {
   public id: string;
   private encryptionKey: string | null;
   private walletStore: PersistentStore<WalletStoreState>;
   private pendingWallet: WalletContainer | null = null;
-  // private wallet: ethers.Wallet | null = null;
   private record: WalletRecord | null;
 
+  private store: Store<{ chainId: string }>;
+
+  emitter: Emitter<WalletEvents>;
+
   constructor(id: string, encryptionKey: string | null) {
+    this.store = new Store({ chainId: '0x1' });
+    this.emitter = createNanoEvents();
+
     this.id = id;
     this.walletStore = walletStore;
     this.encryptionKey = encryptionKey;
@@ -97,37 +112,29 @@ export class Wallet {
     const data = await decrypt<WalletRecord>(this.encryptionKey, record);
     if (data.walletContainer) {
       console.log('syncing with data:', data);
-      const { type, wallet } = data.walletContainer;
-      if (type === ContainerType.mnemonic) {
+      const { seedType, wallet } = data.walletContainer;
+      if (seedType === SeedType.mnemonic) {
         if (!wallet.mnemonic) {
           throw new Error(
             'Mnemonic container is expected to have a wallet with a mnemonic'
           );
         }
         this.record = {
-          walletContainer: {
-            type: ContainerType.mnemonic,
-            wallet: ethers.Wallet.fromMnemonic(
-              wallet.mnemonic.phrase,
-              wallet.mnemonic.path
-            ),
-          },
+          walletContainer: new MnemonicWalletContainer(wallet),
           permissions: data.permissions,
         };
-      } else if (type === ContainerType.privateKey) {
+      } else if (seedType === SeedType.privateKey) {
         this.record = {
-          walletContainer: {
-            type: ContainerType.mnemonic,
-            wallet: new ethers.Wallet(wallet.privateKey),
-          },
+          walletContainer: new PrivateKeyWalletContainer(wallet),
           permissions: data.permissions,
         };
       } else {
-        throw new Error(`Unexpected ContainerType: ${type}`);
+        throw new Error(`Unexpected SeedType: ${seedType}`);
       }
     } else {
       this.record = null;
     }
+    this.emitter.emit('recordUpdated');
   }
 
   async ready() {
@@ -158,7 +165,7 @@ export class Wallet {
     console.log('generateMnemonic', this.id, this);
     const wallet = ethers.Wallet.createRandom();
     this.pendingWallet = {
-      type: ContainerType.mnemonic,
+      seedType: SeedType.mnemonic,
       wallet,
     };
     return wallet;
@@ -167,7 +174,7 @@ export class Wallet {
   async importPrivateKey({ params: privateKey }: PublicMethodParams<string>) {
     const wallet = new ethers.Wallet(privateKey);
     this.pendingWallet = {
-      type: ContainerType.privateKey,
+      seedType: SeedType.privateKey,
       wallet,
     };
     return wallet;
@@ -183,17 +190,16 @@ export class Wallet {
   }
 
   async savePendingWallet() {
-    const { pendingWallet } = this;
-    if (!pendingWallet) {
+    if (!this.pendingWallet) {
       throw new Error('Cannot save pending wallet: pendingWallet is null');
     }
     if (!this.encryptionKey) {
       throw new Error('Cannot save pending wallet: encryptionKey is null');
     }
     const record = createEmptyRecord();
-    const { type, wallet } = pendingWallet;
+    const { seedType, wallet } = this.pendingWallet;
     record.walletContainer = {
-      type,
+      seedType,
       wallet: {
         mnemonic: wallet.mnemonic,
         privateKey: wallet.privateKey,
@@ -202,7 +208,7 @@ export class Wallet {
       },
     };
     this.record = record;
-    console.log('saving record');
+    console.log('saving record', record);
     const encryptedRecord = await encryptRecord(this.encryptionKey, record);
     this.walletStore.setState((state) =>
       produce(state, (draft) => {
@@ -257,13 +263,15 @@ export class Wallet {
     }
   }
 
+  private getCurrentAddress() {
+    return this.record?.walletContainer?.wallet.address;
+  }
+
   async eth_requestAccounts({ context }: PublicMethodParams) {
-    // if (
-    //   this.record?.wallet &&
-    //   this.allowedOrigin(context, this.record.wallet.address)
-    // ) {
-    //   return [this.record.wallet.address];
-    // }
+    const currentAddress = this.getCurrentAddress();
+    if (currentAddress && this.allowedOrigin(context, currentAddress)) {
+      return [currentAddress];
+    }
     if (!context?.origin) {
       throw new Error('This method requires origin');
     }
@@ -288,6 +296,58 @@ export class Wallet {
         },
       });
     });
+  }
+
+  async wallet_switchEthereumChain({
+    params,
+    context,
+  }: PublicMethodParams<[{ chainId: string | number }]>): Promise<string> {
+    if (!this.record?.walletContainer) {
+      throw new Error('Wallet is not initialized');
+    }
+    if (
+      !this.allowedOrigin(context, this.record.walletContainer.wallet.address)
+    ) {
+      throw new OriginNotAllowed();
+    }
+    const { origin } = context;
+    const { chainId } = params[0];
+    return new Promise((resolve, reject) => {
+      notificationWindow.open({
+        route: '/switchEthereumChain',
+        search: `?origin=${origin}&chainId=${chainId}`,
+        onResolve: () => {
+          const value = ethers.utils.hexValue(chainId);
+          this.store.setState({ chainId: value });
+          this.emitter.emit('chainChanged', value);
+          resolve(value);
+        },
+        onDismiss: () => {
+          reject(new UserRejected('User Rejected the Request'));
+        },
+      });
+    });
+  }
+
+  async switchChain({ params: chain, context }: PublicMethodParams<string>) {
+    if (context?.origin !== INTERNAL_ORIGIN) {
+      // allow only for internal origin
+      console.log({ INTERNAL_ORIGIN });
+      throw new OriginNotAllowed(context?.origin);
+    }
+    const chains = {
+      ethereum: '0x1',
+      polygon: '0x89',
+    };
+    if (chain in chains) {
+      const chainId = chains[chain as keyof typeof chains];
+      this.store.setState({ chainId });
+      this.emitter.emit('chainChanged', chainId);
+    }
+  }
+
+  async getChainId() {
+    return this.store.getState().chainId;
   }
 
   async eth_sendTransaction({

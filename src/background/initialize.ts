@@ -1,6 +1,4 @@
 import { Account, AccountPublicRPC } from './account/Account';
-// import { walletStore } from './Wallet/persistence';
-// import { Wallet } from './Wallet/Wallet';
 
 let didInitialize = false;
 
