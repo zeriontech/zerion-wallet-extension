@@ -9,13 +9,18 @@ export enum SeedType {
   mnemonic,
 }
 
-export interface WalletContainer {
+export interface BareWalletContainer {
   seedType: SeedType;
   wallet: BareWallet;
 }
 
+export interface WalletContainer {
+  seedType: SeedType;
+  wallet: ethers.Wallet;
+}
+
 export class MnemonicWalletContainer implements WalletContainer {
-  wallet: BareWallet;
+  wallet: ethers.Wallet;
   seedType = SeedType.mnemonic;
 
   constructor(wallet: BareWallet) {
@@ -32,7 +37,7 @@ export class MnemonicWalletContainer implements WalletContainer {
 }
 
 export class PrivateKeyWalletContainer implements WalletContainer {
-  wallet: BareWallet;
+  wallet: ethers.Wallet;
   seedType = SeedType.privateKey;
 
   constructor(wallet: BareWallet) {
@@ -40,14 +45,20 @@ export class PrivateKeyWalletContainer implements WalletContainer {
   }
 }
 
-export interface WalletRecord {
-  walletContainer: null | WalletContainer;
+export interface WalletRecord<
+  T extends WalletContainer | BareWalletContainer | null
+> {
+  walletContainer: T;
   permissions: Record<Origin, Address>;
 }
 
-export function createEmptyRecord(): WalletRecord {
+export function createRecord({
+  walletContainer,
+}: {
+  walletContainer: WalletContainer;
+}): WalletRecord<WalletContainer> {
   return {
-    walletContainer: null,
+    walletContainer,
     permissions: {},
   };
 }

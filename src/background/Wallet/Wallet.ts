@@ -14,14 +14,18 @@ import { INTERNAL_ORIGIN } from 'src/background/constants';
 import type { WalletStoreState } from './persistence';
 import {
   SeedType,
-  createEmptyRecord,
+  createRecord,
   WalletContainer,
   MnemonicWalletContainer,
   PrivateKeyWalletContainer,
+  BareWalletContainer,
 } from './WalletRecord';
 import type { WalletRecord } from './WalletRecord';
 import { walletStore } from './persistence';
 import { Store } from 'store-unit';
+import { networksStore } from 'src/modules/networks/networks-store';
+import { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
+import { prepareTransaction } from 'src/modules/ethereum/transactions';
 
 export interface BareWallet {
   mnemonic: ethers.Wallet['mnemonic'] | null;
@@ -39,7 +43,7 @@ function walletToObject(wallet: ethers.Wallet | BareWallet): BareWallet {
   };
 }
 
-function toPlainObject(record: WalletRecord) {
+function toPlainObject(record: WalletRecord<BareWalletContainer>) {
   return {
     walletContainer: record.walletContainer
       ? {
@@ -51,7 +55,10 @@ function toPlainObject(record: WalletRecord) {
   };
 }
 
-async function encryptRecord(key: string, record: WalletRecord) {
+async function encryptRecord(
+  key: string,
+  record: WalletRecord<WalletContainer>
+) {
   return encrypt(key, toPlainObject(record));
 }
 
@@ -77,7 +84,7 @@ export class Wallet {
   private encryptionKey: string | null;
   private walletStore: PersistentStore<WalletStoreState>;
   private pendingWallet: WalletContainer | null = null;
-  private record: WalletRecord | null;
+  private record: WalletRecord<WalletContainer> | null;
 
   private store: Store<{ chainId: string }>;
 
@@ -109,7 +116,10 @@ export class Wallet {
     if (!record) {
       return;
     }
-    const data = await decrypt<WalletRecord>(this.encryptionKey, record);
+    const data = await decrypt<WalletRecord<BareWalletContainer>>(
+      this.encryptionKey,
+      record
+    );
     if (data.walletContainer) {
       console.log('syncing with data:', data);
       const { seedType, wallet } = data.walletContainer;
@@ -196,17 +206,8 @@ export class Wallet {
     if (!this.encryptionKey) {
       throw new Error('Cannot save pending wallet: encryptionKey is null');
     }
-    const record = createEmptyRecord();
     const { seedType, wallet } = this.pendingWallet;
-    record.walletContainer = {
-      seedType,
-      wallet: {
-        mnemonic: wallet.mnemonic,
-        privateKey: wallet.privateKey,
-        publicKey: wallet.publicKey,
-        address: wallet.address,
-      },
-    };
+    const record = createRecord({ walletContainer: { seedType, wallet } });
     this.record = record;
     console.log('saving record', record);
     const encryptedRecord = await encryptRecord(this.encryptionKey, record);
@@ -329,6 +330,12 @@ export class Wallet {
     });
   }
 
+  private verifyInternalOrigin(context: Partial<ChannelContext> | undefined) {
+    if (context?.origin !== INTERNAL_ORIGIN) {
+      throw new OriginNotAllowed(context?.origin);
+    }
+  }
+
   async switchChain({ params: chain, context }: PublicMethodParams<string>) {
     if (context?.origin !== INTERNAL_ORIGIN) {
       // allow only for internal origin
@@ -350,6 +357,54 @@ export class Wallet {
     return this.store.getState().chainId;
   }
 
+  private async sendTransaction(
+    incomingTransaction: IncomingTransaction,
+    context: Partial<ChannelContext> | undefined
+  ): Promise<ethers.providers.TransactionResponse> {
+    this.verifyInternalOrigin(context);
+    if (!this.record?.walletContainer) {
+      throw new Error('Wallet is not initialized');
+    }
+    const { chainId } = this.store.getState();
+    const targetChainId = ethers.utils.hexValue(
+      incomingTransaction.chainId || '0x1'
+    );
+    if (chainId !== targetChainId) {
+      await this.wallet_switchEthereumChain({
+        params: [{ chainId: targetChainId }],
+        context,
+      });
+      return this.sendTransaction(incomingTransaction, context);
+    }
+    const networks = await networksStore.load();
+    const transaction = prepareTransaction(incomingTransaction);
+    // const { chainId = '0x1' } = transaction;
+    const nodeUrl = networks.getRpcUrlInternal(networks.getChainById(chainId));
+    const jsonRpcProvider = new ethers.providers.JsonRpcProvider(nodeUrl);
+    const signer = this.record.walletContainer.wallet.connect(jsonRpcProvider);
+    // const populatedTransaction = await signer.populateTransaction({
+    //   ...transaction,
+    //   type: transaction.type || undefined,
+    // });
+    return signer.sendTransaction({
+      ...transaction,
+      type: transaction.type || undefined,
+    });
+    // return { signer, transaction, populatedTransaction, jsonRpcProvider };
+  }
+
+  async signAndSendTransaction({
+    params,
+    context,
+  }: PublicMethodParams<IncomingTransaction[]>) {
+    this.verifyInternalOrigin(context);
+    const transaction = params[0];
+    if (!transaction) {
+      throw new InvalidParams();
+    }
+    return this.sendTransaction(transaction, context);
+  }
+
   async eth_sendTransaction({
     params,
     context,
@@ -367,15 +422,16 @@ export class Wallet {
       throw new InvalidParams();
     }
     const { origin } = context;
+    Object.assign(window, { transactionToSend: transaction });
     return new Promise((resolve, reject) => {
       notificationWindow.open({
         route: '/sendTransaction',
         search: `?origin=${origin}&transaction=${encodeURIComponent(
           JSON.stringify(transaction)
         )}`,
-        onResolve: (result) => {
-          console.log('result', result);
-          resolve('0x123123');
+        onResolve: (hash) => {
+          console.log('result', hash);
+          resolve(hash);
         },
         onDismiss: () => {
           reject(new UserRejected('User Rejected the Request'));

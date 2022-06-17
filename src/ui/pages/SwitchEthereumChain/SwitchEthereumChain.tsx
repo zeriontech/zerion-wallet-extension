@@ -33,6 +33,9 @@ export function SwitchEthereumChain() {
   }
   const originName = new URL(origin).hostname;
   const chainId = params.get('chainId');
+  if (!chainId) {
+    throw new Error('This view requires a chainId get-param');
+  }
 
   return (
     <PageColumn>
@@ -53,7 +56,7 @@ export function SwitchEthereumChain() {
           {originName}
         </UIText>
         <Spacer height={8} />
-        <NetworkIndicator />
+        <NetworkIndicator chainId={chainId} />
       </div>
       <Spacer height={24} />
       <UIText kind="subtitle/m_reg" style={{ textAlign: 'center' }}>

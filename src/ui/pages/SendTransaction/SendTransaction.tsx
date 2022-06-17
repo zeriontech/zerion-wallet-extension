@@ -1,6 +1,7 @@
 import React from 'react';
+import { useMutation, useQuery } from 'react-query';
 import browser from 'webextension-polyfill';
-import type { UnsignedTransaction } from 'ethers';
+import { ethers, UnsignedTransaction } from 'ethers';
 import { useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -10,12 +11,12 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { useQuery } from 'react-query';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { Media } from 'src/ui/ui-kit/Media';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { NetworkIndicator } from 'src/ui/components/NetworkIndicator';
+import { useNetworks } from 'src/modules/networks/useNetworks';
 
 export function SendTransaction() {
   const [params] = useSearchParams();
@@ -26,6 +27,17 @@ export function SendTransaction() {
   } = useQuery('wallet', () => {
     return walletPort.request('getCurrentWallet');
   });
+  const { networks } = useNetworks();
+  const { mutate: signAndSendTransaction, ...signMutation } = useMutation(
+    async (transaction: UnsignedTransaction) => {
+      return await walletPort.request('signAndSendTransaction', [transaction]);
+    },
+    {
+      onSuccess: ({ hash }) => {
+        windowPort.confirm(Number(params.get('windowId')), hash);
+      },
+    }
+  );
   if (isError) {
     return <p>Some Error</p>;
   }
@@ -66,6 +78,16 @@ export function SendTransaction() {
         </UIText>
         <Spacer height={8} />
         <NetworkIndicator chainId={transaction.chainId} />
+        <Spacer height={8} />
+        <UIText kind="subtitle/m_reg">
+          <i>
+            {
+              networks?.getEthereumChainParameter(
+                ethers.utils.hexValue(transaction.chainId || 1)
+              ).rpcUrls[0]
+            }
+          </i>
+        </UIText>
       </div>
       <Spacer height={24} />
       <Spacer height={16} />
@@ -133,10 +155,10 @@ export function SendTransaction() {
       >
         <Button
           onClick={() => {
-            windowPort.confirm(Number(params.get('windowId')));
+            signAndSendTransaction(transaction);
           }}
         >
-          Approve
+          {signMutation.isLoading ? 'Sending...' : 'Approve'}
         </Button>
         <UnstyledButton
           style={{ color: 'var(--primary)' }}

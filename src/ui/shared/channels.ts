@@ -1,6 +1,7 @@
 import { PortMessageChannel } from 'src/shared/PortMessageChannel';
 import type { Wallet } from 'src/shared/types/Wallet';
 import type { AccountPublicRPC } from 'src/shared/types/AccountPublicRPC';
+import type { MemoryCacheRPC } from 'src/shared/types/MemoryCacheRPC';
 import { formatJsonRpcResultForPort } from 'src/shared/formatJsonRpcResultForPort';
 import { formatJsonRpcError } from '@json-rpc-tools/utils';
 import { UserRejected } from 'src/shared/errors/UserRejected';
@@ -21,15 +22,7 @@ type RPCPort<Implementation> = Omit<PortMessageChannel, 'request'> & {
           ]
         : [params?: undefined, id?: number]
       : [never]
-  ): // params: Method extends SomeMethod
-  //   ? Omit<Parameters<Method>[0], 'context'> extends {
-  //       params: unknown;
-  //     }
-  //     ? Omit<Parameters<Method>[0], 'context'>['params']
-  //     : undefined
-  //   : never,
-  // id?: number
-  Method extends SomeMethod ? ReturnType<Method> : never;
+  ): Method extends SomeMethod ? ReturnType<Method> : never;
 };
 
 export const walletPort = new PortMessageChannel({
@@ -39,6 +32,10 @@ export const walletPort = new PortMessageChannel({
 export const accountPublicRPCPort = new PortMessageChannel({
   name: 'accountPublicRPC',
 }) as RPCPort<AccountPublicRPC>;
+
+export const memoryCacheRPCPort = new PortMessageChannel({
+  name: 'memoryCacheRPC',
+}) as RPCPort<MemoryCacheRPC>;
 
 class WindowPort extends PortMessageChannel {
   confirm<T>(windowId: number, result?: T) {

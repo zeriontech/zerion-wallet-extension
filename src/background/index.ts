@@ -9,16 +9,25 @@ import { createNotificationWindowMessageHandler } from './messaging/port-message
 import { createHttpConnectionMessageHandler } from './messaging/port-message-handlers/createHTTPConnectionMessageHandler';
 import { handleAccountEvents } from './messaging/controller-event-handlers/account-events-handler';
 import { EthereumEventsBroadcaster } from './messaging/controller-event-handlers/ethereum-provider-events';
+import { MemoryCacheRPC } from './resource/memoryCacheRPC';
+import { networksStore } from 'src/modules/networks/networks-store';
+import { configureBackgroundClient } from 'src/modules/defi-sdk';
+
+configureBackgroundClient();
+networksStore.load().then((networks) => {
+  Object.assign(window, { networks });
+});
 
 Object.assign(window, { ethers });
-
-console.log('background.js (3)', ethers); // eslint-disable-line no-console
 
 initialize().then(({ account, accountPublicRPC }) => {
   const ALCHEMY_KEY = 'GQBOYG3d8DdUV4cA2LkjU5f8MCZPfQUh';
   const nodeUrl = `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`;
 
   const httpConnection = new HttpConnection(nodeUrl, account);
+  const memoryCacheRPC = new MemoryCacheRPC();
+
+  Object.assign(window, { memoryCacheRPC });
 
   const portRegistry = new PortRegistry();
   portRegistry.addMessageHandler(
@@ -28,6 +37,12 @@ initialize().then(({ account, accountPublicRPC }) => {
     createPortMessageHandler({
       check: (port) => port.name === 'accountPublicRPC',
       controller: accountPublicRPC,
+    })
+  );
+  portRegistry.addMessageHandler(
+    createPortMessageHandler({
+      check: (port) => port.name === 'memoryCacheRPC',
+      controller: memoryCacheRPC,
     })
   );
   portRegistry.addMessageHandler(createNotificationWindowMessageHandler());
@@ -47,7 +62,6 @@ initialize().then(({ account, accountPublicRPC }) => {
     portRegistry.register(port);
   });
 
-  console.log('will setInterval');
   setInterval(() => {
     // eslint-disable-next-line no-console
     console.log('background.js heartbeat', new Date());

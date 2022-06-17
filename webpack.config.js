@@ -1,4 +1,6 @@
 const path = require('path');
+const fs = require('fs');
+const child_process = require('child_process');
 const webpack = require('webpack');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -15,6 +17,11 @@ const fromRoot = (str) => path.join(__dirname, str);
 const noNulls = (array) => array.filter(Boolean);
 
 const outpuDir = fromRoot('./dist');
+
+const dotEnvFileExists = fs.existsSync(path.resolve(process.cwd(), '.env'));
+if (dotEnvFileExists) {
+  require('dotenv').config();
+}
 
 module.exports = {
   mode: env,
@@ -148,6 +155,14 @@ module.exports = {
     }),
     new AssetReplacePlugin({
       '#IN_PAGE_SCRIPT#': 'inPage',
+    }),
+    new webpack.EnvironmentPlugin({
+      VERSION: child_process
+        .execSync(`git describe --always --tags`, { encoding: 'utf8' })
+        .trim(),
+      ALCHEMY_KEY: process.env.ALCHEMY_KEY,
+      DEFI_SDK_API_URL: process.env.DEFI_SDK_API_URL,
+      DEFI_SDK_API_TOKEN: process.env.DEFI_SDK_API_TOKEN,
     }),
   ]),
 };

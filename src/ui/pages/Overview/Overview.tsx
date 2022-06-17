@@ -12,6 +12,7 @@ import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { useNavigate } from 'react-router-dom';
 import { Background } from 'src/ui/components/Background';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { useNetworks } from 'src/modules/networks/useNetworks';
 
 const chainIdToName: { [key: string]: string } = {
   '0x89': 'polygon',
@@ -27,6 +28,7 @@ export function Overview() {
     return walletPort.request('getCurrentWallet');
   });
   const logout = useMutation(() => accountPublicRPCPort.request('logout'));
+  const { networks } = useNetworks();
 
   const { data: chainId, refetch: refetchChainId } = useQuery(
     'wallet/chainId',
@@ -41,7 +43,7 @@ export function Overview() {
   }
   return (
     <Background backgroundColor="var(--background)">
-      <PageColumn className="fadeIn">
+      <PageColumn>
         <div style={{ position: 'absolute', right: 8, top: 8 }}>
           <select
             name="chain"
@@ -54,6 +56,17 @@ export function Overview() {
             <option value="ethereum">Ethereum</option>
             <option value="polygon">Polygon</option>
           </select>
+          <div
+            style={{
+              overflow: 'hidden',
+              maxWidth: 100,
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {networks && chainId
+              ? networks.getRpcUrlInternal(networks.getChainById(chainId))
+              : null}
+          </div>
         </div>
         <PageTop />
         <PageHeading>Summary</PageHeading>
