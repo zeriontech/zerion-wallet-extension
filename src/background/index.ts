@@ -1,5 +1,4 @@
 require('./bufferPolyfill');
-import { ethers } from 'ethers';
 import { initialize } from './initialize';
 import { HttpConnection } from './messaging/HttpConnection';
 import { PortRegistry } from './messaging/PortRegistry';
@@ -14,11 +13,7 @@ import { networksStore } from 'src/modules/networks/networks-store';
 import { configureBackgroundClient } from 'src/modules/defi-sdk';
 
 configureBackgroundClient();
-networksStore.load().then((networks) => {
-  Object.assign(window, { networks });
-});
-
-Object.assign(window, { ethers });
+networksStore.load();
 
 initialize().then(({ account, accountPublicRPC }) => {
   const ALCHEMY_KEY = 'GQBOYG3d8DdUV4cA2LkjU5f8MCZPfQUh';
@@ -26,8 +21,6 @@ initialize().then(({ account, accountPublicRPC }) => {
 
   const httpConnection = new HttpConnection(nodeUrl, account);
   const memoryCacheRPC = new MemoryCacheRPC();
-
-  Object.assign(window, { memoryCacheRPC });
 
   const portRegistry = new PortRegistry();
   portRegistry.addMessageHandler(

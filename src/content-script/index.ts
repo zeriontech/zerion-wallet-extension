@@ -1,11 +1,14 @@
 import { isJsonRpcRequest, isJsonRpcResponse } from '@json-rpc-tools/utils';
+// @ts-ignore parcel syntax for inlining: https://parceljs.org/features/bundle-inlining/#inlining-a-bundle-as-text
+import inPageContent from 'bundle-text:./in-page';
 
 const script = document.createElement('script');
 
 const id = 'my-wallet-channel';
 let content = `window.myWalletChannelId = "${id}";;`;
-content += '#IN_PAGE_SCRIPT#';
+content += inPageContent;
 script.textContent = content;
+script.dataset.walletExtension = 'true';
 
 const container = document.head || document.documentElement;
 container.appendChild(script);
