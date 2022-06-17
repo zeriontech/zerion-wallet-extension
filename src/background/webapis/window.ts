@@ -81,8 +81,11 @@ const remove = async (winId: number) => {
 const openNotification = ({ route = '', ...rest } = {}): Promise<
   number | undefined
 > => {
-  const url = `dialog.html${route && `#${route}`}`;
-  return create({ url, ...rest });
+  const url = new URL(`../../ui/dialog.html`, import.meta.url);
+  if (route) {
+    url.hash = route;
+  }
+  return create({ url: url.toString(), ...rest });
 };
 
 export default {
