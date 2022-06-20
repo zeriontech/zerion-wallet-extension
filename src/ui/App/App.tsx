@@ -42,7 +42,7 @@ function usePersistLocation({ enabled }: { enabled: boolean }) {
   const { pathname, search } = useLocation();
   const page = window.location.pathname;
   useEffect(() => {
-    if (page === 'dialog.html') {
+    if (page && /dialog\.\w+\.html$/.test(page)) {
       return;
     }
     if (!locationStore.ready || !enabled) {
@@ -218,7 +218,7 @@ const templateName = getPageTemplateName();
 
 export function App() {
   useEffect(() => {
-    if (templateName === '/popup.html') {
+    if (templateName && /popup\.\w+\.html$/.test(templateName)) {
       closeOtherWindows();
     }
   }, []);

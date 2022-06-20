@@ -24,17 +24,17 @@
       "128": "images/logo-icon.png"
     },
     "default_title": "NewWallet",
-    "default_popup": "popup.html"
+    "default_popup": "ui/popup.html"
   },
   "author": "https://zerion.io/",
   "background": {
-    "page": "background.html",
+    "page": "background/background.html",
     "persistent": true
   },
   "content_scripts": [
     {
       "all_frames": true,
-      "js": ["content-script.js"],
+      "js": ["content-script/index.ts"],
       "matches": ["file://*/*", "http://*/*", "https://*/*"],
       "run_at": "document_start"
     }

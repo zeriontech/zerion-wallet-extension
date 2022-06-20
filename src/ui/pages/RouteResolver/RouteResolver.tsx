@@ -53,7 +53,7 @@ export function RouteResolver({
     }
 
     resolve();
-  }, [pathname]);
+  }, [navigate, pathname, ready]);
 
   if (!ready) {
     return ARTIFICAL_WAIT_TIME > 0 ? <Splash /> : null;

@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import browser from 'webextension-polyfill';
 import confetti from 'canvas-confetti';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Surface } from 'src/ui/ui-kit/Surface';
@@ -36,9 +35,7 @@ export function DecorativeMessage({
         }}
       >
         <img
-          src={browser.runtime.getURL(
-            require('src/ui/assets/zerion-logo-round@2x.png')
-          )}
+          src={require('src/ui/assets/zerion-logo-round@2x.png')}
           style={{
             width: 32,
             height: 32,

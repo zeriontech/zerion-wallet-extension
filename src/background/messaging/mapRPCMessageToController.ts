@@ -26,11 +26,10 @@ export function mapRPCMessageToController<T>(
     if (method in controller === false) {
       throw new Error(`Unsupported method: ${method}`);
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (controller[method as keyof typeof controller] as any)({
-      params,
-      context,
-    })
+    const controllerMethod = controller[method as keyof typeof controller];
+    controllerMethod
+      // @ts-ignore
+      .call(controller, { params, context })
       .then(
         (result: unknown) => {
           return formatJsonRpcResultForPort(id, result);
