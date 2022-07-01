@@ -24,7 +24,7 @@ export class PortMessageChannel {
     return this.getPromise<Result>(payload.id);
   }
 
-  getPromise<Result>(id: number): Promise<Result> {
+  private getPromise<Result>(id: number): Promise<Result> {
     return new Promise((resolve, reject) => {
       const handler = (msg: JsonRpcPayload | unknown) => {
         if (isJsonRpcPayload(msg) && isJsonRpcResponse(msg)) {

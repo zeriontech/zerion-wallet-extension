@@ -20,14 +20,16 @@ import { RequestAccounts } from 'src/ui/pages/RequestAccounts';
 import { SendTransaction } from 'src/ui/pages/SendTransaction';
 import { Login } from '../pages/Login';
 import { ErrorBoundary } from '../components/ErrorBoundary';
-import { VStack } from '../ui-kit/VStack';
-import { UIText } from '../ui-kit/UIText';
 import { accountPublicRPCPort } from '../shared/channels';
 import { CreateAccount } from '../pages/CreateAccount';
 import { getPageTemplateName } from '../shared/getPageTemplateName';
 import { closeOtherWindows } from '../shared/closeOtherWindows';
 import { URLBar } from '../components/URLBar';
 import { SwitchEthereumChain } from '../pages/SwitchEthereumChain';
+import { DesignTheme } from '../components/DesignTheme';
+import { FillView } from '../components/FillView';
+import { ViewError } from '../components/ViewError';
+import { ViewArea } from '../components/ViewArea';
 
 const locationStore = new PersistentStore('location', {
   pathname: '/',
@@ -80,9 +82,7 @@ function View() {
   );
 }
 
-function RequireAuth({ children }: { children: JSX.Element }) {
-  console.log('RequireAuth');
-  const location = useLocation();
+const useAuthState = () => {
   const { data: isAuthenticated, ...isAuthenticatedQuery } = useQuery(
     'isAuthenticated',
     () => accountPublicRPCPort.request('isAuthenticated')
@@ -91,11 +91,42 @@ function RequireAuth({ children }: { children: JSX.Element }) {
     'getExistingUser',
     () => accountPublicRPCPort.request('getExistingUser')
   );
+  const isLoading =
+    isAuthenticatedQuery.isFetching || getExistingUserQuery.isFetching;
+  return { isAuthenticated, existingUser, isLoading };
+};
 
-  if (isAuthenticatedQuery.isFetching || getExistingUserQuery.isFetching) {
+function SomeKindOfResolver({
+  noUser,
+  notAuthenticated,
+  authenticated,
+}: {
+  noUser: JSX.Element;
+  notAuthenticated: JSX.Element;
+  authenticated: JSX.Element;
+}) {
+  const { isLoading, isAuthenticated, existingUser } = useAuthState();
+  if (isLoading) {
     return null;
   }
-  console.log({ existingUser, isAuthenticated });
+  if (!existingUser) {
+    return noUser;
+  }
+  if (!isAuthenticated) {
+    return notAuthenticated;
+  }
+  return authenticated;
+}
+
+function RequireAuth({ children }: { children: JSX.Element }) {
+  console.log('RequireAuth');
+  const location = useLocation();
+  const { isLoading, isAuthenticated, existingUser } = useAuthState();
+
+  if (isLoading) {
+    return null;
+  }
+
   if (!existingUser) {
     console.log('no user, redirecting to /');
     return <Navigate to="/" replace={true} />;
@@ -154,17 +185,20 @@ function Views() {
 
   return (
     <RouteResolver>
-      <div
-        style={{
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
+      <ViewArea>
         <URLBar />
 
         <Routes>
-          <Route path="/" element={<Intro />} />
+          <Route
+            path="/"
+            element={
+              <SomeKindOfResolver
+                noUser={<Intro />}
+                notAuthenticated={<Navigate to="/login" replace={true} />}
+                authenticated={<Navigate to="/overview" replace={true} />}
+              />
+            }
+          />
           <Route path="/create-account" element={<CreateAccount />} />
           <Route path="/get-started" element={<GetStarted />} />
           <Route path="/get-started/*" element={<GetStarted />} />
@@ -203,7 +237,7 @@ function Views() {
             }
           />
         </Routes>
-      </div>
+      </ViewArea>
     </RouteResolver>
   );
 }
@@ -226,22 +260,12 @@ export function App() {
     <AreaProvider>
       <QueryClientProvider client={queryClient}>
         <Router>
+          <DesignTheme />
           <ErrorBoundary
             renderError={(error) => (
-              <div
-                style={{
-                  height: '100%',
-                  display: 'grid',
-                  placeContent: 'center',
-                  textAlign: 'center',
-                  padding: 20,
-                }}
-              >
-                <VStack gap={8}>
-                  <UIText kind="h/2_med">Oops</UIText>
-                  <UIText kind="subtitle/s_reg">{error?.message}</UIText>
-                </VStack>
-              </div>
+              <FillView>
+                <ViewError error={error} />
+              </FillView>
             )}
           >
             <Views />

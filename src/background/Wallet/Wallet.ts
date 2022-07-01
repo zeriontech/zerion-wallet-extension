@@ -25,7 +25,7 @@ import { walletStore } from './persistence';
 import { Store } from 'store-unit';
 import { networksStore } from 'src/modules/networks/networks-store';
 import { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
-import { prepareTransaction } from 'src/modules/ethereum/transactions';
+import { prepareTransaction } from 'src/modules/ethereum/transactions/prepareTransaction';
 
 export interface BareWallet {
   mnemonic: ethers.Wallet['mnemonic'] | null;

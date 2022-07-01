@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useMutation, useQuery } from 'react-query';
-import browser from 'webextension-polyfill';
+import { DataStatus, useAssetsPrices } from 'defi-sdk';
 import { ethers, UnsignedTransaction } from 'ethers';
 import { useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -17,19 +17,212 @@ import { Media } from 'src/ui/ui-kit/Media';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { NetworkIndicator } from 'src/ui/components/NetworkIndicator';
 import { useNetworks } from 'src/modules/networks/useNetworks';
+import {
+  describeTransaction,
+  TransactionAction,
+  TransactionDescription as TransactionDescriptionType,
+} from 'src/modules/ethereum/transactions/describeTransaction';
+import { baseToCommon } from 'src/shared/units/convert';
+import { formatTokenValue } from 'src/shared/units/formatTokenValue';
+import { Twinkle } from 'src/ui/ui-kit/Twinkle';
+import ZerionSquircle from 'src/ui/assets/zerion-squircle.svg';
 
-export function SendTransaction() {
+function ItemSurface({ style, ...props }: React.HTMLProps<HTMLDivElement>) {
+  const surfaceStyle = {
+    ...style,
+    padding: '10px 12px',
+    backgroundColor: 'var(--background)',
+  };
+  return <Surface style={surfaceStyle} {...props} />;
+}
+
+function WalletLine({ address, label }: { address: string; label: string }) {
+  return (
+    <ItemSurface>
+      <Media
+        vGap={0}
+        image={<BlockieImg address={address} size={32} />}
+        text={
+          <UIText kind="caption/reg" color="var(--neutral-500)">
+            {label}
+          </UIText>
+        }
+        detailText={
+          <UIText kind="subtitle/l_reg">{truncateAddress(address, 4)}</UIText>
+        }
+      />
+    </ItemSurface>
+  );
+}
+
+function AssetLine({
+  transaction,
+}: {
+  transaction: TransactionDescriptionType;
+}) {
+  const assetCode =
+    transaction.sendAssetId ||
+    transaction.approveAssetCode ||
+    transaction.sendAssetCode;
+  const { value: assets, status } = useAssetsPrices(
+    { currency: 'usd', asset_codes: [assetCode?.toLowerCase() || ''] },
+    { enabled: Boolean(assetCode) }
+  );
+  const asset = assetCode ? assets?.[assetCode] : null;
+  if (
+    status === DataStatus.ok &&
+    !asset &&
+    assetCode &&
+    (transaction.action === TransactionAction.transfer ||
+      transaction.action === TransactionAction.approve)
+  ) {
+    // Couldn't resolve asset for a send or approve transaction
+    return (
+      <ItemSurface>
+        <Media
+          vGap={0}
+          image={null}
+          text={
+            <UIText kind="caption/reg" color="var(--neutral-500)">
+              Token (link to explorer?)
+            </UIText>
+          }
+          detailText={
+            <UIText kind="subtitle/l_reg" title={assetCode}>
+              {truncateAddress(assetCode, 6)}
+            </UIText>
+          }
+        />
+      </ItemSurface>
+    );
+  }
+  if (!asset) {
+    return status === DataStatus.requested ? (
+      <ItemSurface style={{ height: 56 }} />
+    ) : null;
+  }
+  if (transaction.action === TransactionAction.approve) {
+    return (
+      <ItemSurface>
+        <Media
+          vGap={0}
+          image={
+            <img
+              style={{ width: 32, height: 32, borderRadius: '50%' }}
+              src={asset.icon_url || ''}
+            />
+          }
+          text={
+            <UIText kind="caption/reg" color="var(--neutral-500)">
+              Token
+            </UIText>
+          }
+          detailText={
+            <UIText kind="subtitle/l_reg">{asset.symbol || '...'}</UIText>
+          }
+        />
+      </ItemSurface>
+    );
+  }
+  if (transaction.action === TransactionAction.transfer) {
+    return (
+      <ItemSurface>
+        <Media
+          vGap={0}
+          image={
+            <img
+              style={{ width: 32, height: 32, borderRadius: '50%' }}
+              src={asset.icon_url || '...'}
+            />
+          }
+          text={
+            <UIText kind="caption/reg" color="var(--neutral-500)">
+              Amount
+            </UIText>
+          }
+          detailText={
+            transaction.sendAmount == null ? null : (
+              <UIText kind="subtitle/l_reg">
+                {`${formatTokenValue(
+                  baseToCommon(transaction.sendAmount, 18)
+                )} ${asset.symbol}`}
+              </UIText>
+            )
+          }
+        />
+      </ItemSurface>
+    );
+  }
+  return null;
+}
+
+function TransactionDescription({
+  transactionDescription,
+}: {
+  transactionDescription: TransactionDescriptionType;
+}) {
+  const { action, contractAddress, assetReceiver } = transactionDescription;
+  return (
+    <>
+      <AssetLine transaction={transactionDescription} />
+      {action === TransactionAction.transfer && assetReceiver ? (
+        <WalletLine address={assetReceiver} label="Receiver" />
+      ) : null}
+      {action === TransactionAction.contractInteraction && contractAddress ? (
+        <ItemSurface>
+          <Media
+            image={null}
+            text={
+              <UIText kind="caption/reg" color="var(--neutral-500)">
+                Contract Address
+              </UIText>
+            }
+            detailText={
+              <UIText kind="subtitle/l_reg" title="contractAddress">
+                {truncateAddress(contractAddress, 10)}
+              </UIText>
+            }
+          />
+        </ItemSurface>
+      ) : null}
+    </>
+  );
+}
+
+const strings = {
+  [TransactionAction.approve]: 'Token Allowance',
+  [TransactionAction.transfer]: 'Send Token',
+  [TransactionAction.swap]: 'Transaction',
+  [TransactionAction.contractInteraction]: 'Contract Interaction',
+};
+
+function SendTransactionContent({
+  transactionStringified,
+  origin,
+  wallet,
+}: {
+  transactionStringified: string;
+  origin: string;
+  wallet: ethers.Wallet;
+}) {
   const [params] = useSearchParams();
-  const {
-    data: wallet,
-    isLoading,
-    isError,
-  } = useQuery('wallet', () => {
-    return walletPort.request('getCurrentWallet');
-  });
+  const transaction = useMemo(
+    () => JSON.parse(transactionStringified) as UnsignedTransaction,
+    [transactionStringified]
+  );
+  const descriptionQuery = useQuery(
+    ['description', transaction],
+    () => describeTransaction(transaction),
+    {
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      refetchOnWindowFocus: false,
+    }
+  );
   const { networks } = useNetworks();
   const { mutate: signAndSendTransaction, ...signMutation } = useMutation(
     async (transaction: UnsignedTransaction) => {
+      await new Promise((r) => setTimeout(r, 2000));
       return await walletPort.request('signAndSendTransaction', [transaction]);
     },
     {
@@ -38,39 +231,35 @@ export function SendTransaction() {
       },
     }
   );
-  if (isError) {
-    return <p>Some Error</p>;
+  const originName = useMemo(() => new URL(origin).hostname, [origin]);
+  if (descriptionQuery.isLoading) {
+    return (
+      <div
+        style={{
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Twinkle>
+          <ZerionSquircle style={{ width: 64, height: 64 }} />
+        </Twinkle>
+      </div>
+    );
   }
-  if (isLoading || !wallet) {
-    return null;
+  if (descriptionQuery.isError || !descriptionQuery.data) {
+    throw descriptionQuery.error || new Error('testing');
   }
-  const origin = params.get('origin');
-  if (!origin) {
-    throw new Error('origin get-parameter is required for this view');
-  }
-  const transactionString = params.get('transaction');
-  if (!transactionString) {
-    throw new Error('transaction get-parameter is required for this view');
-  }
-  const transaction = JSON.parse(transactionString) as UnsignedTransaction;
-  const originName = new URL(origin).hostname;
-  const surfaceStyle = {
-    padding: '10px 12px',
-    backgroundColor: 'var(--background)',
-  };
   return (
     <PageColumn>
       <PageTop />
       <div style={{ display: 'grid', placeItems: 'center' }}>
-        <img
-          style={{ width: 44, height: 44 }}
-          src={browser.runtime.getURL(
-            require('src/ui/assets/zerion-logo-round@2x.png')
-          )}
-        />
+        <ZerionSquircle style={{ width: 44, height: 44 }} />
         <Spacer height={16} />
         <UIText kind="h/5_med" style={{ textAlign: 'center' }}>
-          Contract Interaction
+          {strings[descriptionQuery.data.action] ||
+            strings[TransactionAction.contractInteraction]}
         </UIText>
         <Spacer height={8} />
         <UIText kind="subtitle/m_reg" color="var(--primary)">
@@ -92,60 +281,10 @@ export function SendTransaction() {
       <Spacer height={24} />
       <Spacer height={16} />
       <VStack gap={12}>
-        <Surface style={surfaceStyle}>
-          <Media
-            vGap={0}
-            image={<BlockieImg address={wallet.address} size={32} />}
-            text={
-              <UIText kind="caption/reg" color="var(--neutral-500)">
-                Wallet
-              </UIText>
-            }
-            detailText={
-              <UIText kind="subtitle/l_reg">
-                {truncateAddress(wallet.address, 4)}
-              </UIText>
-            }
-          />
-        </Surface>
-        <Surface style={surfaceStyle}>
-          <Media
-            vGap={0}
-            image={
-              <img
-                style={{ width: 32, height: 32, borderRadius: '50%' }}
-                src="https://chain-icons.s3.amazonaws.com/ethereum.png"
-              />
-            }
-            text={
-              <UIText kind="caption/reg" color="var(--neutral-500)">
-                Amount
-              </UIText>
-            }
-            detailText={<UIText kind="subtitle/l_reg">0.7834 ETH</UIText>}
-          />
-        </Surface>
-        <Surface style={surfaceStyle}>
-          <Media
-            image={null}
-            text={
-              <UIText kind="caption/reg" color="var(--neutral-500)">
-                Contract Address
-              </UIText>
-            }
-            detailText={
-              <UIText
-                kind="subtitle/l_reg"
-                title="0x1111111111111111234erff23fsdfsdfsdf23r2dsf097d"
-              >
-                {truncateAddress(
-                  '0x1111111111111111234erff23fsdfsdfsdf23r2dsf097d',
-                  10
-                )}
-              </UIText>
-            }
-          />
-        </Surface>
+        <WalletLine address={wallet.address} label="Wallet" />
+        <TransactionDescription
+          transactionDescription={descriptionQuery.data}
+        />
       </VStack>
       <Spacer height={16} />
 
@@ -158,7 +297,11 @@ export function SendTransaction() {
             signAndSendTransaction(transaction);
           }}
         >
-          {signMutation.isLoading ? 'Sending...' : 'Approve'}
+          {signMutation.isLoading
+            ? 'Sending...'
+            : descriptionQuery.data.action === TransactionAction.approve
+            ? 'Approve'
+            : 'Confirm'}
         </Button>
         <UnstyledButton
           style={{ color: 'var(--primary)' }}
@@ -170,5 +313,37 @@ export function SendTransaction() {
         </UnstyledButton>
       </VStack>
     </PageColumn>
+  );
+}
+
+export function SendTransaction() {
+  const [params] = useSearchParams();
+  const {
+    data: wallet,
+    isLoading,
+    isError,
+  } = useQuery('wallet', () => {
+    return walletPort.request('getCurrentWallet');
+  });
+  if (isError) {
+    return <p>Some Error</p>;
+  }
+  if (isLoading || !wallet) {
+    return null;
+  }
+  const origin = params.get('origin');
+  if (!origin) {
+    throw new Error('origin get-parameter is required for this view');
+  }
+  const transactionStringified = params.get('transaction');
+  if (!transactionStringified) {
+    throw new Error('transaction get-parameter is required for this view');
+  }
+  return (
+    <SendTransactionContent
+      transactionStringified={transactionStringified}
+      origin={origin}
+      wallet={wallet}
+    />
   );
 }

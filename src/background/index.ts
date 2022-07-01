@@ -1,4 +1,5 @@
 require('./bufferPolyfill');
+import { ethers } from 'ethers';
 import { initialize } from './initialize';
 import { HttpConnection } from './messaging/HttpConnection';
 import { PortRegistry } from './messaging/PortRegistry';
@@ -11,6 +12,8 @@ import { EthereumEventsBroadcaster } from './messaging/controller-event-handlers
 import { MemoryCacheRPC } from './resource/memoryCacheRPC';
 import { networksStore } from 'src/modules/networks/networks-store';
 import { configureBackgroundClient } from 'src/modules/defi-sdk';
+
+Object.assign(window, { ethers });
 
 configureBackgroundClient();
 networksStore.load();

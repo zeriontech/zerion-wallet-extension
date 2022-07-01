@@ -1,16 +1,17 @@
-import type { UnsignedTransaction } from 'ethers';
-import type { IncomingTransaction } from './types/IncomingTransaction';
+import type { UnsignedTransaction } from '../types/UnsignedTransaction';
+import type { IncomingTransaction } from '../types/IncomingTransaction';
 
 const knownFields: Array<keyof UnsignedTransaction> = [
+  'from',
   'to',
   'nonce',
-  'gasLimit',
-  'gasPrice',
   'data',
   'value',
   'chainId',
   'type',
   'accessList',
+  'gasLimit',
+  'gasPrice',
   'maxPriorityFeePerGas',
   'maxFeePerGas',
 ];
@@ -19,7 +20,7 @@ export function prepareTransaction(incomingTransaction: IncomingTransaction) {
   const transaction: UnsignedTransaction = {};
   for (const field of knownFields) {
     const knownField = field as keyof UnsignedTransaction;
-    if (incomingTransaction[knownField]) {
+    if (incomingTransaction[knownField] !== undefined) {
       // @ts-ignore
       transaction[knownField] = incomingTransaction[knownField];
     }

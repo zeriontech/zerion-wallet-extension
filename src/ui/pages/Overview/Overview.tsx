@@ -1,5 +1,6 @@
 import React from 'react';
 import { useMutation, useQuery } from 'react-query';
+import { useNavigate } from 'react-router-dom';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -9,15 +10,17 @@ import { Surface } from 'src/ui/ui-kit/Surface';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { PageHeading } from 'src/ui/components/PageHeading';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
-import { useNavigate } from 'react-router-dom';
 import { Background } from 'src/ui/components/Background';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { useNetworks } from 'src/modules/networks/useNetworks';
+import { createChain } from 'src/modules/networks/Chain';
+import { DataStatus, useAddressPortfolio } from 'defi-sdk';
+import {
+  formatCurrencyToParts,
+  formatCurrencyValue,
+} from 'src/shared/units/formatCurrencyValue';
+import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 
-const chainIdToName: { [key: string]: string } = {
-  '0x89': 'polygon',
-  '0x1': 'ethereum',
-};
 export function Overview() {
   const navigate = useNavigate();
   const {
@@ -34,39 +37,58 @@ export function Overview() {
     'wallet/chainId',
     () => walletPort.request('getChainId')
   );
-  console.log({ chainId });
+
+  const switchChainMutation = useMutation(
+    (chain: string) => walletPort.request('switchChain', chain),
+    { onSuccess: () => refetchChainId() }
+  );
+  const { value, status } = useAddressPortfolio({
+    address: wallet?.address.toLowerCase() || '',
+    currency: 'usd',
+    portfolio_fields: 'all',
+    use_portfolio_service: true,
+  });
+  console.log({ chainId, value });
   if (isError) {
     return <p>Some Error</p>;
   }
-  if (isLoading || !wallet) {
+  if (isLoading || !wallet || status === DataStatus.requested) {
     return null;
   }
   return (
     <Background backgroundColor="var(--background)">
       <PageColumn>
         <div style={{ position: 'absolute', right: 8, top: 8 }}>
-          <select
-            name="chain"
-            value={chainIdToName[chainId || '0x1']}
-            onChange={(event) => {
-              walletPort.request('switchChain', event.target.value);
-              refetchChainId();
-            }}
-          >
-            <option value="ethereum">Ethereum</option>
-            <option value="polygon">Polygon</option>
-          </select>
-          <div
+          {networks ? (
+            <select
+              name="chain"
+              value={networks.getNetworkById(chainId || '0x1')?.chain ?? null}
+              onChange={(event) => {
+                switchChainMutation.mutate(event.target.value);
+              }}
+            >
+              {networks?.getNetworks().map((network) => (
+                <option key={network.chain} value={network.chain}>
+                  {networks.getChainName(createChain(network.name))}
+                </option>
+              ))}
+            </select>
+          ) : null}
+          <UIText
+            kind="caption/reg"
             style={{
               overflow: 'hidden',
-              maxWidth: 100,
+              maxWidth: 150,
               textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
             }}
           >
             {networks && chainId
-              ? networks.getRpcUrlInternal(networks.getChainById(chainId))
+              ? new URL(
+                  networks.getRpcUrlInternal(networks.getChainById(chainId))
+                ).hostname
               : null}
-          </div>
+          </UIText>
         </div>
         <PageTop />
         <PageHeading>Summary</PageHeading>
@@ -74,11 +96,37 @@ export function Overview() {
         <Surface style={{ padding: 12 }}>
           <UIText kind="subtitle/l_reg">Portfolio</UIText>
           <UIText kind="h/1_med">
-            $0<span style={{ color: 'var(--neutral-300)' }}>.00</span>
+            {value?.total_value
+              ? formatCurrencyToParts(value.total_value, 'en', 'usd').map(
+                  (part) => (
+                    <span
+                      style={
+                        part.type === 'decimal' || part.type === 'fraction'
+                          ? { color: 'var(--neutral-300)' }
+                          : undefined
+                      }
+                    >
+                      {part.value}
+                    </span>
+                  )
+                )
+              : null}
           </UIText>
-          <UIText kind="subtitle/l_reg" color="var(--positive-500)">
-            +3.4% ($44.22) Today
-          </UIText>
+          {value?.relative_change_24h ? (
+            <UIText kind="subtitle/l_reg" color="var(--positive-500)">
+              {value?.relative_change_24h
+                ? `+${formatPercent(value.relative_change_24h, 'en')}%`
+                : ''}{' '}
+              {value?.absolute_change_24h
+                ? `(${formatCurrencyValue(
+                    value?.absolute_change_24h,
+                    'en',
+                    'usd'
+                  )})`
+                : ''}{' '}
+              Today
+            </UIText>
+          ) : null}
         </Surface>
         <Spacer height={8} />
         <Surface style={{ padding: 12 }}>

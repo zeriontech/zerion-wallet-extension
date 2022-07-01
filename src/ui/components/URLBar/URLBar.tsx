@@ -4,6 +4,8 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import IconLeft from 'src/ui/assets/chevron-left.svg';
 import { RenderArea } from 'react-area';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import { Store } from 'store-unit';
+import { useStore } from '@store-unit/react';
 
 function capitalize(str: string) {
   return `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
@@ -15,18 +17,36 @@ function titleFromPathname(pathname: string) {
   return last.split('-').map(capitalize).join(' ');
 }
 
-const URLBarBlacklist = new Set(['/', '/intro', '/overview', '/login']);
+const URLBarBlacklist = new Set([
+  '/',
+  '/intro',
+  '/overview',
+  '/login',
+  '/sendTransaction',
+]);
+
+const urlBarStore = new Store(true);
+
+export function toggleUrlBar(on: boolean) {
+  urlBarStore.setState(on);
+}
 
 export function URLBar() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const shouldDisplay = useStore(urlBarStore);
 
   const pathnameRef = useRef(pathname);
+
   useEffect(() => {
     pathnameRef.current = pathname;
   }, [pathname]);
 
-  if (URLBarBlacklist.has(pathname)) {
+  if (
+    URLBarBlacklist.has(pathname) ||
+    !shouldDisplay ||
+    pathname !== pathnameRef.current
+  ) {
     return null;
   }
 

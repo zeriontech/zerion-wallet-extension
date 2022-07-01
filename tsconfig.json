@@ -10,7 +10,7 @@
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "esModuleInterop": true,
-    "types": ["chrome", "node"],
+    "types": ["chrome", "node", "jest"],
     "jsx": "react",
     "allowSyntheticDefaultImports": true,
     "allowJs": true,
