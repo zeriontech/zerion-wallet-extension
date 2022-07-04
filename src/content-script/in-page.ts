@@ -12,7 +12,6 @@ declare global {
 const broadcastChannel = new BroadcastChannel(window.myWalletChannelId);
 const connection = new Connection(broadcastChannel);
 const provider = new EthereumProvider(connection);
-provider.isZerionWallet = true;
 
 provider.connect();
 

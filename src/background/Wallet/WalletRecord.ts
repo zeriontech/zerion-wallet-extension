@@ -1,8 +1,16 @@
+import { encrypt } from '@metamask/browser-passworder';
 import { ethers } from 'ethers';
-import type { BareWallet } from './Wallet';
+import produce from 'immer';
 
 type Origin = string;
 type Address = string;
+
+export interface BareWallet {
+  mnemonic: ethers.Wallet['mnemonic'] | null;
+  privateKey: ethers.Wallet['privateKey'];
+  publicKey: ethers.Wallet['publicKey'];
+  address: ethers.Wallet['address'];
+}
 
 export enum SeedType {
   privateKey,
@@ -50,6 +58,7 @@ export interface WalletRecord<
 > {
   walletContainer: T;
   permissions: Record<Origin, Address>;
+  transactions: ethers.providers.TransactionResponse[];
 }
 
 export function createRecord({
@@ -60,5 +69,29 @@ export function createRecord({
   return {
     walletContainer,
     permissions: {},
+    transactions: [],
   };
+}
+
+function walletToObject(wallet: ethers.Wallet | BareWallet): BareWallet {
+  return {
+    mnemonic: wallet.mnemonic,
+    privateKey: wallet.privateKey,
+    publicKey: wallet.publicKey,
+    address: wallet.address,
+  };
+}
+
+function toPlainObject(record: WalletRecord<BareWalletContainer>) {
+  return produce(record, (draft) => {
+    const { wallet } = draft.walletContainer;
+    draft.walletContainer.wallet = walletToObject(wallet);
+  });
+}
+
+export async function encryptRecord(
+  key: string,
+  record: WalletRecord<WalletContainer>
+) {
+  return encrypt(key, toPlainObject(record));
 }

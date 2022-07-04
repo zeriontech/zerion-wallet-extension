@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useReducer, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import IconLeft from 'src/ui/assets/chevron-left.svg';
@@ -33,26 +33,27 @@ export function toggleUrlBar(on: boolean) {
 
 export function URLBar() {
   const navigate = useNavigate();
+  const [, rerender] = useReducer((n) => n + 1, 0);
   const { pathname } = useLocation();
   const shouldDisplay = useStore(urlBarStore);
 
   const pathnameRef = useRef(pathname);
 
   useEffect(() => {
+    console.log('pathnameRef effect', pathname);
     pathnameRef.current = pathname;
+    rerender();
   }, [pathname]);
 
-  if (
-    URLBarBlacklist.has(pathname) ||
-    !shouldDisplay ||
-    pathname !== pathnameRef.current
-  ) {
+  console.log('URLBar', pathname);
+  if (URLBarBlacklist.has(pathname) || !shouldDisplay) {
     return null;
   }
 
   return (
     <div
       style={{
+        opacity: pathname !== pathnameRef.current ? 0 : 1,
         paddingTop: 8,
         paddingLeft: 8,
         paddingRight: 8,
@@ -69,6 +70,7 @@ export function URLBar() {
         name="navigation-bar"
         children={(children) => {
           let text: React.ReactNode;
+          console.log('URLBar navigation-bar render');
           // This check is done to work around an unavoidable inconsistent state
           // where this callback function is called first because of pathname change
           // and then later because some <Content /> element was added

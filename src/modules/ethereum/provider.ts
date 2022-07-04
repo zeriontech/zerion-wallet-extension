@@ -12,12 +12,14 @@ function accountsEquals(arr1: string[], arr2: string[]) {
 export class EthereumProvider extends JsonRpcProvider {
   accounts: string[];
   chainId: string;
+  isZerionWallet: boolean;
   // enable
   constructor(connection: IJsonRpcConnection) {
     super(connection);
     this.shimLegacy();
     this.chainId = '0x1';
     this.accounts = [];
+    this.isZerionWallet = true;
 
     connection.on(
       'ethereumEvent',

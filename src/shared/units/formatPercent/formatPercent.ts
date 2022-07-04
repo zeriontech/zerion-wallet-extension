@@ -1,5 +1,6 @@
 import memoize from 'memoize-one';
 import type BigNumber from 'bignumber.js';
+import { minus } from 'src/ui/shared/typography';
 import { toNumber } from '../toNumber';
 
 const getFormatterOneDigit = memoize(
@@ -14,5 +15,7 @@ const getFormatterTwoDigits = memoize(
 export function formatPercent(value: BigNumber.Value, locale: string) {
   const formatter =
     value < 1 ? getFormatterTwoDigits(locale) : getFormatterOneDigit(locale);
-  return formatter.format(toNumber(value));
+  const valueAsNumber = toNumber(value);
+  const sign = valueAsNumber < 0 ? minus : '';
+  return `${sign}${formatter.format(Math.abs(valueAsNumber))}`;
 }

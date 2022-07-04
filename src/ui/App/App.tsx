@@ -15,12 +15,13 @@ import { GetStarted } from 'src/ui/pages/GetStarted';
 import { Intro } from 'src/ui/pages/Intro';
 import { PersistentStore } from 'src/shared/PersistentStore';
 import { Overview } from 'src/ui/pages/Overview';
+import { History } from 'src/ui/pages/History';
 import { RouteResolver } from 'src/ui/pages/RouteResolver';
 import { RequestAccounts } from 'src/ui/pages/RequestAccounts';
 import { SendTransaction } from 'src/ui/pages/SendTransaction';
 import { Login } from '../pages/Login';
 import { ErrorBoundary } from '../components/ErrorBoundary';
-import { accountPublicRPCPort } from '../shared/channels';
+import { accountPublicRPCPort, walletPort } from '../shared/channels';
 import { CreateAccount } from '../pages/CreateAccount';
 import { getPageTemplateName } from '../shared/getPageTemplateName';
 import { closeOtherWindows } from '../shared/closeOtherWindows';
@@ -91,9 +92,18 @@ const useAuthState = () => {
     'getExistingUser',
     () => accountPublicRPCPort.request('getExistingUser')
   );
+  const { data: wallet, ...currentWalletQuery } = useQuery('wallet', () => {
+    return walletPort.request('getCurrentWallet');
+  });
   const isLoading =
-    isAuthenticatedQuery.isFetching || getExistingUserQuery.isFetching;
-  return { isAuthenticated, existingUser, isLoading };
+    isAuthenticatedQuery.isFetching ||
+    getExistingUserQuery.isFetching ||
+    currentWalletQuery.isLoading;
+  return {
+    isAuthenticated: Boolean(isAuthenticated && wallet),
+    existingUser,
+    isLoading,
+  };
 };
 
 function SomeKindOfResolver({
@@ -126,6 +136,7 @@ function RequireAuth({ children }: { children: JSX.Element }) {
   if (isLoading) {
     return null;
   }
+  console.log('RequireAuth', { existingUser, isAuthenticated });
 
   if (!existingUser) {
     console.log('no user, redirecting to /');
@@ -187,7 +198,6 @@ function Views() {
     <RouteResolver>
       <ViewArea>
         <URLBar />
-
         <Routes>
           <Route
             path="/"
@@ -209,6 +219,14 @@ function Views() {
             element={
               <RequireAuth>
                 <Overview />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/history"
+            element={
+              <RequireAuth>
+                <History />
               </RequireAuth>
             }
           />

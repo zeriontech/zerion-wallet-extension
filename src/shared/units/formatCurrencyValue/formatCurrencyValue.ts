@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js';
 import memoize from 'memoize-one';
+import { minus } from 'src/ui/shared/typography';
 
 const getDefaultFormatter = memoize((locale, currency) => {
   return new Intl.NumberFormat(locale, {
@@ -14,9 +15,10 @@ export function formatCurrencyValue(
   currency: string
 ) {
   const formatter = getDefaultFormatter(locale, currency);
-  return formatter.format(
-    value instanceof BigNumber ? value.toNumber() : Number(value)
-  );
+  const valueAsNumber =
+    value instanceof BigNumber ? value.toNumber() : Number(value);
+  const sign = valueAsNumber < 0 ? minus : '';
+  return `${sign}${formatter.format(Math.abs(valueAsNumber))}`;
 }
 
 export function formatCurrencyToParts(

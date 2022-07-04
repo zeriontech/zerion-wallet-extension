@@ -1,66 +1,24 @@
 import { ethers, UnsignedTransaction } from 'ethers';
 import { createNanoEvents, Emitter } from 'nanoevents';
 import { produce } from 'immer';
+import { Store } from 'store-unit';
 import { encrypt, decrypt } from '@metamask/browser-passworder';
 import { notificationWindow } from 'src/background/NotificationWindow/NotificationWindow';
 import { ChannelContext } from 'src/shared/types/ChannelContext';
-import { PersistentStore } from 'src/shared/PersistentStore';
 import {
   InvalidParams,
   OriginNotAllowed,
   UserRejected,
 } from 'src/shared/errors/UserRejected';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
-import type { WalletStoreState } from './persistence';
-import {
-  SeedType,
-  createRecord,
-  WalletContainer,
-  MnemonicWalletContainer,
-  PrivateKeyWalletContainer,
-  BareWalletContainer,
-} from './WalletRecord';
-import type { WalletRecord } from './WalletRecord';
+import type { WalletStore } from './persistence';
 import { walletStore } from './persistence';
-import { Store } from 'store-unit';
+import { SeedType, createRecord, WalletContainer } from './WalletRecord';
+import type { WalletRecord } from './WalletRecord';
 import { networksStore } from 'src/modules/networks/networks-store';
 import { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { prepareTransaction } from 'src/modules/ethereum/transactions/prepareTransaction';
-
-export interface BareWallet {
-  mnemonic: ethers.Wallet['mnemonic'] | null;
-  privateKey: ethers.Wallet['privateKey'];
-  publicKey: ethers.Wallet['publicKey'];
-  address: ethers.Wallet['address'];
-}
-
-function walletToObject(wallet: ethers.Wallet | BareWallet): BareWallet {
-  return {
-    mnemonic: wallet.mnemonic,
-    privateKey: wallet.privateKey,
-    publicKey: wallet.publicKey,
-    address: wallet.address,
-  };
-}
-
-function toPlainObject(record: WalletRecord<BareWalletContainer>) {
-  return {
-    walletContainer: record.walletContainer
-      ? {
-          ...record.walletContainer,
-          wallet: walletToObject(record.walletContainer.wallet),
-        }
-      : null,
-    permissions: record.permissions,
-  };
-}
-
-async function encryptRecord(
-  key: string,
-  record: WalletRecord<WalletContainer>
-) {
-  return encrypt(key, toPlainObject(record));
-}
+import { createChain } from 'src/modules/networks/Chain';
 
 class RecordNotFound extends Error {}
 class EncryptionKeyNotFound extends Error {}
@@ -82,7 +40,7 @@ interface WalletEvents {
 export class Wallet {
   public id: string;
   private encryptionKey: string | null;
-  private walletStore: PersistentStore<WalletStoreState>;
+  private walletStore: WalletStore;
   private pendingWallet: WalletContainer | null = null;
   private record: WalletRecord<WalletContainer> | null;
 
@@ -101,9 +59,6 @@ export class Wallet {
 
     this.walletStore.ready().then(() => {
       this.syncWithWalletStore();
-      this.walletStore.on('change', () => {
-        this.syncWithWalletStore();
-      });
     });
     Object.assign(window, { encrypt, decrypt });
   }
@@ -112,39 +67,18 @@ export class Wallet {
     if (!this.encryptionKey) {
       return;
     }
-    const record = walletStore.getState()[this.id];
-    if (!record) {
-      return;
+    await walletStore.ready();
+    this.record = await walletStore.read(this.id, this.encryptionKey);
+    if (this.record) {
+      this.emitter.emit('recordUpdated');
     }
-    const data = await decrypt<WalletRecord<BareWalletContainer>>(
-      this.encryptionKey,
-      record
-    );
-    if (data.walletContainer) {
-      console.log('syncing with data:', data);
-      const { seedType, wallet } = data.walletContainer;
-      if (seedType === SeedType.mnemonic) {
-        if (!wallet.mnemonic) {
-          throw new Error(
-            'Mnemonic container is expected to have a wallet with a mnemonic'
-          );
-        }
-        this.record = {
-          walletContainer: new MnemonicWalletContainer(wallet),
-          permissions: data.permissions,
-        };
-      } else if (seedType === SeedType.privateKey) {
-        this.record = {
-          walletContainer: new PrivateKeyWalletContainer(wallet),
-          permissions: data.permissions,
-        };
-      } else {
-        throw new Error(`Unexpected SeedType: ${seedType}`);
-      }
-    } else {
-      this.record = null;
+  }
+
+  private async updateWalletStore(record: WalletRecord<WalletContainer>) {
+    if (!this.encryptionKey) {
+      throw new Error('Cannot save pending wallet: encryptionKey is null');
     }
-    this.emitter.emit('recordUpdated');
+    this.walletStore.save(this.id, this.encryptionKey, record);
   }
 
   async ready() {
@@ -195,8 +129,6 @@ export class Wallet {
       return null;
     }
     return this.record?.walletContainer?.wallet;
-    // await this.walletStore.ready();
-    // return this.getWalletFromStore();
   }
 
   async savePendingWallet() {
@@ -209,13 +141,7 @@ export class Wallet {
     const { seedType, wallet } = this.pendingWallet;
     const record = createRecord({ walletContainer: { seedType, wallet } });
     this.record = record;
-    console.log('saving record', record);
-    const encryptedRecord = await encryptRecord(this.encryptionKey, record);
-    this.walletStore.setState((state) =>
-      produce(state, (draft) => {
-        draft[this.id] = encryptedRecord;
-      })
-    );
+    this.updateWalletStore(record);
   }
 
   private async acceptOrigin(origin: string, address: string) {
@@ -225,18 +151,10 @@ export class Wallet {
     if (!this.record) {
       throw new RecordNotFound();
     }
-    const updatedRecord = produce(this.record, (draft) => {
+    this.record = produce(this.record, (draft) => {
       draft.permissions[origin] = address;
     });
-    const encryptedRecord = await encryptRecord(
-      this.encryptionKey,
-      updatedRecord
-    );
-    this.walletStore.setState((state) =>
-      produce(state, (draft) => {
-        draft[this.id] = encryptedRecord;
-      })
-    );
+    this.updateWalletStore(this.record);
   }
 
   private allowedOrigin(
@@ -342,19 +260,26 @@ export class Wallet {
       console.log({ INTERNAL_ORIGIN });
       throw new OriginNotAllowed(context?.origin);
     }
-    const chains = {
-      ethereum: '0x1',
-      polygon: '0x89',
-    };
-    if (chain in chains) {
-      const chainId = chains[chain as keyof typeof chains];
-      this.store.setState({ chainId });
-      this.emitter.emit('chainChanged', chainId);
-    }
+    const networks = await networksStore.load();
+    const chainId = networks.getChainId(createChain(chain));
+    this.store.setState({ chainId });
+    this.emitter.emit('chainChanged', chainId);
   }
 
   async getChainId() {
     return this.store.getState().chainId;
+  }
+
+  private savePendingTransaction(
+    transaction: ethers.providers.TransactionResponse
+  ): void {
+    if (!this.record) {
+      throw new Error('Record is not initialized');
+    }
+    this.record = produce(this.record, (draft) => {
+      draft?.transactions.push(transaction);
+    });
+    this.updateWalletStore(this.record);
   }
 
   private async sendTransaction(
@@ -386,10 +311,12 @@ export class Wallet {
     //   ...transaction,
     //   type: transaction.type || undefined,
     // });
-    return signer.sendTransaction({
+    const transactionResponse = await signer.sendTransaction({
       ...transaction,
       type: transaction.type || undefined,
     });
+    this.savePendingTransaction(transactionResponse);
+    return transactionResponse;
     // return { signer, transaction, populatedTransaction, jsonRpcProvider };
   }
 
@@ -438,6 +365,11 @@ export class Wallet {
         },
       });
     });
+  }
+
+  async getPendingTransactions({ context }: PublicMethodParams) {
+    this.verifyInternalOrigin(context);
+    return this.record?.transactions || [];
   }
 
   async logout() {

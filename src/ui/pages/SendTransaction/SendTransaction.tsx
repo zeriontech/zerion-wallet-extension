@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { DataStatus, useAssetsPrices } from 'defi-sdk';
 import { ethers, UnsignedTransaction } from 'ethers';
@@ -292,6 +292,11 @@ function SendTransactionContent({
         style={{ textAlign: 'center', marginTop: 'auto', paddingBottom: 32 }}
         gap={8}
       >
+        <UIText kind="body/s_reg" color="var(--negative)">
+          {signMutation.isError
+            ? (signMutation.error as Error)?.message || 'Some Error'
+            : null}
+        </UIText>
         <Button
           onClick={() => {
             signAndSendTransaction(transaction);

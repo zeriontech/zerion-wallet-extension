@@ -11,6 +11,7 @@ export function FillView({
         height: '100%',
         flexGrow: 1,
         display: 'grid',
+        placeItems: 'center',
         placeContent: 'center',
       }}
       {...props}

@@ -17,8 +17,8 @@
   },
   "alias": {
     "src": "./src",
-    "./src/ui/shared/channels.ts": "./src/ui/shared/channels.mock.ts",
-    "webextension-polyfill": "/src/ui-lab/webextension-polyfill.mock.ts"
+    "ui-lab:./src/ui/shared/channels.ts": "./src/ui/shared/channels.mock.ts",
+    "ui-lab:webextension-polyfill": "/src/ui-lab/webextension-polyfill.mock.ts"
   },
   "repository": {
     "type": "git",
