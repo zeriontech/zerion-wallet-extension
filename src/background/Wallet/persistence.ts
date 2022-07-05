@@ -34,11 +34,6 @@ export class WalletStore extends PersistentStore<WalletStoreState> {
 
     const { seedType, wallet } = data.walletContainer;
     if (seedType === SeedType.mnemonic) {
-      if (!wallet.mnemonic) {
-        throw new Error(
-          'Mnemonic container is expected to have a wallet with a mnemonic'
-        );
-      }
       return {
         ...data,
         walletContainer: new MnemonicWalletContainer(wallet),

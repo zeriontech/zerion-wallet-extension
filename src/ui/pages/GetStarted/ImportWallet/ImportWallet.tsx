@@ -1,3 +1,4 @@
+import { ethers } from 'ethers';
 import React, { useState } from 'react';
 import { Content } from 'react-area';
 import { useMutation } from 'react-query';
@@ -66,6 +67,10 @@ enum Step {
   done,
 }
 
+function isValidMnemonic(phrase: string) {
+  return ethers.utils.isValidMnemonic(phrase);
+}
+
 export function ImportWallet() {
   const [steps, setSteps] = useState(() => new Set<Step>());
   const addStep = (step: Step) => setSteps((steps) => new Set(steps).add(step));
@@ -73,10 +78,14 @@ export function ImportWallet() {
   const navigate = useNavigate();
 
   const { data, ...importWallet } = useMutation(
-    async (key: string) => {
+    async (input: string) => {
       addStep(Step.loading);
       await new Promise((r) => setTimeout(r, 1000));
-      return walletPort.request('importPrivateKey', key);
+      if (isValidMnemonic(input)) {
+        return walletPort.request('importSeedPhrase', input);
+      } else {
+        return walletPort.request('importPrivateKey', input);
+      }
     },
     {
       onSuccess() {

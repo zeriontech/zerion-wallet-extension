@@ -13,7 +13,13 @@ import {
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import type { WalletStore } from './persistence';
 import { walletStore } from './persistence';
-import { SeedType, createRecord, WalletContainer } from './WalletRecord';
+import {
+  SeedType,
+  createRecord,
+  WalletContainer,
+  MnemonicWalletContainer,
+  PrivateKeyWalletContainer,
+} from './WalletRecord';
 import type { WalletRecord } from './WalletRecord';
 import { networksStore } from 'src/modules/networks/networks-store';
 import { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
@@ -116,12 +122,18 @@ export class Wallet {
   }
 
   async importPrivateKey({ params: privateKey }: PublicMethodParams<string>) {
-    const wallet = new ethers.Wallet(privateKey);
-    this.pendingWallet = {
-      seedType: SeedType.privateKey,
-      wallet,
-    };
-    return wallet;
+    this.pendingWallet = new PrivateKeyWalletContainer({ privateKey });
+    return this.pendingWallet.wallet;
+  }
+
+  async importSeedPhrase({ params: seedPhrase }: PublicMethodParams<string>) {
+    this.pendingWallet = new MnemonicWalletContainer({
+      mnemonic: {
+        phrase: seedPhrase,
+        path: undefined,
+      },
+    });
+    return this.pendingWallet.wallet;
   }
 
   async getCurrentWallet() {

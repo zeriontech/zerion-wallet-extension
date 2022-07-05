@@ -6,7 +6,7 @@ type Origin = string;
 type Address = string;
 
 export interface BareWallet {
-  mnemonic: ethers.Wallet['mnemonic'] | null;
+  mnemonic: { phrase: string; path?: string; locale?: string } | null;
   privateKey: ethers.Wallet['privateKey'];
   publicKey: ethers.Wallet['publicKey'];
   address: ethers.Wallet['address'];
@@ -31,7 +31,7 @@ export class MnemonicWalletContainer implements WalletContainer {
   wallet: ethers.Wallet;
   seedType = SeedType.mnemonic;
 
-  constructor(wallet: BareWallet) {
+  constructor(wallet: Pick<BareWallet, 'mnemonic'>) {
     if (!wallet.mnemonic) {
       throw new Error(
         'Mnemonic container is expected to have a wallet with a mnemonic'
@@ -48,7 +48,12 @@ export class PrivateKeyWalletContainer implements WalletContainer {
   wallet: ethers.Wallet;
   seedType = SeedType.privateKey;
 
-  constructor(wallet: BareWallet) {
+  constructor(wallet: Pick<BareWallet, 'privateKey'>) {
+    if (!wallet.privateKey) {
+      throw new Error(
+        'PrivateKey container is expected to have a wallet with a privateKey'
+      );
+    }
     this.wallet = new ethers.Wallet(wallet.privateKey);
   }
 }
