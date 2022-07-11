@@ -5,7 +5,9 @@
   "scripts": {
     "start": "npm-run-all --parallel start:app type-check:watch",
     "start:app": "parcel watch src/manifest.json",
-    "build": "parcel build src/manifest.json",
+    "build:workaround": "parcel watch src/manifest.json --no-hmr --no-content-hash",
+    "build:broken": "parcel build src/manifest.json --no-content-hash --no-scope-hoist",
+    "build": "npm run build:workaround",
     "type-check": "tsc --noEmit",
     "type-check:watch": "tsc --noEmit --pretty --watch",
     "test": "jest",
