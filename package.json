@@ -4,7 +4,7 @@
   "description": "A web3 wallet extension",
   "scripts": {
     "start": "npm-run-all --parallel start:app type-check:watch",
-    "start:app": "parcel watch src/manifest.json",
+    "start:app": "parcel watch src/manifest.json --no-hmr --no-content-hash",
     "build:workaround": "parcel watch src/manifest.json --no-hmr --no-content-hash",
     "build:broken": "parcel build src/manifest.json --no-content-hash --no-scope-hoist",
     "build": "npm run build:workaround",

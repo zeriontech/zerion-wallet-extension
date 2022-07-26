@@ -26,6 +26,7 @@ import { baseToCommon } from 'src/shared/units/convert';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { Twinkle } from 'src/ui/ui-kit/Twinkle';
 import ZerionSquircle from 'src/ui/assets/zerion-squircle.svg';
+import { strings } from 'src/ui/transactions/strings';
 
 function ItemSurface({ style, ...props }: React.HTMLProps<HTMLDivElement>) {
   const surfaceStyle = {
@@ -189,13 +190,6 @@ function TransactionDescription({
   );
 }
 
-const strings = {
-  [TransactionAction.approve]: 'Token Allowance',
-  [TransactionAction.transfer]: 'Send Token',
-  [TransactionAction.swap]: 'Transaction',
-  [TransactionAction.contractInteraction]: 'Contract Interaction',
-};
-
 function SendTransactionContent({
   transactionStringified,
   origin,
@@ -214,6 +208,7 @@ function SendTransactionContent({
     ['description', transaction],
     () => describeTransaction(transaction),
     {
+      retry: false,
       refetchOnMount: false,
       refetchOnReconnect: false,
       refetchOnWindowFocus: false,
@@ -222,7 +217,7 @@ function SendTransactionContent({
   const { networks } = useNetworks();
   const { mutate: signAndSendTransaction, ...signMutation } = useMutation(
     async (transaction: UnsignedTransaction) => {
-      await new Promise((r) => setTimeout(r, 2000));
+      await new Promise((r) => setTimeout(r, 1000));
       return await walletPort.request('signAndSendTransaction', [transaction]);
     },
     {
@@ -258,8 +253,8 @@ function SendTransactionContent({
         <ZerionSquircle style={{ width: 44, height: 44 }} />
         <Spacer height={16} />
         <UIText kind="h/5_med" style={{ textAlign: 'center' }}>
-          {strings[descriptionQuery.data.action] ||
-            strings[TransactionAction.contractInteraction]}
+          {strings.actions[descriptionQuery.data.action] ||
+            strings.actions[TransactionAction.contractInteraction]}
         </UIText>
         <Spacer height={8} />
         <UIText kind="subtitle/m_reg" color="var(--primary)">

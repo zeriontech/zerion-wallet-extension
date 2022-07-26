@@ -1,4 +1,5 @@
 import { Account, AccountPublicRPC } from './account/Account';
+import { TransactionService } from './transactions/TransactionService';
 
 let didInitialize = false;
 
@@ -15,7 +16,14 @@ export async function initialize() {
   await Account.ensureUserAndWallet();
   const account = new Account();
   const accountPublicRPC = new AccountPublicRPC(account);
+  const transactionService = new TransactionService();
+  await transactionService.initialize();
 
-  Object.assign(window, { account, Account, accountPublicRPC });
-  return { account, accountPublicRPC };
+  Object.assign(window, {
+    account,
+    Account,
+    accountPublicRPC,
+    transactionService,
+  });
+  return { account, accountPublicRPC, transactionService };
 }

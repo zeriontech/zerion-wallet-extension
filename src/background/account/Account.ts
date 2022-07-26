@@ -161,6 +161,24 @@ export class AccountPublicRPC {
     }
   }
 
+  async verify({
+    params: { user, password },
+  }: PublicMethodParams<{
+    user: PublicUser;
+    password: string;
+  }>): Promise<boolean> {
+    const currentUser = await Account.readCurrentUser();
+    if (!currentUser || currentUser.id !== user.id) {
+      throw new Error(`User ${user.id} not found`);
+    }
+    const canAuthorize = await Account.verifyPassword(currentUser, password);
+    if (canAuthorize) {
+      return true;
+    } else {
+      throw new Error('Incorrect password');
+    }
+  }
+
   async createUser({
     params: { password },
   }: PublicMethodParams<{ password: string }>): Promise<PublicUser> {

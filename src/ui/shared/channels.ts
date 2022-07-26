@@ -48,3 +48,5 @@ class WindowPort extends PortMessageChannel {
 }
 
 export const windowPort = new WindowPort({ name: 'window' });
+
+Object.assign(window, { walletPort, accountPublicRPCPort });

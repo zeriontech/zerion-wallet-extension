@@ -1,5 +1,4 @@
 import React from 'react';
-import browser from 'webextension-polyfill';
 import { useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -11,6 +10,7 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { useQuery } from 'react-query';
 import { NetworkIndicator } from 'src/ui/components/NetworkIndicator';
+import ZerionSquircle from 'src/ui/assets/zerion-squircle.svg';
 
 export function SwitchEthereumChain() {
   const [params] = useSearchParams();
@@ -41,12 +41,7 @@ export function SwitchEthereumChain() {
     <PageColumn>
       <PageTop />
       <div style={{ display: 'grid', placeItems: 'center' }}>
-        <img
-          style={{ width: 44, height: 44 }}
-          src={browser.runtime.getURL(
-            require('src/ui/assets/zerion-logo-round@2x.png')
-          )}
-        />
+        <ZerionSquircle style={{ width: 44, height: 44 }} />
         <Spacer height={16} />
         <UIText kind="h/5_med" style={{ textAlign: 'center' }}>
           Switch Chain Request ({chainId})

@@ -1,0 +1,25 @@
+.option {
+  margin-left: -16px;
+  margin-right: -16px;
+  padding: 6px 8px;
+  text-align: start;
+}
+
+.decoration {
+  border-radius: 4px;
+  padding: 6px 8px;
+}
+
+@media (hover: hover) {
+  .option:hover .decoration {
+    background-color: var(--neutral-200);
+  }
+}
+
+.option {
+  outline: none;
+}
+
+.option:focus:focus-visible .decoration {
+  background-color: var(--neutral-200);
+}

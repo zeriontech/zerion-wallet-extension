@@ -24,6 +24,10 @@ import { Twinkle } from 'src/ui/ui-kit/Twinkle';
 import ZerionSquircle from 'src/ui/assets/zerion-squircle.svg';
 import { FillView } from 'src/ui/components/FillView';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
+import { usePendingTransactions } from 'src/ui/transactions/usePendingTransactions';
+import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
+import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 
 interface ChangeInfo {
   isPositive: boolean;
@@ -43,6 +47,23 @@ function formatPercentChange(value: number, locale: string): ChangeInfo {
   };
 }
 
+function PendingTransactionsIndicator() {
+  const pendingTxs = usePendingTransactions();
+
+  if (pendingTxs.length === 0) {
+    return null;
+  } else {
+    return (
+      <svg
+        viewBox="0 0 16 16"
+        style={{ width: 8, height: 8, position: 'relative', top: 4 }}
+      >
+        <circle cx="8" cy="8" r="8" fill="var(--notice-500)" />
+      </svg>
+    );
+  }
+}
+
 function PercentChange({
   value,
   locale,
@@ -58,16 +79,7 @@ function PercentChange({
   return render(formatPercentChange(value, locale));
 }
 
-export function Overview() {
-  const navigate = useNavigate();
-  const { data: wallet, ...currentWalletQuery } = useQuery(
-    'wallet',
-    () => {
-      return walletPort.request('getCurrentWallet');
-    },
-    { useErrorBoundary: true }
-  );
-  const logout = useMutation(() => accountPublicRPCPort.request('logout'));
+function NetworkSwitcher() {
   const { networks } = useNetworks();
 
   const { data: chainId, ...chainIdQuery } = useQuery('wallet/chainId', () =>
@@ -78,62 +90,72 @@ export function Overview() {
     (chain: string) => walletPort.request('switchChain', chain),
     { onSuccess: () => chainIdQuery.refetch() }
   );
-  const { value } = useAddressPortfolio({
-    address: wallet?.address.toLowerCase() || '',
-    currency: 'usd',
-    portfolio_fields: 'all',
-    use_portfolio_service: true,
-  });
-  if (!currentWalletQuery.isLoading && !wallet) {
-    return <div>no wallet</div>;
-  }
-  if (currentWalletQuery.isLoading || !wallet || !value) {
-    return (
-      <FillView>
-        <Twinkle>
-          <ZerionSquircle style={{ width: 64, height: 64 }} />
-        </Twinkle>
-        <Spacer height={12} />
-        <UIText kind="caption/reg">
-          (address portfolio might take long...)
-        </UIText>
-      </FillView>
-    );
-  }
+  return networks && chainId ? (
+    <div>
+      <select
+        name="chain"
+        value={networks.getNetworkById(chainId || '0x1')?.chain ?? null}
+        onChange={(event) => {
+          switchChainMutation.mutate(event.target.value);
+        }}
+      >
+        {networks?.getNetworks().map((network) => (
+          <option key={network.chain} value={network.chain}>
+            {networks.getChainName(createChain(network.name))}
+          </option>
+        ))}
+      </select>
+
+      <UIText
+        kind="caption/reg"
+        style={{
+          overflow: 'hidden',
+          maxWidth: 150,
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {networks && chainId
+          ? new URL(networks.getRpcUrlInternal(networks.getChainById(chainId)))
+              .hostname
+          : null}
+      </UIText>
+    </div>
+  ) : null;
+}
+
+export function Overview() {
+  const navigate = useNavigate();
+  const logout = useMutation(() => accountPublicRPCPort.request('logout'));
+
+  const { params, ready } = useAddressParams();
+  const { value } = useAddressPortfolio(
+    {
+      ...params,
+      currency: 'usd',
+      portfolio_fields: 'all',
+      use_portfolio_service: true,
+    },
+    { enabled: ready }
+  );
+  // if (!value) {
+  //   return (
+  //     <FillView>
+  //       <Twinkle>
+  //         <ZerionSquircle style={{ width: 64, height: 64 }} />
+  //       </Twinkle>
+  //       <Spacer height={12} />
+  //       <UIText kind="caption/reg">
+  //         (address portfolio might take long...)
+  //       </UIText>
+  //     </FillView>
+  //   );
+  // }
   return (
     <Background backgroundColor="var(--background)">
       <PageColumn>
-        <div style={{ position: 'absolute', right: 8, top: 8 }}>
-          {networks && chainId ? (
-            <select
-              name="chain"
-              value={networks.getNetworkById(chainId || '0x1')?.chain ?? null}
-              onChange={(event) => {
-                switchChainMutation.mutate(event.target.value);
-              }}
-            >
-              {networks?.getNetworks().map((network) => (
-                <option key={network.chain} value={network.chain}>
-                  {networks.getChainName(createChain(network.name))}
-                </option>
-              ))}
-            </select>
-          ) : null}
-          <UIText
-            kind="caption/reg"
-            style={{
-              overflow: 'hidden',
-              maxWidth: 150,
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {networks && chainId
-              ? new URL(
-                  networks.getRpcUrlInternal(networks.getChainById(chainId))
-                ).hostname
-              : null}
-          </UIText>
+        <div style={{ position: 'absolute', right: 16, top: 16 }}>
+          <SettingsLinkIcon />
         </div>
         <PageTop />
         <PageHeading>Summary</PageHeading>
@@ -141,21 +163,11 @@ export function Overview() {
         <Surface style={{ padding: 12 }}>
           <UIText kind="subtitle/l_reg">Portfolio</UIText>
           <UIText kind="h/1_med">
-            {value?.total_value
-              ? formatCurrencyToParts(value.total_value, 'en', 'usd').map(
-                  (part) => (
-                    <span
-                      style={
-                        part.type === 'decimal' || part.type === 'fraction'
-                          ? { color: 'var(--neutral-300)' }
-                          : undefined
-                      }
-                    >
-                      {part.value}
-                    </span>
-                  )
-                )
-              : null}
+            {value?.total_value ? (
+              <NeutralDecimals
+                parts={formatCurrencyToParts(value.total_value, 'en', 'usd')}
+              />
+            ) : null}
           </UIText>
           {value?.relative_change_24h ? (
             <PercentChange
@@ -190,22 +202,31 @@ export function Overview() {
         <Spacer height={8} />
         <Surface style={{ padding: 12 }}>
           <HStack gap={12}>
-            <BlockieImg address={wallet.address} size={44} />
+            <BlockieImg address={params.address} size={44} />
             <div>
-              <UIText kind="subtitle/l_reg" title={wallet.address}>
-                {truncateAddress(wallet.address, 4)}
+              <UIText kind="subtitle/l_reg" title={params.address}>
+                {truncateAddress(params.address, 4)}
               </UIText>
               <UIText kind="h/6_med">
-                $0<span style={{ color: 'var(--neutral-300)' }}>.00</span>
+                <NeutralDecimals
+                  parts={formatCurrencyToParts(
+                    value?.total_value ?? 0,
+                    'en',
+                    'usd'
+                  )}
+                />
               </UIText>
             </div>
           </HStack>
         </Surface>
         <Spacer height={8} />
         <UIText kind="subtitle/l_reg">
-          <Link style={{ color: 'var(--primary)' }} to="/history">
-            History
-          </Link>
+          <HStack gap={4}>
+            <Link style={{ color: 'var(--primary)' }} to="/history">
+              History
+            </Link>
+            <PendingTransactionsIndicator />
+          </HStack>
         </UIText>
         <div
           style={{ marginTop: 'auto', paddingBottom: 16, textAlign: 'center' }}

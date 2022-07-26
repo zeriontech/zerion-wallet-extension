@@ -6,6 +6,7 @@ import { RenderArea } from 'react-area';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Store } from 'store-unit';
 import { useStore } from '@store-unit/react';
+import { getPageTemplateType } from 'src/ui/shared/getPageTemplateName';
 
 function capitalize(str: string) {
   return `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
@@ -27,6 +28,9 @@ const URLBarBlacklist = new Set([
 
 const urlBarStore = new Store(true);
 
+const templateType = getPageTemplateType();
+const isDialog = templateType === 'dialog';
+
 export function toggleUrlBar(on: boolean) {
   urlBarStore.setState(on);
 }
@@ -46,7 +50,7 @@ export function URLBar() {
   }, [pathname]);
 
   console.log('URLBar', pathname);
-  if (URLBarBlacklist.has(pathname) || !shouldDisplay) {
+  if (URLBarBlacklist.has(pathname) || !shouldDisplay || isDialog) {
     return null;
   }
 

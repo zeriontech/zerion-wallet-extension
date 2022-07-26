@@ -23,7 +23,7 @@ import { Login } from '../pages/Login';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { accountPublicRPCPort, walletPort } from '../shared/channels';
 import { CreateAccount } from '../pages/CreateAccount';
-import { getPageTemplateName } from '../shared/getPageTemplateName';
+import { getPageTemplateType } from '../shared/getPageTemplateName';
 import { closeOtherWindows } from '../shared/closeOtherWindows';
 import { URLBar } from '../components/URLBar';
 import { SwitchEthereumChain } from '../pages/SwitchEthereumChain';
@@ -31,6 +31,9 @@ import { DesignTheme } from '../components/DesignTheme';
 import { FillView } from '../components/FillView';
 import { ViewError } from '../components/ViewError';
 import { ViewArea } from '../components/ViewArea';
+import { Settings } from '../pages/Settings';
+import { Networks } from '../pages/Networks';
+import { BackupWallet } from '../pages/BackupWallet';
 
 const locationStore = new PersistentStore('location', {
   pathname: '/',
@@ -99,6 +102,13 @@ const useAuthState = () => {
     isAuthenticatedQuery.isFetching ||
     getExistingUserQuery.isFetching ||
     currentWalletQuery.isLoading;
+  console.log(
+    'useAuthState, isAuthenticated',
+    isAuthenticated,
+    wallet,
+    currentWalletQuery.isError,
+    currentWalletQuery.isFetched
+  );
   return {
     isAuthenticated: Boolean(isAuthenticated && wallet),
     existingUser,
@@ -156,13 +166,13 @@ function RequireAuth({ children }: { children: JSX.Element }) {
   return children;
 }
 
-const template = getPageTemplateName();
+const templateType = getPageTemplateType();
 
 function useRedirectToSavedLocation({ enabled }: { enabled: boolean }) {
   const navigate = useNavigate();
   const location = useLocation();
   const initialLocationRef = useRef(location.pathname);
-  const [ready, setReady] = useState(!enabled || template !== '/popup.html');
+  const [ready, setReady] = useState(!enabled || templateType !== 'popup');
   console.log('Views:', location.pathname, { ready });
   useEffect(() => {
     let active = true;
@@ -223,6 +233,30 @@ function Views() {
             }
           />
           <Route
+            path="/settings"
+            element={
+              <RequireAuth>
+                <Settings />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/networks"
+            element={
+              <RequireAuth>
+                <Networks />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/backup-wallet/*"
+            element={
+              <RequireAuth>
+                <BackupWallet />
+              </RequireAuth>
+            }
+          />
+          <Route
             path="/history"
             element={
               <RequireAuth>
@@ -254,6 +288,16 @@ function Views() {
               </RequireAuth>
             }
           />
+          <Route
+            path="*"
+            element={
+              <FillView>
+                <div style={{ padding: '1rem', textAlign: 'center' }}>
+                  <p>404 not found</p>
+                </div>
+              </FillView>
+            }
+          />
         </Routes>
       </ViewArea>
     </RouteResolver>
@@ -262,15 +306,9 @@ function Views() {
 
 const queryClient = new QueryClient();
 
-// const pathParts = window.location.pathname.split('/');
-// const baseName = pathParts[1].endsWith('.html')
-//   ? `/${pathParts[1]}`
-//   : undefined;
-const templateName = getPageTemplateName();
-
 export function App() {
   useEffect(() => {
-    if (templateName && /popup\.\w+\.html$/.test(templateName)) {
+    if (templateType === 'popup') {
       closeOtherWindows();
     }
   }, []);

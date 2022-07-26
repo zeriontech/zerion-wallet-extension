@@ -64,6 +64,7 @@ export interface WalletRecord<
   walletContainer: T;
   permissions: Record<Origin, Address>;
   transactions: ethers.providers.TransactionResponse[];
+  lastBackedUp: number | null;
 }
 
 export function createRecord({
@@ -75,6 +76,7 @@ export function createRecord({
     walletContainer,
     permissions: {},
     transactions: [],
+    lastBackedUp: null,
   };
 }
 

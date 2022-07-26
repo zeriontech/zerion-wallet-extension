@@ -25,6 +25,7 @@ import { networksStore } from 'src/modules/networks/networks-store';
 import { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { prepareTransaction } from 'src/modules/ethereum/transactions/prepareTransaction';
 import { createChain } from 'src/modules/networks/Chain';
+import { emitter } from '../events';
 
 class RecordNotFound extends Error {}
 class EncryptionKeyNotFound extends Error {}
@@ -136,6 +137,16 @@ export class Wallet {
     return this.pendingWallet.wallet;
   }
 
+  async getRecoveryPhrase({ context }: PublicMethodParams) {
+    this.verifyInternalOrigin(context);
+    const wallet = await this.getCurrentWallet();
+    if (!wallet) {
+      throw new Error('Wallet not found');
+    }
+    console.log('mnemonic', wallet.mnemonic);
+    return wallet.mnemonic;
+  }
+
   async getCurrentWallet() {
     if (!this.id) {
       return null;
@@ -157,9 +168,6 @@ export class Wallet {
   }
 
   private async acceptOrigin(origin: string, address: string) {
-    if (!this.encryptionKey) {
-      throw new EncryptionKeyNotFound();
-    }
     if (!this.record) {
       throw new RecordNotFound();
     }
@@ -180,6 +188,25 @@ export class Wallet {
       return true;
     }
     return this.record?.permissions[context.origin] === address;
+  }
+
+  async updateLastBackedUp({ context }: PublicMethodParams) {
+    this.verifyInternalOrigin(context);
+    if (!this.record) {
+      throw new RecordNotFound();
+    }
+    this.record = produce(this.record, (draft) => {
+      draft.lastBackedUp = Date.now();
+    });
+    this.updateWalletStore(this.record);
+  }
+
+  async getLastBackedUp({ context }: PublicMethodParams) {
+    this.verifyInternalOrigin(context);
+    if (!this.record) {
+      throw new RecordNotFound();
+    }
+    return this.record.lastBackedUp;
   }
 
   async eth_accounts({ context }: PublicMethodParams) {
@@ -282,16 +309,32 @@ export class Wallet {
     return this.store.getState().chainId;
   }
 
-  private savePendingTransaction(
-    transaction: ethers.providers.TransactionResponse
-  ): void {
-    if (!this.record) {
-      throw new Error('Record is not initialized');
+  // private savePendingTransaction(
+  //   transaction: ethers.providers.TransactionResponse
+  // ): void {
+  //   if (!this.record) {
+  //     throw new Error('Record is not initialized');
+  //   }
+  //   this.record = produce(this.record, (draft) => {
+  //     draft?.transactions.push(transaction);
+  //   });
+  //   emitter.emit('pendingTransactionCreated', transaction);
+  //   this.updateWalletStore(this.record);
+  // }
+
+  private async getProvider(chainId: string) {
+    const networks = await networksStore.load();
+    const nodeUrl = networks.getRpcUrlInternal(networks.getChainById(chainId));
+    return new ethers.providers.JsonRpcProvider(nodeUrl);
+  }
+
+  private async getSigner(chainId: string) {
+    if (!this.record?.walletContainer) {
+      throw new Error('Wallet is not initialized');
     }
-    this.record = produce(this.record, (draft) => {
-      draft?.transactions.push(transaction);
-    });
-    this.updateWalletStore(this.record);
+
+    const jsonRpcProvider = await this.getProvider(chainId);
+    return this.record.walletContainer.wallet.connect(jsonRpcProvider);
   }
 
   private async sendTransaction(
@@ -313,12 +356,14 @@ export class Wallet {
       });
       return this.sendTransaction(incomingTransaction, context);
     }
-    const networks = await networksStore.load();
+    // const networks = await networksStore.load();
     const transaction = prepareTransaction(incomingTransaction);
+
     // const { chainId = '0x1' } = transaction;
-    const nodeUrl = networks.getRpcUrlInternal(networks.getChainById(chainId));
-    const jsonRpcProvider = new ethers.providers.JsonRpcProvider(nodeUrl);
-    const signer = this.record.walletContainer.wallet.connect(jsonRpcProvider);
+    const signer = await this.getSigner(chainId);
+    // const nodeUrl = networks.getRpcUrlInternal(networks.getChainById(chainId));
+    // const jsonRpcProvider = new ethers.providers.JsonRpcProvider(nodeUrl);
+    // const signer = this.record.walletContainer.wallet.connect(jsonRpcProvider);
     // const populatedTransaction = await signer.populateTransaction({
     //   ...transaction,
     //   type: transaction.type || undefined,
@@ -327,7 +372,8 @@ export class Wallet {
       ...transaction,
       type: transaction.type || undefined,
     });
-    this.savePendingTransaction(transactionResponse);
+    // this.savePendingTransaction(transactionResponse);
+    emitter.emit('pendingTransactionCreated', transactionResponse);
     return transactionResponse;
     // return { signer, transaction, populatedTransaction, jsonRpcProvider };
   }

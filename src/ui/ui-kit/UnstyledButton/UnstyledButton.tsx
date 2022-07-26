@@ -6,5 +6,5 @@ export function UnstyledButton({
   className,
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  return <button className={cx(s.button)} {...props} />;
+  return <button className={cx(s.button, className)} {...props} />;
 }
