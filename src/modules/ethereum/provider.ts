@@ -1,5 +1,11 @@
 import { JsonRpcProvider } from '@json-rpc-tools/provider';
-import type { IJsonRpcConnection, JsonRpcRequest } from '@json-rpc-tools/utils';
+import {
+  formatJsonRpcRequest,
+  IJsonRpcConnection,
+  isJsonRpcError,
+  JsonRpcRequest,
+  RequestArguments,
+} from '@json-rpc-tools/utils';
 
 function accountsEquals(arr1: string[], arr2: string[]) {
   // it's okay to perform search like this because `accounts`
@@ -47,6 +53,37 @@ export class EthereumProvider extends JsonRpcProvider {
     });
     this.request({ method: 'eth_accounts' }).then((accounts: string[]) => {
       this.accounts = accounts;
+    });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public async request<Result = any, Params = any>(
+    request: RequestArguments<Params>,
+    context?: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  ): Promise<Result> {
+    return this.getRequestPromise(
+      formatJsonRpcRequest(request.method, request.params || []),
+      context
+    );
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async getRequestPromise<Result = any, Params = any>(
+    request: JsonRpcRequest<Params>,
+    context?: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  ): Promise<Result> {
+    if (!this.connection.connected) {
+      await this.open();
+    }
+    return new Promise((resolve, reject) => {
+      this.events.once(`${request.id}`, (response) => {
+        if (isJsonRpcError(response)) {
+          reject(response.error);
+        } else {
+          resolve(response.result);
+        }
+      });
+      this.connection.send(request);
     });
   }
 

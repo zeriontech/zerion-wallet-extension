@@ -1,12 +1,12 @@
 import {
   ErrorResponse,
-  formatJsonRpcError,
   isJsonRpcPayload,
   isJsonRpcRequest,
   JsonRpcPayload,
   JsonRpcResponse,
 } from '@json-rpc-tools/utils';
 import { formatJsonRpcResultForPort } from 'src/shared/formatJsonRpcResultForPort';
+import { formatJsonRpcWalletError } from 'src/shared/formatJsonRpcWalletError';
 import type { PortContext } from './PortContext';
 
 /**
@@ -35,8 +35,7 @@ export function mapRPCMessageToController<T>(
           return formatJsonRpcResultForPort(id, result);
         },
         (error: Error | ErrorResponse) => {
-          console.log({ error });
-          return formatJsonRpcError(
+          return formatJsonRpcWalletError(
             id,
             'code' in error ? error : error.message
           );

@@ -1,11 +1,11 @@
-import React from 'react';
-import { useMutation, useQuery } from 'react-query';
+import React, { useReducer } from 'react';
+import { useMutation } from 'react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAddressPortfolio } from 'defi-sdk';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
-import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
+import { accountPublicRPCPort } from 'src/ui/shared/channels';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
@@ -13,16 +13,14 @@ import { PageHeading } from 'src/ui/components/PageHeading';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { Background } from 'src/ui/components/Background';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { useNetworks } from 'src/modules/networks/useNetworks';
-import { createChain } from 'src/modules/networks/Chain';
 import {
   formatCurrencyToParts,
   formatCurrencyValue,
 } from 'src/shared/units/formatCurrencyValue';
 import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
-import { Twinkle } from 'src/ui/ui-kit/Twinkle';
-import ZerionSquircle from 'src/ui/assets/zerion-squircle.svg';
-import { FillView } from 'src/ui/components/FillView';
+// import { Twinkle } from 'src/ui/ui-kit/Twinkle';
+// import ZerionSquircle from 'src/ui/assets/zerion-squircle.svg';
+// import { FillView } from 'src/ui/components/FillView';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { usePendingTransactions } from 'src/ui/transactions/usePendingTransactions';
@@ -79,56 +77,25 @@ function PercentChange({
   return render(formatPercentChange(value, locale));
 }
 
-function NetworkSwitcher() {
-  const { networks } = useNetworks();
-
-  const { data: chainId, ...chainIdQuery } = useQuery('wallet/chainId', () =>
-    walletPort.request('getChainId')
+function AddressText({ address }: { address: string }) {
+  const [collapsed, toggle] = useReducer((x) => !x, true);
+  return collapsed ? (
+    <UnstyledButton onClick={toggle}>
+      {truncateAddress(address, 4)}
+    </UnstyledButton>
+  ) : (
+    <span>
+      <span style={{ wordBreak: 'break-all' }}>{address}</span>{' '}
+      <UnstyledButton onClick={toggle}>↤</UnstyledButton>
+    </span>
   );
-
-  const switchChainMutation = useMutation(
-    (chain: string) => walletPort.request('switchChain', chain),
-    { onSuccess: () => chainIdQuery.refetch() }
-  );
-  return networks && chainId ? (
-    <div>
-      <select
-        name="chain"
-        value={networks.getNetworkById(chainId || '0x1')?.chain ?? null}
-        onChange={(event) => {
-          switchChainMutation.mutate(event.target.value);
-        }}
-      >
-        {networks?.getNetworks().map((network) => (
-          <option key={network.chain} value={network.chain}>
-            {networks.getChainName(createChain(network.name))}
-          </option>
-        ))}
-      </select>
-
-      <UIText
-        kind="caption/reg"
-        style={{
-          overflow: 'hidden',
-          maxWidth: 150,
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-        }}
-      >
-        {networks && chainId
-          ? new URL(networks.getRpcUrlInternal(networks.getChainById(chainId)))
-              .hostname
-          : null}
-      </UIText>
-    </div>
-  ) : null;
 }
 
 export function Overview() {
   const navigate = useNavigate();
   const logout = useMutation(() => accountPublicRPCPort.request('logout'));
 
-  const { params, ready } = useAddressParams();
+  const { params, singleAddress, ready } = useAddressParams();
   const { value } = useAddressPortfolio(
     {
       ...params,
@@ -202,10 +169,10 @@ export function Overview() {
         <Spacer height={8} />
         <Surface style={{ padding: 12 }}>
           <HStack gap={12}>
-            <BlockieImg address={params.address} size={44} />
+            <BlockieImg address={singleAddress} size={44} />
             <div>
-              <UIText kind="subtitle/l_reg" title={params.address}>
-                {truncateAddress(params.address, 4)}
+              <UIText kind="subtitle/l_reg" title={singleAddress}>
+                <AddressText address={singleAddress} />
               </UIText>
               <UIText kind="h/6_med">
                 <NeutralDecimals

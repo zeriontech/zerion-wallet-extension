@@ -1,25 +1,45 @@
 import { STANDARD_ERROR_MAP } from '@json-rpc-tools/utils';
 
-export class InvalidParams extends Error {
-  code = STANDARD_ERROR_MAP.INVALID_PARAMS.code;
-
-  constructor(message?: string) {
-    super(message || STANDARD_ERROR_MAP.INVALID_PARAMS.message);
+class ErrorWithEnumerableMessage extends Error {
+  constructor(message: string) {
+    super(message);
+    Object.defineProperty(this, 'message', {
+      value: message,
+      enumerable: true,
+    });
   }
 }
 
-export class OriginNotAllowed extends Error {
+export class InvalidParams extends ErrorWithEnumerableMessage {
+  code = STANDARD_ERROR_MAP.INVALID_PARAMS.code;
+
+  constructor(message = STANDARD_ERROR_MAP.INVALID_PARAMS.message) {
+    super(message);
+  }
+}
+
+export class OriginNotAllowed extends ErrorWithEnumerableMessage {
   code = -32011;
 
   constructor(origin?: string) {
-    super('Method not allowed for this origin' + (origin ? `: ${origin}` : ''));
+    const message =
+      'Method not allowed for this origin' + (origin ? `: ${origin}` : '');
+    super(message);
   }
 }
 
-export class UserRejected extends Error {
+export class UserRejected extends ErrorWithEnumerableMessage {
   code = -32010;
 
-  constructor(message?: string) {
-    super(message || 'Rejected by User');
+  constructor(message = 'Rejected by User') {
+    super(message);
+  }
+}
+
+export class UserRejectedTxSignature extends ErrorWithEnumerableMessage {
+  code = 4001;
+
+  constructor(message = 'Tx Signature: User denied transaction signature.') {
+    super(message);
   }
 }

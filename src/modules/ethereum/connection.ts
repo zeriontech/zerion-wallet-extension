@@ -1,5 +1,11 @@
 import EventEmitter from 'events';
-import type { IJsonRpcConnection, JsonRpcPayload } from '@json-rpc-tools/utils';
+import {
+  IJsonRpcConnection,
+  isJsonRpcError,
+  isJsonRpcResponse,
+  JsonRpcPayload,
+  JsonRpcResult,
+} from '@json-rpc-tools/utils';
 
 export class Connection extends EventEmitter implements IJsonRpcConnection {
   public events = new EventEmitter();
@@ -40,11 +46,15 @@ export class Connection extends EventEmitter implements IJsonRpcConnection {
   }
 
   getPromise<T>(id: number): Promise<T> {
-    return new Promise((resolve) => {
-      const handler = (event: MessageEvent<{ id: number; payload: T }>) => {
+    return new Promise((resolve, reject) => {
+      const handler = (event: MessageEvent<JsonRpcResult>) => {
         const { data } = event;
-        if (data.id === id) {
-          resolve(data.payload);
+        if (data.id === id && isJsonRpcResponse(data)) {
+          if (isJsonRpcError(data)) {
+            reject(data.error);
+          } else {
+            resolve(data.result);
+          }
           this.broadcastChannel.removeEventListener('message', handler);
         }
       };

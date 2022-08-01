@@ -9,6 +9,7 @@ import {
   InvalidParams,
   OriginNotAllowed,
   UserRejected,
+  UserRejectedTxSignature,
 } from 'src/shared/errors/UserRejected';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import type { WalletStore } from './persistence';
@@ -177,6 +178,16 @@ export class Wallet {
     this.updateWalletStore(this.record);
   }
 
+  private removeAllOrigins() {
+    if (!this.record) {
+      throw new RecordNotFound();
+    }
+    this.record = produce(this.record, (draft) => {
+      draft.permissions = {};
+    });
+    this.updateWalletStore(this.record);
+  }
+
   private allowedOrigin(
     context: Partial<ChannelContext> | undefined,
     address: string
@@ -242,12 +253,13 @@ export class Wallet {
       notificationWindow.open({
         route: '/requestAccounts',
         search: `?origin=${origin}`,
-        onResolve: (result) => {
+        onResolve: async () => {
           if (!this.record?.walletContainer) {
             throw new Error('Wallet not found');
           }
           this.acceptOrigin(origin, this.record.walletContainer.wallet.address);
-          resolve(result);
+          const accounts = await this.eth_accounts({ context });
+          resolve(accounts);
         },
         onDismiss: () => {
           reject(new UserRejected('User Rejected the Request'));
@@ -419,7 +431,7 @@ export class Wallet {
           resolve(hash);
         },
         onDismiss: () => {
-          reject(new UserRejected('User Rejected the Request'));
+          reject(new UserRejectedTxSignature());
         },
       });
     });
