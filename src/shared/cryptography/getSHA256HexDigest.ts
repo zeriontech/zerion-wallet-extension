@@ -1,4 +1,4 @@
-export async function getSHA256HexDigest(message: string) {
+export async function getSHA256HexDigest(message: string): Promise<string> {
   const encoder = new TextEncoder();
   // encode as (utf-8) Uint8Array
   const data = encoder.encode(message);

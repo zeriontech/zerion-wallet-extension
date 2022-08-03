@@ -1,5 +1,7 @@
 import React from 'react';
+import cx from 'classnames';
 import { UIText } from '../UIText';
+import * as styles from './styles.module.css';
 
 const asButtonStyle = {
   display: 'inline-flex',
@@ -8,8 +10,8 @@ const asButtonStyle = {
   textAlign: 'center',
 };
 
-type Kind = 'primary' | 'regular';
-type Size = 60 | 56 | 44 | 36;
+type Kind = 'primary' | 'regular' | 'ghost';
+type Size = 60 | 56 | 44 | 36 | 32;
 
 const kinds: { [kind in Kind]: (size: number) => React.CSSProperties } = {
   primary: () => ({
@@ -21,6 +23,10 @@ const kinds: { [kind in Kind]: (size: number) => React.CSSProperties } = {
     color: 'var(--black)',
     border: '1px solid var(--neutral-300)',
   }),
+  ghost: (size) => {
+    const padding = size <= 44 ? 4 : 8;
+    return { paddingLeft: padding, paddingRight: padding };
+  },
 };
 
 interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -39,6 +45,7 @@ export const Button = React.forwardRef(
       kind = 'primary',
       size = 44,
       children,
+      className,
       ...props
     }: Props,
     ref
@@ -63,6 +70,7 @@ export const Button = React.forwardRef(
           isButton ? undefined : asButtonStyle,
           style
         )}
+        className={cx(className, styles[kind])}
         {...props}
       >
         <UIText

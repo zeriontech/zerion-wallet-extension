@@ -1,0 +1,1 @@
+export { ManageWallets } from './ManageWallets';

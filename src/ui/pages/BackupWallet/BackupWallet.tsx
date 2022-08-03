@@ -9,6 +9,7 @@ import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageHeading } from 'src/ui/components/PageHeading';
 import { PageTop } from 'src/ui/components/PageTop';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
+import { prepareUserInputSeedOrPrivateKey } from 'src/ui/shared/prepareUserInputSeedOrPrivateKey';
 import { useMnemonicQuery } from 'src/ui/shared/requests/useMnemonicQuery';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
@@ -159,6 +160,7 @@ function RecoveryPhrase({ onSubmit }: { onSubmit: () => void }) {
   );
 }
 
+const groupId = null;
 function VerifyBackup({ onSuccess }: { onSuccess: () => void }) {
   const verifyMutation = useMutation(
     async (value: string) => {
@@ -173,7 +175,10 @@ function VerifyBackup({ onSuccess }: { onSuccess: () => void }) {
     },
     {
       onSuccess: async () => {
-        await walletPort.request('updateLastBackedUp');
+        if (!groupId) {
+          throw new Error('No groupId');
+        }
+        await walletPort.request('updateLastBackedUp', { groupId });
         onSuccess();
       },
     }
@@ -188,7 +193,7 @@ function VerifyBackup({ onSuccess }: { onSuccess: () => void }) {
             'seedOrPrivateKey'
           );
           verifyMutation.mutate(
-            (value as string).toLowerCase().trim().replace(/\s+/g, ' ')
+            prepareUserInputSeedOrPrivateKey(value as string)
           );
         }}
       >

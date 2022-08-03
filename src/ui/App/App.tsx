@@ -34,6 +34,8 @@ import { ViewArea } from '../components/ViewArea';
 import { Settings } from '../pages/Settings';
 import { Networks } from '../pages/Networks';
 import { BackupWallet } from '../pages/BackupWallet';
+import { ManageWallets } from '../pages/ManageWallets';
+import { WalletSelect } from '../pages/WalletSelect';
 
 const locationStore = new PersistentStore('location', {
   pathname: '/',
@@ -285,6 +287,22 @@ function Views() {
             element={
               <RequireAuth>
                 <SwitchEthereumChain />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/wallets"
+            element={
+              <RequireAuth>
+                <ManageWallets />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/wallet-select"
+            element={
+              <RequireAuth>
+                <WalletSelect />
               </RequireAuth>
             }
           />

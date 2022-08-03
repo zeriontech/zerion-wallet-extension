@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageHeading } from 'src/ui/components/PageHeading';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -23,27 +23,32 @@ enum Step {
 
 export function GenerateWallet() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
   const [steps, setSteps] = useState(() => new Set<Step>());
   const addStep = (step: Step) => setSteps((steps) => new Set(steps).add(step));
 
   const {
-    mutate: generateMnemonics,
+    mutate: generateMnemonicWallet,
     data,
     isLoading,
   } = useMutation(
     async () => {
       addStep(Step.loading);
       await new Promise((r) => setTimeout(r, 1000));
-      return walletPort.request('generateMnemonic');
+      const groupId = params.get('groupId');
+      if (groupId) {
+        return walletPort.request('addMnemonicWallet', { groupId });
+      } else {
+        return walletPort.request('generateMnemonic');
+      }
     },
     {
+      useErrorBoundary: true,
       onSuccess() {
         addStep(Step.done);
       },
     }
   );
-  Object.assign(window, { accountPublicRPCPort });
-  console.log(steps, data);
   return (
     <Background backgroundColor="var(--background)">
       <PageColumn>
@@ -83,7 +88,7 @@ export function GenerateWallet() {
           {data ? null : (
             <Button
               onClick={() => {
-                generateMnemonics();
+                generateMnemonicWallet();
               }}
             >
               {isLoading ? 'Generating...' : 'Generate new Wallet'}
@@ -94,7 +99,6 @@ export function GenerateWallet() {
           <Button
             style={{ marginTop: 'auto', marginBottom: 16 }}
             onClick={() => {
-              console.log('savePendingWallet click');
               accountPublicRPCPort.request('saveUserAndWallet').then(() => {
                 navigate('/overview');
               });

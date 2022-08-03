@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import { Link, Route, Routes } from 'react-router-dom';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { Link, Route, Routes, useSearchParams } from 'react-router-dom';
+import { useQuery } from 'react-query';
 import { Button } from 'src/ui/ui-kit/Button';
 import { PageHeading } from 'src/ui/components/PageHeading';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -11,6 +12,19 @@ import { Surface } from 'src/ui/ui-kit/Surface';
 import { GenerateWallet } from './GenerateWallet';
 import { ImportWallet } from './ImportWallet';
 import { Background } from 'src/ui/components/Background';
+import { walletPort } from 'src/ui/shared/channels';
+import { SeedType } from 'src/shared/SeedType';
+import { WalletGroup } from 'src/background/Wallet/WalletRecord';
+import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
+import { AddressBadge } from 'src/ui/components/AddressBadge';
+
+function useWalletGroups() {
+  return useQuery(
+    'wallet/getWalletGroups',
+    () => walletPort.request('getWalletGroups'),
+    { useErrorBoundary: true }
+  );
+}
 
 function TitleWithLine({
   children,
@@ -33,11 +47,84 @@ function TitleWithLine({
   );
 }
 
-function Options() {
+function NewWalletOption({
+  walletGroups,
+}: {
+  walletGroups: WalletGroup[] | null;
+}) {
+  const [params] = useSearchParams();
   const autoFocusRef = useRef<HTMLButtonElement | null>(null);
   useEffect(() => {
     autoFocusRef.current?.focus();
   }, []);
+  const mnemonicGroups = useMemo(
+    () =>
+      walletGroups?.filter(
+        (group) => group.walletContainer.seedType === SeedType.mnemonic
+      ),
+    [walletGroups]
+  );
+  const hasMnemonicWallets = mnemonicGroups ? mnemonicGroups.length > 0 : false;
+  const selectedGroupId = mnemonicGroups?.length
+    ? params.get('groupId') || mnemonicGroups[0].id
+    : null;
+  const selectedGroup = useMemo(
+    () =>
+      selectedGroupId && mnemonicGroups
+        ? mnemonicGroups.find((group) => group.id === selectedGroupId)
+        : null,
+    [mnemonicGroups, selectedGroupId]
+  );
+  const newWalletUrl = useMemo(() => {
+    if (selectedGroupId) {
+      return `new?groupId=${selectedGroupId}`;
+    } else {
+      return 'new';
+    }
+  }, [selectedGroupId]);
+
+  return (
+    <VStack gap={8}>
+      <Button
+        ref={autoFocusRef}
+        as={Link}
+        to={newWalletUrl}
+        size={hasMnemonicWallets ? 44 : 56}
+      >
+        Create new Wallet
+      </Button>
+      {hasMnemonicWallets ? (
+        <UIText kind="subtitle/l_reg">
+          Within{' '}
+          <Link
+            style={{ color: 'var(--primary)' }}
+            to={`wallet-group-select?${new URLSearchParams({
+              next: '/get-started',
+            })}`}
+          >
+            {selectedGroup?.name}
+          </Link>
+        </UIText>
+      ) : null}
+      {hasMnemonicWallets ? (
+        <>
+          <UIText kind="subtitle/l_reg" color="var(--neutral-500)">
+            <TitleWithLine lineColor="var(--neutral-300)">or</TitleWithLine>
+          </UIText>
+          <Button kind="regular" as={Link} to="new" size={56}>
+            Create New Wallet Group
+          </Button>
+        </>
+      ) : null}
+    </VStack>
+  );
+}
+
+function Options() {
+  const { data: walletGroups, isLoading } = useWalletGroups();
+  if (isLoading) {
+    return null;
+  }
   return (
     <Background backgroundColor="var(--background)">
       <PageColumn>
@@ -53,9 +140,7 @@ function Options() {
 
         <Surface padding={16}>
           <VStack gap={16}>
-            <Button ref={autoFocusRef} as={Link} to="new" size={60}>
-              Create new Wallet
-            </Button>
+            <NewWalletOption walletGroups={walletGroups || null} />
             <UIText kind="subtitle/l_reg" color="var(--neutral-500)">
               <TitleWithLine lineColor="var(--neutral-300)">or</TitleWithLine>
             </UIText>
@@ -73,12 +158,65 @@ function Options() {
   );
 }
 
+function WalletGroupSelect() {
+  const [params] = useSearchParams();
+  const { data: walletGroups, isLoading } = useWalletGroups();
+  const mnemonicGroups = useMemo(
+    () =>
+      walletGroups?.filter(
+        (group) => group.walletContainer.seedType === SeedType.mnemonic
+      ),
+    [walletGroups]
+  );
+  if (isLoading) {
+    return null;
+  }
+  if (!mnemonicGroups) {
+    throw new Error('Wallet Groups are required to display this view');
+  }
+  const targetUrl = params.get('next');
+  return (
+    <PageColumn>
+      <PageTop />
+      <VStack gap={8}>
+        <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
+          Wallets (i)
+        </UIText>
+
+        <SurfaceList
+          items={mnemonicGroups.map((group) => {
+            const url = `${targetUrl}?groupId=${group.id}`;
+            return {
+              key: group.id,
+              to: url,
+              component: (
+                <VStack gap={4}>
+                  <UIText kind="subtitle/m_med">{group.name}</UIText>
+                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                    {group.walletContainer.wallets.map((wallet) => (
+                      <AddressBadge
+                        key={wallet.address}
+                        address={wallet.address}
+                      />
+                    ))}
+                  </div>
+                </VStack>
+              ),
+            };
+          })}
+        />
+      </VStack>
+    </PageColumn>
+  );
+}
+
 export function GetStarted() {
   return (
     <Routes>
       <Route path="/" element={<Options />} />
       <Route path="/new" element={<GenerateWallet />} />
       <Route path="/import" element={<ImportWallet />} />
+      <Route path="/wallet-group-select" element={<WalletGroupSelect />} />
     </Routes>
   );
 }

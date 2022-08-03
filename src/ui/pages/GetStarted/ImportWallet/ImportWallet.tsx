@@ -7,6 +7,7 @@ import { Background } from 'src/ui/components/Background';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
+import { prepareUserInputSeedOrPrivateKey } from 'src/ui/shared/prepareUserInputSeedOrPrivateKey';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -22,7 +23,7 @@ function ImportForm({ onSubmit }: { onSubmit: (value: string) => void }) {
       <UIText kind="subtitle/m_reg" color="var(--neutral-700)">
         Existing wallets can be imported using either
         <ul style={{ listStyle: 'circle', paddingLeft: '1em', marginTop: 8 }}>
-          <li>a seed phrase (12 words)</li>
+          <li>a recovery phrase (12 words)</li>
           <li>or a private key</li>
         </ul>
       </UIText>
@@ -37,7 +38,7 @@ function ImportForm({ onSubmit }: { onSubmit: (value: string) => void }) {
           if (!value) {
             return;
           }
-          onSubmit(value as string);
+          onSubmit(prepareUserInputSeedOrPrivateKey(value as string));
         }}
       >
         <textarea
@@ -45,7 +46,7 @@ function ImportForm({ onSubmit }: { onSubmit: (value: string) => void }) {
           name="seedOrPrivateKey"
           required={true}
           rows={3}
-          placeholder="Enter seed phrase or a private key"
+          placeholder="Enter recovery phrase or a private key"
           style={{
             display: 'block',
             color: 'var(--black)',
@@ -70,6 +71,10 @@ enum Step {
 function isValidMnemonic(phrase: string) {
   return ethers.utils.isValidMnemonic(phrase);
 }
+function isValidPrivateKey(key: string) {
+  const prefixedKey = key.startsWith('0x') ? key : `0x${key}`;
+  return ethers.utils.isHexString(prefixedKey, 32);
+}
 
 export function ImportWallet() {
   const [steps, setSteps] = useState(() => new Set<Step>());
@@ -83,8 +88,10 @@ export function ImportWallet() {
       await new Promise((r) => setTimeout(r, 1000));
       if (isValidMnemonic(input)) {
         return walletPort.request('importSeedPhrase', input);
-      } else {
+      } else if (isValidPrivateKey(input)) {
         return walletPort.request('importPrivateKey', input);
+      } else {
+        throw new Error('Not a private key or a recovery phrase');
       }
     },
     {
@@ -93,6 +100,7 @@ export function ImportWallet() {
       },
     }
   );
+  const importError = importWallet.error ? (importWallet.error as Error) : null;
 
   return (
     <>
@@ -103,46 +111,48 @@ export function ImportWallet() {
       <Background backgroundColor="var(--background)">
         <PageColumn>
           <PageTop />
-          <UIText kind="h/5_med">Seed Phrase or Private Key</UIText>
+          <UIText kind="h/5_med">Recovery Phrase or Private Key</UIText>
           <Spacer height={24}></Spacer>
           {steps.has(Step.loading) ? (
-            <VStack gap={8}>
-              <DecorativeMessage
-                text={
-                  <UIText kind="subtitle/m_reg">
-                    Hi 👋 We're generating your wallet and making sure it's
-                    encrypted with your passcode. This should only take a couple
-                    of minutes.
-                  </UIText>
-                }
-              />
-              {data?.address ? (
-                <DecorativeMessageDone
-                  messageKind="import"
-                  address={data.address}
+            <>
+              <VStack gap={8}>
+                <DecorativeMessage
+                  text={
+                    <UIText kind="subtitle/m_reg">
+                      Hi 👋 We're generating your wallet and making sure it's
+                      encrypted with your passcode. This should only take a
+                      couple of minutes.
+                    </UIText>
+                  }
                 />
-              ) : null}
-              {importWallet.isError ? (
-                <UIText kind="subtitle/m_reg" color="var(--negative-500)">
-                  Could not import wallet
-                </UIText>
-              ) : null}
-            </VStack>
+                {data?.address ? (
+                  <DecorativeMessageDone
+                    messageKind="import"
+                    address={data.address}
+                  />
+                ) : null}
+                {importWallet.isError ? (
+                  <UIText kind="subtitle/m_reg" color="var(--negative-500)">
+                    Could not import wallet{' '}
+                    {importError?.message ? `(${importError.message})` : null}
+                  </UIText>
+                ) : null}
+              </VStack>
+
+              <Button
+                style={{ marginTop: 'auto', marginBottom: 16 }}
+                onClick={() => {
+                  accountPublicRPCPort.request('saveUserAndWallet').then(() => {
+                    navigate('/overview');
+                  });
+                }}
+              >
+                {importWallet.isLoading ? 'Recovering...' : 'Finish'}
+              </Button>
+            </>
           ) : (
             <ImportForm onSubmit={(key) => importWallet.mutate(key)} />
           )}
-          {steps.has(Step.loading) ? (
-            <Button
-              style={{ marginTop: 'auto', marginBottom: 16 }}
-              onClick={() => {
-                accountPublicRPCPort.request('saveUserAndWallet').then(() => {
-                  navigate('/overview');
-                });
-              }}
-            >
-              {importWallet.isLoading ? 'Recovering...' : 'Finish'}
-            </Button>
-          ) : null}
         </PageColumn>
       </Background>
     </>

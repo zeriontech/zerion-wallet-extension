@@ -12,6 +12,11 @@ export function Settings() {
       <SurfaceList
         items={[
           {
+            key: 0,
+            component: <div>Manage Wallets</div>,
+            to: '/wallets',
+          },
+          {
             key: 1,
             component: <BackupSettingsItem />,
             to: '/backup-wallet',
@@ -21,7 +26,7 @@ export function Settings() {
             component: <CurrentNetworkSettingsItem />,
             to: '/networks',
           },
-          { key: 3, component: <div>Goodbye</div>, to: '/overview' },
+          { key: 3, component: <div>Back</div>, to: '/overview' },
         ]}
       />
     </PageColumn>

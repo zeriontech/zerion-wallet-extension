@@ -70,7 +70,7 @@ export class EthereumProvider extends JsonRpcProvider {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async getRequestPromise<Result = any, Params = any>(
     request: JsonRpcRequest<Params>,
-    context?: any // eslint-disable-line @typescript-eslint/no-explicit-any
+    _context?: any // eslint-disable-line @typescript-eslint/no-explicit-any
   ): Promise<Result> {
     if (!this.connection.connected) {
       await this.open();

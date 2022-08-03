@@ -27,6 +27,7 @@ import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { Twinkle } from 'src/ui/ui-kit/Twinkle';
 import ZerionSquircle from 'src/ui/assets/zerion-squircle.svg';
 import { strings } from 'src/ui/transactions/strings';
+import { BareWallet } from 'src/shared/types/BareWallet';
 
 function ItemSurface({ style, ...props }: React.HTMLProps<HTMLDivElement>) {
   const surfaceStyle = {
@@ -197,7 +198,7 @@ function SendTransactionContent({
 }: {
   transactionStringified: string;
   origin: string;
-  wallet: ethers.Wallet;
+  wallet: BareWallet;
 }) {
   const [params] = useSearchParams();
   const transaction = useMemo(

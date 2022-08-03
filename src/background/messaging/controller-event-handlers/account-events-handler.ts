@@ -21,6 +21,11 @@ export function handleAccountEvents({ account }: { account: Account }) {
         emitter.emit('chainChanged', chainId);
       })
     );
+    disposers.push(
+      wallet.emitter.on('accountsChanged', () => {
+        emitter.emit('accountsChanged');
+      })
+    );
   }
 
   addWalletEventListeners(account.getCurrentWallet());

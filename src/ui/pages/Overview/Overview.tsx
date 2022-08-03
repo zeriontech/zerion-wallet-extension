@@ -1,10 +1,9 @@
-import React, { useReducer } from 'react';
+import React from 'react';
 import { useMutation } from 'react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAddressPortfolio } from 'defi-sdk';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { PageColumn } from 'src/ui/components/PageColumn';
-import { PageTop } from 'src/ui/components/PageTop';
 import { accountPublicRPCPort } from 'src/ui/shared/channels';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Surface } from 'src/ui/ui-kit/Surface';
@@ -21,11 +20,16 @@ import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 // import { Twinkle } from 'src/ui/ui-kit/Twinkle';
 // import ZerionSquircle from 'src/ui/assets/zerion-squircle.svg';
 // import { FillView } from 'src/ui/components/FillView';
+import AddWalletIcon from 'src/ui/assets/add-wallet.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { usePendingTransactions } from 'src/ui/transactions/usePendingTransactions';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
+import { Media } from 'src/ui/ui-kit/Media';
+import { Button } from 'src/ui/ui-kit/Button';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import { AddressText } from 'src/ui/components/AddressText';
 
 interface ChangeInfo {
   isPositive: boolean;
@@ -77,17 +81,21 @@ function PercentChange({
   return render(formatPercentChange(value, locale));
 }
 
-function AddressText({ address }: { address: string }) {
-  const [collapsed, toggle] = useReducer((x) => !x, true);
-  return collapsed ? (
-    <UnstyledButton onClick={toggle}>
-      {truncateAddress(address, 4)}
-    </UnstyledButton>
-  ) : (
-    <span>
-      <span style={{ wordBreak: 'break-all' }}>{address}</span>{' '}
-      <UnstyledButton onClick={toggle}>↤</UnstyledButton>
-    </span>
+function CurrentAccount() {
+  const { singleAddress, ready } = useAddressParams();
+  if (!ready) {
+    return null;
+  }
+  return (
+    <Media
+      image={<BlockieImg address={singleAddress} size={24} />}
+      text={
+        <span style={{ fontWeight: 'normal' }}>
+          {truncateAddress(singleAddress, 4)}
+        </span>
+      }
+      detailText={null}
+    />
   );
 }
 
@@ -121,10 +129,32 @@ export function Overview() {
   return (
     <Background backgroundColor="var(--background)">
       <PageColumn>
-        <div style={{ position: 'absolute', right: 16, top: 16 }}>
-          <SettingsLinkIcon />
-        </div>
-        <PageTop />
+        <Spacer height={8} />
+        <HStack gap={12} justifyContent="space-between" alignItems="center">
+          <Button
+            kind="ghost"
+            size={32}
+            as={UnstyledLink}
+            to="/wallet-select"
+            title="Select Account"
+          >
+            <CurrentAccount />
+          </Button>
+
+          <HStack gap={4}>
+            <SettingsLinkIcon />
+            <Button
+              kind="ghost"
+              size={32}
+              title="Add Wallet"
+              as={UnstyledLink}
+              to="/get-started"
+            >
+              <AddWalletIcon />
+            </Button>
+          </HStack>
+        </HStack>
+        <Spacer height={24} />
         <PageHeading>Summary</PageHeading>
         <Spacer height={24} />
         <Surface style={{ padding: 12 }}>
