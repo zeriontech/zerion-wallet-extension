@@ -1,1 +1,1 @@
-export { UIText } from './UIText';
+export { UIText, Kind } from './UIText';

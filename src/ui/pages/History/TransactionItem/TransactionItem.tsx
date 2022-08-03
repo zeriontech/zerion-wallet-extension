@@ -106,8 +106,7 @@ export function TransactionItem({
             {new Intl.DateTimeFormat('en', {
               hour: 'numeric',
               minute: 'numeric',
-              second: 'numeric',
-            }).format(mined_at)}
+            }).format(mined_at * 1000)}
           </span>
         </UIText>
       }

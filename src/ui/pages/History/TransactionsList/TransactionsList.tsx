@@ -27,7 +27,7 @@ export function TransactionsList({
           <UIText kind="subtitle/l_med">
             {new Intl.DateTimeFormat('en', {
               dateStyle: 'medium',
-            }).format(Number(timestamp))}
+            }).format(Number(timestamp) * 1000)}
           </UIText>
           <SurfaceList
             items={items.map((addressTransaction) => ({

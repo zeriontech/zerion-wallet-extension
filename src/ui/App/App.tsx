@@ -227,7 +227,7 @@ function Views() {
           <Route path="/login" element={<Login />} />
           <Route path="/hello" element={<View />} />
           <Route
-            path="/overview"
+            path="/overview/*"
             element={
               <RequireAuth>
                 <Overview />

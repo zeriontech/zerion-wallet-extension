@@ -103,7 +103,17 @@ export function WalletSelect() {
                   ) : null}
                 </HStack>
               ),
-            }))}
+            }))
+            .concat([
+              {
+                key: '1234',
+                // @ts-ignore
+                to: '/wallets',
+                component: (
+                  <div style={{ color: 'var(--primary)' }}>Manage Wallets</div>
+                ),
+              },
+            ])}
         />
       )}
       <Spacer height={24} />

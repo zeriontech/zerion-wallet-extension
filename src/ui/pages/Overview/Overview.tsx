@@ -1,17 +1,13 @@
 import React from 'react';
-import { useMutation } from 'react-query';
-import { Link, useNavigate } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { useAddressPortfolio } from 'defi-sdk';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { PageColumn } from 'src/ui/components/PageColumn';
-import { accountPublicRPCPort } from 'src/ui/shared/channels';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
-import { PageHeading } from 'src/ui/components/PageHeading';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { Background } from 'src/ui/components/Background';
-import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import {
   formatCurrencyToParts,
   formatCurrencyValue,
@@ -29,7 +25,11 @@ import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { Media } from 'src/ui/ui-kit/Media';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
-import { AddressText } from 'src/ui/components/AddressText';
+import {
+  SegmentedControlGroup,
+  SegmentedControlLink,
+} from 'src/ui/ui-kit/SegmentedControl';
+import { Positions } from './Positions';
 
 interface ChangeInfo {
   isPositive: boolean;
@@ -58,7 +58,7 @@ function PendingTransactionsIndicator() {
     return (
       <svg
         viewBox="0 0 16 16"
-        style={{ width: 8, height: 8, position: 'relative', top: 4 }}
+        style={{ width: 8, height: 8, position: 'relative', top: -4 }}
       >
         <circle cx="8" cy="8" r="8" fill="var(--notice-500)" />
       </svg>
@@ -100,10 +100,7 @@ function CurrentAccount() {
 }
 
 export function Overview() {
-  const navigate = useNavigate();
-  const logout = useMutation(() => accountPublicRPCPort.request('logout'));
-
-  const { params, singleAddress, ready } = useAddressParams();
+  const { params, ready } = useAddressParams();
   const { value } = useAddressPortfolio(
     {
       ...params,
@@ -129,34 +126,44 @@ export function Overview() {
   return (
     <Background backgroundColor="var(--background)">
       <PageColumn>
-        <Spacer height={8} />
-        <HStack gap={12} justifyContent="space-between" alignItems="center">
-          <Button
-            kind="ghost"
-            size={32}
-            as={UnstyledLink}
-            to="/wallet-select"
-            title="Select Account"
-          >
-            <CurrentAccount />
-          </Button>
-
-          <HStack gap={4}>
-            <SettingsLinkIcon />
+        <div
+          style={{
+            position: 'sticky',
+            top: 0,
+            backgroundColor: 'var(--background)',
+          }}
+        >
+          <Spacer height={8} />
+          <HStack gap={12} justifyContent="space-between" alignItems="center">
             <Button
               kind="ghost"
               size={32}
-              title="Add Wallet"
               as={UnstyledLink}
-              to="/get-started"
+              to="/wallet-select"
+              title="Select Account"
             >
-              <AddWalletIcon />
+              <CurrentAccount />
             </Button>
+
+            <HStack gap={4}>
+              <SettingsLinkIcon />
+              <Button
+                kind="ghost"
+                size={32}
+                title="Add Wallet"
+                as={UnstyledLink}
+                to="/get-started"
+              >
+                <AddWalletIcon />
+              </Button>
+            </HStack>
           </HStack>
-        </HStack>
+        </div>
         <Spacer height={24} />
+        {/*
         <PageHeading>Summary</PageHeading>
         <Spacer height={24} />
+        */}
         <Surface style={{ padding: 12 }}>
           <UIText kind="subtitle/l_reg">Portfolio</UIText>
           <UIText kind="h/1_med">
@@ -196,6 +203,7 @@ export function Overview() {
             />
           ) : null}
         </Surface>
+        {/*
         <Spacer height={8} />
         <Surface style={{ padding: 12 }}>
           <HStack gap={12}>
@@ -204,39 +212,77 @@ export function Overview() {
               <UIText kind="subtitle/l_reg" title={singleAddress}>
                 <AddressText address={singleAddress} />
               </UIText>
-              <UIText kind="h/6_med">
-                <NeutralDecimals
-                  parts={formatCurrencyToParts(
-                    value?.total_value ?? 0,
-                    'en',
-                    'usd'
-                  )}
-                />
-              </UIText>
+              <HStack gap={8} alignItems="baseline">
+                <UIText kind="h/6_med">
+                  <NeutralDecimals
+                    parts={formatCurrencyToParts(
+                      value?.total_value ?? 0,
+                      'en',
+                      'usd'
+                    )}
+                  />{' '}
+                  {value?.relative_change_24h ? (
+                    <PercentChange
+                      value={value.relative_change_24h}
+                      locale="en"
+                      render={(change) => {
+                        const sign = change.isPositive ? '+' : '';
+                        return (
+                          <UIText
+                            inline={true}
+                            kind="subtitle/l_reg"
+                            color={
+                              change.isNonNegative
+                                ? 'var(--positive-500)'
+                                : 'var(--negative-500)'
+                            }
+                          >
+                            {`${sign}${change.formatted}`}{' '}
+                            {value?.absolute_change_24h
+                              ? `(${formatCurrencyValue(
+                                  value?.absolute_change_24h,
+                                  'en',
+                                  'usd'
+                                )})`
+                              : ''}{' '}
+                            Today
+                          </UIText>
+                        );
+                      }}
+                    />
+                  ) : null}
+                </UIText>
+              </HStack>
             </div>
           </HStack>
         </Surface>
-        <Spacer height={8} />
-        <UIText kind="subtitle/l_reg">
-          <HStack gap={4}>
-            <Link style={{ color: 'var(--primary)' }} to="/history">
-              History
-            </Link>
-            <PendingTransactionsIndicator />
-          </HStack>
-        </UIText>
-        <div
-          style={{ marginTop: 'auto', paddingBottom: 16, textAlign: 'center' }}
+        */}
+        <Spacer height={24} />
+        <SegmentedControlGroup
+          style={{
+            position: 'sticky',
+            top: 40,
+            paddingTop: 4,
+            backgroundColor: 'var(--background)',
+          }}
         >
-          <UnstyledButton
-            onClick={async () => {
-              await logout.mutateAsync();
-              navigate('/login');
-            }}
-          >
-            {logout.isLoading ? 'Locking...' : 'Lock (log out)'}
-          </UnstyledButton>
-        </div>
+          <SegmentedControlLink to="/overview/nfts">
+            {' '}
+            NFTs{' '}
+          </SegmentedControlLink>
+          <SegmentedControlLink to="/overview" end={true}>
+            Tokens
+          </SegmentedControlLink>
+          <SegmentedControlLink to="/history">
+            History <PendingTransactionsIndicator />
+          </SegmentedControlLink>
+        </SegmentedControlGroup>
+        <Spacer height={24} />
+        <Routes>
+          <Route path="/" element={<Positions />} />
+          <Route path="/nfts" element={<div>NFTs</div>} />
+        </Routes>
+        <Spacer height={24} />
       </PageColumn>
     </Background>
   );

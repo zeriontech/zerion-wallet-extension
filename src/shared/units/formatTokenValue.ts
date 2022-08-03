@@ -1,4 +1,5 @@
 import { BigNumber } from 'bignumber.js';
+import { NBSP } from 'src/ui/shared/typography';
 
 function countFractionalZeros(value: string) {
   return value.match(/\.(0+)[1-9]/)?.[1].length ?? 0;
@@ -22,10 +23,8 @@ const formatter = new Intl.NumberFormat('en', {
   maximumFractionDigits: 20,
 });
 
-export function formatTokenValue(value: BigNumber.Value) {
+export function formatTokenValue(value: BigNumber.Value, symbol?: string) {
   const roundedString = roundTokenValue(value);
-  return formatter.format(Number(roundedString));
-  // const value = new BigNumber(rawValue);
-  // const fractionalZeros = countFractionalZeros(value.toFixed());
-  // return formatter.format(value.toNumber());
+  const result = formatter.format(Number(roundedString));
+  return symbol ? `${result}${NBSP}${symbol}` : result;
 }
