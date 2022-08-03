@@ -28,13 +28,11 @@ function PrivateKeyList({ walletGroups }: { walletGroups: WalletGroup[] }) {
           return {
             key: group.id,
             component: (
-              <HStack gap={12}>
+              <HStack gap={8} alignItems="center">
                 <BlockieImg address={address} size={28} />
-                <div>
-                  <UIText kind="subtitle/l_reg" title={address}>
-                    <AddressText address={address} />
-                  </UIText>
-                </div>
+                <UIText kind="subtitle/m_reg" title={address}>
+                  <AddressText address={address} />
+                </UIText>
               </HStack>
             ),
           };
@@ -55,13 +53,22 @@ function MnemonicList({ walletGroups }: { walletGroups: WalletGroup[] }) {
         items={walletGroups.map((group) => ({
           key: group.id,
           component: (
-            <VStack gap={4}>
+            <VStack gap={8}>
               <UIText kind="subtitle/m_med">{group.name}</UIText>
               <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                 {group.walletContainer.wallets.map((wallet) => (
                   <AddressBadge key={wallet.address} address={wallet.address} />
                 ))}
               </div>
+
+              {group.lastBackedUp != null ? (
+                <UIText kind="caption/reg" color="var(--neutral-500)">
+                  Last Backup:{' '}
+                  {new Intl.DateTimeFormat('en', {
+                    dateStyle: 'medium',
+                  }).format(group.lastBackedUp)}
+                </UIText>
+              ) : null}
             </VStack>
           ),
         }))}

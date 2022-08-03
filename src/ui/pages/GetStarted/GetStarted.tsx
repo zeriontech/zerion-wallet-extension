@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Link, Route, Routes, useSearchParams } from 'react-router-dom';
-import { useQuery } from 'react-query';
 import { Button } from 'src/ui/ui-kit/Button';
 import { PageHeading } from 'src/ui/components/PageHeading';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -12,19 +11,11 @@ import { Surface } from 'src/ui/ui-kit/Surface';
 import { GenerateWallet } from './GenerateWallet';
 import { ImportWallet } from './ImportWallet';
 import { Background } from 'src/ui/components/Background';
-import { walletPort } from 'src/ui/shared/channels';
 import { SeedType } from 'src/shared/SeedType';
 import { WalletGroup } from 'src/background/Wallet/WalletRecord';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { AddressBadge } from 'src/ui/components/AddressBadge';
-
-function useWalletGroups() {
-  return useQuery(
-    'wallet/getWalletGroups',
-    () => walletPort.request('getWalletGroups'),
-    { useErrorBoundary: true }
-  );
-}
+import { useWalletGroups } from 'src/ui/shared/requests/useWalletGroups';
 
 function TitleWithLine({
   children,

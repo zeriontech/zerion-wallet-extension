@@ -21,6 +21,7 @@ import {
   createOrUpdateRecord,
   getWalletByAddress,
   toEthersWallet,
+  SeedType,
 } from './WalletRecord';
 import type { WalletRecord } from './WalletRecord';
 import { networksStore } from 'src/modules/networks/networks-store';
@@ -172,14 +173,18 @@ export class Wallet {
     return this.pendingWallet.walletContainer.getFirstWallet();
   }
 
-  async getRecoveryPhrase({ context }: PublicMethodParams) {
+  async getRecoveryPhrase({
+    params: { groupId },
+    context,
+  }: PublicMethodParams<{ groupId: string }>) {
     this.verifyInternalOrigin(context);
-    const wallet = await this.getCurrentWallet();
-    if (!wallet) {
-      throw new Error('Wallet not found');
+    const group = this.record?.walletManager.groups.find(
+      (group) => group.id === groupId
+    );
+    if (!group) {
+      throw new Error('Wallet Group not found');
     }
-    console.log('mnemonic', wallet.mnemonic);
-    return wallet.mnemonic;
+    return group.walletContainer.getMnemonic();
   }
 
   async getCurrentWallet() {
@@ -285,6 +290,7 @@ export class Wallet {
   }
 
   async getLastBackedUp({ context }: PublicMethodParams) {
+    // NOTE: deprecate this method?
     this.verifyInternalOrigin(context);
     if (!this.record) {
       throw new RecordNotFound();
@@ -309,9 +315,9 @@ export class Wallet {
     if (!this.record) {
       throw new RecordNotFound();
     }
-    return this.record.walletManager.groups.filter(
-      (group) => group.lastBackedUp == null
-    ).length;
+    return this.record.walletManager.groups
+      .filter((group) => group.walletContainer.seedType === SeedType.mnemonic)
+      .filter((group) => group.lastBackedUp == null).length;
   }
 
   async eth_accounts({ context }: PublicMethodParams) {

@@ -127,8 +127,14 @@ function VerifyUser({ onSuccess }: { onSuccess: () => void }) {
   );
 }
 
-function RecoveryPhrase({ onSubmit }: { onSubmit: () => void }) {
-  const { data: mnemonic, isLoading } = useMnemonicQuery();
+function RecoveryPhrase({
+  groupId,
+  onSubmit,
+}: {
+  groupId: string;
+  onSubmit: () => void;
+}) {
+  const { data: mnemonic, isLoading } = useMnemonicQuery({ groupId });
   if (isLoading) {
     return <p>Loading...</p>;
   }
@@ -160,11 +166,18 @@ function RecoveryPhrase({ onSubmit }: { onSubmit: () => void }) {
   );
 }
 
-const groupId = null;
-function VerifyBackup({ onSuccess }: { onSuccess: () => void }) {
+function VerifyBackup({
+  groupId,
+  onSuccess,
+}: {
+  groupId: string;
+  onSuccess: () => void;
+}) {
   const verifyMutation = useMutation(
     async (value: string) => {
-      const mnemonic = await walletPort.request('getRecoveryPhrase');
+      const mnemonic = await walletPort.request('getRecoveryPhrase', {
+        groupId,
+      });
       if (!mnemonic) {
         throw new Error('Could not get mnemonic');
       }
@@ -248,27 +261,40 @@ function VerifySuccess() {
 
 export function BackupWallet() {
   const [params, setSearchParams] = useSearchParams();
+  const groupId = params.get('groupId');
+  if (!groupId) {
+    throw new Error('Group Id is required for this view');
+  }
   return (
     <Background backgroundColor="var(--background)">
       <PageColumn>
         {params.has('step') ? null : (
-          <Initial onSubmit={() => setSearchParams({ step: 'verifyUser' })} />
+          <Initial
+            onSubmit={() => setSearchParams({ step: 'verifyUser', groupId })}
+          />
         )}
         {params.get('step') === 'verifyUser' ? (
           <VerifyUser
             onSuccess={() =>
-              setSearchParams({ step: 'recoveryPhrase' }, { replace: true })
+              setSearchParams(
+                { step: 'recoveryPhrase', groupId },
+                { replace: true }
+              )
             }
           />
         ) : null}
         {params.get('step') === 'recoveryPhrase' ? (
           <RecoveryPhrase
-            onSubmit={() => setSearchParams({ step: 'verifyBackup' })}
+            groupId={groupId}
+            onSubmit={() => setSearchParams({ step: 'verifyBackup', groupId })}
           />
         ) : null}
         {params.get('step') === 'verifyBackup' ? (
           <VerifyBackup
-            onSuccess={() => setSearchParams({ step: 'verifySuccess' })}
+            groupId={groupId}
+            onSuccess={() =>
+              setSearchParams({ step: 'verifySuccess', groupId })
+            }
           />
         ) : null}
         {params.get('step') === 'verifySuccess' ? <VerifySuccess /> : null}

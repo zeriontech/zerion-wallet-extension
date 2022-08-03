@@ -11,7 +11,7 @@ const asButtonStyle = {
 };
 
 type Kind = 'primary' | 'regular' | 'ghost';
-type Size = 60 | 56 | 44 | 36 | 32;
+type Size = 60 | 56 | 44 | 36 | 32 | 28;
 
 const kinds: { [kind in Kind]: (size: number) => React.CSSProperties } = {
   primary: () => ({

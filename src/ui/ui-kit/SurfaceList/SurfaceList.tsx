@@ -46,6 +46,7 @@ function ItemButton({
 
 export function SurfaceList({
   items,
+  style,
 }: {
   items: Array<{
     key: string | number;
@@ -53,10 +54,11 @@ export function SurfaceList({
     to?: string;
     onClick?: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick'];
   }>;
+  style?: React.CSSProperties;
 }) {
   const vGap = 12;
   return (
-    <Surface style={{ padding: `0 16px` }}>
+    <Surface style={{ padding: `0 16px`, ...style }}>
       <VStack gap={0}>
         {items.map((item, index) => {
           const component = item.to ? (

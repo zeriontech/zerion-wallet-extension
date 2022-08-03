@@ -1,1 +1,1 @@
-export { BackupSettingsItem } from './BackupSettingsItem';
+export { BackupFlowSettingsSection } from './BackupSettingsItem';
