@@ -1,13 +1,12 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { useAddressPortfolio } from 'defi-sdk';
+import { DataStatus, useAddressPortfolio } from 'defi-sdk';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
-import { Background } from 'src/ui/components/Background';
 import {
   formatCurrencyToParts,
   formatCurrencyValue,
@@ -30,6 +29,13 @@ import {
   SegmentedControlLink,
 } from 'src/ui/ui-kit/SegmentedControl';
 import { Positions } from './Positions';
+import { HistoryList } from '../History/History';
+import { PageBottom } from 'src/ui/components/PageBottom';
+import CopyIcon from 'src/ui/assets/copy.svg';
+import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
+import { useQuery } from 'react-query';
+import { walletPort } from 'src/ui/shared/channels';
+import { NBSP } from 'src/ui/shared/typography';
 
 interface ChangeInfo {
   isPositive: boolean;
@@ -81,17 +87,13 @@ function PercentChange({
   return render(formatPercentChange(value, locale));
 }
 
-function CurrentAccount() {
-  const { singleAddress, ready } = useAddressParams();
-  if (!ready) {
-    return null;
-  }
+function CurrentAccount({ address }: { address: string }) {
   return (
     <Media
-      image={<BlockieImg address={singleAddress} size={24} />}
+      image={<BlockieImg address={address} size={24} />}
       text={
         <span style={{ fontWeight: 'normal' }}>
-          {truncateAddress(singleAddress, 4)}
+          {truncateAddress(address, 4)}
         </span>
       }
       detailText={null}
@@ -99,9 +101,67 @@ function CurrentAccount() {
   );
 }
 
+function CopyButton({ address }: { address: string }) {
+  const { handleCopy, isSuccess } = useCopyToClipboard({ text: address });
+  return (
+    <div style={{ position: 'relative' }}>
+      <Button kind="ghost" size={32} title="Copy Address" onClick={handleCopy}>
+        {isSuccess ? (
+          <div style={{ width: 20, height: 20, color: 'var(--positive-500)' }}>
+            ✔
+          </div>
+        ) : (
+          <CopyIcon style={{ display: 'block', width: 20, height: 20 }} />
+        )}
+      </Button>
+      {isSuccess ? (
+        <div
+          style={{
+            pointerEvents: 'none',
+            backgroundColor: 'var(--z-index-1)',
+            boxShadow: 'var(--elevation-200)',
+            position: 'absolute',
+            bottom: -36,
+            left: -18,
+            padding: 8,
+            borderRadius: 4,
+          }}
+        >
+          Copied!
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function CurrentAccountControls() {
+  const { singleAddress, ready } = useAddressParams();
+  const { data: wallet } = useQuery('getCurrentWallet', () =>
+    walletPort.request('getCurrentWallet')
+  );
+  if (!ready) {
+    return null;
+  }
+  const addressToCopy = wallet?.address || singleAddress;
+  return (
+    <HStack gap={0} alignItems="center">
+      <Button
+        kind="ghost"
+        size={32}
+        as={UnstyledLink}
+        to="/wallet-select"
+        title="Select Account"
+      >
+        <CurrentAccount address={addressToCopy} />
+      </Button>
+      <CopyButton address={addressToCopy} />
+    </HStack>
+  );
+}
+
 export function Overview() {
   const { params, ready } = useAddressParams();
-  const { value } = useAddressPortfolio(
+  const { value, status } = useAddressPortfolio(
     {
       ...params,
       currency: 'usd',
@@ -110,6 +170,7 @@ export function Overview() {
     },
     { enabled: ready }
   );
+  const isLoading = status === DataStatus.requested;
   // if (!value) {
   //   return (
   //     <FillView>
@@ -124,86 +185,76 @@ export function Overview() {
   //   );
   // }
   return (
-    <Background backgroundColor="var(--background)">
-      <PageColumn>
-        <div
-          style={{
-            position: 'sticky',
-            top: 0,
-            backgroundColor: 'var(--background)',
-          }}
-        >
-          <Spacer height={8} />
-          <HStack gap={12} justifyContent="space-between" alignItems="center">
+    <PageColumn>
+      <div
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 1,
+          backgroundColor: 'var(--background)',
+        }}
+      >
+        <Spacer height={8} />
+        <HStack gap={12} justifyContent="space-between" alignItems="center">
+          <CurrentAccountControls />
+
+          <HStack gap={4}>
+            <SettingsLinkIcon />
             <Button
               kind="ghost"
               size={32}
+              title="Add Wallet"
               as={UnstyledLink}
-              to="/wallet-select"
-              title="Select Account"
+              to="/get-started"
             >
-              <CurrentAccount />
+              <AddWalletIcon />
             </Button>
-
-            <HStack gap={4}>
-              <SettingsLinkIcon />
-              <Button
-                kind="ghost"
-                size={32}
-                title="Add Wallet"
-                as={UnstyledLink}
-                to="/get-started"
-              >
-                <AddWalletIcon />
-              </Button>
-            </HStack>
           </HStack>
-        </div>
-        <Spacer height={24} />
-        {/*
-        <PageHeading>Summary</PageHeading>
-        <Spacer height={24} />
-        */}
-        <Surface style={{ padding: 12 }}>
-          <UIText kind="subtitle/l_reg">Portfolio</UIText>
-          <UIText kind="h/1_med">
-            {value?.total_value ? (
-              <NeutralDecimals
-                parts={formatCurrencyToParts(value.total_value, 'en', 'usd')}
-              />
-            ) : null}
-          </UIText>
-          {value?.relative_change_24h ? (
-            <PercentChange
-              value={value.relative_change_24h}
-              locale="en"
-              render={(change) => {
-                const sign = change.isPositive ? '+' : '';
-                return (
-                  <UIText
-                    kind="subtitle/l_reg"
-                    color={
-                      change.isNonNegative
-                        ? 'var(--positive-500)'
-                        : 'var(--negative-500)'
-                    }
-                  >
-                    {`${sign}${change.formatted}`}{' '}
-                    {value?.absolute_change_24h
-                      ? `(${formatCurrencyValue(
-                          value?.absolute_change_24h,
-                          'en',
-                          'usd'
-                        )})`
-                      : ''}{' '}
-                    Today
-                  </UIText>
-                );
-              }}
+        </HStack>
+      </div>
+      <Spacer height={24} />
+      <Surface style={{ padding: 12, height: isLoading ? 112 : undefined }}>
+        <UIText kind="subtitle/l_reg">Portfolio</UIText>
+        <UIText kind="h/1_med">
+          {value?.total_value != null ? (
+            <NeutralDecimals
+              parts={formatCurrencyToParts(value.total_value, 'en', 'usd')}
             />
           ) : null}
-        </Surface>
-        {/*
+        </UIText>
+        {value?.relative_change_24h ? (
+          <PercentChange
+            value={value.relative_change_24h}
+            locale="en"
+            render={(change) => {
+              const sign = change.isPositive ? '+' : '';
+              return (
+                <UIText
+                  kind="subtitle/l_reg"
+                  color={
+                    change.isNonNegative
+                      ? 'var(--positive-500)'
+                      : 'var(--negative-500)'
+                  }
+                >
+                  {`${sign}${change.formatted}`}{' '}
+                  {value?.absolute_change_24h
+                    ? `(${formatCurrencyValue(
+                        value?.absolute_change_24h,
+                        'en',
+                        'usd'
+                      )})`
+                    : ''}{' '}
+                  Today
+                </UIText>
+              );
+            }}
+          />
+        ) : (
+          <UIText kind="subtitle/l_reg">{NBSP}</UIText>
+        )}
+      </Surface>
+      {/*
         <Spacer height={8} />
         <Surface style={{ padding: 12 }}>
           <HStack gap={12}>
@@ -257,33 +308,33 @@ export function Overview() {
           </HStack>
         </Surface>
         */}
-        <Spacer height={24} />
-        <SegmentedControlGroup
-          style={{
-            position: 'sticky',
-            top: 40,
-            paddingTop: 4,
-            backgroundColor: 'var(--background)',
-          }}
-        >
-          <SegmentedControlLink to="/overview/nfts">
-            {' '}
-            NFTs{' '}
-          </SegmentedControlLink>
-          <SegmentedControlLink to="/overview" end={true}>
-            Tokens
-          </SegmentedControlLink>
-          <SegmentedControlLink to="/history">
-            History <PendingTransactionsIndicator />
-          </SegmentedControlLink>
-        </SegmentedControlGroup>
-        <Spacer height={24} />
-        <Routes>
-          <Route path="/" element={<Positions />} />
-          <Route path="/nfts" element={<div>NFTs</div>} />
-        </Routes>
-        <Spacer height={24} />
-      </PageColumn>
-    </Background>
+      <Spacer height={24} />
+      <SegmentedControlGroup
+        style={{
+          position: 'sticky',
+          top: 40,
+          zIndex: 1,
+          paddingTop: 4,
+          marginLeft: -16,
+          marginRight: -16,
+          backgroundColor: 'var(--background)',
+        }}
+      >
+        <SegmentedControlLink to="/overview/nfts"> NFTs </SegmentedControlLink>
+        <SegmentedControlLink to="/overview" end={true}>
+          Tokens
+        </SegmentedControlLink>
+        <SegmentedControlLink to="/overview/history">
+          History <PendingTransactionsIndicator />
+        </SegmentedControlLink>
+      </SegmentedControlGroup>
+      <Spacer height={24} />
+      <Routes>
+        <Route path="/" element={<Positions />} />
+        <Route path="/nfts" element={<div>NFTs</div>} />
+        <Route path="/history" element={<HistoryList />} />
+      </Routes>
+      <PageBottom />
+    </PageColumn>
   );
 }

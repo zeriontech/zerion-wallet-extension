@@ -2,15 +2,8 @@ import { AddressTransaction, useSubscription } from 'defi-sdk';
 import React, { useMemo } from 'react';
 import { useQuery } from 'react-query';
 import { toAddressTransaction } from 'src/modules/ethereum/transactions/model';
-import { Background } from 'src/ui/components/Background';
-import { FillView } from 'src/ui/components/FillView';
-import { PageColumn } from 'src/ui/components/PageColumn';
-import { PageTop } from 'src/ui/components/PageTop';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
-import { Spacer } from 'src/ui/ui-kit/Spacer';
-import { UIText } from 'src/ui/ui-kit/UIText';
-import { VStack } from 'src/ui/ui-kit/VStack';
 import { TransactionsList } from './TransactionsList';
 
 function useMinedAndPendingAddressTransactions() {
@@ -58,33 +51,11 @@ function useMinedAndPendingAddressTransactions() {
   };
 }
 
-export function History() {
+export function HistoryList() {
   const { data: transactions, isLoading } =
     useMinedAndPendingAddressTransactions();
-
   if (isLoading || !transactions) {
     return null;
   }
-
-  return (
-    <Background backgroundColor="var(--background)">
-      <PageColumn>
-        {transactions.length === 0 ? (
-          <FillView>
-            <UIText kind="h/5_reg" color="var(--neutral-500)">
-              Empty State
-            </UIText>
-          </FillView>
-        ) : (
-          <>
-            <PageTop />
-            <VStack gap={24}>
-              <TransactionsList transactions={transactions} />
-              <Spacer height={32} />
-            </VStack>
-          </>
-        )}
-      </PageColumn>
-    </Background>
-  );
+  return <TransactionsList transactions={transactions} />;
 }

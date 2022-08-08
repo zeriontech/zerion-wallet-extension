@@ -9,7 +9,6 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { Background } from 'src/ui/components/Background';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import {
   DecorativeMessage,
@@ -50,64 +49,66 @@ export function GenerateWallet() {
     }
   );
   return (
-    <Background backgroundColor="var(--background)">
-      <PageColumn>
-        <PageTop />
-        <NavigationTitle title={null} />
-        <PageHeading>Get Started</PageHeading>
+    <PageColumn>
+      <PageTop />
+      <NavigationTitle title={null} />
+      <PageHeading>Get Started</PageHeading>
 
-        <Spacer height={32} />
+      <Spacer height={32} />
 
-        <VStack gap={16}>
-          <VStack gap={8}>
+      <VStack gap={16}>
+        <VStack gap={8}>
+          <DecorativeMessage
+            text={
+              <UIText kind="subtitle/m_reg">
+                Wallet will be encrypted with your password
+              </UIText>
+            }
+          />
+          {steps.has(Step.loading) ? (
             <DecorativeMessage
               text={
                 <UIText kind="subtitle/m_reg">
-                  Wallet will be encrypted with your password
+                  Hi 👋 We're generating your wallet and making sure it's
+                  encrypted with your passcode. This should only take a couple
+                  of minutes.
                 </UIText>
               }
             />
-            {steps.has(Step.loading) ? (
-              <DecorativeMessage
-                text={
-                  <UIText kind="subtitle/m_reg">
-                    Hi 👋 We're generating your wallet and making sure it's
-                    encrypted with your passcode. This should only take a couple
-                    of minutes.
-                  </UIText>
-                }
-              />
-            ) : null}
-            {data?.address ? (
-              <DecorativeMessageDone
-                address={data.address}
-                confettiOriginY={0.87}
-              />
-            ) : null}
-          </VStack>
-          {data ? null : (
-            <Button
-              onClick={() => {
-                generateMnemonicWallet();
-              }}
-            >
-              {isLoading ? 'Generating...' : 'Generate new Wallet'}
-            </Button>
-          )}
+          ) : null}
+          {data?.address ? (
+            <DecorativeMessageDone
+              address={data.address}
+              confettiOriginY={0.87}
+            />
+          ) : null}
         </VStack>
-        {data ? (
+        {data ? null : (
           <Button
-            style={{ marginTop: 'auto', marginBottom: 16 }}
             onClick={() => {
-              accountPublicRPCPort.request('saveUserAndWallet').then(() => {
-                navigate('/overview');
-              });
+              generateMnemonicWallet();
             }}
           >
-            Finish
+            {isLoading ? 'Generating...' : 'Generate new Wallet'}
           </Button>
-        ) : null}
-      </PageColumn>
-    </Background>
+        )}
+      </VStack>
+      {data ? (
+        <Button
+          style={{ marginTop: 'auto', marginBottom: 16 }}
+          onClick={async () => {
+            await accountPublicRPCPort.request('saveUserAndWallet');
+            if (data?.address) {
+              await walletPort.request('setCurrentAddress', {
+                address: data.address,
+              });
+            }
+            navigate('/overview');
+          }}
+        >
+          Finish
+        </Button>
+      ) : null}
+    </PageColumn>
   );
 }

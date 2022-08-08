@@ -1,8 +1,6 @@
-import React, { useMemo } from 'react';
-import { useAddressPortfolio } from 'defi-sdk';
+import React from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { useNavigate } from 'react-router-dom';
-import { AddressText } from 'src/ui/components/AddressText';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { FillView } from 'src/ui/components/FillView';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -15,24 +13,9 @@ import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { NBSP } from 'src/ui/shared/typography';
-import { Spacer } from 'src/ui/ui-kit/Spacer';
-
-function PortfolioValue({
-  address: addressStr,
-  render,
-}: {
-  address: string;
-  render: (value: ReturnType<typeof useAddressPortfolio>) => JSX.Element;
-}) {
-  const address = useMemo(() => addressStr.toLowerCase(), [addressStr]);
-  const query = useAddressPortfolio({
-    address,
-    currency: 'usd',
-    portfolio_fields: 'all',
-    use_portfolio_service: true,
-  });
-  return render(query);
-}
+import { PageBottom } from 'src/ui/components/PageBottom';
+import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
+import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 
 export function WalletSelect() {
   const navigate = useNavigate();
@@ -65,58 +48,64 @@ export function WalletSelect() {
         </FillView>
       ) : (
         <SurfaceList
-          items={walletGroups
-            .flatMap((group) => group.walletContainer.wallets)
-            .map((wallet) => ({
-              key: wallet.address,
-              onClick: () => {
-                setCurrentAddressMutation.mutate(wallet.address);
-              },
-              component: (
-                <HStack
-                  gap={4}
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <Media
-                    image={<BlockieImg address={wallet.address} size={24} />}
-                    text={<AddressText as="span" address={wallet.address} />}
-                    detailText={
-                      <PortfolioValue
-                        address={wallet.address}
-                        render={(entry) => (
-                          <UIText kind="label/reg">
-                            {entry.value
-                              ? formatCurrencyValue(
-                                  entry.value?.total_value || 0,
-                                  'en',
-                                  'usd'
-                                )
-                              : NBSP}
-                          </UIText>
-                        )}
-                      />
-                    }
-                  />
-                  {wallet.address.toLowerCase() === singleAddress ? (
-                    <span style={{ color: 'var(--primary)' }}>✔</span>
-                  ) : null}
-                </HStack>
-              ),
-            }))
-            .concat([
-              {
-                key: '1234',
-                // @ts-ignore
-                to: '/wallets',
+          items={[
+            ...walletGroups
+              .flatMap((group) => group.walletContainer.wallets)
+              .map((wallet) => ({
+                key: wallet.address,
+                onClick: () => {
+                  setCurrentAddressMutation.mutate(wallet.address);
+                },
                 component: (
-                  <div style={{ color: 'var(--primary)' }}>Manage Wallets</div>
+                  <HStack
+                    gap={4}
+                    justifyContent="space-between"
+                    alignItems="center"
+                  >
+                    <Media
+                      image={<BlockieImg address={wallet.address} size={24} />}
+                      text={<WalletDisplayName wallet={wallet} />}
+                      detailText={
+                        <PortfolioValue
+                          address={wallet.address}
+                          render={(entry) => (
+                            <UIText kind="label/reg">
+                              {entry.value
+                                ? formatCurrencyValue(
+                                    entry.value?.total_value || 0,
+                                    'en',
+                                    'usd'
+                                  )
+                                : NBSP}
+                            </UIText>
+                          )}
+                        />
+                      }
+                    />
+                    {wallet.address.toLowerCase() === singleAddress ? (
+                      <span style={{ color: 'var(--primary)' }}>✔</span>
+                    ) : null}
+                  </HStack>
                 ),
-              },
-            ])}
+              })),
+            {
+              key: 0,
+              to: '/wallets',
+              component: (
+                <div style={{ color: 'var(--primary)' }}>Manage Wallets</div>
+              ),
+            },
+            {
+              key: 1,
+              to: '/get-started',
+              component: (
+                <div style={{ color: 'var(--primary)' }}>+ Add Wallet</div>
+              ),
+            },
+          ]}
         />
       )}
-      <Spacer height={24} />
+      <PageBottom />
     </PageColumn>
   );
 }

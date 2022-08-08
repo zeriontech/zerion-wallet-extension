@@ -10,18 +10,28 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { GenerateWallet } from './GenerateWallet';
 import { ImportWallet } from './ImportWallet';
-import { Background } from 'src/ui/components/Background';
 import { SeedType } from 'src/shared/SeedType';
 import { WalletGroup } from 'src/background/Wallet/WalletRecord';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { AddressBadge } from 'src/ui/components/AddressBadge';
 import { useWalletGroups } from 'src/ui/shared/requests/useWalletGroups';
+import { PageBottom } from 'src/ui/components/PageBottom';
 
 function TitleWithLine({
   children,
   lineColor = 'currentcolor',
   gap = 8,
 }: React.PropsWithChildren<{ lineColor?: string; gap?: number }>) {
+  const line = (
+    <div
+      style={{
+        position: 'relative',
+        top: 1,
+        height: 1,
+        backgroundColor: lineColor,
+      }}
+    ></div>
+  );
   return (
     <div
       style={{
@@ -31,9 +41,9 @@ function TitleWithLine({
         alignItems: 'center',
       }}
     >
-      <div style={{ height: 1, backgroundColor: lineColor }}></div>
+      {line}
       {children}
-      <div style={{ height: 1, backgroundColor: lineColor }}></div>
+      {line}
     </div>
   );
 }
@@ -105,6 +115,9 @@ function NewWalletOption({
           <Button kind="regular" as={Link} to="new" size={56}>
             Create New Wallet Group
           </Button>
+          <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
+            This will create a new recovery phrase
+          </UIText>
         </>
       ) : null}
     </VStack>
@@ -117,35 +130,36 @@ function Options() {
     return null;
   }
   return (
-    <Background backgroundColor="var(--background)">
-      <PageColumn>
-        <PageTop />
-        <PageHeading>
-          Introducing{' '}
-          <span style={{ color: 'var(--primary)' }}>Zerion Wallet</span>
-        </PageHeading>
-        <Spacer height={4} />
-        <UIText kind="subtitle/l_reg">Explore all of Web3 in one place</UIText>
+    <PageColumn>
+      <PageTop />
+      <PageHeading>
+        Introducing{' '}
+        <span style={{ color: 'var(--primary)' }}>Zerion Wallet</span>
+      </PageHeading>
+      <Spacer height={4} />
+      <UIText kind="subtitle/l_reg">Explore all of Web3 in one place</UIText>
 
-        <Spacer height={32} />
+      <Spacer height={32} />
 
-        <Surface padding={16}>
-          <VStack gap={16}>
-            <NewWalletOption walletGroups={walletGroups || null} />
-            <UIText kind="subtitle/l_reg" color="var(--neutral-500)">
-              <TitleWithLine lineColor="var(--neutral-300)">or</TitleWithLine>
-            </UIText>
+      <Surface padding={16}>
+        <VStack gap={16}>
+          <NewWalletOption walletGroups={walletGroups || null} />
+          <UIText kind="subtitle/l_reg" color="var(--neutral-500)">
+            <TitleWithLine lineColor="var(--neutral-300)">or</TitleWithLine>
+          </UIText>
+          <VStack gap={8}>
             <Button kind="regular" as={Link} to="import" size={56}>
-              Import existing wallet
+              Import Existing Wallet
             </Button>
             <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
-              Use this option if you want to import an existing wallet using a
-              seed phrase or a private key
+              Use this option if you want to import an existing wallet using a{' '}
+              <em>recovery phrase</em> or a <em>private key</em>
             </UIText>
           </VStack>
-        </Surface>
-      </PageColumn>
-    </Background>
+        </VStack>
+      </Surface>
+      <PageBottom />
+    </PageColumn>
   );
 }
 
@@ -185,10 +199,7 @@ function WalletGroupSelect() {
                   <UIText kind="subtitle/m_med">{group.name}</UIText>
                   <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                     {group.walletContainer.wallets.map((wallet) => (
-                      <AddressBadge
-                        key={wallet.address}
-                        address={wallet.address}
-                      />
+                      <AddressBadge key={wallet.address} wallet={wallet} />
                     ))}
                   </div>
                 </VStack>
@@ -197,6 +208,7 @@ function WalletGroupSelect() {
           })}
         />
       </VStack>
+      <PageBottom />
     </PageColumn>
   );
 }

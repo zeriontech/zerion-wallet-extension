@@ -2,9 +2,23 @@
   box-sizing: border-box;
 }
 
+:root {
+  /* Extra stuff, to be finalized with design */
+  --background: var(--neutral-100);
+}
+
+:global(.neutral-bg) {
+  --background: var(--neutral-100);
+}
+
+:global(.white-bg) {
+  --background: var(--white);
+}
+
 body {
   font-family: Graphik, sans-serif;
-  color: 'var(--black)';
+  color: var(--black);
+  background-color: var(--background);
 }
 
 :global(#root) {

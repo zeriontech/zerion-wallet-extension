@@ -21,13 +21,13 @@ export function TransactionsList({
     [transactions]
   );
   return (
-    <>
+    <VStack gap={24}>
       {Object.entries(groupedByDate).map(([timestamp, items]) => (
         <VStack gap={12} key={timestamp}>
           <UIText kind="subtitle/l_med">
             {new Intl.DateTimeFormat('en', {
               dateStyle: 'medium',
-            }).format(Number(timestamp) * 1000)}
+            }).format(Number(timestamp))}
           </UIText>
           <SurfaceList
             items={items.map((addressTransaction) => ({
@@ -39,6 +39,6 @@ export function TransactionsList({
           />
         </VStack>
       ))}
-    </>
+    </VStack>
   );
 }

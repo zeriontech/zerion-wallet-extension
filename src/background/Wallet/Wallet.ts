@@ -22,6 +22,10 @@ import {
   getWalletByAddress,
   toEthersWallet,
   SeedType,
+  removeWalletGroup,
+  renameWalletGroup,
+  renameAddress,
+  removeAddress,
 } from './WalletRecord';
 import type { WalletRecord } from './WalletRecord';
 import { networksStore } from 'src/modules/networks/networks-store';
@@ -30,6 +34,7 @@ import { prepareTransaction } from 'src/modules/ethereum/transactions/prepareTra
 import { createChain } from 'src/modules/networks/Chain';
 import { emitter } from '../events';
 import { getNextAccountPath } from 'src/shared/wallet/getNextAccountPath';
+import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
 
 class RecordNotFound extends Error {}
 
@@ -187,7 +192,8 @@ export class Wallet {
     return group.walletContainer.getMnemonic();
   }
 
-  async getCurrentWallet() {
+  async getCurrentWallet({ context }: PublicMethodParams) {
+    this.verifyInternalOrigin(context);
     if (!this.id) {
       return null;
     }
@@ -198,8 +204,21 @@ export class Wallet {
     return null;
   }
 
+  async getWalletByAddress({
+    context,
+    params: { address },
+  }: PublicMethodParams<{ address: string }>) {
+    this.verifyInternalOrigin(context);
+    if (!this.record) {
+      throw new RecordNotFound();
+    }
+    if (!address) {
+      throw new Error('Ilegal argument: address is required for this method');
+    }
+    return getWalletByAddress(this.record, address);
+  }
+
   async savePendingWallet() {
-    console.log('wallet.savePendingWallet');
     if (!this.pendingWallet) {
       throw new Error('Cannot save pending wallet: pendingWallet is null');
     }
@@ -211,7 +230,6 @@ export class Wallet {
     const record = createOrUpdateRecord(this.record, this.pendingWallet);
     // const record = createRecord({ walletContainer: { seedType, wallet } });
     this.record = record;
-    console.log('wallet.savePendingWallet', record);
     this.updateWalletStore(record);
   }
 
@@ -256,7 +274,7 @@ export class Wallet {
     if (!this.record) {
       throw new RecordNotFound();
     }
-    const checkSumAddress = ethers.utils.getAddress(address);
+    const checkSumAddress = toChecksumAddress(address);
     this.record = produce(this.record, (draft) => {
       draft.walletManager.currentAddress = checkSumAddress;
     });
@@ -345,6 +363,65 @@ export class Wallet {
   async getWalletGroups({ context }: PublicMethodParams) {
     this.verifyInternalOrigin(context);
     return this.record?.walletManager.groups || null;
+  }
+
+  async getWalletGroup({
+    params: { groupId },
+    context,
+  }: PublicMethodParams<{ groupId: string }>) {
+    this.verifyInternalOrigin(context);
+    return (
+      this.record?.walletManager.groups.find((group) => group.id === groupId) ||
+      null
+    );
+  }
+
+  async removeWalletGroup({
+    params: { groupId },
+    context,
+  }: PublicMethodParams<{ groupId: string }>) {
+    this.verifyInternalOrigin(context);
+    if (!this.record) {
+      throw new RecordNotFound();
+    }
+    this.record = removeWalletGroup(this.record, { groupId });
+    this.updateWalletStore(this.record);
+  }
+
+  async renameWalletGroup({
+    params: { groupId, name },
+    context,
+  }: PublicMethodParams<{ groupId: string; name: string }>) {
+    this.verifyInternalOrigin(context);
+    if (!this.record) {
+      throw new RecordNotFound();
+    }
+    this.record = renameWalletGroup(this.record, { groupId, name });
+    this.updateWalletStore(this.record);
+  }
+
+  async renameAddress({
+    params: { address, name },
+    context,
+  }: PublicMethodParams<{ address: string; name: string }>) {
+    this.verifyInternalOrigin(context);
+    if (!this.record) {
+      throw new RecordNotFound();
+    }
+    this.record = renameAddress(this.record, { address, name });
+    this.updateWalletStore(this.record);
+  }
+
+  async removeAddress({
+    params: { address },
+    context,
+  }: PublicMethodParams<{ address: string }>) {
+    this.verifyInternalOrigin(context);
+    if (!this.record) {
+      throw new RecordNotFound();
+    }
+    this.record = removeAddress(this.record, { address });
+    this.updateWalletStore(this.record);
   }
 
   async eth_requestAccounts({ context }: PublicMethodParams) {
@@ -439,7 +516,13 @@ export class Wallet {
   }
 
   private async getSigner(chainId: string) {
-    const currentWallet = await this.getCurrentWallet();
+    const currentAddress = this.readCurrentAddress();
+    if (!this.record) {
+      throw new RecordNotFound();
+    }
+    const currentWallet = currentAddress
+      ? getWalletByAddress(this.record, currentAddress)
+      : null;
     if (!currentWallet) {
       throw new Error('Wallet is not initialized');
     }
@@ -540,7 +623,6 @@ export class Wallet {
           JSON.stringify(transaction)
         )}`,
         onResolve: (hash) => {
-          console.log('result', hash);
           resolve(hash);
         },
         onDismiss: () => {

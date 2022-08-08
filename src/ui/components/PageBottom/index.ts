@@ -1,0 +1,1 @@
+export { PageBottom } from './PageBottom';

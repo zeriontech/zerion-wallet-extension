@@ -15,7 +15,6 @@ import { GetStarted } from 'src/ui/pages/GetStarted';
 import { Intro } from 'src/ui/pages/Intro';
 import { PersistentStore } from 'src/shared/PersistentStore';
 import { Overview } from 'src/ui/pages/Overview';
-import { History } from 'src/ui/pages/History';
 import { RouteResolver } from 'src/ui/pages/RouteResolver';
 import { RequestAccounts } from 'src/ui/pages/RequestAccounts';
 import { SendTransaction } from 'src/ui/pages/SendTransaction';
@@ -36,6 +35,8 @@ import { Networks } from '../pages/Networks';
 import { BackupWallet } from '../pages/BackupWallet';
 import { ManageWallets } from '../pages/ManageWallets';
 import { WalletSelect } from '../pages/WalletSelect';
+import { NotFoundPage } from '../components/NotFoundPage';
+import { UIText } from '../ui-kit/UIText';
 
 const locationStore = new PersistentStore('location', {
   pathname: '/',
@@ -56,7 +57,6 @@ function usePersistLocation({ enabled }: { enabled: boolean }) {
     if (!locationStore.ready || !enabled) {
       return;
     }
-    console.log('usePersistLocation, setting', pathname);
     locationStore.setState((s) => ({ ...s, pathname, search }));
   }, [pathname, search, enabled, page]);
 }
@@ -89,32 +89,46 @@ function View() {
 }
 
 const useAuthState = () => {
-  const { data: isAuthenticated, ...isAuthenticatedQuery } = useQuery(
-    'isAuthenticated',
-    () => accountPublicRPCPort.request('isAuthenticated')
+  const { data, isFetching } = useQuery(
+    'authState',
+    async () => {
+      const [isAuthenticated, existingUser, wallet] = await Promise.all([
+        accountPublicRPCPort.request('isAuthenticated'),
+        accountPublicRPCPort.request('getExistingUser'),
+        walletPort.request('getCurrentWallet'),
+      ]);
+      return {
+        isAuthenticated,
+        existingUser,
+        wallet,
+      };
+    },
+    { useErrorBoundary: true, retry: false, refetchOnWindowFocus: false }
   );
-  const { data: existingUser, ...getExistingUserQuery } = useQuery(
-    'getExistingUser',
-    () => accountPublicRPCPort.request('getExistingUser')
-  );
-  const { data: wallet, ...currentWalletQuery } = useQuery('wallet', () => {
-    return walletPort.request('getCurrentWallet');
-  });
-  const isLoading =
-    isAuthenticatedQuery.isFetching ||
-    getExistingUserQuery.isFetching ||
-    currentWalletQuery.isLoading;
-  console.log(
-    'useAuthState, isAuthenticated',
-    isAuthenticated,
-    wallet,
-    currentWalletQuery.isError,
-    currentWalletQuery.isFetched
-  );
+  const { isAuthenticated, existingUser, wallet } = data || {};
+  // const { data: isAuthenticated, ...isAuthenticatedQuery } = useQuery(
+  //   'isAuthenticated',
+  //   () => accountPublicRPCPort.request('isAuthenticated'),
+  //   { useErrorBoundary: true, retry: false }
+  // );
+  // const { data: existingUser, ...getExistingUserQuery } = useQuery(
+  //   'getExistingUser',
+  //   () => accountPublicRPCPort.request('getExistingUser'),
+  //   { useErrorBoundary: true, retry: false }
+  // );
+  // const { data: wallet, ...currentWalletQuery } = useQuery(
+  //   'wallet/getCurrentWallet',
+  //   () => walletPort.request('getCurrentWallet'),
+  //   { useErrorBoundary: true, retry: false }
+  // );
+  // const isLoading =
+  //   isAuthenticatedQuery.isFetching ||
+  //   getExistingUserQuery.isFetching ||
+  //   currentWalletQuery.isLoading;
   return {
     isAuthenticated: Boolean(isAuthenticated && wallet),
     existingUser,
-    isLoading,
+    isLoading: isFetching,
   };
 };
 
@@ -148,13 +162,10 @@ function RequireAuth({ children }: { children: JSX.Element }) {
   if (isLoading) {
     return null;
   }
-  console.log('RequireAuth', { existingUser, isAuthenticated });
 
   if (!existingUser) {
-    console.log('no user, redirecting to /');
     return <Navigate to="/" replace={true} />;
   } else if (!isAuthenticated) {
-    console.log('not authenticated, redirecting to /login?next=...');
     return (
       <Navigate
         to={`/login?next=${encodeURIComponent(
@@ -175,14 +186,12 @@ function useRedirectToSavedLocation({ enabled }: { enabled: boolean }) {
   const location = useLocation();
   const initialLocationRef = useRef(location.pathname);
   const [ready, setReady] = useState(!enabled || templateType !== 'popup');
-  console.log('Views:', location.pathname, { ready });
   useEffect(() => {
     let active = true;
     if (ready) {
       return;
     }
     locationStore.ready().then(() => {
-      console.log('locationStore is ready', locationStore.getState());
       if (!active) {
         return;
       }
@@ -199,8 +208,8 @@ function useRedirectToSavedLocation({ enabled }: { enabled: boolean }) {
   usePersistLocation({ enabled: ready });
   return { ready };
 }
+
 function Views() {
-  console.log('Views', window.location.pathname, locationStore.getState());
   const { ready } = useRedirectToSavedLocation({ enabled: false });
   if (!ready) {
     return <span>not ready view</span>;
@@ -259,14 +268,6 @@ function Views() {
             }
           />
           <Route
-            path="/history"
-            element={
-              <RequireAuth>
-                <History />
-              </RequireAuth>
-            }
-          />
-          <Route
             path="/requestAccounts"
             element={
               <RequireAuth>
@@ -291,7 +292,7 @@ function Views() {
             }
           />
           <Route
-            path="/wallets"
+            path="/wallets/*"
             element={
               <RequireAuth>
                 <ManageWallets />
@@ -307,15 +308,20 @@ function Views() {
             }
           />
           <Route
-            path="*"
+            path="/not-implemented"
             element={
               <FillView>
-                <div style={{ padding: '1rem', textAlign: 'center' }}>
-                  <p>404 not found</p>
-                </div>
+                <UIText
+                  kind="subtitle/l_reg"
+                  color="var(--neutral-500)"
+                  style={{ padding: 20, textAlign: 'center' }}
+                >
+                  This View is not Implemented
+                </UIText>
               </FillView>
             }
           />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </ViewArea>
     </RouteResolver>

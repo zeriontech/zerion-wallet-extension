@@ -1,8 +1,8 @@
 import React from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { Link, useSearchParams } from 'react-router-dom';
+import { SeedType } from 'src/shared/SeedType';
 import type { PublicUser } from 'src/shared/types/PublicUser';
-import { Background } from 'src/ui/components/Background';
 import { FillView } from 'src/ui/components/FillView';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -265,40 +265,57 @@ export function BackupWallet() {
   if (!groupId) {
     throw new Error('Group Id is required for this view');
   }
+  const { data: walletGroup, isLoading } = useQuery(
+    `wallet/getWalletGroup/${groupId}`,
+    () => walletPort.request('getWalletGroup', { groupId }),
+    { useErrorBoundary: true }
+  );
+  if (isLoading) {
+    return null;
+  }
+  if (walletGroup?.walletContainer.seedType === SeedType.privateKey) {
+    return (
+      <FillView>
+        <UIText
+          kind="subtitle/l_reg"
+          color="var(--neutral-500)"
+          style={{ padding: 20, textAlign: 'center' }}
+        >
+          Backup View for Private Key wallet is not implemented
+        </UIText>
+      </FillView>
+    );
+  }
   return (
-    <Background backgroundColor="var(--background)">
-      <PageColumn>
-        {params.has('step') ? null : (
-          <Initial
-            onSubmit={() => setSearchParams({ step: 'verifyUser', groupId })}
-          />
-        )}
-        {params.get('step') === 'verifyUser' ? (
-          <VerifyUser
-            onSuccess={() =>
-              setSearchParams(
-                { step: 'recoveryPhrase', groupId },
-                { replace: true }
-              )
-            }
-          />
-        ) : null}
-        {params.get('step') === 'recoveryPhrase' ? (
-          <RecoveryPhrase
-            groupId={groupId}
-            onSubmit={() => setSearchParams({ step: 'verifyBackup', groupId })}
-          />
-        ) : null}
-        {params.get('step') === 'verifyBackup' ? (
-          <VerifyBackup
-            groupId={groupId}
-            onSuccess={() =>
-              setSearchParams({ step: 'verifySuccess', groupId })
-            }
-          />
-        ) : null}
-        {params.get('step') === 'verifySuccess' ? <VerifySuccess /> : null}
-      </PageColumn>
-    </Background>
+    <PageColumn>
+      {params.has('step') ? null : (
+        <Initial
+          onSubmit={() => setSearchParams({ step: 'verifyUser', groupId })}
+        />
+      )}
+      {params.get('step') === 'verifyUser' ? (
+        <VerifyUser
+          onSuccess={() =>
+            setSearchParams(
+              { step: 'recoveryPhrase', groupId },
+              { replace: true }
+            )
+          }
+        />
+      ) : null}
+      {params.get('step') === 'recoveryPhrase' ? (
+        <RecoveryPhrase
+          groupId={groupId}
+          onSubmit={() => setSearchParams({ step: 'verifyBackup', groupId })}
+        />
+      ) : null}
+      {params.get('step') === 'verifyBackup' ? (
+        <VerifyBackup
+          groupId={groupId}
+          onSuccess={() => setSearchParams({ step: 'verifySuccess', groupId })}
+        />
+      ) : null}
+      {params.get('step') === 'verifySuccess' ? <VerifySuccess /> : null}
+    </PageColumn>
   );
 }

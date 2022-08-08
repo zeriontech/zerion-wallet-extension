@@ -1,11 +1,12 @@
 import React from 'react';
 import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
+import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { accountPublicRPCPort } from 'src/ui/shared/channels';
-import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
+import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { BackupFlowSettingsSection } from '../BackupWallet/BackupSettingsItem';
 import { CurrentNetworkSettingsItem } from '../Networks/CurrentNetworkSettingsItem';
@@ -22,7 +23,7 @@ export function Settings() {
           items={[
             {
               key: 0,
-              component: <div>Manage Wallets</div>,
+              component: <UIText kind="body/s_reg">Manage Wallets</UIText>,
               to: '/wallets',
             },
             {
@@ -37,15 +38,15 @@ export function Settings() {
                 navigate('/login');
               },
               component: (
-                <span style={{ color: 'var(--negative-500)' }}>
+                <UIText kind="body/s_reg" color="var(--negative-500)">
                   {logout.isLoading ? 'Locking...' : 'Lock (log out)'}
-                </span>
+                </UIText>
               ),
             },
           ]}
         />
       </VStack>
-      <Spacer height={24} />
+      <PageBottom />
     </PageColumn>
   );
 }

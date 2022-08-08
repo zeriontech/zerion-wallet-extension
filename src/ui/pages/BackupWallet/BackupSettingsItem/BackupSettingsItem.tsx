@@ -1,7 +1,8 @@
 import React from 'react';
 import { SeedType } from 'src/shared/SeedType';
-import { AddressText } from 'src/ui/components/AddressText';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
+import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
+import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { useWalletGroups } from 'src/ui/shared/requests/useWalletGroups';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -10,39 +11,12 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
 
-function WarningIcon({
-  glow = false,
-  style,
-}: {
-  glow?: boolean;
-  style?: React.CSSProperties;
-}) {
-  return (
-    <div
-      style={{
-        userSelect: 'none',
-        width: 16,
-        height: 16,
-        borderRadius: '50%',
-        color: 'var(--notice-500)',
-        border: '2px solid var(--notice-500)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: 12,
-        boxShadow: glow ? '0 0 0px 3px var(--notice-400)' : undefined,
-        ...style,
-      }}
-    >
-      !
-    </div>
-  );
-}
-
 export function BackupFlowSettingsSection() {
   const { data: walletGroups, isLoading } = useWalletGroups();
   const notBackedUpGroups = walletGroups?.filter(
-    (group) => group.lastBackedUp == null
+    (group) =>
+      group.walletContainer.seedType === SeedType.mnemonic &&
+      group.lastBackedUp == null
   );
   if (isLoading || !notBackedUpGroups || !notBackedUpGroups.length) {
     return null;
@@ -74,7 +48,7 @@ export function BackupFlowSettingsSection() {
                     <HStack key={wallet.address} gap={4} alignItems="center">
                       <BlockieImg address={wallet.address} size={16} />
                       <UIText kind="caption/reg">
-                        <AddressText as="span" address={wallet.address} />
+                        <WalletDisplayName wallet={wallet} />
                       </UIText>
                     </HStack>
                   ))}

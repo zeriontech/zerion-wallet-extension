@@ -10,6 +10,7 @@ export interface BareWallet {
   mnemonic: { phrase: string; path: string } | null;
   privateKey: ethers.Wallet['privateKey'];
   address: ethers.Wallet['address'];
+  name: string | null;
 }
 
 export enum SeedType {
@@ -33,6 +34,7 @@ export interface WalletContainer {
   getMnemonic(): BareWallet['mnemonic'] | null;
   getFirstWallet(): BareWallet;
   addWallet(wallet: BareWallet): void;
+  removeWallet(address: string): void;
   toPlainObject(): PlainWalletContainer;
   getWalletByAddress(address: string): BareWallet | null;
 }
@@ -42,6 +44,7 @@ function walletToObject(wallet: ethers.Wallet | BareWallet): BareWallet {
     mnemonic: wallet.mnemonic,
     privateKey: wallet.privateKey,
     address: wallet.address,
+    name: wallet instanceof ethers.Wallet ? null : wallet.name,
   };
 }
 
@@ -59,8 +62,18 @@ abstract class WalletContainerImpl implements WalletContainer {
       : this.getFirstWallet().mnemonic;
   }
 
-  addWallet(wallet: ethers.Wallet) {
+  addWallet(wallet: BareWallet) {
     this.wallets.push(wallet);
+  }
+
+  removeWallet(address: string) {
+    const pos = this.wallets.findIndex(
+      (wallet) => wallet.address.toLowerCase() === address.toLowerCase()
+    );
+    if (pos === -1) {
+      return;
+    }
+    this.wallets.splice(pos, 1);
   }
 
   getWalletByAddress(address: string) {
@@ -78,7 +91,10 @@ abstract class WalletContainerImpl implements WalletContainer {
   }
 }
 
-export function getWalletByAddress(record: WalletRecord, address: string) {
+export function getWalletByAddress(
+  record: WalletRecord,
+  address: string
+): BareWallet | null {
   for (const group of record.walletManager.groups) {
     const wallet = group.walletContainer.getWalletByAddress(address);
     if (wallet) {
@@ -93,6 +109,7 @@ function fromEthersWallet(wallet: ethers.Wallet): BareWallet {
     privateKey: wallet.privateKey,
     address: wallet.address,
     mnemonic: wallet.mnemonic,
+    name: null,
   };
 }
 
@@ -106,12 +123,13 @@ export function toEthersWallet(wallet: BareWallet): ethers.Wallet {
 }
 
 function restoreBareWallet(wallet: Partial<BareWallet>): BareWallet {
-  const { address, privateKey, mnemonic } = wallet;
+  const { address, privateKey, mnemonic, name } = wallet;
   if (address && privateKey) {
     return {
       privateKey,
       address,
       mnemonic: mnemonic || null,
+      name: name || null,
     };
   } else if (privateKey) {
     return fromEthersWallet(new ethers.Wallet(privateKey));
@@ -145,7 +163,7 @@ export class MnemonicWalletContainer extends WalletContainerImpl {
 }
 
 export class PrivateKeyWalletContainer extends WalletContainerImpl {
-  wallets: ethers.Wallet[];
+  wallets: BareWallet[];
   seedType = SeedType.privateKey;
 
   constructor(wallets: Array<Pick<BareWallet, 'privateKey'>>) {
@@ -161,11 +179,11 @@ export class PrivateKeyWalletContainer extends WalletContainerImpl {
           'PrivateKey container is expected to have a wallet with a privateKey'
         );
       }
-      return new ethers.Wallet(wallet.privateKey);
+      return restoreBareWallet(new ethers.Wallet(wallet.privateKey));
     });
   }
 
-  addWallet(_wallet: ethers.Wallet) {
+  addWallet(_wallet: BareWallet) {
     throw new Error('PrivateKeyWalletContainer cannot have multiple wallets');
   }
 }
@@ -180,6 +198,7 @@ export interface WalletGroup {
 interface WalletManager {
   groups: WalletGroup[];
   currentAddress: string | null;
+  internalMnemonicGroupCounter: number;
 }
 
 export interface WalletRecord {
@@ -200,7 +219,7 @@ function generateGroupName(
   if (walletContainer.seedType === SeedType.privateKey) {
     return '';
   }
-  const name = (index: number) => `Wallet Group ${index}`;
+  const name = (index: number) => `Wallet Group #${index}`;
   if (!record) {
     return name(1);
   }
@@ -211,7 +230,9 @@ function generateGroupName(
     const index = mnemonicGroups.findIndex((group) => group.name === name);
     return index !== -1;
   }
-  let potentialName = name(mnemonicGroups.length + 1);
+  let potentialName = name(
+    record.walletManager.internalMnemonicGroupCounter + 1
+  );
   while (isNameUsed(potentialName)) {
     potentialName = `${potentialName} (2)`;
   }
@@ -238,6 +259,8 @@ export function createOrUpdateRecord(
   pendingWallet: PendingWallet
 ): WalletRecord {
   if (!record) {
+    const isMnemonicWallet =
+      pendingWallet.walletContainer.seedType === SeedType.mnemonic;
     return {
       walletManager: {
         groups: [
@@ -247,6 +270,7 @@ export function createOrUpdateRecord(
           }),
         ],
         currentAddress: pendingWallet.walletContainer.getFirstWallet().address,
+        internalMnemonicGroupCounter: isMnemonicWallet ? 1 : 0,
       },
       transactions: [],
       permissions: {},
@@ -264,6 +288,7 @@ export function createOrUpdateRecord(
       if (existingGroup) {
         return draft; // NOTE: private key already exists, should we update record or keep untouched?
       } else {
+        draft.walletManager.internalMnemonicGroupCounter += 1;
         draft.walletManager.groups.push(
           createGroup({
             walletContainer,
@@ -286,6 +311,7 @@ export function createOrUpdateRecord(
           existingGroup.walletContainer.addWallet(wallet);
         });
       } else {
+        draft.walletManager.internalMnemonicGroupCounter += 1;
         draft.walletManager.groups.push(
           createGroup({
             walletContainer,
@@ -328,4 +354,120 @@ export async function decryptRecord(key: string, encryptedRecord: string) {
     return group;
   });
   return data as WalletRecord;
+}
+
+function validateName(
+  name: string,
+  { minLength = 1 }: { minLength?: number } = {}
+) {
+  const ETHEREUM_ADDRESS_LENGTH = 40;
+  const MAX_ALLOWED_NAME_LENGTH = ETHEREUM_ADDRESS_LENGTH * 2;
+  if (typeof name !== 'string') {
+    return 'Must be a string';
+  } else if (name.length < minLength) {
+    return 'Must have at least one character';
+  } else if (name.length > MAX_ALLOWED_NAME_LENGTH) {
+    return `Must be shorter than ${MAX_ALLOWED_NAME_LENGTH} characters`;
+  } else if (name === 'debug-error-name') {
+    return 'Debug: intentional debugging error';
+  }
+  return null;
+}
+
+export function renameWalletGroup(
+  record: WalletRecord,
+  { groupId, name }: { groupId: string; name: string }
+) {
+  return produce(record, (draft) => {
+    const group = draft.walletManager.groups.find(
+      (group) => group.id === groupId
+    );
+    if (!group) {
+      throw new Error('Group not found');
+    }
+    const maybeErrorMessage = validateName(name);
+    if (maybeErrorMessage) {
+      throw new Error(maybeErrorMessage);
+    }
+    group.name = name;
+  });
+}
+
+function findWithIndex<T>(items: T[], predicate: (item: T) => boolean) {
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (predicate(item)) {
+      return [i, item] as const;
+    }
+  }
+  return [-1, undefined] as const;
+}
+
+export function removeWalletGroup(
+  record: WalletRecord,
+  { groupId }: { groupId: string }
+) {
+  return produce(record, (draft) => {
+    const [pos, item] = findWithIndex(
+      draft.walletManager.groups,
+      (group) => group.id === groupId
+    );
+    if (!item) {
+      throw new Error('Group not found');
+    }
+    const { currentAddress } = draft.walletManager;
+    const shouldChangeCurrentAddress = item.walletContainer.wallets.some(
+      (wallet) => wallet.address === currentAddress
+    );
+    draft.walletManager.groups.splice(pos, 1);
+    if (shouldChangeCurrentAddress) {
+      const newAddress =
+        draft.walletManager.groups[0]?.walletContainer.getFirstWallet().address;
+      draft.walletManager.currentAddress = newAddress || null;
+    }
+  });
+}
+
+export function removeAddress(
+  record: WalletRecord,
+  { address }: { address: string }
+) {
+  return produce(record, (draft) => {
+    const group = draft.walletManager.groups.find((group) =>
+      group.walletContainer.wallets.some(
+        (wallet) => wallet.address.toLowerCase() === address.toLowerCase()
+      )
+    );
+    if (!group) {
+      throw new Error('Group not found');
+    }
+    if (group.walletContainer.wallets.length === 1) {
+      throw new Error(
+        'Removing last wallet from a wallet group is not allowed. You can remove the whole group'
+      );
+    }
+    group.walletContainer.removeWallet(address);
+  });
+}
+
+export function renameAddress(
+  record: WalletRecord,
+  { address, name }: { address: string; name: string }
+) {
+  const maybeErrorMessage = validateName(name, { minLength: 0 });
+  if (maybeErrorMessage) {
+    throw new Error(maybeErrorMessage);
+  }
+  const lowerCaseAddress = address.toLowerCase();
+  return produce(record, (draft) => {
+    for (const group of draft.walletManager.groups) {
+      for (const wallet of group.walletContainer.wallets) {
+        if (wallet.address.toLowerCase() === lowerCaseAddress) {
+          wallet.name = name || null;
+          return;
+        }
+      }
+    }
+    throw new Error(`Wallet for ${address} not found`);
+  });
 }

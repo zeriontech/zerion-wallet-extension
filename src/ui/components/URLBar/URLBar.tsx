@@ -1,7 +1,7 @@
 import React, { useEffect, useReducer, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import IconLeft from 'src/ui/assets/chevron-left.svg';
+import IconLeft from 'src/ui/assets/chevron-left-medium.svg';
 import { RenderArea } from 'react-area';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Store } from 'store-unit';
@@ -46,12 +46,10 @@ export function URLBar() {
   const pathnameRef = useRef(pathname);
 
   useEffect(() => {
-    console.log('pathnameRef effect', pathname);
     pathnameRef.current = pathname;
     rerender();
   }, [pathname]);
 
-  console.log('URLBar', pathname);
   if (URLBarBlacklist.has(pathname) || !shouldDisplay || isDialog) {
     return null;
   }
@@ -59,6 +57,10 @@ export function URLBar() {
   return (
     <div
       style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 1,
+        backgroundColor: 'var(--background)',
         opacity: pathname !== pathnameRef.current ? 0 : 1,
         paddingTop: 8,
         paddingLeft: 8,
@@ -76,7 +78,6 @@ export function URLBar() {
         name="navigation-bar"
         children={(children) => {
           let text: React.ReactNode;
-          console.log('URLBar navigation-bar render');
           // This check is done to work around an unavoidable inconsistent state
           // where this callback function is called first because of pathname change
           // and then later because some <Content /> element was added
@@ -86,7 +87,14 @@ export function URLBar() {
             text = children.length ? children : titleFromPathname(pathname);
           }
           return (
-            <UIText kind="h/6_reg" style={{ textAlign: 'center' }}>
+            <UIText
+              kind="subtitle/l_reg"
+              style={{
+                textAlign: 'center',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
               {text}
             </UIText>
           );

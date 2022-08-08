@@ -1,10 +1,11 @@
 import React from 'react';
-import { truncateAddress } from 'src/ui/shared/truncateAddress';
+import type { BareWallet } from 'src/shared/types/BareWallet';
+import { getWalletDisplayName } from 'src/ui/shared/getWalletDisplayName';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { BlockieImg } from '../BlockieImg';
 
-export function AddressBadge({ address }: { address: string }) {
+export function AddressBadge({ wallet }: { wallet: BareWallet }) {
   return (
     <UIText
       kind="subtitle/s_reg"
@@ -15,8 +16,10 @@ export function AddressBadge({ address }: { address: string }) {
       }}
     >
       <HStack alignItems="center" gap={4}>
-        <BlockieImg address={address} size={14} />
-        <span>{truncateAddress(address, 4)}</span>
+        <BlockieImg address={wallet.address} size={14} />
+        <span>
+          {getWalletDisplayName(wallet, { padding: 4, maxCharacters: 16 })}
+        </span>
       </HStack>
     </UIText>
   );

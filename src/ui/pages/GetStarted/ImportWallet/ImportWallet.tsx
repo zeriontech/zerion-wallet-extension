@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { Content } from 'react-area';
 import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
-import { Background } from 'src/ui/components/Background';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
@@ -108,53 +107,55 @@ export function ImportWallet() {
         <span>Import Wallet</span>
       </Content>
 
-      <Background backgroundColor="var(--background)">
-        <PageColumn>
-          <PageTop />
-          <UIText kind="h/5_med">Recovery Phrase or Private Key</UIText>
-          <Spacer height={24}></Spacer>
-          {steps.has(Step.loading) ? (
-            <>
-              <VStack gap={8}>
-                <DecorativeMessage
-                  text={
-                    <UIText kind="subtitle/m_reg">
-                      Hi 👋 We're generating your wallet and making sure it's
-                      encrypted with your passcode. This should only take a
-                      couple of minutes.
-                    </UIText>
-                  }
-                />
-                {data?.address ? (
-                  <DecorativeMessageDone
-                    messageKind="import"
-                    address={data.address}
-                  />
-                ) : null}
-                {importWallet.isError ? (
-                  <UIText kind="subtitle/m_reg" color="var(--negative-500)">
-                    Could not import wallet{' '}
-                    {importError?.message ? `(${importError.message})` : null}
+      <PageColumn>
+        <PageTop />
+        <UIText kind="h/5_med">Recovery Phrase or Private Key</UIText>
+        <Spacer height={24}></Spacer>
+        {steps.has(Step.loading) ? (
+          <>
+            <VStack gap={8}>
+              <DecorativeMessage
+                text={
+                  <UIText kind="subtitle/m_reg">
+                    Hi 👋 We're generating your wallet and making sure it's
+                    encrypted with your passcode. This should only take a couple
+                    of minutes.
                   </UIText>
-                ) : null}
-              </VStack>
+                }
+              />
+              {data?.address ? (
+                <DecorativeMessageDone
+                  messageKind="import"
+                  address={data.address}
+                />
+              ) : null}
+              {importWallet.isError ? (
+                <UIText kind="subtitle/m_reg" color="var(--negative-500)">
+                  Could not import wallet{' '}
+                  {importError?.message ? `(${importError.message})` : null}
+                </UIText>
+              ) : null}
+            </VStack>
 
-              <Button
-                style={{ marginTop: 'auto', marginBottom: 16 }}
-                onClick={() => {
-                  accountPublicRPCPort.request('saveUserAndWallet').then(() => {
-                    navigate('/overview');
+            <Button
+              style={{ marginTop: 'auto', marginBottom: 16 }}
+              onClick={async () => {
+                await accountPublicRPCPort.request('saveUserAndWallet');
+                if (data?.address) {
+                  await walletPort.request('setCurrentAddress', {
+                    address: data.address,
                   });
-                }}
-              >
-                {importWallet.isLoading ? 'Recovering...' : 'Finish'}
-              </Button>
-            </>
-          ) : (
-            <ImportForm onSubmit={(key) => importWallet.mutate(key)} />
-          )}
-        </PageColumn>
-      </Background>
+                }
+                navigate('/overview');
+              }}
+            >
+              {importWallet.isLoading ? 'Recovering...' : 'Finish'}
+            </Button>
+          </>
+        ) : (
+          <ImportForm onSubmit={(key) => importWallet.mutate(key)} />
+        )}
+      </PageColumn>
     </>
   );
 }
