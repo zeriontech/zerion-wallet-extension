@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { Background } from 'src/ui/components/Background';
@@ -15,16 +15,20 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 
 export function CreateAccount() {
   const navigate = useNavigate();
+  const [formError, setFormError] = useState<null | {
+    type: string;
+    message: string;
+  }>(null);
   const createUserMutation = useMutation(
-    ({ password }: { password: string }) =>
-      accountPublicRPCPort.request('createUser', { password }),
+    ({ password }: { password: string }) => {
+      return accountPublicRPCPort.request('createUser', { password });
+    },
     {
       onSuccess() {
         navigate('/get-started');
       },
     }
   );
-  console.log({ mutationData: createUserMutation.data });
   return (
     <Background backgroundKind="white">
       <PageColumn>
@@ -36,12 +40,23 @@ export function CreateAccount() {
         </UIText>
         <Spacer height={24} />
         <form
+          onChange={() => setFormError(null)}
           onSubmit={(event) => {
             event.preventDefault();
             const password = new FormData(event.currentTarget).get(
               'password'
             ) as string | undefined;
+            const repeatedPassword = new FormData(event.currentTarget).get(
+              'confirmPassword'
+            ) as string | undefined;
             if (!password) {
+              return;
+            }
+            if (repeatedPassword !== password) {
+              setFormError({
+                type: 'confirmPassword',
+                message: "Passwords don't match",
+              });
               return;
             }
             createUserMutation.mutate({ password });
@@ -49,6 +64,9 @@ export function CreateAccount() {
         >
           <VStack gap={16}>
             <VStack gap={4}>
+              <UIText kind="subtitle/s_reg" color="var(--neutral-500)">
+                Password
+              </UIText>
               <input
                 autoFocus={true}
                 type="password"
@@ -66,6 +84,28 @@ export function CreateAccount() {
                 <UIText kind="caption/reg" color="var(--negative-500)">
                   {(createUserMutation.error as Error).message ||
                     'unknown error'}
+                </UIText>
+              ) : null}
+            </VStack>
+            <VStack gap={4}>
+              <UIText kind="subtitle/s_reg" color="var(--neutral-500)">
+                Confirm Password
+              </UIText>
+              <input
+                type="password"
+                name="confirmPassword"
+                placeholder="enter the password again"
+                required={true}
+                style={{
+                  backgroundColor: 'var(--neutral-200)',
+                  padding: '7px 11px',
+                  border: '1px solid var(--neutral-200)',
+                  borderRadius: 8,
+                }}
+              />
+              {formError?.type === 'confirmPassword' ? (
+                <UIText kind="caption/reg" color="var(--negative-500)">
+                  {formError.message}
                 </UIText>
               ) : null}
             </VStack>
