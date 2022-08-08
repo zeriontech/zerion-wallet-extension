@@ -6,6 +6,7 @@ import { walletPort } from '../channels';
 interface Result {
   params: AddressParams;
   singleAddress: string;
+  maybeSingleAddress: string | null;
   ready: boolean;
   refetch: () => void;
 }
@@ -22,6 +23,7 @@ export function useAddressParams(): Result {
   const address = addressResult || '';
   return {
     params: useMemo(() => ({ address }), [address]),
+    maybeSingleAddress: address || null,
     singleAddress: address,
     ready: Boolean(address),
     refetch,

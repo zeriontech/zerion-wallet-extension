@@ -4,6 +4,7 @@ import { useQuery } from 'react-query';
 import { toAddressTransaction } from 'src/modules/ethereum/transactions/model';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
+import { UIText } from 'src/ui/ui-kit/UIText';
 import { TransactionsList } from './TransactionsList';
 
 function useMinedAndPendingAddressTransactions() {
@@ -56,6 +57,17 @@ export function HistoryList() {
     useMinedAndPendingAddressTransactions();
   if (isLoading || !transactions) {
     return null;
+  }
+  if (!transactions.length) {
+    return (
+      <UIText
+        kind="subtitle/l_reg"
+        color="var(--neutral-500)"
+        style={{ textAlign: 'center' }}
+      >
+        No transactions
+      </UIText>
+    );
   }
   return <TransactionsList transactions={transactions} />;
 }

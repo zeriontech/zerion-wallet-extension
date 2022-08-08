@@ -36,6 +36,7 @@ import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { useQuery } from 'react-query';
 import { walletPort } from 'src/ui/shared/channels';
 import { NBSP } from 'src/ui/shared/typography';
+import { NonFungibleTokens } from './NonFungibleTokens';
 
 interface ChangeInfo {
   isPositive: boolean;
@@ -331,7 +332,7 @@ export function Overview() {
       <Spacer height={24} />
       <Routes>
         <Route path="/" element={<Positions />} />
-        <Route path="/nfts" element={<div>NFTs</div>} />
+        <Route path="/nfts" element={<NonFungibleTokens />} />
         <Route path="/history" element={<HistoryList />} />
       </Routes>
       <PageBottom />

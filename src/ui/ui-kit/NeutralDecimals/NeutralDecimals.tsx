@@ -2,7 +2,7 @@ import React from 'react';
 
 export function NeutralDecimals({
   parts,
-  neutralColor = 'var(--neutral-300)',
+  neutralColor = 'var(--neutral-500)',
 }: {
   parts: Intl.NumberFormatPart[];
   neutralColor?: string;
