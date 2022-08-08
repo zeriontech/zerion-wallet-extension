@@ -1,13 +1,13 @@
-import type { AddressNFT, AddressParams, HookOptions } from 'defi-sdk';
+import type { AddressNFT, AddressParams } from 'defi-sdk';
 import { createDomainHook, mergeList } from 'defi-sdk';
 
-type Options<
-  Payload,
-  Namespace extends string,
-  ScopeName extends string
-> = Omit<HookOptions<Namespace, ScopeName>, 'body' | 'socketNamespace'> & {
-  payload: Payload;
-};
+// type Options<
+//   Payload,
+//   Namespace extends string,
+//   ScopeName extends string
+// > = Omit<HookOptions<Namespace, ScopeName>, 'body' | 'socketNamespace'> & {
+//   payload: Payload;
+// };
 
 export type NFTSortedByParamType =
   | 'floor_price_low'

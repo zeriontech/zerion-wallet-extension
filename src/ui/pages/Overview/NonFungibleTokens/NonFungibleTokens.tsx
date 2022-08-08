@@ -108,7 +108,8 @@ export function NonFungibleTokens() {
     },
     { enabled: ready }
   );
-  const nftTotalValueIsReady = status === DataStatus.ok;
+  const nftTotalValueIsReady =
+    nftTotalValue != null || status === DataStatus.ok;
   if (!ready || !items || !nftTotalValueIsReady) {
     return null;
   }

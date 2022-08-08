@@ -27,6 +27,38 @@ class TransactionsStore extends Store<StoredTransactions> {
   }
 }
 
+const DEBUGGING_TX_HASH = '0x123123';
+
+async function waitForTransaction(
+  hash: string,
+  provider: ethers.providers.Provider
+): Promise<ethers.providers.TransactionReceipt> {
+  if (hash === DEBUGGING_TX_HASH) {
+    const receipt = {
+      blockHash:
+        '0xe485aa7e58d3338909fdc77fc7445da5f552e260dc23bdfe285a2adbe54b4f64',
+      blockNumber: 31658369,
+      byzantium: true,
+      confirmations: 1,
+      contractAddress: '',
+      cumulativeGasUsed: {},
+      effectiveGasPrice: {},
+      from: '0x42b9dF65B219B3dD36FF330A4dD8f327A6Ada990',
+      gasUsed: {},
+      logs: [],
+      logsBloom: '0x002000...',
+      status: 1,
+      to: '0xd7F1Dd5D49206349CaE8b585fcB0Ce3D96f1696F',
+      transactionHash: DEBUGGING_TX_HASH,
+      transactionIndex: 6,
+      type: 2,
+    } as unknown as ethers.providers.TransactionReceipt;
+    return new Promise((r) => setTimeout(() => r(receipt), 6000));
+  } else {
+    return provider.waitForTransaction(hash);
+  }
+}
+
 export class TransactionService {
   private transactionsStore: TransactionsStore;
 
@@ -35,7 +67,6 @@ export class TransactionService {
   }
 
   async initialize() {
-    console.log('TransactionService initialize');
     const transactions: StoredTransactions = (await get('transactions')) ?? [];
     this.transactionsStore = new TransactionsStore(transactions);
     this.addListeners();
@@ -64,9 +95,9 @@ export class TransactionService {
     const chainId = ethers.utils.hexValue(chainIdAsNumber);
     const nodeUrl = networks.getRpcUrlInternal(networks.getChainById(chainId));
     const provider = new ethers.providers.JsonRpcProvider(nodeUrl);
-    console.log('waiting for receipt');
-    const txReceipt = await provider.waitForTransaction(hash);
-    console.log('transactionMined', txReceipt);
+    console.log('trservice: waiting for receipt');
+    const txReceipt = await waitForTransaction(hash, provider);
+    console.log('trservice: transactionMined', txReceipt);
     emitter.emit('transactionMined', txReceipt);
     this.upsertTransaction({ ...transactionObject, receipt: txReceipt });
   }
@@ -79,3 +110,24 @@ export class TransactionService {
     );
   }
 }
+
+function testAddTransaction() {
+  emitter.emit('pendingTransactionCreated', {
+    accessList: [],
+    chainId: 137,
+    confirmations: 0,
+    data: '0x83d13e0100000000000...',
+    from: '0x42b9dF65B219B3dD36FF330A4dD8f327A6Ada990',
+    gasLimit: {},
+    gasPrice: null,
+    hash: DEBUGGING_TX_HASH,
+    maxFeePerGas: {},
+    maxPriorityFeePerGas: {},
+    nonce: 239,
+    to: '0xd7F1Dd5D49206349CaE8b585fcB0Ce3D96f1696F',
+    type: 2,
+    value: {},
+  } as unknown as ethers.providers.TransactionResponse);
+}
+
+Object.assign(window, { testAddTransaction });

@@ -2,10 +2,21 @@ import { AddressTransaction, useSubscription } from 'defi-sdk';
 import React, { useMemo } from 'react';
 import { useQuery } from 'react-query';
 import { toAddressTransaction } from 'src/modules/ethereum/transactions/model';
+import type { PartialAddressTransaction } from 'src/modules/ethereum/transactions/model';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { TransactionsList } from './TransactionsList';
+
+function mergeLocalAndBackendTransactions(
+  local: PartialAddressTransaction[],
+  backend: PartialAddressTransaction[]
+) {
+  const backendHashes = new Set(backend.map((tx) => tx.hash));
+  return local
+    .filter((tx) => backendHashes.has(tx.hash) === false)
+    .concat(backend);
+}
 
 function useMinedAndPendingAddressTransactions() {
   const { params, ready } = useAddressParams();
@@ -13,7 +24,7 @@ function useMinedAndPendingAddressTransactions() {
 
   const { data: localAddressTransactions, ...localTransactionsQuery } =
     useQuery(
-      'pages/history',
+      ['pages/history', localTransactions],
       () => {
         return Promise.all(
           localTransactions.map((transactionObject) =>
@@ -46,7 +57,7 @@ function useMinedAndPendingAddressTransactions() {
   });
   return {
     data: localAddressTransactions
-      ? localAddressTransactions.concat(value || [])
+      ? mergeLocalAndBackendTransactions(localAddressTransactions, value || [])
       : null,
     ...localTransactionsQuery,
   };

@@ -18,7 +18,7 @@ class LocalTransactionsStore extends Store<StoredTransactions> {
       this.setState(dataToModel(transactions));
     }
     browser.storage.onChanged.addListener((changes, namespace) => {
-      console.log('storage listener', changes, namespace);
+      console.log('trservice: storage listener', changes, namespace);
       if ('transactions' in changes) {
         const newValue: StoredTransactions =
           changes.transactions.newValue || [];

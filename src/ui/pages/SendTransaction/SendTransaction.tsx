@@ -28,12 +28,13 @@ import { Twinkle } from 'src/ui/ui-kit/Twinkle';
 import ZerionSquircle from 'src/ui/assets/zerion-squircle.svg';
 import { strings } from 'src/ui/transactions/strings';
 import type { BareWallet } from 'src/shared/types/BareWallet';
+import { Background } from 'src/ui/components/Background';
 
 function ItemSurface({ style, ...props }: React.HTMLProps<HTMLDivElement>) {
   const surfaceStyle = {
     ...style,
     padding: '10px 12px',
-    backgroundColor: 'var(--background)',
+    backgroundColor: 'var(--neutral-100)',
   };
   return <Surface style={surfaceStyle} {...props} />;
 }
@@ -248,72 +249,74 @@ function SendTransactionContent({
     throw descriptionQuery.error || new Error('testing');
   }
   return (
-    <PageColumn>
-      <PageTop />
-      <div style={{ display: 'grid', placeItems: 'center' }}>
-        <ZerionSquircle style={{ width: 44, height: 44 }} />
+    <Background backgroundKind="white">
+      <PageColumn>
+        <PageTop />
+        <div style={{ display: 'grid', placeItems: 'center' }}>
+          <ZerionSquircle style={{ width: 44, height: 44 }} />
+          <Spacer height={16} />
+          <UIText kind="h/5_med" style={{ textAlign: 'center' }}>
+            {strings.actions[descriptionQuery.data.action] ||
+              strings.actions[TransactionAction.contractInteraction]}
+          </UIText>
+          <Spacer height={8} />
+          <UIText kind="subtitle/m_reg" color="var(--primary)">
+            {originName}
+          </UIText>
+          <Spacer height={8} />
+          <NetworkIndicator chainId={transaction.chainId} />
+          <Spacer height={8} />
+          <UIText kind="subtitle/m_reg">
+            <i>
+              {
+                networks?.getEthereumChainParameter(
+                  ethers.utils.hexValue(transaction.chainId || 1)
+                ).rpcUrls[0]
+              }
+            </i>
+          </UIText>
+        </div>
+        <Spacer height={24} />
         <Spacer height={16} />
-        <UIText kind="h/5_med" style={{ textAlign: 'center' }}>
-          {strings.actions[descriptionQuery.data.action] ||
-            strings.actions[TransactionAction.contractInteraction]}
-        </UIText>
-        <Spacer height={8} />
-        <UIText kind="subtitle/m_reg" color="var(--primary)">
-          {originName}
-        </UIText>
-        <Spacer height={8} />
-        <NetworkIndicator chainId={transaction.chainId} />
-        <Spacer height={8} />
-        <UIText kind="subtitle/m_reg">
-          <i>
-            {
-              networks?.getEthereumChainParameter(
-                ethers.utils.hexValue(transaction.chainId || 1)
-              ).rpcUrls[0]
-            }
-          </i>
-        </UIText>
-      </div>
-      <Spacer height={24} />
-      <Spacer height={16} />
-      <VStack gap={12}>
-        <WalletLine address={wallet.address} label="Wallet" />
-        <TransactionDescription
-          transactionDescription={descriptionQuery.data}
-        />
-      </VStack>
-      <Spacer height={16} />
+        <VStack gap={12}>
+          <WalletLine address={wallet.address} label="Wallet" />
+          <TransactionDescription
+            transactionDescription={descriptionQuery.data}
+          />
+        </VStack>
+        <Spacer height={16} />
 
-      <VStack
-        style={{ textAlign: 'center', marginTop: 'auto', paddingBottom: 32 }}
-        gap={8}
-      >
-        <UIText kind="body/s_reg" color="var(--negative)">
-          {signMutation.isError
-            ? (signMutation.error as Error)?.message || 'Some Error'
-            : null}
-        </UIText>
-        <Button
-          onClick={() => {
-            signAndSendTransaction(transaction);
-          }}
+        <VStack
+          style={{ textAlign: 'center', marginTop: 'auto', paddingBottom: 32 }}
+          gap={8}
         >
-          {signMutation.isLoading
-            ? 'Sending...'
-            : descriptionQuery.data.action === TransactionAction.approve
-            ? 'Approve'
-            : 'Confirm'}
-        </Button>
-        <UnstyledButton
-          style={{ color: 'var(--primary)' }}
-          onClick={() => {
-            windowPort.reject(Number(params.get('windowId')));
-          }}
-        >
-          Reject
-        </UnstyledButton>
-      </VStack>
-    </PageColumn>
+          <UIText kind="body/s_reg" color="var(--negative)">
+            {signMutation.isError
+              ? (signMutation.error as Error)?.message || 'Some Error'
+              : null}
+          </UIText>
+          <Button
+            onClick={() => {
+              signAndSendTransaction(transaction);
+            }}
+          >
+            {signMutation.isLoading
+              ? 'Sending...'
+              : descriptionQuery.data.action === TransactionAction.approve
+              ? 'Approve'
+              : 'Confirm'}
+          </Button>
+          <UnstyledButton
+            style={{ color: 'var(--primary)' }}
+            onClick={() => {
+              windowPort.reject(Number(params.get('windowId')));
+            }}
+          >
+            Reject
+          </UnstyledButton>
+        </VStack>
+      </PageColumn>
+    </Background>
   );
 }
 

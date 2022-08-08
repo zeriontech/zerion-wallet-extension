@@ -12,7 +12,6 @@ export function TransactionsList({
 }: {
   transactions: PartialAddressTransaction[];
 }) {
-  console.log(transactions);
   const groupedByDate = useMemo(
     () =>
       groupBy(transactions, (item) =>
