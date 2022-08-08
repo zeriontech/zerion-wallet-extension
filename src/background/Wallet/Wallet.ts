@@ -238,7 +238,13 @@ export class Wallet {
       throw new RecordNotFound();
     }
     this.record = produce(this.record, (draft) => {
-      draft.permissions[origin] = address;
+      const existingPermissions =
+        typeof draft.permissions[origin] === 'string'
+          ? [draft.permissions[origin] as unknown as string]
+          : draft.permissions[origin];
+      const existingPermissionsSet = new Set(existingPermissions || []);
+      existingPermissionsSet.add(address);
+      draft.permissions[origin] = Array.from(existingPermissionsSet);
     });
     this.updateWalletStore(this.record);
   }
@@ -263,7 +269,7 @@ export class Wallet {
     if (context.origin === INTERNAL_ORIGIN) {
       return true;
     }
-    return this.record?.permissions[context.origin] === address;
+    return this.record?.permissions[context.origin]?.includes(address) || false;
   }
 
   async setCurrentAddress({

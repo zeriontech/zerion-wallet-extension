@@ -203,7 +203,7 @@ interface WalletManager {
 
 export interface WalletRecord {
   walletManager: WalletManager;
-  permissions: Record<Origin, Address>;
+  permissions: Record<Origin, Address[]>;
   transactions: ethers.providers.TransactionResponse[];
 }
 

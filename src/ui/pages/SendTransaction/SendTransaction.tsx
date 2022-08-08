@@ -29,6 +29,7 @@ import ZerionSquircle from 'src/ui/assets/zerion-squircle.svg';
 import { strings } from 'src/ui/transactions/strings';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { Background } from 'src/ui/components/Background';
+import { FillView } from 'src/ui/components/FillView';
 
 function ItemSurface({ style, ...props }: React.HTMLProps<HTMLDivElement>) {
   const surfaceStyle = {
@@ -231,18 +232,11 @@ function SendTransactionContent({
   const originName = useMemo(() => new URL(origin).hostname, [origin]);
   if (descriptionQuery.isLoading) {
     return (
-      <div
-        style={{
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
+      <FillView>
         <Twinkle>
           <ZerionSquircle style={{ width: 64, height: 64 }} />
         </Twinkle>
-      </div>
+      </FillView>
     );
   }
   if (descriptionQuery.isError || !descriptionQuery.data) {
