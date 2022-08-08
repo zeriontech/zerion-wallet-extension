@@ -43,7 +43,6 @@ export class EthereumProvider extends JsonRpcProvider {
             this.accounts = value;
           }
         }
-        console.log('emitting ethereumEvent', event, value); // eslint-disable-line no-console
         this.events.emit(event, value);
       }
     );
