@@ -584,15 +584,19 @@ export class Wallet {
       );
     }
     const { chainId } = this.store.getState();
-    const targetChainId = ethers.utils.hexValue(
-      incomingTransaction.chainId || '0x1'
-    );
-    if (chainId !== targetChainId) {
+    const targetChainId = incomingTransaction.chainId
+      ? ethers.utils.hexValue(incomingTransaction.chainId)
+      : null;
+    if (targetChainId && chainId !== targetChainId) {
       await this.wallet_switchEthereumChain({
         params: [{ chainId: targetChainId }],
         context,
       });
       return this.sendTransaction(incomingTransaction, context);
+    } else if (targetChainId == null) {
+      console.warn('chainId field is missing from transaction object');
+      console.log(incomingTransaction);
+      incomingTransaction.chainId = chainId;
     }
     // const networks = await networksStore.load();
     const transaction = prepareTransaction(incomingTransaction);

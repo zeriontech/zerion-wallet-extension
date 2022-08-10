@@ -30,6 +30,8 @@ import { strings } from 'src/ui/transactions/strings';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { Background } from 'src/ui/components/Background';
 import { FillView } from 'src/ui/components/FillView';
+import { capitalize } from 'capitalize-ts';
+import { WarningIcon } from 'src/ui/components/WarningIcon';
 
 function ItemSurface({ style, ...props }: React.HTMLProps<HTMLDivElement>) {
   const surfaceStyle = {
@@ -193,6 +195,25 @@ function TransactionDescription({
   );
 }
 
+type SendTransactionError = null | Error | { body: string };
+function errorToMessage(error?: SendTransactionError) {
+  const fallbackString = 'Unknown Error';
+  if (!error) {
+    return fallbackString;
+  }
+  try {
+    const result =
+      'message' in error
+        ? error.message
+        : 'body' in error
+        ? capitalize(JSON.parse(error.body).error.message) || fallbackString
+        : fallbackString;
+    return `Error: ${result}`;
+  } catch (e) {
+    return `Error: ${fallbackString}`;
+  }
+}
+
 function SendTransactionContent({
   transactionStringified,
   origin,
@@ -206,6 +227,11 @@ function SendTransactionContent({
   const transaction = useMemo(
     () => JSON.parse(transactionStringified) as UnsignedTransaction,
     [transactionStringified]
+  );
+  const { data: chainId, ...chainIdQuery } = useQuery(
+    'eth_chainId',
+    () => walletPort.request('eth_chainId'),
+    { useErrorBoundary: true }
   );
   const descriptionQuery = useQuery(
     ['description', transaction],
@@ -230,7 +256,7 @@ function SendTransactionContent({
     }
   );
   const originName = useMemo(() => new URL(origin).hostname, [origin]);
-  if (descriptionQuery.isLoading) {
+  if (descriptionQuery.isLoading || chainIdQuery.isLoading) {
     return (
       <FillView>
         <Twinkle>
@@ -242,6 +268,13 @@ function SendTransactionContent({
   if (descriptionQuery.isError || !descriptionQuery.data) {
     throw descriptionQuery.error || new Error('testing');
   }
+  if (!chainId) {
+    throw new Error('Wallet did not return chainId');
+  }
+  const effectiveChainId = ethers.utils.hexValue(
+    transaction.chainId || chainId
+  );
+
   return (
     <Background backgroundKind="white">
       <PageColumn>
@@ -258,19 +291,36 @@ function SendTransactionContent({
             {originName}
           </UIText>
           <Spacer height={8} />
-          <NetworkIndicator chainId={transaction.chainId} />
+          <NetworkIndicator chainId={effectiveChainId} />
           <Spacer height={8} />
           <UIText kind="subtitle/m_reg">
             <i>
-              {
-                networks?.getEthereumChainParameter(
-                  ethers.utils.hexValue(transaction.chainId || 1)
-                ).rpcUrls[0]
-              }
+              {networks?.getEthereumChainParameter(effectiveChainId).rpcUrls[0]}
             </i>
           </UIText>
         </div>
         <Spacer height={24} />
+        {transaction.chainId == null ? (
+          <Surface
+            padding={12}
+            style={{ backgroundColor: 'var(--notice-100)' }}
+          >
+            <Media
+              image={<WarningIcon glow={true} />}
+              text={
+                <UIText kind="body/s_reg" color="var(--notice-500)">
+                  {capitalize(originName)} did not provide chainId
+                </UIText>
+              }
+              detailText={
+                <UIText kind="body/s_reg">
+                  The transaction will be sent to{' '}
+                  {networks?.getNetworkById(effectiveChainId)?.name}
+                </UIText>
+              }
+            />
+          </Surface>
+        ) : null}
         <Spacer height={16} />
         <VStack gap={12}>
           <WalletLine address={wallet.address} label="Wallet" />
@@ -284,9 +334,9 @@ function SendTransactionContent({
           style={{ textAlign: 'center', marginTop: 'auto', paddingBottom: 32 }}
           gap={8}
         >
-          <UIText kind="body/s_reg" color="var(--negative)">
+          <UIText kind="body/s_reg" color="var(--negative-500)">
             {signMutation.isError
-              ? (signMutation.error as Error)?.message || 'Some Error'
+              ? errorToMessage(signMutation.error as SendTransactionError)
               : null}
           </UIText>
           <Button
