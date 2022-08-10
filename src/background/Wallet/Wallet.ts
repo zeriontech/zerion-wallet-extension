@@ -35,6 +35,8 @@ import { createChain } from 'src/modules/networks/Chain';
 import { emitter } from '../events';
 import { getNextAccountPath } from 'src/shared/wallet/getNextAccountPath';
 import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
+import { hasGasPrice } from 'src/modules/ethereum/transactions/gasPrices/hasGasPrice';
+import { fetchAndAssignGasPrice } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 
 class RecordNotFound extends Error {}
 
@@ -595,29 +597,20 @@ export class Wallet {
       return this.sendTransaction(incomingTransaction, context);
     } else if (targetChainId == null) {
       console.warn('chainId field is missing from transaction object');
-      console.log(incomingTransaction);
       incomingTransaction.chainId = chainId;
     }
-    // const networks = await networksStore.load();
     const transaction = prepareTransaction(incomingTransaction);
+    if (!hasGasPrice(transaction)) {
+      await fetchAndAssignGasPrice(transaction);
+    }
 
-    // const { chainId = '0x1' } = transaction;
     const signer = await this.getSigner(chainId);
-    // const nodeUrl = networks.getRpcUrlInternal(networks.getChainById(chainId));
-    // const jsonRpcProvider = new ethers.providers.JsonRpcProvider(nodeUrl);
-    // const signer = this.record.walletContainer.wallet.connect(jsonRpcProvider);
-    // const populatedTransaction = await signer.populateTransaction({
-    //   ...transaction,
-    //   type: transaction.type || undefined,
-    // });
     const transactionResponse = await signer.sendTransaction({
       ...transaction,
       type: transaction.type || undefined,
     });
-    // this.savePendingTransaction(transactionResponse);
     emitter.emit('pendingTransactionCreated', transactionResponse);
     return transactionResponse;
-    // return { signer, transaction, populatedTransaction, jsonRpcProvider };
   }
 
   async signAndSendTransaction({

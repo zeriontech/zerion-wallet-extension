@@ -15,7 +15,7 @@ export const walletPort = {
       return Promise.resolve(testWallet);
     } else if (method === 'signAndSendTransaction') {
       return Promise.resolve({ hash: '0x12345' });
-    } else if (method === 'getChainId') {
+    } else if (method === 'getChainId' || method === 'eth_chainId') {
       return Promise.resolve(this.state.chainId);
     } else if (method === 'switchChain') {
       const networks = await networksStore.load();
