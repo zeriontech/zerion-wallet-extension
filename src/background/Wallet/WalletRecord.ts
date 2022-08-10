@@ -447,6 +447,13 @@ export function removeAddress(
       );
     }
     group.walletContainer.removeWallet(address);
+    const { currentAddress } = draft.walletManager;
+    const shouldChangeCurrentAddress =
+      address.toLowerCase() === currentAddress?.toLowerCase();
+    if (shouldChangeCurrentAddress) {
+      draft.walletManager.currentAddress =
+        group.walletContainer.getFirstWallet().address;
+    }
   });
 }
 
