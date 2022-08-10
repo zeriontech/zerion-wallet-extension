@@ -19,10 +19,7 @@ configureBackgroundClient();
 networksStore.load();
 
 initialize().then(({ account, accountPublicRPC }) => {
-  const ALCHEMY_KEY = 'GQBOYG3d8DdUV4cA2LkjU5f8MCZPfQUh';
-  const nodeUrl = `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`;
-
-  const httpConnection = new HttpConnection(nodeUrl, account);
+  const httpConnection = new HttpConnection();
   const memoryCacheRPC = new MemoryCacheRPC();
 
   const portRegistry = new PortRegistry();

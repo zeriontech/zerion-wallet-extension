@@ -6,24 +6,29 @@ import {
   JsonRpcPayload,
   JsonRpcResult,
 } from '@json-rpc-tools/utils';
-import { Account } from '../account/Account';
+import { networksStore } from 'src/modules/networks/networks-store';
+import { emitter } from '../events';
 
 export class HttpConnection extends EventEmitter {
-  url: string;
-  account: Account;
+  chainId: string;
 
-  constructor(url: string, account: Account) {
+  constructor(initialChainId = '0x1') {
     super();
-    this.url = url;
-    this.account = account;
+    this.chainId = initialChainId;
+    emitter.on('chainChanged', (chainId) => {
+      this.chainId = chainId;
+    });
   }
 
-  send(request: JsonRpcPayload): Promise<JsonRpcResult | JsonRpcError> {
+  async send(request: JsonRpcPayload): Promise<JsonRpcResult | JsonRpcError> {
     if (!isJsonRpcRequest(request)) {
       console.log('not a request:', request); // eslint-disable-line no-console
       return Promise.reject('not a request');
     }
-    return fetch(this.url, {
+    const networks = await networksStore.load();
+    const chain = networks.getChainById(this.chainId);
+    const url = networks.getRpcUrlInternal(chain);
+    return fetch(url, {
       method: 'post',
       body: JSON.stringify(request),
     })

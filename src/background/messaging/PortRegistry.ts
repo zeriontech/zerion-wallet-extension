@@ -19,15 +19,13 @@ export type PortMessageHandler = (
 export class PortRegistry {
   private ports: chrome.runtime.Port[];
   private handlers: PortMessageHandler[];
+  listener: (msg: unknown, port: chrome.runtime.Port) => void;
 
   constructor() {
     this.ports = [];
     this.handlers = [];
-  }
 
-  register(port: chrome.runtime.Port) {
-    pushUnique(this.ports, port);
-    const listener = (msg: unknown) => {
+    this.listener = (msg: unknown, port: chrome.runtime.Port) => {
       for (const handler of this.handlers) {
         const didHandle = handler(port, msg);
         if (didHandle) {
@@ -35,10 +33,14 @@ export class PortRegistry {
         }
       }
     };
-    port.onMessage.addListener(listener);
+  }
+
+  register(port: chrome.runtime.Port) {
+    pushUnique(this.ports, port);
+    port.onMessage.addListener(this.listener);
     port.onDisconnect.addListener(() => {
       console.log('port disconnected', port.name); // eslint-disable-line no-console
-      port.onMessage.removeListener(listener);
+      port.onMessage.removeListener(this.listener);
       this.unregister(port);
     });
   }

@@ -1,11 +1,12 @@
 import { JsonRpcProvider } from '@json-rpc-tools/provider';
 import {
   formatJsonRpcRequest,
-  IJsonRpcConnection,
   isJsonRpcError,
+  JsonRpcPayload,
   JsonRpcRequest,
   RequestArguments,
 } from '@json-rpc-tools/utils';
+import type { Connection } from './connection';
 
 function accountsEquals(arr1: string[], arr2: string[]) {
   // it's okay to perform search like this because `accounts`
@@ -15,13 +16,23 @@ function accountsEquals(arr1: string[], arr2: string[]) {
   );
 }
 
+async function fetchInitialState(connection: Connection) {
+  return Promise.all([
+    connection.send<string>(formatJsonRpcRequest('getChainId', [])),
+    connection.send<string[]>(formatJsonRpcRequest('eth_accounts', [])),
+  ]).then(([chainId, accounts]) => ({ chainId, accounts }));
+}
+
 export class EthereumProvider extends JsonRpcProvider {
   accounts: string[];
   chainId: string;
   isZerionWallet: boolean;
-  // enable
-  constructor(connection: IJsonRpcConnection) {
+  connection: Connection;
+  _openPromise: Promise<void> | null = null;
+
+  constructor(connection: Connection) {
     super(connection);
+    this.connection = connection;
     this.shimLegacy();
     this.chainId = '0x1';
     this.accounts = [];
@@ -47,27 +58,40 @@ export class EthereumProvider extends JsonRpcProvider {
       }
     );
 
-    this.request({ method: 'getChainId' }).then((chainId: string) => {
+    this.open();
+  }
+
+  on(event: string, listener: (params: unknown) => unknown) {
+    super.on(event, listener);
+    return this;
+  }
+
+  private async _prepareState() {
+    return fetchInitialState(this.connection).then(({ chainId, accounts }) => {
       this.chainId = chainId;
-    });
-    this.request({ method: 'eth_accounts' }).then((accounts: string[]) => {
       this.accounts = accounts;
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public async request<Result = any, Params = any>(
-    request: RequestArguments<Params>,
-    context?: any // eslint-disable-line @typescript-eslint/no-explicit-any
-  ): Promise<Result> {
-    return this.getRequestPromise(
+  public async request(
+    request: RequestArguments,
+    context?: unknown
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): Promise<any> {
+    if (request.method === 'eth_chainId') {
+      return Promise.resolve(this.chainId);
+    }
+    if (request.method === 'eth_accounts') {
+      return Promise.resolve(this.accounts);
+    }
+    return this._getRequestPromise(
       formatJsonRpcRequest(request.method, request.params || []),
       context
     );
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private async getRequestPromise<Result = any, Params = any>(
+  private async _getRequestPromise<Result = any, Params = any>(
     request: JsonRpcRequest<Params>,
     _context?: any // eslint-disable-line @typescript-eslint/no-explicit-any
   ): Promise<Result> {
@@ -121,5 +145,30 @@ export class EthereumProvider extends JsonRpcProvider {
       // @ts-ignore
       this[_method] = () => this.request({ method });
     }
+  }
+
+  isConnected() {
+    return this.connection.connected;
+  }
+
+  private async _internalOpen(connection: Connection) {
+    if (this.connection === connection && this.connection.connected) return;
+    if (this.connection.connected) this.close();
+    this.connection = connection; // this.setConnection();
+    await Promise.all([this.connection.open(), this._prepareState()]);
+    this.connection.on('payload', (payload: JsonRpcPayload) =>
+      this.onPayload(payload)
+    );
+    this.connection.on('close', () => {
+      this.events.emit('disconnect');
+    });
+    this.events.emit('connect', { chainId: this.chainId });
+  }
+
+  open(connection: Connection = this.connection) {
+    if (!this._openPromise) {
+      this._openPromise = this._internalOpen(connection);
+    }
+    return this._openPromise;
   }
 }

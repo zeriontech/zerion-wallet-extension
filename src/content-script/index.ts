@@ -3,16 +3,7 @@ import { isJsonRpcRequest, isJsonRpcResponse } from '@json-rpc-tools/utils';
 // @ts-ignore parcel syntax for inlining: https://parceljs.org/features/bundle-inlining/#inlining-a-bundle-as-text
 import inPageContent from 'bundle-text:./in-page';
 
-const script = document.createElement('script');
-
 const id = nanoid();
-let content = `window.myWalletChannelId = "${id}";;`;
-content += inPageContent;
-script.textContent = content;
-script.dataset.walletExtension = 'true';
-
-const container = document.head || document.documentElement;
-container.appendChild(script);
 
 const broadcastChannel = new BroadcastChannel(id);
 
@@ -36,3 +27,14 @@ broadcastChannel.addEventListener('message', (event) => {
     console.log('not a JsonRpcRequest'); // eslint-disable-line no-console
   }
 });
+
+// Insert script with ethereum provider _after_ creating a BroadcastChannel
+let content = `window.myWalletChannelId = "${id}";;`;
+content += inPageContent;
+
+const script = document.createElement('script');
+script.textContent = content;
+script.dataset.walletExtension = 'true';
+
+const container = document.head || document.documentElement;
+container.appendChild(script);

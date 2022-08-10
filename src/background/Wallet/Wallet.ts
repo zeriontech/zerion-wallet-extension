@@ -357,6 +357,25 @@ export class Wallet {
     }
   }
 
+  async eth_chainId({ context }: PublicMethodParams) {
+    const currentAddress = this.readCurrentAddress();
+    if (currentAddress && this.allowedOrigin(context, currentAddress)) {
+      return this.getChainId();
+    } else {
+      return '0x1';
+    }
+  }
+
+  async net_version({ context }: PublicMethodParams) {
+    const currentAddress = this.readCurrentAddress();
+    if (currentAddress && this.allowedOrigin(context, currentAddress)) {
+      const chainId = await this.getChainId();
+      return String(parseInt(chainId));
+    } else {
+      return '1';
+    }
+  }
+
   private readCurrentAddress() {
     return this.record?.walletManager.currentAddress || null;
   }
@@ -466,7 +485,9 @@ export class Wallet {
   async wallet_switchEthereumChain({
     params,
     context,
-  }: PublicMethodParams<[{ chainId: string | number }]>): Promise<string> {
+  }: PublicMethodParams<[{ chainId: string | number }]>): Promise<
+    null | object
+  > {
     const currentAddress = this.readCurrentAddress();
     if (!currentAddress) {
       throw new Error('Wallet is not initialized');
@@ -476,6 +497,9 @@ export class Wallet {
     }
     const { origin } = context;
     const { chainId } = params[0];
+    if (chainId === this.store.getState().chainId) {
+      return Promise.resolve(null);
+    }
     return new Promise((resolve, reject) => {
       notificationWindow.open({
         route: '/switchEthereumChain',
@@ -483,8 +507,8 @@ export class Wallet {
         onResolve: () => {
           const value = ethers.utils.hexValue(chainId);
           this.store.setState({ chainId: value });
+          resolve(null);
           this.emitter.emit('chainChanged', value);
-          resolve(value);
         },
         onDismiss: () => {
           reject(new UserRejected('User Rejected the Request'));

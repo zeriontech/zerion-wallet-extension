@@ -40,9 +40,9 @@ export class Connection extends EventEmitter implements IJsonRpcConnection {
     return Promise.resolve();
   }
 
-  send(payload: JsonRpcPayload): Promise<void> {
+  send<Result = unknown>(payload: JsonRpcPayload): Promise<Result> {
     this.broadcastChannel.postMessage(payload);
-    return this.getPromise(payload.id);
+    return this.getPromise<Result>(payload.id);
   }
 
   getPromise<T>(id: number): Promise<T> {
