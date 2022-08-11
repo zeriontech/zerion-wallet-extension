@@ -1,0 +1,1 @@
+export { BlockieImg } from './BlockieImg';

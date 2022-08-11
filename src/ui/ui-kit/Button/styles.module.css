@@ -1,0 +1,12 @@
+.ghost {
+  background-color: transparent;
+  display: block;
+  border-radius: 4px;
+  padding: 4px;
+}
+
+@media (hover: hover) {
+  .ghost:hover {
+    background-color: var(--neutral-300);
+  }
+}

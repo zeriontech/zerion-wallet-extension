@@ -1,0 +1,43 @@
+{
+  "manifest_version": 2,
+  "name": "__MSG_appName__",
+  "short_name": "__MSG_appName__",
+  "version": "0.0.1",
+  "default_locale": "en",
+  "description": "__MSG_appDescription__",
+  "icons": {
+    "16": "images/logo-icon.png",
+    "19": "images/logo-icon.png",
+    "32": "images/logo-icon.png",
+    "38": "images/logo-icon.png",
+    "48": "images/logo-icon.png",
+    "64": "images/logo-icon.png",
+    "128": "images/logo-icon.png",
+    "512": "images/logo-icon.png"
+  },
+  "browser_action": {
+    "default_icon": {
+      "16": "images/logo-icon.png",
+      "19": "images/logo-icon.png",
+      "32": "images/logo-icon.png",
+      "48": "images/logo-icon.png",
+      "128": "images/logo-icon.png"
+    },
+    "default_title": "NewWallet",
+    "default_popup": "ui/popup.html"
+  },
+  "author": "https://zerion.io/",
+  "background": {
+    "page": "background/background.html",
+    "persistent": true
+  },
+  "content_scripts": [
+    {
+      "all_frames": true,
+      "js": ["content-script/index.ts"],
+      "matches": ["file://*/*", "http://*/*", "https://*/*"],
+      "run_at": "document_start"
+    }
+  ],
+  "permissions": ["storage", "unlimitedStorage", "activeTab", "notifications"]
+}

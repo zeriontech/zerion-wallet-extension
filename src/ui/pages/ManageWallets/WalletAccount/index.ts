@@ -1,0 +1,1 @@
+export { WalletAccount } from './WalletAccount';

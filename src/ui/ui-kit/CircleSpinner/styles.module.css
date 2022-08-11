@@ -1,0 +1,79 @@
+/* import { style, createVar, keyframes } from '@vanilla-extract/css'; */
+
+/* // const offsetProperty = createVar(); */
+/* const offsetProperty = '--spinner-offset'; */
+/* export const trackColorProperty = '--track-color'; */
+
+@keyframes spin {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* // const spin = keyframes({ */
+/* // }); */
+
+.spinnerStyle {
+  --spinner-offset: 430;
+  --track-color: var(--neutral-200);
+  display: block;
+  animation: spin 0.6s linear infinite;
+}
+/* export const spinnerStyle = style({ */
+/*   vars: { */
+/*     [offsetProperty]: '430', */
+/*     [trackColorProperty]: 'var(--neutral-200)', */
+/*   }, */
+/*   display: 'block', */
+/*   animation: `${spin} 0.6s linear infinite`, */
+/* }); */
+
+/**
+ * for a circle with d = 90:
+ * circumference = 2 * π * r = 282.74333
+ * 0.25 * circumference = 70.68583
+ * 0.75 * circumference = 212.0575
+ */
+@keyframes dash75 {
+  0% {
+    stroke-dasharray: 70.68583 282.74333; /* 25% */
+  }
+  50% {
+    stroke-dasharray: 212.0575 282.74333; /* 75% */
+  }
+  100% {
+    stroke-dasharray: 70.68583 282.74333; /* 25% */
+  }
+}
+/* const dash75 = keyframes({ */
+/*   '0%': { */
+/*     strokeDasharray: '70.68583 282.74333' [> 25% <], */
+/*   }, */
+/*   '50%': { */
+/*     strokeDasharray: '212.0575 282.74333' [> 75% <], */
+/*   }, */
+/*   '100%': { */
+/*     strokeDasharray: '70.68583 282.74333' [> 25% <], */
+/*   }, */
+/* }); */
+
+.fillStyle {
+  stroke: currentColor;
+  stroke-dasharray: 70.68583 282.74333; /* 25% */
+  animation: dash75 2s ease-in-out infinite;
+}
+/* export const fillStyle = style({ */
+/*   stroke: 'currentColor', */
+/*   strokeDasharray: '70.68583 282.74333' [> 25% <], */
+/*   animation: `${dash75} 2s ease-in-out infinite`, */
+/* }); */
+
+.trackStyle {
+  stroke: var(--track-color);
+}
+
+/* export const trackStyle = style({ */
+/*   stroke: `var(${trackColorProperty})`, */
+/* }); */
