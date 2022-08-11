@@ -1,1 +1,0 @@
-export { SwitchEthereumChain } from './SwitchEthereumChain';

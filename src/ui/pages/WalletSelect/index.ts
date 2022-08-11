@@ -1,1 +1,0 @@
-export { WalletSelect } from './WalletSelect';

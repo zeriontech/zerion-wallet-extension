@@ -1,1 +1,0 @@
-export { WalletDisplayName } from './WalletDisplayName';

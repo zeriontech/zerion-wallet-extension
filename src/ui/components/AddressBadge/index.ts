@@ -1,1 +1,0 @@
-export { AddressBadge } from './AddressBadge';

@@ -1,1 +1,0 @@
-export { WindowSize } from './WindowSize';

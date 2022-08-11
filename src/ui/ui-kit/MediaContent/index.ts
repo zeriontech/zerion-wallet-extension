@@ -1,1 +1,0 @@
-export { MediaContent } from './MediaContent';

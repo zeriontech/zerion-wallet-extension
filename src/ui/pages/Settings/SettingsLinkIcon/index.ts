@@ -1,1 +1,0 @@
-export { SettingsLinkIcon } from './SettingsLinkIcon';

@@ -1,1 +1,0 @@
-export { DesignTheme } from './DesignTheme';
