@@ -1,6 +1,6 @@
 {
   "name": "zerion-wallet",
-  "version": "0.0.1",
+  "version": "1.0.0-alpha.0",
   "description": "A web3 wallet extension",
   "scripts": {
     "start": "npm-run-all --parallel start:app type-check:watch",
@@ -8,6 +8,7 @@
     "build:workaround": "parcel watch src/manifest.json --no-hmr --no-content-hash",
     "build:broken": "parcel build src/manifest.json --no-content-hash --no-scope-hoist",
     "build": "npm run build:workaround",
+    "tagAndPushBuild": "node scripts/tag-and-push-build.js",
     "type-check": "tsc --noEmit",
     "type-check:watch": "tsc --noEmit --pretty --watch",
     "test": "jest",
