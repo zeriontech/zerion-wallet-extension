@@ -6,6 +6,6 @@ const { version } = require('../package.json');
 const tagName = `build-${version}`;
 
 ghPages.publish('dist', {
-  branch: 'releases',
+  branch: 'builds',
   tag: tagName,
 });
