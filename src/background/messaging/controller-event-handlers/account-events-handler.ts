@@ -14,16 +14,15 @@ export function handleAccountEvents({ account }: { account: Account }) {
       wallet.emitter.on('recordUpdated', () => {
         console.log('recordUpdated, emitting accountsChanged');
         emitter.emit('accountsChanged');
-      })
-    );
-    disposers.push(
+      }),
+      wallet.emitter.on('currentAddressChange', () => {
+        emitter.emit('accountsChanged');
+      }),
+      wallet.emitter.on('permissionsUpdated', () => {
+        emitter.emit('accountsChanged');
+      }),
       wallet.emitter.on('chainChanged', (chainId: string) => {
         emitter.emit('chainChanged', chainId);
-      })
-    );
-    disposers.push(
-      wallet.emitter.on('accountsChanged', () => {
-        emitter.emit('accountsChanged');
       })
     );
   }

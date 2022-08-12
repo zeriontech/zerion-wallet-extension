@@ -7,6 +7,7 @@ import { notificationWindow } from 'src/background/NotificationWindow/Notificati
 import { ChannelContext } from 'src/shared/types/ChannelContext';
 import {
   InvalidParams,
+  MethodNotImplemented,
   OriginNotAllowed,
   UserRejected,
   UserRejectedTxSignature,
@@ -51,8 +52,9 @@ type PublicMethodParams<T = undefined> = T extends undefined
 
 interface WalletEvents {
   recordUpdated: () => void;
-  accountsChanged: (addresses: string[]) => void;
+  currentAddressChange: (addresses: string[]) => void;
   chainChanged: (chainId: string) => void;
+  permissionsUpdated: () => void;
 }
 
 export class Wallet {
@@ -249,6 +251,7 @@ export class Wallet {
       draft.permissions[origin] = Array.from(existingPermissionsSet);
     });
     this.updateWalletStore(this.record);
+    this.emitter.emit('permissionsUpdated');
   }
 
   private removeAllOrigins() {
@@ -288,7 +291,7 @@ export class Wallet {
     });
     this.updateWalletStore(this.record);
 
-    this.emitter.emit('accountsChanged', [checkSumAddress]);
+    this.emitter.emit('currentAddressChange', [checkSumAddress]);
   }
 
   async updateLastBackedUp({
@@ -657,6 +660,18 @@ export class Wallet {
         },
       });
     });
+  }
+
+  async eth_signTypedData_v4({ context: _context }: PublicMethodParams) {
+    throw new MethodNotImplemented('eth_signTypedData_v4: Not Implemented');
+  }
+
+  async eth_signTypedData({ context: _context }: PublicMethodParams) {
+    throw new MethodNotImplemented('eth_signTypedData: Not Implemented');
+  }
+
+  async eth_signMessage({ context: _context }: PublicMethodParams) {
+    throw new MethodNotImplemented('eth_signMessage: Not Implemented');
   }
 
   async getPendingTransactions({ context }: PublicMethodParams) {

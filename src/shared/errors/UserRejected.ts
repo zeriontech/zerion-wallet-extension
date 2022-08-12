@@ -43,3 +43,11 @@ export class UserRejectedTxSignature extends ErrorWithEnumerableMessage {
     super(message);
   }
 }
+
+export class MethodNotImplemented extends ErrorWithEnumerableMessage {
+  code = -32601;
+
+  constructor(message = 'Method not implemented') {
+    super(message);
+  }
+}

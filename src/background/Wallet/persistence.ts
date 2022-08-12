@@ -4,10 +4,8 @@ import { decryptRecord, encryptRecord, WalletRecord } from './WalletRecord';
 import produce from 'immer';
 
 type EncryptedWalletRecord = string;
-export type WalletStoreState = Record<
-  string,
-  EncryptedWalletRecord | undefined
->;
+
+type WalletStoreState = Record<string, EncryptedWalletRecord | undefined>;
 
 export class WalletStore extends PersistentStore<WalletStoreState> {
   async read(id: string, encryptionKey: string): Promise<WalletRecord | null> {
