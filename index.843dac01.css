@@ -286,6 +286,8 @@ body {
   color: var(--black);
   background-color: var(--background);
   font-family: Graphik, sans-serif;
+  font-size: 14px;
+  line-height: 20px;
 }
 
 #root {

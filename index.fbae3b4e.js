@@ -41646,14 +41646,18 @@ var _react = require("react");
 var _reactDefault = parcelHelpers.interopDefault(_react);
 var _errorBoundary = require("src/ui/components/ErrorBoundary");
 var _fillView = require("src/ui/components/FillView");
+var _uicontext = require("src/ui/components/UIContext");
 var _viewError = require("src/ui/components/ViewError");
+var _s = $RefreshSig$();
 function WindowSize({ children , style  }) {
+    _s();
+    const [refEl, setRefEl] = (0, _react.useState)(null);
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+        ref: setRefEl,
         style: {
             position: "relative",
             maxWidth: 400,
-            minHeight: 600,
-            maxHeight: 800,
+            height: 600,
             overflowY: "auto",
             border: "1px solid var(--neutral-200)",
             borderRadius: 8,
@@ -41661,24 +41665,34 @@ function WindowSize({ children , style  }) {
             flexDirection: "column",
             ...style
         },
-        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _errorBoundary.ErrorBoundary), {
-            renderError: (error)=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _fillView.FillView), {
-                    children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _viewError.ViewError), {
-                        error: error
-                    }, void 0, false, void 0, void 0)
-                }, void 0, false, void 0, void 0),
-            children: children
+        children: refEl == null ? null : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uicontext.UIContext).Provider, {
+            value: {
+                uiScrollRootElement: refEl
+            },
+            children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _errorBoundary.ErrorBoundary), {
+                renderError: (error)=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _fillView.FillView), {
+                        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _viewError.ViewError), {
+                            error: error
+                        }, void 0, false, void 0, void 0)
+                    }, void 0, false, void 0, void 0),
+                children: children
+            }, void 0, false, {
+                fileName: "src/ui-lab/components/WindowSize/WindowSize.tsx",
+                lineNumber: 29,
+                columnNumber: 11
+            }, this)
         }, void 0, false, {
             fileName: "src/ui-lab/components/WindowSize/WindowSize.tsx",
-            lineNumber: 25,
-            columnNumber: 7
+            lineNumber: 28,
+            columnNumber: 9
         }, this)
     }, void 0, false, {
         fileName: "src/ui-lab/components/WindowSize/WindowSize.tsx",
-        lineNumber: 11,
+        lineNumber: 13,
         columnNumber: 5
     }, this);
 }
+_s(WindowSize, "6wF5gcXpgtrrjvQq0Ns6oR4JpEg=");
 _c = WindowSize;
 var _c;
 $RefreshReg$(_c, "WindowSize");
@@ -41688,7 +41702,37 @@ $RefreshReg$(_c, "WindowSize");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","src/ui/components/ErrorBoundary":"7WKaQ","src/ui/components/FillView":"bUKpC","src/ui/components/ViewError":"lSxbZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"3drbI":[function(require,module,exports) {
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","src/ui/components/ErrorBoundary":"7WKaQ","src/ui/components/FillView":"bUKpC","src/ui/components/ViewError":"lSxbZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","src/ui/components/UIContext":"aF4Em"}],"aF4Em":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "UIContext", ()=>(0, _uicontext.UIContext));
+parcelHelpers.export(exports, "defaultUIContextValue", ()=>(0, _uicontext.defaultUIContextValue));
+var _uicontext = require("./UIContext");
+
+},{"./UIContext":"h8efG","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"h8efG":[function(require,module,exports) {
+var $parcel$ReactRefreshHelpers$31dc = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$31dc.prelude(module);
+
+try {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "defaultUIContextValue", ()=>defaultUIContextValue);
+parcelHelpers.export(exports, "UIContext", ()=>UIContext);
+var _react = require("react");
+var _reactDefault = parcelHelpers.interopDefault(_react);
+const defaultUIContextValue = {
+    uiScrollRootElement: document.body
+};
+const UIContext = (0, _reactDefault.default).createContext(defaultUIContextValue);
+
+  $parcel$ReactRefreshHelpers$31dc.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"react":"21dqq","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"3drbI":[function(require,module,exports) {
 var $parcel$ReactRefreshHelpers$9ed8 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 var prevRefreshReg = window.$RefreshReg$;
 var prevRefreshSig = window.$RefreshSig$;
@@ -42216,10 +42260,11 @@ $RefreshReg$(_c5, "Overview");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-router-dom":"fdOAw","defi-sdk":"iMIhf","src/ui/ui-kit/UIText":"66Z7M","src/ui/components/PageColumn":"7NeTI","src/ui/ui-kit/Spacer":"7Kmxc","src/ui/ui-kit/Surface":"7D9R0","src/ui/shared/truncateAddress":"89mpt","src/ui/components/BlockieImg":"3UGAz","src/shared/units/formatCurrencyValue":"61PkO","src/shared/units/formatPercent/formatPercent":"aemNr","src/ui/assets/add-wallet.svg":"1qo4w","src/ui/ui-kit/HStack":"gTbXj","src/ui/shared/user-address/useAddressParams":"V1kup","src/ui/transactions/usePendingTransactions":"cNwKA","src/ui/ui-kit/NeutralDecimals":"1PKvi","../Settings/SettingsLinkIcon":"krteM","src/ui/ui-kit/Media":"guzi7","src/ui/ui-kit/Button":"6KLPL","src/ui/ui-kit/UnstyledLink":"1JFqV","src/ui/ui-kit/SegmentedControl":"anvhs","./Positions":"8Dqur","../History/History":"lc663","src/ui/components/PageBottom":"gMpD1","src/ui/assets/copy.svg":"jAyf5","src/ui/shared/useCopyToClipboard":"3BR35","react-query":"7slSP","src/ui/shared/channels":"57ETE","src/ui/shared/typography":"g8uXz","./NonFungibleTokens":"kzpL8","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"7NeTI":[function(require,module,exports) {
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-router-dom":"fdOAw","defi-sdk":"iMIhf","src/ui/ui-kit/UIText":"66Z7M","src/ui/components/PageColumn":"7NeTI","src/ui/ui-kit/Spacer":"7Kmxc","src/ui/ui-kit/Surface":"7D9R0","src/ui/shared/truncateAddress":"89mpt","src/ui/components/BlockieImg":"3UGAz","src/shared/units/formatCurrencyValue":"61PkO","src/shared/units/formatPercent/formatPercent":"aemNr","src/ui/assets/add-wallet.svg":"1qo4w","src/ui/ui-kit/HStack":"gTbXj","src/ui/shared/user-address/useAddressParams":"V1kup","src/ui/transactions/usePendingTransactions":"cNwKA","src/ui/ui-kit/NeutralDecimals":"1PKvi","../Settings/SettingsLinkIcon":"krteM","src/ui/ui-kit/Media":"guzi7","src/ui/ui-kit/Button":"6KLPL","src/ui/ui-kit/UnstyledLink":"1JFqV","src/ui/ui-kit/SegmentedControl":"anvhs","./Positions":"8Dqur","../History/History":"lc663","src/ui/components/PageBottom":"gMpD1","src/ui/assets/copy.svg":"jAyf5","src/ui/shared/useCopyToClipboard":"3BR35","react-query":"7slSP","src/ui/shared/channels":"bv9nl","src/ui/shared/typography":"g8uXz","./NonFungibleTokens":"kzpL8","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"7NeTI":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "PageColumn", ()=>(0, _pageColumn.PageColumn));
+parcelHelpers.export(exports, "PAGE_PADDING_HORIZONTAL", ()=>(0, _pageColumn.PAGE_PADDING_HORIZONTAL));
 var _pageColumn = require("./PageColumn");
 
 },{"./PageColumn":"ezFNF","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ezFNF":[function(require,module,exports) {
@@ -42231,6 +42276,7 @@ $parcel$ReactRefreshHelpers$2ae7.prelude(module);
 try {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "PAGE_PADDING_HORIZONTAL", ()=>PAGE_PADDING_HORIZONTAL);
 parcelHelpers.export(exports, "PageColumn", ()=>PageColumn);
 var _jsxDevRuntime = require("react/jsx-dev-runtime");
 var _react = require("react");
@@ -42238,12 +42284,13 @@ var _reactDefault = parcelHelpers.interopDefault(_react);
 var _classnames = require("classnames");
 var _classnamesDefault = parcelHelpers.interopDefault(_classnames);
 var _stylesModuleCss = require("./styles.module.css");
+const PAGE_PADDING_HORIZONTAL = 16;
 function PageColumn({ style , className , ...props }) {
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
         className: (0, _classnamesDefault.default)(className, _stylesModuleCss.column),
         style: {
-            paddingLeft: 16,
-            paddingRight: 16,
+            paddingLeft: PAGE_PADDING_HORIZONTAL,
+            paddingRight: PAGE_PADDING_HORIZONTAL,
             flexGrow: 1,
             display: "flex",
             flexDirection: "column",
@@ -42253,7 +42300,7 @@ function PageColumn({ style , className , ...props }) {
         ...props
     }, void 0, false, {
         fileName: "src/ui/components/PageColumn/PageColumn.tsx",
-        lineNumber: 11,
+        lineNumber: 13,
         columnNumber: 5
     }, this);
 }
@@ -44884,1078 +44931,994 @@ function useAddressParams() {
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react":"21dqq","react-query":"7slSP","../channels":"57ETE","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"57ETE":[function(require,module,exports) {
+},{"react":"21dqq","react-query":"7slSP","../channels":"bv9nl","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"bv9nl":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "walletPort", ()=>walletPort);
 parcelHelpers.export(exports, "accountPublicRPCPort", ()=>accountPublicRPCPort);
+parcelHelpers.export(exports, "memoryCacheRPCPort", ()=>memoryCacheRPCPort);
 parcelHelpers.export(exports, "windowPort", ()=>windowPort);
-// import { ethers } from 'ethers';
-var _chain = require("src/modules/networks/Chain");
-var _networksStore = require("src/modules/networks/networks-store");
-const testAddress = "0x42b9df65b219b3dd36ff330a4dd8f327a6ada990";
-const testWallet = {
-    address: testAddress,
-    mnemonic: null,
-    privateKey: "<privateKey>",
-    name: null
-};
-const walletPort = {
-    state: {
-        chainId: "0x89"
-    },
-    async request (method, ...args) {
-        if (method === "getCurrentWallet") return Promise.resolve(testWallet);
-        else if (method === "getCurrentAddress") return Promise.resolve(testWallet.address);
-        else if (method === "signAndSendTransaction") return Promise.resolve({
-            hash: "0x12345"
-        });
-        else if (method === "getChainId" || method === "eth_chainId") return Promise.resolve(this.state.chainId);
-        else if (method === "switchChain") {
-            const networks = await (0, _networksStore.networksStore).load();
-            this.state.chainId = networks.getChainId(new (0, _chain.Chain)(args[0]));
-            return;
-        }
+var _portMessageChannel = require("src/shared/PortMessageChannel");
+var _formatJsonRpcResultForPort = require("src/shared/formatJsonRpcResultForPort");
+var _utils = require("@json-rpc-tools/utils");
+var _userRejected = require("src/shared/errors/UserRejected");
+const walletPort = new (0, _portMessageChannel.PortMessageChannel)({
+    name: "wallet"
+});
+const accountPublicRPCPort = new (0, _portMessageChannel.PortMessageChannel)({
+    name: "accountPublicRPC"
+});
+const memoryCacheRPCPort = new (0, _portMessageChannel.PortMessageChannel)({
+    name: "memoryCacheRPC"
+});
+class WindowPort extends (0, _portMessageChannel.PortMessageChannel) {
+    confirm(windowId, result) {
+        return this.port.postMessage((0, _formatJsonRpcResultForPort.formatJsonRpcResultForPort)(windowId, result));
     }
-};
-const accountPublicRPCPort = {
-    request (method) {
-        if (method === "logout") return Promise.resolve().then(()=>{
-            // eslint-disable-next-line no-console
-            console.log("accountPublicRPCPort mock: logout!");
-        });
+    reject(windowId) {
+        this.port.postMessage((0, _utils.formatJsonRpcError)(windowId, new (0, _userRejected.UserRejected)()));
     }
-};
-const windowPort = {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    confirm (windowId, ...args) {
-        // eslint-disable-next-line no-console
-        console.log(`windowPort.reject(${windowId}, ${args.join(", ")})`);
-    },
-    reject (windowId) {
-        // eslint-disable-next-line no-console
-        console.log(`windowPort.reject(${windowId})`);
-    }
-};
+}
+const windowPort = new WindowPort({
+    name: "window"
+});
 Object.assign(window, {
     walletPort,
-    accountPublicRPCPort,
-    windowPort
+    accountPublicRPCPort
 });
 
-},{"src/modules/networks/Chain":"7Kj03","src/modules/networks/networks-store":"cQA5b","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7Kj03":[function(require,module,exports) {
+},{"src/shared/PortMessageChannel":"eirSt","src/shared/formatJsonRpcResultForPort":"fB8WN","@json-rpc-tools/utils":"lGviI","src/shared/errors/UserRejected":"91evT","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"eirSt":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "Chain", ()=>Chain);
-parcelHelpers.export(exports, "createChain", ()=>createChain);
-var _memoize = require("lodash/memoize");
-var _memoizeDefault = parcelHelpers.interopDefault(_memoize);
-class Chain {
-    constructor(value){
-        this.value = value;
-    }
-    toString() {
-        return this.value;
-    }
-}
-const createChain = (0, _memoizeDefault.default)((chain)=>new Chain(chain));
-
-},{"lodash/memoize":"azHKC","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"azHKC":[function(require,module,exports) {
-var MapCache = require("./_MapCache");
-/** Error message constants. */ var FUNC_ERROR_TEXT = "Expected a function";
-/**
- * Creates a function that memoizes the result of `func`. If `resolver` is
- * provided, it determines the cache key for storing the result based on the
- * arguments provided to the memoized function. By default, the first argument
- * provided to the memoized function is used as the map cache key. The `func`
- * is invoked with the `this` binding of the memoized function.
- *
- * **Note:** The cache is exposed as the `cache` property on the memoized
- * function. Its creation may be customized by replacing the `_.memoize.Cache`
- * constructor with one whose instances implement the
- * [`Map`](http://ecma-international.org/ecma-262/7.0/#sec-properties-of-the-map-prototype-object)
- * method interface of `clear`, `delete`, `get`, `has`, and `set`.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Function
- * @param {Function} func The function to have its output memoized.
- * @param {Function} [resolver] The function to resolve the cache key.
- * @returns {Function} Returns the new memoized function.
- * @example
- *
- * var object = { 'a': 1, 'b': 2 };
- * var other = { 'c': 3, 'd': 4 };
- *
- * var values = _.memoize(_.values);
- * values(object);
- * // => [1, 2]
- *
- * values(other);
- * // => [3, 4]
- *
- * object.a = 2;
- * values(object);
- * // => [1, 2]
- *
- * // Modify the result cache.
- * values.cache.set(object, ['a', 'b']);
- * values(object);
- * // => ['a', 'b']
- *
- * // Replace `_.memoize.Cache`.
- * _.memoize.Cache = WeakMap;
- */ function memoize(func, resolver) {
-    if (typeof func != "function" || resolver != null && typeof resolver != "function") throw new TypeError(FUNC_ERROR_TEXT);
-    var memoized = function() {
-        var args = arguments, key = resolver ? resolver.apply(this, args) : args[0], cache = memoized.cache;
-        if (cache.has(key)) return cache.get(key);
-        var result = func.apply(this, args);
-        memoized.cache = cache.set(key, result) || cache;
-        return result;
-    };
-    memoized.cache = new (memoize.Cache || MapCache);
-    return memoized;
-}
-// Expose `MapCache`.
-memoize.Cache = MapCache;
-module.exports = memoize;
-
-},{"./_MapCache":"664I1"}],"664I1":[function(require,module,exports) {
-var mapCacheClear = require("./_mapCacheClear"), mapCacheDelete = require("./_mapCacheDelete"), mapCacheGet = require("./_mapCacheGet"), mapCacheHas = require("./_mapCacheHas"), mapCacheSet = require("./_mapCacheSet");
-/**
- * Creates a map cache object to store key-value pairs.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */ function MapCache(entries) {
-    var index = -1, length = entries == null ? 0 : entries.length;
-    this.clear();
-    while(++index < length){
-        var entry = entries[index];
-        this.set(entry[0], entry[1]);
-    }
-}
-// Add methods to `MapCache`.
-MapCache.prototype.clear = mapCacheClear;
-MapCache.prototype["delete"] = mapCacheDelete;
-MapCache.prototype.get = mapCacheGet;
-MapCache.prototype.has = mapCacheHas;
-MapCache.prototype.set = mapCacheSet;
-module.exports = MapCache;
-
-},{"./_mapCacheClear":"7kHs4","./_mapCacheDelete":"4ny9y","./_mapCacheGet":"gVeFY","./_mapCacheHas":"idSOY","./_mapCacheSet":"lXUJT"}],"7kHs4":[function(require,module,exports) {
-var Hash = require("./_Hash"), ListCache = require("./_ListCache"), Map = require("./_Map");
-/**
- * Removes all key-value entries from the map.
- *
- * @private
- * @name clear
- * @memberOf MapCache
- */ function mapCacheClear() {
-    this.size = 0;
-    this.__data__ = {
-        "hash": new Hash,
-        "map": new (Map || ListCache),
-        "string": new Hash
-    };
-}
-module.exports = mapCacheClear;
-
-},{"./_Hash":"jFMT5","./_ListCache":"3UZeo","./_Map":"8YjF4"}],"jFMT5":[function(require,module,exports) {
-var hashClear = require("./_hashClear"), hashDelete = require("./_hashDelete"), hashGet = require("./_hashGet"), hashHas = require("./_hashHas"), hashSet = require("./_hashSet");
-/**
- * Creates a hash object.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */ function Hash(entries) {
-    var index = -1, length = entries == null ? 0 : entries.length;
-    this.clear();
-    while(++index < length){
-        var entry = entries[index];
-        this.set(entry[0], entry[1]);
-    }
-}
-// Add methods to `Hash`.
-Hash.prototype.clear = hashClear;
-Hash.prototype["delete"] = hashDelete;
-Hash.prototype.get = hashGet;
-Hash.prototype.has = hashHas;
-Hash.prototype.set = hashSet;
-module.exports = Hash;
-
-},{"./_hashClear":"f2NRo","./_hashDelete":"cCdgz","./_hashGet":"eKqTO","./_hashHas":"ghnqP","./_hashSet":"6i99R"}],"f2NRo":[function(require,module,exports) {
-var nativeCreate = require("./_nativeCreate");
-/**
- * Removes all key-value entries from the hash.
- *
- * @private
- * @name clear
- * @memberOf Hash
- */ function hashClear() {
-    this.__data__ = nativeCreate ? nativeCreate(null) : {};
-    this.size = 0;
-}
-module.exports = hashClear;
-
-},{"./_nativeCreate":"6i8Uf"}],"6i8Uf":[function(require,module,exports) {
-var getNative = require("./_getNative");
-/* Built-in method references that are verified to be native. */ var nativeCreate = getNative(Object, "create");
-module.exports = nativeCreate;
-
-},{"./_getNative":"9PCIl"}],"9PCIl":[function(require,module,exports) {
-var baseIsNative = require("./_baseIsNative"), getValue = require("./_getValue");
-/**
- * Gets the native function at `key` of `object`.
- *
- * @private
- * @param {Object} object The object to query.
- * @param {string} key The key of the method to get.
- * @returns {*} Returns the function if it's native, else `undefined`.
- */ function getNative(object, key) {
-    var value = getValue(object, key);
-    return baseIsNative(value) ? value : undefined;
-}
-module.exports = getNative;
-
-},{"./_baseIsNative":"2U9Pn","./_getValue":"kKx5I"}],"2U9Pn":[function(require,module,exports) {
-var isFunction = require("./isFunction"), isMasked = require("./_isMasked"), isObject = require("./isObject"), toSource = require("./_toSource");
-/**
- * Used to match `RegExp`
- * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
- */ var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
-/** Used to detect host constructors (Safari). */ var reIsHostCtor = /^\[object .+?Constructor\]$/;
-/** Used for built-in method references. */ var funcProto = Function.prototype, objectProto = Object.prototype;
-/** Used to resolve the decompiled source of functions. */ var funcToString = funcProto.toString;
-/** Used to check objects for own properties. */ var hasOwnProperty = objectProto.hasOwnProperty;
-/** Used to detect if a method is native. */ var reIsNative = RegExp("^" + funcToString.call(hasOwnProperty).replace(reRegExpChar, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$");
-/**
- * The base implementation of `_.isNative` without bad shim checks.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a native function,
- *  else `false`.
- */ function baseIsNative(value) {
-    if (!isObject(value) || isMasked(value)) return false;
-    var pattern = isFunction(value) ? reIsNative : reIsHostCtor;
-    return pattern.test(toSource(value));
-}
-module.exports = baseIsNative;
-
-},{"./isFunction":"cfti6","./_isMasked":"cMDzi","./isObject":"cGhqJ","./_toSource":"bYHc7"}],"cfti6":[function(require,module,exports) {
-var baseGetTag = require("./_baseGetTag"), isObject = require("./isObject");
-/** `Object#toString` result references. */ var asyncTag = "[object AsyncFunction]", funcTag = "[object Function]", genTag = "[object GeneratorFunction]", proxyTag = "[object Proxy]";
-/**
- * Checks if `value` is classified as a `Function` object.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a function, else `false`.
- * @example
- *
- * _.isFunction(_);
- * // => true
- *
- * _.isFunction(/abc/);
- * // => false
- */ function isFunction(value) {
-    if (!isObject(value)) return false;
-    // The use of `Object#toString` avoids issues with the `typeof` operator
-    // in Safari 9 which returns 'object' for typed arrays and other constructors.
-    var tag = baseGetTag(value);
-    return tag == funcTag || tag == genTag || tag == asyncTag || tag == proxyTag;
-}
-module.exports = isFunction;
-
-},{"./_baseGetTag":"lOnbo","./isObject":"cGhqJ"}],"lOnbo":[function(require,module,exports) {
-var Symbol = require("./_Symbol"), getRawTag = require("./_getRawTag"), objectToString = require("./_objectToString");
-/** `Object#toString` result references. */ var nullTag = "[object Null]", undefinedTag = "[object Undefined]";
-/** Built-in value references. */ var symToStringTag = Symbol ? Symbol.toStringTag : undefined;
-/**
- * The base implementation of `getTag` without fallbacks for buggy environments.
- *
- * @private
- * @param {*} value The value to query.
- * @returns {string} Returns the `toStringTag`.
- */ function baseGetTag(value) {
-    if (value == null) return value === undefined ? undefinedTag : nullTag;
-    return symToStringTag && symToStringTag in Object(value) ? getRawTag(value) : objectToString(value);
-}
-module.exports = baseGetTag;
-
-},{"./_Symbol":"7lsL9","./_getRawTag":"995sO","./_objectToString":"bmE3g"}],"7lsL9":[function(require,module,exports) {
-var root = require("./_root");
-/** Built-in value references. */ var Symbol = root.Symbol;
-module.exports = Symbol;
-
-},{"./_root":"dSYUs"}],"dSYUs":[function(require,module,exports) {
-var freeGlobal = require("./_freeGlobal");
-/** Detect free variable `self`. */ var freeSelf = typeof self == "object" && self && self.Object === Object && self;
-/** Used as a reference to the global object. */ var root = freeGlobal || freeSelf || Function("return this")();
-module.exports = root;
-
-},{"./_freeGlobal":"kAk32"}],"kAk32":[function(require,module,exports) {
-var global = arguments[3];
-/** Detect free variable `global` from Node.js. */ var freeGlobal = typeof global == "object" && global && global.Object === Object && global;
-module.exports = freeGlobal;
-
-},{}],"995sO":[function(require,module,exports) {
-var Symbol = require("./_Symbol");
-/** Used for built-in method references. */ var objectProto = Object.prototype;
-/** Used to check objects for own properties. */ var hasOwnProperty = objectProto.hasOwnProperty;
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
- * of values.
- */ var nativeObjectToString = objectProto.toString;
-/** Built-in value references. */ var symToStringTag = Symbol ? Symbol.toStringTag : undefined;
-/**
- * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
- *
- * @private
- * @param {*} value The value to query.
- * @returns {string} Returns the raw `toStringTag`.
- */ function getRawTag(value) {
-    var isOwn = hasOwnProperty.call(value, symToStringTag), tag = value[symToStringTag];
-    try {
-        value[symToStringTag] = undefined;
-        var unmasked = true;
-    } catch (e) {}
-    var result = nativeObjectToString.call(value);
-    if (unmasked) {
-        if (isOwn) value[symToStringTag] = tag;
-        else delete value[symToStringTag];
-    }
-    return result;
-}
-module.exports = getRawTag;
-
-},{"./_Symbol":"7lsL9"}],"bmE3g":[function(require,module,exports) {
-/** Used for built-in method references. */ var objectProto = Object.prototype;
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
- * of values.
- */ var nativeObjectToString = objectProto.toString;
-/**
- * Converts `value` to a string using `Object.prototype.toString`.
- *
- * @private
- * @param {*} value The value to convert.
- * @returns {string} Returns the converted string.
- */ function objectToString(value) {
-    return nativeObjectToString.call(value);
-}
-module.exports = objectToString;
-
-},{}],"cGhqJ":[function(require,module,exports) {
-/**
- * Checks if `value` is the
- * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
- * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an object, else `false`.
- * @example
- *
- * _.isObject({});
- * // => true
- *
- * _.isObject([1, 2, 3]);
- * // => true
- *
- * _.isObject(_.noop);
- * // => true
- *
- * _.isObject(null);
- * // => false
- */ function isObject(value) {
-    var type = typeof value;
-    return value != null && (type == "object" || type == "function");
-}
-module.exports = isObject;
-
-},{}],"cMDzi":[function(require,module,exports) {
-var coreJsData = require("./_coreJsData");
-/** Used to detect methods masquerading as native. */ var maskSrcKey = function() {
-    var uid = /[^.]+$/.exec(coreJsData && coreJsData.keys && coreJsData.keys.IE_PROTO || "");
-    return uid ? "Symbol(src)_1." + uid : "";
-}();
-/**
- * Checks if `func` has its source masked.
- *
- * @private
- * @param {Function} func The function to check.
- * @returns {boolean} Returns `true` if `func` is masked, else `false`.
- */ function isMasked(func) {
-    return !!maskSrcKey && maskSrcKey in func;
-}
-module.exports = isMasked;
-
-},{"./_coreJsData":"6gJwQ"}],"6gJwQ":[function(require,module,exports) {
-var root = require("./_root");
-/** Used to detect overreaching core-js shims. */ var coreJsData = root["__core-js_shared__"];
-module.exports = coreJsData;
-
-},{"./_root":"dSYUs"}],"bYHc7":[function(require,module,exports) {
-/** Used for built-in method references. */ var funcProto = Function.prototype;
-/** Used to resolve the decompiled source of functions. */ var funcToString = funcProto.toString;
-/**
- * Converts `func` to its source code.
- *
- * @private
- * @param {Function} func The function to convert.
- * @returns {string} Returns the source code.
- */ function toSource(func) {
-    if (func != null) {
-        try {
-            return funcToString.call(func);
-        } catch (e) {}
-        try {
-            return func + "";
-        } catch (e1) {}
-    }
-    return "";
-}
-module.exports = toSource;
-
-},{}],"kKx5I":[function(require,module,exports) {
-/**
- * Gets the value at `key` of `object`.
- *
- * @private
- * @param {Object} [object] The object to query.
- * @param {string} key The key of the property to get.
- * @returns {*} Returns the property value.
- */ function getValue(object, key) {
-    return object == null ? undefined : object[key];
-}
-module.exports = getValue;
-
-},{}],"cCdgz":[function(require,module,exports) {
-/**
- * Removes `key` and its value from the hash.
- *
- * @private
- * @name delete
- * @memberOf Hash
- * @param {Object} hash The hash to modify.
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */ function hashDelete(key) {
-    var result = this.has(key) && delete this.__data__[key];
-    this.size -= result ? 1 : 0;
-    return result;
-}
-module.exports = hashDelete;
-
-},{}],"eKqTO":[function(require,module,exports) {
-var nativeCreate = require("./_nativeCreate");
-/** Used to stand-in for `undefined` hash values. */ var HASH_UNDEFINED = "__lodash_hash_undefined__";
-/** Used for built-in method references. */ var objectProto = Object.prototype;
-/** Used to check objects for own properties. */ var hasOwnProperty = objectProto.hasOwnProperty;
-/**
- * Gets the hash value for `key`.
- *
- * @private
- * @name get
- * @memberOf Hash
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */ function hashGet(key) {
-    var data = this.__data__;
-    if (nativeCreate) {
-        var result = data[key];
-        return result === HASH_UNDEFINED ? undefined : result;
-    }
-    return hasOwnProperty.call(data, key) ? data[key] : undefined;
-}
-module.exports = hashGet;
-
-},{"./_nativeCreate":"6i8Uf"}],"ghnqP":[function(require,module,exports) {
-var nativeCreate = require("./_nativeCreate");
-/** Used for built-in method references. */ var objectProto = Object.prototype;
-/** Used to check objects for own properties. */ var hasOwnProperty = objectProto.hasOwnProperty;
-/**
- * Checks if a hash value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf Hash
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */ function hashHas(key) {
-    var data = this.__data__;
-    return nativeCreate ? data[key] !== undefined : hasOwnProperty.call(data, key);
-}
-module.exports = hashHas;
-
-},{"./_nativeCreate":"6i8Uf"}],"6i99R":[function(require,module,exports) {
-var nativeCreate = require("./_nativeCreate");
-/** Used to stand-in for `undefined` hash values. */ var HASH_UNDEFINED = "__lodash_hash_undefined__";
-/**
- * Sets the hash `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf Hash
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the hash instance.
- */ function hashSet(key, value) {
-    var data = this.__data__;
-    this.size += this.has(key) ? 0 : 1;
-    data[key] = nativeCreate && value === undefined ? HASH_UNDEFINED : value;
-    return this;
-}
-module.exports = hashSet;
-
-},{"./_nativeCreate":"6i8Uf"}],"3UZeo":[function(require,module,exports) {
-var listCacheClear = require("./_listCacheClear"), listCacheDelete = require("./_listCacheDelete"), listCacheGet = require("./_listCacheGet"), listCacheHas = require("./_listCacheHas"), listCacheSet = require("./_listCacheSet");
-/**
- * Creates an list cache object.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */ function ListCache(entries) {
-    var index = -1, length = entries == null ? 0 : entries.length;
-    this.clear();
-    while(++index < length){
-        var entry = entries[index];
-        this.set(entry[0], entry[1]);
-    }
-}
-// Add methods to `ListCache`.
-ListCache.prototype.clear = listCacheClear;
-ListCache.prototype["delete"] = listCacheDelete;
-ListCache.prototype.get = listCacheGet;
-ListCache.prototype.has = listCacheHas;
-ListCache.prototype.set = listCacheSet;
-module.exports = ListCache;
-
-},{"./_listCacheClear":"7AKQv","./_listCacheDelete":"j2Z5O","./_listCacheGet":"6Zrrs","./_listCacheHas":"i1CBK","./_listCacheSet":"2Rcur"}],"7AKQv":[function(require,module,exports) {
-/**
- * Removes all key-value entries from the list cache.
- *
- * @private
- * @name clear
- * @memberOf ListCache
- */ function listCacheClear() {
-    this.__data__ = [];
-    this.size = 0;
-}
-module.exports = listCacheClear;
-
-},{}],"j2Z5O":[function(require,module,exports) {
-var assocIndexOf = require("./_assocIndexOf");
-/** Used for built-in method references. */ var arrayProto = Array.prototype;
-/** Built-in value references. */ var splice = arrayProto.splice;
-/**
- * Removes `key` and its value from the list cache.
- *
- * @private
- * @name delete
- * @memberOf ListCache
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */ function listCacheDelete(key) {
-    var data = this.__data__, index = assocIndexOf(data, key);
-    if (index < 0) return false;
-    var lastIndex = data.length - 1;
-    if (index == lastIndex) data.pop();
-    else splice.call(data, index, 1);
-    --this.size;
-    return true;
-}
-module.exports = listCacheDelete;
-
-},{"./_assocIndexOf":"cRVsl"}],"cRVsl":[function(require,module,exports) {
-var eq = require("./eq");
-/**
- * Gets the index at which the `key` is found in `array` of key-value pairs.
- *
- * @private
- * @param {Array} array The array to inspect.
- * @param {*} key The key to search for.
- * @returns {number} Returns the index of the matched value, else `-1`.
- */ function assocIndexOf(array, key) {
-    var length = array.length;
-    while(length--){
-        if (eq(array[length][0], key)) return length;
-    }
-    return -1;
-}
-module.exports = assocIndexOf;
-
-},{"./eq":"aVz5f"}],"aVz5f":[function(require,module,exports) {
-/**
- * Performs a
- * [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
- * comparison between two values to determine if they are equivalent.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to compare.
- * @param {*} other The other value to compare.
- * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
- * @example
- *
- * var object = { 'a': 1 };
- * var other = { 'a': 1 };
- *
- * _.eq(object, object);
- * // => true
- *
- * _.eq(object, other);
- * // => false
- *
- * _.eq('a', 'a');
- * // => true
- *
- * _.eq('a', Object('a'));
- * // => false
- *
- * _.eq(NaN, NaN);
- * // => true
- */ function eq(value, other) {
-    return value === other || value !== value && other !== other;
-}
-module.exports = eq;
-
-},{}],"6Zrrs":[function(require,module,exports) {
-var assocIndexOf = require("./_assocIndexOf");
-/**
- * Gets the list cache value for `key`.
- *
- * @private
- * @name get
- * @memberOf ListCache
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */ function listCacheGet(key) {
-    var data = this.__data__, index = assocIndexOf(data, key);
-    return index < 0 ? undefined : data[index][1];
-}
-module.exports = listCacheGet;
-
-},{"./_assocIndexOf":"cRVsl"}],"i1CBK":[function(require,module,exports) {
-var assocIndexOf = require("./_assocIndexOf");
-/**
- * Checks if a list cache value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf ListCache
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */ function listCacheHas(key) {
-    return assocIndexOf(this.__data__, key) > -1;
-}
-module.exports = listCacheHas;
-
-},{"./_assocIndexOf":"cRVsl"}],"2Rcur":[function(require,module,exports) {
-var assocIndexOf = require("./_assocIndexOf");
-/**
- * Sets the list cache `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf ListCache
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the list cache instance.
- */ function listCacheSet(key, value) {
-    var data = this.__data__, index = assocIndexOf(data, key);
-    if (index < 0) {
-        ++this.size;
-        data.push([
-            key,
-            value
-        ]);
-    } else data[index][1] = value;
-    return this;
-}
-module.exports = listCacheSet;
-
-},{"./_assocIndexOf":"cRVsl"}],"8YjF4":[function(require,module,exports) {
-var getNative = require("./_getNative"), root = require("./_root");
-/* Built-in method references that are verified to be native. */ var Map = getNative(root, "Map");
-module.exports = Map;
-
-},{"./_getNative":"9PCIl","./_root":"dSYUs"}],"4ny9y":[function(require,module,exports) {
-var getMapData = require("./_getMapData");
-/**
- * Removes `key` and its value from the map.
- *
- * @private
- * @name delete
- * @memberOf MapCache
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */ function mapCacheDelete(key) {
-    var result = getMapData(this, key)["delete"](key);
-    this.size -= result ? 1 : 0;
-    return result;
-}
-module.exports = mapCacheDelete;
-
-},{"./_getMapData":"aptgk"}],"aptgk":[function(require,module,exports) {
-var isKeyable = require("./_isKeyable");
-/**
- * Gets the data for `map`.
- *
- * @private
- * @param {Object} map The map to query.
- * @param {string} key The reference key.
- * @returns {*} Returns the map data.
- */ function getMapData(map, key) {
-    var data = map.__data__;
-    return isKeyable(key) ? data[typeof key == "string" ? "string" : "hash"] : data.map;
-}
-module.exports = getMapData;
-
-},{"./_isKeyable":"icylN"}],"icylN":[function(require,module,exports) {
-/**
- * Checks if `value` is suitable for use as unique object key.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is suitable, else `false`.
- */ function isKeyable(value) {
-    var type = typeof value;
-    return type == "string" || type == "number" || type == "symbol" || type == "boolean" ? value !== "__proto__" : value === null;
-}
-module.exports = isKeyable;
-
-},{}],"gVeFY":[function(require,module,exports) {
-var getMapData = require("./_getMapData");
-/**
- * Gets the map value for `key`.
- *
- * @private
- * @name get
- * @memberOf MapCache
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */ function mapCacheGet(key) {
-    return getMapData(this, key).get(key);
-}
-module.exports = mapCacheGet;
-
-},{"./_getMapData":"aptgk"}],"idSOY":[function(require,module,exports) {
-var getMapData = require("./_getMapData");
-/**
- * Checks if a map value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf MapCache
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */ function mapCacheHas(key) {
-    return getMapData(this, key).has(key);
-}
-module.exports = mapCacheHas;
-
-},{"./_getMapData":"aptgk"}],"lXUJT":[function(require,module,exports) {
-var getMapData = require("./_getMapData");
-/**
- * Sets the map `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf MapCache
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the map cache instance.
- */ function mapCacheSet(key, value) {
-    var data = getMapData(this, key), size = data.size;
-    data.set(key, value);
-    this.size += data.size == size ? 0 : 1;
-    return this;
-}
-module.exports = mapCacheSet;
-
-},{"./_getMapData":"aptgk"}],"cQA5b":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "networksStore", ()=>networksStore);
-var _storeUnit = require("store-unit");
-var _networks = require("./Networks");
-var _networksApi = require("./networks-api");
-class NetworksStore extends (0, _storeUnit.Store) {
-    loaderPromise = null;
-    load() {
-        if (this.loaderPromise) return this.loaderPromise;
-        this.loaderPromise = (0, _networksApi.get)().then((value)=>{
-            const networks = new (0, _networks.Networks)({
-                networks: value
-            });
-            this.setState({
-                networks
-            });
-            return networks;
+parcelHelpers.export(exports, "PortMessageChannel", ()=>PortMessageChannel);
+var _utils = require("@json-rpc-tools/utils");
+class PortMessageChannel {
+    constructor({ name  }){
+        this.port = chrome.runtime.connect({
+            name
         });
-        return this.loaderPromise;
+    // this.port.onMessage.addListener(console.log);
+    }
+    request(method, params, id) {
+        const payload = (0, _utils.formatJsonRpcRequest)(method, params, id);
+        this.port.postMessage(payload);
+        return this.getPromise(payload.id);
+    }
+    getPromise(id) {
+        return new Promise((resolve, reject)=>{
+            const handler = (msg)=>{
+                if ((0, _utils.isJsonRpcPayload)(msg) && (0, _utils.isJsonRpcResponse)(msg)) {
+                    if (msg.id === id) {
+                        if ((0, _utils.isJsonRpcResult)(msg)) resolve(msg.result);
+                        else reject(msg.error);
+                        this.port.onMessage.removeListener(handler);
+                    }
+                }
+            };
+            this.port.onMessage.addListener(handler);
+        });
     }
 }
-const networksStore = new NetworksStore({
-    networks: null
-});
 
-},{"store-unit":"4kZQu","./Networks":"i4HFz","./networks-api":"2aSwD","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"i4HFz":[function(require,module,exports) {
+},{"@json-rpc-tools/utils":"lGviI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lGviI":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+const tslib_1 = require("tslib");
+tslib_1.__exportStar(require("./constants"), exports);
+tslib_1.__exportStar(require("./error"), exports);
+tslib_1.__exportStar(require("./env"), exports);
+tslib_1.__exportStar(require("./format"), exports);
+tslib_1.__exportStar(require("./routing"), exports);
+tslib_1.__exportStar(require("./types"), exports);
+tslib_1.__exportStar(require("./validators"), exports);
+
+},{"tslib":"lRdW5","./constants":"j1yQJ","./error":"7C94t","./env":"7xkWN","./format":"3d0nB","./routing":"9H7rT","./types":"leztz","./validators":"d8vBs"}],"lRdW5":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "Networks", ()=>Networks);
-var _isTruthyTs = require("is-truthy-ts");
-var _capitalizeTs = require("capitalize-ts");
-var _chain = require("./Chain");
-var _keys = require("./keys");
-var _asset = require("./asset");
-function toCollection(items, getKey, getItem) {
-    const result = {};
-    for (const item of items)result[getKey(item)] = getItem(item);
-    return result;
-}
-function invertObject(object) {
-    return Object.fromEntries(Object.entries(object).map(([key, value])=>[
-            value,
-            key
-        ]));
-}
-const nameAliases = {
-    "binance-smart-chain": "bsc"
-};
-function localeCompareWithPriority(str1, str2, priorityString) {
-    if (priorityString) {
-        if (str1 === priorityString) return -1;
-        if (str2 === priorityString) return 1;
-    }
-    return str1.localeCompare(str2);
-}
-class Networks {
-    static nameAliases = nameAliases;
-    static nameAliasesInverted = invertObject(nameAliases);
-    static purposeKeyMap = {
-        sending: "supports_sending",
-        trading: "supports_trading",
-        bridge: "supports_bridge"
+parcelHelpers.export(exports, "__extends", ()=>__extends);
+parcelHelpers.export(exports, "__assign", ()=>__assign);
+parcelHelpers.export(exports, "__rest", ()=>__rest);
+parcelHelpers.export(exports, "__decorate", ()=>__decorate);
+parcelHelpers.export(exports, "__param", ()=>__param);
+parcelHelpers.export(exports, "__metadata", ()=>__metadata);
+parcelHelpers.export(exports, "__awaiter", ()=>__awaiter);
+parcelHelpers.export(exports, "__generator", ()=>__generator);
+parcelHelpers.export(exports, "__createBinding", ()=>__createBinding);
+parcelHelpers.export(exports, "__exportStar", ()=>__exportStar);
+parcelHelpers.export(exports, "__values", ()=>__values);
+parcelHelpers.export(exports, "__read", ()=>__read);
+/** @deprecated */ parcelHelpers.export(exports, "__spread", ()=>__spread);
+/** @deprecated */ parcelHelpers.export(exports, "__spreadArrays", ()=>__spreadArrays);
+parcelHelpers.export(exports, "__spreadArray", ()=>__spreadArray);
+parcelHelpers.export(exports, "__await", ()=>__await);
+parcelHelpers.export(exports, "__asyncGenerator", ()=>__asyncGenerator);
+parcelHelpers.export(exports, "__asyncDelegator", ()=>__asyncDelegator);
+parcelHelpers.export(exports, "__asyncValues", ()=>__asyncValues);
+parcelHelpers.export(exports, "__makeTemplateObject", ()=>__makeTemplateObject);
+parcelHelpers.export(exports, "__importStar", ()=>__importStar);
+parcelHelpers.export(exports, "__importDefault", ()=>__importDefault);
+parcelHelpers.export(exports, "__classPrivateFieldGet", ()=>__classPrivateFieldGet);
+parcelHelpers.export(exports, "__classPrivateFieldSet", ()=>__classPrivateFieldSet);
+parcelHelpers.export(exports, "__classPrivateFieldIn", ()=>__classPrivateFieldIn);
+/******************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */ /* global Reflect, Promise */ var extendStatics = function(d1, b1) {
+    extendStatics = Object.setPrototypeOf || ({
+        __proto__: []
+    }) instanceof Array && function(d, b) {
+        d.__proto__ = b;
+    } || function(d, b) {
+        for(var p in b)if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
     };
-    constructor({ networks: networks1 , keys =(0, _keys.keys)  }){
-        this.networks = networks1.sort((a, b)=>localeCompareWithPriority(a.name, b.name, "Ethereum"));
-        this.keys = keys;
-        this.collection = toCollection(this.networks, (network)=>network.external_id, (x)=>x);
-        this.nameToId = toCollection(this.networks, (networks)=>networks.chain, (network)=>network.external_id);
+    return extendStatics(d1, b1);
+};
+function __extends(d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+    extendStatics(d, b);
+    function __() {
+        this.constructor = d;
     }
-    static getName(network) {
-        return network.name || (0, _capitalizeTs.capitalize)(network.chain);
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+}
+var __assign = function() {
+    __assign = Object.assign || function __assign(t) {
+        for(var s, i = 1, n = arguments.length; i < n; i++){
+            s = arguments[i];
+            for(var p in s)if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+function __rest(s, e) {
+    var t = {};
+    for(var p in s)if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0) t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function") {
+        for(var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++)if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i])) t[p[i]] = s[p[i]];
     }
-    static accessByAlias(object, chain) {
-        const value = chain.toString();
-        return object[value] || object[Networks.nameAliases[value]] || object[Networks.nameAliasesInverted[value]];
+    return t;
+}
+function __decorate(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+function __param(paramIndex, decorator) {
+    return function(target, key) {
+        decorator(target, key, paramIndex);
+    };
+}
+function __metadata(metadataKey, metadataValue) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(metadataKey, metadataValue);
+}
+function __awaiter(thisArg, _arguments, P, generator) {
+    function adopt(value) {
+        return value instanceof P ? value : new P(function(resolve) {
+            resolve(value);
+        });
     }
-    toId(chain) {
-        return Networks.accessByAlias(this.nameToId, chain) || "";
-    }
-    getNetworks() {
-        return this.networks;
-    }
-    getChainId(chain) {
-        return this.toId(chain);
-    }
-    getNativeAssetIdsForTrading() {
-        return this.networks.filter((network)=>network.supports_trading && network.native_asset).map((network)=>network.native_asset?.id).filter((0, _isTruthyTs.isTruthy));
-    }
-    getChainName(chain) {
-        return this.collection[this.toId(chain)]?.name || (0, _capitalizeTs.capitalize)(String(chain));
-    }
-    getNetworkById(chainId) {
-        const network = this.collection[chainId];
-        if (!network) throw new Error(`Unsupported network id: ${chainId}`);
-        return network;
-    }
-    getNetworkByName(chain) {
-        return this.collection[this.toId(chain)];
-    }
-    getChainById(chainId) {
-        const network = this.getNetworkById(chainId);
-        return (0, _chain.createChain)(network.chain);
-    }
-    getChainNameById(chainId) {
-        const network = this.getNetworkById(chainId);
-        return this.getChainName((0, _chain.createChain)(network.chain));
-    }
-    getExplorerHomeUrlByName(chain) {
-        return this.collection[this.toId(chain)]?.explorer_home_url;
-    }
-    getExplorerTxUrl(network, hash) {
-        return network?.explorer_tx_url?.replace("{HASH}", hash);
-    }
-    getExplorerTxUrlById(chainId, hash) {
-        return this.getExplorerTxUrl(this.collection[chainId], hash);
-    }
-    getExplorerTxUrlByName(chain, hash) {
-        return this.getExplorerTxUrl(this.collection[this.toId(chain)], hash);
-    }
-    getExplorerTokenUrl(network, address) {
-        return network?.explorer_token_url?.replace("{ADDRESS}", address);
-    }
-    getExplorerTokenUrlById(chainId, address) {
-        return this.getExplorerTokenUrl(this.collection[chainId], address);
-    }
-    getExplorerTokenUrlByName(chain, address) {
-        return this.getExplorerTokenUrl(this.collection[this.toId(chain)], address);
-    }
-    getExplorerNameById(chainId) {
-        return this.collection[chainId]?.explorer_name;
-    }
-    getEthereumChainParameter(chainId) {
-        const network = this.collection[chainId];
-        if (!network || !network.rpc_url_public || !network.native_asset) throw new Error(`Unsupported network id: ${chainId}`);
-        return {
-            chainId,
-            rpcUrls: network.rpc_url_public,
-            chainName: network.name,
-            nativeCurrency: {
-                code: network.native_asset.address,
-                name: network.native_asset.name,
-                symbol: network.native_asset.symbol,
-                decimals: network.native_asset.decimals
-            },
-            iconUrls: [
-                network.icon_url
-            ],
-            blockExplorerUrls: network.explorer_home_url ? [
-                network.explorer_home_url
-            ] : []
+    return new (P || (P = Promise))(function(resolve, reject) {
+        function fulfilled(value) {
+            try {
+                step(generator.next(value));
+            } catch (e) {
+                reject(e);
+            }
+        }
+        function rejected(value) {
+            try {
+                step(generator["throw"](value));
+            } catch (e) {
+                reject(e);
+            }
+        }
+        function step(result) {
+            result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+        }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+}
+function __generator(thisArg, body) {
+    var _ = {
+        label: 0,
+        sent: function() {
+            if (t[0] & 1) throw t[1];
+            return t[1];
+        },
+        trys: [],
+        ops: []
+    }, f, y, t, g;
+    return g = {
+        next: verb(0),
+        "throw": verb(1),
+        "return": verb(2)
+    }, typeof Symbol === "function" && (g[Symbol.iterator] = function() {
+        return this;
+    }), g;
+    function verb(n) {
+        return function(v) {
+            return step([
+                n,
+                v
+            ]);
         };
     }
-    supports(purpose, chain) {
-        const network = this.getNetworkByName(chain);
-        if (!network) return false;
-        const key = Networks.purposeKeyMap[purpose];
-        return network[key];
-    }
-    isNativeAsset(asset, chainId) {
-        const network = this.getNetworkById(chainId);
-        return network.native_asset ? (0, _asset.getAddress)({
-            asset,
-            chain: (0, _chain.createChain)(network.chain)
-        }) === network.native_asset.address : false;
-    }
-    isNativeAddress(address, chainId) {
-        const network = this.getNetworkById(chainId);
-        if (!network.native_asset) throw new Error(`Native asset is not defined for: ${chainId}`);
-        return network.native_asset ? address === network.native_asset.address : false;
-    }
-    getRpcUrlInternal(chain) {
-        const network = this.getNetworkByName(chain);
-        if (!network) throw new Error(`Cannot find network: ${chain}`);
-        if (!network.rpc_url_internal) throw new Error(`Network url missing: ${chain}`);
-        return (0, _keys.applyKeyToEndpoint)(network.rpc_url_internal, this.keys);
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while(_)try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [
+                op[0] & 2,
+                t.value
+            ];
+            switch(op[0]){
+                case 0:
+                case 1:
+                    t = op;
+                    break;
+                case 4:
+                    _.label++;
+                    return {
+                        value: op[1],
+                        done: false
+                    };
+                case 5:
+                    _.label++;
+                    y = op[1];
+                    op = [
+                        0
+                    ];
+                    continue;
+                case 7:
+                    op = _.ops.pop();
+                    _.trys.pop();
+                    continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+                        _ = 0;
+                        continue;
+                    }
+                    if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
+                        _.label = op[1];
+                        break;
+                    }
+                    if (op[0] === 6 && _.label < t[1]) {
+                        _.label = t[1];
+                        t = op;
+                        break;
+                    }
+                    if (t && _.label < t[2]) {
+                        _.label = t[2];
+                        _.ops.push(op);
+                        break;
+                    }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop();
+                    continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) {
+            op = [
+                6,
+                e
+            ];
+            y = 0;
+        } finally{
+            f = t = 0;
+        }
+        if (op[0] & 5) throw op[1];
+        return {
+            value: op[0] ? op[1] : void 0,
+            done: true
+        };
     }
 }
-
-},{"is-truthy-ts":"h3kjr","capitalize-ts":"eOrib","./Chain":"7Kj03","./keys":"lwdCE","./asset":"iMbfS","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"h3kjr":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "isTruthy", ()=>n);
-function n(n1) {
-    return null != n1;
-}
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"eOrib":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "capitalize", ()=>e);
-function e(e1) {
-    return e1.charAt(0).toUpperCase() + e1.slice(1);
-}
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lwdCE":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "keys", ()=>keys);
-parcelHelpers.export(exports, "applyKeyToEndpoint", ()=>applyKeyToEndpoint);
-var _config = require("src/env/config");
-const keys = {
-    ARBITRUM_INFURA_API_KEY: "e2e40a30dc83445e8b4d5d7c88f85276",
-    AURORA_API_KEY: "2ZaW4eTLoH9wrr3N5jMfSkyGXA9PLJDRb5jZdHV591mr",
-    ETHEREUM_ALCHEMY_API_KEY: (0, _config.ALCHEMY_KEY),
-    OPTIMISM_INFURA_API_KEY: "e2e40a30dc83445e8b4d5d7c88f85276",
-    POLYGON_INFURA_API_KEY: "e2e40a30dc83445e8b4d5d7c88f85276",
-    SOLANA_API_KEY: ""
+var __createBinding = Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) desc = {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    };
+    Object.defineProperty(o, k2, desc);
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
 };
-function applyKeyToEndpoint(endpoint, keys1) {
-    /**
-   * input: https://eth-mainnet.alchemyapi.io/v2/{ETHEREUM_ALCHEMY_API_KEY}
-   * output: https://eth-mainnet.alchemyapi.io/v2/keyValue
-   */ let result = endpoint;
-    for(const key in keys1)result = result.replace(`{${key}}`, keys1[key]);
+function __exportStar(m, o) {
+    for(var p in m)if (p !== "default" && !Object.prototype.hasOwnProperty.call(o, p)) __createBinding(o, m, p);
+}
+function __values(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function() {
+            if (o && i >= o.length) o = void 0;
+            return {
+                value: o && o[i++],
+                done: !o
+            };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+}
+function __read(o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while((n === void 0 || n-- > 0) && !(r = i.next()).done)ar.push(r.value);
+    } catch (error) {
+        e = {
+            error: error
+        };
+    } finally{
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        } finally{
+            if (e) throw e.error;
+        }
+    }
+    return ar;
+}
+function __spread() {
+    for(var ar = [], i = 0; i < arguments.length; i++)ar = ar.concat(__read(arguments[i]));
+    return ar;
+}
+function __spreadArrays() {
+    for(var s = 0, i = 0, il = arguments.length; i < il; i++)s += arguments[i].length;
+    for(var r = Array(s), k = 0, i = 0; i < il; i++)for(var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)r[k] = a[j];
+    return r;
+}
+function __spreadArray(to, from, pack) {
+    if (pack || arguments.length === 2) {
+        for(var i = 0, l = from.length, ar; i < l; i++)if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+}
+function __await(v) {
+    return this instanceof __await ? (this.v = v, this) : new __await(v);
+}
+function __asyncGenerator(thisArg, _arguments, generator) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var g = generator.apply(thisArg, _arguments || []), i, q = [];
+    return i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function() {
+        return this;
+    }, i;
+    function verb(n) {
+        if (g[n]) i[n] = function(v) {
+            return new Promise(function(a, b) {
+                q.push([
+                    n,
+                    v,
+                    a,
+                    b
+                ]) > 1 || resume(n, v);
+            });
+        };
+    }
+    function resume(n, v) {
+        try {
+            step(g[n](v));
+        } catch (e) {
+            settle(q[0][3], e);
+        }
+    }
+    function step(r) {
+        r.value instanceof __await ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q[0][2], r);
+    }
+    function fulfill(value) {
+        resume("next", value);
+    }
+    function reject(value) {
+        resume("throw", value);
+    }
+    function settle(f, v) {
+        if (f(v), q.shift(), q.length) resume(q[0][0], q[0][1]);
+    }
+}
+function __asyncDelegator(o) {
+    var i, p;
+    return i = {}, verb("next"), verb("throw", function(e) {
+        throw e;
+    }), verb("return"), i[Symbol.iterator] = function() {
+        return this;
+    }, i;
+    function verb(n, f) {
+        i[n] = o[n] ? function(v) {
+            return (p = !p) ? {
+                value: __await(o[n](v)),
+                done: n === "return"
+            } : f ? f(v) : v;
+        } : f;
+    }
+}
+function __asyncValues(o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function() {
+        return this;
+    }, i);
+    function verb(n) {
+        i[n] = o[n] && function(v) {
+            return new Promise(function(resolve, reject) {
+                v = o[n](v), settle(resolve, reject, v.done, v.value);
+            });
+        };
+    }
+    function settle(resolve, reject, d, v1) {
+        Promise.resolve(v1).then(function(v) {
+            resolve({
+                value: v,
+                done: d
+            });
+        }, reject);
+    }
+}
+function __makeTemplateObject(cooked, raw) {
+    if (Object.defineProperty) Object.defineProperty(cooked, "raw", {
+        value: raw
+    });
+    else cooked.raw = raw;
+    return cooked;
+}
+var __setModuleDefault = Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+};
+function __importStar(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
     return result;
 }
+function __importDefault(mod) {
+    return mod && mod.__esModule ? mod : {
+        default: mod
+    };
+}
+function __classPrivateFieldGet(receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+}
+function __classPrivateFieldSet(receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value), value;
+}
+function __classPrivateFieldIn(state, receiver) {
+    if (receiver === null || typeof receiver !== "object" && typeof receiver !== "function") throw new TypeError("Cannot use 'in' operator on non-object");
+    return typeof state === "function" ? receiver === state : state.has(receiver);
+}
 
-},{"src/env/config":"90ch4","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iMbfS":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "getAssetImplementationInChain", ()=>getAssetImplementationInChain);
-parcelHelpers.export(exports, "getDecimals", ()=>getDecimals);
-parcelHelpers.export(exports, "getAddress", ()=>getAddress);
-function getAssetImplementationInChain({ asset , chain  }) {
-    return asset?.implementations?.[String(chain)];
-}
-function getDecimals({ asset , chain  }) {
-    return getAssetImplementationInChain({
-        asset,
-        chain
-    })?.decimals || asset.decimals;
-}
-const getAddress = ({ asset , chain  })=>{
-    const chainImplementation = getAssetImplementationInChain({
-        asset,
-        chain
-    });
-    return chainImplementation ? chainImplementation.address : undefined;
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"j1yQJ":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.STANDARD_ERROR_MAP = exports.SERVER_ERROR_CODE_RANGE = exports.RESERVED_ERROR_CODES = exports.SERVER_ERROR = exports.INTERNAL_ERROR = exports.INVALID_PARAMS = exports.METHOD_NOT_FOUND = exports.INVALID_REQUEST = exports.PARSE_ERROR = void 0;
+exports.PARSE_ERROR = "PARSE_ERROR";
+exports.INVALID_REQUEST = "INVALID_REQUEST";
+exports.METHOD_NOT_FOUND = "METHOD_NOT_FOUND";
+exports.INVALID_PARAMS = "INVALID_PARAMS";
+exports.INTERNAL_ERROR = "INTERNAL_ERROR";
+exports.SERVER_ERROR = "SERVER_ERROR";
+exports.RESERVED_ERROR_CODES = [
+    -32700,
+    -32600,
+    -32601,
+    -32602,
+    -32603
+];
+exports.SERVER_ERROR_CODE_RANGE = [
+    -32000,
+    -32099
+];
+exports.STANDARD_ERROR_MAP = {
+    [exports.PARSE_ERROR]: {
+        code: -32700,
+        message: "Parse error"
+    },
+    [exports.INVALID_REQUEST]: {
+        code: -32600,
+        message: "Invalid Request"
+    },
+    [exports.METHOD_NOT_FOUND]: {
+        code: -32601,
+        message: "Method not found"
+    },
+    [exports.INVALID_PARAMS]: {
+        code: -32602,
+        message: "Invalid params"
+    },
+    [exports.INTERNAL_ERROR]: {
+        code: -32603,
+        message: "Internal error"
+    },
+    [exports.SERVER_ERROR]: {
+        code: -32000,
+        message: "Server error"
+    }
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2aSwD":[function(require,module,exports) {
+},{}],"7C94t":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.validateJsonRpcError = exports.getErrorByCode = exports.getError = exports.isValidErrorCode = exports.isReservedErrorCode = exports.isServerErrorCode = void 0;
+const constants_1 = require("./constants");
+function isServerErrorCode(code) {
+    return code <= constants_1.SERVER_ERROR_CODE_RANGE[0] && code >= constants_1.SERVER_ERROR_CODE_RANGE[1];
+}
+exports.isServerErrorCode = isServerErrorCode;
+function isReservedErrorCode(code) {
+    return constants_1.RESERVED_ERROR_CODES.includes(code);
+}
+exports.isReservedErrorCode = isReservedErrorCode;
+function isValidErrorCode(code) {
+    return typeof code === "number";
+}
+exports.isValidErrorCode = isValidErrorCode;
+function getError(type) {
+    if (!Object.keys(constants_1.STANDARD_ERROR_MAP).includes(type)) return constants_1.STANDARD_ERROR_MAP[constants_1.INTERNAL_ERROR];
+    return constants_1.STANDARD_ERROR_MAP[type];
+}
+exports.getError = getError;
+function getErrorByCode(code) {
+    const match = Object.values(constants_1.STANDARD_ERROR_MAP).find((e)=>e.code === code);
+    if (!match) return constants_1.STANDARD_ERROR_MAP[constants_1.INTERNAL_ERROR];
+    return match;
+}
+exports.getErrorByCode = getErrorByCode;
+function validateJsonRpcError(response) {
+    if (typeof response.error.code === "undefined") return {
+        valid: false,
+        error: "Missing code for JSON-RPC error"
+    };
+    if (typeof response.error.message === "undefined") return {
+        valid: false,
+        error: "Missing message for JSON-RPC error"
+    };
+    if (!isValidErrorCode(response.error.code)) return {
+        valid: false,
+        error: `Invalid error code type for JSON-RPC: ${response.error.code}`
+    };
+    if (isReservedErrorCode(response.error.code)) {
+        const error = getErrorByCode(response.error.code);
+        if (error.message !== constants_1.STANDARD_ERROR_MAP[constants_1.INTERNAL_ERROR].message && response.error.message === error.message) return {
+            valid: false,
+            error: `Invalid error code message for JSON-RPC: ${response.error.code}`
+        };
+    }
+    return {
+        valid: true
+    };
+}
+exports.validateJsonRpcError = validateJsonRpcError;
+
+},{"./constants":"j1yQJ"}],"7xkWN":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.isNodeJs = void 0;
+const tslib_1 = require("tslib");
+const environment_1 = require("@pedrouid/environment");
+exports.isNodeJs = environment_1.isNode;
+tslib_1.__exportStar(require("@pedrouid/environment"), exports);
+
+},{"tslib":"lRdW5","@pedrouid/environment":"3HG5k"}],"3HG5k":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __exportStar = this && this.__exportStar || function(m, exports) {
+    for(var p in m)if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+__exportStar(require("./crypto"), exports);
+__exportStar(require("./env"), exports);
+
+},{"./crypto":"iS1S1","./env":"5Cmwa"}],"iS1S1":[function(require,module,exports) {
+"use strict";
+var global = arguments[3];
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.isBrowserCryptoAvailable = exports.getSubtleCrypto = exports.getBrowerCrypto = void 0;
+function getBrowerCrypto() {
+    return (global === null || global === void 0 ? void 0 : global.crypto) || (global === null || global === void 0 ? void 0 : global.msCrypto) || {};
+}
+exports.getBrowerCrypto = getBrowerCrypto;
+function getSubtleCrypto() {
+    const browserCrypto = getBrowerCrypto();
+    return browserCrypto.subtle || browserCrypto.webkitSubtle;
+}
+exports.getSubtleCrypto = getSubtleCrypto;
+function isBrowserCryptoAvailable() {
+    return !!getBrowerCrypto() && !!getSubtleCrypto();
+}
+exports.isBrowserCryptoAvailable = isBrowserCryptoAvailable;
+
+},{}],"5Cmwa":[function(require,module,exports) {
+"use strict";
+var process = require("process");
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.isBrowser = exports.isNode = exports.isReactNative = void 0;
+function isReactNative() {
+    return typeof document === "undefined" && typeof navigator !== "undefined" && navigator.product === "ReactNative";
+}
+exports.isReactNative = isReactNative;
+function isNode() {
+    return typeof process !== "undefined" && typeof process.versions !== "undefined" && typeof process.versions.node !== "undefined";
+}
+exports.isNode = isNode;
+function isBrowser() {
+    return !isReactNative() && !isNode();
+}
+exports.isBrowser = isBrowser;
+
+},{"process":"d5jf4"}],"3d0nB":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.formatErrorMessage = exports.formatJsonRpcError = exports.formatJsonRpcResult = exports.formatJsonRpcRequest = exports.payloadId = void 0;
+const error_1 = require("./error");
+const constants_1 = require("./constants");
+function payloadId() {
+    const date = Date.now() * Math.pow(10, 3);
+    const extra = Math.floor(Math.random() * Math.pow(10, 3));
+    return date + extra;
+}
+exports.payloadId = payloadId;
+function formatJsonRpcRequest(method, params, id) {
+    return {
+        id: id || payloadId(),
+        jsonrpc: "2.0",
+        method,
+        params
+    };
+}
+exports.formatJsonRpcRequest = formatJsonRpcRequest;
+function formatJsonRpcResult(id, result) {
+    return {
+        id,
+        jsonrpc: "2.0",
+        result
+    };
+}
+exports.formatJsonRpcResult = formatJsonRpcResult;
+function formatJsonRpcError(id, error) {
+    return {
+        id,
+        jsonrpc: "2.0",
+        error: formatErrorMessage(error)
+    };
+}
+exports.formatJsonRpcError = formatJsonRpcError;
+function formatErrorMessage(error) {
+    if (typeof error === "undefined") return error_1.getError(constants_1.INTERNAL_ERROR);
+    if (typeof error === "string") error = Object.assign(Object.assign({}, error_1.getError(constants_1.SERVER_ERROR)), {
+        message: error
+    });
+    if (error_1.isReservedErrorCode(error.code)) error = error_1.getErrorByCode(error.code);
+    if (!error_1.isServerErrorCode(error.code)) throw new Error("Error code is not in server code range");
+    return error;
+}
+exports.formatErrorMessage = formatErrorMessage;
+
+},{"./error":"7C94t","./constants":"j1yQJ"}],"9H7rT":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.isValidTrailingWildcardRoute = exports.isValidLeadingWildcardRoute = exports.isValidWildcardRoute = exports.isValidDefaultRoute = exports.isValidRoute = void 0;
+function isValidRoute(route) {
+    if (route.includes("*")) return isValidWildcardRoute(route);
+    if (/\W/g.test(route)) return false;
+    return true;
+}
+exports.isValidRoute = isValidRoute;
+function isValidDefaultRoute(route) {
+    return route === "*";
+}
+exports.isValidDefaultRoute = isValidDefaultRoute;
+function isValidWildcardRoute(route) {
+    if (isValidDefaultRoute(route)) return true;
+    if (!route.includes("*")) return false;
+    if (route.split("*").length !== 2) return false;
+    if (route.split("*").filter((x)=>x.trim() === "").length !== 1) return false;
+    return true;
+}
+exports.isValidWildcardRoute = isValidWildcardRoute;
+function isValidLeadingWildcardRoute(route) {
+    return !isValidDefaultRoute(route) && isValidWildcardRoute(route) && !route.split("*")[0].trim();
+}
+exports.isValidLeadingWildcardRoute = isValidLeadingWildcardRoute;
+function isValidTrailingWildcardRoute(route) {
+    return !isValidDefaultRoute(route) && isValidWildcardRoute(route) && !route.split("*")[1].trim();
+}
+exports.isValidTrailingWildcardRoute = isValidTrailingWildcardRoute;
+
+},{}],"leztz":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+const tslib_1 = require("tslib");
+tslib_1.__exportStar(require("@json-rpc-tools/types"), exports);
+
+},{"tslib":"lRdW5","@json-rpc-tools/types":"k5vnh"}],"k5vnh":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+const tslib_1 = require("tslib");
+tslib_1.__exportStar(require("./blockchain"), exports);
+tslib_1.__exportStar(require("./jsonrpc"), exports);
+tslib_1.__exportStar(require("./misc"), exports);
+tslib_1.__exportStar(require("./multi"), exports);
+tslib_1.__exportStar(require("./provider"), exports);
+tslib_1.__exportStar(require("./router"), exports);
+tslib_1.__exportStar(require("./schema"), exports);
+tslib_1.__exportStar(require("./validator"), exports);
+
+},{"tslib":"lRdW5","./blockchain":"sI9gm","./jsonrpc":"dlw23","./misc":"jy7RG","./multi":"efric","./provider":"2Ct9y","./router":"gt8CX","./schema":"dTzyi","./validator":"jYlwM"}],"sI9gm":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.IBlockchainProvider = exports.IBlockchainAuthenticator = exports.IPendingRequests = void 0;
+const misc_1 = require("./misc");
+const provider_1 = require("./provider");
+class IPendingRequests {
+    constructor(storage){
+        this.storage = storage;
+    }
+}
+exports.IPendingRequests = IPendingRequests;
+class IBlockchainAuthenticator extends misc_1.IEvents {
+    constructor(config){
+        super();
+        this.config = config;
+    }
+}
+exports.IBlockchainAuthenticator = IBlockchainAuthenticator;
+class IBlockchainProvider extends provider_1.IJsonRpcProvider {
+    constructor(connection, config){
+        super(connection);
+    }
+}
+exports.IBlockchainProvider = IBlockchainProvider;
+
+},{"./misc":"jy7RG","./provider":"2Ct9y"}],"jy7RG":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.IEvents = void 0;
+class IEvents {
+}
+exports.IEvents = IEvents;
+
+},{}],"2Ct9y":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.IJsonRpcProvider = exports.IBaseJsonRpcProvider = exports.IJsonRpcConnection = void 0;
+const misc_1 = require("./misc");
+class IJsonRpcConnection extends misc_1.IEvents {
+    constructor(opts){
+        super();
+    }
+}
+exports.IJsonRpcConnection = IJsonRpcConnection;
+class IBaseJsonRpcProvider extends misc_1.IEvents {
+    constructor(){
+        super();
+    }
+}
+exports.IBaseJsonRpcProvider = IBaseJsonRpcProvider;
+class IJsonRpcProvider extends IBaseJsonRpcProvider {
+    constructor(connection){
+        super();
+    }
+}
+exports.IJsonRpcProvider = IJsonRpcProvider;
+
+},{"./misc":"jy7RG"}],"dlw23":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+},{}],"efric":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.IMultiServiceProvider = void 0;
+const provider_1 = require("./provider");
+class IMultiServiceProvider extends provider_1.IBaseJsonRpcProvider {
+    constructor(config){
+        super();
+        this.config = config;
+    }
+}
+exports.IMultiServiceProvider = IMultiServiceProvider;
+
+},{"./provider":"2Ct9y"}],"gt8CX":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.IJsonRpcRouter = void 0;
+class IJsonRpcRouter {
+    constructor(routes){
+        this.routes = routes;
+    }
+}
+exports.IJsonRpcRouter = IJsonRpcRouter;
+
+},{}],"dTzyi":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+},{}],"jYlwM":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.IJsonRpcValidator = void 0;
+class IJsonRpcValidator {
+    constructor(schemas){
+        this.schemas = schemas;
+    }
+}
+exports.IJsonRpcValidator = IJsonRpcValidator;
+
+},{}],"d8vBs":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.isJsonRpcValidationInvalid = exports.isJsonRpcError = exports.isJsonRpcResult = exports.isJsonRpcResponse = exports.isJsonRpcRequest = exports.isJsonRpcPayload = void 0;
+function isJsonRpcPayload(payload) {
+    return "id" in payload && "jsonrpc" in payload && payload.jsonrpc === "2.0";
+}
+exports.isJsonRpcPayload = isJsonRpcPayload;
+function isJsonRpcRequest(payload) {
+    return isJsonRpcPayload(payload) && "method" in payload;
+}
+exports.isJsonRpcRequest = isJsonRpcRequest;
+function isJsonRpcResponse(payload) {
+    return isJsonRpcPayload(payload) && (isJsonRpcResult(payload) || isJsonRpcError(payload));
+}
+exports.isJsonRpcResponse = isJsonRpcResponse;
+function isJsonRpcResult(payload) {
+    return "result" in payload;
+}
+exports.isJsonRpcResult = isJsonRpcResult;
+function isJsonRpcError(payload) {
+    return "error" in payload;
+}
+exports.isJsonRpcError = isJsonRpcError;
+function isJsonRpcValidationInvalid(validation) {
+    return "error" in validation && validation.valid === false;
+}
+exports.isJsonRpcValidationInvalid = isJsonRpcValidationInvalid;
+
+},{}],"fB8WN":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "get", ()=>get);
-var _defiSdk = require("defi-sdk");
-function get() {
-    return new Promise((resolve)=>{
-        (0, _defiSdk.client).cachedSubscribe({
-            namespace: "chains",
-            body: {
-                scope: [
-                    "info"
-                ],
-                payload: {}
-            },
-            onData: ({ value  })=>{
-                if (value) resolve(value);
-            }
-        });
-    });
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+parcelHelpers.export(exports, "formatJsonRpcResultForPort", ()=>formatJsonRpcResultForPort);
+var _utils = require("@json-rpc-tools/utils");
+function formatJsonRpcResultForPort(id, result) {
+    const value = (0, _utils.formatJsonRpcResult)(id, result);
+    if (value.result === undefined) // When messages are sent via ports, `undefined` propertires
+    // get removed
+    value.result = null;
+    return value;
 }
 
-},{"defi-sdk":"iMIhf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cNwKA":[function(require,module,exports) {
+},{"@json-rpc-tools/utils":"lGviI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"91evT":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "InvalidParams", ()=>InvalidParams);
+parcelHelpers.export(exports, "OriginNotAllowed", ()=>OriginNotAllowed);
+parcelHelpers.export(exports, "UserRejected", ()=>UserRejected);
+parcelHelpers.export(exports, "UserRejectedTxSignature", ()=>UserRejectedTxSignature);
+parcelHelpers.export(exports, "MethodNotImplemented", ()=>MethodNotImplemented);
+var _utils = require("@json-rpc-tools/utils");
+class ErrorWithEnumerableMessage extends Error {
+    constructor(message){
+        super(message);
+        Object.defineProperty(this, "message", {
+            value: message,
+            enumerable: true
+        });
+    }
+}
+class InvalidParams extends ErrorWithEnumerableMessage {
+    code = (0, _utils.STANDARD_ERROR_MAP).INVALID_PARAMS.code;
+    constructor(message = (0, _utils.STANDARD_ERROR_MAP).INVALID_PARAMS.message){
+        super(message);
+    }
+}
+class OriginNotAllowed extends ErrorWithEnumerableMessage {
+    code = -32011;
+    constructor(origin){
+        const message = "Method not allowed for this origin" + (origin ? `: ${origin}` : "");
+        super(message);
+    }
+}
+class UserRejected extends ErrorWithEnumerableMessage {
+    code = -32010;
+    constructor(message = "Rejected by User"){
+        super(message);
+    }
+}
+class UserRejectedTxSignature extends ErrorWithEnumerableMessage {
+    code = 4001;
+    constructor(message = "Tx Signature: User denied transaction signature."){
+        super(message);
+    }
+}
+class MethodNotImplemented extends ErrorWithEnumerableMessage {
+    code = -32601;
+    constructor(message = "Method not implemented"){
+        super(message);
+    }
+}
+
+},{"@json-rpc-tools/utils":"lGviI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cNwKA":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "usePendingTransactions", ()=>usePendingTransactions);
@@ -46022,7 +45985,7 @@ Object.assign(window, {
     localTransactionsStore
 });
 
-},{"src/background/webapis/storage":"jW3Kj","src/modules/ethereum/transactions/model":"9SL0C","store-unit":"4kZQu","webextension-polyfill":"fTA1T","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jW3Kj":[function(require,module,exports) {
+},{"src/background/webapis/storage":"jW3Kj","src/modules/ethereum/transactions/model":"9SL0C","store-unit":"4kZQu","webextension-polyfill":"4LGeR","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jW3Kj":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "get", ()=>get);
@@ -46045,31 +46008,1141 @@ async function remove(prop) {
     await (0, _webextensionPolyfillDefault.default).storage.local.remove(prop);
 }
 
-},{"webextension-polyfill":"fTA1T","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fTA1T":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-const browser = {
-    runtime: {
-        getURL (path) {
-            return path;
-        }
-    },
-    storage: {
-        local: {
-            get (_prop) {
-                return Promise.resolve({});
-            }
-        },
-        onChanged: {
-            addListener (listener) {
-                console.log("added listener", listener);
-            }
-        }
+},{"webextension-polyfill":"4LGeR","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4LGeR":[function(require,module,exports) {
+(function(global, factory) {
+    if (typeof define === "function" && define.amd) define("webextension-polyfill", [
+        "module"
+    ], factory);
+    else {
+        var mod;
+        factory(module);
     }
-};
-exports.default = browser;
+})(typeof globalThis !== "undefined" ? globalThis : typeof self !== "undefined" ? self : this, function(module) {
+    /* webextension-polyfill - v0.9.0 - Fri Mar 25 2022 17:00:23 */ /* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */ /* vim: set sts=2 sw=2 et tw=80: */ /* This Source Code Form is subject to the terms of the Mozilla Public
+   * License, v. 2.0. If a copy of the MPL was not distributed with this
+   * file, You can obtain one at http://mozilla.org/MPL/2.0/. */ "use strict";
+    if (typeof globalThis != "object" || typeof chrome != "object" || !chrome || !chrome.runtime || !chrome.runtime.id) throw new Error("This script should only be loaded in a browser extension.");
+    if (typeof globalThis.browser === "undefined" || Object.getPrototypeOf(globalThis.browser) !== Object.prototype) {
+        const CHROME_SEND_MESSAGE_CALLBACK_NO_RESPONSE_MESSAGE = "The message port closed before a response was received.";
+        const SEND_RESPONSE_DEPRECATION_WARNING = "Returning a Promise is the preferred way to send a reply from an onMessage/onMessageExternal listener, as the sendResponse will be removed from the specs (See https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/API/runtime/onMessage)"; // Wrapping the bulk of this polyfill in a one-time-use function is a minor
+        // optimization for Firefox. Since Spidermonkey does not fully parse the
+        // contents of a function until the first time it's called, and since it will
+        // never actually need to be called, this allows the polyfill to be included
+        // in Firefox nearly for free.
+        const wrapAPIs = (extensionAPIs)=>{
+            // NOTE: apiMetadata is associated to the content of the api-metadata.json file
+            // at build time by replacing the following "include" with the content of the
+            // JSON file.
+            const apiMetadata = {
+                "alarms": {
+                    "clear": {
+                        "minArgs": 0,
+                        "maxArgs": 1
+                    },
+                    "clearAll": {
+                        "minArgs": 0,
+                        "maxArgs": 0
+                    },
+                    "get": {
+                        "minArgs": 0,
+                        "maxArgs": 1
+                    },
+                    "getAll": {
+                        "minArgs": 0,
+                        "maxArgs": 0
+                    }
+                },
+                "bookmarks": {
+                    "create": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "get": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "getChildren": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "getRecent": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "getSubTree": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "getTree": {
+                        "minArgs": 0,
+                        "maxArgs": 0
+                    },
+                    "move": {
+                        "minArgs": 2,
+                        "maxArgs": 2
+                    },
+                    "remove": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "removeTree": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "search": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "update": {
+                        "minArgs": 2,
+                        "maxArgs": 2
+                    }
+                },
+                "browserAction": {
+                    "disable": {
+                        "minArgs": 0,
+                        "maxArgs": 1,
+                        "fallbackToNoCallback": true
+                    },
+                    "enable": {
+                        "minArgs": 0,
+                        "maxArgs": 1,
+                        "fallbackToNoCallback": true
+                    },
+                    "getBadgeBackgroundColor": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "getBadgeText": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "getPopup": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "getTitle": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "openPopup": {
+                        "minArgs": 0,
+                        "maxArgs": 0
+                    },
+                    "setBadgeBackgroundColor": {
+                        "minArgs": 1,
+                        "maxArgs": 1,
+                        "fallbackToNoCallback": true
+                    },
+                    "setBadgeText": {
+                        "minArgs": 1,
+                        "maxArgs": 1,
+                        "fallbackToNoCallback": true
+                    },
+                    "setIcon": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "setPopup": {
+                        "minArgs": 1,
+                        "maxArgs": 1,
+                        "fallbackToNoCallback": true
+                    },
+                    "setTitle": {
+                        "minArgs": 1,
+                        "maxArgs": 1,
+                        "fallbackToNoCallback": true
+                    }
+                },
+                "browsingData": {
+                    "remove": {
+                        "minArgs": 2,
+                        "maxArgs": 2
+                    },
+                    "removeCache": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "removeCookies": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "removeDownloads": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "removeFormData": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "removeHistory": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "removeLocalStorage": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "removePasswords": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "removePluginData": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "settings": {
+                        "minArgs": 0,
+                        "maxArgs": 0
+                    }
+                },
+                "commands": {
+                    "getAll": {
+                        "minArgs": 0,
+                        "maxArgs": 0
+                    }
+                },
+                "contextMenus": {
+                    "remove": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "removeAll": {
+                        "minArgs": 0,
+                        "maxArgs": 0
+                    },
+                    "update": {
+                        "minArgs": 2,
+                        "maxArgs": 2
+                    }
+                },
+                "cookies": {
+                    "get": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "getAll": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "getAllCookieStores": {
+                        "minArgs": 0,
+                        "maxArgs": 0
+                    },
+                    "remove": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "set": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    }
+                },
+                "devtools": {
+                    "inspectedWindow": {
+                        "eval": {
+                            "minArgs": 1,
+                            "maxArgs": 2,
+                            "singleCallbackArg": false
+                        }
+                    },
+                    "panels": {
+                        "create": {
+                            "minArgs": 3,
+                            "maxArgs": 3,
+                            "singleCallbackArg": true
+                        },
+                        "elements": {
+                            "createSidebarPane": {
+                                "minArgs": 1,
+                                "maxArgs": 1
+                            }
+                        }
+                    }
+                },
+                "downloads": {
+                    "cancel": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "download": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "erase": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "getFileIcon": {
+                        "minArgs": 1,
+                        "maxArgs": 2
+                    },
+                    "open": {
+                        "minArgs": 1,
+                        "maxArgs": 1,
+                        "fallbackToNoCallback": true
+                    },
+                    "pause": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "removeFile": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "resume": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "search": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "show": {
+                        "minArgs": 1,
+                        "maxArgs": 1,
+                        "fallbackToNoCallback": true
+                    }
+                },
+                "extension": {
+                    "isAllowedFileSchemeAccess": {
+                        "minArgs": 0,
+                        "maxArgs": 0
+                    },
+                    "isAllowedIncognitoAccess": {
+                        "minArgs": 0,
+                        "maxArgs": 0
+                    }
+                },
+                "history": {
+                    "addUrl": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "deleteAll": {
+                        "minArgs": 0,
+                        "maxArgs": 0
+                    },
+                    "deleteRange": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "deleteUrl": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "getVisits": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "search": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    }
+                },
+                "i18n": {
+                    "detectLanguage": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "getAcceptLanguages": {
+                        "minArgs": 0,
+                        "maxArgs": 0
+                    }
+                },
+                "identity": {
+                    "launchWebAuthFlow": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    }
+                },
+                "idle": {
+                    "queryState": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    }
+                },
+                "management": {
+                    "get": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "getAll": {
+                        "minArgs": 0,
+                        "maxArgs": 0
+                    },
+                    "getSelf": {
+                        "minArgs": 0,
+                        "maxArgs": 0
+                    },
+                    "setEnabled": {
+                        "minArgs": 2,
+                        "maxArgs": 2
+                    },
+                    "uninstallSelf": {
+                        "minArgs": 0,
+                        "maxArgs": 1
+                    }
+                },
+                "notifications": {
+                    "clear": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "create": {
+                        "minArgs": 1,
+                        "maxArgs": 2
+                    },
+                    "getAll": {
+                        "minArgs": 0,
+                        "maxArgs": 0
+                    },
+                    "getPermissionLevel": {
+                        "minArgs": 0,
+                        "maxArgs": 0
+                    },
+                    "update": {
+                        "minArgs": 2,
+                        "maxArgs": 2
+                    }
+                },
+                "pageAction": {
+                    "getPopup": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "getTitle": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "hide": {
+                        "minArgs": 1,
+                        "maxArgs": 1,
+                        "fallbackToNoCallback": true
+                    },
+                    "setIcon": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "setPopup": {
+                        "minArgs": 1,
+                        "maxArgs": 1,
+                        "fallbackToNoCallback": true
+                    },
+                    "setTitle": {
+                        "minArgs": 1,
+                        "maxArgs": 1,
+                        "fallbackToNoCallback": true
+                    },
+                    "show": {
+                        "minArgs": 1,
+                        "maxArgs": 1,
+                        "fallbackToNoCallback": true
+                    }
+                },
+                "permissions": {
+                    "contains": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "getAll": {
+                        "minArgs": 0,
+                        "maxArgs": 0
+                    },
+                    "remove": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "request": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    }
+                },
+                "runtime": {
+                    "getBackgroundPage": {
+                        "minArgs": 0,
+                        "maxArgs": 0
+                    },
+                    "getPlatformInfo": {
+                        "minArgs": 0,
+                        "maxArgs": 0
+                    },
+                    "openOptionsPage": {
+                        "minArgs": 0,
+                        "maxArgs": 0
+                    },
+                    "requestUpdateCheck": {
+                        "minArgs": 0,
+                        "maxArgs": 0
+                    },
+                    "sendMessage": {
+                        "minArgs": 1,
+                        "maxArgs": 3
+                    },
+                    "sendNativeMessage": {
+                        "minArgs": 2,
+                        "maxArgs": 2
+                    },
+                    "setUninstallURL": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    }
+                },
+                "sessions": {
+                    "getDevices": {
+                        "minArgs": 0,
+                        "maxArgs": 1
+                    },
+                    "getRecentlyClosed": {
+                        "minArgs": 0,
+                        "maxArgs": 1
+                    },
+                    "restore": {
+                        "minArgs": 0,
+                        "maxArgs": 1
+                    }
+                },
+                "storage": {
+                    "local": {
+                        "clear": {
+                            "minArgs": 0,
+                            "maxArgs": 0
+                        },
+                        "get": {
+                            "minArgs": 0,
+                            "maxArgs": 1
+                        },
+                        "getBytesInUse": {
+                            "minArgs": 0,
+                            "maxArgs": 1
+                        },
+                        "remove": {
+                            "minArgs": 1,
+                            "maxArgs": 1
+                        },
+                        "set": {
+                            "minArgs": 1,
+                            "maxArgs": 1
+                        }
+                    },
+                    "managed": {
+                        "get": {
+                            "minArgs": 0,
+                            "maxArgs": 1
+                        },
+                        "getBytesInUse": {
+                            "minArgs": 0,
+                            "maxArgs": 1
+                        }
+                    },
+                    "sync": {
+                        "clear": {
+                            "minArgs": 0,
+                            "maxArgs": 0
+                        },
+                        "get": {
+                            "minArgs": 0,
+                            "maxArgs": 1
+                        },
+                        "getBytesInUse": {
+                            "minArgs": 0,
+                            "maxArgs": 1
+                        },
+                        "remove": {
+                            "minArgs": 1,
+                            "maxArgs": 1
+                        },
+                        "set": {
+                            "minArgs": 1,
+                            "maxArgs": 1
+                        }
+                    }
+                },
+                "tabs": {
+                    "captureVisibleTab": {
+                        "minArgs": 0,
+                        "maxArgs": 2
+                    },
+                    "create": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "detectLanguage": {
+                        "minArgs": 0,
+                        "maxArgs": 1
+                    },
+                    "discard": {
+                        "minArgs": 0,
+                        "maxArgs": 1
+                    },
+                    "duplicate": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "executeScript": {
+                        "minArgs": 1,
+                        "maxArgs": 2
+                    },
+                    "get": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "getCurrent": {
+                        "minArgs": 0,
+                        "maxArgs": 0
+                    },
+                    "getZoom": {
+                        "minArgs": 0,
+                        "maxArgs": 1
+                    },
+                    "getZoomSettings": {
+                        "minArgs": 0,
+                        "maxArgs": 1
+                    },
+                    "goBack": {
+                        "minArgs": 0,
+                        "maxArgs": 1
+                    },
+                    "goForward": {
+                        "minArgs": 0,
+                        "maxArgs": 1
+                    },
+                    "highlight": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "insertCSS": {
+                        "minArgs": 1,
+                        "maxArgs": 2
+                    },
+                    "move": {
+                        "minArgs": 2,
+                        "maxArgs": 2
+                    },
+                    "query": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "reload": {
+                        "minArgs": 0,
+                        "maxArgs": 2
+                    },
+                    "remove": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "removeCSS": {
+                        "minArgs": 1,
+                        "maxArgs": 2
+                    },
+                    "sendMessage": {
+                        "minArgs": 2,
+                        "maxArgs": 3
+                    },
+                    "setZoom": {
+                        "minArgs": 1,
+                        "maxArgs": 2
+                    },
+                    "setZoomSettings": {
+                        "minArgs": 1,
+                        "maxArgs": 2
+                    },
+                    "update": {
+                        "minArgs": 1,
+                        "maxArgs": 2
+                    }
+                },
+                "topSites": {
+                    "get": {
+                        "minArgs": 0,
+                        "maxArgs": 0
+                    }
+                },
+                "webNavigation": {
+                    "getAllFrames": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "getFrame": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    }
+                },
+                "webRequest": {
+                    "handlerBehaviorChanged": {
+                        "minArgs": 0,
+                        "maxArgs": 0
+                    }
+                },
+                "windows": {
+                    "create": {
+                        "minArgs": 0,
+                        "maxArgs": 1
+                    },
+                    "get": {
+                        "minArgs": 1,
+                        "maxArgs": 2
+                    },
+                    "getAll": {
+                        "minArgs": 0,
+                        "maxArgs": 1
+                    },
+                    "getCurrent": {
+                        "minArgs": 0,
+                        "maxArgs": 1
+                    },
+                    "getLastFocused": {
+                        "minArgs": 0,
+                        "maxArgs": 1
+                    },
+                    "remove": {
+                        "minArgs": 1,
+                        "maxArgs": 1
+                    },
+                    "update": {
+                        "minArgs": 2,
+                        "maxArgs": 2
+                    }
+                }
+            };
+            if (Object.keys(apiMetadata).length === 0) throw new Error("api-metadata.json has not been included in browser-polyfill");
+            /**
+       * A WeakMap subclass which creates and stores a value for any key which does
+       * not exist when accessed, but behaves exactly as an ordinary WeakMap
+       * otherwise.
+       *
+       * @param {function} createItem
+       *        A function which will be called in order to create the value for any
+       *        key which does not exist, the first time it is accessed. The
+       *        function receives, as its only argument, the key being created.
+       */ class DefaultWeakMap extends WeakMap {
+                constructor(createItem, items){
+                    super(items);
+                    this.createItem = createItem;
+                }
+                get(key) {
+                    if (!this.has(key)) this.set(key, this.createItem(key));
+                    return super.get(key);
+                }
+            }
+            /**
+       * Returns true if the given object is an object with a `then` method, and can
+       * therefore be assumed to behave as a Promise.
+       *
+       * @param {*} value The value to test.
+       * @returns {boolean} True if the value is thenable.
+       */ const isThenable = (value)=>{
+                return value && typeof value === "object" && typeof value.then === "function";
+            };
+            /**
+       * Creates and returns a function which, when called, will resolve or reject
+       * the given promise based on how it is called:
+       *
+       * - If, when called, `chrome.runtime.lastError` contains a non-null object,
+       *   the promise is rejected with that value.
+       * - If the function is called with exactly one argument, the promise is
+       *   resolved to that value.
+       * - Otherwise, the promise is resolved to an array containing all of the
+       *   function's arguments.
+       *
+       * @param {object} promise
+       *        An object containing the resolution and rejection functions of a
+       *        promise.
+       * @param {function} promise.resolve
+       *        The promise's resolution function.
+       * @param {function} promise.reject
+       *        The promise's rejection function.
+       * @param {object} metadata
+       *        Metadata about the wrapped method which has created the callback.
+       * @param {boolean} metadata.singleCallbackArg
+       *        Whether or not the promise is resolved with only the first
+       *        argument of the callback, alternatively an array of all the
+       *        callback arguments is resolved. By default, if the callback
+       *        function is invoked with only a single argument, that will be
+       *        resolved to the promise, while all arguments will be resolved as
+       *        an array if multiple are given.
+       *
+       * @returns {function}
+       *        The generated callback function.
+       */ const makeCallback = (promise, metadata)=>{
+                return (...callbackArgs)=>{
+                    if (extensionAPIs.runtime.lastError) promise.reject(new Error(extensionAPIs.runtime.lastError.message));
+                    else if (metadata.singleCallbackArg || callbackArgs.length <= 1 && metadata.singleCallbackArg !== false) promise.resolve(callbackArgs[0]);
+                    else promise.resolve(callbackArgs);
+                };
+            };
+            const pluralizeArguments = (numArgs)=>numArgs == 1 ? "argument" : "arguments";
+            /**
+       * Creates a wrapper function for a method with the given name and metadata.
+       *
+       * @param {string} name
+       *        The name of the method which is being wrapped.
+       * @param {object} metadata
+       *        Metadata about the method being wrapped.
+       * @param {integer} metadata.minArgs
+       *        The minimum number of arguments which must be passed to the
+       *        function. If called with fewer than this number of arguments, the
+       *        wrapper will raise an exception.
+       * @param {integer} metadata.maxArgs
+       *        The maximum number of arguments which may be passed to the
+       *        function. If called with more than this number of arguments, the
+       *        wrapper will raise an exception.
+       * @param {boolean} metadata.singleCallbackArg
+       *        Whether or not the promise is resolved with only the first
+       *        argument of the callback, alternatively an array of all the
+       *        callback arguments is resolved. By default, if the callback
+       *        function is invoked with only a single argument, that will be
+       *        resolved to the promise, while all arguments will be resolved as
+       *        an array if multiple are given.
+       *
+       * @returns {function(object, ...*)}
+       *       The generated wrapper function.
+       */ const wrapAsyncFunction = (name, metadata)=>{
+                return function asyncFunctionWrapper(target, ...args) {
+                    if (args.length < metadata.minArgs) throw new Error(`Expected at least ${metadata.minArgs} ${pluralizeArguments(metadata.minArgs)} for ${name}(), got ${args.length}`);
+                    if (args.length > metadata.maxArgs) throw new Error(`Expected at most ${metadata.maxArgs} ${pluralizeArguments(metadata.maxArgs)} for ${name}(), got ${args.length}`);
+                    return new Promise((resolve, reject)=>{
+                        if (metadata.fallbackToNoCallback) // This API method has currently no callback on Chrome, but it return a promise on Firefox,
+                        // and so the polyfill will try to call it with a callback first, and it will fallback
+                        // to not passing the callback if the first call fails.
+                        try {
+                            target[name](...args, makeCallback({
+                                resolve,
+                                reject
+                            }, metadata));
+                        } catch (cbError) {
+                            console.warn(`${name} API method doesn't seem to support the callback parameter, ` + "falling back to call it without a callback: ", cbError);
+                            target[name](...args); // Update the API method metadata, so that the next API calls will not try to
+                            // use the unsupported callback anymore.
+                            metadata.fallbackToNoCallback = false;
+                            metadata.noCallback = true;
+                            resolve();
+                        }
+                        else if (metadata.noCallback) {
+                            target[name](...args);
+                            resolve();
+                        } else target[name](...args, makeCallback({
+                            resolve,
+                            reject
+                        }, metadata));
+                    });
+                };
+            };
+            /**
+       * Wraps an existing method of the target object, so that calls to it are
+       * intercepted by the given wrapper function. The wrapper function receives,
+       * as its first argument, the original `target` object, followed by each of
+       * the arguments passed to the original method.
+       *
+       * @param {object} target
+       *        The original target object that the wrapped method belongs to.
+       * @param {function} method
+       *        The method being wrapped. This is used as the target of the Proxy
+       *        object which is created to wrap the method.
+       * @param {function} wrapper
+       *        The wrapper function which is called in place of a direct invocation
+       *        of the wrapped method.
+       *
+       * @returns {Proxy<function>}
+       *        A Proxy object for the given method, which invokes the given wrapper
+       *        method in its place.
+       */ const wrapMethod = (target, method, wrapper)=>{
+                return new Proxy(method, {
+                    apply (targetMethod, thisObj, args) {
+                        return wrapper.call(thisObj, target, ...args);
+                    }
+                });
+            };
+            let hasOwnProperty = Function.call.bind(Object.prototype.hasOwnProperty);
+            /**
+       * Wraps an object in a Proxy which intercepts and wraps certain methods
+       * based on the given `wrappers` and `metadata` objects.
+       *
+       * @param {object} target
+       *        The target object to wrap.
+       *
+       * @param {object} [wrappers = {}]
+       *        An object tree containing wrapper functions for special cases. Any
+       *        function present in this object tree is called in place of the
+       *        method in the same location in the `target` object tree. These
+       *        wrapper methods are invoked as described in {@see wrapMethod}.
+       *
+       * @param {object} [metadata = {}]
+       *        An object tree containing metadata used to automatically generate
+       *        Promise-based wrapper functions for asynchronous. Any function in
+       *        the `target` object tree which has a corresponding metadata object
+       *        in the same location in the `metadata` tree is replaced with an
+       *        automatically-generated wrapper function, as described in
+       *        {@see wrapAsyncFunction}
+       *
+       * @returns {Proxy<object>}
+       */ const wrapObject = (target, wrappers = {}, metadata = {})=>{
+                let cache = Object.create(null);
+                let handlers = {
+                    has (proxyTarget, prop) {
+                        return prop in target || prop in cache;
+                    },
+                    get (proxyTarget, prop, receiver) {
+                        if (prop in cache) return cache[prop];
+                        if (!(prop in target)) return undefined;
+                        let value1 = target[prop];
+                        if (typeof value1 === "function") {
+                            // This is a method on the underlying object. Check if we need to do
+                            // any wrapping.
+                            if (typeof wrappers[prop] === "function") // We have a special-case wrapper for this method.
+                            value1 = wrapMethod(target, target[prop], wrappers[prop]);
+                            else if (hasOwnProperty(metadata, prop)) {
+                                // This is an async method that we have metadata for. Create a
+                                // Promise wrapper for it.
+                                let wrapper = wrapAsyncFunction(prop, metadata[prop]);
+                                value1 = wrapMethod(target, target[prop], wrapper);
+                            } else // This is a method that we don't know or care about. Return the
+                            // original method, bound to the underlying object.
+                            value1 = value1.bind(target);
+                        } else if (typeof value1 === "object" && value1 !== null && (hasOwnProperty(wrappers, prop) || hasOwnProperty(metadata, prop))) // This is an object that we need to do some wrapping for the children
+                        // of. Create a sub-object wrapper for it with the appropriate child
+                        // metadata.
+                        value1 = wrapObject(value1, wrappers[prop], metadata[prop]);
+                        else if (hasOwnProperty(metadata, "*")) // Wrap all properties in * namespace.
+                        value1 = wrapObject(value1, wrappers[prop], metadata["*"]);
+                        else {
+                            // We don't need to do any wrapping for this property,
+                            // so just forward all access to the underlying object.
+                            Object.defineProperty(cache, prop, {
+                                configurable: true,
+                                enumerable: true,
+                                get () {
+                                    return target[prop];
+                                },
+                                set (value) {
+                                    target[prop] = value;
+                                }
+                            });
+                            return value1;
+                        }
+                        cache[prop] = value1;
+                        return value1;
+                    },
+                    set (proxyTarget, prop, value, receiver) {
+                        if (prop in cache) cache[prop] = value;
+                        else target[prop] = value;
+                        return true;
+                    },
+                    defineProperty (proxyTarget, prop, desc) {
+                        return Reflect.defineProperty(cache, prop, desc);
+                    },
+                    deleteProperty (proxyTarget, prop) {
+                        return Reflect.deleteProperty(cache, prop);
+                    }
+                }; // Per contract of the Proxy API, the "get" proxy handler must return the
+                // original value of the target if that value is declared read-only and
+                // non-configurable. For this reason, we create an object with the
+                // prototype set to `target` instead of using `target` directly.
+                // Otherwise we cannot return a custom object for APIs that
+                // are declared read-only and non-configurable, such as `chrome.devtools`.
+                //
+                // The proxy handlers themselves will still use the original `target`
+                // instead of the `proxyTarget`, so that the methods and properties are
+                // dereferenced via the original targets.
+                let proxyTarget = Object.create(target);
+                return new Proxy(proxyTarget, handlers);
+            };
+            /**
+       * Creates a set of wrapper functions for an event object, which handles
+       * wrapping of listener functions that those messages are passed.
+       *
+       * A single wrapper is created for each listener function, and stored in a
+       * map. Subsequent calls to `addListener`, `hasListener`, or `removeListener`
+       * retrieve the original wrapper, so that  attempts to remove a
+       * previously-added listener work as expected.
+       *
+       * @param {DefaultWeakMap<function, function>} wrapperMap
+       *        A DefaultWeakMap object which will create the appropriate wrapper
+       *        for a given listener function when one does not exist, and retrieve
+       *        an existing one when it does.
+       *
+       * @returns {object}
+       */ const wrapEvent = (wrapperMap)=>({
+                    addListener (target, listener, ...args) {
+                        target.addListener(wrapperMap.get(listener), ...args);
+                    },
+                    hasListener (target, listener) {
+                        return target.hasListener(wrapperMap.get(listener));
+                    },
+                    removeListener (target, listener) {
+                        target.removeListener(wrapperMap.get(listener));
+                    }
+                });
+            const onRequestFinishedWrappers = new DefaultWeakMap((listener)=>{
+                if (typeof listener !== "function") return listener;
+                /**
+         * Wraps an onRequestFinished listener function so that it will return a
+         * `getContent()` property which returns a `Promise` rather than using a
+         * callback API.
+         *
+         * @param {object} req
+         *        The HAR entry object representing the network request.
+         */ return function onRequestFinished(req) {
+                    const wrappedReq = wrapObject(req, {}, {
+                        getContent: {
+                            minArgs: 0,
+                            maxArgs: 0
+                        }
+                    });
+                    listener(wrappedReq);
+                };
+            }); // Keep track if the deprecation warning has been logged at least once.
+            let loggedSendResponseDeprecationWarning = false;
+            const onMessageWrappers = new DefaultWeakMap((listener)=>{
+                if (typeof listener !== "function") return listener;
+                /**
+         * Wraps a message listener function so that it may send responses based on
+         * its return value, rather than by returning a sentinel value and calling a
+         * callback. If the listener function returns a Promise, the response is
+         * sent when the promise either resolves or rejects.
+         *
+         * @param {*} message
+         *        The message sent by the other end of the channel.
+         * @param {object} sender
+         *        Details about the sender of the message.
+         * @param {function(*)} sendResponse
+         *        A callback which, when called with an arbitrary argument, sends
+         *        that value as a response.
+         * @returns {boolean}
+         *        True if the wrapped listener returned a Promise, which will later
+         *        yield a response. False otherwise.
+         */ return function onMessage(message1, sender, sendResponse) {
+                    let didCallSendResponse = false;
+                    let wrappedSendResponse;
+                    let sendResponsePromise = new Promise((resolve)=>{
+                        wrappedSendResponse = function(response) {
+                            if (!loggedSendResponseDeprecationWarning) {
+                                console.warn(SEND_RESPONSE_DEPRECATION_WARNING, new Error().stack);
+                                loggedSendResponseDeprecationWarning = true;
+                            }
+                            didCallSendResponse = true;
+                            resolve(response);
+                        };
+                    });
+                    let result;
+                    try {
+                        result = listener(message1, sender, wrappedSendResponse);
+                    } catch (err1) {
+                        result = Promise.reject(err1);
+                    }
+                    const isResultThenable = result !== true && isThenable(result); // If the listener didn't returned true or a Promise, or called
+                    // wrappedSendResponse synchronously, we can exit earlier
+                    // because there will be no response sent from this listener.
+                    if (result !== true && !isResultThenable && !didCallSendResponse) return false;
+                     // A small helper to send the message if the promise resolves
+                    // and an error if the promise rejects (a wrapped sendMessage has
+                    // to translate the message into a resolved promise or a rejected
+                    // promise).
+                    const sendPromisedResult = (promise)=>{
+                        promise.then((msg)=>{
+                            // send the message value.
+                            sendResponse(msg);
+                        }, (error)=>{
+                            // Send a JSON representation of the error if the rejected value
+                            // is an instance of error, or the object itself otherwise.
+                            let message;
+                            if (error && (error instanceof Error || typeof error.message === "string")) message = error.message;
+                            else message = "An unexpected error occurred";
+                            sendResponse({
+                                __mozWebExtensionPolyfillReject__: true,
+                                message
+                            });
+                        }).catch((err)=>{
+                            // Print an error on the console if unable to send the response.
+                            console.error("Failed to send onMessage rejected reply", err);
+                        });
+                    }; // If the listener returned a Promise, send the resolved value as a
+                    // result, otherwise wait the promise related to the wrappedSendResponse
+                    // callback to resolve and send it as a response.
+                    if (isResultThenable) sendPromisedResult(result);
+                    else sendPromisedResult(sendResponsePromise);
+                     // Let Chrome know that the listener is replying.
+                    return true;
+                };
+            });
+            const wrappedSendMessageCallback = ({ reject , resolve  }, reply)=>{
+                if (extensionAPIs.runtime.lastError) {
+                    // Detect when none of the listeners replied to the sendMessage call and resolve
+                    // the promise to undefined as in Firefox.
+                    // See https://github.com/mozilla/webextension-polyfill/issues/130
+                    if (extensionAPIs.runtime.lastError.message === CHROME_SEND_MESSAGE_CALLBACK_NO_RESPONSE_MESSAGE) resolve();
+                    else reject(new Error(extensionAPIs.runtime.lastError.message));
+                } else if (reply && reply.__mozWebExtensionPolyfillReject__) // Convert back the JSON representation of the error into
+                // an Error instance.
+                reject(new Error(reply.message));
+                else resolve(reply);
+            };
+            const wrappedSendMessage = (name, metadata, apiNamespaceObj, ...args)=>{
+                if (args.length < metadata.minArgs) throw new Error(`Expected at least ${metadata.minArgs} ${pluralizeArguments(metadata.minArgs)} for ${name}(), got ${args.length}`);
+                if (args.length > metadata.maxArgs) throw new Error(`Expected at most ${metadata.maxArgs} ${pluralizeArguments(metadata.maxArgs)} for ${name}(), got ${args.length}`);
+                return new Promise((resolve, reject)=>{
+                    const wrappedCb = wrappedSendMessageCallback.bind(null, {
+                        resolve,
+                        reject
+                    });
+                    args.push(wrappedCb);
+                    apiNamespaceObj.sendMessage(...args);
+                });
+            };
+            const staticWrappers = {
+                devtools: {
+                    network: {
+                        onRequestFinished: wrapEvent(onRequestFinishedWrappers)
+                    }
+                },
+                runtime: {
+                    onMessage: wrapEvent(onMessageWrappers),
+                    onMessageExternal: wrapEvent(onMessageWrappers),
+                    sendMessage: wrappedSendMessage.bind(null, "sendMessage", {
+                        minArgs: 1,
+                        maxArgs: 3
+                    })
+                },
+                tabs: {
+                    sendMessage: wrappedSendMessage.bind(null, "sendMessage", {
+                        minArgs: 2,
+                        maxArgs: 3
+                    })
+                }
+            };
+            const settingMetadata = {
+                clear: {
+                    minArgs: 1,
+                    maxArgs: 1
+                },
+                get: {
+                    minArgs: 1,
+                    maxArgs: 1
+                },
+                set: {
+                    minArgs: 1,
+                    maxArgs: 1
+                }
+            };
+            apiMetadata.privacy = {
+                network: {
+                    "*": settingMetadata
+                },
+                services: {
+                    "*": settingMetadata
+                },
+                websites: {
+                    "*": settingMetadata
+                }
+            };
+            return wrapObject(extensionAPIs, staticWrappers, apiMetadata);
+        }; // The build process adds a UMD wrapper around this file, which makes the
+        // `module` variable available.
+        module.exports = wrapAPIs(chrome);
+    } else module.exports = globalThis.browser;
+});
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9SL0C":[function(require,module,exports) {
+},{}],"9SL0C":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "dataToModel", ()=>dataToModel);
@@ -71618,7 +72691,23 @@ var Symbol = require("./_Symbol"), isArguments = require("./isArguments"), isArr
 }
 module.exports = isFlattenable;
 
-},{"./_Symbol":"7lsL9","./isArguments":"8ReNj","./isArray":"dZaTH"}],"8ReNj":[function(require,module,exports) {
+},{"./_Symbol":"7lsL9","./isArguments":"8ReNj","./isArray":"dZaTH"}],"7lsL9":[function(require,module,exports) {
+var root = require("./_root");
+/** Built-in value references. */ var Symbol = root.Symbol;
+module.exports = Symbol;
+
+},{"./_root":"dSYUs"}],"dSYUs":[function(require,module,exports) {
+var freeGlobal = require("./_freeGlobal");
+/** Detect free variable `self`. */ var freeSelf = typeof self == "object" && self && self.Object === Object && self;
+/** Used as a reference to the global object. */ var root = freeGlobal || freeSelf || Function("return this")();
+module.exports = root;
+
+},{"./_freeGlobal":"kAk32"}],"kAk32":[function(require,module,exports) {
+var global = arguments[3];
+/** Detect free variable `global` from Node.js. */ var freeGlobal = typeof global == "object" && global && global.Object === Object && global;
+module.exports = freeGlobal;
+
+},{}],"8ReNj":[function(require,module,exports) {
 var baseIsArguments = require("./_baseIsArguments"), isObjectLike = require("./isObjectLike");
 /** Used for built-in method references. */ var objectProto = Object.prototype;
 /** Used to check objects for own properties. */ var hasOwnProperty = objectProto.hasOwnProperty;
@@ -71661,7 +72750,72 @@ var baseGetTag = require("./_baseGetTag"), isObjectLike = require("./isObjectLik
 }
 module.exports = baseIsArguments;
 
-},{"./_baseGetTag":"lOnbo","./isObjectLike":"3BLi4"}],"3BLi4":[function(require,module,exports) {
+},{"./_baseGetTag":"lOnbo","./isObjectLike":"3BLi4"}],"lOnbo":[function(require,module,exports) {
+var Symbol = require("./_Symbol"), getRawTag = require("./_getRawTag"), objectToString = require("./_objectToString");
+/** `Object#toString` result references. */ var nullTag = "[object Null]", undefinedTag = "[object Undefined]";
+/** Built-in value references. */ var symToStringTag = Symbol ? Symbol.toStringTag : undefined;
+/**
+ * The base implementation of `getTag` without fallbacks for buggy environments.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @returns {string} Returns the `toStringTag`.
+ */ function baseGetTag(value) {
+    if (value == null) return value === undefined ? undefinedTag : nullTag;
+    return symToStringTag && symToStringTag in Object(value) ? getRawTag(value) : objectToString(value);
+}
+module.exports = baseGetTag;
+
+},{"./_Symbol":"7lsL9","./_getRawTag":"995sO","./_objectToString":"bmE3g"}],"995sO":[function(require,module,exports) {
+var Symbol = require("./_Symbol");
+/** Used for built-in method references. */ var objectProto = Object.prototype;
+/** Used to check objects for own properties. */ var hasOwnProperty = objectProto.hasOwnProperty;
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */ var nativeObjectToString = objectProto.toString;
+/** Built-in value references. */ var symToStringTag = Symbol ? Symbol.toStringTag : undefined;
+/**
+ * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @returns {string} Returns the raw `toStringTag`.
+ */ function getRawTag(value) {
+    var isOwn = hasOwnProperty.call(value, symToStringTag), tag = value[symToStringTag];
+    try {
+        value[symToStringTag] = undefined;
+        var unmasked = true;
+    } catch (e) {}
+    var result = nativeObjectToString.call(value);
+    if (unmasked) {
+        if (isOwn) value[symToStringTag] = tag;
+        else delete value[symToStringTag];
+    }
+    return result;
+}
+module.exports = getRawTag;
+
+},{"./_Symbol":"7lsL9"}],"bmE3g":[function(require,module,exports) {
+/** Used for built-in method references. */ var objectProto = Object.prototype;
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */ var nativeObjectToString = objectProto.toString;
+/**
+ * Converts `value` to a string using `Object.prototype.toString`.
+ *
+ * @private
+ * @param {*} value The value to convert.
+ * @returns {string} Returns the converted string.
+ */ function objectToString(value) {
+    return nativeObjectToString.call(value);
+}
+module.exports = objectToString;
+
+},{}],"3BLi4":[function(require,module,exports) {
 /**
  * Checks if `value` is object-like. A value is object-like if it's not `null`
  * and has a `typeof` result of "object".
@@ -71886,7 +73040,657 @@ var memoize = require("./memoize");
 }
 module.exports = memoizeCapped;
 
-},{"./memoize":"azHKC"}],"joIdQ":[function(require,module,exports) {
+},{"./memoize":"azHKC"}],"azHKC":[function(require,module,exports) {
+var MapCache = require("./_MapCache");
+/** Error message constants. */ var FUNC_ERROR_TEXT = "Expected a function";
+/**
+ * Creates a function that memoizes the result of `func`. If `resolver` is
+ * provided, it determines the cache key for storing the result based on the
+ * arguments provided to the memoized function. By default, the first argument
+ * provided to the memoized function is used as the map cache key. The `func`
+ * is invoked with the `this` binding of the memoized function.
+ *
+ * **Note:** The cache is exposed as the `cache` property on the memoized
+ * function. Its creation may be customized by replacing the `_.memoize.Cache`
+ * constructor with one whose instances implement the
+ * [`Map`](http://ecma-international.org/ecma-262/7.0/#sec-properties-of-the-map-prototype-object)
+ * method interface of `clear`, `delete`, `get`, `has`, and `set`.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Function
+ * @param {Function} func The function to have its output memoized.
+ * @param {Function} [resolver] The function to resolve the cache key.
+ * @returns {Function} Returns the new memoized function.
+ * @example
+ *
+ * var object = { 'a': 1, 'b': 2 };
+ * var other = { 'c': 3, 'd': 4 };
+ *
+ * var values = _.memoize(_.values);
+ * values(object);
+ * // => [1, 2]
+ *
+ * values(other);
+ * // => [3, 4]
+ *
+ * object.a = 2;
+ * values(object);
+ * // => [1, 2]
+ *
+ * // Modify the result cache.
+ * values.cache.set(object, ['a', 'b']);
+ * values(object);
+ * // => ['a', 'b']
+ *
+ * // Replace `_.memoize.Cache`.
+ * _.memoize.Cache = WeakMap;
+ */ function memoize(func, resolver) {
+    if (typeof func != "function" || resolver != null && typeof resolver != "function") throw new TypeError(FUNC_ERROR_TEXT);
+    var memoized = function() {
+        var args = arguments, key = resolver ? resolver.apply(this, args) : args[0], cache = memoized.cache;
+        if (cache.has(key)) return cache.get(key);
+        var result = func.apply(this, args);
+        memoized.cache = cache.set(key, result) || cache;
+        return result;
+    };
+    memoized.cache = new (memoize.Cache || MapCache);
+    return memoized;
+}
+// Expose `MapCache`.
+memoize.Cache = MapCache;
+module.exports = memoize;
+
+},{"./_MapCache":"664I1"}],"664I1":[function(require,module,exports) {
+var mapCacheClear = require("./_mapCacheClear"), mapCacheDelete = require("./_mapCacheDelete"), mapCacheGet = require("./_mapCacheGet"), mapCacheHas = require("./_mapCacheHas"), mapCacheSet = require("./_mapCacheSet");
+/**
+ * Creates a map cache object to store key-value pairs.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */ function MapCache(entries) {
+    var index = -1, length = entries == null ? 0 : entries.length;
+    this.clear();
+    while(++index < length){
+        var entry = entries[index];
+        this.set(entry[0], entry[1]);
+    }
+}
+// Add methods to `MapCache`.
+MapCache.prototype.clear = mapCacheClear;
+MapCache.prototype["delete"] = mapCacheDelete;
+MapCache.prototype.get = mapCacheGet;
+MapCache.prototype.has = mapCacheHas;
+MapCache.prototype.set = mapCacheSet;
+module.exports = MapCache;
+
+},{"./_mapCacheClear":"7kHs4","./_mapCacheDelete":"4ny9y","./_mapCacheGet":"gVeFY","./_mapCacheHas":"idSOY","./_mapCacheSet":"lXUJT"}],"7kHs4":[function(require,module,exports) {
+var Hash = require("./_Hash"), ListCache = require("./_ListCache"), Map = require("./_Map");
+/**
+ * Removes all key-value entries from the map.
+ *
+ * @private
+ * @name clear
+ * @memberOf MapCache
+ */ function mapCacheClear() {
+    this.size = 0;
+    this.__data__ = {
+        "hash": new Hash,
+        "map": new (Map || ListCache),
+        "string": new Hash
+    };
+}
+module.exports = mapCacheClear;
+
+},{"./_Hash":"jFMT5","./_ListCache":"3UZeo","./_Map":"8YjF4"}],"jFMT5":[function(require,module,exports) {
+var hashClear = require("./_hashClear"), hashDelete = require("./_hashDelete"), hashGet = require("./_hashGet"), hashHas = require("./_hashHas"), hashSet = require("./_hashSet");
+/**
+ * Creates a hash object.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */ function Hash(entries) {
+    var index = -1, length = entries == null ? 0 : entries.length;
+    this.clear();
+    while(++index < length){
+        var entry = entries[index];
+        this.set(entry[0], entry[1]);
+    }
+}
+// Add methods to `Hash`.
+Hash.prototype.clear = hashClear;
+Hash.prototype["delete"] = hashDelete;
+Hash.prototype.get = hashGet;
+Hash.prototype.has = hashHas;
+Hash.prototype.set = hashSet;
+module.exports = Hash;
+
+},{"./_hashClear":"f2NRo","./_hashDelete":"cCdgz","./_hashGet":"eKqTO","./_hashHas":"ghnqP","./_hashSet":"6i99R"}],"f2NRo":[function(require,module,exports) {
+var nativeCreate = require("./_nativeCreate");
+/**
+ * Removes all key-value entries from the hash.
+ *
+ * @private
+ * @name clear
+ * @memberOf Hash
+ */ function hashClear() {
+    this.__data__ = nativeCreate ? nativeCreate(null) : {};
+    this.size = 0;
+}
+module.exports = hashClear;
+
+},{"./_nativeCreate":"6i8Uf"}],"6i8Uf":[function(require,module,exports) {
+var getNative = require("./_getNative");
+/* Built-in method references that are verified to be native. */ var nativeCreate = getNative(Object, "create");
+module.exports = nativeCreate;
+
+},{"./_getNative":"9PCIl"}],"9PCIl":[function(require,module,exports) {
+var baseIsNative = require("./_baseIsNative"), getValue = require("./_getValue");
+/**
+ * Gets the native function at `key` of `object`.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @param {string} key The key of the method to get.
+ * @returns {*} Returns the function if it's native, else `undefined`.
+ */ function getNative(object, key) {
+    var value = getValue(object, key);
+    return baseIsNative(value) ? value : undefined;
+}
+module.exports = getNative;
+
+},{"./_baseIsNative":"2U9Pn","./_getValue":"kKx5I"}],"2U9Pn":[function(require,module,exports) {
+var isFunction = require("./isFunction"), isMasked = require("./_isMasked"), isObject = require("./isObject"), toSource = require("./_toSource");
+/**
+ * Used to match `RegExp`
+ * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
+ */ var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
+/** Used to detect host constructors (Safari). */ var reIsHostCtor = /^\[object .+?Constructor\]$/;
+/** Used for built-in method references. */ var funcProto = Function.prototype, objectProto = Object.prototype;
+/** Used to resolve the decompiled source of functions. */ var funcToString = funcProto.toString;
+/** Used to check objects for own properties. */ var hasOwnProperty = objectProto.hasOwnProperty;
+/** Used to detect if a method is native. */ var reIsNative = RegExp("^" + funcToString.call(hasOwnProperty).replace(reRegExpChar, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$");
+/**
+ * The base implementation of `_.isNative` without bad shim checks.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a native function,
+ *  else `false`.
+ */ function baseIsNative(value) {
+    if (!isObject(value) || isMasked(value)) return false;
+    var pattern = isFunction(value) ? reIsNative : reIsHostCtor;
+    return pattern.test(toSource(value));
+}
+module.exports = baseIsNative;
+
+},{"./isFunction":"cfti6","./_isMasked":"cMDzi","./isObject":"cGhqJ","./_toSource":"bYHc7"}],"cfti6":[function(require,module,exports) {
+var baseGetTag = require("./_baseGetTag"), isObject = require("./isObject");
+/** `Object#toString` result references. */ var asyncTag = "[object AsyncFunction]", funcTag = "[object Function]", genTag = "[object GeneratorFunction]", proxyTag = "[object Proxy]";
+/**
+ * Checks if `value` is classified as a `Function` object.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a function, else `false`.
+ * @example
+ *
+ * _.isFunction(_);
+ * // => true
+ *
+ * _.isFunction(/abc/);
+ * // => false
+ */ function isFunction(value) {
+    if (!isObject(value)) return false;
+    // The use of `Object#toString` avoids issues with the `typeof` operator
+    // in Safari 9 which returns 'object' for typed arrays and other constructors.
+    var tag = baseGetTag(value);
+    return tag == funcTag || tag == genTag || tag == asyncTag || tag == proxyTag;
+}
+module.exports = isFunction;
+
+},{"./_baseGetTag":"lOnbo","./isObject":"cGhqJ"}],"cGhqJ":[function(require,module,exports) {
+/**
+ * Checks if `value` is the
+ * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
+ * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+ * @example
+ *
+ * _.isObject({});
+ * // => true
+ *
+ * _.isObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isObject(_.noop);
+ * // => true
+ *
+ * _.isObject(null);
+ * // => false
+ */ function isObject(value) {
+    var type = typeof value;
+    return value != null && (type == "object" || type == "function");
+}
+module.exports = isObject;
+
+},{}],"cMDzi":[function(require,module,exports) {
+var coreJsData = require("./_coreJsData");
+/** Used to detect methods masquerading as native. */ var maskSrcKey = function() {
+    var uid = /[^.]+$/.exec(coreJsData && coreJsData.keys && coreJsData.keys.IE_PROTO || "");
+    return uid ? "Symbol(src)_1." + uid : "";
+}();
+/**
+ * Checks if `func` has its source masked.
+ *
+ * @private
+ * @param {Function} func The function to check.
+ * @returns {boolean} Returns `true` if `func` is masked, else `false`.
+ */ function isMasked(func) {
+    return !!maskSrcKey && maskSrcKey in func;
+}
+module.exports = isMasked;
+
+},{"./_coreJsData":"6gJwQ"}],"6gJwQ":[function(require,module,exports) {
+var root = require("./_root");
+/** Used to detect overreaching core-js shims. */ var coreJsData = root["__core-js_shared__"];
+module.exports = coreJsData;
+
+},{"./_root":"dSYUs"}],"bYHc7":[function(require,module,exports) {
+/** Used for built-in method references. */ var funcProto = Function.prototype;
+/** Used to resolve the decompiled source of functions. */ var funcToString = funcProto.toString;
+/**
+ * Converts `func` to its source code.
+ *
+ * @private
+ * @param {Function} func The function to convert.
+ * @returns {string} Returns the source code.
+ */ function toSource(func) {
+    if (func != null) {
+        try {
+            return funcToString.call(func);
+        } catch (e) {}
+        try {
+            return func + "";
+        } catch (e1) {}
+    }
+    return "";
+}
+module.exports = toSource;
+
+},{}],"kKx5I":[function(require,module,exports) {
+/**
+ * Gets the value at `key` of `object`.
+ *
+ * @private
+ * @param {Object} [object] The object to query.
+ * @param {string} key The key of the property to get.
+ * @returns {*} Returns the property value.
+ */ function getValue(object, key) {
+    return object == null ? undefined : object[key];
+}
+module.exports = getValue;
+
+},{}],"cCdgz":[function(require,module,exports) {
+/**
+ * Removes `key` and its value from the hash.
+ *
+ * @private
+ * @name delete
+ * @memberOf Hash
+ * @param {Object} hash The hash to modify.
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */ function hashDelete(key) {
+    var result = this.has(key) && delete this.__data__[key];
+    this.size -= result ? 1 : 0;
+    return result;
+}
+module.exports = hashDelete;
+
+},{}],"eKqTO":[function(require,module,exports) {
+var nativeCreate = require("./_nativeCreate");
+/** Used to stand-in for `undefined` hash values. */ var HASH_UNDEFINED = "__lodash_hash_undefined__";
+/** Used for built-in method references. */ var objectProto = Object.prototype;
+/** Used to check objects for own properties. */ var hasOwnProperty = objectProto.hasOwnProperty;
+/**
+ * Gets the hash value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf Hash
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */ function hashGet(key) {
+    var data = this.__data__;
+    if (nativeCreate) {
+        var result = data[key];
+        return result === HASH_UNDEFINED ? undefined : result;
+    }
+    return hasOwnProperty.call(data, key) ? data[key] : undefined;
+}
+module.exports = hashGet;
+
+},{"./_nativeCreate":"6i8Uf"}],"ghnqP":[function(require,module,exports) {
+var nativeCreate = require("./_nativeCreate");
+/** Used for built-in method references. */ var objectProto = Object.prototype;
+/** Used to check objects for own properties. */ var hasOwnProperty = objectProto.hasOwnProperty;
+/**
+ * Checks if a hash value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf Hash
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */ function hashHas(key) {
+    var data = this.__data__;
+    return nativeCreate ? data[key] !== undefined : hasOwnProperty.call(data, key);
+}
+module.exports = hashHas;
+
+},{"./_nativeCreate":"6i8Uf"}],"6i99R":[function(require,module,exports) {
+var nativeCreate = require("./_nativeCreate");
+/** Used to stand-in for `undefined` hash values. */ var HASH_UNDEFINED = "__lodash_hash_undefined__";
+/**
+ * Sets the hash `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf Hash
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the hash instance.
+ */ function hashSet(key, value) {
+    var data = this.__data__;
+    this.size += this.has(key) ? 0 : 1;
+    data[key] = nativeCreate && value === undefined ? HASH_UNDEFINED : value;
+    return this;
+}
+module.exports = hashSet;
+
+},{"./_nativeCreate":"6i8Uf"}],"3UZeo":[function(require,module,exports) {
+var listCacheClear = require("./_listCacheClear"), listCacheDelete = require("./_listCacheDelete"), listCacheGet = require("./_listCacheGet"), listCacheHas = require("./_listCacheHas"), listCacheSet = require("./_listCacheSet");
+/**
+ * Creates an list cache object.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */ function ListCache(entries) {
+    var index = -1, length = entries == null ? 0 : entries.length;
+    this.clear();
+    while(++index < length){
+        var entry = entries[index];
+        this.set(entry[0], entry[1]);
+    }
+}
+// Add methods to `ListCache`.
+ListCache.prototype.clear = listCacheClear;
+ListCache.prototype["delete"] = listCacheDelete;
+ListCache.prototype.get = listCacheGet;
+ListCache.prototype.has = listCacheHas;
+ListCache.prototype.set = listCacheSet;
+module.exports = ListCache;
+
+},{"./_listCacheClear":"7AKQv","./_listCacheDelete":"j2Z5O","./_listCacheGet":"6Zrrs","./_listCacheHas":"i1CBK","./_listCacheSet":"2Rcur"}],"7AKQv":[function(require,module,exports) {
+/**
+ * Removes all key-value entries from the list cache.
+ *
+ * @private
+ * @name clear
+ * @memberOf ListCache
+ */ function listCacheClear() {
+    this.__data__ = [];
+    this.size = 0;
+}
+module.exports = listCacheClear;
+
+},{}],"j2Z5O":[function(require,module,exports) {
+var assocIndexOf = require("./_assocIndexOf");
+/** Used for built-in method references. */ var arrayProto = Array.prototype;
+/** Built-in value references. */ var splice = arrayProto.splice;
+/**
+ * Removes `key` and its value from the list cache.
+ *
+ * @private
+ * @name delete
+ * @memberOf ListCache
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */ function listCacheDelete(key) {
+    var data = this.__data__, index = assocIndexOf(data, key);
+    if (index < 0) return false;
+    var lastIndex = data.length - 1;
+    if (index == lastIndex) data.pop();
+    else splice.call(data, index, 1);
+    --this.size;
+    return true;
+}
+module.exports = listCacheDelete;
+
+},{"./_assocIndexOf":"cRVsl"}],"cRVsl":[function(require,module,exports) {
+var eq = require("./eq");
+/**
+ * Gets the index at which the `key` is found in `array` of key-value pairs.
+ *
+ * @private
+ * @param {Array} array The array to inspect.
+ * @param {*} key The key to search for.
+ * @returns {number} Returns the index of the matched value, else `-1`.
+ */ function assocIndexOf(array, key) {
+    var length = array.length;
+    while(length--){
+        if (eq(array[length][0], key)) return length;
+    }
+    return -1;
+}
+module.exports = assocIndexOf;
+
+},{"./eq":"aVz5f"}],"aVz5f":[function(require,module,exports) {
+/**
+ * Performs a
+ * [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
+ * comparison between two values to determine if they are equivalent.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to compare.
+ * @param {*} other The other value to compare.
+ * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
+ * @example
+ *
+ * var object = { 'a': 1 };
+ * var other = { 'a': 1 };
+ *
+ * _.eq(object, object);
+ * // => true
+ *
+ * _.eq(object, other);
+ * // => false
+ *
+ * _.eq('a', 'a');
+ * // => true
+ *
+ * _.eq('a', Object('a'));
+ * // => false
+ *
+ * _.eq(NaN, NaN);
+ * // => true
+ */ function eq(value, other) {
+    return value === other || value !== value && other !== other;
+}
+module.exports = eq;
+
+},{}],"6Zrrs":[function(require,module,exports) {
+var assocIndexOf = require("./_assocIndexOf");
+/**
+ * Gets the list cache value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf ListCache
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */ function listCacheGet(key) {
+    var data = this.__data__, index = assocIndexOf(data, key);
+    return index < 0 ? undefined : data[index][1];
+}
+module.exports = listCacheGet;
+
+},{"./_assocIndexOf":"cRVsl"}],"i1CBK":[function(require,module,exports) {
+var assocIndexOf = require("./_assocIndexOf");
+/**
+ * Checks if a list cache value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf ListCache
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */ function listCacheHas(key) {
+    return assocIndexOf(this.__data__, key) > -1;
+}
+module.exports = listCacheHas;
+
+},{"./_assocIndexOf":"cRVsl"}],"2Rcur":[function(require,module,exports) {
+var assocIndexOf = require("./_assocIndexOf");
+/**
+ * Sets the list cache `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf ListCache
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the list cache instance.
+ */ function listCacheSet(key, value) {
+    var data = this.__data__, index = assocIndexOf(data, key);
+    if (index < 0) {
+        ++this.size;
+        data.push([
+            key,
+            value
+        ]);
+    } else data[index][1] = value;
+    return this;
+}
+module.exports = listCacheSet;
+
+},{"./_assocIndexOf":"cRVsl"}],"8YjF4":[function(require,module,exports) {
+var getNative = require("./_getNative"), root = require("./_root");
+/* Built-in method references that are verified to be native. */ var Map = getNative(root, "Map");
+module.exports = Map;
+
+},{"./_getNative":"9PCIl","./_root":"dSYUs"}],"4ny9y":[function(require,module,exports) {
+var getMapData = require("./_getMapData");
+/**
+ * Removes `key` and its value from the map.
+ *
+ * @private
+ * @name delete
+ * @memberOf MapCache
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */ function mapCacheDelete(key) {
+    var result = getMapData(this, key)["delete"](key);
+    this.size -= result ? 1 : 0;
+    return result;
+}
+module.exports = mapCacheDelete;
+
+},{"./_getMapData":"aptgk"}],"aptgk":[function(require,module,exports) {
+var isKeyable = require("./_isKeyable");
+/**
+ * Gets the data for `map`.
+ *
+ * @private
+ * @param {Object} map The map to query.
+ * @param {string} key The reference key.
+ * @returns {*} Returns the map data.
+ */ function getMapData(map, key) {
+    var data = map.__data__;
+    return isKeyable(key) ? data[typeof key == "string" ? "string" : "hash"] : data.map;
+}
+module.exports = getMapData;
+
+},{"./_isKeyable":"icylN"}],"icylN":[function(require,module,exports) {
+/**
+ * Checks if `value` is suitable for use as unique object key.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is suitable, else `false`.
+ */ function isKeyable(value) {
+    var type = typeof value;
+    return type == "string" || type == "number" || type == "symbol" || type == "boolean" ? value !== "__proto__" : value === null;
+}
+module.exports = isKeyable;
+
+},{}],"gVeFY":[function(require,module,exports) {
+var getMapData = require("./_getMapData");
+/**
+ * Gets the map value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf MapCache
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */ function mapCacheGet(key) {
+    return getMapData(this, key).get(key);
+}
+module.exports = mapCacheGet;
+
+},{"./_getMapData":"aptgk"}],"idSOY":[function(require,module,exports) {
+var getMapData = require("./_getMapData");
+/**
+ * Checks if a map value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf MapCache
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */ function mapCacheHas(key) {
+    return getMapData(this, key).has(key);
+}
+module.exports = mapCacheHas;
+
+},{"./_getMapData":"aptgk"}],"lXUJT":[function(require,module,exports) {
+var getMapData = require("./_getMapData");
+/**
+ * Sets the map `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf MapCache
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the map cache instance.
+ */ function mapCacheSet(key, value) {
+    var data = getMapData(this, key), size = data.size;
+    data.set(key, value);
+    this.size += data.size == size ? 0 : 1;
+    return this;
+}
+module.exports = mapCacheSet;
+
+},{"./_getMapData":"aptgk"}],"joIdQ":[function(require,module,exports) {
 var baseToString = require("./_baseToString");
 /**
  * Converts `value` to a string. An empty string is returned for `null`
@@ -73659,7 +75463,288 @@ async function describeTransaction(transaction) {
     };
 }
 
-},{"ethers":"hdHML","src/modules/networks/networks-store":"cQA5b","./getChainId":"g6Pby","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"g6Pby":[function(require,module,exports) {
+},{"ethers":"hdHML","src/modules/networks/networks-store":"cQA5b","./getChainId":"g6Pby","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cQA5b":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "networksStore", ()=>networksStore);
+var _storeUnit = require("store-unit");
+var _networks = require("./Networks");
+var _networksApi = require("./networks-api");
+class NetworksStore extends (0, _storeUnit.Store) {
+    loaderPromise = null;
+    load() {
+        if (this.loaderPromise) return this.loaderPromise;
+        this.loaderPromise = (0, _networksApi.get)().then((value)=>{
+            const networks = new (0, _networks.Networks)({
+                networks: value
+            });
+            this.setState({
+                networks
+            });
+            return networks;
+        });
+        return this.loaderPromise;
+    }
+}
+const networksStore = new NetworksStore({
+    networks: null
+});
+
+},{"store-unit":"4kZQu","./Networks":"i4HFz","./networks-api":"2aSwD","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"i4HFz":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "Networks", ()=>Networks);
+var _isTruthyTs = require("is-truthy-ts");
+var _capitalizeTs = require("capitalize-ts");
+var _chain = require("./Chain");
+var _keys = require("./keys");
+var _asset = require("./asset");
+function toCollection(items, getKey, getItem) {
+    const result = {};
+    for (const item of items)result[getKey(item)] = getItem(item);
+    return result;
+}
+function invertObject(object) {
+    return Object.fromEntries(Object.entries(object).map(([key, value])=>[
+            value,
+            key
+        ]));
+}
+const nameAliases = {
+    "binance-smart-chain": "bsc"
+};
+function localeCompareWithPriority(str1, str2, priorityString) {
+    if (priorityString) {
+        if (str1 === priorityString) return -1;
+        if (str2 === priorityString) return 1;
+    }
+    return str1.localeCompare(str2);
+}
+class Networks {
+    static nameAliases = nameAliases;
+    static nameAliasesInverted = invertObject(nameAliases);
+    static purposeKeyMap = {
+        sending: "supports_sending",
+        trading: "supports_trading",
+        bridge: "supports_bridge"
+    };
+    constructor({ networks: networks1 , keys =(0, _keys.keys)  }){
+        this.networks = networks1.sort((a, b)=>localeCompareWithPriority(a.name, b.name, "Ethereum"));
+        this.keys = keys;
+        this.collection = toCollection(this.networks, (network)=>network.external_id, (x)=>x);
+        this.nameToId = toCollection(this.networks, (networks)=>networks.chain, (network)=>network.external_id);
+    }
+    static getName(network) {
+        return network.name || (0, _capitalizeTs.capitalize)(network.chain);
+    }
+    static accessByAlias(object, chain) {
+        const value = chain.toString();
+        return object[value] || object[Networks.nameAliases[value]] || object[Networks.nameAliasesInverted[value]];
+    }
+    toId(chain) {
+        return Networks.accessByAlias(this.nameToId, chain) || "";
+    }
+    getNetworks() {
+        return this.networks;
+    }
+    getChainId(chain) {
+        return this.toId(chain);
+    }
+    getNativeAssetIdsForTrading() {
+        return this.networks.filter((network)=>network.supports_trading && network.native_asset).map((network)=>network.native_asset?.id).filter((0, _isTruthyTs.isTruthy));
+    }
+    getChainName(chain) {
+        return this.collection[this.toId(chain)]?.name || (0, _capitalizeTs.capitalize)(String(chain));
+    }
+    getNetworkById(chainId) {
+        const network = this.collection[chainId];
+        if (!network) throw new Error(`Unsupported network id: ${chainId}`);
+        return network;
+    }
+    getNetworkByName(chain) {
+        return this.collection[this.toId(chain)];
+    }
+    getChainById(chainId) {
+        const network = this.getNetworkById(chainId);
+        return (0, _chain.createChain)(network.chain);
+    }
+    getChainNameById(chainId) {
+        const network = this.getNetworkById(chainId);
+        return this.getChainName((0, _chain.createChain)(network.chain));
+    }
+    getExplorerHomeUrlByName(chain) {
+        return this.collection[this.toId(chain)]?.explorer_home_url;
+    }
+    getExplorerTxUrl(network, hash) {
+        return network?.explorer_tx_url?.replace("{HASH}", hash);
+    }
+    getExplorerTxUrlById(chainId, hash) {
+        return this.getExplorerTxUrl(this.collection[chainId], hash);
+    }
+    getExplorerTxUrlByName(chain, hash) {
+        return this.getExplorerTxUrl(this.collection[this.toId(chain)], hash);
+    }
+    getExplorerTokenUrl(network, address) {
+        return network?.explorer_token_url?.replace("{ADDRESS}", address);
+    }
+    getExplorerTokenUrlById(chainId, address) {
+        return this.getExplorerTokenUrl(this.collection[chainId], address);
+    }
+    getExplorerTokenUrlByName(chain, address) {
+        return this.getExplorerTokenUrl(this.collection[this.toId(chain)], address);
+    }
+    getExplorerNameById(chainId) {
+        return this.collection[chainId]?.explorer_name;
+    }
+    getEthereumChainParameter(chainId) {
+        const network = this.collection[chainId];
+        if (!network || !network.rpc_url_public || !network.native_asset) throw new Error(`Unsupported network id: ${chainId}`);
+        return {
+            chainId,
+            rpcUrls: network.rpc_url_public,
+            chainName: network.name,
+            nativeCurrency: {
+                code: network.native_asset.address,
+                name: network.native_asset.name,
+                symbol: network.native_asset.symbol,
+                decimals: network.native_asset.decimals
+            },
+            iconUrls: [
+                network.icon_url
+            ],
+            blockExplorerUrls: network.explorer_home_url ? [
+                network.explorer_home_url
+            ] : []
+        };
+    }
+    supports(purpose, chain) {
+        const network = this.getNetworkByName(chain);
+        if (!network) return false;
+        const key = Networks.purposeKeyMap[purpose];
+        return network[key];
+    }
+    isNativeAsset(asset, chainId) {
+        const network = this.getNetworkById(chainId);
+        return network.native_asset ? (0, _asset.getAddress)({
+            asset,
+            chain: (0, _chain.createChain)(network.chain)
+        }) === network.native_asset.address : false;
+    }
+    isNativeAddress(address, chainId) {
+        const network = this.getNetworkById(chainId);
+        if (!network.native_asset) throw new Error(`Native asset is not defined for: ${chainId}`);
+        return network.native_asset ? address === network.native_asset.address : false;
+    }
+    getRpcUrlInternal(chain) {
+        const network = this.getNetworkByName(chain);
+        if (!network) throw new Error(`Cannot find network: ${chain}`);
+        if (!network.rpc_url_internal) throw new Error(`Network url missing: ${chain}`);
+        return (0, _keys.applyKeyToEndpoint)(network.rpc_url_internal, this.keys);
+    }
+}
+
+},{"is-truthy-ts":"h3kjr","capitalize-ts":"eOrib","./Chain":"7Kj03","./keys":"lwdCE","./asset":"iMbfS","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"h3kjr":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "isTruthy", ()=>n);
+function n(n1) {
+    return null != n1;
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"eOrib":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "capitalize", ()=>e);
+function e(e1) {
+    return e1.charAt(0).toUpperCase() + e1.slice(1);
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7Kj03":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "Chain", ()=>Chain);
+parcelHelpers.export(exports, "createChain", ()=>createChain);
+var _memoize = require("lodash/memoize");
+var _memoizeDefault = parcelHelpers.interopDefault(_memoize);
+class Chain {
+    constructor(value){
+        this.value = value;
+    }
+    toString() {
+        return this.value;
+    }
+}
+const createChain = (0, _memoizeDefault.default)((chain)=>new Chain(chain));
+
+},{"lodash/memoize":"azHKC","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lwdCE":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "keys", ()=>keys);
+parcelHelpers.export(exports, "applyKeyToEndpoint", ()=>applyKeyToEndpoint);
+var _config = require("src/env/config");
+const keys = {
+    ARBITRUM_INFURA_API_KEY: "e2e40a30dc83445e8b4d5d7c88f85276",
+    AURORA_API_KEY: "2ZaW4eTLoH9wrr3N5jMfSkyGXA9PLJDRb5jZdHV591mr",
+    ETHEREUM_ALCHEMY_API_KEY: (0, _config.ALCHEMY_KEY),
+    OPTIMISM_INFURA_API_KEY: "e2e40a30dc83445e8b4d5d7c88f85276",
+    POLYGON_INFURA_API_KEY: "e2e40a30dc83445e8b4d5d7c88f85276",
+    SOLANA_API_KEY: ""
+};
+function applyKeyToEndpoint(endpoint, keys1) {
+    /**
+   * input: https://eth-mainnet.alchemyapi.io/v2/{ETHEREUM_ALCHEMY_API_KEY}
+   * output: https://eth-mainnet.alchemyapi.io/v2/keyValue
+   */ let result = endpoint;
+    for(const key in keys1)result = result.replace(`{${key}}`, keys1[key]);
+    return result;
+}
+
+},{"src/env/config":"90ch4","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iMbfS":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "getAssetImplementationInChain", ()=>getAssetImplementationInChain);
+parcelHelpers.export(exports, "getDecimals", ()=>getDecimals);
+parcelHelpers.export(exports, "getAddress", ()=>getAddress);
+function getAssetImplementationInChain({ asset , chain  }) {
+    return asset?.implementations?.[String(chain)];
+}
+function getDecimals({ asset , chain  }) {
+    return getAssetImplementationInChain({
+        asset,
+        chain
+    })?.decimals || asset.decimals;
+}
+const getAddress = ({ asset , chain  })=>{
+    const chainImplementation = getAssetImplementationInChain({
+        asset,
+        chain
+    });
+    return chainImplementation ? chainImplementation.address : undefined;
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2aSwD":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "get", ()=>get);
+var _defiSdk = require("defi-sdk");
+function get() {
+    return new Promise((resolve)=>{
+        (0, _defiSdk.client).cachedSubscribe({
+            namespace: "chains",
+            body: {
+                scope: [
+                    "info"
+                ],
+                payload: {}
+            },
+            onData: ({ value  })=>{
+                if (value) resolve(value);
+            }
+        });
+    });
+}
+
+},{"defi-sdk":"iMIhf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"g6Pby":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "getChainId", ()=>getChainId);
@@ -73938,7 +76023,7 @@ function useBackupTodosCount() {
 // return 0; // either no data or already backed up
 }
 
-},{"react-query":"7slSP","src/ui/shared/channels":"57ETE","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"g22r5":[function(require,module,exports) {
+},{"react-query":"7slSP","src/ui/shared/channels":"bv9nl","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"g22r5":[function(require,module,exports) {
 module.exports["button"] = `IJzU7a_button`;
 
 },{}],"guzi7":[function(require,module,exports) {
@@ -74251,15 +76336,15 @@ $RefreshReg$(_c2, "SegmentedControlGroup");
   window.$RefreshSig$ = prevRefreshSig;
 }
 },{"react/jsx-dev-runtime":"iTorj","react":"21dqq","classnames":"jocGM","react-router-dom":"fdOAw","src/ui/ui-kit/UIText":"66Z7M","./SegmentedControl.module.css":"2tLIj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"2tLIj":[function(require,module,exports) {
-module.exports["primary"] = `aZtxgG_primary`;
-module.exports["link"] = `aZtxgG_link`;
-module.exports["radio"] = `aZtxgG_radio`;
-module.exports["input"] = `aZtxgG_input`;
 module.exports["secondary"] = `aZtxgG_secondary`;
-module.exports["activeDecorator"] = `aZtxgG_activeDecorator`;
-module.exports["hidden"] = `aZtxgG_hidden`;
-module.exports["activeLink"] = `aZtxgG_activeLink`;
 module.exports["wrap"] = `aZtxgG_wrap`;
+module.exports["primary"] = `aZtxgG_primary`;
+module.exports["activeLink"] = `aZtxgG_activeLink`;
+module.exports["activeDecorator"] = `aZtxgG_activeDecorator`;
+module.exports["link"] = `aZtxgG_link`;
+module.exports["hidden"] = `aZtxgG_hidden`;
+module.exports["input"] = `aZtxgG_input`;
+module.exports["radio"] = `aZtxgG_radio`;
 
 },{}],"8Dqur":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -75329,8 +77414,8 @@ $RefreshReg$(_c, "UnstyledButton");
 module.exports["button"] = `kgAHAa_button`;
 
 },{}],"gIkOH":[function(require,module,exports) {
-module.exports["option"] = `CJjftq_option`;
 module.exports["decoration"] = `CJjftq_decoration`;
+module.exports["option"] = `CJjftq_option`;
 
 },{}],"lc663":[function(require,module,exports) {
 var $parcel$ReactRefreshHelpers$bc21 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
@@ -75938,13 +78023,13 @@ $RefreshReg$(_c, "CircleSpinner");
   window.$RefreshSig$ = prevRefreshSig;
 }
 },{"react/jsx-dev-runtime":"iTorj","react":"21dqq","classnames":"jocGM","./styles.module.css":"85GzJ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"85GzJ":[function(require,module,exports) {
-module.exports["dash75"] = `CVpv0W_dash75`;
-module.exports["dash75"];
+module.exports["trackStyle"] = `CVpv0W_trackStyle`;
 module.exports["fillStyle"] = `CVpv0W_fillStyle`;
 module.exports["spin"] = `CVpv0W_spin`;
 module.exports["spin"];
+module.exports["dash75"] = `CVpv0W_dash75`;
+module.exports["dash75"];
 module.exports["spinnerStyle"] = `CVpv0W_spinnerStyle`;
-module.exports["trackStyle"] = `CVpv0W_trackStyle`;
 
 },{}],"gMpD1":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -77213,6 +79298,7 @@ var _background = require("src/ui/components/Background");
 var _fillView = require("src/ui/components/FillView");
 var _capitalizeTs = require("capitalize-ts");
 var _warningIcon = require("src/ui/components/WarningIcon");
+var _pageStickyFooter = require("src/ui/components/PageStickyFooter");
 var _s = $RefreshSig$(), _s1 = $RefreshSig$(), _s2 = $RefreshSig$();
 function ItemSurface({ style , ...props }) {
     const surfaceStyle = {
@@ -77225,7 +79311,7 @@ function ItemSurface({ style , ...props }) {
         ...props
     }, void 0, false, {
         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-        lineNumber: 42,
+        lineNumber: 43,
         columnNumber: 10
     }, this);
 }
@@ -77249,12 +79335,12 @@ function WalletLine({ address , label  }) {
             }, void 0, false, void 0, void 0)
         }, void 0, false, {
             fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-            lineNumber: 48,
+            lineNumber: 49,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-        lineNumber: 47,
+        lineNumber: 48,
         columnNumber: 5
     }, this);
 }
@@ -77288,12 +79374,12 @@ function AssetLine({ transaction  }) {
             }, void 0, false, void 0, void 0)
         }, void 0, false, {
             fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-            lineNumber: 88,
+            lineNumber: 89,
             columnNumber: 9
         }, this)
     }, void 0, false, {
         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-        lineNumber: 87,
+        lineNumber: 88,
         columnNumber: 7
     }, this);
     if (!asset) return status === (0, _defiSdk.DataStatus).requested ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(ItemSurface, {
@@ -77302,7 +79388,7 @@ function AssetLine({ transaction  }) {
         }
     }, void 0, false, {
         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-        lineNumber: 107,
+        lineNumber: 108,
         columnNumber: 7
     }, this) : null;
     if (transaction.action === (0, _describeTransaction.TransactionAction).approve) return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(ItemSurface, {
@@ -77327,12 +79413,12 @@ function AssetLine({ transaction  }) {
             }, void 0, false, void 0, void 0)
         }, void 0, false, {
             fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-            lineNumber: 113,
+            lineNumber: 114,
             columnNumber: 9
         }, this)
     }, void 0, false, {
         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-        lineNumber: 112,
+        lineNumber: 113,
         columnNumber: 7
     }, this);
     if (transaction.action === (0, _describeTransaction.TransactionAction).transfer) return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(ItemSurface, {
@@ -77357,12 +79443,12 @@ function AssetLine({ transaction  }) {
             }, void 0, false, void 0, void 0)
         }, void 0, false, {
             fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-            lineNumber: 136,
+            lineNumber: 137,
             columnNumber: 9
         }, this)
     }, void 0, false, {
         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-        lineNumber: 135,
+        lineNumber: 136,
         columnNumber: 7
     }, this);
     return null;
@@ -77381,7 +79467,7 @@ function TransactionDescription({ transactionDescription  }) {
                 transaction: transactionDescription
             }, void 0, false, {
                 fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                lineNumber: 173,
+                lineNumber: 174,
                 columnNumber: 7
             }, this),
             action === (0, _describeTransaction.TransactionAction).transfer && assetReceiver ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(WalletLine, {
@@ -77389,7 +79475,7 @@ function TransactionDescription({ transactionDescription  }) {
                 label: "Receiver"
             }, void 0, false, {
                 fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                lineNumber: 175,
+                lineNumber: 176,
                 columnNumber: 9
             }, this) : null,
             action === (0, _describeTransaction.TransactionAction).contractInteraction && contractAddress ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(ItemSurface, {
@@ -77407,12 +79493,12 @@ function TransactionDescription({ transactionDescription  }) {
                     }, void 0, false, void 0, void 0)
                 }, void 0, false, {
                     fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                    lineNumber: 179,
+                    lineNumber: 180,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                lineNumber: 178,
+                lineNumber: 179,
                 columnNumber: 9
             }, this) : null
         ]
@@ -77470,17 +79556,17 @@ function SendTransactionContent({ transactionStringified , origin , wallet  }) {
                 }
             }, void 0, false, {
                 fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                lineNumber: 263,
+                lineNumber: 264,
                 columnNumber: 11
             }, this)
         }, void 0, false, {
             fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-            lineNumber: 262,
+            lineNumber: 263,
             columnNumber: 9
         }, this)
     }, void 0, false, {
         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-        lineNumber: 261,
+        lineNumber: 262,
         columnNumber: 7
     }, this);
     if (descriptionQuery.isError || !descriptionQuery.data) throw descriptionQuery.error || new Error("testing");
@@ -77488,188 +79574,195 @@ function SendTransactionContent({ transactionStringified , origin , wallet  }) {
     const effectiveChainId = (0, _ethers.ethers).utils.hexValue(transaction1.chainId || chainId);
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _background.Background), {
         backgroundKind: "white",
-        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _pageColumn.PageColumn), {
-            children: [
-                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _pageTop.PageTop), {}, void 0, false, {
-                    fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                    lineNumber: 281,
-                    columnNumber: 9
-                }, this),
-                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                    style: {
-                        display: "grid",
-                        placeItems: "center"
-                    },
-                    children: [
-                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _zerionSquircleSvgDefault.default), {
-                            style: {
-                                width: 44,
-                                height: 44
-                            }
-                        }, void 0, false, {
-                            fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                            lineNumber: 283,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
-                            height: 16
-                        }, void 0, false, {
-                            fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                            lineNumber: 284,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
-                            kind: "h/5_med",
-                            style: {
-                                textAlign: "center"
-                            },
-                            children: (0, _strings.strings).actions[descriptionQuery.data.action] || (0, _strings.strings).actions[(0, _describeTransaction.TransactionAction).contractInteraction]
-                        }, void 0, false, {
-                            fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                            lineNumber: 285,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
-                            height: 8
-                        }, void 0, false, {
-                            fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                            lineNumber: 289,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
-                            kind: "subtitle/m_reg",
-                            color: "var(--primary)",
-                            children: originName
-                        }, void 0, false, {
-                            fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                            lineNumber: 290,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
-                            height: 8
-                        }, void 0, false, {
-                            fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                            lineNumber: 293,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _networkIndicator.NetworkIndicator), {
-                            chainId: effectiveChainId
-                        }, void 0, false, {
-                            fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                            lineNumber: 294,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
-                            height: 8
-                        }, void 0, false, {
-                            fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                            lineNumber: 295,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
-                            kind: "subtitle/m_reg",
-                            children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("i", {
-                                children: networks?.getEthereumChainParameter(effectiveChainId).rpcUrls[0]
+        children: [
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _pageColumn.PageColumn), {
+                children: [
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _pageTop.PageTop), {}, void 0, false, {
+                        fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
+                        lineNumber: 282,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                        style: {
+                            display: "grid",
+                            placeItems: "center"
+                        },
+                        children: [
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _zerionSquircleSvgDefault.default), {
+                                style: {
+                                    width: 44,
+                                    height: 44
+                                }
+                            }, void 0, false, {
+                                fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
+                                lineNumber: 284,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
+                                height: 16
+                            }, void 0, false, {
+                                fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
+                                lineNumber: 285,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
+                                kind: "h/5_med",
+                                style: {
+                                    textAlign: "center"
+                                },
+                                children: (0, _strings.strings).actions[descriptionQuery.data.action] || (0, _strings.strings).actions[(0, _describeTransaction.TransactionAction).contractInteraction]
+                            }, void 0, false, {
+                                fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
+                                lineNumber: 286,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
+                                height: 8
+                            }, void 0, false, {
+                                fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
+                                lineNumber: 290,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
+                                kind: "subtitle/m_reg",
+                                color: "var(--primary)",
+                                children: originName
+                            }, void 0, false, {
+                                fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
+                                lineNumber: 291,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
+                                height: 8
+                            }, void 0, false, {
+                                fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
+                                lineNumber: 294,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _networkIndicator.NetworkIndicator), {
+                                chainId: effectiveChainId
+                            }, void 0, false, {
+                                fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
+                                lineNumber: 295,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
+                                height: 8
+                            }, void 0, false, {
+                                fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
+                                lineNumber: 296,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
+                                kind: "subtitle/m_reg",
+                                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("i", {
+                                    children: networks?.getEthereumChainParameter(effectiveChainId).rpcUrls[0]
+                                }, void 0, false, {
+                                    fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
+                                    lineNumber: 298,
+                                    columnNumber: 13
+                                }, this)
                             }, void 0, false, {
                                 fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
                                 lineNumber: 297,
-                                columnNumber: 13
+                                columnNumber: 11
                             }, this)
-                        }, void 0, false, {
-                            fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                            lineNumber: 296,
-                            columnNumber: 11
-                        }, this)
-                    ]
-                }, void 0, true, {
-                    fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                    lineNumber: 282,
-                    columnNumber: 9
-                }, this),
-                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
-                    height: 24
-                }, void 0, false, {
-                    fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                    lineNumber: 302,
-                    columnNumber: 9
-                }, this),
-                transaction1.chainId == null ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _surface.Surface), {
-                    padding: 12,
-                    style: {
-                        backgroundColor: "var(--notice-100)"
-                    },
-                    children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _media.Media), {
-                        image: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _warningIcon.WarningIcon), {
-                            glow: true
-                        }, void 0, false, void 0, void 0),
-                        text: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
-                            kind: "body/s_reg",
-                            color: "var(--notice-500)",
-                            children: [
-                                (0, _capitalizeTs.capitalize)(originName),
-                                " did not provide chainId"
-                            ]
-                        }, void 0, true, void 0, void 0),
-                        detailText: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
-                            kind: "body/s_reg",
-                            children: [
-                                "The transaction will be sent to",
-                                " ",
-                                networks?.getNetworkById(effectiveChainId)?.name
-                            ]
-                        }, void 0, true, void 0, void 0)
+                        ]
+                    }, void 0, true, {
+                        fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
+                        lineNumber: 283,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
+                        height: 24
                     }, void 0, false, {
                         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                        lineNumber: 308,
-                        columnNumber: 13
-                    }, this)
-                }, void 0, false, {
-                    fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                    lineNumber: 304,
-                    columnNumber: 11
-                }, this) : null,
-                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
-                    height: 16
-                }, void 0, false, {
-                    fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                    lineNumber: 324,
-                    columnNumber: 9
-                }, this),
-                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _vstack.VStack), {
-                    gap: 12,
-                    children: [
-                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(WalletLine, {
-                            address: wallet.address,
-                            label: "Wallet"
+                        lineNumber: 303,
+                        columnNumber: 9
+                    }, this),
+                    transaction1.chainId == null ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _surface.Surface), {
+                        padding: 12,
+                        style: {
+                            backgroundColor: "var(--notice-100)"
+                        },
+                        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _media.Media), {
+                            image: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _warningIcon.WarningIcon), {
+                                glow: true
+                            }, void 0, false, void 0, void 0),
+                            text: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
+                                kind: "body/s_reg",
+                                color: "var(--notice-500)",
+                                children: [
+                                    (0, _capitalizeTs.capitalize)(originName),
+                                    " did not provide chainId"
+                                ]
+                            }, void 0, true, void 0, void 0),
+                            detailText: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
+                                kind: "body/s_reg",
+                                children: [
+                                    "The transaction will be sent to",
+                                    " ",
+                                    networks?.getNetworkById(effectiveChainId)?.name
+                                ]
+                            }, void 0, true, void 0, void 0)
                         }, void 0, false, {
                             fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                            lineNumber: 326,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(TransactionDescription, {
-                            transactionDescription: descriptionQuery.data
-                        }, void 0, false, {
-                            fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                            lineNumber: 327,
-                            columnNumber: 11
+                            lineNumber: 309,
+                            columnNumber: 13
                         }, this)
-                    ]
-                }, void 0, true, {
-                    fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                    lineNumber: 325,
-                    columnNumber: 9
-                }, this),
-                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
-                    height: 16
-                }, void 0, false, {
-                    fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                    lineNumber: 331,
-                    columnNumber: 9
-                }, this),
-                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _vstack.VStack), {
+                    }, void 0, false, {
+                        fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
+                        lineNumber: 305,
+                        columnNumber: 11
+                    }, this) : null,
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
+                        height: 16
+                    }, void 0, false, {
+                        fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
+                        lineNumber: 325,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _vstack.VStack), {
+                        gap: 12,
+                        children: [
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(WalletLine, {
+                                address: wallet.address,
+                                label: "Wallet"
+                            }, void 0, false, {
+                                fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
+                                lineNumber: 327,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(TransactionDescription, {
+                                transactionDescription: descriptionQuery.data
+                            }, void 0, false, {
+                                fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
+                                lineNumber: 328,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
+                        lineNumber: 326,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
+                        height: 16
+                    }, void 0, false, {
+                        fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
+                        lineNumber: 332,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
+                lineNumber: 281,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _pageStickyFooter.PageStickyFooter), {
+                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _vstack.VStack), {
                     style: {
                         textAlign: "center",
-                        marginTop: "auto",
                         paddingBottom: 32
                     },
                     gap: 8,
@@ -77680,7 +79773,7 @@ function SendTransactionContent({ transactionStringified , origin , wallet  }) {
                             children: signMutation.isError ? errorToMessage(signMutation.error) : null
                         }, void 0, false, {
                             fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                            lineNumber: 337,
+                            lineNumber: 342,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _button.Button), {
@@ -77690,7 +79783,7 @@ function SendTransactionContent({ transactionStringified , origin , wallet  }) {
                             children: signMutation.isLoading ? "Sending..." : descriptionQuery.data.action === (0, _describeTransaction.TransactionAction).approve ? "Approve" : "Confirm"
                         }, void 0, false, {
                             fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                            lineNumber: 342,
+                            lineNumber: 347,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _unstyledButton.UnstyledButton), {
@@ -77703,24 +79796,24 @@ function SendTransactionContent({ transactionStringified , origin , wallet  }) {
                             children: "Reject"
                         }, void 0, false, {
                             fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                            lineNumber: 353,
+                            lineNumber: 358,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                    lineNumber: 333,
+                    lineNumber: 335,
                     columnNumber: 9
                 }, this)
-            ]
-        }, void 0, true, {
-            fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-            lineNumber: 280,
-            columnNumber: 7
-        }, this)
-    }, void 0, false, {
+            }, void 0, false, {
+                fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
+                lineNumber: 334,
+                columnNumber: 7
+            }, this)
+        ]
+    }, void 0, true, {
         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-        lineNumber: 279,
+        lineNumber: 280,
         columnNumber: 5
     }, this);
 }
@@ -77744,7 +79837,7 @@ function SendTransaction() {
         children: "Some Error"
     }, void 0, false, {
         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-        lineNumber: 377,
+        lineNumber: 382,
         columnNumber: 12
     }, this);
     if (isLoading || !wallet) return null;
@@ -77758,7 +79851,7 @@ function SendTransaction() {
         wallet: wallet
     }, void 0, false, {
         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-        lineNumber: 391,
+        lineNumber: 396,
         columnNumber: 5
     }, this);
 }
@@ -77782,7 +79875,7 @@ $RefreshReg$(_c5, "SendTransaction");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-query":"7slSP","defi-sdk":"iMIhf","ethers":"hdHML","react-router-dom":"fdOAw","src/ui/components/PageColumn":"7NeTI","src/ui/components/PageTop":"48XO9","src/ui/shared/channels":"57ETE","src/ui/ui-kit/Spacer":"7Kmxc","src/ui/ui-kit/UIText":"66Z7M","src/ui/ui-kit/VStack":"hLvwM","src/ui/ui-kit/Button":"6KLPL","src/ui/ui-kit/UnstyledButton":"7pYzj","src/ui/ui-kit/Surface":"7D9R0","src/ui/components/BlockieImg":"3UGAz","src/ui/ui-kit/Media":"guzi7","src/ui/shared/truncateAddress":"89mpt","src/ui/components/NetworkIndicator":"5YyIc","src/modules/networks/useNetworks":"467it","src/modules/ethereum/transactions/describeTransaction":"j38dv","src/shared/units/convert":"aadvP","src/shared/units/formatTokenValue":"jaNzg","src/ui/ui-kit/Twinkle":"behrf","src/ui/assets/zerion-squircle.svg":"3FgyB","src/ui/transactions/strings":"cmv2V","src/ui/components/Background":"g0Xd1","src/ui/components/FillView":"bUKpC","capitalize-ts":"eOrib","src/ui/components/WarningIcon":"l8Zz4","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"48XO9":[function(require,module,exports) {
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-query":"7slSP","defi-sdk":"iMIhf","ethers":"hdHML","react-router-dom":"fdOAw","src/ui/components/PageColumn":"7NeTI","src/ui/components/PageTop":"48XO9","src/ui/shared/channels":"bv9nl","src/ui/ui-kit/Spacer":"7Kmxc","src/ui/ui-kit/UIText":"66Z7M","src/ui/ui-kit/VStack":"hLvwM","src/ui/ui-kit/Button":"6KLPL","src/ui/ui-kit/UnstyledButton":"7pYzj","src/ui/ui-kit/Surface":"7D9R0","src/ui/components/BlockieImg":"3UGAz","src/ui/ui-kit/Media":"guzi7","src/ui/shared/truncateAddress":"89mpt","src/ui/components/NetworkIndicator":"5YyIc","src/modules/networks/useNetworks":"467it","src/modules/ethereum/transactions/describeTransaction":"j38dv","src/shared/units/convert":"aadvP","src/shared/units/formatTokenValue":"jaNzg","src/ui/ui-kit/Twinkle":"behrf","src/ui/assets/zerion-squircle.svg":"3FgyB","src/ui/transactions/strings":"cmv2V","src/ui/components/Background":"g0Xd1","src/ui/components/FillView":"bUKpC","capitalize-ts":"eOrib","src/ui/components/WarningIcon":"l8Zz4","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","src/ui/components/PageStickyFooter":"gR4PH"}],"48XO9":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "PageTop", ()=>(0, _pageTop.PageTop));
@@ -78102,7 +80195,134 @@ $RefreshReg$(_c, "WarningIcon");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"g9QSi":[function(require,module,exports) {
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"gR4PH":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "PageStickyFooter", ()=>(0, _pageStickyFooter.PageStickyFooter));
+var _pageStickyFooter = require("./PageStickyFooter");
+
+},{"./PageStickyFooter":"iAAwi","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iAAwi":[function(require,module,exports) {
+var $parcel$ReactRefreshHelpers$7c29 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$7c29.prelude(module);
+
+try {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "PageStickyFooter", ()=>PageStickyFooter);
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _react = require("react");
+var _reactDefault = parcelHelpers.interopDefault(_react);
+var _pageColumn = require("../PageColumn");
+var _pageFullBleedLine = require("../PageFullBleedLine");
+var _uicontext = require("../UIContext");
+var _s = $RefreshSig$();
+function canBeScrolled(node) {
+    return node.scrollHeight > node.clientHeight;
+}
+function PageStickyFooter({ children  }) {
+    _s();
+    const { uiScrollRootElement  } = (0, _react.useContext)((0, _uicontext.UIContext));
+    const [drawTopBorder, setDrawTopBorder] = (0, _react.useState)(canBeScrolled(uiScrollRootElement));
+    (0, _react.useEffect)(()=>{
+        // uiScrollRootElement might have mutation before useEffect is run,
+        // so we try to update state here before adding the MutationObserver
+        setDrawTopBorder(canBeScrolled(uiScrollRootElement));
+        function handler() {
+            setDrawTopBorder(canBeScrolled(uiScrollRootElement));
+        }
+        const observer = new MutationObserver(handler);
+        observer.observe(uiScrollRootElement, {
+            childList: true,
+            subtree: true,
+            attributes: true
+        });
+        return ()=>{
+            observer.disconnect();
+        };
+    }, [
+        uiScrollRootElement
+    ]);
+    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _pageColumn.PageColumn), {
+        style: {
+            flexGrow: 0,
+            position: "sticky",
+            bottom: 0,
+            backgroundColor: "var(--background)"
+        },
+        children: [
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _pageFullBleedLine.PageFullBleedLine), {
+                lineColor: drawTopBorder ? undefined : "transparent"
+            }, void 0, false, {
+                fileName: "src/ui/components/PageStickyFooter/PageStickyFooter.tsx",
+                lineNumber: 45,
+                columnNumber: 7
+            }, this),
+            children
+        ]
+    }, void 0, true, {
+        fileName: "src/ui/components/PageStickyFooter/PageStickyFooter.tsx",
+        lineNumber: 37,
+        columnNumber: 5
+    }, this);
+}
+_s(PageStickyFooter, "rrkCCGsIsUyMva3aCfzijzz1cLk=");
+_c = PageStickyFooter;
+var _c;
+$RefreshReg$(_c, "PageStickyFooter");
+
+  $parcel$ReactRefreshHelpers$7c29.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","../PageFullBleedLine":"culkn","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","../UIContext":"aF4Em","../PageColumn":"7NeTI"}],"culkn":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "PageFullBleedLine", ()=>(0, _pageFullBleedLine.PageFullBleedLine));
+var _pageFullBleedLine = require("./PageFullBleedLine");
+
+},{"./PageFullBleedLine":"4JNWB","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4JNWB":[function(require,module,exports) {
+var $parcel$ReactRefreshHelpers$ed20 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$ed20.prelude(module);
+
+try {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "PageFullBleedLine", ()=>PageFullBleedLine);
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _react = require("react");
+var _reactDefault = parcelHelpers.interopDefault(_react);
+var _pageColumn = require("../PageColumn");
+function PageFullBleedLine({ lineColor ="var(--neutral-200)" , style , ...props }) {
+    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+        style: {
+            height: 1,
+            backgroundColor: lineColor,
+            marginLeft: 0 - (0, _pageColumn.PAGE_PADDING_HORIZONTAL),
+            marginRight: 0 - (0, _pageColumn.PAGE_PADDING_HORIZONTAL),
+            ...style
+        },
+        ...props
+    }, void 0, false, {
+        fileName: "src/ui/components/PageFullBleedLine/PageFullBleedLine.tsx",
+        lineNumber: 10,
+        columnNumber: 5
+    }, this);
+}
+_c = PageFullBleedLine;
+var _c;
+$RefreshReg$(_c, "PageFullBleedLine");
+
+  $parcel$ReactRefreshHelpers$ed20.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","../PageColumn":"7NeTI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"g9QSi":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "sample", ()=>sample);
@@ -78181,6 +80401,14 @@ var _reactDefault = parcelHelpers.interopDefault(_react);
 var _reactRouterDom = require("react-router-dom");
 var _windowSize = require("src/ui-lab/components/WindowSize");
 var _signMessage = require("./SignMessage");
+const samples = [
+    {
+        message: "Hello, world"
+    },
+    {
+        typedData: '{"types":{"SetMasterContractApproval":[{"name":"warning","type":"string"},{"name":"user","type":"address"},{"name":"masterContract","type":"address"},{"name":"approved","type":"bool"},{"name":"nonce","type":"uint256"}],"EIP712Domain":[{"name":"name","type":"string"},{"name":"chainId","type":"uint256"},{"name":"verifyingContract","type":"address"}]},"domain":{"name":"BentoBox V1","chainId":"137","verifyingContract":"0x0319000133d3ada02600f0875d2cf03d442c3367"},"primaryType":"SetMasterContractApproval","message":{"warning":"Give FULL access to funds in (and approved to) BentoBox?","user":"0x42b9df65b219b3dd36ff330a4dd8f327a6ada990","masterContract":"0xc5017be80b4446988e8686168396289a9a62668e","approved":true,"nonce":"0"}}'
+    }, 
+];
 const readme = {
     name: "SignMessage",
     description: null,
@@ -78191,33 +80419,33 @@ const readme = {
                 gridTemplateColumns: "repeat(5, minmax(290px, 700px))",
                 overflowX: "auto"
             },
-            children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.MemoryRouter), {
-                initialEntries: [
-                    `/signMessage?${new URLSearchParams({
-                        origin: "https://app.zerion.io",
-                        message: "Hello, world",
-                        windowId: String(1)
-                    })}`, 
-                ],
-                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _windowSize.WindowSize), {
-                    children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _signMessage.SignMessage), {}, void 0, false, {
+            children: samples.map((sample, index)=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.MemoryRouter), {
+                    initialEntries: [
+                        `/signMessage?${new URLSearchParams({
+                            origin: "https://app.zerion.io",
+                            windowId: String(index),
+                            ...sample
+                        })}`, 
+                    ],
+                    children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _windowSize.WindowSize), {
+                        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _signMessage.SignMessage), {}, void 0, false, {
+                            fileName: "src/ui/pages/SignMessage/SignMessage.readme.tsx",
+                            lineNumber: 39,
+                            columnNumber: 13
+                        }, undefined)
+                    }, void 0, false, {
                         fileName: "src/ui/pages/SignMessage/SignMessage.readme.tsx",
-                        lineNumber: 29,
+                        lineNumber: 38,
                         columnNumber: 11
                     }, undefined)
-                }, void 0, false, {
+                }, index, false, {
                     fileName: "src/ui/pages/SignMessage/SignMessage.readme.tsx",
                     lineNumber: 28,
                     columnNumber: 9
-                }, undefined)
-            }, void 0, false, {
-                fileName: "src/ui/pages/SignMessage/SignMessage.readme.tsx",
-                lineNumber: 19,
-                columnNumber: 7
-            }, undefined)
+                }, undefined))
         }, void 0, false, {
             fileName: "src/ui/pages/SignMessage/SignMessage.readme.tsx",
-            lineNumber: 11,
+            lineNumber: 19,
             columnNumber: 5
         }, undefined)
 };
@@ -78257,7 +80485,9 @@ var _truncateAddress = require("src/ui/shared/truncateAddress");
 var _zerionSquircleSvg = require("src/ui/assets/zerion-squircle.svg");
 var _zerionSquircleSvgDefault = parcelHelpers.interopDefault(_zerionSquircleSvg);
 var _background = require("src/ui/components/Background");
-var _s = $RefreshSig$(), _s1 = $RefreshSig$();
+var _pageStickyFooter = require("src/ui/components/PageStickyFooter");
+var _toUtf8String = require("src/modules/ethereum/message-signing/toUtf8String");
+var _s = $RefreshSig$(), _s1 = $RefreshSig$(), _s2 = $RefreshSig$(), _s3 = $RefreshSig$();
 function ItemSurface({ style , ...props }) {
     const surfaceStyle = {
         ...style,
@@ -78269,7 +80499,7 @@ function ItemSurface({ style , ...props }) {
         ...props
     }, void 0, false, {
         fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-        lineNumber: 26,
+        lineNumber: 29,
         columnNumber: 10
     }, this);
 }
@@ -78293,12 +80523,12 @@ function WalletLine({ address , label  }) {
             }, void 0, false, void 0, void 0)
         }, void 0, false, {
             fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-            lineNumber: 32,
+            lineNumber: 35,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-        lineNumber: 31,
+        lineNumber: 34,
         columnNumber: 5
     }, this);
 }
@@ -78313,187 +80543,291 @@ function MessageRow({ message  }) {
                 children: "Data to Sign"
             }, void 0, false, {
                 fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                lineNumber: 51,
+                lineNumber: 54,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(ItemSurface, {
                 children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
                     kind: "body/s_reg",
-                    color: "var(--neutral-600)",
-                    children: message
+                    color: "var(--neutral-700)",
+                    children: (0, _toUtf8String.toUtf8String)(message)
                 }, void 0, false, {
                     fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                    lineNumber: 55,
+                    lineNumber: 58,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                lineNumber: 54,
+                lineNumber: 57,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-        lineNumber: 50,
+        lineNumber: 53,
         columnNumber: 5
     }, this);
 }
 _c2 = MessageRow;
-function SignMessageContent({ message , origin , wallet  }) {
+function TypedDataRow({ typedData  }) {
+    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _vstack.VStack), {
+        gap: 8,
+        children: [
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
+                kind: "body/s_reg",
+                color: "var(--neutral-500)",
+                children: "Data to Sign"
+            }, void 0, false, {
+                fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
+                lineNumber: 69,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(ItemSurface, {
+                style: {
+                    maxHeight: 160,
+                    overflow: "auto"
+                },
+                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
+                    kind: "body/s_reg",
+                    color: "var(--neutral-700)",
+                    style: {
+                        fontFamily: "monospace"
+                    },
+                    children: typedData
+                }, void 0, false, {
+                    fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
+                    lineNumber: 73,
+                    columnNumber: 9
+                }, this)
+            }, void 0, false, {
+                fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
+                lineNumber: 72,
+                columnNumber: 7
+            }, this)
+        ]
+    }, void 0, true, {
+        fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
+        lineNumber: 68,
+        columnNumber: 5
+    }, this);
+}
+_c3 = TypedDataRow;
+function useSignTypedData_v4Mutation({ onSuccess  }) {
     _s();
+    return (0, _reactQuery.useMutation)(async ({ typedData  })=>{
+        return await (0, _channels.walletPort).request("signTypedData_v4", {
+            typedData
+        });
+    }, {
+        onSuccess
+    });
+}
+_s(useSignTypedData_v4Mutation, "wwwtpB20p0aLiHIvSy5P98MwIUg=", false, function() {
+    return [
+        (0, _reactQuery.useMutation)
+    ];
+});
+function usePersonalSignMutation({ onSuccess  }) {
+    _s1();
+    return (0, _reactQuery.useMutation)(async ([message])=>{
+        return await (0, _channels.walletPort).request("personalSign", [
+            message
+        ]);
+    }, {
+        onSuccess
+    });
+}
+_s1(usePersonalSignMutation, "wwwtpB20p0aLiHIvSy5P98MwIUg=", false, function() {
+    return [
+        (0, _reactQuery.useMutation)
+    ];
+});
+function isErrorMessageObject(value) {
+    return Boolean(value && "message" in value);
+}
+function getError(value) {
+    return value instanceof Error ? value : isErrorMessageObject(value) ? new Error(value.message) : new Error("Unknown Error");
+}
+function SignMessageContent({ message , origin , typedData , wallet  }) {
+    _s2();
     const [params] = (0, _reactRouterDom.useSearchParams)();
-    // const { mutate: signAndSendTransaction, ...signMutation } = useMutation(
-    //   async (transaction: UnsignedTransaction) => {
-    //     await new Promise((r) => setTimeout(r, 1000));
-    //     return await walletPort.request('signAndSendTransaction', [transaction]);
-    //   },
-    //   {
-    //     onSuccess: ({ hash }) => {
-    //       windowPort.confirm(Number(params.get('windowId')), hash);
-    //     },
-    //   }
-    // );
+    const handleSignSuccess = (signature)=>(0, _channels.windowPort).confirm(Number(params.get("windowId")), signature);
+    const signTypedData_v4Mutation = useSignTypedData_v4Mutation({
+        onSuccess: handleSignSuccess
+    });
+    const personalSignMutation = usePersonalSignMutation({
+        onSuccess: handleSignSuccess
+    });
+    const someMutationError = signTypedData_v4Mutation.isError ? getError(personalSignMutation.error) : personalSignMutation.isError ? getError(personalSignMutation.error) : null;
     const originName = (0, _react.useMemo)(()=>new URL(origin).hostname, [
         origin
     ]);
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _background.Background), {
         backgroundKind: "white",
-        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _pageColumn.PageColumn), {
-            children: [
-                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _pageTop.PageTop), {}, void 0, false, {
-                    fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                    lineNumber: 89,
-                    columnNumber: 9
-                }, this),
-                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                    style: {
-                        display: "grid",
-                        placeItems: "center"
-                    },
-                    children: [
-                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _zerionSquircleSvgDefault.default), {
-                            style: {
-                                width: 44,
-                                height: 44
-                            }
-                        }, void 0, false, {
-                            fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                            lineNumber: 91,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
-                            height: 16
-                        }, void 0, false, {
-                            fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                            lineNumber: 92,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
-                            kind: "h/5_med",
-                            style: {
-                                textAlign: "center"
-                            },
-                            children: "Signature Request"
-                        }, void 0, false, {
-                            fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                            lineNumber: 93,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
-                            height: 8
-                        }, void 0, false, {
-                            fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                            lineNumber: 96,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
-                            kind: "subtitle/m_reg",
-                            color: "var(--primary)",
-                            children: originName
-                        }, void 0, false, {
-                            fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                            lineNumber: 97,
-                            columnNumber: 11
-                        }, this)
-                    ]
-                }, void 0, true, {
-                    fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                    lineNumber: 90,
-                    columnNumber: 9
-                }, this),
-                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
-                    height: 24
-                }, void 0, false, {
-                    fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                    lineNumber: 101,
-                    columnNumber: 9
-                }, this),
-                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
-                    height: 16
-                }, void 0, false, {
-                    fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                    lineNumber: 102,
-                    columnNumber: 9
-                }, this),
-                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _vstack.VStack), {
-                    gap: 12,
-                    children: [
-                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(WalletLine, {
-                            address: wallet.address,
-                            label: "Wallet"
-                        }, void 0, false, {
-                            fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                            lineNumber: 104,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(MessageRow, {
-                            message: message
-                        }, void 0, false, {
-                            fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                            lineNumber: 105,
-                            columnNumber: 11
-                        }, this)
-                    ]
-                }, void 0, true, {
-                    fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                    lineNumber: 103,
-                    columnNumber: 9
-                }, this),
-                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
-                    height: 16
-                }, void 0, false, {
-                    fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                    lineNumber: 107,
-                    columnNumber: 9
-                }, this),
-                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _vstack.VStack), {
+        children: [
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _pageColumn.PageColumn), {
+                children: [
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _pageTop.PageTop), {}, void 0, false, {
+                        fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
+                        lineNumber: 151,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                        style: {
+                            display: "grid",
+                            placeItems: "center"
+                        },
+                        children: [
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _zerionSquircleSvgDefault.default), {
+                                style: {
+                                    width: 44,
+                                    height: 44
+                                }
+                            }, void 0, false, {
+                                fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
+                                lineNumber: 153,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
+                                height: 16
+                            }, void 0, false, {
+                                fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
+                                lineNumber: 154,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
+                                kind: "h/5_med",
+                                style: {
+                                    textAlign: "center"
+                                },
+                                children: "Signature Request"
+                            }, void 0, false, {
+                                fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
+                                lineNumber: 155,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
+                                height: 8
+                            }, void 0, false, {
+                                fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
+                                lineNumber: 158,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
+                                kind: "subtitle/m_reg",
+                                color: "var(--primary)",
+                                children: originName
+                            }, void 0, false, {
+                                fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
+                                lineNumber: 159,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
+                        lineNumber: 152,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
+                        height: 24
+                    }, void 0, false, {
+                        fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
+                        lineNumber: 163,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
+                        height: 16
+                    }, void 0, false, {
+                        fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
+                        lineNumber: 164,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _vstack.VStack), {
+                        gap: 12,
+                        children: [
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(WalletLine, {
+                                address: wallet.address,
+                                label: "Wallet"
+                            }, void 0, false, {
+                                fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
+                                lineNumber: 166,
+                                columnNumber: 11
+                            }, this),
+                            typedData ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(TypedDataRow, {
+                                typedData: typedData
+                            }, void 0, false, {
+                                fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
+                                lineNumber: 168,
+                                columnNumber: 13
+                            }, this) : message ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(MessageRow, {
+                                message: message
+                            }, void 0, false, {
+                                fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
+                                lineNumber: 170,
+                                columnNumber: 13
+                            }, this) : null
+                        ]
+                    }, void 0, true, {
+                        fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
+                        lineNumber: 165,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
+                        height: 16
+                    }, void 0, false, {
+                        fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
+                        lineNumber: 173,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
+                lineNumber: 150,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _pageStickyFooter.PageStickyFooter), {
+                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _vstack.VStack), {
                     style: {
                         textAlign: "center",
                         marginTop: "auto",
-                        paddingBottom: 32
+                        paddingBottom: 24
                     },
                     gap: 8,
                     children: [
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
-                            kind: "body/s_reg",
+                            kind: "caption/reg",
                             color: "var(--negative-500)",
-                            children: null
+                            children: someMutationError?.message || "Testing Error"
                         }, void 0, false, {
                             fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                            lineNumber: 113,
+                            lineNumber: 184,
                             columnNumber: 11
                         }, this),
-                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _button.Button), {
+                        typedData ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _button.Button), {
                             onClick: ()=>{
-                            // signAndSendTransaction(transaction);
+                                signTypedData_v4Mutation.mutate({
+                                    typedData
+                                });
                             },
-                            children: "Sign"
+                            children: signTypedData_v4Mutation.isLoading ? "Signing..." : "Sign"
                         }, void 0, false, {
                             fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                            lineNumber: 116,
-                            columnNumber: 11
-                        }, this),
+                            lineNumber: 188,
+                            columnNumber: 13
+                        }, this) : message ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _button.Button), {
+                            onClick: ()=>{
+                                personalSignMutation.mutate([
+                                    message
+                                ]);
+                            },
+                            children: personalSignMutation.isLoading ? "Signing..." : "Sign"
+                        }, void 0, false, {
+                            fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
+                            lineNumber: 196,
+                            columnNumber: 13
+                        }, this) : null,
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _unstyledButton.UnstyledButton), {
+                            type: "button",
                             style: {
                                 color: "var(--primary)"
                             },
@@ -78503,35 +80837,37 @@ function SignMessageContent({ message , origin , wallet  }) {
                             children: "Reject"
                         }, void 0, false, {
                             fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                            lineNumber: 123,
+                            lineNumber: 204,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                    lineNumber: 109,
+                    lineNumber: 176,
                     columnNumber: 9
                 }, this)
-            ]
-        }, void 0, true, {
-            fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-            lineNumber: 88,
-            columnNumber: 7
-        }, this)
-    }, void 0, false, {
+            }, void 0, false, {
+                fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
+                lineNumber: 175,
+                columnNumber: 7
+            }, this)
+        ]
+    }, void 0, true, {
         fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-        lineNumber: 87,
+        lineNumber: 149,
         columnNumber: 5
     }, this);
 }
-_s(SignMessageContent, "p16JBTIn2XrZRCB90atl2LAAtxk=", false, function() {
+_s2(SignMessageContent, "XyEfOkdj0Cq0pUej73pG37KBQJw=", false, function() {
     return [
-        (0, _reactRouterDom.useSearchParams)
+        (0, _reactRouterDom.useSearchParams),
+        useSignTypedData_v4Mutation,
+        usePersonalSignMutation
     ];
 });
-_c3 = SignMessageContent;
+_c4 = SignMessageContent;
 function SignMessage() {
-    _s1();
+    _s3();
     const [params] = (0, _reactRouterDom.useSearchParams)();
     const { data: wallet , isLoading , isError ,  } = (0, _reactQuery.useQuery)("wallet", ()=>{
         return (0, _channels.walletPort).request("getCurrentWallet");
@@ -78540,43 +80876,59 @@ function SignMessage() {
         children: "Some Error"
     }, void 0, false, {
         fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-        lineNumber: 147,
+        lineNumber: 229,
         columnNumber: 12
     }, this);
     if (isLoading || !wallet) return null;
     const origin = params.get("origin");
     if (!origin) throw new Error("origin get-parameter is required for this view");
     const message = params.get("message");
-    if (message == null) throw new Error("message get-parameter is required for this view");
+    const typedData = params.get("typedData");
+    if (message == null && typedData == null) throw new Error('Either "message" or "typedData" get-parameter is required for this view');
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(SignMessageContent, {
-        message: message,
+        message: message ?? undefined,
+        typedData: typedData ?? undefined,
         origin: origin,
         wallet: wallet
     }, void 0, false, {
         fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-        lineNumber: 161,
+        lineNumber: 246,
         columnNumber: 5
     }, this);
 }
-_s1(SignMessage, "P5G8cyJjtfuJUJ1F7xpf8HUVYnE=", false, function() {
+_s3(SignMessage, "P5G8cyJjtfuJUJ1F7xpf8HUVYnE=", false, function() {
     return [
         (0, _reactRouterDom.useSearchParams),
         (0, _reactQuery.useQuery)
     ];
 });
-_c4 = SignMessage;
-var _c, _c1, _c2, _c3, _c4;
+_c5 = SignMessage;
+var _c, _c1, _c2, _c3, _c4, _c5;
 $RefreshReg$(_c, "ItemSurface");
 $RefreshReg$(_c1, "WalletLine");
 $RefreshReg$(_c2, "MessageRow");
-$RefreshReg$(_c3, "SignMessageContent");
-$RefreshReg$(_c4, "SignMessage");
+$RefreshReg$(_c3, "TypedDataRow");
+$RefreshReg$(_c4, "SignMessageContent");
+$RefreshReg$(_c5, "SignMessage");
 
   $parcel$ReactRefreshHelpers$adf9.postlude(module);
 } finally {
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-query":"7slSP","react-router-dom":"fdOAw","src/ui/components/PageColumn":"7NeTI","src/ui/components/PageTop":"48XO9","src/ui/shared/channels":"57ETE","src/ui/ui-kit/Spacer":"7Kmxc","src/ui/ui-kit/UIText":"66Z7M","src/ui/ui-kit/VStack":"hLvwM","src/ui/ui-kit/Button":"6KLPL","src/ui/ui-kit/UnstyledButton":"7pYzj","src/ui/ui-kit/Surface":"7D9R0","src/ui/components/BlockieImg":"3UGAz","src/ui/ui-kit/Media":"guzi7","src/ui/shared/truncateAddress":"89mpt","src/ui/assets/zerion-squircle.svg":"3FgyB","src/ui/components/Background":"g0Xd1","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}]},["1xC6H","6cA35","f7Z1A"], "f7Z1A", "parcelRequire7f4b")
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-query":"7slSP","react-router-dom":"fdOAw","src/ui/components/PageColumn":"7NeTI","src/ui/components/PageTop":"48XO9","src/ui/shared/channels":"bv9nl","src/ui/ui-kit/Spacer":"7Kmxc","src/ui/ui-kit/UIText":"66Z7M","src/ui/ui-kit/VStack":"hLvwM","src/ui/ui-kit/Button":"6KLPL","src/ui/ui-kit/UnstyledButton":"7pYzj","src/ui/ui-kit/Surface":"7D9R0","src/ui/components/BlockieImg":"3UGAz","src/ui/ui-kit/Media":"guzi7","src/ui/shared/truncateAddress":"89mpt","src/ui/assets/zerion-squircle.svg":"3FgyB","src/ui/components/Background":"g0Xd1","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","src/ui/components/PageStickyFooter":"gR4PH","src/modules/ethereum/message-signing/toUtf8String":"ji3YA"}],"ji3YA":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "toUtf8String", ()=>toUtf8String);
+var _ethers = require("ethers");
+function toUtf8String(value) {
+    try {
+        return (0, _ethers.ethers).utils.toUtf8String(value);
+    } catch (e) {
+        return value;
+    }
+}
+
+},{"ethers":"hdHML","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["1xC6H","6cA35","f7Z1A"], "f7Z1A", "parcelRequire7f4b")
 
 //# sourceMappingURL=index.fbae3b4e.js.map
