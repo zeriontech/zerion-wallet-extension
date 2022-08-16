@@ -124,33 +124,6 @@ export function RequestAccounts() {
           Reject
         </UnstyledButton>
       </VStack>
-
-      {/*
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          const address = new FormData(event.currentTarget).get('address');
-          windowPort.port.postMessage(
-            formatJsonRpcResult(Number(params.get('windowId')), [address])
-          );
-          // walletPort
-          //   .request(formatJsonRpcRequest('testMethod', null))
-          //   .then((res) => {
-          //     console.log('RESULT!!!', res);
-          //     if (isJsonRpcResult(res)) {
-          //       setState(res.result);
-          //     }
-          //   });
-        }}
-      >
-        <input
-          type="text"
-          name="address"
-          placeholder="Enter address"
-          required
-        />
-      </form>
-      */}
     </PageColumn>
   );
 }

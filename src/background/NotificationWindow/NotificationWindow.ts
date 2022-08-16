@@ -5,7 +5,7 @@ import {
 } from '@json-rpc-tools/utils';
 import EventEmitter from 'events';
 import { UserRejected } from 'src/shared/errors/UserRejected';
-import windowManager from '../webapis/window';
+import { windowManager } from '../webapis/window';
 
 class NotificationWindow extends EventEmitter {
   windowId: number | null | undefined = null;
@@ -37,7 +37,6 @@ class NotificationWindow extends EventEmitter {
     onDismiss: (error?: ErrorResponse) => void;
     onResolve: (data: T) => void;
   }) {
-    console.log('open window');
     if (this.windowId != null) {
       windowManager.remove(this.windowId);
     }
@@ -53,9 +52,7 @@ class NotificationWindow extends EventEmitter {
     const params = new URLSearchParams(search);
     params.append('windowId', String(id));
     route = route + `?${params.toString()}`;
-    console.log('openNotification');
     const windowId = await windowManager.openNotification({ route });
-    console.log({ windowId });
     if (windowId) {
       this.idsMap.set(id, windowId);
       disposables.push(() => this.idsMap.delete(id));

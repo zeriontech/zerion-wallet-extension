@@ -27,49 +27,35 @@ const create = async ({
   url: string;
 }): Promise<BrowserWindow['id']> => {
   const {
-    top: cTop,
-    left: cLeft,
-    width,
+    top: currentWindowTop,
+    left: currentWindowLeft,
+    width: currentWindowWidth,
   } = await browser.windows.getCurrent({
     windowTypes: ['normal'],
   } as Windows.GetInfo);
 
-  const top = (cTop || 0) + BROWSER_HEADER;
-  const left = (cLeft || 0) + (width || 0) - WINDOW_SIZE.width;
+  const top = (currentWindowTop || 0) + BROWSER_HEADER;
+  const left =
+    (currentWindowLeft || 0) + (currentWindowWidth || 0) - WINDOW_SIZE.width;
 
   const currentWindow = await browser.windows.getCurrent();
-  let win: BrowserWindow;
-  if (currentWindow.state === 'fullscreen') {
-    // browser.windows.create not pass state to chrome
-    win = await browser.windows.create({
-      focused: true,
-      url,
-      type: 'popup',
-      ...rest,
-      width: undefined,
-      height: undefined,
-      left: undefined,
-      top: undefined,
-      state: 'fullscreen',
-    });
-  } else {
-    win = await browser.windows.create({
-      focused: true,
-      url,
-      type: 'popup',
-      top,
-      left,
-      ...WINDOW_SIZE,
-      ...rest,
-    });
-  }
+  const win = await browser.windows.create({
+    focused: true,
+    url,
+    type: 'popup',
+    top,
+    left,
+    state: currentWindow.state === 'fullscreen' ? 'fullscreen' : undefined,
+    ...WINDOW_SIZE,
+    ...rest,
+  });
 
   // shim firefox
-  if (win.left !== left) {
-    if (win.id) {
-      await browser.windows.update(win.id, { left, top });
-    }
-  }
+  // if (win.left !== left) {
+  //   if (win.id) {
+  //     await browser.windows.update(win.id, { left, top });
+  //   }
+  // }
 
   return win.id;
 };
@@ -88,7 +74,7 @@ const openNotification = ({ route = '', ...rest } = {}): Promise<
   return create({ url: url.toString(), ...rest });
 };
 
-export default {
+export const windowManager = {
   openNotification,
   event,
   remove,
