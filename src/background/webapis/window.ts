@@ -41,7 +41,7 @@ const create = async ({
   let win: BrowserWindow;
   if (currentWindow.state === 'fullscreen') {
     // browser.windows.create not pass state to chrome
-    win = await chrome.windows.create({
+    win = await browser.windows.create({
       focused: true,
       url,
       type: 'popup',

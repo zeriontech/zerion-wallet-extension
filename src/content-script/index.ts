@@ -1,4 +1,5 @@
 import { nanoid } from 'nanoid';
+import browser from 'webextension-polyfill';
 import { isJsonRpcRequest, isJsonRpcResponse } from '@json-rpc-tools/utils';
 // @ts-ignore parcel syntax for inlining: https://parceljs.org/features/bundle-inlining/#inlining-a-bundle-as-text
 import inPageContent from 'bundle-text:./in-page';
@@ -7,7 +8,9 @@ const id = nanoid();
 
 const broadcastChannel = new BroadcastChannel(id);
 
-const port = chrome.runtime.connect({ name: `${chrome.runtime.id}/ethereum` });
+const port = browser.runtime.connect({
+  name: `${browser.runtime.id}/ethereum`,
+});
 
 port.onMessage.addListener((msg) => {
   if (isJsonRpcResponse(msg)) {
