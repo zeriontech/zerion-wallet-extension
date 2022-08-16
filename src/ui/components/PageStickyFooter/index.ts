@@ -1,0 +1,1 @@
+export { PageStickyFooter } from './PageStickyFooter';

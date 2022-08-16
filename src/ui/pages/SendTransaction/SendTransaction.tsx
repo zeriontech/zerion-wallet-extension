@@ -32,6 +32,7 @@ import { Background } from 'src/ui/components/Background';
 import { FillView } from 'src/ui/components/FillView';
 import { capitalize } from 'capitalize-ts';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
+import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 
 function ItemSurface({ style, ...props }: React.HTMLProps<HTMLDivElement>) {
   const surfaceStyle = {
@@ -329,9 +330,13 @@ function SendTransactionContent({
           />
         </VStack>
         <Spacer height={16} />
-
+      </PageColumn>
+      <PageStickyFooter>
         <VStack
-          style={{ textAlign: 'center', marginTop: 'auto', paddingBottom: 32 }}
+          style={{
+            textAlign: 'center',
+            paddingBottom: 32,
+          }}
           gap={8}
         >
           <UIText kind="body/s_reg" color="var(--negative-500)">
@@ -359,7 +364,7 @@ function SendTransactionContent({
             Reject
           </UnstyledButton>
         </VStack>
-      </PageColumn>
+      </PageStickyFooter>
     </Background>
   );
 }

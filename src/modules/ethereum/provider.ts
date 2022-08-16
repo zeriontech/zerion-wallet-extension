@@ -23,10 +23,17 @@ async function fetchInitialState(connection: Connection) {
   ]).then(([chainId, accounts]) => ({ chainId, accounts }));
 }
 
+function updateChainId(self: EthereumProvider, chainId: string) {
+  self.chainId = chainId;
+  self.networkVersion = String(parseInt(chainId, 16));
+}
+
 export class EthereumProvider extends JsonRpcProvider {
   accounts: string[];
   chainId: string;
-  isZerionWallet: boolean;
+  networkVersion: string;
+  isZerionWallet = true;
+  // isMetaMask = true;
   connection: Connection;
   _openPromise: Promise<void> | null = null;
 
@@ -35,8 +42,8 @@ export class EthereumProvider extends JsonRpcProvider {
     this.connection = connection;
     this.shimLegacy();
     this.chainId = '0x1';
+    this.networkVersion = '1';
     this.accounts = [];
-    this.isZerionWallet = true;
 
     connection.on(
       'ethereumEvent',
@@ -45,7 +52,7 @@ export class EthereumProvider extends JsonRpcProvider {
           if (value === this.chainId) {
             return;
           }
-          this.chainId = value;
+          updateChainId(this, value);
         }
         if (event === 'accountsChanged' && Array.isArray(value)) {
           // it's okay to perform search like this because `this.accounts`
@@ -71,7 +78,7 @@ export class EthereumProvider extends JsonRpcProvider {
 
   private async _prepareState() {
     return fetchInitialState(this.connection).then(({ chainId, accounts }) => {
-      this.chainId = chainId;
+      updateChainId(this, chainId);
       this.accounts = accounts;
     });
   }

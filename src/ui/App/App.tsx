@@ -18,6 +18,7 @@ import { Overview } from 'src/ui/pages/Overview';
 import { RouteResolver } from 'src/ui/pages/RouteResolver';
 import { RequestAccounts } from 'src/ui/pages/RequestAccounts';
 import { SendTransaction } from 'src/ui/pages/SendTransaction';
+import { SignMessage } from 'src/ui/pages/SignMessage';
 import { Login } from '../pages/Login';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { accountPublicRPCPort, walletPort } from '../shared/channels';
@@ -37,6 +38,7 @@ import { ManageWallets } from '../pages/ManageWallets';
 import { WalletSelect } from '../pages/WalletSelect';
 import { NotFoundPage } from '../components/NotFoundPage';
 import { UIText } from '../ui-kit/UIText';
+import { defaultUIContextValue, UIContext } from '../components/UIContext';
 
 const locationStore = new PersistentStore('location', {
   pathname: '/',
@@ -284,6 +286,14 @@ function Views() {
             }
           />
           <Route
+            path="/signMessage"
+            element={
+              <RequireAuth>
+                <SignMessage />
+              </RequireAuth>
+            }
+          />
+          <Route
             path="/switchEthereumChain"
             element={
               <RequireAuth>
@@ -338,20 +348,22 @@ export function App() {
   }, []);
   return (
     <AreaProvider>
-      <QueryClientProvider client={queryClient}>
-        <Router>
-          <DesignTheme />
-          <ErrorBoundary
-            renderError={(error) => (
-              <FillView>
-                <ViewError error={error} />
-              </FillView>
-            )}
-          >
-            <Views />
-          </ErrorBoundary>
-        </Router>
-      </QueryClientProvider>
+      <UIContext.Provider value={defaultUIContextValue}>
+        <QueryClientProvider client={queryClient}>
+          <Router>
+            <DesignTheme />
+            <ErrorBoundary
+              renderError={(error) => (
+                <FillView>
+                  <ViewError error={error} />
+                </FillView>
+              )}
+            >
+              <Views />
+            </ErrorBoundary>
+          </Router>
+        </QueryClientProvider>
+      </UIContext.Provider>
     </AreaProvider>
   );
 }

@@ -1,9 +1,15 @@
-import { ethers } from 'ethers';
+// import { ethers } from 'ethers';
 import { Chain } from 'src/modules/networks/Chain';
 import { networksStore } from 'src/modules/networks/networks-store';
+import { BareWallet } from 'src/shared/types/BareWallet';
 
-const testingPrivateKey = process.env.TEST_WALLET_ADDRESS as string;
-const testWallet = new ethers.Wallet(testingPrivateKey);
+const testAddress = process.env.TEST_WALLET_ADDRESS as string;
+const testWallet: BareWallet = {
+  address: testAddress,
+  mnemonic: null,
+  privateKey: '<privateKey>',
+  name: null,
+};
 
 export const walletPort = {
   state: {
@@ -13,6 +19,8 @@ export const walletPort = {
   async request(method: string, ...args: unknown[]) {
     if (method === 'getCurrentWallet') {
       return Promise.resolve(testWallet);
+    } else if (method === 'getCurrentAddress') {
+      return Promise.resolve(testWallet.address);
     } else if (method === 'signAndSendTransaction') {
       return Promise.resolve({ hash: '0x12345' });
     } else if (method === 'getChainId' || method === 'eth_chainId') {

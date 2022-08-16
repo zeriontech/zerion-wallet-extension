@@ -38,6 +38,9 @@ import { getNextAccountPath } from 'src/shared/wallet/getNextAccountPath';
 import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
 import { hasGasPrice } from 'src/modules/ethereum/transactions/gasPrices/hasGasPrice';
 import { fetchAndAssignGasPrice } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
+import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
+import { prepareTypedData } from 'src/modules/ethereum/message-signing/prepareTypedData';
+import { toUtf8String } from 'ethers/lib/utils';
 
 class RecordNotFound extends Error {}
 
@@ -385,6 +388,14 @@ export class Wallet {
     return this.record?.walletManager.currentAddress || null;
   }
 
+  private ensureCurrentAddress(): string {
+    const currentAddress = this.readCurrentAddress();
+    if (!currentAddress) {
+      throw new Error('Wallet is not initialized');
+    }
+    return currentAddress;
+  }
+
   async getCurrentAddress({ context }: PublicMethodParams) {
     this.verifyInternalOrigin(context);
     return this.readCurrentAddress();
@@ -472,10 +483,7 @@ export class Wallet {
         route: '/requestAccounts',
         search: `?origin=${origin}`,
         onResolve: async () => {
-          const currentAddress = this.readCurrentAddress();
-          if (!currentAddress) {
-            throw new Error('Wallet not found');
-          }
+          const currentAddress = this.ensureCurrentAddress();
           this.acceptOrigin(origin, currentAddress);
           const accounts = await this.eth_accounts({ context });
           resolve(accounts);
@@ -577,15 +585,13 @@ export class Wallet {
         '"from" field is missing from the transaction object. Send from current address?'
       );
     }
-    const currentAddress = this.readCurrentAddress();
-    if (!currentAddress) {
-      throw new Error('Wallet is not initialized');
-    }
+    const currentAddress = this.ensureCurrentAddress();
     if (
       incomingTransaction.from.toLowerCase() !== currentAddress.toLowerCase()
     ) {
       throw new Error(
-        'transaction "from" field is different from currently selected address. TODO?...'
+        // TODO?...
+        'transaction "from" field is different from currently selected address'
       );
     }
     const { chainId } = this.store.getState();
@@ -632,10 +638,7 @@ export class Wallet {
     params,
     context,
   }: PublicMethodParams<UnsignedTransaction[]>) {
-    const currentAddress = this.readCurrentAddress();
-    if (!currentAddress) {
-      throw new Error('Wallet is not initialized');
-    }
+    const currentAddress = this.ensureCurrentAddress();
     // TODO: should we check transaction.from instead of currentAddress?
     if (!this.allowedOrigin(context, currentAddress)) {
       throw new OriginNotAllowed();
@@ -662,16 +665,116 @@ export class Wallet {
     });
   }
 
-  async eth_signTypedData_v4({ context: _context }: PublicMethodParams) {
-    throw new MethodNotImplemented('eth_signTypedData_v4: Not Implemented');
+  async signTypedData_v4({
+    params: { typedData: rawTypedData },
+    context,
+  }: PublicMethodParams<{ typedData: TypedData | string }>) {
+    this.verifyInternalOrigin(context);
+    if (!rawTypedData) {
+      throw new InvalidParams();
+    }
+    const { chainId } = this.store.getState();
+    const signer = await this.getSigner(chainId);
+    const typedData = prepareTypedData(rawTypedData);
+    const signature = await signer._signTypedData(
+      typedData.domain,
+      typedData.types,
+      typedData.message
+    );
+    return signature;
+  }
+
+  async eth_signTypedData_v4({
+    context,
+    params: [address, data],
+  }: PublicMethodParams<[string, TypedData | string]>) {
+    const currentAddress = this.ensureCurrentAddress();
+    if (address.toLowerCase() !== currentAddress.toLowerCase()) {
+      throw new Error(
+        // TODO?...
+        'Address parameter is different from currently selected address'
+      );
+    }
+    if (!this.allowedOrigin(context, currentAddress)) {
+      throw new OriginNotAllowed();
+    }
+    const stringifiedData =
+      typeof data === 'string' ? data : JSON.stringify(data);
+    return new Promise((resolve, reject) => {
+      notificationWindow.open({
+        route: '/signMessage',
+        search: `?${new URLSearchParams({
+          origin,
+          typedData: stringifiedData,
+          method: 'eth_signTypedData_v4',
+        })}`,
+        onResolve: (signature) => {
+          resolve(signature);
+        },
+        onDismiss: () => {
+          reject(new UserRejectedTxSignature());
+        },
+      });
+    });
   }
 
   async eth_signTypedData({ context: _context }: PublicMethodParams) {
     throw new MethodNotImplemented('eth_signTypedData: Not Implemented');
   }
 
-  async eth_signMessage({ context: _context }: PublicMethodParams) {
-    throw new MethodNotImplemented('eth_signMessage: Not Implemented');
+  async eth_sign({ context: _context }: PublicMethodParams) {
+    throw new MethodNotImplemented('eth_sign: Not Implemented');
+  }
+
+  async personalSign({
+    params: [message],
+    context,
+  }: PublicMethodParams<[string, string?, string?]>) {
+    this.verifyInternalOrigin(context);
+    if (message == null) {
+      throw new InvalidParams();
+    }
+    const { chainId } = this.store.getState();
+    const signer = await this.getSigner(chainId);
+    const messageAsUtf8String = toUtf8String(message);
+    const signature = await signer.signMessage(messageAsUtf8String);
+    return signature;
+  }
+
+  async personal_sign({
+    params,
+    context,
+  }: PublicMethodParams<[string, string, string]>) {
+    if (!params.length) {
+      throw new InvalidParams();
+    }
+    const [message, address, _password] = params;
+    const currentAddress = this.ensureCurrentAddress();
+    if (address && address.toLowerCase() !== currentAddress.toLowerCase()) {
+      throw new Error(
+        // TODO?...
+        'Address parameter is different from currently selected address'
+      );
+    }
+    if (!this.allowedOrigin(context, currentAddress)) {
+      throw new OriginNotAllowed();
+    }
+    return new Promise((resolve, reject) => {
+      notificationWindow.open({
+        route: '/signMessage',
+        search: `?${new URLSearchParams({
+          origin,
+          message,
+          method: 'personal_sign',
+        })}`,
+        onResolve: (signature) => {
+          resolve(signature);
+        },
+        onDismiss: () => {
+          reject(new UserRejectedTxSignature());
+        },
+      });
+    });
   }
 
   async getPendingTransactions({ context }: PublicMethodParams) {

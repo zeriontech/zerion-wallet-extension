@@ -9,7 +9,13 @@ export const readme: Readme = {
   description: null,
   component: () => (
     <MemoryRouter>
-      <WindowSize>
+      <WindowSize
+        style={{
+          // @ts-ignore --background
+          '--background': 'var(--neutral-100)',
+          backgroundColor: 'var(--background)',
+        }}
+      >
         <Overview />
       </WindowSize>
     </MemoryRouter>

@@ -1,1 +1,1 @@
-export { PageColumn } from './PageColumn';
+export { PageColumn, PAGE_PADDING_HORIZONTAL } from './PageColumn';
