@@ -137,8 +137,8 @@ function CopyButton({ address }: { address: string }) {
 
 function CurrentAccountControls() {
   const { singleAddress, ready } = useAddressParams();
-  const { data: wallet } = useQuery('getCurrentWallet', () =>
-    walletPort.request('getCurrentWallet')
+  const { data: wallet } = useQuery('wallet/uiGetCurrentWallet', () =>
+    walletPort.request('uiGetCurrentWallet')
   );
   if (!ready) {
     return null;

@@ -102,7 +102,7 @@ export class Account extends EventEmitter {
 
   async saveUserAndWallet() {
     if (!this.user || !this.wallet || this.wallet.id === TEMPORARY_ID) {
-      throw new Error('Cannot persist: invalide session state');
+      throw new Error('Cannot persist: invalid session state');
     }
     await Account.writeCurrentUser(this.user);
     await this.wallet.savePendingWallet();

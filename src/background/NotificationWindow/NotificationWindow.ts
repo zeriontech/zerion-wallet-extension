@@ -4,7 +4,7 @@ import {
   JsonRpcResult,
 } from '@json-rpc-tools/utils';
 import EventEmitter from 'events';
-import { UserRejected } from 'src/shared/errors/UserRejected';
+import { UserRejected } from 'src/shared/errors/errors';
 import { windowManager } from '../webapis/window';
 
 class NotificationWindow extends EventEmitter {

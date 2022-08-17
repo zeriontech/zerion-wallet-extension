@@ -14,6 +14,7 @@ import {
   DecorativeMessage,
   DecorativeMessageDone,
 } from '../components/DecorativeMessage';
+import { getError } from 'src/shared/errors/getError';
 
 enum Step {
   loading,
@@ -36,9 +37,9 @@ export function GenerateWallet() {
       await new Promise((r) => setTimeout(r, 1000));
       const groupId = params.get('groupId');
       if (groupId) {
-        return walletPort.request('addMnemonicWallet', { groupId });
+        return walletPort.request('uiAddMnemonicWallet', { groupId });
       } else {
-        return walletPort.request('generateMnemonic');
+        return walletPort.request('uiGenerateMnemonic');
       }
     },
     {
@@ -48,6 +49,10 @@ export function GenerateWallet() {
       },
     }
   );
+
+  const setCurrentAddressMutation = useMutation((address: string) => {
+    return walletPort.request('setCurrentAddress', { address });
+  });
   return (
     <PageColumn>
       <PageTop />
@@ -94,20 +99,29 @@ export function GenerateWallet() {
         )}
       </VStack>
       {data ? (
-        <Button
-          style={{ marginTop: 'auto', marginBottom: 16 }}
-          onClick={async () => {
-            await accountPublicRPCPort.request('saveUserAndWallet');
-            if (data?.address) {
-              await walletPort.request('setCurrentAddress', {
-                address: data.address,
-              });
-            }
-            navigate('/overview');
-          }}
-        >
-          Finish
-        </Button>
+        <VStack gap={4} style={{ marginTop: 'auto' }}>
+          {setCurrentAddressMutation.isError ? (
+            <UIText
+              style={{ textAlign: 'center', wordBreak: 'break-all' }}
+              kind="caption/reg"
+              color="var(--negative-500)"
+            >
+              {getError(setCurrentAddressMutation.error).message}
+            </UIText>
+          ) : null}
+          <Button
+            style={{ marginTop: 'auto', marginBottom: 16 }}
+            onClick={async () => {
+              await accountPublicRPCPort.request('saveUserAndWallet');
+              if (data?.address) {
+                await setCurrentAddressMutation.mutateAsync(data.address);
+              }
+              navigate('/overview');
+            }}
+          >
+            Finish
+          </Button>
+        </VStack>
       ) : null}
     </PageColumn>
   );

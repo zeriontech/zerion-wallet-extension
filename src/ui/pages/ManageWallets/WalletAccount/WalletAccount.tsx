@@ -126,8 +126,8 @@ export function WalletAccount() {
     isLoading,
     refetch: refetchWallet,
   } = useQuery(
-    `wallet/getWalletByAddress/${address}`,
-    () => walletPort.request('getWalletByAddress', { address }),
+    `wallet/uiGetWalletByAddress/${address}`,
+    () => walletPort.request('uiGetWalletByAddress', { address }),
     { useErrorBoundary: true }
   );
   const removeAddressMutation = useMutation(

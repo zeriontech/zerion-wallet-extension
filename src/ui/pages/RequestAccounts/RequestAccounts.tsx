@@ -20,8 +20,8 @@ export function RequestAccounts() {
     data: wallet,
     isLoading,
     isError,
-  } = useQuery('wallet', () => {
-    return walletPort.request('getCurrentWallet');
+  } = useQuery('wallet/uiGetCurrentWallet', () => {
+    return walletPort.request('uiGetCurrentWallet');
   });
   if (isError) {
     return <p>Some Error</p>;

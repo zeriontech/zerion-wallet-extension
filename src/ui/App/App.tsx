@@ -97,7 +97,7 @@ const useAuthState = () => {
       const [isAuthenticated, existingUser, wallet] = await Promise.all([
         accountPublicRPCPort.request('isAuthenticated'),
         accountPublicRPCPort.request('getExistingUser'),
-        walletPort.request('getCurrentWallet'),
+        walletPort.request('uiGetCurrentWallet'),
       ]);
       return {
         isAuthenticated,

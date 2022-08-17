@@ -86,9 +86,9 @@ export function ImportWallet() {
       addStep(Step.loading);
       await new Promise((r) => setTimeout(r, 1000));
       if (isValidMnemonic(input)) {
-        return walletPort.request('importSeedPhrase', input);
+        return walletPort.request('uiImportSeedPhrase', input);
       } else if (isValidPrivateKey(input)) {
-        return walletPort.request('importPrivateKey', input);
+        return walletPort.request('uiImportPrivateKey', input);
       } else {
         throw new Error('Not a private key or a recovery phrase');
       }

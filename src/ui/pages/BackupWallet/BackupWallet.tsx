@@ -247,7 +247,7 @@ function VerifySuccess() {
   return (
     <FillView>
       <VStack gap={8} style={{ placeItems: 'center' }}>
-        <span style={{ fontSize: 48 }}>🥳</span>
+        <span style={{ fontSize: 48, lineHeight: 1 }}>🥳</span>
         <UIText kind="button/m_reg">
           The recovery phrase you have is correct!
         </UIText>
@@ -266,8 +266,8 @@ export function BackupWallet() {
     throw new Error('Group Id is required for this view');
   }
   const { data: walletGroup, isLoading } = useQuery(
-    `wallet/getWalletGroup/${groupId}`,
-    () => walletPort.request('getWalletGroup', { groupId }),
+    `wallet/uiGetWalletGroup/${groupId}`,
+    () => walletPort.request('uiGetWalletGroup', { groupId }),
     { useErrorBoundary: true }
   );
   if (isLoading) {

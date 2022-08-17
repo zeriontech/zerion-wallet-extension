@@ -104,8 +104,8 @@ function MnemonicList({ walletGroups }: { walletGroups: WalletGroup[] }) {
 
 function WalletGroups() {
   const { data: walletGroups, isLoading } = useQuery(
-    'wallet/getWalletGroups',
-    () => walletPort.request('getWalletGroups'),
+    'wallet/uiGetWalletGroups',
+    () => walletPort.request('uiGetWalletGroups'),
     { useErrorBoundary: true }
   );
   const groupedBySeedType = useMemo(() => {

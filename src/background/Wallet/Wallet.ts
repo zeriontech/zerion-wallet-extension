@@ -9,9 +9,10 @@ import {
   InvalidParams,
   MethodNotImplemented,
   OriginNotAllowed,
+  RecordNotFound,
   UserRejected,
   UserRejectedTxSignature,
-} from 'src/shared/errors/UserRejected';
+} from 'src/shared/errors/errors';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import type { WalletStore } from './persistence';
 import { walletStore } from './persistence';
@@ -41,8 +42,7 @@ import { fetchAndAssignGasPrice } from 'src/modules/ethereum/transactions/fetchA
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { prepareTypedData } from 'src/modules/ethereum/message-signing/prepareTypedData';
 import { toUtf8String } from 'ethers/lib/utils';
-
-class RecordNotFound extends Error {}
+import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 
 type PublicMethodParams<T = undefined> = T extends undefined
   ? {
@@ -128,15 +128,18 @@ export class Wallet {
     return new Promise<string>((r) => setTimeout(() => r(String(value)), 1500));
   }
 
-  async generateMnemonic() {
+  // TODO: For now, I prefix methods with "ui" which return wallet data and are supposed to be called
+  // from the UI (extension popup) thread. It's maybe better to refactor them
+  // into a separate isolated class
+  async uiGenerateMnemonic() {
     this.pendingWallet = {
       groupId: null,
       walletContainer: new MnemonicWalletContainer(),
     };
-    return this.pendingWallet.walletContainer.getFirstWallet();
+    return maskWallet(this.pendingWallet.walletContainer.getFirstWallet());
   }
 
-  async addMnemonicWallet({
+  async uiAddMnemonicWallet({
     params: { groupId },
   }: PublicMethodParams<{ groupId: string }>) {
     const group = this.record?.walletManager.groups.find(
@@ -165,24 +168,24 @@ export class Wallet {
       groupId,
       walletContainer: new MnemonicWalletContainer([{ mnemonic }]),
     };
-    return this.pendingWallet.walletContainer.getFirstWallet();
+    return maskWallet(this.pendingWallet.walletContainer.getFirstWallet());
   }
 
-  async importPrivateKey({ params: privateKey }: PublicMethodParams<string>) {
+  async uiImportPrivateKey({ params: privateKey }: PublicMethodParams<string>) {
     this.pendingWallet = {
       groupId: null,
       walletContainer: new PrivateKeyWalletContainer([{ privateKey }]),
     };
-    return this.pendingWallet.walletContainer.getFirstWallet();
+    return maskWallet(this.pendingWallet.walletContainer.getFirstWallet());
   }
 
-  async importSeedPhrase({ params: seedPhrase }: PublicMethodParams<string>) {
+  async uiImportSeedPhrase({ params: seedPhrase }: PublicMethodParams<string>) {
     const mnemonic = { phrase: seedPhrase, path: ethers.utils.defaultPath };
     this.pendingWallet = {
       groupId: null,
       walletContainer: new MnemonicWalletContainer([{ mnemonic }]),
     };
-    return this.pendingWallet.walletContainer.getFirstWallet();
+    return maskWallet(this.pendingWallet.walletContainer.getFirstWallet());
   }
 
   async getRecoveryPhrase({
@@ -199,19 +202,20 @@ export class Wallet {
     return group.walletContainer.getMnemonic();
   }
 
-  async getCurrentWallet({ context }: PublicMethodParams) {
+  async uiGetCurrentWallet({ context }: PublicMethodParams) {
     this.verifyInternalOrigin(context);
     if (!this.id) {
       return null;
     }
     const currentAddress = this.readCurrentAddress();
     if (this.record && currentAddress) {
-      return getWalletByAddress(this.record, currentAddress);
+      const wallet = getWalletByAddress(this.record, currentAddress);
+      return wallet ? maskWallet(wallet) : null;
     }
     return null;
   }
 
-  async getWalletByAddress({
+  async uiGetWalletByAddress({
     context,
     params: { address },
   }: PublicMethodParams<{ address: string }>) {
@@ -222,7 +226,8 @@ export class Wallet {
     if (!address) {
       throw new Error('Ilegal argument: address is required for this method');
     }
-    return getWalletByAddress(this.record, address);
+    const wallet = getWalletByAddress(this.record, address);
+    return wallet ? maskWallet(wallet) : null;
   }
 
   async savePendingWallet() {
@@ -401,20 +406,21 @@ export class Wallet {
     return this.readCurrentAddress();
   }
 
-  async getWalletGroups({ context }: PublicMethodParams) {
+  async uiGetWalletGroups({ context }: PublicMethodParams) {
     this.verifyInternalOrigin(context);
-    return this.record?.walletManager.groups || null;
+    const groups = this.record?.walletManager.groups;
+    return groups ? maskWalletGroups(groups) : null;
   }
 
-  async getWalletGroup({
+  async uiGetWalletGroup({
     params: { groupId },
     context,
   }: PublicMethodParams<{ groupId: string }>) {
     this.verifyInternalOrigin(context);
-    return (
-      this.record?.walletManager.groups.find((group) => group.id === groupId) ||
-      null
+    const group = this.record?.walletManager.groups.find(
+      (group) => group.id === groupId
     );
+    return group ? maskWalletGroup(group) : null;
   }
 
   async removeWalletGroup({
@@ -647,14 +653,14 @@ export class Wallet {
     if (!transaction) {
       throw new InvalidParams();
     }
-    const { origin } = context;
     Object.assign(window, { transactionToSend: transaction });
     return new Promise((resolve, reject) => {
       notificationWindow.open({
         route: '/sendTransaction',
-        search: `?origin=${origin}&transaction=${encodeURIComponent(
-          JSON.stringify(transaction)
-        )}`,
+        search: `?${new URLSearchParams({
+          origin: context.origin,
+          transaction: JSON.stringify(transaction),
+        })}`,
         onResolve: (hash) => {
           resolve(hash);
         },
@@ -704,7 +710,7 @@ export class Wallet {
       notificationWindow.open({
         route: '/signMessage',
         search: `?${new URLSearchParams({
-          origin,
+          origin: context.origin,
           typedData: stringifiedData,
           method: 'eth_signTypedData_v4',
         })}`,
@@ -763,7 +769,7 @@ export class Wallet {
       notificationWindow.open({
         route: '/signMessage',
         search: `?${new URLSearchParams({
-          origin,
+          origin: context.origin,
           message,
           method: 'personal_sign',
         })}`,

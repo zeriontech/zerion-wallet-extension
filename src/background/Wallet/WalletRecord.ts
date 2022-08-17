@@ -1,6 +1,6 @@
 import { decrypt, encrypt } from '@metamask/browser-passworder';
 import { ethers } from 'ethers';
-import produce from 'immer';
+import produce, { immerable } from 'immer';
 import { nanoid } from 'nanoid';
 
 type Origin = string;
@@ -49,6 +49,14 @@ function walletToObject(wallet: ethers.Wallet | BareWallet): BareWallet {
 }
 
 abstract class WalletContainerImpl implements WalletContainer {
+  /**
+   * Important to add [immerable] = true property if we want
+   * to use immer to copy WalletContainers:
+   * https://immerjs.github.io/immer/complex-objects
+   * As of now, walletContainers are copied in the maskWalletGroup functions
+   */
+  [immerable] = true;
+
   abstract wallets: BareWallet[];
   abstract seedType: SeedType;
 

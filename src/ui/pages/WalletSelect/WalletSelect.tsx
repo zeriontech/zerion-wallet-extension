@@ -20,8 +20,8 @@ import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 export function WalletSelect() {
   const navigate = useNavigate();
   const { data: walletGroups, isLoading } = useQuery(
-    'wallet/getWalletGroups',
-    () => walletPort.request('getWalletGroups'),
+    'wallet/uiGetWalletGroups',
+    () => walletPort.request('uiGetWalletGroups'),
     { useErrorBoundary: true }
   );
   const { singleAddress, refetch } = useAddressParams();

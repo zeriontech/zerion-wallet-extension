@@ -3,8 +3,8 @@ import { walletPort } from '../channels';
 
 export function useWalletGroups(options: { enabled?: boolean } = {}) {
   return useQuery(
-    'wallet/getWalletGroups',
-    () => walletPort.request('getWalletGroups'),
+    'wallet/uiGetWalletGroups',
+    () => walletPort.request('uiGetWalletGroups'),
     { useErrorBoundary: true, enabled: options.enabled }
   );
 }

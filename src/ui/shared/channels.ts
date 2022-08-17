@@ -4,7 +4,7 @@ import type { AccountPublicRPC } from 'src/shared/types/AccountPublicRPC';
 import type { MemoryCacheRPC } from 'src/shared/types/MemoryCacheRPC';
 import { formatJsonRpcResultForPort } from 'src/shared/formatJsonRpcResultForPort';
 import { formatJsonRpcError } from '@json-rpc-tools/utils';
-import { UserRejected } from 'src/shared/errors/UserRejected';
+import { UserRejected } from 'src/shared/errors/errors';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SomeMethod = (...args: any) => any;

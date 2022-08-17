@@ -51,3 +51,10 @@ export class MethodNotImplemented extends ErrorWithEnumerableMessage {
     super(message);
   }
 }
+
+export class RecordNotFound extends ErrorWithEnumerableMessage {
+  code = -32602;
+  constructor(message = 'Record not found') {
+    super(message);
+  }
+}

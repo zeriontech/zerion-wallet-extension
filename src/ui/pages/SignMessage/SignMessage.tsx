@@ -19,6 +19,7 @@ import { Background } from 'src/ui/components/Background';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
+import { getError } from 'src/shared/errors/getError';
 
 function ItemSurface({ style, ...props }: React.HTMLProps<HTMLDivElement>) {
   const surfaceStyle = {
@@ -104,18 +105,6 @@ function usePersonalSignMutation({ onSuccess }: SignMutationProps) {
   );
 }
 
-function isErrorMessageObject(value: unknown): value is { message: string } {
-  return Boolean(value && 'message' in (value as { message?: string }));
-}
-
-function getError(value: Error | unknown): Error {
-  return value instanceof Error
-    ? value
-    : isErrorMessageObject(value)
-    ? new Error(value.message)
-    : new Error('Unknown Error');
-}
-
 function SignMessageContent({
   message,
   origin,
@@ -143,7 +132,6 @@ function SignMessageContent({
     : personalSignMutation.isError
     ? getError(personalSignMutation.error)
     : null;
-  console.log({ someMutationError }, signTypedData_v4Mutation.error);
   const originName = useMemo(() => new URL(origin).hostname, [origin]);
 
   return (
@@ -226,8 +214,8 @@ export function SignMessage() {
     data: wallet,
     isLoading,
     isError,
-  } = useQuery('wallet', () => {
-    return walletPort.request('getCurrentWallet');
+  } = useQuery('wallet/uiGetCurrentWallet', () => {
+    return walletPort.request('uiGetCurrentWallet');
   });
   if (isError) {
     return <p>Some Error</p>;
