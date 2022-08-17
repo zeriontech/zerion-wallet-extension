@@ -27,9 +27,14 @@ export function Settings() {
               to: '/wallets',
             },
             {
-              key: 2,
+              key: 1,
               component: <CurrentNetworkSettingsItem />,
               to: '/networks',
+            },
+            {
+              key: 2,
+              component: <UIText kind="body/s_reg">Connected Sites</UIText>,
+              to: '/connected-sites',
             },
             {
               key: 3,

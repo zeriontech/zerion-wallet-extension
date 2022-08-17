@@ -285,6 +285,16 @@ export class Wallet {
     return this.record?.permissions[context.origin]?.includes(address) || false;
   }
 
+  async getOriginPermissions({ context }: PublicMethodParams) {
+    this.verifyInternalOrigin(context);
+    if (!this.record) {
+      throw new RecordNotFound();
+    }
+    return Object.entries(this.record.permissions).map(
+      ([origin, addresses]) => ({ origin, addresses })
+    );
+  }
+
   async setCurrentAddress({
     params: { address },
     context,

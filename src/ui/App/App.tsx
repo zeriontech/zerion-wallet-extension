@@ -39,6 +39,7 @@ import { WalletSelect } from '../pages/WalletSelect';
 import { NotFoundPage } from '../components/NotFoundPage';
 import { UIText } from '../ui-kit/UIText';
 import { defaultUIContextValue, UIContext } from '../components/UIContext';
+import { ConnectedSites } from '../pages/ConnectedSites';
 
 const locationStore = new PersistentStore('location', {
   pathname: '/',
@@ -314,6 +315,14 @@ function Views() {
             element={
               <RequireAuth>
                 <WalletSelect />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/connected-sites"
+            element={
+              <RequireAuth>
+                <ConnectedSites />
               </RequireAuth>
             }
           />

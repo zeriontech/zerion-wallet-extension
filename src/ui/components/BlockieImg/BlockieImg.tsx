@@ -25,11 +25,12 @@ export function BlockieImg({
       icon.style.borderRadius = '6px';
       icon.style.width = `${size}px`;
       icon.style.height = `${size}px`;
+      icon.style.display = 'block';
       ref.current.appendChild(icon);
     }
     return () => {
       icon.parentElement?.removeChild(icon);
     };
   }, [icon, size]);
-  return <span ref={ref} style={{ width: size, height: size }} />;
+  return <span ref={ref} />;
 }
