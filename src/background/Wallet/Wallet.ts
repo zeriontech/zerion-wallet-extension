@@ -262,7 +262,8 @@ export class Wallet {
     this.emitter.emit('permissionsUpdated');
   }
 
-  private removeAllOrigins() {
+  async removeAllOrigins({ context }: PublicMethodParams) {
+    this.verifyInternalOrigin(context);
     if (!this.record) {
       throw new RecordNotFound();
     }
@@ -270,6 +271,7 @@ export class Wallet {
       draft.permissions = {};
     });
     this.updateWalletStore(this.record);
+    this.emitter.emit('permissionsUpdated');
   }
 
   private allowedOrigin(
