@@ -1,5 +1,5 @@
 import { isTruthy } from 'is-truthy-ts';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useId, useRef, useState } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { SeedType } from 'src/shared/SeedType';
@@ -31,6 +31,7 @@ import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog'
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
+import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
 
 function noNulls<T>(arr: (T | null)[]) {
   return arr.filter(isTruthy);
@@ -45,9 +46,11 @@ function useWalletGroup({ groupId }: { groupId: string }) {
 }
 
 function EditableWalletGroupName({
+  id,
   walletGroup,
   onRename,
 }: {
+  id?: string;
   walletGroup: WalletGroup;
   onRename?: () => void;
 }) {
@@ -79,6 +82,7 @@ function EditableWalletGroupName({
         }}
       >
         <UnstyledInput
+          id={id}
           placeholder="Group Name"
           type="text"
           value={value}
@@ -160,6 +164,7 @@ export function WalletGroup() {
     isLoading,
     refetch: refetchWalletGroup,
   } = useWalletGroup({ groupId });
+  const groupInputId = useId();
   const { refetch } = useWalletGroups();
   const removeWalletGroupMutation = useMutation(
     () => walletPort.request('removeWalletGroup', { groupId }),
@@ -200,7 +205,7 @@ export function WalletGroup() {
 
   return (
     <PageColumn>
-      <NavigationTitle title={walletGroup.name} />
+      <NavigationTitle title={getGroupDisplayName(walletGroup.name)} />
       <BottomSheetDialog ref={dialogRef}>
         <RemoveGroupConfirmationDialog walletGroup={walletGroup} />
       </BottomSheetDialog>
@@ -209,11 +214,17 @@ export function WalletGroup() {
         {walletGroup.walletContainer.seedType === SeedType.mnemonic ? (
           <Surface padding="10px 16px">
             <VStack gap={4}>
-              <UIText kind="label/reg" color="var(--neutral-500)">
+              <UIText
+                kind="label/reg"
+                color="var(--neutral-500)"
+                as="label"
+                htmlFor={groupInputId}
+              >
                 Name
               </UIText>
               <UIText kind="body/s_reg">
                 <EditableWalletGroupName
+                  id={groupInputId}
                   walletGroup={walletGroup}
                   onRename={refetchWalletGroup}
                 />

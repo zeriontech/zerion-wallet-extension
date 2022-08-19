@@ -16,6 +16,7 @@ import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { AddressBadge } from 'src/ui/components/AddressBadge';
 import { useWalletGroups } from 'src/ui/shared/requests/useWalletGroups';
 import { PageBottom } from 'src/ui/components/PageBottom';
+import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
 
 function TitleWithLine({
   children,
@@ -103,7 +104,7 @@ function NewWalletOption({
               next: '/get-started',
             })}`}
           >
-            {selectedGroup?.name}
+            {getGroupDisplayName(selectedGroup?.name || '')}
           </Link>
         </UIText>
       ) : null}
@@ -196,7 +197,9 @@ function WalletGroupSelect() {
               to: url,
               component: (
                 <VStack gap={4}>
-                  <UIText kind="subtitle/m_med">{group.name}</UIText>
+                  <UIText kind="subtitle/m_med">
+                    {getGroupDisplayName(group.name)}
+                  </UIText>
                   <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                     {group.walletContainer.wallets.map((wallet) => (
                       <AddressBadge key={wallet.address} wallet={wallet} />

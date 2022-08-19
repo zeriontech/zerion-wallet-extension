@@ -10,7 +10,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { SeedType } from 'src/shared/SeedType';
-import { AddressText } from 'src/ui/components/AddressText';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { AddressBadge } from 'src/ui/components/AddressBadge';
@@ -18,6 +17,8 @@ import { Route, Routes } from 'react-router-dom';
 import ChevronRightIcon from 'src/ui/assets/chevron-right.svg';
 import { WalletGroup as WalletGroupPage } from './WalletGroup';
 import { WalletAccount as WalletAccountPage } from './WalletAccount';
+import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
+import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 
 function PrivateKeyList({ walletGroups }: { walletGroups: WalletGroup[] }) {
   return (
@@ -28,7 +29,8 @@ function PrivateKeyList({ walletGroups }: { walletGroups: WalletGroup[] }) {
 
       <SurfaceList
         items={walletGroups.map((group) => {
-          const { address } = group.walletContainer.wallets[0];
+          const wallet = group.walletContainer.wallets[0];
+          const { address } = wallet;
           return {
             key: group.id,
             to: `/wallets/groups/${group.id}`,
@@ -41,7 +43,7 @@ function PrivateKeyList({ walletGroups }: { walletGroups: WalletGroup[] }) {
                 <HStack gap={8} alignItems="center">
                   <BlockieImg address={address} size={28} />
                   <UIText kind="subtitle/m_reg" title={address}>
-                    <AddressText address={address} />
+                    <WalletDisplayName wallet={wallet} />
                   </UIText>
                 </HStack>
                 <span>
@@ -74,7 +76,7 @@ function MnemonicList({ walletGroups }: { walletGroups: WalletGroup[] }) {
                   kind="subtitle/m_med"
                   style={{ wordBreak: 'break-all' }}
                 >
-                  {group.name}
+                  {getGroupDisplayName(group.name)}
                 </UIText>
                 <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                   {group.walletContainer.wallets.map((wallet) => (

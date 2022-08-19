@@ -1,1 +1,0 @@
-export { AddressText } from './AddressText';
