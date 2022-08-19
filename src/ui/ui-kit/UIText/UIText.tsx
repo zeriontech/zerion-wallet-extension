@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ComponentPropsWithoutRef, ElementType } from 'react';
 
 export const textParams = {
   // [font-size, line-height, weight, letter-spacing]
@@ -49,40 +49,32 @@ const getStyles = (kind: Kind) => {
 };
 
 export interface Props {
+  inline?: boolean;
   kind: Kind;
   color?: string;
-  inline?: boolean;
 }
 
-export function UIText({
-  as = 'div',
+export function UIText<As extends ElementType = 'div'>({
+  as,
   inline = false,
   kind,
   color = 'currentColor',
   style,
   ...props
-}: {
-  as?: 'div' | 'span' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-  inline?: boolean;
-  kind: Kind;
-  color?: string;
-} & React.HTMLProps<HTMLDivElement>) {
+}: Props & { as?: As } & ComponentPropsWithoutRef<As>) {
   const [fontSize, lineHeight, fontWeight, letterSpacing] = getStyles(kind);
-  const Element = as;
-  return (
-    <Element
-      style={{
-        display: inline ? 'inline' : 'block',
-        margin: 0,
-        fontFamily: 'Graphik, sans-serif',
-        fontSize,
-        lineHeight: `${lineHeight}px`,
-        fontWeight,
-        letterSpacing,
-        color,
-        ...style,
-      }}
-      {...props}
-    />
-  );
+  return React.createElement(as || 'div', {
+    style: {
+      display: inline ? 'inline' : 'block',
+      margin: 0,
+      fontFamily: 'Graphik, sans-serif',
+      fontSize,
+      lineHeight: `${lineHeight}px`,
+      fontWeight,
+      letterSpacing,
+      color,
+      ...style,
+    },
+    ...props,
+  });
 }
