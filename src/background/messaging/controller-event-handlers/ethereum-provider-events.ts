@@ -42,7 +42,7 @@ export class EthereumEventsBroadcaster implements Listener {
       emitter.on('accountsChanged', () => {
         this.getClientPorts().forEach(async (port) => {
           const wallet = this.account.getCurrentWallet();
-          const accounts = await wallet.eth_accounts({
+          const accounts = await wallet.publicEthereumController.eth_accounts({
             context: {
               origin: port.sender?.origin,
               tabId: port.sender?.tab?.id,

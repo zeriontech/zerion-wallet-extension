@@ -18,7 +18,7 @@ function accountsEquals(arr1: string[], arr2: string[]) {
 
 async function fetchInitialState(connection: Connection) {
   return Promise.all([
-    connection.send<string>(formatJsonRpcRequest('getChainId', [])),
+    connection.send<string>(formatJsonRpcRequest('eth_chainId', [])),
     connection.send<string[]>(formatJsonRpcRequest('eth_accounts', [])),
   ]).then(([chainId, accounts]) => ({ chainId, accounts }));
 }

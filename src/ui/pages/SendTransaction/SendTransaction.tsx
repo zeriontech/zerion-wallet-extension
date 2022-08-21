@@ -231,7 +231,7 @@ function SendTransactionContent({
   );
   const { data: chainId, ...chainIdQuery } = useQuery(
     'eth_chainId',
-    () => walletPort.request('eth_chainId'),
+    () => walletPort.request('requestChainId'),
     { useErrorBoundary: true }
   );
   const descriptionQuery = useQuery(

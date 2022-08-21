@@ -62,6 +62,7 @@ interface WalletEvents {
 
 export class Wallet {
   public id: string;
+  public publicEthereumController: PublicController;
   private encryptionKey: string | null;
   private walletStore: WalletStore;
   private pendingWallet: PendingWallet | null = null;
@@ -84,6 +85,7 @@ export class Wallet {
       this.syncWithWalletStore();
     });
     Object.assign(window, { encrypt, decrypt });
+    this.publicEthereumController = new PublicController(this);
   }
 
   private async syncWithWalletStore() {
@@ -245,7 +247,7 @@ export class Wallet {
     this.updateWalletStore(record);
   }
 
-  private async acceptOrigin(origin: string, address: string) {
+  async acceptOrigin(origin: string, address: string) {
     if (!this.record) {
       throw new RecordNotFound();
     }
@@ -274,7 +276,7 @@ export class Wallet {
     this.emitter.emit('permissionsUpdated');
   }
 
-  private allowedOrigin(
+  allowedOrigin(
     context: Partial<ChannelContext> | undefined,
     address: string
   ): context is ChannelContext {
@@ -333,7 +335,6 @@ export class Wallet {
         throw new Error(`Group with id ${groupId} not found`);
       }
       group.lastBackedUp = Date.now();
-      // draft.lastBackedUp = Date.now();
     });
     this.updateWalletStore(this.record);
   }
@@ -356,7 +357,6 @@ export class Wallet {
           .sort()[0] || null
       );
     }
-    // return this.record.lastBackedUp;
   }
 
   async getNoBackupCount({ context }: PublicMethodParams) {
@@ -369,43 +369,11 @@ export class Wallet {
       .filter((group) => group.lastBackedUp == null).length;
   }
 
-  async eth_accounts({ context }: PublicMethodParams) {
-    const currentAddress = this.readCurrentAddress();
-    if (!currentAddress) {
-      return [];
-    }
-    // const wallet = this.record?.walletContainer?.wallet;
-    if (this.allowedOrigin(context, currentAddress)) {
-      return [currentAddress];
-    } else {
-      return [];
-    }
-  }
-
-  async eth_chainId({ context }: PublicMethodParams) {
-    const currentAddress = this.readCurrentAddress();
-    if (currentAddress && this.allowedOrigin(context, currentAddress)) {
-      return this.getChainId();
-    } else {
-      return '0x1';
-    }
-  }
-
-  async net_version({ context }: PublicMethodParams) {
-    const currentAddress = this.readCurrentAddress();
-    if (currentAddress && this.allowedOrigin(context, currentAddress)) {
-      const chainId = await this.getChainId();
-      return String(parseInt(chainId));
-    } else {
-      return '1';
-    }
-  }
-
-  private readCurrentAddress() {
+  readCurrentAddress() {
     return this.record?.walletManager.currentAddress || null;
   }
 
-  private ensureCurrentAddress(): string {
+  ensureCurrentAddress(): string {
     const currentAddress = this.readCurrentAddress();
     if (!currentAddress) {
       throw new Error('Wallet is not initialized');
@@ -483,71 +451,6 @@ export class Wallet {
     this.updateWalletStore(this.record);
   }
 
-  async eth_requestAccounts({ context }: PublicMethodParams) {
-    const currentAddress = this.readCurrentAddress();
-    if (currentAddress && this.allowedOrigin(context, currentAddress)) {
-      return [currentAddress];
-    }
-    if (!context?.origin) {
-      throw new Error('This method requires origin');
-    }
-    // if (!this.wallet) {
-    //   console.log('Must create wallet first');
-    //   throw new Error('Must create wallet first');
-    // }
-    const { origin } = context;
-    return new Promise((resolve, reject) => {
-      notificationWindow.open({
-        route: '/requestAccounts',
-        search: `?origin=${origin}`,
-        onResolve: async () => {
-          const currentAddress = this.ensureCurrentAddress();
-          this.acceptOrigin(origin, currentAddress);
-          const accounts = await this.eth_accounts({ context });
-          resolve(accounts);
-        },
-        onDismiss: () => {
-          reject(new UserRejected('User Rejected the Request'));
-        },
-      });
-    });
-  }
-
-  async wallet_switchEthereumChain({
-    params,
-    context,
-  }: PublicMethodParams<[{ chainId: string | number }]>): Promise<
-    null | object
-  > {
-    const currentAddress = this.readCurrentAddress();
-    if (!currentAddress) {
-      throw new Error('Wallet is not initialized');
-    }
-    if (!this.allowedOrigin(context, currentAddress)) {
-      throw new OriginNotAllowed();
-    }
-    const { origin } = context;
-    const { chainId } = params[0];
-    if (chainId === this.store.getState().chainId) {
-      return Promise.resolve(null);
-    }
-    return new Promise((resolve, reject) => {
-      notificationWindow.open({
-        route: '/switchEthereumChain',
-        search: `?origin=${origin}&chainId=${chainId}`,
-        onResolve: () => {
-          const value = ethers.utils.hexValue(chainId);
-          this.store.setState({ chainId: value });
-          resolve(null);
-          this.emitter.emit('chainChanged', value);
-        },
-        onDismiss: () => {
-          reject(new UserRejected('User Rejected the Request'));
-        },
-      });
-    });
-  }
-
   private verifyInternalOrigin(context: Partial<ChannelContext> | undefined) {
     if (context?.origin !== INTERNAL_ORIGIN) {
       throw new OriginNotAllowed(context?.origin);
@@ -555,19 +458,25 @@ export class Wallet {
   }
 
   async switchChain({ params: chain, context }: PublicMethodParams<string>) {
-    if (context?.origin !== INTERNAL_ORIGIN) {
-      // allow only for internal origin
-      console.log({ INTERNAL_ORIGIN });
-      throw new OriginNotAllowed(context?.origin);
-    }
+    this.verifyInternalOrigin(context);
     const networks = await networksStore.load();
     const chainId = networks.getChainId(createChain(chain));
-    this.store.setState({ chainId });
+    this.setChainId(chainId);
     this.emitter.emit('chainChanged', chainId);
   }
 
-  async getChainId() {
+  getChainId() {
     return this.store.getState().chainId;
+  }
+
+  async requestChainId({ context }: PublicMethodParams) {
+    this.verifyInternalOrigin(context);
+    return this.getChainId();
+  }
+
+  setChainId(chainId: string) {
+    const value = ethers.utils.hexValue(chainId);
+    this.store.setState({ chainId: value });
   }
 
   private async getProvider(chainId: string) {
@@ -617,11 +526,14 @@ export class Wallet {
       ? ethers.utils.hexValue(incomingTransaction.chainId)
       : null;
     if (targetChainId && chainId !== targetChainId) {
-      await this.wallet_switchEthereumChain({
-        params: [{ chainId: targetChainId }],
-        context,
-      });
-      return this.sendTransaction(incomingTransaction, context);
+      throw new Error(
+        'chainId in transaction object is different from current chainId'
+      );
+      // await this.wallet_switchEthereumChain({
+      //   params: [{ chainId: targetChainId }],
+      //   context,
+      // });
+      // return this.sendTransaction(incomingTransaction, context);
     } else if (targetChainId == null) {
       console.warn('chainId field is missing from transaction object');
       incomingTransaction.chainId = chainId;
@@ -652,13 +564,126 @@ export class Wallet {
     return this.sendTransaction(transaction, context);
   }
 
+  async signTypedData_v4({
+    params: { typedData: rawTypedData },
+    context,
+  }: PublicMethodParams<{ typedData: TypedData | string }>) {
+    this.verifyInternalOrigin(context);
+    if (!rawTypedData) {
+      throw new InvalidParams();
+    }
+    const { chainId } = this.store.getState();
+    const signer = await this.getSigner(chainId);
+    const typedData = prepareTypedData(rawTypedData);
+    const signature = await signer._signTypedData(
+      typedData.domain,
+      typedData.types,
+      typedData.message
+    );
+    return signature;
+  }
+
+  async personalSign({
+    params: [message],
+    context,
+  }: PublicMethodParams<[string, string?, string?]>) {
+    this.verifyInternalOrigin(context);
+    if (message == null) {
+      throw new InvalidParams();
+    }
+    const { chainId } = this.store.getState();
+    const signer = await this.getSigner(chainId);
+    const messageAsUtf8String = toUtf8String(message);
+    const signature = await signer.signMessage(messageAsUtf8String);
+    return signature;
+  }
+
+  async getPendingTransactions({ context }: PublicMethodParams) {
+    this.verifyInternalOrigin(context);
+    return this.record?.transactions || [];
+  }
+
+  async logout() {
+    chrome.storage.local.clear();
+  }
+}
+
+class PublicController {
+  wallet: Wallet;
+
+  constructor(walletController: Wallet) {
+    this.wallet = walletController;
+  }
+
+  async eth_accounts({ context }: PublicMethodParams) {
+    const currentAddress = this.wallet.readCurrentAddress();
+    if (!currentAddress) {
+      return [];
+    }
+    if (this.wallet.allowedOrigin(context, currentAddress)) {
+      return [currentAddress];
+    } else {
+      return [];
+    }
+  }
+
+  async eth_requestAccounts({ context }: PublicMethodParams) {
+    console.log('eth_requestAccounts');
+    const currentAddress = this.wallet.readCurrentAddress();
+    if (currentAddress && this.wallet.allowedOrigin(context, currentAddress)) {
+      return [currentAddress];
+    }
+    if (!context?.origin) {
+      throw new Error('This method requires origin');
+    }
+    // if (!this.wallet) {
+    //   console.log('Must create wallet first');
+    //   throw new Error('Must create wallet first');
+    // }
+    const { origin } = context;
+    return new Promise((resolve, reject) => {
+      notificationWindow.open({
+        route: '/requestAccounts',
+        search: `?origin=${origin}`,
+        onResolve: async () => {
+          const currentAddress = this.wallet.ensureCurrentAddress();
+          this.wallet.acceptOrigin(origin, currentAddress);
+          const accounts = await this.eth_accounts({ context });
+          resolve(accounts);
+        },
+        onDismiss: () => {
+          reject(new UserRejected('User Rejected the Request'));
+        },
+      });
+    });
+  }
+
+  async eth_chainId({ context }: PublicMethodParams) {
+    const currentAddress = this.wallet.readCurrentAddress();
+    if (currentAddress && this.wallet.allowedOrigin(context, currentAddress)) {
+      return this.wallet.getChainId();
+    } else {
+      return '0x1';
+    }
+  }
+
+  async net_version({ context }: PublicMethodParams) {
+    const currentAddress = this.wallet.readCurrentAddress();
+    if (currentAddress && this.wallet.allowedOrigin(context, currentAddress)) {
+      const chainId = this.wallet.getChainId();
+      return String(parseInt(chainId));
+    } else {
+      return '1';
+    }
+  }
+
   async eth_sendTransaction({
     params,
     context,
   }: PublicMethodParams<UnsignedTransaction[]>) {
-    const currentAddress = this.ensureCurrentAddress();
+    const currentAddress = this.wallet.ensureCurrentAddress();
     // TODO: should we check transaction.from instead of currentAddress?
-    if (!this.allowedOrigin(context, currentAddress)) {
+    if (!this.wallet.allowedOrigin(context, currentAddress)) {
       throw new OriginNotAllowed();
     }
     const transaction = params[0];
@@ -683,38 +708,19 @@ export class Wallet {
     });
   }
 
-  async signTypedData_v4({
-    params: { typedData: rawTypedData },
-    context,
-  }: PublicMethodParams<{ typedData: TypedData | string }>) {
-    this.verifyInternalOrigin(context);
-    if (!rawTypedData) {
-      throw new InvalidParams();
-    }
-    const { chainId } = this.store.getState();
-    const signer = await this.getSigner(chainId);
-    const typedData = prepareTypedData(rawTypedData);
-    const signature = await signer._signTypedData(
-      typedData.domain,
-      typedData.types,
-      typedData.message
-    );
-    return signature;
-  }
-
   async eth_signTypedData_v4({
     context,
     params: [address, data],
   }: PublicMethodParams<[string, TypedData | string]>) {
-    const currentAddress = this.ensureCurrentAddress();
+    const currentAddress = this.wallet.ensureCurrentAddress();
+    if (!this.wallet.allowedOrigin(context, currentAddress)) {
+      throw new OriginNotAllowed();
+    }
     if (address.toLowerCase() !== currentAddress.toLowerCase()) {
       throw new Error(
         // TODO?...
         'Address parameter is different from currently selected address'
       );
-    }
-    if (!this.allowedOrigin(context, currentAddress)) {
-      throw new OriginNotAllowed();
     }
     const stringifiedData =
       typeof data === 'string' ? data : JSON.stringify(data);
@@ -744,21 +750,6 @@ export class Wallet {
     throw new MethodNotImplemented('eth_sign: Not Implemented');
   }
 
-  async personalSign({
-    params: [message],
-    context,
-  }: PublicMethodParams<[string, string?, string?]>) {
-    this.verifyInternalOrigin(context);
-    if (message == null) {
-      throw new InvalidParams();
-    }
-    const { chainId } = this.store.getState();
-    const signer = await this.getSigner(chainId);
-    const messageAsUtf8String = toUtf8String(message);
-    const signature = await signer.signMessage(messageAsUtf8String);
-    return signature;
-  }
-
   async personal_sign({
     params,
     context,
@@ -767,14 +758,14 @@ export class Wallet {
       throw new InvalidParams();
     }
     const [message, address, _password] = params;
-    const currentAddress = this.ensureCurrentAddress();
+    const currentAddress = this.wallet.ensureCurrentAddress();
     if (address && address.toLowerCase() !== currentAddress.toLowerCase()) {
       throw new Error(
         // TODO?...
         'Address parameter is different from currently selected address'
       );
     }
-    if (!this.allowedOrigin(context, currentAddress)) {
+    if (!this.wallet.allowedOrigin(context, currentAddress)) {
       throw new OriginNotAllowed();
     }
     return new Promise((resolve, reject) => {
@@ -795,12 +786,38 @@ export class Wallet {
     });
   }
 
-  async getPendingTransactions({ context }: PublicMethodParams) {
-    this.verifyInternalOrigin(context);
-    return this.record?.transactions || [];
-  }
-
-  async logout() {
-    chrome.storage.local.clear();
+  async wallet_switchEthereumChain({
+    params,
+    context,
+  }: PublicMethodParams<[{ chainId: string | number }]>): Promise<
+    null | object
+  > {
+    const currentAddress = this.wallet.readCurrentAddress();
+    if (!currentAddress) {
+      throw new Error('Wallet is not initialized');
+    }
+    if (!this.wallet.allowedOrigin(context, currentAddress)) {
+      throw new OriginNotAllowed();
+    }
+    const { origin } = context;
+    const { chainId: chainIdParameter } = params[0];
+    const chainId = ethers.utils.hexValue(chainIdParameter);
+    if (chainId === this.wallet.getChainId()) {
+      return Promise.resolve(null);
+    }
+    return new Promise((resolve, reject) => {
+      notificationWindow.open({
+        route: '/switchEthereumChain',
+        search: `?origin=${origin}&chainId=${chainId}`,
+        onResolve: () => {
+          this.wallet.setChainId(chainId);
+          resolve(null);
+          this.wallet.emitter.emit('chainChanged', chainId);
+        },
+        onDismiss: () => {
+          reject(new UserRejected('User Rejected the Request'));
+        },
+      });
+    });
   }
 }

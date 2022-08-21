@@ -5,8 +5,9 @@ import { walletPort } from '../channels';
 export function useCurrentNetwork() {
   const { networks } = useNetworks();
 
-  const { data: chainId, ...chainIdQuery } = useQuery('wallet/chainId', () =>
-    walletPort.request('getChainId')
+  const { data: chainId, ...chainIdQuery } = useQuery(
+    'wallet/requestChainId',
+    () => walletPort.request('requestChainId')
   );
   const name = chainId && networks ? networks.getChainNameById(chainId) : null;
   const network = chainId && networks ? networks.getNetworkById(chainId) : null;
