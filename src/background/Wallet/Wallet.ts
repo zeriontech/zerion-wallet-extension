@@ -43,6 +43,7 @@ import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { prepareTypedData } from 'src/modules/ethereum/message-signing/prepareTypedData';
 import { toUtf8String } from 'ethers/lib/utils';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
+import { removeSignature } from 'src/modules/ethereum/transactions/removeSignature';
 
 type PublicMethodParams<T = undefined> = T extends undefined
   ? {
@@ -548,8 +549,9 @@ export class Wallet {
       ...transaction,
       type: transaction.type || undefined,
     });
-    emitter.emit('pendingTransactionCreated', transactionResponse);
-    return transactionResponse;
+    const safeTx = removeSignature(transactionResponse);
+    emitter.emit('pendingTransactionCreated', safeTx);
+    return safeTx;
   }
 
   async signAndSendTransaction({

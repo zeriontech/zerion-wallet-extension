@@ -88,7 +88,7 @@ export class TransactionService {
     });
   }
 
-  async waitForTransaction(transactionObject: TransactionObject) {
+  private async waitForTransaction(transactionObject: TransactionObject) {
     const networks = await networksStore.load();
     const { hash, transaction } = transactionObject;
     const { chainId: chainIdAsNumber } = transaction;
