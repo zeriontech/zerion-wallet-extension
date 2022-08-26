@@ -7,7 +7,6 @@ import { PageColumn } from 'src/ui/components/PageColumn';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
-import { BlockieImg } from 'src/ui/components/BlockieImg';
 import {
   formatCurrencyToParts,
   formatCurrencyValue,

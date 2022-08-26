@@ -1,5 +1,5 @@
 import { BigNumber } from 'bignumber.js';
-import { NBSP } from 'src/ui/shared/typography';
+import { NBSP } from '../../ui/shared/typography';
 
 function countFractionalZeros(value: string) {
   return value.match(/\.(0+)[1-9]/)?.[1].length ?? 0;
