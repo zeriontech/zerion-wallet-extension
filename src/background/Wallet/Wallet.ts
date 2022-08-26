@@ -28,6 +28,9 @@ import {
   renameWalletGroup,
   renameAddress,
   removeAddress,
+  addPermission,
+  removePermission,
+  removeAllOriginPermissions,
 } from './WalletRecord';
 import type { WalletRecord } from './WalletRecord';
 import { networksStore } from 'src/modules/networks/networks-store';
@@ -252,29 +255,30 @@ export class Wallet {
     if (!this.record) {
       throw new RecordNotFound();
     }
-    this.record = produce(this.record, (draft) => {
-      const existingPermissions =
-        typeof draft.permissions[origin] === 'string'
-          ? [draft.permissions[origin] as unknown as string]
-          : draft.permissions[origin];
-      const existingPermissionsSet = new Set(existingPermissions || []);
-      existingPermissionsSet.add(address);
-      draft.permissions[origin] = Array.from(existingPermissionsSet);
-    });
+    this.record = addPermission(this.record, { address, origin });
     this.updateWalletStore(this.record);
     this.emitter.emit('permissionsUpdated');
   }
 
-  async removeAllOrigins({ context }: PublicMethodParams) {
+  async removeAllOriginPermissions({ context }: PublicMethodParams) {
     this.verifyInternalOrigin(context);
     if (!this.record) {
       throw new RecordNotFound();
     }
-    this.record = produce(this.record, (draft) => {
-      draft.permissions = {};
-    });
+    this.record = removeAllOriginPermissions(this.record);
     this.updateWalletStore(this.record);
     this.emitter.emit('permissionsUpdated');
+  }
+
+  async removePermission({
+    context,
+    params: { origin, address },
+  }: PublicMethodParams<{ origin: string; address?: string }>) {
+    this.verifyInternalOrigin(context);
+    if (!this.record) {
+      throw new RecordNotFound();
+    }
+    this.record = removePermission(this.record, { origin, address });
   }
 
   allowedOrigin(

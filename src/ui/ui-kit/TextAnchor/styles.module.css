@@ -1,0 +1,9 @@
+.anchor {
+  text-decoration: none;
+}
+
+@media (hover: hover) {
+  .anchor:hover {
+    text-decoration: underline;
+  }
+}

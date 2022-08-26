@@ -1,0 +1,1 @@
+export { TextAnchor } from './TextAnchor';

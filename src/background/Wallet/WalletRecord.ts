@@ -486,3 +486,49 @@ export function renameAddress(
     throw new Error(`Wallet for ${address} not found`);
   });
 }
+
+export function addPermission(
+  record: WalletRecord,
+  { address, origin }: { address: string; origin: string }
+) {
+  return produce(record, (draft) => {
+    const existingPermissions =
+      typeof draft.permissions[origin] === 'string' // TODO: handle this at a "migration" step, not here
+        ? [draft.permissions[origin] as unknown as string]
+        : draft.permissions[origin];
+    const existingPermissionsSet = new Set(existingPermissions || []);
+    existingPermissionsSet.add(address);
+    draft.permissions[origin] = Array.from(existingPermissionsSet);
+  });
+}
+
+function spliceItem<T>(arr: T[], item: T) {
+  const pos = arr.indexOf(item);
+  if (pos !== -1) {
+    arr.splice(pos, 1);
+  }
+}
+
+export function removeAllOriginPermissions(record: WalletRecord) {
+  return produce(record, (draft) => {
+    draft.permissions = {};
+  });
+}
+
+export function removePermission(
+  record: WalletRecord,
+  { origin, address }: { origin: string; address?: string }
+) {
+  return produce(record, (draft) => {
+    if (origin in draft.permissions === false) {
+      throw new Error(`Record for ${origin} not found`);
+    }
+    const existingPermissions = draft.permissions[origin];
+    if (address && existingPermissions.length > 1) {
+      spliceItem(draft.permissions[origin], address);
+    } else {
+      // remove whole record for `origin` completely
+      delete draft.permissions[origin];
+    }
+  });
+}

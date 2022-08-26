@@ -1,7 +1,6 @@
 import React from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { useNavigate } from 'react-router-dom';
-import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { FillView } from 'src/ui/components/FillView';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -16,6 +15,8 @@ import { NBSP } from 'src/ui/shared/typography';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
+import { WalletIcon } from 'src/ui/ui-kit/WalletIcon';
+import { IsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
 
 export function WalletSelect() {
   const navigate = useNavigate();
@@ -63,7 +64,18 @@ export function WalletSelect() {
                     alignItems="center"
                   >
                     <Media
-                      image={<BlockieImg address={wallet.address} size={24} />}
+                      image={
+                        <IsConnectedToActiveTab
+                          address={wallet.address}
+                          render={({ data: isConnected }) => (
+                            <WalletIcon
+                              address={wallet.address}
+                              iconSize={24}
+                              active={Boolean(isConnected)}
+                            />
+                          )}
+                        />
+                      }
                       text={<WalletDisplayName wallet={wallet} />}
                       detailText={
                         <PortfolioValue

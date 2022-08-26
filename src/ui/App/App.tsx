@@ -319,7 +319,7 @@ function Views() {
             }
           />
           <Route
-            path="/connected-sites"
+            path="/connected-sites/*"
             element={
               <RequireAuth>
                 <ConnectedSites />

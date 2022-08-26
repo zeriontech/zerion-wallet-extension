@@ -7,7 +7,7 @@ import { UnstyledLink } from '../UnstyledLink';
 import { VStack } from '../VStack';
 import * as s from './styles.module.css';
 
-function ItemLink({
+export function ItemLink({
   to,
   onClick,
   children,
@@ -30,7 +30,7 @@ function ItemLink({
   );
 }
 
-function ItemAnchor({
+export function ItemAnchor({
   href,
   target,
   onClick,
@@ -56,7 +56,7 @@ function ItemAnchor({
   );
 }
 
-function ItemButton({
+export function ItemButton({
   onClick,
   children,
   style,
@@ -82,6 +82,7 @@ export interface Item {
   to?: LinkProps['to'];
   href?: string;
   target?: React.AnchorHTMLAttributes<HTMLAnchorElement>['target'];
+  isInteractive?: boolean;
   onClick?: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick'];
   style?: React.CSSProperties;
 }
@@ -99,9 +100,8 @@ export function SurfaceList({
       <VStack gap={0}>
         {items.map((item, index) => {
           const { style } = item;
-          const isInteractiveItem = Boolean(
-            item.to || item.href || item.onClick
-          );
+          const isInteractiveItem =
+            item.isInteractive ?? Boolean(item.to || item.href || item.onClick);
           const component = item.to ? (
             <ItemLink to={item.to} onClick={item.onClick as any}>
               {item.component}
@@ -116,6 +116,8 @@ export function SurfaceList({
             </ItemAnchor>
           ) : item.onClick ? (
             <ItemButton onClick={item.onClick}>{item.component}</ItemButton>
+          ) : item.isInteractive ? (
+            item.component
           ) : (
             <div style={{ paddingTop: vGap, paddingBottom: vGap }}>
               {item.component}

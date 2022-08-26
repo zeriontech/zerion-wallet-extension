@@ -1,7 +1,6 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { DataStatus, useAddressPortfolio } from 'defi-sdk';
-import browser from 'webextension-polyfill';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
@@ -38,6 +37,7 @@ import { walletPort } from 'src/ui/shared/channels';
 import { NBSP } from 'src/ui/shared/typography';
 import { NonFungibleTokens } from './NonFungibleTokens';
 import { WalletIcon } from 'src/ui/ui-kit/WalletIcon';
+import { useIsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
 
 interface ChangeInfo {
   isPositive: boolean;
@@ -87,32 +87,6 @@ function PercentChange({
     return null;
   }
   return render(formatPercentChange(value, locale));
-}
-
-function useIsConnectedToActiveTab(address: string) {
-  const { data: tabOrigin } = useQuery('activeTab/origin', async () => {
-    const tabs = await browser.tabs.query({ active: true });
-    const url = tabs.find((tab) => tab.url)?.url;
-    if (url) {
-      return new URL(url).origin;
-    } else {
-      return null;
-    }
-  });
-  return useQuery(
-    `hasPermission(${address}, ${tabOrigin})`,
-    async () => {
-      if (tabOrigin) {
-        return walletPort.request('hasPermission', {
-          address,
-          origin: tabOrigin,
-        });
-      } else {
-        return null;
-      }
-    },
-    { enabled: Boolean(tabOrigin) }
-  );
 }
 
 function CurrentAccount({ address }: { address: string }) {
