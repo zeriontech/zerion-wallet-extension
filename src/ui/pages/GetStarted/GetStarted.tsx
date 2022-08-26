@@ -55,7 +55,7 @@ function NewWalletOption({
   walletGroups: WalletGroup[] | null;
 }) {
   const [params] = useSearchParams();
-  const autoFocusRef = useRef<HTMLButtonElement | null>(null);
+  const autoFocusRef = useRef<HTMLAnchorElement | null>(null);
   useEffect(() => {
     autoFocusRef.current?.focus();
   }, []);

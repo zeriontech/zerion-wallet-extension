@@ -1,4 +1,8 @@
-import React from 'react';
+import React, {
+  ComponentPropsWithoutRef,
+  ComponentPropsWithRef,
+  ElementType,
+} from 'react';
 import cx from 'classnames';
 import { UIText } from '../UIText';
 import * as styles from './styles.module.css';
@@ -29,57 +33,50 @@ const kinds: { [kind in Kind]: (size: number) => React.CSSProperties } = {
   },
 };
 
-interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  as?: 'button' | any;
+interface Props {
   kind?: Kind;
   size?: Size;
-  to?: string;
 }
 
-export const Button = React.forwardRef(
-  (
-    {
-      style,
-      as = 'button',
-      kind = 'primary',
-      size = 44,
-      children,
-      className,
-      ...props
-    }: Props,
-    ref
-  ) => {
-    const Element = as;
+const ButtonElement = <As extends ElementType = 'button'>(
+  {
+    style,
+    as,
+    kind = 'primary',
+    size = 44,
+    children,
+    className,
+    ...props
+  }: Props & { as?: As } & ComponentPropsWithoutRef<As> &
+    Partial<Pick<ComponentPropsWithRef<As>, 'ref'>>,
+  ref: React.Ref<ComponentPropsWithRef<As>['ref']>
+) => {
+  const isButton = as === 'button';
+  return (
+    <UIText
+      as={as || 'button'}
+      ref={ref}
+      kind="button/m_med"
+      className={cx(className, styles[kind])}
+      style={Object.assign(
+        {
+          cursor: 'pointer',
+          border: 'none',
+          textDecoration: 'none',
+          paddingLeft: 48,
+          paddingRight: 48,
+          borderRadius: 8,
+          height: size,
+        },
+        kinds[kind](size),
+        isButton ? undefined : asButtonStyle,
+        style
+      )}
+      {...props}
+    >
+      {children}
+    </UIText>
+  );
+};
 
-    const isButton = as === 'button';
-    return (
-      <Element
-        ref={ref}
-        style={Object.assign(
-          {
-            cursor: 'pointer',
-            border: 'none',
-            textDecoration: 'none',
-            paddingLeft: 48,
-            paddingRight: 48,
-            borderRadius: 8,
-            height: size,
-          },
-          kinds[kind](size),
-          isButton ? undefined : asButtonStyle,
-          style
-        )}
-        className={cx(className, styles[kind])}
-        {...props}
-      >
-        <UIText
-          style={{ display: 'inline-block', verticalAlign: 'bottom' }}
-          kind="button/m_med"
-        >
-          {children}
-        </UIText>
-      </Element>
-    );
-  }
-);
+export const Button = React.forwardRef(ButtonElement) as typeof ButtonElement;

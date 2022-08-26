@@ -1,4 +1,8 @@
-import React, { ComponentPropsWithoutRef, ElementType } from 'react';
+import React, {
+  ComponentPropsWithoutRef,
+  ComponentPropsWithRef,
+  ElementType,
+} from 'react';
 
 export const textParams = {
   // [font-size, line-height, weight, letter-spacing]
@@ -54,18 +58,24 @@ export interface Props {
   color?: string;
 }
 
-export function UIText<As extends ElementType = 'div'>({
-  as,
-  inline = false,
-  kind,
-  color = 'currentColor',
-  style,
-  ...props
-}: Props & { as?: As } & ComponentPropsWithoutRef<As>) {
+const UITextComponent = <As extends ElementType = 'div'>(
+  {
+    as,
+    inline = false,
+    kind,
+    color = 'currentColor',
+    style,
+    ...props
+  }: Props & { as?: As } & ComponentPropsWithoutRef<As> & {
+      ref?: ComponentPropsWithRef<As>['ref'];
+    },
+  ref: React.Ref<ComponentPropsWithRef<As>['ref']>
+) => {
   const [fontSize, lineHeight, fontWeight, letterSpacing] = getStyles(kind);
   return React.createElement(as || 'div', {
+    ref,
     style: {
-      display: inline ? 'inline' : 'block',
+      display: inline ? 'inline' : undefined,
       margin: 0,
       fontFamily: 'Graphik, sans-serif',
       fontSize,
@@ -77,4 +87,8 @@ export function UIText<As extends ElementType = 'div'>({
     },
     ...props,
   });
-}
+};
+
+export const UIText = React.forwardRef(
+  UITextComponent
+) as typeof UITextComponent;

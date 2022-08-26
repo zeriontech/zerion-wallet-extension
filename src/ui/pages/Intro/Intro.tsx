@@ -4,7 +4,7 @@ import ZerionLogoWide from 'src/ui/assets/zerion-logo-wide.svg';
 import { Button } from 'src/ui/ui-kit/Button';
 
 export function Intro() {
-  const autoFocusRef = useRef<HTMLButtonElement | null>(null);
+  const autoFocusRef = useRef<HTMLAnchorElement | null>(null);
   useEffect(() => {
     autoFocusRef.current?.focus();
   }, []);
