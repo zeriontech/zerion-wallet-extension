@@ -1,0 +1,25 @@
+.root {
+  position: relative;
+}
+
+.activeIndicatorClip {
+  --circle-radius: 5px;
+
+  /* A trick to "cut" out a circle shape from the element */
+  mask-image: radial-gradient(
+    circle var(--circle-radius) at calc(100% - var(--circle-radius) + 2px)
+      calc(100% - var(--circle-radius) + 2px),
+    transparent var(--circle-radius),
+    purple 0
+  );
+}
+
+.activeIndicator {
+  height: 6px;
+  width: 6px;
+  border-radius: 50%;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  background-color: var(--positive-500);
+}

@@ -290,6 +290,14 @@ export class Wallet {
     return this.record?.permissions[context.origin]?.includes(address) || false;
   }
 
+  async hasPermission({
+    params: { address, origin },
+    context,
+  }: PublicMethodParams<{ address: string; origin: string }>) {
+    this.verifyInternalOrigin(context);
+    return this.record?.permissions[origin]?.includes(address) || false;
+  }
+
   async getOriginPermissions({ context }: PublicMethodParams) {
     this.verifyInternalOrigin(context);
     if (!this.record) {

@@ -18,7 +18,7 @@ export function Media({
   return (
     <HStack gap={gap} alignItems="center">
       {image}
-      <VStack gap={vGap}>
+      <VStack gap={vGap} style={{ textAlign: 'start' }}>
         {text}
         {detailText}
       </VStack>
