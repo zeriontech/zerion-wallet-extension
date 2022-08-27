@@ -1,7 +1,7 @@
 import { ethers, UnsignedTransaction } from 'ethers';
 import { createNanoEvents, Emitter } from 'nanoevents';
-import { produce } from 'immer';
 import { Store } from 'store-unit';
+import { isTruthy } from 'is-truthy-ts';
 import { encrypt, decrypt } from '@metamask/browser-passworder';
 import { notificationWindow } from 'src/background/NotificationWindow/NotificationWindow';
 import { ChannelContext } from 'src/shared/types/ChannelContext';
@@ -14,39 +14,29 @@ import {
   UserRejectedTxSignature,
 } from 'src/shared/errors/errors';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
-import type { WalletStore } from './persistence';
-import { walletStore } from './persistence';
-import {
-  MnemonicWalletContainer,
-  PrivateKeyWalletContainer,
-  PendingWallet,
-  createOrUpdateRecord,
-  getWalletByAddress,
-  toEthersWallet,
-  SeedType,
-  removeWalletGroup,
-  renameWalletGroup,
-  renameAddress,
-  removeAddress,
-  addPermission,
-  removePermission,
-  removeAllOriginPermissions,
-} from './WalletRecord';
-import type { WalletRecord } from './WalletRecord';
 import { networksStore } from 'src/modules/networks/networks-store';
 import { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { prepareTransaction } from 'src/modules/ethereum/transactions/prepareTransaction';
 import { createChain } from 'src/modules/networks/Chain';
-import { emitter } from '../events';
 import { getNextAccountPath } from 'src/shared/wallet/getNextAccountPath';
-import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
 import { hasGasPrice } from 'src/modules/ethereum/transactions/gasPrices/hasGasPrice';
 import { fetchAndAssignGasPrice } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { prepareTypedData } from 'src/modules/ethereum/message-signing/prepareTypedData';
 import { toUtf8String } from 'ethers/lib/utils';
-import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import { removeSignature } from 'src/modules/ethereum/transactions/removeSignature';
+import { toEthersWallet } from './helpers/toEthersWallet';
+import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
+import { SeedType } from './model/SeedType';
+import type { PendingWallet, WalletRecord } from './model/types';
+import {
+  MnemonicWalletContainer,
+  PrivateKeyWalletContainer,
+} from './model/WalletContainer';
+import { WalletRecordModel as Model } from './WalletRecord';
+import type { WalletStore } from './persistence';
+import { walletStore } from './persistence';
+import { emitter } from '../events';
 
 type PublicMethodParams<T = undefined> = T extends undefined
   ? {
@@ -215,7 +205,7 @@ export class Wallet {
     }
     const currentAddress = this.readCurrentAddress();
     if (this.record && currentAddress) {
-      const wallet = getWalletByAddress(this.record, currentAddress);
+      const wallet = Model.getWalletByAddress(this.record, currentAddress);
       return wallet ? maskWallet(wallet) : null;
     }
     return null;
@@ -232,7 +222,7 @@ export class Wallet {
     if (!address) {
       throw new Error('Ilegal argument: address is required for this method');
     }
-    const wallet = getWalletByAddress(this.record, address);
+    const wallet = Model.getWalletByAddress(this.record, address);
     return wallet ? maskWallet(wallet) : null;
   }
 
@@ -243,29 +233,22 @@ export class Wallet {
     if (!this.encryptionKey) {
       throw new Error('Cannot save pending wallet: encryptionKey is null');
     }
-    // const { seedType, wallet } = this.pendingWallet;
-    // const record = createateRecord(this.record, this.pendingWallet);
-    const record = createOrUpdateRecord(this.record, this.pendingWallet);
-    // const record = createRecord({ walletContainer: { seedType, wallet } });
+    const record = Model.createOrUpdateRecord(this.record, this.pendingWallet);
     this.record = record;
     this.updateWalletStore(record);
   }
 
   async acceptOrigin(origin: string, address: string) {
-    if (!this.record) {
-      throw new RecordNotFound();
-    }
-    this.record = addPermission(this.record, { address, origin });
+    this.ensureRecord(this.record);
+    this.record = Model.addPermission(this.record, { address, origin });
     this.updateWalletStore(this.record);
     this.emitter.emit('permissionsUpdated');
   }
 
   async removeAllOriginPermissions({ context }: PublicMethodParams) {
     this.verifyInternalOrigin(context);
-    if (!this.record) {
-      throw new RecordNotFound();
-    }
-    this.record = removeAllOriginPermissions(this.record);
+    this.ensureRecord(this.record);
+    this.record = Model.removeAllOriginPermissions(this.record);
     this.updateWalletStore(this.record);
     this.emitter.emit('permissionsUpdated');
   }
@@ -275,10 +258,8 @@ export class Wallet {
     params: { origin, address },
   }: PublicMethodParams<{ origin: string; address?: string }>) {
     this.verifyInternalOrigin(context);
-    if (!this.record) {
-      throw new RecordNotFound();
-    }
-    this.record = removePermission(this.record, { origin, address });
+    this.ensureRecord(this.record);
+    this.record = Model.removePermission(this.record, { origin, address });
   }
 
   allowedOrigin(
@@ -304,9 +285,7 @@ export class Wallet {
 
   async getOriginPermissions({ context }: PublicMethodParams) {
     this.verifyInternalOrigin(context);
-    if (!this.record) {
-      throw new RecordNotFound();
-    }
+    this.ensureRecord(this.record);
     return Object.entries(this.record.permissions).map(
       ([origin, addresses]) => ({ origin, addresses })
     );
@@ -317,69 +296,15 @@ export class Wallet {
     context,
   }: PublicMethodParams<{ address: string }>) {
     this.verifyInternalOrigin(context);
-    if (!this.record) {
-      throw new RecordNotFound();
-    }
-    const checkSumAddress = toChecksumAddress(address);
-    this.record = produce(this.record, (draft) => {
-      draft.walletManager.currentAddress = checkSumAddress;
-    });
+    this.ensureRecord(this.record);
+    this.record = Model.setCurrentAddress(this.record, { address });
     this.updateWalletStore(this.record);
 
-    this.emitter.emit('currentAddressChange', [checkSumAddress]);
-  }
-
-  async updateLastBackedUp({
-    params: { groupId },
-    context,
-  }: PublicMethodParams<{ groupId: string }>) {
-    if (!groupId) {
-      throw new Error('Must provide groupId');
-    }
-    this.verifyInternalOrigin(context);
-    if (!this.record) {
-      throw new RecordNotFound();
-    }
-    this.record = produce(this.record, (draft) => {
-      const group = draft.walletManager.groups.find(
-        (group) => group.id === groupId
-      );
-      if (!group) {
-        throw new Error(`Group with id ${groupId} not found`);
-      }
-      group.lastBackedUp = Date.now();
-    });
-    this.updateWalletStore(this.record);
-  }
-
-  async getLastBackedUp({ context }: PublicMethodParams) {
-    // NOTE: deprecate this method?
-    this.verifyInternalOrigin(context);
-    if (!this.record) {
-      throw new RecordNotFound();
-    }
-    const hasUnBackedUpGroup = this.record.walletManager.groups.find(
-      (group) => group.lastBackedUp == null
+    const { currentAddress } = this.record.walletManager;
+    this.emitter.emit(
+      'currentAddressChange',
+      [currentAddress].filter(isTruthy)
     );
-    if (hasUnBackedUpGroup) {
-      return null;
-    } else {
-      return (
-        this.record.walletManager.groups
-          .map((group) => group.lastBackedUp)
-          .sort()[0] || null
-      );
-    }
-  }
-
-  async getNoBackupCount({ context }: PublicMethodParams) {
-    this.verifyInternalOrigin(context);
-    if (!this.record) {
-      throw new RecordNotFound();
-    }
-    return this.record.walletManager.groups
-      .filter((group) => group.walletContainer.seedType === SeedType.mnemonic)
-      .filter((group) => group.lastBackedUp == null).length;
   }
 
   readCurrentAddress() {
@@ -392,6 +317,22 @@ export class Wallet {
       throw new Error('Wallet is not initialized');
     }
     return currentAddress;
+  }
+
+  private ensureRecord(
+    record: WalletRecord | null
+  ): asserts record is WalletRecord {
+    if (!record) {
+      throw new RecordNotFound();
+    }
+  }
+
+  private verifyInternalOrigin(
+    context: Partial<ChannelContext> | undefined
+  ): asserts context is Partial<ChannelContext> {
+    if (context?.origin !== INTERNAL_ORIGIN) {
+      throw new OriginNotAllowed(context?.origin);
+    }
   }
 
   async getCurrentAddress({ context }: PublicMethodParams) {
@@ -424,7 +365,7 @@ export class Wallet {
     if (!this.record) {
       throw new RecordNotFound();
     }
-    this.record = removeWalletGroup(this.record, { groupId });
+    this.record = Model.removeWalletGroup(this.record, { groupId });
     this.updateWalletStore(this.record);
   }
 
@@ -436,7 +377,7 @@ export class Wallet {
     if (!this.record) {
       throw new RecordNotFound();
     }
-    this.record = renameWalletGroup(this.record, { groupId, name });
+    this.record = Model.renameWalletGroup(this.record, { groupId, name });
     this.updateWalletStore(this.record);
   }
 
@@ -448,7 +389,7 @@ export class Wallet {
     if (!this.record) {
       throw new RecordNotFound();
     }
-    this.record = renameAddress(this.record, { address, name });
+    this.record = Model.renameAddress(this.record, { address, name });
     this.updateWalletStore(this.record);
   }
 
@@ -457,17 +398,34 @@ export class Wallet {
     context,
   }: PublicMethodParams<{ address: string }>) {
     this.verifyInternalOrigin(context);
-    if (!this.record) {
-      throw new RecordNotFound();
-    }
-    this.record = removeAddress(this.record, { address });
+    this.ensureRecord(this.record);
+    this.record = Model.removeAddress(this.record, { address });
     this.updateWalletStore(this.record);
   }
 
-  private verifyInternalOrigin(context: Partial<ChannelContext> | undefined) {
-    if (context?.origin !== INTERNAL_ORIGIN) {
-      throw new OriginNotAllowed(context?.origin);
+  async updateLastBackedUp({
+    params: { groupId },
+    context,
+  }: PublicMethodParams<{ groupId: string }>) {
+    this.verifyInternalOrigin(context);
+    this.ensureRecord(this.record);
+
+    if (!groupId) {
+      throw new Error('Must provide groupId');
     }
+    this.record = Model.updateLastBackedUp(this.record, {
+      groupId,
+      timestamp: Date.now(),
+    });
+    this.updateWalletStore(this.record);
+  }
+
+  async getNoBackupCount({ context }: PublicMethodParams) {
+    this.verifyInternalOrigin(context);
+    this.ensureRecord(this.record);
+    return this.record.walletManager.groups
+      .filter((group) => group.walletContainer.seedType === SeedType.mnemonic)
+      .filter((group) => group.lastBackedUp == null).length;
   }
 
   async switchChain({ params: chain, context }: PublicMethodParams<string>) {
@@ -504,7 +462,7 @@ export class Wallet {
       throw new RecordNotFound();
     }
     const currentWallet = currentAddress
-      ? getWalletByAddress(this.record, currentAddress)
+      ? Model.getWalletByAddress(this.record, currentAddress)
       : null;
     if (!currentWallet) {
       throw new Error('Wallet is not initialized');

@@ -1,5 +1,5 @@
 import produce from 'immer';
-import type { BareWallet, WalletGroup } from '../WalletRecord';
+import type { BareWallet, WalletGroup } from '../model/types';
 
 function maskMnemonic(
   mnemonic: BareWallet['mnemonic']

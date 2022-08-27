@@ -1,7 +1,8 @@
+import produce from 'immer';
 import { PersistentStore } from 'src/shared/PersistentStore';
 import { get } from '../webapis/storage';
-import { decryptRecord, encryptRecord, WalletRecord } from './WalletRecord';
-import produce from 'immer';
+import type { WalletRecord } from './model/types';
+import { WalletRecordModel as Model } from './WalletRecord';
 
 type EncryptedWalletRecord = string;
 
@@ -13,11 +14,11 @@ export class WalletStore extends PersistentStore<WalletStoreState> {
     if (!encryptedRecord) {
       return null;
     }
-    return await decryptRecord(encryptionKey, encryptedRecord);
+    return await Model.decryptRecord(encryptionKey, encryptedRecord);
   }
 
   async save(id: string, encryptionKey: string, record: WalletRecord) {
-    const encryptedRecord = await encryptRecord(encryptionKey, record);
+    const encryptedRecord = await Model.encryptRecord(encryptionKey, record);
     this.setState((state) =>
       produce(state, (draft) => {
         draft[id] = encryptedRecord;

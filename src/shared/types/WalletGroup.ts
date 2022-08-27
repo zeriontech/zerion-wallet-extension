@@ -1,1 +1,1 @@
-export type { WalletGroup } from 'src/background/Wallet/WalletRecord';
+export type { WalletGroup } from 'src/background/Wallet/model/types';

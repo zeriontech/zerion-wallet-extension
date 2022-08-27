@@ -1,1 +1,1 @@
-export { BareWallet } from 'src/background/Wallet/WalletRecord';
+export type { BareWallet } from 'src/background/Wallet/model/types';

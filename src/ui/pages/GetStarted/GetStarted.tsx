@@ -8,15 +8,15 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Surface } from 'src/ui/ui-kit/Surface';
-import { GenerateWallet } from './GenerateWallet';
-import { ImportWallet } from './ImportWallet';
 import { SeedType } from 'src/shared/SeedType';
-import { WalletGroup } from 'src/background/Wallet/WalletRecord';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { AddressBadge } from 'src/ui/components/AddressBadge';
 import { useWalletGroups } from 'src/ui/shared/requests/useWalletGroups';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
+import type { WalletGroup } from 'src/shared/types/WalletGroup';
+import { GenerateWallet } from './GenerateWallet';
+import { ImportWallet } from './ImportWallet';
 
 function TitleWithLine({
   children,

@@ -1,1 +1,1 @@
-export { SeedType } from 'src/background/Wallet/WalletRecord';
+export { SeedType } from 'src/background/Wallet/model/SeedType';
