@@ -158,7 +158,6 @@ function SomeKindOfResolver({
 }
 
 function RequireAuth({ children }: { children: JSX.Element }) {
-  console.log('RequireAuth');
   const location = useLocation();
   const { isLoading, isAuthenticated, existingUser } = useAuthState();
 

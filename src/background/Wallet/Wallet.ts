@@ -37,6 +37,7 @@ import { WalletRecordModel as Model } from './WalletRecord';
 import type { WalletStore } from './persistence';
 import { walletStore } from './persistence';
 import { emitter } from '../events';
+import { normalizeAddress } from 'src/shared/normalizeAddress';
 
 type PublicMethodParams<T = undefined> = T extends undefined
   ? {
@@ -205,7 +206,9 @@ export class Wallet {
     }
     const currentAddress = this.readCurrentAddress();
     if (this.record && currentAddress) {
-      const wallet = Model.getWalletByAddress(this.record, currentAddress);
+      const wallet =
+        Model.getWalletByAddress(this.record, currentAddress) ||
+        Model.getFirstWallet(this.record);
       return wallet ? maskWallet(wallet) : null;
     }
     return null;
@@ -485,7 +488,8 @@ export class Wallet {
     }
     const currentAddress = this.ensureCurrentAddress();
     if (
-      incomingTransaction.from.toLowerCase() !== currentAddress.toLowerCase()
+      normalizeAddress(incomingTransaction.from) !==
+      normalizeAddress(currentAddress)
     ) {
       throw new Error(
         // TODO?...
@@ -688,7 +692,7 @@ class PublicController {
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
       throw new OriginNotAllowed();
     }
-    if (address.toLowerCase() !== currentAddress.toLowerCase()) {
+    if (normalizeAddress(address) !== normalizeAddress(currentAddress)) {
       throw new Error(
         // TODO?...
         'Address parameter is different from currently selected address'
@@ -731,7 +735,10 @@ class PublicController {
     }
     const [message, address, _password] = params;
     const currentAddress = this.wallet.ensureCurrentAddress();
-    if (address && address.toLowerCase() !== currentAddress.toLowerCase()) {
+    if (
+      address &&
+      normalizeAddress(address) !== normalizeAddress(currentAddress)
+    ) {
       throw new Error(
         // TODO?...
         'Address parameter is different from currently selected address'

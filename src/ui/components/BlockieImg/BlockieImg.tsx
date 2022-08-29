@@ -1,6 +1,6 @@
 import React, { useLayoutEffect, useMemo, useRef } from 'react';
 import { createIcon } from '@download/blockies';
-import { normalizeAddress } from 'src/ui/shared/normalizeAddress';
+import { normalizeAddress } from 'src/shared/normalizeAddress';
 
 export function BlockieImg({
   address,

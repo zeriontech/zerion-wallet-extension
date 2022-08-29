@@ -2,6 +2,7 @@ import { decrypt, encrypt } from '@metamask/browser-passworder';
 import produce from 'immer';
 import { nanoid } from 'nanoid';
 import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
+import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { SeedType } from './model/SeedType';
 import type {
   BareWallet,
@@ -103,6 +104,28 @@ function spliceItem<T>(arr: T[], item: T) {
 }
 
 export class WalletRecordModel {
+  static verifyStateIntegrity(record: WalletRecord) {
+    return produce(record, (draft) => {
+      const { currentAddress } = record.walletManager;
+      if (currentAddress) {
+        const normalizedAddress = normalizeAddress(currentAddress);
+        const walletExists = record.walletManager.groups.some((group) =>
+          group.walletContainer.wallets.some(
+            (wallet) => normalizeAddress(wallet.address) === normalizedAddress
+          )
+        );
+        if (!walletExists) {
+          draft.walletManager.currentAddress =
+            WalletRecordModel.getFirstWallet(draft)?.address || null;
+        }
+      }
+    });
+  }
+
+  static getFirstWallet(record: WalletRecord): BareWallet | null {
+    return record.walletManager.groups[0]?.walletContainer.getFirstWallet();
+  }
+
   static getWalletByAddress(
     record: WalletRecord,
     address: string
@@ -206,7 +229,7 @@ export class WalletRecordModel {
 
       return group;
     });
-    return data as WalletRecord;
+    return WalletRecordModel.verifyStateIntegrity(data as WalletRecord);
   }
 
   static setCurrentAddress(
@@ -266,26 +289,43 @@ export class WalletRecordModel {
 
   static removeAddress(record: WalletRecord, { address }: { address: string }) {
     return produce(record, (draft) => {
-      const group = draft.walletManager.groups.find((group) =>
+      const normalizedAddress = normalizeAddress(address);
+      const [pos, group] = findWithIndex(draft.walletManager.groups, (group) =>
         group.walletContainer.wallets.some(
-          (wallet) => wallet.address.toLowerCase() === address.toLowerCase()
+          (wallet) => normalizeAddress(wallet.address) === normalizedAddress
         )
       );
       if (!group) {
         throw new Error('Group not found');
       }
-      if (group.walletContainer.wallets.length === 1) {
+      const isLastAddress = group.walletContainer.wallets.length === 1;
+      if (
+        group.walletContainer.seedType === SeedType.mnemonic &&
+        isLastAddress
+      ) {
         throw new Error(
           'Removing last wallet from a wallet group is not allowed. You can remove the whole group'
         );
       }
-      group.walletContainer.removeWallet(address);
+      if (isLastAddress) {
+        // remove whole group
+        draft.walletManager.groups.splice(pos, 1);
+      } else {
+        group.walletContainer.removeWallet(address);
+      }
       const { currentAddress } = draft.walletManager;
       const shouldChangeCurrentAddress =
-        address.toLowerCase() === currentAddress?.toLowerCase();
+        currentAddress &&
+        normalizedAddress === normalizeAddress(currentAddress);
       if (shouldChangeCurrentAddress) {
-        draft.walletManager.currentAddress =
-          group.walletContainer.getFirstWallet().address;
+        if (isLastAddress) {
+          draft.walletManager.currentAddress =
+            draft.walletManager.groups[0]?.walletContainer.getFirstWallet()
+              .address || null;
+        } else {
+          draft.walletManager.currentAddress =
+            group.walletContainer.getFirstWallet().address;
+        }
       }
     });
   }
@@ -298,11 +338,11 @@ export class WalletRecordModel {
     if (maybeErrorMessage) {
       throw new Error(maybeErrorMessage);
     }
-    const lowerCaseAddress = address.toLowerCase();
+    const normalizedAddress = normalizeAddress(address);
     return produce(record, (draft) => {
       for (const group of draft.walletManager.groups) {
         for (const wallet of group.walletContainer.wallets) {
-          if (wallet.address.toLowerCase() === lowerCaseAddress) {
+          if (normalizeAddress(wallet.address) === normalizedAddress) {
             wallet.name = name || null;
             return;
           }

@@ -33,7 +33,7 @@ function PrivateKeyList({ walletGroups }: { walletGroups: WalletGroup[] }) {
           const { address } = wallet;
           return {
             key: group.id,
-            to: `/wallets/groups/${group.id}`,
+            to: `/wallets/accounts/${wallet.address}`,
             component: (
               <HStack
                 gap={4}
