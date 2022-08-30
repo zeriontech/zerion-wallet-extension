@@ -33,6 +33,7 @@ import { FillView } from 'src/ui/components/FillView';
 import { capitalize } from 'capitalize-ts';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
+import { queryCacheForAsset } from 'src/modules/defi-sdk/queries';
 
 function ItemSurface({ style, ...props }: React.HTMLProps<HTMLDivElement>) {
   const surfaceStyle = {
@@ -75,7 +76,11 @@ function AssetLine({
     { currency: 'usd', asset_codes: [assetCode?.toLowerCase() || ''] },
     { enabled: Boolean(assetCode) }
   );
-  const asset = assetCode ? assets?.[assetCode] : null;
+  const assetFromCache = useMemo(
+    () => (assetCode ? queryCacheForAsset(assetCode) : null),
+    [assetCode]
+  );
+  const asset = assetFromCache || (assetCode ? assets?.[assetCode] : null);
   if (
     status === DataStatus.ok &&
     !asset &&
