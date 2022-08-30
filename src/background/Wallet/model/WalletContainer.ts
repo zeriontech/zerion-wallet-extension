@@ -79,6 +79,21 @@ abstract class WalletContainerImpl implements WalletContainer {
   }
 
   addWallet(wallet: BareWallet) {
+    const currentMnemonic = this.getMnemonic();
+    if (currentMnemonic) {
+      if (
+        !wallet.mnemonic ||
+        wallet.mnemonic.phrase !== currentMnemonic.phrase
+      ) {
+        throw new Error(
+          'Added wallet must have the same mnemonic as other wallets in the WalletContainer'
+        );
+      }
+    }
+    if (this.wallets.some(({ address }) => address === wallet.address)) {
+      /** Seems it's better to keep existing wallet in order to save existing state, e.g. name */
+      return;
+    }
     this.wallets.push(wallet);
   }
 

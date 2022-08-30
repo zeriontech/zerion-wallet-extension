@@ -10,6 +10,7 @@ import type {
   WalletGroup,
   WalletRecord,
 } from './model/types';
+import { upgrade } from './model/versions';
 import type { WalletContainer } from './model/WalletContainer';
 import {
   MnemonicWalletContainer,
@@ -103,22 +104,26 @@ function spliceItem<T>(arr: T[], item: T) {
   }
 }
 
+function verifyCurrentAddress(record: WalletRecord) {
+  const { currentAddress } = record.walletManager;
+  if (currentAddress) {
+    const normalizedAddress = normalizeAddress(currentAddress);
+    const walletExists = record.walletManager.groups.some((group) =>
+      group.walletContainer.wallets.some(
+        (wallet) => normalizeAddress(wallet.address) === normalizedAddress
+      )
+    );
+    if (!walletExists) {
+      record.walletManager.currentAddress =
+        WalletRecordModel.getFirstWallet(record)?.address || null;
+    }
+  }
+}
+
 export class WalletRecordModel {
   static verifyStateIntegrity(record: WalletRecord) {
     return produce(record, (draft) => {
-      const { currentAddress } = record.walletManager;
-      if (currentAddress) {
-        const normalizedAddress = normalizeAddress(currentAddress);
-        const walletExists = record.walletManager.groups.some((group) =>
-          group.walletContainer.wallets.some(
-            (wallet) => normalizeAddress(wallet.address) === normalizedAddress
-          )
-        );
-        if (!walletExists) {
-          draft.walletManager.currentAddress =
-            WalletRecordModel.getFirstWallet(draft)?.address || null;
-        }
-      }
+      verifyCurrentAddress(draft);
     });
   }
 
@@ -147,6 +152,7 @@ export class WalletRecordModel {
       const isMnemonicWallet =
         pendingWallet.walletContainer.seedType === SeedType.mnemonic;
       return {
+        version: 1,
         walletManager: {
           groups: [
             createGroup({
@@ -160,6 +166,7 @@ export class WalletRecordModel {
         },
         transactions: [],
         permissions: {},
+        preferences: {},
       };
     }
     return produce(record, (draft) => {
@@ -216,8 +223,12 @@ export class WalletRecordModel {
   }
 
   static async decryptRecord(key: string, encryptedRecord: string) {
-    const data = (await decrypt(key, encryptedRecord)) as WalletRecord;
-    data.walletManager.groups = data.walletManager.groups.map((group) => {
+    const persistedEntry = (await decrypt(
+      key,
+      encryptedRecord
+    )) as WalletRecord;
+    const entry = upgrade(persistedEntry);
+    entry.walletManager.groups = entry.walletManager.groups.map((group) => {
       const { seedType, wallets } = group.walletContainer;
       if (seedType === SeedType.mnemonic) {
         group.walletContainer = new MnemonicWalletContainer(wallets);
@@ -229,7 +240,7 @@ export class WalletRecordModel {
 
       return group;
     });
-    return WalletRecordModel.verifyStateIntegrity(data as WalletRecord);
+    return WalletRecordModel.verifyStateIntegrity(entry as WalletRecord);
   }
 
   static setCurrentAddress(
@@ -388,6 +399,15 @@ export class WalletRecordModel {
         // remove whole record for `origin` completely
         delete draft.permissions[origin];
       }
+    });
+  }
+
+  static setPreference(
+    record: WalletRecord,
+    { preferences }: { preferences: Partial<WalletRecord['preferences']> }
+  ) {
+    return produce(record, (draft) => {
+      Object.assign(draft.preferences, preferences);
     });
   }
 

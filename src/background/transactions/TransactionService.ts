@@ -8,15 +8,7 @@ import type {
   StoredTransactions,
   TransactionObject,
 } from 'src/modules/ethereum/transactions/types';
-
-function upsert<T, K extends keyof T>(array: T[], newItem: T, idKey: K) {
-  const pos = array.findIndex((item) => item[idKey] === newItem[idKey]);
-  if (pos !== -1) {
-    array.splice(pos, 1, newItem);
-  } else {
-    array.push(newItem);
-  }
-}
+import { upsert } from 'src/shared/upsert';
 
 class TransactionsStore extends Store<StoredTransactions> {
   constructor(args: StoredTransactions) {

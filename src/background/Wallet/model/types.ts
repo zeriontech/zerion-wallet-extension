@@ -24,10 +24,23 @@ interface WalletManager {
 type Origin = string;
 type Address = string;
 
-export interface WalletRecord {
+interface Preferences {
+  showNetworkSwitchShortcut?: boolean;
+}
+
+// Previous versions are used to perform migrations ("upgrades")
+export interface WalletRecordVersion0 {
   walletManager: WalletManager;
   permissions: Record<Origin, Address[]>;
   transactions: ethers.providers.TransactionResponse[];
+}
+
+export interface WalletRecord {
+  version: 1;
+  walletManager: WalletManager;
+  permissions: Record<Origin, Address[]>;
+  transactions: ethers.providers.TransactionResponse[];
+  preferences: Preferences;
 }
 
 export interface PendingWallet {
