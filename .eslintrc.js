@@ -9,7 +9,9 @@ module.exports = {
     'no-console': 'warn',
     'react-hooks/rules-of-hooks': 'error', // Checks rules of Hooks
     'react-hooks/exhaustive-deps': 'warn', // Checks effect dependencies
-    'no-restricted-globals': ['error'].concat(confusingBrowserGlobals),
+    'no-restricted-globals': ['error']
+      .concat(confusingBrowserGlobals)
+      .concat(['origin']),
   },
   overrides: [
     {
