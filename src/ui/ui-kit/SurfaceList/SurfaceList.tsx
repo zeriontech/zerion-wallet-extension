@@ -57,19 +57,18 @@ export function ItemAnchor({
 }
 
 export function ItemButton({
-  onClick,
   children,
   style,
+  ...props
 }: {
-  onClick: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick'];
   children: React.ReactNode;
   style?: React.CSSProperties;
-}) {
+} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <UnstyledButton
       style={{ color: 'inherit', ...style }}
-      onClick={onClick}
       className={s.option}
+      {...props}
     >
       <div className={s.decoration}>{children}</div>
     </UnstyledButton>

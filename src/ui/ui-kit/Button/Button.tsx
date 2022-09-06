@@ -47,8 +47,9 @@ const ButtonElement = <As extends ElementType = 'button'>(
     children,
     className,
     ...props
-  }: Props & { as?: As } & ComponentPropsWithoutRef<As> &
-    Partial<Pick<ComponentPropsWithRef<As>, 'ref'>>,
+  }: Props & { as?: As } & ComponentPropsWithoutRef<As> & {
+      ref?: ComponentPropsWithRef<As>['ref'];
+    },
   ref: React.Ref<ComponentPropsWithRef<As>['ref']>
 ) => {
   const isButton = as === 'button';

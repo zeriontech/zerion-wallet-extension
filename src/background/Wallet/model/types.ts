@@ -35,10 +35,23 @@ export interface WalletRecordVersion0 {
   transactions: ethers.providers.TransactionResponse[];
 }
 
-export interface WalletRecord {
+export interface Permission {
+  addresses: Address[];
+  chain?: string;
+}
+
+export interface WalletRecordVersion1 {
   version: 1;
   walletManager: WalletManager;
   permissions: Record<Origin, Address[]>;
+  transactions: ethers.providers.TransactionResponse[];
+  preferences: Preferences;
+}
+
+export interface WalletRecord {
+  version: 2;
+  walletManager: WalletManager;
+  permissions: Record<Origin, Permission>;
   transactions: ethers.providers.TransactionResponse[];
   preferences: Preferences;
 }

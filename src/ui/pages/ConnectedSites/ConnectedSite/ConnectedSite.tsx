@@ -23,6 +23,11 @@ import { GenericPrompt } from 'src/ui/components/GenericPrompt';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { walletPort } from 'src/ui/shared/channels';
+import { CurrentNetworkSettingsItem } from '../../Networks/CurrentNetworkSettingsItem';
+import { createChain } from 'src/modules/networks/Chain';
+import { NetworkSelectDialog } from 'src/ui/components/NetworkSelectDialog';
+import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
+import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 
 function useRemovePermissionMutation({ onSuccess }: { onSuccess: () => void }) {
   return useMutation(
@@ -41,17 +46,17 @@ function RevokeAllSurfaceItemButton({
   onSuccess: () => void;
 }) {
   const removePermissionMutation = useRemovePermissionMutation({ onSuccess });
-  const ref = useRef<HTMLDialogElementInterface | null>(null);
+  const removeActionDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   return (
     <>
-      <BottomSheetDialog ref={ref}>
+      <BottomSheetDialog ref={removeActionDialogRef}>
         <GenericPrompt message="The site will ask for permission next time" />
       </BottomSheetDialog>
       <SurfaceItemButton
         onClick={() => {
-          if (ref.current) {
-            showConfirmDialog(ref.current).then(() => {
+          if (removeActionDialogRef.current) {
+            showConfirmDialog(removeActionDialogRef.current).then(() => {
               removePermissionMutation.mutate({ origin });
             });
           }
@@ -67,6 +72,9 @@ function RevokeAllSurfaceItemButton({
 
 export function ConnectedSite() {
   const { originName } = useParams();
+  if (!originName) {
+    throw new Error('originName parameter is required for this view');
+  }
   const { data: connectedSites, refetch } = useQuery(
     'getPermissionsWithWallets',
     getPermissionsWithWallets,
@@ -76,16 +84,31 @@ export function ConnectedSite() {
     () => connectedSites?.find((site) => site.origin === originName),
     [connectedSites, originName]
   );
+  const { data: siteChain, ...chainQuery } = useQuery(
+    `wallet/requestChainForOrigin(${originName})`,
+    () =>
+      walletPort
+        .request('requestChainForOrigin', { origin: originName })
+        .then((chain) => createChain(chain)),
+    { useErrorBoundary: true, suspense: true }
+  );
+  const switchChainMutation = useMutation(
+    (chain: string) =>
+      walletPort.request('switchChainForOrigin', { chain, origin: originName }),
+    { useErrorBoundary: true, onSuccess: () => chainQuery.refetch() }
+  );
   const navigate = useNavigate();
   const handleAllRemoveSuccess = useCallback(() => {
     refetch();
     navigate(-1);
   }, [navigate, refetch]);
 
-  const ref = useRef<HTMLDialogElementInterface | null>(null);
+  const removeActionDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const selectNetworkDialogRef = useRef<HTMLDialogElementInterface | null>(
+    null
+  );
   const removePermissionMutation = useRemovePermissionMutation({
     onSuccess: () => {
-      console.log('useRemovePermissionMutation onSuccess', connectedSites);
       refetch();
       if (connectedSite?.addresses.length === 1) {
         navigate(-1);
@@ -95,87 +118,132 @@ export function ConnectedSite() {
   if (!connectedSite) {
     return <NotFoundPage />;
   }
+  if (!siteChain) {
+    return null;
+  }
   const title = new URL(connectedSite.origin).hostname;
   return (
     <>
-      <BottomSheetDialog ref={ref}>
+      <BottomSheetDialog ref={removeActionDialogRef}>
         <GenericPrompt message="The site will ask for permission next time" />
       </BottomSheetDialog>
       <NavigationTitle title={title} />
       <PageColumn>
         <Spacer height={16} />
-        <UIText kind="subtitle/m_reg">
-          <TextAnchor
-            href={connectedSite.origin}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: 'var(--primary)' }}
-          >
-            {capitalize(title)}
-          </TextAnchor>{' '}
-          can read these addresses:
-        </UIText>
-        <Spacer height={12} />
         <VStack gap={24}>
           <SurfaceList
-            items={connectedSite.wallets.map((wallet) => {
-              return {
-                key: wallet.address,
+            items={[
+              {
+                key: 0,
+                isInteractive: true,
                 component: (
-                  <HStack
-                    gap={4}
-                    justifyContent="space-between"
-                    alignItems="center"
-                  >
-                    <Media
-                      image={
-                        <WalletIcon
-                          address={wallet.address}
-                          active={false}
-                          iconSize={24}
-                        />
-                      }
-                      text={
-                        <UIText
-                          kind="body/s_reg"
-                          style={{ wordBreak: 'break-all' }}
-                        >
-                          <WalletDisplayName wallet={wallet} />
-                        </UIText>
-                      }
-                      detailText={
-                        wallet.name ? (
-                          <UIText kind="caption/reg" color="var(--neutral-500)">
-                            {truncateAddress(wallet.address)}
+                  <>
+                    <CenteredDialog ref={selectNetworkDialogRef}>
+                      <DialogTitle
+                        title={
+                          <UIText kind="subtitle/m_med">
+                            Network for {new URL(originName).hostname}
                           </UIText>
-                        ) : null
-                      }
-                    />
-                    <Button
-                      kind="ghost"
-                      size={28}
+                        }
+                      />
+                      <NetworkSelectDialog value={siteChain.toString()} />
+                    </CenteredDialog>
+
+                    <SurfaceItemButton
                       onClick={() => {
-                        if (ref.current) {
-                          showConfirmDialog(ref.current).then(() => {
-                            removePermissionMutation.mutate({
-                              origin: connectedSite.origin,
-                              address: wallet.address,
-                            });
+                        if (selectNetworkDialogRef.current) {
+                          showConfirmDialog(
+                            selectNetworkDialogRef.current
+                          ).then((value) => {
+                            switchChainMutation.mutate(value);
                           });
                         }
                       }}
-                      style={{
-                        color: 'var(--negative-500)',
-                        fontWeight: 'normal',
-                      }}
                     >
-                      Remove
-                    </Button>
-                  </HStack>
+                      <CurrentNetworkSettingsItem chain={siteChain} />
+                    </SurfaceItemButton>
+                  </>
                 ),
-              };
-            })}
+              },
+            ]}
           />
+          <VStack gap={12}>
+            <UIText kind="subtitle/m_reg">
+              <TextAnchor
+                href={connectedSite.origin}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'var(--primary)' }}
+              >
+                {capitalize(title)}
+              </TextAnchor>{' '}
+              can read these addresses:
+            </UIText>
+            <SurfaceList
+              items={connectedSite.wallets.map((wallet) => {
+                return {
+                  key: wallet.address,
+                  component: (
+                    <HStack
+                      gap={4}
+                      justifyContent="space-between"
+                      alignItems="center"
+                    >
+                      <Media
+                        image={
+                          <WalletIcon
+                            address={wallet.address}
+                            active={false}
+                            iconSize={24}
+                          />
+                        }
+                        text={
+                          <UIText
+                            kind="body/s_reg"
+                            style={{ wordBreak: 'break-all' }}
+                          >
+                            <WalletDisplayName wallet={wallet} />
+                          </UIText>
+                        }
+                        detailText={
+                          wallet.name ? (
+                            <UIText
+                              kind="caption/reg"
+                              color="var(--neutral-500)"
+                            >
+                              {truncateAddress(wallet.address)}
+                            </UIText>
+                          ) : null
+                        }
+                      />
+                      <Button
+                        kind="ghost"
+                        size={28}
+                        onClick={() => {
+                          if (removeActionDialogRef.current) {
+                            showConfirmDialog(
+                              removeActionDialogRef.current
+                            ).then(() => {
+                              removePermissionMutation.mutate({
+                                origin: connectedSite.origin,
+                                address: wallet.address,
+                              });
+                            });
+                          }
+                        }}
+                        style={{
+                          color: 'var(--negative-500)',
+                          fontWeight: 'normal',
+                        }}
+                      >
+                        Revoke
+                      </Button>
+                    </HStack>
+                  ),
+                };
+              })}
+            />
+          </VStack>
           <SurfaceList
             items={[
               {

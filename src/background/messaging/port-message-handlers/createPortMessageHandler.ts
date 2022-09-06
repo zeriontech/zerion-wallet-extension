@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill';
 import type { PortMessageHandler } from '../PortRegistry';
 import { mapRPCMessageToController } from '../mapRPCMessageToController';
 import { getPortContext } from '../getPortContext';
@@ -7,7 +8,7 @@ export function createPortMessageHandler<T>({
   check,
 }: {
   controller: T;
-  check: (port: chrome.runtime.Port) => boolean;
+  check: (port: chrome.runtime.Port | browser.Runtime.Port) => boolean;
 }): PortMessageHandler {
   return function portMessageHandler(port, msg) {
     if (!check(port)) {

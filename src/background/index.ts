@@ -19,7 +19,7 @@ configureBackgroundClient();
 networksStore.load();
 
 initialize().then(({ account, accountPublicRPC }) => {
-  const httpConnection = new HttpConnection();
+  const httpConnection = new HttpConnection(() => account.getCurrentWallet());
   const memoryCacheRPC = new MemoryCacheRPC();
 
   const portRegistry = new PortRegistry();

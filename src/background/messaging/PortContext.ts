@@ -1,4 +1,4 @@
 export interface PortContext {
-  origin: string | undefined;
-  tabId: number | undefined;
+  origin?: string;
+  tabId?: number;
 }

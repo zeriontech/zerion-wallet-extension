@@ -2,6 +2,7 @@ import { decrypt, encrypt } from '@metamask/browser-passworder';
 import produce from 'immer';
 import { nanoid } from 'nanoid';
 import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
+import { Chain, createChain } from 'src/modules/networks/Chain';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { SeedType } from './model/SeedType';
 import type {
@@ -152,7 +153,7 @@ export class WalletRecordModel {
       const isMnemonicWallet =
         pendingWallet.walletContainer.seedType === SeedType.mnemonic;
       return {
-        version: 1,
+        version: 2,
         walletManager: {
           groups: [
             createGroup({
@@ -368,14 +369,36 @@ export class WalletRecordModel {
     { address, origin }: { address: string; origin: string }
   ): WalletRecord {
     return produce(record, (draft) => {
-      const existingPermissions =
-        typeof draft.permissions[origin] === 'string' // TODO: handle this at a "migration" step, not here
-          ? [draft.permissions[origin] as unknown as string]
-          : draft.permissions[origin];
+      const existingPermissions = draft.permissions[origin]?.addresses;
       const existingPermissionsSet = new Set(existingPermissions || []);
       existingPermissionsSet.add(address);
-      draft.permissions[origin] = Array.from(existingPermissionsSet);
+      const updatedAddresses = Array.from(existingPermissionsSet);
+      if (!draft.permissions[origin]) {
+        draft.permissions[origin] = { addresses: updatedAddresses };
+      } else {
+        draft.permissions[origin].addresses = updatedAddresses;
+      }
     });
+  }
+
+  static setChainForOrigin(
+    record: WalletRecord,
+    { chain, origin }: { chain: Chain; origin: string }
+  ) {
+    return produce(record, (draft) => {
+      if (!draft.permissions[origin]) {
+        throw new Error(`Permission for ${origin} not found`);
+      }
+      draft.permissions[origin].chain = chain.toString();
+    });
+  }
+
+  static getChainForOrigin(
+    record: WalletRecord,
+    { origin }: { origin: string }
+  ): Chain {
+    const chain = record.permissions[origin]?.chain;
+    return createChain(chain || 'ethereum');
   }
 
   static removeAllOriginPermissions(record: WalletRecord): WalletRecord {
@@ -392,10 +415,11 @@ export class WalletRecordModel {
       if (origin in draft.permissions === false) {
         throw new Error(`Record for ${origin} not found`);
       }
-      const existingPermissions = draft.permissions[origin];
+      const permission = draft.permissions[origin];
+      const { addresses: existingPermissions } = permission;
       if (address && existingPermissions.length > 1) {
-        spliceItem(draft.permissions[origin], address);
-      } else {
+        spliceItem(existingPermissions, address);
+      } else if (!permission.chain) {
         // remove whole record for `origin` completely
         delete draft.permissions[origin];
       }

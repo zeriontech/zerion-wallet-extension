@@ -15,9 +15,9 @@ import {
 } from 'src/shared/errors/errors';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { networksStore } from 'src/modules/networks/networks-store';
-import { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
+import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { prepareTransaction } from 'src/modules/ethereum/transactions/prepareTransaction';
-import { createChain } from 'src/modules/networks/Chain';
+import { Chain, createChain } from 'src/modules/networks/Chain';
 import { getNextAccountPath } from 'src/shared/wallet/getNextAccountPath';
 import { hasGasPrice } from 'src/modules/ethereum/transactions/gasPrices/hasGasPrice';
 import { fetchAndAssignGasPrice } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
@@ -39,6 +39,10 @@ import { walletStore } from './persistence';
 import { emitter } from '../events';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 
+type PartiallyRequired<T, K extends keyof T> = { [P in keyof T]?: T[P] } & {
+  [P in K]: T[P];
+};
+
 type PublicMethodParams<T = undefined> = T extends undefined
   ? {
       context?: Partial<ChannelContext>;
@@ -51,7 +55,7 @@ type PublicMethodParams<T = undefined> = T extends undefined
 interface WalletEvents {
   recordUpdated: () => void;
   currentAddressChange: (addresses: string[]) => void;
-  chainChanged: (chainId: string) => void;
+  chainChanged: (chain: Chain, origin: string) => void;
   permissionsUpdated: () => void;
 }
 
@@ -236,9 +240,8 @@ export class Wallet {
     if (!this.encryptionKey) {
       throw new Error('Cannot save pending wallet: encryptionKey is null');
     }
-    const record = Model.createOrUpdateRecord(this.record, this.pendingWallet);
-    this.record = record;
-    this.updateWalletStore(record);
+    this.record = Model.createOrUpdateRecord(this.record, this.pendingWallet);
+    this.updateWalletStore(this.record);
   }
 
   async acceptOrigin(origin: string, address: string) {
@@ -263,19 +266,23 @@ export class Wallet {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
     this.record = Model.removePermission(this.record, { origin, address });
+    this.updateWalletStore(this.record);
   }
 
   allowedOrigin(
     context: Partial<ChannelContext> | undefined,
     address: string
-  ): context is ChannelContext {
+  ): context is PartiallyRequired<ChannelContext, 'origin'> {
     if (!context || !context.origin) {
       throw new Error('This method requires context');
     }
     if (context.origin === INTERNAL_ORIGIN) {
       return true;
     }
-    return this.record?.permissions[context.origin]?.includes(address) || false;
+    return (
+      this.record?.permissions[context.origin]?.addresses.includes(address) ||
+      false
+    );
   }
 
   async hasPermission({
@@ -283,15 +290,15 @@ export class Wallet {
     context,
   }: PublicMethodParams<{ address: string; origin: string }>) {
     this.verifyInternalOrigin(context);
-    return this.record?.permissions[origin]?.includes(address) || false;
+    return (
+      this.record?.permissions[origin]?.addresses.includes(address) || false
+    );
   }
 
   async getOriginPermissions({ context }: PublicMethodParams) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
-    return Object.entries(this.record.permissions).map(
-      ([origin, addresses]) => ({ origin, addresses })
-    );
+    return this.record.permissions;
   }
 
   async setCurrentAddress({
@@ -332,7 +339,7 @@ export class Wallet {
 
   private verifyInternalOrigin(
     context: Partial<ChannelContext> | undefined
-  ): asserts context is Partial<ChannelContext> {
+  ): asserts context is PartiallyRequired<ChannelContext, 'origin'> {
     if (context?.origin !== INTERNAL_ORIGIN) {
       throw new OriginNotAllowed(context?.origin);
     }
@@ -431,26 +438,83 @@ export class Wallet {
       .filter((group) => group.lastBackedUp == null).length;
   }
 
-  async switchChain({ params: chain, context }: PublicMethodParams<string>) {
+  async setPreference({
+    context,
+    params: { preferences },
+  }: PublicMethodParams<{
+    preferences: Partial<WalletRecord['preferences']>;
+  }>) {
     this.verifyInternalOrigin(context);
-    const networks = await networksStore.load();
-    const chainId = networks.getChainId(createChain(chain));
-    this.setChainId(chainId);
-    this.emitter.emit('chainChanged', chainId);
+    this.ensureRecord(this.record);
+    this.record = Model.setPreference(this.record, { preferences });
+    this.updateWalletStore(this.record);
   }
 
+  async getPreferences({ context }: PublicMethodParams) {
+    this.verifyInternalOrigin(context);
+    this.ensureRecord(this.record);
+    return this.record.preferences;
+  }
+
+  /** @deprecated */
+  async switchChain({
+    params: _chainStr,
+    context,
+  }: PublicMethodParams<string>) {
+    this.verifyInternalOrigin(context);
+    throw new Error('switchChain is deprecated');
+  }
+
+  async switchChainForOrigin({
+    params: { chain, origin },
+    context,
+  }: PublicMethodParams<{ chain: string; origin: string }>) {
+    this.verifyInternalOrigin(context);
+    this.ensureRecord(this.record);
+    this.setChainForOrigin(createChain(chain), origin);
+  }
+
+  /** @deprecated */
   getChainId() {
-    return this.store.getState().chainId;
+    throw new Error(
+      'Wallet.getChainId is deprecated. Use Wallet.getChainIdForOrigin'
+    );
   }
 
-  async requestChainId({ context }: PublicMethodParams) {
+  /** @deprecated */
+  async requestChainId({ context: _context }: PublicMethodParams) {
+    throw new Error('requestChainId is deprecated');
+  }
+
+  async getChainIdForOrigin({ origin }: { origin: string }) {
+    if (!this.record) {
+      return '0x1';
+    }
+    const chain = Model.getChainForOrigin(this.record, { origin });
+    const networks = await networksStore.load();
+    return networks.getChainId(chain);
+  }
+
+  async requestChainForOrigin({
+    params: { origin },
+    context,
+  }: PublicMethodParams<{ origin: string }>) {
     this.verifyInternalOrigin(context);
-    return this.getChainId();
+    this.ensureRecord(this.record);
+    const chain = Model.getChainForOrigin(this.record, { origin });
+    return chain.toString();
   }
 
-  setChainId(chainId: string) {
-    const value = ethers.utils.hexValue(chainId);
-    this.store.setState({ chainId: value });
+  /** @deprecated */
+  setChainId(_chainId: string) {
+    throw new Error('setChainId is deprecated. Use setChainForOrigin instead');
+  }
+
+  setChainForOrigin(chain: Chain, origin: string) {
+    this.ensureRecord(this.record);
+    this.record = Model.setChainForOrigin(this.record, { chain, origin });
+    this.updateWalletStore(this.record);
+    this.emitter.emit('chainChanged', chain, origin);
   }
 
   private async getProvider(chainId: string) {
@@ -634,23 +698,26 @@ class PublicController {
     });
   }
 
-  async eth_chainId({ context }: PublicMethodParams) {
-    const currentAddress = this.wallet.readCurrentAddress();
-    if (currentAddress && this.wallet.allowedOrigin(context, currentAddress)) {
-      return this.wallet.getChainId();
-    } else {
-      return '0x1';
+  async eth_chainId({ context }: PublicMethodParams): Promise<string> {
+    /**
+     * This is an interesting case. We do not check if context.origin is allowed
+     * for current address and simply return saved chainId for this origin.
+     * This seems to be okay because if the origin has no permissions at all, we will
+     * default to ethereum anyway, but if the origin has permissions for an address which
+     * is not current, it doesn't look like a problem to keep returning saved chainId
+     * for this origin. In case the saved chainId is other than ethereum,
+     * the dAPP will be able to make a conclusion that some _other_ address has some permissions,
+     * but so what?
+     */
+    if (!context || !context.origin) {
+      throw new Error('Unknown sender origin');
     }
+    return this.wallet.getChainIdForOrigin({ origin: context.origin });
   }
 
   async net_version({ context }: PublicMethodParams) {
-    const currentAddress = this.wallet.readCurrentAddress();
-    if (currentAddress && this.wallet.allowedOrigin(context, currentAddress)) {
-      const chainId = this.wallet.getChainId();
-      return String(parseInt(chainId));
-    } else {
-      return '1';
-    }
+    const chainId = await this.eth_chainId({ context });
+    return String(parseInt(chainId));
   }
 
   async eth_sendTransaction({
@@ -781,22 +848,31 @@ class PublicController {
     const { origin } = context;
     const { chainId: chainIdParameter } = params[0];
     const chainId = ethers.utils.hexValue(chainIdParameter);
-    if (chainId === this.wallet.getChainId()) {
-      return Promise.resolve(null);
-    }
-    return new Promise((resolve, reject) => {
-      notificationWindow.open({
-        route: '/switchEthereumChain',
-        search: `?origin=${origin}&chainId=${chainId}`,
-        onResolve: () => {
-          this.wallet.setChainId(chainId);
-          resolve(null);
-          this.wallet.emitter.emit('chainChanged', chainId);
-        },
-        onDismiss: () => {
-          reject(new UserRejected('User Rejected the Request'));
-        },
-      });
+    const currentChainIdForThisOrigin = await this.wallet.getChainIdForOrigin({
+      origin,
     });
+    if (chainId === currentChainIdForThisOrigin) {
+      return null;
+    }
+    const networks = await networksStore.load();
+    // TODO: handle unsupported chain id?
+    const chain = networks.getChainById(chainId);
+    // Switch immediately and return success
+    this.wallet.setChainForOrigin(chain, origin);
+    return null;
+    // return new Promise((resolve, reject) => {
+    //   notificationWindow.open({
+    //     route: '/switchEthereumChain',
+    //     search: `?origin=${origin}&chainId=${chainId}`,
+    //     onResolve: () => {
+    //       this.wallet.setChainId(chainId);
+    //       resolve(null);
+    //       this.wallet.emitter.emit('chainChanged', chainId);
+    //     },
+    //     onDismiss: () => {
+    //       reject(new UserRejected('User Rejected the Request'));
+    //     },
+    //   });
+    // });
   }
 }

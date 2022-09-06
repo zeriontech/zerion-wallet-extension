@@ -6,7 +6,7 @@ type TransactionReceipt = ethers.providers.TransactionReceipt;
 
 export const emitter = createNanoEvents<{
   accountsChanged: () => void;
-  chainChanged: (chainId: string) => void;
+  chainChanged: () => void;
   pendingTransactionCreated: (transaction: TransactionResponse) => void;
   transactionMined: (transaction: TransactionReceipt) => void;
 }>();

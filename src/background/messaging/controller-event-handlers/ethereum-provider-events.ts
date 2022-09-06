@@ -1,12 +1,15 @@
+import browser from 'webextension-polyfill';
 import type { Account } from 'src/background/account/Account';
 import { emitter } from 'src/background/events';
+import { getPortContext } from '../getPortContext';
+import type { RuntimePort } from 'src/background/webapis/RuntimePort';
 
 interface Listener {
   startListening(): void;
   stopListening(): void;
 }
 
-type PortsGetter = () => Array<chrome.runtime.Port>;
+type PortsGetter = () => Array<RuntimePort>;
 
 export class EthereumEventsBroadcaster implements Listener {
   account: Account;
@@ -33,7 +36,7 @@ export class EthereumEventsBroadcaster implements Listener {
   private getClientPorts() {
     const ports = this.getActivePorts();
     return ports.filter(
-      (port) => port.name === `${chrome.runtime.id}/ethereum`
+      (port) => port.name === `${browser.runtime.id}/ethereum`
     );
   }
 
@@ -43,10 +46,7 @@ export class EthereumEventsBroadcaster implements Listener {
         this.getClientPorts().forEach(async (port) => {
           const wallet = this.account.getCurrentWallet();
           const accounts = await wallet.publicEthereumController.eth_accounts({
-            context: {
-              origin: port.sender?.origin,
-              tabId: port.sender?.tab?.id,
-            },
+            context: getPortContext(port),
           });
           port.postMessage({
             type: 'ethereumEvent',
@@ -58,8 +58,12 @@ export class EthereumEventsBroadcaster implements Listener {
     );
 
     this.disposers.push(
-      emitter.on('chainChanged', async (chainId) => {
-        this.getClientPorts().forEach((port) => {
+      emitter.on('chainChanged', async () => {
+        this.getClientPorts().forEach(async (port) => {
+          const wallet = this.account.getCurrentWallet();
+          const chainId = await wallet.publicEthereumController.eth_chainId({
+            context: getPortContext(port),
+          });
           port.postMessage({
             type: 'ethereumEvent',
             event: 'chainChanged',

@@ -21,9 +21,9 @@ export class InvalidParams extends ErrorWithEnumerableMessage {
 export class OriginNotAllowed extends ErrorWithEnumerableMessage {
   code = -32011;
 
-  constructor(origin?: string) {
-    const message =
-      'Method not allowed for this origin' + (origin ? `: ${origin}` : '');
+  constructor(
+    message = 'Origin Not Allowed: Try calling eth_requestAccounts first.'
+  ) {
     super(message);
   }
 }

@@ -5,8 +5,12 @@
   padding: 4px;
 }
 
+.ghost:disabled {
+  cursor: default;
+}
+
 @media (hover: hover) {
-  .ghost:hover {
+  .ghost:not(:disabled):hover {
     background-color: var(--neutral-300);
   }
 }

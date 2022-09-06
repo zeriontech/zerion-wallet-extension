@@ -36,7 +36,6 @@ const selectors = {
 
 function describeApprove(
   transaction: IncomingTransaction
-  // networks: Networks,
 ): TransactionDescription | null {
   if (!transaction.data) {
     return null;

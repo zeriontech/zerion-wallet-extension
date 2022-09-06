@@ -1,17 +1,14 @@
 import type { BareWallet } from 'src/shared/types/BareWallet';
+import type { Permission } from 'src/shared/types/Permission';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { walletPort } from '../channels';
 
-interface PermissionRecord {
-  origin: string;
-  addresses: string[];
-}
+type PermissionRecord = Record<string, Permission>;
 
-export interface ConnectedSiteItem {
+export type ConnectedSiteItem = Permission & {
   origin: string;
-  addresses: string[];
   wallets: BareWallet[];
-}
+};
 
 function createBareWallet(address: string): BareWallet {
   return {
@@ -23,7 +20,7 @@ function createBareWallet(address: string): BareWallet {
 }
 
 function updatePermissionsWithWallets(
-  permissions: PermissionRecord[],
+  permissions: PermissionRecord,
   walletGroups: WalletGroup[]
 ): ConnectedSiteItem[] {
   const walletsMap = new Map(
@@ -31,13 +28,19 @@ function updatePermissionsWithWallets(
       .flatMap((group) => group.walletContainer.wallets)
       .map((wallet) => [wallet.address, wallet])
   );
-  return permissions.map((permission) => ({
-    ...permission,
-    wallets: permission.addresses.map((address) => {
-      const wallet = walletsMap.get(address);
-      return wallet || createBareWallet(address);
-    }),
-  }));
+  const result: ConnectedSiteItem[] = [];
+  for (const origin in permissions) {
+    const permission = permissions[origin];
+    result.push({
+      ...permission,
+      origin,
+      wallets: permission.addresses.map((address) => {
+        const wallet = walletsMap.get(address);
+        return wallet || createBareWallet(address);
+      }),
+    });
+  }
+  return result;
 }
 
 export async function getPermissionsWithWallets() {

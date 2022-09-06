@@ -1,17 +1,9 @@
 import { useQuery } from 'react-query';
-import browser from 'webextension-polyfill';
 import { walletPort } from '../channels';
+import { getActiveTabOrigin } from './getActiveTabOrigin';
 
 export function useIsConnectedToActiveTab(address: string) {
-  const { data: tabOrigin } = useQuery('activeTab/origin', async () => {
-    const tabs = await browser.tabs.query({ active: true });
-    const url = tabs.find((tab) => tab.url)?.url;
-    if (url) {
-      return new URL(url).origin;
-    } else {
-      return null;
-    }
-  });
+  const { data: tabOrigin } = useQuery('activeTab/origin', getActiveTabOrigin);
   return useQuery(
     `hasPermission(${address}, ${tabOrigin})`,
     async () => {

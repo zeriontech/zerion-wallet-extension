@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill';
 import {
   ErrorResponse,
   isJsonRpcPayload,
@@ -15,7 +16,7 @@ import type { PortContext } from './PortContext';
  * then posts the result back to the port
  */
 export function mapRPCMessageToController<T>(
-  port: chrome.runtime.Port,
+  port: browser.Runtime.Port | chrome.runtime.Port,
   msg: JsonRpcPayload | unknown,
   controller: T,
   context: PortContext

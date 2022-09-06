@@ -1,3 +1,5 @@
+import type { RuntimePort } from '../webapis/RuntimePort';
+
 function pushUnique<T>(arr: T[], item: T) {
   if (!arr.includes(item)) {
     arr.push(item);
@@ -12,20 +14,20 @@ function remove<T>(arr: T[], item: T) {
 }
 
 export type PortMessageHandler = (
-  port: chrome.runtime.Port,
+  port: RuntimePort,
   msg: unknown
 ) => void | boolean;
 
 export class PortRegistry {
-  private ports: chrome.runtime.Port[];
+  private ports: RuntimePort[];
   private handlers: PortMessageHandler[];
-  listener: (msg: unknown, port: chrome.runtime.Port) => void;
+  listener: (msg: unknown, port: RuntimePort) => void;
 
   constructor() {
     this.ports = [];
     this.handlers = [];
 
-    this.listener = (msg: unknown, port: chrome.runtime.Port) => {
+    this.listener = (msg: unknown, port: RuntimePort) => {
       for (const handler of this.handlers) {
         const didHandle = handler(port, msg);
         if (didHandle) {
@@ -35,7 +37,7 @@ export class PortRegistry {
     };
   }
 
-  register(port: chrome.runtime.Port) {
+  register(port: RuntimePort) {
     pushUnique(this.ports, port);
     port.onMessage.addListener(this.listener);
     port.onDisconnect.addListener(() => {
@@ -45,7 +47,7 @@ export class PortRegistry {
     });
   }
 
-  unregister(port: chrome.runtime.Port) {
+  unregister(port: RuntimePort) {
     remove(this.ports, port);
   }
 

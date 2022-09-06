@@ -38,6 +38,7 @@ import { NBSP } from 'src/ui/shared/typography';
 import { NonFungibleTokens } from './NonFungibleTokens';
 import { WalletIcon } from 'src/ui/ui-kit/WalletIcon';
 import { useIsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
+import { CurrentNetwork } from './CurrentNetwork';
 
 interface ChangeInfo {
   isPositive: boolean;
@@ -206,7 +207,10 @@ export function Overview() {
       >
         <Spacer height={8} />
         <HStack gap={12} justifyContent="space-between" alignItems="center">
-          <CurrentAccountControls />
+          <HStack gap={4} alignItems="center">
+            <CurrentAccountControls />
+            <CurrentNetwork />
+          </HStack>
 
           <HStack gap={4}>
             <SettingsLinkIcon />

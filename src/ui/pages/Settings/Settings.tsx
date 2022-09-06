@@ -9,7 +9,6 @@ import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { BackupFlowSettingsSection } from '../BackupWallet/BackupSettingsItem';
-import { CurrentNetworkSettingsItem } from '../Networks/CurrentNetworkSettingsItem';
 
 export function Settings() {
   const navigate = useNavigate();
@@ -25,11 +24,6 @@ export function Settings() {
               key: 0,
               component: <UIText kind="body/s_reg">Manage Wallets</UIText>,
               to: '/wallets',
-            },
-            {
-              key: 1,
-              component: <CurrentNetworkSettingsItem />,
-              to: '/networks',
             },
             {
               key: 2,

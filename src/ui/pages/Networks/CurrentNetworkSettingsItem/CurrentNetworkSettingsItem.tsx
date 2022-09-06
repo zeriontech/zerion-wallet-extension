@@ -1,14 +1,13 @@
 import React from 'react';
-import { createChain } from 'src/modules/networks/Chain';
+import { Chain, createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
-import { useCurrentNetwork } from 'src/ui/shared/networks/useCurrentNetwork';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 
-export function CurrentNetworkSettingsItem() {
+export function CurrentNetworkSettingsItem({ chain }: { chain: Chain }) {
   const { networks } = useNetworks();
-  const { network } = useCurrentNetwork();
+  const network = networks?.getNetworkByName(chain);
   return network && networks ? (
     <VStack gap={0}>
       <HStack gap={8} alignItems="center">

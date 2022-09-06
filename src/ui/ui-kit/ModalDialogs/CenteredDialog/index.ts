@@ -1,0 +1,1 @@
+export { CenteredDialog } from './CenteredDialog';

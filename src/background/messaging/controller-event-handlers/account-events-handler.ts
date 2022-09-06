@@ -21,8 +21,8 @@ export function handleAccountEvents({ account }: { account: Account }) {
       wallet.emitter.on('permissionsUpdated', () => {
         emitter.emit('accountsChanged');
       }),
-      wallet.emitter.on('chainChanged', (chainId: string) => {
-        emitter.emit('chainChanged', chainId);
+      wallet.emitter.on('chainChanged', () => {
+        emitter.emit('chainChanged');
       })
     );
   }
@@ -30,10 +30,9 @@ export function handleAccountEvents({ account }: { account: Account }) {
   addWalletEventListeners(account.getCurrentWallet());
 
   account.on('authenticated', async () => {
-    console.log('authenticated, emitting accountsChanged');
+    console.log('authenticated, emitting accountsChanged and chainChanged');
     emitter.emit('accountsChanged');
-    const chainId = await account.getCurrentWallet().getChainId();
-    emitter.emit('chainChanged', chainId);
+    emitter.emit('chainChanged');
   });
 
   account.on('reset', () => {

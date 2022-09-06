@@ -7,26 +7,32 @@ import {
   JsonRpcResult,
 } from '@json-rpc-tools/utils';
 import { networksStore } from 'src/modules/networks/networks-store';
-import { emitter } from '../events';
+import type { ChannelContext } from 'src/shared/types/ChannelContext';
+import type { Wallet } from '../Wallet/Wallet';
 
 export class HttpConnection extends EventEmitter {
-  chainId: string;
+  private walletGetter: () => Wallet;
 
-  constructor(initialChainId = '0x1') {
+  constructor(getWallet: () => Wallet) {
     super();
-    this.chainId = initialChainId;
-    emitter.on('chainChanged', (chainId) => {
-      this.chainId = chainId;
-    });
+    this.walletGetter = getWallet;
   }
 
-  async send(request: JsonRpcPayload): Promise<JsonRpcResult | JsonRpcError> {
+  async send(
+    request: JsonRpcPayload,
+    context: Partial<ChannelContext>
+  ): Promise<JsonRpcResult | JsonRpcError> {
     if (!isJsonRpcRequest(request)) {
       console.log('not a request:', request); // eslint-disable-line no-console
       return Promise.reject('not a request');
     }
     const networks = await networksStore.load();
-    const chain = networks.getChainById(this.chainId);
+    const wallet = this.walletGetter();
+    const chainId = await wallet.publicEthereumController.eth_chainId({
+      context,
+    });
+
+    const chain = networks.getChainById(chainId);
     const url = networks.getRpcUrlInternal(chain);
     return fetch(url, {
       method: 'post',
