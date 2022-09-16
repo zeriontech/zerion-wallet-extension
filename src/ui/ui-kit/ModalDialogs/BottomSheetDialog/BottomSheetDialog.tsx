@@ -16,7 +16,7 @@ export const BottomSheetDialog = React.forwardRef(
           top: '30vh',
           height: '70vh',
           maxHeight: 'initial',
-          width: '100vw',
+          width: '100%',
           maxWidth: 'initial',
           borderTopLeftRadius: 12,
           borderTopRightRadius: 12,

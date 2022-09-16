@@ -1,3 +1,4 @@
+/* eslint-env node */
 /**
  * Parcel recommends using .json configuration files for better caching,
  * but for some reason using .json for this config did not work
