@@ -542,7 +542,13 @@ export class Wallet {
 
   private async sendTransaction(
     incomingTransaction: IncomingTransaction,
-    context: Partial<ChannelContext> | undefined
+    {
+      context,
+      transactionOrigin,
+    }: {
+      context: Partial<ChannelContext> | undefined;
+      transactionOrigin: string;
+    }
   ): Promise<ethers.providers.TransactionResponse> {
     this.verifyInternalOrigin(context);
     if (!incomingTransaction.from) {
@@ -560,7 +566,10 @@ export class Wallet {
         'transaction "from" field is different from currently selected address'
       );
     }
-    const { chainId } = this.store.getState();
+    // const { chainId } = this.store.getState();
+    const chainId = await this.getChainIdForOrigin({
+      origin: transactionOrigin,
+    });
     const targetChainId = incomingTransaction.chainId
       ? ethers.utils.hexValue(incomingTransaction.chainId)
       : null;
@@ -595,13 +604,16 @@ export class Wallet {
   async signAndSendTransaction({
     params,
     context,
-  }: PublicMethodParams<IncomingTransaction[]>) {
+  }: PublicMethodParams<[IncomingTransaction, { origin: string }]>) {
     this.verifyInternalOrigin(context);
-    const transaction = params[0];
+    const [transaction, { origin }] = params;
     if (!transaction) {
       throw new InvalidParams();
     }
-    return this.sendTransaction(transaction, context);
+    return this.sendTransaction(transaction, {
+      context,
+      transactionOrigin: origin,
+    });
   }
 
   async signTypedData_v4({

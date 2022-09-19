@@ -235,8 +235,8 @@ function SendTransactionContent({
     [transactionStringified]
   );
   const { data: chainId, ...chainIdQuery } = useQuery(
-    'eth_chainId',
-    () => walletPort.request('requestChainId'),
+    `wallet/requestChainForOrigin(${origin})`,
+    () => walletPort.request('requestChainForOrigin', { origin }),
     { useErrorBoundary: true }
   );
   const descriptionQuery = useQuery(
@@ -253,7 +253,10 @@ function SendTransactionContent({
   const { mutate: signAndSendTransaction, ...signMutation } = useMutation(
     async (transaction: UnsignedTransaction) => {
       await new Promise((r) => setTimeout(r, 1000));
-      return await walletPort.request('signAndSendTransaction', [transaction]);
+      return await walletPort.request('signAndSendTransaction', [
+        transaction,
+        { origin },
+      ]);
     },
     {
       onSuccess: ({ hash }) => {
