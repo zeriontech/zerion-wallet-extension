@@ -3000,15 +3000,10 @@ module.exports = require("./cjs/react-jsx-dev-runtime.development.js");
 (function() {
     "use strict";
     var React = require("react");
-    // -----------------------------------------------------------------------------
-    var enableScopeAPI = false; // Experimental Create Event Handle API.
-    var enableCacheElement = false;
-    var enableTransitionTracing = false; // No known bugs, but needs performance testing
-    var enableLegacyHidden = false; // Enables unstable_avoidThisFallback feature in Fiber
-    // stuff. Intended to enable React core members to more easily debug scheduling
-    // issues in DEV builds.
-    var enableDebugTracing = false; // Track which Fiber(s) schedule render work.
     // ATTENTION
+    // When adding new symbols to this file,
+    // Please consider also adding to 'react-devtools-shared/src/backend/ReactSymbols'
+    // The Symbol used to tag the ReactElement-like types.
     var REACT_ELEMENT_TYPE = Symbol.for("react.element");
     var REACT_PORTAL_TYPE = Symbol.for("react.portal");
     var REACT_FRAGMENT_TYPE = Symbol.for("react.fragment");
@@ -3052,6 +3047,14 @@ module.exports = require("./cjs/react-jsx-dev-runtime.development.js");
         // eslint-disable-next-line react-internal/no-production-logging
         Function.prototype.apply.call(console[level], console, argsWithFormat);
     }
+    // -----------------------------------------------------------------------------
+    var enableScopeAPI = false; // Experimental Create Event Handle API.
+    var enableCacheElement = false;
+    var enableTransitionTracing = false; // No known bugs, but needs performance testing
+    var enableLegacyHidden = false; // Enables unstable_avoidThisFallback feature in Fiber
+    // stuff. Intended to enable React core members to more easily debug scheduling
+    // issues in DEV builds.
+    var enableDebugTracing = false; // Track which Fiber(s) schedule render work.
     var REACT_MODULE_REFERENCE;
     REACT_MODULE_REFERENCE = Symbol.for("react.module.reference");
     function isValidElementType(type) {
@@ -3830,16 +3833,11 @@ module.exports = require("./cjs/react.development.js");
 (function() {
     "use strict";
     /* global __REACT_DEVTOOLS_GLOBAL_HOOK__ */ if (typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== "undefined" && typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart === "function") __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(new Error());
-    var ReactVersion = "18.1.0";
-    // -----------------------------------------------------------------------------
-    var enableScopeAPI = false; // Experimental Create Event Handle API.
-    var enableCacheElement = false;
-    var enableTransitionTracing = false; // No known bugs, but needs performance testing
-    var enableLegacyHidden = false; // Enables unstable_avoidThisFallback feature in Fiber
-    // stuff. Intended to enable React core members to more easily debug scheduling
-    // issues in DEV builds.
-    var enableDebugTracing = false; // Track which Fiber(s) schedule render work.
+    var ReactVersion = "18.2.0";
     // ATTENTION
+    // When adding new symbols to this file,
+    // Please consider also adding to 'react-devtools-shared/src/backend/ReactSymbols'
+    // The Symbol used to tag the ReactElement-like types.
     var REACT_ELEMENT_TYPE = Symbol.for("react.element");
     var REACT_PORTAL_TYPE = Symbol.for("react.portal");
     var REACT_FRAGMENT_TYPE = Symbol.for("react.fragment");
@@ -3909,6 +3907,14 @@ module.exports = require("./cjs/react.development.js");
         if (impl) stack += impl() || "";
         return stack;
     };
+    // -----------------------------------------------------------------------------
+    var enableScopeAPI = false; // Experimental Create Event Handle API.
+    var enableCacheElement = false;
+    var enableTransitionTracing = false; // No known bugs, but needs performance testing
+    var enableLegacyHidden = false; // Enables unstable_avoidThisFallback feature in Fiber
+    // stuff. Intended to enable React core members to more easily debug scheduling
+    // issues in DEV builds.
+    var enableDebugTracing = false; // Track which Fiber(s) schedule render work.
     var ReactSharedInternals = {
         ReactCurrentDispatcher: ReactCurrentDispatcher,
         ReactCurrentBatchConfig: ReactCurrentBatchConfig,
@@ -6325,7 +6331,7 @@ module.exports = require("./cjs/react-dom.development.js");
  * Get the value for a attribute on a node. Only used in DEV for SSR validation.
  * The third argument is used as a hint of what the expected value is. Some
  * attributes have multiple equivalent values.
- */ function getValueForAttribute(node, name, expected) {
+ */ function getValueForAttribute(node, name, expected, isCustomComponentTag) {
         if (!isAttributeNameSafe(name)) return;
         if (!node.hasAttribute(name)) return expected === undefined ? undefined : null;
         var value = node.getAttribute(name);
@@ -6343,7 +6349,6 @@ module.exports = require("./cjs/react-dom.development.js");
         var propertyInfo = getPropertyInfo(name);
         if (shouldIgnoreAttribute(name, propertyInfo, isCustomComponentTag)) return;
         if (shouldRemoveAttribute(name, value, propertyInfo, isCustomComponentTag)) value = null;
-         // If the prop isn't in the special list, treat it as a simple attribute.
         if (isCustomComponentTag || propertyInfo === null) {
             if (isAttributeNameSafe(name)) {
                 var _attributeName = name;
@@ -6384,6 +6389,9 @@ module.exports = require("./cjs/react-dom.development.js");
         }
     }
     // ATTENTION
+    // When adding new symbols to this file,
+    // Please consider also adding to 'react-devtools-shared/src/backend/ReactSymbols'
+    // The Symbol used to tag the ReactElement-like types.
     var REACT_ELEMENT_TYPE = Symbol.for("react.element");
     var REACT_PORTAL_TYPE = Symbol.for("react.portal");
     var REACT_FRAGMENT_TYPE = Symbol.for("react.fragment");
@@ -14087,8 +14095,7 @@ module.exports = require("./cjs/react-dom.development.js");
     function clearContainer(container) {
         if (container.nodeType === ELEMENT_NODE) container.textContent = "";
         else if (container.nodeType === DOCUMENT_NODE) {
-            var body = container.body;
-            if (body != null) body.textContent = "";
+            if (container.documentElement) container.removeChild(container.documentElement);
         }
     } // -------------------
     function canHydrateInstance(instance, type, props) {
@@ -14113,6 +14120,30 @@ module.exports = require("./cjs/react-dom.development.js");
     }
     function isSuspenseInstanceFallback(instance) {
         return instance.data === SUSPENSE_FALLBACK_START_DATA;
+    }
+    function getSuspenseInstanceFallbackErrorDetails(instance) {
+        var dataset = instance.nextSibling && instance.nextSibling.dataset;
+        var digest, message, stack;
+        if (dataset) {
+            digest = dataset.dgst;
+            message = dataset.msg;
+            stack = dataset.stck;
+        }
+        return {
+            message: message,
+            digest: digest,
+            stack: stack
+        };
+    // const nextSibling = instance.nextSibling;
+    // if (nextSibling) {
+    //   const dataset = ((nextSibling: any): HTMLTemplateElement).dataset;
+    //   value.message = dataset.msg;
+    //   value.hash = dataset.hash;
+    //   if (true) {
+    //     value.stack = dataset.stack;
+    //   }
+    // }
+    // return value;
     }
     function registerSuspenseInstanceRetry(instance, callback) {
         instance._reactRetry = callback;
@@ -14655,6 +14686,491 @@ module.exports = require("./cjs/react-dom.development.js");
         }
         return null;
     }
+    // TODO: Use the unified fiber stack module instead of this local one?
+    // Intentionally not using it yet to derisk the initial implementation, because
+    // the way we push/pop these values is a bit unusual. If there's a mistake, I'd
+    // rather the ids be wrong than crash the whole reconciler.
+    var forkStack = [];
+    var forkStackIndex = 0;
+    var treeForkProvider = null;
+    var treeForkCount = 0;
+    var idStack = [];
+    var idStackIndex = 0;
+    var treeContextProvider = null;
+    var treeContextId = 1;
+    var treeContextOverflow = "";
+    function isForkedChild(workInProgress) {
+        warnIfNotHydrating();
+        return (workInProgress.flags & Forked) !== NoFlags;
+    }
+    function getForksAtLevel(workInProgress) {
+        warnIfNotHydrating();
+        return treeForkCount;
+    }
+    function getTreeId() {
+        var overflow = treeContextOverflow;
+        var idWithLeadingBit = treeContextId;
+        var id = idWithLeadingBit & ~getLeadingBit(idWithLeadingBit);
+        return id.toString(32) + overflow;
+    }
+    function pushTreeFork(workInProgress, totalChildren) {
+        // This is called right after we reconcile an array (or iterator) of child
+        // fibers, because that's the only place where we know how many children in
+        // the whole set without doing extra work later, or storing addtional
+        // information on the fiber.
+        //
+        // That's why this function is separate from pushTreeId — it's called during
+        // the render phase of the fork parent, not the child, which is where we push
+        // the other context values.
+        //
+        // In the Fizz implementation this is much simpler because the child is
+        // rendered in the same callstack as the parent.
+        //
+        // It might be better to just add a `forks` field to the Fiber type. It would
+        // make this module simpler.
+        warnIfNotHydrating();
+        forkStack[forkStackIndex++] = treeForkCount;
+        forkStack[forkStackIndex++] = treeForkProvider;
+        treeForkProvider = workInProgress;
+        treeForkCount = totalChildren;
+    }
+    function pushTreeId(workInProgress, totalChildren, index) {
+        warnIfNotHydrating();
+        idStack[idStackIndex++] = treeContextId;
+        idStack[idStackIndex++] = treeContextOverflow;
+        idStack[idStackIndex++] = treeContextProvider;
+        treeContextProvider = workInProgress;
+        var baseIdWithLeadingBit = treeContextId;
+        var baseOverflow = treeContextOverflow; // The leftmost 1 marks the end of the sequence, non-inclusive. It's not part
+        // of the id; we use it to account for leading 0s.
+        var baseLength = getBitLength(baseIdWithLeadingBit) - 1;
+        var baseId = baseIdWithLeadingBit & ~(1 << baseLength);
+        var slot = index + 1;
+        var length = getBitLength(totalChildren) + baseLength; // 30 is the max length we can store without overflowing, taking into
+        // consideration the leading 1 we use to mark the end of the sequence.
+        if (length > 30) {
+            // We overflowed the bitwise-safe range. Fall back to slower algorithm.
+            // This branch assumes the length of the base id is greater than 5; it won't
+            // work for smaller ids, because you need 5 bits per character.
+            //
+            // We encode the id in multiple steps: first the base id, then the
+            // remaining digits.
+            //
+            // Each 5 bit sequence corresponds to a single base 32 character. So for
+            // example, if the current id is 23 bits long, we can convert 20 of those
+            // bits into a string of 4 characters, with 3 bits left over.
+            //
+            // First calculate how many bits in the base id represent a complete
+            // sequence of characters.
+            var numberOfOverflowBits = baseLength - baseLength % 5; // Then create a bitmask that selects only those bits.
+            var newOverflowBits = (1 << numberOfOverflowBits) - 1; // Select the bits, and convert them to a base 32 string.
+            var newOverflow = (baseId & newOverflowBits).toString(32); // Now we can remove those bits from the base id.
+            var restOfBaseId = baseId >> numberOfOverflowBits;
+            var restOfBaseLength = baseLength - numberOfOverflowBits; // Finally, encode the rest of the bits using the normal algorithm. Because
+            // we made more room, this time it won't overflow.
+            var restOfLength = getBitLength(totalChildren) + restOfBaseLength;
+            var restOfNewBits = slot << restOfBaseLength;
+            var id = restOfNewBits | restOfBaseId;
+            var overflow = newOverflow + baseOverflow;
+            treeContextId = 1 << restOfLength | id;
+            treeContextOverflow = overflow;
+        } else {
+            // Normal path
+            var newBits = slot << baseLength;
+            var _id = newBits | baseId;
+            var _overflow = baseOverflow;
+            treeContextId = 1 << length | _id;
+            treeContextOverflow = _overflow;
+        }
+    }
+    function pushMaterializedTreeId(workInProgress) {
+        warnIfNotHydrating(); // This component materialized an id. This will affect any ids that appear
+        // in its children.
+        var returnFiber = workInProgress.return;
+        if (returnFiber !== null) {
+            var numberOfForks = 1;
+            var slotIndex = 0;
+            pushTreeFork(workInProgress, numberOfForks);
+            pushTreeId(workInProgress, numberOfForks, slotIndex);
+        }
+    }
+    function getBitLength(number) {
+        return 32 - clz32(number);
+    }
+    function getLeadingBit(id) {
+        return 1 << getBitLength(id) - 1;
+    }
+    function popTreeContext(workInProgress) {
+        // Restore the previous values.
+        // This is a bit more complicated than other context-like modules in Fiber
+        // because the same Fiber may appear on the stack multiple times and for
+        // different reasons. We have to keep popping until the work-in-progress is
+        // no longer at the top of the stack.
+        while(workInProgress === treeForkProvider){
+            treeForkProvider = forkStack[--forkStackIndex];
+            forkStack[forkStackIndex] = null;
+            treeForkCount = forkStack[--forkStackIndex];
+            forkStack[forkStackIndex] = null;
+        }
+        while(workInProgress === treeContextProvider){
+            treeContextProvider = idStack[--idStackIndex];
+            idStack[idStackIndex] = null;
+            treeContextOverflow = idStack[--idStackIndex];
+            idStack[idStackIndex] = null;
+            treeContextId = idStack[--idStackIndex];
+            idStack[idStackIndex] = null;
+        }
+    }
+    function getSuspendedTreeContext() {
+        warnIfNotHydrating();
+        if (treeContextProvider !== null) return {
+            id: treeContextId,
+            overflow: treeContextOverflow
+        };
+        else return null;
+    }
+    function restoreSuspendedTreeContext(workInProgress, suspendedContext) {
+        warnIfNotHydrating();
+        idStack[idStackIndex++] = treeContextId;
+        idStack[idStackIndex++] = treeContextOverflow;
+        idStack[idStackIndex++] = treeContextProvider;
+        treeContextId = suspendedContext.id;
+        treeContextOverflow = suspendedContext.overflow;
+        treeContextProvider = workInProgress;
+    }
+    function warnIfNotHydrating() {
+        if (!getIsHydrating()) error1("Expected to be hydrating. This is a bug in React. Please file an issue.");
+    }
+    // This may have been an insertion or a hydration.
+    var hydrationParentFiber = null;
+    var nextHydratableInstance = null;
+    var isHydrating1 = false; // This flag allows for warning supression when we expect there to be mismatches
+    // due to earlier mismatches or a suspended fiber.
+    var didSuspendOrErrorDEV = false; // Hydration errors that were thrown inside this boundary
+    var hydrationErrors = null;
+    function warnIfHydrating() {
+        if (isHydrating1) error1("We should not be hydrating here. This is a bug in React. Please file a bug.");
+    }
+    function markDidThrowWhileHydratingDEV() {
+        didSuspendOrErrorDEV = true;
+    }
+    function didSuspendOrErrorWhileHydratingDEV() {
+        return didSuspendOrErrorDEV;
+    }
+    function enterHydrationState(fiber) {
+        var parentInstance = fiber.stateNode.containerInfo;
+        nextHydratableInstance = getFirstHydratableChildWithinContainer(parentInstance);
+        hydrationParentFiber = fiber;
+        isHydrating1 = true;
+        hydrationErrors = null;
+        didSuspendOrErrorDEV = false;
+        return true;
+    }
+    function reenterHydrationStateFromDehydratedSuspenseInstance(fiber, suspenseInstance, treeContext) {
+        nextHydratableInstance = getFirstHydratableChildWithinSuspenseInstance(suspenseInstance);
+        hydrationParentFiber = fiber;
+        isHydrating1 = true;
+        hydrationErrors = null;
+        didSuspendOrErrorDEV = false;
+        if (treeContext !== null) restoreSuspendedTreeContext(fiber, treeContext);
+        return true;
+    }
+    function warnUnhydratedInstance(returnFiber, instance) {
+        switch(returnFiber.tag){
+            case HostRoot:
+                didNotHydrateInstanceWithinContainer(returnFiber.stateNode.containerInfo, instance);
+                break;
+            case HostComponent:
+                var isConcurrentMode = (returnFiber.mode & ConcurrentMode) !== NoMode;
+                didNotHydrateInstance(returnFiber.type, returnFiber.memoizedProps, returnFiber.stateNode, instance, isConcurrentMode);
+                break;
+            case SuspenseComponent:
+                var suspenseState = returnFiber.memoizedState;
+                if (suspenseState.dehydrated !== null) didNotHydrateInstanceWithinSuspenseInstance(suspenseState.dehydrated, instance);
+                break;
+        }
+    }
+    function deleteHydratableInstance(returnFiber, instance) {
+        warnUnhydratedInstance(returnFiber, instance);
+        var childToDelete = createFiberFromHostInstanceForDeletion();
+        childToDelete.stateNode = instance;
+        childToDelete.return = returnFiber;
+        var deletions = returnFiber.deletions;
+        if (deletions === null) {
+            returnFiber.deletions = [
+                childToDelete
+            ];
+            returnFiber.flags |= ChildDeletion;
+        } else deletions.push(childToDelete);
+    }
+    function warnNonhydratedInstance(returnFiber, fiber) {
+        if (didSuspendOrErrorDEV) // Inside a boundary that already suspended. We're currently rendering the
+        // siblings of a suspended node. The mismatch may be due to the missing
+        // data, so it's probably a false positive.
+        return;
+        switch(returnFiber.tag){
+            case HostRoot:
+                var parentContainer = returnFiber.stateNode.containerInfo;
+                switch(fiber.tag){
+                    case HostComponent:
+                        var type = fiber.type;
+                        var props = fiber.pendingProps;
+                        didNotFindHydratableInstanceWithinContainer(parentContainer, type);
+                        break;
+                    case HostText:
+                        var text = fiber.pendingProps;
+                        didNotFindHydratableTextInstanceWithinContainer(parentContainer, text);
+                        break;
+                }
+                break;
+            case HostComponent:
+                var parentType = returnFiber.type;
+                var parentProps = returnFiber.memoizedProps;
+                var parentInstance = returnFiber.stateNode;
+                switch(fiber.tag){
+                    case HostComponent:
+                        var _type = fiber.type;
+                        var _props = fiber.pendingProps;
+                        var isConcurrentMode = (returnFiber.mode & ConcurrentMode) !== NoMode;
+                        didNotFindHydratableInstance(parentType, parentProps, parentInstance, _type, _props, isConcurrentMode);
+                        break;
+                    case HostText:
+                        var _text = fiber.pendingProps;
+                        var _isConcurrentMode = (returnFiber.mode & ConcurrentMode) !== NoMode;
+                        didNotFindHydratableTextInstance(parentType, parentProps, parentInstance, _text, _isConcurrentMode);
+                        break;
+                }
+                break;
+            case SuspenseComponent:
+                var suspenseState = returnFiber.memoizedState;
+                var _parentInstance = suspenseState.dehydrated;
+                if (_parentInstance !== null) switch(fiber.tag){
+                    case HostComponent:
+                        var _type2 = fiber.type;
+                        var _props2 = fiber.pendingProps;
+                        didNotFindHydratableInstanceWithinSuspenseInstance(_parentInstance, _type2);
+                        break;
+                    case HostText:
+                        var _text2 = fiber.pendingProps;
+                        didNotFindHydratableTextInstanceWithinSuspenseInstance(_parentInstance, _text2);
+                        break;
+                }
+                break;
+            default:
+                return;
+        }
+    }
+    function insertNonHydratedInstance(returnFiber, fiber) {
+        fiber.flags = fiber.flags & ~Hydrating | Placement;
+        warnNonhydratedInstance(returnFiber, fiber);
+    }
+    function tryHydrate(fiber, nextInstance) {
+        switch(fiber.tag){
+            case HostComponent:
+                var type = fiber.type;
+                var props = fiber.pendingProps;
+                var instance = canHydrateInstance(nextInstance, type);
+                if (instance !== null) {
+                    fiber.stateNode = instance;
+                    hydrationParentFiber = fiber;
+                    nextHydratableInstance = getFirstHydratableChild(instance);
+                    return true;
+                }
+                return false;
+            case HostText:
+                var text = fiber.pendingProps;
+                var textInstance = canHydrateTextInstance(nextInstance, text);
+                if (textInstance !== null) {
+                    fiber.stateNode = textInstance;
+                    hydrationParentFiber = fiber; // Text Instances don't have children so there's nothing to hydrate.
+                    nextHydratableInstance = null;
+                    return true;
+                }
+                return false;
+            case SuspenseComponent:
+                var suspenseInstance = canHydrateSuspenseInstance(nextInstance);
+                if (suspenseInstance !== null) {
+                    var suspenseState = {
+                        dehydrated: suspenseInstance,
+                        treeContext: getSuspendedTreeContext(),
+                        retryLane: OffscreenLane
+                    };
+                    fiber.memoizedState = suspenseState; // Store the dehydrated fragment as a child fiber.
+                    // This simplifies the code for getHostSibling and deleting nodes,
+                    // since it doesn't have to consider all Suspense boundaries and
+                    // check if they're dehydrated ones or not.
+                    var dehydratedFragment = createFiberFromDehydratedFragment(suspenseInstance);
+                    dehydratedFragment.return = fiber;
+                    fiber.child = dehydratedFragment;
+                    hydrationParentFiber = fiber; // While a Suspense Instance does have children, we won't step into
+                    // it during the first pass. Instead, we'll reenter it later.
+                    nextHydratableInstance = null;
+                    return true;
+                }
+                return false;
+            default:
+                return false;
+        }
+    }
+    function shouldClientRenderOnMismatch(fiber) {
+        return (fiber.mode & ConcurrentMode) !== NoMode && (fiber.flags & DidCapture) === NoFlags;
+    }
+    function throwOnHydrationMismatch(fiber) {
+        throw new Error("Hydration failed because the initial UI does not match what was rendered on the server.");
+    }
+    function tryToClaimNextHydratableInstance(fiber) {
+        if (!isHydrating1) return;
+        var nextInstance = nextHydratableInstance;
+        if (!nextInstance) {
+            if (shouldClientRenderOnMismatch(fiber)) {
+                warnNonhydratedInstance(hydrationParentFiber, fiber);
+                throwOnHydrationMismatch();
+            } // Nothing to hydrate. Make it an insertion.
+            insertNonHydratedInstance(hydrationParentFiber, fiber);
+            isHydrating1 = false;
+            hydrationParentFiber = fiber;
+            return;
+        }
+        var firstAttemptedInstance = nextInstance;
+        if (!tryHydrate(fiber, nextInstance)) {
+            if (shouldClientRenderOnMismatch(fiber)) {
+                warnNonhydratedInstance(hydrationParentFiber, fiber);
+                throwOnHydrationMismatch();
+            } // If we can't hydrate this instance let's try the next one.
+            // We use this as a heuristic. It's based on intuition and not data so it
+            // might be flawed or unnecessary.
+            nextInstance = getNextHydratableSibling(firstAttemptedInstance);
+            var prevHydrationParentFiber = hydrationParentFiber;
+            if (!nextInstance || !tryHydrate(fiber, nextInstance)) {
+                // Nothing to hydrate. Make it an insertion.
+                insertNonHydratedInstance(hydrationParentFiber, fiber);
+                isHydrating1 = false;
+                hydrationParentFiber = fiber;
+                return;
+            } // We matched the next one, we'll now assume that the first one was
+            // superfluous and we'll delete it. Since we can't eagerly delete it
+            // we'll have to schedule a deletion. To do that, this node needs a dummy
+            // fiber associated with it.
+            deleteHydratableInstance(prevHydrationParentFiber, firstAttemptedInstance);
+        }
+    }
+    function prepareToHydrateHostInstance(fiber, rootContainerInstance, hostContext) {
+        var instance = fiber.stateNode;
+        var shouldWarnIfMismatchDev = !didSuspendOrErrorDEV;
+        var updatePayload = hydrateInstance(instance, fiber.type, fiber.memoizedProps, rootContainerInstance, hostContext, fiber, shouldWarnIfMismatchDev); // TODO: Type this specific to this type of component.
+        fiber.updateQueue = updatePayload; // If the update payload indicates that there is a change or if there
+        // is a new ref we mark this as an update.
+        if (updatePayload !== null) return true;
+        return false;
+    }
+    function prepareToHydrateHostTextInstance(fiber) {
+        var textInstance = fiber.stateNode;
+        var textContent = fiber.memoizedProps;
+        var shouldUpdate = hydrateTextInstance(textInstance, textContent, fiber);
+        if (shouldUpdate) {
+            // We assume that prepareToHydrateHostTextInstance is called in a context where the
+            // hydration parent is the parent host component of this host text.
+            var returnFiber = hydrationParentFiber;
+            if (returnFiber !== null) switch(returnFiber.tag){
+                case HostRoot:
+                    var parentContainer = returnFiber.stateNode.containerInfo;
+                    var isConcurrentMode = (returnFiber.mode & ConcurrentMode) !== NoMode;
+                    didNotMatchHydratedContainerTextInstance(parentContainer, textInstance, textContent, isConcurrentMode);
+                    break;
+                case HostComponent:
+                    var parentType = returnFiber.type;
+                    var parentProps = returnFiber.memoizedProps;
+                    var parentInstance = returnFiber.stateNode;
+                    var _isConcurrentMode2 = (returnFiber.mode & ConcurrentMode) !== NoMode;
+                    didNotMatchHydratedTextInstance(parentType, parentProps, parentInstance, textInstance, textContent, _isConcurrentMode2);
+                    break;
+            }
+        }
+        return shouldUpdate;
+    }
+    function prepareToHydrateHostSuspenseInstance(fiber) {
+        var suspenseState = fiber.memoizedState;
+        var suspenseInstance = suspenseState !== null ? suspenseState.dehydrated : null;
+        if (!suspenseInstance) throw new Error("Expected to have a hydrated suspense instance. This error is likely caused by a bug in React. Please file an issue.");
+        hydrateSuspenseInstance(suspenseInstance, fiber);
+    }
+    function skipPastDehydratedSuspenseInstance(fiber) {
+        var suspenseState = fiber.memoizedState;
+        var suspenseInstance = suspenseState !== null ? suspenseState.dehydrated : null;
+        if (!suspenseInstance) throw new Error("Expected to have a hydrated suspense instance. This error is likely caused by a bug in React. Please file an issue.");
+        return getNextHydratableInstanceAfterSuspenseInstance(suspenseInstance);
+    }
+    function popToNextHostParent(fiber) {
+        var parent = fiber.return;
+        while(parent !== null && parent.tag !== HostComponent && parent.tag !== HostRoot && parent.tag !== SuspenseComponent)parent = parent.return;
+        hydrationParentFiber = parent;
+    }
+    function popHydrationState(fiber) {
+        if (fiber !== hydrationParentFiber) // We're deeper than the current hydration context, inside an inserted
+        // tree.
+        return false;
+        if (!isHydrating1) {
+            // If we're not currently hydrating but we're in a hydration context, then
+            // we were an insertion and now need to pop up reenter hydration of our
+            // siblings.
+            popToNextHostParent(fiber);
+            isHydrating1 = true;
+            return false;
+        } // If we have any remaining hydratable nodes, we need to delete them now.
+        // We only do this deeper than head and body since they tend to have random
+        // other nodes in them. We also ignore components with pure text content in
+        // side of them. We also don't delete anything inside the root container.
+        if (fiber.tag !== HostRoot && (fiber.tag !== HostComponent || shouldDeleteUnhydratedTailInstances(fiber.type) && !shouldSetTextContent(fiber.type, fiber.memoizedProps))) {
+            var nextInstance = nextHydratableInstance;
+            if (nextInstance) {
+                if (shouldClientRenderOnMismatch(fiber)) {
+                    warnIfUnhydratedTailNodes(fiber);
+                    throwOnHydrationMismatch();
+                } else while(nextInstance){
+                    deleteHydratableInstance(fiber, nextInstance);
+                    nextInstance = getNextHydratableSibling(nextInstance);
+                }
+            }
+        }
+        popToNextHostParent(fiber);
+        if (fiber.tag === SuspenseComponent) nextHydratableInstance = skipPastDehydratedSuspenseInstance(fiber);
+        else nextHydratableInstance = hydrationParentFiber ? getNextHydratableSibling(fiber.stateNode) : null;
+        return true;
+    }
+    function hasUnhydratedTailNodes() {
+        return isHydrating1 && nextHydratableInstance !== null;
+    }
+    function warnIfUnhydratedTailNodes(fiber) {
+        var nextInstance = nextHydratableInstance;
+        while(nextInstance){
+            warnUnhydratedInstance(fiber, nextInstance);
+            nextInstance = getNextHydratableSibling(nextInstance);
+        }
+    }
+    function resetHydrationState() {
+        hydrationParentFiber = null;
+        nextHydratableInstance = null;
+        isHydrating1 = false;
+        didSuspendOrErrorDEV = false;
+    }
+    function upgradeHydrationErrorsToRecoverable() {
+        if (hydrationErrors !== null) {
+            // Successfully completed a forced client render. The errors that occurred
+            // during the hydration attempt are now recovered. We will log them in
+            // commit phase, once the entire tree has finished.
+            queueRecoverableErrors(hydrationErrors);
+            hydrationErrors = null;
+        }
+    }
+    function getIsHydrating() {
+        return isHydrating1;
+    }
+    function queueHydrationError(error) {
+        if (hydrationErrors === null) hydrationErrors = [
+            error
+        ];
+        else hydrationErrors.push(error);
+    }
     var ReactCurrentBatchConfig$1 = ReactSharedInternals.ReactCurrentBatchConfig;
     var NoTransition = null;
     function requestCurrentTransition() {
@@ -15010,29 +15526,25 @@ module.exports = require("./cjs/react-dom.development.js");
         }
         return value;
     }
-    // An array of all update queues that received updates during the current
     // render. When this render exits, either because it finishes or because it is
     // interrupted, the interleaved updates will be transferred onto the main part
     // of the queue.
-    var interleavedQueues = null;
-    function pushInterleavedQueue(queue) {
-        if (interleavedQueues === null) interleavedQueues = [
+    var concurrentQueues = null;
+    function pushConcurrentUpdateQueue(queue) {
+        if (concurrentQueues === null) concurrentQueues = [
             queue
         ];
-        else interleavedQueues.push(queue);
+        else concurrentQueues.push(queue);
     }
-    function hasInterleavedUpdates() {
-        return interleavedQueues !== null;
-    }
-    function enqueueInterleavedUpdates() {
+    function finishQueueingConcurrentUpdates() {
         // Transfer the interleaved updates onto the main queue. Each queue has a
         // `pending` field and an `interleaved` field. When they are not null, they
         // point to the last node in a circular linked list. We need to append the
         // interleaved list to the end of the pending list by joining them into a
         // single, circular list.
-        if (interleavedQueues !== null) {
-            for(var i = 0; i < interleavedQueues.length; i++){
-                var queue = interleavedQueues[i];
+        if (concurrentQueues !== null) {
+            for(var i = 0; i < concurrentQueues.length; i++){
+                var queue = concurrentQueues[i];
                 var lastInterleavedUpdate = queue.interleaved;
                 if (lastInterleavedUpdate !== null) {
                     queue.interleaved = null;
@@ -15046,8 +15558,75 @@ module.exports = require("./cjs/react-dom.development.js");
                     queue.pending = lastInterleavedUpdate;
                 }
             }
-            interleavedQueues = null;
+            concurrentQueues = null;
         }
+    }
+    function enqueueConcurrentHookUpdate(fiber, queue, update, lane) {
+        var interleaved = queue.interleaved;
+        if (interleaved === null) {
+            // This is the first update. Create a circular list.
+            update.next = update; // At the end of the current render, this queue's interleaved updates will
+            // be transferred to the pending queue.
+            pushConcurrentUpdateQueue(queue);
+        } else {
+            update.next = interleaved.next;
+            interleaved.next = update;
+        }
+        queue.interleaved = update;
+        return markUpdateLaneFromFiberToRoot(fiber, lane);
+    }
+    function enqueueConcurrentHookUpdateAndEagerlyBailout(fiber, queue, update, lane) {
+        var interleaved = queue.interleaved;
+        if (interleaved === null) {
+            // This is the first update. Create a circular list.
+            update.next = update; // At the end of the current render, this queue's interleaved updates will
+            // be transferred to the pending queue.
+            pushConcurrentUpdateQueue(queue);
+        } else {
+            update.next = interleaved.next;
+            interleaved.next = update;
+        }
+        queue.interleaved = update;
+    }
+    function enqueueConcurrentClassUpdate(fiber, queue, update, lane) {
+        var interleaved = queue.interleaved;
+        if (interleaved === null) {
+            // This is the first update. Create a circular list.
+            update.next = update; // At the end of the current render, this queue's interleaved updates will
+            // be transferred to the pending queue.
+            pushConcurrentUpdateQueue(queue);
+        } else {
+            update.next = interleaved.next;
+            interleaved.next = update;
+        }
+        queue.interleaved = update;
+        return markUpdateLaneFromFiberToRoot(fiber, lane);
+    }
+    function enqueueConcurrentRenderForLane(fiber, lane) {
+        return markUpdateLaneFromFiberToRoot(fiber, lane);
+    } // Calling this function outside this module should only be done for backwards
+    // compatibility and should always be accompanied by a warning.
+    var unsafe_markUpdateLaneFromFiberToRoot = markUpdateLaneFromFiberToRoot;
+    function markUpdateLaneFromFiberToRoot(sourceFiber, lane) {
+        // Update the source fiber's lanes
+        sourceFiber.lanes = mergeLanes(sourceFiber.lanes, lane);
+        var alternate = sourceFiber.alternate;
+        if (alternate !== null) alternate.lanes = mergeLanes(alternate.lanes, lane);
+        if (alternate === null && (sourceFiber.flags & (Placement | Hydrating)) !== NoFlags) warnAboutUpdateOnNotYetMountedFiberInDEV(sourceFiber);
+        var node = sourceFiber;
+        var parent = sourceFiber.return;
+        while(parent !== null){
+            parent.childLanes = mergeLanes(parent.childLanes, lane);
+            alternate = parent.alternate;
+            if (alternate !== null) alternate.childLanes = mergeLanes(alternate.childLanes, lane);
+            else if ((parent.flags & (Placement | Hydrating)) !== NoFlags) warnAboutUpdateOnNotYetMountedFiberInDEV(sourceFiber);
+            node = parent;
+            parent = parent.return;
+        }
+        if (node.tag === HostRoot) {
+            var root = node.stateNode;
+            return root;
+        } else return null;
     }
     var UpdateState = 0;
     var ReplaceState = 1;
@@ -15103,21 +15682,15 @@ module.exports = require("./cjs/react-dom.development.js");
     function enqueueUpdate(fiber, update, lane) {
         var updateQueue = fiber.updateQueue;
         if (updateQueue === null) // Only occurs if the fiber has been unmounted.
-        return;
+        return null;
         var sharedQueue = updateQueue.shared;
-        if (isInterleavedUpdate(fiber)) {
-            var interleaved = sharedQueue.interleaved;
-            if (interleaved === null) {
-                // This is the first update. Create a circular list.
-                update.next = update; // At the end of the current render, this queue's interleaved updates will
-                // be transferred to the pending queue.
-                pushInterleavedQueue(sharedQueue);
-            } else {
-                update.next = interleaved.next;
-                interleaved.next = update;
-            }
-            sharedQueue.interleaved = update;
-        } else {
+        if (currentlyProcessingQueue === sharedQueue && !didWarnUpdateInsideUpdate) {
+            error1("An update (setState, replaceState, or forceUpdate) was scheduled from inside an update function. Update functions should be pure, with zero side-effects. Consider using componentDidUpdate or a callback.");
+            didWarnUpdateInsideUpdate = true;
+        }
+        if (isUnsafeClassRenderPhaseUpdate()) {
+            // This is an unsafe render phase update. Add directly to the update
+            // queue so we can process it immediately during the current render.
             var pending = sharedQueue.pending;
             if (pending === null) // This is the first update. Create a circular list.
             update.next = update;
@@ -15125,12 +15698,12 @@ module.exports = require("./cjs/react-dom.development.js");
                 update.next = pending.next;
                 pending.next = update;
             }
-            sharedQueue.pending = update;
-        }
-        if (currentlyProcessingQueue === sharedQueue && !didWarnUpdateInsideUpdate) {
-            error1("An update (setState, replaceState, or forceUpdate) was scheduled from inside an update function. Update functions should be pure, with zero side-effects. Consider using componentDidUpdate or a callback.");
-            didWarnUpdateInsideUpdate = true;
-        }
+            sharedQueue.pending = update; // Update the childLanes even though we're most likely already rendering
+            // this fiber. This is for backwards compatibility in the case where you
+            // update a different component during render phase than the one that is
+            // currently renderings (a pattern that is accompanied by a warning).
+            return unsafe_markUpdateLaneFromFiberToRoot(fiber, lane);
+        } else return enqueueConcurrentClassUpdate(fiber, sharedQueue, update, lane);
     }
     function entangleTransitions(root, fiber, lane) {
         var updateQueue = fiber.updateQueue;
@@ -15504,9 +16077,11 @@ module.exports = require("./cjs/react-dom.development.js");
                 warnOnInvalidCallback(callback, "setState");
                 update.callback = callback;
             }
-            enqueueUpdate(fiber, update);
-            var root = scheduleUpdateOnFiber(fiber, lane, eventTime);
-            if (root !== null) entangleTransitions(root, fiber, lane);
+            var root = enqueueUpdate(fiber, update, lane);
+            if (root !== null) {
+                scheduleUpdateOnFiber(root, fiber, lane, eventTime);
+                entangleTransitions(root, fiber, lane);
+            }
             markStateUpdateScheduled(fiber, lane);
         },
         enqueueReplaceState: function(inst, payload, callback) {
@@ -15520,9 +16095,11 @@ module.exports = require("./cjs/react-dom.development.js");
                 warnOnInvalidCallback(callback, "replaceState");
                 update.callback = callback;
             }
-            enqueueUpdate(fiber, update);
-            var root = scheduleUpdateOnFiber(fiber, lane, eventTime);
-            if (root !== null) entangleTransitions(root, fiber, lane);
+            var root = enqueueUpdate(fiber, update, lane);
+            if (root !== null) {
+                scheduleUpdateOnFiber(root, fiber, lane, eventTime);
+                entangleTransitions(root, fiber, lane);
+            }
             markStateUpdateScheduled(fiber, lane);
         },
         enqueueForceUpdate: function(inst, callback) {
@@ -15535,9 +16112,11 @@ module.exports = require("./cjs/react-dom.development.js");
                 warnOnInvalidCallback(callback, "forceUpdate");
                 update.callback = callback;
             }
-            enqueueUpdate(fiber, update);
-            var root = scheduleUpdateOnFiber(fiber, lane, eventTime);
-            if (root !== null) entangleTransitions(root, fiber, lane);
+            var root = enqueueUpdate(fiber, update, lane);
+            if (root !== null) {
+                scheduleUpdateOnFiber(root, fiber, lane, eventTime);
+                entangleTransitions(root, fiber, lane);
+            }
             markForceUpdateScheduled(fiber, lane);
         }
     };
@@ -15885,488 +16464,6 @@ module.exports = require("./cjs/react-dom.development.js");
         instance.state = newState;
         instance.context = nextContext;
         return shouldUpdate;
-    }
-    // TODO: Use the unified fiber stack module instead of this local one?
-    // Intentionally not using it yet to derisk the initial implementation, because
-    // the way we push/pop these values is a bit unusual. If there's a mistake, I'd
-    // rather the ids be wrong than crash the whole reconciler.
-    var forkStack = [];
-    var forkStackIndex = 0;
-    var treeForkProvider = null;
-    var treeForkCount = 0;
-    var idStack = [];
-    var idStackIndex = 0;
-    var treeContextProvider = null;
-    var treeContextId = 1;
-    var treeContextOverflow = "";
-    function isForkedChild(workInProgress) {
-        warnIfNotHydrating();
-        return (workInProgress.flags & Forked) !== NoFlags;
-    }
-    function getForksAtLevel(workInProgress) {
-        warnIfNotHydrating();
-        return treeForkCount;
-    }
-    function getTreeId() {
-        var overflow = treeContextOverflow;
-        var idWithLeadingBit = treeContextId;
-        var id = idWithLeadingBit & ~getLeadingBit(idWithLeadingBit);
-        return id.toString(32) + overflow;
-    }
-    function pushTreeFork(workInProgress, totalChildren) {
-        // This is called right after we reconcile an array (or iterator) of child
-        // fibers, because that's the only place where we know how many children in
-        // the whole set without doing extra work later, or storing addtional
-        // information on the fiber.
-        //
-        // That's why this function is separate from pushTreeId — it's called during
-        // the render phase of the fork parent, not the child, which is where we push
-        // the other context values.
-        //
-        // In the Fizz implementation this is much simpler because the child is
-        // rendered in the same callstack as the parent.
-        //
-        // It might be better to just add a `forks` field to the Fiber type. It would
-        // make this module simpler.
-        warnIfNotHydrating();
-        forkStack[forkStackIndex++] = treeForkCount;
-        forkStack[forkStackIndex++] = treeForkProvider;
-        treeForkProvider = workInProgress;
-        treeForkCount = totalChildren;
-    }
-    function pushTreeId(workInProgress, totalChildren, index) {
-        warnIfNotHydrating();
-        idStack[idStackIndex++] = treeContextId;
-        idStack[idStackIndex++] = treeContextOverflow;
-        idStack[idStackIndex++] = treeContextProvider;
-        treeContextProvider = workInProgress;
-        var baseIdWithLeadingBit = treeContextId;
-        var baseOverflow = treeContextOverflow; // The leftmost 1 marks the end of the sequence, non-inclusive. It's not part
-        // of the id; we use it to account for leading 0s.
-        var baseLength = getBitLength(baseIdWithLeadingBit) - 1;
-        var baseId = baseIdWithLeadingBit & ~(1 << baseLength);
-        var slot = index + 1;
-        var length = getBitLength(totalChildren) + baseLength; // 30 is the max length we can store without overflowing, taking into
-        // consideration the leading 1 we use to mark the end of the sequence.
-        if (length > 30) {
-            // We overflowed the bitwise-safe range. Fall back to slower algorithm.
-            // This branch assumes the length of the base id is greater than 5; it won't
-            // work for smaller ids, because you need 5 bits per character.
-            //
-            // We encode the id in multiple steps: first the base id, then the
-            // remaining digits.
-            //
-            // Each 5 bit sequence corresponds to a single base 32 character. So for
-            // example, if the current id is 23 bits long, we can convert 20 of those
-            // bits into a string of 4 characters, with 3 bits left over.
-            //
-            // First calculate how many bits in the base id represent a complete
-            // sequence of characters.
-            var numberOfOverflowBits = baseLength - baseLength % 5; // Then create a bitmask that selects only those bits.
-            var newOverflowBits = (1 << numberOfOverflowBits) - 1; // Select the bits, and convert them to a base 32 string.
-            var newOverflow = (baseId & newOverflowBits).toString(32); // Now we can remove those bits from the base id.
-            var restOfBaseId = baseId >> numberOfOverflowBits;
-            var restOfBaseLength = baseLength - numberOfOverflowBits; // Finally, encode the rest of the bits using the normal algorithm. Because
-            // we made more room, this time it won't overflow.
-            var restOfLength = getBitLength(totalChildren) + restOfBaseLength;
-            var restOfNewBits = slot << restOfBaseLength;
-            var id = restOfNewBits | restOfBaseId;
-            var overflow = newOverflow + baseOverflow;
-            treeContextId = 1 << restOfLength | id;
-            treeContextOverflow = overflow;
-        } else {
-            // Normal path
-            var newBits = slot << baseLength;
-            var _id = newBits | baseId;
-            var _overflow = baseOverflow;
-            treeContextId = 1 << length | _id;
-            treeContextOverflow = _overflow;
-        }
-    }
-    function pushMaterializedTreeId(workInProgress) {
-        warnIfNotHydrating(); // This component materialized an id. This will affect any ids that appear
-        // in its children.
-        var returnFiber = workInProgress.return;
-        if (returnFiber !== null) {
-            var numberOfForks = 1;
-            var slotIndex = 0;
-            pushTreeFork(workInProgress, numberOfForks);
-            pushTreeId(workInProgress, numberOfForks, slotIndex);
-        }
-    }
-    function getBitLength(number) {
-        return 32 - clz32(number);
-    }
-    function getLeadingBit(id) {
-        return 1 << getBitLength(id) - 1;
-    }
-    function popTreeContext(workInProgress) {
-        // Restore the previous values.
-        // This is a bit more complicated than other context-like modules in Fiber
-        // because the same Fiber may appear on the stack multiple times and for
-        // different reasons. We have to keep popping until the work-in-progress is
-        // no longer at the top of the stack.
-        while(workInProgress === treeForkProvider){
-            treeForkProvider = forkStack[--forkStackIndex];
-            forkStack[forkStackIndex] = null;
-            treeForkCount = forkStack[--forkStackIndex];
-            forkStack[forkStackIndex] = null;
-        }
-        while(workInProgress === treeContextProvider){
-            treeContextProvider = idStack[--idStackIndex];
-            idStack[idStackIndex] = null;
-            treeContextOverflow = idStack[--idStackIndex];
-            idStack[idStackIndex] = null;
-            treeContextId = idStack[--idStackIndex];
-            idStack[idStackIndex] = null;
-        }
-    }
-    function getSuspendedTreeContext() {
-        warnIfNotHydrating();
-        if (treeContextProvider !== null) return {
-            id: treeContextId,
-            overflow: treeContextOverflow
-        };
-        else return null;
-    }
-    function restoreSuspendedTreeContext(workInProgress, suspendedContext) {
-        warnIfNotHydrating();
-        idStack[idStackIndex++] = treeContextId;
-        idStack[idStackIndex++] = treeContextOverflow;
-        idStack[idStackIndex++] = treeContextProvider;
-        treeContextId = suspendedContext.id;
-        treeContextOverflow = suspendedContext.overflow;
-        treeContextProvider = workInProgress;
-    }
-    function warnIfNotHydrating() {
-        if (!getIsHydrating()) error1("Expected to be hydrating. This is a bug in React. Please file an issue.");
-    }
-    // This may have been an insertion or a hydration.
-    var hydrationParentFiber = null;
-    var nextHydratableInstance = null;
-    var isHydrating1 = false; // This flag allows for warning supression when we expect there to be mismatches
-    // due to earlier mismatches or a suspended fiber.
-    var didSuspendOrErrorDEV = false; // Hydration errors that were thrown inside this boundary
-    var hydrationErrors = null;
-    function warnIfHydrating() {
-        if (isHydrating1) error1("We should not be hydrating here. This is a bug in React. Please file a bug.");
-    }
-    function markDidThrowWhileHydratingDEV() {
-        didSuspendOrErrorDEV = true;
-    }
-    function enterHydrationState(fiber) {
-        var parentInstance = fiber.stateNode.containerInfo;
-        nextHydratableInstance = getFirstHydratableChildWithinContainer(parentInstance);
-        hydrationParentFiber = fiber;
-        isHydrating1 = true;
-        hydrationErrors = null;
-        didSuspendOrErrorDEV = false;
-        return true;
-    }
-    function reenterHydrationStateFromDehydratedSuspenseInstance(fiber, suspenseInstance, treeContext) {
-        nextHydratableInstance = getFirstHydratableChildWithinSuspenseInstance(suspenseInstance);
-        hydrationParentFiber = fiber;
-        isHydrating1 = true;
-        hydrationErrors = null;
-        didSuspendOrErrorDEV = false;
-        if (treeContext !== null) restoreSuspendedTreeContext(fiber, treeContext);
-        return true;
-    }
-    function warnUnhydratedInstance(returnFiber, instance) {
-        switch(returnFiber.tag){
-            case HostRoot:
-                didNotHydrateInstanceWithinContainer(returnFiber.stateNode.containerInfo, instance);
-                break;
-            case HostComponent:
-                var isConcurrentMode = (returnFiber.mode & ConcurrentMode) !== NoMode;
-                didNotHydrateInstance(returnFiber.type, returnFiber.memoizedProps, returnFiber.stateNode, instance, isConcurrentMode);
-                break;
-            case SuspenseComponent:
-                var suspenseState = returnFiber.memoizedState;
-                if (suspenseState.dehydrated !== null) didNotHydrateInstanceWithinSuspenseInstance(suspenseState.dehydrated, instance);
-                break;
-        }
-    }
-    function deleteHydratableInstance(returnFiber, instance) {
-        warnUnhydratedInstance(returnFiber, instance);
-        var childToDelete = createFiberFromHostInstanceForDeletion();
-        childToDelete.stateNode = instance;
-        childToDelete.return = returnFiber;
-        var deletions = returnFiber.deletions;
-        if (deletions === null) {
-            returnFiber.deletions = [
-                childToDelete
-            ];
-            returnFiber.flags |= ChildDeletion;
-        } else deletions.push(childToDelete);
-    }
-    function warnNonhydratedInstance(returnFiber, fiber) {
-        if (didSuspendOrErrorDEV) // Inside a boundary that already suspended. We're currently rendering the
-        // siblings of a suspended node. The mismatch may be due to the missing
-        // data, so it's probably a false positive.
-        return;
-        switch(returnFiber.tag){
-            case HostRoot:
-                var parentContainer = returnFiber.stateNode.containerInfo;
-                switch(fiber.tag){
-                    case HostComponent:
-                        var type = fiber.type;
-                        var props = fiber.pendingProps;
-                        didNotFindHydratableInstanceWithinContainer(parentContainer, type);
-                        break;
-                    case HostText:
-                        var text = fiber.pendingProps;
-                        didNotFindHydratableTextInstanceWithinContainer(parentContainer, text);
-                        break;
-                }
-                break;
-            case HostComponent:
-                var parentType = returnFiber.type;
-                var parentProps = returnFiber.memoizedProps;
-                var parentInstance = returnFiber.stateNode;
-                switch(fiber.tag){
-                    case HostComponent:
-                        var _type = fiber.type;
-                        var _props = fiber.pendingProps;
-                        var isConcurrentMode = (returnFiber.mode & ConcurrentMode) !== NoMode;
-                        didNotFindHydratableInstance(parentType, parentProps, parentInstance, _type, _props, isConcurrentMode);
-                        break;
-                    case HostText:
-                        var _text = fiber.pendingProps;
-                        var _isConcurrentMode = (returnFiber.mode & ConcurrentMode) !== NoMode;
-                        didNotFindHydratableTextInstance(parentType, parentProps, parentInstance, _text, _isConcurrentMode);
-                        break;
-                }
-                break;
-            case SuspenseComponent:
-                var suspenseState = returnFiber.memoizedState;
-                var _parentInstance = suspenseState.dehydrated;
-                if (_parentInstance !== null) switch(fiber.tag){
-                    case HostComponent:
-                        var _type2 = fiber.type;
-                        var _props2 = fiber.pendingProps;
-                        didNotFindHydratableInstanceWithinSuspenseInstance(_parentInstance, _type2);
-                        break;
-                    case HostText:
-                        var _text2 = fiber.pendingProps;
-                        didNotFindHydratableTextInstanceWithinSuspenseInstance(_parentInstance, _text2);
-                        break;
-                }
-                break;
-            default:
-                return;
-        }
-    }
-    function insertNonHydratedInstance(returnFiber, fiber) {
-        fiber.flags = fiber.flags & ~Hydrating | Placement;
-        warnNonhydratedInstance(returnFiber, fiber);
-    }
-    function tryHydrate(fiber, nextInstance) {
-        switch(fiber.tag){
-            case HostComponent:
-                var type = fiber.type;
-                var props = fiber.pendingProps;
-                var instance = canHydrateInstance(nextInstance, type);
-                if (instance !== null) {
-                    fiber.stateNode = instance;
-                    hydrationParentFiber = fiber;
-                    nextHydratableInstance = getFirstHydratableChild(instance);
-                    return true;
-                }
-                return false;
-            case HostText:
-                var text = fiber.pendingProps;
-                var textInstance = canHydrateTextInstance(nextInstance, text);
-                if (textInstance !== null) {
-                    fiber.stateNode = textInstance;
-                    hydrationParentFiber = fiber; // Text Instances don't have children so there's nothing to hydrate.
-                    nextHydratableInstance = null;
-                    return true;
-                }
-                return false;
-            case SuspenseComponent:
-                var suspenseInstance = canHydrateSuspenseInstance(nextInstance);
-                if (suspenseInstance !== null) {
-                    var suspenseState = {
-                        dehydrated: suspenseInstance,
-                        treeContext: getSuspendedTreeContext(),
-                        retryLane: OffscreenLane
-                    };
-                    fiber.memoizedState = suspenseState; // Store the dehydrated fragment as a child fiber.
-                    // This simplifies the code for getHostSibling and deleting nodes,
-                    // since it doesn't have to consider all Suspense boundaries and
-                    // check if they're dehydrated ones or not.
-                    var dehydratedFragment = createFiberFromDehydratedFragment(suspenseInstance);
-                    dehydratedFragment.return = fiber;
-                    fiber.child = dehydratedFragment;
-                    hydrationParentFiber = fiber; // While a Suspense Instance does have children, we won't step into
-                    // it during the first pass. Instead, we'll reenter it later.
-                    nextHydratableInstance = null;
-                    return true;
-                }
-                return false;
-            default:
-                return false;
-        }
-    }
-    function shouldClientRenderOnMismatch(fiber) {
-        return (fiber.mode & ConcurrentMode) !== NoMode && (fiber.flags & DidCapture) === NoFlags;
-    }
-    function throwOnHydrationMismatch(fiber) {
-        throw new Error("Hydration failed because the initial UI does not match what was rendered on the server.");
-    }
-    function tryToClaimNextHydratableInstance(fiber) {
-        if (!isHydrating1) return;
-        var nextInstance = nextHydratableInstance;
-        if (!nextInstance) {
-            if (shouldClientRenderOnMismatch(fiber)) {
-                warnNonhydratedInstance(hydrationParentFiber, fiber);
-                throwOnHydrationMismatch();
-            } // Nothing to hydrate. Make it an insertion.
-            insertNonHydratedInstance(hydrationParentFiber, fiber);
-            isHydrating1 = false;
-            hydrationParentFiber = fiber;
-            return;
-        }
-        var firstAttemptedInstance = nextInstance;
-        if (!tryHydrate(fiber, nextInstance)) {
-            if (shouldClientRenderOnMismatch(fiber)) {
-                warnNonhydratedInstance(hydrationParentFiber, fiber);
-                throwOnHydrationMismatch();
-            } // If we can't hydrate this instance let's try the next one.
-            // We use this as a heuristic. It's based on intuition and not data so it
-            // might be flawed or unnecessary.
-            nextInstance = getNextHydratableSibling(firstAttemptedInstance);
-            var prevHydrationParentFiber = hydrationParentFiber;
-            if (!nextInstance || !tryHydrate(fiber, nextInstance)) {
-                // Nothing to hydrate. Make it an insertion.
-                insertNonHydratedInstance(hydrationParentFiber, fiber);
-                isHydrating1 = false;
-                hydrationParentFiber = fiber;
-                return;
-            } // We matched the next one, we'll now assume that the first one was
-            // superfluous and we'll delete it. Since we can't eagerly delete it
-            // we'll have to schedule a deletion. To do that, this node needs a dummy
-            // fiber associated with it.
-            deleteHydratableInstance(prevHydrationParentFiber, firstAttemptedInstance);
-        }
-    }
-    function prepareToHydrateHostInstance(fiber, rootContainerInstance, hostContext) {
-        var instance = fiber.stateNode;
-        var shouldWarnIfMismatchDev = !didSuspendOrErrorDEV;
-        var updatePayload = hydrateInstance(instance, fiber.type, fiber.memoizedProps, rootContainerInstance, hostContext, fiber, shouldWarnIfMismatchDev); // TODO: Type this specific to this type of component.
-        fiber.updateQueue = updatePayload; // If the update payload indicates that there is a change or if there
-        // is a new ref we mark this as an update.
-        if (updatePayload !== null) return true;
-        return false;
-    }
-    function prepareToHydrateHostTextInstance(fiber) {
-        var textInstance = fiber.stateNode;
-        var textContent = fiber.memoizedProps;
-        var shouldUpdate = hydrateTextInstance(textInstance, textContent, fiber);
-        if (shouldUpdate) {
-            // We assume that prepareToHydrateHostTextInstance is called in a context where the
-            // hydration parent is the parent host component of this host text.
-            var returnFiber = hydrationParentFiber;
-            if (returnFiber !== null) switch(returnFiber.tag){
-                case HostRoot:
-                    var parentContainer = returnFiber.stateNode.containerInfo;
-                    var isConcurrentMode = (returnFiber.mode & ConcurrentMode) !== NoMode;
-                    didNotMatchHydratedContainerTextInstance(parentContainer, textInstance, textContent, isConcurrentMode);
-                    break;
-                case HostComponent:
-                    var parentType = returnFiber.type;
-                    var parentProps = returnFiber.memoizedProps;
-                    var parentInstance = returnFiber.stateNode;
-                    var _isConcurrentMode2 = (returnFiber.mode & ConcurrentMode) !== NoMode;
-                    didNotMatchHydratedTextInstance(parentType, parentProps, parentInstance, textInstance, textContent, _isConcurrentMode2);
-                    break;
-            }
-        }
-        return shouldUpdate;
-    }
-    function prepareToHydrateHostSuspenseInstance(fiber) {
-        var suspenseState = fiber.memoizedState;
-        var suspenseInstance = suspenseState !== null ? suspenseState.dehydrated : null;
-        if (!suspenseInstance) throw new Error("Expected to have a hydrated suspense instance. This error is likely caused by a bug in React. Please file an issue.");
-        hydrateSuspenseInstance(suspenseInstance, fiber);
-    }
-    function skipPastDehydratedSuspenseInstance(fiber) {
-        var suspenseState = fiber.memoizedState;
-        var suspenseInstance = suspenseState !== null ? suspenseState.dehydrated : null;
-        if (!suspenseInstance) throw new Error("Expected to have a hydrated suspense instance. This error is likely caused by a bug in React. Please file an issue.");
-        return getNextHydratableInstanceAfterSuspenseInstance(suspenseInstance);
-    }
-    function popToNextHostParent(fiber) {
-        var parent = fiber.return;
-        while(parent !== null && parent.tag !== HostComponent && parent.tag !== HostRoot && parent.tag !== SuspenseComponent)parent = parent.return;
-        hydrationParentFiber = parent;
-    }
-    function popHydrationState(fiber) {
-        if (fiber !== hydrationParentFiber) // We're deeper than the current hydration context, inside an inserted
-        // tree.
-        return false;
-        if (!isHydrating1) {
-            // If we're not currently hydrating but we're in a hydration context, then
-            // we were an insertion and now need to pop up reenter hydration of our
-            // siblings.
-            popToNextHostParent(fiber);
-            isHydrating1 = true;
-            return false;
-        } // If we have any remaining hydratable nodes, we need to delete them now.
-        // We only do this deeper than head and body since they tend to have random
-        // other nodes in them. We also ignore components with pure text content in
-        // side of them. We also don't delete anything inside the root container.
-        if (fiber.tag !== HostRoot && (fiber.tag !== HostComponent || shouldDeleteUnhydratedTailInstances(fiber.type) && !shouldSetTextContent(fiber.type, fiber.memoizedProps))) {
-            var nextInstance = nextHydratableInstance;
-            if (nextInstance) {
-                if (shouldClientRenderOnMismatch(fiber)) {
-                    warnIfUnhydratedTailNodes(fiber);
-                    throwOnHydrationMismatch();
-                } else while(nextInstance){
-                    deleteHydratableInstance(fiber, nextInstance);
-                    nextInstance = getNextHydratableSibling(nextInstance);
-                }
-            }
-        }
-        popToNextHostParent(fiber);
-        if (fiber.tag === SuspenseComponent) nextHydratableInstance = skipPastDehydratedSuspenseInstance(fiber);
-        else nextHydratableInstance = hydrationParentFiber ? getNextHydratableSibling(fiber.stateNode) : null;
-        return true;
-    }
-    function hasUnhydratedTailNodes() {
-        return isHydrating1 && nextHydratableInstance !== null;
-    }
-    function warnIfUnhydratedTailNodes(fiber) {
-        var nextInstance = nextHydratableInstance;
-        while(nextInstance){
-            warnUnhydratedInstance(fiber, nextInstance);
-            nextInstance = getNextHydratableSibling(nextInstance);
-        }
-    }
-    function resetHydrationState() {
-        hydrationParentFiber = null;
-        nextHydratableInstance = null;
-        isHydrating1 = false;
-        didSuspendOrErrorDEV = false;
-    }
-    function upgradeHydrationErrorsToRecoverable() {
-        if (hydrationErrors !== null) {
-            // Successfully completed a forced client render. The errors that occurred
-            // during the hydration attempt are now recovered. We will log them in
-            // commit phase, once the entire tree has finished.
-            queueRecoverableErrors(hydrationErrors);
-            hydrationErrors = null;
-        }
-    }
-    function getIsHydrating() {
-        return isHydrating1;
-    }
-    function queueHydrationError(error) {
-        if (hydrationErrors === null) hydrationErrors = [
-            error
-        ];
-        else hydrationErrors.push(error);
     }
     var didWarnAboutMaps;
     var didWarnAboutGenerators;
@@ -17810,7 +17907,8 @@ module.exports = require("./cjs/react-dom.development.js");
         }
     }
     function forceStoreRerender(fiber) {
-        scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp);
+        var root = enqueueConcurrentRenderForLane(fiber, SyncLane);
+        if (root !== null) scheduleUpdateOnFiber(root, fiber, SyncLane, NoTimestamp);
     }
     function mountState(initialState) {
         var hook = mountWorkInProgressHook();
@@ -18167,10 +18265,12 @@ module.exports = require("./cjs/react-dom.development.js");
         };
         if (isRenderPhaseUpdate(fiber)) enqueueRenderPhaseUpdate(queue, update);
         else {
-            enqueueUpdate$1(fiber, queue, update);
-            var eventTime = requestEventTime();
-            var root = scheduleUpdateOnFiber(fiber, lane, eventTime);
-            if (root !== null) entangleTransitionUpdate(root, queue, lane);
+            var root = enqueueConcurrentHookUpdate(fiber, queue, update, lane);
+            if (root !== null) {
+                var eventTime = requestEventTime();
+                scheduleUpdateOnFiber(root, fiber, lane, eventTime);
+                entangleTransitionUpdate(root, queue, lane);
+            }
         }
         markUpdateInDevTools(fiber, lane);
     }
@@ -18186,7 +18286,6 @@ module.exports = require("./cjs/react-dom.development.js");
         };
         if (isRenderPhaseUpdate(fiber)) enqueueRenderPhaseUpdate(queue, update);
         else {
-            enqueueUpdate$1(fiber, queue, update);
             var alternate = fiber.alternate;
             if (fiber.lanes === NoLanes && (alternate === null || alternate.lanes === NoLanes)) {
                 // The queue is currently empty, which means we can eagerly compute the
@@ -18205,19 +18304,26 @@ module.exports = require("./cjs/react-dom.development.js");
                         // without calling the reducer again.
                         update.hasEagerState = true;
                         update.eagerState = eagerState;
-                        if (objectIs(eagerState, currentState)) // Fast path. We can bail out without scheduling React to re-render.
-                        // It's still possible that we'll need to rebase this update later,
-                        // if the component re-renders for a different reason and by that
-                        // time the reducer has changed.
-                        return;
+                        if (objectIs(eagerState, currentState)) {
+                            // Fast path. We can bail out without scheduling React to re-render.
+                            // It's still possible that we'll need to rebase this update later,
+                            // if the component re-renders for a different reason and by that
+                            // time the reducer has changed.
+                            // TODO: Do we still need to entangle transitions in this case?
+                            enqueueConcurrentHookUpdateAndEagerlyBailout(fiber, queue, update, lane);
+                            return;
+                        }
                     } catch (error) {} finally{
                         ReactCurrentDispatcher$1.current = prevDispatcher;
                     }
                 }
             }
-            var eventTime = requestEventTime();
-            var root = scheduleUpdateOnFiber(fiber, lane, eventTime);
-            if (root !== null) entangleTransitionUpdate(root, queue, lane);
+            var root = enqueueConcurrentHookUpdate(fiber, queue, update, lane);
+            if (root !== null) {
+                var eventTime = requestEventTime();
+                scheduleUpdateOnFiber(root, fiber, lane, eventTime);
+                entangleTransitionUpdate(root, queue, lane);
+            }
         }
         markUpdateInDevTools(fiber, lane);
     }
@@ -18238,31 +18344,7 @@ module.exports = require("./cjs/react-dom.development.js");
             pending.next = update;
         }
         queue.pending = update;
-    }
-    function enqueueUpdate$1(fiber, queue, update, lane) {
-        if (isInterleavedUpdate(fiber)) {
-            var interleaved = queue.interleaved;
-            if (interleaved === null) {
-                // This is the first update. Create a circular list.
-                update.next = update; // At the end of the current render, this queue's interleaved updates will
-                // be transferred to the pending queue.
-                pushInterleavedQueue(queue);
-            } else {
-                update.next = interleaved.next;
-                interleaved.next = update;
-            }
-            queue.interleaved = update;
-        } else {
-            var pending = queue.pending;
-            if (pending === null) // This is the first update. Create a circular list.
-            update.next = update;
-            else {
-                update.next = pending.next;
-                pending.next = update;
-            }
-            queue.pending = update;
-        }
-    }
+    } // TODO: Move to ReactFiberConcurrentUpdates?
     function entangleTransitionUpdate(root, queue, lane) {
         if (isTransitionLane(lane)) {
             var queueLanes = queue.lanes; // If any entangled lanes are no longer pending on the root, then they
@@ -19217,13 +19299,22 @@ module.exports = require("./cjs/react-dom.development.js");
             child = child.sibling;
         }
     }
-    function createCapturedValue(value, source) {
+    function createCapturedValueAtFiber(value, source) {
         // If the value is an error, call this function immediately after it is thrown
         // so the stack is accurate.
         return {
             value: value,
             source: source,
-            stack: getStackByFiberInDevAndProd(source)
+            stack: getStackByFiberInDevAndProd(source),
+            digest: null
+        };
+    }
+    function createCapturedValue(value, digest, stack) {
+        return {
+            value: value,
+            source: null,
+            stack: stack != null ? stack : null,
+            digest: digest != null ? digest : null
         };
     }
     // This module is forked in different environments.
@@ -19455,7 +19546,7 @@ module.exports = require("./cjs/react-dom.development.js");
                         // prevent a bail out.
                         var update = createUpdate(NoTimestamp, SyncLane);
                         update.tag = ForceUpdate;
-                        enqueueUpdate(sourceFiber, update);
+                        enqueueUpdate(sourceFiber, update, SyncLane);
                     }
                 } // The source fiber did not complete. Mark it with Sync priority to
                 // indicate that it still has pending work.
@@ -19559,15 +19650,14 @@ module.exports = require("./cjs/react-dom.development.js");
                 _suspenseBoundary.flags |= ForceClientRender;
                 markSuspenseBoundaryShouldCapture(_suspenseBoundary, returnFiber, sourceFiber, root, rootRenderLanes); // Even though the user may not be affected by this error, we should
                 // still log it so it can be fixed.
-                queueHydrationError(value);
+                queueHydrationError(createCapturedValueAtFiber(value, sourceFiber));
                 return;
             }
         }
-         // We didn't find a boundary that could handle this type of exception. Start
+        value = createCapturedValueAtFiber(value, sourceFiber);
+        renderDidError(value); // We didn't find a boundary that could handle this type of exception. Start
         // over and traverse parent path again, this time treating the exception
         // as an error.
-        renderDidError(value);
-        value = createCapturedValue(value, sourceFiber);
         var workInProgress = returnFiber;
         do {
             switch(workInProgress.tag){
@@ -19599,630 +19689,6 @@ module.exports = require("./cjs/react-dom.development.js");
     }
     function getSuspendedCache() {
         return null;
-    }
-    function markUpdate(workInProgress) {
-        // Tag the fiber with an update effect. This turns a Placement into
-        // a PlacementAndUpdate.
-        workInProgress.flags |= Update;
-    }
-    function markRef(workInProgress) {
-        workInProgress.flags |= Ref;
-        workInProgress.flags |= RefStatic;
-    }
-    var appendAllChildren;
-    var updateHostContainer;
-    var updateHostComponent;
-    var updateHostText;
-    // Mutation mode
-    appendAllChildren = function(parent, workInProgress, needsVisibilityToggle, isHidden) {
-        // We only have the top Fiber that was created but we need recurse down its
-        // children to find all the terminal nodes.
-        var node = workInProgress.child;
-        while(node !== null){
-            if (node.tag === HostComponent || node.tag === HostText) appendInitialChild(parent, node.stateNode);
-            else if (node.tag === HostPortal) ;
-            else if (node.child !== null) {
-                node.child.return = node;
-                node = node.child;
-                continue;
-            }
-            if (node === workInProgress) return;
-            while(node.sibling === null){
-                if (node.return === null || node.return === workInProgress) return;
-                node = node.return;
-            }
-            node.sibling.return = node.return;
-            node = node.sibling;
-        }
-    };
-    updateHostContainer = function(current, workInProgress) {};
-    updateHostComponent = function(current, workInProgress, type, newProps, rootContainerInstance) {
-        // If we have an alternate, that means this is an update and we need to
-        // schedule a side-effect to do the updates.
-        var oldProps = current.memoizedProps;
-        if (oldProps === newProps) // In mutation mode, this is sufficient for a bailout because
-        // we won't touch this node even if children changed.
-        return;
-         // If we get updated because one of our children updated, we don't
-        // have newProps so we'll have to reuse them.
-        // TODO: Split the update API as separate for the props vs. children.
-        // Even better would be if children weren't special cased at all tho.
-        var instance = workInProgress.stateNode;
-        var currentHostContext = getHostContext(); // TODO: Experiencing an error where oldProps is null. Suggests a host
-        // component is hitting the resume path. Figure out why. Possibly
-        // related to `hidden`.
-        var updatePayload = prepareUpdate(instance, type, oldProps, newProps, rootContainerInstance, currentHostContext); // TODO: Type this specific to this type of component.
-        workInProgress.updateQueue = updatePayload; // If the update payload indicates that there is a change or if there
-        // is a new ref we mark this as an update. All the work is done in commitWork.
-        if (updatePayload) markUpdate(workInProgress);
-    };
-    updateHostText = function(current, workInProgress, oldText, newText) {
-        // If the text differs, mark it as an update. All the work in done in commitWork.
-        if (oldText !== newText) markUpdate(workInProgress);
-    };
-    function cutOffTailIfNeeded(renderState, hasRenderedATailFallback) {
-        if (getIsHydrating()) // If we're hydrating, we should consume as many items as we can
-        // so we don't leave any behind.
-        return;
-        switch(renderState.tailMode){
-            case "hidden":
-                // Any insertions at the end of the tail list after this point
-                // should be invisible. If there are already mounted boundaries
-                // anything before them are not considered for collapsing.
-                // Therefore we need to go through the whole tail to find if
-                // there are any.
-                var tailNode = renderState.tail;
-                var lastTailNode = null;
-                while(tailNode !== null){
-                    if (tailNode.alternate !== null) lastTailNode = tailNode;
-                    tailNode = tailNode.sibling;
-                } // Next we're simply going to delete all insertions after the
-                // last rendered item.
-                if (lastTailNode === null) // All remaining items in the tail are insertions.
-                renderState.tail = null;
-                else // Detach the insertion after the last node that was already
-                // inserted.
-                lastTailNode.sibling = null;
-                break;
-            case "collapsed":
-                // Any insertions at the end of the tail list after this point
-                // should be invisible. If there are already mounted boundaries
-                // anything before them are not considered for collapsing.
-                // Therefore we need to go through the whole tail to find if
-                // there are any.
-                var _tailNode = renderState.tail;
-                var _lastTailNode = null;
-                while(_tailNode !== null){
-                    if (_tailNode.alternate !== null) _lastTailNode = _tailNode;
-                    _tailNode = _tailNode.sibling;
-                } // Next we're simply going to delete all insertions after the
-                // last rendered item.
-                if (_lastTailNode === null) {
-                    // All remaining items in the tail are insertions.
-                    if (!hasRenderedATailFallback && renderState.tail !== null) // We suspended during the head. We want to show at least one
-                    // row at the tail. So we'll keep on and cut off the rest.
-                    renderState.tail.sibling = null;
-                    else renderState.tail = null;
-                } else // Detach the insertion after the last node that was already
-                // inserted.
-                _lastTailNode.sibling = null;
-                break;
-        }
-    }
-    function bubbleProperties(completedWork) {
-        var didBailout = completedWork.alternate !== null && completedWork.alternate.child === completedWork.child;
-        var newChildLanes = NoLanes;
-        var subtreeFlags = NoFlags;
-        if (!didBailout) {
-            // Bubble up the earliest expiration time.
-            if ((completedWork.mode & ProfileMode) !== NoMode) {
-                // In profiling mode, resetChildExpirationTime is also used to reset
-                // profiler durations.
-                var actualDuration = completedWork.actualDuration;
-                var treeBaseDuration = completedWork.selfBaseDuration;
-                var child = completedWork.child;
-                while(child !== null){
-                    newChildLanes = mergeLanes(newChildLanes, mergeLanes(child.lanes, child.childLanes));
-                    subtreeFlags |= child.subtreeFlags;
-                    subtreeFlags |= child.flags; // When a fiber is cloned, its actualDuration is reset to 0. This value will
-                    // only be updated if work is done on the fiber (i.e. it doesn't bailout).
-                    // When work is done, it should bubble to the parent's actualDuration. If
-                    // the fiber has not been cloned though, (meaning no work was done), then
-                    // this value will reflect the amount of time spent working on a previous
-                    // render. In that case it should not bubble. We determine whether it was
-                    // cloned by comparing the child pointer.
-                    actualDuration += child.actualDuration;
-                    treeBaseDuration += child.treeBaseDuration;
-                    child = child.sibling;
-                }
-                completedWork.actualDuration = actualDuration;
-                completedWork.treeBaseDuration = treeBaseDuration;
-            } else {
-                var _child = completedWork.child;
-                while(_child !== null){
-                    newChildLanes = mergeLanes(newChildLanes, mergeLanes(_child.lanes, _child.childLanes));
-                    subtreeFlags |= _child.subtreeFlags;
-                    subtreeFlags |= _child.flags; // Update the return pointer so the tree is consistent. This is a code
-                    // smell because it assumes the commit phase is never concurrent with
-                    // the render phase. Will address during refactor to alternate model.
-                    _child.return = completedWork;
-                    _child = _child.sibling;
-                }
-            }
-            completedWork.subtreeFlags |= subtreeFlags;
-        } else {
-            // Bubble up the earliest expiration time.
-            if ((completedWork.mode & ProfileMode) !== NoMode) {
-                // In profiling mode, resetChildExpirationTime is also used to reset
-                // profiler durations.
-                var _treeBaseDuration = completedWork.selfBaseDuration;
-                var _child2 = completedWork.child;
-                while(_child2 !== null){
-                    newChildLanes = mergeLanes(newChildLanes, mergeLanes(_child2.lanes, _child2.childLanes)); // "Static" flags share the lifetime of the fiber/hook they belong to,
-                    // so we should bubble those up even during a bailout. All the other
-                    // flags have a lifetime only of a single render + commit, so we should
-                    // ignore them.
-                    subtreeFlags |= _child2.subtreeFlags & StaticMask;
-                    subtreeFlags |= _child2.flags & StaticMask;
-                    _treeBaseDuration += _child2.treeBaseDuration;
-                    _child2 = _child2.sibling;
-                }
-                completedWork.treeBaseDuration = _treeBaseDuration;
-            } else {
-                var _child3 = completedWork.child;
-                while(_child3 !== null){
-                    newChildLanes = mergeLanes(newChildLanes, mergeLanes(_child3.lanes, _child3.childLanes)); // "Static" flags share the lifetime of the fiber/hook they belong to,
-                    // so we should bubble those up even during a bailout. All the other
-                    // flags have a lifetime only of a single render + commit, so we should
-                    // ignore them.
-                    subtreeFlags |= _child3.subtreeFlags & StaticMask;
-                    subtreeFlags |= _child3.flags & StaticMask; // Update the return pointer so the tree is consistent. This is a code
-                    // smell because it assumes the commit phase is never concurrent with
-                    // the render phase. Will address during refactor to alternate model.
-                    _child3.return = completedWork;
-                    _child3 = _child3.sibling;
-                }
-            }
-            completedWork.subtreeFlags |= subtreeFlags;
-        }
-        completedWork.childLanes = newChildLanes;
-        return didBailout;
-    }
-    function completeWork(current, workInProgress, renderLanes) {
-        var newProps = workInProgress.pendingProps; // Note: This intentionally doesn't check if we're hydrating because comparing
-        // to the current tree provider fiber is just as fast and less error-prone.
-        // Ideally we would have a special version of the work loop only
-        // for hydration.
-        popTreeContext(workInProgress);
-        switch(workInProgress.tag){
-            case IndeterminateComponent:
-            case LazyComponent:
-            case SimpleMemoComponent:
-            case FunctionComponent:
-            case ForwardRef:
-            case Fragment:
-            case Mode:
-            case Profiler:
-            case ContextConsumer:
-            case MemoComponent:
-                bubbleProperties(workInProgress);
-                return null;
-            case ClassComponent:
-                var Component = workInProgress.type;
-                if (isContextProvider(Component)) popContext(workInProgress);
-                bubbleProperties(workInProgress);
-                return null;
-            case HostRoot:
-                var fiberRoot = workInProgress.stateNode;
-                popHostContainer(workInProgress);
-                popTopLevelContextObject(workInProgress);
-                resetWorkInProgressVersions();
-                if (fiberRoot.pendingContext) {
-                    fiberRoot.context = fiberRoot.pendingContext;
-                    fiberRoot.pendingContext = null;
-                }
-                if (current === null || current.child === null) {
-                    // If we hydrated, pop so that we can delete any remaining children
-                    // that weren't hydrated.
-                    var wasHydrated = popHydrationState(workInProgress);
-                    if (wasHydrated) // If we hydrated, then we'll need to schedule an update for
-                    // the commit side-effects on the root.
-                    markUpdate(workInProgress);
-                    else if (current !== null) {
-                        var prevState = current.memoizedState;
-                        if (!prevState.isDehydrated || (workInProgress.flags & ForceClientRender) !== NoFlags) {
-                            // Schedule an effect to clear this container at the start of the
-                            // next commit. This handles the case of React rendering into a
-                            // container with previous children. It's also safe to do for
-                            // updates too, because current.child would only be null if the
-                            // previous render was null (so the container would already
-                            // be empty).
-                            workInProgress.flags |= Snapshot; // If this was a forced client render, there may have been
-                            // recoverable errors during first hydration attempt. If so, add
-                            // them to a queue so we can log them in the commit phase.
-                            upgradeHydrationErrorsToRecoverable();
-                        }
-                    }
-                }
-                updateHostContainer(current, workInProgress);
-                bubbleProperties(workInProgress);
-                return null;
-            case HostComponent:
-                popHostContext(workInProgress);
-                var rootContainerInstance = getRootHostContainer();
-                var type = workInProgress.type;
-                if (current !== null && workInProgress.stateNode != null) {
-                    updateHostComponent(current, workInProgress, type, newProps, rootContainerInstance);
-                    if (current.ref !== workInProgress.ref) markRef(workInProgress);
-                } else {
-                    if (!newProps) {
-                        if (workInProgress.stateNode === null) throw new Error("We must have new props for new mounts. This error is likely caused by a bug in React. Please file an issue.");
-                         // This can happen when we abort work.
-                        bubbleProperties(workInProgress);
-                        return null;
-                    }
-                    var currentHostContext = getHostContext(); // TODO: Move createInstance to beginWork and keep it on a context
-                    // "stack" as the parent. Then append children as we go in beginWork
-                    // or completeWork depending on whether we want to add them top->down or
-                    // bottom->up. Top->down is faster in IE11.
-                    var _wasHydrated = popHydrationState(workInProgress);
-                    if (_wasHydrated) // TODO: Move this and createInstance step into the beginPhase
-                    // to consolidate.
-                    {
-                        if (prepareToHydrateHostInstance(workInProgress, rootContainerInstance, currentHostContext)) // If changes to the hydrated node need to be applied at the
-                        // commit-phase we mark this as such.
-                        markUpdate(workInProgress);
-                    } else {
-                        var instance = createInstance(type, newProps, rootContainerInstance, currentHostContext, workInProgress);
-                        appendAllChildren(instance, workInProgress, false, false);
-                        workInProgress.stateNode = instance; // Certain renderers require commit-time effects for initial mount.
-                        // (eg DOM renderer supports auto-focus for certain elements).
-                        // Make sure such renderers get scheduled for later work.
-                        if (finalizeInitialChildren(instance, type, newProps, rootContainerInstance)) markUpdate(workInProgress);
-                    }
-                    if (workInProgress.ref !== null) // If there is a ref on a host node we need to schedule a callback
-                    markRef(workInProgress);
-                }
-                bubbleProperties(workInProgress);
-                return null;
-            case HostText:
-                var newText = newProps;
-                if (current && workInProgress.stateNode != null) {
-                    var oldText = current.memoizedProps; // If we have an alternate, that means this is an update and we need
-                    // to schedule a side-effect to do the updates.
-                    updateHostText(current, workInProgress, oldText, newText);
-                } else {
-                    if (typeof newText !== "string") {
-                        if (workInProgress.stateNode === null) throw new Error("We must have new props for new mounts. This error is likely caused by a bug in React. Please file an issue.");
-                         // This can happen when we abort work.
-                    }
-                    var _rootContainerInstance = getRootHostContainer();
-                    var _currentHostContext = getHostContext();
-                    var _wasHydrated2 = popHydrationState(workInProgress);
-                    if (_wasHydrated2) {
-                        if (prepareToHydrateHostTextInstance(workInProgress)) markUpdate(workInProgress);
-                    } else workInProgress.stateNode = createTextInstance(newText, _rootContainerInstance, _currentHostContext, workInProgress);
-                }
-                bubbleProperties(workInProgress);
-                return null;
-            case SuspenseComponent:
-                popSuspenseContext(workInProgress);
-                var nextState = workInProgress.memoizedState;
-                if (hasUnhydratedTailNodes() && (workInProgress.mode & ConcurrentMode) !== NoMode && (workInProgress.flags & DidCapture) === NoFlags) {
-                    warnIfUnhydratedTailNodes(workInProgress);
-                    resetHydrationState();
-                    workInProgress.flags |= ForceClientRender | Incomplete | ShouldCapture;
-                    return workInProgress;
-                }
-                if (nextState !== null && nextState.dehydrated !== null) {
-                    // We might be inside a hydration state the first time we're picking up this
-                    // Suspense boundary, and also after we've reentered it for further hydration.
-                    var _wasHydrated3 = popHydrationState(workInProgress);
-                    if (current === null) {
-                        if (!_wasHydrated3) throw new Error("A dehydrated suspense component was completed without a hydrated node. This is probably a bug in React.");
-                        prepareToHydrateHostSuspenseInstance(workInProgress);
-                        bubbleProperties(workInProgress);
-                        if ((workInProgress.mode & ProfileMode) !== NoMode) {
-                            var isTimedOutSuspense = nextState !== null;
-                            if (isTimedOutSuspense) {
-                                // Don't count time spent in a timed out Suspense subtree as part of the base duration.
-                                var primaryChildFragment = workInProgress.child;
-                                if (primaryChildFragment !== null) // $FlowFixMe Flow doesn't support type casting in combination with the -= operator
-                                workInProgress.treeBaseDuration -= primaryChildFragment.treeBaseDuration;
-                            }
-                        }
-                        return null;
-                    } else {
-                        // We might have reentered this boundary to hydrate it. If so, we need to reset the hydration
-                        // state since we're now exiting out of it. popHydrationState doesn't do that for us.
-                        resetHydrationState();
-                        if ((workInProgress.flags & DidCapture) === NoFlags) // This boundary did not suspend so it's now hydrated and unsuspended.
-                        workInProgress.memoizedState = null;
-                         // If nothing suspended, we need to schedule an effect to mark this boundary
-                        // as having hydrated so events know that they're free to be invoked.
-                        // It's also a signal to replay events and the suspense callback.
-                        // If something suspended, schedule an effect to attach retry listeners.
-                        // So we might as well always mark this.
-                        workInProgress.flags |= Update;
-                        bubbleProperties(workInProgress);
-                        if ((workInProgress.mode & ProfileMode) !== NoMode) {
-                            var _isTimedOutSuspense = nextState !== null;
-                            if (_isTimedOutSuspense) {
-                                // Don't count time spent in a timed out Suspense subtree as part of the base duration.
-                                var _primaryChildFragment = workInProgress.child;
-                                if (_primaryChildFragment !== null) // $FlowFixMe Flow doesn't support type casting in combination with the -= operator
-                                workInProgress.treeBaseDuration -= _primaryChildFragment.treeBaseDuration;
-                            }
-                        }
-                        return null;
-                    }
-                } // Successfully completed this tree. If this was a forced client render,
-                // there may have been recoverable errors during first hydration
-                // attempt. If so, add them to a queue so we can log them in the
-                // commit phase.
-                upgradeHydrationErrorsToRecoverable();
-                if ((workInProgress.flags & DidCapture) !== NoFlags) {
-                    // Something suspended. Re-render with the fallback children.
-                    workInProgress.lanes = renderLanes; // Do not reset the effect list.
-                    if ((workInProgress.mode & ProfileMode) !== NoMode) transferActualDuration(workInProgress);
-                     // Don't bubble properties in this case.
-                    return workInProgress;
-                }
-                var nextDidTimeout = nextState !== null;
-                var prevDidTimeout = false;
-                if (current === null) popHydrationState(workInProgress);
-                else {
-                    var _prevState = current.memoizedState;
-                    prevDidTimeout = _prevState !== null;
-                }
-                // a passive effect, which is when we process the transitions
-                if (nextDidTimeout !== prevDidTimeout) // an effect to toggle the subtree's visibility. When we switch from
-                // fallback -> primary, the inner Offscreen fiber schedules this effect
-                // as part of its normal complete phase. But when we switch from
-                // primary -> fallback, the inner Offscreen fiber does not have a complete
-                // phase. So we need to schedule its effect here.
-                //
-                // We also use this flag to connect/disconnect the effects, but the same
-                // logic applies: when re-connecting, the Offscreen fiber's complete
-                // phase will handle scheduling the effect. It's only when the fallback
-                // is active that we have to do anything special.
-                {
-                    if (nextDidTimeout) {
-                        var _offscreenFiber2 = workInProgress.child;
-                        _offscreenFiber2.flags |= Visibility; // TODO: This will still suspend a synchronous tree if anything
-                        // in the concurrent tree already suspended during this render.
-                        // This is a known bug.
-                        if ((workInProgress.mode & ConcurrentMode) !== NoMode) {
-                            // TODO: Move this back to throwException because this is too late
-                            // if this is a large tree which is common for initial loads. We
-                            // don't know if we should restart a render or not until we get
-                            // this marker, and this is too late.
-                            // If this render already had a ping or lower pri updates,
-                            // and this is the first time we know we're going to suspend we
-                            // should be able to immediately restart from within throwException.
-                            var hasInvisibleChildContext = current === null && (workInProgress.memoizedProps.unstable_avoidThisFallback !== true || !enableSuspenseAvoidThisFallback);
-                            if (hasInvisibleChildContext || hasSuspenseContext(suspenseStackCursor.current, InvisibleParentSuspenseContext)) // If this was in an invisible tree or a new render, then showing
-                            // this boundary is ok.
-                            renderDidSuspend();
-                            else // Otherwise, we're going to have to hide content so we should
-                            // suspend for longer if possible.
-                            renderDidSuspendDelayIfPossible();
-                        }
-                    }
-                }
-                var wakeables = workInProgress.updateQueue;
-                if (wakeables !== null) // Schedule an effect to attach a retry listener to the promise.
-                // TODO: Move to passive phase
-                workInProgress.flags |= Update;
-                bubbleProperties(workInProgress);
-                if ((workInProgress.mode & ProfileMode) !== NoMode) {
-                    if (nextDidTimeout) {
-                        // Don't count time spent in a timed out Suspense subtree as part of the base duration.
-                        var _primaryChildFragment2 = workInProgress.child;
-                        if (_primaryChildFragment2 !== null) // $FlowFixMe Flow doesn't support type casting in combination with the -= operator
-                        workInProgress.treeBaseDuration -= _primaryChildFragment2.treeBaseDuration;
-                    }
-                }
-                return null;
-            case HostPortal:
-                popHostContainer(workInProgress);
-                updateHostContainer(current, workInProgress);
-                if (current === null) preparePortalMount(workInProgress.stateNode.containerInfo);
-                bubbleProperties(workInProgress);
-                return null;
-            case ContextProvider:
-                // Pop provider fiber
-                var context = workInProgress.type._context;
-                popProvider(context, workInProgress);
-                bubbleProperties(workInProgress);
-                return null;
-            case IncompleteClassComponent:
-                // Same as class component case. I put it down here so that the tags are
-                // sequential to ensure this switch is compiled to a jump table.
-                var _Component = workInProgress.type;
-                if (isContextProvider(_Component)) popContext(workInProgress);
-                bubbleProperties(workInProgress);
-                return null;
-            case SuspenseListComponent:
-                popSuspenseContext(workInProgress);
-                var renderState = workInProgress.memoizedState;
-                if (renderState === null) {
-                    // We're running in the default, "independent" mode.
-                    // We don't do anything in this mode.
-                    bubbleProperties(workInProgress);
-                    return null;
-                }
-                var didSuspendAlready = (workInProgress.flags & DidCapture) !== NoFlags;
-                var renderedTail = renderState.rendering;
-                if (renderedTail === null) {
-                    // We just rendered the head.
-                    if (!didSuspendAlready) {
-                        // This is the first pass. We need to figure out if anything is still
-                        // suspended in the rendered set.
-                        // If new content unsuspended, but there's still some content that
-                        // didn't. Then we need to do a second pass that forces everything
-                        // to keep showing their fallbacks.
-                        // We might be suspended if something in this render pass suspended, or
-                        // something in the previous committed pass suspended. Otherwise,
-                        // there's no chance so we can skip the expensive call to
-                        // findFirstSuspended.
-                        var cannotBeSuspended = renderHasNotSuspendedYet() && (current === null || (current.flags & DidCapture) === NoFlags);
-                        if (!cannotBeSuspended) {
-                            var row = workInProgress.child;
-                            while(row !== null){
-                                var suspended = findFirstSuspended(row);
-                                if (suspended !== null) {
-                                    didSuspendAlready = true;
-                                    workInProgress.flags |= DidCapture;
-                                    cutOffTailIfNeeded(renderState, false); // If this is a newly suspended tree, it might not get committed as
-                                    // part of the second pass. In that case nothing will subscribe to
-                                    // its thenables. Instead, we'll transfer its thenables to the
-                                    // SuspenseList so that it can retry if they resolve.
-                                    // There might be multiple of these in the list but since we're
-                                    // going to wait for all of them anyway, it doesn't really matter
-                                    // which ones gets to ping. In theory we could get clever and keep
-                                    // track of how many dependencies remain but it gets tricky because
-                                    // in the meantime, we can add/remove/change items and dependencies.
-                                    // We might bail out of the loop before finding any but that
-                                    // doesn't matter since that means that the other boundaries that
-                                    // we did find already has their listeners attached.
-                                    var newThenables = suspended.updateQueue;
-                                    if (newThenables !== null) {
-                                        workInProgress.updateQueue = newThenables;
-                                        workInProgress.flags |= Update;
-                                    } // Rerender the whole list, but this time, we'll force fallbacks
-                                    // to stay in place.
-                                    // Reset the effect flags before doing the second pass since that's now invalid.
-                                    // Reset the child fibers to their original state.
-                                    workInProgress.subtreeFlags = NoFlags;
-                                    resetChildFibers(workInProgress, renderLanes); // Set up the Suspense Context to force suspense and immediately
-                                    // rerender the children.
-                                    pushSuspenseContext(workInProgress, setShallowSuspenseContext(suspenseStackCursor.current, ForceSuspenseFallback)); // Don't bubble properties in this case.
-                                    return workInProgress.child;
-                                }
-                                row = row.sibling;
-                            }
-                        }
-                        if (renderState.tail !== null && now() > getRenderTargetTime()) {
-                            // We have already passed our CPU deadline but we still have rows
-                            // left in the tail. We'll just give up further attempts to render
-                            // the main content and only render fallbacks.
-                            workInProgress.flags |= DidCapture;
-                            didSuspendAlready = true;
-                            cutOffTailIfNeeded(renderState, false); // Since nothing actually suspended, there will nothing to ping this
-                            // to get it started back up to attempt the next item. While in terms
-                            // of priority this work has the same priority as this current render,
-                            // it's not part of the same transition once the transition has
-                            // committed. If it's sync, we still want to yield so that it can be
-                            // painted. Conceptually, this is really the same as pinging.
-                            // We can use any RetryLane even if it's the one currently rendering
-                            // since we're leaving it behind on this node.
-                            workInProgress.lanes = SomeRetryLane;
-                        }
-                    } else cutOffTailIfNeeded(renderState, false);
-                     // Next we're going to render the tail.
-                } else {
-                    // Append the rendered row to the child list.
-                    if (!didSuspendAlready) {
-                        var _suspended = findFirstSuspended(renderedTail);
-                        if (_suspended !== null) {
-                            workInProgress.flags |= DidCapture;
-                            didSuspendAlready = true; // Ensure we transfer the update queue to the parent so that it doesn't
-                            // get lost if this row ends up dropped during a second pass.
-                            var _newThenables = _suspended.updateQueue;
-                            if (_newThenables !== null) {
-                                workInProgress.updateQueue = _newThenables;
-                                workInProgress.flags |= Update;
-                            }
-                            cutOffTailIfNeeded(renderState, true); // This might have been modified.
-                            if (renderState.tail === null && renderState.tailMode === "hidden" && !renderedTail.alternate && !getIsHydrating() // We don't cut it if we're hydrating.
-                            ) {
-                                // We're done.
-                                bubbleProperties(workInProgress);
-                                return null;
-                            }
-                        } else if (// time we have to render. So rendering one more row would likely
-                        // exceed it.
-                        now() * 2 - renderState.renderingStartTime > getRenderTargetTime() && renderLanes !== OffscreenLane) {
-                            // We have now passed our CPU deadline and we'll just give up further
-                            // attempts to render the main content and only render fallbacks.
-                            // The assumption is that this is usually faster.
-                            workInProgress.flags |= DidCapture;
-                            didSuspendAlready = true;
-                            cutOffTailIfNeeded(renderState, false); // Since nothing actually suspended, there will nothing to ping this
-                            // to get it started back up to attempt the next item. While in terms
-                            // of priority this work has the same priority as this current render,
-                            // it's not part of the same transition once the transition has
-                            // committed. If it's sync, we still want to yield so that it can be
-                            // painted. Conceptually, this is really the same as pinging.
-                            // We can use any RetryLane even if it's the one currently rendering
-                            // since we're leaving it behind on this node.
-                            workInProgress.lanes = SomeRetryLane;
-                        }
-                    }
-                    if (renderState.isBackwards) {
-                        // The effect list of the backwards tail will have been added
-                        // to the end. This breaks the guarantee that life-cycles fire in
-                        // sibling order but that isn't a strong guarantee promised by React.
-                        // Especially since these might also just pop in during future commits.
-                        // Append to the beginning of the list.
-                        renderedTail.sibling = workInProgress.child;
-                        workInProgress.child = renderedTail;
-                    } else {
-                        var previousSibling = renderState.last;
-                        if (previousSibling !== null) previousSibling.sibling = renderedTail;
-                        else workInProgress.child = renderedTail;
-                        renderState.last = renderedTail;
-                    }
-                }
-                if (renderState.tail !== null) {
-                    // We still have tail rows to render.
-                    // Pop a row.
-                    var next = renderState.tail;
-                    renderState.rendering = next;
-                    renderState.tail = next.sibling;
-                    renderState.renderingStartTime = now();
-                    next.sibling = null; // Restore the context.
-                    // TODO: We can probably just avoid popping it instead and only
-                    // setting it the first time we go from not suspended to suspended.
-                    var suspenseContext = suspenseStackCursor.current;
-                    if (didSuspendAlready) suspenseContext = setShallowSuspenseContext(suspenseContext, ForceSuspenseFallback);
-                    else suspenseContext = setDefaultShallowSuspenseContext(suspenseContext);
-                    pushSuspenseContext(workInProgress, suspenseContext); // Do a pass over the next row.
-                    // Don't bubble properties in this case.
-                    return next;
-                }
-                bubbleProperties(workInProgress);
-                return null;
-            case ScopeComponent:
-                break;
-            case OffscreenComponent:
-            case LegacyHiddenComponent:
-                popRenderLanes(workInProgress);
-                var _nextState = workInProgress.memoizedState;
-                var nextIsHidden = _nextState !== null;
-                if (current !== null) {
-                    var _prevState2 = current.memoizedState;
-                    var prevIsHidden = _prevState2 !== null;
-                    if (prevIsHidden !== nextIsHidden && !enableLegacyHidden) workInProgress.flags |= Visibility;
-                }
-                if (!nextIsHidden || (workInProgress.mode & ConcurrentMode) === NoMode) bubbleProperties(workInProgress);
-                else // Don't bubble properties for hidden children unless we're rendering
-                // at offscreen priority.
-                if (includesSomeLane(subtreeRenderLanes1, OffscreenLane)) {
-                    bubbleProperties(workInProgress);
-                    // Check if there was an insertion or update in the hidden subtree.
-                    // If so, we need to hide those nodes in the commit phase, so
-                    // schedule a visibility effect.
-                    if (workInProgress.subtreeFlags & (Placement | Update)) workInProgress.flags |= Visibility;
-                }
-                return null;
-            case CacheComponent:
-                return null;
-            case TracingMarkerComponent:
-                return null;
-        }
-        throw new Error("Unknown unit of work tag (" + workInProgress.tag + "). This error is likely caused by a bug in " + "React. Please file an issue.");
     }
     var ReactCurrentOwner$1 = ReactSharedInternals.ReactCurrentOwner;
     var didReceiveUpdate = false;
@@ -20480,7 +19946,7 @@ module.exports = require("./cjs/react-dom.development.js");
         }
         reconcileChildren(current, workInProgress, nextChildren, renderLanes);
         return workInProgress.child;
-    }
+    } // Note: These happen to have identical begin phases, for now. We shouldn't hold
     function updateFragment1(current, workInProgress, renderLanes) {
         var nextChildren = workInProgress.pendingProps;
         reconcileChildren(current, workInProgress, nextChildren, renderLanes);
@@ -20503,7 +19969,7 @@ module.exports = require("./cjs/react-dom.development.js");
         reconcileChildren(current, workInProgress, nextChildren, renderLanes);
         return workInProgress.child;
     }
-    function markRef$1(current, workInProgress) {
+    function markRef(current, workInProgress) {
         var ref = workInProgress.ref;
         if (current === null && ref !== null || current !== null && current.ref !== ref) {
             // Schedule a Ref effect
@@ -20567,7 +20033,7 @@ module.exports = require("./cjs/react-dom.development.js");
                 var error$1 = new Error("Simulated error coming from DevTools");
                 var lane = pickArbitraryLane(renderLanes);
                 workInProgress.lanes = mergeLanes(workInProgress.lanes, lane); // Schedule the error boundary to re-render using updated state
-                var update = createClassErrorUpdate(workInProgress, createCapturedValue(error$1, workInProgress), lane);
+                var update = createClassErrorUpdate(workInProgress, createCapturedValueAtFiber(error$1, workInProgress), lane);
                 enqueueCapturedUpdate(workInProgress, update);
                 break;
         }
@@ -20588,15 +20054,7 @@ module.exports = require("./cjs/react-dom.development.js");
         var instance = workInProgress.stateNode;
         var shouldUpdate;
         if (instance === null) {
-            if (current !== null) {
-                // A class component without an instance only mounts if it suspended
-                // inside a non-concurrent tree, in an inconsistent state. We want to
-                // treat it like a new mount, even though an empty version of it already
-                // committed. Disconnect the alternate pointers.
-                current.alternate = null;
-                workInProgress.alternate = null; // Since this is conceptually a new fiber, schedule a Placement effect
-                workInProgress.flags |= Placement;
-            } // In the initial pass we might need to construct the instance.
+            resetSuspendedCurrentOnMountInLegacyMode(current, workInProgress); // In the initial pass we might need to construct the instance.
             constructClassInstance(workInProgress, Component, nextProps);
             mountClassInstance(workInProgress, Component, nextProps, renderLanes);
             shouldUpdate = true;
@@ -20613,7 +20071,7 @@ module.exports = require("./cjs/react-dom.development.js");
     }
     function finishClassComponent(current, workInProgress, Component, shouldUpdate, hasContext, renderLanes) {
         // Refs should update even if shouldComponentUpdate returns false
-        markRef$1(current, workInProgress);
+        markRef(current, workInProgress);
         var didCaptureError = (workInProgress.flags & DidCapture) !== NoFlags;
         if (!shouldUpdate && !didCaptureError) {
             // Context providers should defer to sCU for rendering
@@ -20697,10 +20155,10 @@ module.exports = require("./cjs/react-dom.development.js");
             if (workInProgress.flags & ForceClientRender) {
                 // Something errored during a previous attempt to hydrate the shell, so we
                 // forced a client render.
-                var recoverableError = new Error("There was an error while hydrating. Because the error happened outside of a Suspense boundary, the entire root will switch to client rendering.");
+                var recoverableError = createCapturedValueAtFiber(new Error("There was an error while hydrating. Because the error happened outside of a Suspense boundary, the entire root will switch to client rendering."), workInProgress);
                 return mountHostRootWithoutHydrating(current, workInProgress, nextChildren, renderLanes, recoverableError);
             } else if (nextChildren !== prevChildren) {
-                var _recoverableError = new Error("This root received an early update, before anything was able hydrate. Switched the entire root to client rendering.");
+                var _recoverableError = createCapturedValueAtFiber(new Error("This root received an early update, before anything was able hydrate. Switched the entire root to client rendering."), workInProgress);
                 return mountHostRootWithoutHydrating(current, workInProgress, nextChildren, renderLanes, _recoverableError);
             } else {
                 // The outermost shell has not hydrated yet. Start hydrating.
@@ -20736,7 +20194,7 @@ module.exports = require("./cjs/react-dom.development.js");
         reconcileChildren(current, workInProgress, nextChildren, renderLanes);
         return workInProgress.child;
     }
-    function updateHostComponent$1(current, workInProgress, renderLanes) {
+    function updateHostComponent(current, workInProgress, renderLanes) {
         pushHostContext(workInProgress);
         if (current === null) tryToClaimNextHydratableInstance(workInProgress);
         var type = workInProgress.type;
@@ -20752,26 +20210,18 @@ module.exports = require("./cjs/react-dom.development.js");
         else if (prevProps !== null && shouldSetTextContent(type, prevProps)) // If we're switching from a direct text child to a normal child, or to
         // empty, we need to schedule the text content to be reset.
         workInProgress.flags |= ContentReset;
-        markRef$1(current, workInProgress);
+        markRef(current, workInProgress);
         reconcileChildren(current, workInProgress, nextChildren, renderLanes);
         return workInProgress.child;
     }
-    function updateHostText$1(current, workInProgress) {
+    function updateHostText(current, workInProgress) {
         if (current === null) tryToClaimNextHydratableInstance(workInProgress);
          // Nothing to do here. This is terminal. We'll do the completion step
         // immediately after.
         return null;
     }
     function mountLazyComponent(_current, workInProgress, elementType, renderLanes) {
-        if (_current !== null) {
-            // A lazy component only mounts if it suspended inside a non-
-            // concurrent tree, in an inconsistent state. We want to treat it like
-            // a new mount, even though an empty version of it already committed.
-            // Disconnect the alternate pointers.
-            _current.alternate = null;
-            workInProgress.alternate = null; // Since this is conceptually a new fiber, schedule a Placement effect
-            workInProgress.flags |= Placement;
-        }
+        resetSuspendedCurrentOnMountInLegacyMode(_current, workInProgress);
         var props = workInProgress.pendingProps;
         var lazyComponent = elementType;
         var payload = lazyComponent._payload;
@@ -20810,15 +20260,7 @@ module.exports = require("./cjs/react-dom.development.js");
         throw new Error("Element type is invalid. Received a promise that resolves to: " + Component + ". " + ("Lazy element type must resolve to a class or function." + hint));
     }
     function mountIncompleteClassComponent(_current, workInProgress, Component, nextProps, renderLanes) {
-        if (_current !== null) {
-            // An incomplete component only mounts if it suspended inside a non-
-            // concurrent tree, in an inconsistent state. We want to treat it like
-            // a new mount, even though an empty version of it already committed.
-            // Disconnect the alternate pointers.
-            _current.alternate = null;
-            workInProgress.alternate = null; // Since this is conceptually a new fiber, schedule a Placement effect
-            workInProgress.flags |= Placement;
-        } // Promote the fiber to a class and try rendering again.
+        resetSuspendedCurrentOnMountInLegacyMode(_current, workInProgress); // Promote the fiber to a class and try rendering again.
         workInProgress.tag = ClassComponent; // The rest of this function is a fork of `updateClassComponent`
         // Push context providers early to prevent context stack mismatches.
         // During mounting we don't know the child context yet as the instance doesn't exist.
@@ -20834,15 +20276,7 @@ module.exports = require("./cjs/react-dom.development.js");
         return finishClassComponent(null, workInProgress, Component, true, hasContext, renderLanes);
     }
     function mountIndeterminateComponent(_current, workInProgress, Component, renderLanes) {
-        if (_current !== null) {
-            // An indeterminate component only mounts if it suspended inside a non-
-            // concurrent tree, in an inconsistent state. We want to treat it like
-            // a new mount, even though an empty version of it already committed.
-            // Disconnect the alternate pointers.
-            _current.alternate = null;
-            workInProgress.alternate = null; // Since this is conceptually a new fiber, schedule a Placement effect
-            workInProgress.flags |= Placement;
-        }
+        resetSuspendedCurrentOnMountInLegacyMode(_current, workInProgress);
         var props = workInProgress.pendingProps;
         var context;
         var unmaskedContext = getUnmaskedContext(workInProgress, Component, false);
@@ -21022,6 +20456,7 @@ module.exports = require("./cjs/react-dom.development.js");
         // a stack.
         if (current === null) {
             // Initial mount
+            // Special path for hydration
             // If we're currently hydrating, try to hydrate this boundary.
             tryToClaimNextHydratableInstance(workInProgress); // This could've been a dehydrated suspense component.
             var suspenseState = workInProgress.memoizedState;
@@ -21040,74 +20475,27 @@ module.exports = require("./cjs/react-dom.development.js");
             } else return mountSuspensePrimaryChildren(workInProgress, nextPrimaryChildren);
         } else {
             // This is an update.
-            // If the current fiber has a SuspenseState, that means it's already showing
-            // a fallback.
+            // Special path for hydration
             var prevState = current.memoizedState;
             if (prevState !== null) {
-                // The current tree is already showing a fallback
-                // Special path for hydration
                 var _dehydrated = prevState.dehydrated;
-                if (_dehydrated !== null) {
-                    if (!didSuspend) return updateDehydratedSuspenseComponent(current, workInProgress, _dehydrated, prevState, renderLanes);
-                    else if (workInProgress.flags & ForceClientRender) {
-                        // Something errored during hydration. Try again without hydrating.
-                        workInProgress.flags &= ~ForceClientRender;
-                        return retrySuspenseComponentWithoutHydrating(current, workInProgress, renderLanes, new Error("There was an error while hydrating this Suspense boundary. Switched to client rendering."));
-                    } else if (workInProgress.memoizedState !== null) {
-                        // Something suspended and we should still be in dehydrated mode.
-                        // Leave the existing child in place.
-                        workInProgress.child = current.child; // The dehydrated completion pass expects this flag to be there
-                        // but the normal suspense pass doesn't.
-                        workInProgress.flags |= DidCapture;
-                        return null;
-                    } else {
-                        // Suspended but we should no longer be in dehydrated mode.
-                        // Therefore we now have to render the fallback.
-                        var _nextPrimaryChildren = nextProps.children;
-                        var _nextFallbackChildren = nextProps.fallback;
-                        var fallbackChildFragment = mountSuspenseFallbackAfterRetryWithoutHydrating(current, workInProgress, _nextPrimaryChildren, _nextFallbackChildren, renderLanes);
-                        var _primaryChildFragment2 = workInProgress.child;
-                        _primaryChildFragment2.memoizedState = mountSuspenseOffscreenState(renderLanes);
-                        workInProgress.memoizedState = SUSPENDED_MARKER;
-                        return fallbackChildFragment;
-                    }
-                }
-                if (showFallback) {
-                    var _nextFallbackChildren2 = nextProps.fallback;
-                    var _nextPrimaryChildren2 = nextProps.children;
-                    var _fallbackChildFragment = updateSuspenseFallbackChildren(current, workInProgress, _nextPrimaryChildren2, _nextFallbackChildren2, renderLanes);
-                    var _primaryChildFragment3 = workInProgress.child;
-                    var prevOffscreenState = current.child.memoizedState;
-                    _primaryChildFragment3.memoizedState = prevOffscreenState === null ? mountSuspenseOffscreenState(renderLanes) : updateSuspenseOffscreenState(prevOffscreenState, renderLanes);
-                    _primaryChildFragment3.childLanes = getRemainingWorkInPrimaryTree(current, renderLanes);
-                    workInProgress.memoizedState = SUSPENDED_MARKER;
-                    return _fallbackChildFragment;
-                } else {
-                    var _nextPrimaryChildren3 = nextProps.children;
-                    var _primaryChildFragment4 = updateSuspensePrimaryChildren(current, workInProgress, _nextPrimaryChildren3, renderLanes);
-                    workInProgress.memoizedState = null;
-                    return _primaryChildFragment4;
-                }
-            } else // The current tree is not already showing a fallback.
+                if (_dehydrated !== null) return updateDehydratedSuspenseComponent(current, workInProgress, didSuspend, nextProps, _dehydrated, prevState, renderLanes);
+            }
             if (showFallback) {
-                // Timed out.
-                var _nextFallbackChildren3 = nextProps.fallback;
-                var _nextPrimaryChildren4 = nextProps.children;
-                var _fallbackChildFragment2 = updateSuspenseFallbackChildren(current, workInProgress, _nextPrimaryChildren4, _nextFallbackChildren3, renderLanes);
-                var _primaryChildFragment5 = workInProgress.child;
-                var _prevOffscreenState = current.child.memoizedState;
-                _primaryChildFragment5.memoizedState = _prevOffscreenState === null ? mountSuspenseOffscreenState(renderLanes) : updateSuspenseOffscreenState(_prevOffscreenState, renderLanes);
-                _primaryChildFragment5.childLanes = getRemainingWorkInPrimaryTree(current, renderLanes);
-                // fallback children.
+                var _nextFallbackChildren = nextProps.fallback;
+                var _nextPrimaryChildren = nextProps.children;
+                var fallbackChildFragment = updateSuspenseFallbackChildren(current, workInProgress, _nextPrimaryChildren, _nextFallbackChildren, renderLanes);
+                var _primaryChildFragment2 = workInProgress.child;
+                var prevOffscreenState = current.child.memoizedState;
+                _primaryChildFragment2.memoizedState = prevOffscreenState === null ? mountSuspenseOffscreenState(renderLanes) : updateSuspenseOffscreenState(prevOffscreenState, renderLanes);
+                _primaryChildFragment2.childLanes = getRemainingWorkInPrimaryTree(current, renderLanes);
                 workInProgress.memoizedState = SUSPENDED_MARKER;
-                return _fallbackChildFragment2;
+                return fallbackChildFragment;
             } else {
-                // Still haven't timed out. Continue rendering the children, like we
-                // normally do.
-                var _nextPrimaryChildren5 = nextProps.children;
-                var _primaryChildFragment6 = updateSuspensePrimaryChildren(current, workInProgress, _nextPrimaryChildren5, renderLanes);
+                var _nextPrimaryChildren2 = nextProps.children;
+                var _primaryChildFragment3 = updateSuspensePrimaryChildren(current, workInProgress, _nextPrimaryChildren2, renderLanes);
                 workInProgress.memoizedState = null;
-                return _primaryChildFragment6;
+                return _primaryChildFragment3;
             }
         }
     }
@@ -21220,12 +20608,12 @@ module.exports = require("./cjs/react-dom.development.js");
                 primaryChildFragment.actualStartTime = -1;
                 primaryChildFragment.selfBaseDuration = currentPrimaryChildFragment.selfBaseDuration;
                 primaryChildFragment.treeBaseDuration = currentPrimaryChildFragment.treeBaseDuration;
-            }
+            } // The fallback fiber was added as a deletion during the first pass.
             // However, since we're going to remain on the fallback, we no longer want
             // to delete it.
             workInProgress.deletions = null;
         } else {
-            primaryChildFragment = updateWorkInProgressOffscreenFiber(currentPrimaryChildFragment, primaryChildProps);
+            primaryChildFragment = updateWorkInProgressOffscreenFiber(currentPrimaryChildFragment, primaryChildProps); // Since we're reusing a current tree, we need to reuse the flags, too.
             // (We don't do this in legacy mode, because in legacy mode we don't re-use
             // the current tree; see previous branch.)
             primaryChildFragment.subtreeFlags = currentPrimaryChildFragment.subtreeFlags & StaticMask;
@@ -21304,70 +20692,110 @@ module.exports = require("./cjs/react-dom.development.js");
         workInProgress.lanes = laneToLanes(OffscreenLane);
         return null;
     }
-    function updateDehydratedSuspenseComponent(current, workInProgress, suspenseInstance, suspenseState, renderLanes) {
-        // We should never be hydrating at this point because it is the first pass,
-        // but after we've already committed once.
-        warnIfHydrating();
-        if ((workInProgress.mode & ConcurrentMode) === NoMode) return retrySuspenseComponentWithoutHydrating(current, workInProgress, renderLanes, // required — every concurrent mode path that causes hydration to
-        // de-opt to client rendering should have an error message.
-        null);
-        if (isSuspenseInstanceFallback(suspenseInstance)) // This boundary is in a permanent fallback state. In this case, we'll never
-        // get an update and we'll never be able to hydrate the final content. Let's just try the
-        // client side render instead.
-        return retrySuspenseComponentWithoutHydrating(current, workInProgress, renderLanes, // here on the client. Or, in production, a hash/id that corresponds to
-        // the error.
-        new Error("The server could not finish this Suspense boundary, likely due to an error during server rendering. Switched to client rendering."));
-        // any context has changed, we need to treat is as if the input might have changed.
-        var hasContextChanged = includesSomeLane(renderLanes, current.childLanes);
-        if (didReceiveUpdate || hasContextChanged) {
-            // This boundary has changed since the first render. This means that we are now unable to
-            // hydrate it. We might still be able to hydrate it using a higher priority lane.
-            var root = getWorkInProgressRoot();
-            if (root !== null) {
-                var attemptHydrationAtLane = getBumpedLaneForHydration(root, renderLanes);
-                if (attemptHydrationAtLane !== NoLane && attemptHydrationAtLane !== suspenseState.retryLane) {
-                    // Intentionally mutating since this render will get interrupted. This
-                    // is one of the very rare times where we mutate the current tree
-                    // during the render phase.
-                    suspenseState.retryLane = attemptHydrationAtLane; // TODO: Ideally this would inherit the event time of the current render
-                    var eventTime = NoTimestamp;
-                    scheduleUpdateOnFiber(current, attemptHydrationAtLane, eventTime);
-                }
-            } // If we have scheduled higher pri work above, this will probably just abort the render
-            // since we now have higher priority work, but in case it doesn't, we need to prepare to
-            // render something, if we time out. Even if that requires us to delete everything and
-            // skip hydration.
-            // Delay having to do this as long as the suspense timeout allows us.
-            renderDidSuspendDelayIfPossible();
-            return retrySuspenseComponentWithoutHydrating(current, workInProgress, renderLanes, new Error("This Suspense boundary received an update before it finished hydrating. This caused the boundary to switch to client rendering. The usual way to fix this is to wrap the original update in startTransition."));
-        } else if (isSuspenseInstancePending(suspenseInstance)) {
-            // This component is still pending more data from the server, so we can't hydrate its
-            // content. We treat it as if this component suspended itself. It might seem as if
-            // we could just try to render it client-side instead. However, this will perform a
-            // lot of unnecessary work and is unlikely to complete since it often will suspend
-            // on missing data anyway. Additionally, the server might be able to render more
-            // than we can on the client yet. In that case we'd end up with more fallback states
-            // on the client than if we just leave it alone. If the server times out or errors
-            // these should update this boundary to the permanent Fallback state instead.
-            // Mark it as having captured (i.e. suspended).
-            workInProgress.flags |= DidCapture; // Leave the child in place. I.e. the dehydrated fragment.
-            workInProgress.child = current.child; // Register a callback to retry this boundary once the server has sent the result.
-            var retry = retryDehydratedSuspenseBoundary.bind(null, current);
-            registerSuspenseInstanceRetry(suspenseInstance, retry);
-            return null;
+    function updateDehydratedSuspenseComponent(current, workInProgress, didSuspend, nextProps, suspenseInstance, suspenseState, renderLanes) {
+        if (!didSuspend) {
+            // This is the first render pass. Attempt to hydrate.
+            // We should never be hydrating at this point because it is the first pass,
+            // but after we've already committed once.
+            warnIfHydrating();
+            if ((workInProgress.mode & ConcurrentMode) === NoMode) return retrySuspenseComponentWithoutHydrating(current, workInProgress, renderLanes, // required — every concurrent mode path that causes hydration to
+            // de-opt to client rendering should have an error message.
+            null);
+            if (isSuspenseInstanceFallback(suspenseInstance)) {
+                // This boundary is in a permanent fallback state. In this case, we'll never
+                // get an update and we'll never be able to hydrate the final content. Let's just try the
+                // client side render instead.
+                var digest, message, stack;
+                var _getSuspenseInstanceF = getSuspenseInstanceFallbackErrorDetails(suspenseInstance);
+                digest = _getSuspenseInstanceF.digest;
+                message = _getSuspenseInstanceF.message;
+                stack = _getSuspenseInstanceF.stack;
+                var error;
+                if (message) // eslint-disable-next-line react-internal/prod-error-codes
+                error = new Error(message);
+                else error = new Error("The server could not finish this Suspense boundary, likely due to an error during server rendering. Switched to client rendering.");
+                var capturedValue = createCapturedValue(error, digest, stack);
+                return retrySuspenseComponentWithoutHydrating(current, workInProgress, renderLanes, capturedValue);
+            }
+            // any context has changed, we need to treat is as if the input might have changed.
+            var hasContextChanged = includesSomeLane(renderLanes, current.childLanes);
+            if (didReceiveUpdate || hasContextChanged) {
+                // This boundary has changed since the first render. This means that we are now unable to
+                // hydrate it. We might still be able to hydrate it using a higher priority lane.
+                var root = getWorkInProgressRoot();
+                if (root !== null) {
+                    var attemptHydrationAtLane = getBumpedLaneForHydration(root, renderLanes);
+                    if (attemptHydrationAtLane !== NoLane && attemptHydrationAtLane !== suspenseState.retryLane) {
+                        // Intentionally mutating since this render will get interrupted. This
+                        // is one of the very rare times where we mutate the current tree
+                        // during the render phase.
+                        suspenseState.retryLane = attemptHydrationAtLane; // TODO: Ideally this would inherit the event time of the current render
+                        var eventTime = NoTimestamp;
+                        enqueueConcurrentRenderForLane(current, attemptHydrationAtLane);
+                        scheduleUpdateOnFiber(root, current, attemptHydrationAtLane, eventTime);
+                    }
+                } // If we have scheduled higher pri work above, this will probably just abort the render
+                // since we now have higher priority work, but in case it doesn't, we need to prepare to
+                // render something, if we time out. Even if that requires us to delete everything and
+                // skip hydration.
+                // Delay having to do this as long as the suspense timeout allows us.
+                renderDidSuspendDelayIfPossible();
+                var _capturedValue = createCapturedValue(new Error("This Suspense boundary received an update before it finished hydrating. This caused the boundary to switch to client rendering. The usual way to fix this is to wrap the original update in startTransition."));
+                return retrySuspenseComponentWithoutHydrating(current, workInProgress, renderLanes, _capturedValue);
+            } else if (isSuspenseInstancePending(suspenseInstance)) {
+                // This component is still pending more data from the server, so we can't hydrate its
+                // content. We treat it as if this component suspended itself. It might seem as if
+                // we could just try to render it client-side instead. However, this will perform a
+                // lot of unnecessary work and is unlikely to complete since it often will suspend
+                // on missing data anyway. Additionally, the server might be able to render more
+                // than we can on the client yet. In that case we'd end up with more fallback states
+                // on the client than if we just leave it alone. If the server times out or errors
+                // these should update this boundary to the permanent Fallback state instead.
+                // Mark it as having captured (i.e. suspended).
+                workInProgress.flags |= DidCapture; // Leave the child in place. I.e. the dehydrated fragment.
+                workInProgress.child = current.child; // Register a callback to retry this boundary once the server has sent the result.
+                var retry = retryDehydratedSuspenseBoundary.bind(null, current);
+                registerSuspenseInstanceRetry(suspenseInstance, retry);
+                return null;
+            } else {
+                // This is the first attempt.
+                reenterHydrationStateFromDehydratedSuspenseInstance(workInProgress, suspenseInstance, suspenseState.treeContext);
+                var primaryChildren = nextProps.children;
+                var primaryChildFragment = mountSuspensePrimaryChildren(workInProgress, primaryChildren); // Mark the children as hydrating. This is a fast path to know whether this
+                // tree is part of a hydrating tree. This is used to determine if a child
+                // node has fully mounted yet, and for scheduling event replaying.
+                // Conceptually this is similar to Placement in that a new subtree is
+                // inserted into the React tree here. It just happens to not need DOM
+                // mutations because it already exists.
+                primaryChildFragment.flags |= Hydrating;
+                return primaryChildFragment;
+            }
         } else {
-            // This is the first attempt.
-            reenterHydrationStateFromDehydratedSuspenseInstance(workInProgress, suspenseInstance, suspenseState.treeContext);
-            var nextProps = workInProgress.pendingProps;
-            var primaryChildren = nextProps.children;
-            var primaryChildFragment = mountSuspensePrimaryChildren(workInProgress, primaryChildren); // Mark the children as hydrating. This is a fast path to know whether this
-            // tree is part of a hydrating tree. This is used to determine if a child
-            // node has fully mounted yet, and for scheduling event replaying.
-            // Conceptually this is similar to Placement in that a new subtree is
-            // inserted into the React tree here. It just happens to not need DOM
-            // mutations because it already exists.
-            primaryChildFragment.flags |= Hydrating;
-            return primaryChildFragment;
+            // This is the second render pass. We already attempted to hydrated, but
+            // something either suspended or errored.
+            if (workInProgress.flags & ForceClientRender) {
+                // Something errored during hydration. Try again without hydrating.
+                workInProgress.flags &= ~ForceClientRender;
+                var _capturedValue2 = createCapturedValue(new Error("There was an error while hydrating this Suspense boundary. Switched to client rendering."));
+                return retrySuspenseComponentWithoutHydrating(current, workInProgress, renderLanes, _capturedValue2);
+            } else if (workInProgress.memoizedState !== null) {
+                // Something suspended and we should still be in dehydrated mode.
+                // Leave the existing child in place.
+                workInProgress.child = current.child; // The dehydrated completion pass expects this flag to be there
+                // but the normal suspense pass doesn't.
+                workInProgress.flags |= DidCapture;
+                return null;
+            } else {
+                // Suspended but we should no longer be in dehydrated mode.
+                // Therefore we now have to render the fallback.
+                var nextPrimaryChildren = nextProps.children;
+                var nextFallbackChildren = nextProps.fallback;
+                var fallbackChildFragment = mountSuspenseFallbackAfterRetryWithoutHydrating(current, workInProgress, nextPrimaryChildren, nextFallbackChildren, renderLanes);
+                var _primaryChildFragment4 = workInProgress.child;
+                _primaryChildFragment4.memoizedState = mountSuspenseOffscreenState(renderLanes);
+                workInProgress.memoizedState = SUSPENDED_MARKER;
+                return fallbackChildFragment;
+            }
         }
     }
     function scheduleSuspenseWorkOnFiber(fiber, renderLanes, propagationRoot) {
@@ -21659,6 +21087,19 @@ module.exports = require("./cjs/react-dom.development.js");
     function markWorkInProgressReceivedUpdate() {
         didReceiveUpdate = true;
     }
+    function resetSuspendedCurrentOnMountInLegacyMode(current, workInProgress) {
+        if ((workInProgress.mode & ConcurrentMode) === NoMode) {
+            if (current !== null) {
+                // A lazy component only mounts if it suspended inside a non-
+                // concurrent tree, in an inconsistent state. We want to treat it like
+                // a new mount, even though an empty version of it already committed.
+                // Disconnect the alternate pointers.
+                current.alternate = null;
+                workInProgress.alternate = null; // Since this is conceptually a new fiber, schedule a Placement effect
+                workInProgress.flags |= Placement;
+            }
+        }
+    }
     function bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes) {
         if (current !== null) // Reuse previous dependencies
         workInProgress.dependencies = current.dependencies;
@@ -21899,9 +21340,9 @@ module.exports = require("./cjs/react-dom.development.js");
             case HostRoot:
                 return updateHostRoot(current, workInProgress, renderLanes);
             case HostComponent:
-                return updateHostComponent$1(current, workInProgress, renderLanes);
+                return updateHostComponent(current, workInProgress, renderLanes);
             case HostText:
-                return updateHostText$1(current, workInProgress);
+                return updateHostText(current, workInProgress);
             case SuspenseComponent:
                 return updateSuspenseComponent(current, workInProgress, renderLanes);
             case HostPortal:
@@ -21944,6 +21385,645 @@ module.exports = require("./cjs/react-dom.development.js");
                 break;
             case OffscreenComponent:
                 return updateOffscreenComponent(current, workInProgress, renderLanes);
+        }
+        throw new Error("Unknown unit of work tag (" + workInProgress.tag + "). This error is likely caused by a bug in " + "React. Please file an issue.");
+    }
+    function markUpdate(workInProgress) {
+        // Tag the fiber with an update effect. This turns a Placement into
+        // a PlacementAndUpdate.
+        workInProgress.flags |= Update;
+    }
+    function markRef$1(workInProgress) {
+        workInProgress.flags |= Ref;
+        workInProgress.flags |= RefStatic;
+    }
+    var appendAllChildren;
+    var updateHostContainer;
+    var updateHostComponent$1;
+    var updateHostText$1;
+    // Mutation mode
+    appendAllChildren = function(parent, workInProgress, needsVisibilityToggle, isHidden) {
+        // We only have the top Fiber that was created but we need recurse down its
+        // children to find all the terminal nodes.
+        var node = workInProgress.child;
+        while(node !== null){
+            if (node.tag === HostComponent || node.tag === HostText) appendInitialChild(parent, node.stateNode);
+            else if (node.tag === HostPortal) ;
+            else if (node.child !== null) {
+                node.child.return = node;
+                node = node.child;
+                continue;
+            }
+            if (node === workInProgress) return;
+            while(node.sibling === null){
+                if (node.return === null || node.return === workInProgress) return;
+                node = node.return;
+            }
+            node.sibling.return = node.return;
+            node = node.sibling;
+        }
+    };
+    updateHostContainer = function(current, workInProgress) {};
+    updateHostComponent$1 = function(current, workInProgress, type, newProps, rootContainerInstance) {
+        // If we have an alternate, that means this is an update and we need to
+        // schedule a side-effect to do the updates.
+        var oldProps = current.memoizedProps;
+        if (oldProps === newProps) // In mutation mode, this is sufficient for a bailout because
+        // we won't touch this node even if children changed.
+        return;
+         // If we get updated because one of our children updated, we don't
+        // have newProps so we'll have to reuse them.
+        // TODO: Split the update API as separate for the props vs. children.
+        // Even better would be if children weren't special cased at all tho.
+        var instance = workInProgress.stateNode;
+        var currentHostContext = getHostContext(); // TODO: Experiencing an error where oldProps is null. Suggests a host
+        // component is hitting the resume path. Figure out why. Possibly
+        // related to `hidden`.
+        var updatePayload = prepareUpdate(instance, type, oldProps, newProps, rootContainerInstance, currentHostContext); // TODO: Type this specific to this type of component.
+        workInProgress.updateQueue = updatePayload; // If the update payload indicates that there is a change or if there
+        // is a new ref we mark this as an update. All the work is done in commitWork.
+        if (updatePayload) markUpdate(workInProgress);
+    };
+    updateHostText$1 = function(current, workInProgress, oldText, newText) {
+        // If the text differs, mark it as an update. All the work in done in commitWork.
+        if (oldText !== newText) markUpdate(workInProgress);
+    };
+    function cutOffTailIfNeeded(renderState, hasRenderedATailFallback) {
+        if (getIsHydrating()) // If we're hydrating, we should consume as many items as we can
+        // so we don't leave any behind.
+        return;
+        switch(renderState.tailMode){
+            case "hidden":
+                // Any insertions at the end of the tail list after this point
+                // should be invisible. If there are already mounted boundaries
+                // anything before them are not considered for collapsing.
+                // Therefore we need to go through the whole tail to find if
+                // there are any.
+                var tailNode = renderState.tail;
+                var lastTailNode = null;
+                while(tailNode !== null){
+                    if (tailNode.alternate !== null) lastTailNode = tailNode;
+                    tailNode = tailNode.sibling;
+                } // Next we're simply going to delete all insertions after the
+                // last rendered item.
+                if (lastTailNode === null) // All remaining items in the tail are insertions.
+                renderState.tail = null;
+                else // Detach the insertion after the last node that was already
+                // inserted.
+                lastTailNode.sibling = null;
+                break;
+            case "collapsed":
+                // Any insertions at the end of the tail list after this point
+                // should be invisible. If there are already mounted boundaries
+                // anything before them are not considered for collapsing.
+                // Therefore we need to go through the whole tail to find if
+                // there are any.
+                var _tailNode = renderState.tail;
+                var _lastTailNode = null;
+                while(_tailNode !== null){
+                    if (_tailNode.alternate !== null) _lastTailNode = _tailNode;
+                    _tailNode = _tailNode.sibling;
+                } // Next we're simply going to delete all insertions after the
+                // last rendered item.
+                if (_lastTailNode === null) {
+                    // All remaining items in the tail are insertions.
+                    if (!hasRenderedATailFallback && renderState.tail !== null) // We suspended during the head. We want to show at least one
+                    // row at the tail. So we'll keep on and cut off the rest.
+                    renderState.tail.sibling = null;
+                    else renderState.tail = null;
+                } else // Detach the insertion after the last node that was already
+                // inserted.
+                _lastTailNode.sibling = null;
+                break;
+        }
+    }
+    function bubbleProperties(completedWork) {
+        var didBailout = completedWork.alternate !== null && completedWork.alternate.child === completedWork.child;
+        var newChildLanes = NoLanes;
+        var subtreeFlags = NoFlags;
+        if (!didBailout) {
+            // Bubble up the earliest expiration time.
+            if ((completedWork.mode & ProfileMode) !== NoMode) {
+                // In profiling mode, resetChildExpirationTime is also used to reset
+                // profiler durations.
+                var actualDuration = completedWork.actualDuration;
+                var treeBaseDuration = completedWork.selfBaseDuration;
+                var child = completedWork.child;
+                while(child !== null){
+                    newChildLanes = mergeLanes(newChildLanes, mergeLanes(child.lanes, child.childLanes));
+                    subtreeFlags |= child.subtreeFlags;
+                    subtreeFlags |= child.flags; // When a fiber is cloned, its actualDuration is reset to 0. This value will
+                    // only be updated if work is done on the fiber (i.e. it doesn't bailout).
+                    // When work is done, it should bubble to the parent's actualDuration. If
+                    // the fiber has not been cloned though, (meaning no work was done), then
+                    // this value will reflect the amount of time spent working on a previous
+                    // render. In that case it should not bubble. We determine whether it was
+                    // cloned by comparing the child pointer.
+                    actualDuration += child.actualDuration;
+                    treeBaseDuration += child.treeBaseDuration;
+                    child = child.sibling;
+                }
+                completedWork.actualDuration = actualDuration;
+                completedWork.treeBaseDuration = treeBaseDuration;
+            } else {
+                var _child = completedWork.child;
+                while(_child !== null){
+                    newChildLanes = mergeLanes(newChildLanes, mergeLanes(_child.lanes, _child.childLanes));
+                    subtreeFlags |= _child.subtreeFlags;
+                    subtreeFlags |= _child.flags; // Update the return pointer so the tree is consistent. This is a code
+                    // smell because it assumes the commit phase is never concurrent with
+                    // the render phase. Will address during refactor to alternate model.
+                    _child.return = completedWork;
+                    _child = _child.sibling;
+                }
+            }
+            completedWork.subtreeFlags |= subtreeFlags;
+        } else {
+            // Bubble up the earliest expiration time.
+            if ((completedWork.mode & ProfileMode) !== NoMode) {
+                // In profiling mode, resetChildExpirationTime is also used to reset
+                // profiler durations.
+                var _treeBaseDuration = completedWork.selfBaseDuration;
+                var _child2 = completedWork.child;
+                while(_child2 !== null){
+                    newChildLanes = mergeLanes(newChildLanes, mergeLanes(_child2.lanes, _child2.childLanes)); // "Static" flags share the lifetime of the fiber/hook they belong to,
+                    // so we should bubble those up even during a bailout. All the other
+                    // flags have a lifetime only of a single render + commit, so we should
+                    // ignore them.
+                    subtreeFlags |= _child2.subtreeFlags & StaticMask;
+                    subtreeFlags |= _child2.flags & StaticMask;
+                    _treeBaseDuration += _child2.treeBaseDuration;
+                    _child2 = _child2.sibling;
+                }
+                completedWork.treeBaseDuration = _treeBaseDuration;
+            } else {
+                var _child3 = completedWork.child;
+                while(_child3 !== null){
+                    newChildLanes = mergeLanes(newChildLanes, mergeLanes(_child3.lanes, _child3.childLanes)); // "Static" flags share the lifetime of the fiber/hook they belong to,
+                    // so we should bubble those up even during a bailout. All the other
+                    // flags have a lifetime only of a single render + commit, so we should
+                    // ignore them.
+                    subtreeFlags |= _child3.subtreeFlags & StaticMask;
+                    subtreeFlags |= _child3.flags & StaticMask; // Update the return pointer so the tree is consistent. This is a code
+                    // smell because it assumes the commit phase is never concurrent with
+                    // the render phase. Will address during refactor to alternate model.
+                    _child3.return = completedWork;
+                    _child3 = _child3.sibling;
+                }
+            }
+            completedWork.subtreeFlags |= subtreeFlags;
+        }
+        completedWork.childLanes = newChildLanes;
+        return didBailout;
+    }
+    function completeDehydratedSuspenseBoundary(current, workInProgress, nextState) {
+        if (hasUnhydratedTailNodes() && (workInProgress.mode & ConcurrentMode) !== NoMode && (workInProgress.flags & DidCapture) === NoFlags) {
+            warnIfUnhydratedTailNodes(workInProgress);
+            resetHydrationState();
+            workInProgress.flags |= ForceClientRender | Incomplete | ShouldCapture;
+            return false;
+        }
+        var wasHydrated = popHydrationState(workInProgress);
+        if (nextState !== null && nextState.dehydrated !== null) {
+            // We might be inside a hydration state the first time we're picking up this
+            // Suspense boundary, and also after we've reentered it for further hydration.
+            if (current === null) {
+                if (!wasHydrated) throw new Error("A dehydrated suspense component was completed without a hydrated node. This is probably a bug in React.");
+                prepareToHydrateHostSuspenseInstance(workInProgress);
+                bubbleProperties(workInProgress);
+                if ((workInProgress.mode & ProfileMode) !== NoMode) {
+                    var isTimedOutSuspense = nextState !== null;
+                    if (isTimedOutSuspense) {
+                        // Don't count time spent in a timed out Suspense subtree as part of the base duration.
+                        var primaryChildFragment = workInProgress.child;
+                        if (primaryChildFragment !== null) // $FlowFixMe Flow doesn't support type casting in combination with the -= operator
+                        workInProgress.treeBaseDuration -= primaryChildFragment.treeBaseDuration;
+                    }
+                }
+                return false;
+            } else {
+                // We might have reentered this boundary to hydrate it. If so, we need to reset the hydration
+                // state since we're now exiting out of it. popHydrationState doesn't do that for us.
+                resetHydrationState();
+                if ((workInProgress.flags & DidCapture) === NoFlags) // This boundary did not suspend so it's now hydrated and unsuspended.
+                workInProgress.memoizedState = null;
+                 // If nothing suspended, we need to schedule an effect to mark this boundary
+                // as having hydrated so events know that they're free to be invoked.
+                // It's also a signal to replay events and the suspense callback.
+                // If something suspended, schedule an effect to attach retry listeners.
+                // So we might as well always mark this.
+                workInProgress.flags |= Update;
+                bubbleProperties(workInProgress);
+                if ((workInProgress.mode & ProfileMode) !== NoMode) {
+                    var _isTimedOutSuspense = nextState !== null;
+                    if (_isTimedOutSuspense) {
+                        // Don't count time spent in a timed out Suspense subtree as part of the base duration.
+                        var _primaryChildFragment = workInProgress.child;
+                        if (_primaryChildFragment !== null) // $FlowFixMe Flow doesn't support type casting in combination with the -= operator
+                        workInProgress.treeBaseDuration -= _primaryChildFragment.treeBaseDuration;
+                    }
+                }
+                return false;
+            }
+        } else {
+            // Successfully completed this tree. If this was a forced client render,
+            // there may have been recoverable errors during first hydration
+            // attempt. If so, add them to a queue so we can log them in the
+            // commit phase.
+            upgradeHydrationErrorsToRecoverable(); // Fall through to normal Suspense path
+            return true;
+        }
+    }
+    function completeWork(current, workInProgress, renderLanes) {
+        var newProps = workInProgress.pendingProps; // Note: This intentionally doesn't check if we're hydrating because comparing
+        // to the current tree provider fiber is just as fast and less error-prone.
+        // Ideally we would have a special version of the work loop only
+        // for hydration.
+        popTreeContext(workInProgress);
+        switch(workInProgress.tag){
+            case IndeterminateComponent:
+            case LazyComponent:
+            case SimpleMemoComponent:
+            case FunctionComponent:
+            case ForwardRef:
+            case Fragment:
+            case Mode:
+            case Profiler:
+            case ContextConsumer:
+            case MemoComponent:
+                bubbleProperties(workInProgress);
+                return null;
+            case ClassComponent:
+                var Component = workInProgress.type;
+                if (isContextProvider(Component)) popContext(workInProgress);
+                bubbleProperties(workInProgress);
+                return null;
+            case HostRoot:
+                var fiberRoot = workInProgress.stateNode;
+                popHostContainer(workInProgress);
+                popTopLevelContextObject(workInProgress);
+                resetWorkInProgressVersions();
+                if (fiberRoot.pendingContext) {
+                    fiberRoot.context = fiberRoot.pendingContext;
+                    fiberRoot.pendingContext = null;
+                }
+                if (current === null || current.child === null) {
+                    // If we hydrated, pop so that we can delete any remaining children
+                    // that weren't hydrated.
+                    var wasHydrated = popHydrationState(workInProgress);
+                    if (wasHydrated) // If we hydrated, then we'll need to schedule an update for
+                    // the commit side-effects on the root.
+                    markUpdate(workInProgress);
+                    else if (current !== null) {
+                        var prevState = current.memoizedState;
+                        if (!prevState.isDehydrated || (workInProgress.flags & ForceClientRender) !== NoFlags) {
+                            // Schedule an effect to clear this container at the start of the
+                            // next commit. This handles the case of React rendering into a
+                            // container with previous children. It's also safe to do for
+                            // updates too, because current.child would only be null if the
+                            // previous render was null (so the container would already
+                            // be empty).
+                            workInProgress.flags |= Snapshot; // If this was a forced client render, there may have been
+                            // recoverable errors during first hydration attempt. If so, add
+                            // them to a queue so we can log them in the commit phase.
+                            upgradeHydrationErrorsToRecoverable();
+                        }
+                    }
+                }
+                updateHostContainer(current, workInProgress);
+                bubbleProperties(workInProgress);
+                return null;
+            case HostComponent:
+                popHostContext(workInProgress);
+                var rootContainerInstance = getRootHostContainer();
+                var type = workInProgress.type;
+                if (current !== null && workInProgress.stateNode != null) {
+                    updateHostComponent$1(current, workInProgress, type, newProps, rootContainerInstance);
+                    if (current.ref !== workInProgress.ref) markRef$1(workInProgress);
+                } else {
+                    if (!newProps) {
+                        if (workInProgress.stateNode === null) throw new Error("We must have new props for new mounts. This error is likely caused by a bug in React. Please file an issue.");
+                         // This can happen when we abort work.
+                        bubbleProperties(workInProgress);
+                        return null;
+                    }
+                    var currentHostContext = getHostContext(); // TODO: Move createInstance to beginWork and keep it on a context
+                    // "stack" as the parent. Then append children as we go in beginWork
+                    // or completeWork depending on whether we want to add them top->down or
+                    // bottom->up. Top->down is faster in IE11.
+                    var _wasHydrated = popHydrationState(workInProgress);
+                    if (_wasHydrated) // TODO: Move this and createInstance step into the beginPhase
+                    // to consolidate.
+                    {
+                        if (prepareToHydrateHostInstance(workInProgress, rootContainerInstance, currentHostContext)) // If changes to the hydrated node need to be applied at the
+                        // commit-phase we mark this as such.
+                        markUpdate(workInProgress);
+                    } else {
+                        var instance = createInstance(type, newProps, rootContainerInstance, currentHostContext, workInProgress);
+                        appendAllChildren(instance, workInProgress, false, false);
+                        workInProgress.stateNode = instance; // Certain renderers require commit-time effects for initial mount.
+                        // (eg DOM renderer supports auto-focus for certain elements).
+                        // Make sure such renderers get scheduled for later work.
+                        if (finalizeInitialChildren(instance, type, newProps, rootContainerInstance)) markUpdate(workInProgress);
+                    }
+                    if (workInProgress.ref !== null) // If there is a ref on a host node we need to schedule a callback
+                    markRef$1(workInProgress);
+                }
+                bubbleProperties(workInProgress);
+                return null;
+            case HostText:
+                var newText = newProps;
+                if (current && workInProgress.stateNode != null) {
+                    var oldText = current.memoizedProps; // If we have an alternate, that means this is an update and we need
+                    // to schedule a side-effect to do the updates.
+                    updateHostText$1(current, workInProgress, oldText, newText);
+                } else {
+                    if (typeof newText !== "string") {
+                        if (workInProgress.stateNode === null) throw new Error("We must have new props for new mounts. This error is likely caused by a bug in React. Please file an issue.");
+                         // This can happen when we abort work.
+                    }
+                    var _rootContainerInstance = getRootHostContainer();
+                    var _currentHostContext = getHostContext();
+                    var _wasHydrated2 = popHydrationState(workInProgress);
+                    if (_wasHydrated2) {
+                        if (prepareToHydrateHostTextInstance(workInProgress)) markUpdate(workInProgress);
+                    } else workInProgress.stateNode = createTextInstance(newText, _rootContainerInstance, _currentHostContext, workInProgress);
+                }
+                bubbleProperties(workInProgress);
+                return null;
+            case SuspenseComponent:
+                popSuspenseContext(workInProgress);
+                var nextState = workInProgress.memoizedState; // Special path for dehydrated boundaries. We may eventually move this
+                // to its own fiber type so that we can add other kinds of hydration
+                // boundaries that aren't associated with a Suspense tree. In anticipation
+                // of such a refactor, all the hydration logic is contained in
+                // this branch.
+                if (current === null || current.memoizedState !== null && current.memoizedState.dehydrated !== null) {
+                    var fallthroughToNormalSuspensePath = completeDehydratedSuspenseBoundary(current, workInProgress, nextState);
+                    if (!fallthroughToNormalSuspensePath) {
+                        if (workInProgress.flags & ShouldCapture) // Special case. There were remaining unhydrated nodes. We treat
+                        // this as a mismatch. Revert to client rendering.
+                        return workInProgress;
+                        else // Did not finish hydrating, either because this is the initial
+                        // render or because something suspended.
+                        return null;
+                    } // Continue with the normal Suspense path.
+                }
+                if ((workInProgress.flags & DidCapture) !== NoFlags) {
+                    // Something suspended. Re-render with the fallback children.
+                    workInProgress.lanes = renderLanes; // Do not reset the effect list.
+                    if ((workInProgress.mode & ProfileMode) !== NoMode) transferActualDuration(workInProgress);
+                     // Don't bubble properties in this case.
+                    return workInProgress;
+                }
+                var nextDidTimeout = nextState !== null;
+                var prevDidTimeout = current !== null && current.memoizedState !== null;
+                // a passive effect, which is when we process the transitions
+                if (nextDidTimeout !== prevDidTimeout) // an effect to toggle the subtree's visibility. When we switch from
+                // fallback -> primary, the inner Offscreen fiber schedules this effect
+                // as part of its normal complete phase. But when we switch from
+                // primary -> fallback, the inner Offscreen fiber does not have a complete
+                // phase. So we need to schedule its effect here.
+                //
+                // We also use this flag to connect/disconnect the effects, but the same
+                // logic applies: when re-connecting, the Offscreen fiber's complete
+                // phase will handle scheduling the effect. It's only when the fallback
+                // is active that we have to do anything special.
+                {
+                    if (nextDidTimeout) {
+                        var _offscreenFiber2 = workInProgress.child;
+                        _offscreenFiber2.flags |= Visibility; // TODO: This will still suspend a synchronous tree if anything
+                        // in the concurrent tree already suspended during this render.
+                        // This is a known bug.
+                        if ((workInProgress.mode & ConcurrentMode) !== NoMode) {
+                            // TODO: Move this back to throwException because this is too late
+                            // if this is a large tree which is common for initial loads. We
+                            // don't know if we should restart a render or not until we get
+                            // this marker, and this is too late.
+                            // If this render already had a ping or lower pri updates,
+                            // and this is the first time we know we're going to suspend we
+                            // should be able to immediately restart from within throwException.
+                            var hasInvisibleChildContext = current === null && (workInProgress.memoizedProps.unstable_avoidThisFallback !== true || !enableSuspenseAvoidThisFallback);
+                            if (hasInvisibleChildContext || hasSuspenseContext(suspenseStackCursor.current, InvisibleParentSuspenseContext)) // If this was in an invisible tree or a new render, then showing
+                            // this boundary is ok.
+                            renderDidSuspend();
+                            else // Otherwise, we're going to have to hide content so we should
+                            // suspend for longer if possible.
+                            renderDidSuspendDelayIfPossible();
+                        }
+                    }
+                }
+                var wakeables = workInProgress.updateQueue;
+                if (wakeables !== null) // Schedule an effect to attach a retry listener to the promise.
+                // TODO: Move to passive phase
+                workInProgress.flags |= Update;
+                bubbleProperties(workInProgress);
+                if ((workInProgress.mode & ProfileMode) !== NoMode) {
+                    if (nextDidTimeout) {
+                        // Don't count time spent in a timed out Suspense subtree as part of the base duration.
+                        var primaryChildFragment = workInProgress.child;
+                        if (primaryChildFragment !== null) // $FlowFixMe Flow doesn't support type casting in combination with the -= operator
+                        workInProgress.treeBaseDuration -= primaryChildFragment.treeBaseDuration;
+                    }
+                }
+                return null;
+            case HostPortal:
+                popHostContainer(workInProgress);
+                updateHostContainer(current, workInProgress);
+                if (current === null) preparePortalMount(workInProgress.stateNode.containerInfo);
+                bubbleProperties(workInProgress);
+                return null;
+            case ContextProvider:
+                // Pop provider fiber
+                var context = workInProgress.type._context;
+                popProvider(context, workInProgress);
+                bubbleProperties(workInProgress);
+                return null;
+            case IncompleteClassComponent:
+                // Same as class component case. I put it down here so that the tags are
+                // sequential to ensure this switch is compiled to a jump table.
+                var _Component = workInProgress.type;
+                if (isContextProvider(_Component)) popContext(workInProgress);
+                bubbleProperties(workInProgress);
+                return null;
+            case SuspenseListComponent:
+                popSuspenseContext(workInProgress);
+                var renderState = workInProgress.memoizedState;
+                if (renderState === null) {
+                    // We're running in the default, "independent" mode.
+                    // We don't do anything in this mode.
+                    bubbleProperties(workInProgress);
+                    return null;
+                }
+                var didSuspendAlready = (workInProgress.flags & DidCapture) !== NoFlags;
+                var renderedTail = renderState.rendering;
+                if (renderedTail === null) {
+                    // We just rendered the head.
+                    if (!didSuspendAlready) {
+                        // This is the first pass. We need to figure out if anything is still
+                        // suspended in the rendered set.
+                        // If new content unsuspended, but there's still some content that
+                        // didn't. Then we need to do a second pass that forces everything
+                        // to keep showing their fallbacks.
+                        // We might be suspended if something in this render pass suspended, or
+                        // something in the previous committed pass suspended. Otherwise,
+                        // there's no chance so we can skip the expensive call to
+                        // findFirstSuspended.
+                        var cannotBeSuspended = renderHasNotSuspendedYet() && (current === null || (current.flags & DidCapture) === NoFlags);
+                        if (!cannotBeSuspended) {
+                            var row = workInProgress.child;
+                            while(row !== null){
+                                var suspended = findFirstSuspended(row);
+                                if (suspended !== null) {
+                                    didSuspendAlready = true;
+                                    workInProgress.flags |= DidCapture;
+                                    cutOffTailIfNeeded(renderState, false); // If this is a newly suspended tree, it might not get committed as
+                                    // part of the second pass. In that case nothing will subscribe to
+                                    // its thenables. Instead, we'll transfer its thenables to the
+                                    // SuspenseList so that it can retry if they resolve.
+                                    // There might be multiple of these in the list but since we're
+                                    // going to wait for all of them anyway, it doesn't really matter
+                                    // which ones gets to ping. In theory we could get clever and keep
+                                    // track of how many dependencies remain but it gets tricky because
+                                    // in the meantime, we can add/remove/change items and dependencies.
+                                    // We might bail out of the loop before finding any but that
+                                    // doesn't matter since that means that the other boundaries that
+                                    // we did find already has their listeners attached.
+                                    var newThenables = suspended.updateQueue;
+                                    if (newThenables !== null) {
+                                        workInProgress.updateQueue = newThenables;
+                                        workInProgress.flags |= Update;
+                                    } // Rerender the whole list, but this time, we'll force fallbacks
+                                    // to stay in place.
+                                    // Reset the effect flags before doing the second pass since that's now invalid.
+                                    // Reset the child fibers to their original state.
+                                    workInProgress.subtreeFlags = NoFlags;
+                                    resetChildFibers(workInProgress, renderLanes); // Set up the Suspense Context to force suspense and immediately
+                                    // rerender the children.
+                                    pushSuspenseContext(workInProgress, setShallowSuspenseContext(suspenseStackCursor.current, ForceSuspenseFallback)); // Don't bubble properties in this case.
+                                    return workInProgress.child;
+                                }
+                                row = row.sibling;
+                            }
+                        }
+                        if (renderState.tail !== null && now() > getRenderTargetTime()) {
+                            // We have already passed our CPU deadline but we still have rows
+                            // left in the tail. We'll just give up further attempts to render
+                            // the main content and only render fallbacks.
+                            workInProgress.flags |= DidCapture;
+                            didSuspendAlready = true;
+                            cutOffTailIfNeeded(renderState, false); // Since nothing actually suspended, there will nothing to ping this
+                            // to get it started back up to attempt the next item. While in terms
+                            // of priority this work has the same priority as this current render,
+                            // it's not part of the same transition once the transition has
+                            // committed. If it's sync, we still want to yield so that it can be
+                            // painted. Conceptually, this is really the same as pinging.
+                            // We can use any RetryLane even if it's the one currently rendering
+                            // since we're leaving it behind on this node.
+                            workInProgress.lanes = SomeRetryLane;
+                        }
+                    } else cutOffTailIfNeeded(renderState, false);
+                     // Next we're going to render the tail.
+                } else {
+                    // Append the rendered row to the child list.
+                    if (!didSuspendAlready) {
+                        var _suspended = findFirstSuspended(renderedTail);
+                        if (_suspended !== null) {
+                            workInProgress.flags |= DidCapture;
+                            didSuspendAlready = true; // Ensure we transfer the update queue to the parent so that it doesn't
+                            // get lost if this row ends up dropped during a second pass.
+                            var _newThenables = _suspended.updateQueue;
+                            if (_newThenables !== null) {
+                                workInProgress.updateQueue = _newThenables;
+                                workInProgress.flags |= Update;
+                            }
+                            cutOffTailIfNeeded(renderState, true); // This might have been modified.
+                            if (renderState.tail === null && renderState.tailMode === "hidden" && !renderedTail.alternate && !getIsHydrating() // We don't cut it if we're hydrating.
+                            ) {
+                                // We're done.
+                                bubbleProperties(workInProgress);
+                                return null;
+                            }
+                        } else if (// time we have to render. So rendering one more row would likely
+                        // exceed it.
+                        now() * 2 - renderState.renderingStartTime > getRenderTargetTime() && renderLanes !== OffscreenLane) {
+                            // We have now passed our CPU deadline and we'll just give up further
+                            // attempts to render the main content and only render fallbacks.
+                            // The assumption is that this is usually faster.
+                            workInProgress.flags |= DidCapture;
+                            didSuspendAlready = true;
+                            cutOffTailIfNeeded(renderState, false); // Since nothing actually suspended, there will nothing to ping this
+                            // to get it started back up to attempt the next item. While in terms
+                            // of priority this work has the same priority as this current render,
+                            // it's not part of the same transition once the transition has
+                            // committed. If it's sync, we still want to yield so that it can be
+                            // painted. Conceptually, this is really the same as pinging.
+                            // We can use any RetryLane even if it's the one currently rendering
+                            // since we're leaving it behind on this node.
+                            workInProgress.lanes = SomeRetryLane;
+                        }
+                    }
+                    if (renderState.isBackwards) {
+                        // The effect list of the backwards tail will have been added
+                        // to the end. This breaks the guarantee that life-cycles fire in
+                        // sibling order but that isn't a strong guarantee promised by React.
+                        // Especially since these might also just pop in during future commits.
+                        // Append to the beginning of the list.
+                        renderedTail.sibling = workInProgress.child;
+                        workInProgress.child = renderedTail;
+                    } else {
+                        var previousSibling = renderState.last;
+                        if (previousSibling !== null) previousSibling.sibling = renderedTail;
+                        else workInProgress.child = renderedTail;
+                        renderState.last = renderedTail;
+                    }
+                }
+                if (renderState.tail !== null) {
+                    // We still have tail rows to render.
+                    // Pop a row.
+                    var next = renderState.tail;
+                    renderState.rendering = next;
+                    renderState.tail = next.sibling;
+                    renderState.renderingStartTime = now();
+                    next.sibling = null; // Restore the context.
+                    // TODO: We can probably just avoid popping it instead and only
+                    // setting it the first time we go from not suspended to suspended.
+                    var suspenseContext = suspenseStackCursor.current;
+                    if (didSuspendAlready) suspenseContext = setShallowSuspenseContext(suspenseContext, ForceSuspenseFallback);
+                    else suspenseContext = setDefaultShallowSuspenseContext(suspenseContext);
+                    pushSuspenseContext(workInProgress, suspenseContext); // Do a pass over the next row.
+                    // Don't bubble properties in this case.
+                    return next;
+                }
+                bubbleProperties(workInProgress);
+                return null;
+            case ScopeComponent:
+                break;
+            case OffscreenComponent:
+            case LegacyHiddenComponent:
+                popRenderLanes(workInProgress);
+                var _nextState = workInProgress.memoizedState;
+                var nextIsHidden = _nextState !== null;
+                if (current !== null) {
+                    var _prevState = current.memoizedState;
+                    var prevIsHidden = _prevState !== null;
+                    if (prevIsHidden !== nextIsHidden && !enableLegacyHidden) workInProgress.flags |= Visibility;
+                }
+                if (!nextIsHidden || (workInProgress.mode & ConcurrentMode) === NoMode) bubbleProperties(workInProgress);
+                else // Don't bubble properties for hidden children unless we're rendering
+                // at offscreen priority.
+                if (includesSomeLane(subtreeRenderLanes1, OffscreenLane)) {
+                    bubbleProperties(workInProgress);
+                    // Check if there was an insertion or update in the hidden subtree.
+                    // If so, we need to hide those nodes in the commit phase, so
+                    // schedule a visibility effect.
+                    if (workInProgress.subtreeFlags & (Placement | Update)) workInProgress.flags |= Visibility;
+                }
+                return null;
+            case CacheComponent:
+                return null;
+            case TracingMarkerComponent:
+                return null;
         }
         throw new Error("Unknown unit of work tag (" + workInProgress.tag + "). This error is likely caused by a bug in " + "React. Please file an issue.");
     }
@@ -22440,6 +22520,7 @@ module.exports = require("./cjs/react-dom.development.js");
             case ScopeComponent:
             case OffscreenComponent:
             case LegacyHiddenComponent:
+            case TracingMarkerComponent:
                 break;
             default:
                 throw new Error("This unit of work tag should not have side-effects. This error is likely caused by a bug in React. Please file an issue.");
@@ -23066,8 +23147,11 @@ module.exports = require("./cjs/react-dom.development.js");
                 commitReconciliationEffects(finishedWork);
                 var offscreenFiber = finishedWork.child;
                 if (offscreenFiber.flags & Visibility) {
+                    var offscreenInstance = offscreenFiber.stateNode;
                     var newState = offscreenFiber.memoizedState;
-                    var isHidden = newState !== null;
+                    var isHidden = newState !== null; // Track the current state on the Offscreen instance so we can
+                    // read it during an event
+                    offscreenInstance.isHidden = isHidden;
                     if (isHidden) {
                         var wasHidden = offscreenFiber.alternate !== null && offscreenFiber.alternate.memoizedState !== null;
                         if (!wasHidden) // TODO: Move to passive phase
@@ -23096,12 +23180,12 @@ module.exports = require("./cjs/react-dom.development.js");
                 } else recursivelyTraverseMutationEffects(root, finishedWork);
                 commitReconciliationEffects(finishedWork);
                 if (flags & Visibility) {
+                    var _offscreenInstance = finishedWork.stateNode;
                     var _newState = finishedWork.memoizedState;
                     var _isHidden = _newState !== null;
-                    var offscreenBoundary = finishedWork;
-                    // TODO: This needs to run whenever there's an insertion or update
-                    // inside a hidden Offscreen tree.
-                    hideOrUnhideAllChildren(offscreenBoundary, _isHidden);
+                    var offscreenBoundary = finishedWork; // Track the current state on the Offscreen instance so we can
+                    // read it during an event
+                    _offscreenInstance.isHidden = _isHidden;
                     if (_isHidden) {
                         if (!_wasHidden) {
                             if ((offscreenBoundary.mode & ConcurrentMode) !== NoMode) {
@@ -23115,6 +23199,9 @@ module.exports = require("./cjs/react-dom.development.js");
                             }
                         }
                     }
+                    // TODO: This needs to run whenever there's an insertion or update
+                    // inside a hidden Offscreen tree.
+                    hideOrUnhideAllChildren(offscreenBoundary, _isHidden);
                 }
                 return;
             case SuspenseListComponent:
@@ -23765,11 +23852,9 @@ module.exports = require("./cjs/react-dom.development.js");
         if ((mode & ConcurrentMode) === NoMode) return SyncLane;
         return claimNextRetryLane();
     }
-    function scheduleUpdateOnFiber(fiber, lane, eventTime) {
+    function scheduleUpdateOnFiber(root, fiber, lane, eventTime) {
         checkForNestedUpdates();
         if (isRunningInsertionEffect) error1("useInsertionEffect must not schedule updates.");
-        var root = markUpdateLaneFromFiberToRoot(fiber, lane);
-        if (root === null) return null;
         if (isFlushingPassiveEffects) didScheduleUpdateDuringPassiveEffects = true;
         markRootUpdated(root, lane, eventTime);
         if ((executionContext & RenderContext) !== NoLanes && root === workInProgressRoot) // This update was dispatched during the render phase. This is a mistake
@@ -23782,7 +23867,6 @@ module.exports = require("./cjs/react-dom.development.js");
             if (isDevToolsPresent) addFiberToLanesMap(root, fiber, lane);
             warnIfUpdatesNotWrappedWithActDEV(fiber);
             if (root === workInProgressRoot) {
-                // TODO: Consolidate with `isInterleavedUpdate` check
                 // Received an update to a tree that's in the middle of rendering. Mark
                 // that there was an interleaved update work on this root. Unless the
                 // `deferRenderPhaseUpdateToNextBatch` flag is off and this is a render
@@ -23808,7 +23892,6 @@ module.exports = require("./cjs/react-dom.development.js");
                 flushSyncCallbacksOnlyInLegacyMode();
             }
         }
-        return root;
     }
     function scheduleInitialHydrationOnRoot(root, lane, eventTime) {
         // This is a special fork of scheduleUpdateOnFiber that is only used to
@@ -23824,42 +23907,12 @@ module.exports = require("./cjs/react-dom.development.js");
         current.lanes = lane;
         markRootUpdated(root, lane, eventTime);
         ensureRootIsScheduled(root, eventTime);
-    } // This is split into a separate function so we can mark a fiber with pending
-    // work without treating it as a typical update that originates from an event;
-    // e.g. retrying a Suspense boundary isn't an update, but it does schedule work
-    // on a fiber.
-    function markUpdateLaneFromFiberToRoot(sourceFiber, lane) {
-        // Update the source fiber's lanes
-        sourceFiber.lanes = mergeLanes(sourceFiber.lanes, lane);
-        var alternate = sourceFiber.alternate;
-        if (alternate !== null) alternate.lanes = mergeLanes(alternate.lanes, lane);
-        if (alternate === null && (sourceFiber.flags & (Placement | Hydrating)) !== NoFlags) warnAboutUpdateOnNotYetMountedFiberInDEV(sourceFiber);
-        var node = sourceFiber;
-        var parent = sourceFiber.return;
-        while(parent !== null){
-            parent.childLanes = mergeLanes(parent.childLanes, lane);
-            alternate = parent.alternate;
-            if (alternate !== null) alternate.childLanes = mergeLanes(alternate.childLanes, lane);
-            else if ((parent.flags & (Placement | Hydrating)) !== NoFlags) warnAboutUpdateOnNotYetMountedFiberInDEV(sourceFiber);
-            node = parent;
-            parent = parent.return;
-        }
-        if (node.tag === HostRoot) {
-            var root = node.stateNode;
-            return root;
-        } else return null;
     }
-    function isInterleavedUpdate(fiber, lane) {
-        return(// Requires some refactoring. Not a big deal though since it's rare for
-        // concurrent apps to have more than a single root.
-        (workInProgressRoot !== null || // we should treat this as an interleaved update, too. This is also a
-        // defensive coding measure in case a new update comes in between when
-        // rendering has finished and when the interleaved updates are transferred
-        // to the main queue.
-        hasInterleavedUpdates()) && (fiber.mode & ConcurrentMode) !== NoMode && // then don't treat this as an interleaved update. This pattern is
-        // accompanied by a warning but we haven't fully deprecated it yet. We can
-        // remove once the deferRenderPhaseUpdateToNextBatch flag is enabled.
-        (executionContext & RenderContext) === NoContext);
+    function isUnsafeClassRenderPhaseUpdate(fiber) {
+        // Check if this is a render phase update. Only called by class components,
+        // which special (deprecated) behavior for UNSAFE_componentWillReceive props.
+        return(// decided not to enable it.
+        (executionContext & RenderContext) !== NoContext);
     } // Use this function to schedule a task for a root. There's only one task per
     // root; if a task was already scheduled, we'll check to make sure the priority
     // of the existing task is the same as the priority of the next level that the
@@ -23909,8 +23962,8 @@ module.exports = require("./cjs/react-dom.development.js");
                 // https://github.com/facebook/react/issues/22459
                 // We don't support running callbacks in the middle of render
                 // or commit so we need to check against that.
-                if (executionContext === NoContext) // It's only safe to do this conditionally because we always
-                // check for pending work before we exit the task.
+                if ((executionContext & (RenderContext | CommitContext)) === NoContext) // Note that this would still prematurely flush the callbacks
+                // if this happens outside render or commit phase (e.g. in an event).
                 flushSyncCallbacks();
             });
             newCallbackNode = null;
@@ -24343,7 +24396,7 @@ module.exports = require("./cjs/react-dom.development.js");
         workInProgressRootPingedLanes = NoLanes;
         workInProgressRootConcurrentErrors = null;
         workInProgressRootRecoverableErrors = null;
-        enqueueInterleavedUpdates();
+        finishQueueingConcurrentUpdates();
         ReactStrictModeWarnings.discardPendingWarnings();
         return rootWorkInProgress;
     }
@@ -24772,7 +24825,12 @@ module.exports = require("./cjs/react-dom.development.js");
             var onRecoverableError = root.onRecoverableError;
             for(var i = 0; i < recoverableErrors.length; i++){
                 var recoverableError = recoverableErrors[i];
-                onRecoverableError(recoverableError);
+                var componentStack = recoverableError.stack;
+                var digest = recoverableError.digest;
+                onRecoverableError(recoverableError.value, {
+                    componentStack: componentStack,
+                    digest: digest
+                });
             }
         }
         if (hasUncaughtError) {
@@ -24901,11 +24959,10 @@ module.exports = require("./cjs/react-dom.development.js");
     }
     var onUncaughtError = prepareToThrowUncaughtError;
     function captureCommitPhaseErrorOnRoot(rootFiber, sourceFiber, error) {
-        var errorInfo = createCapturedValue(error, sourceFiber);
+        var errorInfo = createCapturedValueAtFiber(error, sourceFiber);
         var update = createRootErrorUpdate(rootFiber, errorInfo, SyncLane);
-        enqueueUpdate(rootFiber, update);
+        var root = enqueueUpdate(rootFiber, update, SyncLane);
         var eventTime = requestEventTime();
-        var root = markUpdateLaneFromFiberToRoot(rootFiber, SyncLane);
         if (root !== null) {
             markRootUpdated(root, SyncLane, eventTime);
             ensureRootIsScheduled(root, eventTime);
@@ -24930,11 +24987,10 @@ module.exports = require("./cjs/react-dom.development.js");
                 var ctor = fiber.type;
                 var instance = fiber.stateNode;
                 if (typeof ctor.getDerivedStateFromError === "function" || typeof instance.componentDidCatch === "function" && !isAlreadyFailedLegacyErrorBoundary(instance)) {
-                    var errorInfo = createCapturedValue(error$1, sourceFiber);
+                    var errorInfo = createCapturedValueAtFiber(error$1, sourceFiber);
                     var update = createClassErrorUpdate(fiber, errorInfo, SyncLane);
-                    enqueueUpdate(fiber, update);
+                    var root = enqueueUpdate(fiber, update, SyncLane);
                     var eventTime = requestEventTime();
-                    var root = markUpdateLaneFromFiberToRoot(fiber, SyncLane);
                     if (root !== null) {
                         markRootUpdated(root, SyncLane, eventTime);
                         ensureRootIsScheduled(root, eventTime);
@@ -24985,7 +25041,7 @@ module.exports = require("./cjs/react-dom.development.js");
         retryLane = requestRetryLane(boundaryFiber);
          // TODO: Special case idle priority?
         var eventTime = requestEventTime();
-        var root = markUpdateLaneFromFiberToRoot(boundaryFiber, retryLane);
+        var root = enqueueConcurrentRenderForLane(boundaryFiber, retryLane);
         if (root !== null) {
             markRootUpdated(root, retryLane, eventTime);
             ensureRootIsScheduled(root, eventTime);
@@ -25108,7 +25164,8 @@ module.exports = require("./cjs/react-dom.development.js");
         try {
             return beginWork(current, unitOfWork, lanes);
         } catch (originalError) {
-            if (originalError !== null && typeof originalError === "object" && typeof originalError.then === "function") // Don't replay promises. Treat everything else like an error.
+            if (didSuspendOrErrorWhileHydratingDEV() || originalError !== null && typeof originalError === "object" && typeof originalError.then === "function") // Don't replay promises.
+            // Don't replay errors if we are hydrating and have already suspended or handled an error
             throw originalError;
              // Keep this code in sync with handleError; any changes here must have
             // corresponding changes there.
@@ -25357,7 +25414,10 @@ module.exports = require("./cjs/react-dom.development.js");
             if (failedBoundaries.has(fiber) || alternate !== null && failedBoundaries.has(alternate)) needsRemount = true;
         }
         if (needsRemount) fiber._debugNeedsRemount = true;
-        if (needsRemount || needsRender) scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp);
+        if (needsRemount || needsRender) {
+            var _root = enqueueConcurrentRenderForLane(fiber, SyncLane);
+            if (_root !== null) scheduleUpdateOnFiber(_root, fiber, SyncLane, NoTimestamp);
+        }
         if (child !== null && !needsRemount) scheduleFibersWithFamiliesRecursively(child, updatedFamilies, staleFamilies);
         if (sibling !== null) scheduleFibersWithFamiliesRecursively(sibling, updatedFamilies, staleFamilies);
     }
@@ -25785,7 +25845,9 @@ module.exports = require("./cjs/react-dom.development.js");
         var fiber = createFiber(OffscreenComponent, pendingProps, key, mode);
         fiber.elementType = REACT_OFFSCREEN_TYPE;
         fiber.lanes = lanes;
-        var primaryChildInstance = {};
+        var primaryChildInstance = {
+            isHidden: false
+        };
         fiber.stateNode = primaryChildInstance;
         return fiber;
     }
@@ -25917,7 +25979,7 @@ module.exports = require("./cjs/react-dom.development.js");
         initializeUpdateQueue(uninitializedFiber);
         return root;
     }
-    var ReactVersion = "18.1.0";
+    var ReactVersion = "18.2.0";
     function createPortal(children, containerInfo, implementation) {
         var key = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
         checkKeyStringCoercion(key);
@@ -25993,7 +26055,7 @@ module.exports = require("./cjs/react-dom.development.js");
         var lane = requestUpdateLane(current);
         var update = createUpdate(eventTime, lane);
         update.callback = callback !== undefined && callback !== null ? callback : null;
-        enqueueUpdate(current, update);
+        enqueueUpdate(current, update, lane);
         scheduleInitialHydrationOnRoot(root, lane, eventTime);
         return root;
     }
@@ -26020,9 +26082,11 @@ module.exports = require("./cjs/react-dom.development.js");
             if (typeof callback !== "function") error1("render(...): Expected the last optional `callback` argument to be a function. Instead received: %s.", callback);
             update.callback = callback;
         }
-        enqueueUpdate(current$1, update);
-        var root = scheduleUpdateOnFiber(current$1, lane, eventTime);
-        if (root !== null) entangleTransitions(root, current$1, lane);
+        var root = enqueueUpdate(current$1, update, lane);
+        if (root !== null) {
+            scheduleUpdateOnFiber(root, current$1, lane, eventTime);
+            entangleTransitions(root, current$1, lane);
+        }
         return lane;
     }
     function getPublicRootInstance(container) {
@@ -26038,17 +26102,20 @@ module.exports = require("./cjs/react-dom.development.js");
     function attemptSynchronousHydration$1(fiber) {
         switch(fiber.tag){
             case HostRoot:
-                var root = fiber.stateNode;
-                if (isRootDehydrated(root)) {
+                var root2 = fiber.stateNode;
+                if (isRootDehydrated(root2)) {
                     // Flush the first scheduled "update".
-                    var lanes = getHighestPriorityPendingLanes(root);
-                    flushRoot(root, lanes);
+                    var lanes = getHighestPriorityPendingLanes(root2);
+                    flushRoot(root2, lanes);
                 }
                 break;
             case SuspenseComponent:
-                var eventTime = requestEventTime();
                 flushSync(function() {
-                    return scheduleUpdateOnFiber(fiber, SyncLane, eventTime);
+                    var root = enqueueConcurrentRenderForLane(fiber, SyncLane);
+                    if (root !== null) {
+                        var eventTime = requestEventTime();
+                        scheduleUpdateOnFiber(root, fiber, SyncLane, eventTime);
+                    }
                 }); // If we're still blocked after this, we need to increase
                 // the priority of any promises resolving within this
                 // boundary so that they next attempt also has higher pri.
@@ -26072,18 +26139,24 @@ module.exports = require("./cjs/react-dom.development.js");
         // since you have to wrap anything that might suspend in
         // Suspense.
         return;
-        var eventTime = requestEventTime();
         var lane = SelectiveHydrationLane;
-        scheduleUpdateOnFiber(fiber, lane, eventTime);
+        var root = enqueueConcurrentRenderForLane(fiber, lane);
+        if (root !== null) {
+            var eventTime = requestEventTime();
+            scheduleUpdateOnFiber(root, fiber, lane, eventTime);
+        }
         markRetryLaneIfNotHydrated(fiber, lane);
     }
     function attemptHydrationAtCurrentPriority$1(fiber) {
         if (fiber.tag !== SuspenseComponent) // We ignore HostRoots here because we can't increase
         // their priority other than synchronously flush it.
         return;
-        var eventTime = requestEventTime();
         var lane = requestUpdateLane(fiber);
-        scheduleUpdateOnFiber(fiber, lane, eventTime);
+        var root = enqueueConcurrentRenderForLane(fiber, lane);
+        if (root !== null) {
+            var eventTime = requestEventTime();
+            scheduleUpdateOnFiber(root, fiber, lane, eventTime);
+        }
         markRetryLaneIfNotHydrated(fiber, lane);
     }
     function findHostInstanceWithNoPortals(fiber) {
@@ -26181,7 +26254,8 @@ module.exports = require("./cjs/react-dom.development.js");
             // As a result though, React will see the scheduled update as a noop and bailout.
             // Shallow cloning props works as a workaround for now to bypass the bailout check.
             fiber.memoizedProps = assign({}, fiber.memoizedProps);
-            scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp);
+            var root = enqueueConcurrentRenderForLane(fiber, SyncLane);
+            if (root !== null) scheduleUpdateOnFiber(root, fiber, SyncLane, NoTimestamp);
         }
     };
     overrideHookStateDeletePath = function(fiber, id, path) {
@@ -26195,7 +26269,8 @@ module.exports = require("./cjs/react-dom.development.js");
             // As a result though, React will see the scheduled update as a noop and bailout.
             // Shallow cloning props works as a workaround for now to bypass the bailout check.
             fiber.memoizedProps = assign({}, fiber.memoizedProps);
-            scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp);
+            var root = enqueueConcurrentRenderForLane(fiber, SyncLane);
+            if (root !== null) scheduleUpdateOnFiber(root, fiber, SyncLane, NoTimestamp);
         }
     };
     overrideHookStateRenamePath = function(fiber, id, oldPath, newPath) {
@@ -26209,26 +26284,31 @@ module.exports = require("./cjs/react-dom.development.js");
             // As a result though, React will see the scheduled update as a noop and bailout.
             // Shallow cloning props works as a workaround for now to bypass the bailout check.
             fiber.memoizedProps = assign({}, fiber.memoizedProps);
-            scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp);
+            var root = enqueueConcurrentRenderForLane(fiber, SyncLane);
+            if (root !== null) scheduleUpdateOnFiber(root, fiber, SyncLane, NoTimestamp);
         }
     }; // Support DevTools props for function components, forwardRef, memo, host components, etc.
     overrideProps = function(fiber, path, value) {
         fiber.pendingProps = copyWithSet(fiber.memoizedProps, path, value);
         if (fiber.alternate) fiber.alternate.pendingProps = fiber.pendingProps;
-        scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp);
+        var root = enqueueConcurrentRenderForLane(fiber, SyncLane);
+        if (root !== null) scheduleUpdateOnFiber(root, fiber, SyncLane, NoTimestamp);
     };
     overridePropsDeletePath = function(fiber, path) {
         fiber.pendingProps = copyWithDelete(fiber.memoizedProps, path);
         if (fiber.alternate) fiber.alternate.pendingProps = fiber.pendingProps;
-        scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp);
+        var root = enqueueConcurrentRenderForLane(fiber, SyncLane);
+        if (root !== null) scheduleUpdateOnFiber(root, fiber, SyncLane, NoTimestamp);
     };
     overridePropsRenamePath = function(fiber, oldPath, newPath) {
         fiber.pendingProps = copyWithRename(fiber.memoizedProps, oldPath, newPath);
         if (fiber.alternate) fiber.alternate.pendingProps = fiber.pendingProps;
-        scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp);
+        var root = enqueueConcurrentRenderForLane(fiber, SyncLane);
+        if (root !== null) scheduleUpdateOnFiber(root, fiber, SyncLane, NoTimestamp);
     };
     scheduleUpdate = function(fiber) {
-        scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp);
+        var root = enqueueConcurrentRenderForLane(fiber, SyncLane);
+        if (root !== null) scheduleUpdateOnFiber(root, fiber, SyncLane, NoTimestamp);
     };
     setErrorHandler = function(newShouldErrorImpl) {
         shouldErrorImpl = newShouldErrorImpl;
@@ -27883,8 +27963,10 @@ var Query = /*#__PURE__*/ function() {
         }, this.cacheTime);
     };
     _proto.clearGcTimeout = function clearGcTimeout() {
-        clearTimeout(this.gcTimeout);
-        this.gcTimeout = undefined;
+        if (this.gcTimeout) {
+            clearTimeout(this.gcTimeout);
+            this.gcTimeout = undefined;
+        }
     };
     _proto.optionalRemove = function optionalRemove() {
         if (!this.observers.length) {
@@ -29003,7 +29085,7 @@ var QueryObserver = /*#__PURE__*/ function(_Subscribable) {
         _this.client = client;
         _this.options = options;
         _this.trackedProps = [];
-        _this.previousSelectError = null;
+        _this.selectError = null;
         _this.bindMethods();
         _this.setOptions(options);
         return _this;
@@ -29157,12 +29239,16 @@ var QueryObserver = /*#__PURE__*/ function(_Subscribable) {
         this.clearRefetchInterval();
     };
     _proto.clearStaleTimeout = function clearStaleTimeout() {
-        clearTimeout(this.staleTimeoutId);
-        this.staleTimeoutId = undefined;
+        if (this.staleTimeoutId) {
+            clearTimeout(this.staleTimeoutId);
+            this.staleTimeoutId = undefined;
+        }
     };
     _proto.clearRefetchInterval = function clearRefetchInterval() {
-        clearInterval(this.refetchIntervalId);
-        this.refetchIntervalId = undefined;
+        if (this.refetchIntervalId) {
+            clearInterval(this.refetchIntervalId);
+            this.refetchIntervalId = undefined;
+        }
     };
     _proto.createResult = function createResult(query, options) {
         var prevQuery = this.currentQuery;
@@ -29193,23 +29279,17 @@ var QueryObserver = /*#__PURE__*/ function(_Subscribable) {
             status = prevQueryResult.status;
             isPreviousData = true;
         } else if (options.select && typeof state.data !== "undefined") {
-            var _this$previousSelect;
             // Memoize select result
-            if (prevResult && state.data === (prevResultState == null ? void 0 : prevResultState.data) && options.select === ((_this$previousSelect = this.previousSelect) == null ? void 0 : _this$previousSelect.fn) && !this.previousSelectError) data = this.previousSelect.result;
+            if (prevResult && state.data === (prevResultState == null ? void 0 : prevResultState.data) && options.select === this.selectFn) data = this.selectResult;
             else try {
+                this.selectFn = options.select;
                 data = options.select(state.data);
                 if (options.structuralSharing !== false) data = (0, _utils.replaceEqualDeep)(prevResult == null ? void 0 : prevResult.data, data);
-                this.previousSelect = {
-                    fn: options.select,
-                    result: data
-                };
-                this.previousSelectError = null;
+                this.selectResult = data;
+                this.selectError = null;
             } catch (selectError) {
                 (0, _logger.getLogger)().error(selectError);
-                error = selectError;
-                this.previousSelectError = selectError;
-                errorUpdatedAt = Date.now();
-                status = "error";
+                this.selectError = selectError;
             }
         } else data = state.data;
          // Show placeholder data if needed
@@ -29221,13 +29301,10 @@ var QueryObserver = /*#__PURE__*/ function(_Subscribable) {
                 if (options.select && typeof placeholderData !== "undefined") try {
                     placeholderData = options.select(placeholderData);
                     if (options.structuralSharing !== false) placeholderData = (0, _utils.replaceEqualDeep)(prevResult == null ? void 0 : prevResult.data, placeholderData);
-                    this.previousSelectError = null;
+                    this.selectError = null;
                 } catch (selectError) {
                     (0, _logger.getLogger)().error(selectError);
-                    error = selectError;
-                    this.previousSelectError = selectError;
-                    errorUpdatedAt = Date.now();
-                    status = "error";
+                    this.selectError = selectError;
                 }
             }
             if (typeof placeholderData !== "undefined") {
@@ -29235,6 +29312,12 @@ var QueryObserver = /*#__PURE__*/ function(_Subscribable) {
                 data = placeholderData;
                 isPlaceholderData = true;
             }
+        }
+        if (this.selectError) {
+            error = this.selectError;
+            data = this.selectResult;
+            errorUpdatedAt = Date.now();
+            status = "error";
         }
         var result = {
             status: status,
@@ -31020,7 +31103,6 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "textParams", ()=>textParams);
 parcelHelpers.export(exports, "UIText", ()=>UIText);
-var _jsxDevRuntime = require("react/jsx-dev-runtime");
 var _react = require("react");
 var _reactDefault = parcelHelpers.interopDefault(_react);
 const textParams = {
@@ -31235,12 +31317,12 @@ const getStyles = (kind)=>{
     if (!result) throw new Error(`Unsupported text kind: ${kind}`);
     return result;
 };
-function UIText({ as ="div" , inline =false , kind , color ="currentColor" , style , ...props }) {
+const UITextComponent = ({ as , inline =false , kind , color ="currentColor" , style , ...props }, ref)=>{
     const [fontSize, lineHeight, fontWeight, letterSpacing] = getStyles(kind);
-    const Element = as;
-    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(Element, {
+    return /*#__PURE__*/ (0, _reactDefault.default).createElement(as || "div", {
+        ref,
         style: {
-            display: inline ? "inline" : "block",
+            display: inline ? "inline" : undefined,
             margin: 0,
             fontFamily: "Graphik, sans-serif",
             fontSize,
@@ -31251,22 +31333,21 @@ function UIText({ as ="div" , inline =false , kind , color ="currentColor" , sty
             ...style
         },
         ...props
-    }, void 0, false, {
-        fileName: "src/ui/ui-kit/UIText/UIText.tsx",
-        lineNumber: 73,
-        columnNumber: 5
-    }, this);
-}
-_c = UIText;
-var _c;
-$RefreshReg$(_c, "UIText");
+    });
+};
+_c = UITextComponent;
+const UIText = /*#__PURE__*/ (0, _reactDefault.default).forwardRef(UITextComponent);
+_c1 = UIText;
+var _c, _c1;
+$RefreshReg$(_c, "UITextComponent");
+$RefreshReg$(_c1, "UIText");
 
   $parcel$ReactRefreshHelpers$4fe7.postlude(module);
 } finally {
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"hLvwM":[function(require,module,exports) {
+},{"react":"21dqq","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"hLvwM":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "VStack", ()=>(0, _vstack.VStack));
@@ -31383,8 +31464,8 @@ function d(e1, t1) {
 }
 function f(e, t) {
     if (null == e) return {};
-    var n, r, a = {}, s = Object.keys(e);
-    for(r = 0; r < s.length; r++)t.indexOf(n = s[r]) >= 0 || (a[n] = e[n]);
+    var n, r, a = {}, o = Object.keys(e);
+    for(r = 0; r < o.length; r++)t.indexOf(n = o[r]) >= 0 || (a[n] = e[n]);
     return a;
 }
 function l(e, t) {
@@ -31499,11 +31580,11 @@ function k(e8, t5, n) {
     void 0 === n && (n = g);
     var r = !1;
     if (null === e8) throw new Error('Cannot handle "change" event before "received"');
-    var a = S(t5, n), s = e8.map(function(e) {
+    var a = S(t5, n), o = e8.map(function(e) {
         var t = n(e);
         return t in a ? (r = !0, a[t]) : e;
     });
-    return r ? s : e8;
+    return r ? o : e8;
 }
 function C(e9, t, n) {
     if (void 0 === n && (n = g), null === e9) throw new Error('Cannot handle "removed" event before "received"');
@@ -31559,31 +31640,33 @@ var q = function() {
     }, t6.remove = function(e) {
         this.map.delete(e);
     }, e12;
-}(), P = new Map, A = new Map;
-function O(e, t, n) {
+}(), O = new Map, P = new Map;
+function A(e, t, n) {
     var r = n[1];
     if (r && r.scope && r.payload) {
         var a1 = r.scope;
-        P.get(e).add(n), a1.forEach(function(a) {
-            e.on("received " + t + " " + a, function s(o) {
-                I(r, o) && (e.off("received " + t + " " + a, s), P.get(e).delete(n));
+        O.get(e).add(n), a1.forEach(function(a) {
+            e.on("received " + t + " " + a, function o(s) {
+                I(r, s) && (e.off("received " + t + " " + a, o), O.get(e).delete(n));
             });
         });
     }
 }
 function _(e, t) {
     var n = t[0], r = t[1];
-    r && r.scope && r.payload && ("subscribe" === n && A.get(e).set(r, t), "unsubscribe" === n && A.get(e).has(r) && A.get(e).delete(r));
+    r && r.scope && r.payload && ("subscribe" === n && P.get(e).set(r, t), "unsubscribe" === n && P.get(e).has(r) && P.get(e).delete(r));
 }
-var j = {}, T = function(e13, n3, r1, a3) {
-    if (void 0 === a3 && (a3 = r1), !j[r1]) {
-        var s1 = function(e, t7) {
-            P.set(e, new Set), A.set(e, new Map);
+var j = {}, T = function(e13, n3, r1, a3, o1) {
+    if (void 0 === a3 && (a3 = {}), void 0 === o1 && (o1 = r1), !j[r1]) {
+        var s = a3.query, i = void 0 === s ? {} : s, u1 = f(a3, [
+            "query"
+        ]), d1 = function(e, t7) {
+            O.set(e, new Set), P.set(e, new Map);
             var n = e.emit;
             Object.assign(e, {
                 emit: function(r) {
                     var a = arguments;
-                    "get" === r ? O(e, t7, a) : "subscribe" !== r && "unsubscribe" !== r || _(e, a), n.apply(e, arguments);
+                    "get" === r ? A(e, t7, a) : "subscribe" !== r && "unsubscribe" !== r || _(e, a), n.apply(e, arguments);
                 }
             });
             var r2 = !1;
@@ -31591,19 +31674,19 @@ var j = {}, T = function(e13, n3, r1, a3) {
                 r2 = !1;
             }), e.on("reconnect", function() {
                 r2 || (r2 = !0, function() {
-                    for(var t, r = p(P.get(e)); !(t = r()).done;)n.apply(e, t.value);
-                    for(var a, s = p(A.get(e).values()); !(a = s()).done;)n.apply(e, a.value);
+                    for(var t, r = p(O.get(e)); !(t = r()).done;)n.apply(e, t.value);
+                    for(var a, o = p(P.get(e).values()); !(a = o()).done;)n.apply(e, a.value);
                 }());
             }), e;
-        }((0, _socketIoClientDefault.default)(new URL(r1, e13).toString(), {
+        }((0, _socketIoClientDefault.default)(new URL(r1, e13).toString(), c({
             transports: [
                 "websocket"
             ],
             timeout: 6e4,
-            query: {
+            query: c({
                 api_token: n3
-            }
-        }), e13);
+            }, i)
+        }, u1)), e13);
         (function(e) {
             if ("undefined" == typeof document) return function() {};
             var t, n = !1;
@@ -31614,28 +31697,28 @@ var j = {}, T = function(e13, n3, r1, a3) {
                     n = !1;
                 }), e.connect(), e.emit("reconnect")));
             });
-        })(s1), j[r1] = {
-            socket: s1,
-            namespace: a3
+        })(d1), j[r1] = {
+            socket: d1,
+            namespace: o1
         };
     }
     return j[r1];
 };
 function N(e14) {
-    var t = e14.namespace, n = e14.scope, r = e14.getId, a = e14.mergeStrategy, s = e14.verifyFn;
-    return function(e15, o) {
-        var i = o.client, u1 = f(o, [
+    var t = e14.namespace, n = e14.scope, r = e14.getId, a = e14.mergeStrategy, o = e14.verifyFn;
+    return function(e15, s) {
+        var i = s.client, u2 = f(s, [
             "client"
-        ]), d1 = i || this;
-        if (!d1) throw new Error("Domain request must be called either as a method of Client or with a client parameter");
-        return d1.cachedSubscribe(c({}, u1, {
+        ]), d2 = i || this;
+        if (!d2) throw new Error("Domain request must be called either as a method of Client or with a client parameter");
+        return d2.cachedSubscribe(c({}, u2, {
             onData: function(e) {
-                e.data && u1.onData(e.data);
+                e.data && u2.onData(e.data);
             },
             namespace: t,
-            getId: r || u1.getId,
-            mergeStrategy: a || u1.mergeStrategy,
-            verifyFn: s || u1.verifyFn,
+            getId: r || u2.getId,
+            mergeStrategy: a || u2.mergeStrategy,
+            verifyFn: o || u2.verifyFn,
             body: {
                 scope: [
                     n
@@ -31649,12 +31732,12 @@ var x = function(e) {
     return e.asset_code;
 };
 function K(e16, t) {
-    var n = t.meta, r = n.asset_codes, a = n.asset_code, s = e16.payload, o = s.asset_codes;
-    if (s.currency !== n.currency) return !1;
-    if (a) return o.includes(a);
-    if (o.length > r.length) return !1;
+    var n = t.meta, r = n.asset_codes, a = n.asset_code, o = e16.payload, s = o.asset_codes;
+    if (o.currency !== n.currency) return !1;
+    if (a) return s.includes(a);
+    if (s.length > r.length) return !1;
     var i = new Set(r);
-    return o.every(function(e) {
+    return s.every(function(e) {
         return i.has(e);
     });
 }
@@ -31722,11 +31805,11 @@ function Z() {
 }
 var ee = function(e18) {
     function t9(t10) {
-        var r, a = (void 0 === t10 ? {} : t10).max, s = void 0 === a ? 50 : a;
+        var r, a = (void 0 === t10 ? {} : t10).max, o = void 0 === a ? 50 : a;
         return (r = e18.call(this, {
             usesStaleEntries: !1
         }) || this).map = void 0, r.lruCache = void 0, r.staleEntries = void 0, r.map = new Map, r.lruCache = new (0, _lruCacheDefault.default)({
-            max: s,
+            max: o,
             dispose: function(e19, t11, n) {
                 "evict" === n && function(e, t12 = Z()) {
                     t12("readwrite", (t)=>(t.delete(e), X(t.transaction)));
@@ -31809,22 +31892,22 @@ var ee = function(e18) {
     "removed"
 ];
 function ne(e27) {
-    var t16 = e27.socketNamespace, n = e27.method, r = void 0 === n ? "subscribe" : n, a = e27.body, s = e27.onMessage, o = e27.onAnyMessage, i = e27.verifyFn, c1 = void 0 === i ? h : i, u2 = t16.socket, d2 = t16.namespace;
+    var t16 = e27.socketNamespace, n = e27.method, r = void 0 === n ? "subscribe" : n, a = e27.body, o = e27.onMessage, s = e27.onAnyMessage, i = e27.verifyFn, c1 = void 0 === i ? h : i, u3 = t16.socket, d3 = t16.namespace;
     if (!a.scope.length) throw new Error("Invalid scope argument: scope cannot be empty");
     var f1 = a.scope[0], l1 = [];
     return te.forEach(function(e28) {
         var t17 = function(e) {
             return function(t) {
-                c1(a, t) && s(e, t), o && o(e, t);
+                c1(a, t) && o(e, t), s && s(e, t);
             };
         }(e28);
-        u2.on(e28 + " " + d2 + " " + f1, t17), l1.push(function() {
-            return u2.off(e28 + " " + d2 + " " + f1, t17);
+        u3.on(e28 + " " + d3 + " " + f1, t17), l1.push(function() {
+            return u3.off(e28 + " " + d3 + " " + f1, t17);
         });
-    }), u2.emit(r, a), function() {
+    }), u3.emit(r, a), function() {
         l1.forEach(function(e) {
             return e();
-        }), "subscribe" === r && u2.emit("unsubscribe", a);
+        }), "subscribe" === r && u3.emit("unsubscribe", a);
     };
 }
 function re(e) {
@@ -31833,8 +31916,8 @@ function re(e) {
         body: e.body
     });
 }
-var ae = 0, se = {}, oe = function(e) {
-    return se[e] || (se[e] = ++ae), se[e];
+var ae = 0, oe = {}, se = function(e) {
+    return oe[e] || (oe[e] = ++ae), oe[e];
 };
 function ie(e, t) {
     if ("socketNamespace" in e) return e;
@@ -31857,37 +31940,51 @@ var ce = {
     return u(t18, e), t18;
 }(function() {
     function e29(e) {
-        this.url = void 0, this.apiToken = void 0, this.cache = void 0, this.hooks = void 0, this.customGetCacheKey = void 0, this.url = e ? e.url : null, this.apiToken = e ? e.apiToken : null, this.cache = (null == e ? void 0 : e.cache) || new q, this.customGetCacheKey = null == e ? void 0 : e.getCacheKey, this.hooks = this.configureHooks(e), this.namespaceFactory = this.namespaceFactory.bind(this);
+        this.url = void 0, this.apiToken = void 0, this.ioOptions = void 0, this.cache = void 0, this.hooks = void 0, this.customGetCacheKey = void 0, this.url = e ? e.url : null, this.apiToken = e ? e.apiToken : null, this.ioOptions = null == e ? void 0 : e.ioOptions, this.cache = (null == e ? void 0 : e.cache) || new q, this.customGetCacheKey = null == e ? void 0 : e.getCacheKey, this.hooks = this.configureHooks(e), this.namespaceFactory = this.namespaceFactory.bind(this);
     }
     var t19 = e29.prototype;
     return t19.configureHooks = function(e) {
         return e ? Object.assign({}, ce, e.hooks) : ce;
     }, t19.namespaceFactory = function(e) {
         if (!this.url || !this.apiToken) throw new Error("Client must be configured with a url and a token. Call client.configure({ url, apiToken }) before calling this method");
-        return T(this.url, this.apiToken, e);
+        return T(this.url, this.apiToken, e, this.ioOptions);
     }, t19.configure = function(e) {
-        var t = e.apiToken;
-        return this.url = e.url, this.apiToken = t, this.hooks = this.configureHooks(e), this.cache = e.cache || this.cache, this.customGetCacheKey = e.getCacheKey, this;
+        var t = e.apiToken, n = e.ioOptions;
+        return this.url = e.url, this.apiToken = t, this.ioOptions = n, this.hooks = this.configureHooks(e), this.cache = e.cache || this.cache, this.customGetCacheKey = e.getCacheKey, this;
     }, t19.subscribe = function(e) {
-        return ne(ie(e, this.namespaceFactory));
+        var t = e.verifyFn, n = void 0 === t ? I : t, r = ie(f(e, [
+            "verifyFn"
+        ]), this.namespaceFactory);
+        this.hooks.willSendRequest(r.body, {
+            namespace: r.socketNamespace.namespace
+        });
+        var a = re(r), o = se(a);
+        return ne(c({}, r, {
+            verifyFn: n,
+            body: c({}, r.body, {
+                payload: c({}, r.body.payload, {
+                    request_id: o
+                })
+            })
+        }));
     }, t19.getFromCache = function(e) {
         if (!F(e.cachePolicy || "cache-and-network")) return null;
-        var t = ie(e, this.namespaceFactory), n = re(t), r = oe(n), a = this.getCacheKey(n, r), s = this.cache.get(a, t.cachePolicy || "cache-and-network");
-        return s ? s.getState() : null;
+        var t = ie(e, this.namespaceFactory), n = re(t), r = se(n), a = this.getCacheKey(n, r), o = this.cache.get(a, t.cachePolicy || "cache-and-network");
+        return o ? o.getState() : null;
     }, t19.getCacheKey = function(e, t) {
         return this.customGetCacheKey ? this.customGetCacheKey({
             key: e,
             requestId: t
         }) : this.cache instanceof ee ? e : t;
     }, t19.cachedSubscribe = function(e30) {
-        var t20 = e30.cachePolicy, n9 = void 0 === t20 ? "cache-and-network" : t20, r5 = e30.onData, a4 = e30.getId, s3 = e30.mergeStrategy, o = void 0 === s3 ? b : s3, i1 = e30.verifyFn, u3 = void 0 === i1 ? I : i1, d3 = ie(f(e30, [
+        var t20 = e30.cachePolicy, n9 = void 0 === t20 ? "cache-and-network" : t20, r5 = e30.onData, a4 = e30.getId, o2 = e30.mergeStrategy, s = void 0 === o2 ? b : o2, i1 = e30.verifyFn, u4 = void 0 === i1 ? I : i1, d4 = ie(f(e30, [
             "cachePolicy",
             "onData",
             "getId",
             "mergeStrategy",
             "verifyFn"
-        ]), this.namespaceFactory), l2 = re(d3), p1 = oe(l2), h1 = this.getCacheKey(l2, p1), m1 = d3.socketNamespace.namespace, g1 = this.hooks.willSendRequest(c({}, d3.body, {
-            payload: c({}, d3.body.payload, {
+        ]), this.namespaceFactory), l2 = re(d4), p1 = se(l2), h1 = this.getCacheKey(l2, p1), m1 = d4.socketNamespace.namespace, g1 = this.hooks.willSendRequest(c({}, d4.body, {
+            payload: c({}, d4.body.payload, {
                 request_id: p1
             })
         }), {
@@ -31912,21 +32009,21 @@ var ce = {
             throw new Error("Unexpected internal error: newly created entry not found");
         }(this.cache, h1, n9, S1 ? v.requested : void 0), C1 = k1.getState(), E1 = k1.addClientListener(r5);
         if (S1) {
-            var D1 = ne(c({}, d3, {
+            var D1 = ne(c({}, d4, {
                 body: g1,
-                verifyFn: u3,
+                verifyFn: u4,
                 onMessage: function(e31, t) {
-                    var n = t.payload, r = t.meta, s = d3.body.scope.find(function(e) {
+                    var n = t.payload, r = t.meta, o = d4.body.scope.find(function(e) {
                         return e in n;
                     });
-                    if (s) {
-                        var i = k1.getState(), c2 = o({
+                    if (o) {
+                        var i = k1.getState(), c2 = s({
                             event: e31,
-                            prevData: i.data ? i.data[s] : i.data,
-                            newData: n[s],
+                            prevData: i.data ? i.data[o] : i.data,
+                            newData: n[o],
                             getId: a4
                         });
-                        k1.setData(s, c2, r);
+                        k1.setData(o, c2, r);
                     }
                 }
             }));
@@ -31947,11 +32044,11 @@ function fe(e) {
 }
 var le = m(), pe = m(v.requested);
 function he(e32) {
-    var t21 = e32.keepStaleData, n = void 0 !== t21 && t21, i = e32.enabled, u4 = void 0 === i || i, d4 = e32.client, l3 = f(e32, [
+    var t21 = e32.keepStaleData, n = void 0 !== t21 && t21, i = e32.enabled, u5 = void 0 === i || i, d5 = e32.client, l3 = f(e32, [
         "keepStaleData",
         "enabled",
         "client"
-    ]), p2 = d4 || de, h2 = (0, _react.useState)(p2.getFromCache(l3)), m2 = h2[0], y1 = h2[1], g2 = (0, _react.useCallback)(function(e) {
+    ]), p2 = d5 || de, h2 = (0, _react.useState)(p2.getFromCache(l3)), m2 = h2[0], y1 = h2[1], g2 = (0, _react.useCallback)(function(e) {
         y1(function(t) {
             if (!n) return e;
             if (!t) return e;
@@ -31995,26 +32092,26 @@ function he(e32) {
         l3
     ]);
     k2 !== m2 && F(S2.cachePolicy || "cache-and-network") && (n || g2(k2)), (0, _react.useEffect)(function() {
-        if (u4) return g2(p2.getFromCache(S2)), p2.cachedSubscribe(S2).unsubscribe;
+        if (u5) return g2(p2.getFromCache(S2)), p2.cachedSubscribe(S2).unsubscribe;
     }, [
-        u4,
+        u5,
         S2,
         g2,
         p2
     ]);
-    var C2 = u4 && "cache-only" !== S2.cachePolicy;
+    var C2 = u5 && "cache-only" !== S2.cachePolicy;
     return !m2 || C2 && (!m2 || m2.status === v.noRequests && !m2.data) ? C2 ? pe : le : m2;
 }
 function ve(e33) {
-    var t = e33.namespace, n = e33.scope, a = e33.getId, o = e33.mergeStrategy, u5 = e33.verifyFn;
-    return function(e, d5) {
-        void 0 === d5 && (d5 = {});
+    var t = e33.namespace, n = e33.scope, a = e33.getId, s = e33.mergeStrategy, u6 = e33.verifyFn;
+    return function(e, d6) {
+        void 0 === d6 && (d6 = {});
         var f2 = (0, _react.useState)(e), l4 = f2[0], p3 = f2[1];
-        return l4 !== e && ((0, _fastDeepEqualDefault.default)(l4, e) || p3(e)), he(c({}, d5, {
+        return l4 !== e && ((0, _fastDeepEqualDefault.default)(l4, e) || p3(e)), he(c({}, d6, {
             namespace: t,
-            getId: a || d5.getId,
-            mergeStrategy: o || d5.mergeStrategy,
-            verifyFn: u5 || d5.verifyFn,
+            getId: a || d6.getId,
+            mergeStrategy: s || d6.mergeStrategy,
+            verifyFn: u6 || d6.verifyFn,
             body: (0, _react.useMemo)(function() {
                 return {
                     scope: [
@@ -32060,7 +32157,7 @@ var me = ve({
     scope: "portfolio"
 });
 
-},{"store-unit":"4kZQu","socket.io-client":"c56j9","lru-cache":"aIUB0","react":"21dqq","fast-deep-equal":"ixZYU","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4kZQu":[function(require,module,exports) {
+},{"store-unit":"4kZQu","socket.io-client":"c56j9","lru-cache":"26bTZ","react":"21dqq","fast-deep-equal":"ixZYU","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4kZQu":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "FormDataStore", ()=>i);
@@ -32119,7 +32216,7 @@ var r = /*#__PURE__*/ function() {
     return i1 = t2, (r2 = a).prototype = Object.create(i1.prototype), r2.prototype.constructor = r2, n(r2, i1), a;
 }(r);
 
-},{"nanoevents":"1c5nO","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1c5nO":[function(require,module,exports) {
+},{"nanoevents":"3aSd1","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3aSd1":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "createNanoEvents", ()=>createNanoEvents);
@@ -39214,7 +39311,7 @@ function toArray(list, index) {
     this.jitter = jitter;
 };
 
-},{}],"aIUB0":[function(require,module,exports) {
+},{}],"26bTZ":[function(require,module,exports) {
 var process = require("process");
 const perf = typeof performance === "object" && performance && typeof performance.now === "function" ? performance : Date;
 const hasAbortController = typeof AbortController === "function";
@@ -39230,7 +39327,10 @@ const AC = hasAbortController ? AbortController : class AbortController {
         this.signal.dispatchEvent("abort");
     }
 };
-const AS = hasAbortController ? AbortSignal : class AbortSignal {
+const hasAbortSignal = typeof AbortSignal === "function";
+// Some polyfills put this on the AC class, not global
+const hasACAbortSignal = typeof AC.AbortSignal === "function";
+const AS = hasAbortSignal ? AbortSignal : hasACAbortSignal ? AC.AbortController : class AbortSignal {
     constructor(){
         this.aborted = false;
         this._listeners = [];
@@ -39315,7 +39415,7 @@ class Stack {
 }
 class LRUCache {
     constructor(options = {}){
-        const { max =0 , ttl , ttlResolution =1 , ttlAutopurge , updateAgeOnGet , updateAgeOnHas , allowStale , dispose , disposeAfter , noDisposeOnSet , noUpdateTTL , maxSize =0 , sizeCalculation , fetchMethod , noDeleteOnFetchRejection ,  } = options;
+        const { max =0 , ttl , ttlResolution =1 , ttlAutopurge , updateAgeOnGet , updateAgeOnHas , allowStale , dispose , disposeAfter , noDisposeOnSet , noUpdateTTL , maxSize =0 , maxEntrySize =0 , sizeCalculation , fetchMethod , fetchContext , noDeleteOnFetchRejection , noDeleteOnStaleGet ,  } = options;
         // deprecated options, don't trigger a warning for getting them if
         // the thing being passed in is another LRUCache we're copying.
         const { length , maxAge , stale  } = options instanceof LRUCache ? {} : options;
@@ -39324,13 +39424,16 @@ class LRUCache {
         if (!UintArray) throw new Error("invalid max value: " + max);
         this.max = max;
         this.maxSize = maxSize;
+        this.maxEntrySize = maxEntrySize || this.maxSize;
         this.sizeCalculation = sizeCalculation || length;
         if (this.sizeCalculation) {
-            if (!this.maxSize) throw new TypeError("cannot set sizeCalculation without setting maxSize");
+            if (!this.maxSize && !this.maxEntrySize) throw new TypeError("cannot set sizeCalculation without setting maxSize or maxEntrySize");
             if (typeof this.sizeCalculation !== "function") throw new TypeError("sizeCalculation set to non-function");
         }
         this.fetchMethod = fetchMethod || null;
         if (this.fetchMethod && typeof this.fetchMethod !== "function") throw new TypeError("fetchMethod must be a function if specified");
+        this.fetchContext = fetchContext;
+        if (!this.fetchMethod && fetchContext !== undefined) throw new TypeError("cannot set fetchContext without fetchMethod");
         this.keyMap = new Map();
         this.keyList = new Array(max).fill(null);
         this.valList = new Array(max).fill(null);
@@ -39352,11 +39455,16 @@ class LRUCache {
         this.noDisposeOnSet = !!noDisposeOnSet;
         this.noUpdateTTL = !!noUpdateTTL;
         this.noDeleteOnFetchRejection = !!noDeleteOnFetchRejection;
-        if (this.maxSize !== 0) {
-            if (!isPosInt(this.maxSize)) throw new TypeError("maxSize must be a positive integer if specified");
+        // NB: maxEntrySize is set to maxSize if it's set
+        if (this.maxEntrySize !== 0) {
+            if (this.maxSize !== 0) {
+                if (!isPosInt(this.maxSize)) throw new TypeError("maxSize must be a positive integer if specified");
+            }
+            if (!isPosInt(this.maxEntrySize)) throw new TypeError("maxEntrySize must be a positive integer if specified");
             this.initializeSizeTracking();
         }
         this.allowStale = !!allowStale || !!stale;
+        this.noDeleteOnStaleGet = !!noDeleteOnStaleGet;
         this.updateAgeOnGet = !!updateAgeOnGet;
         this.updateAgeOnHas = !!updateAgeOnHas;
         this.ttlResolution = isPosInt(ttlResolution) || ttlResolution === 0 ? ttlResolution : 1;
@@ -39388,8 +39496,8 @@ class LRUCache {
     initializeTTLTracking() {
         this.ttls = new ZeroArray(this.max);
         this.starts = new ZeroArray(this.max);
-        this.setItemTTL = (index, ttl)=>{
-            this.starts[index] = ttl !== 0 ? perf.now() : 0;
+        this.setItemTTL = (index, ttl, start = perf.now())=>{
+            this.starts[index] = ttl !== 0 ? start : 0;
             this.ttls[index] = ttl;
             if (ttl !== 0 && this.ttlAutopurge) {
                 const t = setTimeout(()=>{
@@ -39423,14 +39531,17 @@ class LRUCache {
         };
     }
     updateItemAge(index) {}
-    setItemTTL(index, ttl) {}
+    setItemTTL(index, ttl, start) {}
     isStale(index) {
         return false;
     }
     initializeSizeTracking() {
         this.calculatedSize = 0;
         this.sizes = new ZeroArray(this.max);
-        this.removeItemSize = (index)=>this.calculatedSize -= this.sizes[index];
+        this.removeItemSize = (index)=>{
+            this.calculatedSize -= this.sizes[index];
+            this.sizes[index] = 0;
+        };
         this.requireSize = (k, v, size, sizeCalculation)=>{
             if (!isPosInt(size)) {
                 if (sizeCalculation) {
@@ -39441,7 +39552,7 @@ class LRUCache {
             }
             return size;
         };
-        this.addItemSize = (index, v, k, size)=>{
+        this.addItemSize = (index, size)=>{
             this.sizes[index] = size;
             const maxSize = this.maxSize - this.sizes[index];
             while(this.calculatedSize > maxSize)this.evict(true);
@@ -39449,9 +39560,9 @@ class LRUCache {
         };
     }
     removeItemSize(index) {}
-    addItemSize(index, v, k, size) {}
+    addItemSize(index, size) {}
     requireSize(k, v, size, sizeCalculation) {
-        if (size || sizeCalculation) throw new TypeError("cannot set size without setting maxSize on cache");
+        if (size || sizeCalculation) throw new TypeError("cannot set size without setting maxSize or maxEntrySize on cache");
     }
     *indexes({ allowStale =this.allowStale  } = {}) {
         if (this.size) for(let i = this.tail;;){
@@ -39526,13 +39637,22 @@ class LRUCache {
     }
     dump() {
         const arr = [];
-        for (const i of this.indexes()){
+        for (const i of this.indexes({
+            allowStale: true
+        })){
             const key = this.keyList[i];
-            const value = this.valList[i];
+            const v = this.valList[i];
+            const value = this.isBackgroundFetch(v) ? v.__staleWhileFetching : v;
             const entry = {
                 value
             };
-            if (this.ttls) entry.ttl = this.ttls[i];
+            if (this.ttls) {
+                entry.ttl = this.ttls[i];
+                // always dump the start relative to a portable timestamp
+                // it's ok for this to be a bit slow, it's a rare operation.
+                const age = perf.now() - this.starts[i];
+                entry.start = Math.floor(Date.now() - age);
+            }
             if (this.sizes) entry.size = this.sizes[i];
             arr.unshift([
                 key,
@@ -39543,11 +39663,23 @@ class LRUCache {
     }
     load(arr) {
         this.clear();
-        for (const [key, entry] of arr)this.set(key, entry.value, entry);
+        for (const [key, entry] of arr){
+            if (entry.start) {
+                // entry.start is a portable timestamp, but we may be using
+                // node's performance.now(), so calculate the offset.
+                // it's ok for this to be a bit slow, it's a rare operation.
+                const age = Date.now() - entry.start;
+                entry.start = perf.now() - age;
+            }
+            this.set(key, entry.value, entry);
+        }
     }
     dispose(v, k, reason) {}
-    set(k, v, { ttl =this.ttl , noDisposeOnSet =this.noDisposeOnSet , size =0 , sizeCalculation =this.sizeCalculation , noUpdateTTL =this.noUpdateTTL ,  } = {}) {
+    set(k, v, { ttl =this.ttl , start , noDisposeOnSet =this.noDisposeOnSet , size =0 , sizeCalculation =this.sizeCalculation , noUpdateTTL =this.noUpdateTTL ,  } = {}) {
         size = this.requireSize(k, v, size, sizeCalculation);
+        // if the item doesn't fit, don't do anything
+        // NB: maxEntrySize set to maxSize by default
+        if (this.maxEntrySize && size > this.maxEntrySize) return this;
         let index = this.size === 0 ? undefined : this.keyMap.get(k);
         if (index === undefined) {
             // addition
@@ -39559,7 +39691,7 @@ class LRUCache {
             this.prev[index] = this.tail;
             this.tail = index;
             this.size++;
-            this.addItemSize(index, v, k, size);
+            this.addItemSize(index, size);
             noUpdateTTL = false;
         } else {
             // update
@@ -39576,12 +39708,12 @@ class LRUCache {
                 }
                 this.removeItemSize(index);
                 this.valList[index] = v;
-                this.addItemSize(index, v, k, size);
+                this.addItemSize(index, size);
             }
             this.moveToTail(index);
         }
         if (ttl !== 0 && this.ttl === 0 && !this.ttls) this.initializeTTLTracking();
-        if (!noUpdateTTL) this.setItemTTL(index, ttl);
+        if (!noUpdateTTL) this.setItemTTL(index, ttl, start);
         if (this.disposeAfter) while(this.disposed.length)this.disposeAfter(...this.disposed.shift());
         return this;
     }
@@ -39637,15 +39769,20 @@ class LRUCache {
     // like get(), but without any LRU updating or TTL expiration
     peek(k, { allowStale =this.allowStale  } = {}) {
         const index = this.keyMap.get(k);
-        if (index !== undefined && (allowStale || !this.isStale(index))) return this.valList[index];
+        if (index !== undefined && (allowStale || !this.isStale(index))) {
+            const v = this.valList[index];
+            // either stale and allowed, or forcing a refresh of non-stale value
+            return this.isBackgroundFetch(v) ? v.__staleWhileFetching : v;
+        }
     }
-    backgroundFetch(k, index, options) {
+    backgroundFetch(k, index, options, context) {
         const v1 = index === undefined ? undefined : this.valList[index];
         if (this.isBackgroundFetch(v1)) return v1;
         const ac = new AC();
         const fetchOpts = {
             signal: ac.signal,
-            options
+            options,
+            context
         };
         const cb = (v)=>{
             if (!ac.signal.aborted) this.set(k, v, fetchOpts.options);
@@ -39677,16 +39814,18 @@ class LRUCache {
     }
     // this takes the union of get() and set() opts, because it does both
     async fetch(k, { // get options
-    allowStale =this.allowStale , updateAgeOnGet =this.updateAgeOnGet , // set options
+    allowStale =this.allowStale , updateAgeOnGet =this.updateAgeOnGet , noDeleteOnStaleGet =this.noDeleteOnStaleGet , // set options
     ttl =this.ttl , noDisposeOnSet =this.noDisposeOnSet , size =0 , sizeCalculation =this.sizeCalculation , noUpdateTTL =this.noUpdateTTL , // fetch exclusive options
-    noDeleteOnFetchRejection =this.noDeleteOnFetchRejection ,  } = {}) {
+    noDeleteOnFetchRejection =this.noDeleteOnFetchRejection , fetchContext =this.fetchContext , forceRefresh =false ,  } = {}) {
         if (!this.fetchMethod) return this.get(k, {
             allowStale,
-            updateAgeOnGet
+            updateAgeOnGet,
+            noDeleteOnStaleGet
         });
         const options = {
             allowStale,
             updateAgeOnGet,
+            noDeleteOnStaleGet,
             ttl,
             noDisposeOnSet,
             size,
@@ -39696,24 +39835,26 @@ class LRUCache {
         };
         let index = this.keyMap.get(k);
         if (index === undefined) {
-            const p = this.backgroundFetch(k, index, options);
+            const p = this.backgroundFetch(k, index, options, fetchContext);
             return p.__returned = p;
         } else {
             // in cache, maybe already fetching
             const v = this.valList[index];
             if (this.isBackgroundFetch(v)) return allowStale && v.__staleWhileFetching !== undefined ? v.__staleWhileFetching : v.__returned = v;
-            if (!this.isStale(index)) {
+            // if we force a refresh, that means do NOT serve the cached value,
+            // unless we are already in the process of refreshing the cache.
+            if (!forceRefresh && !this.isStale(index)) {
                 this.moveToTail(index);
                 if (updateAgeOnGet) this.updateItemAge(index);
                 return v;
             }
-            // ok, it is stale, and not already fetching
+            // ok, it is stale or a forced refresh, and not already fetching.
             // refresh the cache.
-            const p = this.backgroundFetch(k, index, options);
+            const p = this.backgroundFetch(k, index, options, fetchContext);
             return allowStale && p.__staleWhileFetching !== undefined ? p.__staleWhileFetching : p.__returned = p;
         }
     }
-    get(k, { allowStale =this.allowStale , updateAgeOnGet =this.updateAgeOnGet ,  } = {}) {
+    get(k, { allowStale =this.allowStale , updateAgeOnGet =this.updateAgeOnGet , noDeleteOnStaleGet =this.noDeleteOnStaleGet ,  } = {}) {
         const index = this.keyMap.get(k);
         if (index !== undefined) {
             const value = this.valList[index];
@@ -39721,7 +39862,7 @@ class LRUCache {
             if (this.isStale(index)) {
                 // delete only if not an in-flight background fetch
                 if (!fetching) {
-                    this.delete(k);
+                    if (!noDeleteOnStaleGet) this.delete(k);
                     return allowStale ? value : undefined;
                 } else return allowStale ? value.__staleWhileFetching : undefined;
             } else {
@@ -41752,7 +41893,6 @@ var _pageColumn = require("src/ui/components/PageColumn");
 var _spacer = require("src/ui/ui-kit/Spacer");
 var _surface = require("src/ui/ui-kit/Surface");
 var _truncateAddress = require("src/ui/shared/truncateAddress");
-var _blockieImg = require("src/ui/components/BlockieImg");
 var _formatCurrencyValue = require("src/shared/units/formatCurrencyValue");
 var _formatPercent = require("src/shared/units/formatPercent/formatPercent");
 // import { Twinkle } from 'src/ui/ui-kit/Twinkle';
@@ -41779,7 +41919,11 @@ var _reactQuery = require("react-query");
 var _channels = require("src/ui/shared/channels");
 var _typography = require("src/ui/shared/typography");
 var _nonFungibleTokens = require("./NonFungibleTokens");
-var _s = $RefreshSig$(), _s1 = $RefreshSig$(), _s2 = $RefreshSig$(), _s3 = $RefreshSig$();
+var _walletIcon = require("src/ui/ui-kit/WalletIcon");
+var _useIsConnectedToActiveTab = require("src/ui/shared/requests/useIsConnectedToActiveTab");
+var _currentNetwork = require("./CurrentNetwork");
+var _dynamicIsland = require("src/ui/components/DynamicIsland");
+var _s = $RefreshSig$(), _s1 = $RefreshSig$(), _s2 = $RefreshSig$(), _s3 = $RefreshSig$(), _s4 = $RefreshSig$();
 function formatPercentChange(value, locale) {
     return {
         isPositive: value > 0,
@@ -41808,12 +41952,12 @@ function PendingTransactionsIndicator() {
             fill: "var(--notice-500)"
         }, void 0, false, {
             fileName: "src/ui/pages/Overview/Overview.tsx",
-            lineNumber: 70,
+            lineNumber: 73,
             columnNumber: 9
         }, this)
     }, void 0, false, {
         fileName: "src/ui/pages/Overview/Overview.tsx",
-        lineNumber: 66,
+        lineNumber: 69,
         columnNumber: 7
     }, this);
 }
@@ -41829,10 +41973,14 @@ function PercentChange({ value , locale , render  }) {
 }
 _c1 = PercentChange;
 function CurrentAccount({ address  }) {
+    _s1();
+    const { data: isConnected  } = (0, _useIsConnectedToActiveTab.useIsConnectedToActiveTab)(address);
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _media.Media), {
-        image: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _blockieImg.BlockieImg), {
+        vGap: 0,
+        image: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _walletIcon.WalletIcon), {
             address: address,
-            size: 24
+            iconSize: 24,
+            active: Boolean(isConnected)
         }, void 0, false, void 0, void 0),
         text: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
             style: {
@@ -41843,13 +41991,18 @@ function CurrentAccount({ address  }) {
         detailText: null
     }, void 0, false, {
         fileName: "src/ui/pages/Overview/Overview.tsx",
-        lineNumber: 93,
+        lineNumber: 97,
         columnNumber: 5
     }, this);
 }
+_s1(CurrentAccount, "RAGXg0WhVPddMFhKDaTIJajKOtk=", false, function() {
+    return [
+        (0, _useIsConnectedToActiveTab.useIsConnectedToActiveTab)
+    ];
+});
 _c2 = CurrentAccount;
 function CopyButton({ address  }) {
-    _s1();
+    _s2();
     const { handleCopy , isSuccess  } = (0, _useCopyToClipboard.useCopyToClipboard)({
         text: address
     });
@@ -41872,7 +42025,7 @@ function CopyButton({ address  }) {
                     children: "\u2714"
                 }, void 0, false, {
                     fileName: "src/ui/pages/Overview/Overview.tsx",
-                    lineNumber: 111,
+                    lineNumber: 122,
                     columnNumber: 11
                 }, this) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _copySvgDefault.default), {
                     style: {
@@ -41882,12 +42035,12 @@ function CopyButton({ address  }) {
                     }
                 }, void 0, false, {
                     fileName: "src/ui/pages/Overview/Overview.tsx",
-                    lineNumber: 115,
+                    lineNumber: 126,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "src/ui/pages/Overview/Overview.tsx",
-                lineNumber: 109,
+                lineNumber: 120,
                 columnNumber: 7
             }, this),
             isSuccess ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -41904,26 +42057,26 @@ function CopyButton({ address  }) {
                 children: "Copied!"
             }, void 0, false, {
                 fileName: "src/ui/pages/Overview/Overview.tsx",
-                lineNumber: 119,
+                lineNumber: 130,
                 columnNumber: 9
             }, this) : null
         ]
     }, void 0, true, {
         fileName: "src/ui/pages/Overview/Overview.tsx",
-        lineNumber: 108,
+        lineNumber: 119,
         columnNumber: 5
     }, this);
 }
-_s1(CopyButton, "A4aVUJsehEKi1vrWLmOOCdDvKyc=", false, function() {
+_s2(CopyButton, "A4aVUJsehEKi1vrWLmOOCdDvKyc=", false, function() {
     return [
         (0, _useCopyToClipboard.useCopyToClipboard)
     ];
 });
 _c3 = CopyButton;
 function CurrentAccountControls() {
-    _s2();
+    _s3();
     const { singleAddress , ready  } = (0, _useAddressParams.useAddressParams)();
-    const { data: wallet  } = (0, _reactQuery.useQuery)("getCurrentWallet", ()=>(0, _channels.walletPort).request("getCurrentWallet"));
+    const { data: wallet  } = (0, _reactQuery.useQuery)("wallet/uiGetCurrentWallet", ()=>(0, _channels.walletPort).request("uiGetCurrentWallet"));
     if (!ready) return null;
     const addressToCopy = wallet?.address || singleAddress;
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _hstack.HStack), {
@@ -41940,29 +42093,29 @@ function CurrentAccountControls() {
                     address: addressToCopy
                 }, void 0, false, {
                     fileName: "src/ui/pages/Overview/Overview.tsx",
-                    lineNumber: 156,
+                    lineNumber: 167,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "src/ui/pages/Overview/Overview.tsx",
-                lineNumber: 149,
+                lineNumber: 160,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(CopyButton, {
                 address: addressToCopy
             }, void 0, false, {
                 fileName: "src/ui/pages/Overview/Overview.tsx",
-                lineNumber: 158,
+                lineNumber: 169,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "src/ui/pages/Overview/Overview.tsx",
-        lineNumber: 148,
+        lineNumber: 159,
         columnNumber: 5
     }, this);
 }
-_s2(CurrentAccountControls, "WZNvqknkT+eh+vsGdIKnonQOmu4=", false, function() {
+_s3(CurrentAccountControls, "WZNvqknkT+eh+vsGdIKnonQOmu4=", false, function() {
     return [
         (0, _useAddressParams.useAddressParams),
         (0, _reactQuery.useQuery)
@@ -41970,7 +42123,7 @@ _s2(CurrentAccountControls, "WZNvqknkT+eh+vsGdIKnonQOmu4=", false, function() {
 });
 _c4 = CurrentAccountControls;
 function Overview() {
-    _s3();
+    _s4();
     const { params , ready  } = (0, _useAddressParams.useAddressParams)();
     const { value , status  } = (0, _defiSdk.useAddressPortfolio)({
         ...params,
@@ -42008,7 +42161,7 @@ function Overview() {
                         height: 8
                     }, void 0, false, {
                         fileName: "src/ui/pages/Overview/Overview.tsx",
-                        lineNumber: 198,
+                        lineNumber: 209,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _hstack.HStack), {
@@ -42016,9 +42169,29 @@ function Overview() {
                         justifyContent: "space-between",
                         alignItems: "center",
                         children: [
-                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(CurrentAccountControls, {}, void 0, false, {
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _hstack.HStack), {
+                                gap: 4,
+                                alignItems: "center",
+                                children: [
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(CurrentAccountControls, {}, void 0, false, {
+                                        fileName: "src/ui/pages/Overview/Overview.tsx",
+                                        lineNumber: 212,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _currentNetwork.CurrentNetwork), {}, void 0, false, {
+                                        fileName: "src/ui/pages/Overview/Overview.tsx",
+                                        lineNumber: 213,
+                                        columnNumber: 13
+                                    }, this)
+                                ]
+                            }, void 0, true, {
                                 fileName: "src/ui/pages/Overview/Overview.tsx",
-                                lineNumber: 200,
+                                lineNumber: 211,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _dynamicIsland.DynamicIsland), {}, void 0, false, {
+                                fileName: "src/ui/pages/Overview/Overview.tsx",
+                                lineNumber: 215,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _hstack.HStack), {
@@ -42026,7 +42199,7 @@ function Overview() {
                                 children: [
                                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _settingsLinkIcon.SettingsLinkIcon), {}, void 0, false, {
                                         fileName: "src/ui/pages/Overview/Overview.tsx",
-                                        lineNumber: 203,
+                                        lineNumber: 218,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _button.Button), {
@@ -42037,37 +42210,37 @@ function Overview() {
                                         to: "/get-started",
                                         children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _addWalletSvgDefault.default), {}, void 0, false, {
                                             fileName: "src/ui/pages/Overview/Overview.tsx",
-                                            lineNumber: 211,
+                                            lineNumber: 226,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "src/ui/pages/Overview/Overview.tsx",
-                                        lineNumber: 204,
+                                        lineNumber: 219,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "src/ui/pages/Overview/Overview.tsx",
-                                lineNumber: 202,
+                                lineNumber: 217,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "src/ui/pages/Overview/Overview.tsx",
-                        lineNumber: 199,
+                        lineNumber: 210,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "src/ui/pages/Overview/Overview.tsx",
-                lineNumber: 190,
+                lineNumber: 201,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
                 height: 24
             }, void 0, false, {
                 fileName: "src/ui/pages/Overview/Overview.tsx",
-                lineNumber: 216,
+                lineNumber: 231,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _surface.Surface), {
@@ -42081,7 +42254,7 @@ function Overview() {
                         children: "Portfolio"
                     }, void 0, false, {
                         fileName: "src/ui/pages/Overview/Overview.tsx",
-                        lineNumber: 218,
+                        lineNumber: 233,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
@@ -42090,12 +42263,12 @@ function Overview() {
                             parts: (0, _formatCurrencyValue.formatCurrencyToParts)(value.total_value, "en", "usd")
                         }, void 0, false, {
                             fileName: "src/ui/pages/Overview/Overview.tsx",
-                            lineNumber: 221,
+                            lineNumber: 236,
                             columnNumber: 13
                         }, this) : null
                     }, void 0, false, {
                         fileName: "src/ui/pages/Overview/Overview.tsx",
-                        lineNumber: 219,
+                        lineNumber: 234,
                         columnNumber: 9
                     }, this),
                     value?.relative_change_24h ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(PercentChange, {
@@ -42117,27 +42290,27 @@ function Overview() {
                         }
                     }, void 0, false, {
                         fileName: "src/ui/pages/Overview/Overview.tsx",
-                        lineNumber: 227,
+                        lineNumber: 242,
                         columnNumber: 11
                     }, this) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
                         kind: "subtitle/l_reg",
                         children: (0, _typography.NBSP)
                     }, void 0, false, {
                         fileName: "src/ui/pages/Overview/Overview.tsx",
-                        lineNumber: 255,
+                        lineNumber: 270,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "src/ui/pages/Overview/Overview.tsx",
-                lineNumber: 217,
+                lineNumber: 232,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
                 height: 24
             }, void 0, false, {
                 fileName: "src/ui/pages/Overview/Overview.tsx",
-                lineNumber: 312,
+                lineNumber: 327,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _segmentedControl.SegmentedControlGroup), {
@@ -42156,7 +42329,7 @@ function Overview() {
                         children: " NFTs "
                     }, void 0, false, {
                         fileName: "src/ui/pages/Overview/Overview.tsx",
-                        lineNumber: 324,
+                        lineNumber: 339,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _segmentedControl.SegmentedControlLink), {
@@ -42165,7 +42338,7 @@ function Overview() {
                         children: "Tokens"
                     }, void 0, false, {
                         fileName: "src/ui/pages/Overview/Overview.tsx",
-                        lineNumber: 325,
+                        lineNumber: 340,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _segmentedControl.SegmentedControlLink), {
@@ -42174,26 +42347,26 @@ function Overview() {
                             "History ",
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(PendingTransactionsIndicator, {}, void 0, false, {
                                 fileName: "src/ui/pages/Overview/Overview.tsx",
-                                lineNumber: 329,
+                                lineNumber: 344,
                                 columnNumber: 19
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "src/ui/pages/Overview/Overview.tsx",
-                        lineNumber: 328,
+                        lineNumber: 343,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "src/ui/pages/Overview/Overview.tsx",
-                lineNumber: 313,
+                lineNumber: 328,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
                 height: 24
             }, void 0, false, {
                 fileName: "src/ui/pages/Overview/Overview.tsx",
-                lineNumber: 332,
+                lineNumber: 347,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Routes), {
@@ -42203,7 +42376,7 @@ function Overview() {
                         element: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _positions.Positions), {}, void 0, false, void 0, void 0)
                     }, void 0, false, {
                         fileName: "src/ui/pages/Overview/Overview.tsx",
-                        lineNumber: 334,
+                        lineNumber: 349,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Route), {
@@ -42211,7 +42384,7 @@ function Overview() {
                         element: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _nonFungibleTokens.NonFungibleTokens), {}, void 0, false, void 0, void 0)
                     }, void 0, false, {
                         fileName: "src/ui/pages/Overview/Overview.tsx",
-                        lineNumber: 335,
+                        lineNumber: 350,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouterDom.Route), {
@@ -42219,28 +42392,28 @@ function Overview() {
                         element: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _history.HistoryList), {}, void 0, false, void 0, void 0)
                     }, void 0, false, {
                         fileName: "src/ui/pages/Overview/Overview.tsx",
-                        lineNumber: 336,
+                        lineNumber: 351,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "src/ui/pages/Overview/Overview.tsx",
-                lineNumber: 333,
+                lineNumber: 348,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _pageBottom.PageBottom), {}, void 0, false, {
                 fileName: "src/ui/pages/Overview/Overview.tsx",
-                lineNumber: 338,
+                lineNumber: 353,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "src/ui/pages/Overview/Overview.tsx",
-        lineNumber: 189,
+        lineNumber: 200,
         columnNumber: 5
     }, this);
 }
-_s3(Overview, "+a2O+moyUP2mBkzsIfLQOBpr2UU=", false, function() {
+_s4(Overview, "+a2O+moyUP2mBkzsIfLQOBpr2UU=", false, function() {
     return [
         (0, _useAddressParams.useAddressParams),
         (0, _defiSdk.useAddressPortfolio)
@@ -42260,7 +42433,7 @@ $RefreshReg$(_c5, "Overview");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-router-dom":"fdOAw","defi-sdk":"iMIhf","src/ui/ui-kit/UIText":"66Z7M","src/ui/components/PageColumn":"7NeTI","src/ui/ui-kit/Spacer":"7Kmxc","src/ui/ui-kit/Surface":"7D9R0","src/ui/shared/truncateAddress":"89mpt","src/ui/components/BlockieImg":"3UGAz","src/shared/units/formatCurrencyValue":"61PkO","src/shared/units/formatPercent/formatPercent":"aemNr","src/ui/assets/add-wallet.svg":"1qo4w","src/ui/ui-kit/HStack":"gTbXj","src/ui/shared/user-address/useAddressParams":"V1kup","src/ui/transactions/usePendingTransactions":"cNwKA","src/ui/ui-kit/NeutralDecimals":"1PKvi","../Settings/SettingsLinkIcon":"krteM","src/ui/ui-kit/Media":"guzi7","src/ui/ui-kit/Button":"6KLPL","src/ui/ui-kit/UnstyledLink":"1JFqV","src/ui/ui-kit/SegmentedControl":"anvhs","./Positions":"8Dqur","../History/History":"lc663","src/ui/components/PageBottom":"gMpD1","src/ui/assets/copy.svg":"jAyf5","src/ui/shared/useCopyToClipboard":"3BR35","react-query":"7slSP","src/ui/shared/channels":"bv9nl","src/ui/shared/typography":"g8uXz","./NonFungibleTokens":"kzpL8","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"7NeTI":[function(require,module,exports) {
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-router-dom":"fdOAw","defi-sdk":"iMIhf","src/ui/ui-kit/UIText":"66Z7M","src/ui/components/PageColumn":"7NeTI","src/ui/ui-kit/Spacer":"7Kmxc","src/ui/ui-kit/Surface":"7D9R0","src/ui/shared/truncateAddress":"89mpt","src/shared/units/formatCurrencyValue":"61PkO","src/shared/units/formatPercent/formatPercent":"aemNr","src/ui/assets/add-wallet.svg":"1qo4w","src/ui/ui-kit/HStack":"gTbXj","src/ui/shared/user-address/useAddressParams":"V1kup","src/ui/transactions/usePendingTransactions":"cNwKA","src/ui/ui-kit/NeutralDecimals":"1PKvi","../Settings/SettingsLinkIcon":"krteM","src/ui/ui-kit/Media":"guzi7","src/ui/ui-kit/Button":"6KLPL","src/ui/ui-kit/UnstyledLink":"1JFqV","src/ui/ui-kit/SegmentedControl":"anvhs","./Positions":"8Dqur","../History/History":"lc663","src/ui/components/PageBottom":"gMpD1","src/ui/assets/copy.svg":"jAyf5","src/ui/shared/useCopyToClipboard":"3BR35","react-query":"7slSP","src/ui/shared/channels":"57ETE","src/ui/shared/typography":"g8uXz","./NonFungibleTokens":"kzpL8","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","src/ui/ui-kit/WalletIcon":"33r2V","src/ui/shared/requests/useIsConnectedToActiveTab":"h0H3S","./CurrentNetwork":"2II6v","src/ui/components/DynamicIsland":"2afXw"}],"7NeTI":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "PageColumn", ()=>(0, _pageColumn.PageColumn));
@@ -42467,167 +42640,6 @@ const NBSP = "\xa0";
 const muchGreater = "\u226B";
 const veryMuchGreater = "\u22D9";
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3UGAz":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "BlockieImg", ()=>(0, _blockieImg.BlockieImg));
-var _blockieImg = require("./BlockieImg");
-
-},{"./BlockieImg":"bxTkK","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bxTkK":[function(require,module,exports) {
-var $parcel$ReactRefreshHelpers$f852 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
-var prevRefreshReg = window.$RefreshReg$;
-var prevRefreshSig = window.$RefreshSig$;
-$parcel$ReactRefreshHelpers$f852.prelude(module);
-
-try {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "BlockieImg", ()=>BlockieImg);
-var _jsxDevRuntime = require("react/jsx-dev-runtime");
-var _react = require("react");
-var _reactDefault = parcelHelpers.interopDefault(_react);
-var _blockies = require("@download/blockies");
-var _normalizeAddress = require("src/ui/shared/normalizeAddress");
-var _s = $RefreshSig$();
-function BlockieImg({ address , size  }) {
-    _s();
-    const blocksCount = 8;
-    const icon = (0, _react.useMemo)(()=>(0, _blockies.createIcon)({
-            seed: (0, _normalizeAddress.normalizeAddress)(address),
-            size: blocksCount,
-            scale: size / blocksCount * window.devicePixelRatio
-        }), [
-        address,
-        size
-    ]);
-    const ref = (0, _react.useRef)(null);
-    (0, _react.useLayoutEffect)(()=>{
-        if (ref.current && icon) {
-            icon.style.borderRadius = "6px";
-            icon.style.width = `${size}px`;
-            icon.style.height = `${size}px`;
-            ref.current.appendChild(icon);
-        }
-        return ()=>{
-            icon.parentElement?.removeChild(icon);
-        };
-    }, [
-        icon,
-        size
-    ]);
-    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
-        ref: ref,
-        style: {
-            width: size,
-            height: size
-        }
-    }, void 0, false, {
-        fileName: "src/ui/components/BlockieImg/BlockieImg.tsx",
-        lineNumber: 34,
-        columnNumber: 10
-    }, this);
-}
-_s(BlockieImg, "SSG55tH0HZK49DDGAklHBX0HVZs=");
-_c = BlockieImg;
-var _c;
-$RefreshReg$(_c, "BlockieImg");
-
-  $parcel$ReactRefreshHelpers$f852.postlude(module);
-} finally {
-  window.$RefreshReg$ = prevRefreshReg;
-  window.$RefreshSig$ = prevRefreshSig;
-}
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","@download/blockies":"4vV4u","src/ui/shared/normalizeAddress":"a0N3D","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"4vV4u":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "renderIcon", ()=>renderIcon);
-parcelHelpers.export(exports, "createIcon", ()=>createIcon);
-// The random number is a js implementation of the Xorshift PRNG
-const randseed = new Array(4); // Xorshift: [x, y, z, w] 32 bit values
-function seedrand(seed) {
-    randseed.fill(0);
-    for(let i = 0; i < seed.length; i++)randseed[i % 4] = (randseed[i % 4] << 5) - randseed[i % 4] + seed.charCodeAt(i);
-}
-function rand() {
-    // based on Java's String.hashCode(), expanded to 4 32bit values
-    const t = randseed[0] ^ randseed[0] << 11;
-    randseed[0] = randseed[1];
-    randseed[1] = randseed[2];
-    randseed[2] = randseed[3];
-    randseed[3] = randseed[3] ^ randseed[3] >> 19 ^ t ^ t >> 8;
-    return (randseed[3] >>> 0) / 2147483648;
-}
-function createColor() {
-    //saturation is the whole color spectrum
-    const h = Math.floor(rand() * 360);
-    //saturation goes from 40 to 100, it avoids greyish colors
-    const s = rand() * 60 + 40 + "%";
-    //lightness can be anything from 0 to 100, but probabilities are a bell curve around 50%
-    const l = (rand() + rand() + rand() + rand()) * 25 + "%";
-    return "hsl(" + h + "," + s + "," + l + ")";
-}
-function createImageData(size) {
-    const width = size; // Only support square icons for now
-    const height = size;
-    const dataWidth = Math.ceil(width / 2);
-    const mirrorWidth = width - dataWidth;
-    const data = [];
-    for(let y = 0; y < height; y++){
-        let row = [];
-        for(let x = 0; x < dataWidth; x++)// this makes foreground and background color to have a 43% (1/2.3) probability
-        // spot color has 13% chance
-        row[x] = Math.floor(rand() * 2.3);
-        const r = row.slice(0, mirrorWidth);
-        r.reverse();
-        row = row.concat(r);
-        for(let i = 0; i < row.length; i++)data.push(row[i]);
-    }
-    return data;
-}
-function buildOpts(opts) {
-    const newOpts = {};
-    newOpts.seed = opts.seed || Math.floor(Math.random() * Math.pow(10, 16)).toString(16);
-    seedrand(newOpts.seed);
-    newOpts.size = opts.size || 8;
-    newOpts.scale = opts.scale || 4;
-    newOpts.color = opts.color || createColor();
-    newOpts.bgcolor = opts.bgcolor || createColor();
-    newOpts.spotcolor = opts.spotcolor || createColor();
-    return newOpts;
-}
-function renderIcon(opts, canvas) {
-    opts = buildOpts(opts || {});
-    const imageData = createImageData(opts.size);
-    const width = Math.sqrt(imageData.length);
-    canvas.width = canvas.height = opts.size * opts.scale;
-    const cc = canvas.getContext("2d");
-    cc.fillStyle = opts.bgcolor;
-    cc.fillRect(0, 0, canvas.width, canvas.height);
-    cc.fillStyle = opts.color;
-    for(let i = 0; i < imageData.length; i++)// if data is 0, leave the background
-    if (imageData[i]) {
-        const row = Math.floor(i / width);
-        const col = i % width;
-        // if data is 2, choose spot color, if 1 choose foreground
-        cc.fillStyle = imageData[i] == 1 ? opts.color : opts.spotcolor;
-        cc.fillRect(col * opts.scale, row * opts.scale, opts.scale, opts.scale);
-    }
-    return canvas;
-}
-function createIcon(opts) {
-    var canvas = document.createElement("canvas");
-    renderIcon(opts, canvas);
-    return canvas;
-}
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"a0N3D":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "normalizeAddress", ()=>normalizeAddress);
-function normalizeAddress(address) {
-    return address.startsWith("0x") ? address.toLowerCase() : address;
-}
-
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"61PkO":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -42666,10 +42678,10 @@ function formatCurrencyToParts(value, locale, currency) {
 (function(globalObject) {
     "use strict";
     /*
- *      bignumber.js v9.0.2
+ *      bignumber.js v9.1.0
  *      A JavaScript library for arbitrary-precision arithmetic.
  *      https://github.com/MikeMcl/bignumber.js
- *      Copyright (c) 2021 Michael Mclaughlin <M8ch88l@gmail.com>
+ *      Copyright (c) 2022 Michael Mclaughlin <M8ch88l@gmail.com>
  *      MIT Licensed.
  *
  *      BigNumber.prototype methods     |  BigNumber methods
@@ -44084,7 +44096,12 @@ function formatCurrencyToParts(value, locale, currency) {
                 }
             }
             // x < y? Point xc to the array of the bigger number.
-            if (xLTy) t = xc, xc = yc, yc = t, y.s = -y.s;
+            if (xLTy) {
+                t = xc;
+                xc = yc;
+                yc = t;
+                y.s = -y.s;
+            }
             b = (j = yc.length) - (i = xc.length);
             // Append zeros to xc if shorter.
             // No need to add zeros to yc if shorter as subtract only needs to start at yc.length.
@@ -44198,7 +44215,14 @@ function formatCurrencyToParts(value, locale, currency) {
             xcL = xc.length;
             ycL = yc.length;
             // Ensure xc points to longer array and xcL to its length.
-            if (xcL < ycL) zc = xc, xc = yc, yc = zc, i = xcL, xcL = ycL, ycL = i;
+            if (xcL < ycL) {
+                zc = xc;
+                xc = yc;
+                yc = zc;
+                i = xcL;
+                xcL = ycL;
+                ycL = i;
+            }
             // Initialise the result array with zeros.
             for(i = xcL + ycL, zc = []; i--; zc.push(0));
             base = BASE;
@@ -44286,7 +44310,12 @@ function formatCurrencyToParts(value, locale, currency) {
             a = xc.length;
             b = yc.length;
             // Point xc to the longer array, and b to the shorter length.
-            if (a - b < 0) t = yc, yc = xc, xc = t, b = a;
+            if (a - b < 0) {
+                t = yc;
+                yc = xc;
+                xc = t;
+                b = a;
+            }
             // Only start adding at yc.length - 1 as the further digits of xc can be ignored.
             for(a = 0; b;){
                 a = (xc[--b] = xc[b] + yc[b] + a) / BASE | 0;
@@ -44497,7 +44526,12 @@ function formatCurrencyToParts(value, locale, currency) {
             str = x.toFixed(dp, rm);
             if (x.c) {
                 var i, arr = str.split("."), g1 = +format.groupSize, g2 = +format.secondaryGroupSize, groupSeparator = format.groupSeparator || "", intPart = arr[0], fractionPart = arr[1], isNeg = x.s < 0, intDigits = isNeg ? intPart.slice(1) : intPart, len = intDigits.length;
-                if (g2) i = g1, g1 = g2, g2 = i, len -= i;
+                if (g2) {
+                    i = g1;
+                    g1 = g2;
+                    g2 = i;
+                    len -= i;
+                }
                 if (g1 > 0 && len > 0) {
                     i = len % g1 || g1;
                     intPart = intDigits.substr(0, i);
@@ -44931,994 +44965,1078 @@ function useAddressParams() {
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react":"21dqq","react-query":"7slSP","../channels":"bv9nl","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"bv9nl":[function(require,module,exports) {
+},{"react":"21dqq","react-query":"7slSP","../channels":"57ETE","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"57ETE":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "walletPort", ()=>walletPort);
 parcelHelpers.export(exports, "accountPublicRPCPort", ()=>accountPublicRPCPort);
-parcelHelpers.export(exports, "memoryCacheRPCPort", ()=>memoryCacheRPCPort);
 parcelHelpers.export(exports, "windowPort", ()=>windowPort);
-var _portMessageChannel = require("src/shared/PortMessageChannel");
-var _formatJsonRpcResultForPort = require("src/shared/formatJsonRpcResultForPort");
-var _utils = require("@json-rpc-tools/utils");
-var _userRejected = require("src/shared/errors/UserRejected");
-const walletPort = new (0, _portMessageChannel.PortMessageChannel)({
-    name: "wallet"
-});
-const accountPublicRPCPort = new (0, _portMessageChannel.PortMessageChannel)({
-    name: "accountPublicRPC"
-});
-const memoryCacheRPCPort = new (0, _portMessageChannel.PortMessageChannel)({
-    name: "memoryCacheRPC"
-});
-class WindowPort extends (0, _portMessageChannel.PortMessageChannel) {
-    confirm(windowId, result) {
-        return this.port.postMessage((0, _formatJsonRpcResultForPort.formatJsonRpcResultForPort)(windowId, result));
+// import { ethers } from 'ethers';
+var _chain = require("src/modules/networks/Chain");
+var _networksStore = require("src/modules/networks/networks-store");
+const testAddress = "0x42b9df65b219b3dd36ff330a4dd8f327a6ada990";
+const testWallet = {
+    address: testAddress,
+    mnemonic: null,
+    privateKey: "<privateKey>",
+    name: null
+};
+const walletPort = {
+    state: {
+        chainId: "0x89"
+    },
+    async request (method, ...args) {
+        if (method === "getCurrentWallet") return Promise.resolve(testWallet);
+        else if (method === "getCurrentAddress") return Promise.resolve(testWallet.address);
+        else if (method === "signAndSendTransaction") return Promise.resolve({
+            hash: "0x12345"
+        });
+        else if (method === "getChainId" || method === "eth_chainId") return Promise.resolve(this.state.chainId);
+        else if (method === "switchChain") {
+            const networks = await (0, _networksStore.networksStore).load();
+            this.state.chainId = networks.getChainId(new (0, _chain.Chain)(args[0]));
+            return;
+        }
     }
-    reject(windowId) {
-        this.port.postMessage((0, _utils.formatJsonRpcError)(windowId, new (0, _userRejected.UserRejected)()));
+};
+const accountPublicRPCPort = {
+    request (method) {
+        if (method === "logout") return Promise.resolve().then(()=>{
+            // eslint-disable-next-line no-console
+            console.log("accountPublicRPCPort mock: logout!");
+        });
     }
-}
-const windowPort = new WindowPort({
-    name: "window"
-});
+};
+const windowPort = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    confirm (windowId, ...args) {
+        // eslint-disable-next-line no-console
+        console.log(`windowPort.reject(${windowId}, ${args.join(", ")})`);
+    },
+    reject (windowId) {
+        // eslint-disable-next-line no-console
+        console.log(`windowPort.reject(${windowId})`);
+    }
+};
 Object.assign(window, {
     walletPort,
-    accountPublicRPCPort
+    accountPublicRPCPort,
+    windowPort
 });
 
-},{"src/shared/PortMessageChannel":"eirSt","src/shared/formatJsonRpcResultForPort":"fB8WN","@json-rpc-tools/utils":"lGviI","src/shared/errors/UserRejected":"91evT","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"eirSt":[function(require,module,exports) {
+},{"src/modules/networks/Chain":"7Kj03","src/modules/networks/networks-store":"cQA5b","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7Kj03":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "PortMessageChannel", ()=>PortMessageChannel);
-var _utils = require("@json-rpc-tools/utils");
-class PortMessageChannel {
-    constructor({ name  }){
-        this.port = chrome.runtime.connect({
-            name
-        });
-    // this.port.onMessage.addListener(console.log);
+parcelHelpers.export(exports, "Chain", ()=>Chain);
+parcelHelpers.export(exports, "createChain", ()=>createChain);
+var _memoize = require("lodash/memoize");
+var _memoizeDefault = parcelHelpers.interopDefault(_memoize);
+class Chain {
+    constructor(value){
+        this.value = value;
     }
-    request(method, params, id) {
-        const payload = (0, _utils.formatJsonRpcRequest)(method, params, id);
-        this.port.postMessage(payload);
-        return this.getPromise(payload.id);
-    }
-    getPromise(id) {
-        return new Promise((resolve, reject)=>{
-            const handler = (msg)=>{
-                if ((0, _utils.isJsonRpcPayload)(msg) && (0, _utils.isJsonRpcResponse)(msg)) {
-                    if (msg.id === id) {
-                        if ((0, _utils.isJsonRpcResult)(msg)) resolve(msg.result);
-                        else reject(msg.error);
-                        this.port.onMessage.removeListener(handler);
-                    }
-                }
-            };
-            this.port.onMessage.addListener(handler);
-        });
+    toString() {
+        return this.value;
     }
 }
+const createChain = (0, _memoizeDefault.default)((chain)=>new Chain(chain));
 
-},{"@json-rpc-tools/utils":"lGviI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lGviI":[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-const tslib_1 = require("tslib");
-tslib_1.__exportStar(require("./constants"), exports);
-tslib_1.__exportStar(require("./error"), exports);
-tslib_1.__exportStar(require("./env"), exports);
-tslib_1.__exportStar(require("./format"), exports);
-tslib_1.__exportStar(require("./routing"), exports);
-tslib_1.__exportStar(require("./types"), exports);
-tslib_1.__exportStar(require("./validators"), exports);
+},{"lodash/memoize":"azHKC","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"azHKC":[function(require,module,exports) {
+var MapCache = require("./_MapCache");
+/** Error message constants. */ var FUNC_ERROR_TEXT = "Expected a function";
+/**
+ * Creates a function that memoizes the result of `func`. If `resolver` is
+ * provided, it determines the cache key for storing the result based on the
+ * arguments provided to the memoized function. By default, the first argument
+ * provided to the memoized function is used as the map cache key. The `func`
+ * is invoked with the `this` binding of the memoized function.
+ *
+ * **Note:** The cache is exposed as the `cache` property on the memoized
+ * function. Its creation may be customized by replacing the `_.memoize.Cache`
+ * constructor with one whose instances implement the
+ * [`Map`](http://ecma-international.org/ecma-262/7.0/#sec-properties-of-the-map-prototype-object)
+ * method interface of `clear`, `delete`, `get`, `has`, and `set`.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Function
+ * @param {Function} func The function to have its output memoized.
+ * @param {Function} [resolver] The function to resolve the cache key.
+ * @returns {Function} Returns the new memoized function.
+ * @example
+ *
+ * var object = { 'a': 1, 'b': 2 };
+ * var other = { 'c': 3, 'd': 4 };
+ *
+ * var values = _.memoize(_.values);
+ * values(object);
+ * // => [1, 2]
+ *
+ * values(other);
+ * // => [3, 4]
+ *
+ * object.a = 2;
+ * values(object);
+ * // => [1, 2]
+ *
+ * // Modify the result cache.
+ * values.cache.set(object, ['a', 'b']);
+ * values(object);
+ * // => ['a', 'b']
+ *
+ * // Replace `_.memoize.Cache`.
+ * _.memoize.Cache = WeakMap;
+ */ function memoize(func, resolver) {
+    if (typeof func != "function" || resolver != null && typeof resolver != "function") throw new TypeError(FUNC_ERROR_TEXT);
+    var memoized = function() {
+        var args = arguments, key = resolver ? resolver.apply(this, args) : args[0], cache = memoized.cache;
+        if (cache.has(key)) return cache.get(key);
+        var result = func.apply(this, args);
+        memoized.cache = cache.set(key, result) || cache;
+        return result;
+    };
+    memoized.cache = new (memoize.Cache || MapCache);
+    return memoized;
+}
+// Expose `MapCache`.
+memoize.Cache = MapCache;
+module.exports = memoize;
 
-},{"tslib":"lRdW5","./constants":"j1yQJ","./error":"7C94t","./env":"7xkWN","./format":"3d0nB","./routing":"9H7rT","./types":"leztz","./validators":"d8vBs"}],"lRdW5":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "__extends", ()=>__extends);
-parcelHelpers.export(exports, "__assign", ()=>__assign);
-parcelHelpers.export(exports, "__rest", ()=>__rest);
-parcelHelpers.export(exports, "__decorate", ()=>__decorate);
-parcelHelpers.export(exports, "__param", ()=>__param);
-parcelHelpers.export(exports, "__metadata", ()=>__metadata);
-parcelHelpers.export(exports, "__awaiter", ()=>__awaiter);
-parcelHelpers.export(exports, "__generator", ()=>__generator);
-parcelHelpers.export(exports, "__createBinding", ()=>__createBinding);
-parcelHelpers.export(exports, "__exportStar", ()=>__exportStar);
-parcelHelpers.export(exports, "__values", ()=>__values);
-parcelHelpers.export(exports, "__read", ()=>__read);
-/** @deprecated */ parcelHelpers.export(exports, "__spread", ()=>__spread);
-/** @deprecated */ parcelHelpers.export(exports, "__spreadArrays", ()=>__spreadArrays);
-parcelHelpers.export(exports, "__spreadArray", ()=>__spreadArray);
-parcelHelpers.export(exports, "__await", ()=>__await);
-parcelHelpers.export(exports, "__asyncGenerator", ()=>__asyncGenerator);
-parcelHelpers.export(exports, "__asyncDelegator", ()=>__asyncDelegator);
-parcelHelpers.export(exports, "__asyncValues", ()=>__asyncValues);
-parcelHelpers.export(exports, "__makeTemplateObject", ()=>__makeTemplateObject);
-parcelHelpers.export(exports, "__importStar", ()=>__importStar);
-parcelHelpers.export(exports, "__importDefault", ()=>__importDefault);
-parcelHelpers.export(exports, "__classPrivateFieldGet", ()=>__classPrivateFieldGet);
-parcelHelpers.export(exports, "__classPrivateFieldSet", ()=>__classPrivateFieldSet);
-parcelHelpers.export(exports, "__classPrivateFieldIn", ()=>__classPrivateFieldIn);
-/******************************************************************************
-Copyright (c) Microsoft Corporation.
+},{"./_MapCache":"664I1"}],"664I1":[function(require,module,exports) {
+var mapCacheClear = require("./_mapCacheClear"), mapCacheDelete = require("./_mapCacheDelete"), mapCacheGet = require("./_mapCacheGet"), mapCacheHas = require("./_mapCacheHas"), mapCacheSet = require("./_mapCacheSet");
+/**
+ * Creates a map cache object to store key-value pairs.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */ function MapCache(entries) {
+    var index = -1, length = entries == null ? 0 : entries.length;
+    this.clear();
+    while(++index < length){
+        var entry = entries[index];
+        this.set(entry[0], entry[1]);
+    }
+}
+// Add methods to `MapCache`.
+MapCache.prototype.clear = mapCacheClear;
+MapCache.prototype["delete"] = mapCacheDelete;
+MapCache.prototype.get = mapCacheGet;
+MapCache.prototype.has = mapCacheHas;
+MapCache.prototype.set = mapCacheSet;
+module.exports = MapCache;
 
-Permission to use, copy, modify, and/or distribute this software for any
-purpose with or without fee is hereby granted.
+},{"./_mapCacheClear":"7kHs4","./_mapCacheDelete":"4ny9y","./_mapCacheGet":"gVeFY","./_mapCacheHas":"idSOY","./_mapCacheSet":"lXUJT"}],"7kHs4":[function(require,module,exports) {
+var Hash = require("./_Hash"), ListCache = require("./_ListCache"), Map = require("./_Map");
+/**
+ * Removes all key-value entries from the map.
+ *
+ * @private
+ * @name clear
+ * @memberOf MapCache
+ */ function mapCacheClear() {
+    this.size = 0;
+    this.__data__ = {
+        "hash": new Hash,
+        "map": new (Map || ListCache),
+        "string": new Hash
+    };
+}
+module.exports = mapCacheClear;
 
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-PERFORMANCE OF THIS SOFTWARE.
-***************************************************************************** */ /* global Reflect, Promise */ var extendStatics = function(d1, b1) {
-    extendStatics = Object.setPrototypeOf || ({
-        __proto__: []
-    }) instanceof Array && function(d, b) {
-        d.__proto__ = b;
-    } || function(d, b) {
-        for(var p in b)if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
-    };
-    return extendStatics(d1, b1);
-};
-function __extends(d, b) {
-    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-    extendStatics(d, b);
-    function __() {
-        this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-}
-var __assign = function() {
-    __assign = Object.assign || function __assign(t) {
-        for(var s, i = 1, n = arguments.length; i < n; i++){
-            s = arguments[i];
-            for(var p in s)if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
-function __rest(s, e) {
-    var t = {};
-    for(var p in s)if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0) t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function") {
-        for(var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++)if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i])) t[p[i]] = s[p[i]];
-    }
-    return t;
-}
-function __decorate(decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-}
-function __param(paramIndex, decorator) {
-    return function(target, key) {
-        decorator(target, key, paramIndex);
-    };
-}
-function __metadata(metadataKey, metadataValue) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(metadataKey, metadataValue);
-}
-function __awaiter(thisArg, _arguments, P, generator) {
-    function adopt(value) {
-        return value instanceof P ? value : new P(function(resolve) {
-            resolve(value);
-        });
-    }
-    return new (P || (P = Promise))(function(resolve, reject) {
-        function fulfilled(value) {
-            try {
-                step(generator.next(value));
-            } catch (e) {
-                reject(e);
-            }
-        }
-        function rejected(value) {
-            try {
-                step(generator["throw"](value));
-            } catch (e) {
-                reject(e);
-            }
-        }
-        function step(result) {
-            result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
-        }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-}
-function __generator(thisArg, body) {
-    var _ = {
-        label: 0,
-        sent: function() {
-            if (t[0] & 1) throw t[1];
-            return t[1];
-        },
-        trys: [],
-        ops: []
-    }, f, y, t, g;
-    return g = {
-        next: verb(0),
-        "throw": verb(1),
-        "return": verb(2)
-    }, typeof Symbol === "function" && (g[Symbol.iterator] = function() {
-        return this;
-    }), g;
-    function verb(n) {
-        return function(v) {
-            return step([
-                n,
-                v
-            ]);
-        };
-    }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while(_)try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [
-                op[0] & 2,
-                t.value
-            ];
-            switch(op[0]){
-                case 0:
-                case 1:
-                    t = op;
-                    break;
-                case 4:
-                    _.label++;
-                    return {
-                        value: op[1],
-                        done: false
-                    };
-                case 5:
-                    _.label++;
-                    y = op[1];
-                    op = [
-                        0
-                    ];
-                    continue;
-                case 7:
-                    op = _.ops.pop();
-                    _.trys.pop();
-                    continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
-                        _ = 0;
-                        continue;
-                    }
-                    if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
-                        _.label = op[1];
-                        break;
-                    }
-                    if (op[0] === 6 && _.label < t[1]) {
-                        _.label = t[1];
-                        t = op;
-                        break;
-                    }
-                    if (t && _.label < t[2]) {
-                        _.label = t[2];
-                        _.ops.push(op);
-                        break;
-                    }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop();
-                    continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) {
-            op = [
-                6,
-                e
-            ];
-            y = 0;
-        } finally{
-            f = t = 0;
-        }
-        if (op[0] & 5) throw op[1];
-        return {
-            value: op[0] ? op[1] : void 0,
-            done: true
-        };
+},{"./_Hash":"jFMT5","./_ListCache":"3UZeo","./_Map":"8YjF4"}],"jFMT5":[function(require,module,exports) {
+var hashClear = require("./_hashClear"), hashDelete = require("./_hashDelete"), hashGet = require("./_hashGet"), hashHas = require("./_hashHas"), hashSet = require("./_hashSet");
+/**
+ * Creates a hash object.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */ function Hash(entries) {
+    var index = -1, length = entries == null ? 0 : entries.length;
+    this.clear();
+    while(++index < length){
+        var entry = entries[index];
+        this.set(entry[0], entry[1]);
     }
 }
-var __createBinding = Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) desc = {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    };
-    Object.defineProperty(o, k2, desc);
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-};
-function __exportStar(m, o) {
-    for(var p in m)if (p !== "default" && !Object.prototype.hasOwnProperty.call(o, p)) __createBinding(o, m, p);
+// Add methods to `Hash`.
+Hash.prototype.clear = hashClear;
+Hash.prototype["delete"] = hashDelete;
+Hash.prototype.get = hashGet;
+Hash.prototype.has = hashHas;
+Hash.prototype.set = hashSet;
+module.exports = Hash;
+
+},{"./_hashClear":"f2NRo","./_hashDelete":"cCdgz","./_hashGet":"eKqTO","./_hashHas":"ghnqP","./_hashSet":"6i99R"}],"f2NRo":[function(require,module,exports) {
+var nativeCreate = require("./_nativeCreate");
+/**
+ * Removes all key-value entries from the hash.
+ *
+ * @private
+ * @name clear
+ * @memberOf Hash
+ */ function hashClear() {
+    this.__data__ = nativeCreate ? nativeCreate(null) : {};
+    this.size = 0;
 }
-function __values(o) {
-    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-    if (m) return m.call(o);
-    if (o && typeof o.length === "number") return {
-        next: function() {
-            if (o && i >= o.length) o = void 0;
-            return {
-                value: o && o[i++],
-                done: !o
-            };
-        }
-    };
-    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+module.exports = hashClear;
+
+},{"./_nativeCreate":"6i8Uf"}],"6i8Uf":[function(require,module,exports) {
+var getNative = require("./_getNative");
+/* Built-in method references that are verified to be native. */ var nativeCreate = getNative(Object, "create");
+module.exports = nativeCreate;
+
+},{"./_getNative":"9PCIl"}],"9PCIl":[function(require,module,exports) {
+var baseIsNative = require("./_baseIsNative"), getValue = require("./_getValue");
+/**
+ * Gets the native function at `key` of `object`.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @param {string} key The key of the method to get.
+ * @returns {*} Returns the function if it's native, else `undefined`.
+ */ function getNative(object, key) {
+    var value = getValue(object, key);
+    return baseIsNative(value) ? value : undefined;
 }
-function __read(o, n) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator];
-    if (!m) return o;
-    var i = m.call(o), r, ar = [], e;
+module.exports = getNative;
+
+},{"./_baseIsNative":"2U9Pn","./_getValue":"kKx5I"}],"2U9Pn":[function(require,module,exports) {
+var isFunction = require("./isFunction"), isMasked = require("./_isMasked"), isObject = require("./isObject"), toSource = require("./_toSource");
+/**
+ * Used to match `RegExp`
+ * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
+ */ var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
+/** Used to detect host constructors (Safari). */ var reIsHostCtor = /^\[object .+?Constructor\]$/;
+/** Used for built-in method references. */ var funcProto = Function.prototype, objectProto = Object.prototype;
+/** Used to resolve the decompiled source of functions. */ var funcToString = funcProto.toString;
+/** Used to check objects for own properties. */ var hasOwnProperty = objectProto.hasOwnProperty;
+/** Used to detect if a method is native. */ var reIsNative = RegExp("^" + funcToString.call(hasOwnProperty).replace(reRegExpChar, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$");
+/**
+ * The base implementation of `_.isNative` without bad shim checks.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a native function,
+ *  else `false`.
+ */ function baseIsNative(value) {
+    if (!isObject(value) || isMasked(value)) return false;
+    var pattern = isFunction(value) ? reIsNative : reIsHostCtor;
+    return pattern.test(toSource(value));
+}
+module.exports = baseIsNative;
+
+},{"./isFunction":"cfti6","./_isMasked":"cMDzi","./isObject":"cGhqJ","./_toSource":"bYHc7"}],"cfti6":[function(require,module,exports) {
+var baseGetTag = require("./_baseGetTag"), isObject = require("./isObject");
+/** `Object#toString` result references. */ var asyncTag = "[object AsyncFunction]", funcTag = "[object Function]", genTag = "[object GeneratorFunction]", proxyTag = "[object Proxy]";
+/**
+ * Checks if `value` is classified as a `Function` object.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a function, else `false`.
+ * @example
+ *
+ * _.isFunction(_);
+ * // => true
+ *
+ * _.isFunction(/abc/);
+ * // => false
+ */ function isFunction(value) {
+    if (!isObject(value)) return false;
+    // The use of `Object#toString` avoids issues with the `typeof` operator
+    // in Safari 9 which returns 'object' for typed arrays and other constructors.
+    var tag = baseGetTag(value);
+    return tag == funcTag || tag == genTag || tag == asyncTag || tag == proxyTag;
+}
+module.exports = isFunction;
+
+},{"./_baseGetTag":"lOnbo","./isObject":"cGhqJ"}],"lOnbo":[function(require,module,exports) {
+var Symbol = require("./_Symbol"), getRawTag = require("./_getRawTag"), objectToString = require("./_objectToString");
+/** `Object#toString` result references. */ var nullTag = "[object Null]", undefinedTag = "[object Undefined]";
+/** Built-in value references. */ var symToStringTag = Symbol ? Symbol.toStringTag : undefined;
+/**
+ * The base implementation of `getTag` without fallbacks for buggy environments.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @returns {string} Returns the `toStringTag`.
+ */ function baseGetTag(value) {
+    if (value == null) return value === undefined ? undefinedTag : nullTag;
+    return symToStringTag && symToStringTag in Object(value) ? getRawTag(value) : objectToString(value);
+}
+module.exports = baseGetTag;
+
+},{"./_Symbol":"7lsL9","./_getRawTag":"995sO","./_objectToString":"bmE3g"}],"7lsL9":[function(require,module,exports) {
+var root = require("./_root");
+/** Built-in value references. */ var Symbol = root.Symbol;
+module.exports = Symbol;
+
+},{"./_root":"dSYUs"}],"dSYUs":[function(require,module,exports) {
+var freeGlobal = require("./_freeGlobal");
+/** Detect free variable `self`. */ var freeSelf = typeof self == "object" && self && self.Object === Object && self;
+/** Used as a reference to the global object. */ var root = freeGlobal || freeSelf || Function("return this")();
+module.exports = root;
+
+},{"./_freeGlobal":"kAk32"}],"kAk32":[function(require,module,exports) {
+var global = arguments[3];
+/** Detect free variable `global` from Node.js. */ var freeGlobal = typeof global == "object" && global && global.Object === Object && global;
+module.exports = freeGlobal;
+
+},{}],"995sO":[function(require,module,exports) {
+var Symbol = require("./_Symbol");
+/** Used for built-in method references. */ var objectProto = Object.prototype;
+/** Used to check objects for own properties. */ var hasOwnProperty = objectProto.hasOwnProperty;
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */ var nativeObjectToString = objectProto.toString;
+/** Built-in value references. */ var symToStringTag = Symbol ? Symbol.toStringTag : undefined;
+/**
+ * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @returns {string} Returns the raw `toStringTag`.
+ */ function getRawTag(value) {
+    var isOwn = hasOwnProperty.call(value, symToStringTag), tag = value[symToStringTag];
     try {
-        while((n === void 0 || n-- > 0) && !(r = i.next()).done)ar.push(r.value);
-    } catch (error) {
-        e = {
-            error: error
-        };
-    } finally{
-        try {
-            if (r && !r.done && (m = i["return"])) m.call(i);
-        } finally{
-            if (e) throw e.error;
-        }
+        value[symToStringTag] = undefined;
+        var unmasked = true;
+    } catch (e) {}
+    var result = nativeObjectToString.call(value);
+    if (unmasked) {
+        if (isOwn) value[symToStringTag] = tag;
+        else delete value[symToStringTag];
     }
-    return ar;
-}
-function __spread() {
-    for(var ar = [], i = 0; i < arguments.length; i++)ar = ar.concat(__read(arguments[i]));
-    return ar;
-}
-function __spreadArrays() {
-    for(var s = 0, i = 0, il = arguments.length; i < il; i++)s += arguments[i].length;
-    for(var r = Array(s), k = 0, i = 0; i < il; i++)for(var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)r[k] = a[j];
-    return r;
-}
-function __spreadArray(to, from, pack) {
-    if (pack || arguments.length === 2) {
-        for(var i = 0, l = from.length, ar; i < l; i++)if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-}
-function __await(v) {
-    return this instanceof __await ? (this.v = v, this) : new __await(v);
-}
-function __asyncGenerator(thisArg, _arguments, generator) {
-    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-    var g = generator.apply(thisArg, _arguments || []), i, q = [];
-    return i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function() {
-        return this;
-    }, i;
-    function verb(n) {
-        if (g[n]) i[n] = function(v) {
-            return new Promise(function(a, b) {
-                q.push([
-                    n,
-                    v,
-                    a,
-                    b
-                ]) > 1 || resume(n, v);
-            });
-        };
-    }
-    function resume(n, v) {
-        try {
-            step(g[n](v));
-        } catch (e) {
-            settle(q[0][3], e);
-        }
-    }
-    function step(r) {
-        r.value instanceof __await ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q[0][2], r);
-    }
-    function fulfill(value) {
-        resume("next", value);
-    }
-    function reject(value) {
-        resume("throw", value);
-    }
-    function settle(f, v) {
-        if (f(v), q.shift(), q.length) resume(q[0][0], q[0][1]);
-    }
-}
-function __asyncDelegator(o) {
-    var i, p;
-    return i = {}, verb("next"), verb("throw", function(e) {
-        throw e;
-    }), verb("return"), i[Symbol.iterator] = function() {
-        return this;
-    }, i;
-    function verb(n, f) {
-        i[n] = o[n] ? function(v) {
-            return (p = !p) ? {
-                value: __await(o[n](v)),
-                done: n === "return"
-            } : f ? f(v) : v;
-        } : f;
-    }
-}
-function __asyncValues(o) {
-    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-    var m = o[Symbol.asyncIterator], i;
-    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function() {
-        return this;
-    }, i);
-    function verb(n) {
-        i[n] = o[n] && function(v) {
-            return new Promise(function(resolve, reject) {
-                v = o[n](v), settle(resolve, reject, v.done, v.value);
-            });
-        };
-    }
-    function settle(resolve, reject, d, v1) {
-        Promise.resolve(v1).then(function(v) {
-            resolve({
-                value: v,
-                done: d
-            });
-        }, reject);
-    }
-}
-function __makeTemplateObject(cooked, raw) {
-    if (Object.defineProperty) Object.defineProperty(cooked, "raw", {
-        value: raw
-    });
-    else cooked.raw = raw;
-    return cooked;
-}
-var __setModuleDefault = Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-};
-function __importStar(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
     return result;
 }
-function __importDefault(mod) {
-    return mod && mod.__esModule ? mod : {
-        default: mod
-    };
-}
-function __classPrivateFieldGet(receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-}
-function __classPrivateFieldSet(receiver, state, value, kind, f) {
-    if (kind === "m") throw new TypeError("Private method is not writable");
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-    return kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value), value;
-}
-function __classPrivateFieldIn(state, receiver) {
-    if (receiver === null || typeof receiver !== "object" && typeof receiver !== "function") throw new TypeError("Cannot use 'in' operator on non-object");
-    return typeof state === "function" ? receiver === state : state.has(receiver);
-}
+module.exports = getRawTag;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"j1yQJ":[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.STANDARD_ERROR_MAP = exports.SERVER_ERROR_CODE_RANGE = exports.RESERVED_ERROR_CODES = exports.SERVER_ERROR = exports.INTERNAL_ERROR = exports.INVALID_PARAMS = exports.METHOD_NOT_FOUND = exports.INVALID_REQUEST = exports.PARSE_ERROR = void 0;
-exports.PARSE_ERROR = "PARSE_ERROR";
-exports.INVALID_REQUEST = "INVALID_REQUEST";
-exports.METHOD_NOT_FOUND = "METHOD_NOT_FOUND";
-exports.INVALID_PARAMS = "INVALID_PARAMS";
-exports.INTERNAL_ERROR = "INTERNAL_ERROR";
-exports.SERVER_ERROR = "SERVER_ERROR";
-exports.RESERVED_ERROR_CODES = [
-    -32700,
-    -32600,
-    -32601,
-    -32602,
-    -32603
-];
-exports.SERVER_ERROR_CODE_RANGE = [
-    -32000,
-    -32099
-];
-exports.STANDARD_ERROR_MAP = {
-    [exports.PARSE_ERROR]: {
-        code: -32700,
-        message: "Parse error"
-    },
-    [exports.INVALID_REQUEST]: {
-        code: -32600,
-        message: "Invalid Request"
-    },
-    [exports.METHOD_NOT_FOUND]: {
-        code: -32601,
-        message: "Method not found"
-    },
-    [exports.INVALID_PARAMS]: {
-        code: -32602,
-        message: "Invalid params"
-    },
-    [exports.INTERNAL_ERROR]: {
-        code: -32603,
-        message: "Internal error"
-    },
-    [exports.SERVER_ERROR]: {
-        code: -32000,
-        message: "Server error"
+},{"./_Symbol":"7lsL9"}],"bmE3g":[function(require,module,exports) {
+/** Used for built-in method references. */ var objectProto = Object.prototype;
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */ var nativeObjectToString = objectProto.toString;
+/**
+ * Converts `value` to a string using `Object.prototype.toString`.
+ *
+ * @private
+ * @param {*} value The value to convert.
+ * @returns {string} Returns the converted string.
+ */ function objectToString(value) {
+    return nativeObjectToString.call(value);
+}
+module.exports = objectToString;
+
+},{}],"cGhqJ":[function(require,module,exports) {
+/**
+ * Checks if `value` is the
+ * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
+ * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+ * @example
+ *
+ * _.isObject({});
+ * // => true
+ *
+ * _.isObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isObject(_.noop);
+ * // => true
+ *
+ * _.isObject(null);
+ * // => false
+ */ function isObject(value) {
+    var type = typeof value;
+    return value != null && (type == "object" || type == "function");
+}
+module.exports = isObject;
+
+},{}],"cMDzi":[function(require,module,exports) {
+var coreJsData = require("./_coreJsData");
+/** Used to detect methods masquerading as native. */ var maskSrcKey = function() {
+    var uid = /[^.]+$/.exec(coreJsData && coreJsData.keys && coreJsData.keys.IE_PROTO || "");
+    return uid ? "Symbol(src)_1." + uid : "";
+}();
+/**
+ * Checks if `func` has its source masked.
+ *
+ * @private
+ * @param {Function} func The function to check.
+ * @returns {boolean} Returns `true` if `func` is masked, else `false`.
+ */ function isMasked(func) {
+    return !!maskSrcKey && maskSrcKey in func;
+}
+module.exports = isMasked;
+
+},{"./_coreJsData":"6gJwQ"}],"6gJwQ":[function(require,module,exports) {
+var root = require("./_root");
+/** Used to detect overreaching core-js shims. */ var coreJsData = root["__core-js_shared__"];
+module.exports = coreJsData;
+
+},{"./_root":"dSYUs"}],"bYHc7":[function(require,module,exports) {
+/** Used for built-in method references. */ var funcProto = Function.prototype;
+/** Used to resolve the decompiled source of functions. */ var funcToString = funcProto.toString;
+/**
+ * Converts `func` to its source code.
+ *
+ * @private
+ * @param {Function} func The function to convert.
+ * @returns {string} Returns the source code.
+ */ function toSource(func) {
+    if (func != null) {
+        try {
+            return funcToString.call(func);
+        } catch (e) {}
+        try {
+            return func + "";
+        } catch (e1) {}
     }
-};
+    return "";
+}
+module.exports = toSource;
 
-},{}],"7C94t":[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", {
-    value: true
+},{}],"kKx5I":[function(require,module,exports) {
+/**
+ * Gets the value at `key` of `object`.
+ *
+ * @private
+ * @param {Object} [object] The object to query.
+ * @param {string} key The key of the property to get.
+ * @returns {*} Returns the property value.
+ */ function getValue(object, key) {
+    return object == null ? undefined : object[key];
+}
+module.exports = getValue;
+
+},{}],"cCdgz":[function(require,module,exports) {
+/**
+ * Removes `key` and its value from the hash.
+ *
+ * @private
+ * @name delete
+ * @memberOf Hash
+ * @param {Object} hash The hash to modify.
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */ function hashDelete(key) {
+    var result = this.has(key) && delete this.__data__[key];
+    this.size -= result ? 1 : 0;
+    return result;
+}
+module.exports = hashDelete;
+
+},{}],"eKqTO":[function(require,module,exports) {
+var nativeCreate = require("./_nativeCreate");
+/** Used to stand-in for `undefined` hash values. */ var HASH_UNDEFINED = "__lodash_hash_undefined__";
+/** Used for built-in method references. */ var objectProto = Object.prototype;
+/** Used to check objects for own properties. */ var hasOwnProperty = objectProto.hasOwnProperty;
+/**
+ * Gets the hash value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf Hash
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */ function hashGet(key) {
+    var data = this.__data__;
+    if (nativeCreate) {
+        var result = data[key];
+        return result === HASH_UNDEFINED ? undefined : result;
+    }
+    return hasOwnProperty.call(data, key) ? data[key] : undefined;
+}
+module.exports = hashGet;
+
+},{"./_nativeCreate":"6i8Uf"}],"ghnqP":[function(require,module,exports) {
+var nativeCreate = require("./_nativeCreate");
+/** Used for built-in method references. */ var objectProto = Object.prototype;
+/** Used to check objects for own properties. */ var hasOwnProperty = objectProto.hasOwnProperty;
+/**
+ * Checks if a hash value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf Hash
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */ function hashHas(key) {
+    var data = this.__data__;
+    return nativeCreate ? data[key] !== undefined : hasOwnProperty.call(data, key);
+}
+module.exports = hashHas;
+
+},{"./_nativeCreate":"6i8Uf"}],"6i99R":[function(require,module,exports) {
+var nativeCreate = require("./_nativeCreate");
+/** Used to stand-in for `undefined` hash values. */ var HASH_UNDEFINED = "__lodash_hash_undefined__";
+/**
+ * Sets the hash `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf Hash
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the hash instance.
+ */ function hashSet(key, value) {
+    var data = this.__data__;
+    this.size += this.has(key) ? 0 : 1;
+    data[key] = nativeCreate && value === undefined ? HASH_UNDEFINED : value;
+    return this;
+}
+module.exports = hashSet;
+
+},{"./_nativeCreate":"6i8Uf"}],"3UZeo":[function(require,module,exports) {
+var listCacheClear = require("./_listCacheClear"), listCacheDelete = require("./_listCacheDelete"), listCacheGet = require("./_listCacheGet"), listCacheHas = require("./_listCacheHas"), listCacheSet = require("./_listCacheSet");
+/**
+ * Creates an list cache object.
+ *
+ * @private
+ * @constructor
+ * @param {Array} [entries] The key-value pairs to cache.
+ */ function ListCache(entries) {
+    var index = -1, length = entries == null ? 0 : entries.length;
+    this.clear();
+    while(++index < length){
+        var entry = entries[index];
+        this.set(entry[0], entry[1]);
+    }
+}
+// Add methods to `ListCache`.
+ListCache.prototype.clear = listCacheClear;
+ListCache.prototype["delete"] = listCacheDelete;
+ListCache.prototype.get = listCacheGet;
+ListCache.prototype.has = listCacheHas;
+ListCache.prototype.set = listCacheSet;
+module.exports = ListCache;
+
+},{"./_listCacheClear":"7AKQv","./_listCacheDelete":"j2Z5O","./_listCacheGet":"6Zrrs","./_listCacheHas":"i1CBK","./_listCacheSet":"2Rcur"}],"7AKQv":[function(require,module,exports) {
+/**
+ * Removes all key-value entries from the list cache.
+ *
+ * @private
+ * @name clear
+ * @memberOf ListCache
+ */ function listCacheClear() {
+    this.__data__ = [];
+    this.size = 0;
+}
+module.exports = listCacheClear;
+
+},{}],"j2Z5O":[function(require,module,exports) {
+var assocIndexOf = require("./_assocIndexOf");
+/** Used for built-in method references. */ var arrayProto = Array.prototype;
+/** Built-in value references. */ var splice = arrayProto.splice;
+/**
+ * Removes `key` and its value from the list cache.
+ *
+ * @private
+ * @name delete
+ * @memberOf ListCache
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */ function listCacheDelete(key) {
+    var data = this.__data__, index = assocIndexOf(data, key);
+    if (index < 0) return false;
+    var lastIndex = data.length - 1;
+    if (index == lastIndex) data.pop();
+    else splice.call(data, index, 1);
+    --this.size;
+    return true;
+}
+module.exports = listCacheDelete;
+
+},{"./_assocIndexOf":"cRVsl"}],"cRVsl":[function(require,module,exports) {
+var eq = require("./eq");
+/**
+ * Gets the index at which the `key` is found in `array` of key-value pairs.
+ *
+ * @private
+ * @param {Array} array The array to inspect.
+ * @param {*} key The key to search for.
+ * @returns {number} Returns the index of the matched value, else `-1`.
+ */ function assocIndexOf(array, key) {
+    var length = array.length;
+    while(length--){
+        if (eq(array[length][0], key)) return length;
+    }
+    return -1;
+}
+module.exports = assocIndexOf;
+
+},{"./eq":"aVz5f"}],"aVz5f":[function(require,module,exports) {
+/**
+ * Performs a
+ * [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
+ * comparison between two values to determine if they are equivalent.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to compare.
+ * @param {*} other The other value to compare.
+ * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
+ * @example
+ *
+ * var object = { 'a': 1 };
+ * var other = { 'a': 1 };
+ *
+ * _.eq(object, object);
+ * // => true
+ *
+ * _.eq(object, other);
+ * // => false
+ *
+ * _.eq('a', 'a');
+ * // => true
+ *
+ * _.eq('a', Object('a'));
+ * // => false
+ *
+ * _.eq(NaN, NaN);
+ * // => true
+ */ function eq(value, other) {
+    return value === other || value !== value && other !== other;
+}
+module.exports = eq;
+
+},{}],"6Zrrs":[function(require,module,exports) {
+var assocIndexOf = require("./_assocIndexOf");
+/**
+ * Gets the list cache value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf ListCache
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */ function listCacheGet(key) {
+    var data = this.__data__, index = assocIndexOf(data, key);
+    return index < 0 ? undefined : data[index][1];
+}
+module.exports = listCacheGet;
+
+},{"./_assocIndexOf":"cRVsl"}],"i1CBK":[function(require,module,exports) {
+var assocIndexOf = require("./_assocIndexOf");
+/**
+ * Checks if a list cache value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf ListCache
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */ function listCacheHas(key) {
+    return assocIndexOf(this.__data__, key) > -1;
+}
+module.exports = listCacheHas;
+
+},{"./_assocIndexOf":"cRVsl"}],"2Rcur":[function(require,module,exports) {
+var assocIndexOf = require("./_assocIndexOf");
+/**
+ * Sets the list cache `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf ListCache
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the list cache instance.
+ */ function listCacheSet(key, value) {
+    var data = this.__data__, index = assocIndexOf(data, key);
+    if (index < 0) {
+        ++this.size;
+        data.push([
+            key,
+            value
+        ]);
+    } else data[index][1] = value;
+    return this;
+}
+module.exports = listCacheSet;
+
+},{"./_assocIndexOf":"cRVsl"}],"8YjF4":[function(require,module,exports) {
+var getNative = require("./_getNative"), root = require("./_root");
+/* Built-in method references that are verified to be native. */ var Map = getNative(root, "Map");
+module.exports = Map;
+
+},{"./_getNative":"9PCIl","./_root":"dSYUs"}],"4ny9y":[function(require,module,exports) {
+var getMapData = require("./_getMapData");
+/**
+ * Removes `key` and its value from the map.
+ *
+ * @private
+ * @name delete
+ * @memberOf MapCache
+ * @param {string} key The key of the value to remove.
+ * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+ */ function mapCacheDelete(key) {
+    var result = getMapData(this, key)["delete"](key);
+    this.size -= result ? 1 : 0;
+    return result;
+}
+module.exports = mapCacheDelete;
+
+},{"./_getMapData":"aptgk"}],"aptgk":[function(require,module,exports) {
+var isKeyable = require("./_isKeyable");
+/**
+ * Gets the data for `map`.
+ *
+ * @private
+ * @param {Object} map The map to query.
+ * @param {string} key The reference key.
+ * @returns {*} Returns the map data.
+ */ function getMapData(map, key) {
+    var data = map.__data__;
+    return isKeyable(key) ? data[typeof key == "string" ? "string" : "hash"] : data.map;
+}
+module.exports = getMapData;
+
+},{"./_isKeyable":"icylN"}],"icylN":[function(require,module,exports) {
+/**
+ * Checks if `value` is suitable for use as unique object key.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is suitable, else `false`.
+ */ function isKeyable(value) {
+    var type = typeof value;
+    return type == "string" || type == "number" || type == "symbol" || type == "boolean" ? value !== "__proto__" : value === null;
+}
+module.exports = isKeyable;
+
+},{}],"gVeFY":[function(require,module,exports) {
+var getMapData = require("./_getMapData");
+/**
+ * Gets the map value for `key`.
+ *
+ * @private
+ * @name get
+ * @memberOf MapCache
+ * @param {string} key The key of the value to get.
+ * @returns {*} Returns the entry value.
+ */ function mapCacheGet(key) {
+    return getMapData(this, key).get(key);
+}
+module.exports = mapCacheGet;
+
+},{"./_getMapData":"aptgk"}],"idSOY":[function(require,module,exports) {
+var getMapData = require("./_getMapData");
+/**
+ * Checks if a map value for `key` exists.
+ *
+ * @private
+ * @name has
+ * @memberOf MapCache
+ * @param {string} key The key of the entry to check.
+ * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+ */ function mapCacheHas(key) {
+    return getMapData(this, key).has(key);
+}
+module.exports = mapCacheHas;
+
+},{"./_getMapData":"aptgk"}],"lXUJT":[function(require,module,exports) {
+var getMapData = require("./_getMapData");
+/**
+ * Sets the map `key` to `value`.
+ *
+ * @private
+ * @name set
+ * @memberOf MapCache
+ * @param {string} key The key of the value to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns the map cache instance.
+ */ function mapCacheSet(key, value) {
+    var data = getMapData(this, key), size = data.size;
+    data.set(key, value);
+    this.size += data.size == size ? 0 : 1;
+    return this;
+}
+module.exports = mapCacheSet;
+
+},{"./_getMapData":"aptgk"}],"cQA5b":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "networksStore", ()=>networksStore);
+var _storeUnit = require("store-unit");
+var _networks = require("./Networks");
+var _networksApi = require("./networks-api");
+class NetworksStore extends (0, _storeUnit.Store) {
+    loaderPromise = null;
+    load() {
+        if (this.loaderPromise) return this.loaderPromise;
+        this.loaderPromise = (0, _networksApi.get)().then((value)=>{
+            const networks = new (0, _networks.Networks)({
+                networks: value
+            });
+            this.setState({
+                networks
+            });
+            return networks;
+        });
+        return this.loaderPromise;
+    }
+}
+const networksStore = new NetworksStore({
+    networks: null
 });
-exports.validateJsonRpcError = exports.getErrorByCode = exports.getError = exports.isValidErrorCode = exports.isReservedErrorCode = exports.isServerErrorCode = void 0;
-const constants_1 = require("./constants");
-function isServerErrorCode(code) {
-    return code <= constants_1.SERVER_ERROR_CODE_RANGE[0] && code >= constants_1.SERVER_ERROR_CODE_RANGE[1];
+
+},{"store-unit":"4kZQu","./Networks":"i4HFz","./networks-api":"2aSwD","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"i4HFz":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "Networks", ()=>Networks);
+var _isTruthyTs = require("is-truthy-ts");
+var _capitalizeTs = require("capitalize-ts");
+var _chain = require("./Chain");
+var _keys = require("./keys");
+var _asset = require("./asset");
+function toCollection(items, getKey, getItem) {
+    const result = {};
+    for (const item of items)result[getKey(item)] = getItem(item);
+    return result;
 }
-exports.isServerErrorCode = isServerErrorCode;
-function isReservedErrorCode(code) {
-    return constants_1.RESERVED_ERROR_CODES.includes(code);
+function invertObject(object) {
+    return Object.fromEntries(Object.entries(object).map(([key, value])=>[
+            value,
+            key
+        ]));
 }
-exports.isReservedErrorCode = isReservedErrorCode;
-function isValidErrorCode(code) {
-    return typeof code === "number";
+const nameAliases = {
+    "binance-smart-chain": "bsc"
+};
+function localeCompareWithPriority(str1, str2, priorityString) {
+    if (priorityString) {
+        if (str1 === priorityString) return -1;
+        if (str2 === priorityString) return 1;
+    }
+    return str1.localeCompare(str2);
 }
-exports.isValidErrorCode = isValidErrorCode;
-function getError(type) {
-    if (!Object.keys(constants_1.STANDARD_ERROR_MAP).includes(type)) return constants_1.STANDARD_ERROR_MAP[constants_1.INTERNAL_ERROR];
-    return constants_1.STANDARD_ERROR_MAP[type];
-}
-exports.getError = getError;
-function getErrorByCode(code) {
-    const match = Object.values(constants_1.STANDARD_ERROR_MAP).find((e)=>e.code === code);
-    if (!match) return constants_1.STANDARD_ERROR_MAP[constants_1.INTERNAL_ERROR];
-    return match;
-}
-exports.getErrorByCode = getErrorByCode;
-function validateJsonRpcError(response) {
-    if (typeof response.error.code === "undefined") return {
-        valid: false,
-        error: "Missing code for JSON-RPC error"
+class Networks {
+    static nameAliases = nameAliases;
+    static nameAliasesInverted = invertObject(nameAliases);
+    static purposeKeyMap = {
+        sending: "supports_sending",
+        trading: "supports_trading",
+        bridge: "supports_bridge"
     };
-    if (typeof response.error.message === "undefined") return {
-        valid: false,
-        error: "Missing message for JSON-RPC error"
-    };
-    if (!isValidErrorCode(response.error.code)) return {
-        valid: false,
-        error: `Invalid error code type for JSON-RPC: ${response.error.code}`
-    };
-    if (isReservedErrorCode(response.error.code)) {
-        const error = getErrorByCode(response.error.code);
-        if (error.message !== constants_1.STANDARD_ERROR_MAP[constants_1.INTERNAL_ERROR].message && response.error.message === error.message) return {
-            valid: false,
-            error: `Invalid error code message for JSON-RPC: ${response.error.code}`
+    constructor({ networks: networks1 , keys =(0, _keys.keys)  }){
+        this.networks = networks1.sort((a, b)=>localeCompareWithPriority(a.name, b.name, "Ethereum"));
+        this.keys = keys;
+        this.collection = toCollection(this.networks, (network)=>network.external_id, (x)=>x);
+        this.nameToId = toCollection(this.networks, (networks)=>networks.chain, (network)=>network.external_id);
+    }
+    static getName(network) {
+        return network.name || (0, _capitalizeTs.capitalize)(network.chain);
+    }
+    static accessByAlias(object, chain) {
+        const value = chain.toString();
+        return object[value] || object[Networks.nameAliases[value]] || object[Networks.nameAliasesInverted[value]];
+    }
+    toId(chain) {
+        return Networks.accessByAlias(this.nameToId, chain) || "";
+    }
+    getNetworks() {
+        return this.networks;
+    }
+    getChainId(chain) {
+        return this.toId(chain);
+    }
+    getNativeAssetIdsForTrading() {
+        return this.networks.filter((network)=>network.supports_trading && network.native_asset).map((network)=>network.native_asset?.id).filter((0, _isTruthyTs.isTruthy));
+    }
+    getChainName(chain) {
+        return this.collection[this.toId(chain)]?.name || (0, _capitalizeTs.capitalize)(String(chain));
+    }
+    getNetworkById(chainId) {
+        const network = this.collection[chainId];
+        if (!network) throw new Error(`Unsupported network id: ${chainId}`);
+        return network;
+    }
+    getNetworkByName(chain) {
+        return this.collection[this.toId(chain)];
+    }
+    getChainById(chainId) {
+        const network = this.getNetworkById(chainId);
+        return (0, _chain.createChain)(network.chain);
+    }
+    getChainNameById(chainId) {
+        const network = this.getNetworkById(chainId);
+        return this.getChainName((0, _chain.createChain)(network.chain));
+    }
+    getExplorerHomeUrlByName(chain) {
+        return this.collection[this.toId(chain)]?.explorer_home_url;
+    }
+    getExplorerTxUrl(network, hash) {
+        return network?.explorer_tx_url?.replace("{HASH}", hash);
+    }
+    getExplorerTxUrlById(chainId, hash) {
+        return this.getExplorerTxUrl(this.collection[chainId], hash);
+    }
+    getExplorerTxUrlByName(chain, hash) {
+        return this.getExplorerTxUrl(this.collection[this.toId(chain)], hash);
+    }
+    getExplorerTokenUrl(network, address) {
+        return network?.explorer_token_url?.replace("{ADDRESS}", address);
+    }
+    getExplorerTokenUrlById(chainId, address) {
+        return this.getExplorerTokenUrl(this.collection[chainId], address);
+    }
+    getExplorerTokenUrlByName(chain, address) {
+        return this.getExplorerTokenUrl(this.collection[this.toId(chain)], address);
+    }
+    getExplorerNameById(chainId) {
+        return this.collection[chainId]?.explorer_name;
+    }
+    getEthereumChainParameter(chainId) {
+        const network = this.collection[chainId];
+        if (!network || !network.rpc_url_public || !network.native_asset) throw new Error(`Unsupported network id: ${chainId}`);
+        return {
+            chainId,
+            rpcUrls: network.rpc_url_public,
+            chainName: network.name,
+            nativeCurrency: {
+                code: network.native_asset.address,
+                name: network.native_asset.name,
+                symbol: network.native_asset.symbol,
+                decimals: network.native_asset.decimals
+            },
+            iconUrls: [
+                network.icon_url
+            ],
+            blockExplorerUrls: network.explorer_home_url ? [
+                network.explorer_home_url
+            ] : []
         };
     }
-    return {
-        valid: true
-    };
+    supports(purpose, chain) {
+        const network = this.getNetworkByName(chain);
+        if (!network) return false;
+        const key = Networks.purposeKeyMap[purpose];
+        return network[key];
+    }
+    isNativeAsset(asset, chainId) {
+        const network = this.getNetworkById(chainId);
+        return network.native_asset ? (0, _asset.getAddress)({
+            asset,
+            chain: (0, _chain.createChain)(network.chain)
+        }) === network.native_asset.address : false;
+    }
+    isNativeAddress(address, chainId) {
+        const network = this.getNetworkById(chainId);
+        if (!network.native_asset) throw new Error(`Native asset is not defined for: ${chainId}`);
+        return network.native_asset ? address === network.native_asset.address : false;
+    }
+    getRpcUrlInternal(chain) {
+        const network = this.getNetworkByName(chain);
+        if (!network) throw new Error(`Cannot find network: ${chain}`);
+        if (!network.rpc_url_internal) throw new Error(`Network url missing: ${chain}`);
+        return (0, _keys.applyKeyToEndpoint)(network.rpc_url_internal, this.keys);
+    }
 }
-exports.validateJsonRpcError = validateJsonRpcError;
 
-},{"./constants":"j1yQJ"}],"7xkWN":[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.isNodeJs = void 0;
-const tslib_1 = require("tslib");
-const environment_1 = require("@pedrouid/environment");
-exports.isNodeJs = environment_1.isNode;
-tslib_1.__exportStar(require("@pedrouid/environment"), exports);
+},{"is-truthy-ts":"h3kjr","capitalize-ts":"eOrib","./Chain":"7Kj03","./keys":"lwdCE","./asset":"iMbfS","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"h3kjr":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "isTruthy", ()=>n);
+function n(n1) {
+    return null != n1;
+}
 
-},{"tslib":"lRdW5","@pedrouid/environment":"3HG5k"}],"3HG5k":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __exportStar = this && this.__exportStar || function(m, exports) {
-    for(var p in m)if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"eOrib":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "capitalize", ()=>e);
+function e(e1) {
+    return e1.charAt(0).toUpperCase() + e1.slice(1);
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lwdCE":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "keys", ()=>keys);
+parcelHelpers.export(exports, "applyKeyToEndpoint", ()=>applyKeyToEndpoint);
+var _config = require("src/env/config");
+const keys = {
+    ARBITRUM_INFURA_API_KEY: "e2e40a30dc83445e8b4d5d7c88f85276",
+    AURORA_API_KEY: "2ZaW4eTLoH9wrr3N5jMfSkyGXA9PLJDRb5jZdHV591mr",
+    ETHEREUM_ALCHEMY_API_KEY: (0, _config.ALCHEMY_KEY),
+    OPTIMISM_INFURA_API_KEY: "e2e40a30dc83445e8b4d5d7c88f85276",
+    POLYGON_INFURA_API_KEY: "e2e40a30dc83445e8b4d5d7c88f85276",
+    SOLANA_API_KEY: ""
 };
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-__exportStar(require("./crypto"), exports);
-__exportStar(require("./env"), exports);
+function applyKeyToEndpoint(endpoint, keys1) {
+    /**
+   * input: https://eth-mainnet.alchemyapi.io/v2/{ETHEREUM_ALCHEMY_API_KEY}
+   * output: https://eth-mainnet.alchemyapi.io/v2/keyValue
+   */ let result = endpoint;
+    for(const key in keys1)result = result.replace(`{${key}}`, keys1[key]);
+    return result;
+}
 
-},{"./crypto":"iS1S1","./env":"5Cmwa"}],"iS1S1":[function(require,module,exports) {
-"use strict";
-var global = arguments[3];
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.isBrowserCryptoAvailable = exports.getSubtleCrypto = exports.getBrowerCrypto = void 0;
-function getBrowerCrypto() {
-    return (global === null || global === void 0 ? void 0 : global.crypto) || (global === null || global === void 0 ? void 0 : global.msCrypto) || {};
+},{"src/env/config":"90ch4","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iMbfS":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "getAssetImplementationInChain", ()=>getAssetImplementationInChain);
+parcelHelpers.export(exports, "getDecimals", ()=>getDecimals);
+parcelHelpers.export(exports, "getAddress", ()=>getAddress);
+function getAssetImplementationInChain({ asset , chain  }) {
+    return asset?.implementations?.[String(chain)];
 }
-exports.getBrowerCrypto = getBrowerCrypto;
-function getSubtleCrypto() {
-    const browserCrypto = getBrowerCrypto();
-    return browserCrypto.subtle || browserCrypto.webkitSubtle;
+function getDecimals({ asset , chain  }) {
+    return getAssetImplementationInChain({
+        asset,
+        chain
+    })?.decimals || asset.decimals;
 }
-exports.getSubtleCrypto = getSubtleCrypto;
-function isBrowserCryptoAvailable() {
-    return !!getBrowerCrypto() && !!getSubtleCrypto();
-}
-exports.isBrowserCryptoAvailable = isBrowserCryptoAvailable;
-
-},{}],"5Cmwa":[function(require,module,exports) {
-"use strict";
-var process = require("process");
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.isBrowser = exports.isNode = exports.isReactNative = void 0;
-function isReactNative() {
-    return typeof document === "undefined" && typeof navigator !== "undefined" && navigator.product === "ReactNative";
-}
-exports.isReactNative = isReactNative;
-function isNode() {
-    return typeof process !== "undefined" && typeof process.versions !== "undefined" && typeof process.versions.node !== "undefined";
-}
-exports.isNode = isNode;
-function isBrowser() {
-    return !isReactNative() && !isNode();
-}
-exports.isBrowser = isBrowser;
-
-},{"process":"d5jf4"}],"3d0nB":[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.formatErrorMessage = exports.formatJsonRpcError = exports.formatJsonRpcResult = exports.formatJsonRpcRequest = exports.payloadId = void 0;
-const error_1 = require("./error");
-const constants_1 = require("./constants");
-function payloadId() {
-    const date = Date.now() * Math.pow(10, 3);
-    const extra = Math.floor(Math.random() * Math.pow(10, 3));
-    return date + extra;
-}
-exports.payloadId = payloadId;
-function formatJsonRpcRequest(method, params, id) {
-    return {
-        id: id || payloadId(),
-        jsonrpc: "2.0",
-        method,
-        params
-    };
-}
-exports.formatJsonRpcRequest = formatJsonRpcRequest;
-function formatJsonRpcResult(id, result) {
-    return {
-        id,
-        jsonrpc: "2.0",
-        result
-    };
-}
-exports.formatJsonRpcResult = formatJsonRpcResult;
-function formatJsonRpcError(id, error) {
-    return {
-        id,
-        jsonrpc: "2.0",
-        error: formatErrorMessage(error)
-    };
-}
-exports.formatJsonRpcError = formatJsonRpcError;
-function formatErrorMessage(error) {
-    if (typeof error === "undefined") return error_1.getError(constants_1.INTERNAL_ERROR);
-    if (typeof error === "string") error = Object.assign(Object.assign({}, error_1.getError(constants_1.SERVER_ERROR)), {
-        message: error
+const getAddress = ({ asset , chain  })=>{
+    const chainImplementation = getAssetImplementationInChain({
+        asset,
+        chain
     });
-    if (error_1.isReservedErrorCode(error.code)) error = error_1.getErrorByCode(error.code);
-    if (!error_1.isServerErrorCode(error.code)) throw new Error("Error code is not in server code range");
-    return error;
-}
-exports.formatErrorMessage = formatErrorMessage;
+    return chainImplementation ? chainImplementation.address : undefined;
+};
 
-},{"./error":"7C94t","./constants":"j1yQJ"}],"9H7rT":[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.isValidTrailingWildcardRoute = exports.isValidLeadingWildcardRoute = exports.isValidWildcardRoute = exports.isValidDefaultRoute = exports.isValidRoute = void 0;
-function isValidRoute(route) {
-    if (route.includes("*")) return isValidWildcardRoute(route);
-    if (/\W/g.test(route)) return false;
-    return true;
-}
-exports.isValidRoute = isValidRoute;
-function isValidDefaultRoute(route) {
-    return route === "*";
-}
-exports.isValidDefaultRoute = isValidDefaultRoute;
-function isValidWildcardRoute(route) {
-    if (isValidDefaultRoute(route)) return true;
-    if (!route.includes("*")) return false;
-    if (route.split("*").length !== 2) return false;
-    if (route.split("*").filter((x)=>x.trim() === "").length !== 1) return false;
-    return true;
-}
-exports.isValidWildcardRoute = isValidWildcardRoute;
-function isValidLeadingWildcardRoute(route) {
-    return !isValidDefaultRoute(route) && isValidWildcardRoute(route) && !route.split("*")[0].trim();
-}
-exports.isValidLeadingWildcardRoute = isValidLeadingWildcardRoute;
-function isValidTrailingWildcardRoute(route) {
-    return !isValidDefaultRoute(route) && isValidWildcardRoute(route) && !route.split("*")[1].trim();
-}
-exports.isValidTrailingWildcardRoute = isValidTrailingWildcardRoute;
-
-},{}],"leztz":[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-const tslib_1 = require("tslib");
-tslib_1.__exportStar(require("@json-rpc-tools/types"), exports);
-
-},{"tslib":"lRdW5","@json-rpc-tools/types":"k5vnh"}],"k5vnh":[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-const tslib_1 = require("tslib");
-tslib_1.__exportStar(require("./blockchain"), exports);
-tslib_1.__exportStar(require("./jsonrpc"), exports);
-tslib_1.__exportStar(require("./misc"), exports);
-tslib_1.__exportStar(require("./multi"), exports);
-tslib_1.__exportStar(require("./provider"), exports);
-tslib_1.__exportStar(require("./router"), exports);
-tslib_1.__exportStar(require("./schema"), exports);
-tslib_1.__exportStar(require("./validator"), exports);
-
-},{"tslib":"lRdW5","./blockchain":"sI9gm","./jsonrpc":"dlw23","./misc":"jy7RG","./multi":"efric","./provider":"2Ct9y","./router":"gt8CX","./schema":"dTzyi","./validator":"jYlwM"}],"sI9gm":[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.IBlockchainProvider = exports.IBlockchainAuthenticator = exports.IPendingRequests = void 0;
-const misc_1 = require("./misc");
-const provider_1 = require("./provider");
-class IPendingRequests {
-    constructor(storage){
-        this.storage = storage;
-    }
-}
-exports.IPendingRequests = IPendingRequests;
-class IBlockchainAuthenticator extends misc_1.IEvents {
-    constructor(config){
-        super();
-        this.config = config;
-    }
-}
-exports.IBlockchainAuthenticator = IBlockchainAuthenticator;
-class IBlockchainProvider extends provider_1.IJsonRpcProvider {
-    constructor(connection, config){
-        super(connection);
-    }
-}
-exports.IBlockchainProvider = IBlockchainProvider;
-
-},{"./misc":"jy7RG","./provider":"2Ct9y"}],"jy7RG":[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.IEvents = void 0;
-class IEvents {
-}
-exports.IEvents = IEvents;
-
-},{}],"2Ct9y":[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.IJsonRpcProvider = exports.IBaseJsonRpcProvider = exports.IJsonRpcConnection = void 0;
-const misc_1 = require("./misc");
-class IJsonRpcConnection extends misc_1.IEvents {
-    constructor(opts){
-        super();
-    }
-}
-exports.IJsonRpcConnection = IJsonRpcConnection;
-class IBaseJsonRpcProvider extends misc_1.IEvents {
-    constructor(){
-        super();
-    }
-}
-exports.IBaseJsonRpcProvider = IBaseJsonRpcProvider;
-class IJsonRpcProvider extends IBaseJsonRpcProvider {
-    constructor(connection){
-        super();
-    }
-}
-exports.IJsonRpcProvider = IJsonRpcProvider;
-
-},{"./misc":"jy7RG"}],"dlw23":[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-},{}],"efric":[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.IMultiServiceProvider = void 0;
-const provider_1 = require("./provider");
-class IMultiServiceProvider extends provider_1.IBaseJsonRpcProvider {
-    constructor(config){
-        super();
-        this.config = config;
-    }
-}
-exports.IMultiServiceProvider = IMultiServiceProvider;
-
-},{"./provider":"2Ct9y"}],"gt8CX":[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.IJsonRpcRouter = void 0;
-class IJsonRpcRouter {
-    constructor(routes){
-        this.routes = routes;
-    }
-}
-exports.IJsonRpcRouter = IJsonRpcRouter;
-
-},{}],"dTzyi":[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-},{}],"jYlwM":[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.IJsonRpcValidator = void 0;
-class IJsonRpcValidator {
-    constructor(schemas){
-        this.schemas = schemas;
-    }
-}
-exports.IJsonRpcValidator = IJsonRpcValidator;
-
-},{}],"d8vBs":[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.isJsonRpcValidationInvalid = exports.isJsonRpcError = exports.isJsonRpcResult = exports.isJsonRpcResponse = exports.isJsonRpcRequest = exports.isJsonRpcPayload = void 0;
-function isJsonRpcPayload(payload) {
-    return "id" in payload && "jsonrpc" in payload && payload.jsonrpc === "2.0";
-}
-exports.isJsonRpcPayload = isJsonRpcPayload;
-function isJsonRpcRequest(payload) {
-    return isJsonRpcPayload(payload) && "method" in payload;
-}
-exports.isJsonRpcRequest = isJsonRpcRequest;
-function isJsonRpcResponse(payload) {
-    return isJsonRpcPayload(payload) && (isJsonRpcResult(payload) || isJsonRpcError(payload));
-}
-exports.isJsonRpcResponse = isJsonRpcResponse;
-function isJsonRpcResult(payload) {
-    return "result" in payload;
-}
-exports.isJsonRpcResult = isJsonRpcResult;
-function isJsonRpcError(payload) {
-    return "error" in payload;
-}
-exports.isJsonRpcError = isJsonRpcError;
-function isJsonRpcValidationInvalid(validation) {
-    return "error" in validation && validation.valid === false;
-}
-exports.isJsonRpcValidationInvalid = isJsonRpcValidationInvalid;
-
-},{}],"fB8WN":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2aSwD":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-parcelHelpers.export(exports, "formatJsonRpcResultForPort", ()=>formatJsonRpcResultForPort);
-var _utils = require("@json-rpc-tools/utils");
-function formatJsonRpcResultForPort(id, result) {
-    const value = (0, _utils.formatJsonRpcResult)(id, result);
-    if (value.result === undefined) // When messages are sent via ports, `undefined` propertires
-    // get removed
-    value.result = null;
-    return value;
-}
-
-},{"@json-rpc-tools/utils":"lGviI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"91evT":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "InvalidParams", ()=>InvalidParams);
-parcelHelpers.export(exports, "OriginNotAllowed", ()=>OriginNotAllowed);
-parcelHelpers.export(exports, "UserRejected", ()=>UserRejected);
-parcelHelpers.export(exports, "UserRejectedTxSignature", ()=>UserRejectedTxSignature);
-parcelHelpers.export(exports, "MethodNotImplemented", ()=>MethodNotImplemented);
-var _utils = require("@json-rpc-tools/utils");
-class ErrorWithEnumerableMessage extends Error {
-    constructor(message){
-        super(message);
-        Object.defineProperty(this, "message", {
-            value: message,
-            enumerable: true
+parcelHelpers.export(exports, "get", ()=>get);
+var _defiSdk = require("defi-sdk");
+function get() {
+    return new Promise((resolve)=>{
+        (0, _defiSdk.client).cachedSubscribe({
+            namespace: "chains",
+            body: {
+                scope: [
+                    "info"
+                ],
+                payload: {}
+            },
+            onData: ({ value  })=>{
+                if (value) resolve(value);
+            }
         });
-    }
-}
-class InvalidParams extends ErrorWithEnumerableMessage {
-    code = (0, _utils.STANDARD_ERROR_MAP).INVALID_PARAMS.code;
-    constructor(message = (0, _utils.STANDARD_ERROR_MAP).INVALID_PARAMS.message){
-        super(message);
-    }
-}
-class OriginNotAllowed extends ErrorWithEnumerableMessage {
-    code = -32011;
-    constructor(origin){
-        const message = "Method not allowed for this origin" + (origin ? `: ${origin}` : "");
-        super(message);
-    }
-}
-class UserRejected extends ErrorWithEnumerableMessage {
-    code = -32010;
-    constructor(message = "Rejected by User"){
-        super(message);
-    }
-}
-class UserRejectedTxSignature extends ErrorWithEnumerableMessage {
-    code = 4001;
-    constructor(message = "Tx Signature: User denied transaction signature."){
-        super(message);
-    }
-}
-class MethodNotImplemented extends ErrorWithEnumerableMessage {
-    code = -32601;
-    constructor(message = "Method not implemented"){
-        super(message);
-    }
+    });
 }
 
-},{"@json-rpc-tools/utils":"lGviI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cNwKA":[function(require,module,exports) {
+},{"defi-sdk":"iMIhf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cNwKA":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "usePendingTransactions", ()=>usePendingTransactions);
@@ -45971,8 +46089,7 @@ class LocalTransactionsStore extends (0, _storeUnit.Store) {
     async init() {
         const transactions = await (0, _storage.get)("transactions");
         if (transactions) this.setState((0, _model.dataToModel)(transactions));
-        (0, _webextensionPolyfillDefault.default).storage.onChanged.addListener((changes, namespace)=>{
-            console.log("trservice: storage listener", changes, namespace);
+        (0, _webextensionPolyfillDefault.default).storage.onChanged.addListener((changes, _namespace)=>{
             if ("transactions" in changes) {
                 const newValue = changes.transactions.newValue || [];
                 this.setState((0, _model.dataToModel)(newValue));
@@ -45985,7 +46102,7 @@ Object.assign(window, {
     localTransactionsStore
 });
 
-},{"src/background/webapis/storage":"jW3Kj","src/modules/ethereum/transactions/model":"9SL0C","store-unit":"4kZQu","webextension-polyfill":"4LGeR","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jW3Kj":[function(require,module,exports) {
+},{"src/background/webapis/storage":"jW3Kj","src/modules/ethereum/transactions/model":"9SL0C","store-unit":"4kZQu","webextension-polyfill":"fTA1T","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jW3Kj":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "get", ()=>get);
@@ -46008,1141 +46125,31 @@ async function remove(prop) {
     await (0, _webextensionPolyfillDefault.default).storage.local.remove(prop);
 }
 
-},{"webextension-polyfill":"4LGeR","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4LGeR":[function(require,module,exports) {
-(function(global, factory) {
-    if (typeof define === "function" && define.amd) define("webextension-polyfill", [
-        "module"
-    ], factory);
-    else {
-        var mod;
-        factory(module);
-    }
-})(typeof globalThis !== "undefined" ? globalThis : typeof self !== "undefined" ? self : this, function(module) {
-    /* webextension-polyfill - v0.9.0 - Fri Mar 25 2022 17:00:23 */ /* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */ /* vim: set sts=2 sw=2 et tw=80: */ /* This Source Code Form is subject to the terms of the Mozilla Public
-   * License, v. 2.0. If a copy of the MPL was not distributed with this
-   * file, You can obtain one at http://mozilla.org/MPL/2.0/. */ "use strict";
-    if (typeof globalThis != "object" || typeof chrome != "object" || !chrome || !chrome.runtime || !chrome.runtime.id) throw new Error("This script should only be loaded in a browser extension.");
-    if (typeof globalThis.browser === "undefined" || Object.getPrototypeOf(globalThis.browser) !== Object.prototype) {
-        const CHROME_SEND_MESSAGE_CALLBACK_NO_RESPONSE_MESSAGE = "The message port closed before a response was received.";
-        const SEND_RESPONSE_DEPRECATION_WARNING = "Returning a Promise is the preferred way to send a reply from an onMessage/onMessageExternal listener, as the sendResponse will be removed from the specs (See https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/API/runtime/onMessage)"; // Wrapping the bulk of this polyfill in a one-time-use function is a minor
-        // optimization for Firefox. Since Spidermonkey does not fully parse the
-        // contents of a function until the first time it's called, and since it will
-        // never actually need to be called, this allows the polyfill to be included
-        // in Firefox nearly for free.
-        const wrapAPIs = (extensionAPIs)=>{
-            // NOTE: apiMetadata is associated to the content of the api-metadata.json file
-            // at build time by replacing the following "include" with the content of the
-            // JSON file.
-            const apiMetadata = {
-                "alarms": {
-                    "clear": {
-                        "minArgs": 0,
-                        "maxArgs": 1
-                    },
-                    "clearAll": {
-                        "minArgs": 0,
-                        "maxArgs": 0
-                    },
-                    "get": {
-                        "minArgs": 0,
-                        "maxArgs": 1
-                    },
-                    "getAll": {
-                        "minArgs": 0,
-                        "maxArgs": 0
-                    }
-                },
-                "bookmarks": {
-                    "create": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "get": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "getChildren": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "getRecent": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "getSubTree": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "getTree": {
-                        "minArgs": 0,
-                        "maxArgs": 0
-                    },
-                    "move": {
-                        "minArgs": 2,
-                        "maxArgs": 2
-                    },
-                    "remove": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "removeTree": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "search": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "update": {
-                        "minArgs": 2,
-                        "maxArgs": 2
-                    }
-                },
-                "browserAction": {
-                    "disable": {
-                        "minArgs": 0,
-                        "maxArgs": 1,
-                        "fallbackToNoCallback": true
-                    },
-                    "enable": {
-                        "minArgs": 0,
-                        "maxArgs": 1,
-                        "fallbackToNoCallback": true
-                    },
-                    "getBadgeBackgroundColor": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "getBadgeText": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "getPopup": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "getTitle": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "openPopup": {
-                        "minArgs": 0,
-                        "maxArgs": 0
-                    },
-                    "setBadgeBackgroundColor": {
-                        "minArgs": 1,
-                        "maxArgs": 1,
-                        "fallbackToNoCallback": true
-                    },
-                    "setBadgeText": {
-                        "minArgs": 1,
-                        "maxArgs": 1,
-                        "fallbackToNoCallback": true
-                    },
-                    "setIcon": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "setPopup": {
-                        "minArgs": 1,
-                        "maxArgs": 1,
-                        "fallbackToNoCallback": true
-                    },
-                    "setTitle": {
-                        "minArgs": 1,
-                        "maxArgs": 1,
-                        "fallbackToNoCallback": true
-                    }
-                },
-                "browsingData": {
-                    "remove": {
-                        "minArgs": 2,
-                        "maxArgs": 2
-                    },
-                    "removeCache": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "removeCookies": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "removeDownloads": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "removeFormData": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "removeHistory": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "removeLocalStorage": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "removePasswords": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "removePluginData": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "settings": {
-                        "minArgs": 0,
-                        "maxArgs": 0
-                    }
-                },
-                "commands": {
-                    "getAll": {
-                        "minArgs": 0,
-                        "maxArgs": 0
-                    }
-                },
-                "contextMenus": {
-                    "remove": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "removeAll": {
-                        "minArgs": 0,
-                        "maxArgs": 0
-                    },
-                    "update": {
-                        "minArgs": 2,
-                        "maxArgs": 2
-                    }
-                },
-                "cookies": {
-                    "get": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "getAll": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "getAllCookieStores": {
-                        "minArgs": 0,
-                        "maxArgs": 0
-                    },
-                    "remove": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "set": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    }
-                },
-                "devtools": {
-                    "inspectedWindow": {
-                        "eval": {
-                            "minArgs": 1,
-                            "maxArgs": 2,
-                            "singleCallbackArg": false
-                        }
-                    },
-                    "panels": {
-                        "create": {
-                            "minArgs": 3,
-                            "maxArgs": 3,
-                            "singleCallbackArg": true
-                        },
-                        "elements": {
-                            "createSidebarPane": {
-                                "minArgs": 1,
-                                "maxArgs": 1
-                            }
-                        }
-                    }
-                },
-                "downloads": {
-                    "cancel": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "download": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "erase": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "getFileIcon": {
-                        "minArgs": 1,
-                        "maxArgs": 2
-                    },
-                    "open": {
-                        "minArgs": 1,
-                        "maxArgs": 1,
-                        "fallbackToNoCallback": true
-                    },
-                    "pause": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "removeFile": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "resume": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "search": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "show": {
-                        "minArgs": 1,
-                        "maxArgs": 1,
-                        "fallbackToNoCallback": true
-                    }
-                },
-                "extension": {
-                    "isAllowedFileSchemeAccess": {
-                        "minArgs": 0,
-                        "maxArgs": 0
-                    },
-                    "isAllowedIncognitoAccess": {
-                        "minArgs": 0,
-                        "maxArgs": 0
-                    }
-                },
-                "history": {
-                    "addUrl": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "deleteAll": {
-                        "minArgs": 0,
-                        "maxArgs": 0
-                    },
-                    "deleteRange": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "deleteUrl": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "getVisits": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "search": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    }
-                },
-                "i18n": {
-                    "detectLanguage": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "getAcceptLanguages": {
-                        "minArgs": 0,
-                        "maxArgs": 0
-                    }
-                },
-                "identity": {
-                    "launchWebAuthFlow": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    }
-                },
-                "idle": {
-                    "queryState": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    }
-                },
-                "management": {
-                    "get": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "getAll": {
-                        "minArgs": 0,
-                        "maxArgs": 0
-                    },
-                    "getSelf": {
-                        "minArgs": 0,
-                        "maxArgs": 0
-                    },
-                    "setEnabled": {
-                        "minArgs": 2,
-                        "maxArgs": 2
-                    },
-                    "uninstallSelf": {
-                        "minArgs": 0,
-                        "maxArgs": 1
-                    }
-                },
-                "notifications": {
-                    "clear": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "create": {
-                        "minArgs": 1,
-                        "maxArgs": 2
-                    },
-                    "getAll": {
-                        "minArgs": 0,
-                        "maxArgs": 0
-                    },
-                    "getPermissionLevel": {
-                        "minArgs": 0,
-                        "maxArgs": 0
-                    },
-                    "update": {
-                        "minArgs": 2,
-                        "maxArgs": 2
-                    }
-                },
-                "pageAction": {
-                    "getPopup": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "getTitle": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "hide": {
-                        "minArgs": 1,
-                        "maxArgs": 1,
-                        "fallbackToNoCallback": true
-                    },
-                    "setIcon": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "setPopup": {
-                        "minArgs": 1,
-                        "maxArgs": 1,
-                        "fallbackToNoCallback": true
-                    },
-                    "setTitle": {
-                        "minArgs": 1,
-                        "maxArgs": 1,
-                        "fallbackToNoCallback": true
-                    },
-                    "show": {
-                        "minArgs": 1,
-                        "maxArgs": 1,
-                        "fallbackToNoCallback": true
-                    }
-                },
-                "permissions": {
-                    "contains": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "getAll": {
-                        "minArgs": 0,
-                        "maxArgs": 0
-                    },
-                    "remove": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "request": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    }
-                },
-                "runtime": {
-                    "getBackgroundPage": {
-                        "minArgs": 0,
-                        "maxArgs": 0
-                    },
-                    "getPlatformInfo": {
-                        "minArgs": 0,
-                        "maxArgs": 0
-                    },
-                    "openOptionsPage": {
-                        "minArgs": 0,
-                        "maxArgs": 0
-                    },
-                    "requestUpdateCheck": {
-                        "minArgs": 0,
-                        "maxArgs": 0
-                    },
-                    "sendMessage": {
-                        "minArgs": 1,
-                        "maxArgs": 3
-                    },
-                    "sendNativeMessage": {
-                        "minArgs": 2,
-                        "maxArgs": 2
-                    },
-                    "setUninstallURL": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    }
-                },
-                "sessions": {
-                    "getDevices": {
-                        "minArgs": 0,
-                        "maxArgs": 1
-                    },
-                    "getRecentlyClosed": {
-                        "minArgs": 0,
-                        "maxArgs": 1
-                    },
-                    "restore": {
-                        "minArgs": 0,
-                        "maxArgs": 1
-                    }
-                },
-                "storage": {
-                    "local": {
-                        "clear": {
-                            "minArgs": 0,
-                            "maxArgs": 0
-                        },
-                        "get": {
-                            "minArgs": 0,
-                            "maxArgs": 1
-                        },
-                        "getBytesInUse": {
-                            "minArgs": 0,
-                            "maxArgs": 1
-                        },
-                        "remove": {
-                            "minArgs": 1,
-                            "maxArgs": 1
-                        },
-                        "set": {
-                            "minArgs": 1,
-                            "maxArgs": 1
-                        }
-                    },
-                    "managed": {
-                        "get": {
-                            "minArgs": 0,
-                            "maxArgs": 1
-                        },
-                        "getBytesInUse": {
-                            "minArgs": 0,
-                            "maxArgs": 1
-                        }
-                    },
-                    "sync": {
-                        "clear": {
-                            "minArgs": 0,
-                            "maxArgs": 0
-                        },
-                        "get": {
-                            "minArgs": 0,
-                            "maxArgs": 1
-                        },
-                        "getBytesInUse": {
-                            "minArgs": 0,
-                            "maxArgs": 1
-                        },
-                        "remove": {
-                            "minArgs": 1,
-                            "maxArgs": 1
-                        },
-                        "set": {
-                            "minArgs": 1,
-                            "maxArgs": 1
-                        }
-                    }
-                },
-                "tabs": {
-                    "captureVisibleTab": {
-                        "minArgs": 0,
-                        "maxArgs": 2
-                    },
-                    "create": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "detectLanguage": {
-                        "minArgs": 0,
-                        "maxArgs": 1
-                    },
-                    "discard": {
-                        "minArgs": 0,
-                        "maxArgs": 1
-                    },
-                    "duplicate": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "executeScript": {
-                        "minArgs": 1,
-                        "maxArgs": 2
-                    },
-                    "get": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "getCurrent": {
-                        "minArgs": 0,
-                        "maxArgs": 0
-                    },
-                    "getZoom": {
-                        "minArgs": 0,
-                        "maxArgs": 1
-                    },
-                    "getZoomSettings": {
-                        "minArgs": 0,
-                        "maxArgs": 1
-                    },
-                    "goBack": {
-                        "minArgs": 0,
-                        "maxArgs": 1
-                    },
-                    "goForward": {
-                        "minArgs": 0,
-                        "maxArgs": 1
-                    },
-                    "highlight": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "insertCSS": {
-                        "minArgs": 1,
-                        "maxArgs": 2
-                    },
-                    "move": {
-                        "minArgs": 2,
-                        "maxArgs": 2
-                    },
-                    "query": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "reload": {
-                        "minArgs": 0,
-                        "maxArgs": 2
-                    },
-                    "remove": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "removeCSS": {
-                        "minArgs": 1,
-                        "maxArgs": 2
-                    },
-                    "sendMessage": {
-                        "minArgs": 2,
-                        "maxArgs": 3
-                    },
-                    "setZoom": {
-                        "minArgs": 1,
-                        "maxArgs": 2
-                    },
-                    "setZoomSettings": {
-                        "minArgs": 1,
-                        "maxArgs": 2
-                    },
-                    "update": {
-                        "minArgs": 1,
-                        "maxArgs": 2
-                    }
-                },
-                "topSites": {
-                    "get": {
-                        "minArgs": 0,
-                        "maxArgs": 0
-                    }
-                },
-                "webNavigation": {
-                    "getAllFrames": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "getFrame": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    }
-                },
-                "webRequest": {
-                    "handlerBehaviorChanged": {
-                        "minArgs": 0,
-                        "maxArgs": 0
-                    }
-                },
-                "windows": {
-                    "create": {
-                        "minArgs": 0,
-                        "maxArgs": 1
-                    },
-                    "get": {
-                        "minArgs": 1,
-                        "maxArgs": 2
-                    },
-                    "getAll": {
-                        "minArgs": 0,
-                        "maxArgs": 1
-                    },
-                    "getCurrent": {
-                        "minArgs": 0,
-                        "maxArgs": 1
-                    },
-                    "getLastFocused": {
-                        "minArgs": 0,
-                        "maxArgs": 1
-                    },
-                    "remove": {
-                        "minArgs": 1,
-                        "maxArgs": 1
-                    },
-                    "update": {
-                        "minArgs": 2,
-                        "maxArgs": 2
-                    }
-                }
-            };
-            if (Object.keys(apiMetadata).length === 0) throw new Error("api-metadata.json has not been included in browser-polyfill");
-            /**
-       * A WeakMap subclass which creates and stores a value for any key which does
-       * not exist when accessed, but behaves exactly as an ordinary WeakMap
-       * otherwise.
-       *
-       * @param {function} createItem
-       *        A function which will be called in order to create the value for any
-       *        key which does not exist, the first time it is accessed. The
-       *        function receives, as its only argument, the key being created.
-       */ class DefaultWeakMap extends WeakMap {
-                constructor(createItem, items){
-                    super(items);
-                    this.createItem = createItem;
-                }
-                get(key) {
-                    if (!this.has(key)) this.set(key, this.createItem(key));
-                    return super.get(key);
-                }
+},{"webextension-polyfill":"fTA1T","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fTA1T":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+const browser = {
+    runtime: {
+        getURL (path) {
+            return path;
+        }
+    },
+    storage: {
+        local: {
+            get (_prop) {
+                return Promise.resolve({});
             }
-            /**
-       * Returns true if the given object is an object with a `then` method, and can
-       * therefore be assumed to behave as a Promise.
-       *
-       * @param {*} value The value to test.
-       * @returns {boolean} True if the value is thenable.
-       */ const isThenable = (value)=>{
-                return value && typeof value === "object" && typeof value.then === "function";
-            };
-            /**
-       * Creates and returns a function which, when called, will resolve or reject
-       * the given promise based on how it is called:
-       *
-       * - If, when called, `chrome.runtime.lastError` contains a non-null object,
-       *   the promise is rejected with that value.
-       * - If the function is called with exactly one argument, the promise is
-       *   resolved to that value.
-       * - Otherwise, the promise is resolved to an array containing all of the
-       *   function's arguments.
-       *
-       * @param {object} promise
-       *        An object containing the resolution and rejection functions of a
-       *        promise.
-       * @param {function} promise.resolve
-       *        The promise's resolution function.
-       * @param {function} promise.reject
-       *        The promise's rejection function.
-       * @param {object} metadata
-       *        Metadata about the wrapped method which has created the callback.
-       * @param {boolean} metadata.singleCallbackArg
-       *        Whether or not the promise is resolved with only the first
-       *        argument of the callback, alternatively an array of all the
-       *        callback arguments is resolved. By default, if the callback
-       *        function is invoked with only a single argument, that will be
-       *        resolved to the promise, while all arguments will be resolved as
-       *        an array if multiple are given.
-       *
-       * @returns {function}
-       *        The generated callback function.
-       */ const makeCallback = (promise, metadata)=>{
-                return (...callbackArgs)=>{
-                    if (extensionAPIs.runtime.lastError) promise.reject(new Error(extensionAPIs.runtime.lastError.message));
-                    else if (metadata.singleCallbackArg || callbackArgs.length <= 1 && metadata.singleCallbackArg !== false) promise.resolve(callbackArgs[0]);
-                    else promise.resolve(callbackArgs);
-                };
-            };
-            const pluralizeArguments = (numArgs)=>numArgs == 1 ? "argument" : "arguments";
-            /**
-       * Creates a wrapper function for a method with the given name and metadata.
-       *
-       * @param {string} name
-       *        The name of the method which is being wrapped.
-       * @param {object} metadata
-       *        Metadata about the method being wrapped.
-       * @param {integer} metadata.minArgs
-       *        The minimum number of arguments which must be passed to the
-       *        function. If called with fewer than this number of arguments, the
-       *        wrapper will raise an exception.
-       * @param {integer} metadata.maxArgs
-       *        The maximum number of arguments which may be passed to the
-       *        function. If called with more than this number of arguments, the
-       *        wrapper will raise an exception.
-       * @param {boolean} metadata.singleCallbackArg
-       *        Whether or not the promise is resolved with only the first
-       *        argument of the callback, alternatively an array of all the
-       *        callback arguments is resolved. By default, if the callback
-       *        function is invoked with only a single argument, that will be
-       *        resolved to the promise, while all arguments will be resolved as
-       *        an array if multiple are given.
-       *
-       * @returns {function(object, ...*)}
-       *       The generated wrapper function.
-       */ const wrapAsyncFunction = (name, metadata)=>{
-                return function asyncFunctionWrapper(target, ...args) {
-                    if (args.length < metadata.minArgs) throw new Error(`Expected at least ${metadata.minArgs} ${pluralizeArguments(metadata.minArgs)} for ${name}(), got ${args.length}`);
-                    if (args.length > metadata.maxArgs) throw new Error(`Expected at most ${metadata.maxArgs} ${pluralizeArguments(metadata.maxArgs)} for ${name}(), got ${args.length}`);
-                    return new Promise((resolve, reject)=>{
-                        if (metadata.fallbackToNoCallback) // This API method has currently no callback on Chrome, but it return a promise on Firefox,
-                        // and so the polyfill will try to call it with a callback first, and it will fallback
-                        // to not passing the callback if the first call fails.
-                        try {
-                            target[name](...args, makeCallback({
-                                resolve,
-                                reject
-                            }, metadata));
-                        } catch (cbError) {
-                            console.warn(`${name} API method doesn't seem to support the callback parameter, ` + "falling back to call it without a callback: ", cbError);
-                            target[name](...args); // Update the API method metadata, so that the next API calls will not try to
-                            // use the unsupported callback anymore.
-                            metadata.fallbackToNoCallback = false;
-                            metadata.noCallback = true;
-                            resolve();
-                        }
-                        else if (metadata.noCallback) {
-                            target[name](...args);
-                            resolve();
-                        } else target[name](...args, makeCallback({
-                            resolve,
-                            reject
-                        }, metadata));
-                    });
-                };
-            };
-            /**
-       * Wraps an existing method of the target object, so that calls to it are
-       * intercepted by the given wrapper function. The wrapper function receives,
-       * as its first argument, the original `target` object, followed by each of
-       * the arguments passed to the original method.
-       *
-       * @param {object} target
-       *        The original target object that the wrapped method belongs to.
-       * @param {function} method
-       *        The method being wrapped. This is used as the target of the Proxy
-       *        object which is created to wrap the method.
-       * @param {function} wrapper
-       *        The wrapper function which is called in place of a direct invocation
-       *        of the wrapped method.
-       *
-       * @returns {Proxy<function>}
-       *        A Proxy object for the given method, which invokes the given wrapper
-       *        method in its place.
-       */ const wrapMethod = (target, method, wrapper)=>{
-                return new Proxy(method, {
-                    apply (targetMethod, thisObj, args) {
-                        return wrapper.call(thisObj, target, ...args);
-                    }
-                });
-            };
-            let hasOwnProperty = Function.call.bind(Object.prototype.hasOwnProperty);
-            /**
-       * Wraps an object in a Proxy which intercepts and wraps certain methods
-       * based on the given `wrappers` and `metadata` objects.
-       *
-       * @param {object} target
-       *        The target object to wrap.
-       *
-       * @param {object} [wrappers = {}]
-       *        An object tree containing wrapper functions for special cases. Any
-       *        function present in this object tree is called in place of the
-       *        method in the same location in the `target` object tree. These
-       *        wrapper methods are invoked as described in {@see wrapMethod}.
-       *
-       * @param {object} [metadata = {}]
-       *        An object tree containing metadata used to automatically generate
-       *        Promise-based wrapper functions for asynchronous. Any function in
-       *        the `target` object tree which has a corresponding metadata object
-       *        in the same location in the `metadata` tree is replaced with an
-       *        automatically-generated wrapper function, as described in
-       *        {@see wrapAsyncFunction}
-       *
-       * @returns {Proxy<object>}
-       */ const wrapObject = (target, wrappers = {}, metadata = {})=>{
-                let cache = Object.create(null);
-                let handlers = {
-                    has (proxyTarget, prop) {
-                        return prop in target || prop in cache;
-                    },
-                    get (proxyTarget, prop, receiver) {
-                        if (prop in cache) return cache[prop];
-                        if (!(prop in target)) return undefined;
-                        let value1 = target[prop];
-                        if (typeof value1 === "function") {
-                            // This is a method on the underlying object. Check if we need to do
-                            // any wrapping.
-                            if (typeof wrappers[prop] === "function") // We have a special-case wrapper for this method.
-                            value1 = wrapMethod(target, target[prop], wrappers[prop]);
-                            else if (hasOwnProperty(metadata, prop)) {
-                                // This is an async method that we have metadata for. Create a
-                                // Promise wrapper for it.
-                                let wrapper = wrapAsyncFunction(prop, metadata[prop]);
-                                value1 = wrapMethod(target, target[prop], wrapper);
-                            } else // This is a method that we don't know or care about. Return the
-                            // original method, bound to the underlying object.
-                            value1 = value1.bind(target);
-                        } else if (typeof value1 === "object" && value1 !== null && (hasOwnProperty(wrappers, prop) || hasOwnProperty(metadata, prop))) // This is an object that we need to do some wrapping for the children
-                        // of. Create a sub-object wrapper for it with the appropriate child
-                        // metadata.
-                        value1 = wrapObject(value1, wrappers[prop], metadata[prop]);
-                        else if (hasOwnProperty(metadata, "*")) // Wrap all properties in * namespace.
-                        value1 = wrapObject(value1, wrappers[prop], metadata["*"]);
-                        else {
-                            // We don't need to do any wrapping for this property,
-                            // so just forward all access to the underlying object.
-                            Object.defineProperty(cache, prop, {
-                                configurable: true,
-                                enumerable: true,
-                                get () {
-                                    return target[prop];
-                                },
-                                set (value) {
-                                    target[prop] = value;
-                                }
-                            });
-                            return value1;
-                        }
-                        cache[prop] = value1;
-                        return value1;
-                    },
-                    set (proxyTarget, prop, value, receiver) {
-                        if (prop in cache) cache[prop] = value;
-                        else target[prop] = value;
-                        return true;
-                    },
-                    defineProperty (proxyTarget, prop, desc) {
-                        return Reflect.defineProperty(cache, prop, desc);
-                    },
-                    deleteProperty (proxyTarget, prop) {
-                        return Reflect.deleteProperty(cache, prop);
-                    }
-                }; // Per contract of the Proxy API, the "get" proxy handler must return the
-                // original value of the target if that value is declared read-only and
-                // non-configurable. For this reason, we create an object with the
-                // prototype set to `target` instead of using `target` directly.
-                // Otherwise we cannot return a custom object for APIs that
-                // are declared read-only and non-configurable, such as `chrome.devtools`.
-                //
-                // The proxy handlers themselves will still use the original `target`
-                // instead of the `proxyTarget`, so that the methods and properties are
-                // dereferenced via the original targets.
-                let proxyTarget = Object.create(target);
-                return new Proxy(proxyTarget, handlers);
-            };
-            /**
-       * Creates a set of wrapper functions for an event object, which handles
-       * wrapping of listener functions that those messages are passed.
-       *
-       * A single wrapper is created for each listener function, and stored in a
-       * map. Subsequent calls to `addListener`, `hasListener`, or `removeListener`
-       * retrieve the original wrapper, so that  attempts to remove a
-       * previously-added listener work as expected.
-       *
-       * @param {DefaultWeakMap<function, function>} wrapperMap
-       *        A DefaultWeakMap object which will create the appropriate wrapper
-       *        for a given listener function when one does not exist, and retrieve
-       *        an existing one when it does.
-       *
-       * @returns {object}
-       */ const wrapEvent = (wrapperMap)=>({
-                    addListener (target, listener, ...args) {
-                        target.addListener(wrapperMap.get(listener), ...args);
-                    },
-                    hasListener (target, listener) {
-                        return target.hasListener(wrapperMap.get(listener));
-                    },
-                    removeListener (target, listener) {
-                        target.removeListener(wrapperMap.get(listener));
-                    }
-                });
-            const onRequestFinishedWrappers = new DefaultWeakMap((listener)=>{
-                if (typeof listener !== "function") return listener;
-                /**
-         * Wraps an onRequestFinished listener function so that it will return a
-         * `getContent()` property which returns a `Promise` rather than using a
-         * callback API.
-         *
-         * @param {object} req
-         *        The HAR entry object representing the network request.
-         */ return function onRequestFinished(req) {
-                    const wrappedReq = wrapObject(req, {}, {
-                        getContent: {
-                            minArgs: 0,
-                            maxArgs: 0
-                        }
-                    });
-                    listener(wrappedReq);
-                };
-            }); // Keep track if the deprecation warning has been logged at least once.
-            let loggedSendResponseDeprecationWarning = false;
-            const onMessageWrappers = new DefaultWeakMap((listener)=>{
-                if (typeof listener !== "function") return listener;
-                /**
-         * Wraps a message listener function so that it may send responses based on
-         * its return value, rather than by returning a sentinel value and calling a
-         * callback. If the listener function returns a Promise, the response is
-         * sent when the promise either resolves or rejects.
-         *
-         * @param {*} message
-         *        The message sent by the other end of the channel.
-         * @param {object} sender
-         *        Details about the sender of the message.
-         * @param {function(*)} sendResponse
-         *        A callback which, when called with an arbitrary argument, sends
-         *        that value as a response.
-         * @returns {boolean}
-         *        True if the wrapped listener returned a Promise, which will later
-         *        yield a response. False otherwise.
-         */ return function onMessage(message1, sender, sendResponse) {
-                    let didCallSendResponse = false;
-                    let wrappedSendResponse;
-                    let sendResponsePromise = new Promise((resolve)=>{
-                        wrappedSendResponse = function(response) {
-                            if (!loggedSendResponseDeprecationWarning) {
-                                console.warn(SEND_RESPONSE_DEPRECATION_WARNING, new Error().stack);
-                                loggedSendResponseDeprecationWarning = true;
-                            }
-                            didCallSendResponse = true;
-                            resolve(response);
-                        };
-                    });
-                    let result;
-                    try {
-                        result = listener(message1, sender, wrappedSendResponse);
-                    } catch (err1) {
-                        result = Promise.reject(err1);
-                    }
-                    const isResultThenable = result !== true && isThenable(result); // If the listener didn't returned true or a Promise, or called
-                    // wrappedSendResponse synchronously, we can exit earlier
-                    // because there will be no response sent from this listener.
-                    if (result !== true && !isResultThenable && !didCallSendResponse) return false;
-                     // A small helper to send the message if the promise resolves
-                    // and an error if the promise rejects (a wrapped sendMessage has
-                    // to translate the message into a resolved promise or a rejected
-                    // promise).
-                    const sendPromisedResult = (promise)=>{
-                        promise.then((msg)=>{
-                            // send the message value.
-                            sendResponse(msg);
-                        }, (error)=>{
-                            // Send a JSON representation of the error if the rejected value
-                            // is an instance of error, or the object itself otherwise.
-                            let message;
-                            if (error && (error instanceof Error || typeof error.message === "string")) message = error.message;
-                            else message = "An unexpected error occurred";
-                            sendResponse({
-                                __mozWebExtensionPolyfillReject__: true,
-                                message
-                            });
-                        }).catch((err)=>{
-                            // Print an error on the console if unable to send the response.
-                            console.error("Failed to send onMessage rejected reply", err);
-                        });
-                    }; // If the listener returned a Promise, send the resolved value as a
-                    // result, otherwise wait the promise related to the wrappedSendResponse
-                    // callback to resolve and send it as a response.
-                    if (isResultThenable) sendPromisedResult(result);
-                    else sendPromisedResult(sendResponsePromise);
-                     // Let Chrome know that the listener is replying.
-                    return true;
-                };
-            });
-            const wrappedSendMessageCallback = ({ reject , resolve  }, reply)=>{
-                if (extensionAPIs.runtime.lastError) {
-                    // Detect when none of the listeners replied to the sendMessage call and resolve
-                    // the promise to undefined as in Firefox.
-                    // See https://github.com/mozilla/webextension-polyfill/issues/130
-                    if (extensionAPIs.runtime.lastError.message === CHROME_SEND_MESSAGE_CALLBACK_NO_RESPONSE_MESSAGE) resolve();
-                    else reject(new Error(extensionAPIs.runtime.lastError.message));
-                } else if (reply && reply.__mozWebExtensionPolyfillReject__) // Convert back the JSON representation of the error into
-                // an Error instance.
-                reject(new Error(reply.message));
-                else resolve(reply);
-            };
-            const wrappedSendMessage = (name, metadata, apiNamespaceObj, ...args)=>{
-                if (args.length < metadata.minArgs) throw new Error(`Expected at least ${metadata.minArgs} ${pluralizeArguments(metadata.minArgs)} for ${name}(), got ${args.length}`);
-                if (args.length > metadata.maxArgs) throw new Error(`Expected at most ${metadata.maxArgs} ${pluralizeArguments(metadata.maxArgs)} for ${name}(), got ${args.length}`);
-                return new Promise((resolve, reject)=>{
-                    const wrappedCb = wrappedSendMessageCallback.bind(null, {
-                        resolve,
-                        reject
-                    });
-                    args.push(wrappedCb);
-                    apiNamespaceObj.sendMessage(...args);
-                });
-            };
-            const staticWrappers = {
-                devtools: {
-                    network: {
-                        onRequestFinished: wrapEvent(onRequestFinishedWrappers)
-                    }
-                },
-                runtime: {
-                    onMessage: wrapEvent(onMessageWrappers),
-                    onMessageExternal: wrapEvent(onMessageWrappers),
-                    sendMessage: wrappedSendMessage.bind(null, "sendMessage", {
-                        minArgs: 1,
-                        maxArgs: 3
-                    })
-                },
-                tabs: {
-                    sendMessage: wrappedSendMessage.bind(null, "sendMessage", {
-                        minArgs: 2,
-                        maxArgs: 3
-                    })
-                }
-            };
-            const settingMetadata = {
-                clear: {
-                    minArgs: 1,
-                    maxArgs: 1
-                },
-                get: {
-                    minArgs: 1,
-                    maxArgs: 1
-                },
-                set: {
-                    minArgs: 1,
-                    maxArgs: 1
-                }
-            };
-            apiMetadata.privacy = {
-                network: {
-                    "*": settingMetadata
-                },
-                services: {
-                    "*": settingMetadata
-                },
-                websites: {
-                    "*": settingMetadata
-                }
-            };
-            return wrapObject(extensionAPIs, staticWrappers, apiMetadata);
-        }; // The build process adds a UMD wrapper around this file, which makes the
-        // `module` variable available.
-        module.exports = wrapAPIs(chrome);
-    } else module.exports = globalThis.browser;
-});
+        },
+        onChanged: {
+            addListener (listener) {
+                console.log("added listener", listener);
+            }
+        }
+    }
+};
+exports.default = browser;
 
-},{}],"9SL0C":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9SL0C":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "dataToModel", ()=>dataToModel);
@@ -47690,7 +46697,6 @@ class WildcardRunningEvent extends RunningEvent {
 }
 class BaseContract {
     constructor(addressOrName, contractInterface, signerOrProvider){
-        logger.checkNew(new.target, Contract);
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
         //address = getAddress(address);
         (0, _properties.defineReadOnly)(this, "interface", (0, _properties.getStatic)(new.target, "getInterface")(contractInterface));
@@ -48865,7 +47871,6 @@ function isBigNumberish(value) {
 let _warnedToStringRadix = false;
 class BigNumber {
     constructor(constructorGuard, hex){
-        logger.checkNew(new.target, BigNumber);
         if (constructorGuard !== _constructorGuard) logger.throwError("cannot call constructor directly; use BigNumber.from", (0, _logger.Logger).errors.UNSUPPORTED_OPERATION, {
             operation: "new (BigNumber)"
         });
@@ -49215,14 +48220,15 @@ function _base16To36(value) {
                 j++;
             }
         }
-        return this.strip();
+        return this._strip();
     };
     function parseHex4Bits(string, index) {
         var c = string.charCodeAt(index);
-        // 'A' - 'F'
-        if (c >= 65 && c <= 70) return c - 55;
+        // '0' - '9'
+        if (c >= 48 && c <= 57) return c - 48;
+        else if (c >= 65 && c <= 70) return c - 55;
         else if (c >= 97 && c <= 102) return c - 87;
-        else return c - 48 & 0xf;
+        else assert(false, "Invalid character in " + string);
     }
     function parseHexByte(string, lowerBound, index) {
         var r = parseHex4Bits(string, index);
@@ -49259,18 +48265,21 @@ function _base16To36(value) {
                 } else off += 8;
             }
         }
-        this.strip();
+        this._strip();
     };
     function parseBase(str, start, end, mul) {
         var r = 0;
+        var b = 0;
         var len = Math.min(str.length, end);
         for(var i = start; i < len; i++){
             var c = str.charCodeAt(i) - 48;
             r *= mul;
             // 'a'
-            if (c >= 49) r += c - 49 + 0xa;
-            else if (c >= 17) r += c - 17 + 0xa;
-            else r += c;
+            if (c >= 49) b = c - 49 + 0xa;
+            else if (c >= 17) b = c - 17 + 0xa;
+            else b = c;
+            assert(c >= 0 && b < mul, "Invalid character");
+            r += b;
         }
         return r;
     }
@@ -49302,7 +48311,7 @@ function _base16To36(value) {
             if (this.words[0] + word < 0x4000000) this.words[0] += word;
             else this._iaddn(word);
         }
-        this.strip();
+        this._strip();
     };
     BN.prototype.copy = function copy(dest) {
         dest.words = new Array(this.length);
@@ -49310,6 +48319,15 @@ function _base16To36(value) {
         dest.length = this.length;
         dest.negative = this.negative;
         dest.red = this.red;
+    };
+    function move(dest, src) {
+        dest.words = src.words;
+        dest.length = src.length;
+        dest.negative = src.negative;
+        dest.red = src.red;
+    }
+    BN.prototype._move = function _move(dest) {
+        move(dest, this);
     };
     BN.prototype.clone = function clone() {
         var r = new BN(null);
@@ -49321,7 +48339,7 @@ function _base16To36(value) {
         return this;
     };
     // Remove leading `0` from `this`
-    BN.prototype.strip = function strip() {
+    BN.prototype._strip = function strip() {
         while(this.length > 1 && this.words[this.length - 1] === 0)this.length--;
         return this._normSign();
     };
@@ -49330,9 +48348,17 @@ function _base16To36(value) {
         if (this.length === 1 && this.words[0] === 0) this.negative = 0;
         return this;
     };
-    BN.prototype.inspect = function inspect() {
+    // Check Symbol.for because not everywhere where Symbol defined
+    // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol#Browser_compatibility
+    if (typeof Symbol !== "undefined" && typeof Symbol.for === "function") try {
+        BN.prototype[Symbol.for("nodejs.util.inspect.custom")] = inspect;
+    } catch (e1) {
+        BN.prototype.inspect = inspect;
+    }
+    else BN.prototype.inspect = inspect;
+    function inspect() {
         return (this.red ? "<BN-R: " : "<BN: ") + this.toString(16) + ">";
-    };
+    }
     /*
 
   var zeros = [];
@@ -49479,13 +48505,13 @@ function _base16To36(value) {
                 var w = this.words[i];
                 var word = ((w << off | carry) & 0xffffff).toString(16);
                 carry = w >>> 24 - off & 0xffffff;
-                if (carry !== 0 || i !== this.length - 1) out = zeros[6 - word.length] + word + out;
-                else out = word + out;
                 off += 2;
                 if (off >= 26) {
                     off -= 26;
                     i--;
                 }
+                if (carry !== 0 || i !== this.length - 1) out = zeros[6 - word.length] + word + out;
+                else out = word + out;
             }
             if (carry !== 0) out = carry.toString(16) + out;
             while(out.length % padding !== 0)out = "0" + out;
@@ -49501,7 +48527,7 @@ function _base16To36(value) {
             var c = this.clone();
             c.negative = 0;
             while(!c.isZero()){
-                var r = c.modn(groupBase).toString(base);
+                var r = c.modrn(groupBase).toString(base);
                 c = c.idivn(groupBase);
                 if (!c.isZero()) out = zeros[groupSize - r.length] + r + out;
                 else out = r + out;
@@ -49522,42 +48548,72 @@ function _base16To36(value) {
         return this.negative !== 0 ? -ret : ret;
     };
     BN.prototype.toJSON = function toJSON() {
-        return this.toString(16);
+        return this.toString(16, 2);
     };
-    BN.prototype.toBuffer = function toBuffer(endian, length) {
-        assert(typeof Buffer !== "undefined");
+    if (Buffer) BN.prototype.toBuffer = function toBuffer(endian, length) {
         return this.toArrayLike(Buffer, endian, length);
     };
     BN.prototype.toArray = function toArray(endian, length) {
         return this.toArrayLike(Array, endian, length);
     };
+    var allocate = function allocate(ArrayType, size) {
+        if (ArrayType.allocUnsafe) return ArrayType.allocUnsafe(size);
+        return new ArrayType(size);
+    };
     BN.prototype.toArrayLike = function toArrayLike(ArrayType, endian, length) {
+        this._strip();
         var byteLength = this.byteLength();
         var reqLength = length || Math.max(1, byteLength);
         assert(byteLength <= reqLength, "byte array longer than desired length");
         assert(reqLength > 0, "Requested array length <= 0");
-        this.strip();
-        var littleEndian = endian === "le";
-        var res = new ArrayType(reqLength);
-        var b, i;
-        var q = this.clone();
-        if (!littleEndian) {
-            // Assume big-endian
-            for(i = 0; i < reqLength - byteLength; i++)res[i] = 0;
-            for(i = 0; !q.isZero(); i++){
-                b = q.andln(0xff);
-                q.iushrn(8);
-                res[reqLength - i - 1] = b;
-            }
-        } else {
-            for(i = 0; !q.isZero(); i++){
-                b = q.andln(0xff);
-                q.iushrn(8);
-                res[i] = b;
-            }
-            for(; i < reqLength; i++)res[i] = 0;
-        }
+        var res = allocate(ArrayType, reqLength);
+        var postfix = endian === "le" ? "LE" : "BE";
+        this["_toArrayLike" + postfix](res, byteLength);
         return res;
+    };
+    BN.prototype._toArrayLikeLE = function _toArrayLikeLE(res, byteLength) {
+        var position = 0;
+        var carry = 0;
+        for(var i = 0, shift = 0; i < this.length; i++){
+            var word = this.words[i] << shift | carry;
+            res[position++] = word & 0xff;
+            if (position < res.length) res[position++] = word >> 8 & 0xff;
+            if (position < res.length) res[position++] = word >> 16 & 0xff;
+            if (shift === 6) {
+                if (position < res.length) res[position++] = word >> 24 & 0xff;
+                carry = 0;
+                shift = 0;
+            } else {
+                carry = word >>> 24;
+                shift += 2;
+            }
+        }
+        if (position < res.length) {
+            res[position++] = carry;
+            while(position < res.length)res[position++] = 0;
+        }
+    };
+    BN.prototype._toArrayLikeBE = function _toArrayLikeBE(res, byteLength) {
+        var position = res.length - 1;
+        var carry = 0;
+        for(var i = 0, shift = 0; i < this.length; i++){
+            var word = this.words[i] << shift | carry;
+            res[position--] = word & 0xff;
+            if (position >= 0) res[position--] = word >> 8 & 0xff;
+            if (position >= 0) res[position--] = word >> 16 & 0xff;
+            if (shift === 6) {
+                if (position >= 0) res[position--] = word >> 24 & 0xff;
+                carry = 0;
+                shift = 0;
+            } else {
+                carry = word >>> 24;
+                shift += 2;
+            }
+        }
+        if (position >= 0) {
+            res[position--] = carry;
+            while(position >= 0)res[position--] = 0;
+        }
     };
     if (Math.clz32) BN.prototype._countBits = function _countBits(w) {
         return 32 - Math.clz32(w);
@@ -49618,7 +48674,7 @@ function _base16To36(value) {
         for(var bit = 0; bit < w.length; bit++){
             var off = bit / 26 | 0;
             var wbit = bit % 26;
-            w[bit] = (num.words[off] & 1 << wbit) >>> wbit;
+            w[bit] = num.words[off] >>> wbit & 0x01;
         }
         return w;
     }
@@ -49659,7 +48715,7 @@ function _base16To36(value) {
     BN.prototype.iuor = function iuor(num) {
         while(this.length < num.length)this.words[this.length++] = 0;
         for(var i = 0; i < num.length; i++)this.words[i] = this.words[i] | num.words[i];
-        return this.strip();
+        return this._strip();
     };
     BN.prototype.ior = function ior(num) {
         assert((this.negative | num.negative) === 0);
@@ -49682,7 +48738,7 @@ function _base16To36(value) {
         else b = this;
         for(var i = 0; i < b.length; i++)this.words[i] = this.words[i] & num.words[i];
         this.length = b.length;
-        return this.strip();
+        return this._strip();
     };
     BN.prototype.iand = function iand(num) {
         assert((this.negative | num.negative) === 0);
@@ -49712,7 +48768,7 @@ function _base16To36(value) {
         for(var i = 0; i < b.length; i++)this.words[i] = a.words[i] ^ b.words[i];
         if (this !== a) for(; i < a.length; i++)this.words[i] = a.words[i];
         this.length = a.length;
-        return this.strip();
+        return this._strip();
     };
     BN.prototype.ixor = function ixor(num) {
         assert((this.negative | num.negative) === 0);
@@ -49740,7 +48796,7 @@ function _base16To36(value) {
         // Handle the residue
         if (bitsLeft > 0) this.words[i] = ~this.words[i] & 0x3ffffff >> 26 - bitsLeft;
         // And remove leading zeroes
-        return this.strip();
+        return this._strip();
     };
     BN.prototype.notn = function notn(width) {
         return this.clone().inotn(width);
@@ -49753,7 +48809,7 @@ function _base16To36(value) {
         this._expand(off + 1);
         if (val) this.words[off] = this.words[off] | 1 << wbit;
         else this.words[off] = this.words[off] & ~(1 << wbit);
-        return this.strip();
+        return this._strip();
     };
     // Add `num` to `this` in-place
     BN.prototype.iadd = function iadd(num) {
@@ -49864,7 +48920,7 @@ function _base16To36(value) {
         if (carry === 0 && i < a.length && a !== this) for(; i < a.length; i++)this.words[i] = a.words[i];
         this.length = Math.max(this.length, i);
         if (a !== this) this.negative = 1;
-        return this.strip();
+        return this._strip();
     };
     // Subtract `num` from `this`
     BN.prototype.sub = function sub(num) {
@@ -49901,7 +48957,7 @@ function _base16To36(value) {
         }
         if (carry !== 0) out.words[k] = carry | 0;
         else out.length--;
-        return out.strip();
+        return out._strip();
     }
     // TODO(indutny): it may be reasonable to omit it for users who don't need
     // to work with 256-bit numbers, otherwise it gives 20% improvement for 256-bit
@@ -50491,11 +49547,13 @@ function _base16To36(value) {
         }
         if (carry !== 0) out.words[k] = carry;
         else out.length--;
-        return out.strip();
+        return out._strip();
     }
     function jumboMulTo(self, num, out) {
-        var fftm = new FFTM();
-        return fftm.mulp(self, num, out);
+        // Temporary disable, see https://github.com/indutny/bn.js/issues/211
+        // var fftm = new FFTM();
+        // return fftm.mulp(self, num, out);
+        return bigMulTo(self, num, out);
     }
     BN.prototype.mulTo = function mulTo(num, out) {
         var res;
@@ -50640,7 +49698,7 @@ function _base16To36(value) {
         this.normalize13b(rmws, N);
         out.negative = x.negative ^ y.negative;
         out.length = x.length + y.length;
-        return out.strip();
+        return out._strip();
     };
     // Multiply `this` by `num`
     BN.prototype.mul = function mul(num) {
@@ -50659,6 +49717,8 @@ function _base16To36(value) {
         return this.clone().mulTo(num, this);
     };
     BN.prototype.imuln = function imuln(num) {
+        var isNegNum = num < 0;
+        if (isNegNum) num = -num;
         assert(typeof num === "number");
         assert(num < 0x4000000);
         // Carry
@@ -50676,7 +49736,7 @@ function _base16To36(value) {
             this.words[i] = carry;
             this.length++;
         }
-        return this;
+        return isNegNum ? this.ineg() : this;
     };
     BN.prototype.muln = function muln(num) {
         return this.clone().imuln(num);
@@ -50729,7 +49789,7 @@ function _base16To36(value) {
             for(i = 0; i < s; i++)this.words[i] = 0;
             this.length += s;
         }
-        return this.strip();
+        return this._strip();
     };
     BN.prototype.ishln = function ishln(bits) {
         // TODO(indutny): implement me
@@ -50775,7 +49835,7 @@ function _base16To36(value) {
             this.words[0] = 0;
             this.length = 1;
         }
-        return this.strip();
+        return this._strip();
     };
     BN.prototype.ishrn = function ishrn(bits, hint, extended) {
         // TODO(indutny): implement me
@@ -50821,7 +49881,7 @@ function _base16To36(value) {
             var mask = 0x3ffffff ^ 0x3ffffff >>> r << r;
             this.words[this.length - 1] &= mask;
         }
-        return this.strip();
+        return this._strip();
     };
     // Return only lowers bits of number
     BN.prototype.maskn = function maskn(bits) {
@@ -50834,7 +49894,7 @@ function _base16To36(value) {
         if (num < 0) return this.isubn(-num);
         // Possible sign change
         if (this.negative !== 0) {
-            if (this.length === 1 && (this.words[0] | 0) < num) {
+            if (this.length === 1 && (this.words[0] | 0) <= num) {
                 this.words[0] = num - (this.words[0] | 0);
                 this.negative = 0;
                 return this;
@@ -50878,7 +49938,7 @@ function _base16To36(value) {
             this.words[i] += 0x4000000;
             this.words[i + 1] -= 1;
         }
-        return this.strip();
+        return this._strip();
     };
     BN.prototype.addn = function addn(num) {
         return this.clone().iaddn(num);
@@ -50911,7 +49971,7 @@ function _base16To36(value) {
             carry = w >> 26;
             this.words[i + shift] = w & 0x3ffffff;
         }
-        if (carry === 0) return this.strip();
+        if (carry === 0) return this._strip();
         // Subtraction overflow
         assert(carry === -1);
         carry = 0;
@@ -50921,7 +49981,7 @@ function _base16To36(value) {
             this.words[i] = w & 0x3ffffff;
         }
         this.negative = 1;
-        return this.strip();
+        return this._strip();
     };
     BN.prototype._wordDiv = function _wordDiv(num, mode) {
         var shift = this.length - num.length;
@@ -50964,8 +50024,8 @@ function _base16To36(value) {
             }
             if (q) q.words[j] = qj;
         }
-        if (q) q.strip();
-        a.strip();
+        if (q) q._strip();
+        a._strip();
         // Denormalize
         if (mode !== "div" && shift !== 0) a.iushrn(shift);
         return {
@@ -51029,11 +50089,11 @@ function _base16To36(value) {
             };
             if (mode === "mod") return {
                 div: null,
-                mod: new BN(this.modn(num.words[0]))
+                mod: new BN(this.modrn(num.words[0]))
             };
             return {
                 div: this.divn(num.words[0]),
-                mod: new BN(this.modn(num.words[0]))
+                mod: new BN(this.modrn(num.words[0]))
             };
         }
         return this._wordDiv(num, mode);
@@ -51063,15 +50123,23 @@ function _base16To36(value) {
         // Round up
         return dm.div.negative !== 0 ? dm.div.isubn(1) : dm.div.iaddn(1);
     };
-    BN.prototype.modn = function modn(num) {
+    BN.prototype.modrn = function modrn(num) {
+        var isNegNum = num < 0;
+        if (isNegNum) num = -num;
         assert(num <= 0x3ffffff);
         var p = 67108864 % num;
         var acc = 0;
         for(var i = this.length - 1; i >= 0; i--)acc = (p * acc + (this.words[i] | 0)) % num;
-        return acc;
+        return isNegNum ? -acc : acc;
+    };
+    // WARNING: DEPRECATED
+    BN.prototype.modn = function modn(num) {
+        return this.modrn(num);
     };
     // In-place division by number
     BN.prototype.idivn = function idivn(num) {
+        var isNegNum = num < 0;
+        if (isNegNum) num = -num;
         assert(num <= 0x3ffffff);
         var carry = 0;
         for(var i = this.length - 1; i >= 0; i--){
@@ -51079,7 +50147,8 @@ function _base16To36(value) {
             this.words[i] = w / num | 0;
             carry = w % num;
         }
-        return this.strip();
+        this._strip();
+        return isNegNum ? this.ineg() : this;
     };
     BN.prototype.divn = function divn(num) {
         return this.clone().idivn(num);
@@ -51264,7 +50333,7 @@ function _base16To36(value) {
         var negative = num < 0;
         if (this.negative !== 0 && !negative) return -1;
         if (this.negative === 0 && negative) return 1;
-        this.strip();
+        this._strip();
         var res;
         if (this.length > 1) res = 1;
         else {
@@ -51456,9 +50525,9 @@ function _base16To36(value) {
             r.words[0] = 0;
             r.length = 1;
         } else if (cmp > 0) r.isub(this.p);
-        else if (r.strip !== undefined) // r is BN v4 instance
+        else if (r.strip !== undefined) // r is a BN v4 instance
         r.strip();
-        else // r is BN v5 instance
+        else // r is a BN v5 instance
         r._strip();
         return r;
     };
@@ -51579,7 +50648,8 @@ function _base16To36(value) {
     };
     Red.prototype.imod = function imod(a) {
         if (this.prime) return this.prime.ireduce(a)._forceRed(this);
-        return a.umod(this.m)._forceRed(this);
+        move(a, a.umod(this.m)._forceRed(this));
+        return a;
     };
     Red.prototype.neg = function neg(a) {
         if (a.isZero()) return a.clone();
@@ -52197,6 +51267,11 @@ var ErrorCode;
     //   - replacement: the full TransactionsResponse for the replacement
     //   - receipt: the receipt of the replacement
     ErrorCode1["TRANSACTION_REPLACED"] = "TRANSACTION_REPLACED";
+    ///////////////////
+    // Interaction Errors
+    // The user rejected the action, such as signing a message or sending
+    // a transaction
+    ErrorCode1["ACTION_REJECTED"] = "ACTION_REJECTED";
 })(ErrorCode || (ErrorCode = {}));
 const HEX = "0123456789abcdef";
 class Logger {
@@ -52389,19 +51464,19 @@ Logger.levels = LogLevel;
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "logger/5.6.0";
+const version = "logger/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4BMks":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "bytes/5.6.1";
+const version = "bytes/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gN5k0":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "bignumber/5.6.0";
+const version = "bignumber/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4kqiW":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -52528,7 +51603,6 @@ class FixedFormat {
 }
 class FixedNumber {
     constructor(constructorGuard, hex, value, format){
-        logger.checkNew(new.target, FixedNumber);
         if (constructorGuard !== _constructorGuard) logger.throwError("cannot use FixedNumber constructor; use FixedNumber.from", (0, _logger.Logger).errors.UNSUPPORTED_OPERATION, {
             operation: "new FixedFormat"
         });
@@ -52806,13 +51880,13 @@ class Description {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "properties/5.6.0";
+const version = "properties/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9uxOS":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "abi/5.6.1";
+const version = "abi/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4pw2B":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -52841,7 +51915,6 @@ const paramTypeBytes = new RegExp(/^bytes([0-9]*)$/);
 const paramTypeNumber = new RegExp(/^(u?int)([0-9]*)$/);
 class AbiCoder {
     constructor(coerceFunc){
-        logger.checkNew(new.target, AbiCoder);
         (0, _properties.defineReadOnly)(this, "coerceFunc", coerceFunc || null);
     }
     _getCoder(param) {
@@ -53224,8 +52297,8 @@ function keccak256(data) {
 }
 
 },{"js-sha3":"7x0z6","@ethersproject/bytes":"htrqZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7x0z6":[function(require,module,exports) {
-var process = require("process");
 var global = arguments[3];
+var process = require("process");
 /**
  * [js-sha3]{@link https://github.com/emn178/js-sha3}
  *
@@ -53986,13 +53059,13 @@ function decode(data) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "rlp/5.6.0";
+const version = "rlp/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jWoM7":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "address/5.6.0";
+const version = "address/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"doYUW":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -54698,7 +53771,7 @@ function toUtf8CodePoints(str, form = UnicodeNormalizationForm.current) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "strings/5.6.0";
+const version = "strings/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9qcL7":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -55112,8 +54185,6 @@ function nameprep(value) {
     let name = (0, _utf8._toUtf8String)(codes);
     // IDNA: 4.2.3.1
     if (name.substring(0, 1) === "-" || name.substring(2, 4) === "--" || name.substring(name.length - 1) === "-") throw new Error("invalid hyphen");
-    // IDNA: 4.2.4
-    if (name.length > 63) throw new Error("too long");
     return name;
 }
 
@@ -55237,7 +54308,6 @@ function wrapAccessError(property, error) {
 }
 class Interface {
     constructor(fragments){
-        logger.checkNew(new.target, Interface);
         let abi = [];
         if (typeof fragments === "string") abi = JSON.parse(fragments);
         else abi = fragments;
@@ -55493,6 +54563,8 @@ class Interface {
         const encodeTopic = (param, value)=>{
             if (param.type === "string") return (0, _hash.id)(value);
             else if (param.type === "bytes") return (0, _keccak256.keccak256)((0, _bytes.hexlify)(value));
+            if (param.type === "bool" && typeof value === "boolean") value = value ? "0x01" : "0x00";
+            if (param.type.match(/^u?int/)) value = (0, _bignumber.BigNumber).from(value).toHexString();
             // Check addresses are valid
             if (param.type === "address") this._abiCoder.encode([
                 "address"
@@ -55692,6 +54764,7 @@ parcelHelpers.export(exports, "id", ()=>(0, _id.id));
 parcelHelpers.export(exports, "dnsEncode", ()=>(0, _namehash.dnsEncode));
 parcelHelpers.export(exports, "namehash", ()=>(0, _namehash.namehash));
 parcelHelpers.export(exports, "isValidName", ()=>(0, _namehash.isValidName));
+parcelHelpers.export(exports, "ensNormalize", ()=>(0, _namehash.ensNormalize));
 parcelHelpers.export(exports, "messagePrefix", ()=>(0, _message.messagePrefix));
 parcelHelpers.export(exports, "hashMessage", ()=>(0, _message.hashMessage));
 parcelHelpers.export(exports, "_TypedDataEncoder", ()=>(0, _typedData.TypedDataEncoder));
@@ -55714,6 +54787,7 @@ function id(text) {
 },{"@ethersproject/keccak256":"hXDEv","@ethersproject/strings":"5TGFZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bSxC5":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "ensNormalize", ()=>ensNormalize);
 parcelHelpers.export(exports, "isValidName", ()=>isValidName);
 parcelHelpers.export(exports, "namehash", ()=>namehash);
 parcelHelpers.export(exports, "dnsEncode", ()=>dnsEncode);
@@ -55722,51 +54796,520 @@ var _strings = require("@ethersproject/strings");
 var _keccak256 = require("@ethersproject/keccak256");
 var _logger = require("@ethersproject/logger");
 var _version = require("./_version");
+var _lib = require("./ens-normalize/lib");
 const logger = new (0, _logger.Logger)((0, _version.version));
 const Zeros = new Uint8Array(32);
 Zeros.fill(0);
-const Partition = new RegExp("^((.*)\\.)?([^.]+)$");
+function checkComponent(comp) {
+    if (comp.length === 0) throw new Error("invalid ENS name; empty component");
+    return comp;
+}
+function ensNameSplit(name) {
+    const bytes = (0, _strings.toUtf8Bytes)((0, _lib.ens_normalize)(name));
+    const comps = [];
+    if (name.length === 0) return comps;
+    let last = 0;
+    for(let i = 0; i < bytes.length; i++){
+        const d = bytes[i];
+        // A separator (i.e. "."); copy this component
+        if (d === 0x2e) {
+            comps.push(checkComponent(bytes.slice(last, i)));
+            last = i + 1;
+        }
+    }
+    // There was a stray separator at the end of the name
+    if (last >= bytes.length) throw new Error("invalid ENS name; empty component");
+    comps.push(checkComponent(bytes.slice(last)));
+    return comps;
+}
+function ensNormalize(name) {
+    return ensNameSplit(name).map((comp)=>(0, _strings.toUtf8String)(comp)).join(".");
+}
 function isValidName(name) {
     try {
-        const comps = name.split(".");
-        for(let i = 0; i < comps.length; i++){
-            if ((0, _strings.nameprep)(comps[i]).length === 0) throw new Error("empty");
-        }
-        return true;
+        return ensNameSplit(name).length !== 0;
     } catch (error) {}
     return false;
 }
 function namehash(name) {
     /* istanbul ignore if */ if (typeof name !== "string") logger.throwArgumentError("invalid ENS name; not a string", "name", name);
-    let current = name;
     let result = Zeros;
-    while(current.length){
-        const partition = current.match(Partition);
-        if (partition == null || partition[2] === "") logger.throwArgumentError("invalid ENS address; missing component", "name", name);
-        const label = (0, _strings.toUtf8Bytes)((0, _strings.nameprep)(partition[3]));
-        result = (0, _keccak256.keccak256)((0, _bytes.concat)([
-            result,
-            (0, _keccak256.keccak256)(label)
-        ]));
-        current = partition[2] || "";
-    }
+    const comps = ensNameSplit(name);
+    while(comps.length)result = (0, _keccak256.keccak256)((0, _bytes.concat)([
+        result,
+        (0, _keccak256.keccak256)(comps.pop())
+    ]));
     return (0, _bytes.hexlify)(result);
 }
 function dnsEncode(name) {
-    return (0, _bytes.hexlify)((0, _bytes.concat)(name.split(".").map((comp)=>{
-        // We jam in an _ prefix to fill in with the length later
-        // Note: Nameprep throws if the component is over 63 bytes
-        const bytes = (0, _strings.toUtf8Bytes)("_" + (0, _strings.nameprep)(comp));
+    return (0, _bytes.hexlify)((0, _bytes.concat)(ensNameSplit(name).map((comp)=>{
+        // DNS does not allow components over 63 bytes in length
+        if (comp.length > 63) throw new Error("invalid DNS encoded entry; length exceeds 63 bytes");
+        const bytes = new Uint8Array(comp.length + 1);
+        bytes.set(comp, 1);
         bytes[0] = bytes.length - 1;
         return bytes;
     }))) + "00";
 }
 
-},{"@ethersproject/bytes":"htrqZ","@ethersproject/strings":"5TGFZ","@ethersproject/keccak256":"hXDEv","@ethersproject/logger":"hLvB2","./_version":"kUuZu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kUuZu":[function(require,module,exports) {
+},{"@ethersproject/bytes":"htrqZ","@ethersproject/strings":"5TGFZ","@ethersproject/keccak256":"hXDEv","@ethersproject/logger":"hLvB2","./_version":"kUuZu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./ens-normalize/lib":"f04Ft"}],"kUuZu":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "hash/5.6.0";
+const version = "hash/5.7.0";
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"f04Ft":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "ens_normalize_post_check", ()=>ens_normalize_post_check);
+parcelHelpers.export(exports, "ens_normalize", ()=>ens_normalize);
+/**
+ * MIT License
+ *
+ * Copyright (c) 2021 Andrew Raffensperger
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * This is a near carbon-copy of the original source (link below) with the
+ * TypeScript typings added and a few tweaks to make it ES3-compatible.
+ *
+ * See: https://github.com/adraffy/ens-normalize.js
+ */ var _strings = require("@ethersproject/strings");
+var _includeJs = require("./include.js");
+var _decoderJs = require("./decoder.js");
+const r = (0, _includeJs.getData)();
+// @TODO: This should be lazily loaded
+const VALID = new Set((0, _decoderJs.read_member_array)(r));
+const IGNORED = new Set((0, _decoderJs.read_member_array)(r));
+const MAPPED = (0, _decoderJs.read_mapped_map)(r);
+const EMOJI_ROOT = (0, _decoderJs.read_emoji_trie)(r);
+//const NFC_CHECK = new Set(read_member_array(r, Array.from(VALID.values()).sort((a, b) => a - b)));
+//const STOP = 0x2E;
+const HYPHEN = 0x2D;
+const UNDERSCORE = 0x5F;
+function explode_cp(name) {
+    return (0, _strings.toUtf8CodePoints)(name);
+}
+function filter_fe0f(cps) {
+    return cps.filter((cp)=>cp != 0xFE0F);
+}
+function ens_normalize_post_check(name) {
+    for (let label of name.split(".")){
+        let cps = explode_cp(label);
+        try {
+            for(let i = cps.lastIndexOf(UNDERSCORE) - 1; i >= 0; i--){
+                if (cps[i] !== UNDERSCORE) throw new Error(`underscore only allowed at start`);
+            }
+            if (cps.length >= 4 && cps.every((cp)=>cp < 0x80) && cps[2] === HYPHEN && cps[3] === HYPHEN) throw new Error(`invalid label extension`);
+        } catch (err) {
+            throw new Error(`Invalid label "${label}": ${err.message}`);
+        }
+    }
+    return name;
+}
+function ens_normalize(name) {
+    return ens_normalize_post_check(normalize(name, filter_fe0f));
+}
+function normalize(name, emoji_filter) {
+    let input = explode_cp(name).reverse(); // flip for pop
+    let output = [];
+    while(input.length){
+        let emoji = consume_emoji_reversed(input);
+        if (emoji) {
+            output.push(...emoji_filter(emoji));
+            continue;
+        }
+        let cp = input.pop();
+        if (VALID.has(cp)) {
+            output.push(cp);
+            continue;
+        }
+        if (IGNORED.has(cp)) continue;
+        let cps = MAPPED[cp];
+        if (cps) {
+            output.push(...cps);
+            continue;
+        }
+        throw new Error(`Disallowed codepoint: 0x${cp.toString(16).toUpperCase()}`);
+    }
+    return ens_normalize_post_check(nfc(String.fromCodePoint(...output)));
+}
+function nfc(s) {
+    return s.normalize("NFC");
+}
+function consume_emoji_reversed(cps, eaten) {
+    var _a;
+    let node = EMOJI_ROOT;
+    let emoji;
+    let saved;
+    let stack = [];
+    let pos = cps.length;
+    if (eaten) eaten.length = 0; // clear input buffer (if needed)
+    while(pos){
+        let cp = cps[--pos];
+        node = (_a = node.branches.find((x)=>x.set.has(cp))) === null || _a === void 0 ? void 0 : _a.node;
+        if (!node) break;
+        if (node.save) saved = cp;
+        else if (node.check) {
+            if (cp === saved) break;
+        }
+        stack.push(cp);
+        if (node.fe0f) {
+            stack.push(0xFE0F);
+            if (pos > 0 && cps[pos - 1] == 0xFE0F) pos--; // consume optional FE0F
+        }
+        if (node.valid) {
+            emoji = stack.slice(); // copy stack
+            if (node.valid == 2) emoji.splice(1, 1); // delete FE0F at position 1 (RGI ZWJ don't follow spec!)
+            if (eaten) eaten.push(...cps.slice(pos).reverse()); // copy input (if needed)
+            cps.length = pos; // truncate
+        }
+    }
+    return emoji;
+}
+
+},{"@ethersproject/strings":"5TGFZ","./include.js":"fe7hh","./decoder.js":"k3KbO","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fe7hh":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "getData", ()=>getData);
+/**
+ * MIT License
+ *
+ * Copyright (c) 2021 Andrew Raffensperger
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * This is a near carbon-copy of the original source (link below) with the
+ * TypeScript typings added and a few tweaks to make it ES3-compatible.
+ *
+ * See: https://github.com/adraffy/ens-normalize.js
+ */ var _base64 = require("@ethersproject/base64");
+var _decoderJs = require("./decoder.js");
+function getData() {
+    return (0, _decoderJs.read_compressed_payload)((0, _base64.decode)("AEQF2AO2DEsA2wIrAGsBRABxAN8AZwCcAEwAqgA0AGwAUgByADcATAAVAFYAIQAyACEAKAAYAFgAGwAjABQAMAAmADIAFAAfABQAKwATACoADgAbAA8AHQAYABoAGQAxADgALAAoADwAEwA9ABMAGgARAA4ADwAWABMAFgAIAA8AHgQXBYMA5BHJAS8JtAYoAe4AExozi0UAH21tAaMnBT8CrnIyhrMDhRgDygIBUAEHcoFHUPe8AXBjAewCjgDQR8IICIcEcQLwATXCDgzvHwBmBoHNAqsBdBcUAykgDhAMShskMgo8AY8jqAQfAUAfHw8BDw87MioGlCIPBwZCa4ELatMAAMspJVgsDl8AIhckSg8XAHdvTwBcIQEiDT4OPhUqbyECAEoAS34Aej8Ybx83JgT/Xw8gHxZ/7w8RICxPHA9vBw+Pfw8PHwAPFv+fAsAvCc8vEr8ivwD/EQ8Bol8OEBa/A78hrwAPCU8vESNvvwWfHwNfAVoDHr+ZAAED34YaAdJPAK7PLwSEgDLHAGo1Pz8Pvx9fUwMrpb8O/58VTzAPIBoXIyQJNF8hpwIVAT8YGAUADDNBaX3RAMomJCg9EhUeA29MABsZBTMNJipjOhc19gcIDR8bBwQHEggCWi6DIgLuAQYA+BAFCha3A5XiAEsqM7UFFgFLhAMjFTMYE1Klnw74nRVBG/ASCm0BYRN/BrsU3VoWy+S0vV8LQx+vN8gF2AC2AK5EAWwApgYDKmAAroQ0NDQ0AT+OCg7wAAIHRAbpNgVcBV0APTA5BfbPFgMLzcYL/QqqA82eBALKCjQCjqYCht0/k2+OAsXQAoP3ASTKDgDw6ACKAUYCMpIKJpRaAE4A5womABzZvs0REEKiACIQAd5QdAECAj4Ywg/wGqY2AVgAYADYvAoCGAEubA0gvAY2ALAAbpbvqpyEAGAEpgQAJgAG7gAgAEACmghUFwCqAMpAINQIwC4DthRAAPcycKgApoIdABwBfCisABoATwBqASIAvhnSBP8aH/ECeAKXAq40NjgDBTwFYQU6AXs3oABgAD4XNgmcCY1eCl5tIFZeUqGgyoNHABgAEQAaABNwWQAmABMATPMa3T34ADldyprmM1M2XociUQgLzvwAXT3xABgAEQAaABNwIGFAnADD8AAgAD4BBJWzaCcIAIEBFMAWwKoAAdq9BWAF5wLQpALEtQAKUSGkahR4GnJM+gsAwCgeFAiUAECQ0BQuL8AAIAAAADKeIheclvFqQAAETr4iAMxIARMgAMIoHhQIAn0E0pDQFC4HhznoAAAAIAI2C0/4lvFqQAAETgBJJwYCAy4ABgYAFAA8MBKYEH4eRhTkAjYeFcgACAYAeABsOqyQ5gRwDayqugEgaIIAtgoACgDmEABmBAWGme5OBJJA2m4cDeoAmITWAXwrMgOgAGwBCh6CBXYF1Tzg1wKAAFdiuABRAFwAXQBsAG8AdgBrAHYAbwCEAHEwfxQBVE5TEQADVFhTBwBDANILAqcCzgLTApQCrQL6vAAMAL8APLhNBKkE6glGKTAU4Dr4N2EYEwBCkABKk8rHAbYBmwIoAiU4Ajf/Aq4CowCAANIChzgaNBsCsTgeODcFXrgClQKdAqQBiQGYAqsCsjTsNHsfNPA0ixsAWTWiOAMFPDQSNCk2BDZHNow2TTZUNhk28Jk9VzI3QkEoAoICoQKwAqcAQAAxBV4FXbS9BW47YkIXP1ciUqs05DS/FwABUwJW11e6nHuYZmSh/RAYA8oMKvZ8KASoUAJYWAJ6ILAsAZSoqjpgA0ocBIhmDgDWAAawRDQoAAcuAj5iAHABZiR2AIgiHgCaAU68ACxuHAG0ygM8MiZIAlgBdF4GagJqAPZOHAMuBgoATkYAsABiAHgAMLoGDPj0HpKEBAAOJgAuALggTAHWAeAMEDbd20Uege0ADwAWADkAQgA9OHd+2MUQZBBhBgNNDkxxPxUQArEPqwvqERoM1irQ090ANK4H8ANYB/ADWANYB/AH8ANYB/ADWANYA1gDWBwP8B/YxRBkD00EcgWTBZAE2wiIJk4RhgctCNdUEnQjHEwDSgEBIypJITuYMxAlR0wRTQgIATZHbKx9PQNMMbBU+pCnA9AyVDlxBgMedhKlAC8PeCE1uk6DekxxpQpQT7NX9wBFBgASqwAS5gBJDSgAUCwGPQBI4zTYABNGAE2bAE3KAExdGABKaAbgAFBXAFCOAFBJABI2SWdObALDOq0//QomCZhvwHdTBkIQHCemEPgMNAG2ATwN7kvZBPIGPATKH34ZGg/OlZ0Ipi3eDO4m5C6igFsj9iqEBe5L9TzeC05RaQ9aC2YJ5DpkgU8DIgEOIowK3g06CG4Q9ArKbA3mEUYHOgPWSZsApgcCCxIdNhW2JhFirQsKOXgG/Br3C5AmsBMqev0F1BoiBk4BKhsAANAu6IWxWjJcHU9gBgQLJiPIFKlQIQ0mQLh4SRocBxYlqgKSQ3FKiFE3HpQh9zw+DWcuFFF9B/Y8BhlQC4I8n0asRQ8R0z6OPUkiSkwtBDaALDAnjAnQD4YMunxzAVoJIgmyDHITMhEYN8YIOgcaLpclJxYIIkaWYJsE+KAD9BPSAwwFQAlCBxQDthwuEy8VKgUOgSXYAvQ21i60ApBWgQEYBcwPJh/gEFFH4Q7qCJwCZgOEJewALhUiABginAhEZABgj9lTBi7MCMhqbSN1A2gU6GIRdAeSDlgHqBw0FcAc4nDJXgyGCSiksAlcAXYJmgFgBOQICjVcjKEgQmdUi1kYnCBiQUBd/QIyDGYVoES+h3kCjA9sEhwBNgF0BzoNAgJ4Ee4RbBCWCOyGBTW2M/k6JgRQIYQgEgooA1BszwsoJvoM+WoBpBJjAw00PnfvZ6xgtyUX/gcaMsZBYSHyC5NPzgydGsIYQ1QvGeUHwAP0GvQn60FYBgADpAQUOk4z7wS+C2oIjAlAAEoOpBgH2BhrCnKM0QEyjAG4mgNYkoQCcJAGOAcMAGgMiAV65gAeAqgIpAAGANADWAA6Aq4HngAaAIZCAT4DKDABIuYCkAOUCDLMAZYwAfQqBBzEDBYA+DhuSwLDsgKAa2ajBd5ZAo8CSjYBTiYEBk9IUgOwcuIA3ABMBhTgSAEWrEvMG+REAeBwLADIAPwABjYHBkIBzgH0bgC4AWALMgmjtLYBTuoqAIQAFmwB2AKKAN4ANgCA8gFUAE4FWvoF1AJQSgESMhksWGIBvAMgATQBDgB6BsyOpsoIIARuB9QCEBwV4gLvLwe2AgMi4BPOQsYCvd9WADIXUu5eZwqoCqdeaAC0YTQHMnM9UQAPH6k+yAdy/BZIiQImSwBQ5gBQQzSaNTFWSTYBpwGqKQK38AFtqwBI/wK37gK3rQK3sAK6280C0gK33AK3zxAAUEIAUD9SklKDArekArw5AEQAzAHCO147WTteO1k7XjtZO147WTteO1kDmChYI03AVU0oJqkKbV9GYewMpw3VRMk6ShPcYFJgMxPJLbgUwhXPJVcZPhq9JwYl5VUKDwUt1GYxCC00dhe9AEApaYNCY4ceMQpMHOhTklT5LRwAskujM7ANrRsWREEFSHXuYisWDwojAmSCAmJDXE6wXDchAqH4AmiZAmYKAp+FOBwMAmY8AmYnBG8EgAN/FAN+kzkHOXgYOYM6JCQCbB4CMjc4CwJtyAJtr/CLADRoRiwBaADfAOIASwYHmQyOAP8MwwAOtgJ3MAJ2o0ACeUxEAni7Hl3cRa9G9AJ8QAJ6yQJ9CgJ88UgBSH5kJQAsFklZSlwWGErNAtECAtDNSygDiFADh+dExpEzAvKiXQQDA69Lz0wuJgTQTU1NsAKLQAKK2cIcCB5EaAa4Ao44Ao5dQZiCAo7aAo5deVG1UzYLUtVUhgKT/AKTDQDqAB1VH1WwVdEHLBwplocy4nhnRTw6ApegAu+zWCKpAFomApaQApZ9nQCqWa1aCoJOADwClrYClk9cRVzSApnMApllXMtdCBoCnJw5wzqeApwXAp+cAp65iwAeEDIrEAKd8gKekwC2PmE1YfACntQCoG8BqgKeoCACnk+mY8lkKCYsAiewAiZ/AqD8AqBN2AKmMAKlzwKoAAB+AqfzaH1osgAESmodatICrOQCrK8CrWgCrQMCVx4CVd0CseLYAx9PbJgCsr4OArLpGGzhbWRtSWADJc4Ctl08QG6RAylGArhfArlIFgK5K3hwN3DiAr0aAy2zAzISAr6JcgMDM3ICvhtzI3NQAsPMAsMFc4N0TDZGdOEDPKgDPJsDPcACxX0CxkgCxhGKAshqUgLIRQLJUALJLwJkngLd03h6YniveSZL0QMYpGcDAmH1GfSVJXsMXpNevBICz2wCz20wTFTT9BSgAMeuAs90ASrrA04TfkwGAtwoAtuLAtJQA1JdA1NgAQIDVY2AikABzBfuYUZ2AILPg44C2sgC2d+EEYRKpz0DhqYAMANkD4ZyWvoAVgLfZgLeuXR4AuIw7RUB8zEoAfScAfLTiALr9ALpcXoAAur6AurlAPpIAboC7ooC652Wq5cEAu5AA4XhmHpw4XGiAvMEAGoDjheZlAL3FAORbwOSiAL3mQL52gL4Z5odmqy8OJsfA52EAv77ARwAOp8dn7QDBY4DpmsDptoA0sYDBmuhiaIGCgMMSgFgASACtgNGAJwEgLpoBgC8BGzAEowcggCEDC6kdjoAJAM0C5IKRoABZCgiAIzw3AYBLACkfng9ogigkgNmWAN6AEQCvrkEVqTGAwCsBRbAA+4iQkMCHR072jI2PTbUNsk2RjY5NvA23TZKNiU3EDcZN5I+RTxDRTBCJkK5VBYKFhZfwQCWygU3AJBRHpu+OytgNxa61A40GMsYjsn7BVwFXQVcBV0FaAVdBVwFXQVcBV0FXAVdBVwFXUsaCNyKAK4AAQUHBwKU7oICoW1e7jAEzgPxA+YDwgCkBFDAwADABKzAAOxFLhitA1UFTDeyPkM+bj51QkRCuwTQWWQ8X+0AWBYzsACNA8xwzAGm7EZ/QisoCTAbLDs6fnLfb8H2GccsbgFw13M1HAVkBW/Jxsm9CNRO8E8FDD0FBQw9FkcClOYCoMFegpDfADgcMiA2AJQACB8AsigKAIzIEAJKeBIApY5yPZQIAKQiHb4fvj5BKSRPQrZCOz0oXyxgOywfKAnGbgMClQaCAkILXgdeCD9IIGUgQj5fPoY+dT52Ao5CM0dAX9BTVG9SDzFwWTQAbxBzJF/lOEIQQglCCkKJIAls5AcClQICoKPMODEFxhi6KSAbiyfIRrMjtCgdWCAkPlFBIitCsEJRzAbMAV/OEyQzDg0OAQQEJ36i328/Mk9AybDJsQlq3tDRApUKAkFzXf1d/j9uALYP6hCoFgCTGD8kPsFKQiobrm0+zj0KSD8kPnVCRBwMDyJRTHFgMTJa5rwXQiQ2YfI/JD7BMEJEHGINTw4TOFlIRzwJO0icMQpyPyQ+wzJCRBv6DVgnKB01NgUKj2bwYzMqCoBkznBgEF+zYDIocwRIX+NgHj4HICNfh2C4CwdwFWpTG/lgUhYGAwRfv2Ts8mAaXzVgml/XYIJfuWC4HI1gUF9pYJZgMR6ilQHMAOwLAlDRefC0in4AXAEJA6PjCwc0IamOANMMCAECRQDFNRTZBgd+CwQlRA+r6+gLBDEFBnwUBXgKATIArwAGRAAHA3cDdAN2A3kDdwN9A3oDdQN7A30DfAN4A3oDfQAYEAAlAtYASwMAUAFsAHcKAHcAmgB3AHUAdQB2AHVu8UgAygDAAHcAdQB1AHYAdQALCgB3AAsAmgB3AAsCOwB3AAtu8UgAygDAAHgKAJoAdwB3AHUAdQB2AHUAeAB1AHUAdgB1bvFIAMoAwAALCgCaAHcACwB3AAsCOwB3AAtu8UgAygDAAH4ACwGgALcBpwC6AahdAu0COwLtbvFIAMoAwAALCgCaAu0ACwLtAAsCOwLtAAtu8UgAygDAA24ACwNvAAu0VsQAAzsAABCkjUIpAAsAUIusOggWcgMeBxVsGwL67U/2HlzmWOEeOgALASvuAAseAfpKUpnpGgYJDCIZM6YyARUE9ThqAD5iXQgnAJYJPnOzw0ZAEZxEKsIAkA4DhAHnTAIDxxUDK0lxCQlPYgIvIQVYJQBVqE1GakUAKGYiDToSBA1EtAYAXQJYAIF8GgMHRyAAIAjOe9YncekRAA0KACUrjwE7Ayc6AAYWAqaiKG4McEcqANoN3+Mg9TwCBhIkuCny+JwUQ29L008JluRxu3K+oAdqiHOqFH0AG5SUIfUJ5SxCGfxdipRzqTmT4V5Zb+r1Uo4Vm+NqSSEl2mNvR2JhIa8SpYO6ntdwFXHCWTCK8f2+Hxo7uiG3drDycAuKIMP5bhi06ACnqArH1rz4Rqg//lm6SgJGEVbF9xJHISaR6HxqxSnkw6shDnelHKNEfGUXSJRJ1GcsmtJw25xrZMDK9gXSm1/YMkdX4/6NKYOdtk/NQ3/NnDASjTc3fPjIjW/5sVfVObX2oTDWkr1dF9f3kxBsD3/3aQO8hPfRz+e0uEiJqt1161griu7gz8hDDwtpy+F+BWtefnKHZPAxcZoWbnznhJpy0e842j36bcNzGnIEusgGX0a8ZxsnjcSsPDZ09yZ36fCQbriHeQ72JRMILNl6ePPf2HWoVwgWAm1fb3V2sAY0+B6rAXqSwPBgseVmoqsBTSrm91+XasMYYySI8eeRxH3ZvHkMz3BQ5aJ3iUVbYPNM3/7emRtjlsMgv/9VyTsyt/mK+8fgWeT6SoFaclXqn42dAIsvAarF5vNNWHzKSkKQ/8Hfk5ZWK7r9yliOsooyBjRhfkHP4Q2DkWXQi6FG/9r/IwbmkV5T7JSopHKn1pJwm9tb5Ot0oyN1Z2mPpKXHTxx2nlK08fKk1hEYA8WgVVWL5lgx0iTv+KdojJeU23ZDjmiubXOxVXJKKi2Wjuh2HLZOFLiSC7Tls5SMh4f+Pj6xUSrNjFqLGehRNB8lC0QSLNmkJJx/wSG3MnjE9T1CkPwJI0wH2lfzwETIiVqUxg0dfu5q39Gt+hwdcxkhhNvQ4TyrBceof3Mhs/IxFci1HmHr4FMZgXEEczPiGCx0HRwzAqDq2j9AVm1kwN0mRVLWLylgtoPNapF5cY4Y1wJh/e0BBwZj44YgZrDNqvD/9Hv7GFYdUQeDJuQ3EWI4HaKqavU1XjC/n41kT4L79kqGq0kLhdTZvgP3TA3fS0ozVz+5piZsoOtIvBUFoMKbNcmBL6YxxaUAusHB38XrS8dQMnQwJfUUkpRoGr5AUeWicvBTzyK9g77+yCkf5PAysL7r/JjcZgrbvRpMW9iyaxZvKO6ceZN2EwIxKwVFPuvFuiEPGCoagbMo+SpydLrXqBzNCDGFCrO/rkcwa2xhokQZ5CdZ0AsU3JfSqJ6n5I14YA+P/uAgfhPU84Tlw7cEFfp7AEE8ey4sP12PTt4Cods1GRgDOB5xvyiR5m+Bx8O5nBCNctU8BevfV5A08x6RHd5jcwPTMDSZJOedIZ1cGQ704lxbAzqZOP05ZxaOghzSdvFBHYqomATARyAADK4elP8Ly3IrUZKfWh23Xy20uBUmLS4Pfagu9+oyVa2iPgqRP3F2CTUsvJ7+RYnN8fFZbU/HVvxvcFFDKkiTqV5UBZ3Gz54JAKByi9hkKMZJvuGgcSYXFmw08UyoQyVdfTD1/dMkCHXcTGAKeROgArsvmRrQTLUOXioOHGK2QkjHuoYFgXciZoTJd6Fs5q1QX1G+p/e26hYsEf7QZD1nnIyl/SFkNtYYmmBhpBrxl9WbY0YpHWRuw2Ll/tj9mD8P4snVzJl4F9J+1arVeTb9E5r2ILH04qStjxQNwn3m4YNqxmaNbLAqW2TN6LidwuJRqS+NXbtqxoeDXpxeGWmxzSkWxjkyCkX4NQRme6q5SAcC+M7+9ETfA/EwrzQajKakCwYyeunP6ZFlxU2oMEn1Pz31zeStW74G406ZJFCl1wAXIoUKkWotYEpOuXB1uVNxJ63dpJEqfxBeptwIHNrPz8BllZoIcBoXwgfJ+8VAUnVPvRvexnw0Ma/WiGYuJO5y8QTvEYBigFmhUxY5RqzE8OcywN/8m4UYrlaniJO75XQ6KSo9+tWHlu+hMi0UVdiKQp7NelnoZUzNaIyBPVeOwK6GNp+FfHuPOoyhaWuNvTYFkvxscMQWDh+zeFCFkgwbXftiV23ywJ4+uwRqmg9k3KzwIQpzppt8DBBOMbrqwQM5Gb05sEwdKzMiAqOloaA/lr0KA+1pr0/+HiWoiIjHA/wir2nIuS3PeU/ji3O6ZwoxcR1SZ9FhtLC5S0FIzFhbBWcGVP/KpxOPSiUoAdWUpqKH++6Scz507iCcxYI6rdMBICPJZea7OcmeFw5mObJSiqpjg2UoWNIs+cFhyDSt6geV5qgi3FunmwwDoGSMgerFOZGX1m0dMCYo5XOruxO063dwENK9DbnVM9wYFREzh4vyU1WYYJ/LRRp6oxgjqP/X5a8/4Af6p6NWkQferzBmXme0zY/4nwMJm/wd1tIqSwGz+E3xPEAOoZlJit3XddD7/BT1pllzOx+8bmQtANQ/S6fZexc6qi3W+Q2xcmXTUhuS5mpHQRvcxZUN0S5+PL9lXWUAaRZhEH8hTdAcuNMMCuVNKTEGtSUKNi3O6KhSaTzck8csZ2vWRZ+d7mW8c4IKwXIYd25S/zIftPkwPzufjEvOHWVD1m+FjpDVUTV0DGDuHj6QnaEwLu/dEgdLQOg9E1Sro9XHJ8ykLAwtPu+pxqKDuFexqON1sKQm7rwbE1E68UCfA/erovrTCG+DBSNg0l4goDQvZN6uNlbyLpcZAwj2UclycvLpIZMgv4yRlpb3YuMftozorbcGVHt/VeDV3+Fdf1TP0iuaCsPi2G4XeGhsyF1ubVDxkoJhmniQ0/jSg/eYML9KLfnCFgISWkp91eauR3IQvED0nAPXK+6hPCYs+n3+hCZbiskmVMG2da+0EsZPonUeIY8EbfusQXjsK/eFDaosbPjEfQS0RKG7yj5GG69M7MeO1HmiUYocgygJHL6M1qzUDDwUSmr99V7Sdr2F3JjQAJY+F0yH33Iv3+C9M38eML7gTgmNu/r2bUMiPvpYbZ6v1/IaESirBHNa7mPKn4dEmYg7v/+HQgPN1G79jBQ1+soydfDC2r+h2Bl/KIc5KjMK7OH6nb1jLsNf0EHVe2KBiE51ox636uyG6Lho0t3J34L5QY/ilE3mikaF4HKXG1mG1rCevT1Vv6GavltxoQe/bMrpZvRggnBxSEPEeEzkEdOxTnPXHVjUYdw8JYvjB/o7Eegc3Ma+NUxLLnsK0kJlinPmUHzHGtrk5+CAbVzFOBqpyy3QVUnzTDfC/0XD94/okH+OB+i7g9lolhWIjSnfIb+Eq43ZXOWmwvjyV/qqD+t0e+7mTEM74qP/Ozt8nmC7mRpyu63OB4KnUzFc074SqoyPUAgM+/TJGFo6T44EHnQU4X4z6qannVqgw/U7zCpwcmXV1AubIrvOmkKHazJAR55ePjp5tLBsN8vAqs3NAHdcEHOR2xQ0lsNAFzSUuxFQCFYvXLZJdOj9p4fNq6p0HBGUik2YzaI4xySy91KzhQ0+q1hjxvImRwPRf76tChlRkhRCi74NXZ9qUNeIwP+s5p+3m5nwPdNOHgSLD79n7O9m1n1uDHiMntq4nkYwV5OZ1ENbXxFd4PgrlvavZsyUO4MqYlqqn1O8W/I1dEZq5dXhrbETLaZIbC2Kj/Aa/QM+fqUOHdf0tXAQ1huZ3cmWECWSXy/43j35+Mvq9xws7JKseriZ1pEWKc8qlzNrGPUGcVgOa9cPJYIJsGnJTAUsEcDOEVULO5x0rXBijc1lgXEzQQKhROf8zIV82w8eswc78YX11KYLWQRcgHNJElBxfXr72lS2RBSl07qTKorO2uUDZr3sFhYsvnhLZn0A94KRzJ/7DEGIAhW5ZWFpL8gEwu1aLA9MuWZzNwl8Oze9Y+bX+v9gywRVnoB5I/8kXTXU3141yRLYrIOOz6SOnyHNy4SieqzkBXharjfjqq1q6tklaEbA8Qfm2DaIPs7OTq/nvJBjKfO2H9bH2cCMh1+5gspfycu8f/cuuRmtDjyqZ7uCIMyjdV3a+p3fqmXsRx4C8lujezIFHnQiVTXLXuI1XrwN3+siYYj2HHTvESUx8DlOTXpak9qFRK+L3mgJ1WsD7F4cu1aJoFoYQnu+wGDMOjJM3kiBQWHCcvhJ/HRdxodOQp45YZaOTA22Nb4XKCVxqkbwMYFhzYQYIAnCW8FW14uf98jhUG2zrKhQQ0q0CEq0t5nXyvUyvR8DvD69LU+g3i+HFWQMQ8PqZuHD+sNKAV0+M6EJC0szq7rEr7B5bQ8BcNHzvDMc9eqB5ZCQdTf80Obn4uzjwpYU7SISdtV0QGa9D3Wrh2BDQtpBKxaNFV+/Cy2P/Sv+8s7Ud0Fd74X4+o/TNztWgETUapy+majNQ68Lq3ee0ZO48VEbTZYiH1Co4OlfWef82RWeyUXo7woM03PyapGfikTnQinoNq5z5veLpeMV3HCAMTaZmA1oGLAn7XS3XYsz+XK7VMQsc4XKrmDXOLU/pSXVNUq8dIqTba///3x6LiLS6xs1xuCAYSfcQ3+rQgmu7uvf3THKt5Ooo97TqcbRqxx7EASizaQCBQllG/rYxVapMLgtLbZS64w1MDBMXX+PQpBKNwqUKOf2DDRDUXQf9EhOS0Qj4nTmlA8dzSLz/G1d+Ud8MTy/6ghhdiLpeerGY/UlDOfiuqFsMUU5/UYlP+BAmgRLuNpvrUaLlVkrqDievNVEAwF+4CoM1MZTmjxjJMsKJq+u8Zd7tNCUFy6LiyYXRJQ4VyvEQFFaCGKsxIwQkk7EzZ6LTJq2hUuPhvAW+gQnSG6J+MszC+7QCRHcnqDdyNRJ6T9xyS87A6MDutbzKGvGktpbXqtzWtXb9HsfK2cBMomjN9a4y+TaJLnXxAeX/HWzmf4cR4vALt/P4w4qgKY04ml4ZdLOinFYS6cup3G/1ie4+t1eOnpBNlqGqs75ilzkT4+DsZQxNvaSKJ//6zIbbk/M7LOhFmRc/1R+kBtz7JFGdZm/COotIdvQoXpTqP/1uqEUmCb/QWoGLMwO5ANcHzxdY48IGP5+J+zKOTBFZ4Pid+GTM+Wq12MV/H86xEJptBa6T+p3kgpwLedManBHC2GgNrFpoN2xnrMz9WFWX/8/ygSBkavq2Uv7FdCsLEYLu9LLIvAU0bNRDtzYl+/vXmjpIvuJFYjmI0im6QEYqnIeMsNjXG4vIutIGHijeAG/9EDBozKV5cldkHbLxHh25vT+ZEzbhXlqvpzKJwcEgfNwLAKFeo0/pvEE10XDB+EXRTXtSzJozQKFFAJhMxYkVaCW+E9AL7tMeU8acxidHqzb6lX4691UsDpy/LLRmT+epgW56+5Cw8tB4kMUv6s9lh3eRKbyGs+H/4mQMaYzPTf2OOdokEn+zzgvoD3FqNKk8QqGAXVsqcGdXrT62fSPkR2vROFi68A6se86UxRUk4cajfPyCC4G5wDhD+zNq4jodQ4u4n/m37Lr36n4LIAAsVr02dFi9AiwA81MYs2rm4eDlDNmdMRvEKRHfBwW5DdMNp0jPFZMeARqF/wL4XBfd+EMLBfMzpH5GH6NaW+1vrvMdg+VxDzatk3MXgO3ro3P/DpcC6+Mo4MySJhKJhSR01SGGGp5hPWmrrUgrv3lDnP+HhcI3nt3YqBoVAVTBAQT5iuhTg8nvPtd8ZeYj6w1x6RqGUBrSku7+N1+BaasZvjTk64RoIDlL8brpEcJx3OmY7jLoZsswdtmhfC/G21llXhITOwmvRDDeTTPbyASOa16cF5/A1fZAidJpqju3wYAy9avPR1ya6eNp9K8XYrrtuxlqi+bDKwlfrYdR0RRiKRVTLOH85+ZY7XSmzRpfZBJjaTa81VDcJHpZnZnSQLASGYW9l51ZV/h7eVzTi3Hv6hUsgc/51AqJRTkpbFVLXXszoBL8nBX0u/0jBLT8nH+fJePbrwURT58OY+UieRjd1vs04w0VG5VN2U6MoGZkQzKN/ptz0Q366dxoTGmj7i1NQGHi9GgnquXFYdrCfZBmeb7s0T6yrdlZH5cZuwHFyIJ/kAtGsTg0xH5taAAq44BAk1CPk9KVVbqQzrCUiFdF/6gtlPQ8bHHc1G1W92MXGZ5HEHftyLYs8mbD/9xYRUWkHmlM0zC2ilJlnNgV4bfALpQghxOUoZL7VTqtCHIaQSXm+YUMnpkXybnV+A6xlm2CVy8fn0Xlm2XRa0+zzOa21JWWmixfiPMSCZ7qA4rS93VN3pkpF1s5TonQjisHf7iU9ZGvUPOAKZcR1pbeVf/Ul7OhepGCaId9wOtqo7pJ7yLcBZ0pFkOF28y4zEI/kcUNmutBHaQpBdNM8vjCS6HZRokkeo88TBAjGyG7SR+6vUgTcyK9Imalj0kuxz0wmK+byQU11AiJFk/ya5dNduRClcnU64yGu/ieWSeOos1t3ep+RPIWQ2pyTYVbZltTbsb7NiwSi3AV+8KLWk7LxCnfZUetEM8ThnsSoGH38/nyAwFguJp8FjvlHtcWZuU4hPva0rHfr0UhOOJ/F6vS62FW7KzkmRll2HEc7oUq4fyi5T70Vl7YVIfsPHUCdHesf9Lk7WNVWO75JDkYbMI8TOW8JKVtLY9d6UJRITO8oKo0xS+o99Yy04iniGHAaGj88kEWgwv0OrHdY/nr76DOGNS59hXCGXzTKUvDl9iKpLSWYN1lxIeyywdNpTkhay74w2jFT6NS8qkjo5CxA1yfSYwp6AJIZNKIeEK5PJAW7ORgWgwp0VgzYpqovMrWxbu+DGZ6Lhie1RAqpzm8VUzKJOH3mCzWuTOLsN3VT/dv2eeYe9UjbR8YTBsLz7q60VN1sU51k+um1f8JxD5pPhbhSC8rRaB454tmh6YUWrJI3+GWY0qeWioj/tbkYITOkJaeuGt4JrJvHA+l0Gu7kY7XOaa05alMnRWVCXqFgLIwSY4uF59Ue5SU4QKuc/HamDxbr0x6csCetXGoP7Qn1Bk/J9DsynO/UD6iZ1Hyrz+jit0hDCwi/E9OjgKTbB3ZQKQ/0ZOvevfNHG0NK4Aj3Cp7NpRk07RT1i/S0EL93Ag8GRgKI9CfpajKyK6+Jj/PI1KO5/85VAwz2AwzP8FTBb075IxCXv6T9RVvWT2tUaqxDS92zrGUbWzUYk9mSs82pECH+fkqsDt93VW++4YsR/dHCYcQSYTO/KaBMDj9LSD/J/+z20Kq8XvZUAIHtm9hRPP3ItbuAu2Hm5lkPs92pd7kCxgRs0xOVBnZ13ccdA0aunrwv9SdqElJRC3g+oCu+nXyCgmXUs9yMjTMAIHfxZV+aPKcZeUBWt057Xo85Ks1Ir5gzEHCWqZEhrLZMuF11ziGtFQUds/EESajhagzcKsxamcSZxGth4UII+adPhQkUnx2WyN+4YWR+r3f8MnkyGFuR4zjzxJS8WsQYR5PTyRaD9ixa6Mh741nBHbzfjXHskGDq179xaRNrCIB1z1xRfWfjqw2pHc1zk9xlPpL8sQWAIuETZZhbnmL54rceXVNRvUiKrrqIkeogsl0XXb17ylNb0f4GA9Wd44vffEG8FSZGHEL2fbaTGRcSiCeA8PmA/f6Hz8HCS76fXUHwgwkzSwlI71ekZ7Fapmlk/KC+Hs8hUcw3N2LN5LhkVYyizYFl/uPeVP5lsoJHhhfWvvSWruCUW1ZcJOeuTbrDgywJ/qG07gZJplnTvLcYdNaH0KMYOYMGX+rB4NGPFmQsNaIwlWrfCezxre8zXBrsMT+edVLbLqN1BqB76JH4BvZTqUIMfGwPGEn+EnmTV86fPBaYbFL3DFEhjB45CewkXEAtJxk4/Ms2pPXnaRqdky0HOYdcUcE2zcXq4vaIvW2/v0nHFJH2XXe22ueDmq/18XGtELSq85j9X8q0tcNSSKJIX8FTuJF/Pf8j5PhqG2u+osvsLxYrvvfeVJL+4tkcXcr9JV7v0ERmj/X6fM3NC4j6dS1+9Umr2oPavqiAydTZPLMNRGY23LO9zAVDly7jD+70G5TPPLdhRIl4WxcYjLnM+SNcJ26FOrkrISUtPObIz5Zb3AG612krnpy15RMW+1cQjlnWFI6538qky9axd2oJmHIHP08KyP0ubGO+TQNOYuv2uh17yCIvR8VcStw7o1g0NM60sk+8Tq7YfIBJrtp53GkvzXH7OA0p8/n/u1satf/VJhtR1l8Wa6Gmaug7haSpaCaYQax6ta0mkutlb+eAOSG1aobM81D9A4iS1RRlzBBoVX6tU1S6WE2N9ORY6DfeLRC4l9Rvr5h95XDWB2mR1d4WFudpsgVYwiTwT31ljskD8ZyDOlm5DkGh9N/UB/0AI5Xvb8ZBmai2hQ4BWMqFwYnzxwB26YHSOv9WgY3JXnvoN+2R4rqGVh/LLDMtpFP+SpMGJNWvbIl5SOodbCczW2RKleksPoUeGEzrjtKHVdtZA+kfqO+rVx/iclCqwoopepvJpSTDjT+b9GWylGRF8EDbGlw6eUzmJM95Ovoz+kwLX3c2fTjFeYEsE7vUZm3mqdGJuKh2w9/QGSaqRHs99aScGOdDqkFcACoqdbBoQqqjamhH6Q9ng39JCg3lrGJwd50Qk9ovnqBTr8MME7Ps2wiVfygUmPoUBJJfJWX5Nda0nuncbFkA=="));
+}
+
+},{"@ethersproject/base64":"329Wu","./decoder.js":"k3KbO","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"329Wu":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "decode", ()=>(0, _base64.decode));
+parcelHelpers.export(exports, "encode", ()=>(0, _base64.encode));
+var _base64 = require("./base64");
+"use strict";
+
+},{"./base64":"cgzIg","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cgzIg":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "decode", ()=>decode);
+parcelHelpers.export(exports, "encode", ()=>encode);
+var _bytes = require("@ethersproject/bytes");
+"use strict";
+function decode(textData) {
+    textData = atob(textData);
+    const data = [];
+    for(let i = 0; i < textData.length; i++)data.push(textData.charCodeAt(i));
+    return (0, _bytes.arrayify)(data);
+}
+function encode(data) {
+    data = (0, _bytes.arrayify)(data);
+    let textData = "";
+    for(let i = 0; i < data.length; i++)textData += String.fromCharCode(data[i]);
+    return btoa(textData);
+}
+
+},{"@ethersproject/bytes":"htrqZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"k3KbO":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "decode_arithmetic", ()=>decode_arithmetic);
+// returns an iterator which returns the next symbol
+parcelHelpers.export(exports, "read_payload", ()=>read_payload);
+parcelHelpers.export(exports, "read_compressed_payload", ()=>read_compressed_payload);
+// eg. [0,1,2,3...] => [0,-1,1,-2,...]
+parcelHelpers.export(exports, "signed", ()=>signed);
+parcelHelpers.export(exports, "read_member_array", ()=>read_member_array);
+// returns array of 
+// [x, ys] => single replacement rule
+// [x, ys, n, dx, dx] => linear map
+parcelHelpers.export(exports, "read_mapped_map", ()=>read_mapped_map);
+parcelHelpers.export(exports, "read_zero_terminated_array", ()=>read_zero_terminated_array);
+parcelHelpers.export(exports, "read_emoji_trie", ()=>read_emoji_trie);
+/**
+ * MIT License
+ *
+ * Copyright (c) 2021 Andrew Raffensperger
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * This is a near carbon-copy of the original source (link below) with the
+ * TypeScript typings added and a few tweaks to make it ES3-compatible.
+ *
+ * See: https://github.com/adraffy/ens-normalize.js
+ */ // https://github.com/behnammodi/polyfill/blob/master/array.polyfill.js
+function flat(array, depth1) {
+    if (depth1 == null) depth1 = 1;
+    const result = [];
+    const forEach = result.forEach;
+    const flatDeep = function(arr, depth) {
+        forEach.call(arr, function(val) {
+            if (depth > 0 && Array.isArray(val)) flatDeep(val, depth - 1);
+            else result.push(val);
+        });
+    };
+    flatDeep(array, depth1);
+    return result;
+}
+function fromEntries(array) {
+    const result = {};
+    for(let i = 0; i < array.length; i++){
+        const value = array[i];
+        result[value[0]] = value[1];
+    }
+    return result;
+}
+function decode_arithmetic(bytes) {
+    let pos = 0;
+    function u16() {
+        return bytes[pos++] << 8 | bytes[pos++];
+    }
+    // decode the frequency table
+    let symbol_count = u16();
+    let total = 1;
+    let acc = [
+        0,
+        1
+    ]; // first symbol has frequency 1
+    for(let i = 1; i < symbol_count; i++)acc.push(total += u16());
+    // skip the sized-payload that the last 3 symbols index into
+    let skip = u16();
+    let pos_payload = pos;
+    pos += skip;
+    let read_width = 0;
+    let read_buffer = 0;
+    function read_bit() {
+        if (read_width == 0) {
+            // this will read beyond end of buffer
+            // but (undefined|0) => zero pad
+            read_buffer = read_buffer << 8 | bytes[pos++];
+            read_width = 8;
+        }
+        return read_buffer >> --read_width & 1;
+    }
+    const N = 31;
+    const FULL = Math.pow(2, N);
+    const HALF = FULL >>> 1;
+    const QRTR = HALF >> 1;
+    const MASK = FULL - 1;
+    // fill register
+    let register = 0;
+    for(let i1 = 0; i1 < N; i1++)register = register << 1 | read_bit();
+    let symbols = [];
+    let low = 0;
+    let range = FULL; // treat like a float
+    while(true){
+        let value = Math.floor(((register - low + 1) * total - 1) / range);
+        let start = 0;
+        let end = symbol_count;
+        while(end - start > 1){
+            let mid = start + end >>> 1;
+            if (value < acc[mid]) end = mid;
+            else start = mid;
+        }
+        if (start == 0) break; // first symbol is end mark
+        symbols.push(start);
+        let a = low + Math.floor(range * acc[start] / total);
+        let b = low + Math.floor(range * acc[start + 1] / total) - 1;
+        while(((a ^ b) & HALF) == 0){
+            register = register << 1 & MASK | read_bit();
+            a = a << 1 & MASK;
+            b = b << 1 & MASK | 1;
+        }
+        while(a & ~b & QRTR){
+            register = register & HALF | register << 1 & MASK >>> 1 | read_bit();
+            a = a << 1 ^ HALF;
+            b = (b ^ HALF) << 1 | HALF | 1;
+        }
+        low = a;
+        range = 1 + b - a;
+    }
+    let offset = symbol_count - 4;
+    return symbols.map((x)=>{
+        switch(x - offset){
+            case 3:
+                return offset + 0x10100 + (bytes[pos_payload++] << 16 | bytes[pos_payload++] << 8 | bytes[pos_payload++]);
+            case 2:
+                return offset + 0x100 + (bytes[pos_payload++] << 8 | bytes[pos_payload++]);
+            case 1:
+                return offset + bytes[pos_payload++];
+            default:
+                return x - 1;
+        }
+    });
+}
+function read_payload(v) {
+    let pos = 0;
+    return ()=>v[pos++];
+}
+function read_compressed_payload(bytes) {
+    return read_payload(decode_arithmetic(bytes));
+}
+function signed(i) {
+    return i & 1 ? ~i >> 1 : i >> 1;
+}
+function read_counts(n, next) {
+    let v = Array(n);
+    for(let i = 0; i < n; i++)v[i] = 1 + next();
+    return v;
+}
+function read_ascending(n, next) {
+    let v = Array(n);
+    for(let i = 0, x = -1; i < n; i++)v[i] = x += 1 + next();
+    return v;
+}
+function read_deltas(n, next) {
+    let v = Array(n);
+    for(let i = 0, x = 0; i < n; i++)v[i] = x += signed(next());
+    return v;
+}
+function read_member_array(next, lookup) {
+    let v = read_ascending(next(), next);
+    let n = next();
+    let vX = read_ascending(n, next);
+    let vN = read_counts(n, next);
+    for(let i = 0; i < n; i++)for(let j = 0; j < vN[i]; j++)v.push(vX[i] + j);
+    return lookup ? v.map((x)=>lookup[x]) : v;
+}
+function read_mapped_map(next) {
+    let ret = [];
+    while(true){
+        let w = next();
+        if (w == 0) break;
+        ret.push(read_linear_table(w, next));
+    }
+    while(true){
+        let w = next() - 1;
+        if (w < 0) break;
+        ret.push(read_replacement_table(w, next));
+    }
+    return fromEntries(flat(ret));
+}
+function read_zero_terminated_array(next) {
+    let v = [];
+    while(true){
+        let i = next();
+        if (i == 0) break;
+        v.push(i);
+    }
+    return v;
+}
+function read_transposed(n, w, next) {
+    let m = Array(n).fill(undefined).map(()=>[]);
+    for(let i = 0; i < w; i++)read_deltas(n, next).forEach((x, j)=>m[j].push(x));
+    return m;
+}
+function read_linear_table(w, next) {
+    let dx = 1 + next();
+    let dy = next();
+    let vN = read_zero_terminated_array(next);
+    let m = read_transposed(vN.length, 1 + w, next);
+    return flat(m.map((v, i)=>{
+        const x = v[0], ys = v.slice(1);
+        //let [x, ...ys] = v;
+        //return Array(vN[i]).fill().map((_, j) => {
+        return Array(vN[i]).fill(undefined).map((_, j)=>{
+            let j_dy = j * dy;
+            return [
+                x + j * dx,
+                ys.map((y)=>y + j_dy)
+            ];
+        });
+    }));
+}
+function read_replacement_table(w, next) {
+    let n = 1 + next();
+    let m = read_transposed(n, 1 + w, next);
+    return m.map((v)=>[
+            v[0],
+            v.slice(1)
+        ]);
+}
+function read_emoji_trie(next) {
+    let sorted = read_member_array(next).sort((a, b)=>a - b);
+    return read();
+    function read() {
+        let branches = [];
+        while(true){
+            let keys = read_member_array(next, sorted);
+            if (keys.length == 0) break;
+            branches.push({
+                set: new Set(keys),
+                node: read()
+            });
+        }
+        branches.sort((a, b)=>b.set.size - a.set.size); // sort by likelihood
+        let temp = next();
+        let valid = temp % 3;
+        temp = temp / 3 | 0;
+        let fe0f = !!(temp & 1);
+        temp >>= 1;
+        let save = temp == 1;
+        let check = temp == 2;
+        return {
+            branches,
+            valid,
+            fe0f,
+            save,
+            check
+        };
+    }
+}
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hJKk8":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -56298,15 +55841,17 @@ class Provider {
                     return null;
                 })
             });
-            let maxFeePerGas = null, maxPriorityFeePerGas = null;
+            let lastBaseFeePerGas = null, maxFeePerGas = null, maxPriorityFeePerGas = null;
             if (block && block.baseFeePerGas) {
                 // We may want to compute this more accurately in the future,
                 // using the formula "check if the base fee is correct".
                 // See: https://eips.ethereum.org/EIPS/eip-1559
+                lastBaseFeePerGas = block.baseFeePerGas;
                 maxPriorityFeePerGas = (0, _bignumber.BigNumber).from("1500000000");
                 maxFeePerGas = block.baseFeePerGas.mul(2).add(maxPriorityFeePerGas);
             }
             return {
+                lastBaseFeePerGas,
                 maxFeePerGas,
                 maxPriorityFeePerGas,
                 gasPrice
@@ -56330,7 +55875,7 @@ class Provider {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "abstract-provider/5.6.0";
+const version = "abstract-provider/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"g9Ey5":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -56588,7 +56133,6 @@ class Signer {
 }
 class VoidSigner extends Signer {
     constructor(address, provider){
-        logger.checkNew(new.target, VoidSigner);
         super();
         (0, _properties.defineReadOnly)(this, "address", address);
         (0, _properties.defineReadOnly)(this, "provider", provider || null);
@@ -56621,7 +56165,7 @@ class VoidSigner extends Signer {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "abstract-signer/5.6.0";
+const version = "abstract-signer/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"d1ust":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -56888,9 +56432,7 @@ function _parseEipSignature(tx, fields, serialize1) {
             s: tx.s,
             recoveryParam: tx.v
         });
-    } catch (error1) {
-        console.log(error1);
-    }
+    } catch (error1) {}
 }
 function _parseEip1559(payload) {
     const transaction = _rlp.decode(payload.slice(1));
@@ -56954,7 +56496,7 @@ function _parse(rawTransaction) {
     try {
         tx.v = (0, _bignumber.BigNumber).from(transaction[6]).toNumber();
     } catch (error) {
-        console.log(error);
+        // @TODO: What makes snese to do? The v is too big
         return tx;
     }
     tx.r = (0, _bytes.hexZeroPad)(transaction[7], 32);
@@ -56982,9 +56524,7 @@ function _parse(rawTransaction) {
                 s: (0, _bytes.hexlify)(tx.s),
                 recoveryParam: recoveryParam
             });
-        } catch (error) {
-            console.log(error);
-        }
+        } catch (error) {}
         tx.hash = (0, _keccak256.keccak256)(rawTransaction);
     }
     tx.type = null;
@@ -57031,6 +56571,7 @@ class SigningKey {
     constructor(privateKey){
         (0, _properties.defineReadOnly)(this, "curve", "secp256k1");
         (0, _properties.defineReadOnly)(this, "privateKey", (0, _bytes.hexlify)(privateKey));
+        if ((0, _bytes.hexDataLength)(this.privateKey) !== 32) logger.throwArgumentError("invalid private key", "privateKey", "[[ REDACTED ]]");
         const keyPair = getCurve().keyFromPrivate((0, _bytes.arrayify)(this.privateKey));
         (0, _properties.defineReadOnly)(this, "publicKey", "0x" + keyPair.getPublic(false, "hex"));
         (0, _properties.defineReadOnly)(this, "compressedPublicKey", "0x" + keyPair.getPublic(true, "hex"));
@@ -60481,19 +60022,19 @@ Hmac.prototype.digest = function digest(enc) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "signing-key/5.6.0";
+const version = "signing-key/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7piXV":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "transactions/5.6.0";
+const version = "transactions/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6ewae":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "contracts/5.6.0";
+const version = "contracts/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2DfhD":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -60553,7 +60094,6 @@ function hasMnemonic(value) {
 }
 class Wallet extends (0, _abstractSigner.Signer) {
     constructor(privateKey, provider){
-        logger.checkNew(new.target, Wallet);
         super();
         if (isAccount(privateKey)) {
             const signingKey = new (0, _signingKey.SigningKey)(privateKey.privateKey);
@@ -60737,7 +60277,6 @@ class HDNode {
      *   - fromMnemonic
      *   - fromSeed
      */ constructor(constructorGuard, privateKey, publicKey, parentFingerprint, chainCode, index, depth, mnemonicOrPath){
-        logger.checkNew(new.target, HDNode);
         /* istanbul ignore if */ if (constructorGuard !== _constructorGuard) throw new Error("HDNode constructor cannot be called directly");
         if (privateKey) {
             const signingKey = new (0, _signingKey.SigningKey)(privateKey);
@@ -61175,7 +60714,7 @@ var SupportedAlgorithm;
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "sha2/5.6.0";
+const version = "sha2/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"czmoZ":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -61239,7 +60778,7 @@ class Wordlist {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "wordlists/5.6.0";
+const version = "wordlists/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"86SLu":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -61288,7 +60827,7 @@ const langEn = new LangEn();
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "hdnode/5.6.0";
+const version = "hdnode/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7myQM":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -61341,7 +60880,7 @@ function randomBytes(length) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "random/5.6.0";
+const version = "random/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aDkFd":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -65575,7 +65114,7 @@ function decrypt(json, password) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "json-wallets/5.6.0";
+const version = "json-wallets/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"d3wDI":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -65930,7 +65469,7 @@ function encrypt(account, password, options, progressCallback) {
             address: account.address.substring(2).toLowerCase(),
             id: (0, _utils.uuidV4)(uuidRandom),
             version: 3,
-            Crypto: {
+            crypto: {
                 cipher: "aes-128-ctr",
                 cipherparams: {
                     iv: (0, _bytes.hexlify)(iv).substring(2)
@@ -66407,7 +65946,7 @@ function encrypt(account, password, options, progressCallback) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "wallet/5.6.0";
+const version = "wallet/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bErvj":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -66481,10 +66020,12 @@ function getDefaultProvider(network, options) {
         // @TODO: Add support for IpcProvider; maybe if it ends in ".ipc"?
         // Handle http and ws (and their secure variants)
         const match = network.match(/^(ws|http)s?:/i);
-        if (match) switch(match[1]){
+        if (match) switch(match[1].toLowerCase()){
             case "http":
+            case "https":
                 return new (0, _jsonRpcProvider.JsonRpcProvider)(network);
             case "ws":
+            case "wss":
                 return new (0, _websocketProvider.WebSocketProvider)(network);
             default:
                 logger.throwArgumentError("unsupported URL scheme", "network", network);
@@ -66558,7 +66099,11 @@ function ethDefaultProvider(network1) {
             providerList.push(new providers.CloudflareProvider(network1));
         } catch (error3) {}
         if (providers.AnkrProvider && options.ankr !== "-") try {
-            providerList.push(new providers.AnkrProvider(network1, options.ankr));
+            const skip = [
+                "ropsten"
+            ];
+            const provider = new providers.AnkrProvider(network1, options.ankr);
+            if (provider.network && skip.indexOf(provider.network.name) === -1) providerList.push(provider);
         } catch (error4) {}
         if (providerList.length === 0) return null;
         if (providers.FallbackProvider) {
@@ -66659,7 +66204,8 @@ const networks = {
     },
     matic: {
         chainId: 137,
-        name: "matic"
+        name: "matic",
+        _defaultProvider: ethDefaultProvider("matic")
     },
     maticmum: {
         chainId: 80001,
@@ -66667,7 +66213,8 @@ const networks = {
     },
     optimism: {
         chainId: 10,
-        name: "optimism"
+        name: "optimism",
+        _defaultProvider: ethDefaultProvider("optimism")
     },
     "optimism-kovan": {
         chainId: 69,
@@ -66684,6 +66231,10 @@ const networks = {
     "arbitrum-rinkeby": {
         chainId: 421611,
         name: "arbitrum-rinkeby"
+    },
+    "arbitrum-goerli": {
+        chainId: 421613,
+        name: "arbitrum-goerli"
     },
     bnb: {
         chainId: 56,
@@ -66750,7 +66301,7 @@ function getNetwork(network) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "networks/5.6.2";
+const version = "networks/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7OFAa":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -66759,6 +66310,7 @@ parcelHelpers.export(exports, "Event", ()=>Event);
 parcelHelpers.export(exports, "Resolver", ()=>Resolver);
 parcelHelpers.export(exports, "BaseProvider", ()=>BaseProvider);
 var _abstractProvider = require("@ethersproject/abstract-provider");
+var _base64 = require("@ethersproject/base64");
 var _basex = require("@ethersproject/basex");
 var _bignumber = require("@ethersproject/bignumber");
 var _bytes = require("@ethersproject/bytes");
@@ -67344,6 +66896,19 @@ class Resolver {
             if (swarm) {
                 if (swarm[1].length === 64) return "bzz://" + swarm[1];
             }
+            const skynet = hexBytes.match(/^0x90b2c605([0-9a-f]*)$/);
+            if (skynet) {
+                if (skynet[1].length === 68) {
+                    // URL Safe base64; https://datatracker.ietf.org/doc/html/rfc4648#section-5
+                    const urlSafe = {
+                        "=": "",
+                        "+": "-",
+                        "/": "_"
+                    };
+                    const hash = (0, _base64.encode)("0x" + skynet[1]).replace(/[=+\/]/g, (a)=>urlSafe[a]);
+                    return "sia://" + hash;
+                }
+            }
             return logger.throwError(`invalid or unsupported content hash data`, (0, _logger.Logger).errors.UNSUPPORTED_OPERATION, {
                 operation: "getContentHash()",
                 data: hexBytes
@@ -67384,7 +66949,6 @@ class BaseProvider extends (0, _abstractProvider.Provider) {
      *  MUST set this. Standard named networks have a known chainId.
      *
      */ constructor(network){
-        logger.checkNew(new.target, (0, _abstractProvider.Provider));
         super();
         // Events being listened to
         this._events = [];
@@ -67625,15 +67189,21 @@ class BaseProvider extends (0, _abstractProvider.Provider) {
                         // We only allow a single getLogs to be in-flight at a time
                         if (!event._inflight) {
                             event._inflight = true;
-                            // Filter from the last known event; due to load-balancing
+                            // This is the first filter for this event, so we want to
+                            // restrict events to events that happened no earlier than now
+                            if (event._lastBlockNumber === -2) event._lastBlockNumber = blockNumber - 1;
+                            // Filter from the last *known* event; due to load-balancing
                             // and some nodes returning updated block numbers before
                             // indexing events, a logs result with 0 entries cannot be
                             // trusted and we must retry a range which includes it again
                             const filter = event.filter;
                             filter.fromBlock = event._lastBlockNumber + 1;
                             filter.toBlock = blockNumber;
-                            // Prevent fitler ranges from growing too wild
-                            if (filter.toBlock - this._maxFilterBlockRange > filter.fromBlock) filter.fromBlock = filter.toBlock - this._maxFilterBlockRange;
+                            // Prevent fitler ranges from growing too wild, since it is quite
+                            // likely there just haven't been any events to move the lastBlockNumber.
+                            const minFromBlock = filter.toBlock - this._maxFilterBlockRange;
+                            if (minFromBlock > filter.fromBlock) filter.fromBlock = minFromBlock;
+                            if (filter.fromBlock < 0) filter.fromBlock = 0;
                             const runner = this.getLogs(filter).then((logs)=>{
                                 // Allow the next getLogs
                                 event._inflight = false;
@@ -68405,7 +67975,7 @@ class BaseProvider extends (0, _abstractProvider.Provider) {
             while(true){
                 if (currentName === "" || currentName === ".") return null;
                 // Optimization since the eth node cannot change and does
-                // not have a wildcar resolver
+                // not have a wildcard resolver
                 if (name !== "eth" && currentName === "eth") return null;
                 // Check the current node for a resolver
                 const addr = yield this._getResolver(currentName, "getResolver");
@@ -68454,7 +68024,7 @@ class BaseProvider extends (0, _abstractProvider.Provider) {
                 if ((0, _bytes.isHexString)(name)) throw error;
             }
             if (typeof name !== "string") logger.throwArgumentError("invalid ENS name", "name", name);
-            // Get the addr from the resovler
+            // Get the addr from the resolver
             const resolver = yield this.getResolver(name);
             if (!resolver) return null;
             return yield resolver.getAddress();
@@ -68609,7 +68179,7 @@ class BaseProvider extends (0, _abstractProvider.Provider) {
     }
 }
 
-},{"@ethersproject/abstract-provider":"g1jr1","@ethersproject/basex":"dm2o4","@ethersproject/bignumber":"ckYYW","@ethersproject/bytes":"htrqZ","@ethersproject/constants":"gKbDE","@ethersproject/hash":"7JYPm","@ethersproject/networks":"6JNhW","@ethersproject/properties":"h3GJb","@ethersproject/sha2":"k4R8k","@ethersproject/strings":"5TGFZ","@ethersproject/web":"5yjI3","bech32":"2C5n6","@ethersproject/logger":"hLvB2","./_version":"6PYAk","./formatter":"ZfOHh","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5yjI3":[function(require,module,exports) {
+},{"@ethersproject/abstract-provider":"g1jr1","@ethersproject/basex":"dm2o4","@ethersproject/bignumber":"ckYYW","@ethersproject/bytes":"htrqZ","@ethersproject/constants":"gKbDE","@ethersproject/hash":"7JYPm","@ethersproject/networks":"6JNhW","@ethersproject/properties":"h3GJb","@ethersproject/sha2":"k4R8k","@ethersproject/strings":"5TGFZ","@ethersproject/web":"5yjI3","bech32":"2C5n6","@ethersproject/logger":"hLvB2","./_version":"6PYAk","./formatter":"ZfOHh","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@ethersproject/base64":"329Wu"}],"5yjI3":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 // This API is still a work in progress; the future changes will likely be:
@@ -68719,6 +68289,7 @@ function _fetchData(connection, body1, processFunc) {
             };
         }
         if (connection.skipFetchSetup != null) options.skipFetchSetup = !!connection.skipFetchSetup;
+        if (connection.fetchOptions != null) options.fetchOptions = (0, _properties.shallowCopy)(connection.fetchOptions);
     }
     const reData = new RegExp("^data:([a-z0-9-]+/[a-z0-9-]+);base64,(.*)$", "i");
     const dataMatch = url ? url.match(reData) : null;
@@ -68966,39 +68537,11 @@ function poll(func, options) {
     });
 }
 
-},{"@ethersproject/base64":"329Wu","@ethersproject/bytes":"htrqZ","@ethersproject/properties":"h3GJb","@ethersproject/strings":"5TGFZ","@ethersproject/logger":"hLvB2","./_version":"6HtXu","./geturl":"gsrWY","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"329Wu":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "decode", ()=>(0, _base64.decode));
-parcelHelpers.export(exports, "encode", ()=>(0, _base64.encode));
-var _base64 = require("./base64");
-"use strict";
-
-},{"./base64":"cgzIg","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cgzIg":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "decode", ()=>decode);
-parcelHelpers.export(exports, "encode", ()=>encode);
-var _bytes = require("@ethersproject/bytes");
-"use strict";
-function decode(textData) {
-    textData = atob(textData);
-    const data = [];
-    for(let i = 0; i < textData.length; i++)data.push(textData.charCodeAt(i));
-    return (0, _bytes.arrayify)(data);
-}
-function encode(data) {
-    data = (0, _bytes.arrayify)(data);
-    let textData = "";
-    for(let i = 0; i < data.length; i++)textData += String.fromCharCode(data[i]);
-    return btoa(textData);
-}
-
-},{"@ethersproject/bytes":"htrqZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6HtXu":[function(require,module,exports) {
+},{"@ethersproject/base64":"329Wu","@ethersproject/bytes":"htrqZ","@ethersproject/properties":"h3GJb","@ethersproject/strings":"5TGFZ","@ethersproject/logger":"hLvB2","./_version":"6HtXu","./geturl":"gsrWY","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6HtXu":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "web/5.6.0";
+const version = "web/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gsrWY":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -69047,6 +68590,14 @@ function getUrl(href, options) {
             request.credentials = "same-origin"; // include, *same-origin, omit
             request.redirect = "follow"; // manual, *follow, error
             request.referrer = "client"; // no-referrer, *client
+        }
+        if (options.fetchOptions != null) {
+            const opts = options.fetchOptions;
+            if (opts.mode) request.mode = opts.mode;
+            if (opts.cache) request.cache = opts.cache;
+            if (opts.credentials) request.credentials = opts.credentials;
+            if (opts.redirect) request.redirect = opts.redirect;
+            if (opts.referrer) request.referrer = opts.referrer;
         }
         const response = yield fetch(href, request);
         const body = yield response.arrayBuffer();
@@ -69211,7 +68762,7 @@ module.exports = {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "providers/5.6.4";
+const version = "providers/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ZfOHh":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -69232,7 +68783,6 @@ var _version = require("./_version");
 const logger = new (0, _logger.Logger)((0, _version.version));
 class Formatter {
     constructor(){
-        logger.checkNew(new.target, Formatter);
         this.formats = this.getDefaultFormats();
     }
     getDefaultFormats() {
@@ -69407,7 +68957,15 @@ class Formatter {
     blockTag(blockTag) {
         if (blockTag == null) return "latest";
         if (blockTag === "earliest") return "0x0";
-        if (blockTag === "latest" || blockTag === "pending") return blockTag;
+        switch(blockTag){
+            case "earliest":
+                return "0x0";
+            case "latest":
+            case "pending":
+            case "safe":
+            case "finalized":
+                return blockTag;
+        }
         if (typeof blockTag === "number" || (0, _bytes.isHexString)(blockTag)) return (0, _bytes.hexValue)(blockTag);
         throw new Error("invalid blockTag");
     }
@@ -69651,11 +69209,17 @@ class AlchemyProvider extends (0, _urlJsonRpcProvider.UrlJsonRpcProvider) {
             case "arbitrum-rinkeby":
                 host = "arb-rinkeby.g.alchemy.com/v2/";
                 break;
+            case "arbitrum-goerli":
+                host = "arb-goerli.g.alchemy.com/v2/";
+                break;
             case "optimism":
                 host = "opt-mainnet.g.alchemy.com/v2/";
                 break;
             case "optimism-kovan":
                 host = "opt-kovan.g.alchemy.com/v2/";
+                break;
+            case "optimism-goerli":
+                host = "opt-goerli.g.alchemy.com/v2/";
                 break;
             default:
                 logger.throwArgumentError("unsupported network", "network", arguments[0]);
@@ -70020,36 +69584,54 @@ const errorGas = [
     "call",
     "estimateGas"
 ];
-function spelunk(value) {
+function spelunk(value, requireData) {
     if (value == null) return null;
     // These *are* the droids we're looking for.
-    if (typeof value.message === "string" && value.message.match("reverted") && (0, _bytes.isHexString)(value.data)) return {
-        message: value.message,
-        data: value.data
-    };
+    if (typeof value.message === "string" && value.message.match("reverted")) {
+        const data = (0, _bytes.isHexString)(value.data) ? value.data : null;
+        if (!requireData || data) return {
+            message: value.message,
+            data
+        };
+    }
     // Spelunk further...
     if (typeof value === "object") {
         for(const key in value){
-            const result = spelunk(value[key]);
+            const result = spelunk(value[key], requireData);
             if (result) return result;
         }
         return null;
     }
     // Might be a JSON string we can further descend...
     if (typeof value === "string") try {
-        return spelunk(JSON.parse(value));
+        return spelunk(JSON.parse(value), requireData);
     } catch (error) {}
     return null;
 }
 function checkError(method, error, params) {
+    const transaction = params.transaction || params.signedTransaction;
     // Undo the "convenience" some nodes are attempting to prevent backwards
     // incompatibility; maybe for v6 consider forwarding reverts as errors
     if (method === "call") {
-        const result = spelunk(error);
+        const result = spelunk(error, true);
         if (result) return result.data;
+        // Nothing descriptive..
         logger.throwError("missing revert data in call exception; Transaction reverted without a reason string", (0, _logger.Logger).errors.CALL_EXCEPTION, {
-            error,
-            data: "0x"
+            data: "0x",
+            transaction,
+            error
+        });
+    }
+    if (method === "estimateGas") {
+        // Try to find something, with a preference on SERVER_ERROR body
+        let result = spelunk(error.body, false);
+        if (result == null) result = spelunk(error, false);
+        // Found "reverted", this is a CALL_EXCEPTION
+        if (result) logger.throwError("cannot estimate gas; transaction may fail or may require manual gas limit", (0, _logger.Logger).errors.UNPREDICTABLE_GAS_LIMIT, {
+            reason: result.message,
+            method,
+            transaction,
+            error
         });
     }
     // @TODO: Should we spelunk for message too?
@@ -70058,27 +69640,26 @@ function checkError(method, error, params) {
     else if (typeof error.body === "string") message = error.body;
     else if (typeof error.responseText === "string") message = error.responseText;
     message = (message || "").toLowerCase();
-    const transaction = params.transaction || params.signedTransaction;
     // "insufficient funds for gas * price + value + cost(data)"
-    if (message.match(/insufficient funds|base fee exceeds gas limit/)) logger.throwError("insufficient funds for intrinsic transaction cost", (0, _logger.Logger).errors.INSUFFICIENT_FUNDS, {
+    if (message.match(/insufficient funds|base fee exceeds gas limit/i)) logger.throwError("insufficient funds for intrinsic transaction cost", (0, _logger.Logger).errors.INSUFFICIENT_FUNDS, {
         error,
         method,
         transaction
     });
     // "nonce too low"
-    if (message.match(/nonce (is )?too low/)) logger.throwError("nonce has already been used", (0, _logger.Logger).errors.NONCE_EXPIRED, {
+    if (message.match(/nonce (is )?too low/i)) logger.throwError("nonce has already been used", (0, _logger.Logger).errors.NONCE_EXPIRED, {
         error,
         method,
         transaction
     });
     // "replacement transaction underpriced"
-    if (message.match(/replacement transaction underpriced/)) logger.throwError("replacement fee too low", (0, _logger.Logger).errors.REPLACEMENT_UNDERPRICED, {
+    if (message.match(/replacement transaction underpriced|transaction gas price.*too low/i)) logger.throwError("replacement fee too low", (0, _logger.Logger).errors.REPLACEMENT_UNDERPRICED, {
         error,
         method,
         transaction
     });
     // "replacement transaction underpriced"
-    if (message.match(/only replay-protected/)) logger.throwError("legacy pre-eip-155 transactions not supported", (0, _logger.Logger).errors.UNSUPPORTED_OPERATION, {
+    if (message.match(/only replay-protected/i)) logger.throwError("legacy pre-eip-155 transactions not supported", (0, _logger.Logger).errors.UNSUPPORTED_OPERATION, {
         error,
         method,
         transaction
@@ -70112,7 +69693,6 @@ function getLowerCase(value) {
 const _constructorGuard = {};
 class JsonRpcSigner extends (0, _abstractSigner.Signer) {
     constructor(constructorGuard, provider, addressOrIndex){
-        logger.checkNew(new.target, JsonRpcSigner);
         super();
         if (constructorGuard !== _constructorGuard) throw new Error("do not call the JsonRpcSigner constructor directly; use provider.getSigner");
         (0, _properties.defineReadOnly)(this, "provider", provider);
@@ -70177,6 +69757,10 @@ class JsonRpcSigner extends (0, _abstractSigner.Signer) {
             ]).then((hash)=>{
                 return hash;
             }, (error)=>{
+                if (typeof error.message === "string" && error.message.match(/user denied/i)) logger.throwError("user rejected transaction", (0, _logger.Logger).errors.ACTION_REJECTED, {
+                    action: "sendTransaction",
+                    transaction: tx
+                });
                 return checkError("sendTransaction", error, hexTx);
             });
         });
@@ -70213,21 +69797,39 @@ class JsonRpcSigner extends (0, _abstractSigner.Signer) {
         return __awaiter(this, void 0, void 0, function*() {
             const data = typeof message === "string" ? (0, _strings.toUtf8Bytes)(message) : message;
             const address = yield this.getAddress();
-            return yield this.provider.send("personal_sign", [
-                (0, _bytes.hexlify)(data),
-                address.toLowerCase()
-            ]);
+            try {
+                return yield this.provider.send("personal_sign", [
+                    (0, _bytes.hexlify)(data),
+                    address.toLowerCase()
+                ]);
+            } catch (error) {
+                if (typeof error.message === "string" && error.message.match(/user denied/i)) logger.throwError("user rejected signing", (0, _logger.Logger).errors.ACTION_REJECTED, {
+                    action: "signMessage",
+                    from: address,
+                    message: data
+                });
+                throw error;
+            }
         });
     }
     _legacySignMessage(message) {
         return __awaiter(this, void 0, void 0, function*() {
             const data = typeof message === "string" ? (0, _strings.toUtf8Bytes)(message) : message;
             const address = yield this.getAddress();
-            // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
-            return yield this.provider.send("eth_sign", [
-                address.toLowerCase(),
-                (0, _bytes.hexlify)(data)
-            ]);
+            try {
+                // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign
+                return yield this.provider.send("eth_sign", [
+                    address.toLowerCase(),
+                    (0, _bytes.hexlify)(data)
+                ]);
+            } catch (error) {
+                if (typeof error.message === "string" && error.message.match(/user denied/i)) logger.throwError("user rejected signing", (0, _logger.Logger).errors.ACTION_REJECTED, {
+                    action: "_legacySignMessage",
+                    from: address,
+                    message: data
+                });
+                throw error;
+            }
         });
     }
     _signTypedData(domain, types, value) {
@@ -70237,10 +69839,23 @@ class JsonRpcSigner extends (0, _abstractSigner.Signer) {
                 return this.provider.resolveName(name);
             });
             const address = yield this.getAddress();
-            return yield this.provider.send("eth_signTypedData_v4", [
-                address.toLowerCase(),
-                JSON.stringify((0, _hash._TypedDataEncoder).getPayload(populated.domain, types, populated.value))
-            ]);
+            try {
+                return yield this.provider.send("eth_signTypedData_v4", [
+                    address.toLowerCase(),
+                    JSON.stringify((0, _hash._TypedDataEncoder).getPayload(populated.domain, types, populated.value))
+                ]);
+            } catch (error) {
+                if (typeof error.message === "string" && error.message.match(/user denied/i)) logger.throwError("user rejected signing", (0, _logger.Logger).errors.ACTION_REJECTED, {
+                    action: "_signTypedData",
+                    from: address,
+                    message: {
+                        domain: populated.domain,
+                        types,
+                        value: populated.value
+                    }
+                });
+                throw error;
+            }
         });
     }
     unlock(password) {
@@ -70290,7 +69905,6 @@ const allowedTransactionKeys = {
 };
 class JsonRpcProvider extends (0, _baseProvider.BaseProvider) {
     constructor(url, network1){
-        logger.checkNew(new.target, JsonRpcProvider);
         let networkOrReady = network1;
         // The network is unknown, query the JSON-RPC for it
         if (networkOrReady == null) networkOrReady = new Promise((resolve, reject)=>{
@@ -70453,7 +70067,7 @@ class JsonRpcProvider extends (0, _baseProvider.BaseProvider) {
                     "eth_getStorageAt",
                     [
                         getLowerCase(params.address),
-                        params.position,
+                        (0, _bytes.hexZeroPad)(params.position, 32),
                         params.blockTag
                     ]
                 ];
@@ -70538,7 +70152,7 @@ class JsonRpcProvider extends (0, _baseProvider.BaseProvider) {
             // is fair), so we delete type if it is 0 and a non-EIP-1559 network
             if (method === "call" || method === "estimateGas") {
                 const tx = params.transaction;
-                if (tx && tx.type != null && (0, _bignumber.BigNumber).from(tx.type).isZero()) // If there are no EIP-1559 properties, it might be non-EIP-a559
+                if (tx && tx.type != null && (0, _bignumber.BigNumber).from(tx.type).isZero()) // If there are no EIP-1559 properties, it might be non-EIP-1559
                 {
                     if (tx.maxFeePerGas == null && tx.maxPriorityFeePerGas == null) {
                         const feeData = yield this.getFeeData();
@@ -70641,7 +70255,7 @@ class JsonRpcProvider extends (0, _baseProvider.BaseProvider) {
             "value"
         ].forEach(function(key) {
             if (transaction[key] == null) return;
-            const value = (0, _bytes.hexValue)(transaction[key]);
+            const value = (0, _bytes.hexValue)((0, _bignumber.BigNumber).from(transaction[key]));
             if (key === "gasLimit") key = "gas";
             result[key] = value;
         });
@@ -70807,6 +70421,12 @@ function getHost(name) {
     switch(name){
         case "homestead":
             return "rpc.ankr.com/eth/";
+        case "ropsten":
+            return "rpc.ankr.com/eth_ropsten/";
+        case "rinkeby":
+            return "rpc.ankr.com/eth_rinkeby/";
+        case "goerli":
+            return "rpc.ankr.com/eth_goerli/";
         case "matic":
             return "rpc.ankr.com/polygon/";
         case "arbitrum":
@@ -70981,7 +70601,7 @@ function getTransactionPostData(transaction) {
 function getResult(result) {
     // getLogs, getHistory have weird success responses
     if (result.status == 0 && (result.message === "No records found" || result.message === "No transactions found")) return result.result;
-    if (result.status != 1 || result.message != "OK") {
+    if (result.status != 1 || typeof result.message !== "string" || !result.message.match(/^OK/)) {
         const error = new Error("invalid response");
         error.result = JSON.stringify(result);
         if ((result.result || "").toLowerCase().indexOf("rate limit") >= 0) error.throttleRetry = true;
@@ -71018,7 +70638,6 @@ function checkLogTag(blockTag) {
     if (blockTag === "latest") return blockTag;
     return parseInt(blockTag.substring(2), 16);
 }
-const defaultApiKey = "9D13ZE7XSBTJ94N9BNJ2MA33VMAY2YPIRB";
 function checkError(method, error, transaction) {
     // Undo the "convenience" some nodes are attempting to prevent backwards
     // incompatibility; maybe for v6 consider forwarding reverts as errors
@@ -71071,10 +70690,9 @@ function checkError(method, error, transaction) {
 }
 class EtherscanProvider extends (0, _baseProvider.BaseProvider) {
     constructor(network, apiKey){
-        logger.checkNew(new.target, EtherscanProvider);
         super(network);
         (0, _properties.defineReadOnly)(this, "baseUrl", this.getBaseUrl());
-        (0, _properties.defineReadOnly)(this, "apiKey", apiKey || defaultApiKey);
+        (0, _properties.defineReadOnly)(this, "apiKey", apiKey || null);
     }
     getBaseUrl() {
         switch(this.network ? this.network.name : "invalid"){
@@ -71088,9 +70706,13 @@ class EtherscanProvider extends (0, _baseProvider.BaseProvider) {
                 return "https://api-kovan.etherscan.io";
             case "goerli":
                 return "https://api-goerli.etherscan.io";
+            case "optimism":
+                return "https://api-optimistic.etherscan.io";
+            case "optimism-kovan":
+                return "https://api-kovan-optimistic.etherscan.io";
             default:
         }
-        return logger.throwArgumentError("unsupported network", "network", name);
+        return logger.throwArgumentError("unsupported network", "network", this.network.name);
     }
     getUrl(module, params) {
         const query = Object.keys(params).reduce((accum, key)=>{
@@ -71316,7 +70938,7 @@ class EtherscanProvider extends (0, _baseProvider.BaseProvider) {
         });
     }
     isCommunityResource() {
-        return this.apiKey === defaultApiKey;
+        return this.apiKey == null;
     }
 }
 
@@ -71614,6 +71236,7 @@ function getRunner(config, currentBlockNumber, method, params) {
             case "call":
             case "estimateGas":
                 if (params.blockTag && (0, _bytes.isHexString)(params.blockTag)) provider = yield waitForSync(config, currentBlockNumber);
+                if (method === "call" && params.blockTag) return provider[method](params.transaction, params.blockTag);
                 return provider[method](params.transaction);
             case "getTransaction":
             case "getTransactionReceipt":
@@ -71633,7 +71256,6 @@ function getRunner(config, currentBlockNumber, method, params) {
 }
 class FallbackProvider extends (0, _baseProvider.BaseProvider) {
     constructor(providers, quorum){
-        logger.checkNew(new.target, FallbackProvider);
         if (providers.length === 0) logger.throwArgumentError("missing providers", "providers", providers);
         const providerConfigs = providers.map((configOrProvider, index)=>{
             if ((0, _abstractProvider.Provider).isProvider(configOrProvider)) {
@@ -72073,79 +71695,52 @@ class NodesmithProvider extends (0, _urlJsonRpcProvider.UrlJsonRpcProvider) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "PocketProvider", ()=>PocketProvider);
-var _properties = require("@ethersproject/properties");
 var _logger = require("@ethersproject/logger");
 var _version = require("./_version");
 var _urlJsonRpcProvider = require("./url-json-rpc-provider");
 "use strict";
 const logger = new (0, _logger.Logger)((0, _version.version));
-// These are load-balancer-based application IDs
-const defaultApplicationIds = {
-    homestead: "6004bcd10040261633ade990",
-    ropsten: "6004bd4d0040261633ade991",
-    rinkeby: "6004bda20040261633ade994",
-    goerli: "6004bd860040261633ade992"
-};
+const defaultApplicationId = "62e1ad51b37b8e00394bda3b";
 class PocketProvider extends (0, _urlJsonRpcProvider.UrlJsonRpcProvider) {
-    constructor(network, apiKey){
-        // We need a bit of creativity in the constructor because
-        // Pocket uses different default API keys based on the network
-        if (apiKey == null) {
-            const n = (0, _properties.getStatic)(new.target, "getNetwork")(network);
-            if (n) {
-                const applicationId = defaultApplicationIds[n.name];
-                if (applicationId) apiKey = {
-                    applicationId: applicationId,
-                    loadBalancer: true
-                };
-            }
-            // If there was any issue above, we don't know this network
-            if (apiKey == null) logger.throwError("unsupported network", (0, _logger.Logger).errors.INVALID_ARGUMENT, {
-                argument: "network",
-                value: network
-            });
-        }
-        super(network, apiKey);
-    }
     static getApiKey(apiKey) {
-        // Most API Providers allow null to get the default configuration, but
-        // Pocket requires the network to decide the default provider, so we
-        // rely on hijacking the constructor to add a sensible default for us
-        if (apiKey == null) logger.throwArgumentError("PocketProvider.getApiKey does not support null apiKey", "apiKey", apiKey);
         const apiKeyObj = {
             applicationId: null,
-            loadBalancer: false,
+            loadBalancer: true,
             applicationSecretKey: null
         };
         // Parse applicationId and applicationSecretKey
-        if (typeof apiKey === "string") apiKeyObj.applicationId = apiKey;
+        if (apiKey == null) apiKeyObj.applicationId = defaultApplicationId;
+        else if (typeof apiKey === "string") apiKeyObj.applicationId = apiKey;
         else if (apiKey.applicationSecretKey != null) {
-            logger.assertArgument(typeof apiKey.applicationId === "string", "applicationSecretKey requires an applicationId", "applicationId", apiKey.applicationId);
-            logger.assertArgument(typeof apiKey.applicationSecretKey === "string", "invalid applicationSecretKey", "applicationSecretKey", "[REDACTED]");
             apiKeyObj.applicationId = apiKey.applicationId;
             apiKeyObj.applicationSecretKey = apiKey.applicationSecretKey;
-            apiKeyObj.loadBalancer = !!apiKey.loadBalancer;
-        } else if (apiKey.applicationId) {
-            logger.assertArgument(typeof apiKey.applicationId === "string", "apiKey.applicationId must be a string", "apiKey.applicationId", apiKey.applicationId);
-            apiKeyObj.applicationId = apiKey.applicationId;
-            apiKeyObj.loadBalancer = !!apiKey.loadBalancer;
-        } else logger.throwArgumentError("unsupported PocketProvider apiKey", "apiKey", apiKey);
+        } else if (apiKey.applicationId) apiKeyObj.applicationId = apiKey.applicationId;
+        else logger.throwArgumentError("unsupported PocketProvider apiKey", "apiKey", apiKey);
         return apiKeyObj;
     }
     static getUrl(network, apiKey) {
         let host = null;
         switch(network ? network.name : "unknown"){
+            case "goerli":
+                host = "eth-goerli.gateway.pokt.network";
+                break;
             case "homestead":
                 host = "eth-mainnet.gateway.pokt.network";
                 break;
-            case "ropsten":
-                host = "eth-ropsten.gateway.pokt.network";
+            case "kovan":
+                host = "poa-kovan.gateway.pokt.network";
+                break;
+            case "matic":
+                host = "poly-mainnet.gateway.pokt.network";
+                break;
+            case "maticmum":
+                host = "polygon-mumbai-rpc.gateway.pokt.network";
                 break;
             case "rinkeby":
                 host = "eth-rinkeby.gateway.pokt.network";
                 break;
-            case "goerli":
-                host = "eth-goerli.gateway.pokt.network";
+            case "ropsten":
+                host = "eth-ropsten.gateway.pokt.network";
                 break;
             default:
                 logger.throwError("unsupported network", (0, _logger.Logger).errors.INVALID_ARGUMENT, {
@@ -72153,15 +71748,11 @@ class PocketProvider extends (0, _urlJsonRpcProvider.UrlJsonRpcProvider) {
                     value: network
                 });
         }
-        let url = null;
-        if (apiKey.loadBalancer) url = `https:/\/${host}/v1/lb/${apiKey.applicationId}`;
-        else url = `https:/\/${host}/v1/${apiKey.applicationId}`;
+        const url = `https:/\/${host}/v1/lb/${apiKey.applicationId}`;
         const connection = {
+            headers: {},
             url
         };
-        // Initialize empty headers
-        connection.headers = {};
-        // Apply application secret key
         if (apiKey.applicationSecretKey != null) {
             connection.user = "";
             connection.password = apiKey.applicationSecretKey;
@@ -72169,11 +71760,11 @@ class PocketProvider extends (0, _urlJsonRpcProvider.UrlJsonRpcProvider) {
         return connection;
     }
     isCommunityResource() {
-        return this.applicationId === defaultApplicationIds[this.network.name];
+        return this.applicationId === defaultApplicationId;
     }
 }
 
-},{"@ethersproject/properties":"h3GJb","@ethersproject/logger":"hLvB2","./_version":"6PYAk","./url-json-rpc-provider":"9CTqA","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cIjQb":[function(require,module,exports) {
+},{"@ethersproject/logger":"hLvB2","./_version":"6PYAk","./url-json-rpc-provider":"9CTqA","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cIjQb":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Web3Provider", ()=>Web3Provider);
@@ -72265,7 +71856,6 @@ function buildEip1193Fetcher(provider) {
 }
 class Web3Provider extends (0, _jsonRpcProvider.JsonRpcProvider) {
     constructor(provider, network){
-        logger.checkNew(new.target, Web3Provider);
         if (provider == null) logger.throwArgumentError("missing provider", "provider", provider);
         let path = null;
         let jsonRpcFetchFunc = null;
@@ -72506,7 +72096,7 @@ function sha256(types, values) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "solidity/5.6.0";
+const version = "solidity/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kGZhx":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -72585,13 +72175,13 @@ function parseEther(ether) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "units/5.6.0";
+const version = "units/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aosLW":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "version", ()=>version);
-const version = "ethers/5.6.4";
+const version = "ethers/5.7.0";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5rYDX":[function(require,module,exports) {
 var baseFlatten = require("./_baseFlatten"), baseOrderBy = require("./_baseOrderBy"), baseRest = require("./_baseRest"), isIterateeCall = require("./_isIterateeCall");
@@ -72691,23 +72281,7 @@ var Symbol = require("./_Symbol"), isArguments = require("./isArguments"), isArr
 }
 module.exports = isFlattenable;
 
-},{"./_Symbol":"7lsL9","./isArguments":"8ReNj","./isArray":"dZaTH"}],"7lsL9":[function(require,module,exports) {
-var root = require("./_root");
-/** Built-in value references. */ var Symbol = root.Symbol;
-module.exports = Symbol;
-
-},{"./_root":"dSYUs"}],"dSYUs":[function(require,module,exports) {
-var freeGlobal = require("./_freeGlobal");
-/** Detect free variable `self`. */ var freeSelf = typeof self == "object" && self && self.Object === Object && self;
-/** Used as a reference to the global object. */ var root = freeGlobal || freeSelf || Function("return this")();
-module.exports = root;
-
-},{"./_freeGlobal":"kAk32"}],"kAk32":[function(require,module,exports) {
-var global = arguments[3];
-/** Detect free variable `global` from Node.js. */ var freeGlobal = typeof global == "object" && global && global.Object === Object && global;
-module.exports = freeGlobal;
-
-},{}],"8ReNj":[function(require,module,exports) {
+},{"./_Symbol":"7lsL9","./isArguments":"8ReNj","./isArray":"dZaTH"}],"8ReNj":[function(require,module,exports) {
 var baseIsArguments = require("./_baseIsArguments"), isObjectLike = require("./isObjectLike");
 /** Used for built-in method references. */ var objectProto = Object.prototype;
 /** Used to check objects for own properties. */ var hasOwnProperty = objectProto.hasOwnProperty;
@@ -72750,72 +72324,7 @@ var baseGetTag = require("./_baseGetTag"), isObjectLike = require("./isObjectLik
 }
 module.exports = baseIsArguments;
 
-},{"./_baseGetTag":"lOnbo","./isObjectLike":"3BLi4"}],"lOnbo":[function(require,module,exports) {
-var Symbol = require("./_Symbol"), getRawTag = require("./_getRawTag"), objectToString = require("./_objectToString");
-/** `Object#toString` result references. */ var nullTag = "[object Null]", undefinedTag = "[object Undefined]";
-/** Built-in value references. */ var symToStringTag = Symbol ? Symbol.toStringTag : undefined;
-/**
- * The base implementation of `getTag` without fallbacks for buggy environments.
- *
- * @private
- * @param {*} value The value to query.
- * @returns {string} Returns the `toStringTag`.
- */ function baseGetTag(value) {
-    if (value == null) return value === undefined ? undefinedTag : nullTag;
-    return symToStringTag && symToStringTag in Object(value) ? getRawTag(value) : objectToString(value);
-}
-module.exports = baseGetTag;
-
-},{"./_Symbol":"7lsL9","./_getRawTag":"995sO","./_objectToString":"bmE3g"}],"995sO":[function(require,module,exports) {
-var Symbol = require("./_Symbol");
-/** Used for built-in method references. */ var objectProto = Object.prototype;
-/** Used to check objects for own properties. */ var hasOwnProperty = objectProto.hasOwnProperty;
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
- * of values.
- */ var nativeObjectToString = objectProto.toString;
-/** Built-in value references. */ var symToStringTag = Symbol ? Symbol.toStringTag : undefined;
-/**
- * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
- *
- * @private
- * @param {*} value The value to query.
- * @returns {string} Returns the raw `toStringTag`.
- */ function getRawTag(value) {
-    var isOwn = hasOwnProperty.call(value, symToStringTag), tag = value[symToStringTag];
-    try {
-        value[symToStringTag] = undefined;
-        var unmasked = true;
-    } catch (e) {}
-    var result = nativeObjectToString.call(value);
-    if (unmasked) {
-        if (isOwn) value[symToStringTag] = tag;
-        else delete value[symToStringTag];
-    }
-    return result;
-}
-module.exports = getRawTag;
-
-},{"./_Symbol":"7lsL9"}],"bmE3g":[function(require,module,exports) {
-/** Used for built-in method references. */ var objectProto = Object.prototype;
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
- * of values.
- */ var nativeObjectToString = objectProto.toString;
-/**
- * Converts `value` to a string using `Object.prototype.toString`.
- *
- * @private
- * @param {*} value The value to convert.
- * @returns {string} Returns the converted string.
- */ function objectToString(value) {
-    return nativeObjectToString.call(value);
-}
-module.exports = objectToString;
-
-},{}],"3BLi4":[function(require,module,exports) {
+},{"./_baseGetTag":"lOnbo","./isObjectLike":"3BLi4"}],"3BLi4":[function(require,module,exports) {
 /**
  * Checks if `value` is object-like. A value is object-like if it's not `null`
  * and has a `typeof` result of "object".
@@ -73040,657 +72549,7 @@ var memoize = require("./memoize");
 }
 module.exports = memoizeCapped;
 
-},{"./memoize":"azHKC"}],"azHKC":[function(require,module,exports) {
-var MapCache = require("./_MapCache");
-/** Error message constants. */ var FUNC_ERROR_TEXT = "Expected a function";
-/**
- * Creates a function that memoizes the result of `func`. If `resolver` is
- * provided, it determines the cache key for storing the result based on the
- * arguments provided to the memoized function. By default, the first argument
- * provided to the memoized function is used as the map cache key. The `func`
- * is invoked with the `this` binding of the memoized function.
- *
- * **Note:** The cache is exposed as the `cache` property on the memoized
- * function. Its creation may be customized by replacing the `_.memoize.Cache`
- * constructor with one whose instances implement the
- * [`Map`](http://ecma-international.org/ecma-262/7.0/#sec-properties-of-the-map-prototype-object)
- * method interface of `clear`, `delete`, `get`, `has`, and `set`.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Function
- * @param {Function} func The function to have its output memoized.
- * @param {Function} [resolver] The function to resolve the cache key.
- * @returns {Function} Returns the new memoized function.
- * @example
- *
- * var object = { 'a': 1, 'b': 2 };
- * var other = { 'c': 3, 'd': 4 };
- *
- * var values = _.memoize(_.values);
- * values(object);
- * // => [1, 2]
- *
- * values(other);
- * // => [3, 4]
- *
- * object.a = 2;
- * values(object);
- * // => [1, 2]
- *
- * // Modify the result cache.
- * values.cache.set(object, ['a', 'b']);
- * values(object);
- * // => ['a', 'b']
- *
- * // Replace `_.memoize.Cache`.
- * _.memoize.Cache = WeakMap;
- */ function memoize(func, resolver) {
-    if (typeof func != "function" || resolver != null && typeof resolver != "function") throw new TypeError(FUNC_ERROR_TEXT);
-    var memoized = function() {
-        var args = arguments, key = resolver ? resolver.apply(this, args) : args[0], cache = memoized.cache;
-        if (cache.has(key)) return cache.get(key);
-        var result = func.apply(this, args);
-        memoized.cache = cache.set(key, result) || cache;
-        return result;
-    };
-    memoized.cache = new (memoize.Cache || MapCache);
-    return memoized;
-}
-// Expose `MapCache`.
-memoize.Cache = MapCache;
-module.exports = memoize;
-
-},{"./_MapCache":"664I1"}],"664I1":[function(require,module,exports) {
-var mapCacheClear = require("./_mapCacheClear"), mapCacheDelete = require("./_mapCacheDelete"), mapCacheGet = require("./_mapCacheGet"), mapCacheHas = require("./_mapCacheHas"), mapCacheSet = require("./_mapCacheSet");
-/**
- * Creates a map cache object to store key-value pairs.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */ function MapCache(entries) {
-    var index = -1, length = entries == null ? 0 : entries.length;
-    this.clear();
-    while(++index < length){
-        var entry = entries[index];
-        this.set(entry[0], entry[1]);
-    }
-}
-// Add methods to `MapCache`.
-MapCache.prototype.clear = mapCacheClear;
-MapCache.prototype["delete"] = mapCacheDelete;
-MapCache.prototype.get = mapCacheGet;
-MapCache.prototype.has = mapCacheHas;
-MapCache.prototype.set = mapCacheSet;
-module.exports = MapCache;
-
-},{"./_mapCacheClear":"7kHs4","./_mapCacheDelete":"4ny9y","./_mapCacheGet":"gVeFY","./_mapCacheHas":"idSOY","./_mapCacheSet":"lXUJT"}],"7kHs4":[function(require,module,exports) {
-var Hash = require("./_Hash"), ListCache = require("./_ListCache"), Map = require("./_Map");
-/**
- * Removes all key-value entries from the map.
- *
- * @private
- * @name clear
- * @memberOf MapCache
- */ function mapCacheClear() {
-    this.size = 0;
-    this.__data__ = {
-        "hash": new Hash,
-        "map": new (Map || ListCache),
-        "string": new Hash
-    };
-}
-module.exports = mapCacheClear;
-
-},{"./_Hash":"jFMT5","./_ListCache":"3UZeo","./_Map":"8YjF4"}],"jFMT5":[function(require,module,exports) {
-var hashClear = require("./_hashClear"), hashDelete = require("./_hashDelete"), hashGet = require("./_hashGet"), hashHas = require("./_hashHas"), hashSet = require("./_hashSet");
-/**
- * Creates a hash object.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */ function Hash(entries) {
-    var index = -1, length = entries == null ? 0 : entries.length;
-    this.clear();
-    while(++index < length){
-        var entry = entries[index];
-        this.set(entry[0], entry[1]);
-    }
-}
-// Add methods to `Hash`.
-Hash.prototype.clear = hashClear;
-Hash.prototype["delete"] = hashDelete;
-Hash.prototype.get = hashGet;
-Hash.prototype.has = hashHas;
-Hash.prototype.set = hashSet;
-module.exports = Hash;
-
-},{"./_hashClear":"f2NRo","./_hashDelete":"cCdgz","./_hashGet":"eKqTO","./_hashHas":"ghnqP","./_hashSet":"6i99R"}],"f2NRo":[function(require,module,exports) {
-var nativeCreate = require("./_nativeCreate");
-/**
- * Removes all key-value entries from the hash.
- *
- * @private
- * @name clear
- * @memberOf Hash
- */ function hashClear() {
-    this.__data__ = nativeCreate ? nativeCreate(null) : {};
-    this.size = 0;
-}
-module.exports = hashClear;
-
-},{"./_nativeCreate":"6i8Uf"}],"6i8Uf":[function(require,module,exports) {
-var getNative = require("./_getNative");
-/* Built-in method references that are verified to be native. */ var nativeCreate = getNative(Object, "create");
-module.exports = nativeCreate;
-
-},{"./_getNative":"9PCIl"}],"9PCIl":[function(require,module,exports) {
-var baseIsNative = require("./_baseIsNative"), getValue = require("./_getValue");
-/**
- * Gets the native function at `key` of `object`.
- *
- * @private
- * @param {Object} object The object to query.
- * @param {string} key The key of the method to get.
- * @returns {*} Returns the function if it's native, else `undefined`.
- */ function getNative(object, key) {
-    var value = getValue(object, key);
-    return baseIsNative(value) ? value : undefined;
-}
-module.exports = getNative;
-
-},{"./_baseIsNative":"2U9Pn","./_getValue":"kKx5I"}],"2U9Pn":[function(require,module,exports) {
-var isFunction = require("./isFunction"), isMasked = require("./_isMasked"), isObject = require("./isObject"), toSource = require("./_toSource");
-/**
- * Used to match `RegExp`
- * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
- */ var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
-/** Used to detect host constructors (Safari). */ var reIsHostCtor = /^\[object .+?Constructor\]$/;
-/** Used for built-in method references. */ var funcProto = Function.prototype, objectProto = Object.prototype;
-/** Used to resolve the decompiled source of functions. */ var funcToString = funcProto.toString;
-/** Used to check objects for own properties. */ var hasOwnProperty = objectProto.hasOwnProperty;
-/** Used to detect if a method is native. */ var reIsNative = RegExp("^" + funcToString.call(hasOwnProperty).replace(reRegExpChar, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$");
-/**
- * The base implementation of `_.isNative` without bad shim checks.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a native function,
- *  else `false`.
- */ function baseIsNative(value) {
-    if (!isObject(value) || isMasked(value)) return false;
-    var pattern = isFunction(value) ? reIsNative : reIsHostCtor;
-    return pattern.test(toSource(value));
-}
-module.exports = baseIsNative;
-
-},{"./isFunction":"cfti6","./_isMasked":"cMDzi","./isObject":"cGhqJ","./_toSource":"bYHc7"}],"cfti6":[function(require,module,exports) {
-var baseGetTag = require("./_baseGetTag"), isObject = require("./isObject");
-/** `Object#toString` result references. */ var asyncTag = "[object AsyncFunction]", funcTag = "[object Function]", genTag = "[object GeneratorFunction]", proxyTag = "[object Proxy]";
-/**
- * Checks if `value` is classified as a `Function` object.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a function, else `false`.
- * @example
- *
- * _.isFunction(_);
- * // => true
- *
- * _.isFunction(/abc/);
- * // => false
- */ function isFunction(value) {
-    if (!isObject(value)) return false;
-    // The use of `Object#toString` avoids issues with the `typeof` operator
-    // in Safari 9 which returns 'object' for typed arrays and other constructors.
-    var tag = baseGetTag(value);
-    return tag == funcTag || tag == genTag || tag == asyncTag || tag == proxyTag;
-}
-module.exports = isFunction;
-
-},{"./_baseGetTag":"lOnbo","./isObject":"cGhqJ"}],"cGhqJ":[function(require,module,exports) {
-/**
- * Checks if `value` is the
- * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
- * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an object, else `false`.
- * @example
- *
- * _.isObject({});
- * // => true
- *
- * _.isObject([1, 2, 3]);
- * // => true
- *
- * _.isObject(_.noop);
- * // => true
- *
- * _.isObject(null);
- * // => false
- */ function isObject(value) {
-    var type = typeof value;
-    return value != null && (type == "object" || type == "function");
-}
-module.exports = isObject;
-
-},{}],"cMDzi":[function(require,module,exports) {
-var coreJsData = require("./_coreJsData");
-/** Used to detect methods masquerading as native. */ var maskSrcKey = function() {
-    var uid = /[^.]+$/.exec(coreJsData && coreJsData.keys && coreJsData.keys.IE_PROTO || "");
-    return uid ? "Symbol(src)_1." + uid : "";
-}();
-/**
- * Checks if `func` has its source masked.
- *
- * @private
- * @param {Function} func The function to check.
- * @returns {boolean} Returns `true` if `func` is masked, else `false`.
- */ function isMasked(func) {
-    return !!maskSrcKey && maskSrcKey in func;
-}
-module.exports = isMasked;
-
-},{"./_coreJsData":"6gJwQ"}],"6gJwQ":[function(require,module,exports) {
-var root = require("./_root");
-/** Used to detect overreaching core-js shims. */ var coreJsData = root["__core-js_shared__"];
-module.exports = coreJsData;
-
-},{"./_root":"dSYUs"}],"bYHc7":[function(require,module,exports) {
-/** Used for built-in method references. */ var funcProto = Function.prototype;
-/** Used to resolve the decompiled source of functions. */ var funcToString = funcProto.toString;
-/**
- * Converts `func` to its source code.
- *
- * @private
- * @param {Function} func The function to convert.
- * @returns {string} Returns the source code.
- */ function toSource(func) {
-    if (func != null) {
-        try {
-            return funcToString.call(func);
-        } catch (e) {}
-        try {
-            return func + "";
-        } catch (e1) {}
-    }
-    return "";
-}
-module.exports = toSource;
-
-},{}],"kKx5I":[function(require,module,exports) {
-/**
- * Gets the value at `key` of `object`.
- *
- * @private
- * @param {Object} [object] The object to query.
- * @param {string} key The key of the property to get.
- * @returns {*} Returns the property value.
- */ function getValue(object, key) {
-    return object == null ? undefined : object[key];
-}
-module.exports = getValue;
-
-},{}],"cCdgz":[function(require,module,exports) {
-/**
- * Removes `key` and its value from the hash.
- *
- * @private
- * @name delete
- * @memberOf Hash
- * @param {Object} hash The hash to modify.
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */ function hashDelete(key) {
-    var result = this.has(key) && delete this.__data__[key];
-    this.size -= result ? 1 : 0;
-    return result;
-}
-module.exports = hashDelete;
-
-},{}],"eKqTO":[function(require,module,exports) {
-var nativeCreate = require("./_nativeCreate");
-/** Used to stand-in for `undefined` hash values. */ var HASH_UNDEFINED = "__lodash_hash_undefined__";
-/** Used for built-in method references. */ var objectProto = Object.prototype;
-/** Used to check objects for own properties. */ var hasOwnProperty = objectProto.hasOwnProperty;
-/**
- * Gets the hash value for `key`.
- *
- * @private
- * @name get
- * @memberOf Hash
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */ function hashGet(key) {
-    var data = this.__data__;
-    if (nativeCreate) {
-        var result = data[key];
-        return result === HASH_UNDEFINED ? undefined : result;
-    }
-    return hasOwnProperty.call(data, key) ? data[key] : undefined;
-}
-module.exports = hashGet;
-
-},{"./_nativeCreate":"6i8Uf"}],"ghnqP":[function(require,module,exports) {
-var nativeCreate = require("./_nativeCreate");
-/** Used for built-in method references. */ var objectProto = Object.prototype;
-/** Used to check objects for own properties. */ var hasOwnProperty = objectProto.hasOwnProperty;
-/**
- * Checks if a hash value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf Hash
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */ function hashHas(key) {
-    var data = this.__data__;
-    return nativeCreate ? data[key] !== undefined : hasOwnProperty.call(data, key);
-}
-module.exports = hashHas;
-
-},{"./_nativeCreate":"6i8Uf"}],"6i99R":[function(require,module,exports) {
-var nativeCreate = require("./_nativeCreate");
-/** Used to stand-in for `undefined` hash values. */ var HASH_UNDEFINED = "__lodash_hash_undefined__";
-/**
- * Sets the hash `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf Hash
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the hash instance.
- */ function hashSet(key, value) {
-    var data = this.__data__;
-    this.size += this.has(key) ? 0 : 1;
-    data[key] = nativeCreate && value === undefined ? HASH_UNDEFINED : value;
-    return this;
-}
-module.exports = hashSet;
-
-},{"./_nativeCreate":"6i8Uf"}],"3UZeo":[function(require,module,exports) {
-var listCacheClear = require("./_listCacheClear"), listCacheDelete = require("./_listCacheDelete"), listCacheGet = require("./_listCacheGet"), listCacheHas = require("./_listCacheHas"), listCacheSet = require("./_listCacheSet");
-/**
- * Creates an list cache object.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */ function ListCache(entries) {
-    var index = -1, length = entries == null ? 0 : entries.length;
-    this.clear();
-    while(++index < length){
-        var entry = entries[index];
-        this.set(entry[0], entry[1]);
-    }
-}
-// Add methods to `ListCache`.
-ListCache.prototype.clear = listCacheClear;
-ListCache.prototype["delete"] = listCacheDelete;
-ListCache.prototype.get = listCacheGet;
-ListCache.prototype.has = listCacheHas;
-ListCache.prototype.set = listCacheSet;
-module.exports = ListCache;
-
-},{"./_listCacheClear":"7AKQv","./_listCacheDelete":"j2Z5O","./_listCacheGet":"6Zrrs","./_listCacheHas":"i1CBK","./_listCacheSet":"2Rcur"}],"7AKQv":[function(require,module,exports) {
-/**
- * Removes all key-value entries from the list cache.
- *
- * @private
- * @name clear
- * @memberOf ListCache
- */ function listCacheClear() {
-    this.__data__ = [];
-    this.size = 0;
-}
-module.exports = listCacheClear;
-
-},{}],"j2Z5O":[function(require,module,exports) {
-var assocIndexOf = require("./_assocIndexOf");
-/** Used for built-in method references. */ var arrayProto = Array.prototype;
-/** Built-in value references. */ var splice = arrayProto.splice;
-/**
- * Removes `key` and its value from the list cache.
- *
- * @private
- * @name delete
- * @memberOf ListCache
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */ function listCacheDelete(key) {
-    var data = this.__data__, index = assocIndexOf(data, key);
-    if (index < 0) return false;
-    var lastIndex = data.length - 1;
-    if (index == lastIndex) data.pop();
-    else splice.call(data, index, 1);
-    --this.size;
-    return true;
-}
-module.exports = listCacheDelete;
-
-},{"./_assocIndexOf":"cRVsl"}],"cRVsl":[function(require,module,exports) {
-var eq = require("./eq");
-/**
- * Gets the index at which the `key` is found in `array` of key-value pairs.
- *
- * @private
- * @param {Array} array The array to inspect.
- * @param {*} key The key to search for.
- * @returns {number} Returns the index of the matched value, else `-1`.
- */ function assocIndexOf(array, key) {
-    var length = array.length;
-    while(length--){
-        if (eq(array[length][0], key)) return length;
-    }
-    return -1;
-}
-module.exports = assocIndexOf;
-
-},{"./eq":"aVz5f"}],"aVz5f":[function(require,module,exports) {
-/**
- * Performs a
- * [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
- * comparison between two values to determine if they are equivalent.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to compare.
- * @param {*} other The other value to compare.
- * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
- * @example
- *
- * var object = { 'a': 1 };
- * var other = { 'a': 1 };
- *
- * _.eq(object, object);
- * // => true
- *
- * _.eq(object, other);
- * // => false
- *
- * _.eq('a', 'a');
- * // => true
- *
- * _.eq('a', Object('a'));
- * // => false
- *
- * _.eq(NaN, NaN);
- * // => true
- */ function eq(value, other) {
-    return value === other || value !== value && other !== other;
-}
-module.exports = eq;
-
-},{}],"6Zrrs":[function(require,module,exports) {
-var assocIndexOf = require("./_assocIndexOf");
-/**
- * Gets the list cache value for `key`.
- *
- * @private
- * @name get
- * @memberOf ListCache
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */ function listCacheGet(key) {
-    var data = this.__data__, index = assocIndexOf(data, key);
-    return index < 0 ? undefined : data[index][1];
-}
-module.exports = listCacheGet;
-
-},{"./_assocIndexOf":"cRVsl"}],"i1CBK":[function(require,module,exports) {
-var assocIndexOf = require("./_assocIndexOf");
-/**
- * Checks if a list cache value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf ListCache
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */ function listCacheHas(key) {
-    return assocIndexOf(this.__data__, key) > -1;
-}
-module.exports = listCacheHas;
-
-},{"./_assocIndexOf":"cRVsl"}],"2Rcur":[function(require,module,exports) {
-var assocIndexOf = require("./_assocIndexOf");
-/**
- * Sets the list cache `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf ListCache
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the list cache instance.
- */ function listCacheSet(key, value) {
-    var data = this.__data__, index = assocIndexOf(data, key);
-    if (index < 0) {
-        ++this.size;
-        data.push([
-            key,
-            value
-        ]);
-    } else data[index][1] = value;
-    return this;
-}
-module.exports = listCacheSet;
-
-},{"./_assocIndexOf":"cRVsl"}],"8YjF4":[function(require,module,exports) {
-var getNative = require("./_getNative"), root = require("./_root");
-/* Built-in method references that are verified to be native. */ var Map = getNative(root, "Map");
-module.exports = Map;
-
-},{"./_getNative":"9PCIl","./_root":"dSYUs"}],"4ny9y":[function(require,module,exports) {
-var getMapData = require("./_getMapData");
-/**
- * Removes `key` and its value from the map.
- *
- * @private
- * @name delete
- * @memberOf MapCache
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */ function mapCacheDelete(key) {
-    var result = getMapData(this, key)["delete"](key);
-    this.size -= result ? 1 : 0;
-    return result;
-}
-module.exports = mapCacheDelete;
-
-},{"./_getMapData":"aptgk"}],"aptgk":[function(require,module,exports) {
-var isKeyable = require("./_isKeyable");
-/**
- * Gets the data for `map`.
- *
- * @private
- * @param {Object} map The map to query.
- * @param {string} key The reference key.
- * @returns {*} Returns the map data.
- */ function getMapData(map, key) {
-    var data = map.__data__;
-    return isKeyable(key) ? data[typeof key == "string" ? "string" : "hash"] : data.map;
-}
-module.exports = getMapData;
-
-},{"./_isKeyable":"icylN"}],"icylN":[function(require,module,exports) {
-/**
- * Checks if `value` is suitable for use as unique object key.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is suitable, else `false`.
- */ function isKeyable(value) {
-    var type = typeof value;
-    return type == "string" || type == "number" || type == "symbol" || type == "boolean" ? value !== "__proto__" : value === null;
-}
-module.exports = isKeyable;
-
-},{}],"gVeFY":[function(require,module,exports) {
-var getMapData = require("./_getMapData");
-/**
- * Gets the map value for `key`.
- *
- * @private
- * @name get
- * @memberOf MapCache
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */ function mapCacheGet(key) {
-    return getMapData(this, key).get(key);
-}
-module.exports = mapCacheGet;
-
-},{"./_getMapData":"aptgk"}],"idSOY":[function(require,module,exports) {
-var getMapData = require("./_getMapData");
-/**
- * Checks if a map value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf MapCache
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */ function mapCacheHas(key) {
-    return getMapData(this, key).has(key);
-}
-module.exports = mapCacheHas;
-
-},{"./_getMapData":"aptgk"}],"lXUJT":[function(require,module,exports) {
-var getMapData = require("./_getMapData");
-/**
- * Sets the map `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf MapCache
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the map cache instance.
- */ function mapCacheSet(key, value) {
-    var data = getMapData(this, key), size = data.size;
-    data.set(key, value);
-    this.size += data.size == size ? 0 : 1;
-    return this;
-}
-module.exports = mapCacheSet;
-
-},{"./_getMapData":"aptgk"}],"joIdQ":[function(require,module,exports) {
+},{"./memoize":"azHKC"}],"joIdQ":[function(require,module,exports) {
 var baseToString = require("./_baseToString");
 /**
  * Converts `value` to a string. An empty string is returned for `null`
@@ -75463,288 +74322,7 @@ async function describeTransaction(transaction) {
     };
 }
 
-},{"ethers":"hdHML","src/modules/networks/networks-store":"cQA5b","./getChainId":"g6Pby","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cQA5b":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "networksStore", ()=>networksStore);
-var _storeUnit = require("store-unit");
-var _networks = require("./Networks");
-var _networksApi = require("./networks-api");
-class NetworksStore extends (0, _storeUnit.Store) {
-    loaderPromise = null;
-    load() {
-        if (this.loaderPromise) return this.loaderPromise;
-        this.loaderPromise = (0, _networksApi.get)().then((value)=>{
-            const networks = new (0, _networks.Networks)({
-                networks: value
-            });
-            this.setState({
-                networks
-            });
-            return networks;
-        });
-        return this.loaderPromise;
-    }
-}
-const networksStore = new NetworksStore({
-    networks: null
-});
-
-},{"store-unit":"4kZQu","./Networks":"i4HFz","./networks-api":"2aSwD","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"i4HFz":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "Networks", ()=>Networks);
-var _isTruthyTs = require("is-truthy-ts");
-var _capitalizeTs = require("capitalize-ts");
-var _chain = require("./Chain");
-var _keys = require("./keys");
-var _asset = require("./asset");
-function toCollection(items, getKey, getItem) {
-    const result = {};
-    for (const item of items)result[getKey(item)] = getItem(item);
-    return result;
-}
-function invertObject(object) {
-    return Object.fromEntries(Object.entries(object).map(([key, value])=>[
-            value,
-            key
-        ]));
-}
-const nameAliases = {
-    "binance-smart-chain": "bsc"
-};
-function localeCompareWithPriority(str1, str2, priorityString) {
-    if (priorityString) {
-        if (str1 === priorityString) return -1;
-        if (str2 === priorityString) return 1;
-    }
-    return str1.localeCompare(str2);
-}
-class Networks {
-    static nameAliases = nameAliases;
-    static nameAliasesInverted = invertObject(nameAliases);
-    static purposeKeyMap = {
-        sending: "supports_sending",
-        trading: "supports_trading",
-        bridge: "supports_bridge"
-    };
-    constructor({ networks: networks1 , keys =(0, _keys.keys)  }){
-        this.networks = networks1.sort((a, b)=>localeCompareWithPriority(a.name, b.name, "Ethereum"));
-        this.keys = keys;
-        this.collection = toCollection(this.networks, (network)=>network.external_id, (x)=>x);
-        this.nameToId = toCollection(this.networks, (networks)=>networks.chain, (network)=>network.external_id);
-    }
-    static getName(network) {
-        return network.name || (0, _capitalizeTs.capitalize)(network.chain);
-    }
-    static accessByAlias(object, chain) {
-        const value = chain.toString();
-        return object[value] || object[Networks.nameAliases[value]] || object[Networks.nameAliasesInverted[value]];
-    }
-    toId(chain) {
-        return Networks.accessByAlias(this.nameToId, chain) || "";
-    }
-    getNetworks() {
-        return this.networks;
-    }
-    getChainId(chain) {
-        return this.toId(chain);
-    }
-    getNativeAssetIdsForTrading() {
-        return this.networks.filter((network)=>network.supports_trading && network.native_asset).map((network)=>network.native_asset?.id).filter((0, _isTruthyTs.isTruthy));
-    }
-    getChainName(chain) {
-        return this.collection[this.toId(chain)]?.name || (0, _capitalizeTs.capitalize)(String(chain));
-    }
-    getNetworkById(chainId) {
-        const network = this.collection[chainId];
-        if (!network) throw new Error(`Unsupported network id: ${chainId}`);
-        return network;
-    }
-    getNetworkByName(chain) {
-        return this.collection[this.toId(chain)];
-    }
-    getChainById(chainId) {
-        const network = this.getNetworkById(chainId);
-        return (0, _chain.createChain)(network.chain);
-    }
-    getChainNameById(chainId) {
-        const network = this.getNetworkById(chainId);
-        return this.getChainName((0, _chain.createChain)(network.chain));
-    }
-    getExplorerHomeUrlByName(chain) {
-        return this.collection[this.toId(chain)]?.explorer_home_url;
-    }
-    getExplorerTxUrl(network, hash) {
-        return network?.explorer_tx_url?.replace("{HASH}", hash);
-    }
-    getExplorerTxUrlById(chainId, hash) {
-        return this.getExplorerTxUrl(this.collection[chainId], hash);
-    }
-    getExplorerTxUrlByName(chain, hash) {
-        return this.getExplorerTxUrl(this.collection[this.toId(chain)], hash);
-    }
-    getExplorerTokenUrl(network, address) {
-        return network?.explorer_token_url?.replace("{ADDRESS}", address);
-    }
-    getExplorerTokenUrlById(chainId, address) {
-        return this.getExplorerTokenUrl(this.collection[chainId], address);
-    }
-    getExplorerTokenUrlByName(chain, address) {
-        return this.getExplorerTokenUrl(this.collection[this.toId(chain)], address);
-    }
-    getExplorerNameById(chainId) {
-        return this.collection[chainId]?.explorer_name;
-    }
-    getEthereumChainParameter(chainId) {
-        const network = this.collection[chainId];
-        if (!network || !network.rpc_url_public || !network.native_asset) throw new Error(`Unsupported network id: ${chainId}`);
-        return {
-            chainId,
-            rpcUrls: network.rpc_url_public,
-            chainName: network.name,
-            nativeCurrency: {
-                code: network.native_asset.address,
-                name: network.native_asset.name,
-                symbol: network.native_asset.symbol,
-                decimals: network.native_asset.decimals
-            },
-            iconUrls: [
-                network.icon_url
-            ],
-            blockExplorerUrls: network.explorer_home_url ? [
-                network.explorer_home_url
-            ] : []
-        };
-    }
-    supports(purpose, chain) {
-        const network = this.getNetworkByName(chain);
-        if (!network) return false;
-        const key = Networks.purposeKeyMap[purpose];
-        return network[key];
-    }
-    isNativeAsset(asset, chainId) {
-        const network = this.getNetworkById(chainId);
-        return network.native_asset ? (0, _asset.getAddress)({
-            asset,
-            chain: (0, _chain.createChain)(network.chain)
-        }) === network.native_asset.address : false;
-    }
-    isNativeAddress(address, chainId) {
-        const network = this.getNetworkById(chainId);
-        if (!network.native_asset) throw new Error(`Native asset is not defined for: ${chainId}`);
-        return network.native_asset ? address === network.native_asset.address : false;
-    }
-    getRpcUrlInternal(chain) {
-        const network = this.getNetworkByName(chain);
-        if (!network) throw new Error(`Cannot find network: ${chain}`);
-        if (!network.rpc_url_internal) throw new Error(`Network url missing: ${chain}`);
-        return (0, _keys.applyKeyToEndpoint)(network.rpc_url_internal, this.keys);
-    }
-}
-
-},{"is-truthy-ts":"h3kjr","capitalize-ts":"eOrib","./Chain":"7Kj03","./keys":"lwdCE","./asset":"iMbfS","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"h3kjr":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "isTruthy", ()=>n);
-function n(n1) {
-    return null != n1;
-}
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"eOrib":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "capitalize", ()=>e);
-function e(e1) {
-    return e1.charAt(0).toUpperCase() + e1.slice(1);
-}
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7Kj03":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "Chain", ()=>Chain);
-parcelHelpers.export(exports, "createChain", ()=>createChain);
-var _memoize = require("lodash/memoize");
-var _memoizeDefault = parcelHelpers.interopDefault(_memoize);
-class Chain {
-    constructor(value){
-        this.value = value;
-    }
-    toString() {
-        return this.value;
-    }
-}
-const createChain = (0, _memoizeDefault.default)((chain)=>new Chain(chain));
-
-},{"lodash/memoize":"azHKC","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lwdCE":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "keys", ()=>keys);
-parcelHelpers.export(exports, "applyKeyToEndpoint", ()=>applyKeyToEndpoint);
-var _config = require("src/env/config");
-const keys = {
-    ARBITRUM_INFURA_API_KEY: "e2e40a30dc83445e8b4d5d7c88f85276",
-    AURORA_API_KEY: "2ZaW4eTLoH9wrr3N5jMfSkyGXA9PLJDRb5jZdHV591mr",
-    ETHEREUM_ALCHEMY_API_KEY: (0, _config.ALCHEMY_KEY),
-    OPTIMISM_INFURA_API_KEY: "e2e40a30dc83445e8b4d5d7c88f85276",
-    POLYGON_INFURA_API_KEY: "e2e40a30dc83445e8b4d5d7c88f85276",
-    SOLANA_API_KEY: ""
-};
-function applyKeyToEndpoint(endpoint, keys1) {
-    /**
-   * input: https://eth-mainnet.alchemyapi.io/v2/{ETHEREUM_ALCHEMY_API_KEY}
-   * output: https://eth-mainnet.alchemyapi.io/v2/keyValue
-   */ let result = endpoint;
-    for(const key in keys1)result = result.replace(`{${key}}`, keys1[key]);
-    return result;
-}
-
-},{"src/env/config":"90ch4","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iMbfS":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "getAssetImplementationInChain", ()=>getAssetImplementationInChain);
-parcelHelpers.export(exports, "getDecimals", ()=>getDecimals);
-parcelHelpers.export(exports, "getAddress", ()=>getAddress);
-function getAssetImplementationInChain({ asset , chain  }) {
-    return asset?.implementations?.[String(chain)];
-}
-function getDecimals({ asset , chain  }) {
-    return getAssetImplementationInChain({
-        asset,
-        chain
-    })?.decimals || asset.decimals;
-}
-const getAddress = ({ asset , chain  })=>{
-    const chainImplementation = getAssetImplementationInChain({
-        asset,
-        chain
-    });
-    return chainImplementation ? chainImplementation.address : undefined;
-};
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2aSwD":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "get", ()=>get);
-var _defiSdk = require("defi-sdk");
-function get() {
-    return new Promise((resolve)=>{
-        (0, _defiSdk.client).cachedSubscribe({
-            namespace: "chains",
-            body: {
-                scope: [
-                    "info"
-                ],
-                payload: {}
-            },
-            onData: ({ value  })=>{
-                if (value) resolve(value);
-            }
-        });
-    });
-}
-
-},{"defi-sdk":"iMIhf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"g6Pby":[function(require,module,exports) {
+},{"ethers":"hdHML","src/modules/networks/networks-store":"cQA5b","./getChainId":"g6Pby","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"g6Pby":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "getChainId", ()=>getChainId);
@@ -76006,7 +74584,6 @@ parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "useBackupTodosCount", ()=>useBackupTodosCount);
 var _reactQuery = require("react-query");
 var _channels = require("src/ui/shared/channels");
-// import { useLastBackedUp } from 'src/ui/shared/requests/useLastBackedUp';
 function useNoBackupCount() {
     return (0, _reactQuery.useQuery)("wallet/getNoBackupCount", ()=>{
         return (0, _channels.walletPort).request("getNoBackupCount");
@@ -76017,13 +74594,9 @@ function useNoBackupCount() {
 function useBackupTodosCount() {
     const { data: count  } = useNoBackupCount();
     return count ?? 0;
-// if (data === null) {
-//   return 1; // did not backup yet
-// }
-// return 0; // either no data or already backed up
 }
 
-},{"react-query":"7slSP","src/ui/shared/channels":"bv9nl","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"g22r5":[function(require,module,exports) {
+},{"react-query":"7slSP","src/ui/shared/channels":"57ETE","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"g22r5":[function(require,module,exports) {
 module.exports["button"] = `IJzU7a_button`;
 
 },{}],"guzi7":[function(require,module,exports) {
@@ -76055,6 +74628,9 @@ function Media({ image , text , detailText , gap =8 , vGap =4  }) {
             image,
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _vstack.VStack), {
                 gap: vGap,
+                style: {
+                    textAlign: "start"
+                },
                 children: [
                     text,
                     detailText
@@ -76127,11 +74703,13 @@ const kinds = {
         };
     }
 };
-const Button = /*#__PURE__*/ (0, _reactDefault.default).forwardRef(_c = ({ style , as ="button" , kind ="primary" , size =44 , children , className , ...props }, ref)=>{
-    const Element = as;
+const ButtonElement = ({ style , as , kind ="primary" , size =44 , children , className , ...props }, ref)=>{
     const isButton = as === "button";
-    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(Element, {
+    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
+        as: as || "button",
         ref: ref,
+        kind: "button/m_med",
+        className: (0, _classnamesDefault.default)(className, _stylesModuleCss[kind]),
         style: Object.assign({
             cursor: "pointer",
             border: "none",
@@ -76141,29 +74719,19 @@ const Button = /*#__PURE__*/ (0, _reactDefault.default).forwardRef(_c = ({ style
             borderRadius: 8,
             height: size
         }, kinds[kind](size), isButton ? undefined : asButtonStyle, style),
-        className: (0, _classnamesDefault.default)(className, _stylesModuleCss[kind]),
         ...props,
-        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
-            style: {
-                display: "inline-block",
-                verticalAlign: "bottom"
-            },
-            kind: "button/m_med",
-            children: children
-        }, void 0, false, {
-            fileName: "src/ui/ui-kit/Button/Button.tsx",
-            lineNumber: 76,
-            columnNumber: 9
-        }, undefined)
+        children: children
     }, void 0, false, {
         fileName: "src/ui/ui-kit/Button/Button.tsx",
         lineNumber: 57,
-        columnNumber: 7
+        columnNumber: 5
     }, undefined);
-});
+};
+_c = ButtonElement;
+const Button = /*#__PURE__*/ (0, _reactDefault.default).forwardRef(ButtonElement);
 _c1 = Button;
 var _c, _c1;
-$RefreshReg$(_c, "Button$React.forwardRef");
+$RefreshReg$(_c, "ButtonElement");
 $RefreshReg$(_c1, "Button");
 
   $parcel$ReactRefreshHelpers$a327.postlude(module);
@@ -76336,15 +74904,15 @@ $RefreshReg$(_c2, "SegmentedControlGroup");
   window.$RefreshSig$ = prevRefreshSig;
 }
 },{"react/jsx-dev-runtime":"iTorj","react":"21dqq","classnames":"jocGM","react-router-dom":"fdOAw","src/ui/ui-kit/UIText":"66Z7M","./SegmentedControl.module.css":"2tLIj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"2tLIj":[function(require,module,exports) {
-module.exports["secondary"] = `aZtxgG_secondary`;
+module.exports["radio"] = `aZtxgG_radio`;
+module.exports["input"] = `aZtxgG_input`;
 module.exports["wrap"] = `aZtxgG_wrap`;
-module.exports["primary"] = `aZtxgG_primary`;
-module.exports["activeLink"] = `aZtxgG_activeLink`;
 module.exports["activeDecorator"] = `aZtxgG_activeDecorator`;
 module.exports["link"] = `aZtxgG_link`;
+module.exports["activeLink"] = `aZtxgG_activeLink`;
+module.exports["primary"] = `aZtxgG_primary`;
+module.exports["secondary"] = `aZtxgG_secondary`;
 module.exports["hidden"] = `aZtxgG_hidden`;
-module.exports["input"] = `aZtxgG_input`;
-module.exports["radio"] = `aZtxgG_radio`;
 
 },{}],"8Dqur":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -76552,7 +75120,7 @@ parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "roundTokenValue", ()=>roundTokenValue);
 parcelHelpers.export(exports, "formatTokenValue", ()=>formatTokenValue);
 var _bignumberJs = require("bignumber.js");
-var _typography = require("src/ui/shared/typography");
+var _typography = require("../../ui/shared/typography");
 function countFractionalZeros(value) {
     return value.match(/\.(0+)[1-9]/)?.[1].length ?? 0;
 }
@@ -76570,7 +75138,7 @@ function formatTokenValue(value, symbol) {
     return symbol ? `${result}${0, _typography.NBSP}${symbol}` : result;
 }
 
-},{"bignumber.js":"57qkX","src/ui/shared/typography":"g8uXz","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bsI25":[function(require,module,exports) {
+},{"bignumber.js":"57qkX","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../../ui/shared/typography":"g8uXz"}],"bsI25":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "TokenIcon", ()=>(0, _tokenIcon.TokenIcon));
@@ -76874,7 +75442,7 @@ $RefreshReg$(_c, "VirtualizedSurfaceList");
         if (e6.scrollElement) return t(e6.scrollElement.getBoundingClientRect()), s2.observe(e6.scrollElement), ()=>{
             s2.unobserve(e6.scrollElement);
         };
-    }, a1 = (e7, t5)=>{
+    }, c1 = (e7, t5)=>{
         const s3 = ((e, t)=>{
             let s = {
                 height: -1,
@@ -76893,7 +75461,7 @@ $RefreshReg$(_c, "VirtualizedSurfaceList");
         }), ()=>{
             e7.scrollElement.removeEventListener("resize", n3);
         };
-    }, c1 = {
+    }, a1 = {
         element: [
             "scrollLeft",
             "scrollTop"
@@ -76904,21 +75472,21 @@ $RefreshReg$(_c, "VirtualizedSurfaceList");
         ]
     }, h1 = (e8)=>(t, s4)=>{
             if (!t.scrollElement) return;
-            const n = c1[e8][0], o = c1[e8][1];
+            const n = a1[e8][0], o = a1[e8][1];
             let i = t.scrollElement[n], l = t.scrollElement[o];
             const r = ()=>{
                 s4(t.scrollElement[t.options.horizontal ? n : o]);
             };
             r();
-            const a2 = (e)=>{
-                const s = e.currentTarget, a = s[n], c = s[o];
-                (t.options.horizontal ? i - a : l - c) && r(), i = a, l = c;
+            const c2 = (e)=>{
+                const s = e.currentTarget, c = s[n], a = s[o];
+                (t.options.horizontal ? i - c : l - a) && r(), i = c, l = a;
             };
-            return t.scrollElement.addEventListener("scroll", a2, {
+            return t.scrollElement.addEventListener("scroll", c2, {
                 capture: !1,
                 passive: !0
             }), ()=>{
-                t.scrollElement.removeEventListener("scroll", a2);
+                t.scrollElement.removeEventListener("scroll", c2);
             };
         }, u1 = h1("element"), d = h1("window"), f = (e, t)=>e.getBoundingClientRect()[t.options.horizontal ? "width" : "height"], m = (e, t, s)=>{
         var n;
@@ -76972,7 +75540,7 @@ $RefreshReg$(_c, "VirtualizedSurfaceList");
                     this.cleanup();
                 }, this._willUpdate = ()=>{
                 const e10 = this.options.getScrollElement();
-                this.scrollElement !== e10 && (this.cleanup(), this.scrollElement = e10, this.unsubs.push(this.options.observeElementRect(this, (e)=>{
+                this.scrollElement !== e10 && (this.cleanup(), this.scrollElement = e10, this._scrollToOffset(this.scrollOffset, !1), this.unsubs.push(this.options.observeElementRect(this, (e)=>{
                     this.scrollRect = e, this.calculateRange();
                 })), this.unsubs.push(this.options.observeElementOffset(this, (e)=>{
                     this.scrollOffset = e, this.calculateRange();
@@ -76987,12 +75555,12 @@ $RefreshReg$(_c, "VirtualizedSurfaceList");
                 this.pendingMeasuredCacheIndexes = [];
                 const i = this.measurementsCache.slice(0, o);
                 for(let l = o; l < e; l++){
-                    const e = s(l), o = n[e], r = i[l - 1] ? i[l - 1].end : t, a = "number" == typeof o ? o : this.options.estimateSize(l), c = r + a;
+                    const e = s(l), o = n[e], r = i[l - 1] ? i[l - 1].end : t, c = "number" == typeof o ? o : this.options.estimateSize(l), a = r + c;
                     i[l] = {
                         index: l,
                         start: r,
-                        size: a,
-                        end: c,
+                        size: c,
+                        end: a,
                         key: e
                     };
                 }
@@ -77062,11 +75630,11 @@ $RefreshReg$(_c, "VirtualizedSurfaceList");
                     }, o4 = [], i3 = {};
                 for(let s7 = 0, r = e13.length; s7 < r; s7++){
                     var l2;
-                    const r = e13[s7], a = {
+                    const r = e13[s7], c = {
                         ...t9[r],
                         measureElement: i3[r] = null != (l2 = this.measureElementCache[r]) ? l2 : n6(r)
                     };
-                    o4.push(a);
+                    o4.push(c);
                 }
                 return this.measureElementCache = i3, o4;
             }, {
@@ -77078,10 +75646,10 @@ $RefreshReg$(_c, "VirtualizedSurfaceList");
                 "auto" === n && (n = e <= i ? "start" : e >= i + l ? "end" : "start"), "start" === n ? t6._scrollToOffset(e, o) : "end" === n ? t6._scrollToOffset(e - l, o) : "center" === n && t6._scrollToOffset(e - l / 2, o);
             }, this.scrollToIndex = function(e, s) {
                 let { align: n = "auto" , smoothScroll: o = t6.options.enableSmoothScroll , ...i } = void 0 === s ? {} : s;
-                const l = t6.getMeasurements(), r = t6.scrollOffset, a = t6.getSize(), { count: c  } = t6.options, h = l[Math.max(0, Math.min(e, c - 1))];
+                const l = t6.getMeasurements(), r = t6.scrollOffset, c = t6.getSize(), { count: a  } = t6.options, h = l[Math.max(0, Math.min(e, a - 1))];
                 if (!h) return;
                 if ("auto" === n) {
-                    if (h.end >= r + a - t6.options.scrollPaddingEnd) n = "end";
+                    if (h.end >= r + c - t6.options.scrollPaddingEnd) n = "end";
                     else {
                         if (!(h.start <= r + t6.options.scrollPaddingStart)) return;
                         n = "start";
@@ -77121,7 +75689,7 @@ $RefreshReg$(_c, "VirtualizedSurfaceList");
         }, [o] = n1.useState(()=>new p(s8));
         return o.setOptions(s8), n1.useEffect(()=>o._didMount(), []), E(()=>o._willUpdate()), o;
     }
-    e1.Virtualizer = p, e1.defaultKeyExtractor = i1, e1.defaultRangeExtractor = l1, e1.elementScroll = g, e1.measureElement = f, e1.memo = o1, e1.observeElementOffset = u1, e1.observeElementRect = r1, e1.observeWindowOffset = d, e1.observeWindowRect = a1, e1.useVirtualizer = function(e) {
+    e1.Virtualizer = p, e1.defaultKeyExtractor = i1, e1.defaultRangeExtractor = l1, e1.elementScroll = g, e1.measureElement = f, e1.memo = o1, e1.observeElementOffset = u1, e1.observeElementRect = r1, e1.observeWindowOffset = d, e1.observeWindowRect = c1, e1.useVirtualizer = function(e) {
         return b({
             observeElementRect: r1,
             observeElementOffset: u1,
@@ -77131,7 +75699,7 @@ $RefreshReg$(_c, "VirtualizedSurfaceList");
     }, e1.useWindowVirtualizer = function(e) {
         return b({
             getScrollElement: ()=>"undefined" != typeof window ? window : null,
-            observeElementRect: a1,
+            observeElementRect: c1,
             observeElementOffset: d,
             scrollToFn: m,
             ...e
@@ -77150,6 +75718,9 @@ $parcel$ReactRefreshHelpers$ef11.prelude(module);
 try {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "ItemLink", ()=>ItemLink);
+parcelHelpers.export(exports, "ItemAnchor", ()=>ItemAnchor);
+parcelHelpers.export(exports, "ItemButton", ()=>ItemButton);
 parcelHelpers.export(exports, "SurfaceList", ()=>SurfaceList);
 var _jsxDevRuntime = require("react/jsx-dev-runtime");
 var _react = require("react");
@@ -77209,25 +75780,25 @@ function ItemAnchor({ href , target , onClick , children , style  }) {
     }, this);
 }
 _c1 = ItemAnchor;
-function ItemButton({ onClick , children , style  }) {
+function ItemButton({ children , style , ...props }) {
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _unstyledButton.UnstyledButton), {
         style: {
             color: "inherit",
             ...style
         },
-        onClick: onClick,
         className: _stylesModuleCss.option,
+        ...props,
         children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
             className: _stylesModuleCss.decoration,
             children: children
         }, void 0, false, {
             fileName: "src/ui/ui-kit/SurfaceList/SurfaceList.tsx",
-            lineNumber: 74,
+            lineNumber: 73,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "src/ui/ui-kit/SurfaceList/SurfaceList.tsx",
-        lineNumber: 69,
+        lineNumber: 68,
         columnNumber: 5
     }, this);
 }
@@ -77240,14 +75811,14 @@ function SurfaceList({ items , style: style1  }) {
             gap: 0,
             children: items.map((item, index)=>{
                 const { style  } = item;
-                const isInteractiveItem = Boolean(item.to || item.href || item.onClick);
+                const isInteractiveItem = item.isInteractive ?? Boolean(item.to || item.href || item.onClick);
                 const component = item.to ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(ItemLink, {
                     to: item.to,
                     onClick: item.onClick,
                     children: item.component
                 }, void 0, false, {
                     fileName: "src/ui/ui-kit/SurfaceList/SurfaceList.tsx",
-                    lineNumber: 106,
+                    lineNumber: 105,
                     columnNumber: 13
                 }, this) : item.href ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(ItemAnchor, {
                     href: item.href,
@@ -77256,16 +75827,16 @@ function SurfaceList({ items , style: style1  }) {
                     children: item.component
                 }, void 0, false, {
                     fileName: "src/ui/ui-kit/SurfaceList/SurfaceList.tsx",
-                    lineNumber: 110,
+                    lineNumber: 109,
                     columnNumber: 13
                 }, this) : item.onClick ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(ItemButton, {
                     onClick: item.onClick,
                     children: item.component
                 }, void 0, false, {
                     fileName: "src/ui/ui-kit/SurfaceList/SurfaceList.tsx",
-                    lineNumber: 118,
+                    lineNumber: 117,
                     columnNumber: 13
-                }, this) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                }, this) : item.isInteractive ? item.component : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                     style: {
                         paddingTop: vGap,
                         paddingBottom: vGap
@@ -77273,7 +75844,7 @@ function SurfaceList({ items , style: style1  }) {
                     children: item.component
                 }, void 0, false, {
                     fileName: "src/ui/ui-kit/SurfaceList/SurfaceList.tsx",
-                    lineNumber: 120,
+                    lineNumber: 121,
                     columnNumber: 13
                 }, this);
                 if (item.key == null) throw new Error("No key");
@@ -77292,14 +75863,14 @@ function SurfaceList({ items , style: style1  }) {
                             }
                         }, void 0, false, {
                             fileName: "src/ui/ui-kit/SurfaceList/SurfaceList.tsx",
-                            lineNumber: 136,
+                            lineNumber: 137,
                             columnNumber: 17
                         }, this) : null,
                         component
                     ]
                 }, item.key, true, {
                     fileName: "src/ui/ui-kit/SurfaceList/SurfaceList.tsx",
-                    lineNumber: 128,
+                    lineNumber: 129,
                     columnNumber: 13
                 }, this);
             })
@@ -77770,6 +76341,9 @@ function startOfDate(value) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "SurfaceList", ()=>(0, _surfaceList.SurfaceList));
+parcelHelpers.export(exports, "SurfaceItemLink", ()=>(0, _surfaceList.ItemLink));
+parcelHelpers.export(exports, "SurfaceItemAnchor", ()=>(0, _surfaceList.ItemAnchor));
+parcelHelpers.export(exports, "SurfaceItemButton", ()=>(0, _surfaceList.ItemButton));
 var _surfaceList = require("./SurfaceList");
 
 },{"./SurfaceList":"heOtR","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bK6xn":[function(require,module,exports) {
@@ -78023,13 +76597,13 @@ $RefreshReg$(_c, "CircleSpinner");
   window.$RefreshSig$ = prevRefreshSig;
 }
 },{"react/jsx-dev-runtime":"iTorj","react":"21dqq","classnames":"jocGM","./styles.module.css":"85GzJ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"85GzJ":[function(require,module,exports) {
-module.exports["trackStyle"] = `CVpv0W_trackStyle`;
-module.exports["fillStyle"] = `CVpv0W_fillStyle`;
 module.exports["spin"] = `CVpv0W_spin`;
 module.exports["spin"];
+module.exports["spinnerStyle"] = `CVpv0W_spinnerStyle`;
+module.exports["fillStyle"] = `CVpv0W_fillStyle`;
+module.exports["trackStyle"] = `CVpv0W_trackStyle`;
 module.exports["dash75"] = `CVpv0W_dash75`;
 module.exports["dash75"];
-module.exports["spinnerStyle"] = `CVpv0W_spinnerStyle`;
 
 },{}],"gMpD1":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -79193,7 +77767,4171 @@ $RefreshReg$(_c, "SquareElement");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"fAm54":[function(require,module,exports) {
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"33r2V":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "WalletIcon", ()=>(0, _walletIcon.WalletIcon));
+var _walletIcon = require("./WalletIcon");
+
+},{"./WalletIcon":"902JN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"902JN":[function(require,module,exports) {
+var $parcel$ReactRefreshHelpers$1e47 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$1e47.prelude(module);
+
+try {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "WalletIcon", ()=>WalletIcon);
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _react = require("react");
+var _reactDefault = parcelHelpers.interopDefault(_react);
+var _blockieImg = require("src/ui/components/BlockieImg");
+var _stylesModuleCss = require("./styles.module.css");
+function WalletIcon({ active , address , iconSize  }) {
+    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+        className: _stylesModuleCss.root,
+        children: [
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                className: active ? _stylesModuleCss.activeIndicatorClip : undefined,
+                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _blockieImg.BlockieImg), {
+                    address: address,
+                    size: iconSize
+                }, void 0, false, {
+                    fileName: "src/ui/ui-kit/WalletIcon/WalletIcon.tsx",
+                    lineNumber: 17,
+                    columnNumber: 9
+                }, this)
+            }, void 0, false, {
+                fileName: "src/ui/ui-kit/WalletIcon/WalletIcon.tsx",
+                lineNumber: 16,
+                columnNumber: 7
+            }, this),
+            active ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                className: _stylesModuleCss.activeIndicator
+            }, void 0, false, {
+                fileName: "src/ui/ui-kit/WalletIcon/WalletIcon.tsx",
+                lineNumber: 19,
+                columnNumber: 17
+            }, this) : null
+        ]
+    }, void 0, true, {
+        fileName: "src/ui/ui-kit/WalletIcon/WalletIcon.tsx",
+        lineNumber: 15,
+        columnNumber: 5
+    }, this);
+}
+_c = WalletIcon;
+var _c;
+$RefreshReg$(_c, "WalletIcon");
+
+  $parcel$ReactRefreshHelpers$1e47.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","src/ui/components/BlockieImg":"3UGAz","./styles.module.css":"2BvqZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"3UGAz":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "BlockieImg", ()=>(0, _blockieImg.BlockieImg));
+var _blockieImg = require("./BlockieImg");
+
+},{"./BlockieImg":"bxTkK","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bxTkK":[function(require,module,exports) {
+var $parcel$ReactRefreshHelpers$f852 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$f852.prelude(module);
+
+try {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "BlockieImg", ()=>BlockieImg);
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _react = require("react");
+var _reactDefault = parcelHelpers.interopDefault(_react);
+var _blockies = require("@download/blockies");
+var _normalizeAddress = require("src/shared/normalizeAddress");
+var _s = $RefreshSig$();
+function BlockieImg({ address , size  }) {
+    _s();
+    const blocksCount = 8;
+    const icon = (0, _react.useMemo)(()=>(0, _blockies.createIcon)({
+            seed: (0, _normalizeAddress.normalizeAddress)(address),
+            size: blocksCount,
+            scale: size / blocksCount * window.devicePixelRatio
+        }), [
+        address,
+        size
+    ]);
+    const ref = (0, _react.useRef)(null);
+    (0, _react.useLayoutEffect)(()=>{
+        if (ref.current && icon) {
+            icon.style.borderRadius = "6px";
+            icon.style.width = `${size}px`;
+            icon.style.height = `${size}px`;
+            icon.style.display = "block";
+            ref.current.appendChild(icon);
+        }
+        return ()=>{
+            icon.parentElement?.removeChild(icon);
+        };
+    }, [
+        icon,
+        size
+    ]);
+    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+        ref: ref
+    }, void 0, false, {
+        fileName: "src/ui/components/BlockieImg/BlockieImg.tsx",
+        lineNumber: 35,
+        columnNumber: 10
+    }, this);
+}
+_s(BlockieImg, "SSG55tH0HZK49DDGAklHBX0HVZs=");
+_c = BlockieImg;
+var _c;
+$RefreshReg$(_c, "BlockieImg");
+
+  $parcel$ReactRefreshHelpers$f852.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","@download/blockies":"4vV4u","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","src/shared/normalizeAddress":"cqdMs"}],"4vV4u":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "renderIcon", ()=>renderIcon);
+parcelHelpers.export(exports, "createIcon", ()=>createIcon);
+// The random number is a js implementation of the Xorshift PRNG
+const randseed = new Array(4); // Xorshift: [x, y, z, w] 32 bit values
+function seedrand(seed) {
+    randseed.fill(0);
+    for(let i = 0; i < seed.length; i++)randseed[i % 4] = (randseed[i % 4] << 5) - randseed[i % 4] + seed.charCodeAt(i);
+}
+function rand() {
+    // based on Java's String.hashCode(), expanded to 4 32bit values
+    const t = randseed[0] ^ randseed[0] << 11;
+    randseed[0] = randseed[1];
+    randseed[1] = randseed[2];
+    randseed[2] = randseed[3];
+    randseed[3] = randseed[3] ^ randseed[3] >> 19 ^ t ^ t >> 8;
+    return (randseed[3] >>> 0) / 2147483648;
+}
+function createColor() {
+    //saturation is the whole color spectrum
+    const h = Math.floor(rand() * 360);
+    //saturation goes from 40 to 100, it avoids greyish colors
+    const s = rand() * 60 + 40 + "%";
+    //lightness can be anything from 0 to 100, but probabilities are a bell curve around 50%
+    const l = (rand() + rand() + rand() + rand()) * 25 + "%";
+    return "hsl(" + h + "," + s + "," + l + ")";
+}
+function createImageData(size) {
+    const width = size; // Only support square icons for now
+    const height = size;
+    const dataWidth = Math.ceil(width / 2);
+    const mirrorWidth = width - dataWidth;
+    const data = [];
+    for(let y = 0; y < height; y++){
+        let row = [];
+        for(let x = 0; x < dataWidth; x++)// this makes foreground and background color to have a 43% (1/2.3) probability
+        // spot color has 13% chance
+        row[x] = Math.floor(rand() * 2.3);
+        const r = row.slice(0, mirrorWidth);
+        r.reverse();
+        row = row.concat(r);
+        for(let i = 0; i < row.length; i++)data.push(row[i]);
+    }
+    return data;
+}
+function buildOpts(opts) {
+    const newOpts = {};
+    newOpts.seed = opts.seed || Math.floor(Math.random() * Math.pow(10, 16)).toString(16);
+    seedrand(newOpts.seed);
+    newOpts.size = opts.size || 8;
+    newOpts.scale = opts.scale || 4;
+    newOpts.color = opts.color || createColor();
+    newOpts.bgcolor = opts.bgcolor || createColor();
+    newOpts.spotcolor = opts.spotcolor || createColor();
+    return newOpts;
+}
+function renderIcon(opts, canvas) {
+    opts = buildOpts(opts || {});
+    const imageData = createImageData(opts.size);
+    const width = Math.sqrt(imageData.length);
+    canvas.width = canvas.height = opts.size * opts.scale;
+    const cc = canvas.getContext("2d");
+    cc.fillStyle = opts.bgcolor;
+    cc.fillRect(0, 0, canvas.width, canvas.height);
+    cc.fillStyle = opts.color;
+    for(let i = 0; i < imageData.length; i++)// if data is 0, leave the background
+    if (imageData[i]) {
+        const row = Math.floor(i / width);
+        const col = i % width;
+        // if data is 2, choose spot color, if 1 choose foreground
+        cc.fillStyle = imageData[i] == 1 ? opts.color : opts.spotcolor;
+        cc.fillRect(col * opts.scale, row * opts.scale, opts.scale, opts.scale);
+    }
+    return canvas;
+}
+function createIcon(opts) {
+    var canvas = document.createElement("canvas");
+    renderIcon(opts, canvas);
+    return canvas;
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cqdMs":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "normalizeAddress", ()=>normalizeAddress);
+function normalizeAddress(address) {
+    return address.startsWith("0x") ? address.toLowerCase() : address;
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2BvqZ":[function(require,module,exports) {
+module.exports["activeIndicator"] = `kFt79a_activeIndicator`;
+module.exports["root"] = `kFt79a_root`;
+module.exports["activeIndicatorClip"] = `kFt79a_activeIndicatorClip`;
+
+},{}],"h0H3S":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "useIsConnectedToActiveTab", ()=>useIsConnectedToActiveTab);
+parcelHelpers.export(exports, "IsConnectedToActiveTab", ()=>IsConnectedToActiveTab);
+var _reactQuery = require("react-query");
+var _channels = require("../channels");
+var _getActiveTabOrigin = require("./getActiveTabOrigin");
+function useIsConnectedToActiveTab(address) {
+    const { data: tabOrigin  } = (0, _reactQuery.useQuery)("activeTab/origin", (0, _getActiveTabOrigin.getActiveTabOrigin));
+    return (0, _reactQuery.useQuery)(`hasPermission(${address}, ${tabOrigin})`, async ()=>{
+        if (tabOrigin) return (0, _channels.walletPort).request("hasPermission", {
+            address,
+            origin: tabOrigin
+        });
+        else return null;
+    }, {
+        enabled: Boolean(tabOrigin)
+    });
+}
+function IsConnectedToActiveTab({ address , render  }) {
+    return render(useIsConnectedToActiveTab(address));
+}
+
+},{"react-query":"7slSP","../channels":"57ETE","./getActiveTabOrigin":"jYIMI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jYIMI":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "getActiveTabOrigin", ()=>getActiveTabOrigin);
+var _webextensionPolyfill = require("webextension-polyfill");
+var _webextensionPolyfillDefault = parcelHelpers.interopDefault(_webextensionPolyfill);
+async function getActiveTabOrigin() {
+    const tabs = await (0, _webextensionPolyfillDefault.default).tabs.query({
+        active: true
+    });
+    const url = tabs.find((tab)=>tab.url)?.url;
+    if (url) return new URL(url).origin;
+    else return null;
+}
+
+},{"webextension-polyfill":"fTA1T","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2II6v":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "CurrentNetwork", ()=>(0, _currentNetwork.CurrentNetwork));
+var _currentNetwork = require("./CurrentNetwork");
+
+},{"./CurrentNetwork":"gnplm","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gnplm":[function(require,module,exports) {
+var $parcel$ReactRefreshHelpers$3ad1 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$3ad1.prelude(module);
+
+try {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "CurrentNetwork", ()=>CurrentNetwork);
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _react = require("react");
+var _reactDefault = parcelHelpers.interopDefault(_react);
+var _reactQuery = require("react-query");
+var _chain = require("src/modules/networks/Chain");
+var _useNetworks = require("src/modules/networks/useNetworks");
+var _networkSelectDialog = require("src/ui/components/NetworkSelectDialog");
+var _channels = require("src/ui/shared/channels");
+var _getActiveTabOrigin = require("src/ui/shared/requests/getActiveTabOrigin");
+var _button = require("src/ui/ui-kit/Button");
+var _hstack = require("src/ui/ui-kit/HStack");
+var _centeredDialog = require("src/ui/ui-kit/ModalDialogs/CenteredDialog");
+var _dialogTitle = require("src/ui/ui-kit/ModalDialogs/DialogTitle");
+var _showConfirmDialog = require("src/ui/ui-kit/ModalDialogs/showConfirmDialog");
+var _uitext = require("src/ui/ui-kit/UIText");
+var _s = $RefreshSig$();
+function CurrentNetwork() {
+    _s();
+    const { data: tabOrigin  } = (0, _reactQuery.useQuery)("activeTab/origin", (0, _getActiveTabOrigin.getActiveTabOrigin));
+    const { data: siteChain , ...chainQuery } = (0, _reactQuery.useQuery)(`wallet/requestChainForOrigin(${tabOrigin})`, async ()=>!tabOrigin ? null : (0, _channels.walletPort).request("requestChainForOrigin", {
+            origin: tabOrigin
+        }).then((chain)=>(0, _chain.createChain)(chain)), {
+        enabled: Boolean(tabOrigin),
+        useErrorBoundary: true,
+        suspense: true
+    });
+    const switchChainMutation = (0, _reactQuery.useMutation)(({ chain , origin  })=>(0, _channels.walletPort).request("switchChainForOrigin", {
+            chain,
+            origin
+        }), {
+        useErrorBoundary: true,
+        onSuccess: ()=>chainQuery.refetch()
+    });
+    const { data: permissions  } = (0, _reactQuery.useQuery)("wallet/getOriginPermissions", ()=>(0, _channels.walletPort).request("getOriginPermissions"), {
+        useErrorBoundary: true
+    });
+    const ref = (0, _react.useRef)(null);
+    const hasSomePermissions = (0, _react.useMemo)(()=>{
+        return tabOrigin && permissions?.[tabOrigin];
+    }, [
+        permissions,
+        tabOrigin
+    ]);
+    const { networks  } = (0, _useNetworks.useNetworks)();
+    if (!hasSomePermissions) return null;
+    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
+        children: [
+            tabOrigin && siteChain ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _centeredDialog.CenteredDialog), {
+                ref: ref,
+                children: [
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _dialogTitle.DialogTitle), {
+                        title: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
+                            kind: "subtitle/m_med",
+                            children: [
+                                "Network for ",
+                                new URL(tabOrigin).hostname
+                            ]
+                        }, void 0, true, void 0, void 0)
+                    }, void 0, false, {
+                        fileName: "src/ui/pages/Overview/CurrentNetwork/CurrentNetwork.tsx",
+                        lineNumber: 54,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _networkSelectDialog.NetworkSelectDialog), {
+                        value: siteChain.toString()
+                    }, void 0, false, {
+                        fileName: "src/ui/pages/Overview/CurrentNetwork/CurrentNetwork.tsx",
+                        lineNumber: 61,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "src/ui/pages/Overview/CurrentNetwork/CurrentNetwork.tsx",
+                lineNumber: 53,
+                columnNumber: 9
+            }, this) : null,
+            siteChain && tabOrigin ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _button.Button), {
+                kind: "ghost",
+                size: 28,
+                style: {
+                    fontWeight: 400
+                },
+                disabled: !hasSomePermissions,
+                onClick: ()=>{
+                    if (ref.current) (0, _showConfirmDialog.showConfirmDialog)(ref.current).then((value)=>{
+                        switchChainMutation.mutate({
+                            chain: value,
+                            origin: tabOrigin
+                        });
+                    });
+                },
+                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _hstack.HStack), {
+                    gap: 4,
+                    alignItems: "center",
+                    children: [
+                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("img", {
+                            src: networks?.getNetworkByName(siteChain)?.icon_url || "",
+                            alt: "",
+                            style: {
+                                width: 16,
+                                height: 16
+                            }
+                        }, void 0, false, {
+                            fileName: "src/ui/pages/Overview/CurrentNetwork/CurrentNetwork.tsx",
+                            lineNumber: 80,
+                            columnNumber: 13
+                        }, this),
+                        networks?.getChainName(siteChain) || null
+                    ]
+                }, void 0, true, {
+                    fileName: "src/ui/pages/Overview/CurrentNetwork/CurrentNetwork.tsx",
+                    lineNumber: 79,
+                    columnNumber: 11
+                }, this)
+            }, void 0, false, {
+                fileName: "src/ui/pages/Overview/CurrentNetwork/CurrentNetwork.tsx",
+                lineNumber: 66,
+                columnNumber: 9
+            }, this) : null
+        ]
+    }, void 0, true);
+}
+_s(CurrentNetwork, "1X4vLylLlVkSYc8WY72PXeLSpkY=", false, function() {
+    return [
+        (0, _reactQuery.useQuery),
+        (0, _reactQuery.useQuery),
+        (0, _reactQuery.useMutation),
+        (0, _reactQuery.useQuery),
+        (0, _useNetworks.useNetworks)
+    ];
+});
+_c = CurrentNetwork;
+var _c;
+$RefreshReg$(_c, "CurrentNetwork");
+
+  $parcel$ReactRefreshHelpers$3ad1.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-query":"7slSP","src/modules/networks/Chain":"7Kj03","src/modules/networks/useNetworks":"467it","src/ui/components/NetworkSelectDialog":"2aq7q","src/ui/shared/channels":"57ETE","src/ui/shared/requests/getActiveTabOrigin":"jYIMI","src/ui/ui-kit/Button":"6KLPL","src/ui/ui-kit/HStack":"gTbXj","src/ui/ui-kit/ModalDialogs/CenteredDialog":"iv0MR","src/ui/ui-kit/ModalDialogs/DialogTitle":"6M930","src/ui/ui-kit/ModalDialogs/showConfirmDialog":"4yAqC","src/ui/ui-kit/UIText":"66Z7M","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"2aq7q":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "NetworkSelectDialog", ()=>(0, _networkSelectDialog.NetworkSelectDialog));
+var _networkSelectDialog = require("./NetworkSelectDialog");
+
+},{"./NetworkSelectDialog":"a7rsM","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"a7rsM":[function(require,module,exports) {
+var $parcel$ReactRefreshHelpers$ef22 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$ef22.prelude(module);
+
+try {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "NetworkSelectDialog", ()=>NetworkSelectDialog);
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _react = require("react");
+var _reactDefault = parcelHelpers.interopDefault(_react);
+var _chain = require("src/modules/networks/Chain");
+var _useNetworks = require("src/modules/networks/useNetworks");
+var _hstack = require("src/ui/ui-kit/HStack");
+var _surfaceList = require("src/ui/ui-kit/SurfaceList");
+var _s = $RefreshSig$();
+function NetworkSelectDialog({ value  }) {
+    _s();
+    const { networks  } = (0, _useNetworks.useNetworks)();
+    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("form", {
+        method: "dialog",
+        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _surfaceList.SurfaceList), {
+            items: networks ? networks.getNetworks().map((network)=>({
+                    key: network.chain,
+                    isInteractive: true,
+                    component: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _surfaceList.SurfaceItemButton), {
+                        value: network.chain,
+                        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _hstack.HStack), {
+                            gap: 4,
+                            justifyContent: "space-between",
+                            children: [
+                                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _hstack.HStack), {
+                                    gap: 8,
+                                    alignItems: "center",
+                                    children: [
+                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("img", {
+                                            src: network.icon_url || "",
+                                            alt: "",
+                                            style: {
+                                                width: 16,
+                                                height: 16
+                                            }
+                                        }, void 0, false, void 0, void 0),
+                                        networks.getChainName((0, _chain.createChain)(network.name))
+                                    ]
+                                }, void 0, true, void 0, void 0),
+                                network.chain === value ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                                    style: {
+                                        color: "var(--primary)"
+                                    },
+                                    children: "\u2714"
+                                }, void 0, false, void 0, void 0) : null
+                            ]
+                        }, void 0, true, void 0, void 0)
+                    }, void 0, false, void 0, void 0)
+                })) : []
+        }, void 0, false, {
+            fileName: "src/ui/components/NetworkSelectDialog/NetworkSelectDialog.tsx",
+            lineNumber: 12,
+            columnNumber: 7
+        }, this)
+    }, void 0, false, {
+        fileName: "src/ui/components/NetworkSelectDialog/NetworkSelectDialog.tsx",
+        lineNumber: 11,
+        columnNumber: 5
+    }, this);
+}
+_s(NetworkSelectDialog, "xhESPob4cK1tmU67ZL49AePz1EA=", false, function() {
+    return [
+        (0, _useNetworks.useNetworks)
+    ];
+});
+_c = NetworkSelectDialog;
+var _c;
+$RefreshReg$(_c, "NetworkSelectDialog");
+
+  $parcel$ReactRefreshHelpers$ef22.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","src/modules/networks/Chain":"7Kj03","src/modules/networks/useNetworks":"467it","src/ui/ui-kit/HStack":"gTbXj","src/ui/ui-kit/SurfaceList":"7zM7u","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"iv0MR":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "CenteredDialog", ()=>(0, _centeredDialog.CenteredDialog));
+var _centeredDialog = require("./CenteredDialog");
+
+},{"./CenteredDialog":"gFHKw","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gFHKw":[function(require,module,exports) {
+var $parcel$ReactRefreshHelpers$89d0 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$89d0.prelude(module);
+
+try {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "CenteredDialog", ()=>CenteredDialog);
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _react = require("react");
+var _reactDefault = parcelHelpers.interopDefault(_react);
+var _classnames = require("classnames");
+var _classnamesDefault = parcelHelpers.interopDefault(_classnames);
+var _stylesModuleCss = require("./styles.module.css");
+const CenteredDialog = /*#__PURE__*/ (0, _reactDefault.default).forwardRef(_c = ({ style , className , ...props }, ref)=>{
+    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("dialog", {
+        ref: ref,
+        className: (0, _classnamesDefault.default)(_stylesModuleCss.appear, _stylesModuleCss.dialog, className),
+        style: {
+            border: "none",
+            height: "100vh",
+            maxHeight: "initial",
+            width: "100vw",
+            maxWidth: "initial",
+            borderRadius: 0,
+            padding: 16,
+            ...style
+        },
+        ...props
+    }, void 0, false, {
+        fileName: "src/ui/ui-kit/ModalDialogs/CenteredDialog/CenteredDialog.tsx",
+        lineNumber: 11,
+        columnNumber: 7
+    }, undefined);
+});
+_c1 = CenteredDialog;
+var _c, _c1;
+$RefreshReg$(_c, "CenteredDialog$React.forwardRef");
+$RefreshReg$(_c1, "CenteredDialog");
+
+  $parcel$ReactRefreshHelpers$89d0.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","classnames":"jocGM","./styles.module.css":"gReew","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"gReew":[function(require,module,exports) {
+module.exports["dialog"] = `nsGwZa_dialog`;
+module.exports["appear"] = `nsGwZa_appear`;
+module.exports["appear"];
+module.exports["fadeIn"] = `nsGwZa_fadeIn`;
+module.exports["fadeIn"];
+
+},{}],"6M930":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "DialogTitle", ()=>(0, _dialogTitle.DialogTitle));
+var _dialogTitle = require("./DialogTitle");
+
+},{"./DialogTitle":"1MtID","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1MtID":[function(require,module,exports) {
+var $parcel$ReactRefreshHelpers$7d5e = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$7d5e.prelude(module);
+
+try {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "DialogTitle", ()=>DialogTitle);
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _react = require("react");
+var _reactDefault = parcelHelpers.interopDefault(_react);
+var _button = require("src/ui/ui-kit/Button");
+function DialogTitle({ title  }) {
+    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+        style: {
+            display: "grid",
+            gridTemplateColumns: "1fr 4fr 1fr"
+        },
+        children: [
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                style: {
+                    gridColumnStart: 2,
+                    placeSelf: "center"
+                },
+                children: title
+            }, void 0, false, {
+                fileName: "src/ui/ui-kit/ModalDialogs/DialogTitle/DialogTitle.tsx",
+                lineNumber: 12,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("form", {
+                method: "dialog",
+                style: {
+                    placeSelf: "end"
+                },
+                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _button.Button), {
+                    value: "cancel",
+                    kind: "ghost",
+                    size: 32,
+                    "aria-label": "Close",
+                    style: {
+                        color: "var(--primary)",
+                        fontWeight: 400
+                    },
+                    children: "Close"
+                }, void 0, false, {
+                    fileName: "src/ui/ui-kit/ModalDialogs/DialogTitle/DialogTitle.tsx",
+                    lineNumber: 14,
+                    columnNumber: 9
+                }, this)
+            }, void 0, false, {
+                fileName: "src/ui/ui-kit/ModalDialogs/DialogTitle/DialogTitle.tsx",
+                lineNumber: 13,
+                columnNumber: 7
+            }, this)
+        ]
+    }, void 0, true, {
+        fileName: "src/ui/ui-kit/ModalDialogs/DialogTitle/DialogTitle.tsx",
+        lineNumber: 6,
+        columnNumber: 5
+    }, this);
+}
+_c = DialogTitle;
+var _c;
+$RefreshReg$(_c, "DialogTitle");
+
+  $parcel$ReactRefreshHelpers$7d5e.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","src/ui/ui-kit/Button":"6KLPL","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"4yAqC":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "showConfirmDialog", ()=>showConfirmDialog);
+function showConfirmDialog(dialog) {
+    dialog.showModal();
+    return new Promise((resolve, reject)=>{
+        function handler() {
+            if (!dialog.returnValue || dialog.returnValue === "cancel") reject(dialog.returnValue);
+            else resolve(dialog.returnValue);
+            dialog.removeEventListener("close", handler);
+            dialog.removeEventListener("cancel", handler);
+        }
+        dialog.addEventListener("close", handler);
+        dialog.addEventListener("cancel", handler);
+    });
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2afXw":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "DynamicIsland", ()=>(0, _dynamicIsland.DynamicIsland));
+var _dynamicIsland = require("./DynamicIsland");
+
+},{"./DynamicIsland":"7URUl","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7URUl":[function(require,module,exports) {
+var $parcel$ReactRefreshHelpers$a05c = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$a05c.prelude(module);
+
+try {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "DynamicIsland", ()=>DynamicIsland);
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _react = require("react");
+var _reactDefault = parcelHelpers.interopDefault(_react);
+var _reactSpring = require("react-spring");
+var _useTransformTrigger = require("../useTransformTrigger");
+var _s = $RefreshSig$();
+function DynamicIsland() {
+    _s();
+    const { style , trigger  } = (0, _useTransformTrigger.useTransformTrigger)({
+        scale: 1.3
+    });
+    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactSpring.animated).div, {
+        onClick: trigger,
+        style: {
+            ...style,
+            color: "var(--always-white)",
+            backgroundColor: "var(--always-black)",
+            borderRadius: 1000,
+            padding: "2px 16px"
+        },
+        children: "island"
+    }, void 0, false, {
+        fileName: "src/ui/components/DynamicIsland/DynamicIsland.tsx",
+        lineNumber: 8,
+        columnNumber: 5
+    }, this);
+}
+_s(DynamicIsland, "5nFSwP5Kj5Me41o2Z0VBSRuz4Jo=", false, function() {
+    return [
+        (0, _useTransformTrigger.useTransformTrigger)
+    ];
+});
+_c = DynamicIsland;
+var _c;
+$RefreshReg$(_c, "DynamicIsland");
+
+  $parcel$ReactRefreshHelpers$a05c.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-spring":"2gPbQ","../useTransformTrigger":"dTurW","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"2gPbQ":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _web = require("@react-spring/web");
+parcelHelpers.exportAll(_web, exports);
+
+},{"@react-spring/web":"75MAn","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"75MAn":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "a", ()=>animated);
+parcelHelpers.export(exports, "animated", ()=>animated);
+var _core = require("@react-spring/core");
+var _reactDom = require("react-dom");
+var _shared = require("@react-spring/shared");
+var _animated = require("@react-spring/animated");
+parcelHelpers.exportAll(_core, exports);
+function _objectWithoutPropertiesLoose(source, excluded) {
+    if (source == null) return {};
+    var target = {};
+    var sourceKeys = Object.keys(source);
+    var key, i;
+    for(i = 0; i < sourceKeys.length; i++){
+        key = sourceKeys[i];
+        if (excluded.indexOf(key) >= 0) continue;
+        target[key] = source[key];
+    }
+    return target;
+}
+const _excluded$2 = [
+    "style",
+    "children",
+    "scrollTop",
+    "scrollLeft"
+];
+const isCustomPropRE = /^--/;
+function dangerousStyleValue(name, value) {
+    if (value == null || typeof value === "boolean" || value === "") return "";
+    if (typeof value === "number" && value !== 0 && !isCustomPropRE.test(name) && !(isUnitlessNumber.hasOwnProperty(name) && isUnitlessNumber[name])) return value + "px";
+    return ("" + value).trim();
+}
+const attributeCache = {};
+function applyAnimatedValues(instance, props) {
+    if (!instance.nodeType || !instance.setAttribute) return false;
+    const isFilterElement = instance.nodeName === "filter" || instance.parentNode && instance.parentNode.nodeName === "filter";
+    const _ref = props, { style , children , scrollTop , scrollLeft  } = _ref, attributes = _objectWithoutPropertiesLoose(_ref, _excluded$2);
+    const values = Object.values(attributes);
+    const names = Object.keys(attributes).map((name)=>isFilterElement || instance.hasAttribute(name) ? name : attributeCache[name] || (attributeCache[name] = name.replace(/([A-Z])/g, (n)=>"-" + n.toLowerCase())));
+    if (children !== void 0) instance.textContent = children;
+    for(let name1 in style)if (style.hasOwnProperty(name1)) {
+        const value = dangerousStyleValue(name1, style[name1]);
+        if (isCustomPropRE.test(name1)) instance.style.setProperty(name1, value);
+        else instance.style[name1] = value;
+    }
+    names.forEach((name, i)=>{
+        instance.setAttribute(name, values[i]);
+    });
+    if (scrollTop !== void 0) instance.scrollTop = scrollTop;
+    if (scrollLeft !== void 0) instance.scrollLeft = scrollLeft;
+}
+let isUnitlessNumber = {
+    animationIterationCount: true,
+    borderImageOutset: true,
+    borderImageSlice: true,
+    borderImageWidth: true,
+    boxFlex: true,
+    boxFlexGroup: true,
+    boxOrdinalGroup: true,
+    columnCount: true,
+    columns: true,
+    flex: true,
+    flexGrow: true,
+    flexPositive: true,
+    flexShrink: true,
+    flexNegative: true,
+    flexOrder: true,
+    gridRow: true,
+    gridRowEnd: true,
+    gridRowSpan: true,
+    gridRowStart: true,
+    gridColumn: true,
+    gridColumnEnd: true,
+    gridColumnSpan: true,
+    gridColumnStart: true,
+    fontWeight: true,
+    lineClamp: true,
+    lineHeight: true,
+    opacity: true,
+    order: true,
+    orphans: true,
+    tabSize: true,
+    widows: true,
+    zIndex: true,
+    zoom: true,
+    fillOpacity: true,
+    floodOpacity: true,
+    stopOpacity: true,
+    strokeDasharray: true,
+    strokeDashoffset: true,
+    strokeMiterlimit: true,
+    strokeOpacity: true,
+    strokeWidth: true
+};
+const prefixKey = (prefix, key)=>prefix + key.charAt(0).toUpperCase() + key.substring(1);
+const prefixes = [
+    "Webkit",
+    "Ms",
+    "Moz",
+    "O"
+];
+isUnitlessNumber = Object.keys(isUnitlessNumber).reduce((acc, prop)=>{
+    prefixes.forEach((prefix)=>acc[prefixKey(prefix, prop)] = acc[prop]);
+    return acc;
+}, isUnitlessNumber);
+const _excluded$1 = [
+    "x",
+    "y",
+    "z"
+];
+const domTransforms = /^(matrix|translate|scale|rotate|skew)/;
+const pxTransforms = /^(translate)/;
+const degTransforms = /^(rotate|skew)/;
+const addUnit = (value, unit)=>(0, _shared.is).num(value) && value !== 0 ? value + unit : value;
+const isValueIdentity = (value, id)=>(0, _shared.is).arr(value) ? value.every((v)=>isValueIdentity(v, id)) : (0, _shared.is).num(value) ? value === id : parseFloat(value) === id;
+class AnimatedStyle extends (0, _animated.AnimatedObject) {
+    constructor(_ref){
+        let { x: x1 , y: y1 , z: z1  } = _ref, style = _objectWithoutPropertiesLoose(_ref, _excluded$1);
+        const inputs = [];
+        const transforms = [];
+        if (x1 || y1 || z1) {
+            inputs.push([
+                x1 || 0,
+                y1 || 0,
+                z1 || 0
+            ]);
+            transforms.push((xyz)=>[
+                    `translate3d(${xyz.map((v)=>addUnit(v, "px")).join(",")})`,
+                    isValueIdentity(xyz, 0)
+                ]);
+        }
+        (0, _shared.eachProp)(style, (value, key)=>{
+            if (key === "transform") {
+                inputs.push([
+                    value || ""
+                ]);
+                transforms.push((transform)=>[
+                        transform,
+                        transform === ""
+                    ]);
+            } else if (domTransforms.test(key)) {
+                delete style[key];
+                if ((0, _shared.is).und(value)) return;
+                const unit = pxTransforms.test(key) ? "px" : degTransforms.test(key) ? "deg" : "";
+                inputs.push((0, _shared.toArray)(value));
+                transforms.push(key === "rotate3d" ? ([x, y, z, deg])=>[
+                        `rotate3d(${x},${y},${z},${addUnit(deg, unit)})`,
+                        isValueIdentity(deg, 0)
+                    ] : (input)=>[
+                        `${key}(${input.map((v)=>addUnit(v, unit)).join(",")})`,
+                        isValueIdentity(input, key.startsWith("scale") ? 1 : 0)
+                    ]);
+            }
+        });
+        if (inputs.length) style.transform = new FluidTransform(inputs, transforms);
+        super(style);
+    }
+}
+class FluidTransform extends (0, _shared.FluidValue) {
+    constructor(inputs, transforms){
+        super();
+        this._value = null;
+        this.inputs = inputs;
+        this.transforms = transforms;
+    }
+    get() {
+        return this._value || (this._value = this._get());
+    }
+    _get() {
+        let transform = "";
+        let identity = true;
+        (0, _shared.each)(this.inputs, (input, i)=>{
+            const arg1 = (0, _shared.getFluidValue)(input[0]);
+            const [t, id] = this.transforms[i]((0, _shared.is).arr(arg1) ? arg1 : input.map((0, _shared.getFluidValue)));
+            transform += " " + t;
+            identity = identity && id;
+        });
+        return identity ? "none" : transform;
+    }
+    observerAdded(count) {
+        if (count == 1) (0, _shared.each)(this.inputs, (input)=>(0, _shared.each)(input, (value)=>(0, _shared.hasFluidValue)(value) && (0, _shared.addFluidObserver)(value, this)));
+    }
+    observerRemoved(count) {
+        if (count == 0) (0, _shared.each)(this.inputs, (input)=>(0, _shared.each)(input, (value)=>(0, _shared.hasFluidValue)(value) && (0, _shared.removeFluidObserver)(value, this)));
+    }
+    eventObserved(event) {
+        if (event.type == "change") this._value = null;
+        (0, _shared.callFluidObservers)(this, event);
+    }
+}
+const primitives = [
+    "a",
+    "abbr",
+    "address",
+    "area",
+    "article",
+    "aside",
+    "audio",
+    "b",
+    "base",
+    "bdi",
+    "bdo",
+    "big",
+    "blockquote",
+    "body",
+    "br",
+    "button",
+    "canvas",
+    "caption",
+    "cite",
+    "code",
+    "col",
+    "colgroup",
+    "data",
+    "datalist",
+    "dd",
+    "del",
+    "details",
+    "dfn",
+    "dialog",
+    "div",
+    "dl",
+    "dt",
+    "em",
+    "embed",
+    "fieldset",
+    "figcaption",
+    "figure",
+    "footer",
+    "form",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "head",
+    "header",
+    "hgroup",
+    "hr",
+    "html",
+    "i",
+    "iframe",
+    "img",
+    "input",
+    "ins",
+    "kbd",
+    "keygen",
+    "label",
+    "legend",
+    "li",
+    "link",
+    "main",
+    "map",
+    "mark",
+    "menu",
+    "menuitem",
+    "meta",
+    "meter",
+    "nav",
+    "noscript",
+    "object",
+    "ol",
+    "optgroup",
+    "option",
+    "output",
+    "p",
+    "param",
+    "picture",
+    "pre",
+    "progress",
+    "q",
+    "rp",
+    "rt",
+    "ruby",
+    "s",
+    "samp",
+    "script",
+    "section",
+    "select",
+    "small",
+    "source",
+    "span",
+    "strong",
+    "style",
+    "sub",
+    "summary",
+    "sup",
+    "table",
+    "tbody",
+    "td",
+    "textarea",
+    "tfoot",
+    "th",
+    "thead",
+    "time",
+    "title",
+    "tr",
+    "track",
+    "u",
+    "ul",
+    "var",
+    "video",
+    "wbr",
+    "circle",
+    "clipPath",
+    "defs",
+    "ellipse",
+    "foreignObject",
+    "g",
+    "image",
+    "line",
+    "linearGradient",
+    "mask",
+    "path",
+    "pattern",
+    "polygon",
+    "polyline",
+    "radialGradient",
+    "rect",
+    "stop",
+    "svg",
+    "text",
+    "tspan"
+];
+const _excluded = [
+    "scrollTop",
+    "scrollLeft"
+];
+(0, _core.Globals).assign({
+    batchedUpdates: (0, _reactDom.unstable_batchedUpdates),
+    createStringInterpolator: (0, _shared.createStringInterpolator),
+    colors: (0, _shared.colors)
+});
+const host = (0, _animated.createHost)(primitives, {
+    applyAnimatedValues,
+    createAnimatedStyle: (style)=>new AnimatedStyle(style),
+    getComponentProps: (_ref)=>{
+        let props = _objectWithoutPropertiesLoose(_ref, _excluded);
+        return props;
+    }
+});
+const animated = host.animated;
+
+},{"@react-spring/core":"f5VEd","react-dom":"j6uA9","@react-spring/shared":"jm667","@react-spring/animated":"abfrL","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"f5VEd":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "Globals", ()=>(0, _shared.Globals));
+parcelHelpers.export(exports, "createInterpolator", ()=>(0, _shared.createInterpolator));
+parcelHelpers.export(exports, "useIsomorphicLayoutEffect", ()=>(0, _shared.useIsomorphicLayoutEffect));
+parcelHelpers.export(exports, "useReducedMotion", ()=>(0, _shared.useReducedMotion));
+parcelHelpers.export(exports, "BailSignal", ()=>BailSignal);
+parcelHelpers.export(exports, "Controller", ()=>Controller);
+parcelHelpers.export(exports, "FrameValue", ()=>FrameValue);
+parcelHelpers.export(exports, "Interpolation", ()=>Interpolation);
+parcelHelpers.export(exports, "Spring", ()=>Spring);
+parcelHelpers.export(exports, "SpringContext", ()=>SpringContext);
+parcelHelpers.export(exports, "SpringRef", ()=>SpringRef);
+parcelHelpers.export(exports, "SpringValue", ()=>SpringValue);
+parcelHelpers.export(exports, "Trail", ()=>Trail);
+parcelHelpers.export(exports, "Transition", ()=>Transition);
+parcelHelpers.export(exports, "config", ()=>config);
+parcelHelpers.export(exports, "easings", ()=>easings);
+parcelHelpers.export(exports, "inferTo", ()=>inferTo);
+parcelHelpers.export(exports, "interpolate", ()=>interpolate);
+parcelHelpers.export(exports, "to", ()=>to);
+parcelHelpers.export(exports, "update", ()=>update);
+parcelHelpers.export(exports, "useChain", ()=>useChain);
+parcelHelpers.export(exports, "useSpring", ()=>useSpring);
+parcelHelpers.export(exports, "useSpringRef", ()=>useSpringRef);
+parcelHelpers.export(exports, "useSprings", ()=>useSprings);
+parcelHelpers.export(exports, "useTrail", ()=>useTrail);
+parcelHelpers.export(exports, "useTransition", ()=>useTransition);
+var _shared = require("@react-spring/shared");
+var _react = require("react");
+var _animated = require("@react-spring/animated");
+var _animated1 = require("@react-spring/types/animated");
+parcelHelpers.exportAll(_animated1, exports);
+var _interpolation = require("@react-spring/types/interpolation");
+parcelHelpers.exportAll(_interpolation, exports);
+function _extends() {
+    _extends = Object.assign || function(target) {
+        for(var i = 1; i < arguments.length; i++){
+            var source = arguments[i];
+            for(var key in source)if (Object.prototype.hasOwnProperty.call(source, key)) target[key] = source[key];
+        }
+        return target;
+    };
+    return _extends.apply(this, arguments);
+}
+function callProp(value, ...args) {
+    return (0, _shared.is).fun(value) ? value(...args) : value;
+}
+const matchProp = (value, key)=>value === true || !!(key && value && ((0, _shared.is).fun(value) ? value(key) : (0, _shared.toArray)(value).includes(key)));
+const resolveProp = (prop, key)=>(0, _shared.is).obj(prop) ? key && prop[key] : prop;
+const getDefaultProp = (props, key)=>props.default === true ? props[key] : props.default ? props.default[key] : undefined;
+const noopTransform = (value)=>value;
+const getDefaultProps = (props, transform = noopTransform)=>{
+    let keys = DEFAULT_PROPS;
+    if (props.default && props.default !== true) {
+        props = props.default;
+        keys = Object.keys(props);
+    }
+    const defaults1 = {};
+    for (const key of keys){
+        const value = transform(props[key], key);
+        if (!(0, _shared.is).und(value)) defaults1[key] = value;
+    }
+    return defaults1;
+};
+const DEFAULT_PROPS = [
+    "config",
+    "onProps",
+    "onStart",
+    "onChange",
+    "onPause",
+    "onResume",
+    "onRest"
+];
+const RESERVED_PROPS = {
+    config: 1,
+    from: 1,
+    to: 1,
+    ref: 1,
+    loop: 1,
+    reset: 1,
+    pause: 1,
+    cancel: 1,
+    reverse: 1,
+    immediate: 1,
+    default: 1,
+    delay: 1,
+    onProps: 1,
+    onStart: 1,
+    onChange: 1,
+    onPause: 1,
+    onResume: 1,
+    onRest: 1,
+    onResolve: 1,
+    items: 1,
+    trail: 1,
+    sort: 1,
+    expires: 1,
+    initial: 1,
+    enter: 1,
+    update: 1,
+    leave: 1,
+    children: 1,
+    onDestroyed: 1,
+    keys: 1,
+    callId: 1,
+    parentId: 1
+};
+function getForwardProps(props) {
+    const forward = {};
+    let count = 0;
+    (0, _shared.eachProp)(props, (value, prop)=>{
+        if (!RESERVED_PROPS[prop]) {
+            forward[prop] = value;
+            count++;
+        }
+    });
+    if (count) return forward;
+}
+function inferTo(props) {
+    const to1 = getForwardProps(props);
+    if (to1) {
+        const out = {
+            to: to1
+        };
+        (0, _shared.eachProp)(props, (val, key)=>key in to1 || (out[key] = val));
+        return out;
+    }
+    return _extends({}, props);
+}
+function computeGoal(value) {
+    value = (0, _shared.getFluidValue)(value);
+    return (0, _shared.is).arr(value) ? value.map(computeGoal) : (0, _shared.isAnimatedString)(value) ? (0, _shared.Globals).createStringInterpolator({
+        range: [
+            0,
+            1
+        ],
+        output: [
+            value,
+            value
+        ]
+    })(1) : value;
+}
+function hasProps(props) {
+    for(const _ in props)return true;
+    return false;
+}
+function isAsyncTo(to2) {
+    return (0, _shared.is).fun(to2) || (0, _shared.is).arr(to2) && (0, _shared.is).obj(to2[0]);
+}
+function detachRefs(ctrl, ref) {
+    var _ctrl$ref;
+    (_ctrl$ref = ctrl.ref) == null || _ctrl$ref.delete(ctrl);
+    ref == null || ref.delete(ctrl);
+}
+function replaceRef(ctrl, ref) {
+    if (ref && ctrl.ref !== ref) {
+        var _ctrl$ref2;
+        (_ctrl$ref2 = ctrl.ref) == null || _ctrl$ref2.delete(ctrl);
+        ref.add(ctrl);
+        ctrl.ref = ref;
+    }
+}
+function useChain(refs, timeSteps, timeFrame = 1000) {
+    (0, _shared.useIsomorphicLayoutEffect)(()=>{
+        if (timeSteps) {
+            let prevDelay = 0;
+            (0, _shared.each)(refs, (ref, i)=>{
+                const controllers = ref.current;
+                if (controllers.length) {
+                    let delay = timeFrame * timeSteps[i];
+                    if (isNaN(delay)) delay = prevDelay;
+                    else prevDelay = delay;
+                    (0, _shared.each)(controllers, (ctrl)=>{
+                        (0, _shared.each)(ctrl.queue, (props)=>{
+                            const memoizedDelayProp = props.delay;
+                            props.delay = (key)=>delay + callProp(memoizedDelayProp || 0, key);
+                        });
+                    });
+                    ref.start();
+                }
+            });
+        } else {
+            let p = Promise.resolve();
+            (0, _shared.each)(refs, (ref)=>{
+                const controllers = ref.current;
+                if (controllers.length) {
+                    const queues = controllers.map((ctrl)=>{
+                        const q = ctrl.queue;
+                        ctrl.queue = [];
+                        return q;
+                    });
+                    p = p.then(()=>{
+                        (0, _shared.each)(controllers, (ctrl, i)=>(0, _shared.each)(queues[i] || [], (update1)=>ctrl.queue.push(update1)));
+                        return Promise.all(ref.start());
+                    });
+                }
+            });
+        }
+    });
+}
+const config = {
+    default: {
+        tension: 170,
+        friction: 26
+    },
+    gentle: {
+        tension: 120,
+        friction: 14
+    },
+    wobbly: {
+        tension: 180,
+        friction: 12
+    },
+    stiff: {
+        tension: 210,
+        friction: 20
+    },
+    slow: {
+        tension: 280,
+        friction: 60
+    },
+    molasses: {
+        tension: 280,
+        friction: 120
+    }
+};
+const c1 = 1.70158;
+const c2 = c1 * 1.525;
+const c3 = c1 + 1;
+const c4 = 2 * Math.PI / 3;
+const c5 = 2 * Math.PI / 4.5;
+const bounceOut = (x)=>{
+    const n1 = 7.5625;
+    const d1 = 2.75;
+    if (x < 1 / d1) return n1 * x * x;
+    else if (x < 2 / d1) return n1 * (x -= 1.5 / d1) * x + 0.75;
+    else if (x < 2.5 / d1) return n1 * (x -= 2.25 / d1) * x + 0.9375;
+    else return n1 * (x -= 2.625 / d1) * x + 0.984375;
+};
+const easings = {
+    linear: (x)=>x,
+    easeInQuad: (x)=>x * x,
+    easeOutQuad: (x)=>1 - (1 - x) * (1 - x),
+    easeInOutQuad: (x)=>x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2,
+    easeInCubic: (x)=>x * x * x,
+    easeOutCubic: (x)=>1 - Math.pow(1 - x, 3),
+    easeInOutCubic: (x)=>x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2,
+    easeInQuart: (x)=>x * x * x * x,
+    easeOutQuart: (x)=>1 - Math.pow(1 - x, 4),
+    easeInOutQuart: (x)=>x < 0.5 ? 8 * x * x * x * x : 1 - Math.pow(-2 * x + 2, 4) / 2,
+    easeInQuint: (x)=>x * x * x * x * x,
+    easeOutQuint: (x)=>1 - Math.pow(1 - x, 5),
+    easeInOutQuint: (x)=>x < 0.5 ? 16 * x * x * x * x * x : 1 - Math.pow(-2 * x + 2, 5) / 2,
+    easeInSine: (x)=>1 - Math.cos(x * Math.PI / 2),
+    easeOutSine: (x)=>Math.sin(x * Math.PI / 2),
+    easeInOutSine: (x)=>-(Math.cos(Math.PI * x) - 1) / 2,
+    easeInExpo: (x)=>x === 0 ? 0 : Math.pow(2, 10 * x - 10),
+    easeOutExpo: (x)=>x === 1 ? 1 : 1 - Math.pow(2, -10 * x),
+    easeInOutExpo: (x)=>x === 0 ? 0 : x === 1 ? 1 : x < 0.5 ? Math.pow(2, 20 * x - 10) / 2 : (2 - Math.pow(2, -20 * x + 10)) / 2,
+    easeInCirc: (x)=>1 - Math.sqrt(1 - Math.pow(x, 2)),
+    easeOutCirc: (x)=>Math.sqrt(1 - Math.pow(x - 1, 2)),
+    easeInOutCirc: (x)=>x < 0.5 ? (1 - Math.sqrt(1 - Math.pow(2 * x, 2))) / 2 : (Math.sqrt(1 - Math.pow(-2 * x + 2, 2)) + 1) / 2,
+    easeInBack: (x)=>c3 * x * x * x - c1 * x * x,
+    easeOutBack: (x)=>1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2),
+    easeInOutBack: (x)=>x < 0.5 ? Math.pow(2 * x, 2) * ((c2 + 1) * 2 * x - c2) / 2 : (Math.pow(2 * x - 2, 2) * ((c2 + 1) * (x * 2 - 2) + c2) + 2) / 2,
+    easeInElastic: (x)=>x === 0 ? 0 : x === 1 ? 1 : -Math.pow(2, 10 * x - 10) * Math.sin((x * 10 - 10.75) * c4),
+    easeOutElastic: (x)=>x === 0 ? 0 : x === 1 ? 1 : Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * c4) + 1,
+    easeInOutElastic: (x)=>x === 0 ? 0 : x === 1 ? 1 : x < 0.5 ? -(Math.pow(2, 20 * x - 10) * Math.sin((20 * x - 11.125) * c5)) / 2 : Math.pow(2, -20 * x + 10) * Math.sin((20 * x - 11.125) * c5) / 2 + 1,
+    easeInBounce: (x)=>1 - bounceOut(1 - x),
+    easeOutBounce: bounceOut,
+    easeInOutBounce: (x)=>x < 0.5 ? (1 - bounceOut(1 - 2 * x)) / 2 : (1 + bounceOut(2 * x - 1)) / 2
+};
+const defaults = _extends({}, config.default, {
+    mass: 1,
+    damping: 1,
+    easing: easings.linear,
+    clamp: false
+});
+class AnimationConfig {
+    constructor(){
+        this.tension = void 0;
+        this.friction = void 0;
+        this.frequency = void 0;
+        this.damping = void 0;
+        this.mass = void 0;
+        this.velocity = 0;
+        this.restVelocity = void 0;
+        this.precision = void 0;
+        this.progress = void 0;
+        this.duration = void 0;
+        this.easing = void 0;
+        this.clamp = void 0;
+        this.bounce = void 0;
+        this.decay = void 0;
+        this.round = void 0;
+        Object.assign(this, defaults);
+    }
+}
+function mergeConfig(config1, newConfig, defaultConfig) {
+    if (defaultConfig) {
+        defaultConfig = _extends({}, defaultConfig);
+        sanitizeConfig(defaultConfig, newConfig);
+        newConfig = _extends({}, defaultConfig, newConfig);
+    }
+    sanitizeConfig(config1, newConfig);
+    Object.assign(config1, newConfig);
+    for(const key in defaults)if (config1[key] == null) config1[key] = defaults[key];
+    let { mass , frequency , damping  } = config1;
+    if (!(0, _shared.is).und(frequency)) {
+        if (frequency < 0.01) frequency = 0.01;
+        if (damping < 0) damping = 0;
+        config1.tension = Math.pow(2 * Math.PI / frequency, 2) * mass;
+        config1.friction = 4 * Math.PI * damping * mass / frequency;
+    }
+    return config1;
+}
+function sanitizeConfig(config2, props) {
+    if (!(0, _shared.is).und(props.decay)) config2.duration = undefined;
+    else {
+        const isTensionConfig = !(0, _shared.is).und(props.tension) || !(0, _shared.is).und(props.friction);
+        if (isTensionConfig || !(0, _shared.is).und(props.frequency) || !(0, _shared.is).und(props.damping) || !(0, _shared.is).und(props.mass)) {
+            config2.duration = undefined;
+            config2.decay = undefined;
+        }
+        if (isTensionConfig) config2.frequency = undefined;
+    }
+}
+const emptyArray = [];
+class Animation {
+    constructor(){
+        this.changed = false;
+        this.values = emptyArray;
+        this.toValues = null;
+        this.fromValues = emptyArray;
+        this.to = void 0;
+        this.from = void 0;
+        this.config = new AnimationConfig();
+        this.immediate = false;
+    }
+}
+function scheduleProps(callId, { key , props , defaultProps , state , actions  }) {
+    return new Promise((resolve, reject)=>{
+        var _props$cancel;
+        let delay;
+        let timeout;
+        let cancel = matchProp((_props$cancel = props.cancel) != null ? _props$cancel : defaultProps == null ? void 0 : defaultProps.cancel, key);
+        if (cancel) onStart();
+        else {
+            if (!(0, _shared.is).und(props.pause)) state.paused = matchProp(props.pause, key);
+            let pause = defaultProps == null ? void 0 : defaultProps.pause;
+            if (pause !== true) pause = state.paused || matchProp(pause, key);
+            delay = callProp(props.delay || 0, key);
+            if (pause) {
+                state.resumeQueue.add(onResume);
+                actions.pause();
+            } else {
+                actions.resume();
+                onResume();
+            }
+        }
+        function onPause() {
+            state.resumeQueue.add(onResume);
+            state.timeouts.delete(timeout);
+            timeout.cancel();
+            delay = timeout.time - (0, _shared.raf).now();
+        }
+        function onResume() {
+            if (delay > 0 && !(0, _shared.Globals).skipAnimation) {
+                state.delayed = true;
+                timeout = (0, _shared.raf).setTimeout(onStart, delay);
+                state.pauseQueue.add(onPause);
+                state.timeouts.add(timeout);
+            } else onStart();
+        }
+        function onStart() {
+            if (state.delayed) state.delayed = false;
+            state.pauseQueue.delete(onPause);
+            state.timeouts.delete(timeout);
+            if (callId <= (state.cancelId || 0)) cancel = true;
+            try {
+                actions.start(_extends({}, props, {
+                    callId,
+                    cancel
+                }), resolve);
+            } catch (err) {
+                reject(err);
+            }
+        }
+    });
+}
+const getCombinedResult = (target, results)=>results.length == 1 ? results[0] : results.some((result)=>result.cancelled) ? getCancelledResult(target.get()) : results.every((result)=>result.noop) ? getNoopResult(target.get()) : getFinishedResult(target.get(), results.every((result)=>result.finished));
+const getNoopResult = (value)=>({
+        value,
+        noop: true,
+        finished: true,
+        cancelled: false
+    });
+const getFinishedResult = (value, finished, cancelled = false)=>({
+        value,
+        finished,
+        cancelled
+    });
+const getCancelledResult = (value)=>({
+        value,
+        cancelled: true,
+        finished: false
+    });
+function runAsync(to3, props1, state, target) {
+    const { callId , parentId , onRest  } = props1;
+    const { asyncTo: prevTo , promise: prevPromise  } = state;
+    if (!parentId && to3 === prevTo && !props1.reset) return prevPromise;
+    return state.promise = (async ()=>{
+        state.asyncId = callId;
+        state.asyncTo = to3;
+        const defaultProps = getDefaultProps(props1, (value, key)=>key === "onRest" ? undefined : value);
+        let preventBail;
+        let bail;
+        const bailPromise = new Promise((resolve, reject)=>(preventBail = resolve, bail = reject));
+        const bailIfEnded = (bailSignal)=>{
+            const bailResult = callId <= (state.cancelId || 0) && getCancelledResult(target) || callId !== state.asyncId && getFinishedResult(target, false);
+            if (bailResult) {
+                bailSignal.result = bailResult;
+                bail(bailSignal);
+                throw bailSignal;
+            }
+        };
+        const animate = (arg1, arg2)=>{
+            const bailSignal = new BailSignal();
+            const skipAnimationSignal = new SkipAniamtionSignal();
+            return (async ()=>{
+                if ((0, _shared.Globals).skipAnimation) {
+                    stopAsync(state);
+                    skipAnimationSignal.result = getFinishedResult(target, false);
+                    bail(skipAnimationSignal);
+                    throw skipAnimationSignal;
+                }
+                bailIfEnded(bailSignal);
+                const props = (0, _shared.is).obj(arg1) ? _extends({}, arg1) : _extends({}, arg2, {
+                    to: arg1
+                });
+                props.parentId = callId;
+                (0, _shared.eachProp)(defaultProps, (value, key)=>{
+                    if ((0, _shared.is).und(props[key])) props[key] = value;
+                });
+                const result = await target.start(props);
+                bailIfEnded(bailSignal);
+                if (state.paused) await new Promise((resume)=>{
+                    state.resumeQueue.add(resume);
+                });
+                return result;
+            })();
+        };
+        let result1;
+        if ((0, _shared.Globals).skipAnimation) {
+            stopAsync(state);
+            return getFinishedResult(target, false);
+        }
+        try {
+            let animating;
+            if ((0, _shared.is).arr(to3)) animating = (async (queue)=>{
+                for (const props of queue)await animate(props);
+            })(to3);
+            else animating = Promise.resolve(to3(animate, target.stop.bind(target)));
+            await Promise.all([
+                animating.then(preventBail),
+                bailPromise
+            ]);
+            result1 = getFinishedResult(target.get(), true, false);
+        } catch (err) {
+            if (err instanceof BailSignal) result1 = err.result;
+            else if (err instanceof SkipAniamtionSignal) result1 = err.result;
+            else throw err;
+        } finally{
+            if (callId == state.asyncId) {
+                state.asyncId = parentId;
+                state.asyncTo = parentId ? prevTo : undefined;
+                state.promise = parentId ? prevPromise : undefined;
+            }
+        }
+        if ((0, _shared.is).fun(onRest)) (0, _shared.raf).batchedUpdates(()=>{
+            onRest(result1, target, target.item);
+        });
+        return result1;
+    })();
+}
+function stopAsync(state, cancelId) {
+    (0, _shared.flush)(state.timeouts, (t)=>t.cancel());
+    state.pauseQueue.clear();
+    state.resumeQueue.clear();
+    state.asyncId = state.asyncTo = state.promise = undefined;
+    if (cancelId) state.cancelId = cancelId;
+}
+class BailSignal extends Error {
+    constructor(){
+        super("An async animation has been interrupted. You see this error because you forgot to use `await` or `.catch(...)` on its returned promise.");
+        this.result = void 0;
+    }
+}
+class SkipAniamtionSignal extends Error {
+    constructor(){
+        super("SkipAnimationSignal");
+        this.result = void 0;
+    }
+}
+const isFrameValue = (value)=>value instanceof FrameValue;
+let nextId$1 = 1;
+class FrameValue extends (0, _shared.FluidValue) {
+    constructor(...args){
+        super(...args);
+        this.id = nextId$1++;
+        this.key = void 0;
+        this._priority = 0;
+    }
+    get priority() {
+        return this._priority;
+    }
+    set priority(priority) {
+        if (this._priority != priority) {
+            this._priority = priority;
+            this._onPriorityChange(priority);
+        }
+    }
+    get() {
+        const node = (0, _animated.getAnimated)(this);
+        return node && node.getValue();
+    }
+    to(...args) {
+        return (0, _shared.Globals).to(this, args);
+    }
+    interpolate(...args) {
+        (0, _shared.deprecateInterpolate)();
+        return (0, _shared.Globals).to(this, args);
+    }
+    toJSON() {
+        return this.get();
+    }
+    observerAdded(count) {
+        if (count == 1) this._attach();
+    }
+    observerRemoved(count) {
+        if (count == 0) this._detach();
+    }
+    _attach() {}
+    _detach() {}
+    _onChange(value, idle = false) {
+        (0, _shared.callFluidObservers)(this, {
+            type: "change",
+            parent: this,
+            value,
+            idle
+        });
+    }
+    _onPriorityChange(priority) {
+        if (!this.idle) (0, _shared.frameLoop).sort(this);
+        (0, _shared.callFluidObservers)(this, {
+            type: "priority",
+            parent: this,
+            priority
+        });
+    }
+}
+const $P = Symbol.for("SpringPhase");
+const HAS_ANIMATED = 1;
+const IS_ANIMATING = 2;
+const IS_PAUSED = 4;
+const hasAnimated = (target)=>(target[$P] & HAS_ANIMATED) > 0;
+const isAnimating = (target)=>(target[$P] & IS_ANIMATING) > 0;
+const isPaused = (target)=>(target[$P] & IS_PAUSED) > 0;
+const setActiveBit = (target, active)=>active ? target[$P] |= IS_ANIMATING | HAS_ANIMATED : target[$P] &= ~IS_ANIMATING;
+const setPausedBit = (target, paused)=>paused ? target[$P] |= IS_PAUSED : target[$P] &= ~IS_PAUSED;
+class SpringValue extends FrameValue {
+    constructor(arg1, arg2){
+        super();
+        this.key = void 0;
+        this.animation = new Animation();
+        this.queue = void 0;
+        this.defaultProps = {};
+        this._state = {
+            paused: false,
+            delayed: false,
+            pauseQueue: new Set(),
+            resumeQueue: new Set(),
+            timeouts: new Set()
+        };
+        this._pendingCalls = new Set();
+        this._lastCallId = 0;
+        this._lastToId = 0;
+        this._memoizedDuration = 0;
+        if (!(0, _shared.is).und(arg1) || !(0, _shared.is).und(arg2)) {
+            const props = (0, _shared.is).obj(arg1) ? _extends({}, arg1) : _extends({}, arg2, {
+                from: arg1
+            });
+            if ((0, _shared.is).und(props.default)) props.default = true;
+            this.start(props);
+        }
+    }
+    get idle() {
+        return !(isAnimating(this) || this._state.asyncTo) || isPaused(this);
+    }
+    get goal() {
+        return (0, _shared.getFluidValue)(this.animation.to);
+    }
+    get velocity() {
+        const node1 = (0, _animated.getAnimated)(this);
+        return node1 instanceof (0, _animated.AnimatedValue) ? node1.lastVelocity || 0 : node1.getPayload().map((node)=>node.lastVelocity || 0);
+    }
+    get hasAnimated() {
+        return hasAnimated(this);
+    }
+    get isAnimating() {
+        return isAnimating(this);
+    }
+    get isPaused() {
+        return isPaused(this);
+    }
+    get isDelayed() {
+        return this._state.delayed;
+    }
+    advance(dt) {
+        let idle = true;
+        let changed = false;
+        const anim = this.animation;
+        let { config: config3 , toValues  } = anim;
+        const payload = (0, _animated.getPayload)(anim.to);
+        if (!payload && (0, _shared.hasFluidValue)(anim.to)) toValues = (0, _shared.toArray)((0, _shared.getFluidValue)(anim.to));
+        anim.values.forEach((node, i)=>{
+            if (node.done) return;
+            const to4 = node.constructor == (0, _animated.AnimatedString) ? 1 : payload ? payload[i].lastPosition : toValues[i];
+            let finished = anim.immediate;
+            let position = to4;
+            if (!finished) {
+                position = node.lastPosition;
+                if (config3.tension <= 0) {
+                    node.done = true;
+                    return;
+                }
+                let elapsed = node.elapsedTime += dt;
+                const from = anim.fromValues[i];
+                const v0 = node.v0 != null ? node.v0 : node.v0 = (0, _shared.is).arr(config3.velocity) ? config3.velocity[i] : config3.velocity;
+                let velocity;
+                if (!(0, _shared.is).und(config3.duration)) {
+                    let p = 1;
+                    if (config3.duration > 0) {
+                        if (this._memoizedDuration !== config3.duration) {
+                            this._memoizedDuration = config3.duration;
+                            if (node.durationProgress > 0) {
+                                node.elapsedTime = config3.duration * node.durationProgress;
+                                elapsed = node.elapsedTime += dt;
+                            }
+                        }
+                        p = (config3.progress || 0) + elapsed / this._memoizedDuration;
+                        p = p > 1 ? 1 : p < 0 ? 0 : p;
+                        node.durationProgress = p;
+                    }
+                    position = from + config3.easing(p) * (to4 - from);
+                    velocity = (position - node.lastPosition) / dt;
+                    finished = p == 1;
+                } else if (config3.decay) {
+                    const decay = config3.decay === true ? 0.998 : config3.decay;
+                    const e = Math.exp(-(1 - decay) * elapsed);
+                    position = from + v0 / (1 - decay) * (1 - e);
+                    finished = Math.abs(node.lastPosition - position) < 0.1;
+                    velocity = v0 * e;
+                } else {
+                    velocity = node.lastVelocity == null ? v0 : node.lastVelocity;
+                    const precision = config3.precision || (from == to4 ? 0.005 : Math.min(1, Math.abs(to4 - from) * 0.001));
+                    const restVelocity = config3.restVelocity || precision / 10;
+                    const bounceFactor = config3.clamp ? 0 : config3.bounce;
+                    const canBounce = !(0, _shared.is).und(bounceFactor);
+                    const isGrowing = from == to4 ? node.v0 > 0 : from < to4;
+                    let isMoving;
+                    let isBouncing = false;
+                    const step = 1;
+                    const numSteps = Math.ceil(dt / step);
+                    for(let n = 0; n < numSteps; ++n){
+                        isMoving = Math.abs(velocity) > restVelocity;
+                        if (!isMoving) {
+                            finished = Math.abs(to4 - position) <= precision;
+                            if (finished) break;
+                        }
+                        if (canBounce) {
+                            isBouncing = position == to4 || position > to4 == isGrowing;
+                            if (isBouncing) {
+                                velocity = -velocity * bounceFactor;
+                                position = to4;
+                            }
+                        }
+                        const springForce = -config3.tension * 0.000001 * (position - to4);
+                        const dampingForce = -config3.friction * 0.001 * velocity;
+                        const acceleration = (springForce + dampingForce) / config3.mass;
+                        velocity = velocity + acceleration * step;
+                        position = position + velocity * step;
+                    }
+                }
+                node.lastVelocity = velocity;
+                if (Number.isNaN(position)) {
+                    console.warn(`Got NaN while animating:`, this);
+                    finished = true;
+                }
+            }
+            if (payload && !payload[i].done) finished = false;
+            if (finished) node.done = true;
+            else idle = false;
+            if (node.setValue(position, config3.round)) changed = true;
+        });
+        const node2 = (0, _animated.getAnimated)(this);
+        const currVal = node2.getValue();
+        if (idle) {
+            const finalVal = (0, _shared.getFluidValue)(anim.to);
+            if ((currVal !== finalVal || changed) && !config3.decay) {
+                node2.setValue(finalVal);
+                this._onChange(finalVal);
+            } else if (changed && config3.decay) this._onChange(currVal);
+            this._stop();
+        } else if (changed) this._onChange(currVal);
+    }
+    set(value) {
+        (0, _shared.raf).batchedUpdates(()=>{
+            this._stop();
+            this._focus(value);
+            this._set(value);
+        });
+        return this;
+    }
+    pause() {
+        this._update({
+            pause: true
+        });
+    }
+    resume() {
+        this._update({
+            pause: false
+        });
+    }
+    finish() {
+        if (isAnimating(this)) {
+            const { to: to5 , config: config4  } = this.animation;
+            (0, _shared.raf).batchedUpdates(()=>{
+                this._onStart();
+                if (!config4.decay) this._set(to5, false);
+                this._stop();
+            });
+        }
+        return this;
+    }
+    update(props) {
+        const queue = this.queue || (this.queue = []);
+        queue.push(props);
+        return this;
+    }
+    start(to6, arg2) {
+        let queue;
+        if (!(0, _shared.is).und(to6)) queue = [
+            (0, _shared.is).obj(to6) ? to6 : _extends({}, arg2, {
+                to: to6
+            })
+        ];
+        else {
+            queue = this.queue || [];
+            this.queue = [];
+        }
+        return Promise.all(queue.map((props)=>{
+            const up = this._update(props);
+            return up;
+        })).then((results)=>getCombinedResult(this, results));
+    }
+    stop(cancel) {
+        const { to: to7  } = this.animation;
+        this._focus(this.get());
+        stopAsync(this._state, cancel && this._lastCallId);
+        (0, _shared.raf).batchedUpdates(()=>this._stop(to7, cancel));
+        return this;
+    }
+    reset() {
+        this._update({
+            reset: true
+        });
+    }
+    eventObserved(event) {
+        if (event.type == "change") this._start();
+        else if (event.type == "priority") this.priority = event.priority + 1;
+    }
+    _prepareNode(props) {
+        const key = this.key || "";
+        let { to: to8 , from  } = props;
+        to8 = (0, _shared.is).obj(to8) ? to8[key] : to8;
+        if (to8 == null || isAsyncTo(to8)) to8 = undefined;
+        from = (0, _shared.is).obj(from) ? from[key] : from;
+        if (from == null) from = undefined;
+        const range = {
+            to: to8,
+            from
+        };
+        if (!hasAnimated(this)) {
+            if (props.reverse) [to8, from] = [
+                from,
+                to8
+            ];
+            from = (0, _shared.getFluidValue)(from);
+            if (!(0, _shared.is).und(from)) this._set(from);
+            else if (!(0, _animated.getAnimated)(this)) this._set(to8);
+        }
+        return range;
+    }
+    _update(_ref, isLoop) {
+        let props = _extends({}, _ref);
+        const { key , defaultProps  } = this;
+        if (props.default) Object.assign(defaultProps, getDefaultProps(props, (value, prop)=>/^on/.test(prop) ? resolveProp(value, key) : value));
+        mergeActiveFn(this, props, "onProps");
+        sendEvent(this, "onProps", props, this);
+        const range = this._prepareNode(props);
+        if (Object.isFrozen(this)) throw Error("Cannot animate a `SpringValue` object that is frozen. Did you forget to pass your component to `animated(...)` before animating its props?");
+        const state = this._state;
+        return scheduleProps(++this._lastCallId, {
+            key,
+            props,
+            defaultProps,
+            state,
+            actions: {
+                pause: ()=>{
+                    if (!isPaused(this)) {
+                        setPausedBit(this, true);
+                        (0, _shared.flushCalls)(state.pauseQueue);
+                        sendEvent(this, "onPause", getFinishedResult(this, checkFinished(this, this.animation.to)), this);
+                    }
+                },
+                resume: ()=>{
+                    if (isPaused(this)) {
+                        setPausedBit(this, false);
+                        if (isAnimating(this)) this._resume();
+                        (0, _shared.flushCalls)(state.resumeQueue);
+                        sendEvent(this, "onResume", getFinishedResult(this, checkFinished(this, this.animation.to)), this);
+                    }
+                },
+                start: this._merge.bind(this, range)
+            }
+        }).then((result)=>{
+            if (props.loop && result.finished && !(isLoop && result.noop)) {
+                const nextProps = createLoopUpdate(props);
+                if (nextProps) return this._update(nextProps, true);
+            }
+            return result;
+        });
+    }
+    _merge(range, props, resolve) {
+        if (props.cancel) {
+            this.stop(true);
+            return resolve(getCancelledResult(this));
+        }
+        const hasToProp = !(0, _shared.is).und(range.to);
+        const hasFromProp = !(0, _shared.is).und(range.from);
+        if (hasToProp || hasFromProp) {
+            if (props.callId > this._lastToId) this._lastToId = props.callId;
+            else return resolve(getCancelledResult(this));
+        }
+        const { key , defaultProps , animation: anim  } = this;
+        const { to: prevTo , from: prevFrom  } = anim;
+        let { to: to9 = prevTo , from =prevFrom  } = range;
+        if (hasFromProp && !hasToProp && (!props.default || (0, _shared.is).und(to9))) to9 = from;
+        if (props.reverse) [to9, from] = [
+            from,
+            to9
+        ];
+        const hasFromChanged = !(0, _shared.isEqual)(from, prevFrom);
+        if (hasFromChanged) anim.from = from;
+        from = (0, _shared.getFluidValue)(from);
+        const hasToChanged = !(0, _shared.isEqual)(to9, prevTo);
+        if (hasToChanged) this._focus(to9);
+        const hasAsyncTo = isAsyncTo(props.to);
+        const { config: config5  } = anim;
+        const { decay , velocity  } = config5;
+        if (hasToProp || hasFromProp) config5.velocity = 0;
+        if (props.config && !hasAsyncTo) mergeConfig(config5, callProp(props.config, key), props.config !== defaultProps.config ? callProp(defaultProps.config, key) : void 0);
+        let node = (0, _animated.getAnimated)(this);
+        if (!node || (0, _shared.is).und(to9)) return resolve(getFinishedResult(this, true));
+        const reset = (0, _shared.is).und(props.reset) ? hasFromProp && !props.default : !(0, _shared.is).und(from) && matchProp(props.reset, key);
+        const value = reset ? from : this.get();
+        const goal = computeGoal(to9);
+        const isAnimatable = (0, _shared.is).num(goal) || (0, _shared.is).arr(goal) || (0, _shared.isAnimatedString)(goal);
+        const immediate = !hasAsyncTo && (!isAnimatable || matchProp(defaultProps.immediate || props.immediate, key));
+        if (hasToChanged) {
+            const nodeType = (0, _animated.getAnimatedType)(to9);
+            if (nodeType !== node.constructor) {
+                if (immediate) node = this._set(goal);
+                else throw Error(`Cannot animate between ${node.constructor.name} and ${nodeType.name}, as the "to" prop suggests`);
+            }
+        }
+        const goalType = node.constructor;
+        let started = (0, _shared.hasFluidValue)(to9);
+        let finished = false;
+        if (!started) {
+            const hasValueChanged = reset || !hasAnimated(this) && hasFromChanged;
+            if (hasToChanged || hasValueChanged) {
+                finished = (0, _shared.isEqual)(computeGoal(value), goal);
+                started = !finished;
+            }
+            if (!(0, _shared.isEqual)(anim.immediate, immediate) && !immediate || !(0, _shared.isEqual)(config5.decay, decay) || !(0, _shared.isEqual)(config5.velocity, velocity)) started = true;
+        }
+        if (finished && isAnimating(this)) {
+            if (anim.changed && !reset) started = true;
+            else if (!started) this._stop(prevTo);
+        }
+        if (!hasAsyncTo) {
+            if (started || (0, _shared.hasFluidValue)(prevTo)) {
+                anim.values = node.getPayload();
+                anim.toValues = (0, _shared.hasFluidValue)(to9) ? null : goalType == (0, _animated.AnimatedString) ? [
+                    1
+                ] : (0, _shared.toArray)(goal);
+            }
+            if (anim.immediate != immediate) {
+                anim.immediate = immediate;
+                if (!immediate && !reset) this._set(prevTo);
+            }
+            if (started) {
+                const { onRest  } = anim;
+                (0, _shared.each)(ACTIVE_EVENTS, (type)=>mergeActiveFn(this, props, type));
+                const result = getFinishedResult(this, checkFinished(this, prevTo));
+                (0, _shared.flushCalls)(this._pendingCalls, result);
+                this._pendingCalls.add(resolve);
+                if (anim.changed) (0, _shared.raf).batchedUpdates(()=>{
+                    anim.changed = !reset;
+                    onRest == null || onRest(result, this);
+                    if (reset) callProp(defaultProps.onRest, result);
+                    else anim.onStart == null || anim.onStart(result, this);
+                });
+            }
+        }
+        if (reset) this._set(value);
+        if (hasAsyncTo) resolve(runAsync(props.to, props, this._state, this));
+        else if (started) this._start();
+        else if (isAnimating(this) && !hasToChanged) this._pendingCalls.add(resolve);
+        else resolve(getNoopResult(value));
+    }
+    _focus(value) {
+        const anim = this.animation;
+        if (value !== anim.to) {
+            if ((0, _shared.getFluidObservers)(this)) this._detach();
+            anim.to = value;
+            if ((0, _shared.getFluidObservers)(this)) this._attach();
+        }
+    }
+    _attach() {
+        let priority = 0;
+        const { to: to10  } = this.animation;
+        if ((0, _shared.hasFluidValue)(to10)) {
+            (0, _shared.addFluidObserver)(to10, this);
+            if (isFrameValue(to10)) priority = to10.priority + 1;
+        }
+        this.priority = priority;
+    }
+    _detach() {
+        const { to: to11  } = this.animation;
+        if ((0, _shared.hasFluidValue)(to11)) (0, _shared.removeFluidObserver)(to11, this);
+    }
+    _set(arg, idle = true) {
+        const value = (0, _shared.getFluidValue)(arg);
+        if (!(0, _shared.is).und(value)) {
+            const oldNode = (0, _animated.getAnimated)(this);
+            if (!oldNode || !(0, _shared.isEqual)(value, oldNode.getValue())) {
+                const nodeType = (0, _animated.getAnimatedType)(value);
+                if (!oldNode || oldNode.constructor != nodeType) (0, _animated.setAnimated)(this, nodeType.create(value));
+                else oldNode.setValue(value);
+                if (oldNode) (0, _shared.raf).batchedUpdates(()=>{
+                    this._onChange(value, idle);
+                });
+            }
+        }
+        return (0, _animated.getAnimated)(this);
+    }
+    _onStart() {
+        const anim = this.animation;
+        if (!anim.changed) {
+            anim.changed = true;
+            sendEvent(this, "onStart", getFinishedResult(this, checkFinished(this, anim.to)), this);
+        }
+    }
+    _onChange(value, idle) {
+        if (!idle) {
+            this._onStart();
+            callProp(this.animation.onChange, value, this);
+        }
+        callProp(this.defaultProps.onChange, value, this);
+        super._onChange(value, idle);
+    }
+    _start() {
+        const anim = this.animation;
+        (0, _animated.getAnimated)(this).reset((0, _shared.getFluidValue)(anim.to));
+        if (!anim.immediate) anim.fromValues = anim.values.map((node)=>node.lastPosition);
+        if (!isAnimating(this)) {
+            setActiveBit(this, true);
+            if (!isPaused(this)) this._resume();
+        }
+    }
+    _resume() {
+        if ((0, _shared.Globals).skipAnimation) this.finish();
+        else (0, _shared.frameLoop).start(this);
+    }
+    _stop(goal, cancel) {
+        if (isAnimating(this)) {
+            setActiveBit(this, false);
+            const anim = this.animation;
+            (0, _shared.each)(anim.values, (node)=>{
+                node.done = true;
+            });
+            if (anim.toValues) anim.onChange = anim.onPause = anim.onResume = undefined;
+            (0, _shared.callFluidObservers)(this, {
+                type: "idle",
+                parent: this
+            });
+            const result = cancel ? getCancelledResult(this.get()) : getFinishedResult(this.get(), checkFinished(this, goal != null ? goal : anim.to));
+            (0, _shared.flushCalls)(this._pendingCalls, result);
+            if (anim.changed) {
+                anim.changed = false;
+                sendEvent(this, "onRest", result, this);
+            }
+        }
+    }
+}
+function checkFinished(target, to12) {
+    const goal = computeGoal(to12);
+    const value = computeGoal(target.get());
+    return (0, _shared.isEqual)(value, goal);
+}
+function createLoopUpdate(props, loop = props.loop, to13 = props.to) {
+    let loopRet = callProp(loop);
+    if (loopRet) {
+        const overrides = loopRet !== true && inferTo(loopRet);
+        const reverse = (overrides || props).reverse;
+        const reset = !overrides || overrides.reset;
+        return createUpdate(_extends({}, props, {
+            loop,
+            default: false,
+            pause: undefined,
+            to: !reverse || isAsyncTo(to13) ? to13 : undefined,
+            from: reset ? props.from : undefined,
+            reset
+        }, overrides));
+    }
+}
+function createUpdate(props) {
+    const { to: to14 , from  } = props = inferTo(props);
+    const keys = new Set();
+    if ((0, _shared.is).obj(to14)) findDefined(to14, keys);
+    if ((0, _shared.is).obj(from)) findDefined(from, keys);
+    props.keys = keys.size ? Array.from(keys) : null;
+    return props;
+}
+function declareUpdate(props) {
+    const update2 = createUpdate(props);
+    if ((0, _shared.is).und(update2.default)) update2.default = getDefaultProps(update2);
+    return update2;
+}
+function findDefined(values, keys) {
+    (0, _shared.eachProp)(values, (value, key)=>value != null && keys.add(key));
+}
+const ACTIVE_EVENTS = [
+    "onStart",
+    "onRest",
+    "onChange",
+    "onPause",
+    "onResume"
+];
+function mergeActiveFn(target, props, type) {
+    target.animation[type] = props[type] !== getDefaultProp(props, type) ? resolveProp(props[type], target.key) : undefined;
+}
+function sendEvent(target, type, ...args) {
+    var _target$animation$typ, _target$animation, _target$defaultProps$, _target$defaultProps;
+    (_target$animation$typ = (_target$animation = target.animation)[type]) == null || _target$animation$typ.call(_target$animation, ...args);
+    (_target$defaultProps$ = (_target$defaultProps = target.defaultProps)[type]) == null || _target$defaultProps$.call(_target$defaultProps, ...args);
+}
+const BATCHED_EVENTS = [
+    "onStart",
+    "onChange",
+    "onRest"
+];
+let nextId = 1;
+class Controller {
+    constructor(props, flush){
+        this.id = nextId++;
+        this.springs = {};
+        this.queue = [];
+        this.ref = void 0;
+        this._flush = void 0;
+        this._initialProps = void 0;
+        this._lastAsyncId = 0;
+        this._active = new Set();
+        this._changed = new Set();
+        this._started = false;
+        this._item = void 0;
+        this._state = {
+            paused: false,
+            pauseQueue: new Set(),
+            resumeQueue: new Set(),
+            timeouts: new Set()
+        };
+        this._events = {
+            onStart: new Map(),
+            onChange: new Map(),
+            onRest: new Map()
+        };
+        this._onFrame = this._onFrame.bind(this);
+        if (flush) this._flush = flush;
+        if (props) this.start(_extends({
+            default: true
+        }, props));
+    }
+    get idle() {
+        return !this._state.asyncTo && Object.values(this.springs).every((spring)=>{
+            return spring.idle && !spring.isDelayed && !spring.isPaused;
+        });
+    }
+    get item() {
+        return this._item;
+    }
+    set item(item) {
+        this._item = item;
+    }
+    get() {
+        const values = {};
+        this.each((spring, key)=>values[key] = spring.get());
+        return values;
+    }
+    set(values) {
+        for(const key in values){
+            const value = values[key];
+            if (!(0, _shared.is).und(value)) this.springs[key].set(value);
+        }
+    }
+    update(props) {
+        if (props) this.queue.push(createUpdate(props));
+        return this;
+    }
+    start(props) {
+        let { queue  } = this;
+        if (props) queue = (0, _shared.toArray)(props).map(createUpdate);
+        else this.queue = [];
+        if (this._flush) return this._flush(this, queue);
+        prepareKeys(this, queue);
+        return flushUpdateQueue(this, queue);
+    }
+    stop(arg, keys) {
+        if (arg !== !!arg) keys = arg;
+        if (keys) {
+            const springs = this.springs;
+            (0, _shared.each)((0, _shared.toArray)(keys), (key)=>springs[key].stop(!!arg));
+        } else {
+            stopAsync(this._state, this._lastAsyncId);
+            this.each((spring)=>spring.stop(!!arg));
+        }
+        return this;
+    }
+    pause(keys) {
+        if ((0, _shared.is).und(keys)) this.start({
+            pause: true
+        });
+        else {
+            const springs = this.springs;
+            (0, _shared.each)((0, _shared.toArray)(keys), (key)=>springs[key].pause());
+        }
+        return this;
+    }
+    resume(keys) {
+        if ((0, _shared.is).und(keys)) this.start({
+            pause: false
+        });
+        else {
+            const springs = this.springs;
+            (0, _shared.each)((0, _shared.toArray)(keys), (key)=>springs[key].resume());
+        }
+        return this;
+    }
+    each(iterator) {
+        (0, _shared.eachProp)(this.springs, iterator);
+    }
+    _onFrame() {
+        const { onStart: onStart1 , onChange: onChange1 , onRest: onRest1  } = this._events;
+        const active = this._active.size > 0;
+        const changed = this._changed.size > 0;
+        if (active && !this._started || changed && !this._started) {
+            this._started = true;
+            (0, _shared.flush)(onStart1, ([onStart, result])=>{
+                result.value = this.get();
+                onStart(result, this, this._item);
+            });
+        }
+        const idle = !active && this._started;
+        const values = changed || idle && onRest1.size ? this.get() : null;
+        if (changed && onChange1.size) (0, _shared.flush)(onChange1, ([onChange, result])=>{
+            result.value = values;
+            onChange(result, this, this._item);
+        });
+        if (idle) {
+            this._started = false;
+            (0, _shared.flush)(onRest1, ([onRest, result])=>{
+                result.value = values;
+                onRest(result, this, this._item);
+            });
+        }
+    }
+    eventObserved(event) {
+        if (event.type == "change") {
+            this._changed.add(event.parent);
+            if (!event.idle) this._active.add(event.parent);
+        } else if (event.type == "idle") this._active.delete(event.parent);
+        else return;
+        (0, _shared.raf).onFrame(this._onFrame);
+    }
+}
+function flushUpdateQueue(ctrl, queue) {
+    return Promise.all(queue.map((props)=>flushUpdate(ctrl, props))).then((results)=>getCombinedResult(ctrl, results));
+}
+async function flushUpdate(ctrl, props2, isLoop) {
+    const { keys , to: to15 , from , loop , onRest , onResolve  } = props2;
+    const defaults2 = (0, _shared.is).obj(props2.default) && props2.default;
+    if (loop) props2.loop = false;
+    if (to15 === false) props2.to = null;
+    if (from === false) props2.from = null;
+    const asyncTo = (0, _shared.is).arr(to15) || (0, _shared.is).fun(to15) ? to15 : undefined;
+    if (asyncTo) {
+        props2.to = undefined;
+        props2.onRest = undefined;
+        if (defaults2) defaults2.onRest = undefined;
+    } else (0, _shared.each)(BATCHED_EVENTS, (key)=>{
+        const handler = props2[key];
+        if ((0, _shared.is).fun(handler)) {
+            const queue = ctrl["_events"][key];
+            props2[key] = ({ finished , cancelled  })=>{
+                const result = queue.get(handler);
+                if (result) {
+                    if (!finished) result.finished = false;
+                    if (cancelled) result.cancelled = true;
+                } else queue.set(handler, {
+                    value: null,
+                    finished: finished || false,
+                    cancelled: cancelled || false
+                });
+            };
+            if (defaults2) defaults2[key] = props2[key];
+        }
+    });
+    const state = ctrl["_state"];
+    if (props2.pause === !state.paused) {
+        state.paused = props2.pause;
+        (0, _shared.flushCalls)(props2.pause ? state.pauseQueue : state.resumeQueue);
+    } else if (state.paused) props2.pause = true;
+    const promises = (keys || Object.keys(ctrl.springs)).map((key)=>ctrl.springs[key].start(props2));
+    const cancel = props2.cancel === true || getDefaultProp(props2, "cancel") === true;
+    if (asyncTo || cancel && state.asyncId) promises.push(scheduleProps(++ctrl["_lastAsyncId"], {
+        props: props2,
+        state,
+        actions: {
+            pause: (0, _shared.noop),
+            resume: (0, _shared.noop),
+            start (props, resolve) {
+                if (cancel) {
+                    stopAsync(state, ctrl["_lastAsyncId"]);
+                    resolve(getCancelledResult(ctrl));
+                } else {
+                    props.onRest = onRest;
+                    resolve(runAsync(asyncTo, props, state, ctrl));
+                }
+            }
+        }
+    }));
+    if (state.paused) await new Promise((resume)=>{
+        state.resumeQueue.add(resume);
+    });
+    const result2 = getCombinedResult(ctrl, await Promise.all(promises));
+    if (loop && result2.finished && !(isLoop && result2.noop)) {
+        const nextProps = createLoopUpdate(props2, loop, to15);
+        if (nextProps) {
+            prepareKeys(ctrl, [
+                nextProps
+            ]);
+            return flushUpdate(ctrl, nextProps, true);
+        }
+    }
+    if (onResolve) (0, _shared.raf).batchedUpdates(()=>onResolve(result2, ctrl, ctrl.item));
+    return result2;
+}
+function getSprings(ctrl, props3) {
+    const springs = _extends({}, ctrl.springs);
+    if (props3) (0, _shared.each)((0, _shared.toArray)(props3), (props)=>{
+        if ((0, _shared.is).und(props.keys)) props = createUpdate(props);
+        if (!(0, _shared.is).obj(props.to)) props = _extends({}, props, {
+            to: undefined
+        });
+        prepareSprings(springs, props, (key)=>{
+            return createSpring(key);
+        });
+    });
+    setSprings(ctrl, springs);
+    return springs;
+}
+function setSprings(ctrl, springs) {
+    (0, _shared.eachProp)(springs, (spring, key)=>{
+        if (!ctrl.springs[key]) {
+            ctrl.springs[key] = spring;
+            (0, _shared.addFluidObserver)(spring, ctrl);
+        }
+    });
+}
+function createSpring(key, observer) {
+    const spring = new SpringValue();
+    spring.key = key;
+    if (observer) (0, _shared.addFluidObserver)(spring, observer);
+    return spring;
+}
+function prepareSprings(springs, props, create) {
+    if (props.keys) (0, _shared.each)(props.keys, (key)=>{
+        const spring = springs[key] || (springs[key] = create(key));
+        spring["_prepareNode"](props);
+    });
+}
+function prepareKeys(ctrl, queue) {
+    (0, _shared.each)(queue, (props)=>{
+        prepareSprings(ctrl.springs, props, (key)=>{
+            return createSpring(key, ctrl);
+        });
+    });
+}
+function _objectWithoutPropertiesLoose(source, excluded) {
+    if (source == null) return {};
+    var target = {};
+    var sourceKeys = Object.keys(source);
+    var key, i;
+    for(i = 0; i < sourceKeys.length; i++){
+        key = sourceKeys[i];
+        if (excluded.indexOf(key) >= 0) continue;
+        target[key] = source[key];
+    }
+    return target;
+}
+const _excluded$3 = [
+    "children"
+];
+const SpringContext = (_ref)=>{
+    let { children  } = _ref, props = _objectWithoutPropertiesLoose(_ref, _excluded$3);
+    const inherited = (0, _react.useContext)(ctx);
+    const pause = props.pause || !!inherited.pause, immediate = props.immediate || !!inherited.immediate;
+    props = (0, _shared.useMemoOne)(()=>({
+            pause,
+            immediate
+        }), [
+        pause,
+        immediate
+    ]);
+    const { Provider  } = ctx;
+    return _react.createElement(Provider, {
+        value: props
+    }, children);
+};
+const ctx = makeContext(SpringContext, {});
+SpringContext.Provider = ctx.Provider;
+SpringContext.Consumer = ctx.Consumer;
+function makeContext(target, init) {
+    Object.assign(target, _react.createContext(init));
+    target.Provider._context = target;
+    target.Consumer._context = target;
+    return target;
+}
+const SpringRef = ()=>{
+    const current = [];
+    const SpringRef1 = function SpringRef(props) {
+        (0, _shared.deprecateDirectCall)();
+        const results = [];
+        (0, _shared.each)(current, (ctrl, i)=>{
+            if ((0, _shared.is).und(props)) results.push(ctrl.start());
+            else {
+                const update3 = _getProps(props, ctrl, i);
+                if (update3) results.push(ctrl.start(update3));
+            }
+        });
+        return results;
+    };
+    SpringRef1.current = current;
+    SpringRef1.add = function(ctrl) {
+        if (!current.includes(ctrl)) current.push(ctrl);
+    };
+    SpringRef1.delete = function(ctrl) {
+        const i = current.indexOf(ctrl);
+        if (~i) current.splice(i, 1);
+    };
+    SpringRef1.pause = function() {
+        (0, _shared.each)(current, (ctrl)=>ctrl.pause(...arguments));
+        return this;
+    };
+    SpringRef1.resume = function() {
+        (0, _shared.each)(current, (ctrl)=>ctrl.resume(...arguments));
+        return this;
+    };
+    SpringRef1.set = function(values) {
+        (0, _shared.each)(current, (ctrl)=>ctrl.set(values));
+    };
+    SpringRef1.start = function(props) {
+        const results = [];
+        (0, _shared.each)(current, (ctrl, i)=>{
+            if ((0, _shared.is).und(props)) results.push(ctrl.start());
+            else {
+                const update4 = this._getProps(props, ctrl, i);
+                if (update4) results.push(ctrl.start(update4));
+            }
+        });
+        return results;
+    };
+    SpringRef1.stop = function() {
+        (0, _shared.each)(current, (ctrl)=>ctrl.stop(...arguments));
+        return this;
+    };
+    SpringRef1.update = function(props) {
+        (0, _shared.each)(current, (ctrl, i)=>ctrl.update(this._getProps(props, ctrl, i)));
+        return this;
+    };
+    const _getProps = function _getProps(arg, ctrl, index) {
+        return (0, _shared.is).fun(arg) ? arg(index, ctrl) : arg;
+    };
+    SpringRef1._getProps = _getProps;
+    return SpringRef1;
+};
+function useSprings(length, props, deps) {
+    const propsFn = (0, _shared.is).fun(props) && props;
+    if (propsFn && !deps) deps = [];
+    const ref = (0, _react.useMemo)(()=>propsFn || arguments.length == 3 ? SpringRef() : void 0, []);
+    const layoutId = (0, _react.useRef)(0);
+    const forceUpdate = (0, _shared.useForceUpdate)();
+    const state = (0, _react.useMemo)(()=>({
+            ctrls: [],
+            queue: [],
+            flush (ctrl, updates) {
+                const springs = getSprings(ctrl, updates);
+                const canFlushSync = layoutId.current > 0 && !state.queue.length && !Object.keys(springs).some((key)=>!ctrl.springs[key]);
+                return canFlushSync ? flushUpdateQueue(ctrl, updates) : new Promise((resolve)=>{
+                    setSprings(ctrl, springs);
+                    state.queue.push(()=>{
+                        resolve(flushUpdateQueue(ctrl, updates));
+                    });
+                    forceUpdate();
+                });
+            }
+        }), []);
+    const ctrls = (0, _react.useRef)([
+        ...state.ctrls
+    ]);
+    const updates1 = [];
+    const prevLength = (0, _shared.usePrev)(length) || 0;
+    (0, _react.useMemo)(()=>{
+        (0, _shared.each)(ctrls.current.slice(length, prevLength), (ctrl)=>{
+            detachRefs(ctrl, ref);
+            ctrl.stop(true);
+        });
+        ctrls.current.length = length;
+        declareUpdates(prevLength, length);
+    }, [
+        length
+    ]);
+    (0, _react.useMemo)(()=>{
+        declareUpdates(0, Math.min(prevLength, length));
+    }, deps);
+    function declareUpdates(startIndex, endIndex) {
+        for(let i = startIndex; i < endIndex; i++){
+            const ctrl = ctrls.current[i] || (ctrls.current[i] = new Controller(null, state.flush));
+            const update5 = propsFn ? propsFn(i, ctrl) : props[i];
+            if (update5) updates1[i] = declareUpdate(update5);
+        }
+    }
+    const springs1 = ctrls.current.map((ctrl, i)=>getSprings(ctrl, updates1[i]));
+    const context = (0, _react.useContext)(SpringContext);
+    const prevContext = (0, _shared.usePrev)(context);
+    const hasContext = context !== prevContext && hasProps(context);
+    (0, _shared.useIsomorphicLayoutEffect)(()=>{
+        layoutId.current++;
+        state.ctrls = ctrls.current;
+        const { queue  } = state;
+        if (queue.length) {
+            state.queue = [];
+            (0, _shared.each)(queue, (cb)=>cb());
+        }
+        (0, _shared.each)(ctrls.current, (ctrl, i)=>{
+            ref == null || ref.add(ctrl);
+            if (hasContext) ctrl.start({
+                default: context
+            });
+            const update6 = updates1[i];
+            if (update6) {
+                replaceRef(ctrl, update6.ref);
+                if (ctrl.ref) ctrl.queue.push(update6);
+                else ctrl.start(update6);
+            }
+        });
+    });
+    (0, _shared.useOnce)(()=>()=>{
+            (0, _shared.each)(state.ctrls, (ctrl)=>ctrl.stop(true));
+        });
+    const values = springs1.map((x)=>_extends({}, x));
+    return ref ? [
+        values,
+        ref
+    ] : values;
+}
+function useSpring(props, deps) {
+    const isFn = (0, _shared.is).fun(props);
+    const [[values], ref] = useSprings(1, isFn ? props : [
+        props
+    ], isFn ? deps || [] : deps);
+    return isFn || arguments.length == 2 ? [
+        values,
+        ref
+    ] : values;
+}
+const initSpringRef = ()=>SpringRef();
+const useSpringRef = ()=>(0, _react.useState)(initSpringRef)[0];
+function useTrail(length, propsArg1, deps) {
+    var _passedRef;
+    const propsFn = (0, _shared.is).fun(propsArg1) && propsArg1;
+    if (propsFn && !deps) deps = [];
+    let reverse = true;
+    let passedRef = undefined;
+    const result = useSprings(length, (i, ctrl)=>{
+        const props = propsFn ? propsFn(i, ctrl) : propsArg1;
+        passedRef = props.ref;
+        reverse = reverse && props.reverse;
+        return props;
+    }, deps || [
+        {}
+    ]);
+    const ref = (_passedRef = passedRef) != null ? _passedRef : result[1];
+    (0, _shared.useIsomorphicLayoutEffect)(()=>{
+        (0, _shared.each)(ref.current, (ctrl, i)=>{
+            const parent = ref.current[i + (reverse ? 1 : -1)];
+            if (parent) ctrl.start({
+                to: parent.springs
+            });
+            else ctrl.start();
+        });
+    }, deps);
+    if (propsFn || arguments.length == 3) {
+        ref["_getProps"] = (propsArg, ctrl, i)=>{
+            const props = (0, _shared.is).fun(propsArg) ? propsArg(i, ctrl) : propsArg;
+            if (props) {
+                const parent = ref.current[i + (props.reverse ? 1 : -1)];
+                if (parent) props.to = parent.springs;
+                return props;
+            }
+        };
+        return result;
+    }
+    ref["start"] = (propsArg)=>{
+        const results = [];
+        (0, _shared.each)(ref.current, (ctrl, i)=>{
+            const props = (0, _shared.is).fun(propsArg) ? propsArg(i, ctrl) : propsArg;
+            const parent = ref.current[i + (reverse ? 1 : -1)];
+            if (parent) results.push(ctrl.start(_extends({}, props, {
+                to: parent.springs
+            })));
+            else results.push(ctrl.start(_extends({}, props)));
+        });
+        return results;
+    };
+    return result[0];
+}
+let TransitionPhase;
+(function(TransitionPhase1) {
+    TransitionPhase1["MOUNT"] = "mount";
+    TransitionPhase1["ENTER"] = "enter";
+    TransitionPhase1["UPDATE"] = "update";
+    TransitionPhase1["LEAVE"] = "leave";
+})(TransitionPhase || (TransitionPhase = {}));
+function useTransition(data, props, deps) {
+    const propsFn = (0, _shared.is).fun(props) && props;
+    const { reset , sort , trail =0 , expires =true , exitBeforeEnter =false , onDestroyed , ref: propsRef , config: propsConfig  } = propsFn ? propsFn() : props;
+    const ref = (0, _react.useMemo)(()=>propsFn || arguments.length == 3 ? SpringRef() : void 0, []);
+    const items = (0, _shared.toArray)(data);
+    const transitions1 = [];
+    const usedTransitions = (0, _react.useRef)(null);
+    const prevTransitions = reset ? null : usedTransitions.current;
+    (0, _shared.useIsomorphicLayoutEffect)(()=>{
+        usedTransitions.current = transitions1;
+    });
+    (0, _shared.useOnce)(()=>{
+        (0, _shared.each)(transitions1, (t)=>{
+            ref == null || ref.add(t.ctrl);
+            t.ctrl.ref = ref;
+        });
+        return ()=>{
+            (0, _shared.each)(usedTransitions.current, (t)=>{
+                if (t.expired) clearTimeout(t.expirationId);
+                detachRefs(t.ctrl, ref);
+                t.ctrl.stop(true);
+            });
+        };
+    });
+    const keys = getKeys(items, propsFn ? propsFn() : props, prevTransitions);
+    const expired = reset && usedTransitions.current || [];
+    (0, _shared.useIsomorphicLayoutEffect)(()=>(0, _shared.each)(expired, ({ ctrl , item , key  })=>{
+            detachRefs(ctrl, ref);
+            callProp(onDestroyed, item, key);
+        }));
+    const reused = [];
+    if (prevTransitions) (0, _shared.each)(prevTransitions, (t, i)=>{
+        if (t.expired) {
+            clearTimeout(t.expirationId);
+            expired.push(t);
+        } else {
+            i = reused[i] = keys.indexOf(t.key);
+            if (~i) transitions1[i] = t;
+        }
+    });
+    (0, _shared.each)(items, (item, i)=>{
+        if (!transitions1[i]) {
+            transitions1[i] = {
+                key: keys[i],
+                item,
+                phase: TransitionPhase.MOUNT,
+                ctrl: new Controller()
+            };
+            transitions1[i].ctrl.item = item;
+        }
+    });
+    if (reused.length) {
+        let i = -1;
+        const { leave  } = propsFn ? propsFn() : props;
+        (0, _shared.each)(reused, (keyIndex, prevIndex)=>{
+            const t = prevTransitions[prevIndex];
+            if (~keyIndex) {
+                i = transitions1.indexOf(t);
+                transitions1[i] = _extends({}, t, {
+                    item: items[keyIndex]
+                });
+            } else if (leave) transitions1.splice(++i, 0, t);
+        });
+    }
+    if ((0, _shared.is).fun(sort)) transitions1.sort((a, b)=>sort(a.item, b.item));
+    let delay = -trail;
+    const forceUpdate = (0, _shared.useForceUpdate)();
+    const defaultProps = getDefaultProps(props);
+    const changes = new Map();
+    const exitingTransitions = (0, _react.useRef)(new Map());
+    const forceChange = (0, _react.useRef)(false);
+    (0, _shared.each)(transitions1, (t1, i)=>{
+        const key = t1.key;
+        const prevPhase = t1.phase;
+        const p = propsFn ? propsFn() : props;
+        let to16;
+        let phase;
+        let propsDelay = callProp(p.delay || 0, key);
+        if (prevPhase == TransitionPhase.MOUNT) {
+            to16 = p.enter;
+            phase = TransitionPhase.ENTER;
+        } else {
+            const isLeave = keys.indexOf(key) < 0;
+            if (prevPhase != TransitionPhase.LEAVE) {
+                if (isLeave) {
+                    to16 = p.leave;
+                    phase = TransitionPhase.LEAVE;
+                } else if (to16 = p.update) phase = TransitionPhase.UPDATE;
+                else return;
+            } else if (!isLeave) {
+                to16 = p.enter;
+                phase = TransitionPhase.ENTER;
+            } else return;
+        }
+        to16 = callProp(to16, t1.item, i);
+        to16 = (0, _shared.is).obj(to16) ? inferTo(to16) : {
+            to: to16
+        };
+        if (!to16.config) {
+            const config6 = propsConfig || defaultProps.config;
+            to16.config = callProp(config6, t1.item, i, phase);
+        }
+        delay += trail;
+        const payload = _extends({}, defaultProps, {
+            delay: propsDelay + delay,
+            ref: propsRef,
+            immediate: p.immediate,
+            reset: false
+        }, to16);
+        if (phase == TransitionPhase.ENTER && (0, _shared.is).und(payload.from)) {
+            const _p = propsFn ? propsFn() : props;
+            const from = (0, _shared.is).und(_p.initial) || prevTransitions ? _p.from : _p.initial;
+            payload.from = callProp(from, t1.item, i);
+        }
+        const { onResolve  } = payload;
+        payload.onResolve = (result)=>{
+            callProp(onResolve, result);
+            const transitions = usedTransitions.current;
+            const t2 = transitions.find((t)=>t.key === key);
+            if (!t2) return;
+            if (result.cancelled && t2.phase != TransitionPhase.UPDATE) return;
+            if (t2.ctrl.idle) {
+                const idle = transitions.every((t)=>t.ctrl.idle);
+                if (t2.phase == TransitionPhase.LEAVE) {
+                    const expiry = callProp(expires, t2.item);
+                    if (expiry !== false) {
+                        const expiryMs = expiry === true ? 0 : expiry;
+                        t2.expired = true;
+                        if (!idle && expiryMs > 0) {
+                            if (expiryMs <= 0x7fffffff) t2.expirationId = setTimeout(forceUpdate, expiryMs);
+                            return;
+                        }
+                    }
+                }
+                if (idle && transitions.some((t)=>t.expired)) {
+                    exitingTransitions.current.delete(t2);
+                    if (exitBeforeEnter) forceChange.current = true;
+                    forceUpdate();
+                }
+            }
+        };
+        const springs = getSprings(t1.ctrl, payload);
+        if (phase === TransitionPhase.LEAVE && exitBeforeEnter) exitingTransitions.current.set(t1, {
+            phase,
+            springs,
+            payload
+        });
+        else changes.set(t1, {
+            phase,
+            springs,
+            payload
+        });
+    });
+    const context = (0, _react.useContext)(SpringContext);
+    const prevContext = (0, _shared.usePrev)(context);
+    const hasContext = context !== prevContext && hasProps(context);
+    (0, _shared.useIsomorphicLayoutEffect)(()=>{
+        if (hasContext) (0, _shared.each)(transitions1, (t)=>{
+            t.ctrl.start({
+                default: context
+            });
+        });
+    }, [
+        context
+    ]);
+    (0, _shared.each)(changes, (_, t)=>{
+        if (exitingTransitions.current.size) {
+            const ind = transitions1.findIndex((state)=>state.key === t.key);
+            transitions1.splice(ind, 1);
+        }
+    });
+    (0, _shared.useIsomorphicLayoutEffect)(()=>{
+        (0, _shared.each)(exitingTransitions.current.size ? exitingTransitions.current : changes, ({ phase , payload  }, t)=>{
+            const { ctrl  } = t;
+            t.phase = phase;
+            ref == null || ref.add(ctrl);
+            if (hasContext && phase == TransitionPhase.ENTER) ctrl.start({
+                default: context
+            });
+            if (payload) {
+                replaceRef(ctrl, payload.ref);
+                if ((ctrl.ref || ref) && !forceChange.current) ctrl.update(payload);
+                else {
+                    ctrl.start(payload);
+                    if (forceChange.current) forceChange.current = false;
+                }
+            }
+        });
+    }, reset ? void 0 : deps);
+    const renderTransitions = (render)=>_react.createElement(_react.Fragment, null, transitions1.map((t, i)=>{
+            const { springs  } = changes.get(t) || t.ctrl;
+            const elem = render(_extends({}, springs), t.item, t, i);
+            return elem && elem.type ? _react.createElement(elem.type, _extends({}, elem.props, {
+                key: (0, _shared.is).str(t.key) || (0, _shared.is).num(t.key) ? t.key : t.ctrl.id,
+                ref: elem.ref
+            })) : elem;
+        }));
+    return ref ? [
+        renderTransitions,
+        ref
+    ] : renderTransitions;
+}
+let nextKey = 1;
+function getKeys(items, { key , keys =key  }, prevTransitions) {
+    if (keys === null) {
+        const reused = new Set();
+        return items.map((item)=>{
+            const t3 = prevTransitions && prevTransitions.find((t)=>t.item === item && t.phase !== TransitionPhase.LEAVE && !reused.has(t));
+            if (t3) {
+                reused.add(t3);
+                return t3.key;
+            }
+            return nextKey++;
+        });
+    }
+    return (0, _shared.is).und(keys) ? items : (0, _shared.is).fun(keys) ? items.map(keys) : (0, _shared.toArray)(keys);
+}
+const _excluded$2 = [
+    "children"
+];
+function Spring(_ref) {
+    let { children  } = _ref, props = _objectWithoutPropertiesLoose(_ref, _excluded$2);
+    return children(useSpring(props));
+}
+const _excluded$1 = [
+    "items",
+    "children"
+];
+function Trail(_ref) {
+    let { items , children  } = _ref, props = _objectWithoutPropertiesLoose(_ref, _excluded$1);
+    const trails = useTrail(items.length, props);
+    return items.map((item, index)=>{
+        const result = children(item, index);
+        return (0, _shared.is).fun(result) ? result(trails[index]) : result;
+    });
+}
+const _excluded = [
+    "items",
+    "children"
+];
+function Transition(_ref) {
+    let { items , children  } = _ref, props = _objectWithoutPropertiesLoose(_ref, _excluded);
+    return useTransition(items, props)(children);
+}
+class Interpolation extends FrameValue {
+    constructor(source, args){
+        super();
+        this.key = void 0;
+        this.idle = true;
+        this.calc = void 0;
+        this._active = new Set();
+        this.source = source;
+        this.calc = (0, _shared.createInterpolator)(...args);
+        const value = this._get();
+        const nodeType = (0, _animated.getAnimatedType)(value);
+        (0, _animated.setAnimated)(this, nodeType.create(value));
+    }
+    advance(_dt) {
+        const value = this._get();
+        const oldValue = this.get();
+        if (!(0, _shared.isEqual)(value, oldValue)) {
+            (0, _animated.getAnimated)(this).setValue(value);
+            this._onChange(value, this.idle);
+        }
+        if (!this.idle && checkIdle(this._active)) becomeIdle(this);
+    }
+    _get() {
+        const inputs = (0, _shared.is).arr(this.source) ? this.source.map((0, _shared.getFluidValue)) : (0, _shared.toArray)((0, _shared.getFluidValue)(this.source));
+        return this.calc(...inputs);
+    }
+    _start() {
+        if (this.idle && !checkIdle(this._active)) {
+            this.idle = false;
+            (0, _shared.each)((0, _animated.getPayload)(this), (node)=>{
+                node.done = false;
+            });
+            if ((0, _shared.Globals).skipAnimation) {
+                (0, _shared.raf).batchedUpdates(()=>this.advance());
+                becomeIdle(this);
+            } else (0, _shared.frameLoop).start(this);
+        }
+    }
+    _attach() {
+        let priority = 1;
+        (0, _shared.each)((0, _shared.toArray)(this.source), (source)=>{
+            if ((0, _shared.hasFluidValue)(source)) (0, _shared.addFluidObserver)(source, this);
+            if (isFrameValue(source)) {
+                if (!source.idle) this._active.add(source);
+                priority = Math.max(priority, source.priority + 1);
+            }
+        });
+        this.priority = priority;
+        this._start();
+    }
+    _detach() {
+        (0, _shared.each)((0, _shared.toArray)(this.source), (source)=>{
+            if ((0, _shared.hasFluidValue)(source)) (0, _shared.removeFluidObserver)(source, this);
+        });
+        this._active.clear();
+        becomeIdle(this);
+    }
+    eventObserved(event) {
+        if (event.type == "change") {
+            if (event.idle) this.advance();
+            else {
+                this._active.add(event.parent);
+                this._start();
+            }
+        } else if (event.type == "idle") this._active.delete(event.parent);
+        else if (event.type == "priority") this.priority = (0, _shared.toArray)(this.source).reduce((highest, parent)=>Math.max(highest, (isFrameValue(parent) ? parent.priority : 0) + 1), 0);
+    }
+}
+function isIdle(source) {
+    return source.idle !== false;
+}
+function checkIdle(active) {
+    return !active.size || Array.from(active).every(isIdle);
+}
+function becomeIdle(self) {
+    if (!self.idle) {
+        self.idle = true;
+        (0, _shared.each)((0, _animated.getPayload)(self), (node)=>{
+            node.done = true;
+        });
+        (0, _shared.callFluidObservers)(self, {
+            type: "idle",
+            parent: self
+        });
+    }
+}
+const to = (source, ...args)=>new Interpolation(source, args);
+const interpolate = (source, ...args)=>((0, _shared.deprecateInterpolate)(), new Interpolation(source, args));
+(0, _shared.Globals).assign({
+    createStringInterpolator: (0, _shared.createStringInterpolator),
+    to: (source, args)=>new Interpolation(source, args)
+});
+const update = (0, _shared.frameLoop).advance;
+
+},{"@react-spring/shared":"jm667","react":"21dqq","@react-spring/animated":"abfrL","@react-spring/types/animated":"e9Tpo","@react-spring/types/interpolation":"dlWzh","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jm667":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "raf", ()=>(0, _rafz.raf));
+parcelHelpers.export(exports, "FluidValue", ()=>FluidValue);
+parcelHelpers.export(exports, "Globals", ()=>globals);
+parcelHelpers.export(exports, "addFluidObserver", ()=>addFluidObserver);
+parcelHelpers.export(exports, "callFluidObserver", ()=>callFluidObserver);
+parcelHelpers.export(exports, "callFluidObservers", ()=>callFluidObservers);
+parcelHelpers.export(exports, "colorToRgba", ()=>colorToRgba);
+parcelHelpers.export(exports, "colors", ()=>colors);
+parcelHelpers.export(exports, "createInterpolator", ()=>createInterpolator);
+parcelHelpers.export(exports, "createStringInterpolator", ()=>createStringInterpolator);
+parcelHelpers.export(exports, "defineHidden", ()=>defineHidden);
+parcelHelpers.export(exports, "deprecateDirectCall", ()=>deprecateDirectCall);
+parcelHelpers.export(exports, "deprecateInterpolate", ()=>deprecateInterpolate);
+parcelHelpers.export(exports, "each", ()=>each);
+parcelHelpers.export(exports, "eachProp", ()=>eachProp);
+parcelHelpers.export(exports, "flush", ()=>flush);
+parcelHelpers.export(exports, "flushCalls", ()=>flushCalls);
+parcelHelpers.export(exports, "frameLoop", ()=>frameLoop);
+parcelHelpers.export(exports, "getFluidObservers", ()=>getFluidObservers);
+parcelHelpers.export(exports, "getFluidValue", ()=>getFluidValue);
+parcelHelpers.export(exports, "hasFluidValue", ()=>hasFluidValue);
+parcelHelpers.export(exports, "hex3", ()=>hex3);
+parcelHelpers.export(exports, "hex4", ()=>hex4);
+parcelHelpers.export(exports, "hex6", ()=>hex6);
+parcelHelpers.export(exports, "hex8", ()=>hex8);
+parcelHelpers.export(exports, "hsl", ()=>hsl);
+parcelHelpers.export(exports, "hsla", ()=>hsla);
+parcelHelpers.export(exports, "is", ()=>is);
+parcelHelpers.export(exports, "isAnimatedString", ()=>isAnimatedString);
+parcelHelpers.export(exports, "isEqual", ()=>isEqual);
+parcelHelpers.export(exports, "isSSR", ()=>isSSR);
+parcelHelpers.export(exports, "noop", ()=>noop);
+parcelHelpers.export(exports, "removeFluidObserver", ()=>removeFluidObserver);
+parcelHelpers.export(exports, "rgb", ()=>rgb);
+parcelHelpers.export(exports, "rgba", ()=>rgba);
+parcelHelpers.export(exports, "setFluidGetter", ()=>setFluidGetter);
+parcelHelpers.export(exports, "toArray", ()=>toArray);
+parcelHelpers.export(exports, "useForceUpdate", ()=>useForceUpdate);
+parcelHelpers.export(exports, "useIsomorphicLayoutEffect", ()=>useIsomorphicLayoutEffect);
+parcelHelpers.export(exports, "useMemoOne", ()=>useMemoOne);
+parcelHelpers.export(exports, "useOnce", ()=>useOnce);
+parcelHelpers.export(exports, "usePrev", ()=>usePrev);
+parcelHelpers.export(exports, "useReducedMotion", ()=>useReducedMotion);
+var _rafz = require("@react-spring/rafz");
+var _react = require("react");
+function noop() {}
+const defineHidden = (obj, key, value)=>Object.defineProperty(obj, key, {
+        value,
+        writable: true,
+        configurable: true
+    });
+const is = {
+    arr: Array.isArray,
+    obj: (a)=>!!a && a.constructor.name === "Object",
+    fun: (a)=>typeof a === "function",
+    str: (a)=>typeof a === "string",
+    num: (a)=>typeof a === "number",
+    und: (a)=>a === undefined
+};
+function isEqual(a, b) {
+    if (is.arr(a)) {
+        if (!is.arr(b) || a.length !== b.length) return false;
+        for(let i = 0; i < a.length; i++){
+            if (a[i] !== b[i]) return false;
+        }
+        return true;
+    }
+    return a === b;
+}
+const each = (obj, fn)=>obj.forEach(fn);
+function eachProp(obj, fn, ctx) {
+    if (is.arr(obj)) {
+        for(let i = 0; i < obj.length; i++)fn.call(ctx, obj[i], `${i}`);
+        return;
+    }
+    for(const key in obj)if (obj.hasOwnProperty(key)) fn.call(ctx, obj[key], key);
+}
+const toArray = (a)=>is.und(a) ? [] : is.arr(a) ? a : [
+        a
+    ];
+function flush(queue, iterator) {
+    if (queue.size) {
+        const items = Array.from(queue);
+        queue.clear();
+        each(items, iterator);
+    }
+}
+const flushCalls = (queue, ...args)=>flush(queue, (fn)=>fn(...args));
+const isSSR = ()=>typeof window === "undefined" || !window.navigator || /ServerSideRendering|^Deno\//.test(window.navigator.userAgent);
+let createStringInterpolator$1;
+let to;
+let colors$1 = null;
+let skipAnimation = false;
+let willAdvance = noop;
+const assign = (globals1)=>{
+    if (globals1.to) to = globals1.to;
+    if (globals1.now) (0, _rafz.raf).now = globals1.now;
+    if (globals1.colors !== undefined) colors$1 = globals1.colors;
+    if (globals1.skipAnimation != null) skipAnimation = globals1.skipAnimation;
+    if (globals1.createStringInterpolator) createStringInterpolator$1 = globals1.createStringInterpolator;
+    if (globals1.requestAnimationFrame) (0, _rafz.raf).use(globals1.requestAnimationFrame);
+    if (globals1.batchedUpdates) (0, _rafz.raf).batchedUpdates = globals1.batchedUpdates;
+    if (globals1.willAdvance) willAdvance = globals1.willAdvance;
+    if (globals1.frameLoop) (0, _rafz.raf).frameLoop = globals1.frameLoop;
+};
+var globals = /*#__PURE__*/ Object.freeze({
+    __proto__: null,
+    get createStringInterpolator () {
+        return createStringInterpolator$1;
+    },
+    get to () {
+        return to;
+    },
+    get colors () {
+        return colors$1;
+    },
+    get skipAnimation () {
+        return skipAnimation;
+    },
+    get willAdvance () {
+        return willAdvance;
+    },
+    assign: assign
+});
+const startQueue = new Set();
+let currentFrame = [];
+let prevFrame = [];
+let priority = 0;
+const frameLoop = {
+    get idle () {
+        return !startQueue.size && !currentFrame.length;
+    },
+    start (animation) {
+        if (priority > animation.priority) {
+            startQueue.add(animation);
+            (0, _rafz.raf).onStart(flushStartQueue);
+        } else {
+            startSafely(animation);
+            (0, _rafz.raf)(advance);
+        }
+    },
+    advance,
+    sort (animation) {
+        if (priority) (0, _rafz.raf).onFrame(()=>frameLoop.sort(animation));
+        else {
+            const prevIndex = currentFrame.indexOf(animation);
+            if (~prevIndex) {
+                currentFrame.splice(prevIndex, 1);
+                startUnsafely(animation);
+            }
+        }
+    },
+    clear () {
+        currentFrame = [];
+        startQueue.clear();
+    }
+};
+function flushStartQueue() {
+    startQueue.forEach(startSafely);
+    startQueue.clear();
+    (0, _rafz.raf)(advance);
+}
+function startSafely(animation) {
+    if (!currentFrame.includes(animation)) startUnsafely(animation);
+}
+function startUnsafely(animation) {
+    currentFrame.splice(findIndex(currentFrame, (other)=>other.priority > animation.priority), 0, animation);
+}
+function advance(dt) {
+    const nextFrame = prevFrame;
+    for(let i = 0; i < currentFrame.length; i++){
+        const animation = currentFrame[i];
+        priority = animation.priority;
+        if (!animation.idle) {
+            willAdvance(animation);
+            animation.advance(dt);
+            if (!animation.idle) nextFrame.push(animation);
+        }
+    }
+    priority = 0;
+    prevFrame = currentFrame;
+    prevFrame.length = 0;
+    currentFrame = nextFrame;
+    return currentFrame.length > 0;
+}
+function findIndex(arr, test) {
+    const index = arr.findIndex(test);
+    return index < 0 ? arr.length : index;
+}
+const colors = {
+    transparent: 0x00000000,
+    aliceblue: 0xf0f8ffff,
+    antiquewhite: 0xfaebd7ff,
+    aqua: 0x00ffffff,
+    aquamarine: 0x7fffd4ff,
+    azure: 0xf0ffffff,
+    beige: 0xf5f5dcff,
+    bisque: 0xffe4c4ff,
+    black: 0x000000ff,
+    blanchedalmond: 0xffebcdff,
+    blue: 0x0000ffff,
+    blueviolet: 0x8a2be2ff,
+    brown: 0xa52a2aff,
+    burlywood: 0xdeb887ff,
+    burntsienna: 0xea7e5dff,
+    cadetblue: 0x5f9ea0ff,
+    chartreuse: 0x7fff00ff,
+    chocolate: 0xd2691eff,
+    coral: 0xff7f50ff,
+    cornflowerblue: 0x6495edff,
+    cornsilk: 0xfff8dcff,
+    crimson: 0xdc143cff,
+    cyan: 0x00ffffff,
+    darkblue: 0x00008bff,
+    darkcyan: 0x008b8bff,
+    darkgoldenrod: 0xb8860bff,
+    darkgray: 0xa9a9a9ff,
+    darkgreen: 0x006400ff,
+    darkgrey: 0xa9a9a9ff,
+    darkkhaki: 0xbdb76bff,
+    darkmagenta: 0x8b008bff,
+    darkolivegreen: 0x556b2fff,
+    darkorange: 0xff8c00ff,
+    darkorchid: 0x9932ccff,
+    darkred: 0x8b0000ff,
+    darksalmon: 0xe9967aff,
+    darkseagreen: 0x8fbc8fff,
+    darkslateblue: 0x483d8bff,
+    darkslategray: 0x2f4f4fff,
+    darkslategrey: 0x2f4f4fff,
+    darkturquoise: 0x00ced1ff,
+    darkviolet: 0x9400d3ff,
+    deeppink: 0xff1493ff,
+    deepskyblue: 0x00bfffff,
+    dimgray: 0x696969ff,
+    dimgrey: 0x696969ff,
+    dodgerblue: 0x1e90ffff,
+    firebrick: 0xb22222ff,
+    floralwhite: 0xfffaf0ff,
+    forestgreen: 0x228b22ff,
+    fuchsia: 0xff00ffff,
+    gainsboro: 0xdcdcdcff,
+    ghostwhite: 0xf8f8ffff,
+    gold: 0xffd700ff,
+    goldenrod: 0xdaa520ff,
+    gray: 0x808080ff,
+    green: 0x008000ff,
+    greenyellow: 0xadff2fff,
+    grey: 0x808080ff,
+    honeydew: 0xf0fff0ff,
+    hotpink: 0xff69b4ff,
+    indianred: 0xcd5c5cff,
+    indigo: 0x4b0082ff,
+    ivory: 0xfffff0ff,
+    khaki: 0xf0e68cff,
+    lavender: 0xe6e6faff,
+    lavenderblush: 0xfff0f5ff,
+    lawngreen: 0x7cfc00ff,
+    lemonchiffon: 0xfffacdff,
+    lightblue: 0xadd8e6ff,
+    lightcoral: 0xf08080ff,
+    lightcyan: 0xe0ffffff,
+    lightgoldenrodyellow: 0xfafad2ff,
+    lightgray: 0xd3d3d3ff,
+    lightgreen: 0x90ee90ff,
+    lightgrey: 0xd3d3d3ff,
+    lightpink: 0xffb6c1ff,
+    lightsalmon: 0xffa07aff,
+    lightseagreen: 0x20b2aaff,
+    lightskyblue: 0x87cefaff,
+    lightslategray: 0x778899ff,
+    lightslategrey: 0x778899ff,
+    lightsteelblue: 0xb0c4deff,
+    lightyellow: 0xffffe0ff,
+    lime: 0x00ff00ff,
+    limegreen: 0x32cd32ff,
+    linen: 0xfaf0e6ff,
+    magenta: 0xff00ffff,
+    maroon: 0x800000ff,
+    mediumaquamarine: 0x66cdaaff,
+    mediumblue: 0x0000cdff,
+    mediumorchid: 0xba55d3ff,
+    mediumpurple: 0x9370dbff,
+    mediumseagreen: 0x3cb371ff,
+    mediumslateblue: 0x7b68eeff,
+    mediumspringgreen: 0x00fa9aff,
+    mediumturquoise: 0x48d1ccff,
+    mediumvioletred: 0xc71585ff,
+    midnightblue: 0x191970ff,
+    mintcream: 0xf5fffaff,
+    mistyrose: 0xffe4e1ff,
+    moccasin: 0xffe4b5ff,
+    navajowhite: 0xffdeadff,
+    navy: 0x000080ff,
+    oldlace: 0xfdf5e6ff,
+    olive: 0x808000ff,
+    olivedrab: 0x6b8e23ff,
+    orange: 0xffa500ff,
+    orangered: 0xff4500ff,
+    orchid: 0xda70d6ff,
+    palegoldenrod: 0xeee8aaff,
+    palegreen: 0x98fb98ff,
+    paleturquoise: 0xafeeeeff,
+    palevioletred: 0xdb7093ff,
+    papayawhip: 0xffefd5ff,
+    peachpuff: 0xffdab9ff,
+    peru: 0xcd853fff,
+    pink: 0xffc0cbff,
+    plum: 0xdda0ddff,
+    powderblue: 0xb0e0e6ff,
+    purple: 0x800080ff,
+    rebeccapurple: 0x663399ff,
+    red: 0xff0000ff,
+    rosybrown: 0xbc8f8fff,
+    royalblue: 0x4169e1ff,
+    saddlebrown: 0x8b4513ff,
+    salmon: 0xfa8072ff,
+    sandybrown: 0xf4a460ff,
+    seagreen: 0x2e8b57ff,
+    seashell: 0xfff5eeff,
+    sienna: 0xa0522dff,
+    silver: 0xc0c0c0ff,
+    skyblue: 0x87ceebff,
+    slateblue: 0x6a5acdff,
+    slategray: 0x708090ff,
+    slategrey: 0x708090ff,
+    snow: 0xfffafaff,
+    springgreen: 0x00ff7fff,
+    steelblue: 0x4682b4ff,
+    tan: 0xd2b48cff,
+    teal: 0x008080ff,
+    thistle: 0xd8bfd8ff,
+    tomato: 0xff6347ff,
+    turquoise: 0x40e0d0ff,
+    violet: 0xee82eeff,
+    wheat: 0xf5deb3ff,
+    white: 0xffffffff,
+    whitesmoke: 0xf5f5f5ff,
+    yellow: 0xffff00ff,
+    yellowgreen: 0x9acd32ff
+};
+const NUMBER = "[-+]?\\d*\\.?\\d+";
+const PERCENTAGE = NUMBER + "%";
+function call(...parts) {
+    return "\\(\\s*(" + parts.join(")\\s*,\\s*(") + ")\\s*\\)";
+}
+const rgb = new RegExp("rgb" + call(NUMBER, NUMBER, NUMBER));
+const rgba = new RegExp("rgba" + call(NUMBER, NUMBER, NUMBER, NUMBER));
+const hsl = new RegExp("hsl" + call(NUMBER, PERCENTAGE, PERCENTAGE));
+const hsla = new RegExp("hsla" + call(NUMBER, PERCENTAGE, PERCENTAGE, NUMBER));
+const hex3 = /^#([0-9a-fA-F]{1})([0-9a-fA-F]{1})([0-9a-fA-F]{1})$/;
+const hex4 = /^#([0-9a-fA-F]{1})([0-9a-fA-F]{1})([0-9a-fA-F]{1})([0-9a-fA-F]{1})$/;
+const hex6 = /^#([0-9a-fA-F]{6})$/;
+const hex8 = /^#([0-9a-fA-F]{8})$/;
+function normalizeColor(color) {
+    let match;
+    if (typeof color === "number") return color >>> 0 === color && color >= 0 && color <= 0xffffffff ? color : null;
+    if (match = hex6.exec(color)) return parseInt(match[1] + "ff", 16) >>> 0;
+    if (colors$1 && colors$1[color] !== undefined) return colors$1[color];
+    if (match = rgb.exec(color)) return (parse255(match[1]) << 24 | parse255(match[2]) << 16 | parse255(match[3]) << 8 | 0x000000ff) >>> 0;
+    if (match = rgba.exec(color)) return (parse255(match[1]) << 24 | parse255(match[2]) << 16 | parse255(match[3]) << 8 | parse1(match[4])) >>> 0;
+    if (match = hex3.exec(color)) return parseInt(match[1] + match[1] + match[2] + match[2] + match[3] + match[3] + "ff", 16) >>> 0;
+    if (match = hex8.exec(color)) return parseInt(match[1], 16) >>> 0;
+    if (match = hex4.exec(color)) return parseInt(match[1] + match[1] + match[2] + match[2] + match[3] + match[3] + match[4] + match[4], 16) >>> 0;
+    if (match = hsl.exec(color)) return (hslToRgb(parse360(match[1]), parsePercentage(match[2]), parsePercentage(match[3])) | 0x000000ff) >>> 0;
+    if (match = hsla.exec(color)) return (hslToRgb(parse360(match[1]), parsePercentage(match[2]), parsePercentage(match[3])) | parse1(match[4])) >>> 0;
+    return null;
+}
+function hue2rgb(p, q, t) {
+    if (t < 0) t += 1;
+    if (t > 1) t -= 1;
+    if (t < 1 / 6) return p + (q - p) * 6 * t;
+    if (t < 0.5) return q;
+    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+    return p;
+}
+function hslToRgb(h, s, l) {
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    const r = hue2rgb(p, q, h + 1 / 3);
+    const g = hue2rgb(p, q, h);
+    const b = hue2rgb(p, q, h - 1 / 3);
+    return Math.round(r * 255) << 24 | Math.round(g * 255) << 16 | Math.round(b * 255) << 8;
+}
+function parse255(str) {
+    const int = parseInt(str, 10);
+    if (int < 0) return 0;
+    if (int > 255) return 255;
+    return int;
+}
+function parse360(str) {
+    const int = parseFloat(str);
+    return (int % 360 + 360) % 360 / 360;
+}
+function parse1(str) {
+    const num = parseFloat(str);
+    if (num < 0) return 0;
+    if (num > 1) return 255;
+    return Math.round(num * 255);
+}
+function parsePercentage(str) {
+    const int = parseFloat(str);
+    if (int < 0) return 0;
+    if (int > 100) return 1;
+    return int / 100;
+}
+function colorToRgba(input) {
+    let int32Color = normalizeColor(input);
+    if (int32Color === null) return input;
+    int32Color = int32Color || 0;
+    let r = (int32Color & 0xff000000) >>> 24;
+    let g = (int32Color & 0x00ff0000) >>> 16;
+    let b = (int32Color & 0x0000ff00) >>> 8;
+    let a = (int32Color & 0x000000ff) / 255;
+    return `rgba(${r}, ${g}, ${b}, ${a})`;
+}
+const createInterpolator = (range1, output, extrapolate)=>{
+    if (is.fun(range1)) return range1;
+    if (is.arr(range1)) return createInterpolator({
+        range: range1,
+        output: output,
+        extrapolate
+    });
+    if (is.str(range1.output[0])) return createStringInterpolator$1(range1);
+    const config = range1;
+    const outputRange = config.output;
+    const inputRange = config.range || [
+        0,
+        1
+    ];
+    const extrapolateLeft = config.extrapolateLeft || config.extrapolate || "extend";
+    const extrapolateRight = config.extrapolateRight || config.extrapolate || "extend";
+    const easing = config.easing || ((t)=>t);
+    return (input)=>{
+        const range = findRange(input, inputRange);
+        return interpolate(input, inputRange[range], inputRange[range + 1], outputRange[range], outputRange[range + 1], easing, extrapolateLeft, extrapolateRight, config.map);
+    };
+};
+function interpolate(input, inputMin, inputMax, outputMin, outputMax, easing, extrapolateLeft, extrapolateRight, map) {
+    let result = map ? map(input) : input;
+    if (result < inputMin) {
+        if (extrapolateLeft === "identity") return result;
+        else if (extrapolateLeft === "clamp") result = inputMin;
+    }
+    if (result > inputMax) {
+        if (extrapolateRight === "identity") return result;
+        else if (extrapolateRight === "clamp") result = inputMax;
+    }
+    if (outputMin === outputMax) return outputMin;
+    if (inputMin === inputMax) return input <= inputMin ? outputMin : outputMax;
+    if (inputMin === -Infinity) result = -result;
+    else if (inputMax === Infinity) result = result - inputMin;
+    else result = (result - inputMin) / (inputMax - inputMin);
+    result = easing(result);
+    if (outputMin === -Infinity) result = -result;
+    else if (outputMax === Infinity) result = result + outputMin;
+    else result = result * (outputMax - outputMin) + outputMin;
+    return result;
+}
+function findRange(input, inputRange) {
+    for(var i = 1; i < inputRange.length - 1; ++i)if (inputRange[i] >= input) break;
+    return i - 1;
+}
+function _extends() {
+    _extends = Object.assign || function(target) {
+        for(var i = 1; i < arguments.length; i++){
+            var source = arguments[i];
+            for(var key in source)if (Object.prototype.hasOwnProperty.call(source, key)) target[key] = source[key];
+        }
+        return target;
+    };
+    return _extends.apply(this, arguments);
+}
+const $get = Symbol.for("FluidValue.get");
+const $observers = Symbol.for("FluidValue.observers");
+const hasFluidValue = (arg)=>Boolean(arg && arg[$get]);
+const getFluidValue = (arg)=>arg && arg[$get] ? arg[$get]() : arg;
+const getFluidObservers = (target)=>target[$observers] || null;
+function callFluidObserver(observer, event) {
+    if (observer.eventObserved) observer.eventObserved(event);
+    else observer(event);
+}
+function callFluidObservers(target, event) {
+    let observers = target[$observers];
+    if (observers) observers.forEach((observer)=>{
+        callFluidObserver(observer, event);
+    });
+}
+class FluidValue {
+    constructor(get){
+        this[$get] = void 0;
+        this[$observers] = void 0;
+        if (!get && !(get = this.get)) throw Error("Unknown getter");
+        setFluidGetter(this, get);
+    }
+}
+const setFluidGetter = (target, get)=>setHidden(target, $get, get);
+function addFluidObserver(target, observer) {
+    if (target[$get]) {
+        let observers = target[$observers];
+        if (!observers) setHidden(target, $observers, observers = new Set());
+        if (!observers.has(observer)) {
+            observers.add(observer);
+            if (target.observerAdded) target.observerAdded(observers.size, observer);
+        }
+    }
+    return observer;
+}
+function removeFluidObserver(target, observer) {
+    let observers = target[$observers];
+    if (observers && observers.has(observer)) {
+        const count = observers.size - 1;
+        if (count) observers.delete(observer);
+        else target[$observers] = null;
+        if (target.observerRemoved) target.observerRemoved(count, observer);
+    }
+}
+const setHidden = (target, key, value)=>Object.defineProperty(target, key, {
+        value,
+        writable: true,
+        configurable: true
+    });
+const numberRegex = /[+\-]?(?:0|[1-9]\d*)(?:\.\d*)?(?:[eE][+\-]?\d+)?/g;
+const colorRegex = /(#(?:[0-9a-f]{2}){2,4}|(#[0-9a-f]{3})|(rgb|hsl)a?\((-?\d+%?[,\s]+){2,3}\s*[\d\.]+%?\))/gi;
+const unitRegex = new RegExp(`(${numberRegex.source})(%|[a-z]+)`, "i");
+const rgbaRegex = /rgba\(([0-9\.-]+), ([0-9\.-]+), ([0-9\.-]+), ([0-9\.-]+)\)/gi;
+const cssVariableRegex = /var\((--[a-zA-Z0-9-_]+),? ?([a-zA-Z0-9 ()%#.,-]+)?\)/;
+const variableToRgba = (input)=>{
+    const [token, fallback] = parseCSSVariable(input);
+    if (!token || isSSR()) return input;
+    const value = window.getComputedStyle(document.documentElement).getPropertyValue(token);
+    if (value) return value.trim();
+    else if (fallback && fallback.startsWith("--")) {
+        const _value = window.getComputedStyle(document.documentElement).getPropertyValue(fallback);
+        if (_value) return _value;
+        else return input;
+    } else if (fallback && cssVariableRegex.test(fallback)) return variableToRgba(fallback);
+    else if (fallback) return fallback;
+    return input;
+};
+const parseCSSVariable = (current)=>{
+    const match = cssVariableRegex.exec(current);
+    if (!match) return [
+        , 
+    ];
+    const [, token, fallback] = match;
+    return [
+        token,
+        fallback
+    ];
+};
+let namedColorRegex;
+const rgbaRound = (_, p1, p2, p3, p4)=>`rgba(${Math.round(p1)}, ${Math.round(p2)}, ${Math.round(p3)}, ${p4})`;
+const createStringInterpolator = (config)=>{
+    if (!namedColorRegex) namedColorRegex = colors$1 ? new RegExp(`(${Object.keys(colors$1).join("|")})(?!\\w)`, "g") : /^\b$/;
+    const output1 = config.output.map((value)=>{
+        return getFluidValue(value).replace(cssVariableRegex, variableToRgba).replace(colorRegex, colorToRgba).replace(namedColorRegex, colorToRgba);
+    });
+    const keyframes = output1.map((value)=>value.match(numberRegex).map(Number));
+    const outputRanges = keyframes[0].map((_, i)=>keyframes.map((values)=>{
+            if (!(i in values)) throw Error('The arity of each "output" value must be equal');
+            return values[i];
+        }));
+    const interpolators = outputRanges.map((output)=>createInterpolator(_extends({}, config, {
+            output
+        })));
+    return (input)=>{
+        var _output$find;
+        const missingUnit = !unitRegex.test(output1[0]) && ((_output$find = output1.find((value)=>unitRegex.test(value))) == null ? void 0 : _output$find.replace(numberRegex, ""));
+        let i = 0;
+        return output1[0].replace(numberRegex, ()=>`${interpolators[i++](input)}${missingUnit || ""}`).replace(rgbaRegex, rgbaRound);
+    };
+};
+const prefix = "react-spring: ";
+const once = (fn)=>{
+    const func = fn;
+    let called = false;
+    if (typeof func != "function") throw new TypeError(`${prefix}once requires a function parameter`);
+    return (...args)=>{
+        if (!called) {
+            func(...args);
+            called = true;
+        }
+    };
+};
+const warnInterpolate = once(console.warn);
+function deprecateInterpolate() {
+    warnInterpolate(`${prefix}The "interpolate" function is deprecated in v9 (use "to" instead)`);
+}
+const warnDirectCall = once(console.warn);
+function deprecateDirectCall() {
+    warnDirectCall(`${prefix}Directly calling start instead of using the api object is deprecated in v9 (use ".start" instead), this will be removed in later 0.X.0 versions`);
+}
+function isAnimatedString(value) {
+    return is.str(value) && (value[0] == "#" || /\d/.test(value) || !isSSR() && cssVariableRegex.test(value) || value in (colors$1 || {}));
+}
+const useIsomorphicLayoutEffect = isSSR() ? (0, _react.useEffect) : (0, _react.useLayoutEffect);
+const useIsMounted = ()=>{
+    const isMounted = (0, _react.useRef)(false);
+    useIsomorphicLayoutEffect(()=>{
+        isMounted.current = true;
+        return ()=>{
+            isMounted.current = false;
+        };
+    }, []);
+    return isMounted;
+};
+function useForceUpdate() {
+    const update = (0, _react.useState)()[1];
+    const isMounted = useIsMounted();
+    return ()=>{
+        if (isMounted.current) update(Math.random());
+    };
+}
+function useMemoOne(getResult, inputs) {
+    const [initial] = (0, _react.useState)(()=>({
+            inputs,
+            result: getResult()
+        }));
+    const committed = (0, _react.useRef)();
+    const prevCache = committed.current;
+    let cache = prevCache;
+    if (cache) {
+        const useCache = Boolean(inputs && cache.inputs && areInputsEqual(inputs, cache.inputs));
+        if (!useCache) cache = {
+            inputs,
+            result: getResult()
+        };
+    } else cache = initial;
+    (0, _react.useEffect)(()=>{
+        committed.current = cache;
+        if (prevCache == initial) initial.inputs = initial.result = undefined;
+    }, [
+        cache
+    ]);
+    return cache.result;
+}
+function areInputsEqual(next, prev) {
+    if (next.length !== prev.length) return false;
+    for(let i = 0; i < next.length; i++){
+        if (next[i] !== prev[i]) return false;
+    }
+    return true;
+}
+const useOnce = (effect)=>(0, _react.useEffect)(effect, emptyDeps);
+const emptyDeps = [];
+function usePrev(value) {
+    const prevRef = (0, _react.useRef)();
+    (0, _react.useEffect)(()=>{
+        prevRef.current = value;
+    });
+    return prevRef.current;
+}
+const useReducedMotion = ()=>{
+    const [reducedMotion, setReducedMotion] = (0, _react.useState)(null);
+    useIsomorphicLayoutEffect(()=>{
+        const mql = window.matchMedia("(prefers-reduced-motion)");
+        const handleMediaChange = (e)=>{
+            setReducedMotion(e.matches);
+            assign({
+                skipAnimation: e.matches
+            });
+        };
+        handleMediaChange(mql);
+        mql.addEventListener("change", handleMediaChange);
+        return ()=>{
+            mql.removeEventListener("change", handleMediaChange);
+        };
+    }, []);
+    return reducedMotion;
+};
+
+},{"@react-spring/rafz":"jCdCs","react":"21dqq","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jCdCs":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "__raf", ()=>__raf);
+parcelHelpers.export(exports, "raf", ()=>raf);
+let updateQueue = makeQueue();
+const raf = (fn)=>schedule(fn, updateQueue);
+let writeQueue = makeQueue();
+raf.write = (fn)=>schedule(fn, writeQueue);
+let onStartQueue = makeQueue();
+raf.onStart = (fn)=>schedule(fn, onStartQueue);
+let onFrameQueue = makeQueue();
+raf.onFrame = (fn)=>schedule(fn, onFrameQueue);
+let onFinishQueue = makeQueue();
+raf.onFinish = (fn)=>schedule(fn, onFinishQueue);
+let timeouts = [];
+raf.setTimeout = (handler, ms)=>{
+    let time = raf.now() + ms;
+    let cancel = ()=>{
+        let i = timeouts.findIndex((t)=>t.cancel == cancel);
+        if (~i) timeouts.splice(i, 1);
+        pendingCount -= ~i ? 1 : 0;
+    };
+    let timeout = {
+        time,
+        handler,
+        cancel
+    };
+    timeouts.splice(findTimeout(time), 0, timeout);
+    pendingCount += 1;
+    start();
+    return timeout;
+};
+let findTimeout = (time)=>~(~timeouts.findIndex((t)=>t.time > time) || ~timeouts.length);
+raf.cancel = (fn)=>{
+    onStartQueue.delete(fn);
+    onFrameQueue.delete(fn);
+    onFinishQueue.delete(fn);
+    updateQueue.delete(fn);
+    writeQueue.delete(fn);
+};
+raf.sync = (fn)=>{
+    sync = true;
+    raf.batchedUpdates(fn);
+    sync = false;
+};
+raf.throttle = (fn)=>{
+    let lastArgs;
+    function queuedFn() {
+        try {
+            fn(...lastArgs);
+        } finally{
+            lastArgs = null;
+        }
+    }
+    function throttled(...args) {
+        lastArgs = args;
+        raf.onStart(queuedFn);
+    }
+    throttled.handler = fn;
+    throttled.cancel = ()=>{
+        onStartQueue.delete(queuedFn);
+        lastArgs = null;
+    };
+    return throttled;
+};
+let nativeRaf = typeof window != "undefined" ? window.requestAnimationFrame : ()=>{};
+raf.use = (impl)=>nativeRaf = impl;
+raf.now = typeof performance != "undefined" ? ()=>performance.now() : Date.now;
+raf.batchedUpdates = (fn)=>fn();
+raf.catch = console.error;
+raf.frameLoop = "always";
+raf.advance = ()=>{
+    if (raf.frameLoop !== "demand") console.warn("Cannot call the manual advancement of rafz whilst frameLoop is not set as demand");
+    else update();
+};
+let ts = -1;
+let pendingCount = 0;
+let sync = false;
+function schedule(fn, queue) {
+    if (sync) {
+        queue.delete(fn);
+        fn(0);
+    } else {
+        queue.add(fn);
+        start();
+    }
+}
+function start() {
+    if (ts < 0) {
+        ts = 0;
+        if (raf.frameLoop !== "demand") nativeRaf(loop);
+    }
+}
+function stop() {
+    ts = -1;
+}
+function loop() {
+    if (~ts) {
+        nativeRaf(loop);
+        raf.batchedUpdates(update);
+    }
+}
+function update() {
+    let prevTs = ts;
+    ts = raf.now();
+    let count = findTimeout(ts);
+    if (count) {
+        eachSafely(timeouts.splice(0, count), (t)=>t.handler());
+        pendingCount -= count;
+    }
+    if (!pendingCount) {
+        stop();
+        return;
+    }
+    onStartQueue.flush();
+    updateQueue.flush(prevTs ? Math.min(64, ts - prevTs) : 16.667);
+    onFrameQueue.flush();
+    writeQueue.flush();
+    onFinishQueue.flush();
+}
+function makeQueue() {
+    let next = new Set();
+    let current = next;
+    return {
+        add (fn) {
+            pendingCount += current == next && !next.has(fn) ? 1 : 0;
+            next.add(fn);
+        },
+        delete (fn) {
+            pendingCount -= current == next && next.has(fn) ? 1 : 0;
+            return next.delete(fn);
+        },
+        flush (arg) {
+            if (current.size) {
+                next = new Set();
+                pendingCount -= current.size;
+                eachSafely(current, (fn)=>fn(arg) && next.add(fn));
+                pendingCount += next.size;
+                current = next;
+            }
+        }
+    };
+}
+function eachSafely(values, each) {
+    values.forEach((value)=>{
+        try {
+            each(value);
+        } catch (e) {
+            raf.catch(e);
+        }
+    });
+}
+const __raf = {
+    count () {
+        return pendingCount;
+    },
+    isRunning () {
+        return ts >= 0;
+    },
+    clear () {
+        ts = -1;
+        timeouts = [];
+        onStartQueue = makeQueue();
+        updateQueue = makeQueue();
+        onFrameQueue = makeQueue();
+        writeQueue = makeQueue();
+        onFinishQueue = makeQueue();
+        pendingCount = 0;
+    }
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"abfrL":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "Animated", ()=>Animated);
+parcelHelpers.export(exports, "AnimatedArray", ()=>AnimatedArray);
+parcelHelpers.export(exports, "AnimatedObject", ()=>AnimatedObject);
+parcelHelpers.export(exports, "AnimatedString", ()=>AnimatedString);
+parcelHelpers.export(exports, "AnimatedValue", ()=>AnimatedValue);
+parcelHelpers.export(exports, "createHost", ()=>createHost);
+parcelHelpers.export(exports, "getAnimated", ()=>getAnimated);
+parcelHelpers.export(exports, "getAnimatedType", ()=>getAnimatedType);
+parcelHelpers.export(exports, "getPayload", ()=>getPayload);
+parcelHelpers.export(exports, "isAnimated", ()=>isAnimated);
+parcelHelpers.export(exports, "setAnimated", ()=>setAnimated);
+var _shared = require("@react-spring/shared");
+var _react = require("react");
+const $node = Symbol.for("Animated:node");
+const isAnimated = (value)=>!!value && value[$node] === value;
+const getAnimated = (owner)=>owner && owner[$node];
+const setAnimated = (owner, node)=>(0, _shared.defineHidden)(owner, $node, node);
+const getPayload = (owner)=>owner && owner[$node] && owner[$node].getPayload();
+class Animated {
+    constructor(){
+        this.payload = void 0;
+        setAnimated(this, this);
+    }
+    getPayload() {
+        return this.payload || [];
+    }
+}
+class AnimatedValue extends Animated {
+    constructor(_value){
+        super();
+        this.done = true;
+        this.elapsedTime = void 0;
+        this.lastPosition = void 0;
+        this.lastVelocity = void 0;
+        this.v0 = void 0;
+        this.durationProgress = 0;
+        this._value = _value;
+        if ((0, _shared.is).num(this._value)) this.lastPosition = this._value;
+    }
+    static create(value) {
+        return new AnimatedValue(value);
+    }
+    getPayload() {
+        return [
+            this
+        ];
+    }
+    getValue() {
+        return this._value;
+    }
+    setValue(value, step) {
+        if ((0, _shared.is).num(value)) {
+            this.lastPosition = value;
+            if (step) {
+                value = Math.round(value / step) * step;
+                if (this.done) this.lastPosition = value;
+            }
+        }
+        if (this._value === value) return false;
+        this._value = value;
+        return true;
+    }
+    reset() {
+        const { done  } = this;
+        this.done = false;
+        if ((0, _shared.is).num(this._value)) {
+            this.elapsedTime = 0;
+            this.durationProgress = 0;
+            this.lastPosition = this._value;
+            if (done) this.lastVelocity = null;
+            this.v0 = null;
+        }
+    }
+}
+class AnimatedString extends AnimatedValue {
+    constructor(value){
+        super(0);
+        this._string = null;
+        this._toString = void 0;
+        this._toString = (0, _shared.createInterpolator)({
+            output: [
+                value,
+                value
+            ]
+        });
+    }
+    static create(value) {
+        return new AnimatedString(value);
+    }
+    getValue() {
+        let value = this._string;
+        return value == null ? this._string = this._toString(this._value) : value;
+    }
+    setValue(value) {
+        if ((0, _shared.is).str(value)) {
+            if (value == this._string) return false;
+            this._string = value;
+            this._value = 1;
+        } else if (super.setValue(value)) this._string = null;
+        else return false;
+        return true;
+    }
+    reset(goal) {
+        if (goal) this._toString = (0, _shared.createInterpolator)({
+            output: [
+                this.getValue(),
+                goal
+            ]
+        });
+        this._value = 0;
+        super.reset();
+    }
+}
+const TreeContext = {
+    dependencies: null
+};
+class AnimatedObject extends Animated {
+    constructor(source){
+        super();
+        this.source = source;
+        this.setValue(source);
+    }
+    getValue(animated) {
+        const values = {};
+        (0, _shared.eachProp)(this.source, (source, key)=>{
+            if (isAnimated(source)) values[key] = source.getValue(animated);
+            else if ((0, _shared.hasFluidValue)(source)) values[key] = (0, _shared.getFluidValue)(source);
+            else if (!animated) values[key] = source;
+        });
+        return values;
+    }
+    setValue(source) {
+        this.source = source;
+        this.payload = this._makePayload(source);
+    }
+    reset() {
+        if (this.payload) (0, _shared.each)(this.payload, (node)=>node.reset());
+    }
+    _makePayload(source) {
+        if (source) {
+            const payload = new Set();
+            (0, _shared.eachProp)(source, this._addToPayload, payload);
+            return Array.from(payload);
+        }
+    }
+    _addToPayload(source) {
+        if (TreeContext.dependencies && (0, _shared.hasFluidValue)(source)) TreeContext.dependencies.add(source);
+        const payload = getPayload(source);
+        if (payload) (0, _shared.each)(payload, (node)=>this.add(node));
+    }
+}
+class AnimatedArray extends AnimatedObject {
+    constructor(source){
+        super(source);
+    }
+    static create(source) {
+        return new AnimatedArray(source);
+    }
+    getValue() {
+        return this.source.map((node)=>node.getValue());
+    }
+    setValue(source) {
+        const payload = this.getPayload();
+        if (source.length == payload.length) return payload.map((node, i)=>node.setValue(source[i])).some(Boolean);
+        super.setValue(source.map(makeAnimated));
+        return true;
+    }
+}
+function makeAnimated(value) {
+    const nodeType = (0, _shared.isAnimatedString)(value) ? AnimatedString : AnimatedValue;
+    return nodeType.create(value);
+}
+function getAnimatedType(value) {
+    const parentNode = getAnimated(value);
+    return parentNode ? parentNode.constructor : (0, _shared.is).arr(value) ? AnimatedArray : (0, _shared.isAnimatedString)(value) ? AnimatedString : AnimatedValue;
+}
+function _extends() {
+    _extends = Object.assign || function(target) {
+        for(var i = 1; i < arguments.length; i++){
+            var source = arguments[i];
+            for(var key in source)if (Object.prototype.hasOwnProperty.call(source, key)) target[key] = source[key];
+        }
+        return target;
+    };
+    return _extends.apply(this, arguments);
+}
+const withAnimated = (Component, host)=>{
+    const hasInstance = !(0, _shared.is).fun(Component) || Component.prototype && Component.prototype.isReactComponent;
+    return (0, _react.forwardRef)((givenProps, givenRef)=>{
+        const instanceRef = (0, _react.useRef)(null);
+        const ref = hasInstance && (0, _react.useCallback)((value)=>{
+            instanceRef.current = updateRef(givenRef, value);
+        }, [
+            givenRef
+        ]);
+        const [props, deps] = getAnimatedState(givenProps, host);
+        const forceUpdate = (0, _shared.useForceUpdate)();
+        const callback = ()=>{
+            const instance = instanceRef.current;
+            if (hasInstance && !instance) return;
+            const didUpdate = instance ? host.applyAnimatedValues(instance, props.getValue(true)) : false;
+            if (didUpdate === false) forceUpdate();
+        };
+        const observer1 = new PropsObserver(callback, deps);
+        const observerRef = (0, _react.useRef)();
+        (0, _shared.useIsomorphicLayoutEffect)(()=>{
+            observerRef.current = observer1;
+            (0, _shared.each)(deps, (dep)=>(0, _shared.addFluidObserver)(dep, observer1));
+            return ()=>{
+                if (observerRef.current) {
+                    (0, _shared.each)(observerRef.current.deps, (dep)=>(0, _shared.removeFluidObserver)(dep, observerRef.current));
+                    (0, _shared.raf).cancel(observerRef.current.update);
+                }
+            };
+        });
+        (0, _react.useEffect)(callback, []);
+        (0, _shared.useOnce)(()=>()=>{
+                const observer = observerRef.current;
+                (0, _shared.each)(observer.deps, (dep)=>(0, _shared.removeFluidObserver)(dep, observer));
+            });
+        const usedProps = host.getComponentProps(props.getValue());
+        return _react.createElement(Component, _extends({}, usedProps, {
+            ref: ref
+        }));
+    });
+};
+class PropsObserver {
+    constructor(update, deps){
+        this.update = update;
+        this.deps = deps;
+    }
+    eventObserved(event) {
+        if (event.type == "change") (0, _shared.raf).write(this.update);
+    }
+}
+function getAnimatedState(props, host) {
+    const dependencies = new Set();
+    TreeContext.dependencies = dependencies;
+    if (props.style) props = _extends({}, props, {
+        style: host.createAnimatedStyle(props.style)
+    });
+    props = new AnimatedObject(props);
+    TreeContext.dependencies = null;
+    return [
+        props,
+        dependencies
+    ];
+}
+function updateRef(ref, value) {
+    if (ref) {
+        if ((0, _shared.is).fun(ref)) ref(value);
+        else ref.current = value;
+    }
+    return value;
+}
+const cacheKey = Symbol.for("AnimatedComponent");
+const createHost = (components, { applyAnimatedValues: _applyAnimatedValues = ()=>false , createAnimatedStyle: _createAnimatedStyle = (style)=>new AnimatedObject(style) , getComponentProps: _getComponentProps = (props)=>props  } = {})=>{
+    const hostConfig = {
+        applyAnimatedValues: _applyAnimatedValues,
+        createAnimatedStyle: _createAnimatedStyle,
+        getComponentProps: _getComponentProps
+    };
+    const animated = (Component)=>{
+        const displayName = getDisplayName(Component) || "Anonymous";
+        if ((0, _shared.is).str(Component)) Component = animated[Component] || (animated[Component] = withAnimated(Component, hostConfig));
+        else Component = Component[cacheKey] || (Component[cacheKey] = withAnimated(Component, hostConfig));
+        Component.displayName = `Animated(${displayName})`;
+        return Component;
+    };
+    (0, _shared.eachProp)(components, (Component, key)=>{
+        if ((0, _shared.is).arr(components)) key = getDisplayName(Component);
+        animated[key] = animated(Component);
+    });
+    return {
+        animated
+    };
+};
+const getDisplayName = (arg)=>(0, _shared.is).str(arg) ? arg : arg && (0, _shared.is).str(arg.displayName) ? arg.displayName : (0, _shared.is).fun(arg) && arg.name || null;
+
+},{"@react-spring/shared":"jm667","react":"21dqq","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"e9Tpo":[function(require,module,exports) {
+
+},{}],"dlWzh":[function(require,module,exports) {
+
+},{}],"dTurW":[function(require,module,exports) {
+var $parcel$ReactRefreshHelpers$0c13 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$0c13.prelude(module);
+
+try {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "useTransformTrigger", ()=>useTransformTrigger);
+var _react = require("react");
+var _reactSpring = require("react-spring");
+function useTransformTrigger({ x =0 , y =0 , rotation =0 , scale =1 , timing =150 , springConfig ={
+    tension: 300,
+    friction: 10
+} ,  }) {
+    const [on, set] = (0, _react.useState)(false);
+    const style = (0, _reactSpring.useSpring)({
+        backfaceVisibility: "hidden",
+        transform: on ? `translate(${x}px, ${y}px)
+         rotate(${rotation}deg)
+         scale(${scale})` : `translate(0px, 0px)
+         rotate(0deg)
+         scale(1)`,
+        config: springConfig
+    });
+    (0, _react.useEffect)(()=>{
+        if (!on) return;
+        const timeoutId = setTimeout(()=>set(false), timing);
+        return ()=>{
+            clearTimeout(timeoutId);
+        };
+    }, [
+        on,
+        timing
+    ]);
+    const trigger = (0, _react.useCallback)(()=>set(true), []);
+    return {
+        style,
+        trigger
+    };
+}
+
+  $parcel$ReactRefreshHelpers$0c13.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"react":"21dqq","react-spring":"2gPbQ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"fAm54":[function(require,module,exports) {
 var $parcel$ReactRefreshHelpers$3fea = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 var prevRefreshReg = window.$RefreshReg$;
 var prevRefreshSig = window.$RefreshSig$;
@@ -79299,6 +82037,7 @@ var _fillView = require("src/ui/components/FillView");
 var _capitalizeTs = require("capitalize-ts");
 var _warningIcon = require("src/ui/components/WarningIcon");
 var _pageStickyFooter = require("src/ui/components/PageStickyFooter");
+var _queries = require("src/modules/defi-sdk/queries");
 var _s = $RefreshSig$(), _s1 = $RefreshSig$(), _s2 = $RefreshSig$();
 function ItemSurface({ style , ...props }) {
     const surfaceStyle = {
@@ -79311,7 +82050,7 @@ function ItemSurface({ style , ...props }) {
         ...props
     }, void 0, false, {
         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-        lineNumber: 43,
+        lineNumber: 44,
         columnNumber: 10
     }, this);
 }
@@ -79335,12 +82074,12 @@ function WalletLine({ address , label  }) {
             }, void 0, false, void 0, void 0)
         }, void 0, false, {
             fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-            lineNumber: 49,
+            lineNumber: 50,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-        lineNumber: 48,
+        lineNumber: 49,
         columnNumber: 5
     }, this);
 }
@@ -79356,7 +82095,10 @@ function AssetLine({ transaction  }) {
     }, {
         enabled: Boolean(assetCode)
     });
-    const asset = assetCode ? assets?.[assetCode] : null;
+    const assetFromCache = (0, _react.useMemo)(()=>assetCode ? (0, _queries.queryCacheForAsset)(assetCode) : null, [
+        assetCode
+    ]);
+    const asset = assetFromCache || (assetCode ? assets?.[assetCode] : null);
     if (status === (0, _defiSdk.DataStatus).ok && !asset && assetCode && (transaction.action === (0, _describeTransaction.TransactionAction).transfer || transaction.action === (0, _describeTransaction.TransactionAction).approve)) // Couldn't resolve asset for a send or approve transaction
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(ItemSurface, {
         children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _media.Media), {
@@ -79374,12 +82116,12 @@ function AssetLine({ transaction  }) {
             }, void 0, false, void 0, void 0)
         }, void 0, false, {
             fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-            lineNumber: 89,
+            lineNumber: 94,
             columnNumber: 9
         }, this)
     }, void 0, false, {
         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-        lineNumber: 88,
+        lineNumber: 93,
         columnNumber: 7
     }, this);
     if (!asset) return status === (0, _defiSdk.DataStatus).requested ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(ItemSurface, {
@@ -79388,7 +82130,7 @@ function AssetLine({ transaction  }) {
         }
     }, void 0, false, {
         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-        lineNumber: 108,
+        lineNumber: 113,
         columnNumber: 7
     }, this) : null;
     if (transaction.action === (0, _describeTransaction.TransactionAction).approve) return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(ItemSurface, {
@@ -79413,12 +82155,12 @@ function AssetLine({ transaction  }) {
             }, void 0, false, void 0, void 0)
         }, void 0, false, {
             fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-            lineNumber: 114,
+            lineNumber: 119,
             columnNumber: 9
         }, this)
     }, void 0, false, {
         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-        lineNumber: 113,
+        lineNumber: 118,
         columnNumber: 7
     }, this);
     if (transaction.action === (0, _describeTransaction.TransactionAction).transfer) return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(ItemSurface, {
@@ -79443,17 +82185,17 @@ function AssetLine({ transaction  }) {
             }, void 0, false, void 0, void 0)
         }, void 0, false, {
             fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-            lineNumber: 137,
+            lineNumber: 142,
             columnNumber: 9
         }, this)
     }, void 0, false, {
         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-        lineNumber: 136,
+        lineNumber: 141,
         columnNumber: 7
     }, this);
     return null;
 }
-_s(AssetLine, "d+/cF4dlxi0+i2uEPd+bXeZNg9k=", false, function() {
+_s(AssetLine, "f7AFlG6B1wcwqsIOgb2X5vAa6iE=", false, function() {
     return [
         (0, _defiSdk.useAssetsPrices)
     ];
@@ -79467,7 +82209,7 @@ function TransactionDescription({ transactionDescription  }) {
                 transaction: transactionDescription
             }, void 0, false, {
                 fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                lineNumber: 174,
+                lineNumber: 179,
                 columnNumber: 7
             }, this),
             action === (0, _describeTransaction.TransactionAction).transfer && assetReceiver ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(WalletLine, {
@@ -79475,7 +82217,7 @@ function TransactionDescription({ transactionDescription  }) {
                 label: "Receiver"
             }, void 0, false, {
                 fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                lineNumber: 176,
+                lineNumber: 181,
                 columnNumber: 9
             }, this) : null,
             action === (0, _describeTransaction.TransactionAction).contractInteraction && contractAddress ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(ItemSurface, {
@@ -79493,12 +82235,12 @@ function TransactionDescription({ transactionDescription  }) {
                     }, void 0, false, void 0, void 0)
                 }, void 0, false, {
                     fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                    lineNumber: 180,
+                    lineNumber: 185,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                lineNumber: 179,
+                lineNumber: 184,
                 columnNumber: 9
             }, this) : null
         ]
@@ -79521,7 +82263,7 @@ function SendTransactionContent({ transactionStringified , origin , wallet  }) {
     const transaction1 = (0, _react.useMemo)(()=>JSON.parse(transactionStringified), [
         transactionStringified
     ]);
-    const { data: chainId , ...chainIdQuery } = (0, _reactQuery.useQuery)("eth_chainId", ()=>(0, _channels.walletPort).request("eth_chainId"), {
+    const { data: chainId , ...chainIdQuery } = (0, _reactQuery.useQuery)("eth_chainId", ()=>(0, _channels.walletPort).request("requestChainId"), {
         useErrorBoundary: true
     });
     const descriptionQuery = (0, _reactQuery.useQuery)([
@@ -79556,17 +82298,17 @@ function SendTransactionContent({ transactionStringified , origin , wallet  }) {
                 }
             }, void 0, false, {
                 fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                lineNumber: 264,
+                lineNumber: 269,
                 columnNumber: 11
             }, this)
         }, void 0, false, {
             fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-            lineNumber: 263,
+            lineNumber: 268,
             columnNumber: 9
         }, this)
     }, void 0, false, {
         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-        lineNumber: 262,
+        lineNumber: 267,
         columnNumber: 7
     }, this);
     if (descriptionQuery.isError || !descriptionQuery.data) throw descriptionQuery.error || new Error("testing");
@@ -79579,7 +82321,7 @@ function SendTransactionContent({ transactionStringified , origin , wallet  }) {
                 children: [
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _pageTop.PageTop), {}, void 0, false, {
                         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                        lineNumber: 282,
+                        lineNumber: 287,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -79595,14 +82337,14 @@ function SendTransactionContent({ transactionStringified , origin , wallet  }) {
                                 }
                             }, void 0, false, {
                                 fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                                lineNumber: 284,
+                                lineNumber: 289,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
                                 height: 16
                             }, void 0, false, {
                                 fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                                lineNumber: 285,
+                                lineNumber: 290,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
@@ -79613,14 +82355,14 @@ function SendTransactionContent({ transactionStringified , origin , wallet  }) {
                                 children: (0, _strings.strings).actions[descriptionQuery.data.action] || (0, _strings.strings).actions[(0, _describeTransaction.TransactionAction).contractInteraction]
                             }, void 0, false, {
                                 fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                                lineNumber: 286,
+                                lineNumber: 291,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
                                 height: 8
                             }, void 0, false, {
                                 fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                                lineNumber: 290,
+                                lineNumber: 295,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
@@ -79629,28 +82371,28 @@ function SendTransactionContent({ transactionStringified , origin , wallet  }) {
                                 children: originName
                             }, void 0, false, {
                                 fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                                lineNumber: 291,
+                                lineNumber: 296,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
                                 height: 8
                             }, void 0, false, {
                                 fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                                lineNumber: 294,
+                                lineNumber: 299,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _networkIndicator.NetworkIndicator), {
                                 chainId: effectiveChainId
                             }, void 0, false, {
                                 fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                                lineNumber: 295,
+                                lineNumber: 300,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
                                 height: 8
                             }, void 0, false, {
                                 fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                                lineNumber: 296,
+                                lineNumber: 301,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
@@ -79659,25 +82401,25 @@ function SendTransactionContent({ transactionStringified , origin , wallet  }) {
                                     children: networks?.getEthereumChainParameter(effectiveChainId).rpcUrls[0]
                                 }, void 0, false, {
                                     fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                                    lineNumber: 298,
+                                    lineNumber: 303,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                                lineNumber: 297,
+                                lineNumber: 302,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                        lineNumber: 283,
+                        lineNumber: 288,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
                         height: 24
                     }, void 0, false, {
                         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                        lineNumber: 303,
+                        lineNumber: 308,
                         columnNumber: 9
                     }, this),
                     transaction1.chainId == null ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _surface.Surface), {
@@ -79707,19 +82449,19 @@ function SendTransactionContent({ transactionStringified , origin , wallet  }) {
                             }, void 0, true, void 0, void 0)
                         }, void 0, false, {
                             fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                            lineNumber: 309,
+                            lineNumber: 314,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                        lineNumber: 305,
+                        lineNumber: 310,
                         columnNumber: 11
                     }, this) : null,
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
                         height: 16
                     }, void 0, false, {
                         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                        lineNumber: 325,
+                        lineNumber: 330,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _vstack.VStack), {
@@ -79730,33 +82472,33 @@ function SendTransactionContent({ transactionStringified , origin , wallet  }) {
                                 label: "Wallet"
                             }, void 0, false, {
                                 fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                                lineNumber: 327,
+                                lineNumber: 332,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(TransactionDescription, {
                                 transactionDescription: descriptionQuery.data
                             }, void 0, false, {
                                 fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                                lineNumber: 328,
+                                lineNumber: 333,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                        lineNumber: 326,
+                        lineNumber: 331,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
                         height: 16
                     }, void 0, false, {
                         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                        lineNumber: 332,
+                        lineNumber: 337,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                lineNumber: 281,
+                lineNumber: 286,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _pageStickyFooter.PageStickyFooter), {
@@ -79773,7 +82515,7 @@ function SendTransactionContent({ transactionStringified , origin , wallet  }) {
                             children: signMutation.isError ? errorToMessage(signMutation.error) : null
                         }, void 0, false, {
                             fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                            lineNumber: 342,
+                            lineNumber: 347,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _button.Button), {
@@ -79783,7 +82525,7 @@ function SendTransactionContent({ transactionStringified , origin , wallet  }) {
                             children: signMutation.isLoading ? "Sending..." : descriptionQuery.data.action === (0, _describeTransaction.TransactionAction).approve ? "Approve" : "Confirm"
                         }, void 0, false, {
                             fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                            lineNumber: 347,
+                            lineNumber: 352,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _unstyledButton.UnstyledButton), {
@@ -79796,24 +82538,24 @@ function SendTransactionContent({ transactionStringified , origin , wallet  }) {
                             children: "Reject"
                         }, void 0, false, {
                             fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                            lineNumber: 358,
+                            lineNumber: 363,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                    lineNumber: 335,
+                    lineNumber: 340,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-                lineNumber: 334,
+                lineNumber: 339,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-        lineNumber: 280,
+        lineNumber: 285,
         columnNumber: 5
     }, this);
 }
@@ -79830,14 +82572,14 @@ _c4 = SendTransactionContent;
 function SendTransaction() {
     _s2();
     const [params] = (0, _reactRouterDom.useSearchParams)();
-    const { data: wallet , isLoading , isError ,  } = (0, _reactQuery.useQuery)("wallet", ()=>{
-        return (0, _channels.walletPort).request("getCurrentWallet");
+    const { data: wallet , isLoading , isError ,  } = (0, _reactQuery.useQuery)("wallet/uiGetCurrentWallet", ()=>{
+        return (0, _channels.walletPort).request("uiGetCurrentWallet");
     });
     if (isError) return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
         children: "Some Error"
     }, void 0, false, {
         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-        lineNumber: 382,
+        lineNumber: 387,
         columnNumber: 12
     }, this);
     if (isLoading || !wallet) return null;
@@ -79851,7 +82593,7 @@ function SendTransaction() {
         wallet: wallet
     }, void 0, false, {
         fileName: "src/ui/pages/SendTransaction/SendTransaction.tsx",
-        lineNumber: 396,
+        lineNumber: 401,
         columnNumber: 5
     }, this);
 }
@@ -79875,7 +82617,7 @@ $RefreshReg$(_c5, "SendTransaction");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-query":"7slSP","defi-sdk":"iMIhf","ethers":"hdHML","react-router-dom":"fdOAw","src/ui/components/PageColumn":"7NeTI","src/ui/components/PageTop":"48XO9","src/ui/shared/channels":"bv9nl","src/ui/ui-kit/Spacer":"7Kmxc","src/ui/ui-kit/UIText":"66Z7M","src/ui/ui-kit/VStack":"hLvwM","src/ui/ui-kit/Button":"6KLPL","src/ui/ui-kit/UnstyledButton":"7pYzj","src/ui/ui-kit/Surface":"7D9R0","src/ui/components/BlockieImg":"3UGAz","src/ui/ui-kit/Media":"guzi7","src/ui/shared/truncateAddress":"89mpt","src/ui/components/NetworkIndicator":"5YyIc","src/modules/networks/useNetworks":"467it","src/modules/ethereum/transactions/describeTransaction":"j38dv","src/shared/units/convert":"aadvP","src/shared/units/formatTokenValue":"jaNzg","src/ui/ui-kit/Twinkle":"behrf","src/ui/assets/zerion-squircle.svg":"3FgyB","src/ui/transactions/strings":"cmv2V","src/ui/components/Background":"g0Xd1","src/ui/components/FillView":"bUKpC","capitalize-ts":"eOrib","src/ui/components/WarningIcon":"l8Zz4","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","src/ui/components/PageStickyFooter":"gR4PH"}],"48XO9":[function(require,module,exports) {
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-query":"7slSP","defi-sdk":"iMIhf","ethers":"hdHML","react-router-dom":"fdOAw","src/ui/components/PageColumn":"7NeTI","src/ui/components/PageTop":"48XO9","src/ui/shared/channels":"57ETE","src/ui/ui-kit/Spacer":"7Kmxc","src/ui/ui-kit/UIText":"66Z7M","src/ui/ui-kit/VStack":"hLvwM","src/ui/ui-kit/Button":"6KLPL","src/ui/ui-kit/UnstyledButton":"7pYzj","src/ui/ui-kit/Surface":"7D9R0","src/ui/components/BlockieImg":"3UGAz","src/ui/ui-kit/Media":"guzi7","src/ui/shared/truncateAddress":"89mpt","src/ui/components/NetworkIndicator":"5YyIc","src/modules/networks/useNetworks":"467it","src/modules/ethereum/transactions/describeTransaction":"j38dv","src/shared/units/convert":"aadvP","src/shared/units/formatTokenValue":"jaNzg","src/ui/ui-kit/Twinkle":"behrf","src/ui/assets/zerion-squircle.svg":"3FgyB","src/ui/transactions/strings":"cmv2V","src/ui/components/Background":"g0Xd1","src/ui/components/FillView":"bUKpC","capitalize-ts":"eOrib","src/ui/components/WarningIcon":"l8Zz4","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","src/ui/components/PageStickyFooter":"gR4PH","src/modules/defi-sdk/queries":"4F87m"}],"48XO9":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "PageTop", ()=>(0, _pageTop.PageTop));
@@ -80221,7 +82963,7 @@ var _s = $RefreshSig$();
 function canBeScrolled(node) {
     return node.scrollHeight > node.clientHeight;
 }
-function PageStickyFooter({ children  }) {
+function PageStickyFooter({ children , style  }) {
     _s();
     const { uiScrollRootElement  } = (0, _react.useContext)((0, _uicontext.UIContext));
     const [drawTopBorder, setDrawTopBorder] = (0, _react.useState)(canBeScrolled(uiScrollRootElement));
@@ -80249,21 +82991,22 @@ function PageStickyFooter({ children  }) {
             flexGrow: 0,
             position: "sticky",
             bottom: 0,
-            backgroundColor: "var(--background)"
+            backgroundColor: "var(--background)",
+            ...style
         },
         children: [
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _pageFullBleedLine.PageFullBleedLine), {
                 lineColor: drawTopBorder ? undefined : "transparent"
             }, void 0, false, {
                 fileName: "src/ui/components/PageStickyFooter/PageStickyFooter.tsx",
-                lineNumber: 45,
+                lineNumber: 47,
                 columnNumber: 7
             }, this),
             children
         ]
     }, void 0, true, {
         fileName: "src/ui/components/PageStickyFooter/PageStickyFooter.tsx",
-        lineNumber: 37,
+        lineNumber: 38,
         columnNumber: 5
     }, this);
 }
@@ -80322,7 +83065,98 @@ $RefreshReg$(_c, "PageFullBleedLine");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","../PageColumn":"7NeTI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"g9QSi":[function(require,module,exports) {
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","../PageColumn":"7NeTI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"4F87m":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "queryCacheForAsset", ()=>queryCacheForAsset);
+var _index = require("./index");
+function queryCacheForAsset(assetCode) {
+    const normalizedCode = assetCode.toLowerCase();
+    for (const entry of (0, _index.backgroundCache).map.values()){
+        if (entry.state.value?.positions?.length) for (const position of entry.state.value.positions){
+            if (Object.values(position.asset.implementations).some((impl)=>impl.address === normalizedCode)) return position.asset;
+        }
+    }
+}
+
+},{"./index":"apRUh","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"apRUh":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "backgroundCache", ()=>backgroundCache);
+parcelHelpers.export(exports, "configureUIClient", ()=>configureUIClient);
+parcelHelpers.export(exports, "configureBackgroundClient", ()=>configureBackgroundClient);
+var _defiSdk = require("defi-sdk");
+var _config = require("src/env/config");
+var _backgroundMemoryCache = require("./BackgroundMemoryCache");
+const backgroundCache = new (0, _backgroundMemoryCache.BackgroundMemoryCache)();
+async function configureUIClient() {
+    // This client instance uses background script's memory as cache
+    backgroundCache.load().then(()=>{
+        if (!(0, _config.DEFI_SDK_API_URL) || !(0, _config.DEFI_SDK_API_TOKEN)) throw new Error("DEFI_SDK_API_URL and DEFI_SDK_API_TOKEN must be defined in ENV");
+        (0, _defiSdk.client).configure({
+            getCacheKey: ({ key  })=>key,
+            cache: backgroundCache,
+            url: (0, _config.DEFI_SDK_API_URL),
+            apiToken: (0, _config.DEFI_SDK_API_TOKEN)
+        });
+    });
+}
+function configureBackgroundClient() {
+    if (!(0, _config.DEFI_SDK_API_URL) || !(0, _config.DEFI_SDK_API_TOKEN)) throw new Error("DEFI_SDK_API_URL and DEFI_SDK_API_TOKEN must be defined in ENV");
+    (0, _defiSdk.client).configure({
+        url: (0, _config.DEFI_SDK_API_URL),
+        apiToken: (0, _config.DEFI_SDK_API_TOKEN)
+    });
+}
+
+},{"defi-sdk":"iMIhf","src/env/config":"90ch4","./BackgroundMemoryCache":"OyiaK","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"OyiaK":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "BackgroundMemoryCache", ()=>BackgroundMemoryCache);
+var _defiSdk = require("defi-sdk");
+var _channels = require("src/ui/shared/channels");
+class BackgroundMemoryCache {
+    constructor(){
+        this.map = new Map();
+    }
+    getChangeHandler(key, entryStore) {
+        return ()=>{
+            this.safeWriteEntry(key, entryStore);
+        };
+    }
+    safeWriteEntry(key, entryStore) {
+        if (entryStore.getState().status === (0, _defiSdk.DataStatus).ok) (0, _channels.memoryCacheRPCPort).request("set", {
+            key,
+            value: entryStore.getState()
+        });
+        return Promise.resolve();
+    }
+    get(key) {
+        return this.map.get(key) || null;
+    }
+    set(key, entryStore) {
+        this.map.set(key, entryStore);
+        entryStore.on("change", this.getChangeHandler(key, entryStore));
+        this.safeWriteEntry(key, entryStore);
+    }
+    remove() {
+        throw new Error("Not implemented");
+    }
+    async load() {
+        (0, _channels.memoryCacheRPCPort).request("getAll").then((cacheObject)=>{
+            for(const key in cacheObject){
+                const value = cacheObject[key];
+                value.isStale = true;
+                value.hasSubscribers = false;
+                const entryStore = new (0, _defiSdk.EntryStore)(value);
+                entryStore.on("change", this.getChangeHandler(key, entryStore));
+                this.map.set(key, entryStore);
+            }
+        });
+    }
+}
+
+},{"defi-sdk":"iMIhf","src/ui/shared/channels":"57ETE","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"g9QSi":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "sample", ()=>sample);
@@ -80487,6 +83321,7 @@ var _zerionSquircleSvgDefault = parcelHelpers.interopDefault(_zerionSquircleSvg)
 var _background = require("src/ui/components/Background");
 var _pageStickyFooter = require("src/ui/components/PageStickyFooter");
 var _toUtf8String = require("src/modules/ethereum/message-signing/toUtf8String");
+var _getError = require("src/shared/errors/getError");
 var _s = $RefreshSig$(), _s1 = $RefreshSig$(), _s2 = $RefreshSig$(), _s3 = $RefreshSig$();
 function ItemSurface({ style , ...props }) {
     const surfaceStyle = {
@@ -80499,7 +83334,7 @@ function ItemSurface({ style , ...props }) {
         ...props
     }, void 0, false, {
         fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-        lineNumber: 29,
+        lineNumber: 30,
         columnNumber: 10
     }, this);
 }
@@ -80523,12 +83358,12 @@ function WalletLine({ address , label  }) {
             }, void 0, false, void 0, void 0)
         }, void 0, false, {
             fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-            lineNumber: 35,
+            lineNumber: 36,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-        lineNumber: 34,
+        lineNumber: 35,
         columnNumber: 5
     }, this);
 }
@@ -80543,7 +83378,7 @@ function MessageRow({ message  }) {
                 children: "Data to Sign"
             }, void 0, false, {
                 fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                lineNumber: 54,
+                lineNumber: 55,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(ItemSurface, {
@@ -80553,18 +83388,18 @@ function MessageRow({ message  }) {
                     children: (0, _toUtf8String.toUtf8String)(message)
                 }, void 0, false, {
                     fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                    lineNumber: 58,
+                    lineNumber: 59,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                lineNumber: 57,
+                lineNumber: 58,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-        lineNumber: 53,
+        lineNumber: 54,
         columnNumber: 5
     }, this);
 }
@@ -80579,7 +83414,7 @@ function TypedDataRow({ typedData  }) {
                 children: "Data to Sign"
             }, void 0, false, {
                 fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                lineNumber: 69,
+                lineNumber: 70,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(ItemSurface, {
@@ -80596,18 +83431,18 @@ function TypedDataRow({ typedData  }) {
                     children: typedData
                 }, void 0, false, {
                     fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                    lineNumber: 73,
+                    lineNumber: 74,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                lineNumber: 72,
+                lineNumber: 73,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-        lineNumber: 68,
+        lineNumber: 69,
         columnNumber: 5
     }, this);
 }
@@ -80642,12 +83477,6 @@ _s1(usePersonalSignMutation, "wwwtpB20p0aLiHIvSy5P98MwIUg=", false, function() {
         (0, _reactQuery.useMutation)
     ];
 });
-function isErrorMessageObject(value) {
-    return Boolean(value && "message" in value);
-}
-function getError(value) {
-    return value instanceof Error ? value : isErrorMessageObject(value) ? new Error(value.message) : new Error("Unknown Error");
-}
 function SignMessageContent({ message , origin , typedData , wallet  }) {
     _s2();
     const [params] = (0, _reactRouterDom.useSearchParams)();
@@ -80658,7 +83487,7 @@ function SignMessageContent({ message , origin , typedData , wallet  }) {
     const personalSignMutation = usePersonalSignMutation({
         onSuccess: handleSignSuccess
     });
-    const someMutationError = signTypedData_v4Mutation.isError ? getError(personalSignMutation.error) : personalSignMutation.isError ? getError(personalSignMutation.error) : null;
+    const someMutationError = signTypedData_v4Mutation.isError ? (0, _getError.getError)(signTypedData_v4Mutation.error) : personalSignMutation.isError ? (0, _getError.getError)(personalSignMutation.error) : null;
     const originName = (0, _react.useMemo)(()=>new URL(origin).hostname, [
         origin
     ]);
@@ -80669,7 +83498,7 @@ function SignMessageContent({ message , origin , typedData , wallet  }) {
                 children: [
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _pageTop.PageTop), {}, void 0, false, {
                         fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                        lineNumber: 151,
+                        lineNumber: 140,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -80685,14 +83514,14 @@ function SignMessageContent({ message , origin , typedData , wallet  }) {
                                 }
                             }, void 0, false, {
                                 fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                                lineNumber: 153,
+                                lineNumber: 142,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
                                 height: 16
                             }, void 0, false, {
                                 fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                                lineNumber: 154,
+                                lineNumber: 143,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
@@ -80703,14 +83532,14 @@ function SignMessageContent({ message , origin , typedData , wallet  }) {
                                 children: "Signature Request"
                             }, void 0, false, {
                                 fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                                lineNumber: 155,
+                                lineNumber: 144,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
                                 height: 8
                             }, void 0, false, {
                                 fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                                lineNumber: 158,
+                                lineNumber: 147,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
@@ -80719,27 +83548,27 @@ function SignMessageContent({ message , origin , typedData , wallet  }) {
                                 children: originName
                             }, void 0, false, {
                                 fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                                lineNumber: 159,
+                                lineNumber: 148,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                        lineNumber: 152,
+                        lineNumber: 141,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
                         height: 24
                     }, void 0, false, {
                         fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                        lineNumber: 163,
+                        lineNumber: 152,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
                         height: 16
                     }, void 0, false, {
                         fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                        lineNumber: 164,
+                        lineNumber: 153,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _vstack.VStack), {
@@ -80750,39 +83579,39 @@ function SignMessageContent({ message , origin , typedData , wallet  }) {
                                 label: "Wallet"
                             }, void 0, false, {
                                 fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                                lineNumber: 166,
+                                lineNumber: 155,
                                 columnNumber: 11
                             }, this),
                             typedData ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(TypedDataRow, {
                                 typedData: typedData
                             }, void 0, false, {
                                 fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                                lineNumber: 168,
+                                lineNumber: 157,
                                 columnNumber: 13
                             }, this) : message ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(MessageRow, {
                                 message: message
                             }, void 0, false, {
                                 fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                                lineNumber: 170,
+                                lineNumber: 159,
                                 columnNumber: 13
                             }, this) : null
                         ]
                     }, void 0, true, {
                         fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                        lineNumber: 165,
+                        lineNumber: 154,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _spacer.Spacer), {
                         height: 16
                     }, void 0, false, {
                         fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                        lineNumber: 173,
+                        lineNumber: 162,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                lineNumber: 150,
+                lineNumber: 139,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _pageStickyFooter.PageStickyFooter), {
@@ -80790,19 +83619,20 @@ function SignMessageContent({ message , origin , typedData , wallet  }) {
                     style: {
                         textAlign: "center",
                         marginTop: "auto",
-                        paddingBottom: 24
+                        paddingBottom: 24,
+                        paddingTop: 8
                     },
                     gap: 8,
                     children: [
-                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
+                        someMutationError ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _uitext.UIText), {
                             kind: "caption/reg",
                             color: "var(--negative-500)",
-                            children: someMutationError?.message || "Testing Error"
+                            children: someMutationError?.message
                         }, void 0, false, {
                             fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                            lineNumber: 184,
-                            columnNumber: 11
-                        }, this),
+                            lineNumber: 175,
+                            columnNumber: 13
+                        }, this) : null,
                         typedData ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _button.Button), {
                             onClick: ()=>{
                                 signTypedData_v4Mutation.mutate({
@@ -80812,7 +83642,7 @@ function SignMessageContent({ message , origin , typedData , wallet  }) {
                             children: signTypedData_v4Mutation.isLoading ? "Signing..." : "Sign"
                         }, void 0, false, {
                             fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                            lineNumber: 188,
+                            lineNumber: 180,
                             columnNumber: 13
                         }, this) : message ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _button.Button), {
                             onClick: ()=>{
@@ -80823,7 +83653,7 @@ function SignMessageContent({ message , origin , typedData , wallet  }) {
                             children: personalSignMutation.isLoading ? "Signing..." : "Sign"
                         }, void 0, false, {
                             fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                            lineNumber: 196,
+                            lineNumber: 188,
                             columnNumber: 13
                         }, this) : null,
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _unstyledButton.UnstyledButton), {
@@ -80837,24 +83667,24 @@ function SignMessageContent({ message , origin , typedData , wallet  }) {
                             children: "Reject"
                         }, void 0, false, {
                             fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                            lineNumber: 204,
+                            lineNumber: 196,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                    lineNumber: 176,
+                    lineNumber: 165,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-                lineNumber: 175,
+                lineNumber: 164,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-        lineNumber: 149,
+        lineNumber: 138,
         columnNumber: 5
     }, this);
 }
@@ -80869,14 +83699,14 @@ _c4 = SignMessageContent;
 function SignMessage() {
     _s3();
     const [params] = (0, _reactRouterDom.useSearchParams)();
-    const { data: wallet , isLoading , isError ,  } = (0, _reactQuery.useQuery)("wallet", ()=>{
-        return (0, _channels.walletPort).request("getCurrentWallet");
+    const { data: wallet , isLoading , isError ,  } = (0, _reactQuery.useQuery)("wallet/uiGetCurrentWallet", ()=>{
+        return (0, _channels.walletPort).request("uiGetCurrentWallet");
     });
     if (isError) return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
         children: "Some Error"
     }, void 0, false, {
         fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-        lineNumber: 229,
+        lineNumber: 221,
         columnNumber: 12
     }, this);
     if (isLoading || !wallet) return null;
@@ -80892,7 +83722,7 @@ function SignMessage() {
         wallet: wallet
     }, void 0, false, {
         fileName: "src/ui/pages/SignMessage/SignMessage.tsx",
-        lineNumber: 246,
+        lineNumber: 238,
         columnNumber: 5
     }, this);
 }
@@ -80916,7 +83746,7 @@ $RefreshReg$(_c5, "SignMessage");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-query":"7slSP","react-router-dom":"fdOAw","src/ui/components/PageColumn":"7NeTI","src/ui/components/PageTop":"48XO9","src/ui/shared/channels":"bv9nl","src/ui/ui-kit/Spacer":"7Kmxc","src/ui/ui-kit/UIText":"66Z7M","src/ui/ui-kit/VStack":"hLvwM","src/ui/ui-kit/Button":"6KLPL","src/ui/ui-kit/UnstyledButton":"7pYzj","src/ui/ui-kit/Surface":"7D9R0","src/ui/components/BlockieImg":"3UGAz","src/ui/ui-kit/Media":"guzi7","src/ui/shared/truncateAddress":"89mpt","src/ui/assets/zerion-squircle.svg":"3FgyB","src/ui/components/Background":"g0Xd1","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","src/ui/components/PageStickyFooter":"gR4PH","src/modules/ethereum/message-signing/toUtf8String":"ji3YA"}],"ji3YA":[function(require,module,exports) {
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-query":"7slSP","react-router-dom":"fdOAw","src/ui/components/PageColumn":"7NeTI","src/ui/components/PageTop":"48XO9","src/ui/shared/channels":"57ETE","src/ui/ui-kit/Spacer":"7Kmxc","src/ui/ui-kit/UIText":"66Z7M","src/ui/ui-kit/VStack":"hLvwM","src/ui/ui-kit/Button":"6KLPL","src/ui/ui-kit/UnstyledButton":"7pYzj","src/ui/ui-kit/Surface":"7D9R0","src/ui/components/BlockieImg":"3UGAz","src/ui/ui-kit/Media":"guzi7","src/ui/shared/truncateAddress":"89mpt","src/ui/assets/zerion-squircle.svg":"3FgyB","src/ui/components/Background":"g0Xd1","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","src/ui/components/PageStickyFooter":"gR4PH","src/modules/ethereum/message-signing/toUtf8String":"ji3YA","src/shared/errors/getError":"5xFVa"}],"ji3YA":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "toUtf8String", ()=>toUtf8String);
@@ -80929,6 +83759,17 @@ function toUtf8String(value) {
     }
 }
 
-},{"ethers":"hdHML","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["1xC6H","6cA35","f7Z1A"], "f7Z1A", "parcelRequire7f4b")
+},{"ethers":"hdHML","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5xFVa":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "getError", ()=>getError);
+function isErrorMessageObject(value) {
+    return Boolean(value && "message" in value);
+}
+function getError(value) {
+    return value instanceof Error ? value : isErrorMessageObject(value) ? new Error(value.message) : new Error("Unknown Error");
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["1xC6H","6cA35","f7Z1A"], "f7Z1A", "parcelRequire7f4b")
 
 //# sourceMappingURL=index.fbae3b4e.js.map
