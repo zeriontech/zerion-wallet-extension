@@ -3,7 +3,9 @@ import { walletPort } from '../channels';
 import { getActiveTabOrigin } from './getActiveTabOrigin';
 
 export function useIsConnectedToActiveTab(address: string) {
-  const { data: tabOrigin } = useQuery('activeTab/origin', getActiveTabOrigin);
+  const { data: tabOrigin } = useQuery('activeTab/origin', getActiveTabOrigin, {
+    useErrorBoundary: true,
+  });
   return useQuery(
     `hasPermission(${address}, ${tabOrigin})`,
     async () => {

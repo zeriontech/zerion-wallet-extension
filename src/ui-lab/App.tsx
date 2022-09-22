@@ -1,3 +1,4 @@
+import { ethers } from 'ethers';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from 'react-query';
@@ -9,6 +10,8 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { configureClient } from './defi-sdk';
 import * as readmes from './readmes';
+
+Object.assign(window, { ethers });
 
 const readmeComponents = Object.values(readmes);
 

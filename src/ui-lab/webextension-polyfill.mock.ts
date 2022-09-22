@@ -25,6 +25,26 @@ const browser = {
       },
     },
   },
+  tabs: {
+    query(): chrome.tabs.Tab[] {
+      return [
+        {
+          active: true,
+          url: document.location.href,
+          index: 0,
+          highlighted: false,
+          pinned: false,
+          windowId: 1,
+          incognito: false,
+          selected: false,
+          autoDiscardable: false,
+          discarded: false,
+          audible: false,
+          groupId: 1,
+        },
+      ];
+    },
+  },
 };
 
 export default browser;

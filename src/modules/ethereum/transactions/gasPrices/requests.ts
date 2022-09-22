@@ -1,14 +1,14 @@
 import { client, mergeSingleEntity } from 'defi-sdk';
 import type { EIP1559 } from './EIP1559';
 
-interface OptimisticGasPriceInfo {
+export interface OptimisticGasPriceInfo {
   l1?: number;
   l2?: number;
   fixed_overhead?: number;
   dynamic_overhead?: number;
 }
 
-interface EIP1559GasPrices {
+export interface EIP1559GasPrices {
   base_fee: number;
   fast: EIP1559 | null;
   rapid: EIP1559 | null;
@@ -16,7 +16,7 @@ interface EIP1559GasPrices {
   standard: EIP1559 | null;
 }
 
-interface ChainGasPrice {
+export interface ChainGasPrice {
   datetime: string;
   source: string;
   info: {
@@ -30,6 +30,8 @@ interface ChainGasPrice {
     optimistic?: OptimisticGasPriceInfo;
   };
 }
+
+export type Speed = keyof NonNullable<ChainGasPrice['info']['classic']>;
 
 type Payload = Record<string, ChainGasPrice>;
 

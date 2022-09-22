@@ -22,18 +22,6 @@ function toCollection<T, K>(
   return result;
 }
 
-function invertObject<T extends { [key: string]: string }, K extends keyof T>(
-  object: T
-): { [key in T[K]]: K } {
-  return Object.fromEntries(
-    Object.entries(object).map(([key, value]) => [value, key])
-  ) as { [key in T[K]]: K };
-}
-
-const nameAliases = {
-  'binance-smart-chain': 'bsc',
-};
-
 function localeCompareWithPriority(
   str1: string,
   str2: string,
@@ -55,8 +43,6 @@ export class Networks {
   private keys: Keys;
   private collection: { [key: string]: NetworkConfig | undefined };
   private nameToId: { [key: string]: string };
-  static nameAliases = nameAliases;
-  static nameAliasesInverted = invertObject(nameAliases);
   static purposeKeyMap = {
     sending: 'supports_sending',
     trading: 'supports_trading',
@@ -90,22 +76,8 @@ export class Networks {
     return network.name || capitalize(network.chain);
   }
 
-  static accessByAlias<T extends { [key: string]: T[K] }, K extends keyof T>(
-    object: T,
-    chain: Chain
-  ): T[K] | undefined {
-    const value = chain.toString();
-    return (
-      object[value] ||
-      object[
-        Networks.nameAliases[value as keyof typeof Networks.nameAliases]
-      ] ||
-      object[Networks.nameAliasesInverted[value]]
-    );
-  }
-
   private toId(chain: Chain) {
-    return Networks.accessByAlias(this.nameToId, chain) || '';
+    return this.nameToId[chain.toString()];
   }
 
   getNetworks() {

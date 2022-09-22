@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { DataStatus, useAssetsPrices } from 'defi-sdk';
-import { ethers, UnsignedTransaction } from 'ethers';
 import { useSearchParams } from 'react-router-dom';
+import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { walletPort, windowPort } from 'src/ui/shared/channels';
@@ -34,6 +34,12 @@ import { capitalize } from 'capitalize-ts';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { queryCacheForAsset } from 'src/modules/defi-sdk/queries';
+import { Chain, createChain } from 'src/modules/networks/Chain';
+import { fetchAndAssignGasPrice } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
+import { hasGasPrice } from 'src/modules/ethereum/transactions/gasPrices/hasGasPrice';
+import { NetworkFee } from './NetworkFee';
+import { resolveChainForTx } from 'src/modules/ethereum/transactions/resolveChainForTx';
+import { networksStore } from 'src/modules/networks/networks-store';
 
 function ItemSurface({ style, ...props }: React.HTMLProps<HTMLDivElement>) {
   const surfaceStyle = {
@@ -220,6 +226,22 @@ function errorToMessage(error?: SendTransactionError) {
   }
 }
 
+async function resolveChainAndGasPrice(
+  transaction: IncomingTransaction,
+  currentChain: Chain
+) {
+  const networks = await networksStore.load();
+  const chain = await resolveChainForTx(transaction, currentChain);
+  const chainId = networks.getChainId(chain);
+  const copyWithChainId = { ...transaction, chainId };
+  if (hasGasPrice(copyWithChainId)) {
+    return copyWithChainId;
+  } else {
+    await fetchAndAssignGasPrice(copyWithChainId);
+    return copyWithChainId;
+  }
+}
+
 function SendTransactionContent({
   transactionStringified,
   origin,
@@ -230,18 +252,28 @@ function SendTransactionContent({
   wallet: BareWallet;
 }) {
   const [params] = useSearchParams();
-  const transaction = useMemo(
-    () => JSON.parse(transactionStringified) as UnsignedTransaction,
+  const incomingTransaction = useMemo(
+    () => JSON.parse(transactionStringified) as IncomingTransaction,
     [transactionStringified]
   );
-  const { data: chainId, ...chainIdQuery } = useQuery(
-    `wallet/requestChainForOrigin(${origin})`,
-    () => walletPort.request('requestChainForOrigin', { origin }),
+  const { networks } = useNetworks();
+  const { data: transaction } = useQuery(
+    ['resolveChainAndGasPrice', incomingTransaction, origin],
+    async () => {
+      const currentChain = await walletPort.request('requestChainForOrigin', {
+        origin,
+      });
+      return resolveChainAndGasPrice(
+        incomingTransaction,
+        createChain(currentChain)
+      );
+    },
     { useErrorBoundary: true }
   );
+
   const descriptionQuery = useQuery(
     ['description', transaction],
-    () => describeTransaction(transaction),
+    () => (transaction ? describeTransaction(transaction) : null),
     {
       retry: false,
       refetchOnMount: false,
@@ -249,9 +281,8 @@ function SendTransactionContent({
       refetchOnWindowFocus: false,
     }
   );
-  const { networks } = useNetworks();
   const { mutate: signAndSendTransaction, ...signMutation } = useMutation(
-    async (transaction: UnsignedTransaction) => {
+    async (transaction: IncomingTransaction) => {
       await new Promise((r) => setTimeout(r, 1000));
       return await walletPort.request('signAndSendTransaction', [
         transaction,
@@ -265,7 +296,7 @@ function SendTransactionContent({
     }
   );
   const originName = useMemo(() => new URL(origin).hostname, [origin]);
-  if (descriptionQuery.isLoading || chainIdQuery.isLoading) {
+  if (!transaction || descriptionQuery.isLoading) {
     return (
       <FillView>
         <Twinkle>
@@ -277,12 +308,8 @@ function SendTransactionContent({
   if (descriptionQuery.isError || !descriptionQuery.data) {
     throw descriptionQuery.error || new Error('testing');
   }
-  if (!chainId) {
-    throw new Error('Wallet did not return chainId');
-  }
-  const effectiveChainId = ethers.utils.hexValue(
-    transaction.chainId || chainId
-  );
+
+  const chain = networks?.getChainById(transaction.chainId);
 
   return (
     <Background backgroundKind="white">
@@ -300,11 +327,14 @@ function SendTransactionContent({
             {originName}
           </UIText>
           <Spacer height={8} />
-          <NetworkIndicator chainId={effectiveChainId} />
+          <NetworkIndicator chainId={transaction.chainId} />
           <Spacer height={8} />
           <UIText kind="subtitle/m_reg">
             <i>
-              {networks?.getEthereumChainParameter(effectiveChainId).rpcUrls[0]}
+              {
+                networks?.getEthereumChainParameter(transaction.chainId)
+                  .rpcUrls[0]
+              }
             </i>
           </UIText>
         </div>
@@ -324,18 +354,23 @@ function SendTransactionContent({
               detailText={
                 <UIText kind="body/s_reg">
                   The transaction will be sent to{' '}
-                  {networks?.getNetworkById(effectiveChainId)?.name}
+                  {networks?.getNetworkById(transaction.chainId)?.name}
                 </UIText>
               }
             />
           </Surface>
         ) : null}
         <Spacer height={16} />
-        <VStack gap={12}>
-          <WalletLine address={wallet.address} label="Wallet" />
-          <TransactionDescription
-            transactionDescription={descriptionQuery.data}
-          />
+        <VStack gap={24}>
+          <VStack gap={12}>
+            <WalletLine address={wallet.address} label="Wallet" />
+            <TransactionDescription
+              transactionDescription={descriptionQuery.data}
+            />
+          </VStack>
+          {transaction && chain ? (
+            <NetworkFee transaction={transaction} chain={chain} />
+          ) : null}
         </VStack>
         <Spacer height={16} />
       </PageColumn>
@@ -354,7 +389,10 @@ function SendTransactionContent({
           </UIText>
           <Button
             onClick={() => {
-              signAndSendTransaction(transaction);
+              // send an untouched version of transaction;
+              // TODO: if we add UI for updating gas price in this view,
+              // we should send an updated tx object
+              signAndSendTransaction(incomingTransaction);
             }}
           >
             {signMutation.isLoading
@@ -379,16 +417,11 @@ function SendTransactionContent({
 
 export function SendTransaction() {
   const [params] = useSearchParams();
-  const {
-    data: wallet,
-    isLoading,
-    isError,
-  } = useQuery('wallet/uiGetCurrentWallet', () => {
-    return walletPort.request('uiGetCurrentWallet');
-  });
-  if (isError) {
-    return <p>Some Error</p>;
-  }
+  const { data: wallet, isLoading } = useQuery(
+    'wallet/uiGetCurrentWallet',
+    () => walletPort.request('uiGetCurrentWallet'),
+    { useErrorBoundary: true }
+  );
   if (isLoading || !wallet) {
     return null;
   }

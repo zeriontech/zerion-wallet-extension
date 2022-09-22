@@ -1,10 +1,10 @@
 import { ethers } from 'ethers';
 import { networksStore } from 'src/modules/networks/networks-store';
-import type { UnsignedTransaction } from '../types/UnsignedTransaction';
+import type { IncomingTransaction } from '../types/IncomingTransaction';
 import { assignGasPrice } from './gasPrices/assignGasPrice';
 import { gasChainPricesSubscription } from './gasPrices/requests';
 
-export async function fetchAndAssignGasPrice(transaction: UnsignedTransaction) {
+async function fetchGasPrice(transaction: IncomingTransaction) {
   const { chainId } = transaction;
   if (!chainId) {
     throw new Error('Transaction object must have a chainId property');
@@ -18,6 +18,11 @@ export async function fetchAndAssignGasPrice(transaction: UnsignedTransaction) {
   if (!gasPricesInfo) {
     throw new Error(`Gas Price info for ${chain.toString()} not found`);
   }
+  return gasPricesInfo;
+}
+
+export async function fetchAndAssignGasPrice(transaction: IncomingTransaction) {
+  const gasPricesInfo = await fetchGasPrice(transaction);
   const { eip1559, classic } = gasPricesInfo.info;
 
   assignGasPrice(transaction, {

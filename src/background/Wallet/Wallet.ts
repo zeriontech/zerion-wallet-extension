@@ -38,6 +38,7 @@ import type { WalletStore } from './persistence';
 import { walletStore } from './persistence';
 import { emitter } from '../events';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
+import { getTransactionChainId } from 'src/modules/ethereum/transactions/resolveChainForTx';
 
 type PartiallyRequired<T, K extends keyof T> = { [P in keyof T]?: T[P] } & {
   [P in K]: T[P];
@@ -566,13 +567,10 @@ export class Wallet {
         'transaction "from" field is different from currently selected address'
       );
     }
-    // const { chainId } = this.store.getState();
     const chainId = await this.getChainIdForOrigin({
       origin: transactionOrigin,
     });
-    const targetChainId = incomingTransaction.chainId
-      ? ethers.utils.hexValue(incomingTransaction.chainId)
-      : null;
+    const targetChainId = getTransactionChainId(incomingTransaction);
     if (targetChainId && chainId !== targetChainId) {
       throw new Error(
         'chainId in transaction object is different from current chainId'
