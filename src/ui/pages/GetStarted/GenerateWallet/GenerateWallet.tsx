@@ -90,6 +90,7 @@ export function GenerateWallet() {
         </VStack>
         {data ? null : (
           <Button
+            disabled={isLoading}
             onClick={() => {
               generateMnemonicWallet();
             }}
@@ -112,6 +113,7 @@ export function GenerateWallet() {
           <Button
             style={{ marginTop: 'auto', marginBottom: 16 }}
             onClick={async () => {
+              // TODO: use useMutation() to update disabled state for button
               await accountPublicRPCPort.request('saveUserAndWallet');
               if (data?.address) {
                 await setCurrentAddressMutation.mutateAsync(data.address);

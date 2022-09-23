@@ -388,6 +388,7 @@ function SendTransactionContent({
               : null}
           </UIText>
           <Button
+            disabled={signMutation.isLoading}
             onClick={() => {
               // send an untouched version of transaction;
               // TODO: if we add UI for updating gas price in this view,

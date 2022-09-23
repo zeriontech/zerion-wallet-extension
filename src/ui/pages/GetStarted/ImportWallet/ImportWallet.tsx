@@ -148,6 +148,7 @@ export function ImportWallet() {
                 }
                 navigate('/overview');
               }}
+              disabled={importWallet.isLoading}
             >
               {importWallet.isLoading ? 'Recovering...' : 'Finish'}
             </Button>

@@ -178,6 +178,7 @@ function SignMessageContent({
           ) : null}
           {typedData ? (
             <Button
+              disabled={signTypedData_v4Mutation.isLoading}
               onClick={() => {
                 signTypedData_v4Mutation.mutate({ typedData });
               }}
@@ -186,6 +187,7 @@ function SignMessageContent({
             </Button>
           ) : message ? (
             <Button
+              disabled={personalSignMutation.isLoading}
               onClick={() => {
                 personalSignMutation.mutate([message]);
               }}

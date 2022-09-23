@@ -88,7 +88,7 @@ export function Login() {
                 </UIText>
               ) : null}
             </VStack>
-            <Button>
+            <Button disabled={loginMutation.isLoading}>
               {loginMutation.isLoading ? 'Checking...' : 'Unlock'}
             </Button>
             <UIText

@@ -22,7 +22,7 @@ export function Intro() {
       <ZerionLogoWide />
       <div style={{ textAlign: 'center' }}>
         <Button ref={autoFocusRef} as={Link} to="/create-account">
-          Get Started...
+          Get Started
         </Button>
       </div>
     </div>
