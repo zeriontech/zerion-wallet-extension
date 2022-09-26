@@ -131,133 +131,140 @@ export function ConnectedSite() {
       <PageColumn>
         <Spacer height={16} />
         <VStack gap={24}>
-          <SurfaceList
-            items={[
-              {
-                key: 0,
-                isInteractive: true,
-                component: (
-                  <>
-                    <CenteredDialog ref={selectNetworkDialogRef}>
-                      <DialogTitle
-                        title={
-                          <UIText kind="subtitle/m_med">
-                            Network for {new URL(originName).hostname}
-                          </UIText>
-                        }
-                      />
-                      <NetworkSelectDialog value={siteChain.toString()} />
-                    </CenteredDialog>
-
-                    <SurfaceItemButton
-                      onClick={() => {
-                        if (selectNetworkDialogRef.current) {
-                          showConfirmDialog(
-                            selectNetworkDialogRef.current
-                          ).then((value) => {
-                            switchChainMutation.mutate(value);
-                          });
-                        }
-                      }}
-                    >
-                      <CurrentNetworkSettingsItem chain={siteChain} />
-                    </SurfaceItemButton>
-                  </>
-                ),
-              },
-            ]}
-          />
-          <VStack gap={12}>
-            <UIText kind="subtitle/m_reg">
-              <TextAnchor
-                href={connectedSite.origin}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ color: 'var(--primary)' }}
-              >
-                {capitalize(title)}
-              </TextAnchor>{' '}
-              can read these addresses:
-            </UIText>
+          <VStack gap={8}>
+            <UIText kind="subtitle/m_reg">Network</UIText>
             <SurfaceList
-              items={connectedSite.wallets.map((wallet) => {
-                return {
-                  key: wallet.address,
+              items={[
+                {
+                  key: 0,
+                  isInteractive: true,
                   component: (
-                    <HStack
-                      gap={4}
-                      justifyContent="space-between"
-                      alignItems="center"
-                    >
-                      <Media
-                        image={
-                          <WalletIcon
-                            address={wallet.address}
-                            active={false}
-                            iconSize={24}
-                          />
-                        }
-                        text={
-                          <UIText
-                            kind="body/s_reg"
-                            style={{ wordBreak: 'break-all' }}
-                          >
-                            <WalletDisplayName wallet={wallet} />
-                          </UIText>
-                        }
-                        detailText={
-                          wallet.name ? (
-                            <UIText
-                              kind="caption/reg"
-                              color="var(--neutral-500)"
-                            >
-                              {truncateAddress(wallet.address)}
+                    <>
+                      <CenteredDialog ref={selectNetworkDialogRef}>
+                        <DialogTitle
+                          title={
+                            <UIText kind="subtitle/m_med">
+                              Network for {new URL(originName).hostname}
                             </UIText>
-                          ) : null
-                        }
-                      />
-                      <Button
-                        kind="ghost"
-                        size={28}
+                          }
+                        />
+                        <NetworkSelectDialog value={siteChain.toString()} />
+                      </CenteredDialog>
+
+                      <SurfaceItemButton
                         onClick={() => {
-                          if (removeActionDialogRef.current) {
+                          if (selectNetworkDialogRef.current) {
                             showConfirmDialog(
-                              removeActionDialogRef.current
-                            ).then(() => {
-                              removePermissionMutation.mutate({
-                                origin: connectedSite.origin,
-                                address: wallet.address,
-                              });
+                              selectNetworkDialogRef.current
+                            ).then((value) => {
+                              switchChainMutation.mutate(value);
                             });
                           }
                         }}
-                        style={{
-                          color: 'var(--negative-500)',
-                          fontWeight: 'normal',
-                        }}
                       >
-                        Revoke
-                      </Button>
-                    </HStack>
+                        <CurrentNetworkSettingsItem chain={siteChain} />
+                      </SurfaceItemButton>
+                    </>
                   ),
-                };
-              })}
+                },
+              ]}
             />
           </VStack>
-          <SurfaceList
-            items={[
-              {
-                key: 0,
-                isInteractive: true,
-                component: (
-                  <RevokeAllSurfaceItemButton
-                    origin={connectedSite.origin}
-                    onSuccess={handleAllRemoveSuccess}
-                  />
-                ),
-              },
-            ]}
-          />
+          {connectedSite.wallets.length ? (
+            <>
+              <VStack gap={12}>
+                <UIText kind="subtitle/m_reg">
+                  <TextAnchor
+                    href={connectedSite.origin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: 'var(--primary)' }}
+                  >
+                    {capitalize(title)}
+                  </TextAnchor>{' '}
+                  can read these addresses:
+                </UIText>
+                <SurfaceList
+                  items={connectedSite.wallets.map((wallet) => {
+                    return {
+                      key: wallet.address,
+                      component: (
+                        <HStack
+                          gap={4}
+                          justifyContent="space-between"
+                          alignItems="center"
+                        >
+                          <Media
+                            image={
+                              <WalletIcon
+                                address={wallet.address}
+                                active={false}
+                                iconSize={24}
+                              />
+                            }
+                            text={
+                              <UIText
+                                kind="body/s_reg"
+                                style={{ wordBreak: 'break-all' }}
+                              >
+                                <WalletDisplayName wallet={wallet} />
+                              </UIText>
+                            }
+                            detailText={
+                              wallet.name ? (
+                                <UIText
+                                  kind="caption/reg"
+                                  color="var(--neutral-500)"
+                                >
+                                  {truncateAddress(wallet.address)}
+                                </UIText>
+                              ) : null
+                            }
+                          />
+                          <Button
+                            kind="ghost"
+                            size={28}
+                            onClick={() => {
+                              if (removeActionDialogRef.current) {
+                                showConfirmDialog(
+                                  removeActionDialogRef.current
+                                ).then(() => {
+                                  removePermissionMutation.mutate({
+                                    origin: connectedSite.origin,
+                                    address: wallet.address,
+                                  });
+                                });
+                              }
+                            }}
+                            style={{
+                              color: 'var(--negative-500)',
+                              fontWeight: 'normal',
+                            }}
+                          >
+                            Revoke
+                          </Button>
+                        </HStack>
+                      ),
+                    };
+                  })}
+                />
+              </VStack>
+              <SurfaceList
+                items={[
+                  {
+                    key: 0,
+                    isInteractive: true,
+                    component: (
+                      <RevokeAllSurfaceItemButton
+                        origin={connectedSite.origin}
+                        onSuccess={handleAllRemoveSuccess}
+                      />
+                    ),
+                  },
+                ]}
+              />
+            </>
+          ) : null}
         </VStack>
         <PageBottom />
       </PageColumn>

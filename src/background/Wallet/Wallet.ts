@@ -39,6 +39,7 @@ import { walletStore } from './persistence';
 import { emitter } from '../events';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getTransactionChainId } from 'src/modules/ethereum/transactions/resolveChainForTx';
+import { WalletNameFlag } from './model/WalletNameFlag';
 
 type PartiallyRequired<T, K extends keyof T> = { [P in keyof T]?: T[P] } & {
   [P in K]: T[P];
@@ -455,6 +456,25 @@ export class Wallet {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
     return this.record.preferences;
+  }
+
+  async getPreferencesPublic() {
+    this.ensureRecord(this.record);
+    return this.record.preferences;
+  }
+
+  async wallet_setWalletNameFlag({
+    context,
+    params: { flag, checked },
+  }: PublicMethodParams<{ flag: WalletNameFlag; checked: boolean }>) {
+    this.verifyInternalOrigin(context);
+    this.ensureRecord(this.record);
+    if (checked) {
+      this.record = Model.setWalletNameFlag(this.record, { flag });
+    } else {
+      this.record = Model.removeWalletNameFlag(this.record, { flag });
+    }
+    this.updateWalletStore(this.record);
   }
 
   /** @deprecated */
@@ -884,5 +904,10 @@ class PublicController {
     //     },
     //   });
     // });
+  }
+
+  async wallet_getWalletNameFlags({ context: _context }: PublicMethodParams) {
+    const preferences = await this.wallet.getPreferencesPublic();
+    return preferences.walletNameFlags || [];
   }
 }

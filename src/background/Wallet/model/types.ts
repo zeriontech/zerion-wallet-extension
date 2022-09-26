@@ -1,5 +1,6 @@
 import type { ethers } from 'ethers';
 import type { WalletContainer } from './WalletContainer';
+import { WalletNameFlag } from './WalletNameFlag';
 
 export interface BareWallet {
   mnemonic: { phrase: string; path: string } | null;
@@ -26,6 +27,7 @@ type Address = string;
 
 interface Preferences {
   showNetworkSwitchShortcut?: boolean;
+  walletNameFlags?: WalletNameFlag[];
 }
 
 // Previous versions are used to perform migrations ("upgrades")

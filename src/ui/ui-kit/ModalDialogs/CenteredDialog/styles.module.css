@@ -1,7 +1,7 @@
 @keyframes appear {
   from {
-    transform: scale(0.95);
-    opacity: 0.4;
+    transform: scale(0.98);
+    opacity: 0.8;
   }
   to {
     transform: scale(1);

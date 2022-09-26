@@ -17,6 +17,7 @@ import {
   MnemonicWalletContainer,
   PrivateKeyWalletContainer,
 } from './model/WalletContainer';
+import { WalletNameFlag } from './model/WalletNameFlag';
 
 function generateGroupName(
   record: WalletRecord | null,
@@ -422,6 +423,8 @@ export class WalletRecordModel {
       } else if (!permission.chain) {
         // remove whole record for `origin` completely
         delete draft.permissions[origin];
+      } else {
+        draft.permissions[origin].addresses = [];
       }
     });
   }
@@ -432,6 +435,29 @@ export class WalletRecordModel {
   ) {
     return produce(record, (draft) => {
       Object.assign(draft.preferences, preferences);
+    });
+  }
+
+  static setWalletNameFlag(
+    record: WalletRecord,
+    { flag }: { flag: WalletNameFlag }
+  ) {
+    return produce(record, (draft) => {
+      const { walletNameFlags } = draft.preferences;
+      const set = new Set(walletNameFlags).add(flag);
+      draft.preferences.walletNameFlags = Array.from(set);
+    });
+  }
+
+  static removeWalletNameFlag(
+    record: WalletRecord,
+    { flag }: { flag: WalletNameFlag }
+  ) {
+    return produce(record, (draft) => {
+      const { walletNameFlags } = draft.preferences;
+      const set = new Set(walletNameFlags);
+      set.delete(flag);
+      draft.preferences.walletNameFlags = Array.from(set);
     });
   }
 

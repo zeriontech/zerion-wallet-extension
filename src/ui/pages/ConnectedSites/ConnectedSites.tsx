@@ -18,14 +18,13 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
-import { ViewLoading } from 'src/ui/components/ViewLoading';
-import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { GenericPrompt } from 'src/ui/components/GenericPrompt';
 import {
   ConnectedSiteItem,
   getPermissionsWithWallets,
 } from 'src/ui/shared/requests/getPermissionsWithWallets';
 import { ConnectedSite } from './ConnectedSite';
+import { ViewSuspense } from 'src/ui/components/ViewSuspense';
 
 function RevokeAllPermissionsComponent({
   onRevokeAll,
@@ -190,20 +189,6 @@ function ConnectedSitesMain() {
       )}
       <PageBottom />
     </PageColumn>
-  );
-}
-
-function ViewSuspense({ children }: React.PropsWithChildren) {
-  return (
-    <React.Suspense
-      fallback={
-        <DelayedRender>
-          <ViewLoading />
-        </DelayedRender>
-      }
-    >
-      {children}
-    </React.Suspense>
   );
 }
 

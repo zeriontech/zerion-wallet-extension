@@ -6,6 +6,7 @@ import {
   JsonRpcRequest,
   RequestArguments,
 } from '@json-rpc-tools/utils';
+import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import type { Connection } from './connection';
 
 function accountsEquals(arr1: string[], arr2: string[]) {
@@ -20,7 +21,14 @@ async function fetchInitialState(connection: Connection) {
   return Promise.all([
     connection.send<string>(formatJsonRpcRequest('eth_chainId', [])),
     connection.send<string[]>(formatJsonRpcRequest('eth_accounts', [])),
-  ]).then(([chainId, accounts]) => ({ chainId, accounts }));
+    connection.send<WalletNameFlag[]>(
+      formatJsonRpcRequest('wallet_getWalletNameFlags', [])
+    ),
+  ]).then(([chainId, accounts, walletNameFlags]) => ({
+    chainId,
+    accounts,
+    walletNameFlags,
+  }));
 }
 
 function updateChainId(self: EthereumProvider, chainId: string) {
@@ -33,7 +41,7 @@ export class EthereumProvider extends JsonRpcProvider {
   chainId: string;
   networkVersion: string;
   isZerionWallet = true;
-  // isMetaMask = true;
+  isMetaMask?: boolean;
   connection: Connection;
   _openPromise: Promise<void> | null = null;
 
@@ -77,10 +85,16 @@ export class EthereumProvider extends JsonRpcProvider {
   }
 
   private async _prepareState() {
-    return fetchInitialState(this.connection).then(({ chainId, accounts }) => {
-      updateChainId(this, chainId);
-      this.accounts = accounts;
-    });
+    return fetchInitialState(this.connection).then(
+      ({ chainId, accounts, walletNameFlags }) => {
+        updateChainId(this, chainId);
+        this.accounts = accounts;
+        if (walletNameFlags.includes(WalletNameFlag.isMetaMask)) {
+          console.log('is metamask in _prepareState');
+          this.isMetaMask = true;
+        }
+      }
+    );
   }
 
   public async request(

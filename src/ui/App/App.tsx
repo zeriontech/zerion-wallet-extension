@@ -246,7 +246,7 @@ function Views() {
             }
           />
           <Route
-            path="/settings"
+            path="/settings/*"
             element={
               <RequireAuth>
                 <Settings />
