@@ -17,6 +17,7 @@ import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { GenerateWallet } from './GenerateWallet';
 import { ImportWallet } from './ImportWallet';
+import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 
 function TitleWithLine({
   children,
@@ -133,6 +134,7 @@ function Options() {
   return (
     <PageColumn>
       <PageTop />
+      <NavigationTitle title="Get Started" backTo="/intro" />
       <PageHeading>
         Introducing{' '}
         <span style={{ color: 'var(--primary)' }}>Zerion Wallet</span>

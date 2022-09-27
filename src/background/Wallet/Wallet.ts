@@ -115,14 +115,11 @@ export class Wallet {
     return this.id;
   }
 
-  async updateId({ params: id }: PublicMethodParams<string>) {
+  async updateCredentials({
+    params: { id, encryptionKey },
+  }: PublicMethodParams<{ id: string; encryptionKey: string }>) {
     this.id = id;
-    await walletStore.ready();
-    await this.syncWithWalletStore();
-  }
-
-  async updateEncryptionKey({ params: key }: PublicMethodParams<string>) {
-    this.encryptionKey = key;
+    this.encryptionKey = encryptionKey;
     await walletStore.ready();
     await this.syncWithWalletStore();
   }

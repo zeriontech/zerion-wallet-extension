@@ -4,7 +4,8 @@ import { generateSalt } from '@metamask/browser-passworder';
 import { get, remove, set } from 'src/background/webapis/storage';
 import { getSHA256HexDigest } from 'src/shared/cryptography/getSHA256HexDigest';
 import { Wallet } from '../Wallet/Wallet';
-import { getWalletTable } from '../Wallet/persistence';
+import { walletStore } from '../Wallet/persistence';
+import { validate } from 'src/shared/validation/user-input';
 
 interface User {
   id: string;
@@ -17,19 +18,6 @@ export interface PublicUser {
 }
 
 const TEMPORARY_ID = 'temporary';
-
-function validate({ password }: { password: string }): {
-  valid: boolean;
-  message: string;
-} {
-  if (password.length < 6) {
-    return {
-      valid: false,
-      message: 'Password must have at least 6 characters',
-    };
-  }
-  return { valid: true, message: '' };
-}
 
 export class Account extends EventEmitter {
   private user: User | null;
@@ -50,10 +38,9 @@ export class Account extends EventEmitter {
 
   static async ensureUserAndWallet() {
     const existingUser = await Account.readCurrentUser();
-    const walletTable = await getWalletTable();
+    const walletTable = await walletStore.getSavedState();
     console.log({ existingUser, walletTable });
     if (existingUser && !walletTable?.[existingUser.id]) {
-      console.log('will removeCurrentUser');
       await Account.removeCurrentUser();
     }
   }
@@ -99,9 +86,9 @@ export class Account extends EventEmitter {
     this.user = user;
     const salt = user.id;
     this.encryptionKey = await getSHA256HexDigest(`${salt}:${password}`);
-    // this.wallet = new Wallet(user.id, this.encryptionKey);
-    await this.wallet.updateId({ params: user.id });
-    await this.wallet.updateEncryptionKey({ params: this.encryptionKey });
+    await this.wallet.updateCredentials({
+      params: { id: user.id, encryptionKey: this.encryptionKey },
+    });
     this.emit('authenticated');
   }
 
@@ -123,6 +110,19 @@ export class Account extends EventEmitter {
     }
     await Account.writeCurrentUser(this.user);
     await this.wallet.savePendingWallet();
+
+    /**
+     * Cleaning up:
+     * Right now, only one "currentUser" can exist, so we remove
+     * all other entries from walletStore because they become unreachable anyway.
+     */
+    const walletTable = await walletStore.getSavedState();
+    if (this.user) {
+      const { id } = this.user;
+      walletStore.deleteMany(
+        Object.keys(walletTable).filter((key) => key !== id)
+      );
+    }
   }
 
   logout() {

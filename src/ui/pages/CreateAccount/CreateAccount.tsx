@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
+import { PASSWORD_MIN_LENGTH } from 'src/shared/validation/user-input';
 import { Background } from 'src/ui/components/Background';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageBottom } from 'src/ui/components/PageBottom';
@@ -69,6 +70,7 @@ export function CreateAccount() {
               </UIText>
               <input
                 autoFocus={true}
+                minLength={PASSWORD_MIN_LENGTH}
                 type="password"
                 name="password"
                 placeholder="password"

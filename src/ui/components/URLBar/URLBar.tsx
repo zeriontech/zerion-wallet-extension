@@ -37,6 +37,16 @@ export function toggleUrlBar(on: boolean) {
   urlBarStore.setState(on);
 }
 
+export function BackButton(
+  props: React.ButtonHTMLAttributes<HTMLButtonElement>
+) {
+  return (
+    <UnstyledButton style={{ padding: 8 }} {...props}>
+      <IconLeft />
+    </UnstyledButton>
+  );
+}
+
 export function URLBar() {
   const navigate = useNavigate();
   const [, rerender] = useReducer((n) => n + 1, 0);
@@ -70,9 +80,20 @@ export function URLBar() {
         gridTemplateColumns: '40px 1fr 40px',
       }}
     >
-      <UnstyledButton onClick={() => navigate(-1)} style={{ padding: 8 }}>
-        <IconLeft />
-      </UnstyledButton>
+      <RenderArea
+        name="navigation-bar-back-button"
+        children={(children) => {
+          console.log(
+            'rendering navigation-bar-back-buttonsdf',
+            children.length
+          );
+          return children.length ? (
+            children
+          ) : (
+            <BackButton onClick={() => navigate(-1)} />
+          );
+        }}
+      />
 
       <RenderArea
         name="navigation-bar"

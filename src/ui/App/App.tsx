@@ -226,12 +226,13 @@ function Views() {
             path="/"
             element={
               <SomeKindOfResolver
-                noUser={<Intro />}
+                noUser={<Navigate to="/intro" replace={true} />}
                 notAuthenticated={<Navigate to="/login" replace={true} />}
                 authenticated={<Navigate to="/overview" replace={true} />}
               />
             }
           />
+          <Route path="/intro" element={<Intro />} />
           <Route path="/create-account" element={<CreateAccount />} />
           <Route path="/get-started" element={<GetStarted />} />
           <Route path="/get-started/*" element={<GetStarted />} />

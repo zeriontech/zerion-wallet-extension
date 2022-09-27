@@ -42,4 +42,8 @@ export class PersistentStore<T> extends Store<T> {
       }
     });
   }
+
+  async getSavedState() {
+    return this.ready().then(() => this.getState());
+  }
 }

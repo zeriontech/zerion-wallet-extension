@@ -1,6 +1,5 @@
 import produce from 'immer';
 import { PersistentStore } from 'src/shared/PersistentStore';
-import { get } from '../webapis/storage';
 import type { WalletRecord } from './model/types';
 import { WalletRecordModel as Model } from './WalletRecord';
 
@@ -25,12 +24,18 @@ export class WalletStore extends PersistentStore<WalletStoreState> {
       })
     );
   }
+
+  deleteMany(keys: string[]) {
+    this.setState((state) =>
+      produce(state, (draft) => {
+        for (const key of keys) {
+          delete draft[key];
+        }
+      })
+    );
+  }
 }
 
 export const walletStore = new WalletStore('wallet', {});
-
-export async function getWalletTable() {
-  return get<WalletStoreState>('wallet');
-}
 
 Object.assign(window, { walletStore });

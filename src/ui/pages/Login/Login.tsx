@@ -1,6 +1,6 @@
 import React from 'react';
 import { useMutation, useQuery } from 'react-query';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { PublicUser } from 'src/background/account/Account';
 import { Background } from 'src/ui/components/Background';
 import { PageBottom } from 'src/ui/components/PageBottom';
@@ -11,6 +11,8 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import * as s from 'src/ui/style/helpers.module.css';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 
 export function Login() {
   const [params] = useSearchParams();
@@ -91,18 +93,19 @@ export function Login() {
             <Button disabled={loginMutation.isLoading}>
               {loginMutation.isLoading ? 'Checking...' : 'Unlock'}
             </Button>
-            <UIText
-              kind="button/s_reg"
-              color="var(--primary)"
-              style={{ textAlign: 'center' }}
-            >
-              <Link
+            <div style={{ textAlign: 'center' }}>
+              <UIText
+                as={UnstyledLink}
                 to="/create-account"
-                style={{ color: 'inherit', textDecoration: 'inherit' }}
+                kind="button/s_reg"
+                color="var(--primary)"
               >
-                Or create new account
-              </Link>
-            </UIText>
+                <span className={s.hoverUnderline}>Or create new account</span>
+              </UIText>
+              <UIText kind="button/s_reg">
+                (creating new account will erase the current one)
+              </UIText>
+            </div>
           </VStack>
         </form>
         <PageBottom />
