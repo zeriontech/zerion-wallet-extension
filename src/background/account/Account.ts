@@ -18,6 +18,19 @@ export interface PublicUser {
 
 const TEMPORARY_ID = 'temporary';
 
+function validate({ password }: { password: string }): {
+  valid: boolean;
+  message: string;
+} {
+  if (password.length < 6) {
+    return {
+      valid: false,
+      message: 'Password must have at least 6 characters',
+    };
+  }
+  return { valid: true, message: '' };
+}
+
 export class Account extends EventEmitter {
   private user: User | null;
   private encryptionKey: string | null;
@@ -46,6 +59,10 @@ export class Account extends EventEmitter {
   }
 
   static async createUser(password: string): Promise<User> {
+    const validity = validate({ password });
+    if (!validity.valid) {
+      throw new Error(validity.message);
+    }
     const id = nanoid();
     const salt = generateSalt();
     const hash = await getSHA256HexDigest(`${salt}:${password}`);
