@@ -19,6 +19,8 @@ import { WalletGroup as WalletGroupPage } from './WalletGroup';
 import { WalletAccount as WalletAccountPage } from './WalletAccount';
 import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
+import { PageBottom } from 'src/ui/components/PageBottom';
+import { WarningIcon } from 'src/ui/components/WarningIcon';
 
 function PrivateKeyList({ walletGroups }: { walletGroups: WalletGroup[] }) {
   return (
@@ -91,7 +93,14 @@ function MnemonicList({ walletGroups }: { walletGroups: WalletGroup[] }) {
                       dateStyle: 'medium',
                     }).format(group.lastBackedUp)}
                   </UIText>
-                ) : null}
+                ) : (
+                  <HStack gap={4}>
+                    <WarningIcon />
+                    <UIText kind="caption/reg" color="var(--notice-500)">
+                      Never backed up
+                    </UIText>
+                  </HStack>
+                )}
               </VStack>
               <span>
                 <ChevronRightIcon />
@@ -174,6 +183,7 @@ function WalletGroups() {
           </VStack>
         </>
       )}
+      <PageBottom />
     </PageColumn>
   );
 }
