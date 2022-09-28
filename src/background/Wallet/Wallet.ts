@@ -675,6 +675,19 @@ export class Wallet {
   }
 }
 
+interface Web3WalletPermission {
+  /**
+   * This seems to be a method that didn't get much adoption, but
+   * metamask and some dapps use it for some reason:
+   * https://eips.ethereum.org/EIPS/eip-2255
+   */
+  // The name of the method corresponding to the permission
+  parentCapability: string;
+
+  // The date the permission was granted, in UNIX epoch time
+  date?: number;
+}
+
 class PublicController {
   wallet: Wallet;
 
@@ -906,5 +919,43 @@ class PublicController {
   async wallet_getWalletNameFlags({ context: _context }: PublicMethodParams) {
     const preferences = await this.wallet.getPreferencesPublic();
     return preferences.walletNameFlags || [];
+  }
+
+  private generatePermissionResponse(
+    params: [{ [name: string]: unknown }]
+  ): Web3WalletPermission[] {
+    if (params?.[0] && 'eth_accounts' in params[0]) {
+      return [{ parentCapability: 'eth_accounts' }];
+    } else {
+      throw new InvalidParams();
+    }
+  }
+
+  private getIsAllowedOrigin({ context }: PublicMethodParams) {
+    const currentAddress = this.wallet.readCurrentAddress();
+    if (!currentAddress) {
+      return false;
+    }
+    return this.wallet.allowedOrigin(context, currentAddress);
+  }
+
+  async wallet_requestPermissions({
+    context,
+    params,
+  }: PublicMethodParams<[{ [name: string]: unknown }]>): Promise<
+    Web3WalletPermission[]
+  > {
+    await this.eth_requestAccounts({ context });
+    return this.generatePermissionResponse(params);
+  }
+
+  async wallet_getPermissions({
+    context,
+  }: PublicMethodParams): Promise<Web3WalletPermission[]> {
+    if (this.getIsAllowedOrigin({ context })) {
+      return [{ parentCapability: 'eth_accounts' }];
+    } else {
+      return [];
+    }
   }
 }
