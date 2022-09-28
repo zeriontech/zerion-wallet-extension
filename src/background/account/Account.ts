@@ -205,7 +205,7 @@ export class AccountPublicRPC {
   }
 
   async saveUserAndWallet() {
-    this.account.saveUserAndWallet();
+    return this.account.saveUserAndWallet();
   }
 
   async logout() {
