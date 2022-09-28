@@ -452,12 +452,12 @@ export class Wallet {
   async getPreferences({ context }: PublicMethodParams) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
-    return this.record.preferences;
+    return Model.getPreferences(this.record);
   }
 
   async getPreferencesPublic() {
     this.ensureRecord(this.record);
-    return this.record.preferences;
+    return Model.getPreferences(this.record);
   }
 
   async wallet_setWalletNameFlag({

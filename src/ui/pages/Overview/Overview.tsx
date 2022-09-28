@@ -39,6 +39,7 @@ import { NonFungibleTokens } from './NonFungibleTokens';
 import { WalletIcon } from 'src/ui/ui-kit/WalletIcon';
 import { useIsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
 import { CurrentNetwork } from './CurrentNetwork';
+import { ViewSuspense } from 'src/ui/components/ViewSuspense';
 
 interface ChangeInfo {
   isPositive: boolean;
@@ -170,7 +171,7 @@ function CurrentAccountControls() {
   );
 }
 
-export function Overview() {
+function OverviewComponent() {
   const { params, ready } = useAddressParams();
   const { value, status } = useAddressPortfolio(
     {
@@ -182,6 +183,11 @@ export function Overview() {
     { enabled: ready }
   );
   const isLoading = status === DataStatus.requested;
+  const { data: preferences } = useQuery(
+    'wallet/getPreferences',
+    () => walletPort.request('getPreferences'),
+    { useErrorBoundary: true, suspense: true }
+  );
   // if (!value) {
   //   return (
   //     <FillView>
@@ -209,7 +215,9 @@ export function Overview() {
         <HStack gap={12} justifyContent="space-between" alignItems="center">
           <HStack gap={4} alignItems="center">
             <CurrentAccountControls />
-            <CurrentNetwork />
+            {preferences?.showNetworkSwitchShortcut === true ? (
+              <CurrentNetwork />
+            ) : null}
           </HStack>
 
           <HStack gap={4}>
@@ -350,5 +358,13 @@ export function Overview() {
       </Routes>
       <PageBottom />
     </PageColumn>
+  );
+}
+
+export function Overview() {
+  return (
+    <ViewSuspense>
+      <OverviewComponent />
+    </ViewSuspense>
   );
 }

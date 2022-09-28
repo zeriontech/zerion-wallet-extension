@@ -429,6 +429,14 @@ export class WalletRecordModel {
     });
   }
 
+  static getPreferences(record: WalletRecord) {
+    const defaults: WalletRecord['preferences'] = {
+      showNetworkSwitchShortcut: true,
+    };
+    const { preferences } = record;
+    return { ...defaults, ...preferences };
+  }
+
   static setPreference(
     record: WalletRecord,
     { preferences }: { preferences: Partial<WalletRecord['preferences']> }
