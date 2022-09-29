@@ -40,6 +40,7 @@ import { hasGasPrice } from 'src/modules/ethereum/transactions/gasPrices/hasGasP
 import { NetworkFee } from './NetworkFee';
 import { resolveChainForTx } from 'src/modules/ethereum/transactions/resolveChainForTx';
 import { networksStore } from 'src/modules/networks/networks-store';
+import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 
 function ItemSurface({ style, ...props }: React.HTMLProps<HTMLDivElement>) {
   const surfaceStyle = {
@@ -369,7 +370,18 @@ function SendTransactionContent({
             />
           </VStack>
           {transaction && chain ? (
-            <NetworkFee transaction={transaction} chain={chain} />
+            <ErrorBoundary
+              renderError={() => (
+                <UIText kind="body/s_reg">
+                  <span style={{ display: 'inline-block' }}>
+                    <WarningIcon />
+                  </span>{' '}
+                  Failed to load network fee
+                </UIText>
+              )}
+            >
+              <NetworkFee transaction={transaction} chain={chain} />
+            </ErrorBoundary>
           ) : null}
         </VStack>
         <Spacer height={16} />

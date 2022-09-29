@@ -17,21 +17,25 @@ export const readme: Readme = {
         overflowX: 'auto',
       }}
     >
-      {Object.values(sample).map((tx, index) => (
-        <MemoryRouter
-          key={index}
-          initialEntries={[
-            `/sendTransaction?${new URLSearchParams({
-              origin: 'https://zerion.io',
-              transaction: JSON.stringify(tx),
-              windowId: String(index),
-            })}`,
-          ]}
-        >
-          <WindowSize>
-            <SendTransaction />
-          </WindowSize>
-        </MemoryRouter>
+      {Object.entries(sample).map(([key, tx], index) => (
+        <div>
+          {key}
+
+          <MemoryRouter
+            key={index}
+            initialEntries={[
+              `/sendTransaction?${new URLSearchParams({
+                origin: 'https://zerion.io',
+                transaction: JSON.stringify(tx),
+                windowId: String(index),
+              })}`,
+            ]}
+          >
+            <WindowSize>
+              <SendTransaction />
+            </WindowSize>
+          </MemoryRouter>
+        </div>
       ))}
     </div>
   ),

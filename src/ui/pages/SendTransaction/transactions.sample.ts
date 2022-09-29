@@ -48,6 +48,14 @@ export const sample = {
     chainId: '0x1',
     data: '0x',
   },
+  sendEthNoGasPrice: {
+    gas: '0x5a3c',
+    from: '0x42b9df65b219b3dd36ff330a4dd8f327a6ada990',
+    to: '0xea79c0adb4f9d249770a8752fc6c0020999c52a0',
+    value: '0x4033b4c4e5b4000',
+    chainId: '0x1',
+    data: '0x',
+  },
   sendTokenNoChainId: {
     gas: '0xcc7a',
     gasPrice: '0xe33e22200',
