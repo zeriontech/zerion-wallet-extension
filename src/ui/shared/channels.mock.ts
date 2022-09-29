@@ -1,4 +1,3 @@
-// import { ethers } from 'ethers';
 import { Chain } from 'src/modules/networks/Chain';
 import { networksStore } from 'src/modules/networks/networks-store';
 import type { BareWallet } from 'src/shared/types/BareWallet';
@@ -19,12 +18,31 @@ const mockedPermissions: WalletRecord['permissions'] = {
   },
 };
 
-export const walletPort = {
-  state: {
+class WalletPortMock {
+  state = {
     chainId: '0x89',
-  },
+  };
+
+  preferences: WalletRecord['preferences'] = {};
+
+  async setPreference({
+    preferences,
+  }: {
+    preferences: Partial<WalletRecord['preferences']>;
+  }) {
+    Object.assign(this.preferences, preferences);
+  }
+
+  async getPreferences() {
+    return this.preferences;
+  }
 
   async request(method: string, ...args: unknown[]) {
+    // @ts-ignore
+    if (typeof this[method] === 'function') {
+      // @ts-ignore
+      return this[method](...args);
+    }
     if (method === 'uiGetCurrentWallet') {
       return Promise.resolve(testWallet);
     } else if (method === 'getNoBackupCount') {
@@ -54,8 +72,10 @@ export const walletPort = {
     } else {
       throw new Error(`Mock method not implemented: ${method}`);
     }
-  },
-};
+  }
+}
+
+export const walletPort = new WalletPortMock();
 
 export const accountPublicRPCPort = {
   request(method: string) {
