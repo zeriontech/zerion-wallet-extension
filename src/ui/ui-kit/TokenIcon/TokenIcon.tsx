@@ -27,7 +27,7 @@ export function TokenIcon({ src, symbol, size = 32, style }: Props) {
         borderRadius: '50%',
         textAlign: 'center',
         lineHeight: `${size}px`,
-        fontSize: size <= 24 ? 8 : 14,
+        fontSize: size <= 24 ? 8 : size <= 36 ? 10 : 14,
         width: size,
         height: size,
         ...style,

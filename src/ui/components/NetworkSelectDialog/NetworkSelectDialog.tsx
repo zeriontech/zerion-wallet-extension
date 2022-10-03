@@ -15,6 +15,7 @@ export function NetworkSelectDialog({ value }: { value: string }) {
             ? networks.getNetworks().map((network) => ({
                 key: network.chain,
                 isInteractive: true,
+                pad: false,
                 component: (
                   <SurfaceItemButton value={network.chain}>
                     <HStack gap={4} justifyContent="space-between">

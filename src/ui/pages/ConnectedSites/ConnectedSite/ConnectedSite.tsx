@@ -138,6 +138,7 @@ export function ConnectedSite() {
                 {
                   key: 0,
                   isInteractive: true,
+                  pad: false,
                   component: (
                     <>
                       <CenteredDialog ref={selectNetworkDialogRef}>
@@ -254,6 +255,7 @@ export function ConnectedSite() {
                   {
                     key: 0,
                     isInteractive: true,
+                    pad: false,
                     component: (
                       <RevokeAllSurfaceItemButton
                         origin={connectedSite.origin}
