@@ -248,12 +248,20 @@ interface PreparedPositions {
 }
 
 function usePreparedPositions({
-  items,
+  items: unfilteredItems,
   groupType,
 }: {
   items: AddressPosition[];
   groupType: PositionsGroupType;
 }): PreparedPositions {
+  const items = useMemo(
+    () =>
+      unfilteredItems.filter((item) =>
+        item.type === 'asset' ? item.is_displayable : true
+      ),
+    [unfilteredItems]
+  );
+
   const totalValue = useMemo(() => getFullPositionsValue(items), [items]);
   return useMemo(() => {
     const byProtocol =
