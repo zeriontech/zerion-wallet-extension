@@ -84,6 +84,9 @@ export interface Item {
   isInteractive?: boolean;
   onClick?: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick'];
   style?: React.CSSProperties;
+  separatorTop?: boolean;
+  separatorLeadingInset?: number;
+  pad?: boolean;
 }
 
 export function SurfaceList({
@@ -98,7 +101,12 @@ export function SurfaceList({
     <Surface style={style}>
       <VStack gap={0}>
         {items.map((item, index) => {
-          const { style } = item;
+          const {
+            style,
+            separatorTop = true,
+            separatorLeadingInset = 0,
+            pad = true,
+          } = item;
           const isInteractiveItem =
             item.isInteractive ?? Boolean(item.to || item.href || item.onClick);
           const component = item.to ? (
@@ -115,7 +123,7 @@ export function SurfaceList({
             </ItemAnchor>
           ) : item.onClick ? (
             <ItemButton onClick={item.onClick}>{item.component}</ItemButton>
-          ) : item.isInteractive ? (
+          ) : pad === false ? (
             item.component
           ) : (
             <div style={{ paddingTop: vGap, paddingBottom: vGap }}>
@@ -133,11 +141,12 @@ export function SurfaceList({
                 ...style,
               }}
             >
-              {index > 0 ? (
+              {index > 0 && separatorTop ? (
                 <div
                   style={{
                     height: 1,
-                    marginLeft: isInteractiveItem ? 16 : 0,
+                    marginLeft:
+                      (isInteractiveItem ? 16 : 0) + separatorLeadingInset,
                     marginRight: isInteractiveItem ? 16 : 0,
                     backgroundColor: 'var(--neutral-300)',
                   }}

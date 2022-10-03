@@ -83,10 +83,6 @@ export function URLBar() {
       <RenderArea
         name="navigation-bar-back-button"
         children={(children) => {
-          console.log(
-            'rendering navigation-bar-back-buttonsdf',
-            children.length
-          );
           return children.length ? (
             children
           ) : (

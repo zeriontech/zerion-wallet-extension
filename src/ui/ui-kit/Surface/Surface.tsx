@@ -10,7 +10,9 @@ export function Surface({
   return (
     <div
       style={{
-        borderRadius: 12,
+        // @ts-ignore
+        ['--surface-border-radius']: '12px',
+        borderRadius: 'var(--surface-border-radius)',
         backgroundColor: 'var(--z-index-1)',
         padding,
         ...style,

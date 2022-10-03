@@ -134,7 +134,7 @@ function Options() {
   return (
     <PageColumn>
       <PageTop />
-      <NavigationTitle title="Get Started" backTo="/intro" />
+      <NavigationTitle title="Get Started" />
       <PageHeading>
         Introducing{' '}
         <span style={{ color: 'var(--primary)' }}>Zerion Wallet</span>

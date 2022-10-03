@@ -207,7 +207,7 @@ function OverviewComponent() {
         style={{
           position: 'sticky',
           top: 0,
-          zIndex: 1,
+          zIndex: 'var(--navbar-index)',
           backgroundColor: 'var(--background)',
         }}
       >
@@ -335,7 +335,7 @@ function OverviewComponent() {
         style={{
           position: 'sticky',
           top: 40,
-          zIndex: 1,
+          zIndex: 'var(--max-layout-index)',
           paddingTop: 4,
           marginLeft: -16,
           marginRight: -16,
