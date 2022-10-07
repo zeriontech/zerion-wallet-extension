@@ -18,6 +18,7 @@ import {
   PositionsGroupType,
 } from 'src/ui/components/Positions/types';
 import {
+  clearMissingParentIds,
   groupPositionsByName,
   groupPositionsByProtocol,
   sortPositionGroupsByTotalValue,
@@ -280,7 +281,9 @@ function usePreparedPositions({
       const nameIndex: PreparedPositions['protocolIndex'][string]['nameIndex'] =
         {};
       for (const name of names) {
-        nameIndex[name] = sortPositionsByParentId(byName[name]);
+        nameIndex[name] = sortPositionsByParentId(
+          clearMissingParentIds(byName[name])
+        );
       }
       protocolIndex[protocol] = {
         totalValue: currentTotalValue,
