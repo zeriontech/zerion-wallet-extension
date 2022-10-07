@@ -10,7 +10,8 @@ function canBeScrolled(node: HTMLElement) {
 export function PageStickyFooter({
   children,
   style,
-}: React.HTMLAttributes<HTMLDivElement>) {
+  lineColor,
+}: React.HTMLAttributes<HTMLDivElement> & { lineColor?: string }) {
   const { uiScrollRootElement } = useContext(UIContext);
   const [drawTopBorder, setDrawTopBorder] = useState(
     canBeScrolled(uiScrollRootElement)
@@ -45,7 +46,7 @@ export function PageStickyFooter({
       }}
     >
       <PageFullBleedLine
-        lineColor={drawTopBorder ? undefined : 'transparent'}
+        lineColor={drawTopBorder ? lineColor : 'transparent'}
       />
       {children}
     </PageColumn>

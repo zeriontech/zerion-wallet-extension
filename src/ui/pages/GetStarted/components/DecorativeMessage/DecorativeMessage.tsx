@@ -6,21 +6,27 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
+import * as s from './styles.module.css';
 
 export function DecorativeMessage({
   text,
   isConsecutive = false,
+  style,
 }: {
   text: React.ReactNode;
   isConsecutive?: boolean;
+  style?: React.CSSProperties;
 }) {
   return (
     <HStack
       gap={8}
       alignItems="start"
       style={{
+        ...style,
         gridTemplateColumns: 'minmax(min-content, max-content) auto',
+        animationFillMode: 'backwards',
       }}
+      className={s.appear}
     >
       <div
         style={{
@@ -47,15 +53,12 @@ export function DecorativeMessage({
   );
 }
 
-export function DecorativeMessageDone({
-  address,
-  messageKind = 'new',
+export function WithConfetti({
+  children,
   confettiOriginY = 0.75,
-}: {
-  address: string;
-  messageKind?: 'import' | 'new';
+}: React.PropsWithChildren<{
   confettiOriginY?: number;
-}) {
+}>) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   useEffect(() => {
     function fire(confettiInstance: confetti.CreateTypes) {
@@ -94,7 +97,7 @@ export function DecorativeMessageDone({
     return () => {
       clearTimeout(timerId);
     };
-  }, []);
+  }, [confettiOriginY]);
   return (
     <>
       <canvas
@@ -107,6 +110,22 @@ export function DecorativeMessageDone({
           height: '100%',
         }}
       ></canvas>
+      {children}
+    </>
+  );
+}
+
+export function DecorativeMessageDone({
+  address,
+  messageKind = 'new',
+  confettiOriginY = 0.75,
+}: {
+  address: string;
+  messageKind?: 'import' | 'new';
+  confettiOriginY?: number;
+}) {
+  return (
+    <WithConfetti confettiOriginY={confettiOriginY}>
       <DecorativeMessage
         text={
           <UIText kind="h/6_med">
@@ -121,6 +140,7 @@ export function DecorativeMessageDone({
       />
       <DecorativeMessage
         isConsecutive={true}
+        style={{ animationDelay: '300ms' }}
         text={
           <VStack gap={8}>
             <UIText kind="subtitle/m_reg">You can now use</UIText>
@@ -142,6 +162,6 @@ export function DecorativeMessageDone({
           </VStack>
         }
       />
-    </>
+    </WithConfetti>
   );
 }

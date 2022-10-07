@@ -7,20 +7,13 @@ import cx from 'classnames';
 import { UIText } from '../UIText';
 import * as styles from './styles.module.css';
 
-const asButtonStyle = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  textAlign: 'center',
-};
-
 type Kind = 'primary' | 'regular' | 'ghost';
 type Size = 60 | 56 | 44 | 36 | 32 | 28;
 
 const kinds: { [kind in Kind]: (size: number) => React.CSSProperties } = {
   primary: () => ({
-    background: 'var(--actions-default)',
-    color: 'white',
+    // background: 'var(--actions-default)',
+    // color: 'white',
   }),
   regular: () => ({
     background: 'var(--white)',
@@ -52,25 +45,26 @@ const ButtonElement = <As extends ElementType = 'button'>(
     },
   ref: React.Ref<ComponentPropsWithRef<As>['ref']>
 ) => {
-  const isButton = as === 'button';
+  const isButton = as == null || as === 'button';
   return (
     <UIText
       as={as || 'button'}
       ref={ref}
       kind="button/m_med"
-      className={cx(className, styles[kind])}
+      className={cx(className, styles[kind], styles.button, {
+        [styles.asButton]: !isButton,
+      })}
       style={Object.assign(
         {
-          cursor: 'pointer',
           border: 'none',
           textDecoration: 'none',
           paddingLeft: 48,
           paddingRight: 48,
           borderRadius: 8,
           height: size,
+          color: undefined,
         },
         kinds[kind](size),
-        isButton ? undefined : asButtonStyle,
         style
       )}
       {...props}

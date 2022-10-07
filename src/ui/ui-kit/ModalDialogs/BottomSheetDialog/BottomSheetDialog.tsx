@@ -5,7 +5,7 @@ import * as s from './styles.module.css';
 export const BottomSheetDialog = React.forwardRef(
   (
     { style, className, ...props }: React.HTMLAttributes<HTMLElement>,
-    ref: React.Ref<HTMLElement>
+    ref: React.Ref<HTMLDialogElement>
   ) => {
     return (
       <dialog

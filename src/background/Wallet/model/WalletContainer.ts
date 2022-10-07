@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 import { immerable } from 'immer';
+import { restoreBareWallet, walletToObject } from 'src/shared/wallet/create';
 import { SeedType } from './SeedType';
 import type { BareWallet } from './types';
 
@@ -17,43 +18,6 @@ export interface WalletContainer {
   removeWallet(address: string): void;
   toPlainObject(): PlainWalletContainer;
   getWalletByAddress(address: string): BareWallet | null;
-}
-
-function walletToObject(wallet: ethers.Wallet | BareWallet): BareWallet {
-  return {
-    mnemonic: wallet.mnemonic,
-    privateKey: wallet.privateKey,
-    address: wallet.address,
-    name: wallet instanceof ethers.Wallet ? null : wallet.name,
-  };
-}
-
-function fromEthersWallet(wallet: ethers.Wallet): BareWallet {
-  return {
-    privateKey: wallet.privateKey,
-    address: wallet.address,
-    mnemonic: wallet.mnemonic,
-    name: null,
-  };
-}
-
-function restoreBareWallet(wallet: Partial<BareWallet>): BareWallet {
-  const { address, privateKey, mnemonic, name } = wallet;
-  if (address && privateKey) {
-    return {
-      privateKey,
-      address,
-      mnemonic: mnemonic || null,
-      name: name || null,
-    };
-  } else if (privateKey) {
-    return fromEthersWallet(new ethers.Wallet(privateKey));
-  } else if (mnemonic) {
-    const wallet = ethers.Wallet.fromMnemonic(mnemonic.phrase, mnemonic.path);
-    return fromEthersWallet(wallet);
-  } else {
-    return fromEthersWallet(ethers.Wallet.createRandom());
-  }
 }
 
 abstract class WalletContainerImpl implements WalletContainer {
