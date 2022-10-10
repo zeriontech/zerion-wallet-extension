@@ -1,11 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import {
-  Link,
-  Route,
-  Routes,
-  useNavigate,
-  useSearchParams,
-} from 'react-router-dom';
+import { Link, Route, Routes, useSearchParams } from 'react-router-dom';
 import { Button } from 'src/ui/ui-kit/Button';
 import { PageHeading } from 'src/ui/components/PageHeading';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -24,8 +18,6 @@ import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { GenerateWallet } from './GenerateWallet';
 import { ImportWallet } from './ImportWallet';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
-import { useMutation } from 'react-query';
-import { walletPort } from 'src/ui/shared/channels';
 
 function TitleWithLine({
   children,
@@ -87,38 +79,16 @@ function NewWalletOption({
     [mnemonicGroups, selectedGroupId]
   );
 
-  const navigate = useNavigate();
-
-  const redirectToMnemonicImport = useMutation(
-    async (groupId: string) => {
-      const mnemonic = await walletPort.request('getRecoveryPhrase', {
-        groupId,
-      });
-      if (!mnemonic) {
-        throw new Error(`Missing mnemonic for ${selectedGroupId}`);
-      }
-      navigate('/get-started/import/mnemonic', {
-        // NOTE: this is just a precaution;
-        // pass as state to avoid storing sensitive data in the URL
-        state: { value: mnemonic.phrase },
-      });
-    },
-    { useErrorBoundary: true }
-  );
-
   return (
     <VStack gap={8}>
       {hasMnemonicWallets && selectedGroupId ? (
         <Button
-          // @ts-ignore autoFocusRef type is OKAY :|
           ref={autoFocusRef}
           size={44}
-          onClick={() => redirectToMnemonicImport.mutate(selectedGroupId)}
-          disabled={redirectToMnemonicImport.isLoading}
+          as={Link}
+          to={`/get-started/import/mnemonic?groupId=${selectedGroupId}`}
         >
-          {redirectToMnemonicImport.isLoading
-            ? 'Preparing...'
-            : 'Create new Wallet'}
+          Create new Wallet
         </Button>
       ) : (
         <Button ref={autoFocusRef} as={Link} to="new" size={56}>

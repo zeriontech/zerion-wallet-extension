@@ -182,7 +182,6 @@ export class Wallet {
   async uiImportSeedPhrase({
     params: mnemonics,
   }: PublicMethodParams<NonNullable<BareWallet['mnemonic']>[]>) {
-    // const mnemonic = { phrase: seedPhrase, path: ethers.utils.defaultPath };
     this.pendingWallet = {
       groupId: null,
       walletContainer: new MnemonicWalletContainer(
