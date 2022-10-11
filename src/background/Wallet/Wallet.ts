@@ -28,7 +28,7 @@ import { removeSignature } from 'src/modules/ethereum/transactions/removeSignatu
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import { SeedType } from './model/SeedType';
-import type { PendingWallet, WalletRecord } from './model/types';
+import type { BareWallet, PendingWallet, WalletRecord } from './model/types';
 import {
   MnemonicWalletContainer,
   PrivateKeyWalletContainer,
@@ -179,11 +179,14 @@ export class Wallet {
     return maskWallet(this.pendingWallet.walletContainer.getFirstWallet());
   }
 
-  async uiImportSeedPhrase({ params: seedPhrase }: PublicMethodParams<string>) {
-    const mnemonic = { phrase: seedPhrase, path: ethers.utils.defaultPath };
+  async uiImportSeedPhrase({
+    params: mnemonics,
+  }: PublicMethodParams<NonNullable<BareWallet['mnemonic']>[]>) {
     this.pendingWallet = {
       groupId: null,
-      walletContainer: new MnemonicWalletContainer([{ mnemonic }]),
+      walletContainer: new MnemonicWalletContainer(
+        mnemonics.map((mnemonic) => ({ mnemonic }))
+      ),
     };
     return maskWallet(this.pendingWallet.walletContainer.getFirstWallet());
   }

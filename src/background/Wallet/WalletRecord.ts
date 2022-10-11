@@ -4,6 +4,7 @@ import { nanoid } from 'nanoid';
 import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
 import { Chain, createChain } from 'src/modules/networks/Chain';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
+import { getIndexFromPath } from 'src/shared/wallet/getNextAccountPath';
 import { SeedType } from './model/SeedType';
 import type {
   BareWallet,
@@ -192,7 +193,6 @@ export class WalletRecordModel {
           );
         }
       } else if (seedType === SeedType.mnemonic) {
-        /** Is mnemonic */
         const mnemonic = walletContainer.getMnemonic();
         if (!mnemonic) {
           throw new Error('Mnemonic not found');
@@ -204,6 +204,11 @@ export class WalletRecordModel {
         if (existingGroup) {
           walletContainer.wallets.forEach((wallet) => {
             existingGroup.walletContainer.addWallet(wallet);
+          });
+          existingGroup.walletContainer.wallets.sort((a, b) => {
+            const index1 = getIndexFromPath(a.mnemonic?.path || '');
+            const index2 = getIndexFromPath(b.mnemonic?.path || '');
+            return index1 - index2;
           });
         } else {
           draft.walletManager.internalMnemonicGroupCounter += 1;

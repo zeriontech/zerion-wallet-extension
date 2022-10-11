@@ -10,7 +10,7 @@ interface ClassicGasPriceProps {
   gasPrice: string;
 }
 
-export function assignGasPrice<T>(
+export function assignGasPrice<T extends object>(
   transaction: T,
   gasPrice: GasPriceObject
 ): T & (ClassicGasPriceProps | EIP1559Props) {

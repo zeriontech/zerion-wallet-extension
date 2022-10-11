@@ -39,6 +39,7 @@ function Initial({ onSubmit }: { onSubmit: () => void }) {
           />
           <DecorativeMessage
             isConsecutive={true}
+            style={{ animationDelay: '300ms' }}
             text={
               <UIText kind="subtitle/m_reg">
                 🔐 Backing up your wallet with a recovery phrase helps ensure
@@ -49,6 +50,7 @@ function Initial({ onSubmit }: { onSubmit: () => void }) {
           />
           <DecorativeMessage
             isConsecutive={true}
+            style={{ animationDelay: '600ms' }}
             text={
               <UIText kind="subtitle/m_reg">
                 ☝️ Make sure you're ready to write down this recovery phrase and

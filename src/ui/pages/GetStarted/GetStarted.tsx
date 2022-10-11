@@ -78,24 +78,23 @@ function NewWalletOption({
         : null,
     [mnemonicGroups, selectedGroupId]
   );
-  const newWalletUrl = useMemo(() => {
-    if (selectedGroupId) {
-      return `new?groupId=${selectedGroupId}`;
-    } else {
-      return 'new';
-    }
-  }, [selectedGroupId]);
 
   return (
     <VStack gap={8}>
-      <Button
-        ref={autoFocusRef}
-        as={Link}
-        to={newWalletUrl}
-        size={hasMnemonicWallets ? 44 : 56}
-      >
-        Create new Wallet
-      </Button>
+      {hasMnemonicWallets && selectedGroupId ? (
+        <Button
+          ref={autoFocusRef}
+          size={44}
+          as={Link}
+          to={`/get-started/import/mnemonic?groupId=${selectedGroupId}`}
+        >
+          Create new Wallet
+        </Button>
+      ) : (
+        <Button ref={autoFocusRef} as={Link} to="new" size={56}>
+          Create new Wallet
+        </Button>
+      )}
       {hasMnemonicWallets ? (
         <UIText kind="subtitle/l_reg">
           Within{' '}
@@ -223,7 +222,7 @@ export function GetStarted() {
     <Routes>
       <Route path="/" element={<Options />} />
       <Route path="/new" element={<GenerateWallet />} />
-      <Route path="/import" element={<ImportWallet />} />
+      <Route path="/import/*" element={<ImportWallet />} />
       <Route path="/wallet-group-select" element={<WalletGroupSelect />} />
     </Routes>
   );

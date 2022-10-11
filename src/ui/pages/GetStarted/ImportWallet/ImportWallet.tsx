@@ -1,62 +1,133 @@
-import { ethers } from 'ethers';
 import React, { useState } from 'react';
-import { Content } from 'react-area';
-import { useMutation } from 'react-query';
-import { useNavigate } from 'react-router-dom';
+import { Route, Routes, useNavigate } from 'react-router-dom';
+import { Background } from 'src/ui/components/Background';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
-import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { prepareUserInputSeedOrPrivateKey } from 'src/ui/shared/prepareUserInputSeedOrPrivateKey';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import QuestionHintIcon from 'src/ui/assets/question-hint.svg';
+import ShieldIcon from 'src/ui/assets/shield.svg';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import type { ValidationResult } from 'src/shared/validation/ValidationResult';
+import { SeedType } from 'src/shared/SeedType';
+import { NavigationTitle } from 'src/ui/components/NavigationTitle';
+import { PageBottom } from 'src/ui/components/PageBottom';
+import { PrivateKeyImportView } from './PrivateKeyImportView';
+import { MnemonicImportView } from './MnemonicImportView';
 import {
-  DecorativeMessage,
-  DecorativeMessageDone,
-} from '../components/DecorativeMessage';
+  isValidMnemonic,
+  isValidPrivateKey,
+} from 'src/shared/validation/wallet';
+import { memoryLocationState } from './memoryLocationState';
 
-function ImportForm({ onSubmit }: { onSubmit: (value: string) => void }) {
+function getSeedType(value: string) {
+  if (isValidMnemonic(value)) {
+    return SeedType.mnemonic;
+  } else if (isValidPrivateKey(value)) {
+    return SeedType.privateKey;
+  } else {
+    return null;
+  }
+}
+
+function validate({
+  recoveryInput,
+}: {
+  recoveryInput: string;
+}): ValidationResult {
+  if (recoveryInput.trim().split(/\s+/).length > 1) {
+    // probably a mnemonic
+    if (isValidMnemonic(recoveryInput)) {
+      return { valid: true, message: '' };
+    } else {
+      return { valid: false, message: 'Invalid recovery phrase' };
+    }
+  } else {
+    if (isValidPrivateKey(recoveryInput)) {
+      return { valid: true, message: '' };
+    } else {
+      return { valid: false, message: 'Invalid private key' };
+    }
+  }
+}
+
+function ImportForm({
+  onSubmit,
+}: {
+  onSubmit: (result: { value: string; seedType: SeedType }) => void;
+}) {
+  const [validationResult, setValidationResult] =
+    useState<ValidationResult | null>(null);
   return (
     <>
-      <UIText kind="subtitle/m_reg" color="var(--neutral-700)">
-        Existing wallets can be imported using either
-        <ul style={{ listStyle: 'circle', paddingLeft: '1em', marginTop: 8 }}>
-          <li>a recovery phrase (12 words)</li>
-          <li>or a private key</li>
-        </ul>
-      </UIText>
-      <Spacer height={24}></Spacer>
       <form
         style={{ display: 'flex', flexGrow: 1, flexDirection: 'column' }}
+        onInput={() => setValidationResult(null)}
         onSubmit={(event) => {
           event.preventDefault();
-          const value = new FormData(event.currentTarget).get(
+          const userInput = new FormData(event.currentTarget).get(
             'seedOrPrivateKey'
-          );
+          ) as string;
+          const value = prepareUserInputSeedOrPrivateKey(userInput);
           if (!value) {
             return;
           }
-          onSubmit(prepareUserInputSeedOrPrivateKey(value as string));
+          const validity = validate({ recoveryInput: value });
+          setValidationResult(validity);
+          if (!validity.valid) {
+            return;
+          }
+          const seedType = getSeedType(value);
+          if (seedType == null) {
+            throw new Error('Unexpected input value');
+          }
+          onSubmit({ value, seedType });
         }}
       >
-        <textarea
-          autoFocus={true}
-          name="seedOrPrivateKey"
-          required={true}
-          rows={3}
-          placeholder="Enter recovery phrase or a private key"
-          style={{
-            display: 'block',
-            color: 'var(--black)',
-            resize: 'vertical',
-            backgroundColor: 'var(--white)',
-            padding: '7px 11px',
-            border: '1px solid var(--neutral-200)',
-            borderRadius: 8,
-          }}
-        />
-        <Button style={{ marginTop: 'auto', marginBottom: 16 }}>Import</Button>
+        <VStack gap={4}>
+          <textarea
+            autoFocus={true}
+            name="seedOrPrivateKey"
+            required={true}
+            rows={14}
+            placeholder="Use spaces between words if using a seed phrase"
+            style={{
+              display: 'block',
+              color: 'var(--black)',
+              resize: 'vertical',
+              backgroundColor: 'var(--neutral-200)',
+              padding: '7px 11px',
+              border: '1px solid var(--neutral-200)',
+              fontSize: 16,
+              borderRadius: 8,
+            }}
+          />
+          {validationResult?.valid === false ? (
+            <UIText kind="caption/reg" color="var(--negative-500)" role="alert">
+              {validationResult.message}
+            </UIText>
+          ) : null}
+        </VStack>
+        <VStack gap={16} style={{ marginTop: 'auto' }}>
+          <UIText kind="caption/reg" color="var(--neutral-500)">
+            <HStack
+              gap={4}
+              alignItems="center"
+              style={{
+                marginLeft: 'auto',
+                marginRight: 'auto',
+                width: 'max-content',
+              }}
+            >
+              <ShieldIcon />
+              <span>Zerion passed security audits</span>
+            </HStack>
+          </UIText>
+          <Button style={{ width: '100%' }}>Import</Button>
+        </VStack>
       </form>
     </>
   );
@@ -67,96 +138,61 @@ enum Step {
   done,
 }
 
-function isValidMnemonic(phrase: string) {
-  return ethers.utils.isValidMnemonic(phrase);
-}
-function isValidPrivateKey(key: string) {
-  const prefixedKey = key.startsWith('0x') ? key : `0x${key}`;
-  return ethers.utils.isHexString(prefixedKey, 32);
-}
-
-export function ImportWallet() {
-  const [steps, setSteps] = useState(() => new Set<Step>());
-  const addStep = (step: Step) => setSteps((steps) => new Set(steps).add(step));
-
+function ImportWalletView() {
+  const [steps] = useState(() => new Set<Step>());
   const navigate = useNavigate();
-
-  const { data, ...importWallet } = useMutation(
-    async (input: string) => {
-      addStep(Step.loading);
-      await new Promise((r) => setTimeout(r, 1000));
-      if (isValidMnemonic(input)) {
-        return walletPort.request('uiImportSeedPhrase', input);
-      } else if (isValidPrivateKey(input)) {
-        return walletPort.request('uiImportPrivateKey', input);
-      } else {
-        throw new Error('Not a private key or a recovery phrase');
-      }
-    },
-    {
-      onSuccess() {
-        addStep(Step.done);
-      },
-    }
-  );
-  const importError = importWallet.error ? (importWallet.error as Error) : null;
 
   return (
     <>
-      <Content name="navigation-bar">
-        <span>Import Wallet</span>
-      </Content>
+      <NavigationTitle title="Import Wallet" />
 
-      <PageColumn>
-        <PageTop />
-        <UIText kind="h/5_med">Recovery Phrase or Private Key</UIText>
-        <Spacer height={24}></Spacer>
-        {steps.has(Step.loading) ? (
-          <>
-            <VStack gap={8}>
-              <DecorativeMessage
-                text={
-                  <UIText kind="subtitle/m_reg">
-                    Hi 👋 We're generating your wallet and making sure it's
-                    encrypted with your passcode. This should only take a couple
-                    of minutes.
-                  </UIText>
-                }
-              />
-              {data?.address ? (
-                <DecorativeMessageDone
-                  messageKind="import"
-                  address={data.address}
-                />
-              ) : null}
-              {importWallet.isError ? (
-                <UIText kind="subtitle/m_reg" color="var(--negative-500)">
-                  Could not import wallet{' '}
-                  {importError?.message ? `(${importError.message})` : null}
-                </UIText>
-              ) : null}
-            </VStack>
-
-            <Button
-              style={{ marginTop: 'auto', marginBottom: 16 }}
-              onClick={async () => {
-                await accountPublicRPCPort.request('saveUserAndWallet');
-                if (data?.address) {
-                  await walletPort.request('setCurrentAddress', {
-                    address: data.address,
-                  });
-                }
-                navigate('/overview');
-              }}
-              disabled={importWallet.isLoading}
-            >
-              {importWallet.isLoading ? 'Recovering...' : 'Finish'}
-            </Button>
-          </>
-        ) : (
-          <ImportForm onSubmit={(key) => importWallet.mutate(key)} />
-        )}
-      </PageColumn>
+      <Background backgroundKind={steps.size === 0 ? 'white' : 'neutral'}>
+        <PageColumn>
+          <PageTop />
+          <UIText kind="h/5_med">
+            Enter Recovery Phrase{' '}
+            <QuestionHintIcon
+              style={{ color: 'var(--neutral-500)', verticalAlign: 'middle' }}
+            />{' '}
+            <br />
+            or Private Key{' '}
+            <QuestionHintIcon
+              style={{ color: 'var(--neutral-500)', verticalAlign: 'middle' }}
+            />
+          </UIText>
+          <Spacer height={24}></Spacer>
+          <ImportForm
+            onSubmit={({ value, seedType }) => {
+              if (seedType === SeedType.privateKey) {
+                // NOTE:
+                // see memoryLocationState for why and how it's used instead of location state
+                const pathname = '/get-started/import/private-key';
+                const to = `${pathname}?state=memory`;
+                memoryLocationState.set(pathname, value);
+                navigate(to);
+              } else if (seedType === SeedType.mnemonic) {
+                // NOTE:
+                // see memoryLocationState for why it's used instead of location state
+                const pathname = '/get-started/import/mnemonic';
+                const to = `${pathname}?state=memory`;
+                memoryLocationState.set(pathname, value);
+                navigate(to);
+              }
+            }}
+          />
+          <PageBottom />
+        </PageColumn>
+      </Background>
     </>
+  );
+}
+
+export function ImportWallet() {
+  return (
+    <Routes>
+      <Route path="/" element={<ImportWalletView />} />
+      <Route path="/private-key" element={<PrivateKeyImportView />} />
+      <Route path="/mnemonic" element={<MnemonicImportView />} />
+    </Routes>
   );
 }

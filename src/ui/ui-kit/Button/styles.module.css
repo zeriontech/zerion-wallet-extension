@@ -1,3 +1,26 @@
+.button {
+  cursor: pointer;
+}
+
+.asButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: currentColor;
+}
+
+.primary {
+  background-color: var(--actions-default);
+  color: var(--always-white);
+}
+
+.primary:disabled {
+  cursor: default;
+  background-color: var(--actions-disabled);
+  color: var(--actions-on-disabled);
+}
+
 .ghost {
   background-color: transparent;
   display: block;

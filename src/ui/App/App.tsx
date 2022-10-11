@@ -352,6 +352,7 @@ const queryClient = new QueryClient();
 export function App() {
   useEffect(() => {
     if (templateType === 'popup') {
+      // window.location.hash = '#/get-started/import'
       closeOtherWindows();
     }
   }, []);
