@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useMutation } from 'react-query';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
@@ -13,6 +13,7 @@ import {
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
 import { isValidPrivateKey } from 'src/shared/validation/wallet';
+import { useMemoryLocationState } from '../memoryLocationState';
 
 function PrivateKeyImportFlow({
   address,
@@ -58,8 +59,7 @@ function PrivateKeyImportFlow({
 }
 
 export function PrivateKeyImportView() {
-  const { state: locationState } = useLocation();
-  const { value: privateKey } = locationState as { value: string };
+  const { value: privateKey } = useMemoryLocationState();
   if (!privateKey) {
     throw new Error(
       'Location state for PrivateKeyImportView is expected to have a value property'

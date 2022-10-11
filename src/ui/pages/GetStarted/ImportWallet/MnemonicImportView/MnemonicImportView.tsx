@@ -1,13 +1,14 @@
 import { useSubscription } from 'defi-sdk';
 import React, { useMemo, useState } from 'react';
 import { useQuery } from 'react-query';
-import { useLocation, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { walletPort } from 'src/ui/shared/channels';
+import { useMemoryLocationState } from '../memoryLocationState';
 import { AddressImportFlow } from './AddressImportFlow';
 import { getFirstNMnemonicWallets } from './getFirstNMnemonicWallets';
 import { useStaleTime } from './useStaleTime';
@@ -18,8 +19,7 @@ function useMnenomicPhraseForLocation() {
    * - either locationState
    * - or resolve from groupId in searchParams
    */
-  const { state: locationState } = useLocation();
-  const { value: phraseFromState } = (locationState || {}) as { value: string };
+  const { value: phraseFromState } = useMemoryLocationState();
   const [params] = useSearchParams();
   const groupId = params.get('groupId');
   if (!phraseFromState && !groupId) {

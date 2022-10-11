@@ -21,6 +21,7 @@ import {
   isValidMnemonic,
   isValidPrivateKey,
 } from 'src/shared/validation/wallet';
+import { memoryLocationState } from './memoryLocationState';
 
 function getSeedType(value: string) {
   if (isValidMnemonic(value)) {
@@ -163,17 +164,19 @@ function ImportWalletView() {
           <ImportForm
             onSubmit={({ value, seedType }) => {
               if (seedType === SeedType.privateKey) {
-                navigate('/get-started/import/private-key', {
-                  // NOTE: this is just a precaution;
-                  // pass as state to avoid storing sensitive data in the URL
-                  state: { value },
-                });
+                // NOTE:
+                // see memoryLocationState for why and how it's used instead of location state
+                const pathname = '/get-started/import/private-key';
+                const to = `${pathname}?state=memory`;
+                memoryLocationState.set(pathname, value);
+                navigate(to);
               } else if (seedType === SeedType.mnemonic) {
-                navigate('/get-started/import/mnemonic', {
-                  // NOTE: this is just a precaution;
-                  // pass as state to avoid storing sensitive data in the URL
-                  state: { value },
-                });
+                // NOTE:
+                // see memoryLocationState for why it's used instead of location state
+                const pathname = '/get-started/import/mnemonic';
+                const to = `${pathname}?state=memory`;
+                memoryLocationState.set(pathname, value);
+                navigate(to);
               }
             }}
           />
