@@ -89,7 +89,6 @@ function ConnectedSitesList({
           return {
             key: item.origin,
             to: `/connected-sites/${encodeURIComponent(item.origin)}`,
-            // to: '/not-implemented',
             component: (
               <HStack
                 gap={4}

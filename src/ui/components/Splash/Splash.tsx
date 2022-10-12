@@ -1,5 +1,5 @@
 import React from 'react';
-import ZerionLogoWide from 'src/ui/assets/zerion-logo-wide.svg';
+import ZerionLogoText from 'src/ui/assets/zerion-logo-text.svg';
 
 export function Splash() {
   return (
@@ -18,7 +18,7 @@ export function Splash() {
           placeContent: 'center',
         }}
       >
-        <ZerionLogoWide />
+        <ZerionLogoText />
       </div>
     </div>
   );

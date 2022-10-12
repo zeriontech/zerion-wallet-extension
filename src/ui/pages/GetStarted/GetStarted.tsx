@@ -1,5 +1,11 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { Link, Route, Routes, useSearchParams } from 'react-router-dom';
+import {
+  Link,
+  Route,
+  Routes,
+  useLocation,
+  useSearchParams,
+} from 'react-router-dom';
 import { Button } from 'src/ui/ui-kit/Button';
 import { PageHeading } from 'src/ui/components/PageHeading';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -18,43 +24,20 @@ import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { GenerateWallet } from './GenerateWallet';
 import { ImportWallet } from './ImportWallet';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
+import { TitleWithLine } from './components/TitleWithLine';
 
-function TitleWithLine({
-  children,
-  lineColor = 'currentcolor',
-  gap = 8,
-}: React.PropsWithChildren<{ lineColor?: string; gap?: number }>) {
-  const line = (
-    <div
-      style={{
-        position: 'relative',
-        top: 1,
-        height: 1,
-        backgroundColor: lineColor,
-      }}
-    ></div>
-  );
-  return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr auto 1fr',
-        gap,
-        alignItems: 'center',
-      }}
-    >
-      {line}
-      {children}
-      {line}
-    </div>
-  );
+function createNextHref(path: string, beforePath: string | null) {
+  return beforePath ? `${beforePath}?next=${encodeURIComponent(path)}` : path;
 }
 
 function NewWalletOption({
+  beforeCreate,
   walletGroups,
 }: {
+  beforeCreate: string | null;
   walletGroups: WalletGroup[] | null;
 }) {
+  const location = useLocation();
   const [params] = useSearchParams();
   const autoFocusRef = useRef<HTMLAnchorElement | null>(null);
   useEffect(() => {
@@ -79,6 +62,8 @@ function NewWalletOption({
     [mnemonicGroups, selectedGroupId]
   );
 
+  const newWalletPath = createNextHref('/get-started/new', beforeCreate);
+
   return (
     <VStack gap={8}>
       {hasMnemonicWallets && selectedGroupId ? (
@@ -86,13 +71,16 @@ function NewWalletOption({
           ref={autoFocusRef}
           size={44}
           as={Link}
-          to={`/get-started/import/mnemonic?groupId=${selectedGroupId}`}
+          to={createNextHref(
+            `/get-started/import/mnemonic?groupId=${selectedGroupId}`,
+            beforeCreate
+          )}
         >
-          Create new Wallet
+          Create New Wallet
         </Button>
       ) : (
-        <Button ref={autoFocusRef} as={Link} to="new" size={56}>
-          Create new Wallet
+        <Button ref={autoFocusRef} as={Link} to={newWalletPath} size={56}>
+          Create New Wallet
         </Button>
       )}
       {hasMnemonicWallets ? (
@@ -101,7 +89,7 @@ function NewWalletOption({
           <Link
             style={{ color: 'var(--primary)' }}
             to={`wallet-group-select?${new URLSearchParams({
-              next: '/get-started',
+              next: location.pathname + location.search,
             })}`}
           >
             {getGroupDisplayName(selectedGroup?.name || '')}
@@ -113,7 +101,7 @@ function NewWalletOption({
           <UIText kind="subtitle/l_reg" color="var(--neutral-500)">
             <TitleWithLine lineColor="var(--neutral-300)">or</TitleWithLine>
           </UIText>
-          <Button kind="regular" as={Link} to="new" size={56}>
+          <Button kind="regular" as={Link} to={newWalletPath} size={56}>
             Create New Wallet Group
           </Button>
           <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
@@ -127,9 +115,13 @@ function NewWalletOption({
 
 function Options() {
   const { data: walletGroups, isLoading } = useWalletGroups();
+  const [params] = useSearchParams();
   if (isLoading) {
     return null;
   }
+
+  const beforeCreate = params.get('beforeCreate');
+  const importHref = createNextHref('/get-started/import', beforeCreate);
   return (
     <PageColumn>
       <PageTop />
@@ -145,12 +137,15 @@ function Options() {
 
       <Surface padding={16}>
         <VStack gap={16}>
-          <NewWalletOption walletGroups={walletGroups || null} />
+          <NewWalletOption
+            beforeCreate={beforeCreate}
+            walletGroups={walletGroups || null}
+          />
           <UIText kind="subtitle/l_reg" color="var(--neutral-500)">
             <TitleWithLine lineColor="var(--neutral-300)">or</TitleWithLine>
           </UIText>
           <VStack gap={8}>
-            <Button kind="regular" as={Link} to="import" size={56}>
+            <Button kind="regular" as={Link} to={importHref} size={56}>
               Import Existing Wallet
             </Button>
             <UIText kind="subtitle/m_reg" color="var(--neutral-500)">

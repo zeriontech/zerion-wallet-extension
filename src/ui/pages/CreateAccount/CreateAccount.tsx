@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PASSWORD_MIN_LENGTH } from 'src/shared/validation/user-input';
 import { Background } from 'src/ui/components/Background';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -16,6 +16,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 
 export function CreateAccount() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
   const [formError, setFormError] = useState<null | {
     type: string;
     message: string;
@@ -26,7 +27,7 @@ export function CreateAccount() {
     },
     {
       onSuccess() {
-        navigate('/get-started');
+        navigate(params.get('next') || '/get-started');
       },
     }
   );
