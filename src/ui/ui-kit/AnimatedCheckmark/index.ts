@@ -1,0 +1,1 @@
+export { AnimatedCheckmark } from './AnimatedCheckmark';

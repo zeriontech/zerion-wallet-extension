@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { BareWallet } from 'src/shared/types/BareWallet';
 import {
@@ -16,36 +16,8 @@ import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { NBSP } from 'src/ui/shared/typography';
-import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
-import CheckmarkCheckedIcon from 'src/ui/assets/checkmark-checked.svg';
-import CheckmarkUnCheckedIcon from 'src/ui/assets/checkmark-unchecked.svg';
-import { animated } from 'react-spring';
 import { getIndexFromPath } from 'src/shared/wallet/getNextAccountPath';
-
-function AnimatedCheckmark({ checked }: { checked: boolean }) {
-  const { style, trigger } = useTransformTrigger({
-    scale: 1.15,
-    timing: 100,
-  });
-  useLayoutEffect(() => {
-    if (checked) {
-      trigger();
-    }
-  }, [checked, trigger]);
-  if (!checked) {
-    return (
-      <div>
-        <CheckmarkUnCheckedIcon />
-      </div>
-    );
-  } else {
-    return (
-      <animated.div style={style}>
-        <CheckmarkCheckedIcon style={{ color: 'var(--primary)' }} />
-      </animated.div>
-    );
-  }
-}
+import { AnimatedCheckmark } from 'src/ui/ui-kit/AnimatedCheckmark';
 
 export function WalletList({
   wallets,
@@ -135,7 +107,10 @@ export function WalletList({
                   </UIText>
                 ) : (
                   <span>
-                    <AnimatedCheckmark checked={values.has(wallet.address)} />
+                    <AnimatedCheckmark
+                      checked={values.has(wallet.address)}
+                      checkedColor="var(--primary)"
+                    />
                   </span>
                 )}
               </HStack>

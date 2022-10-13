@@ -11,6 +11,7 @@ export function useTransformTrigger({
     tension: 300,
     friction: 10,
   },
+  delay = 0,
 }) {
   const [on, set] = useState(false);
 
@@ -24,6 +25,7 @@ export function useTransformTrigger({
          rotate(0deg)
          scale(1)`,
     config: springConfig,
+    delay,
   } as const);
 
   useEffect(() => {

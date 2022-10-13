@@ -13,6 +13,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import * as s from 'src/ui/style/helpers.module.css';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import { Input } from 'src/ui/ui-kit/Input';
 
 export function Login() {
   const [params] = useSearchParams();
@@ -71,18 +72,12 @@ export function Login() {
         >
           <VStack gap={16}>
             <VStack gap={4}>
-              <input
+              <Input
                 autoFocus={true}
                 type="password"
                 name="password"
                 placeholder="password"
                 required={true}
-                style={{
-                  backgroundColor: 'var(--neutral-200)',
-                  padding: '7px 11px',
-                  border: '1px solid var(--neutral-200)',
-                  borderRadius: 8,
-                }}
               />
               {loginMutation.error ? (
                 <UIText kind="caption/reg" color="var(--negative-500)">

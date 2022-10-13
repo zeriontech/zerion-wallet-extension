@@ -1,0 +1,14 @@
+.zstack {
+  display: grid;
+  grid-template-columns: minmax(0, 100%);
+  height: 100%;
+}
+
+.zstack > * {
+  grid-area: 1 / 1 / 1 / 1;
+}
+
+.hideLowerElements > * + * {
+  height: 0;
+  visibility: hidden;
+}

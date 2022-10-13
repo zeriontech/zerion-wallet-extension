@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import { useMutation } from 'react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PASSWORD_MIN_LENGTH } from 'src/shared/validation/user-input';
@@ -13,10 +13,20 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { AnimatedCheckmark } from 'src/ui/ui-kit/AnimatedCheckmark';
+import { ZStack } from 'src/ui/ui-kit/ZStack';
+import { Input } from 'src/ui/ui-kit/Input';
+import { StrengthIndicator } from './StrengthIndicator';
 
 export function CreateAccount() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
+  const inputId = useId();
+  const [value, setValue] = useState('');
+  const [repeatValue, setRepeatValue] = useState('');
+  const [focusedInput, setFocusedInput] = useState<
+    'password' | 'confirmPassword'
+  >('password');
   const [formError, setFormError] = useState<null | {
     type: string;
     message: string;
@@ -69,20 +79,41 @@ export function CreateAccount() {
               <UIText kind="subtitle/s_reg" color="var(--neutral-500)">
                 Password
               </UIText>
-              <input
-                autoFocus={true}
-                minLength={PASSWORD_MIN_LENGTH}
-                type="password"
-                name="password"
-                placeholder="password"
-                required={true}
-                style={{
-                  backgroundColor: 'var(--neutral-200)',
-                  padding: '7px 11px',
-                  border: '1px solid var(--neutral-200)',
-                  borderRadius: 8,
-                }}
-              />
+              <ZStack>
+                <Input
+                  id={inputId}
+                  value={value}
+                  onChange={(event) => setValue(event.target.value)}
+                  onFocus={() => setFocusedInput('password')}
+                  autoFocus={true}
+                  minLength={PASSWORD_MIN_LENGTH}
+                  type="password"
+                  name="password"
+                  placeholder="password"
+                  required={true}
+                />
+                <div
+                  style={{
+                    alignSelf: 'center',
+                    justifySelf: 'end',
+                    marginRight: 12,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    minWidth: 24,
+                  }}
+                >
+                  {(focusedInput === 'password' && value !== repeatValue) ||
+                  !value ? (
+                    <StrengthIndicator value={value} />
+                  ) : (
+                    <AnimatedCheckmark
+                      checked={value === repeatValue}
+                      checkedColor="var(--positive-500)"
+                      animate={false}
+                    />
+                  )}
+                </div>
+              </ZStack>
               {createUserMutation.error ? (
                 <UIText kind="caption/reg" color="var(--negative-500)">
                   {(createUserMutation.error as Error).message ||
@@ -94,18 +125,37 @@ export function CreateAccount() {
               <UIText kind="subtitle/s_reg" color="var(--neutral-500)">
                 Confirm Password
               </UIText>
-              <input
-                type="password"
-                name="confirmPassword"
-                placeholder="enter the password again"
-                required={true}
-                style={{
-                  backgroundColor: 'var(--neutral-200)',
-                  padding: '7px 11px',
-                  border: '1px solid var(--neutral-200)',
-                  borderRadius: 8,
-                }}
-              />
+              <ZStack>
+                <Input
+                  value={repeatValue}
+                  onChange={(event) => setRepeatValue(event.target.value)}
+                  onFocus={() => setFocusedInput('confirmPassword')}
+                  type="password"
+                  name="confirmPassword"
+                  placeholder="enter the password again"
+                  required={true}
+                />
+                <div
+                  style={{
+                    alignSelf: 'center',
+                    justifySelf: 'end',
+                    marginRight: 12,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    minWidth: 24,
+                  }}
+                >
+                  {value &&
+                  (focusedInput === 'confirmPassword' ||
+                    value === repeatValue) ? (
+                    <AnimatedCheckmark
+                      animate={focusedInput === 'confirmPassword'}
+                      checked={value === repeatValue}
+                      checkedColor="var(--positive-500)"
+                    />
+                  ) : null}
+                </div>
+              </ZStack>
               {formError?.type === 'confirmPassword' ? (
                 <UIText kind="caption/reg" color="var(--negative-500)">
                   {formError.message}
