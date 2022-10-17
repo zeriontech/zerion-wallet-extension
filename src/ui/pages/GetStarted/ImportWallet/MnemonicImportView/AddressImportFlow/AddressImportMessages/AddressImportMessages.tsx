@@ -9,7 +9,7 @@ import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import CheckmarkCheckedIcon from 'src/ui/assets/checkmark-checked.svg';
+import CheckmarkCheckedIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { Media } from 'src/ui/ui-kit/Media';
 import { WalletIcon } from 'src/ui/ui-kit/WalletIcon';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';

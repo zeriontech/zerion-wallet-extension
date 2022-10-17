@@ -12,6 +12,12 @@ module.exports = {
       params: {
         overrides: {
           removeViewBox: false,
+          removeHiddenElems: false,
+          removeEmptyAttrs: false,
+          removeEmptyContainers: false,
+          removeOffCanvasPaths: false,
+          removeUselessDefs: false,
+          cleanupIDs: false,
         },
       },
     },

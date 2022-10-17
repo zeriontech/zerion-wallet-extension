@@ -10,7 +10,7 @@ import { Media } from 'src/ui/ui-kit/Media';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Image } from 'src/ui/ui-kit/MediaFallback';
-import WalletPositionIcon from 'src/ui/assets/wallet-position.svg';
+import WalletPositionIcon from 'jsx:src/ui/assets/wallet-position.svg';
 // import { VirtualizedSurfaceList } from 'src/ui/ui-kit/SurfaceList/VirtualizedSurfaceList';
 import { Item, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import {

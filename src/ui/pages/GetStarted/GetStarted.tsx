@@ -25,6 +25,9 @@ import { GenerateWallet } from './GenerateWallet';
 import { ImportWallet } from './ImportWallet';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { TitleWithLine } from './components/TitleWithLine';
+import backgroundArts from 'src/ui/assets/background-arts.svg';
+import { Background } from 'src/ui/components/Background';
+import { useBodyStyle } from 'src/ui/components/Background/Background';
 
 function createNextHref(path: string, beforePath: string | null) {
   return beforePath ? `${beforePath}?next=${encodeURIComponent(path)}` : path;
@@ -32,10 +35,10 @@ function createNextHref(path: string, beforePath: string | null) {
 
 function NewWalletOption({
   beforeCreate,
-  walletGroups,
+  mnemonicWalletGroups: mnemonicGroups,
 }: {
   beforeCreate: string | null;
-  walletGroups: WalletGroup[] | null;
+  mnemonicWalletGroups: WalletGroup[] | null;
 }) {
   const location = useLocation();
   const [params] = useSearchParams();
@@ -43,13 +46,6 @@ function NewWalletOption({
   useEffect(() => {
     autoFocusRef.current?.focus();
   }, []);
-  const mnemonicGroups = useMemo(
-    () =>
-      walletGroups?.filter(
-        (group) => group.walletContainer.seedType === SeedType.mnemonic
-      ),
-    [walletGroups]
-  );
   const hasMnemonicWallets = mnemonicGroups ? mnemonicGroups.length > 0 : false;
   const selectedGroupId = mnemonicGroups?.length
     ? params.get('groupId') || mnemonicGroups[0].id
@@ -116,6 +112,25 @@ function NewWalletOption({
 function Options() {
   const { data: walletGroups, isLoading } = useWalletGroups();
   const [params] = useSearchParams();
+  const mnemonicGroups = useMemo(
+    () =>
+      walletGroups?.filter(
+        (group) => group.walletContainer.seedType === SeedType.mnemonic
+      ),
+    [walletGroups]
+  );
+  const hasMnemonicWallets = mnemonicGroups ? mnemonicGroups.length > 0 : false;
+
+  useBodyStyle(
+    useMemo(
+      () => ({
+        backgroundImage: `url(${backgroundArts})`,
+        backgroundRepeat: 'no-repeat',
+      }),
+      []
+    )
+  );
+
   if (isLoading) {
     return null;
   }
@@ -123,40 +138,52 @@ function Options() {
   const beforeCreate = params.get('beforeCreate');
   const importHref = createNextHref('/get-started/import', beforeCreate);
   return (
-    <PageColumn>
-      <PageTop />
-      <NavigationTitle title="Get Started" />
-      <PageHeading>
-        Introducing{' '}
-        <span style={{ color: 'var(--primary)' }}>Zerion Wallet</span>
-      </PageHeading>
-      <Spacer height={4} />
-      <UIText kind="subtitle/l_reg">Explore all of Web3 in one place</UIText>
+    <Background backgroundKind="transparent">
+      <PageColumn style={{ paddingTop: hasMnemonicWallets ? 60 : 120 }}>
+        <NavigationTitle title={null} />
+        <PageHeading>
+          {hasMnemonicWallets ? null : (
+            <span>
+              Introducing
+              <br aria-hidden={true} />
+            </span>
+          )}
+          <span
+            style={{
+              color: hasMnemonicWallets ? 'currentColor' : 'var(--primary)',
+            }}
+          >
+            Zerion Wallet
+          </span>
+        </PageHeading>
+        <Spacer height={4} />
+        <UIText kind="subtitle/l_reg">Explore all of Web3 in one place</UIText>
 
-      <Spacer height={32} />
+        <Spacer height={32} />
 
-      <Surface padding={16}>
-        <VStack gap={16}>
-          <NewWalletOption
-            beforeCreate={beforeCreate}
-            walletGroups={walletGroups || null}
-          />
-          <UIText kind="subtitle/l_reg" color="var(--neutral-500)">
-            <TitleWithLine lineColor="var(--neutral-300)">or</TitleWithLine>
-          </UIText>
-          <VStack gap={8}>
-            <Button kind="regular" as={Link} to={importHref} size={56}>
-              Import Existing Wallet
-            </Button>
-            <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
-              Use this option if you want to import an existing wallet using a{' '}
-              <em>recovery phrase</em> or a <em>private key</em>
+        <Surface padding={16}>
+          <VStack gap={16}>
+            <NewWalletOption
+              beforeCreate={beforeCreate}
+              mnemonicWalletGroups={mnemonicGroups || null}
+            />
+            <UIText kind="subtitle/l_reg" color="var(--neutral-500)">
+              <TitleWithLine lineColor="var(--neutral-300)">or</TitleWithLine>
             </UIText>
+            <VStack gap={8}>
+              <Button kind="regular" as={Link} to={importHref} size={56}>
+                Import Existing Wallet
+              </Button>
+              <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
+                Use this option if you want to import an existing wallet using a{' '}
+                <em>recovery phrase</em> or a <em>private key</em>
+              </UIText>
+            </VStack>
           </VStack>
-        </VStack>
-      </Surface>
-      <PageBottom />
-    </PageColumn>
+        </Surface>
+        <PageBottom />
+      </PageColumn>
+    </Background>
   );
 }
 

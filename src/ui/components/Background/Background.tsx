@@ -1,4 +1,34 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useLayoutEffect, useRef } from 'react';
+
+export function useBodyStyle(style: React.CSSProperties) {
+  const prevValuesRef = useRef<React.CSSProperties>({});
+
+  useLayoutEffect(() => {
+    for (const key in style) {
+      if (key in prevValuesRef.current === false) {
+        // @ts-ignore key is keyof CSSProperties
+        prevValuesRef.current[key] = document.body.style[key];
+      }
+      // @ts-ignore key is keyof CSSProperties
+      document.body.style[key] = style[key];
+    }
+  }, [style]);
+  useLayoutEffect(() => {
+    const prevValues = prevValuesRef.current;
+    return () => {
+      for (const key in prevValues) {
+        // @ts-ignore key is keyof CSSProperties
+        document.body.style[key] = prevValues[key];
+      }
+    };
+  }, []);
+}
+
+const bgClassNames = {
+  neutral: 'neutral-bg',
+  white: 'white-bg',
+  transparent: 'transparent-bg',
+} as const;
 
 export function Background({
   children,
@@ -6,13 +36,13 @@ export function Background({
   backgroundKind,
 }: React.HTMLAttributes<HTMLDivElement> & {
   backgroundColor?: React.CSSProperties['backgroundColor'];
-  backgroundKind?: 'neutral' | 'white';
+  backgroundKind?: 'neutral' | 'white' | 'transparent';
 }) {
   useEffect(() => {
     if (!backgroundKind) {
       return;
     }
-    const className = backgroundKind === 'neutral' ? 'neutral-bg' : 'white-bg';
+    const className = bgClassNames[backgroundKind];
     document.body.classList.add(className);
     return () => {
       document.body.classList.remove(className);

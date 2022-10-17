@@ -19,6 +19,10 @@
   --background: var(--white);
 }
 
+:global(.transparent-bg) {
+  --background: transparent;
+}
+
 body {
   font-family: Graphik, sans-serif;
   font-size: 14px;

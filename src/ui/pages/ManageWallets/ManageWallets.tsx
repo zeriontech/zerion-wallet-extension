@@ -14,7 +14,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { AddressBadge } from 'src/ui/components/AddressBadge';
 import { Route, Routes } from 'react-router-dom';
-import ChevronRightIcon from 'src/ui/assets/chevron-right.svg';
+import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import { WalletGroup as WalletGroupPage } from './WalletGroup';
 import { WalletAccount as WalletAccountPage } from './WalletAccount';
 import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';

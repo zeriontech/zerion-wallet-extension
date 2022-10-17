@@ -13,7 +13,7 @@ import { Surface } from 'src/ui/ui-kit/Surface';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { Media } from 'src/ui/ui-kit/Media';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
-import ZerionSquircle from 'src/ui/assets/zerion-squircle.svg';
+import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { Background } from 'src/ui/components/Background';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';

@@ -1,5 +1,5 @@
 import React from 'react';
-import ZerionLogoText from 'src/ui/assets/zerion-logo-text.svg';
+import ZerionLogoText from 'jsx:src/ui/assets/zerion-logo-text.svg';
 
 export function Splash() {
   return (

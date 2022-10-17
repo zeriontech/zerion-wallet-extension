@@ -10,7 +10,7 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { useQuery } from 'react-query';
 import { NetworkIndicator } from 'src/ui/components/NetworkIndicator';
-import ZerionSquircle from 'src/ui/assets/zerion-squircle.svg';
+import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
 
 export function SwitchEthereumChain() {
   const [params] = useSearchParams();

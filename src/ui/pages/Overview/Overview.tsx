@@ -12,9 +12,9 @@ import {
 } from 'src/shared/units/formatCurrencyValue';
 import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 // import { Twinkle } from 'src/ui/ui-kit/Twinkle';
-// import ZerionSquircle from 'src/ui/assets/zerion-squircle.svg';
+// import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
 // import { FillView } from 'src/ui/components/FillView';
-import AddWalletIcon from 'src/ui/assets/add-wallet.svg';
+import AddWalletIcon from 'jsx:src/ui/assets/add-wallet.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { usePendingTransactions } from 'src/ui/transactions/usePendingTransactions';
@@ -30,7 +30,7 @@ import {
 import { Positions } from './Positions';
 import { HistoryList } from '../History/History';
 import { PageBottom } from 'src/ui/components/PageBottom';
-import CopyIcon from 'src/ui/assets/copy.svg';
+import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { useQuery } from 'react-query';
 import { walletPort } from 'src/ui/shared/channels';

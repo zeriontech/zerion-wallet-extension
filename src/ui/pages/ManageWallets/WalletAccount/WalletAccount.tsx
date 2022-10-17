@@ -10,7 +10,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import ChevronRightIcon from 'src/ui/assets/chevron-right.svg';
+import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { getWalletDisplayName } from 'src/ui/shared/getWalletDisplayName';

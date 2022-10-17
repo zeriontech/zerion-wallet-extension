@@ -1,7 +1,7 @@
 import React, { useLayoutEffect } from 'react';
 import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
-import CheckmarkCheckedIcon from 'src/ui/assets/checkmark-checked.svg';
-import CheckmarkUnCheckedIcon from 'src/ui/assets/checkmark-unchecked.svg';
+import CheckmarkCheckedIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
+import CheckmarkUnCheckedIcon from 'jsx:src/ui/assets/checkmark-unchecked.svg';
 import { animated } from 'react-spring';
 
 export function AnimatedCheckmark({

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import ZerionLogo from 'src/ui/assets/zerion-squircle.svg';
-import ZerionLogoText from 'src/ui/assets/zerion-logo-text.svg';
+import ZerionLogo from 'jsx:src/ui/assets/zerion-squircle.svg';
+import ZerionLogoText from 'jsx:src/ui/assets/zerion-logo-text.svg';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 

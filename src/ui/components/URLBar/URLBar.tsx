@@ -1,7 +1,7 @@
 import React, { useEffect, useReducer, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import IconLeft from 'src/ui/assets/chevron-left-medium.svg';
+import IconLeft from 'jsx:src/ui/assets/chevron-left-medium.svg';
 import { RenderArea } from 'react-area';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Store } from 'store-unit';
@@ -27,6 +27,10 @@ const URLBarBlacklist = new Set([
   '/login',
   '/sendTransaction',
 ]);
+
+export function hideURLBarFor(path: string) {
+  URLBarBlacklist.add(path);
+}
 
 const urlBarStore = new Store(true);
 

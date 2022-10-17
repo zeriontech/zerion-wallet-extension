@@ -1,5 +1,5 @@
 import React from 'react';
-import SettingsIcon from 'src/ui/assets/settings.svg';
+import SettingsIcon from 'jsx:src/ui/assets/settings.svg';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { useSettingsTodosCount } from '../useSettingsTodosCount';
