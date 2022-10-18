@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import { WalletRecord } from 'src/shared/types/WalletRecord';
+import { AngleRightRow } from 'src/ui/components/AngleRightRow';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -14,6 +15,8 @@ import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { ControlledToggle } from 'src/ui/ui-kit/Toggle/Toggle';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import WalletIcon from 'jsx:src/ui/assets/wallet.svg';
+import LockIcon from 'jsx:src/ui/assets/lock.svg';
 import { BackupFlowSettingsSection } from '../BackupWallet/BackupSettingsItem';
 
 function SettingsMain() {
@@ -29,17 +32,32 @@ function SettingsMain() {
             {
               key: 0,
               to: '/wallets',
-              component: <UIText kind="body/s_reg">Manage Wallets</UIText>,
+              component: (
+                <AngleRightRow>
+                  <HStack gap={4} alignItems="center">
+                    <WalletIcon />
+                    <UIText kind="body/s_reg">Manage Wallets</UIText>
+                  </HStack>
+                </AngleRightRow>
+              ),
             },
             {
               key: 2,
               to: '/connected-sites',
-              component: <UIText kind="body/s_reg">Connected Sites</UIText>,
+              component: (
+                <AngleRightRow>
+                  <UIText kind="body/s_reg">Connected Sites</UIText>
+                </AngleRightRow>
+              ),
             },
             {
               key: 3,
               to: '/settings/user-preferences',
-              component: <UIText kind="body/s_reg">Preferences</UIText>,
+              component: (
+                <AngleRightRow>
+                  <UIText kind="body/s_reg">Preferences</UIText>
+                </AngleRightRow>
+              ),
             },
             {
               key: 4,
@@ -48,9 +66,21 @@ function SettingsMain() {
                 navigate('/login');
               },
               component: (
-                <UIText kind="body/s_reg" color="var(--negative-500)">
-                  {logout.isLoading ? 'Locking...' : 'Lock (log out)'}
-                </UIText>
+                <HStack
+                  gap={8}
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
+                  <HStack gap={4} alignItems="center">
+                    <LockIcon />
+                    <UIText kind="body/s_reg" color="var(--negative-500)">
+                      {logout.isLoading ? 'Locking...' : 'Lock'}
+                    </UIText>
+                  </HStack>
+                  <UIText kind="body/s_reg" color="var(--neutral-500)">
+                    Log Out
+                  </UIText>
+                </HStack>
               ),
             },
           ]}
