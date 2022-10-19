@@ -64,6 +64,7 @@ export function GenerateWallet() {
       <VStack gap={16}>
         <VStack gap={8}>
           <DecorativeMessage
+            animate={false}
             text={
               <UIText kind="subtitle/m_reg">
                 Wallet will be encrypted with your password

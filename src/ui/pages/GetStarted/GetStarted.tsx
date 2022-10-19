@@ -1,19 +1,11 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import {
-  Link,
-  Route,
-  Routes,
-  useLocation,
-  useSearchParams,
-} from 'react-router-dom';
+import { Link, Route, Routes, useSearchParams } from 'react-router-dom';
 import { Button } from 'src/ui/ui-kit/Button';
-import { PageHeading } from 'src/ui/components/PageHeading';
 import { PageTop } from 'src/ui/components/PageTop';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { Surface } from 'src/ui/ui-kit/Surface';
 import { SeedType } from 'src/shared/SeedType';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { AddressBadge } from 'src/ui/components/AddressBadge';
@@ -24,10 +16,12 @@ import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { GenerateWallet } from './GenerateWallet';
 import { ImportWallet } from './ImportWallet';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
-import { TitleWithLine } from './components/TitleWithLine';
 import backgroundArts from 'src/ui/assets/background-arts.svg';
 import { Background } from 'src/ui/components/Background';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
+import { AngleRightRow } from 'src/ui/components/AngleRightRow';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import CheckIcon from 'jsx:src/ui/assets/check.svg';
 
 function createNextHref(path: string, beforePath: string | null) {
   return beforePath ? `${beforePath}?next=${encodeURIComponent(path)}` : path;
@@ -40,72 +34,83 @@ function NewWalletOption({
   beforeCreate: string | null;
   mnemonicWalletGroups: WalletGroup[] | null;
 }) {
-  const location = useLocation();
-  const [params] = useSearchParams();
   const autoFocusRef = useRef<HTMLAnchorElement | null>(null);
   useEffect(() => {
     autoFocusRef.current?.focus();
   }, []);
   const hasMnemonicWallets = mnemonicGroups ? mnemonicGroups.length > 0 : false;
-  const selectedGroupId = mnemonicGroups?.length
-    ? params.get('groupId') || mnemonicGroups[0].id
-    : null;
-  const selectedGroup = useMemo(
-    () =>
-      selectedGroupId && mnemonicGroups
-        ? mnemonicGroups.find((group) => group.id === selectedGroupId)
-        : null,
-    [mnemonicGroups, selectedGroupId]
-  );
 
   const newWalletPath = createNextHref('/get-started/new', beforeCreate);
 
+  const elevationStyle = { boxShadow: 'var(--elevation-200)' };
   return (
     <VStack gap={8}>
-      {hasMnemonicWallets && selectedGroupId ? (
+      {hasMnemonicWallets ? (
         <Button
           ref={autoFocusRef}
-          size={44}
+          size={56}
           as={Link}
-          to={createNextHref(
-            `/get-started/import/mnemonic?groupId=${selectedGroupId}`,
-            beforeCreate
-          )}
+          to={`wallet-group-select?${
+            beforeCreate ? new URLSearchParams({ beforeCreate }) : ''
+          }`}
+          style={elevationStyle}
         >
           Create New Wallet
         </Button>
       ) : (
-        <Button ref={autoFocusRef} as={Link} to={newWalletPath} size={56}>
+        <Button
+          ref={autoFocusRef}
+          as={Link}
+          to={newWalletPath}
+          size={56}
+          style={elevationStyle}
+        >
           Create New Wallet
         </Button>
       )}
-      {hasMnemonicWallets ? (
-        <UIText kind="subtitle/l_reg">
-          Within{' '}
-          <Link
-            style={{ color: 'var(--primary)' }}
-            to={`wallet-group-select?${new URLSearchParams({
-              next: location.pathname + location.search,
-            })}`}
-          >
-            {getGroupDisplayName(selectedGroup?.name || '')}
-          </Link>
-        </UIText>
-      ) : null}
-      {hasMnemonicWallets ? (
-        <>
-          <UIText kind="subtitle/l_reg" color="var(--neutral-500)">
-            <TitleWithLine lineColor="var(--neutral-300)">or</TitleWithLine>
-          </UIText>
-          <Button kind="regular" as={Link} to={newWalletPath} size={56}>
-            Create New Wallet Group
-          </Button>
-          <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
-            This will create a new recovery phrase
-          </UIText>
-        </>
-      ) : null}
     </VStack>
+  );
+}
+
+function DecorativeFeatureList() {
+  const features = [
+    'Sign transactions in-app',
+    'Manage your multichain portfolio',
+    'Import multiple wallets',
+  ];
+  return (
+    <ul
+      style={{
+        listStyle: 'none',
+        padding: 0,
+        margin: 0,
+        display: 'grid',
+        gridTemplateRows: 'auto',
+        gap: 8,
+      }}
+    >
+      {features.map((text, index) => (
+        <li key={index}>
+          <HStack gap={8} alignItems="center">
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 4,
+                borderRadius: '50%',
+                backgroundColor: 'var(--z-index-1)',
+                color: 'var(--primary)',
+              }}
+            >
+              <CheckIcon style={{ width: 16, height: 16 }} />
+            </div>
+
+            <UIText kind="body/regular">{text}</UIText>
+          </HStack>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -124,6 +129,7 @@ function Options() {
   useBodyStyle(
     useMemo(
       () => ({
+        backgroundColor: 'var(--neutral-100)',
         backgroundImage: `url(${backgroundArts})`,
         backgroundRepeat: 'no-repeat',
       }),
@@ -139,9 +145,9 @@ function Options() {
   const importHref = createNextHref('/get-started/import', beforeCreate);
   return (
     <Background backgroundKind="transparent">
-      <PageColumn style={{ paddingTop: hasMnemonicWallets ? 60 : 120 }}>
+      <PageColumn style={{ paddingTop: 100 }}>
         <NavigationTitle title={null} />
-        <PageHeading>
+        <UIText kind="headline/hero">
           {hasMnemonicWallets ? null : (
             <span>
               Introducing
@@ -155,32 +161,33 @@ function Options() {
           >
             Zerion Wallet
           </span>
-        </PageHeading>
-        <Spacer height={4} />
-        <UIText kind="subtitle/l_reg">Explore all of Web3 in one place</UIText>
+        </UIText>
+        <Spacer height={8} />
+        <UIText kind="headline/h3">Explore all of Web3 in one place</UIText>
 
-        <Spacer height={32} />
+        <Spacer height={24} />
 
-        <Surface padding={16}>
-          <VStack gap={16}>
-            <NewWalletOption
-              beforeCreate={beforeCreate}
-              mnemonicWalletGroups={mnemonicGroups || null}
-            />
-            <UIText kind="subtitle/l_reg" color="var(--neutral-500)">
-              <TitleWithLine lineColor="var(--neutral-300)">or</TitleWithLine>
-            </UIText>
-            <VStack gap={8}>
-              <Button kind="regular" as={Link} to={importHref} size={56}>
-                Import Existing Wallet
-              </Button>
-              <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
-                Use this option if you want to import an existing wallet using a{' '}
-                <em>recovery phrase</em> or a <em>private key</em>
-              </UIText>
-            </VStack>
-          </VStack>
-        </Surface>
+        <DecorativeFeatureList />
+
+        <Spacer height={24} />
+
+        <VStack gap={16}>
+          <NewWalletOption
+            beforeCreate={beforeCreate}
+            mnemonicWalletGroups={mnemonicGroups || null}
+          />
+          <Button
+            kind="regular"
+            as={Link}
+            to={importHref}
+            size={56}
+            style={{
+              boxShadow: 'var(--elevation-300)',
+            }}
+          >
+            Import Existing Wallet
+          </Button>
+        </VStack>
         <PageBottom />
       </PageColumn>
     </Background>
@@ -189,6 +196,7 @@ function Options() {
 
 function WalletGroupSelect() {
   const [params] = useSearchParams();
+  const beforeCreate = params.get('beforeCreate');
   const { data: walletGroups, isLoading } = useWalletGroups();
   const mnemonicGroups = useMemo(
     () =>
@@ -203,36 +211,73 @@ function WalletGroupSelect() {
   if (!mnemonicGroups) {
     throw new Error('Wallet Groups are required to display this view');
   }
-  const targetUrl = params.get('next');
   return (
     <PageColumn>
+      <NavigationTitle title="Create New Wallet" />
       <PageTop />
-      <VStack gap={8}>
-        <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
-          Wallets (i)
-        </UIText>
+      <VStack gap={20}>
+        <VStack gap={8}>
+          <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
+            Add new address to an existing group
+          </UIText>
 
-        <SurfaceList
-          items={mnemonicGroups.map((group) => {
-            const url = `${targetUrl}?groupId=${group.id}`;
-            return {
-              key: group.id,
-              to: url,
-              component: (
-                <VStack gap={4}>
-                  <UIText kind="subtitle/m_med">
-                    {getGroupDisplayName(group.name)}
+          <SurfaceList
+            items={mnemonicGroups.map((group) => {
+              return {
+                key: group.id,
+                to: createNextHref(
+                  `/get-started/import/mnemonic?groupId=${group.id}`,
+                  beforeCreate
+                ),
+                component: (
+                  <AngleRightRow>
+                    <VStack gap={4}>
+                      <UIText kind="subtitle/m_med">
+                        {getGroupDisplayName(group.name)}
+                      </UIText>
+                      <div
+                        style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}
+                      >
+                        {group.walletContainer.wallets.map((wallet) => (
+                          <AddressBadge key={wallet.address} wallet={wallet} />
+                        ))}
+                      </div>
+                    </VStack>
+                  </AngleRightRow>
+                ),
+              };
+            })}
+          />
+        </VStack>
+        <VStack gap={8}>
+          <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
+            Or create a new wallet group
+          </UIText>
+          <SurfaceList
+            items={[
+              {
+                key: 0,
+                to: createNextHref('/get-started/new', beforeCreate),
+                component: (
+                  <UIText kind="body/regular" color="var(--primary)">
+                    <span
+                      style={{ fontSize: '1.25em', verticalAlign: 'middle' }}
+                    >
+                      +
+                    </span>{' '}
+                    <span style={{ verticalAlign: 'middle' }}>
+                      Create New Wallet Group
+                    </span>
                   </UIText>
-                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                    {group.walletContainer.wallets.map((wallet) => (
-                      <AddressBadge key={wallet.address} wallet={wallet} />
-                    ))}
-                  </div>
-                </VStack>
-              ),
-            };
-          })}
-        />
+                ),
+              },
+            ]}
+          />
+
+          <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
+            This will create a new recovery phrase
+          </UIText>
+        </VStack>
       </VStack>
       <PageBottom />
     </PageColumn>

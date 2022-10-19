@@ -12,10 +12,12 @@ export function DecorativeMessage({
   text,
   isConsecutive = false,
   style,
+  animate = true,
 }: {
   text: React.ReactNode;
   isConsecutive?: boolean;
   style?: React.CSSProperties;
+  animate?: boolean;
 }) {
   return (
     <HStack
@@ -26,7 +28,7 @@ export function DecorativeMessage({
         gridTemplateColumns: 'minmax(min-content, max-content) auto',
         animationFillMode: 'backwards',
       }}
-      className={s.appear}
+      className={animate ? s.appear : undefined}
     >
       <div
         style={{

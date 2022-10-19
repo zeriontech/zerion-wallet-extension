@@ -153,7 +153,9 @@ export function AddressImportMessages({ values }: { values: BareWallet[] }) {
   return (
     <PageColumn>
       <PageTop />
-      <VStack gap={8}>{messages}</VStack>
+      <VStack gap={8} style={{ paddingBottom: 24 }}>
+        {messages}
+      </VStack>
 
       <Button
         as={animated.button}
