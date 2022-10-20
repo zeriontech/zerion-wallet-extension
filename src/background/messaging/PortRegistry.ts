@@ -40,6 +40,7 @@ export class PortRegistry {
   register(port: RuntimePort) {
     pushUnique(this.ports, port);
     port.onMessage.addListener(this.listener);
+
     port.onDisconnect.addListener(() => {
       console.log('port disconnected', port.name); // eslint-disable-line no-console
       port.onMessage.removeListener(this.listener);
@@ -57,5 +58,12 @@ export class PortRegistry {
 
   addMessageHandler(handler: PortMessageHandler) {
     this.handlers.push(handler);
+  }
+
+  postMessage<T>({ portName, message }: { portName: string; message: T }) {
+    const port = this.ports.find((port) => port.name === portName);
+    if (port) {
+      port.postMessage(message);
+    }
   }
 }

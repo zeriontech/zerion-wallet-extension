@@ -9,6 +9,7 @@ export const emitter = createNanoEvents<{
   chainChanged: () => void;
   pendingTransactionCreated: (transaction: TransactionResponse) => void;
   transactionMined: (transaction: TransactionReceipt) => void;
+  userActivity: () => void;
 }>();
 
 Object.assign(window, { emitter });

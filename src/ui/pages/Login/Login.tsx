@@ -44,7 +44,6 @@ export function Login() {
   if (!user) {
     throw new Error('Login page: User not found');
   }
-  console.log({ mutationData: loginMutation.data });
   return (
     <Background backgroundKind="white">
       <PageColumn>

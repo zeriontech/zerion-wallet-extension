@@ -12,6 +12,7 @@ import { EthereumEventsBroadcaster } from './messaging/controller-event-handlers
 import { MemoryCacheRPC } from './resource/memoryCacheRPC';
 import { networksStore } from 'src/modules/networks/networks-store';
 import { configureBackgroundClient } from 'src/modules/defi-sdk';
+import { start as startIdleTimer } from './idle-time-handler';
 
 Object.assign(window, { ethers });
 
@@ -55,8 +56,14 @@ initialize().then(({ account, accountPublicRPC }) => {
     portRegistry.register(port);
   });
 
-  setInterval(() => {
-    // eslint-disable-next-line no-console
-    console.log('background.js heartbeat', new Date());
-  }, 1000 * 60);
+  account.on('reset', () => {
+    portRegistry.postMessage({
+      portName: `${chrome.runtime.id}/wallet`,
+      message: 'session-logout',
+    });
+  });
+
+  startIdleTimer(() => {
+    account.logout();
+  });
 });
