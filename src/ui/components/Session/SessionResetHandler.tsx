@@ -8,7 +8,7 @@ export function SessionResetHandler() {
   const pathnameRef = useRef(location.pathname);
   pathnameRef.current = location.pathname;
   useEffect(() => {
-    async function messageHandler(message: unknown) {
+    function messageHandler(message: unknown) {
       if (message === 'session-logout') {
         if (pathnameRef.current !== '/login') {
           navigate('/login');
