@@ -115,6 +115,11 @@ export class Wallet {
     return this.id;
   }
 
+  async userHeartbeat({ context }: PublicMethodParams) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('userActivity');
+  }
+
   async updateCredentials({
     params: { id, encryptionKey },
   }: PublicMethodParams<{ id: string; encryptionKey: string }>) {

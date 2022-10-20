@@ -40,6 +40,9 @@ import { NotFoundPage } from '../components/NotFoundPage';
 import { UIText } from '../ui-kit/UIText';
 import { defaultUIContextValue, UIContext } from '../components/UIContext';
 import { ConnectedSites } from '../pages/ConnectedSites';
+import { InvalidateQueryCache } from '../components/Session/InvalidateQueryCache';
+import { InactivityDetector } from '../components/Session/InactivityDetector';
+import { SessionResetHandler } from '../components/Session/SessionResetHandler';
 
 const locationStore = new PersistentStore('location', {
   pathname: '/',
@@ -232,11 +235,31 @@ function Views() {
               />
             }
           />
-          <Route path="/intro" element={<Intro />} />
-          <Route path="/create-account" element={<CreateAccount />} />
-          <Route path="/get-started" element={<GetStarted />} />
+          <Route
+            path="/intro"
+            element={
+              <InvalidateQueryCache>
+                <Intro />
+              </InvalidateQueryCache>
+            }
+          />
+          <Route
+            path="/create-account"
+            element={
+              <InvalidateQueryCache>
+                <CreateAccount />
+              </InvalidateQueryCache>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <InvalidateQueryCache>
+                <Login />
+              </InvalidateQueryCache>
+            }
+          />
           <Route path="/get-started/*" element={<GetStarted />} />
-          <Route path="/login" element={<Login />} />
           <Route path="/hello" element={<View />} />
           <Route
             path="/overview/*"
@@ -361,6 +384,8 @@ export function App() {
       <UIContext.Provider value={defaultUIContextValue}>
         <QueryClientProvider client={queryClient}>
           <Router>
+            <InactivityDetector />
+            <SessionResetHandler />
             <DesignTheme />
             <ErrorBoundary
               renderError={(error) => (
