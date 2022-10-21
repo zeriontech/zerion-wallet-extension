@@ -36,7 +36,7 @@ function useRedirectIfOriginAlreadyAllowed({
         if (!address) {
           return;
         }
-        const isAllowed = result[origin].addresses.includes(address);
+        const isAllowed = result[origin]?.addresses.includes(address);
         if (isAllowed) {
           onIsAllowed();
         }
