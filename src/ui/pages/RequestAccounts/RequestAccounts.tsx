@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useQuery } from 'react-query';
 import { useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -14,8 +14,43 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
 
+function useRedirectIfOriginAlreadyAllowed({
+  origin,
+  address,
+  onIsAllowed,
+}: {
+  origin: string;
+  address: string | undefined;
+  onIsAllowed: () => void;
+}) {
+  useQuery(
+    'getOriginPermissions',
+    () => walletPort.request('getOriginPermissions'),
+    {
+      enabled: Boolean(address),
+      useErrorBoundary: true,
+      suspense: true,
+      refetchOnWindowFocus: false,
+      retry: false,
+      onSuccess(result) {
+        if (!address) {
+          return;
+        }
+        const isAllowed = result[origin].addresses.includes(address);
+        if (isAllowed) {
+          onIsAllowed();
+        }
+      },
+    }
+  );
+}
+
 export function RequestAccounts() {
   const [params] = useSearchParams();
+  const origin = params.get('origin');
+  if (!origin) {
+    throw new Error('origin get-parameter is required for this view');
+  }
   const {
     data: wallet,
     isLoading,
@@ -23,15 +58,21 @@ export function RequestAccounts() {
   } = useQuery('wallet/uiGetCurrentWallet', () => {
     return walletPort.request('uiGetCurrentWallet');
   });
+  const handleConfirm = useCallback(() => {
+    windowPort.confirm(Number(params.get('windowId')));
+  }, [params]);
+
+  useRedirectIfOriginAlreadyAllowed({
+    origin,
+    address: wallet?.address,
+    onIsAllowed: handleConfirm,
+  });
+
   if (isError) {
     return <p>Some Error</p>;
   }
   if (isLoading || !wallet) {
     return null;
-  }
-  const origin = params.get('origin');
-  if (!origin) {
-    throw new Error('origin get-parameter is required for this view');
   }
   const originName = new URL(origin).hostname;
   return (
@@ -108,13 +149,7 @@ export function RequestAccounts() {
         style={{ textAlign: 'center', marginTop: 'auto', paddingBottom: 32 }}
         gap={8}
       >
-        <Button
-          onClick={() => {
-            windowPort.confirm(Number(params.get('windowId')));
-          }}
-        >
-          Approve
-        </Button>
+        <Button onClick={handleConfirm}>Approve</Button>
         <UnstyledButton
           style={{ color: 'var(--primary)' }}
           onClick={() => {
