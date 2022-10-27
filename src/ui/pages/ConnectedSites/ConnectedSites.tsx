@@ -114,7 +114,7 @@ function ConnectedSitesList({
                     </div>
                   }
                   text={
-                    <UIText kind="body/s_reg">
+                    <UIText kind="body/accent">
                       {new URL(item.origin).hostname}
                     </UIText>
                   }

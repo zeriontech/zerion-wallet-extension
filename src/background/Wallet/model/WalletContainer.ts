@@ -132,3 +132,13 @@ export class PrivateKeyWalletContainer extends WalletContainerImpl {
     throw new Error('PrivateKeyWalletContainer cannot have multiple wallets');
   }
 }
+
+export class TestPrivateKeyWalletContainer extends WalletContainerImpl {
+  wallets: BareWallet[];
+  seedType = SeedType.privateKey;
+
+  constructor(wallets: BareWallet[]) {
+    super();
+    this.wallets = wallets;
+  }
+}

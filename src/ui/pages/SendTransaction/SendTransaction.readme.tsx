@@ -18,11 +18,10 @@ export const readme: Readme = {
       }}
     >
       {Object.entries(sample).map(([key, tx], index) => (
-        <div>
+        <div key={index}>
           {key}
 
           <MemoryRouter
-            key={index}
             initialEntries={[
               `/sendTransaction?${new URLSearchParams({
                 origin: 'https://zerion.io',

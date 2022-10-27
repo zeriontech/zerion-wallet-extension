@@ -13,14 +13,17 @@
 
 :global(.neutral-bg) {
   --background: var(--neutral-100);
+  background-color: var(--background);
 }
 
 :global(.white-bg) {
   --background: var(--white);
+  background-color: var(--background);
 }
 
 :global(.transparent-bg) {
   --background: transparent;
+  background-color: var(--background);
 }
 
 body {

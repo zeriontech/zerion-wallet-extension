@@ -4,7 +4,10 @@ import { Store } from 'store-unit';
 import { isTruthy } from 'is-truthy-ts';
 import { encrypt, decrypt } from '@metamask/browser-passworder';
 import { notificationWindow } from 'src/background/NotificationWindow/NotificationWindow';
-import { ChannelContext } from 'src/shared/types/ChannelContext';
+import type {
+  ChannelContext,
+  PrivateChannelContext,
+} from 'src/shared/types/ChannelContext';
 import {
   InvalidParams,
   MethodNotImplemented,
@@ -13,7 +16,10 @@ import {
   UserRejected,
   UserRejectedTxSignature,
 } from 'src/shared/errors/errors';
-import { INTERNAL_ORIGIN } from 'src/background/constants';
+import {
+  INTERNAL_ORIGIN,
+  INTERNAL_ORIGIN_SYMBOL,
+} from 'src/background/constants';
 import { networksStore } from 'src/modules/networks/networks-store';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { prepareTransaction } from 'src/modules/ethereum/transactions/prepareTransaction';
@@ -41,6 +47,8 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getTransactionChainId } from 'src/modules/ethereum/transactions/resolveChainForTx';
 import { WalletNameFlag } from './model/WalletNameFlag';
 
+const INTERNAL_SYMBOL_CONTEXT = { origin: INTERNAL_ORIGIN_SYMBOL };
+
 type PartiallyRequired<T, K extends keyof T> = { [P in keyof T]?: T[P] } & {
   [P in K]: T[P];
 };
@@ -52,6 +60,15 @@ type PublicMethodParams<T = undefined> = T extends undefined
   : {
       params: T;
       context?: Partial<ChannelContext>;
+    };
+
+type WalletMethodParams<T = undefined> = T extends undefined
+  ? {
+      context?: Partial<ChannelContext | PrivateChannelContext>;
+    }
+  : {
+      params: T;
+      context?: Partial<ChannelContext | PrivateChannelContext>;
     };
 
 interface WalletEvents {
@@ -115,7 +132,7 @@ export class Wallet {
     return this.id;
   }
 
-  async userHeartbeat({ context }: PublicMethodParams) {
+  async userHeartbeat({ context }: WalletMethodParams) {
     this.verifyInternalOrigin(context);
     emitter.emit('userActivity');
   }
@@ -129,8 +146,13 @@ export class Wallet {
     await this.syncWithWalletStore();
   }
 
-  async testMethod({ params: value }: PublicMethodParams<number>) {
-    return new Promise<string>((r) => setTimeout(() => r(String(value)), 1500));
+  async testMethod({ params: value }: WalletMethodParams<number>) {
+    return new Promise<string>((r) =>
+      setTimeout(
+        () => r(`Hello, curious developer. Your value is ${value}`),
+        1500
+      )
+    );
   }
 
   // TODO: For now, I prefix methods with "ui" which return wallet data and are supposed to be called
@@ -146,7 +168,7 @@ export class Wallet {
 
   async uiAddMnemonicWallet({
     params: { groupId },
-  }: PublicMethodParams<{ groupId: string }>) {
+  }: WalletMethodParams<{ groupId: string }>) {
     const group = this.record?.walletManager.groups.find(
       (group) => group.id === groupId
     );
@@ -176,7 +198,7 @@ export class Wallet {
     return maskWallet(this.pendingWallet.walletContainer.getFirstWallet());
   }
 
-  async uiImportPrivateKey({ params: privateKey }: PublicMethodParams<string>) {
+  async uiImportPrivateKey({ params: privateKey }: WalletMethodParams<string>) {
     this.pendingWallet = {
       groupId: null,
       walletContainer: new PrivateKeyWalletContainer([{ privateKey }]),
@@ -186,7 +208,7 @@ export class Wallet {
 
   async uiImportSeedPhrase({
     params: mnemonics,
-  }: PublicMethodParams<NonNullable<BareWallet['mnemonic']>[]>) {
+  }: WalletMethodParams<NonNullable<BareWallet['mnemonic']>[]>) {
     this.pendingWallet = {
       groupId: null,
       walletContainer: new MnemonicWalletContainer(
@@ -199,7 +221,7 @@ export class Wallet {
   async getRecoveryPhrase({
     params: { groupId },
     context,
-  }: PublicMethodParams<{ groupId: string }>) {
+  }: WalletMethodParams<{ groupId: string }>) {
     this.verifyInternalOrigin(context);
     const group = this.record?.walletManager.groups.find(
       (group) => group.id === groupId
@@ -228,7 +250,7 @@ export class Wallet {
   async uiGetWalletByAddress({
     context,
     params: { address },
-  }: PublicMethodParams<{ address: string }>) {
+  }: WalletMethodParams<{ address: string }>) {
     this.verifyInternalOrigin(context);
     if (!this.record) {
       throw new RecordNotFound();
@@ -269,7 +291,7 @@ export class Wallet {
   async removePermission({
     context,
     params: { origin, address },
-  }: PublicMethodParams<{ origin: string; address?: string }>) {
+  }: WalletMethodParams<{ origin: string; address?: string }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
     this.record = Model.removePermission(this.record, { origin, address });
@@ -295,7 +317,7 @@ export class Wallet {
   async hasPermission({
     params: { address, origin },
     context,
-  }: PublicMethodParams<{ address: string; origin: string }>) {
+  }: WalletMethodParams<{ address: string; origin: string }>) {
     this.verifyInternalOrigin(context);
     return (
       this.record?.permissions[origin]?.addresses.includes(address) || false
@@ -311,7 +333,7 @@ export class Wallet {
   async setCurrentAddress({
     params: { address },
     context,
-  }: PublicMethodParams<{ address: string }>) {
+  }: WalletMethodParams<{ address: string }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
     this.record = Model.setCurrentAddress(this.record, { address });
@@ -345,19 +367,34 @@ export class Wallet {
   }
 
   private verifyInternalOrigin(
-    context: Partial<ChannelContext> | undefined
-  ): asserts context is PartiallyRequired<ChannelContext, 'origin'> {
-    if (context?.origin !== INTERNAL_ORIGIN) {
-      throw new OriginNotAllowed(context?.origin);
+    context: Partial<ChannelContext | PrivateChannelContext> | undefined
+  ): asserts context is PartiallyRequired<
+    ChannelContext | PrivateChannelContext,
+    'origin'
+  > {
+    if (
+      context?.origin !== INTERNAL_ORIGIN &&
+      context?.origin !== INTERNAL_ORIGIN_SYMBOL
+    ) {
+      throw new OriginNotAllowed();
     }
   }
 
-  async getCurrentAddress({ context }: PublicMethodParams) {
+  private ensureStringOrigin(
+    context: Partial<ChannelContext | PrivateChannelContext> | undefined
+  ): asserts context is PartiallyRequired<ChannelContext, 'origin'> {
+    this.verifyInternalOrigin(context);
+    if (typeof context.origin !== 'string') {
+      throw new Error('Origin must be a string');
+    }
+  }
+
+  async getCurrentAddress({ context }: WalletMethodParams) {
     this.verifyInternalOrigin(context);
     return this.readCurrentAddress();
   }
 
-  async uiGetWalletGroups({ context }: PublicMethodParams) {
+  async uiGetWalletGroups({ context }: WalletMethodParams) {
     this.verifyInternalOrigin(context);
     const groups = this.record?.walletManager.groups;
     return groups ? maskWalletGroups(groups) : null;
@@ -366,7 +403,7 @@ export class Wallet {
   async uiGetWalletGroup({
     params: { groupId },
     context,
-  }: PublicMethodParams<{ groupId: string }>) {
+  }: WalletMethodParams<{ groupId: string }>) {
     this.verifyInternalOrigin(context);
     const group = this.record?.walletManager.groups.find(
       (group) => group.id === groupId
@@ -377,7 +414,7 @@ export class Wallet {
   async removeWalletGroup({
     params: { groupId },
     context,
-  }: PublicMethodParams<{ groupId: string }>) {
+  }: WalletMethodParams<{ groupId: string }>) {
     this.verifyInternalOrigin(context);
     if (!this.record) {
       throw new RecordNotFound();
@@ -389,7 +426,7 @@ export class Wallet {
   async renameWalletGroup({
     params: { groupId, name },
     context,
-  }: PublicMethodParams<{ groupId: string; name: string }>) {
+  }: WalletMethodParams<{ groupId: string; name: string }>) {
     this.verifyInternalOrigin(context);
     if (!this.record) {
       throw new RecordNotFound();
@@ -401,7 +438,7 @@ export class Wallet {
   async renameAddress({
     params: { address, name },
     context,
-  }: PublicMethodParams<{ address: string; name: string }>) {
+  }: WalletMethodParams<{ address: string; name: string }>) {
     this.verifyInternalOrigin(context);
     if (!this.record) {
       throw new RecordNotFound();
@@ -413,7 +450,7 @@ export class Wallet {
   async removeAddress({
     params: { address },
     context,
-  }: PublicMethodParams<{ address: string }>) {
+  }: WalletMethodParams<{ address: string }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
     this.record = Model.removeAddress(this.record, { address });
@@ -423,7 +460,7 @@ export class Wallet {
   async updateLastBackedUp({
     params: { groupId },
     context,
-  }: PublicMethodParams<{ groupId: string }>) {
+  }: WalletMethodParams<{ groupId: string }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
 
@@ -437,7 +474,7 @@ export class Wallet {
     this.updateWalletStore(this.record);
   }
 
-  async getNoBackupCount({ context }: PublicMethodParams) {
+  async getNoBackupCount({ context }: WalletMethodParams) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
     return this.record.walletManager.groups
@@ -448,7 +485,7 @@ export class Wallet {
   async setPreference({
     context,
     params: { preferences },
-  }: PublicMethodParams<{
+  }: WalletMethodParams<{
     preferences: Partial<WalletRecord['preferences']>;
   }>) {
     this.verifyInternalOrigin(context);
@@ -457,7 +494,7 @@ export class Wallet {
     this.updateWalletStore(this.record);
   }
 
-  async getPreferences({ context }: PublicMethodParams) {
+  async getPreferences({ context }: WalletMethodParams) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
     return Model.getPreferences(this.record);
@@ -471,7 +508,7 @@ export class Wallet {
   async wallet_setWalletNameFlag({
     context,
     params: { flag, checked },
-  }: PublicMethodParams<{ flag: WalletNameFlag; checked: boolean }>) {
+  }: WalletMethodParams<{ flag: WalletNameFlag; checked: boolean }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
     if (checked) {
@@ -486,7 +523,7 @@ export class Wallet {
   async switchChain({
     params: _chainStr,
     context,
-  }: PublicMethodParams<string>) {
+  }: WalletMethodParams<string>) {
     this.verifyInternalOrigin(context);
     throw new Error('switchChain is deprecated');
   }
@@ -494,7 +531,7 @@ export class Wallet {
   async switchChainForOrigin({
     params: { chain, origin },
     context,
-  }: PublicMethodParams<{ chain: string; origin: string }>) {
+  }: WalletMethodParams<{ chain: string; origin: string }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
     this.setChainForOrigin(createChain(chain), origin);
@@ -524,7 +561,7 @@ export class Wallet {
   async requestChainForOrigin({
     params: { origin },
     context,
-  }: PublicMethodParams<{ origin: string }>) {
+  }: WalletMethodParams<{ origin: string }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
     const chain = Model.getChainForOrigin(this.record, { origin });
@@ -627,8 +664,9 @@ export class Wallet {
   async signAndSendTransaction({
     params,
     context,
-  }: PublicMethodParams<[IncomingTransaction, { origin: string }]>) {
+  }: WalletMethodParams<[IncomingTransaction, { origin: string }]>) {
     this.verifyInternalOrigin(context);
+    this.ensureStringOrigin(context);
     const [transaction, { origin }] = params;
     if (!transaction) {
       throw new InvalidParams();
@@ -642,7 +680,7 @@ export class Wallet {
   async signTypedData_v4({
     params: { typedData: rawTypedData },
     context,
-  }: PublicMethodParams<{ typedData: TypedData | string }>) {
+  }: WalletMethodParams<{ typedData: TypedData | string }>) {
     this.verifyInternalOrigin(context);
     if (!rawTypedData) {
       throw new InvalidParams();
@@ -661,7 +699,7 @@ export class Wallet {
   async personalSign({
     params: [message],
     context,
-  }: PublicMethodParams<[string, string?, string?]>) {
+  }: WalletMethodParams<[string, string?, string?]>) {
     this.verifyInternalOrigin(context);
     if (message == null) {
       throw new InvalidParams();
@@ -733,9 +771,18 @@ class PublicController {
       notificationWindow.open({
         route: '/requestAccounts',
         search: `?origin=${origin}`,
-        onResolve: async () => {
+        onResolve: async ({ address }: { address: string }) => {
+          if (!address) {
+            throw new Error('Confirmation resolved with invalid arguments');
+          }
           const currentAddress = this.wallet.ensureCurrentAddress();
-          this.wallet.acceptOrigin(origin, currentAddress);
+          if (normalizeAddress(address) !== normalizeAddress(currentAddress)) {
+            await this.wallet.setCurrentAddress({
+              params: { address },
+              context: INTERNAL_SYMBOL_CONTEXT,
+            });
+          }
+          this.wallet.acceptOrigin(origin, address);
           const accounts = await this.eth_accounts({ context });
           resolve(accounts);
         },

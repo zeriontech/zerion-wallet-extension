@@ -1,3 +1,8 @@
-export { readme as OverviewReadme } from 'src/ui/pages/Overview/Overview.readme';
-export { readme as SendTransactionReadme } from 'src/ui/pages/SendTransaction/SendTransaction.readme';
-export { readme as SignMessageReadme } from 'src/ui/pages/SignMessage/SignMessage.readme';
+import type { Readme } from '../types';
+
+export const readmes: Readme[] = [
+  require('src/ui/pages/Overview/Overview.readme').readme,
+  require('src/ui/pages/SendTransaction/SendTransaction.readme').readme,
+  require('src/ui/pages/SignMessage/SignMessage.readme').readme,
+  require('src/ui/pages/RequestAccounts/RequestAccounts.readme').readme,
+];

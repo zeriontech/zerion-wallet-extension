@@ -9,11 +9,10 @@ import { ViewError } from 'src/ui/components/ViewError';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { configureClient } from './defi-sdk';
-import * as readmes from './readmes';
+import { readmes } from './readmes';
+import './lab.module.css';
 
 Object.assign(window, { ethers });
-
-const readmeComponents = Object.values(readmes);
 
 const queryClient = new QueryClient();
 configureClient();
@@ -34,8 +33,8 @@ function App() {
           <UIText kind="h/2_sb">Hello, UI Lab</UIText>
 
           <VStack gap={56}>
-            {readmeComponents.map((readme) => (
-              <VStack gap={12}>
+            {readmes.map((readme, index) => (
+              <VStack gap={12} key={index}>
                 <UIText kind="h/6_med">{readme.name}</UIText>
 
                 {React.createElement(readme.component)}

@@ -1,4 +1,5 @@
-import React, { useEffect, useLayoutEffect, useRef } from 'react';
+import React, { useContext, useEffect, useLayoutEffect, useRef } from 'react';
+import { UIContext } from '../UIContext';
 
 export function useBodyStyle(style: React.CSSProperties) {
   const prevValuesRef = useRef<React.CSSProperties>({});
@@ -38,26 +39,28 @@ export function Background({
   backgroundColor?: React.CSSProperties['backgroundColor'];
   backgroundKind?: 'neutral' | 'white' | 'transparent';
 }) {
+  const { uiScrollRootElement } = useContext(UIContext);
   useEffect(() => {
     if (!backgroundKind) {
       return;
     }
     const className = bgClassNames[backgroundKind];
-    document.body.classList.add(className);
+    uiScrollRootElement.classList.add(className);
     return () => {
-      document.body.classList.remove(className);
+      uiScrollRootElement.classList.remove(className);
     };
-  }, [backgroundKind]);
+  }, [backgroundKind, uiScrollRootElement.classList]);
   useEffect(() => {
     if (!backgroundColor) {
       return;
     }
-    const previousValue = document.body.style.getPropertyValue('--background');
-    document.body.style.backgroundColor = backgroundColor;
+    const previousValue =
+      uiScrollRootElement.style.getPropertyValue('--background');
+    uiScrollRootElement.style.backgroundColor = backgroundColor;
     return () => {
-      document.body.style.backgroundColor = previousValue;
+      uiScrollRootElement.style.backgroundColor = previousValue;
     };
-  }, [backgroundColor]);
+  }, [backgroundColor, uiScrollRootElement.style]);
 
   return children as JSX.Element;
 }
