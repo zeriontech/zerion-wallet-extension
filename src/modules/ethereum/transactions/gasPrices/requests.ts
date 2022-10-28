@@ -72,7 +72,6 @@ class GasChainPricesSubscription {
           if (!this.latestValue) {
             resolve(value);
           }
-          console.log('subsription updated', value);
           this.latestValue = value;
         },
         mergeStrategy: mergeSingleEntity,

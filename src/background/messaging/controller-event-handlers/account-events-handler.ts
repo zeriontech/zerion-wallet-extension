@@ -12,7 +12,6 @@ export function handleAccountEvents({ account }: { account: Account }) {
   function addWalletEventListeners(wallet: Wallet) {
     disposers.push(
       wallet.emitter.on('recordUpdated', () => {
-        console.log('recordUpdated, emitting accountsChanged');
         emitter.emit('accountsChanged');
       }),
       wallet.emitter.on('currentAddressChange', () => {
@@ -30,7 +29,6 @@ export function handleAccountEvents({ account }: { account: Account }) {
   addWalletEventListeners(account.getCurrentWallet());
 
   account.on('authenticated', async () => {
-    console.log('authenticated, emitting accountsChanged and chainChanged');
     emitter.emit('accountsChanged');
     emitter.emit('chainChanged');
   });

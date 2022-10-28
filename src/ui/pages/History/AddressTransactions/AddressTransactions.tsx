@@ -47,7 +47,6 @@ export function AddressTransactions() {
   if (!groupedByDate) {
     return null;
   }
-  console.log('AddressTransactions', value);
 
   return (
     <>

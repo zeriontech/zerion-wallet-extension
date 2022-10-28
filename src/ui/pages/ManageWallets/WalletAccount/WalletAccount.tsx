@@ -51,7 +51,7 @@ function EditableWalletName({
     }
   );
   const debouncedRenameRequest = useDebouncedCallback(
-    useCallback((value) => mutate(value), [mutate]),
+    useCallback((value: string) => mutate(value), [mutate]),
     500
   );
   return (

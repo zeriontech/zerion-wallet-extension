@@ -18,7 +18,6 @@ const queryClient = new QueryClient();
 configureClient();
 
 function App() {
-  console.log('App render');
   return (
     <QueryClientProvider client={queryClient}>
       <ErrorBoundary

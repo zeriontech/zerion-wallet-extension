@@ -68,7 +68,7 @@ function EditableWalletGroupName({
     }
   );
   const debouncedRenameRequest = useDebouncedCallback(
-    useCallback((value) => mutate(value), [mutate]),
+    useCallback((value: string) => mutate(value), [mutate]),
     500
   );
   return (
@@ -176,7 +176,6 @@ export function WalletGroup() {
       },
     }
   );
-  console.log({ groupId, isLoading });
   if (isLoading) {
     return (
       <>

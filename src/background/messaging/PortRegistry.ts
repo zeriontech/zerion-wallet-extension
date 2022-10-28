@@ -41,11 +41,12 @@ export class PortRegistry {
     pushUnique(this.ports, port);
     port.onMessage.addListener(this.listener);
 
-    port.onDisconnect.addListener(() => {
-      console.log('port disconnected', port.name); // eslint-disable-line no-console
+    const disconnectHandler = () => {
       port.onMessage.removeListener(this.listener);
       this.unregister(port);
-    });
+      port.onDisconnect.removeListener(disconnectHandler);
+    };
+    port.onDisconnect.addListener(disconnectHandler);
   }
 
   unregister(port: RuntimePort) {

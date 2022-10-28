@@ -21,7 +21,7 @@ const browser = {
           _namespace: OnChangedParameters[1]
         ) => void
       ) {
-        console.log('added listener', listener);
+        console.log('added listener', listener); // eslint-disable-line no-console
       },
     },
   },

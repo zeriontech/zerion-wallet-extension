@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect } from 'react';
 import { AreaProvider } from 'react-area';
 import { QueryClient, QueryClientProvider, useQuery } from 'react-query';
 import {
@@ -8,12 +8,10 @@ import {
   useLocation,
   Link,
   Outlet,
-  useNavigate,
   Navigate,
 } from 'react-router-dom';
 import { GetStarted } from 'src/ui/pages/GetStarted';
 import { Intro } from 'src/ui/pages/Intro';
-import { PersistentStore } from 'src/shared/PersistentStore';
 import { Overview } from 'src/ui/pages/Overview';
 import { RouteResolver } from 'src/ui/pages/RouteResolver';
 import { RequestAccounts } from 'src/ui/pages/RequestAccounts';
@@ -43,29 +41,6 @@ import { ConnectedSites } from '../pages/ConnectedSites';
 import { InvalidateQueryCache } from '../components/Session/InvalidateQueryCache';
 import { InactivityDetector } from '../components/Session/InactivityDetector';
 import { SessionResetHandler } from '../components/Session/SessionResetHandler';
-
-const locationStore = new PersistentStore('location', {
-  pathname: '/',
-  search: '',
-});
-
-locationStore.ready().then(() => {
-  console.log('locationStore ready', locationStore.getState());
-});
-
-function usePersistLocation({ enabled }: { enabled: boolean }) {
-  const { pathname, search } = useLocation();
-  const page = window.location.pathname;
-  useEffect(() => {
-    if (page && /dialog\.\w+\.html$/.test(page)) {
-      return;
-    }
-    if (!locationStore.ready || !enabled) {
-      return;
-    }
-    locationStore.setState((s) => ({ ...s, pathname, search }));
-  }, [pathname, search, enabled, page]);
-}
 
 function View() {
   const location = useLocation();
@@ -186,40 +161,7 @@ function RequireAuth({ children }: { children: JSX.Element }) {
 
 const templateType = getPageTemplateType();
 
-function useRedirectToSavedLocation({ enabled }: { enabled: boolean }) {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const initialLocationRef = useRef(location.pathname);
-  const [ready, setReady] = useState(!enabled || templateType !== 'popup');
-  useEffect(() => {
-    let active = true;
-    if (ready) {
-      return;
-    }
-    locationStore.ready().then(() => {
-      if (!active) {
-        return;
-      }
-      const { pathname, search } = locationStore.getState();
-      if (pathname !== '/' && initialLocationRef.current === '/') {
-        navigate({ pathname, search });
-      }
-      setReady(true);
-    });
-    return () => {
-      active = false;
-    };
-  }, [navigate, ready]);
-  usePersistLocation({ enabled: ready });
-  return { ready };
-}
-
 function Views() {
-  const { ready } = useRedirectToSavedLocation({ enabled: false });
-  if (!ready) {
-    return <span>not ready view</span>;
-  }
-
   return (
     <RouteResolver>
       <ViewArea>

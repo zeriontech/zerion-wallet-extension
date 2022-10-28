@@ -15,7 +15,7 @@ export function ItemLink({
 }: {
   to: LinkProps['to'];
   children: React.ReactNode;
-  onClick?: () => void;
+  onClick?: React.AnchorHTMLAttributes<HTMLAnchorElement>['onClick'];
   style?: React.CSSProperties;
 }) {
   return (
@@ -40,7 +40,7 @@ export function ItemAnchor({
   href: string;
   target?: React.AnchorHTMLAttributes<HTMLAnchorElement>['target'];
   children: React.ReactNode;
-  onClick?: () => void;
+  onClick?: React.AnchorHTMLAttributes<HTMLAnchorElement>['onClick'];
   style?: React.CSSProperties;
 }) {
   return (
@@ -110,14 +110,21 @@ export function SurfaceList({
           const isInteractiveItem =
             item.isInteractive ?? Boolean(item.to || item.href || item.onClick);
           const component = item.to ? (
-            <ItemLink to={item.to} onClick={item.onClick as any}>
+            <ItemLink
+              to={item.to}
+              onClick={
+                item.onClick as React.AnchorHTMLAttributes<HTMLAnchorElement>['onClick']
+              }
+            >
               {item.component}
             </ItemLink>
           ) : item.href ? (
             <ItemAnchor
               href={item.href}
               target={item.target}
-              onClick={item.onClick as any}
+              onClick={
+                item.onClick as React.AnchorHTMLAttributes<HTMLAnchorElement>['onClick']
+              }
             >
               {item.component}
             </ItemAnchor>

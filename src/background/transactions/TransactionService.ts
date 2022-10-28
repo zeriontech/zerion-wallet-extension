@@ -87,9 +87,7 @@ export class TransactionService {
     const chainId = ethers.utils.hexValue(chainIdAsNumber);
     const nodeUrl = networks.getRpcUrlInternal(networks.getChainById(chainId));
     const provider = new ethers.providers.JsonRpcProvider(nodeUrl);
-    console.log('trservice: waiting for receipt');
     const txReceipt = await waitForTransaction(hash, provider);
-    console.log('trservice: transactionMined', txReceipt);
     emitter.emit('transactionMined', txReceipt);
     this.upsertTransaction({ ...transactionObject, receipt: txReceipt });
   }

@@ -643,6 +643,7 @@ export class Wallet {
       // });
       // return this.sendTransaction(incomingTransaction, context);
     } else if (targetChainId == null) {
+      // eslint-disable-next-line no-console
       console.warn('chainId field is missing from transaction object');
       incomingTransaction.chainId = chainId;
     }
@@ -754,7 +755,6 @@ class PublicController {
   }
 
   async eth_requestAccounts({ context }: PublicMethodParams) {
-    console.log('eth_requestAccounts');
     const currentAddress = this.wallet.readCurrentAddress();
     if (currentAddress && this.wallet.allowedOrigin(context, currentAddress)) {
       return [currentAddress];

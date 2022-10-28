@@ -90,7 +90,6 @@ export class EthereumProvider extends JsonRpcProvider {
         updateChainId(this, chainId);
         this.accounts = accounts;
         if (walletNameFlags.includes(WalletNameFlag.isMetaMask)) {
-          console.log('is metamask in _prepareState');
           this.isMetaMask = true;
         }
       }

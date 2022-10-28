@@ -39,7 +39,6 @@ export class Account extends EventEmitter {
   static async ensureUserAndWallet() {
     const existingUser = await Account.readCurrentUser();
     const walletTable = await walletStore.getSavedState();
-    console.log({ existingUser, walletTable });
     if (existingUser && !walletTable?.[existingUser.id]) {
       await Account.removeCurrentUser();
     }

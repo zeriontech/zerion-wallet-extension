@@ -23,7 +23,8 @@ export function mapRPCMessageToController<T>(
 ) {
   if (isJsonRpcPayload(msg) && isJsonRpcRequest(msg)) {
     const { method, params, id } = msg;
-    console.log({ method, params, id, port, context }); // eslint-disable-line no-console
+    // logging
+    // console.log({ method, params, id, port, context });
     if (method in controller === false) {
       throw new Error(`Unsupported method: ${method}`);
     }
@@ -43,7 +44,8 @@ export function mapRPCMessageToController<T>(
         }
       )
       .then((result: JsonRpcResponse) => {
-        console.log('controller result', result);
+        // logging
+        // console.log('controller result', result);
         port.postMessage(result);
       });
   }

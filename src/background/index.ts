@@ -52,7 +52,6 @@ initialize().then(({ account, accountPublicRPC }) => {
   ethereumEventsBroadcaster.startListening();
 
   chrome.runtime.onConnect.addListener((port) => {
-    console.log('background.js: port connected', port); // eslint-disable-line no-console
     portRegistry.register(port);
   });
 
