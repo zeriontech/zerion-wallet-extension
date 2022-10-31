@@ -1,10 +1,5 @@
-import {
-  isJsonRpcError,
-  isJsonRpcPayload,
-  isJsonRpcRequest,
-  isJsonRpcResult,
-} from '@json-rpc-tools/utils';
 import { notificationWindow } from 'src/background/NotificationWindow/NotificationWindow';
+import { isRpcError, isRpcRequest, isRpcResult } from 'src/shared/custom-rpc';
 import type { PortMessageHandler } from '../PortRegistry';
 
 export function createNotificationWindowMessageHandler(): PortMessageHandler {
@@ -12,19 +7,19 @@ export function createNotificationWindowMessageHandler(): PortMessageHandler {
     if (port.name !== 'window') {
       return;
     }
-    if (!isJsonRpcPayload(msg)) {
-      return;
-    }
 
-    if (isJsonRpcResult(msg)) {
+    if (isRpcResult(msg)) {
       notificationWindow.emit('resolve', msg);
-    } else if (isJsonRpcError(msg)) {
+    } else if (isRpcError(msg)) {
       notificationWindow.emit('reject', msg);
-    } else if (isJsonRpcRequest(msg)) {
+    } else if (isRpcRequest(msg)) {
       if (msg.method === 'closeCurrentWindow') {
         notificationWindow.closeCurrentWindow();
       }
+    } else {
+      return false;
     }
+
     return true;
   };
 }

@@ -11,6 +11,7 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { useQuery } from 'react-query';
 import { NetworkIndicator } from 'src/ui/components/NetworkIndicator';
 import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
+import { invariant } from 'src/shared/invariant';
 
 export function SwitchEthereumChain() {
   const [params] = useSearchParams();
@@ -66,7 +67,9 @@ export function SwitchEthereumChain() {
       >
         <Button
           onClick={() => {
-            windowPort.confirm(Number(params.get('windowId')));
+            const windowId = params.get('windowId');
+            invariant(windowId, 'windowId get-parameter is required');
+            windowPort.confirm(windowId);
           }}
         >
           Approve
@@ -74,7 +77,9 @@ export function SwitchEthereumChain() {
         <UnstyledButton
           style={{ color: 'var(--primary)' }}
           onClick={() => {
-            windowPort.reject(Number(params.get('windowId')));
+            const windowId = params.get('windowId');
+            invariant(windowId, 'windowId get-parameter is required');
+            windowPort.reject(windowId);
           }}
         >
           Reject

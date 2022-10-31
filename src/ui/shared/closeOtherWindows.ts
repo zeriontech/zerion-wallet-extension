@@ -1,6 +1,10 @@
-import { formatJsonRpcRequest } from '@json-rpc-tools/utils';
+import type { RpcRequest } from 'src/shared/custom-rpc';
 import { windowPort } from './channels';
 
 export function closeOtherWindows() {
-  windowPort.port.postMessage(formatJsonRpcRequest('closeCurrentWindow', null));
+  const request: RpcRequest = {
+    id: String(Math.random()),
+    method: 'closeCurrentWindow',
+  };
+  windowPort.port.postMessage(request);
 }

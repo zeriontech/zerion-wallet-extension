@@ -1,29 +1,27 @@
-import {
-  ErrorResponse,
-  JsonRpcError,
-  JsonRpcResult,
-} from '@json-rpc-tools/utils';
+import { ErrorResponse } from '@json-rpc-tools/utils';
 import EventEmitter from 'events';
+import { nanoid } from 'nanoid';
+import type { RpcError, RpcResult } from 'src/shared/custom-rpc';
 import { UserRejected } from 'src/shared/errors/errors';
 import { windowManager } from '../webapis/window';
 
 class NotificationWindow extends EventEmitter {
   windowId: number | null | undefined = null;
-  id: number;
-  idsMap: Map<number, number>;
+  id: string;
+  idsMap: Map<string, number>;
 
   constructor() {
     super();
-    this.id = 0;
+    this.id = nanoid();
     this.idsMap = new Map();
   }
 
-  private getWindowId(id: number) {
+  private getWindowId(id: string) {
     return this.idsMap.get(id);
   }
 
   private getNewId() {
-    return this.id++;
+    return nanoid();
   }
 
   async open<T>({
@@ -82,13 +80,13 @@ class NotificationWindow extends EventEmitter {
       windowManager.event.off('windowRemoved', handleWindowRemoved);
     });
 
-    const handleResolve = ({ id, result }: JsonRpcResult) => {
+    const handleResolve = ({ id, result }: RpcResult<T>) => {
       if (this.getWindowId(id) === windowId) {
         onResolve(result);
         onDone();
       }
     };
-    const handleReject = (payload: JsonRpcError) => {
+    const handleReject = (payload: RpcError) => {
       const windowId = this.getWindowId(payload.id);
       if (windowId != null) {
         handleDismiss(windowId, payload.error);

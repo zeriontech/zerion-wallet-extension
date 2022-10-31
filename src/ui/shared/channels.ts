@@ -3,8 +3,6 @@ import { PortMessageChannel } from 'src/shared/PortMessageChannel';
 import type { Wallet } from 'src/shared/types/Wallet';
 import type { AccountPublicRPC } from 'src/shared/types/AccountPublicRPC';
 import type { MemoryCacheRPC } from 'src/shared/types/MemoryCacheRPC';
-import { formatJsonRpcResultForPort } from 'src/shared/formatJsonRpcResultForPort';
-import { formatJsonRpcError } from '@json-rpc-tools/utils';
 import { UserRejected } from 'src/shared/errors/errors';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -46,12 +44,18 @@ export const memoryCacheRPCPort = new PortMessageChannel({
 }) as RPCPort<MemoryCacheRPC>;
 
 class WindowPort extends PortMessageChannel {
-  confirm<T>(windowId: number, result?: T) {
-    return this.port.postMessage(formatJsonRpcResultForPort(windowId, result));
+  confirm<T>(windowId: string, result?: T) {
+    return this.port.postMessage({
+      id: windowId,
+      result,
+    });
   }
 
-  reject(windowId: number) {
-    this.port.postMessage(formatJsonRpcError(windowId, new UserRejected()));
+  reject(windowId: string) {
+    this.port.postMessage({
+      id: windowId,
+      error: new UserRejected(),
+    });
   }
 }
 

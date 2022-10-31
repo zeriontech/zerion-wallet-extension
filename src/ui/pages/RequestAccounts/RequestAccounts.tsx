@@ -27,6 +27,7 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { WalletMedia, Composition } from 'src/ui/components/WalletMedia';
+import { invariant } from 'src/shared/invariant';
 
 function WalletSelectList({
   wallets,
@@ -296,9 +297,11 @@ function RequestAccountsView({
 export function RequestAccounts() {
   const [params] = useSearchParams();
   const origin = params.get('origin');
-  if (!origin) {
-    throw new Error('origin get-parameter is required for this view');
-  }
+  const windowId = params.get('windowId');
+
+  invariant(origin, 'origin get-parameter is required');
+  invariant(windowId, 'windowId get-parameter is required');
+
   const walletGroupsQuery = useQuery(
     'wallet/uiGetWalletGroups',
     () => walletPort.request('uiGetWalletGroups'),
@@ -313,11 +316,11 @@ export function RequestAccounts() {
   });
   const handleConfirm = useCallback(
     (result: { address: string }) => {
-      windowPort.confirm(Number(params.get('windowId')), result);
+      windowPort.confirm(windowId, result);
     },
-    [params]
+    [windowId]
   );
-  const handleReject = () => windowPort.reject(Number(params.get('windowId')));
+  const handleReject = () => windowPort.reject(windowId);
 
   useRedirectIfOriginAlreadyAllowed({
     origin,

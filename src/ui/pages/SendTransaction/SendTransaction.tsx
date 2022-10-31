@@ -41,6 +41,7 @@ import { NetworkFee } from './NetworkFee';
 import { resolveChainForTx } from 'src/modules/ethereum/transactions/resolveChainForTx';
 import { networksStore } from 'src/modules/networks/networks-store';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
+import { invariant } from 'src/shared/invariant';
 
 function ItemSurface({ style, ...props }: React.HTMLProps<HTMLDivElement>) {
   const surfaceStyle = {
@@ -292,7 +293,9 @@ function SendTransactionContent({
     },
     {
       onSuccess: ({ hash }) => {
-        windowPort.confirm(Number(params.get('windowId')), hash);
+        const windowId = params.get('windowId');
+        invariant(windowId, 'windowId get-parameter is required');
+        windowPort.confirm(windowId, hash);
       },
     }
   );
@@ -417,7 +420,9 @@ function SendTransactionContent({
           <UnstyledButton
             style={{ color: 'var(--primary)' }}
             onClick={() => {
-              windowPort.reject(Number(params.get('windowId')));
+              const windowId = params.get('windowId');
+              invariant(windowId, 'windowId get-parameter is required');
+              windowPort.reject(windowId);
             }}
           >
             Reject

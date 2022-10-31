@@ -20,6 +20,7 @@ import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
 import { getError } from 'src/shared/errors/getError';
+import { invariant } from 'src/shared/invariant';
 
 function ItemSurface({ style, ...props }: React.HTMLProps<HTMLDivElement>) {
   const surfaceStyle = {
@@ -117,9 +118,10 @@ function SignMessageContent({
   wallet: BareWallet;
 }) {
   const [params] = useSearchParams();
-
+  const windowId = params.get('windowId');
+  invariant(windowId, 'windowId get-parameter is required');
   const handleSignSuccess = (signature: string) =>
-    windowPort.confirm(Number(params.get('windowId')), signature);
+    windowPort.confirm(windowId, signature);
 
   const signTypedData_v4Mutation = useSignTypedData_v4Mutation({
     onSuccess: handleSignSuccess,
@@ -199,7 +201,7 @@ function SignMessageContent({
             type="button"
             style={{ color: 'var(--primary)' }}
             onClick={() => {
-              windowPort.reject(Number(params.get('windowId')));
+              windowPort.reject(windowId);
             }}
           >
             Reject
