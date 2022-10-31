@@ -12,7 +12,7 @@ export function createHttpConnectionMessageHandler(
       return;
     }
     const context = getPortContext(port);
-    if (isJsonRpcPayload(msg) && isJsonRpcRequest(msg)) {
+    if (isJsonRpcPayload(msg) && isJsonRpcRequest(msg) && Boolean(msg.method)) {
       httpConnection.send(msg, context).then((result) => {
         port.postMessage(result);
       });
