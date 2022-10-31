@@ -494,15 +494,15 @@ export class Wallet {
     this.updateWalletStore(this.record);
   }
 
-  async getPreferences({ context }: WalletMethodParams) {
+  async getPreferences({
+    context,
+  }: WalletMethodParams): Promise<ReturnType<typeof Model.getPreferences>> {
     this.verifyInternalOrigin(context);
-    this.ensureRecord(this.record);
-    return Model.getPreferences(this.record);
-  }
-
-  async getPreferencesPublic() {
-    this.ensureRecord(this.record);
-    return Model.getPreferences(this.record);
+    if (!this.record) {
+      return {};
+    } else {
+      return Model.getPreferences(this.record);
+    }
   }
 
   async wallet_setWalletNameFlag({
@@ -972,7 +972,16 @@ class PublicController {
   }
 
   async wallet_getWalletNameFlags({ context: _context }: PublicMethodParams) {
-    const preferences = await this.wallet.getPreferencesPublic();
+    const preferences = await this.wallet.getPreferences({
+      /**
+       * NOTE: we're not checking `context` param here and use
+       * INTERNAL_SYMBOL_CONTEXT, because preferences.walletNameFlags are
+       * supposed to work even before the user has given permissions
+       * to the DApp. `walletNameFlags` are about global ethereum object behavior
+       * and do not contain any private data
+       */
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
     return preferences.walletNameFlags || [];
   }
 

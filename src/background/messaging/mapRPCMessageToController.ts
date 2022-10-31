@@ -9,6 +9,8 @@ import {
 import { formatJsonRpcResultForPort } from 'src/shared/formatJsonRpcResultForPort';
 import { formatJsonRpcWalletError } from 'src/shared/formatJsonRpcWalletError';
 import type { PortContext } from './PortContext';
+import { isClassProperty } from 'src/shared/core/isClassProperty';
+import { InvalidParams } from 'src/shared/errors/errors';
 
 /**
  * This function takes a JsonRpcRequest and maps
@@ -25,8 +27,19 @@ export function mapRPCMessageToController<T>(
     const { method, params, id } = msg;
     // logging
     // console.log({ method, params, id, port, context });
-    if (method in controller === false) {
-      throw new Error(`Unsupported method: ${method}`);
+    if (
+      !isClassProperty(controller, method) ||
+      typeof controller[method as keyof typeof controller] !== 'function'
+    ) {
+      port.postMessage(
+        formatJsonRpcWalletError(
+          id,
+          new InvalidParams(
+            method ? `Unsupported method: ${method}` : undefined
+          )
+        )
+      );
+      return;
     }
     const controllerMethod = controller[method as keyof typeof controller];
     controllerMethod

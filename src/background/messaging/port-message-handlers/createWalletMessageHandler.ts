@@ -3,6 +3,7 @@ import type { Wallet } from 'src/shared/types/Wallet';
 import { mapRPCMessageToController } from '../mapRPCMessageToController';
 import { getPortContext } from '../getPortContext';
 import type { PortMessageHandler } from '../PortRegistry';
+import { isClassProperty } from 'src/shared/core/isClassProperty';
 
 export function createWalletMessageHandler(
   getWallet: () => Wallet
@@ -18,7 +19,7 @@ export function createWalletMessageHandler(
 
     function mapToControllerIfPossible<T>(controller: T) {
       if (
-        method in controller &&
+        isClassProperty(controller, method) &&
         typeof controller[method as keyof typeof controller] === 'function'
       ) {
         mapRPCMessageToController(port, msg, controller, context);
