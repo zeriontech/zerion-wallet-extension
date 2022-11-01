@@ -5,9 +5,7 @@
   "scripts": {
     "start": "npm-run-all --parallel start:app type-check:watch",
     "start:app": "parcel watch src/manifest.json --no-hmr --no-content-hash",
-    "build:workaround": "parcel watch src/manifest.json --no-hmr --no-content-hash",
-    "build:broken": "parcel build src/manifest.json --no-content-hash --no-scope-hoist",
-    "build": "npm run build:workaround",
+    "build": "parcel build src/manifest.json --no-content-hash",
     "tagAndPushBuild": "node scripts/tag-and-push-build.js",
     "type-check": "tsc --noEmit",
     "type-check:watch": "tsc --noEmit --pretty --watch",
@@ -22,6 +20,11 @@
     "src": "./src",
     "ui-lab:./src/ui/shared/channels.ts": "./src/ui/shared/channels.mock.ts",
     "ui-lab:webextension-polyfill": "/src/ui-lab/webextension-polyfill.mock.ts"
+  },
+  "@parcel/bundler-default": {
+    "minBundles": 10000000,
+    "minBundleSize": 3000,
+    "maxParallelRequests": 20
   },
   "repository": {
     "type": "git",

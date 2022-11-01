@@ -3,7 +3,7 @@ import cx from 'classnames';
 import { NavLink } from 'react-router-dom';
 import type { NavLinkProps } from 'react-router-dom';
 import { UIText, Kind as UITextKind } from 'src/ui/ui-kit/UIText';
-import s from './SegmentedControl.module.css';
+import * as s from './SegmentedControl.module.css';
 
 export const kinds = ['primary', 'secondary'] as const;
 
