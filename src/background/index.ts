@@ -1,4 +1,5 @@
 require('./bufferPolyfill');
+import browser from 'webextension-polyfill';
 import { ethers } from 'ethers';
 import { initialize } from './initialize';
 import { HttpConnection } from './messaging/HttpConnection';
@@ -13,11 +14,23 @@ import { MemoryCacheRPC } from './resource/memoryCacheRPC';
 import { networksStore } from 'src/modules/networks/networks-store';
 import { configureBackgroundClient } from 'src/modules/defi-sdk';
 import { start as startIdleTimer } from './idle-time-handler';
+import type { RuntimePort } from './webapis/RuntimePort';
 
 Object.assign(window, { ethers });
 
 configureBackgroundClient();
 networksStore.load();
+
+function verifyPort(port: RuntimePort) {
+  const protocol = port.sender?.url ? new URL(port.sender.url).protocol : null;
+  if (protocol === 'chrome-extension:') {
+    return true;
+  } else {
+    // the only non-extension (meaning, content-script) port
+    // allowed is `${browser.runtime.id}/ethereum`
+    return port.name === `${browser.runtime.id}/ethereum`;
+  }
+}
 
 initialize().then(({ account, accountPublicRPC }) => {
   const httpConnection = new HttpConnection(() => account.getCurrentWallet());
@@ -52,7 +65,9 @@ initialize().then(({ account, accountPublicRPC }) => {
   ethereumEventsBroadcaster.startListening();
 
   chrome.runtime.onConnect.addListener((port) => {
-    portRegistry.register(port);
+    if (verifyPort(port)) {
+      portRegistry.register(port);
+    }
   });
 
   account.on('reset', () => {
