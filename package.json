@@ -6,6 +6,7 @@
     "start": "npm-run-all --parallel start:app type-check:watch",
     "start:app": "parcel watch src/manifest.json --no-hmr --no-content-hash",
     "build": "parcel build src/manifest.json --no-content-hash",
+    "build:production": "node scripts/build.js",
     "tagAndPushBuild": "node scripts/tag-and-push-build.js",
     "type-check": "tsc --noEmit",
     "type-check:watch": "tsc --noEmit --pretty --watch",
