@@ -35,7 +35,7 @@
     {
       "all_frames": true,
       "js": ["content-script/index.ts"],
-      "matches": ["file://*/*", "http://*/*", "https://*/*"],
+      "matches": ["http://*/*", "https://*/*"],
       "run_at": "document_start"
     }
   ],
