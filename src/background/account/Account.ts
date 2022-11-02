@@ -1,6 +1,5 @@
 import { nanoid } from 'nanoid';
 import EventEmitter from 'events';
-import { generateSalt } from '@metamask/browser-passworder';
 import { get, remove, set } from 'src/background/webapis/storage';
 import { getSHA256HexDigest } from 'src/shared/cryptography/getSHA256HexDigest';
 import { Wallet } from '../Wallet/Wallet';
@@ -9,8 +8,6 @@ import { validate } from 'src/shared/validation/user-input';
 
 interface User {
   id: string;
-  passwordHash: string;
-  salt: string;
 }
 
 export interface PublicUser {
@@ -18,6 +15,16 @@ export interface PublicUser {
 }
 
 const TEMPORARY_ID = 'temporary';
+
+async function createEncryptionKey({
+  password,
+  salt,
+}: {
+  password: string;
+  salt: string;
+}) {
+  return await getSHA256HexDigest(`${salt}:${password}`);
+}
 
 export class Account extends EventEmitter {
   private user: User | null;
@@ -49,18 +56,9 @@ export class Account extends EventEmitter {
     if (!validity.valid) {
       throw new Error(validity.message);
     }
-    const id = nanoid();
-    const salt = generateSalt();
-    const hash = await getSHA256HexDigest(`${salt}:${password}`);
-    const record = { id, passwordHash: hash, salt };
-    // await set('currentUser', record);
+    const id = nanoid(36); // use longer id than default (21)
+    const record = { id /* passwordHash: hash, salt */ };
     return record;
-  }
-
-  static async verifyPassword(user: User, password: string) {
-    const { salt } = user;
-    const hash = await getSHA256HexDigest(`${salt}:${password}`);
-    return hash === user.passwordHash;
   }
 
   constructor() {
@@ -77,14 +75,33 @@ export class Account extends EventEmitter {
     this.emit('reset');
   }
 
-  async init(user: User, password: string) {
-    const passwordIsCorrect = await Account.verifyPassword(user, password);
+  async verifyPassword(user: User, password: string) {
+    const encryptionKey = await createEncryptionKey({
+      password,
+      salt: user.id,
+    });
+    try {
+      await this.wallet.verifyCredentials({
+        params: { id: user.id, encryptionKey },
+      });
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async login(user: User, password: string) {
+    const passwordIsCorrect = await this.verifyPassword(user, password);
     if (!passwordIsCorrect) {
       throw new Error('Incorrect password');
     }
+    await this.setNewUser(user, password);
+  }
+
+  async setNewUser(user: User, password: string) {
     this.user = user;
     const salt = user.id;
-    this.encryptionKey = await getSHA256HexDigest(`${salt}:${password}`);
+    this.encryptionKey = await createEncryptionKey({ salt, password });
     await this.wallet.updateCredentials({
       params: { id: user.id, encryptionKey: this.encryptionKey },
     });
@@ -168,9 +185,12 @@ export class AccountPublicRPC {
     if (!currentUser || currentUser.id !== user.id) {
       throw new Error(`User ${user.id} not found`);
     }
-    const canAuthorize = await Account.verifyPassword(currentUser, password);
+    const canAuthorize = await this.account.verifyPassword(
+      currentUser,
+      password
+    );
     if (canAuthorize) {
-      await this.account.init(currentUser, password);
+      await this.account.login(currentUser, password);
       return user;
     } else {
       throw new Error('Incorrect password');
@@ -187,7 +207,10 @@ export class AccountPublicRPC {
     if (!currentUser || currentUser.id !== user.id) {
       throw new Error(`User ${user.id} not found`);
     }
-    const canAuthorize = await Account.verifyPassword(currentUser, password);
+    const canAuthorize = await this.account.verifyPassword(
+      currentUser,
+      password
+    );
     if (canAuthorize) {
       return true;
     } else {
@@ -199,7 +222,7 @@ export class AccountPublicRPC {
     params: { password },
   }: PublicMethodParams<{ password: string }>): Promise<PublicUser> {
     const user = await Account.createUser(password);
-    await this.account.init(user, password);
+    await this.account.setNewUser(user, password);
     return { id: user.id };
   }
 

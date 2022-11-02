@@ -230,6 +230,10 @@ export class WalletRecordModel {
   }
 
   static async decryptRecord(key: string, encryptedRecord: string) {
+    return await decrypt(key, encryptedRecord);
+  }
+
+  static async decryptAndRestoreRecord(key: string, encryptedRecord: string) {
     const persistedEntry = (await decrypt(
       key,
       encryptedRecord

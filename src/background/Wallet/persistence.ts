@@ -8,12 +8,20 @@ type EncryptedWalletRecord = string;
 type WalletStoreState = Record<string, EncryptedWalletRecord | undefined>;
 
 export class WalletStore extends PersistentStore<WalletStoreState> {
+  async check(id: string, encryptionKey: string) {
+    const encryptedRecord = this.getState()[id];
+    if (!encryptedRecord) {
+      throw new Error(`Cannot read: record for ${id} not found`);
+    }
+    return Model.decryptRecord(encryptionKey, encryptedRecord);
+  }
+
   async read(id: string, encryptionKey: string): Promise<WalletRecord | null> {
     const encryptedRecord = this.getState()[id];
     if (!encryptedRecord) {
       return null;
     }
-    return await Model.decryptRecord(encryptionKey, encryptedRecord);
+    return await Model.decryptAndRestoreRecord(encryptionKey, encryptedRecord);
   }
 
   async save(id: string, encryptionKey: string, record: WalletRecord) {

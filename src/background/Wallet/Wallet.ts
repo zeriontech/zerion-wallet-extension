@@ -137,6 +137,13 @@ export class Wallet {
     emitter.emit('userActivity');
   }
 
+  async verifyCredentials({
+    params: { id, encryptionKey },
+  }: PublicMethodParams<{ id: string; encryptionKey: string }>) {
+    await walletStore.ready();
+    await walletStore.check(id, encryptionKey);
+  }
+
   async updateCredentials({
     params: { id, encryptionKey },
   }: PublicMethodParams<{ id: string; encryptionKey: string }>) {
