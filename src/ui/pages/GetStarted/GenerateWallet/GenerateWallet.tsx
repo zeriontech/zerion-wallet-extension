@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageHeading } from 'src/ui/components/PageHeading';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -15,15 +15,15 @@ import {
   DecorativeMessageDone,
 } from '../components/DecorativeMessage';
 import { getError } from 'src/shared/errors/getError';
+import { WithPasswordSession } from 'src/ui/components/VerifyUser/WithPasswordSession';
 
 enum Step {
   loading,
   done,
 }
 
-export function GenerateWallet() {
+function GenerateWalletView() {
   const navigate = useNavigate();
-  const [params] = useSearchParams();
   const [steps, setSteps] = useState(() => new Set<Step>());
   const addStep = (step: Step) => setSteps((steps) => new Set(steps).add(step));
 
@@ -35,12 +35,7 @@ export function GenerateWallet() {
     async () => {
       addStep(Step.loading);
       await new Promise((r) => setTimeout(r, 1000));
-      const groupId = params.get('groupId');
-      if (groupId) {
-        return walletPort.request('uiAddMnemonicWallet', { groupId });
-      } else {
-        return walletPort.request('uiGenerateMnemonic');
-      }
+      return walletPort.request('uiGenerateMnemonic');
     },
     {
       useErrorBoundary: true,
@@ -50,9 +45,18 @@ export function GenerateWallet() {
     }
   );
 
-  const setCurrentAddressMutation = useMutation((address: string) => {
-    return walletPort.request('setCurrentAddress', { address });
-  });
+  const finalizeMutation = useMutation(
+    async (address: string) => {
+      await accountPublicRPCPort.request('saveUserAndWallet');
+      return walletPort.request('setCurrentAddress', { address });
+    },
+    {
+      onSuccess() {
+        navigate('/overview');
+      },
+    }
+  );
+
   return (
     <PageColumn>
       <PageTop />
@@ -102,24 +106,20 @@ export function GenerateWallet() {
       </VStack>
       {data ? (
         <VStack gap={4} style={{ marginTop: 'auto' }}>
-          {setCurrentAddressMutation.isError ? (
+          {finalizeMutation.isError ? (
             <UIText
               style={{ textAlign: 'center', wordBreak: 'break-all' }}
               kind="caption/reg"
               color="var(--negative-500)"
             >
-              {getError(setCurrentAddressMutation.error).message}
+              {getError(finalizeMutation.error).message}
             </UIText>
           ) : null}
           <Button
             style={{ marginTop: 'auto', marginBottom: 16 }}
+            disabled={finalizeMutation.isLoading}
             onClick={async () => {
-              // TODO: use useMutation() to update disabled state for button
-              await accountPublicRPCPort.request('saveUserAndWallet');
-              if (data?.address) {
-                await setCurrentAddressMutation.mutateAsync(data.address);
-              }
-              navigate('/overview');
+              finalizeMutation.mutate(data.address);
             }}
           >
             Finish
@@ -127,5 +127,13 @@ export function GenerateWallet() {
         </VStack>
       ) : null}
     </PageColumn>
+  );
+}
+
+export function GenerateWallet() {
+  return (
+    <WithPasswordSession>
+      <GenerateWalletView />
+    </WithPasswordSession>
   );
 }

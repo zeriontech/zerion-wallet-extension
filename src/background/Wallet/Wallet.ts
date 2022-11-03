@@ -13,6 +13,7 @@ import {
   MethodNotImplemented,
   OriginNotAllowed,
   RecordNotFound,
+  SessionExpired,
   UserRejected,
   UserRejectedTxSignature,
 } from 'src/shared/errors/errors';
@@ -24,7 +25,6 @@ import { networksStore } from 'src/modules/networks/networks-store';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { prepareTransaction } from 'src/modules/ethereum/transactions/prepareTransaction';
 import { Chain, createChain } from 'src/modules/networks/Chain';
-import { getNextAccountPath } from 'src/shared/wallet/getNextAccountPath';
 import { hasGasPrice } from 'src/modules/ethereum/transactions/gasPrices/hasGasPrice';
 import { fetchAndAssignGasPrice } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
@@ -82,6 +82,7 @@ export class Wallet {
   public id: string;
   public publicEthereumController: PublicController;
   private encryptionKey: string | null;
+  private seedPhraseEncryptionKey: CryptoKey | null;
   private walletStore: WalletStore;
   private pendingWallet: PendingWallet | null = null;
   private record: WalletRecord | null;
@@ -97,6 +98,7 @@ export class Wallet {
     this.id = id;
     this.walletStore = walletStore;
     this.encryptionKey = encryptionKey;
+    this.seedPhraseEncryptionKey = null;
     this.record = null;
 
     this.walletStore.ready().then(() => {
@@ -137,6 +139,7 @@ export class Wallet {
     emitter.emit('userActivity');
   }
 
+  /** throws if encryptionKey is wrong */
   async verifyCredentials({
     params: { id, encryptionKey },
   }: PublicMethodParams<{ id: string; encryptionKey: string }>) {
@@ -144,11 +147,33 @@ export class Wallet {
     await walletStore.check(id, encryptionKey);
   }
 
+  hasSeedPhraseEncryptionKey() {
+    return Boolean(this.seedPhraseEncryptionKey);
+  }
+
+  removeSeedPhraseEncryptionKey() {
+    this.seedPhraseEncryptionKey = null;
+  }
+
+  private setExpirationForSeedPhraseEncryptionKey() {
+    setTimeout(() => {
+      if (this) {
+        this.removeSeedPhraseEncryptionKey();
+      }
+    }, 1000 * 60);
+  }
+
   async updateCredentials({
-    params: { id, encryptionKey },
-  }: PublicMethodParams<{ id: string; encryptionKey: string }>) {
+    params: { id, encryptionKey, seedPhraseEncryptionKey },
+  }: PublicMethodParams<{
+    id: string;
+    encryptionKey: string;
+    seedPhraseEncryptionKey: CryptoKey | null;
+  }>) {
     this.id = id;
     this.encryptionKey = encryptionKey;
+    this.seedPhraseEncryptionKey = seedPhraseEncryptionKey;
+    this.setExpirationForSeedPhraseEncryptionKey();
     await walletStore.ready();
     await this.syncWithWalletStore();
   }
@@ -166,41 +191,14 @@ export class Wallet {
   // from the UI (extension popup) thread. It's maybe better to refactor them
   // into a separate isolated class
   async uiGenerateMnemonic() {
+    if (!this.seedPhraseEncryptionKey) {
+      throw new SessionExpired();
+    }
     this.pendingWallet = {
       groupId: null,
-      walletContainer: new MnemonicWalletContainer(),
-    };
-    return maskWallet(this.pendingWallet.walletContainer.getFirstWallet());
-  }
-
-  async uiAddMnemonicWallet({
-    params: { groupId },
-  }: WalletMethodParams<{ groupId: string }>) {
-    const group = this.record?.walletManager.groups.find(
-      (group) => group.id === groupId
-    );
-    if (!group) {
-      throw new Error(`Group with id ${groupId} not found`);
-    }
-    if (!group.walletContainer.wallets.length) {
-      throw new Error(
-        `Existing group is expected to have at least one mnemonic wallet`
-      );
-    }
-    const { wallets } = group.walletContainer;
-    const lastMnemonic = wallets[wallets.length - 1].mnemonic;
-    if (!lastMnemonic) {
-      throw new Error(
-        `Existing group is expected to have at least one mnemonic wallet`
-      );
-    }
-    const mnemonic = {
-      phrase: lastMnemonic.phrase,
-      path: getNextAccountPath(lastMnemonic.path),
-    };
-    this.pendingWallet = {
-      groupId,
-      walletContainer: new MnemonicWalletContainer([{ mnemonic }]),
+      walletContainer: await MnemonicWalletContainer.create({
+        encryptionKey: this.seedPhraseEncryptionKey,
+      }),
     };
     return maskWallet(this.pendingWallet.walletContainer.getFirstWallet());
   }
@@ -216,11 +214,15 @@ export class Wallet {
   async uiImportSeedPhrase({
     params: mnemonics,
   }: WalletMethodParams<NonNullable<BareWallet['mnemonic']>[]>) {
+    if (!this.seedPhraseEncryptionKey) {
+      throw new SessionExpired();
+    }
     this.pendingWallet = {
       groupId: null,
-      walletContainer: new MnemonicWalletContainer(
-        mnemonics.map((mnemonic) => ({ mnemonic }))
-      ),
+      walletContainer: await MnemonicWalletContainer.create({
+        wallets: mnemonics.map((mnemonic) => ({ mnemonic })),
+        encryptionKey: this.seedPhraseEncryptionKey,
+      }),
     };
     return maskWallet(this.pendingWallet.walletContainer.getFirstWallet());
   }
@@ -230,13 +232,14 @@ export class Wallet {
     context,
   }: WalletMethodParams<{ groupId: string }>) {
     this.verifyInternalOrigin(context);
-    const group = this.record?.walletManager.groups.find(
-      (group) => group.id === groupId
-    );
-    if (!group) {
-      throw new Error('Wallet Group not found');
+    this.ensureRecord(this.record);
+    if (!this.seedPhraseEncryptionKey) {
+      throw new SessionExpired();
     }
-    return group.walletContainer.getMnemonic();
+    return await Model.getRecoveryPhrase(this.record, {
+      groupId,
+      encryptionKey: this.seedPhraseEncryptionKey,
+    });
   }
 
   async uiGetCurrentWallet({ context }: PublicMethodParams) {
@@ -277,6 +280,8 @@ export class Wallet {
       throw new Error('Cannot save pending wallet: encryptionKey is null');
     }
     this.record = Model.createOrUpdateRecord(this.record, this.pendingWallet);
+    this.pendingWallet = null;
+    this.seedPhraseEncryptionKey = null;
     this.updateWalletStore(this.record);
   }
 

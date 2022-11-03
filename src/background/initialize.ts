@@ -1,3 +1,4 @@
+import { prepareStorage } from 'src/shared/core/version';
 import { Account, AccountPublicRPC } from './account/Account';
 import { TransactionService } from './transactions/TransactionService';
 
@@ -8,6 +9,8 @@ export async function initialize() {
     throw new Error('Initialize function should be run only once');
   }
   didInitialize = true;
+
+  await prepareStorage();
 
   // This method is called only when background script runs for the first time
   // This means that either the user is opening the extension for the first time,

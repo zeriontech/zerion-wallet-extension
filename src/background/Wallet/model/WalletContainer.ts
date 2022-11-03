@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 import { immerable } from 'immer';
+import { stableEncrypt } from 'src/shared/cryptography/encryption';
 import { restoreBareWallet, walletToObject } from 'src/shared/wallet/create';
 import { SeedType } from './SeedType';
 import type { BareWallet } from './types';
@@ -89,6 +90,29 @@ abstract class WalletContainerImpl implements WalletContainer {
 export class MnemonicWalletContainer extends WalletContainerImpl {
   wallets: BareWallet[];
   seedType = SeedType.mnemonic;
+
+  static async create({
+    wallets,
+    encryptionKey,
+  }: {
+    wallets?: Array<Pick<BareWallet, 'mnemonic'>>;
+    encryptionKey: CryptoKey;
+  }): Promise<MnemonicWalletContainer> {
+    const walletContainer = new MnemonicWalletContainer(wallets);
+    const { mnemonic } = walletContainer.getFirstWallet();
+    if (mnemonic) {
+      const encryptedMnemonic = await stableEncrypt(
+        encryptionKey,
+        mnemonic.phrase
+      );
+      walletContainer.wallets.forEach((wallet) => {
+        if (wallet.mnemonic) {
+          wallet.mnemonic.phrase = encryptedMnemonic;
+        }
+      });
+    }
+    return walletContainer;
+  }
 
   constructor(wallets?: Array<Pick<BareWallet, 'mnemonic'>>) {
     super();

@@ -22,6 +22,7 @@ import {
   isValidPrivateKey,
 } from 'src/shared/validation/wallet';
 import { memoryLocationState } from './memoryLocationState';
+import { WithPasswordSession } from 'src/ui/components/VerifyUser/WithPasswordSession';
 
 function getSeedType(value: string) {
   if (isValidMnemonic(value)) {
@@ -133,20 +134,14 @@ function ImportForm({
   );
 }
 
-enum Step {
-  loading,
-  done,
-}
-
 function ImportWalletView() {
-  const [steps] = useState(() => new Set<Step>());
   const navigate = useNavigate();
 
   return (
     <>
       <NavigationTitle title="Import Wallet" />
 
-      <Background backgroundKind={steps.size === 0 ? 'white' : 'neutral'}>
+      <Background backgroundKind="white">
         <PageColumn>
           <PageTop />
           <UIText kind="h/5_med">
@@ -192,7 +187,14 @@ export function ImportWallet() {
     <Routes>
       <Route path="/" element={<ImportWalletView />} />
       <Route path="/private-key" element={<PrivateKeyImportView />} />
-      <Route path="/mnemonic" element={<MnemonicImportView />} />
+      <Route
+        path="/mnemonic"
+        element={
+          <WithPasswordSession text="Recovery phrase will be encrypted with your password">
+            <MnemonicImportView />
+          </WithPasswordSession>
+        }
+      />
     </Routes>
   );
 }

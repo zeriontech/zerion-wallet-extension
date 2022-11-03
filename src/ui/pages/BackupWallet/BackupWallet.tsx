@@ -2,13 +2,14 @@ import React from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { SeedType } from 'src/shared/SeedType';
-import type { PublicUser } from 'src/shared/types/PublicUser';
+import { Background } from 'src/ui/components/Background';
 import { FillView } from 'src/ui/components/FillView';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageHeading } from 'src/ui/components/PageHeading';
 import { PageTop } from 'src/ui/components/PageTop';
-import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
+import { VerifyUser } from 'src/ui/components/VerifyUser';
+import { walletPort } from 'src/ui/shared/channels';
 import { prepareUserInputSeedOrPrivateKey } from 'src/ui/shared/prepareUserInputSeedOrPrivateKey';
 import { useMnemonicQuery } from 'src/ui/shared/requests/useMnemonicQuery';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -65,67 +66,6 @@ function Initial({ onSubmit }: { onSubmit: () => void }) {
         </Button>
       </VStack>
     </>
-  );
-}
-
-function VerifyUser({ onSuccess }: { onSuccess: () => void }) {
-  const { data: user, isLoading } = useQuery(
-    'user',
-    () => {
-      return accountPublicRPCPort.request('getExistingUser');
-    },
-    { useErrorBoundary: true }
-  );
-  const loginMutation = useMutation(
-    ({ user, password }: { user: PublicUser; password: string }) =>
-      accountPublicRPCPort.request('login', { user, password }),
-    { onSuccess }
-  );
-  if (isLoading) {
-    return null;
-  }
-  return (
-    <form
-      onSubmit={(event) => {
-        event.preventDefault();
-        const password = new FormData(event.currentTarget).get('password') as
-          | string
-          | undefined;
-        if (!password) {
-          return;
-        }
-        if (!user) {
-          throw new Error('Cannot login: user not found');
-        }
-        loginMutation.mutate({ user, password });
-      }}
-    >
-      <Spacer height={32} />
-      <VStack gap={16}>
-        <UIText kind="h/6_reg">Enter password</UIText>
-        <VStack gap={4}>
-          <input
-            autoFocus={true}
-            type="password"
-            name="password"
-            placeholder="password"
-            required={true}
-            style={{
-              backgroundColor: 'var(--neutral-200)',
-              padding: '7px 11px',
-              border: '1px solid var(--neutral-200)',
-              borderRadius: 8,
-            }}
-          />
-          {loginMutation.error ? (
-            <UIText kind="caption/reg" color="var(--negative-500)">
-              {(loginMutation.error as Error).message || 'unknown error'}
-            </UIText>
-          ) : null}
-        </VStack>
-        <Button>{loginMutation.isLoading ? 'Checking...' : 'Confirm'}</Button>
-      </VStack>
-    </form>
   );
 }
 
@@ -296,14 +236,16 @@ export function BackupWallet() {
         />
       )}
       {params.get('step') === 'verifyUser' ? (
-        <VerifyUser
-          onSuccess={() =>
-            setSearchParams(
-              { step: 'recoveryPhrase', groupId },
-              { replace: true }
-            )
-          }
-        />
+        <Background backgroundKind="white">
+          <VerifyUser
+            onSuccess={() =>
+              setSearchParams(
+                { step: 'recoveryPhrase', groupId },
+                { replace: true }
+              )
+            }
+          />
+        </Background>
       ) : null}
       {params.get('step') === 'recoveryPhrase' ? (
         <RecoveryPhrase

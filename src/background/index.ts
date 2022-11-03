@@ -70,6 +70,13 @@ initialize().then(({ account, accountPublicRPC }) => {
     }
   });
 
+  portRegistry.addListener('disconnect', (port: RuntimePort) => {
+    if (port.name === `${browser.runtime.id}/wallet`) {
+      // Means extension UI is closed
+      account.expirePasswordSession();
+    }
+  });
+
   account.on('reset', () => {
     portRegistry.postMessage({
       portName: `${chrome.runtime.id}/wallet`,

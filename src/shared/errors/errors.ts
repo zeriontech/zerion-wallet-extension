@@ -58,3 +58,12 @@ export class RecordNotFound extends ErrorWithEnumerableMessage {
     super(message);
   }
 }
+
+export class SessionExpired extends ErrorWithEnumerableMessage {
+  // 211210N is zerion in l33t
+  code = 2312103;
+
+  constructor(message = 'Session expired') {
+    super(message);
+  }
+}

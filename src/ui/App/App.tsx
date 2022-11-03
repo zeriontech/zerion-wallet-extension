@@ -41,6 +41,8 @@ import { ConnectedSites } from '../pages/ConnectedSites';
 import { InvalidateQueryCache } from '../components/Session/InvalidateQueryCache';
 import { InactivityDetector } from '../components/Session/InactivityDetector';
 import { SessionResetHandler } from '../components/Session/SessionResetHandler';
+import { ViewSuspense } from '../components/ViewSuspense';
+import { VersionUpgrade } from '../components/VersionUpgrade';
 
 function View() {
   const location = useLocation();
@@ -314,21 +316,22 @@ function Views() {
 
 const queryClient = new QueryClient();
 
-export function App() {
+function CloseOtherWindows() {
   useEffect(() => {
     if (templateType === 'popup') {
       // window.location.hash = '#/get-started/import'
       closeOtherWindows();
     }
   }, []);
+  return null;
+}
+
+export function App() {
   return (
     <AreaProvider>
       <UIContext.Provider value={defaultUIContextValue}>
         <QueryClientProvider client={queryClient}>
           <Router>
-            <InactivityDetector />
-            <SessionResetHandler />
-            <DesignTheme />
             <ErrorBoundary
               renderError={(error) => (
                 <FillView>
@@ -336,7 +339,15 @@ export function App() {
                 </FillView>
               )}
             >
-              <Views />
+              <InactivityDetector />
+              <SessionResetHandler />
+              <DesignTheme />
+              <VersionUpgrade>
+                <CloseOtherWindows />
+                <ViewSuspense>
+                  <Views />
+                </ViewSuspense>
+              </VersionUpgrade>
             </ErrorBoundary>
           </Router>
         </QueryClientProvider>

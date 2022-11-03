@@ -19,6 +19,13 @@ import { Store } from 'store-unit';
 type State = Record<string, { value: string } | undefined>;
 
 class MemoryLocationState extends Store<State> {
+  constructor(state: State) {
+    super(state);
+    setInterval(() => {
+      // clear state each minute
+      this.setState({});
+    }, 1000 * 60);
+  }
   set(key: string, value: string) {
     this.setState((state) => ({ ...state, [key]: { value } }));
   }

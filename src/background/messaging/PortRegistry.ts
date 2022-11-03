@@ -22,6 +22,9 @@ export class PortRegistry {
   private ports: RuntimePort[];
   private handlers: PortMessageHandler[];
   listener: (msg: unknown, port: RuntimePort) => void;
+  private listeners: {
+    onDisconnect: Set<(port: RuntimePort) => void>;
+  };
 
   constructor() {
     this.ports = [];
@@ -35,6 +38,21 @@ export class PortRegistry {
         }
       }
     };
+
+    this.listeners = {
+      onDisconnect: new Set(),
+    };
+  }
+
+  addListener(event: 'disconnect', listener: (port: RuntimePort) => void) {
+    if (event === 'disconnect') {
+      this.listeners.onDisconnect.add(listener);
+      return () => {
+        this.listeners.onDisconnect.delete(listener);
+      };
+    } else {
+      throw new Error('Unsupported event');
+    }
   }
 
   register(port: RuntimePort) {
@@ -43,6 +61,9 @@ export class PortRegistry {
 
     const disconnectHandler = () => {
       port.onMessage.removeListener(this.listener);
+      for (const eventListener of this.listeners.onDisconnect) {
+        eventListener(port);
+      }
       this.unregister(port);
       port.onDisconnect.removeListener(disconnectHandler);
     };
