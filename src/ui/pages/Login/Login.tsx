@@ -1,6 +1,6 @@
 import React from 'react';
 import { useMutation, useQuery } from 'react-query';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import type { PublicUser } from 'src/background/account/Account';
 import { Background } from 'src/ui/components/Background';
 import { PageBottom } from 'src/ui/components/PageBottom';
@@ -42,7 +42,7 @@ export function Login() {
     throw error;
   }
   if (!user) {
-    throw new Error('Login page: User not found');
+    return <Navigate to="/" replace={true} />;
   }
   return (
     <Background backgroundKind="white">

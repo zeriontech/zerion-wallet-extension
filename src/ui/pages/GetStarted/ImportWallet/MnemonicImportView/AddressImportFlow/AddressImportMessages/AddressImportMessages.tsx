@@ -18,6 +18,10 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
 import { DecorativeMessage } from 'src/ui/pages/GetStarted/components/DecorativeMessage';
 import { WithConfetti } from 'src/ui/pages/GetStarted/components/DecorativeMessage/DecorativeMessage';
+import { getError } from 'src/shared/errors/getError';
+import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
+import { FillView } from 'src/ui/components/FillView';
+import { ViewError } from 'src/ui/components/ViewError';
 
 export function OnMount({
   children,
@@ -31,14 +35,14 @@ export function OnMount({
   return children as JSX.Element;
 }
 
-export function AddressImportMessages({ values }: { values: BareWallet[] }) {
+function AddressImportMessagesView({ values }: { values: BareWallet[] }) {
   const [ready, setReady] = useState(false);
   const [messages, setMessages] = useState(() => new Set<React.ReactNode>());
   const navigate = useNavigate();
   const addMessage = (message: React.ReactNode) =>
     setMessages((messages) => new Set(messages).add(message));
 
-  const importMutation = useMutation(
+  const finalizeMutation = useMutation(
     async (mnemonics: NonNullable<BareWallet['mnemonic']>[]) => {
       await new Promise((r) => setTimeout(r, 1000));
       const data = await walletPort.request('uiImportSeedPhrase', mnemonics);
@@ -50,6 +54,7 @@ export function AddressImportMessages({ values }: { values: BareWallet[] }) {
       }
     },
     {
+      useErrorBoundary: true,
       onSuccess() {
         navigate('/overview');
       },
@@ -62,6 +67,7 @@ export function AddressImportMessages({ values }: { values: BareWallet[] }) {
     ids.push(
       msg(
         <DecorativeMessage
+          key={0}
           text={
             <UIText kind="subtitle/m_reg">
               ⏳ Checking your wallet history on the blockchain...
@@ -72,6 +78,7 @@ export function AddressImportMessages({ values }: { values: BareWallet[] }) {
       ),
       msg(
         <DecorativeMessage
+          key={1}
           isConsecutive={true}
           text={
             <UIText kind="subtitle/m_reg">
@@ -83,6 +90,7 @@ export function AddressImportMessages({ values }: { values: BareWallet[] }) {
       ),
       msg(
         <DecorativeMessage
+          key={2}
           isConsecutive={false}
           text={
             <UIText kind="headline/h3">
@@ -96,7 +104,7 @@ export function AddressImportMessages({ values }: { values: BareWallet[] }) {
         2400
       ),
       msg(
-        <OnMount onMount={() => setReady(true)}>
+        <OnMount key={3} onMount={() => setReady(true)}>
           <WithConfetti>
             <DecorativeMessage
               isConsecutive={true}
@@ -114,6 +122,7 @@ export function AddressImportMessages({ values }: { values: BareWallet[] }) {
                   <UIText kind="small/regular">Welcome on board</UIText>
                   {values.map((wallet) => (
                     <Media
+                      key={wallet.address}
                       image={
                         <WalletIcon
                           address={wallet.address}
@@ -157,20 +166,54 @@ export function AddressImportMessages({ values }: { values: BareWallet[] }) {
         {messages}
       </VStack>
 
-      <Button
-        as={animated.button}
-        disabled={!ready || importMutation.isLoading}
-        style={{ ...style, marginTop: 'auto', marginBottom: 16 }}
-        onClick={() => {
-          const mnemonics = values
-            .map((wallet) => wallet.mnemonic)
-            .filter(isTruthy);
-          importMutation.mutate(mnemonics);
-        }}
-      >
-        {importMutation.isLoading ? 'Submitting' : 'Finish'}
-      </Button>
+      <VStack gap={4} style={{ marginTop: 'auto', marginBottom: 16 }}>
+        {finalizeMutation.isError ? (
+          <UIText
+            style={{ textAlign: 'center', wordBreak: 'break-all' }}
+            kind="caption/reg"
+            color="var(--negative-500)"
+          >
+            {getError(finalizeMutation.error).message}
+          </UIText>
+        ) : null}
+        <Button
+          as={animated.button}
+          disabled={!ready || finalizeMutation.isLoading}
+          style={style}
+          onClick={() => {
+            const mnemonics = values
+              .map((wallet) => wallet.mnemonic)
+              .filter(isTruthy);
+            finalizeMutation.mutate(mnemonics);
+          }}
+        >
+          {finalizeMutation.isLoading ? 'Submitting' : 'Finish'}
+        </Button>
+      </VStack>
       <PageBottom />
     </PageColumn>
+  );
+}
+
+export function AddressImportMessages({ values }: { values: BareWallet[] }) {
+  return (
+    <ErrorBoundary
+      renderError={(error) => {
+        if (error?.code === 2312103) {
+          return (
+            <FillView>
+              <ViewError
+                title="Session Expired"
+                error={new Error('You will need to enter your password again')}
+              />
+            </FillView>
+          );
+        } else {
+          throw error;
+        }
+      }}
+    >
+      <AddressImportMessagesView values={values} />
+    </ErrorBoundary>
   );
 }

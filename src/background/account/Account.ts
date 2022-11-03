@@ -1,13 +1,16 @@
 import { nanoid } from 'nanoid';
 import EventEmitter from 'events';
+import { generateSalt } from '@metamask/browser-passworder';
 import { get, remove, set } from 'src/background/webapis/storage';
 import { getSHA256HexDigest } from 'src/shared/cryptography/getSHA256HexDigest';
 import { Wallet } from '../Wallet/Wallet';
 import { walletStore } from '../Wallet/persistence';
 import { validate } from 'src/shared/validation/user-input';
+import { createCryptoKey } from 'src/shared/cryptography/encryption';
 
 interface User {
   id: string;
+  salt: string;
 }
 
 export interface PublicUser {
@@ -57,7 +60,8 @@ export class Account extends EventEmitter {
       throw new Error(validity.message);
     }
     const id = nanoid(36); // use longer id than default (21)
-    const record = { id /* passwordHash: hash, salt */ };
+    const salt = generateSalt(); // used to encrypt seed phrases
+    const record = { id, salt /* passwordHash: hash */ };
     return record;
   }
 
@@ -100,10 +104,17 @@ export class Account extends EventEmitter {
 
   async setNewUser(user: User, password: string) {
     this.user = user;
-    const salt = user.id;
-    this.encryptionKey = await createEncryptionKey({ salt, password });
+    this.encryptionKey = await createEncryptionKey({ salt: user.id, password });
+    const seedPhraseEncryptionKey = await createCryptoKey({
+      salt: user.salt,
+      password,
+    });
     await this.wallet.updateCredentials({
-      params: { id: user.id, encryptionKey: this.encryptionKey },
+      params: {
+        id: user.id,
+        encryptionKey: this.encryptionKey,
+        seedPhraseEncryptionKey,
+      },
     });
     this.emit('authenticated');
   }
@@ -118,6 +129,14 @@ export class Account extends EventEmitter {
 
   getCurrentWallet() {
     return this.wallet;
+  }
+
+  hasActivePasswordSession(): boolean {
+    return this.wallet.hasSeedPhraseEncryptionKey();
+  }
+
+  expirePasswordSession() {
+    this.wallet.removeSeedPhraseEncryptionKey();
   }
 
   async saveUserAndWallet() {
@@ -216,6 +235,10 @@ export class AccountPublicRPC {
     } else {
       throw new Error('Incorrect password');
     }
+  }
+
+  async hasActivePasswordSession() {
+    return this.account.hasActivePasswordSession();
   }
 
   async createUser({

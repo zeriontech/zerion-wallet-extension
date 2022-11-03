@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill';
 import { isJsonRpcPayload, isJsonRpcRequest } from '@json-rpc-tools/utils';
 import type { Wallet } from 'src/shared/types/Wallet';
 import { mapRPCMessageToController } from '../mapRPCMessageToController';
@@ -29,10 +30,10 @@ export function createWalletMessageHandler(
       }
     }
 
-    if (port.name === `${chrome.runtime.id}/ethereum`) {
+    if (port.name === `${browser.runtime.id}/ethereum`) {
       const controller = getWallet().publicEthereumController;
       return mapToControllerIfPossible(controller);
-    } else if (port.name === `${chrome.runtime.id}/wallet`) {
+    } else if (port.name === `${browser.runtime.id}/wallet`) {
       const controller = getWallet();
       return mapToControllerIfPossible(controller);
     } else {

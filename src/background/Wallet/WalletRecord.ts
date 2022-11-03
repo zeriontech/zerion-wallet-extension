@@ -3,6 +3,7 @@ import produce from 'immer';
 import { nanoid } from 'nanoid';
 import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
 import { Chain, createChain } from 'src/modules/networks/Chain';
+import { stableDecrypt } from 'src/shared/cryptography/encryption';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getIndexFromPath } from 'src/shared/wallet/getNextAccountPath';
 import { SeedType } from './model/SeedType';
@@ -252,6 +253,36 @@ export class WalletRecordModel {
       return group;
     });
     return WalletRecordModel.verifyStateIntegrity(entry as WalletRecord);
+  }
+
+  static async getRecoveryPhrase(
+    record: WalletRecord,
+    { groupId, encryptionKey }: { groupId: string; encryptionKey: CryptoKey }
+  ) {
+    const group = record.walletManager.groups.find(
+      (group) => group.id === groupId
+    );
+    if (!group) {
+      throw new Error('Wallet Group not found');
+    }
+    const encryptedMnemonic = group.walletContainer.getMnemonic();
+    if (!encryptedMnemonic) {
+      throw new Error(`Missing mnemonic from wallet object for ${groupId}`);
+    }
+    // encrypted data has no spaces
+    const isNotEncrypted = encryptedMnemonic.phrase.split(' ').length > 3;
+    if (isNotEncrypted) {
+      return encryptedMnemonic;
+    }
+
+    const phrase = await stableDecrypt<string>(
+      encryptionKey,
+      encryptedMnemonic.phrase
+    );
+    return {
+      ...encryptedMnemonic,
+      phrase,
+    };
   }
 
   static setCurrentAddress(

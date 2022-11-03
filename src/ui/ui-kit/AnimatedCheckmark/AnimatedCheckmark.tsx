@@ -8,10 +8,12 @@ export function AnimatedCheckmark({
   animate = true,
   checked,
   checkedColor,
+  uncheckedColor = 'var(--neutral-400)',
 }: {
   animate?: boolean;
   checked: boolean;
   checkedColor: string;
+  uncheckedColor?: string;
 }) {
   const { style, trigger } = useTransformTrigger({
     scale: 1.15,
@@ -28,7 +30,9 @@ export function AnimatedCheckmark({
   if (!checked) {
     return (
       <div>
-        <CheckmarkUnCheckedIcon style={{ display: 'block' }} />
+        <CheckmarkUnCheckedIcon
+          style={{ display: 'block', color: uncheckedColor }}
+        />
       </div>
     );
   } else {

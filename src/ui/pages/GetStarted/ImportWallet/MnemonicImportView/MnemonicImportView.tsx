@@ -23,9 +23,7 @@ function useMnenomicPhraseForLocation() {
   const [params] = useSearchParams();
   const groupId = params.get('groupId');
   if (!phraseFromState && !groupId) {
-    throw new Error(
-      'The view requires either value in location state or groupId in searchParams'
-    );
+    throw new Error('View data expired');
   }
   const getRecoveryPhraseQuery = useQuery(
     `getRecoveryPhrase(${groupId})`,

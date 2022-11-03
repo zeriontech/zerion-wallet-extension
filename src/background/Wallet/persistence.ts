@@ -8,6 +8,7 @@ type EncryptedWalletRecord = string;
 type WalletStoreState = Record<string, EncryptedWalletRecord | undefined>;
 
 export class WalletStore extends PersistentStore<WalletStoreState> {
+  /** throws if encryptionKey is wrong */
   async check(id: string, encryptionKey: string) {
     const encryptedRecord = this.getState()[id];
     if (!encryptedRecord) {
