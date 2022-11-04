@@ -5,7 +5,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Surface } from 'src/ui/ui-kit/Surface';
-import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import {
   formatCurrencyToParts,
   formatCurrencyValue,
@@ -40,6 +39,8 @@ import { WalletIcon } from 'src/ui/ui-kit/WalletIcon';
 import { useIsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
 import { CurrentNetwork } from './CurrentNetwork';
 import { ViewSuspense } from 'src/ui/components/ViewSuspense';
+import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
+import type { BareWallet } from 'src/shared/types/BareWallet';
 
 interface ChangeInfo {
   isPositive: boolean;
@@ -91,21 +92,21 @@ function PercentChange({
   return render(formatPercentChange(value, locale));
 }
 
-function CurrentAccount({ address }: { address: string }) {
-  const { data: isConnected } = useIsConnectedToActiveTab(address);
+function CurrentAccount({ wallet }: { wallet: BareWallet }) {
+  const { data: isConnected } = useIsConnectedToActiveTab(wallet.address);
   return (
     <Media
       vGap={0}
       image={
         <WalletIcon
-          address={address}
+          address={wallet.address}
           iconSize={24}
           active={Boolean(isConnected)}
         />
       }
       text={
         <span style={{ fontWeight: 'normal' }}>
-          {truncateAddress(address, 4)}
+          <WalletDisplayName wallet={wallet} />
         </span>
       }
       detailText={null}
@@ -151,10 +152,10 @@ function CurrentAccountControls() {
   const { data: wallet } = useQuery('wallet/uiGetCurrentWallet', () =>
     walletPort.request('uiGetCurrentWallet')
   );
-  if (!ready) {
+  if (!ready || !wallet) {
     return null;
   }
-  const addressToCopy = wallet?.address || singleAddress;
+  const addressToCopy = wallet.address || singleAddress;
   return (
     <HStack gap={0} alignItems="center">
       <Button
@@ -164,7 +165,7 @@ function CurrentAccountControls() {
         to="/wallet-select"
         title="Select Account"
       >
-        <CurrentAccount address={addressToCopy} />
+        <CurrentAccount wallet={wallet} />
       </Button>
       <CopyButton address={addressToCopy} />
     </HStack>
