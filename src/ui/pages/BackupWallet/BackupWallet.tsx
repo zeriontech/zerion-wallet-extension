@@ -18,6 +18,8 @@ import { Surface } from 'src/ui/ui-kit/Surface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { DecorativeMessage } from '../GetStarted/components/DecorativeMessage';
+import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
+import { HStack } from 'src/ui/ui-kit/HStack';
 
 function Initial({ onSubmit }: { onSubmit: () => void }) {
   return (
@@ -88,11 +90,15 @@ function RecoveryPhrase({
       <Spacer height={32} />
 
       <VStack gap={24}>
-        <UIText kind="subtitle/l_reg">First, write this down</UIText>
+        <NavigationTitle title="Write this down" />
         <Surface padding={16}>
           <UIText
             kind="button/l_med"
-            style={{ wordSpacing: 10, lineHeight: 1.6 }}
+            style={{
+              wordSpacing: 10,
+              lineHeight: 1.6,
+              textTransform: 'uppercase',
+            }}
           >
             {mnemonic.phrase}
           </UIText>
@@ -100,7 +106,10 @@ function RecoveryPhrase({
         <VStack gap={12}>
           <UIText kind="subtitle/l_reg">Next,</UIText>
           <Button autoFocus={true} onClick={onSubmit}>
-            Verify Backup
+            <HStack gap={8} justifyContent="center">
+              <span>Verify Backup</span>
+              <ArrowRightIcon />
+            </HStack>
           </Button>
         </VStack>
       </VStack>
