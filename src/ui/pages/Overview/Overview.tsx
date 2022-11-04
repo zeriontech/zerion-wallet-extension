@@ -4,7 +4,6 @@ import { DataStatus, useAddressPortfolio } from 'defi-sdk';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
-import { Surface } from 'src/ui/ui-kit/Surface';
 import {
   formatCurrencyToParts,
   formatCurrencyValue,
@@ -41,6 +40,8 @@ import { CurrentNetwork } from './CurrentNetwork';
 import { ViewSuspense } from 'src/ui/components/ViewSuspense';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import type { BareWallet } from 'src/shared/types/BareWallet';
+import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
+import { VStack } from 'src/ui/ui-kit/VStack';
 
 interface ChangeInfo {
   isPositive: boolean;
@@ -204,12 +205,13 @@ function OverviewComponent() {
   // }
   return (
     <PageColumn>
-      <div
+      <PageFullBleedColumn
+        padding={true}
         style={{
           position: 'sticky',
           top: 0,
           zIndex: 'var(--navbar-index)',
-          backgroundColor: 'var(--background)',
+          backgroundColor: 'var(--white)',
         }}
       >
         <Spacer height={8} />
@@ -234,123 +236,77 @@ function OverviewComponent() {
             </Button>
           </HStack>
         </HStack>
-      </div>
-      <Spacer height={24} />
-      <Surface style={{ padding: 12, height: isLoading ? 112 : undefined }}>
-        <UIText kind="subtitle/l_reg">Portfolio</UIText>
-        <UIText kind="h/1_med">
-          {value?.total_value != null ? (
-            <NeutralDecimals
-              parts={formatCurrencyToParts(value.total_value, 'en', 'usd')}
-            />
-          ) : null}
-        </UIText>
-        {value?.relative_change_24h ? (
-          <PercentChange
-            value={value.relative_change_24h}
-            locale="en"
-            render={(change) => {
-              const sign = change.isPositive ? '+' : '';
-              return (
-                <UIText
-                  kind="subtitle/l_reg"
-                  color={
-                    change.isNonNegative
-                      ? 'var(--positive-500)'
-                      : 'var(--negative-500)'
-                  }
-                >
-                  {`${sign}${change.formatted}`}{' '}
-                  {value?.absolute_change_24h
-                    ? `(${formatCurrencyValue(
-                        value?.absolute_change_24h,
-                        'en',
-                        'usd'
-                      )})`
-                    : ''}{' '}
-                  Today
-                </UIText>
-              );
-            }}
-          />
-        ) : (
-          <UIText kind="subtitle/l_reg">{NBSP}</UIText>
-        )}
-      </Surface>
-      {/*
-        <Spacer height={8} />
-        <Surface style={{ padding: 12 }}>
-          <HStack gap={12}>
-            <BlockieImg address={singleAddress} size={44} />
-            <div>
-              <UIText kind="subtitle/l_reg" title={singleAddress}>
-                <AddressText address={singleAddress} />
-              </UIText>
-              <HStack gap={8} alignItems="baseline">
-                <UIText kind="h/6_med">
-                  <NeutralDecimals
-                    parts={formatCurrencyToParts(
-                      value?.total_value ?? 0,
-                      'en',
-                      'usd'
-                    )}
-                  />{' '}
-                  {value?.relative_change_24h ? (
-                    <PercentChange
-                      value={value.relative_change_24h}
-                      locale="en"
-                      render={(change) => {
-                        const sign = change.isPositive ? '+' : '';
-                        return (
-                          <UIText
-                            inline={true}
-                            kind="subtitle/l_reg"
-                            color={
-                              change.isNonNegative
-                                ? 'var(--positive-500)'
-                                : 'var(--negative-500)'
-                            }
-                          >
-                            {`${sign}${change.formatted}`}{' '}
-                            {value?.absolute_change_24h
-                              ? `(${formatCurrencyValue(
-                                  value?.absolute_change_24h,
-                                  'en',
-                                  'usd'
-                                )})`
-                              : ''}{' '}
-                            Today
-                          </UIText>
-                        );
-                      }}
-                    />
-                  ) : null}
-                </UIText>
-              </HStack>
-            </div>
-          </HStack>
-        </Surface>
-        */}
-      <Spacer height={24} />
-      <SegmentedControlGroup
+      </PageFullBleedColumn>
+      <PageFullBleedColumn
+        padding={true}
+        style={{ backgroundColor: 'var(--white)' }}
+      >
+        <Spacer height={24} />
+        <div style={{ height: isLoading ? 68 : undefined }}>
+          <VStack gap={0}>
+            <UIText kind="h/1_med">
+              {value?.total_value != null ? (
+                <NeutralDecimals
+                  parts={formatCurrencyToParts(value.total_value, 'en', 'usd')}
+                />
+              ) : (
+                NBSP
+              )}
+            </UIText>
+            {value?.relative_change_24h ? (
+              <PercentChange
+                value={value.relative_change_24h}
+                locale="en"
+                render={(change) => {
+                  const sign = change.isPositive ? '+' : '';
+                  return (
+                    <UIText
+                      kind="subtitle/l_reg"
+                      color={
+                        change.isNonNegative
+                          ? 'var(--positive-500)'
+                          : 'var(--negative-500)'
+                      }
+                    >
+                      {`${sign}${change.formatted}`}{' '}
+                      {value?.absolute_change_24h
+                        ? `(${formatCurrencyValue(
+                            value?.absolute_change_24h,
+                            'en',
+                            'usd'
+                          )})`
+                        : ''}{' '}
+                      Today
+                    </UIText>
+                  );
+                }}
+              />
+            ) : (
+              <UIText kind="subtitle/l_reg">{NBSP}</UIText>
+            )}
+          </VStack>
+        </div>
+        <Spacer height={24} />
+      </PageFullBleedColumn>
+      <PageFullBleedColumn
+        padding={false}
         style={{
           position: 'sticky',
           top: 40,
           zIndex: 'var(--max-layout-index)',
-          paddingTop: 4,
-          marginLeft: -16,
-          marginRight: -16,
-          backgroundColor: 'var(--background)',
+          backgroundColor: 'var(--white)',
         }}
       >
-        <SegmentedControlLink to="/overview/nfts"> NFTs </SegmentedControlLink>
-        <SegmentedControlLink to="/overview" end={true}>
-          Tokens
-        </SegmentedControlLink>
-        <SegmentedControlLink to="/overview/history">
-          History <PendingTransactionsIndicator />
-        </SegmentedControlLink>
-      </SegmentedControlGroup>
+        <SegmentedControlGroup style={{ paddingTop: 4 }}>
+          <SegmentedControlLink to="/overview/nfts">NFTs</SegmentedControlLink>
+          <SegmentedControlLink to="/overview" end={true}>
+            Tokens
+          </SegmentedControlLink>
+          <SegmentedControlLink to="/overview/history">
+            History <PendingTransactionsIndicator />
+          </SegmentedControlLink>
+        </SegmentedControlGroup>
+      </PageFullBleedColumn>
       <Spacer height={24} />
       <Routes>
         <Route path="/" element={<Positions />} />
