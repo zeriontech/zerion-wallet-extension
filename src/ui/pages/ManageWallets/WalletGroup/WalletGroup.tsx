@@ -304,7 +304,7 @@ export function WalletGroup() {
             })),
             {
               key: 1,
-              to: `/get-started/new?groupId=${walletGroup.id}`,
+              to: `/get-started/import/mnemonic?groupId=${walletGroup.id}`,
               component: (
                 <div style={{ color: 'var(--primary)' }}>+ Add Wallet</div>
               ),
