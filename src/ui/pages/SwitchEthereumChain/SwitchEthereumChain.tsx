@@ -12,9 +12,11 @@ import { useQuery } from 'react-query';
 import { NetworkIndicator } from 'src/ui/components/NetworkIndicator';
 import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
 import { invariant } from 'src/shared/invariant';
+import { useNetworks } from 'src/modules/networks/useNetworks';
 
 export function SwitchEthereumChain() {
   const [params] = useSearchParams();
+  const { networks } = useNetworks();
   const {
     data: wallet,
     isLoading,
@@ -25,7 +27,7 @@ export function SwitchEthereumChain() {
   if (isError) {
     return <p>Some Error</p>;
   }
-  if (isLoading || !wallet) {
+  if (isLoading || !wallet || !networks) {
     return null;
   }
   const origin = params.get('origin');
@@ -52,7 +54,10 @@ export function SwitchEthereumChain() {
           {originName}
         </UIText>
         <Spacer height={8} />
-        <NetworkIndicator chainId={chainId} />
+        <NetworkIndicator
+          chain={networks.getChainById(chainId)}
+          networks={networks}
+        />
       </div>
       <Spacer height={24} />
       <UIText kind="subtitle/m_reg" style={{ textAlign: 'center' }}>

@@ -141,11 +141,14 @@ export function NetworkFee({
   }, [chain, feeEstimation, nativeAsset]);
   return (
     <HStack gap={8} justifyContent="space-between" alignItems="center">
-      <UIText kind="body/s_reg">Network Fee</UIText>
+      <UIText kind="small/regular">Network Fee</UIText>
       {isLoading ? (
         <CircleSpinner />
       ) : fiatValue == null ? null : (
-        <UIText kind="body/s_reg" title={getFeeTypeTitle(feeEstimation?.type)}>
+        <UIText
+          kind="small/regular"
+          title={getFeeTypeTitle(feeEstimation?.type)}
+        >
           {[time, formatCurrencyValue(fiatValue, 'en', 'usd')]
             .filter(isTruthy)
             .join(' · ')}

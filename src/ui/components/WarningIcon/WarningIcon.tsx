@@ -15,6 +15,7 @@ export function WarningIcon({
   style?: React.CSSProperties;
 }) {
   const { color, glowColor } = colors[kind];
+  const glowWidth = 3;
   return (
     <div
       style={{
@@ -28,7 +29,8 @@ export function WarningIcon({
         alignItems: 'center',
         justifyContent: 'center',
         fontSize: 12,
-        boxShadow: glow ? `0 0 0px 3px ${glowColor}` : undefined,
+        margin: glow ? glowWidth : undefined,
+        boxShadow: glow ? `0 0 0px ${glowWidth}px ${glowColor}` : undefined,
         ...style,
       }}
     >

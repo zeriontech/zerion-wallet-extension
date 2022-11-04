@@ -81,6 +81,7 @@ export interface Item {
   to?: LinkProps['to'];
   href?: string;
   target?: React.AnchorHTMLAttributes<HTMLAnchorElement>['target'];
+  rel?: React.AnchorHTMLAttributes<HTMLAnchorElement>['rel'];
   isInteractive?: boolean;
   onClick?: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick'];
   style?: React.CSSProperties;

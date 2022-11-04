@@ -8,12 +8,7 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
-import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { Surface } from 'src/ui/ui-kit/Surface';
-import { BlockieImg } from 'src/ui/components/BlockieImg';
-import { Media } from 'src/ui/ui-kit/Media';
-import { truncateAddress } from 'src/ui/shared/truncateAddress';
-import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { Background } from 'src/ui/components/Background';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
@@ -21,33 +16,18 @@ import { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
 import { getError } from 'src/shared/errors/getError';
 import { invariant } from 'src/shared/invariant';
+import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
+import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import { WalletIcon } from 'src/ui/ui-kit/WalletIcon';
+import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 
 function ItemSurface({ style, ...props }: React.HTMLProps<HTMLDivElement>) {
   const surfaceStyle = {
     ...style,
     padding: '10px 12px',
-    backgroundColor: 'var(--neutral-100)',
   };
   return <Surface style={surfaceStyle} {...props} />;
-}
-
-function WalletLine({ address, label }: { address: string; label: string }) {
-  return (
-    <ItemSurface>
-      <Media
-        vGap={0}
-        image={<BlockieImg address={address} size={32} />}
-        text={
-          <UIText kind="caption/reg" color="var(--neutral-500)">
-            {label}
-          </UIText>
-        }
-        detailText={
-          <UIText kind="subtitle/l_reg">{truncateAddress(address, 4)}</UIText>
-        }
-      />
-    </ItemSurface>
-  );
 }
 
 function MessageRow({ message }: { message: string }) {
@@ -134,27 +114,34 @@ function SignMessageContent({
     : personalSignMutation.isError
     ? getError(personalSignMutation.error)
     : null;
-  const originName = useMemo(() => new URL(origin).hostname, [origin]);
+  const hostname = useMemo(() => new URL(origin).hostname, [origin]);
 
   return (
-    <Background backgroundKind="white">
+    <Background backgroundKind="neutral">
       <PageColumn>
         <PageTop />
         <div style={{ display: 'grid', placeItems: 'center' }}>
-          <ZerionSquircle style={{ width: 44, height: 44 }} />
+          <SiteFaviconImg style={{ width: 44, height: 44 }} url={origin} />
           <Spacer height={16} />
-          <UIText kind="h/5_med" style={{ textAlign: 'center' }}>
+          <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
             Signature Request
           </UIText>
-          <Spacer height={8} />
-          <UIText kind="subtitle/m_reg" color="var(--primary)">
-            {originName}
+          <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
+            <TextAnchor href={origin} target="_blank" rel="noopener noreferrer">
+              {hostname}
+            </TextAnchor>
           </UIText>
+          <Spacer height={8} />
+
+          <HStack gap={8} alignItems="center">
+            <WalletIcon address={wallet.address} iconSize={20} active={false} />
+            <UIText kind="small/regular">
+              <WalletDisplayName wallet={wallet} />
+            </UIText>
+          </HStack>
         </div>
         <Spacer height={24} />
-        <Spacer height={16} />
         <VStack gap={12}>
-          <WalletLine address={wallet.address} label="Wallet" />
           {typedData ? (
             <TypedDataRow typedData={typedData} />
           ) : message ? (
@@ -178,34 +165,42 @@ function SignMessageContent({
               {someMutationError?.message}
             </UIText>
           ) : null}
-          {typedData ? (
-            <Button
-              disabled={signTypedData_v4Mutation.isLoading}
-              onClick={() => {
-                signTypedData_v4Mutation.mutate({ typedData });
-              }}
-            >
-              {signTypedData_v4Mutation.isLoading ? 'Signing...' : 'Sign'}
-            </Button>
-          ) : message ? (
-            <Button
-              disabled={personalSignMutation.isLoading}
-              onClick={() => {
-                personalSignMutation.mutate([message]);
-              }}
-            >
-              {personalSignMutation.isLoading ? 'Signing...' : 'Sign'}
-            </Button>
-          ) : null}
-          <UnstyledButton
-            type="button"
-            style={{ color: 'var(--primary)' }}
-            onClick={() => {
-              windowPort.reject(windowId);
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: 8,
             }}
           >
-            Reject
-          </UnstyledButton>
+            <Button
+              kind="regular"
+              type="button"
+              onClick={() => {
+                windowPort.reject(windowId);
+              }}
+            >
+              Cancel
+            </Button>
+            {typedData ? (
+              <Button
+                disabled={signTypedData_v4Mutation.isLoading}
+                onClick={() => {
+                  signTypedData_v4Mutation.mutate({ typedData });
+                }}
+              >
+                {signTypedData_v4Mutation.isLoading ? 'Signing...' : 'Sign'}
+              </Button>
+            ) : message ? (
+              <Button
+                disabled={personalSignMutation.isLoading}
+                onClick={() => {
+                  personalSignMutation.mutate([message]);
+                }}
+              >
+                {personalSignMutation.isLoading ? 'Signing...' : 'Sign'}
+              </Button>
+            ) : null}
+          </div>
         </VStack>
       </PageStickyFooter>
     </Background>

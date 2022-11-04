@@ -1,0 +1,1 @@
+export { SiteFaviconImg } from './SiteFaviconImg';

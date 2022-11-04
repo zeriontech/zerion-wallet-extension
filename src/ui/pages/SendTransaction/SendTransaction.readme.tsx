@@ -5,6 +5,11 @@ import type { Readme } from 'src/ui-lab/types';
 import { SendTransaction } from './SendTransaction';
 import { sample } from './transactions.sample';
 
+const sampleOrigins = [
+  'https://app.zerion.io/',
+  'https://app.uniswap.org/',
+  'https://app.sushi.com/',
+];
 export const readme: Readme = {
   name: 'SendTransaction',
   description: null,
@@ -13,7 +18,7 @@ export const readme: Readme = {
       style={{
         display: 'grid',
         gridGap: 12,
-        gridTemplateColumns: 'repeat(5, minmax(290px, 700px))',
+        gridTemplateColumns: 'repeat(5, minmax(360px, 700px))',
         overflowX: 'auto',
       }}
     >
@@ -24,7 +29,7 @@ export const readme: Readme = {
           <MemoryRouter
             initialEntries={[
               `/sendTransaction?${new URLSearchParams({
-                origin: 'https://zerion.io',
+                origin: sampleOrigins[index % sampleOrigins.length],
                 transaction: JSON.stringify(tx),
                 windowId: String(index),
               })}`,

@@ -12,6 +12,12 @@ const samples: Array<{ message: string } | { typedData: string }> = [
   },
 ];
 
+const sampleOrigins = [
+  'https://app.zerion.io/',
+  'https://app.uniswap.org/',
+  'https://app.sushi.com/',
+];
+
 export const readme: Readme = {
   name: 'SignMessage',
   description: null,
@@ -20,7 +26,7 @@ export const readme: Readme = {
       style={{
         display: 'grid',
         gridGap: 12,
-        gridTemplateColumns: 'repeat(5, minmax(290px, 700px))',
+        gridTemplateColumns: 'repeat(5, minmax(360px, 700px))',
         overflowX: 'auto',
       }}
     >
@@ -29,7 +35,7 @@ export const readme: Readme = {
           key={index}
           initialEntries={[
             `/signMessage?${new URLSearchParams({
-              origin: 'https://app.zerion.io',
+              origin: sampleOrigins[index % sampleOrigins.length],
               windowId: String(index),
               ...sample,
             })}`,

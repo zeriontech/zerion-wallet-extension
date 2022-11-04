@@ -1,33 +1,26 @@
 import React from 'react';
-import { ethers } from 'ethers';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
-
-const chainNameById: Record<string, string | undefined> = {
-  '0x1': 'Ethereum',
-  '0x89': 'Polygon',
-};
-const chainIconById: Record<string, string | undefined> = {
-  '0x1': 'https://chain-icons.s3.amazonaws.com/ethereum.png',
-  '0x89': 'https://chain-icons.s3.amazonaws.com/polygon.png',
-};
+import { Networks } from 'src/modules/networks/Networks';
+import { Chain } from 'src/modules/networks/Chain';
 
 export function NetworkIndicator({
-  chainId: chainIdRaw = 1,
+  chain,
+  networks,
   size = 20,
 }: {
-  chainId?: string | number;
+  chain: Chain;
+  networks: Networks;
   size?: number;
 }) {
-  const chainId = ethers.utils.hexValue(chainIdRaw);
   return (
     <HStack gap={4} alignItems="center">
       <img
-        src={chainIconById[chainId] || ''}
+        src={networks.getNetworkByName(chain)?.icon_url || ''}
         alt=""
         style={{ width: size, height: size }}
       />
-      <UIText kind="subtitle/m_reg">{chainNameById[chainId] || chainId}</UIText>
+      <UIText kind="subtitle/m_reg">{networks.getChainName(chain)}</UIText>
     </HStack>
   );
 }

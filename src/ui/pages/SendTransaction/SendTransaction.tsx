@@ -10,7 +10,6 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
-import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { Media } from 'src/ui/ui-kit/Media';
@@ -42,12 +41,40 @@ import { resolveChainForTx } from 'src/modules/ethereum/transactions/resolveChai
 import { networksStore } from 'src/modules/networks/networks-store';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { invariant } from 'src/shared/invariant';
+import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
+import { PageFullBleedLine } from 'src/ui/components/PageFullBleedLine';
+import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import { WalletIcon } from 'src/ui/ui-kit/WalletIcon';
+import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
+import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
+import { AngleRightRow } from 'src/ui/components/AngleRightRow';
+import { Networks } from 'src/modules/networks/Networks';
 
+function UknownIcon({ size }: { size: number }) {
+  return (
+    <UIText
+      kind="headline/h3"
+      style={{
+        height: size,
+        width: size,
+        lineHeight: `${size}px`,
+        textAlign: 'center',
+        fontWeight: 'normal',
+        borderRadius: 6,
+        backgroundColor: 'var(--neutral-300)',
+        userSelect: 'none',
+        color: 'var(--neutral-500)',
+      }}
+    >
+      ?
+    </UIText>
+  );
+}
 function ItemSurface({ style, ...props }: React.HTMLProps<HTMLDivElement>) {
   const surfaceStyle = {
     ...style,
     padding: '10px 12px',
-    backgroundColor: 'var(--neutral-100)',
   };
   return <Surface style={surfaceStyle} {...props} />;
 }
@@ -73,8 +100,12 @@ function WalletLine({ address, label }: { address: string; label: string }) {
 
 function AssetLine({
   transaction,
+  networks,
+  chain,
 }: {
   transaction: TransactionDescriptionType;
+  networks: Networks;
+  chain: Chain;
 }) {
   const assetCode =
     transaction.sendAssetId ||
@@ -98,22 +129,34 @@ function AssetLine({
   ) {
     // Couldn't resolve asset for a send or approve transaction
     return (
-      <ItemSurface>
-        <Media
-          vGap={0}
-          image={null}
-          text={
-            <UIText kind="caption/reg" color="var(--neutral-500)">
-              Token (link to explorer?)
-            </UIText>
-          }
-          detailText={
-            <UIText kind="subtitle/l_reg" title={assetCode}>
-              {truncateAddress(assetCode, 6)}
-            </UIText>
-          }
-        />
-      </ItemSurface>
+      <SurfaceList
+        items={[
+          {
+            key: 0,
+            href: networks.getExplorerTokenUrlByName(chain, assetCode),
+            target: '_blank',
+            rel: 'noopener noreferrer',
+            component: (
+              <AngleRightRow>
+                <Media
+                  vGap={0}
+                  image={null}
+                  text={
+                    <UIText kind="caption/reg" color="var(--neutral-500)">
+                      Token
+                    </UIText>
+                  }
+                  detailText={
+                    <UIText kind="subtitle/l_reg" title={assetCode}>
+                      {truncateAddress(assetCode, 6)}
+                    </UIText>
+                  }
+                />
+              </AngleRightRow>
+            ),
+          },
+        ]}
+      />
     );
   }
   if (!asset) {
@@ -123,25 +166,39 @@ function AssetLine({
   }
   if (transaction.action === TransactionAction.approve) {
     return (
-      <ItemSurface>
-        <Media
-          vGap={0}
-          image={
-            <img
-              style={{ width: 32, height: 32, borderRadius: '50%' }}
-              src={asset.icon_url || ''}
-            />
-          }
-          text={
-            <UIText kind="caption/reg" color="var(--neutral-500)">
-              Token
-            </UIText>
-          }
-          detailText={
-            <UIText kind="subtitle/l_reg">{asset.symbol || '...'}</UIText>
-          }
-        />
-      </ItemSurface>
+      <SurfaceList
+        items={[
+          {
+            key: 0,
+            href: networks.getExplorerTokenUrlByName(chain, asset.asset_code),
+            target: '_blank',
+            rel: 'noopener noreferrer',
+            component: (
+              <AngleRightRow>
+                <Media
+                  vGap={0}
+                  image={
+                    <img
+                      style={{ width: 32, height: 32, borderRadius: '50%' }}
+                      src={asset.icon_url || ''}
+                    />
+                  }
+                  text={
+                    <UIText kind="caption/reg" color="var(--neutral-500)">
+                      Token
+                    </UIText>
+                  }
+                  detailText={
+                    <UIText kind="subtitle/l_reg">
+                      {asset.symbol || '...'}
+                    </UIText>
+                  }
+                />
+              </AngleRightRow>
+            ),
+          },
+        ]}
+      />
     );
   }
   if (transaction.action === TransactionAction.transfer) {
@@ -178,32 +235,52 @@ function AssetLine({
 
 function TransactionDescription({
   transactionDescription,
+  networks,
+  chain,
 }: {
   transactionDescription: TransactionDescriptionType;
+  networks: Networks;
+  chain: Chain;
 }) {
   const { action, contractAddress, assetReceiver } = transactionDescription;
   return (
     <>
-      <AssetLine transaction={transactionDescription} />
+      <AssetLine
+        transaction={transactionDescription}
+        networks={networks}
+        chain={chain}
+      />
       {action === TransactionAction.transfer && assetReceiver ? (
         <WalletLine address={assetReceiver} label="Receiver" />
       ) : null}
       {action === TransactionAction.contractInteraction && contractAddress ? (
-        <ItemSurface>
-          <Media
-            image={null}
-            text={
-              <UIText kind="caption/reg" color="var(--neutral-500)">
-                Contract Address
-              </UIText>
-            }
-            detailText={
-              <UIText kind="subtitle/l_reg" title="contractAddress">
-                {truncateAddress(contractAddress, 10)}
-              </UIText>
-            }
-          />
-        </ItemSurface>
+        <SurfaceList
+          items={[
+            {
+              key: 0,
+              // href: networks.getExplorerAddressUrlByName(chain, contractAddress),
+              target: '_blank',
+              rel: 'noopener noreferrer',
+              component: (
+                // <AngleRightRow>
+                // </AngleRightRow>
+                <Media
+                  image={<UknownIcon size={32} />}
+                  text={
+                    <UIText kind="caption/reg" color="var(--neutral-500)">
+                      Interact with
+                    </UIText>
+                  }
+                  detailText={
+                    <UIText kind="subtitle/l_reg" title="contractAddress">
+                      {truncateAddress(contractAddress, 7)}
+                    </UIText>
+                  }
+                />
+              ),
+            },
+          ]}
+        />
       ) : null}
     </>
   );
@@ -299,8 +376,8 @@ function SendTransactionContent({
       },
     }
   );
-  const originName = useMemo(() => new URL(origin).hostname, [origin]);
-  if (!transaction || descriptionQuery.isLoading) {
+  const hostname = useMemo(() => new URL(origin).hostname, [origin]);
+  if (!transaction || descriptionQuery.isLoading || !networks) {
     return (
       <FillView>
         <Twinkle>
@@ -313,63 +390,81 @@ function SendTransactionContent({
     throw descriptionQuery.error || new Error('testing');
   }
 
-  const chain = networks?.getChainById(transaction.chainId);
+  const chain = networks.getChainById(transaction.chainId);
 
   return (
-    <Background backgroundKind="white">
+    <Background backgroundKind="neutral">
       <PageColumn>
+        <div
+          style={{
+            position: 'sticky',
+            top: 0,
+            backgroundColor: 'var(--background)',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              paddingTop: 8,
+              paddingBottom: 8,
+            }}
+          >
+            <NetworkIndicator chain={chain} networks={networks} />
+          </div>
+          <PageFullBleedLine lineColor="var(--neutral-300)" />
+        </div>
         <PageTop />
         <div style={{ display: 'grid', placeItems: 'center' }}>
-          <ZerionSquircle style={{ width: 44, height: 44 }} />
+          <SiteFaviconImg style={{ width: 44, height: 44 }} url={origin} />
           <Spacer height={16} />
-          <UIText kind="h/5_med" style={{ textAlign: 'center' }}>
+          <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
             {strings.actions[descriptionQuery.data.action] ||
               strings.actions[TransactionAction.contractInteraction]}
           </UIText>
-          <Spacer height={8} />
-          <UIText kind="subtitle/m_reg" color="var(--primary)">
-            {originName}
+          <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
+            <TextAnchor href={origin} target="_blank" rel="noopener noreferrer">
+              {hostname}
+            </TextAnchor>
           </UIText>
           <Spacer height={8} />
-          <NetworkIndicator chainId={transaction.chainId} />
-          <Spacer height={8} />
-          <UIText kind="subtitle/m_reg">
-            <i>
-              {
-                networks?.getEthereumChainParameter(transaction.chainId)
-                  .rpcUrls[0]
-              }
-            </i>
-          </UIText>
+
+          <HStack gap={8} alignItems="center">
+            <WalletIcon address={wallet.address} iconSize={20} active={false} />
+            <UIText kind="small/regular">
+              <WalletDisplayName wallet={wallet} />
+            </UIText>
+          </HStack>
         </div>
-        <Spacer height={24} />
-        {transaction.chainId == null ? (
-          <Surface
-            padding={12}
-            style={{ backgroundColor: 'var(--notice-100)' }}
-          >
-            <Media
-              image={<WarningIcon glow={true} />}
-              text={
-                <UIText kind="body/s_reg" color="var(--notice-500)">
-                  {capitalize(originName)} did not provide chainId
-                </UIText>
-              }
-              detailText={
-                <UIText kind="body/s_reg">
-                  The transaction will be sent to{' '}
-                  {networks?.getNetworkById(transaction.chainId)?.name}
-                </UIText>
-              }
-            />
-          </Surface>
+        {incomingTransaction.chainId == null ? (
+          <>
+            <Spacer height={24} />
+            <Surface padding={12}>
+              <Media
+                alignItems="start"
+                image={<WarningIcon glow={true} />}
+                text={
+                  <UIText kind="body/s_reg" color="var(--notice-500)">
+                    {capitalize(hostname)} did not provide chainId
+                  </UIText>
+                }
+                detailText={
+                  <UIText kind="body/s_reg">
+                    The transaction will be sent to{' '}
+                    {networks?.getNetworkById(transaction.chainId)?.name}
+                  </UIText>
+                }
+              />
+            </Surface>
+          </>
         ) : null}
-        <Spacer height={16} />
-        <VStack gap={24}>
+        <Spacer height={24} />
+        <VStack gap={16}>
           <VStack gap={12}>
-            <WalletLine address={wallet.address} label="Wallet" />
             <TransactionDescription
               transactionDescription={descriptionQuery.data}
+              networks={networks}
+              chain={chain}
             />
           </VStack>
           {transaction && chain ? (
@@ -383,7 +478,16 @@ function SendTransactionContent({
                 </UIText>
               )}
             >
-              <NetworkFee transaction={transaction} chain={chain} />
+              <SurfaceList
+                items={[
+                  {
+                    key: 0,
+                    component: (
+                      <NetworkFee transaction={transaction} chain={chain} />
+                    ),
+                  },
+                ]}
+              />
             </ErrorBoundary>
           ) : null}
         </VStack>
@@ -402,31 +506,40 @@ function SendTransactionContent({
               ? errorToMessage(signMutation.error as SendTransactionError)
               : null}
           </UIText>
-          <Button
-            disabled={signMutation.isLoading}
-            onClick={() => {
-              // send an untouched version of transaction;
-              // TODO: if we add UI for updating gas price in this view,
-              // we should send an updated tx object
-              signAndSendTransaction(incomingTransaction);
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: 8,
             }}
           >
-            {signMutation.isLoading
-              ? 'Sending...'
-              : descriptionQuery.data.action === TransactionAction.approve
-              ? 'Approve'
-              : 'Confirm'}
-          </Button>
-          <UnstyledButton
-            style={{ color: 'var(--primary)' }}
-            onClick={() => {
-              const windowId = params.get('windowId');
-              invariant(windowId, 'windowId get-parameter is required');
-              windowPort.reject(windowId);
-            }}
-          >
-            Reject
-          </UnstyledButton>
+            <Button
+              kind="regular"
+              type="button"
+              onClick={() => {
+                const windowId = params.get('windowId');
+                invariant(windowId, 'windowId get-parameter is required');
+                windowPort.reject(windowId);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={signMutation.isLoading}
+              onClick={() => {
+                // send an untouched version of transaction;
+                // TODO: if we add UI for updating gas price in this view,
+                // we should send an updated tx object
+                signAndSendTransaction(incomingTransaction);
+              }}
+            >
+              {signMutation.isLoading
+                ? 'Sending...'
+                : descriptionQuery.data.action === TransactionAction.approve
+                ? 'Approve'
+                : 'Confirm'}
+            </Button>
+          </div>
         </VStack>
       </PageStickyFooter>
     </Background>

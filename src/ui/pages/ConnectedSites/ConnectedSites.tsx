@@ -8,12 +8,10 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
-import GlobeIcon from 'jsx:src/ui/assets/globe.svg';
 import { FillView } from 'src/ui/components/FillView';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { AddressBadge } from 'src/ui/components/AddressBadge';
 import { Media } from 'src/ui/ui-kit/Media';
-import { Image } from 'src/ui/ui-kit/MediaFallback';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
@@ -25,6 +23,7 @@ import {
 } from 'src/ui/shared/requests/getPermissionsWithWallets';
 import { ConnectedSite } from './ConnectedSite';
 import { ViewSuspense } from 'src/ui/components/ViewSuspense';
+import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 
 function RevokeAllPermissionsComponent({
   onRevokeAll,
@@ -98,18 +97,10 @@ function ConnectedSitesList({
                 <Media
                   image={
                     <div>
-                      <Image
+                      <SiteFaviconImg
                         style={iconStyle}
-                        src={`${item.origin}/favicon.ico`}
+                        url={item.origin}
                         alt={alt}
-                        renderError={() => (
-                          <Image
-                            style={iconStyle}
-                            src={`${item.origin}/favicon.png`}
-                            alt={alt}
-                            renderError={() => <GlobeIcon style={iconStyle} />}
-                          />
-                        )}
                       />
                     </div>
                   }
