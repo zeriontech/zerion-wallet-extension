@@ -21,7 +21,7 @@ import {
   isValidMnemonic,
   isValidPrivateKey,
 } from 'src/shared/validation/wallet';
-import { memoryLocationState } from './memoryLocationState';
+import { MemoryLocationState } from './memoryLocationState';
 import { WithPasswordSession } from 'src/ui/components/VerifyUser/WithPasswordSession';
 
 function getSeedType(value: string) {
@@ -134,7 +134,11 @@ function ImportForm({
   );
 }
 
-function ImportWalletView() {
+function ImportWalletView({
+  locationStateStore,
+}: {
+  locationStateStore: MemoryLocationState;
+}) {
   const navigate = useNavigate();
 
   return (
@@ -150,7 +154,7 @@ function ImportWalletView() {
               style={{ color: 'var(--neutral-500)', verticalAlign: 'middle' }}
             />{' '}
             <br />
-            or Private Key{' '}
+            or a Private Key{' '}
             <QuestionHintIcon
               style={{ color: 'var(--neutral-500)', verticalAlign: 'middle' }}
             />
@@ -160,17 +164,17 @@ function ImportWalletView() {
             onSubmit={({ value, seedType }) => {
               if (seedType === SeedType.privateKey) {
                 // NOTE:
-                // see memoryLocationState for why and how it's used instead of location state
+                // see locationStateStore for why and how it's used instead of location state
                 const pathname = '/get-started/import/private-key';
                 const to = `${pathname}?state=memory`;
-                memoryLocationState.set(pathname, value);
+                locationStateStore.set(pathname, value);
                 navigate(to);
               } else if (seedType === SeedType.mnemonic) {
                 // NOTE:
-                // see memoryLocationState for why it's used instead of location state
+                // see locationStateStore for why it's used instead of location state
                 const pathname = '/get-started/import/mnemonic';
                 const to = `${pathname}?state=memory`;
-                memoryLocationState.set(pathname, value);
+                locationStateStore.set(pathname, value);
                 navigate(to);
               }
             }}
@@ -183,15 +187,24 @@ function ImportWalletView() {
 }
 
 export function ImportWallet() {
+  const [memoryLocationState] = useState(() => new MemoryLocationState({}));
   return (
     <Routes>
-      <Route path="/" element={<ImportWalletView />} />
-      <Route path="/private-key" element={<PrivateKeyImportView />} />
+      <Route
+        path="/"
+        element={<ImportWalletView locationStateStore={memoryLocationState} />}
+      />
+      <Route
+        path="/private-key"
+        element={
+          <PrivateKeyImportView locationStateStore={memoryLocationState} />
+        }
+      />
       <Route
         path="/mnemonic"
         element={
           <WithPasswordSession text="Recovery phrase will be encrypted with your password">
-            <MnemonicImportView />
+            <MnemonicImportView locationStateStore={memoryLocationState} />
           </WithPasswordSession>
         }
       />

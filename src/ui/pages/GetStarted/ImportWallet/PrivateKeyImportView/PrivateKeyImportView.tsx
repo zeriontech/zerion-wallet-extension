@@ -13,7 +13,10 @@ import {
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
 import { isValidPrivateKey } from 'src/shared/validation/wallet';
-import { useMemoryLocationState } from '../memoryLocationState';
+import {
+  MemoryLocationState,
+  useMemoryLocationState,
+} from '../memoryLocationState';
 
 function PrivateKeyImportFlow({
   address,
@@ -58,8 +61,12 @@ function PrivateKeyImportFlow({
   );
 }
 
-export function PrivateKeyImportView() {
-  const { value: privateKey } = useMemoryLocationState();
+export function PrivateKeyImportView({
+  locationStateStore,
+}: {
+  locationStateStore: MemoryLocationState;
+}) {
+  const { value: privateKey } = useMemoryLocationState(locationStateStore);
   if (!privateKey) {
     throw new Error(
       'Location state for PrivateKeyImportView is expected to have a value property'

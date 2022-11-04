@@ -8,18 +8,25 @@ import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { walletPort } from 'src/ui/shared/channels';
-import { useMemoryLocationState } from '../memoryLocationState';
+import {
+  MemoryLocationState,
+  useMemoryLocationState,
+} from '../memoryLocationState';
 import { AddressImportFlow } from './AddressImportFlow';
 import { getFirstNMnemonicWallets } from './getFirstNMnemonicWallets';
 import { useStaleTime } from './useStaleTime';
 
-function useMnenomicPhraseForLocation() {
+function useMnenomicPhraseForLocation({
+  locationStateStore,
+}: {
+  locationStateStore: MemoryLocationState;
+}) {
   /**
    * Get phrase from
    * - either locationState
    * - or resolve from groupId in searchParams
    */
-  const { value: phraseFromState } = useMemoryLocationState();
+  const { value: phraseFromState } = useMemoryLocationState(locationStateStore);
   const [params] = useSearchParams();
   const groupId = params.get('groupId');
   if (!phraseFromState && !groupId) {
@@ -56,9 +63,15 @@ function useMnenomicPhraseForLocation() {
   }
 }
 
-export function MnemonicImportView() {
+export function MnemonicImportView({
+  locationStateStore,
+}: {
+  locationStateStore: MemoryLocationState;
+}) {
   const [count] = useState(100);
-  const { phrase, isLoading: isLoadingPhrase } = useMnenomicPhraseForLocation();
+  const { phrase, isLoading: isLoadingPhrase } = useMnenomicPhraseForLocation({
+    locationStateStore,
+  });
   const { data: wallets } = useQuery(
     `getFirstNMnemonicWallets(${phrase}, ${count})`,
     async () =>

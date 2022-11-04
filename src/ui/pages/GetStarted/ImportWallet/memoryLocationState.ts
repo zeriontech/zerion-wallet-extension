@@ -12,37 +12,23 @@
  * without expecting this state to be read
  */
 import { useStore } from '@store-unit/react';
-import { omit } from 'lodash';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { Store } from 'store-unit';
 
 type State = Record<string, { value: string } | undefined>;
 
-class MemoryLocationState extends Store<State> {
-  constructor(state: State) {
-    super(state);
-    setInterval(() => {
-      // clear state each minute
-      this.setState({});
-    }, 1000 * 60);
-  }
+export class MemoryLocationState extends Store<State> {
   set(key: string, value: string) {
     this.setState((state) => ({ ...state, [key]: { value } }));
   }
-
-  unset(key: string) {
-    this.setState((state) => omit(state, [key]));
-  }
 }
-
-export const memoryLocationState = new MemoryLocationState({});
 
 const EMPTY_VALUE = { value: undefined };
 
-export function useMemoryLocationState() {
+export function useMemoryLocationState(store: MemoryLocationState) {
   const { pathname } = useLocation();
   const [params] = useSearchParams();
-  const state = useStore(memoryLocationState);
+  const state = useStore(store);
   if (params.get('state') === 'memory') {
     // only use this store if it's explicitly expected
     return state[pathname] || EMPTY_VALUE;
