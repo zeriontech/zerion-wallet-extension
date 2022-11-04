@@ -24,7 +24,9 @@ export function SiteFaviconImg({
         <Image
           style={style}
           src={`${url}/favicon.png`}
-          renderError={() => <GlobeIcon style={style} />}
+          renderError={() => (
+            <GlobeIcon style={{ color: 'var(--primary)', ...style }} />
+          )}
         />
       )}
     />

@@ -17,6 +17,8 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import WalletIcon from 'jsx:src/ui/assets/wallet.svg';
 import LockIcon from 'jsx:src/ui/assets/lock.svg';
+import GlobeIcon from 'jsx:src/ui/assets/globe.svg';
+import SettingsIcon from 'jsx:src/ui/assets/settings.svg';
 import { BackupFlowSettingsSection } from '../BackupWallet/BackupSettingsItem';
 
 function SettingsMain() {
@@ -46,7 +48,13 @@ function SettingsMain() {
               to: '/connected-sites',
               component: (
                 <AngleRightRow>
-                  <UIText kind="body/s_reg">Connected Sites</UIText>
+                  <HStack gap={4} alignItems="center">
+                    <GlobeIcon
+                      // This icon doesn't fit, temporary hack to make it look better
+                      style={{ marginRight: 2, color: 'var(--neutral-800)' }}
+                    />
+                    <UIText kind="body/s_reg">Connected Sites</UIText>
+                  </HStack>
                 </AngleRightRow>
               ),
             },
@@ -55,7 +63,10 @@ function SettingsMain() {
               to: '/settings/user-preferences',
               component: (
                 <AngleRightRow>
-                  <UIText kind="body/s_reg">Preferences</UIText>
+                  <HStack gap={4} alignItems="center">
+                    <SettingsIcon />
+                    <UIText kind="body/s_reg">Preferences</UIText>
+                  </HStack>
                 </AngleRightRow>
               ),
             },
