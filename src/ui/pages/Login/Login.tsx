@@ -1,11 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import type { PublicUser } from 'src/background/account/Account';
-import { Background } from 'src/ui/components/Background';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
-import { PageTop } from 'src/ui/components/PageTop';
 import { accountPublicRPCPort } from 'src/ui/shared/channels';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
@@ -14,6 +12,13 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import * as s from 'src/ui/style/helpers.module.css';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { Input } from 'src/ui/ui-kit/Input';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import ZerionLogo from 'jsx:src/ui/assets/zerion-squircle.svg';
+import ZerionLogoText from 'jsx:src/ui/assets/zerion-logo-text.svg';
+import { apostrophe } from 'src/ui/shared/typography';
+import backgroundArts2 from 'src/ui/assets/background-arts-2.svg';
+import { useBodyStyle } from 'src/ui/components/Background/Background';
+import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 
 export function Login() {
   const [params] = useSearchParams();
@@ -35,6 +40,16 @@ export function Login() {
       },
     }
   );
+  useBodyStyle(
+    useMemo(
+      () => ({
+        backgroundColor: 'var(--neutral-100)',
+        backgroundImage: `url(${backgroundArts2})`,
+        backgroundRepeat: 'no-repeat',
+      }),
+      []
+    )
+  );
   if (isLoading) {
     return null;
   }
@@ -45,65 +60,81 @@ export function Login() {
     return <Navigate to="/" replace={true} />;
   }
   return (
-    <Background backgroundKind="white">
-      <PageColumn>
-        <PageTop />
-        <PageTop />
-        <UIText kind="h/5_sb" style={{ textAlign: 'center' }}>
-          Login
-        </UIText>
-        <UIText kind="caption/reg">next: {params.get('next')}</UIText>
-        <Spacer height={24} />
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            const password = new FormData(event.currentTarget).get(
-              'password'
-            ) as string | undefined;
-            if (!password) {
-              return;
-            }
-            if (!user) {
-              throw new Error('Cannot login: user not found');
-            }
-            loginMutation.mutate({ user, password });
-          }}
-        >
-          <VStack gap={16}>
-            <VStack gap={4}>
-              <Input
-                autoFocus={true}
-                type="password"
-                name="password"
-                placeholder="password"
-                required={true}
-              />
-              {loginMutation.error ? (
-                <UIText kind="caption/reg" color="var(--negative-500)">
-                  {(loginMutation.error as Error).message || 'unknown error'}
-                </UIText>
-              ) : null}
-            </VStack>
-            <Button disabled={loginMutation.isLoading}>
-              {loginMutation.isLoading ? 'Checking...' : 'Unlock'}
-            </Button>
-            <div style={{ textAlign: 'center' }}>
-              <UIText
-                as={UnstyledLink}
-                to="/create-account"
-                kind="button/s_reg"
-                color="var(--primary)"
-              >
-                <span className={s.hoverUnderline}>Or create new account</span>
+    <PageColumn>
+      <Spacer height={56} />
+      <HStack
+        gap={16}
+        alignItems="center"
+        style={{ placeSelf: 'center', alignSelf: 'center' }}
+      >
+        <ZerionLogo style={{ width: 54, height: 54 }} />
+        <ZerionLogoText style={{ height: 17 }} />
+      </HStack>
+      <Spacer height={86} />
+      <VStack gap={8} style={{ textAlign: 'center' }}>
+        <UIText kind="headline/h1">Welcome back!</UIText>
+        <UIText kind="body/regular">{`It${apostrophe}s nice to see you again`}</UIText>
+      </VStack>
+      <Spacer height={24} />
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          const password = new FormData(event.currentTarget).get('password') as
+            | string
+            | undefined;
+          if (!password) {
+            return;
+          }
+          if (!user) {
+            throw new Error('Cannot login: user not found');
+          }
+          loginMutation.mutate({ user, password });
+        }}
+      >
+        <VStack gap={16}>
+          <VStack gap={4}>
+            <Input
+              style={{ backgroundColor: 'var(--white)' }}
+              autoFocus={true}
+              type="password"
+              name="password"
+              placeholder="password"
+              required={true}
+            />
+            {loginMutation.error ? (
+              <UIText kind="caption/reg" color="var(--negative-500)">
+                {(loginMutation.error as Error).message || 'unknown error'}
               </UIText>
-              <UIText kind="button/s_reg">
-                (creating new account will erase the current one)
-              </UIText>
-            </div>
+            ) : null}
           </VStack>
-        </form>
-        <PageBottom />
-      </PageColumn>
-    </Background>
+          <Button disabled={loginMutation.isLoading}>
+            {loginMutation.isLoading ? 'Checking...' : 'Unlock'}
+          </Button>
+          <div style={{ textAlign: 'center' }}>
+            <UIText
+              as={UnstyledLink}
+              to="/create-account"
+              kind="body/accent"
+              color="var(--primary)"
+            >
+              <span className={s.hoverUnderline}>Create new account</span>
+            </UIText>
+            <UIText kind="button/s_reg">
+              (creating new account will erase the current one)
+            </UIText>
+          </div>
+        </VStack>
+      </form>
+      <UIText
+        kind="caption/regular"
+        style={{ marginTop: 'auto', textAlign: 'center' }}
+        color="var(--neutral-500)"
+      >
+        <TextAnchor href="https://zerio.io" target="_blank">
+          zerion.io
+        </TextAnchor>
+      </UIText>
+      <PageBottom />
+    </PageColumn>
   );
 }
