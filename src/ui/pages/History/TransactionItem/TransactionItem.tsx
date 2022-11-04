@@ -6,6 +6,7 @@ import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Media } from 'src/ui/ui-kit/Media';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import ContractExecutionIcon from 'jsx:src/ui/assets/contract-execution.svg';
 
 function TransactionIcon({
   addressTransaction,
@@ -18,6 +19,7 @@ function TransactionIcon({
     changes[0]?.asset.icon_url ||
     changes[0]?.nft_asset?.asset?.preview.url;
   const symbol = meta.asset?.symbol || changes[0]?.asset.symbol;
+  const isSomeAsset = Boolean(meta.asset || changes[0]?.asset);
   const isNftIcon = changes[0]?.nft_asset?.asset?.preview.url;
   if (url) {
     return (
@@ -29,7 +31,7 @@ function TransactionIcon({
         alt=""
       />
     );
-  } else {
+  } else if (isSomeAsset) {
     return (
       <UIText
         kind="label/reg"
@@ -49,6 +51,8 @@ function TransactionIcon({
         {symbol?.slice(0, 3).toUpperCase() ?? '?'}
       </UIText>
     );
+  } else {
+    return <ContractExecutionIcon style={{ width: 24, height: 24 }} />;
   }
 }
 
