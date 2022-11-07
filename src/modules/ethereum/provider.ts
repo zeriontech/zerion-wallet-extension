@@ -6,6 +6,7 @@ import {
   JsonRpcRequest,
   RequestArguments,
 } from '@json-rpc-tools/utils';
+import { InvalidParams } from 'src/shared/errors/errors';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import type { Connection } from './connection';
 
@@ -134,7 +135,7 @@ export class EthereumProvider extends JsonRpcProvider {
   }
 
   // Taken from Rabby
-  // shim to matamask legacy api
+  // shim for legacy api
   sendAsync = (
     payload: unknown,
     callback: (error: null | Error, result: unknown) => void
@@ -156,6 +157,27 @@ export class EthereumProvider extends JsonRpcProvider {
     this.request({ method, params })
       .then((result) => callback(null, { ...rest, method, result }))
       .catch((error) => callback(error, { ...rest, method, error }));
+  };
+
+  // shim for legacy api
+  send = (payload: unknown, callback: unknown) => {
+    if (typeof payload === 'string' && (!callback || Array.isArray(callback))) {
+      return this.request({
+        method: payload,
+        params: callback,
+      }).then((result) => ({
+        id: undefined,
+        jsonrpc: '2.0',
+        result,
+      }));
+    }
+
+    if (typeof payload === 'object' && typeof callback === 'function') {
+      // @ts-ignore callback should have appropriate signature
+      return this.sendAsync(payload, callback);
+    }
+
+    throw new InvalidParams();
   };
 
   shimLegacy() {
