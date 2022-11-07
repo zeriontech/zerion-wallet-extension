@@ -151,9 +151,9 @@ function WalletGroups() {
           <VStack gap={24}>
             {groupedBySeedType.map(([seedType, items]) => {
               if (seedType === SeedType.privateKey) {
-                return <PrivateKeyList walletGroups={items} />;
+                return <PrivateKeyList key={seedType} walletGroups={items} />;
               } else if (seedType === SeedType.mnemonic) {
-                return <MnemonicList walletGroups={items} />;
+                return <MnemonicList key={seedType} walletGroups={items} />;
               } else {
                 return <div>Unknown seed type</div>;
               }

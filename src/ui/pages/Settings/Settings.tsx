@@ -51,7 +51,11 @@ function SettingsMain() {
                   <HStack gap={4} alignItems="center">
                     <GlobeIcon
                       // This icon doesn't fit, temporary hack to make it look better
-                      style={{ marginRight: 2, color: 'var(--neutral-800)' }}
+                      style={{
+                        marginLeft: 2,
+                        marginRight: 2,
+                        color: 'var(--neutral-800)',
+                      }}
                     />
                     <UIText kind="body/s_reg">Connected Sites</UIText>
                   </HStack>
