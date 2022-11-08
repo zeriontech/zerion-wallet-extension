@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useId, useRef } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { SeedType } from 'src/shared/SeedType';
@@ -23,6 +23,9 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { WithConfetti } from '../GetStarted/components/DecorativeMessage/DecorativeMessage';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
+import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
+import CopyIcon from 'jsx:src/ui/assets/copy.svg';
+import { ZStack } from 'src/ui/ui-kit/ZStack';
 
 function Initial({ onSubmit }: { onSubmit: () => void }) {
   return (
@@ -80,9 +83,26 @@ function RecoveryPhrase({
   onSubmit,
 }: {
   groupId: string;
-  onSubmit: () => void;
+  onSubmit: ({ didCopy }: { didCopy: boolean }) => void;
 }) {
   const { data: mnemonic, isLoading } = useMnemonicQuery({ groupId });
+  const { handleCopy, isSuccess: isCopySuccess } = useCopyToClipboard({
+    text: mnemonic?.phrase || '',
+  });
+  const didCopyRef = useRef(false);
+  const copyRecoveryPhrase = () => {
+    didCopyRef.current = true;
+    handleCopy();
+  };
+  useEffect(() => {
+    // listen to copy event. If it occurred on this view,
+    // we will clear clipboard before navigating to next view
+    const handler = () => {
+      didCopyRef.current = true;
+    };
+    window.addEventListener('copy', handler);
+    return () => window.removeEventListener('copy', handler);
+  }, []);
   if (isLoading) {
     return <ViewLoading />;
   }
@@ -93,8 +113,8 @@ function RecoveryPhrase({
     <PageColumn>
       <PageTop />
 
-      <VStack gap={24}>
-        <NavigationTitle title="Write this down" />
+      <NavigationTitle title="Write this down" />
+      <VStack gap={16}>
         <Surface padding={16}>
           <UIText
             kind="button/l_med"
@@ -107,8 +127,44 @@ function RecoveryPhrase({
             {mnemonic.phrase}
           </UIText>
         </Surface>
+        <div>
+          <Button
+            kind="regular"
+            type="button"
+            onClick={copyRecoveryPhrase}
+            style={{ paddingLeft: 28, paddingRight: 28 }}
+          >
+            <HStack gap={8}>
+              {isCopySuccess ? (
+                <div
+                  style={{
+                    width: 20,
+                    height: 20,
+                    color: 'var(--positive-500)',
+                  }}
+                >
+                  ✔
+                </div>
+              ) : (
+                <CopyIcon style={{ display: 'block', width: 20, height: 20 }} />
+              )}
+              <ZStack
+                hideLowerElements={true}
+                justifyContent="start"
+                style={{ textAlign: 'left' }}
+              >
+                {isCopySuccess ? <span>Copied!</span> : null}
+                <span aria-hidden={isCopySuccess}>Copy to Clipboard</span>
+              </ZStack>
+            </HStack>
+          </Button>
+        </div>
       </VStack>
-      <Button style={{ marginTop: 'auto' }} autoFocus={true} onClick={onSubmit}>
+      <Button
+        style={{ marginTop: 'auto' }}
+        autoFocus={true}
+        onClick={() => onSubmit({ didCopy: didCopyRef.current })}
+      >
         <HStack gap={8} justifyContent="center">
           <span>Verify Backup</span>
           <ArrowRightIcon />
@@ -149,6 +205,11 @@ function VerifyBackup({
       },
     }
   );
+  const textAreaId = useId();
+  const autoFocusRef = useRef<HTMLTextAreaElement | null>(null);
+  useEffect(() => {
+    autoFocusRef.current?.focus();
+  }, []);
   return (
     <PageColumn>
       <form
@@ -166,11 +227,15 @@ function VerifyBackup({
         <PageTop />
         <VStack gap={12}>
           <VStack gap={4}>
-            <UIText kind="subtitle/l_reg">Recovery Phrase</UIText>
+            <UIText kind="subtitle/l_reg" as="label" htmlFor={textAreaId}>
+              Recovery Phrase
+            </UIText>
             <textarea
+              ref={autoFocusRef}
               autoFocus={true}
               name="seedOrPrivateKey"
               required={true}
+              id={textAreaId}
               rows={14}
               placeholder="Enter seed phrase or a private key"
               style={{
@@ -182,6 +247,7 @@ function VerifyBackup({
                 padding: '7px 11px',
                 border: '1px solid var(--neutral-200)',
                 borderRadius: 8,
+                fontSize: 16,
               }}
             />
             {verifyMutation.error ? (
@@ -258,6 +324,9 @@ export function BackupWallet() {
     () => walletPort.request('uiGetWalletGroup', { groupId }),
     { useErrorBoundary: true }
   );
+  const { handleCopy: emptyClipboard } = useCopyToClipboard({
+    text: 'You can copy and paste recovery phrase from where you saved it',
+  });
   if (isLoading || !walletGroup) {
     return null;
   }
@@ -303,7 +372,12 @@ export function BackupWallet() {
       {params.get('step') === 'recoveryPhrase' ? (
         <RecoveryPhrase
           groupId={groupId}
-          onSubmit={() => setSearchParams({ step: 'verifyBackup', groupId })}
+          onSubmit={({ didCopy }) => {
+            if (didCopy) {
+              emptyClipboard();
+            }
+            setSearchParams({ step: 'verifyBackup', groupId });
+          }}
         />
       ) : null}
       {params.get('step') === 'verifyBackup' ? (

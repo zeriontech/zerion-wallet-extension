@@ -160,7 +160,7 @@ export class Wallet {
       if (this) {
         this.removeSeedPhraseEncryptionKey();
       }
-    }, 1000 * 60);
+    }, 1000 * 120);
   }
 
   async updateCredentials({
