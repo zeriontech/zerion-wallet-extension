@@ -57,29 +57,46 @@ export function DecorativeMessage({
 
 export function WithConfetti({
   children,
-  confettiOriginY = 0.75,
+  fireDelay = 300,
+  originY = 0.75,
+  leftOriginX = 0.6,
+  rightOriginX = 0.6,
+  gravity = 1,
+  decay = 0.9,
+  particleCount = 150,
+  startVelocity = 30,
 }: React.PropsWithChildren<{
-  confettiOriginY?: number;
+  fireDelay?: number;
+  originY?: number;
+  leftOriginX?: number;
+  rightOriginX?: number;
+  gravity?: number;
+  decay?: number;
+  particleCount?: number;
+  startVelocity?: number;
 }>) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   useEffect(() => {
     function fire(confettiInstance: confetti.CreateTypes) {
       confettiInstance({
         disableForReducedMotion: true,
-        particleCount: 150,
-        startVelocity: 30,
+        particleCount,
+        startVelocity,
         angle: 50,
         spread: 50,
-        origin: { x: 0.6, y: confettiOriginY },
+        origin: { x: rightOriginX, y: originY },
+        gravity,
+        decay,
       });
       confettiInstance({
         disableForReducedMotion: true,
-        particleCount: 150,
-        startVelocity: 25,
-        decay: 0.9,
+        particleCount,
+        startVelocity,
         angle: 130,
         spread: 50,
-        origin: { x: 0.6, y: confettiOriginY },
+        origin: { x: leftOriginX, y: originY },
+        gravity,
+        decay,
       });
     }
 
@@ -95,11 +112,20 @@ export function WithConfetti({
 
     const timerId = setTimeout(() => {
       fire(customConfetti);
-    }, 300);
+    }, fireDelay);
     return () => {
       clearTimeout(timerId);
     };
-  }, [confettiOriginY]);
+  }, [
+    decay,
+    fireDelay,
+    gravity,
+    leftOriginX,
+    originY,
+    particleCount,
+    rightOriginX,
+    startVelocity,
+  ]);
   return (
     <>
       <canvas
@@ -127,7 +153,7 @@ export function DecorativeMessageDone({
   confettiOriginY?: number;
 }) {
   return (
-    <WithConfetti confettiOriginY={confettiOriginY}>
+    <WithConfetti originY={confettiOriginY}>
       <DecorativeMessage
         text={
           <UIText kind="h/6_med">

@@ -2,15 +2,15 @@ import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { accountPublicRPCPort } from 'src/ui/shared/channels';
 import { Background } from '../Background';
+import { FillView } from '../FillView';
 import { NavigationTitle } from '../NavigationTitle';
 import { PageColumn } from '../PageColumn';
-import { PageTop } from '../PageTop';
 import { VerifyUser } from './VerifyUser';
 
 export function WithPasswordSession({
   text,
   children,
-}: React.PropsWithChildren<{ text?: string }>) {
+}: React.PropsWithChildren<{ text?: React.ReactNode }>) {
   const { data: hasActivePasswordSession, isLoading } = useQuery(
     'hasActivePasswordSession',
     () => {
@@ -26,9 +26,14 @@ export function WithPasswordSession({
     return (
       <Background backgroundKind="white">
         <PageColumn>
-          <PageTop />
           <NavigationTitle title="Enter password" />
-          <VerifyUser text={text} onSuccess={() => setVerified(true)} />
+          <FillView adjustForNavigationBar={true}>
+            <VerifyUser
+              style={{ justifySelf: 'stretch' }}
+              text={text}
+              onSuccess={() => setVerified(true)}
+            />
+          </FillView>
         </PageColumn>
       </Background>
     );

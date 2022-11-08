@@ -1,1 +1,1 @@
-export { URLBar } from './URLBar';
+export { URLBar, NAVIGATION_BAR_HEIGHT } from './URLBar';

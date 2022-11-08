@@ -46,10 +46,14 @@ export function BackButton(
 ) {
   return (
     <UnstyledButton style={{ padding: 8 }} {...props}>
-      <IconLeft />
+      <IconLeft style={{ display: 'block' }} />
     </UnstyledButton>
   );
 }
+
+// This value is just a result of inner components
+// If styles are changed, this value needs to be updated manually
+export const NAVIGATION_BAR_HEIGHT = 46;
 
 export function URLBar() {
   const navigate = useNavigate();
@@ -109,7 +113,7 @@ export function URLBar() {
           }
           return (
             <UIText
-              kind="subtitle/l_reg"
+              kind="body/accent"
               style={{
                 textAlign: 'center',
                 overflow: 'hidden',

@@ -20,10 +20,13 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { DecorativeMessage } from '../GetStarted/components/DecorativeMessage';
 import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import { WithConfetti } from '../GetStarted/components/DecorativeMessage/DecorativeMessage';
+import { PageBottom } from 'src/ui/components/PageBottom';
+import { ViewLoading } from 'src/ui/components/ViewLoading';
 
 function Initial({ onSubmit }: { onSubmit: () => void }) {
   return (
-    <>
+    <PageColumn>
       <NavigationTitle title={null} />
       <PageTop />
       <PageHeading>Backup Your Wallet</PageHeading>
@@ -63,11 +66,12 @@ function Initial({ onSubmit }: { onSubmit: () => void }) {
             }
           />
         </VStack>
-        <Button autoFocus={true} onClick={onSubmit}>
-          Show Recovery Phrase
-        </Button>
       </VStack>
-    </>
+      <Button style={{ marginTop: 'auto' }} autoFocus={true} onClick={onSubmit}>
+        Show Recovery Phrase
+      </Button>
+      <PageBottom />
+    </PageColumn>
   );
 }
 
@@ -80,14 +84,14 @@ function RecoveryPhrase({
 }) {
   const { data: mnemonic, isLoading } = useMnemonicQuery({ groupId });
   if (isLoading) {
-    return <p>Loading...</p>;
+    return <ViewLoading />;
   }
   if (!mnemonic) {
     throw new Error('Could not get mnemonic');
   }
   return (
-    <div>
-      <Spacer height={32} />
+    <PageColumn>
+      <PageTop />
 
       <VStack gap={24}>
         <NavigationTitle title="Write this down" />
@@ -103,17 +107,15 @@ function RecoveryPhrase({
             {mnemonic.phrase}
           </UIText>
         </Surface>
-        <VStack gap={12}>
-          <UIText kind="subtitle/l_reg">Next,</UIText>
-          <Button autoFocus={true} onClick={onSubmit}>
-            <HStack gap={8} justifyContent="center">
-              <span>Verify Backup</span>
-              <ArrowRightIcon />
-            </HStack>
-          </Button>
-        </VStack>
       </VStack>
-    </div>
+      <Button style={{ marginTop: 'auto' }} autoFocus={true} onClick={onSubmit}>
+        <HStack gap={8} justifyContent="center">
+          <span>Verify Backup</span>
+          <ArrowRightIcon />
+        </HStack>
+      </Button>
+      <PageBottom />
+    </PageColumn>
   );
 }
 
@@ -148,9 +150,9 @@ function VerifyBackup({
     }
   );
   return (
-    <div>
-      <Spacer height={32} />
+    <PageColumn>
       <form
+        style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}
         onSubmit={(event) => {
           event.preventDefault();
           const value = new FormData(event.currentTarget).get(
@@ -161,6 +163,7 @@ function VerifyBackup({
           );
         }}
       >
+        <PageTop />
         <VStack gap={12}>
           <VStack gap={4}>
             <UIText kind="subtitle/l_reg">Recovery Phrase</UIText>
@@ -168,7 +171,7 @@ function VerifyBackup({
               autoFocus={true}
               name="seedOrPrivateKey"
               required={true}
-              rows={3}
+              rows={14}
               placeholder="Enter seed phrase or a private key"
               style={{
                 display: 'block',
@@ -187,26 +190,60 @@ function VerifyBackup({
               </UIText>
             ) : null}
           </VStack>
-          <Button autoFocus={true}>Verify</Button>
         </VStack>
+        <Button autoFocus={true} style={{ marginTop: 'auto' }}>
+          Verify
+        </Button>
+        <PageBottom />
       </form>
-    </div>
+    </PageColumn>
   );
 }
 
-function VerifySuccess() {
+function VerifySuccess({ seedType }: { seedType: SeedType }) {
   return (
-    <FillView>
-      <VStack gap={8} style={{ placeItems: 'center' }}>
-        <span style={{ fontSize: 48, lineHeight: 1 }}>🥳</span>
-        <UIText kind="button/m_reg">
-          The recovery phrase you have is correct!
-        </UIText>
-        <Button as={Link} to="/overview">
-          Return to Main Screen
+    <PageColumn>
+      <WithConfetti
+        fireDelay={0}
+        originY={0.55}
+        leftOriginX={0.25}
+        rightOriginX={0.75}
+        gravity={0.2}
+        decay={0.84}
+        particleCount={50}
+        startVelocity={20}
+      >
+        <FillView>
+          <VStack
+            gap={24}
+            style={{
+              placeItems: 'center',
+              textAlign: 'center',
+              paddingLeft: 52,
+              paddingRight: 52,
+            }}
+          >
+            <span style={{ fontSize: 48, lineHeight: 1 }}>🥳</span>
+            <UIText kind="headline/h1">Nicely done!</UIText>
+            <UIText kind="body/regular" color="var(--neutral-500)">
+              Find a secure location for your{' '}
+              {seedType === SeedType.privateKey
+                ? 'private key'
+                : 'recovery phrase'}{' '}
+              and remember:
+              <br />
+              <UIText kind="body/accent" inline={true}>
+                never share it with anyone
+              </UIText>
+            </UIText>
+          </VStack>
+        </FillView>
+        <Button style={{ marginTop: 'auto' }} as={Link} to="/overview">
+          Finish
         </Button>
-      </VStack>
-    </FillView>
+        <PageBottom />
+      </WithConfetti>
+    </PageColumn>
   );
 }
 
@@ -221,10 +258,11 @@ export function BackupWallet() {
     () => walletPort.request('uiGetWalletGroup', { groupId }),
     { useErrorBoundary: true }
   );
-  if (isLoading) {
+  if (isLoading || !walletGroup) {
     return null;
   }
-  if (walletGroup?.walletContainer.seedType === SeedType.privateKey) {
+  const { seedType } = walletGroup.walletContainer;
+  if (seedType === SeedType.privateKey) {
     return (
       <FillView>
         <UIText
@@ -238,23 +276,29 @@ export function BackupWallet() {
     );
   }
   return (
-    <PageColumn>
+    <>
       {params.has('step') ? null : (
         <Initial
           onSubmit={() => setSearchParams({ step: 'verifyUser', groupId })}
         />
       )}
       {params.get('step') === 'verifyUser' ? (
-        <Background backgroundKind="white">
-          <VerifyUser
-            onSuccess={() =>
-              setSearchParams(
-                { step: 'recoveryPhrase', groupId },
-                { replace: true }
-              )
-            }
-          />
-        </Background>
+        <PageColumn>
+          <Background backgroundKind="white">
+            <NavigationTitle title="Enter password" />
+            <FillView adjustForNavigationBar={true}>
+              <VerifyUser
+                style={{ justifySelf: 'stretch' }}
+                onSuccess={() =>
+                  setSearchParams(
+                    { step: 'recoveryPhrase', groupId },
+                    { replace: true }
+                  )
+                }
+              />
+            </FillView>
+          </Background>
+        </PageColumn>
       ) : null}
       {params.get('step') === 'recoveryPhrase' ? (
         <RecoveryPhrase
@@ -268,7 +312,9 @@ export function BackupWallet() {
           onSuccess={() => setSearchParams({ step: 'verifySuccess', groupId })}
         />
       ) : null}
-      {params.get('step') === 'verifySuccess' ? <VerifySuccess /> : null}
-    </PageColumn>
+      {params.get('step') === 'verifySuccess' ? (
+        <VerifySuccess seedType={seedType} />
+      ) : null}
+    </>
   );
 }
