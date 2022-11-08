@@ -34,6 +34,10 @@ export class BackgroundMemoryCache implements RequestCache<EntryStore> {
     this.safeWriteEntry(key, entryStore);
   }
 
+  clear() {
+    this.map = new Map();
+  }
+
   remove() {
     throw new Error('Not implemented');
   }
