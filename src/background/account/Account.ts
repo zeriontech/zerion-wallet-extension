@@ -34,6 +34,8 @@ export class Account extends EventEmitter {
   private encryptionKey: string | null;
   private wallet: Wallet;
 
+  isPendingNewUser: boolean;
+
   private static async writeCurrentUser(user: User) {
     await set('currentUser', user);
   }
@@ -68,6 +70,7 @@ export class Account extends EventEmitter {
   constructor() {
     super();
     this.user = null;
+    this.isPendingNewUser = false;
     this.encryptionKey = null;
     this.wallet = new Wallet(TEMPORARY_ID, null);
   }
@@ -99,11 +102,12 @@ export class Account extends EventEmitter {
     if (!passwordIsCorrect) {
       throw new Error('Incorrect password');
     }
-    await this.setNewUser(user, password);
+    await this.setNewUser(user, password, { isNewUser: false });
   }
 
-  async setNewUser(user: User, password: string) {
+  async setNewUser(user: User, password: string, { isNewUser = false } = {}) {
     this.user = user;
+    this.isPendingNewUser = isNewUser;
     this.encryptionKey = await createEncryptionKey({ salt: user.id, password });
     const seedPhraseEncryptionKey = await createCryptoKey({
       salt: user.salt,
@@ -145,6 +149,7 @@ export class Account extends EventEmitter {
     }
     await Account.writeCurrentUser(this.user);
     await this.wallet.savePendingWallet();
+    this.isPendingNewUser = false;
 
     /**
      * Cleaning up:
@@ -216,27 +221,6 @@ export class AccountPublicRPC {
     }
   }
 
-  async verify({
-    params: { user, password },
-  }: PublicMethodParams<{
-    user: PublicUser;
-    password: string;
-  }>): Promise<boolean> {
-    const currentUser = await Account.readCurrentUser();
-    if (!currentUser || currentUser.id !== user.id) {
-      throw new Error(`User ${user.id} not found`);
-    }
-    const canAuthorize = await this.account.verifyPassword(
-      currentUser,
-      password
-    );
-    if (canAuthorize) {
-      return true;
-    } else {
-      throw new Error('Incorrect password');
-    }
-  }
-
   async hasActivePasswordSession() {
     return this.account.hasActivePasswordSession();
   }
@@ -245,12 +229,16 @@ export class AccountPublicRPC {
     params: { password },
   }: PublicMethodParams<{ password: string }>): Promise<PublicUser> {
     const user = await Account.createUser(password);
-    await this.account.setNewUser(user, password);
+    await this.account.setNewUser(user, password, { isNewUser: true });
     return { id: user.id };
   }
 
   async saveUserAndWallet() {
     return this.account.saveUserAndWallet();
+  }
+
+  async isPendingNewUser() {
+    return this.account.isPendingNewUser;
   }
 
   async logout() {
