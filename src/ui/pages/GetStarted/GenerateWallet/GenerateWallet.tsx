@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -16,6 +16,7 @@ import {
 } from '../components/DecorativeMessage';
 import { getError } from 'src/shared/errors/getError';
 import { WithPasswordSession } from 'src/ui/components/VerifyUser/WithPasswordSession';
+import { PageBottom } from 'src/ui/components/PageBottom';
 
 enum Step {
   loading,
@@ -31,6 +32,7 @@ function GenerateWalletView() {
     mutate: generateMnemonicWallet,
     data,
     isLoading,
+    status,
   } = useMutation(
     async () => {
       addStep(Step.loading);
@@ -44,6 +46,12 @@ function GenerateWalletView() {
       },
     }
   );
+  useEffect(() => {
+    if (status === 'idle') {
+      // This is invoked twice in StrictMode, it's fine
+      generateMnemonicWallet();
+    }
+  }, [generateMnemonicWallet, status]);
 
   const finalizeMutation = useMutation(
     async (address: string) => {
@@ -93,17 +101,18 @@ function GenerateWalletView() {
             />
           ) : null}
         </VStack>
-        {data ? null : (
-          <Button
-            disabled={isLoading}
-            onClick={() => {
-              generateMnemonicWallet();
-            }}
-          >
-            {isLoading ? 'Generating...' : 'Generate new Wallet'}
-          </Button>
-        )}
       </VStack>
+      {data ? null : (
+        <Button
+          style={{ marginTop: 'auto' }}
+          disabled={isLoading}
+          onClick={() => {
+            generateMnemonicWallet();
+          }}
+        >
+          {isLoading ? 'Generating...' : 'Generate new Wallet'}
+        </Button>
+      )}
       {data ? (
         <VStack gap={4} style={{ marginTop: 'auto' }}>
           {finalizeMutation.isError ? (
@@ -116,7 +125,6 @@ function GenerateWalletView() {
             </UIText>
           ) : null}
           <Button
-            style={{ marginTop: 'auto', marginBottom: 16 }}
             disabled={finalizeMutation.isLoading}
             onClick={async () => {
               finalizeMutation.mutate(data.address);
@@ -126,6 +134,7 @@ function GenerateWalletView() {
           </Button>
         </VStack>
       ) : null}
+      <PageBottom />
     </PageColumn>
   );
 }
