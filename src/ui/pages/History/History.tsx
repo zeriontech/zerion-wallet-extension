@@ -1,74 +1,75 @@
-import { AddressTransaction, useSubscription } from 'defi-sdk';
-import React, { useMemo } from 'react';
+import React from 'react';
+import { useAddressActions } from 'defi-sdk';
 import { useQuery } from 'react-query';
 import { toAddressTransaction } from 'src/modules/ethereum/transactions/model';
-import type { PartialAddressTransaction } from 'src/modules/ethereum/transactions/model';
+import type { Action } from 'src/modules/ethereum/transactions/model';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { TransactionsList } from './TransactionsList';
+import { ActionsList } from './ActionsList';
 
-function mergeLocalAndBackendTransactions(
-  local: PartialAddressTransaction[],
-  backend: PartialAddressTransaction[]
-) {
-  const backendHashes = new Set(backend.map((tx) => tx.hash));
+function mergeLocalAndBackendActions(local: Action[], backend: Action[]) {
+  const backendHashes = new Set(backend.map((tx) => tx.transaction.hash));
   return local
-    .filter((tx) => backendHashes.has(tx.hash) === false)
+    .filter((tx) => backendHashes.has(tx.transaction.hash) === false)
     .concat(backend);
 }
 
-function useMinedAndPendingAddressTransactions() {
+function useMinedAndPendingAddressActions() {
   const { params, ready } = useAddressParams();
-  const localTransactions = useLocalAddressTransactions(params);
+  const localActions = useLocalAddressTransactions(params);
 
-  const { data: localAddressTransactions, ...localTransactionsQuery } =
-    useQuery(
-      ['pages/history', localTransactions],
-      () => {
-        return Promise.all(
-          localTransactions.map((transactionObject) =>
-            toAddressTransaction(transactionObject)
-          )
-        );
-      },
-      { useErrorBoundary: true }
-    );
+  const { data: localAddressActions, ...localActionsQuery } = useQuery(
+    ['pages/history', localActions],
+    () => {
+      return Promise.all(
+        localActions.map((transactionObject) =>
+          toAddressTransaction(transactionObject)
+        )
+      );
+    },
+    { useErrorBoundary: true }
+  );
 
-  const { value } = useSubscription<
-    AddressTransaction[],
-    'address',
-    'transactions'
-  >({
-    enabled: ready,
-    namespace: 'address',
-    body: useMemo(
-      () => ({
-        scope: ['transactions'],
-        payload: {
-          ...params,
-          currency: 'usd',
-          transactions_limit: 50,
-          transactions_offset: 0,
-        },
-      }),
-      [params]
-    ),
-  });
+  const {
+    value,
+    isLoading: actionsIsLoading,
+    hasMore,
+    fetchMore,
+  } = useAddressActions(
+    {
+      ...params,
+      currency: 'usd',
+    },
+    {
+      limit: 50,
+      enabled: ready,
+    }
+  );
+
   return {
-    data: localAddressTransactions
-      ? mergeLocalAndBackendTransactions(localAddressTransactions, value || [])
+    value: localAddressActions
+      ? mergeLocalAndBackendActions(localAddressActions, value || [])
       : null,
-    ...localTransactionsQuery,
+    ...localActionsQuery,
+    isLoading: actionsIsLoading || localActionsQuery.isLoading,
+    hasMore: Boolean(hasMore),
+    fetchMore,
   };
 }
 
 export function HistoryList() {
-  const { data: transactions, isLoading } =
-    useMinedAndPendingAddressTransactions();
-  if (isLoading || !transactions) {
+  const {
+    value: transactions,
+    isLoading,
+    fetchMore,
+    hasMore,
+  } = useMinedAndPendingAddressActions();
+
+  if (!transactions) {
     return null;
   }
+
   if (!transactions.length) {
     return (
       <UIText
@@ -80,5 +81,12 @@ export function HistoryList() {
       </UIText>
     );
   }
-  return <TransactionsList transactions={transactions} />;
+  return (
+    <ActionsList
+      actions={transactions}
+      hasMore={hasMore}
+      isLoading={isLoading}
+      onLoadMore={fetchMore}
+    />
+  );
 }
