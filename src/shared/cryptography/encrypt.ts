@@ -1,5 +1,8 @@
 import { keyFromPassword } from '@metamask/browser-passworder';
-import { base64ToArrayBuffer, arrayBufferToBase64 } from './convert';
+import {
+  base64ToArrayBuffer,
+  arrayBufferToBase64,
+} from 'src/modules/crypto/convert';
 
 export async function createCryptoKey({
   password,

@@ -1,6 +1,6 @@
 import EventEmitter from 'events';
 import { nanoid } from 'nanoid';
-import { generateSalt } from '@metamask/browser-passworder';
+import { createSalt } from 'src/modules/crypto';
 import { get, remove, set } from 'src/background/webapis/storage';
 import { getSHA256HexDigest } from 'src/shared/cryptography/getSHA256HexDigest';
 import { validate } from 'src/shared/validation/user-input';
@@ -62,7 +62,7 @@ export class Account extends EventEmitter {
       throw new Error(validity.message);
     }
     const id = nanoid(36); // use longer id than default (21)
-    const salt = generateSalt(); // used to encrypt seed phrases
+    const salt = createSalt(); // used to encrypt seed phrases
     const record = { id, salt /* passwordHash: hash */ };
     return record;
   }

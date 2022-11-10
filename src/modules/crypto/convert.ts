@@ -1,10 +1,13 @@
 export function arrayBufferToBase64(buffer: ArrayBuffer) {
   const bytes = new Uint8Array(buffer);
-  let binary = '';
-  for (const byte of bytes) {
-    binary += String.fromCharCode(byte);
-  }
-  return window.btoa(binary);
+  return uint8ArrayToBase64(bytes);
+}
+
+export function uint8ArrayToBase64(array: Uint8Array) {
+  // Explicit casting needed to satisfy the typechecker
+  return window.btoa(
+    String.fromCharCode.apply(null, array as unknown as number[])
+  );
 }
 
 export function base64ToArrayBuffer(base64: string) {
