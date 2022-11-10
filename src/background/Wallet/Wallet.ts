@@ -2,7 +2,7 @@ import { ethers, UnsignedTransaction } from 'ethers';
 import { createNanoEvents, Emitter } from 'nanoevents';
 import { Store } from 'store-unit';
 import { isTruthy } from 'is-truthy-ts';
-import { encrypt, decrypt } from '@metamask/browser-passworder';
+import { encrypt, decrypt } from 'src/modules/crypto';
 import { notificationWindow } from 'src/background/NotificationWindow/NotificationWindow';
 import type {
   ChannelContext,
@@ -80,6 +80,7 @@ interface WalletEvents {
 
 export class Wallet {
   public id: string;
+  // eslint-disable-next-line no-use-before-define
   public publicEthereumController: PublicController;
   private encryptionKey: string | null;
   private seedPhraseEncryptionKey: CryptoKey | null;

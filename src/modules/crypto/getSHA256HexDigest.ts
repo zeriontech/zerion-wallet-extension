@@ -1,7 +1,7 @@
+import { utf8ToUint8Array } from './convert';
+
 export async function getSHA256HexDigest(message: string): Promise<string> {
-  const encoder = new TextEncoder();
-  // encode as (utf-8) Uint8Array
-  const data = encoder.encode(message);
+  const data = utf8ToUint8Array(message);
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
   const hashArray = Array.from(new Uint8Array(hashBuffer)); // convert buffer to byte array
   const hashHex = hashArray

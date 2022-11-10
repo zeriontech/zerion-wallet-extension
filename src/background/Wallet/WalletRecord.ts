@@ -1,9 +1,9 @@
-import { decrypt, encrypt } from '@metamask/browser-passworder';
+import { decrypt, encrypt } from 'src/modules/crypto';
 import produce from 'immer';
 import { nanoid } from 'nanoid';
 import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
 import { Chain, createChain } from 'src/modules/networks/Chain';
-import { stableDecrypt } from 'src/shared/cryptography/encryption';
+import { stableDecrypt } from 'src/modules/crypto';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getIndexFromPath } from 'src/shared/wallet/getNextAccountPath';
 import { SeedType } from './model/SeedType';

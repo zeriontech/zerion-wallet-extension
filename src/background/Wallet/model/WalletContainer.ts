@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import { immerable } from 'immer';
-import { stableEncrypt } from 'src/shared/cryptography/encryption';
+import { stableEncrypt } from 'src/modules/crypto';
 import { restoreBareWallet, walletToObject } from 'src/shared/wallet/create';
 import { SeedType } from './SeedType';
 import type { BareWallet } from './types';
