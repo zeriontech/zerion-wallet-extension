@@ -1,7 +1,13 @@
 export { getRandomUint8Array, getRandomBase64 } from './random';
 export {
-  uint8ArrayToBase64,
-  arrayBufferToBase64,
+  utf8ToUint8Array,
+  uint8ArrayToUtf8,
+  arrayBufferToUtf8,
   base64ToArrayBuffer,
+  arrayBufferToBase64,
+  base64ToUint8Array,
+  uint8ArrayToBase64,
 } from './convert';
-export { createSalt } from './key';
+export { createSalt, createCryptoKey } from './key';
+export { encrypt, decrypt } from './aes';
+export { stableEncrypt, stableDecrypt } from './aesStable';

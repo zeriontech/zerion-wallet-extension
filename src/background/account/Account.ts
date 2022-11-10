@@ -1,12 +1,11 @@
 import EventEmitter from 'events';
 import { nanoid } from 'nanoid';
-import { createSalt } from 'src/modules/crypto';
+import { createSalt, createCryptoKey } from 'src/modules/crypto';
+import { getSHA256HexDigest } from 'src/modules/crypto/getSHA256HexDigest';
 import { get, remove, set } from 'src/background/webapis/storage';
-import { getSHA256HexDigest } from 'src/shared/cryptography/getSHA256HexDigest';
 import { validate } from 'src/shared/validation/user-input';
 import { Wallet } from '../Wallet/Wallet';
 import { walletStore } from '../Wallet/persistence';
-import { createCryptoKey } from 'src/shared/cryptography/encrypt';
 
 interface User {
   id: string;
@@ -109,10 +108,7 @@ export class Account extends EventEmitter {
     this.user = user;
     this.isPendingNewUser = isNewUser;
     this.encryptionKey = await createEncryptionKey({ salt: user.id, password });
-    const seedPhraseEncryptionKey = await createCryptoKey({
-      salt: user.salt,
-      password,
-    });
+    const seedPhraseEncryptionKey = await createCryptoKey(password, user.salt);
     await this.wallet.updateCredentials({
       params: {
         id: user.id,
