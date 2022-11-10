@@ -2,7 +2,7 @@ import { ethers, UnsignedTransaction } from 'ethers';
 import { createNanoEvents, Emitter } from 'nanoevents';
 import { Store } from 'store-unit';
 import { isTruthy } from 'is-truthy-ts';
-import { encrypt, decrypt } from '@metamask/browser-passworder';
+import { encrypt, decrypt } from 'src/modules/crypto';
 import { notificationWindow } from 'src/background/NotificationWindow/NotificationWindow';
 import type {
   ChannelContext,
