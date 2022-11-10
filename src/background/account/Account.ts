@@ -4,9 +4,9 @@ import { generateSalt } from '@metamask/browser-passworder';
 import { get, remove, set } from 'src/background/webapis/storage';
 import { getSHA256HexDigest } from 'src/shared/cryptography/getSHA256HexDigest';
 import { validate } from 'src/shared/validation/user-input';
-import { createCryptoKey } from 'src/shared/cryptography/encryption';
 import { Wallet } from '../Wallet/Wallet';
 import { walletStore } from '../Wallet/persistence';
+import { createCryptoKey } from 'src/shared/cryptography/encrypt';
 
 interface User {
   id: string;
