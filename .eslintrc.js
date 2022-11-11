@@ -3,7 +3,7 @@ const confusingBrowserGlobals = require('confusing-browser-globals');
 module.exports = {
   extends: ['eslint:recommended'],
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint', 'react-hooks'],
+  plugins: ['@typescript-eslint', 'react-hooks', 'import'],
   env: { browser: true },
   rules: {
     'no-console': 'warn',
@@ -12,6 +12,7 @@ module.exports = {
     'no-restricted-globals': ['error']
       .concat(confusingBrowserGlobals)
       .concat(['origin']),
+    'import/order': 'error',
   },
   overrides: [
     {

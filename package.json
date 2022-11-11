@@ -61,6 +61,7 @@
     "@typescript-eslint/parser": "^5.41.0",
     "confusing-browser-globals": "^1.0.11",
     "eslint": "^8.26.0",
+    "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "gh-pages": "^4.0.0",
     "husky": "^7.0.4",
