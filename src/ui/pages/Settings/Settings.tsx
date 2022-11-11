@@ -51,11 +51,7 @@ function SettingsMain() {
                   <HStack gap={4} alignItems="center">
                     <GlobeIcon
                       // This icon doesn't fit, temporary hack to make it look better
-                      style={{
-                        marginLeft: 2,
-                        marginRight: 2,
-                        color: 'var(--neutral-800)',
-                      }}
+                      style={{ color: 'var(--neutral-800)' }}
                     />
                     <UIText kind="body/s_reg">Connected Sites</UIText>
                   </HStack>
@@ -87,7 +83,7 @@ function SettingsMain() {
                   justifyContent="space-between"
                 >
                   <HStack gap={4} alignItems="center">
-                    <LockIcon />
+                    <LockIcon style={{ color: 'var(--negative-500)' }} />
                     <UIText kind="body/s_reg" color="var(--negative-500)">
                       {logout.isLoading ? 'Locking...' : 'Lock'}
                     </UIText>
