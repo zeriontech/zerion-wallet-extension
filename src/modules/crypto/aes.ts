@@ -14,7 +14,7 @@ type Encrypted = {
   data: string;
 };
 
-export function getIV() {
+function getIV() {
   return getRandomUint8Array(16);
 }
 
