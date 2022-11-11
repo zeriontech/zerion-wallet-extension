@@ -48,6 +48,15 @@ export const sample = {
     chainId: '0x1',
     data: '0x',
   },
+  sendFiveUsdc: {
+    from: '0x42b9df65b219b3dd36ff330a4dd8f327a6ada990',
+    to: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+    data: '0xa9059cbb000000000000000000000000064bd35c9064fc3e628a3be3310a1cf65488103d00000000000000000000000000000000000000000000000000000000004c4b40',
+    chainId: '0x1',
+    gas: '0x0',
+    maxFeePerGas: '0x787811664',
+    maxPriorityFeePerGas: '0xda43519c',
+  },
   sendEthNoGasPrice: {
     gas: '0x5a3c',
     from: '0x42b9df65b219b3dd36ff330a4dd8f327a6ada990',

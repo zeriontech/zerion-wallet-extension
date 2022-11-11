@@ -49,6 +49,7 @@ import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
 import { Networks } from 'src/modules/networks/Networks';
+import { getDecimals } from 'src/modules/networks/asset';
 import { NetworkFee } from './NetworkFee';
 
 function UknownIcon({ size }: { size: number }) {
@@ -221,7 +222,10 @@ function AssetLine({
             transaction.sendAmount == null ? null : (
               <UIText kind="subtitle/l_reg">
                 {`${formatTokenValue(
-                  baseToCommon(transaction.sendAmount, 18)
+                  baseToCommon(
+                    transaction.sendAmount,
+                    getDecimals({ asset, chain })
+                  )
                 )} ${asset.symbol}`}
               </UIText>
             )
