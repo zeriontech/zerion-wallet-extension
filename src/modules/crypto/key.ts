@@ -2,29 +2,6 @@ import { utf8ToUint8Array, base64ToUint8Array } from './convert';
 import { getRandomBase64 } from './random';
 
 /**
- * Creates a salt for use in CryptoKey generation.
- */
-export function createSalt() {
-  return getRandomBase64(32);
-}
-
-/**
- * Creates a new CryptoKey.
- *
- * @param password - The password, UTF-8 string.
- * @param salt - The salt, Base64 string.
- */
-export async function createCryptoKey(
-  password: string,
-  salt: string
-): Promise<CryptoKey> {
-  const masterKey = await createMasterKey(password);
-  const secretKey = await createSecretKey(masterKey, salt);
-
-  return secretKey;
-}
-
-/**
  * Creates a new master key for a given password.
  */
 async function createMasterKey(password: string): Promise<CryptoKey> {
@@ -69,4 +46,27 @@ async function createSecretKey(
     true,
     ['encrypt', 'decrypt']
   );
+}
+
+/**
+ * Creates a salt for use in CryptoKey generation.
+ */
+export function createSalt() {
+  return getRandomBase64(32);
+}
+
+/**
+ * Creates a new CryptoKey.
+ *
+ * @param password - The password, UTF-8 string.
+ * @param salt - The salt, Base64 string.
+ */
+export async function createCryptoKey(
+  password: string,
+  salt: string
+): Promise<CryptoKey> {
+  const masterKey = await createMasterKey(password);
+  const secretKey = await createSecretKey(masterKey, salt);
+
+  return secretKey;
 }

@@ -11,15 +11,6 @@ export function arrayBufferToUtf8(buffer: ArrayBuffer) {
   return uint8ArrayToUtf8(bytes);
 }
 
-export function arrayBufferToBase64(buffer: ArrayBuffer) {
-  const bytes = new Uint8Array(buffer);
-  return uint8ArrayToBase64(bytes);
-}
-
-export function base64ToArrayBuffer(base64: string) {
-  return base64ToUint8Array(base64).buffer;
-}
-
 export function base64ToUint8Array(base64: string) {
   const binary = window.atob(base64);
   const array = new Uint8Array(binary.length);
@@ -34,4 +25,13 @@ export function uint8ArrayToBase64(array: Uint8Array) {
   return window.btoa(
     String.fromCharCode.apply(null, array as unknown as number[])
   );
+}
+
+export function arrayBufferToBase64(buffer: ArrayBuffer) {
+  const bytes = new Uint8Array(buffer);
+  return uint8ArrayToBase64(bytes);
+}
+
+export function base64ToArrayBuffer(base64: string) {
+  return base64ToUint8Array(base64).buffer;
 }

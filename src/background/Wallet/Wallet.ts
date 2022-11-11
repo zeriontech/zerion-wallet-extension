@@ -80,6 +80,7 @@ interface WalletEvents {
 
 export class Wallet {
   public id: string;
+  // eslint-disable-next-line no-use-before-define
   public publicEthereumController: PublicController;
   private encryptionKey: string | null;
   private seedPhraseEncryptionKey: CryptoKey | null;

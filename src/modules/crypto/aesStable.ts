@@ -5,6 +5,10 @@ import {
   utf8ToUint8Array,
 } from './convert';
 
+function getIV() {
+  return new Uint8Array(12);
+}
+
 export async function stableEncrypt<T>(key: CryptoKey, obj: T) {
   const dataJSON = JSON.stringify(obj);
   const dataArray = utf8ToUint8Array(dataJSON);
@@ -29,8 +33,4 @@ export async function stableDecrypt<T>(
   const decryptedString = arrayBufferToUtf8(decryptedBuffer);
 
   return JSON.parse(decryptedString);
-}
-
-function getIV() {
-  return new Uint8Array(12);
 }

@@ -14,6 +14,10 @@ type Encrypted = {
   data: string;
 };
 
+export function getIV() {
+  return getRandomUint8Array(16);
+}
+
 /**
  * Encrypts data with a given password.
  */
@@ -65,8 +69,4 @@ export async function decrypt<T>(password: string, json: string): Promise<T> {
   const decryptedString = uint8ArrayToUtf8(decryptedArray);
 
   return JSON.parse(decryptedString);
-}
-
-export function getIV() {
-  return getRandomUint8Array(16);
 }
