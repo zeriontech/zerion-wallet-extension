@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery } from 'react-query';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { NotFoundPage } from 'src/ui/components/NotFoundPage';
@@ -29,6 +29,7 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
+import { invariant } from 'src/shared/invariant';
 
 function EditableWalletName({
   wallet,
@@ -117,10 +118,14 @@ function RemoveAddressConfirmationDialog({ wallet }: { wallet: BareWallet }) {
 
 export function WalletAccount() {
   const { address } = useParams();
+  const [params] = useSearchParams();
+  const groupId = params.get('groupId');
+  invariant(
+    groupId,
+    'groupId is a required search-param for WalletAccount view'
+  );
+  invariant(address, 'Address param is required for WalletAccount view');
   const navigate = useNavigate();
-  if (!address) {
-    throw new Error('Address param is required for this view');
-  }
   const {
     data: wallet,
     isLoading,
@@ -214,7 +219,11 @@ export function WalletAccount() {
             items={[
               {
                 key: 0,
-                to: '/not-implemented',
+                to: `/backup-wallet?${new URLSearchParams({
+                  groupId,
+                  address: wallet.address,
+                  backupKind: 'reveal',
+                })}`,
                 component: (
                   <HStack
                     gap={4}
