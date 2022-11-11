@@ -21,9 +21,9 @@ import {
   ConnectedSiteItem,
   getPermissionsWithWallets,
 } from 'src/ui/shared/requests/getPermissionsWithWallets';
-import { ConnectedSite } from './ConnectedSite';
 import { ViewSuspense } from 'src/ui/components/ViewSuspense';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
+import { ConnectedSite } from './ConnectedSite';
 
 function RevokeAllPermissionsComponent({
   onRevokeAll,

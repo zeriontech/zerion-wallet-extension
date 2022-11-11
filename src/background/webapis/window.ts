@@ -1,5 +1,5 @@
-import browser, { Windows } from 'webextension-polyfill';
 import { EventEmitter } from 'events';
+import browser, { Windows } from 'webextension-polyfill';
 
 const IS_WINDOWS = /windows/i.test(navigator.userAgent);
 

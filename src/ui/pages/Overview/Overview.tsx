@@ -17,7 +17,6 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { usePendingTransactions } from 'src/ui/transactions/usePendingTransactions';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
-import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { Media } from 'src/ui/ui-kit/Media';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
@@ -25,23 +24,24 @@ import {
   SegmentedControlGroup,
   SegmentedControlLink,
 } from 'src/ui/ui-kit/SegmentedControl';
-import { Positions } from './Positions';
-import { HistoryList } from '../History/History';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { useQuery } from 'react-query';
 import { walletPort } from 'src/ui/shared/channels';
 import { NBSP } from 'src/ui/shared/typography';
-import { NonFungibleTokens } from './NonFungibleTokens';
 import { WalletIcon } from 'src/ui/ui-kit/WalletIcon';
 import { useIsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
-import { CurrentNetwork } from './CurrentNetwork';
 import { ViewSuspense } from 'src/ui/components/ViewSuspense';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { HistoryList } from '../History/History';
+import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
+import { CurrentNetwork } from './CurrentNetwork';
+import { NonFungibleTokens } from './NonFungibleTokens';
+import { Positions } from './Positions';
 
 interface ChangeInfo {
   isPositive: boolean;

@@ -17,15 +17,15 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { DecorativeMessage } from '../GetStarted/components/DecorativeMessage';
 import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { WithConfetti } from '../GetStarted/components/DecorativeMessage/DecorativeMessage';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
+import { WithConfetti } from '../GetStarted/components/DecorativeMessage/DecorativeMessage';
+import { DecorativeMessage } from '../GetStarted/components/DecorativeMessage';
 
 function Initial({ onSubmit }: { onSubmit: () => void }) {
   return (

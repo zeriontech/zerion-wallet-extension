@@ -1,7 +1,7 @@
 import React from 'react';
 import cx from 'classnames';
-import * as s from './styles.module.css';
 import { NAVIGATION_BAR_HEIGHT } from '../URLBar';
+import * as s from './styles.module.css';
 
 export function FillView({
   className,

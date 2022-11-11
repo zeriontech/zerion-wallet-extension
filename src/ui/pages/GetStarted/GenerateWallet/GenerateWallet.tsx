@@ -10,13 +10,13 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
+import { getError } from 'src/shared/errors/getError';
+import { WithPasswordSession } from 'src/ui/components/VerifyUser/WithPasswordSession';
+import { PageBottom } from 'src/ui/components/PageBottom';
 import {
   DecorativeMessage,
   DecorativeMessageDone,
 } from '../components/DecorativeMessage';
-import { getError } from 'src/shared/errors/getError';
-import { WithPasswordSession } from 'src/ui/components/VerifyUser/WithPasswordSession';
-import { PageBottom } from 'src/ui/components/PageBottom';
 
 enum Step {
   loading,

@@ -7,11 +7,11 @@ import {
 import { Button } from 'src/ui/ui-kit/Button';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { FillView } from '../FillView';
-import { PageColumn } from '../PageColumn';
 import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { accountPublicRPCPort } from 'src/ui/shared/channels';
+import { PageColumn } from '../PageColumn';
+import { FillView } from '../FillView';
 
 export function VersionUpgrade({ children }: React.PropsWithChildren) {
   const { data, isLoading, refetch } = useQuery(

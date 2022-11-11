@@ -1,6 +1,8 @@
 require('./bufferPolyfill');
 import browser from 'webextension-polyfill';
 import { ethers } from 'ethers';
+import { networksStore } from 'src/modules/networks/networks-store';
+import { configureBackgroundClient } from 'src/modules/defi-sdk';
 import { initialize } from './initialize';
 import { HttpConnection } from './messaging/HttpConnection';
 import { PortRegistry } from './messaging/PortRegistry';
@@ -11,8 +13,6 @@ import { createHttpConnectionMessageHandler } from './messaging/port-message-han
 import { handleAccountEvents } from './messaging/controller-event-handlers/account-events-handler';
 import { EthereumEventsBroadcaster } from './messaging/controller-event-handlers/ethereum-provider-events';
 import { MemoryCacheRPC } from './resource/memoryCacheRPC';
-import { networksStore } from 'src/modules/networks/networks-store';
-import { configureBackgroundClient } from 'src/modules/defi-sdk';
 import { start as startIdleTimer } from './idle-time-handler';
 import type { RuntimePort } from './webapis/RuntimePort';
 

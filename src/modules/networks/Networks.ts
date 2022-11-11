@@ -1,12 +1,12 @@
 import type { Asset } from 'defi-sdk';
 import { isTruthy } from 'is-truthy-ts';
 import { capitalize } from 'capitalize-ts';
+import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import type { Chain } from './Chain';
 import { createChain } from './Chain';
 import { NetworkConfig } from './NetworkConfig';
 import { applyKeyToEndpoint, keys as defaultKeys } from './keys';
 import type { Keys } from './keys';
-import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import type { TransactionPurpose } from './TransactionPurpose';
 import { getAddress } from './asset';
 

@@ -23,11 +23,11 @@ import { GenericPrompt } from 'src/ui/components/GenericPrompt';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { walletPort } from 'src/ui/shared/channels';
-import { CurrentNetworkSettingsItem } from '../../Networks/CurrentNetworkSettingsItem';
 import { createChain } from 'src/modules/networks/Chain';
 import { NetworkSelectDialog } from 'src/ui/components/NetworkSelectDialog';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import { CurrentNetworkSettingsItem } from '../../Networks/CurrentNetworkSettingsItem';
 
 function useRemovePermissionMutation({ onSuccess }: { onSuccess: () => void }) {
   return useMutation(

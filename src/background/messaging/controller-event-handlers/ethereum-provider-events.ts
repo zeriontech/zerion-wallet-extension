@@ -1,8 +1,8 @@
 import browser from 'webextension-polyfill';
 import type { Account } from 'src/background/account/Account';
 import { emitter } from 'src/background/events';
-import { getPortContext } from '../getPortContext';
 import type { RuntimePort } from 'src/background/webapis/RuntimePort';
+import { getPortContext } from '../getPortContext';
 
 interface Listener {
   startListening(): void;

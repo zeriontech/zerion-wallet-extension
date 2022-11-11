@@ -4,10 +4,10 @@ import type { AddressTransaction } from 'defi-sdk';
 import React, { useMemo } from 'react';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
-import { TransactionItem } from '../TransactionItem';
 import { startOfDate } from 'src/shared/units/startOfDate';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import { TransactionItem } from '../TransactionItem';
 
 export function AddressTransactions() {
   const { params, ready } = useAddressParams();

@@ -1,10 +1,10 @@
 import browser from 'webextension-polyfill';
 import { isJsonRpcPayload, isJsonRpcRequest } from '@json-rpc-tools/utils';
 import type { Wallet } from 'src/shared/types/Wallet';
+import { isClassProperty } from 'src/shared/core/isClassProperty';
 import { mapRPCMessageToController } from '../mapRPCMessageToController';
 import { getPortContext } from '../getPortContext';
 import type { PortMessageHandler } from '../PortRegistry';
-import { isClassProperty } from 'src/shared/core/isClassProperty';
 
 export function createWalletMessageHandler(
   getWallet: () => Wallet

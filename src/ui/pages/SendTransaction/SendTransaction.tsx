@@ -36,7 +36,6 @@ import { queryCacheForAsset } from 'src/modules/defi-sdk/queries';
 import { Chain, createChain } from 'src/modules/networks/Chain';
 import { fetchAndAssignGasPrice } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import { hasGasPrice } from 'src/modules/ethereum/transactions/gasPrices/hasGasPrice';
-import { NetworkFee } from './NetworkFee';
 import { resolveChainForTx } from 'src/modules/ethereum/transactions/resolveChainForTx';
 import { networksStore } from 'src/modules/networks/networks-store';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
@@ -50,6 +49,7 @@ import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
 import { Networks } from 'src/modules/networks/Networks';
+import { NetworkFee } from './NetworkFee';
 
 function UknownIcon({ size }: { size: number }) {
   return (

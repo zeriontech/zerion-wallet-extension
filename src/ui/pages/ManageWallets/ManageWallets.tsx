@@ -15,12 +15,12 @@ import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { AddressBadge } from 'src/ui/components/AddressBadge';
 import { Route, Routes } from 'react-router-dom';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
-import { WalletGroup as WalletGroupPage } from './WalletGroup';
-import { WalletAccount as WalletAccountPage } from './WalletAccount';
 import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
+import { WalletAccount as WalletAccountPage } from './WalletAccount';
+import { WalletGroup as WalletGroupPage } from './WalletGroup';
 
 function PrivateKeyList({ walletGroups }: { walletGroups: WalletGroup[] }) {
   return (

@@ -1,7 +1,6 @@
 import { ethers } from 'ethers';
 import { Store } from 'store-unit';
 import { networksStore } from 'src/modules/networks/networks-store';
-import { emitter } from '../events';
 import { set, get } from 'src/background/webapis/storage';
 import produce from 'immer';
 import type {
@@ -9,6 +8,7 @@ import type {
   TransactionObject,
 } from 'src/modules/ethereum/transactions/types';
 import { upsert } from 'src/shared/upsert';
+import { emitter } from '../events';
 
 class TransactionsStore extends Store<StoredTransactions> {
   constructor(args: StoredTransactions) {

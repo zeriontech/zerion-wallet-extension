@@ -6,13 +6,13 @@ import { PageTop } from 'src/ui/components/PageTop';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { UIText } from 'src/ui/ui-kit/UIText';
+import { Button } from 'src/ui/ui-kit/Button';
+import { isValidPrivateKey } from 'src/shared/validation/wallet';
 import {
   DecorativeMessage,
   DecorativeMessageDone,
 } from '../../components/DecorativeMessage';
-import { UIText } from 'src/ui/ui-kit/UIText';
-import { Button } from 'src/ui/ui-kit/Button';
-import { isValidPrivateKey } from 'src/shared/validation/wallet';
 import {
   MemoryLocationState,
   useMemoryLocationState,

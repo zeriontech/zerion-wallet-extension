@@ -15,14 +15,14 @@ import type { ValidationResult } from 'src/shared/validation/ValidationResult';
 import { SeedType } from 'src/shared/SeedType';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageBottom } from 'src/ui/components/PageBottom';
-import { PrivateKeyImportView } from './PrivateKeyImportView';
-import { MnemonicImportView } from './MnemonicImportView';
 import {
   isValidMnemonic,
   isValidPrivateKey,
 } from 'src/shared/validation/wallet';
-import { MemoryLocationState } from './memoryLocationState';
 import { WithPasswordSession } from 'src/ui/components/VerifyUser/WithPasswordSession';
+import { PrivateKeyImportView } from './PrivateKeyImportView';
+import { MnemonicImportView } from './MnemonicImportView';
+import { MemoryLocationState } from './memoryLocationState';
 
 function getSeedType(value: string) {
   if (isValidMnemonic(value)) {

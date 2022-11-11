@@ -15,9 +15,9 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { AnimatedCheckmark } from 'src/ui/ui-kit/AnimatedCheckmark';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { Input } from 'src/ui/ui-kit/Input';
-import { StrengthIndicator } from './StrengthIndicator';
 import backgroundArts2 from 'src/ui/assets/background-arts-2.svg';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
+import { StrengthIndicator } from './StrengthIndicator';
 
 export function CreateAccount() {
   const navigate = useNavigate();

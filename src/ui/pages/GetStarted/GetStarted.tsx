@@ -13,8 +13,6 @@ import { useWalletGroups } from 'src/ui/shared/requests/useWalletGroups';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
-import { GenerateWallet } from './GenerateWallet';
-import { ImportWallet } from './ImportWallet';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import backgroundArts from 'src/ui/assets/background-arts.svg';
 import { Background } from 'src/ui/components/Background';
@@ -22,6 +20,8 @@ import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import CheckIcon from 'jsx:src/ui/assets/check.svg';
+import { ImportWallet } from './ImportWallet';
+import { GenerateWallet } from './GenerateWallet';
 
 function createNextHref(path: string, beforePath: string | null) {
   return beforePath ? `${beforePath}?next=${encodeURIComponent(path)}` : path;

@@ -8,9 +8,9 @@ import {
 } from '@json-rpc-tools/utils';
 import { formatJsonRpcResultForPort } from 'src/shared/formatJsonRpcResultForPort';
 import { formatJsonRpcWalletError } from 'src/shared/formatJsonRpcWalletError';
-import type { PortContext } from './PortContext';
 import { isClassProperty } from 'src/shared/core/isClassProperty';
 import { InvalidParams } from 'src/shared/errors/errors';
+import type { PortContext } from './PortContext';
 
 /**
  * This function takes a JsonRpcRequest and maps

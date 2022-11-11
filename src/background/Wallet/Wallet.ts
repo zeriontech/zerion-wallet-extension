@@ -31,6 +31,9 @@ import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { prepareTypedData } from 'src/modules/ethereum/message-signing/prepareTypedData';
 import { toUtf8String } from 'ethers/lib/utils';
 import { removeSignature } from 'src/modules/ethereum/transactions/removeSignature';
+import { normalizeAddress } from 'src/shared/normalizeAddress';
+import { getTransactionChainId } from 'src/modules/ethereum/transactions/resolveChainForTx';
+import { emitter } from '../events';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import { SeedType } from './model/SeedType';
@@ -42,9 +45,6 @@ import {
 import { WalletRecordModel as Model } from './WalletRecord';
 import type { WalletStore } from './persistence';
 import { walletStore } from './persistence';
-import { emitter } from '../events';
-import { normalizeAddress } from 'src/shared/normalizeAddress';
-import { getTransactionChainId } from 'src/modules/ethereum/transactions/resolveChainForTx';
 import { WalletNameFlag } from './model/WalletNameFlag';
 
 const INTERNAL_SYMBOL_CONTEXT = { origin: INTERNAL_ORIGIN_SYMBOL };
