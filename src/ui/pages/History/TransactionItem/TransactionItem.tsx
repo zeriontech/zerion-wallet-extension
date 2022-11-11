@@ -16,9 +16,9 @@ function TransactionIcon({
   const { meta, changes } = addressTransaction;
   const url =
     meta.asset?.icon_url ||
-    changes[0]?.asset.icon_url ||
+    changes[0]?.asset?.icon_url ||
     changes[0]?.nft_asset?.asset?.preview.url;
-  const symbol = meta.asset?.symbol || changes[0]?.asset.symbol;
+  const symbol = meta.asset?.symbol || changes[0]?.asset?.symbol;
   const isSomeAsset = Boolean(meta.asset || changes[0]?.asset);
   const isNftIcon = changes[0]?.nft_asset?.asset?.preview.url;
   if (url) {
