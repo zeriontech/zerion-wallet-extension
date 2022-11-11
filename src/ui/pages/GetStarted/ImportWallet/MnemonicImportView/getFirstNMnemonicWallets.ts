@@ -1,6 +1,6 @@
+// @ts-ignore parcel syntax for bundle url
 import workerPath from 'url:./getFirstNMnemonicWallets.worker';
 import type { Params, Result } from './getFirstNMnemonicWallets.worker';
-// @ts-ignore parcel syntax for bundle url
 
 export async function getFirstNMnemonicWallets(params: Params) {
   return new Promise<Result>((resolve, reject) => {
