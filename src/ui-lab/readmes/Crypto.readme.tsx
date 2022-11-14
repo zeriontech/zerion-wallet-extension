@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { MemoryRouter } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useMutation } from 'react-query';
 import { WindowSize } from 'src/ui-lab/components/WindowSize';
 import type { Readme } from 'src/ui-lab/types';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -16,6 +16,11 @@ import {
 } from 'src/modules/crypto';
 import { Input } from 'src/ui/ui-kit/Input';
 import { Surface } from 'src/ui/ui-kit/Surface';
+import { PageTop } from 'src/ui/components/PageTop';
+import { PageBottom } from 'src/ui/components/PageBottom';
+import CheckmarkCheckedIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import { NBSP } from 'src/ui/shared/typography';
 
 type Secret = {
   text: string;
@@ -29,6 +34,7 @@ const Crypto = () => {
   const [decryptedText, setDecryptedText] = useState('');
   const [_cryptoKey, setCryptoKey] = useState<CryptoKey>();
   const [cryptoKeyRaw, setCryptoKeyRaw] = useState('');
+  const [passed, setPassed] = useState<boolean | null>(null);
 
   const onGenerateSalt = () => setSalt(createSalt());
 
@@ -38,20 +44,54 @@ const Crypto = () => {
     const rawKey = await window.crypto.subtle.exportKey('raw', key);
     setCryptoKeyRaw(arrayBufferToBase64(rawKey));
   };
-  const onEncrypt = async () => {
+
+  async function test() {
     const secret: Secret = { text };
-    const result = await encrypt(password, secret);
-    setEncryptedJSON(result);
-  };
-  const onDecrypt = async () => {
-    const secret = await decrypt<Secret>(password, encryptedJSON);
-    setDecryptedText(secret.text);
-  };
+    const encryptedJSON = await encrypt(password, secret);
+    setEncryptedJSON(encryptedJSON);
+    const decrypted = await decrypt<Secret>(password, encryptedJSON);
+    setDecryptedText(decrypted.text);
+    setPassed(text === decrypted.text);
+  }
+
+  const { mutate: testMutate, isLoading } = useMutation(() => test());
+  useEffect(() => {
+    testMutate();
+  }, [testMutate]);
 
   return (
     <Background backgroundKind="neutral">
       <PageColumn>
+        <PageTop />
         <VStack gap={16}>
+          {isLoading ? (
+            <UIText kind="body/accent">Running...</UIText>
+          ) : passed === true ? (
+            <HStack gap={8}>
+              <CheckmarkCheckedIcon style={{ color: 'var(--positive-500)' }} />
+              <UIText kind="body/accent" color="var(--positive-500)">
+                Pass
+              </UIText>
+            </HStack>
+          ) : passed === false ? (
+            <HStack gap={8}>
+              <div
+                style={{
+                  borderRadius: '50%',
+                  height: 24,
+                  width: 24,
+                  backgroundColor: 'var(--negative-500)',
+                }}
+              />
+              <UIText kind="body/accent" color="var(--negative-500)">
+                Fail
+              </UIText>
+            </HStack>
+          ) : (
+            <UIText kind="body/accent" color="var(--positive-500)">
+              {NBSP}
+            </UIText>
+          )}
           <VStack gap={4}>
             <UIText kind="subtitle/s_reg" color="var(--neutral-500)">
               Text
@@ -92,23 +132,6 @@ const Crypto = () => {
             <Button onClick={onGenerateSalt}>Generate salt</Button>
           </VStack>
           <VStack gap={8}>
-            <Surface padding="10px 12px">
-              <UIText
-                kind="body/s_reg"
-                color="var(--neutral-700)"
-                style={{
-                  fontFamily: 'monospace',
-                  textAlign: 'center',
-                  textOverflow: 'ellipsis',
-                  overflow: 'hidden',
-                }}
-              >
-                {cryptoKeyRaw ? cryptoKeyRaw : 'Crypto key is not created yet'}
-              </UIText>
-            </Surface>
-            <Button onClick={onCreateKey}>Create key</Button>
-          </VStack>
-          <VStack gap={8}>
             <UIText kind="subtitle/s_reg" color="var(--neutral-500)">
               Encrypted JSON
             </UIText>
@@ -126,7 +149,6 @@ const Crypto = () => {
                 {encryptedJSON}
               </UIText>
             </Surface>
-            <Button onClick={onEncrypt}>Encrypt</Button>
           </VStack>
           <VStack gap={8}>
             <UIText kind="subtitle/s_reg" color="var(--neutral-500)">
@@ -144,9 +166,27 @@ const Crypto = () => {
                 {decryptedText}
               </UIText>
             </Surface>
-            <Button onClick={onDecrypt}>Decrypt</Button>
+          </VStack>
+          <Button onClick={() => testMutate()}>Test</Button>
+          <VStack gap={8}>
+            <Surface padding="10px 12px">
+              <UIText
+                kind="body/s_reg"
+                color="var(--neutral-700)"
+                style={{
+                  fontFamily: 'monospace',
+                  textAlign: 'center',
+                  textOverflow: 'ellipsis',
+                  overflow: 'hidden',
+                }}
+              >
+                {cryptoKeyRaw ? cryptoKeyRaw : 'Crypto key is not created yet'}
+              </UIText>
+            </Surface>
+            <Button onClick={onCreateKey}>Create key</Button>
           </VStack>
         </VStack>
+        <PageBottom />
       </PageColumn>
     </Background>
   );
@@ -156,17 +196,8 @@ export const readme: Readme = {
   name: 'Crypto',
   description: null,
   component: () => (
-    <MemoryRouter
-      initialEntries={[
-        `/crypto?${new URLSearchParams({
-          origin: 'https://zerion.io',
-          windowId: '1',
-        })}`,
-      ]}
-    >
-      <WindowSize>
-        <Crypto />
-      </WindowSize>
-    </MemoryRouter>
+    <WindowSize style={{ height: 800 }}>
+      <Crypto />
+    </WindowSize>
   ),
 };
