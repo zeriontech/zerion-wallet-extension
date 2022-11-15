@@ -51,7 +51,7 @@ export function ActionsList({
               key: 'load-more-button',
               onClick: onLoadMore,
               component: (
-                <HStack gap={8}>
+                <HStack gap={8} alignItems="center">
                   <span style={{ color: 'var(--primary)' }}>
                     More transactions
                   </span>

@@ -28,9 +28,10 @@ function mergeLocalAndBackendActions(
       .concat(backend)
   ).filter(
     (item) =>
-      item.datetime &&
-      new Date(item.datetime).getTime() >
-        new Date(lastBackendAction.datetime).getTime()
+      !lastBackendAction ||
+      (item.datetime &&
+        new Date(item.datetime).getTime() >
+          new Date(lastBackendAction.datetime).getTime())
   );
 }
 
