@@ -235,7 +235,7 @@ export function WalletGroup() {
           items={noNulls([
             {
               key: 1,
-              to: `/backup-wallet?groupId=${walletGroup.id}`,
+              to: `/backup-wallet?groupId=${walletGroup.id}&backupKind=verify`,
               component: (
                 <HStack
                   gap={4}
@@ -268,7 +268,7 @@ export function WalletGroup() {
           items={[
             ...walletGroup.walletContainer.wallets.map((wallet) => ({
               key: wallet.address,
-              to: `/wallets/accounts/${wallet.address}`,
+              to: `/wallets/accounts/${wallet.address}?groupId=${walletGroup.id}`,
               component: (
                 <HStack
                   gap={4}

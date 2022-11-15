@@ -285,6 +285,24 @@ export class WalletRecordModel {
     };
   }
 
+  static async getPrivateKey(
+    record: WalletRecord,
+    { address }: { address: string }
+  ) {
+    let wallet: BareWallet | null = null;
+    for (const group of record.walletManager.groups) {
+      const matchedWallet = group.walletContainer.getWalletByAddress(address);
+      if (matchedWallet) {
+        wallet = matchedWallet;
+        break;
+      }
+    }
+    if (!wallet) {
+      throw new Error('Wallet with given address not found');
+    }
+    return wallet.privateKey;
+  }
+
   static setCurrentAddress(
     record: WalletRecord,
     { address }: { address: string }

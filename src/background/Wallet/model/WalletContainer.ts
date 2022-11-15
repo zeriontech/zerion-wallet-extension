@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 import { immerable } from 'immer';
 import { stableEncrypt } from 'src/modules/crypto';
+import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { restoreBareWallet, walletToObject } from 'src/shared/wallet/create';
 import { SeedType } from './SeedType';
 import type { BareWallet } from './types';
@@ -74,7 +75,7 @@ abstract class WalletContainerImpl implements WalletContainer {
 
   getWalletByAddress(address: string) {
     const wallet = this.wallets.find(
-      (wallet) => wallet.address.toLowerCase() === address.toLowerCase()
+      (wallet) => normalizeAddress(wallet.address) === normalizeAddress(address)
     );
     return wallet || null;
   }

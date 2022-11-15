@@ -56,7 +56,7 @@ export function BackupFlowSettingsSection() {
                 <div>
                   <Button
                     as={UnstyledLink}
-                    to={`/backup-wallet?groupId=${group.id}`}
+                    to={`/backup-wallet?groupId=${group.id}&backupKind=verify`}
                     size={28}
                     style={{ paddingLeft: 12, paddingRight: 12 }}
                   >

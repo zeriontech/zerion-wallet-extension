@@ -243,6 +243,47 @@ export class Wallet {
     });
   }
 
+  async verifyRecoveryPhrase({
+    params: { groupId, value },
+    context,
+  }: WalletMethodParams<{ groupId: string; value: string }>) {
+    this.verifyInternalOrigin(context);
+    this.ensureRecord(this.record);
+    if (!this.seedPhraseEncryptionKey) {
+      throw new SessionExpired();
+    }
+    const mnemonic = await Model.getRecoveryPhrase(this.record, {
+      groupId,
+      encryptionKey: this.seedPhraseEncryptionKey,
+    });
+    return mnemonic.phrase === value;
+  }
+
+  async getPrivateKey({
+    params: { address },
+    context,
+  }: WalletMethodParams<{ address: string }>) {
+    this.verifyInternalOrigin(context);
+    this.ensureRecord(this.record);
+    if (!this.seedPhraseEncryptionKey) {
+      throw new SessionExpired();
+    }
+    return await Model.getPrivateKey(this.record, { address });
+  }
+
+  async verifyPrivateKey({
+    params: { address, value },
+    context,
+  }: WalletMethodParams<{ address: string; value: string }>) {
+    this.verifyInternalOrigin(context);
+    this.ensureRecord(this.record);
+    if (!this.seedPhraseEncryptionKey) {
+      throw new SessionExpired();
+    }
+    const privateKey = await Model.getPrivateKey(this.record, { address });
+    return privateKey === value;
+  }
+
   async uiGetCurrentWallet({ context }: PublicMethodParams) {
     this.verifyInternalOrigin(context);
     if (!this.id) {

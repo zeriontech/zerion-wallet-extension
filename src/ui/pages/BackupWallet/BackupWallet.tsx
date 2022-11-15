@@ -1,7 +1,8 @@
 import React, { useEffect, useId, useRef } from 'react';
 import { useMutation, useQuery } from 'react-query';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { SeedType } from 'src/shared/SeedType';
+import { invariant } from 'src/shared/invariant';
 import { Background } from 'src/ui/components/Background';
 import { FillView } from 'src/ui/components/FillView';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -11,7 +12,7 @@ import { PageTop } from 'src/ui/components/PageTop';
 import { VerifyUser } from 'src/ui/components/VerifyUser';
 import { walletPort } from 'src/ui/shared/channels';
 import { prepareUserInputSeedOrPrivateKey } from 'src/ui/shared/prepareUserInputSeedOrPrivateKey';
-import { useMnemonicQuery } from 'src/ui/shared/requests/useMnemonicQuery';
+import { useSecretValue } from 'src/ui/shared/requests/useWalletSecretQuery';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Surface } from 'src/ui/ui-kit/Surface';
@@ -78,16 +79,28 @@ function Initial({ onSubmit }: { onSubmit: () => void }) {
   );
 }
 
-function RecoveryPhrase({
+type BackupKind = 'reveal' | 'verify';
+
+function RevealSecret({
+  seedType,
   groupId,
+  address,
+  backupKind,
   onSubmit,
 }: {
+  seedType: SeedType;
   groupId: string;
+  address: string | null;
+  backupKind: BackupKind;
   onSubmit: ({ didCopy }: { didCopy: boolean }) => void;
 }) {
-  const { data: mnemonic, isLoading } = useMnemonicQuery({ groupId });
+  const { data: secretValue, isLoading } = useSecretValue({
+    groupId,
+    address,
+    seedType,
+  });
   const { handleCopy, isSuccess: isCopySuccess } = useCopyToClipboard({
-    text: mnemonic?.phrase || '',
+    text: secretValue || '',
   });
   const didCopyRef = useRef(false);
   const copyRecoveryPhrase = () => {
@@ -106,9 +119,10 @@ function RecoveryPhrase({
   if (isLoading) {
     return <ViewLoading />;
   }
-  if (!mnemonic) {
+  if (!secretValue) {
     throw new Error('Could not get mnemonic');
   }
+  const isMnemonic = seedType === SeedType.mnemonic;
   return (
     <PageColumn>
       <PageTop />
@@ -117,14 +131,15 @@ function RecoveryPhrase({
       <VStack gap={16}>
         <Surface padding={16}>
           <UIText
-            kind="button/l_med"
+            kind={isMnemonic ? 'body/accent' : 'body/regular'}
             style={{
               wordSpacing: 10,
               lineHeight: 1.6,
-              textTransform: 'uppercase',
+              textTransform: isMnemonic ? 'uppercase' : undefined,
+              wordBreak: 'break-all',
             }}
           >
-            {mnemonic.phrase}
+            {secretValue}
           </UIText>
         </Surface>
         <div>
@@ -165,10 +180,14 @@ function RecoveryPhrase({
         autoFocus={true}
         onClick={() => onSubmit({ didCopy: didCopyRef.current })}
       >
-        <HStack gap={8} justifyContent="center">
-          <span>Verify Backup</span>
-          <ArrowRightIcon />
-        </HStack>
+        {backupKind === 'reveal' ? (
+          'Done'
+        ) : (
+          <HStack gap={8} justifyContent="center">
+            <span>Verify Backup</span>
+            <ArrowRightIcon />
+          </HStack>
+        )}
       </Button>
       <PageBottom />
     </PageColumn>
@@ -177,23 +196,37 @@ function RecoveryPhrase({
 
 function VerifyBackup({
   groupId,
+  address,
+  seedType,
   onSuccess,
 }: {
   groupId: string;
+  address: string | null;
+  seedType: SeedType;
   onSuccess: () => void;
 }) {
   const verifyMutation = useMutation(
     async (value: string) => {
-      const mnemonic = await walletPort.request('getRecoveryPhrase', {
-        groupId,
-      });
-      if (!mnemonic) {
-        throw new Error('Could not get mnemonic');
+      if (seedType === SeedType.mnemonic) {
+        const isCorrect = await walletPort.request('verifyRecoveryPhrase', {
+          groupId,
+          value,
+        });
+        if (!isCorrect) {
+          throw new Error('Wrong phrase');
+        }
+        return true;
+      } else if (seedType === SeedType.privateKey) {
+        invariant(address, 'Address param is required for privateKey seedType');
+        const isCorrect = await walletPort.request('verifyPrivateKey', {
+          address,
+          value,
+        });
+        if (!isCorrect) {
+          throw new Error('Wrong phrase');
+        }
+        return true;
       }
-      if (value !== mnemonic.phrase) {
-        throw new Error('Wrong phrase');
-      }
-      return true;
     },
     {
       onSuccess: async () => {
@@ -315,43 +348,63 @@ function VerifySuccess({ seedType }: { seedType: SeedType }) {
 
 export function BackupWallet() {
   const [params, setSearchParams] = useSearchParams();
+  const updateSearchParam = (
+    key: string,
+    value: string,
+    navigateOptions?: Parameters<typeof setSearchParams>[1]
+  ) => {
+    const newParams = new URLSearchParams(params);
+    newParams.set(key, value);
+    setSearchParams(newParams, navigateOptions);
+  };
+  const navigate = useNavigate();
   const groupId = params.get('groupId');
-  if (!groupId) {
-    throw new Error('Group Id is required for this view');
-  }
+  const backupKind = params.get('backupKind') as BackupKind | null;
+  invariant(groupId, 'groupId param is required for BackupWallet view');
+  invariant(backupKind, 'backupKind param is required for BackupWallet view');
   const { data: walletGroup, isLoading } = useQuery(
     `wallet/uiGetWalletGroup/${groupId}`,
     () => walletPort.request('uiGetWalletGroup', { groupId }),
     { useErrorBoundary: true }
   );
+  const secretName =
+    walletGroup?.walletContainer.seedType === SeedType.privateKey
+      ? 'private key'
+      : 'recovery phrase';
   const { handleCopy: emptyClipboard } = useCopyToClipboard({
-    text: 'You can copy and paste recovery phrase from where you saved it',
+    text: `You can copy and paste ${secretName} from where you saved it`,
   });
   if (isLoading || !walletGroup) {
     return null;
   }
-  const { seedType } = walletGroup.walletContainer;
-  if (seedType === SeedType.privateKey) {
-    return (
-      <FillView>
-        <UIText
-          kind="subtitle/l_reg"
-          color="var(--neutral-500)"
-          style={{ padding: 20, textAlign: 'center' }}
-        >
-          Backup View for Private Key wallet is not implemented
-        </UIText>
-      </FillView>
+  const { seedType: groupSeedType } = walletGroup.walletContainer;
+  const address = params.get('address') || null;
+  const seedType = address ? SeedType.privateKey : SeedType.mnemonic;
+  if (groupSeedType === SeedType.privateKey && seedType === SeedType.mnemonic) {
+    throw new Error(
+      'Cannot display mnemonic for privateKey group. Address search-param is missing from BackupWallet view'
     );
   }
+
+  /**
+   * The logic for BackupWallet flow:
+   * if backupKind === 'reveal', this means we only want
+   * to show the user the secret and not ask to verify it.
+   * In this case, the <Initial /> step is skipped and the last
+   * steps (<VerifyBackup/>, <VerifySuccess />) are also skipped.
+   *
+   * For now, this is manageable, but if it gets more complicated,
+   * these flows should be refactored into separate routes.
+   */
+  const isVerifyUserStep =
+    params.get('step') === 'verifyUser' ||
+    (params.has('step') == false && backupKind === 'reveal');
   return (
     <>
-      {params.has('step') ? null : (
-        <Initial
-          onSubmit={() => setSearchParams({ step: 'verifyUser', groupId })}
-        />
+      {params.has('step') || backupKind === 'reveal' ? null : (
+        <Initial onSubmit={() => updateSearchParam('step', 'verifyUser')} />
       )}
-      {params.get('step') === 'verifyUser' ? (
+      {isVerifyUserStep ? (
         <PageColumn>
           <Background backgroundKind="white">
             <NavigationTitle title="Enter password" />
@@ -359,31 +412,39 @@ export function BackupWallet() {
               <VerifyUser
                 style={{ justifySelf: 'stretch' }}
                 onSuccess={() =>
-                  setSearchParams(
-                    { step: 'recoveryPhrase', groupId },
-                    { replace: true }
-                  )
+                  updateSearchParam('step', 'revealSecret', { replace: true })
                 }
               />
             </FillView>
           </Background>
         </PageColumn>
       ) : null}
-      {params.get('step') === 'recoveryPhrase' ? (
-        <RecoveryPhrase
+      {params.get('step') === 'revealSecret' ? (
+        <RevealSecret
           groupId={groupId}
+          address={address}
+          seedType={seedType}
+          backupKind={backupKind}
           onSubmit={({ didCopy }) => {
-            if (didCopy) {
+            if (didCopy && seedType === SeedType.mnemonic) {
               emptyClipboard();
             }
-            setSearchParams({ step: 'verifyBackup', groupId });
+            if (backupKind === 'reveal') {
+              navigate('/');
+            } else {
+              updateSearchParam('step', 'verifyBackup');
+            }
           }}
         />
       ) : null}
       {params.get('step') === 'verifyBackup' ? (
         <VerifyBackup
           groupId={groupId}
-          onSuccess={() => setSearchParams({ step: 'verifySuccess', groupId })}
+          seedType={seedType}
+          address={address}
+          onSuccess={() => {
+            updateSearchParam('step', 'verifySuccess');
+          }}
         />
       ) : null}
       {params.get('step') === 'verifySuccess' ? (
