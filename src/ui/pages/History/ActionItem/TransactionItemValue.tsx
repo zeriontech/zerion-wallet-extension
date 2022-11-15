@@ -93,7 +93,7 @@ export function HistoryTokenValue({
       gap={4}
       alignItems="center"
       style={{
-        gridTemplateColumns: 'minmax(40px, 1fr) auto',
+        gridTemplateColumns: 'minmax(8px, 1fr) auto',
         overflow: 'hidden',
       }}
       title={formatted ? `${sign}${formatted} ${tokenTitle}` : undefined}
