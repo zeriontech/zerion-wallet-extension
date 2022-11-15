@@ -1,7 +1,7 @@
-import { ethers } from 'ethers';
 import { immerable } from 'immer';
 import { stableEncrypt } from 'src/modules/crypto';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
+import { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { restoreBareWallet, walletToObject } from 'src/shared/wallet/create';
 import { SeedType } from './SeedType';
 import type { BareWallet } from './types';
@@ -96,7 +96,7 @@ export class MnemonicWalletContainer extends WalletContainerImpl {
     wallets,
     encryptionKey,
   }: {
-    wallets?: Array<Pick<BareWallet, 'mnemonic'>>;
+    wallets?: Array<PartiallyRequired<BareWallet, 'mnemonic'>>;
     encryptionKey: CryptoKey;
   }): Promise<MnemonicWalletContainer> {
     const walletContainer = new MnemonicWalletContainer(wallets);
@@ -115,7 +115,7 @@ export class MnemonicWalletContainer extends WalletContainerImpl {
     return walletContainer;
   }
 
-  constructor(wallets?: Array<Pick<BareWallet, 'mnemonic'>>) {
+  constructor(wallets?: Array<PartiallyRequired<BareWallet, 'mnemonic'>>) {
     super();
     if (!wallets || !wallets.length) {
       this.wallets = [restoreBareWallet({})];
@@ -136,7 +136,7 @@ export class PrivateKeyWalletContainer extends WalletContainerImpl {
   wallets: BareWallet[];
   seedType = SeedType.privateKey;
 
-  constructor(wallets: Array<Pick<BareWallet, 'privateKey'>>) {
+  constructor(wallets: Array<PartiallyRequired<BareWallet, 'privateKey'>>) {
     super();
     if (!wallets || wallets.length > 1) {
       throw new Error(
@@ -149,7 +149,7 @@ export class PrivateKeyWalletContainer extends WalletContainerImpl {
           'PrivateKey container is expected to have a wallet with a privateKey'
         );
       }
-      return restoreBareWallet(new ethers.Wallet(wallet.privateKey));
+      return restoreBareWallet(wallet);
     });
   }
 

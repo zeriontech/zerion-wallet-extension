@@ -33,6 +33,7 @@ import { toUtf8String } from 'ethers/lib/utils';
 import { removeSignature } from 'src/modules/ethereum/transactions/removeSignature';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getTransactionChainId } from 'src/modules/ethereum/transactions/resolveChainForTx';
+import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { emitter } from '../events';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
@@ -48,10 +49,6 @@ import { walletStore } from './persistence';
 import { WalletNameFlag } from './model/WalletNameFlag';
 
 const INTERNAL_SYMBOL_CONTEXT = { origin: INTERNAL_ORIGIN_SYMBOL };
-
-type PartiallyRequired<T, K extends keyof T> = { [P in keyof T]?: T[P] } & {
-  [P in K]: T[P];
-};
 
 type PublicMethodParams<T = undefined> = T extends undefined
   ? {
