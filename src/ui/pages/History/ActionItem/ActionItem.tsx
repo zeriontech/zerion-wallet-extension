@@ -11,7 +11,12 @@ import { Media } from 'src/ui/ui-kit/Media';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import FailedIcon from 'jsx:src/ui/assets/failed.svg';
 import { Networks } from 'src/modules/networks/Networks';
-import { AssetIcon, TransactionItemIcon } from './TransactionTypeIcon';
+import {
+  AssetIcon,
+  transactionIconStyle,
+  TransactionItemIcon,
+  TRANSACTION_ICON_SIZE,
+} from './TransactionTypeIcon';
 import {
   getFungibleAsset,
   HistoryItemValue,
@@ -65,15 +70,13 @@ function ActionView({
     <HStack
       gap={24}
       justifyContent="space-between"
-      style={{ height: 44 }}
+      style={{ height: 42 }}
       alignItems="center"
     >
       <Media
-        gap={12}
-        vGap={0}
         image={
           action.transaction.status === 'failed' ? (
-            <FailedIcon style={{ width: 36, height: 36 }} />
+            <FailedIcon style={transactionIconStyle} />
           ) : action.transaction.status === 'pending' ? (
             <CircleSpinner
               size="38px"
@@ -90,7 +93,7 @@ function ActionView({
           )
         }
         text={
-          <UIText kind="body/accent">{`${
+          <UIText kind="subtitle/m_med">{`${
             action.transaction.status === 'failed' ? 'Failed ' : ''
           }${action.type.display_value}`}</UIText>
         }
@@ -114,7 +117,7 @@ function ActionView({
               />
             ) : null}
             <UIText
-              kind="small/regular"
+              kind="subtitle/s_reg"
               color="var(--neutral-500)"
               style={{
                 overflow: 'hidden',
@@ -138,9 +141,9 @@ function ActionView({
           </HStack>
         }
       />
-      <VStack gap={0} style={{ justifyItems: 'end' }}>
+      <VStack gap={4} style={{ justifyItems: 'end' }}>
         <UIText
-          kind="body/regular"
+          kind="subtitle/m_reg"
           color={
             shouldUsePositiveColor ? 'var(--positive-500)' : 'var(--black)'
           }
@@ -174,7 +177,7 @@ function ActionView({
             />
           ) : null}
         </UIText>
-        <UIText kind="small/regular" color="var(--neutral-500)">
+        <UIText kind="subtitle/s_reg" color="var(--neutral-500)">
           {incomingTransfers?.length ? (
             <TransactionCurrencyValue
               transfers={incomingTransfers}
@@ -220,34 +223,34 @@ function PendingAction({
     <HStack
       gap={24}
       justifyContent="space-between"
-      style={{ height: 44 }}
+      style={{ height: 42 }}
       alignItems="center"
     >
       <Media
-        gap={12}
-        vGap={0}
         image={
-          <div style={{ position: 'relative', width: 36, height: 36 }}>
-            <CircleSpinner
-              size="38px"
-              trackWidth="7%"
-              color="var(--primary)"
-              style={{
-                position: 'absolute',
-                top: -1,
-                left: -1,
-              }}
-            />
-            {asset ? (
-              <AssetIcon
-                size={36}
-                asset={{ fungible: asset }}
-                type={action.type.value}
+          <div style={{ position: 'relative', ...transactionIconStyle }}>
+            {action.transaction.status === 'pending' ? (
+              <CircleSpinner
+                size="38px"
+                trackWidth="7%"
+                color="var(--primary)"
+                style={{
+                  position: 'absolute',
+                  top: -1,
+                  left: -1,
+                }}
               />
             ) : null}
+            <AssetIcon
+              size={TRANSACTION_ICON_SIZE}
+              asset={asset ? { fungible: asset } : undefined}
+              type={action.type.value}
+            />
           </div>
         }
-        text={<UIText kind="body/accent">{action.type.display_value}</UIText>}
+        text={
+          <UIText kind="subtitle/m_med">{action.type.display_value}</UIText>
+        }
         detailText={
           <HStack alignItems="center" gap={4}>
             {action.transaction.chain !== NetworkId.Ethereum ? (
@@ -267,13 +270,15 @@ function PendingAction({
                 )}
               />
             ) : null}{' '}
-            <UIText kind="small/regular" color="var(--neutral-500)">
-              Pending
-            </UIText>
+            {action.transaction.status === 'pending' ? (
+              <UIText kind="subtitle/s_reg" color="var(--neutral-500)">
+                Pending
+              </UIText>
+            ) : null}
           </HStack>
         }
       />
-      <UIText kind="body/regular">
+      <UIText kind="subtitle/m_reg">
         {asset ? (
           <TextAnchor
             href={`https://app.zerion.io/explore/asset/${asset.symbol}-${asset.asset_code}?address=${address}`}

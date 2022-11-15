@@ -24,8 +24,8 @@ import ChangeAssets3 from 'jsx:src/ui/assets/changed-assets-3.svg';
 import ChangeAssetsMore from 'jsx:src/ui/assets/changed-assets-more.svg';
 import { getFungibleAsset, getNftAsset } from './TransactionItemValue';
 
-export const TRANSACTION_ICON_SIZE = 36;
-export const TRANSACTION_SMALL_ICON_SIZE = 27;
+export const TRANSACTION_ICON_SIZE = 24;
+export const TRANSACTION_SMALL_ICON_SIZE = 18;
 export const transactionIconStyle = {
   width: TRANSACTION_ICON_SIZE,
   height: TRANSACTION_ICON_SIZE,
@@ -101,16 +101,18 @@ export function AssetIcon({
   const fungible = getFungibleAsset(asset);
   const nft = getNftAsset(asset);
 
-  return fungible ? (
+  return fungible?.icon_url ? (
     <TokenIcon size={size} src={fungible.icon_url} symbol={fungible.symbol} />
-  ) : nft ? (
+  ) : nft?.icon_url || nft?.collection.icon_url ? (
     <TokenIcon
       size={size}
       src={nft.icon_url || nft.collection.icon_url}
       style={{ borderRadius: 4 }}
       symbol={nft.symbol}
     />
-  ) : null;
+  ) : (
+    <TransactionTypeIcon type={type} />
+  );
 }
 
 function TransferIcon({

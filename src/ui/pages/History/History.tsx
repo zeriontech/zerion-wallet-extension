@@ -1,5 +1,5 @@
-import React from 'react';
-import { useAddressActions } from 'defi-sdk';
+import React, { useMemo } from 'react';
+import { AddressAction, useAddressActions } from 'defi-sdk';
 import { useQuery } from 'react-query';
 import { toAddressTransaction } from 'src/modules/ethereum/transactions/model';
 import type { Action } from 'src/modules/ethereum/transactions/model';
@@ -8,15 +8,34 @@ import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddress
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { ActionsList } from './ActionsList';
 
-function mergeLocalAndBackendActions(local: Action[], backend: Action[]) {
+export function sortActions<T extends { datetime?: string }>(actions: T[]) {
+  return actions.sort((a, b) => {
+    const aDate = a.datetime ? new Date(a.datetime).getTime() : Date.now();
+    const bDate = b.datetime ? new Date(b.datetime).getTime() : Date.now();
+    return bDate - aDate;
+  });
+}
+
+function mergeLocalAndBackendActions(
+  local: Action[],
+  backend: AddressAction[]
+) {
   const backendHashes = new Set(backend.map((tx) => tx.transaction.hash));
-  return local
-    .filter((tx) => backendHashes.has(tx.transaction.hash) === false)
-    .concat(backend);
+  const lastBackendAction = backend[backend.length - 1];
+  return sortActions(
+    local
+      .filter((tx) => backendHashes.has(tx.transaction.hash) === false)
+      .concat(backend)
+  ).filter(
+    (item) =>
+      item.datetime &&
+      new Date(item.datetime).getTime() >
+        new Date(lastBackendAction.datetime).getTime()
+  );
 }
 
 function useMinedAndPendingAddressActions() {
-  const { params, ready } = useAddressParams();
+  const { params } = useAddressParams();
   const localActions = useLocalAddressTransactions(params);
 
   const { data: localAddressActions, ...localActionsQuery } = useQuery(
@@ -42,20 +61,31 @@ function useMinedAndPendingAddressActions() {
       currency: 'usd',
     },
     {
-      limit: 50,
-      enabled: ready,
+      limit: 10,
+      subscribe: false,
+      useFullCache: false,
     }
   );
 
-  return {
-    value: localAddressActions
-      ? mergeLocalAndBackendActions(localAddressActions, value || [])
-      : null,
-    ...localActionsQuery,
-    isLoading: actionsIsLoading || localActionsQuery.isLoading,
-    hasMore: Boolean(hasMore),
-    fetchMore,
-  };
+  return useMemo(
+    () => ({
+      value: localAddressActions
+        ? mergeLocalAndBackendActions(localAddressActions, value || [])
+        : null,
+      ...localActionsQuery,
+      isLoading: actionsIsLoading || localActionsQuery.isLoading,
+      hasMore: Boolean(hasMore),
+      fetchMore,
+    }),
+    [
+      localAddressActions,
+      value,
+      localActionsQuery,
+      hasMore,
+      actionsIsLoading,
+      fetchMore,
+    ]
+  );
 }
 
 export function HistoryList() {
