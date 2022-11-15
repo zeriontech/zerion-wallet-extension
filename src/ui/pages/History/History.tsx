@@ -62,7 +62,7 @@ function useMinedAndPendingAddressActions() {
       currency: 'usd',
     },
     {
-      limit: 10,
+      limit: 30,
       subscribe: false,
       useFullCache: false,
     }

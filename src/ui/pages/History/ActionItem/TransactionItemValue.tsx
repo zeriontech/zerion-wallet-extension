@@ -92,10 +92,21 @@ export function HistoryTokenValue({
     <HStack
       gap={4}
       alignItems="center"
-      style={{ gridTemplateColumns: 'auto minmax(0, 1fr)', overflow: 'hidden' }}
+      style={{
+        gridTemplateColumns: 'minmax(40px, 1fr) auto',
+        overflow: 'hidden',
+      }}
       title={formatted ? `${sign}${formatted} ${tokenTitle}` : undefined}
     >
-      {displayedValue}
+      <span
+        style={{
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {displayedValue}
+      </span>
       <TextAnchor
         href={`https://app.zerion.io/explore/asset/${asset.symbol}-${asset.asset_code}?address=${address}`}
         target="_blank"
@@ -126,7 +137,11 @@ export function HistoryNFTValue({
   address?: string;
 }) {
   return (
-    <HStack gap={4} alignItems="center">
+    <HStack
+      gap={4}
+      alignItems="center"
+      style={{ gridTemplateColumns: 'minmax(40px, 1fr) auto' }}
+    >
       {quantity > 1 ? (
         <span>
           {getSign(quantity, direction)}
@@ -137,6 +152,7 @@ export function HistoryNFTValue({
         <TextAnchor
           href={`https://app.zerion.io/nfts/${nftAsset.asset_code}?address=${address}`}
           target="_blank"
+          title={name}
           rel="noopener noreferrer"
           style={{
             overflow: 'hidden',

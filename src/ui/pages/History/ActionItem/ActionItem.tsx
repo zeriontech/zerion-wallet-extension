@@ -70,7 +70,11 @@ function ActionView({
     <HStack
       gap={24}
       justifyContent="space-between"
-      style={{ height: 42 }}
+      style={{
+        height: 42,
+        gridTemplateColumns:
+          'minmax(min-content, max-content) minmax(100px, max-content)',
+      }}
       alignItems="center"
     >
       <Media
@@ -141,17 +145,26 @@ function ActionView({
           </HStack>
         }
       />
-      <VStack gap={4} style={{ justifyItems: 'end' }}>
+      <VStack
+        gap={4}
+        style={{ justifyItems: 'end', overflow: 'hidden', textAlign: 'left' }}
+      >
         <UIText
           kind="subtitle/m_reg"
           color={
             shouldUsePositiveColor ? 'var(--positive-500)' : 'var(--black)'
           }
+          style={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            maxWidth: '100%',
+          }}
         >
           {action.type.value === 'approve' && maybeApprovedAsset ? (
             <TextAnchor
               href={`https://app.zerion.io/explore/asset/${maybeApprovedAsset.symbol}-${maybeApprovedAsset.asset_code}?address=${address}`}
               target="_blank"
+              title={maybeApprovedAsset.name || maybeApprovedAsset.symbol}
               rel="noopener noreferrer"
               style={{
                 overflow: 'hidden',
