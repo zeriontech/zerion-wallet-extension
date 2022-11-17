@@ -101,10 +101,10 @@ export class Account extends EventEmitter {
     if (!passwordIsCorrect) {
       throw new Error('Incorrect password');
     }
-    await this.setNewUser(user, password, { isNewUser: false });
+    await this.setUser(user, password, { isNewUser: false });
   }
 
-  async setNewUser(user: User, password: string, { isNewUser = false } = {}) {
+  async setUser(user: User, password: string, { isNewUser = false } = {}) {
     this.user = user;
     this.isPendingNewUser = isNewUser;
     this.encryptionKey = await createEncryptionKey({ salt: user.id, password });
@@ -225,7 +225,7 @@ export class AccountPublicRPC {
     params: { password },
   }: PublicMethodParams<{ password: string }>): Promise<PublicUser> {
     const user = await Account.createUser(password);
-    await this.account.setNewUser(user, password, { isNewUser: true });
+    await this.account.setUser(user, password, { isNewUser: true });
     return { id: user.id };
   }
 
