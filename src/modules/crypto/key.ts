@@ -30,9 +30,7 @@ async function createSecretKey(
 
   // In 2021, OWASP recommended to use 310000 iterations for
   // PBKDF2-HMAC-SHA256 and 120000 for PBKDF2-HMAC-SHA512.
-  //
-  // The browser-passworder package currently uses 10000 iterations
-  // (the recommendation from 2011). Here we use 350000.
+  // Here we use 350000 for better security.
 
   return await window.crypto.subtle.deriveKey(
     {
