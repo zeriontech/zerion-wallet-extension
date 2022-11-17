@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { SeedType } from 'src/shared/SeedType';
@@ -25,6 +25,7 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
+import { SecretInput } from 'src/ui/components/SecretInput';
 import { WithConfetti } from '../GetStarted/components/DecorativeMessage/DecorativeMessage';
 import { DecorativeMessage } from '../GetStarted/components/DecorativeMessage';
 
@@ -238,64 +239,48 @@ function VerifyBackup({
       },
     }
   );
-  const textAreaId = useId();
-  const autoFocusRef = useRef<HTMLTextAreaElement | null>(null);
+  const autoFocusRef = useRef<HTMLInputElement | null>(null);
   useEffect(() => {
     autoFocusRef.current?.focus();
   }, []);
   return (
-    <PageColumn>
-      <form
-        style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}
-        onSubmit={(event) => {
-          event.preventDefault();
-          const value = new FormData(event.currentTarget).get(
-            'seedOrPrivateKey'
-          );
-          verifyMutation.mutate(
-            prepareUserInputSeedOrPrivateKey(value as string)
-          );
-        }}
-      >
-        <PageTop />
-        <VStack gap={12}>
-          <VStack gap={4}>
-            <UIText kind="subtitle/l_reg" as="label" htmlFor={textAreaId}>
-              Recovery Phrase
-            </UIText>
-            <textarea
+    <Background backgroundKind="white">
+      <PageColumn>
+        <form
+          style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}
+          onSubmit={(event) => {
+            event.preventDefault();
+            const value = new FormData(event.currentTarget).get(
+              'seedOrPrivateKey'
+            );
+            verifyMutation.mutate(
+              prepareUserInputSeedOrPrivateKey(value as string)
+            );
+          }}
+        >
+          <PageTop />
+          <VStack gap={12}>
+            <SecretInput
               ref={autoFocusRef}
-              autoFocus={true}
+              label={<UIText kind="subtitle/l_reg">Recovery Phrase</UIText>}
               name="seedOrPrivateKey"
               required={true}
-              id={textAreaId}
-              rows={14}
-              placeholder="Enter seed phrase or a private key"
-              style={{
-                display: 'block',
-                width: '100%',
-                color: 'var(--black)',
-                resize: 'vertical',
-                backgroundColor: 'var(--white)',
-                padding: '7px 11px',
-                border: '1px solid var(--neutral-200)',
-                borderRadius: 8,
-                fontSize: 16,
-              }}
+              hint={
+                verifyMutation.error ? (
+                  <UIText kind="caption/reg" color="var(--negative-500)">
+                    {(verifyMutation.error as Error).message || 'unknown error'}
+                  </UIText>
+                ) : null
+              }
             />
-            {verifyMutation.error ? (
-              <UIText kind="caption/reg" color="var(--negative-500)">
-                {(verifyMutation.error as Error).message || 'unknown error'}
-              </UIText>
-            ) : null}
           </VStack>
-        </VStack>
-        <Button autoFocus={true} style={{ marginTop: 'auto' }}>
-          Verify
-        </Button>
-        <PageBottom />
-      </form>
-    </PageColumn>
+          <Button autoFocus={true} style={{ marginTop: 'auto' }}>
+            Verify
+          </Button>
+          <PageBottom />
+        </form>
+      </PageColumn>
+    </Background>
   );
 }
 

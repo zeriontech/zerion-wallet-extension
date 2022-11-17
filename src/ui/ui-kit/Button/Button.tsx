@@ -8,7 +8,7 @@ import { UIText } from '../UIText';
 import * as styles from './styles.module.css';
 
 type Kind = 'primary' | 'regular' | 'ghost';
-type Size = 60 | 56 | 44 | 36 | 32 | 28;
+type Size = 60 | 56 | 46 | 44 | 40 | 36 | 32 | 28;
 
 const kinds: { [kind in Kind]: (size: number) => React.CSSProperties } = {
   primary: () => ({

@@ -20,6 +20,7 @@ import {
   isValidPrivateKey,
 } from 'src/shared/validation/wallet';
 import { WithPasswordSession } from 'src/ui/components/VerifyUser/WithPasswordSession';
+import { SecretInput } from 'src/ui/components/SecretInput';
 import { PrivateKeyImportView } from './PrivateKeyImportView';
 import { MnemonicImportView } from './MnemonicImportView';
 import { MemoryLocationState } from './memoryLocationState';
@@ -88,30 +89,27 @@ function ImportForm({
           onSubmit({ value, seedType });
         }}
       >
-        <VStack gap={4}>
-          <textarea
-            autoFocus={true}
-            name="seedOrPrivateKey"
-            required={true}
-            rows={14}
-            placeholder="Use spaces between words if using a seed phrase"
-            style={{
-              display: 'block',
-              color: 'var(--black)',
-              resize: 'vertical',
-              backgroundColor: 'var(--neutral-200)',
-              padding: '7px 11px',
-              border: '1px solid var(--neutral-200)',
-              fontSize: 16,
-              borderRadius: 8,
-            }}
-          />
-          {validationResult?.valid === false ? (
-            <UIText kind="caption/reg" color="var(--negative-500)" role="alert">
-              {validationResult.message}
+        <SecretInput
+          autoFocus={true}
+          name="seedOrPrivateKey"
+          required={true}
+          label={
+            <UIText kind="caption/regular" color="var(--neutral-600)">
+              Use spaces between words if using a seed phrase
             </UIText>
-          ) : null}
-        </VStack>
+          }
+          hint={
+            validationResult?.valid === false ? (
+              <UIText
+                kind="caption/regular"
+                color="var(--negative-500)"
+                role="alert"
+              >
+                {validationResult.message}
+              </UIText>
+            ) : null
+          }
+        />
         <VStack gap={16} style={{ marginTop: 'auto' }}>
           <UIText kind="caption/reg" color="var(--neutral-500)">
             <HStack
