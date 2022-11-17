@@ -1,4 +1,3 @@
-import { NetworkId } from 'src/modules/networks/NetworkId';
 import { networksStore } from 'src/modules/networks/networks-store';
 import type { AddressAction, PendingAction, ActionType } from 'defi-sdk';
 import { ethers } from 'ethers';
@@ -45,7 +44,7 @@ export async function toAddressTransaction(
         ? networks
             .getChainById(ethers.utils.hexValue(transaction.chainId))
             ?.toString()
-        : NetworkId.Ethereum,
+        : '',
       status: receipt ? 'confirmed' : 'pending',
       fee: null,
       nonce: transaction.nonce,

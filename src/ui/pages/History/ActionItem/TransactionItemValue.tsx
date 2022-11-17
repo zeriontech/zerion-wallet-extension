@@ -210,7 +210,10 @@ export function HistoryItemValue({
       asset={fungibleAsset}
       value={baseToCommon(
         transfers[0].quantity,
-        getDecimals({ asset: fungibleAsset, chain })
+        getDecimals({
+          asset: fungibleAsset,
+          chain,
+        })
       )}
       direction={direction}
     />

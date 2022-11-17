@@ -11,26 +11,25 @@ import { Media } from 'src/ui/ui-kit/Media';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import FailedIcon from 'jsx:src/ui/assets/failed.svg';
 import { Networks } from 'src/modules/networks/Networks';
+import { createChain } from 'src/modules/networks/Chain';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import { VStack } from 'src/ui/ui-kit/VStack';
+import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
+import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
+import { Image } from 'src/ui/ui-kit/MediaFallback';
+import { getChainIconURL } from 'src/ui/components/Positions/helpers';
+import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
+import {
+  getFungibleAsset,
+  HistoryItemValue,
+  TransactionCurrencyValue,
+} from './TransactionItemValue';
 import {
   AssetIcon,
   transactionIconStyle,
   TransactionItemIcon,
   TRANSACTION_ICON_SIZE,
 } from './TransactionTypeIcon';
-import {
-  getFungibleAsset,
-  HistoryItemValue,
-  TransactionCurrencyValue,
-} from './TransactionItemValue';
-import { createChain } from 'src/modules/networks/Chain';
-import { HStack } from 'src/ui/ui-kit/HStack';
-import { VStack } from 'src/ui/ui-kit/VStack';
-import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
-import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
-import { NetworkId } from 'src/modules/networks/NetworkId';
-import { Image } from 'src/ui/ui-kit/MediaFallback';
-import { getChainIconURL } from 'src/ui/components/Positions/helpers';
-import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 
 function getActionAddress(action: AddressAction | PendingAction) {
   const address =
@@ -64,7 +63,9 @@ function ActionView({
     incomingTransfers?.length === 1 &&
     Boolean(getFungibleAsset(incomingTransfers[0].asset));
   const maybeApprovedAsset = getFungibleAsset(approveTransfers?.asset);
-  const chain = createChain(action.transaction.chain);
+  const chain = action.transaction.chain
+    ? createChain(action.transaction.chain)
+    : null;
 
   return (
     <HStack
@@ -103,7 +104,7 @@ function ActionView({
         }
         detailText={
           <HStack alignItems="center" gap={4}>
-            {action.transaction.chain !== NetworkId.Ethereum ? (
+            {chain ? (
               <Image
                 style={{
                   width: 12,
@@ -111,9 +112,7 @@ function ActionView({
                   borderRadius: 2,
                   overflow: 'hidden',
                 }}
-                title={networks?.getChainName(
-                  createChain(action.transaction.chain)
-                )}
+                title={networks?.getChainName(chain)}
                 src={getChainIconURL(action.transaction.chain)}
                 renderError={() => (
                   <TokenIcon symbol={action.transaction.chain} size={12} />
@@ -131,7 +130,8 @@ function ActionView({
             >
               {action.type.value === 'approve' ||
               action.type.value === 'mint' ? null : incomingTransfers?.length &&
-                outgoingTransfers?.length ? (
+                outgoingTransfers?.length &&
+                chain ? (
                 <HistoryItemValue
                   transfers={outgoingTransfers}
                   direction="out"
@@ -174,14 +174,14 @@ function ActionView({
             >
               {maybeApprovedAsset.name || maybeApprovedAsset.symbol}
             </TextAnchor>
-          ) : incomingTransfers?.length ? (
+          ) : incomingTransfers?.length && chain ? (
             <HistoryItemValue
               transfers={incomingTransfers}
               direction="in"
               chain={chain}
               address={address}
             />
-          ) : outgoingTransfers?.length ? (
+          ) : outgoingTransfers?.length && chain ? (
             <HistoryItemValue
               transfers={outgoingTransfers}
               direction="out"
@@ -191,12 +191,12 @@ function ActionView({
           ) : null}
         </UIText>
         <UIText kind="subtitle/s_reg" color="var(--neutral-500)">
-          {incomingTransfers?.length ? (
+          {incomingTransfers?.length && chain ? (
             <TransactionCurrencyValue
               transfers={incomingTransfers}
               chain={chain}
             />
-          ) : outgoingTransfers?.length ? (
+          ) : outgoingTransfers?.length && chain ? (
             <TransactionCurrencyValue
               transfers={outgoingTransfers}
               chain={chain}
@@ -266,7 +266,7 @@ function PendingAction({
         }
         detailText={
           <HStack alignItems="center" gap={4}>
-            {action.transaction.chain !== NetworkId.Ethereum ? (
+            {action.transaction.chain ? (
               <Image
                 style={{
                   width: 12,
@@ -282,7 +282,7 @@ function PendingAction({
                   <TokenIcon symbol={action.transaction.chain} size={12} />
                 )}
               />
-            ) : null}{' '}
+            ) : null}
             {action.transaction.status === 'pending' ? (
               <UIText kind="subtitle/s_reg" color="var(--neutral-500)">
                 Pending
