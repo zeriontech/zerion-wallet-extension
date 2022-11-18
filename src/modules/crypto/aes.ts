@@ -7,25 +7,19 @@ import {
 } from './convert';
 import { createCryptoKey, createSalt } from './key';
 import { getRandomUint8Array } from './random';
+import { Encrypted } from './types';
 
-type Encrypted = {
-  salt: string;
-  iv: string;
-  data: string;
-};
+const VERSION = 1;
 
 function getIV() {
   return getRandomUint8Array(16);
 }
 
-/**
- * Encrypts data with a given password.
- */
-export async function encrypt<T>(
+async function encryptObject<T>(
   password: string,
   obj: T,
   salt: string = createSalt()
-): Promise<string> {
+): Promise<Encrypted> {
   const dataJSON = JSON.stringify(obj);
   const dataArray = utf8ToUint8Array(dataJSON);
 
@@ -41,19 +35,31 @@ export async function encrypt<T>(
   const ivBase64 = arrayBufferToBase64(iv);
   const encryptedBase64 = arrayBufferToBase64(encryptedBuffer);
 
-  const encrypted: Encrypted = { iv: ivBase64, data: encryptedBase64, salt };
-  return JSON.stringify(encrypted);
+  return {
+    iv: ivBase64,
+    data: encryptedBase64,
+    salt,
+    version: VERSION,
+  };
 }
 
 /**
- * Decrypts a given JSON string.
+ * Encrypts data with a given password.
  */
-export async function decrypt<T>(password: string, json: string): Promise<T> {
-  const {
-    iv: ivBase64,
-    data: dataBase64,
-    salt,
-  } = JSON.parse(json) as Encrypted;
+export async function encrypt<T>(
+  password: string,
+  obj: T,
+  salt: string = createSalt()
+): Promise<string> {
+  const encrypted = await encryptObject(password, obj, salt);
+  return JSON.stringify(encrypted);
+}
+
+async function decryptObject<T>(
+  password: string,
+  encrypted: Encrypted
+): Promise<T> {
+  const { iv: ivBase64, data: dataBase64, salt } = encrypted;
   const dataArray = base64ToUint8Array(dataBase64);
 
   const iv = base64ToArrayBuffer(ivBase64);
@@ -69,4 +75,12 @@ export async function decrypt<T>(password: string, json: string): Promise<T> {
   const decryptedString = uint8ArrayToUtf8(decryptedArray);
 
   return JSON.parse(decryptedString);
+}
+
+/**
+ * Decrypts a given JSON string.
+ */
+export async function decrypt<T>(password: string, json: string): Promise<T> {
+  const encrypted = JSON.parse(json) as Encrypted;
+  return decryptObject(password, encrypted);
 }
