@@ -7,6 +7,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import VisibleIcon from 'jsx:src/ui/assets/visible.svg';
 import InvisibleIcon from 'jsx:src/ui/assets/invisible.svg';
 import { Surface } from 'src/ui/ui-kit/Surface';
+import { clipboardWarning } from 'src/ui/pages/BackupWallet/clipboardWarning';
 
 export const SecretInput = React.forwardRef(
   (
@@ -38,6 +39,7 @@ export const SecretInput = React.forwardRef(
     }, [inputValue]);
     const reactId = useId();
     const id = idFromProps || reactId;
+    const isTechnicalHint = clipboardWarning.isWarningMessage(inputValue);
     return (
       <VStack gap={24}>
         <VStack gap={4}>
@@ -52,7 +54,7 @@ export const SecretInput = React.forwardRef(
                 setInputValue(event.target.value);
                 onChange?.(event);
               }}
-              type="password"
+              type={isTechnicalHint ? 'text' : 'password'}
               placeholder="Recovery phrase or a private key"
               {...inputProps}
             />
@@ -74,6 +76,12 @@ export const SecretInput = React.forwardRef(
               )}
             </Button>
           </HStack>
+          {isTechnicalHint ? (
+            <UIText kind="caption/regular" color="var(--notice-500)">
+              We cleared your clipboard after you copied the recovery phrase. If
+              you saved it somewhere, you can copy and paste it here now.
+            </UIText>
+          ) : null}
           {hint}
         </VStack>
         {didRevealOnce && inputValue ? (

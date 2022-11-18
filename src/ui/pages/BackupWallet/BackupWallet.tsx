@@ -30,6 +30,7 @@ import { SecretInput } from 'src/ui/components/SecretInput';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { WithConfetti } from '../GetStarted/components/DecorativeMessage/DecorativeMessage';
 import { DecorativeMessage } from '../GetStarted/components/DecorativeMessage';
+import { clipboardWarning } from './clipboardWarning';
 
 function Initial({ onSubmit }: { onSubmit: () => void }) {
   return (
@@ -388,12 +389,15 @@ export function BackupWallet() {
     () => walletPort.request('uiGetWalletGroup', { groupId }),
     { useErrorBoundary: true }
   );
-  const secretName =
-    walletGroup?.walletContainer.seedType === SeedType.privateKey
-      ? 'private key'
-      : 'recovery phrase';
   const { handleCopy: emptyClipboard } = useCopyToClipboard({
-    text: `You can copy and paste ${secretName} from where you saved it`,
+    // We replace user clipboard with a warning message.
+    // This works as "emptying" the clipboard, but it's more helpful
+    // than just putting empty string there, in my opinion.
+    // Also, if we see the user pasting this message, we can show a more
+    // detailed message about what's going on.
+    text: clipboardWarning.getMessage(
+      walletGroup?.walletContainer.seedType || SeedType.mnemonic
+    ),
   });
   if (isLoading || !walletGroup) {
     return null;
