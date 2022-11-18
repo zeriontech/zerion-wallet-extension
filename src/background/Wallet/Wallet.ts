@@ -81,6 +81,7 @@ export class Wallet {
   public publicEthereumController: PublicController;
   private encryptionKey: string | null;
   private seedPhraseEncryptionKey: CryptoKey | null;
+  private seedPhraseExpiryTimerId: NodeJS.Timeout | number = 0;
   private walletStore: WalletStore;
   private pendingWallet: PendingWallet | null = null;
   private record: WalletRecord | null;
@@ -154,7 +155,8 @@ export class Wallet {
   }
 
   private setExpirationForSeedPhraseEncryptionKey() {
-    setTimeout(() => {
+    clearTimeout(this.seedPhraseExpiryTimerId);
+    this.seedPhraseExpiryTimerId = setTimeout(() => {
       if (this) {
         this.removeSeedPhraseEncryptionKey();
       }
