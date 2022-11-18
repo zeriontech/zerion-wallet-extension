@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { SeedType } from 'src/shared/SeedType';
@@ -19,6 +19,7 @@ import { Surface } from 'src/ui/ui-kit/Surface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
+import InvisibleIcon from 'jsx:src/ui/assets/invisible.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
@@ -26,6 +27,7 @@ import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { SecretInput } from 'src/ui/components/SecretInput';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { WithConfetti } from '../GetStarted/components/DecorativeMessage/DecorativeMessage';
 import { DecorativeMessage } from '../GetStarted/components/DecorativeMessage';
 
@@ -82,6 +84,37 @@ function Initial({ onSubmit }: { onSubmit: () => void }) {
 
 type BackupKind = 'reveal' | 'verify';
 
+function BlurredToggle({ children }: React.PropsWithChildren) {
+  const [hidden, setHidden] = useState(true);
+  const reveal = () => setHidden(false);
+  return (
+    <ZStack
+      // click handler here is just for a larger click area;
+      // semantically, click handler on the child button is enough
+      onClick={reveal}
+      style={{ cursor: hidden ? 'pointer' : undefined }}
+    >
+      <UnstyledButton
+        type="button"
+        style={{ placeSelf: 'center', zIndex: 1 }}
+        onClick={reveal}
+      >
+        {hidden ? (
+          <InvisibleIcon style={{ display: 'block', width: 36, height: 36 }} />
+        ) : null}
+      </UnstyledButton>
+      <div
+        style={{
+          filter: hidden ? 'blur(5px)' : undefined,
+          transition: 'filter 250ms',
+        }}
+      >
+        {children}
+      </div>
+    </ZStack>
+  );
+}
+
 function RevealSecret({
   seedType,
   groupId,
@@ -130,19 +163,21 @@ function RevealSecret({
 
       <NavigationTitle title="Write this down" />
       <VStack gap={16}>
-        <Surface padding={16}>
-          <UIText
-            kind={isMnemonic ? 'body/accent' : 'body/regular'}
-            style={{
-              wordSpacing: 10,
-              lineHeight: 1.6,
-              textTransform: isMnemonic ? 'uppercase' : undefined,
-              wordBreak: 'break-all',
-            }}
-          >
-            {secretValue}
-          </UIText>
-        </Surface>
+        <BlurredToggle>
+          <Surface padding={16}>
+            <UIText
+              kind={isMnemonic ? 'body/accent' : 'body/regular'}
+              style={{
+                wordSpacing: 10,
+                lineHeight: 1.6,
+                textTransform: isMnemonic ? 'uppercase' : undefined,
+                wordBreak: 'break-all',
+              }}
+            >
+              {secretValue}
+            </UIText>
+          </Surface>
+        </BlurredToggle>
         <div>
           <Button
             kind="regular"

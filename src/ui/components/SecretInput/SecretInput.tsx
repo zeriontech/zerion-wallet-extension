@@ -85,6 +85,7 @@ export const SecretInput = React.forwardRef(
               kind="body/regular"
               style={{
                 filter: reveal ? undefined : 'blur(5px)',
+                transition: 'filter 200ms',
                 userSelect: 'none',
               }}
             >
