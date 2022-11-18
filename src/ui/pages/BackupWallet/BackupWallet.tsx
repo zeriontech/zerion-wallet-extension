@@ -96,6 +96,7 @@ function BlurredToggle({ children }: React.PropsWithChildren) {
     >
       <UnstyledButton
         type="button"
+        aria-label="Visually reveal value"
         style={{ placeSelf: 'center', zIndex: 1 }}
         onClick={reveal}
       >
@@ -171,7 +172,7 @@ function RevealSecret({
                 wordSpacing: 10,
                 lineHeight: 1.6,
                 textTransform: isMnemonic ? 'uppercase' : undefined,
-                wordBreak: 'break-all',
+                wordBreak: 'break-word',
               }}
             >
               {secretValue}

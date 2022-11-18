@@ -87,6 +87,7 @@ export const SecretInput = React.forwardRef(
                 filter: reveal ? undefined : 'blur(5px)',
                 transition: 'filter 200ms',
                 userSelect: 'none',
+                wordBreak: 'break-word',
               }}
             >
               {inputValue}
