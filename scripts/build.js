@@ -7,6 +7,9 @@
  * This is awful, but seems to be the only workaround
  * unless this gets implemented:
  * https://github.com/parcel-bundler/parcel/issues/8594
+ *
+ * Ideally, if manifest.json could be provided as arg, the command would be
+ * "parcel build src/manifest.json --no-content-hash"
  */
 
 /* eslint-env node */
