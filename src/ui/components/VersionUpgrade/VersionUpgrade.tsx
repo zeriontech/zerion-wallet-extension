@@ -7,8 +7,6 @@ import {
 import { Button } from 'src/ui/ui-kit/Button';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
-import { HStack } from 'src/ui/ui-kit/HStack';
 import { accountPublicRPCPort } from 'src/ui/shared/channels';
 import { PageColumn } from '../PageColumn';
 import { FillView } from '../FillView';
@@ -47,6 +45,7 @@ export function VersionUpgrade({ children }: React.PropsWithChildren) {
     data?.storageVersion.mismatch &&
     data.storageVersion.action === 'clear-storage'
   ) {
+    const CAN_LOGIN_TO_OLD_VERSION = false;
     return (
       <FillView>
         <PageColumn>
@@ -65,20 +64,8 @@ export function VersionUpgrade({ children }: React.PropsWithChildren) {
             </UIText>
             <UIText kind="headline/h2">Version Upgrade </UIText>
             <UIText kind="body/regular" style={{ textAlign: 'start' }}>
-              Hello, alpha user! I have updated storage schema, and now
-              <HStack gap={8} style={{ marginTop: 12, marginBottom: 12 }}>
-                <CheckIcon
-                  style={{
-                    color: 'var(--positive-500)',
-                    width: 20,
-                    height: 20,
-                    position: 'relative',
-                    top: 2,
-                  }}
-                />
-                Recovery phrases will be kept encrypted even when you are logged
-                in
-              </HStack>
+              Hello, alpha user! I have updated storage schema.
+              <br />
               To upgrade, existing storage needs to cleared. You will have to
               import everything again.
             </UIText>
@@ -104,13 +91,15 @@ export function VersionUpgrade({ children }: React.PropsWithChildren) {
                 </div>
               </Button>
 
-              <Button
-                kind="ghost"
-                style={{ fontWeight: 'normal' }}
-                onClick={() => setIgnoreWarning(true)}
-              >
-                Use old storage to make backups
-              </Button>
+              {CAN_LOGIN_TO_OLD_VERSION ? (
+                <Button
+                  kind="ghost"
+                  style={{ fontWeight: 'normal' }}
+                  onClick={() => setIgnoreWarning(true)}
+                >
+                  Use old storage to make backups
+                </Button>
+              ) : null}
             </VStack>
           </VStack>
         </PageColumn>
