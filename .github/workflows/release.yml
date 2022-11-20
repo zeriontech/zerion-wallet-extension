@@ -1,0 +1,36 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
+
+      - name: Install dependencies and build
+        run: |
+          npm install
+          npm run build:production
+
+      - name: Compress build artifacts
+        shell: bash
+        run: |
+          mv dist zerion-wallet-extension-${{github.ref_name}}
+          zip -r zerion-wallet-extension-${{github.ref_name}}.zip zerion-wallet-extension-${{github.ref_name}}
+          tar czf zerion-wallet-extension-${{github.ref_name}}.tar.gz --directory=zerion-wallet-extension-${{github.ref_name}} .
+
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          generateReleaseNotes: true
+          artifacts: 'zerion-wallet-extension-${{github.ref_name}}.zip,zerion-wallet-extension-${{github.ref_name}}.tar.gz'
