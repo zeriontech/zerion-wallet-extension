@@ -1,4 +1,3 @@
-require('./bufferPolyfill');
 import browser from 'webextension-polyfill';
 import { ethers } from 'ethers';
 import { networksStore } from 'src/modules/networks/networks-store';
