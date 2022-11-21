@@ -6,7 +6,6 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
-import { HStack } from 'src/ui/ui-kit/HStack';
 import { PendingAction } from 'src/modules/ethereum/transactions/model';
 import { ActionItem } from '../ActionItem';
 
@@ -51,15 +50,12 @@ export function ActionsList({
             {
               key: 0,
               onClick: onLoadMore,
-              component: (
-                <HStack gap={8} alignItems="center">
-                  <span style={{ color: 'var(--primary)' }}>
-                    More transactions
-                  </span>
-                  {isLoading ? (
-                    <CircleSpinner style={{ display: 'inline-block' }} />
-                  ) : null}
-                </HStack>
+              component: isLoading ? (
+                <CircleSpinner style={{ display: 'inline-block' }} />
+              ) : (
+                <span style={{ color: 'var(--primary)' }}>
+                  More transactions
+                </span>
               ),
             },
           ]}
