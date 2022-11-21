@@ -42,10 +42,6 @@ export class BackgroundMemoryCache implements RequestCache<EntryStore> {
     throw new Error('Not implemented');
   }
 
-  clear() {
-    this.map.clear();
-  }
-
   async load(): Promise<void> {
     memoryCacheRPCPort.request('getAll').then((cacheObject) => {
       for (const key in cacheObject) {

@@ -22,7 +22,7 @@ export function roundTokenValue(rawValue: BigNumber.Value) {
 
 const getDefaultFormatter = memoize((notation?: 'compact') => {
   return new Intl.NumberFormat('en', {
-    maximumFractionDigits: notation ? 1 : 20,
+    maximumFractionDigits: notation === 'compact' ? 1 : 20,
     notation,
   });
 });

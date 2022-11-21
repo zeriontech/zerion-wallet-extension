@@ -1,5 +1,5 @@
 import { networksStore } from 'src/modules/networks/networks-store';
-import type { AddressAction, PendingAction, ActionType } from 'defi-sdk';
+import type { AddressAction, ActionType } from 'defi-sdk';
 import { ethers } from 'ethers';
 import { capitalize } from 'capitalize-ts';
 import sortBy from 'lodash/sortBy';
@@ -14,11 +14,10 @@ export function dataToModel(transactions: StoredTransactions) {
   return sortBy(transactions, (item) => item.timestamp ?? Infinity).reverse();
 }
 
-export type RawPendingAction = Omit<PendingAction, 'content'> & {
+export type PendingAction = Omit<AddressAction, 'content'> & {
   asset_code?: string;
+  address: string;
 };
-
-export type Action = AddressAction | RawPendingAction;
 
 function decsriptionToType(description: TransactionDescription): ActionType {
   const types: Record<TransactionAction, ActionType> = {
@@ -32,7 +31,7 @@ function decsriptionToType(description: TransactionDescription): ActionType {
 
 export async function toAddressTransaction(
   transactionObject: TransactionObject
-): Promise<RawPendingAction> {
+): Promise<PendingAction> {
   const description = await describeTransaction(transactionObject.transaction);
   const networks = await networksStore.load();
   const { transaction, hash, receipt, timestamp } = transactionObject;
@@ -49,19 +48,19 @@ export async function toAddressTransaction(
       fee: null,
       nonce: transaction.nonce,
     },
-    address: transaction.from,
     datetime: new Date(timestamp ?? Date.now()).toISOString(),
     label: {
       type: 'to',
       display_value: {
         text: '',
       },
+      value: '',
     },
     type: {
-      action: null,
       display_value: capitalize(decsriptionToType(description)),
       value: decsriptionToType(description),
     },
+    address: transaction.from,
     asset_code: description.approveAssetCode || description.sendAssetCode,
   };
 }

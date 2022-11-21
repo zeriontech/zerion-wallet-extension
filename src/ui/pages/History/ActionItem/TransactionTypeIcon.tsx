@@ -1,10 +1,9 @@
 import React from 'react';
-import {
+import type {
   ActionAsset,
   ActionTransfer,
   ActionType,
   AddressAction,
-  PendingAction,
 } from 'defi-sdk';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import ApproveIcon from 'jsx:src/ui/assets/actionTypes/approve.svg';
@@ -135,11 +134,7 @@ function TransferIcon({
   return <AssetIcon asset={transfers[0].asset} type={type} size={size} />;
 }
 
-export function TransactionItemIcon({
-  action,
-}: {
-  action: AddressAction | PendingAction;
-}) {
+export function TransactionItemIcon({ action }: { action: AddressAction }) {
   const approveTransfers = action.content?.single_asset;
   const incomingTransfers = action.content?.transfers?.incoming;
   const outgoingTransfers = action.content?.transfers?.outgoing;

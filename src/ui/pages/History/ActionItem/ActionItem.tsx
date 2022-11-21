@@ -1,9 +1,6 @@
 import React from 'react';
-import { AddressAction, PendingAction, useAssetsPrices } from 'defi-sdk';
-import type {
-  Action,
-  RawPendingAction,
-} from 'src/modules/ethereum/transactions/model';
+import { AddressAction, useAssetsPrices } from 'defi-sdk';
+import type { PendingAction } from 'src/modules/ethereum/transactions/model';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
@@ -45,7 +42,7 @@ function ActionView({
   action,
   networks,
 }: {
-  action: AddressAction | PendingAction;
+  action: AddressAction;
   networks: Networks;
 }) {
   const { params, ready } = useAddressParams();
@@ -66,6 +63,14 @@ function ActionView({
   const chain = action.transaction.chain
     ? createChain(action.transaction.chain)
     : null;
+
+  const explorerHref = chain
+    ? networks.getExplorerTxUrlByName(chain, action.transaction.hash)
+    : null;
+
+  const actionTitle = `${
+    action.transaction.status === 'failed' ? 'Failed ' : ''
+  }${action.type.display_value}`;
 
   return (
     <HStack
@@ -98,9 +103,25 @@ function ActionView({
           )
         }
         text={
-          <UIText kind="subtitle/m_med">{`${
-            action.transaction.status === 'failed' ? 'Failed ' : ''
-          }${action.type.display_value}`}</UIText>
+          <UIText kind="subtitle/m_med">
+            {explorerHref ? (
+              <TextAnchor
+                href={explorerHref}
+                target="_blank"
+                title={explorerHref}
+                rel="noopener noreferrer"
+                style={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {actionTitle}
+              </TextAnchor>
+            ) : (
+              actionTitle
+            )}
+          </UIText>
         }
         detailText={
           <HStack alignItems="center" gap={4}>
@@ -208,11 +229,11 @@ function ActionView({
   );
 }
 
-function PendingAction({
+function PendingActionView({
   action,
   networks,
 }: {
-  action: RawPendingAction;
+  action: PendingAction;
   networks: Networks;
 }) {
   const { value } = useAssetsPrices(
@@ -313,7 +334,11 @@ function PendingAction({
   );
 }
 
-export function ActionItem({ addressAction }: { addressAction: Action }) {
+export function ActionItem({
+  addressAction,
+}: {
+  addressAction: AddressAction | PendingAction;
+}) {
   const { networks } = useNetworks();
   if (!networks || !addressAction) {
     return null;
@@ -323,5 +348,5 @@ export function ActionItem({ addressAction }: { addressAction: Action }) {
       <ActionView action={addressAction as AddressAction} networks={networks} />
     );
   }
-  return <PendingAction action={addressAction} networks={networks} />;
+  return <PendingActionView action={addressAction} networks={networks} />;
 }

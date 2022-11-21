@@ -1,13 +1,14 @@
 import React, { useMemo } from 'react';
 import groupBy from 'lodash/groupBy';
+import type { AddressAction } from 'defi-sdk';
 import { startOfDate } from 'src/shared/units/startOfDate';
-import type { Action } from 'src/modules/ethereum/transactions/model';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
-import { ActionItem } from '../ActionItem';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import { PendingAction } from 'src/modules/ethereum/transactions/model';
+import { ActionItem } from '../ActionItem';
 
 export function ActionsList({
   actions,
@@ -15,7 +16,7 @@ export function ActionsList({
   isLoading,
   onLoadMore,
 }: {
-  actions: Action[];
+  actions: (AddressAction | PendingAction)[];
   hasMore: boolean;
   isLoading: boolean;
   onLoadMore?(): void;
@@ -48,7 +49,7 @@ export function ActionsList({
         <SurfaceList
           items={[
             {
-              key: 'load-more-button',
+              key: 0,
               onClick: onLoadMore,
               component: (
                 <HStack gap={8} alignItems="center">

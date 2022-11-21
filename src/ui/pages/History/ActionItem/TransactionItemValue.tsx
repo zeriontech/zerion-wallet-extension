@@ -38,7 +38,7 @@ export function getNftAsset(asset?: ActionAsset) {
   return null;
 }
 
-export function HistoryTokenValue({
+function HistoryTokenValue({
   value,
   asset,
   direction,
@@ -59,7 +59,7 @@ export function HistoryTokenValue({
   const infiniteValue = value && value.gt(new BigNumber(1e15));
   const veryInfiniteValue = value && value.gt(new BigNumber(1e21));
 
-  const formattedWithSighnificantValue = value
+  const formattedWithSignificantValue = value
     ? formatTokenValue(value, '', {
         notation: value.gt(new BigNumber(1e8)) ? 'compact' : undefined,
       })
@@ -68,7 +68,7 @@ export function HistoryTokenValue({
   const truncated =
     value &&
     value.lt(new BigNumber(1)) &&
-    formattedWithSighnificantValue.length > 8
+    formattedWithSignificantValue.length > 8
       ? `${middleTruncate({
           value: value.toString(),
           trailingLettersCount: 5,
@@ -83,7 +83,7 @@ export function HistoryTokenValue({
   ) : infiniteValue ? (
     `${muchGreater} 1T`
   ) : (
-    `${sign}${(truncated || formattedWithSighnificantValue).trim()}`
+    `${sign}${(truncated || formattedWithSignificantValue).trim()}`
   );
 
   const formatted = value ? formatTokenValue(value) : null;

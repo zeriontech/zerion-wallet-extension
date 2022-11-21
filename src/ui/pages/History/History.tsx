@@ -1,8 +1,10 @@
 import React, { useMemo } from 'react';
 import { AddressAction, useAddressActions } from 'defi-sdk';
 import { useQuery } from 'react-query';
-import { toAddressTransaction } from 'src/modules/ethereum/transactions/model';
-import type { Action } from 'src/modules/ethereum/transactions/model';
+import {
+  PendingAction,
+  toAddressTransaction,
+} from 'src/modules/ethereum/transactions/model';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -17,7 +19,7 @@ export function sortActions<T extends { datetime?: string }>(actions: T[]) {
 }
 
 function mergeLocalAndBackendActions(
-  local: Action[],
+  local: (AddressAction | PendingAction)[],
   backend: AddressAction[]
 ) {
   const backendHashes = new Set(backend.map((tx) => tx.transaction.hash));
@@ -54,7 +56,7 @@ function useMinedAndPendingAddressActions() {
   const {
     value,
     isLoading: actionsIsLoading,
-    hasMore,
+    hasNext,
     fetchMore,
   } = useAddressActions(
     {
@@ -63,8 +65,8 @@ function useMinedAndPendingAddressActions() {
     },
     {
       limit: 30,
-      subscribe: false,
-      useFullCache: false,
+      listenForUpdates: true,
+      paginatedCachePolicy: 'first-page',
     }
   );
 
@@ -75,14 +77,14 @@ function useMinedAndPendingAddressActions() {
         : null,
       ...localActionsQuery,
       isLoading: actionsIsLoading || localActionsQuery.isLoading,
-      hasMore: Boolean(hasMore),
+      hasMore: Boolean(hasNext),
       fetchMore,
     }),
     [
       localAddressActions,
       value,
       localActionsQuery,
-      hasMore,
+      hasNext,
       actionsIsLoading,
       fetchMore,
     ]
