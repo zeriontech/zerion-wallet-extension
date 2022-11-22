@@ -23,7 +23,7 @@ export function ActionsList({
   const groupedByDate = useMemo(
     () =>
       groupBy(actions, (item) =>
-        startOfDate(new Date(item.datetime || Date.now()).getTime()).getTime()
+        startOfDate(new Date(item.datetime).getTime() || Date.now()).getTime()
       ),
     [actions]
   );
