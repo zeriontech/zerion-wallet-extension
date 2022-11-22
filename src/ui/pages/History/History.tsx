@@ -66,7 +66,7 @@ function useMinedAndPendingAddressActions() {
     {
       limit: 30,
       listenForUpdates: true,
-      paginatedCachePolicy: 'first-page',
+      paginatedCacheMode: 'first-page',
     }
   );
 

@@ -90,7 +90,7 @@
     "capitalize-ts": "^1.0.0",
     "classnames": "^2.3.1",
     "copy-to-clipboard": "^3.3.2",
-    "defi-sdk": "^0.1.0-alpha.48",
+    "defi-sdk": "^0.1.0-alpha.49",
     "ethers": "^5.7.0",
     "events": "^3.3.0",
     "immer": "^9.0.15",

@@ -5,7 +5,6 @@ import { startOfDate } from 'src/shared/units/startOfDate';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
-import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { PendingAction } from 'src/modules/ethereum/transactions/model';
 import { ActionItem } from '../ActionItem';
 
@@ -49,11 +48,13 @@ export function ActionsList({
           items={[
             {
               key: 0,
-              onClick: onLoadMore,
-              component: isLoading ? (
-                <CircleSpinner style={{ display: 'inline-block' }} />
-              ) : (
-                <span style={{ color: 'var(--primary)' }}>
+              onClick: isLoading ? undefined : onLoadMore,
+              component: (
+                <span
+                  style={{
+                    color: isLoading ? 'var(--neutral-500)' : 'var(--primary)',
+                  }}
+                >
                   More transactions
                 </span>
               ),
