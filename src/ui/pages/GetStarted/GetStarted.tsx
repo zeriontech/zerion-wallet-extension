@@ -143,11 +143,12 @@ function Options() {
   }
 
   const beforeCreate = params.get('beforeCreate');
+  const isIntro = params.has('intro');
   const importHref = createNextHref('/get-started/import', beforeCreate);
   return (
     <Background backgroundKind="transparent">
       <PageColumn style={{ paddingTop: 100 }}>
-        <NavigationTitle title={null} />
+        <NavigationTitle urlBar={isIntro ? 'none' : undefined} title={null} />
         <UIText kind="headline/hero">
           {hasMnemonicWallets ? null : (
             <span>
