@@ -34,5 +34,11 @@ export function prepareTransaction(incomingTransaction: IncomingTransaction) {
   ) {
     transaction.chainId = parseInt(incomingTransaction.chainId);
   }
+  if (
+    incomingTransaction.type != null &&
+    typeof incomingTransaction.type === 'string'
+  ) {
+    transaction.type = parseInt(incomingTransaction.type);
+  }
   return transaction;
 }
