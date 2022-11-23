@@ -38,14 +38,14 @@ const create = async ({
   const left =
     (currentWindowLeft || 0) + (currentWindowWidth || 0) - WINDOW_SIZE.width;
 
-  const currentWindow = await browser.windows.getCurrent();
+  // const currentWindow = await browser.windows.getCurrent();
   const win = await browser.windows.create({
     focused: true,
     url,
     type: 'popup',
     top,
     left,
-    state: currentWindow.state === 'fullscreen' ? 'fullscreen' : undefined,
+    // state: currentWindow.state === 'fullscreen' ? 'fullscreen' : undefined,
     ...WINDOW_SIZE,
     ...rest,
   });

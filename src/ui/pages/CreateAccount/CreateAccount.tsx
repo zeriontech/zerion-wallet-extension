@@ -48,6 +48,7 @@ export function CreateAccount() {
         backgroundColor: 'var(--neutral-100)',
         backgroundImage: `url(${backgroundArts2})`,
         backgroundRepeat: 'no-repeat',
+        backgroundSize: 'cover',
       }),
       []
     )
