@@ -132,6 +132,7 @@ function Options() {
         backgroundColor: 'var(--neutral-100)',
         backgroundImage: `url(${backgroundArts})`,
         backgroundRepeat: 'no-repeat',
+        backgroundSize: 'cover',
       }),
       []
     )
