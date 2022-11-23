@@ -286,7 +286,7 @@ function RequestAccountsView({
           <Button
             onClick={() => onConfirm({ address: selectedWallet.address })}
           >
-            Approve
+            Connect
           </Button>
         </div>
       </PageColumn>
