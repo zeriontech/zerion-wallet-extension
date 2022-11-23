@@ -26,6 +26,14 @@
     "default_title": "NewWallet",
     "default_popup": "ui/popup.html"
   },
+  "commands": {
+    "_execute_browser_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Y",
+        "mac": "Command+Shift+Y"
+      }
+    }
+  },
   "author": "https://zerion.io/",
   "background": {
     "page": "background/background.html",
