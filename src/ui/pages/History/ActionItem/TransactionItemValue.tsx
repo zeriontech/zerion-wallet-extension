@@ -207,7 +207,7 @@ export function HistoryItemValue({
       nftAsset={nftAsset}
       direction={direction}
       quantity={1}
-      name={nftAsset.name || nftAsset.collection.name}
+      name={nftAsset.name || nftAsset.collection?.name}
     />
   ) : fungibleAsset ? (
     <HistoryTokenValue

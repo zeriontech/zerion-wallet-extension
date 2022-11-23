@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type {
   ActionAsset,
   ActionTransfer,
@@ -30,42 +30,61 @@ export const transactionIconStyle = {
   height: TRANSACTION_ICON_SIZE,
 };
 
-export function TransactionTypeIcon({ type }: { type: ActionType }) {
+export function TransactionTypeIcon({
+  type,
+  size,
+}: {
+  type: ActionType;
+  size?: number;
+}) {
+  const style = useMemo(
+    () => ({
+      display: 'flex',
+      ...(size
+        ? {
+            width: size,
+            height: size,
+          }
+        : transactionIconStyle),
+    }),
+    [size]
+  );
+
   if (type === 'approve') {
-    return <ApproveIcon style={transactionIconStyle} />;
+    return <ApproveIcon style={style} />;
   }
   if (type === 'borrow') {
-    return <BorrowIcon style={transactionIconStyle} />;
+    return <BorrowIcon style={style} />;
   }
   if (type === 'cancel') {
-    return <CancelIcon style={transactionIconStyle} />;
+    return <CancelIcon style={style} />;
   }
   if (type === 'claim' || type === 'execute' || type === 'deployment') {
-    return <ContractIcon style={transactionIconStyle} />;
+    return <ContractIcon style={style} />;
   }
   if (type === 'deposit') {
-    return <DepositIcon style={transactionIconStyle} />;
+    return <DepositIcon style={style} />;
   }
   if (type === 'mint') {
-    return <MintIcon style={transactionIconStyle} />;
+    return <MintIcon style={style} />;
   }
   if (type === 'receive' || type === 'unstake') {
-    return <ReceiveIcon style={transactionIconStyle} />;
+    return <ReceiveIcon style={style} />;
   }
   if (type === 'repay') {
-    return <RepayIcon style={transactionIconStyle} />;
+    return <RepayIcon style={style} />;
   }
   if (type === 'send' || type === 'stake') {
-    return <SendIcon style={transactionIconStyle} />;
+    return <SendIcon style={style} />;
   }
   if (type === 'trade') {
-    return <SwapIcon style={transactionIconStyle} />;
+    return <SwapIcon style={style} />;
   }
   if (type === 'withdraw') {
-    return <WithdrawIcon style={transactionIconStyle} />;
+    return <WithdrawIcon style={style} />;
   }
 
-  return <UnknownIcon style={transactionIconStyle} />;
+  return <UnknownIcon style={style} />;
 }
 
 function TransactionMultipleAssetsIcon({
@@ -102,15 +121,15 @@ export function AssetIcon({
 
   return fungible?.icon_url ? (
     <TokenIcon size={size} src={fungible.icon_url} symbol={fungible.symbol} />
-  ) : nft?.icon_url || nft?.collection.icon_url ? (
+  ) : nft?.icon_url || nft?.collection?.icon_url ? (
     <TokenIcon
       size={size}
-      src={nft.icon_url || nft.collection.icon_url}
+      src={nft.icon_url || nft.collection?.icon_url}
       style={{ borderRadius: 4 }}
       symbol={nft.symbol}
     />
   ) : (
-    <TransactionTypeIcon type={type} />
+    <TransactionTypeIcon type={type} size={size} />
   );
 }
 
