@@ -28,6 +28,7 @@ import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { SecretInput } from 'src/ui/components/SecretInput';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { focusNode } from 'src/ui/shared/focusNode';
 import { WithConfetti } from '../GetStarted/components/DecorativeMessage/DecorativeMessage';
 import { DecorativeMessage } from '../GetStarted/components/DecorativeMessage';
 import { clipboardWarning } from './clipboardWarning';
@@ -359,7 +360,12 @@ function VerifySuccess({ seedType }: { seedType: SeedType }) {
             </UIText>
           </VStack>
         </FillView>
-        <Button style={{ marginTop: 'auto' }} as={Link} to="/overview">
+        <Button
+          ref={focusNode}
+          style={{ marginTop: 'auto' }}
+          as={Link}
+          to="/overview"
+        >
           Finish
         </Button>
         <PageBottom />

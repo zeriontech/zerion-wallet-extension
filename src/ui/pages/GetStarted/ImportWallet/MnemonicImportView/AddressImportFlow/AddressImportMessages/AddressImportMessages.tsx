@@ -159,6 +159,12 @@ function AddressImportMessagesView({ values }: { values: BareWallet[] }) {
       trigger();
     }
   }, [ready, trigger]);
+  const autoFocusRef = useRef<HTMLButtonElement | null>(null);
+  useEffect(() => {
+    if (ready) {
+      autoFocusRef.current?.focus();
+    }
+  }, [ready]);
   return (
     <PageColumn>
       <PageTop />
@@ -178,6 +184,7 @@ function AddressImportMessagesView({ values }: { values: BareWallet[] }) {
         ) : null}
         <Button
           as={animated.button}
+          ref={autoFocusRef}
           disabled={!ready || finalizeMutation.isLoading}
           style={style}
           onClick={() => {
