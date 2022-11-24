@@ -28,13 +28,18 @@ import {
   TRANSACTION_ICON_SIZE,
 } from './TransactionTypeIcon';
 
-function getActionAddress(action: AddressAction | PendingAction) {
+function getActionAddress(
+  action: AddressAction | PendingAction,
+  { truncate }: { truncate?: boolean }
+) {
   const address =
     action.label?.display_value.wallet_address ||
     action.label?.display_value.contract_address;
 
   return address
-    ? truncateAddress(address, 4)
+    ? truncate
+      ? truncateAddress(address, 4)
+      : address
     : action.label?.display_value.text;
 }
 
@@ -149,10 +154,9 @@ function ActionView({
                 whiteSpace: 'nowrap',
               }}
             >
-              {action.type.value === 'approve' ||
-              action.type.value === 'mint' ? null : incomingTransfers?.length &&
-                outgoingTransfers?.length &&
-                chain ? (
+              {incomingTransfers?.length &&
+              outgoingTransfers?.length &&
+              chain ? (
                 <HistoryItemValue
                   transfers={outgoingTransfers}
                   direction="out"
@@ -160,7 +164,9 @@ function ActionView({
                   address={address}
                 />
               ) : (
-                getActionAddress(action)
+                <span title={getActionAddress(action, { truncate: false })}>
+                  {getActionAddress(action, { truncate: true })}
+                </span>
               )}
             </UIText>
           </HStack>
