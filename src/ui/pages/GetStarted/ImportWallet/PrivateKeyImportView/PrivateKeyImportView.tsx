@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -29,6 +29,13 @@ function PrivateKeyImportFlow({
   onSubmit: () => void;
   isSubmitting: boolean;
 }) {
+  const autoFocusRef = useRef<HTMLButtonElement | null>(null);
+  const isDonePreparing = !isSubmitting;
+  useEffect(() => {
+    if (isDonePreparing) {
+      autoFocusRef.current?.focus();
+    }
+  }, [isDonePreparing]);
   return (
     <>
       <VStack gap={8}>
@@ -51,6 +58,7 @@ function PrivateKeyImportFlow({
       </VStack>
 
       <Button
+        ref={autoFocusRef}
         style={{ marginTop: 'auto', marginBottom: 16 }}
         onClick={onSubmit}
         disabled={isSubmitting}

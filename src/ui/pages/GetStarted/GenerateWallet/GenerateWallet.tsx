@@ -13,6 +13,7 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { getError } from 'src/shared/errors/getError';
 import { WithPasswordSession } from 'src/ui/components/VerifyUser/WithPasswordSession';
 import { PageBottom } from 'src/ui/components/PageBottom';
+import { focusNode } from 'src/ui/shared/focusNode';
 import {
   DecorativeMessage,
   DecorativeMessageDone,
@@ -125,6 +126,7 @@ function GenerateWalletView() {
             </UIText>
           ) : null}
           <Button
+            ref={focusNode}
             disabled={finalizeMutation.isLoading}
             onClick={async () => {
               finalizeMutation.mutate(data.address);
