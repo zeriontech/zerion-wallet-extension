@@ -19,6 +19,7 @@ import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
+import { WalletOrigin } from 'src/shared/WalletOrigin';
 import { WalletAccount as WalletAccountPage } from './WalletAccount';
 import { WalletGroup as WalletGroupPage } from './WalletGroup';
 
@@ -28,7 +29,6 @@ function PrivateKeyList({ walletGroups }: { walletGroups: WalletGroup[] }) {
       <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
         Imported by Private Key (i)
       </UIText>
-
       <SurfaceList
         items={walletGroups.map((group) => {
           const wallet = group.walletContainer.wallets[0];
@@ -85,7 +85,6 @@ function MnemonicList({ walletGroups }: { walletGroups: WalletGroup[] }) {
                     <AddressBadge key={wallet.address} wallet={wallet} />
                   ))}
                 </div>
-
                 {group.lastBackedUp != null ? (
                   <UIText kind="caption/reg" color="var(--neutral-500)">
                     Last Backup:{' '}
@@ -93,14 +92,22 @@ function MnemonicList({ walletGroups }: { walletGroups: WalletGroup[] }) {
                       dateStyle: 'medium',
                     }).format(group.lastBackedUp)}
                   </UIText>
-                ) : (
+                ) : group.origin === WalletOrigin.extension ? (
                   <HStack gap={4}>
                     <WarningIcon />
                     <UIText kind="caption/reg" color="var(--notice-500)">
                       Never backed up
                     </UIText>
                   </HStack>
-                )}
+                ) : group.origin === WalletOrigin.imported ? (
+                  <UIText kind="caption/reg" color="var(--neutral-500)">
+                    Imported on{' '}
+                    {new Intl.DateTimeFormat('en', {
+                      dateStyle: 'medium',
+                      timeStyle: 'medium',
+                    }).format(group.created)}
+                  </UIText>
+                ) : null}
               </VStack>
               <span>
                 <ChevronRightIcon />

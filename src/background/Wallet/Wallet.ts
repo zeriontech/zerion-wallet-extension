@@ -47,6 +47,7 @@ import { WalletRecordModel as Model } from './WalletRecord';
 import type { WalletStore } from './persistence';
 import { walletStore } from './persistence';
 import { WalletNameFlag } from './model/WalletNameFlag';
+import { WalletOrigin } from './model/WalletOrigin';
 
 const INTERNAL_SYMBOL_CONTEXT = { origin: INTERNAL_ORIGIN_SYMBOL };
 
@@ -195,6 +196,7 @@ export class Wallet {
       throw new SessionExpired();
     }
     this.pendingWallet = {
+      origin: WalletOrigin.extension,
       groupId: null,
       walletContainer: await MnemonicWalletContainer.create({
         encryptionKey: this.seedPhraseEncryptionKey,
@@ -205,6 +207,7 @@ export class Wallet {
 
   async uiImportPrivateKey({ params: privateKey }: WalletMethodParams<string>) {
     this.pendingWallet = {
+      origin: WalletOrigin.imported,
       groupId: null,
       walletContainer: new PrivateKeyWalletContainer([{ privateKey }]),
     };
@@ -218,6 +221,7 @@ export class Wallet {
       throw new SessionExpired();
     }
     this.pendingWallet = {
+      origin: WalletOrigin.imported,
       groupId: null,
       walletContainer: await MnemonicWalletContainer.create({
         wallets: mnemonics.map((mnemonic) => ({ mnemonic })),
