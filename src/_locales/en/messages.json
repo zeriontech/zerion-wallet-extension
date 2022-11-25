@@ -1,10 +1,10 @@
 {
   "appName": {
-    "message": "Zerion Wallet",
+    "message": "Zerion – Web3 DeFi & NFT Wallet",
     "description": "The name of the application"
   },
   "appDescription": {
-    "message": "Zerion Wallet description",
+    "message": "Zerion is the first smart, social crypto wallet connecting you to Web3 - from DeFi to NFTs and everything in between",
     "description": "The description of the application"
   }
 }
