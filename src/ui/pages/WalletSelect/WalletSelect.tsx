@@ -17,6 +17,7 @@ import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { WalletIcon } from 'src/ui/ui-kit/WalletIcon';
 import { IsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
+import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 
 export function WalletSelect() {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ export function WalletSelect() {
   );
   const { singleAddress, refetch } = useAddressParams();
   const setCurrentAddressMutation = useMutation(
-    (address: string) => walletPort.request('setCurrentAddress', { address }),
+    (address: string) => setCurrentAddress({ address }),
     {
       onSuccess() {
         refetch();

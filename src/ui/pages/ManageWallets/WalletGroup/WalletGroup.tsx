@@ -159,11 +159,9 @@ export function WalletGroup() {
   if (!groupId) {
     throw new Error('Group Id is required for this view');
   }
-  const {
-    data: walletGroup,
-    isLoading,
-    refetch: refetchWalletGroup,
-  } = useWalletGroup({ groupId });
+  const { data: walletGroup, refetch: refetchWalletGroup } = useWalletGroup({
+    groupId,
+  });
   const groupInputId = useId();
   const { refetch } = useWalletGroups();
   const removeWalletGroupMutation = useMutation(
@@ -176,14 +174,6 @@ export function WalletGroup() {
       },
     }
   );
-  if (isLoading) {
-    return (
-      <>
-        <NavigationTitle title={null} />
-        <span>loading...</span>
-      </>
-    );
-  }
   if (!walletGroup) {
     return (
       <>

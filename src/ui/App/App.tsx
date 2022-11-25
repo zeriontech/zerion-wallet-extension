@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { AreaProvider } from 'react-area';
-import { QueryClient, QueryClientProvider, useQuery } from 'react-query';
+import { QueryClientProvider, useQuery } from 'react-query';
 import {
   HashRouter as Router,
   Routes,
@@ -43,6 +43,7 @@ import { InactivityDetector } from '../components/Session/InactivityDetector';
 import { SessionResetHandler } from '../components/Session/SessionResetHandler';
 import { ViewSuspense } from '../components/ViewSuspense';
 import { VersionUpgrade } from '../components/VersionUpgrade';
+import { queryClient } from '../shared/requests/queryClient';
 
 function View() {
   const location = useLocation();
@@ -313,8 +314,6 @@ function Views() {
     </RouteResolver>
   );
 }
-
-const queryClient = new QueryClient();
 
 function CloseOtherWindows() {
   useEffect(() => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { DataStatus, useAddressPortfolio } from 'defi-sdk';
+import { useAddressPortfolio } from 'defi-sdk';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
@@ -175,7 +175,7 @@ function CurrentAccountControls() {
 
 function OverviewComponent() {
   const { params, ready } = useAddressParams();
-  const { value, status } = useAddressPortfolio(
+  const { value, isLoading: isLoadingPortfolio } = useAddressPortfolio(
     {
       ...params,
       currency: 'usd',
@@ -184,7 +184,6 @@ function OverviewComponent() {
     },
     { enabled: ready }
   );
-  const isLoading = status === DataStatus.requested;
   const { data: preferences } = useQuery(
     'wallet/getPreferences',
     () => walletPort.request('getPreferences'),
@@ -242,7 +241,7 @@ function OverviewComponent() {
         style={{ backgroundColor: 'var(--white)' }}
       >
         <Spacer height={24} />
-        <div style={{ height: isLoading ? 68 : undefined }}>
+        <div style={{ height: isLoadingPortfolio ? 68 : undefined }}>
           <VStack gap={0}>
             <UIText kind="h/1_med">
               {value?.total_value != null ? (
