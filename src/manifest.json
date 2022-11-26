@@ -6,17 +6,17 @@
   "default_locale": "en",
   "description": "__MSG_appDescription__",
   "icons": {
-    "16": "https://s3.amazonaws.com/cdn.zerion.io/images/zer_logo_16.png",
-    "32": "https://s3.amazonaws.com/cdn.zerion.io/images/zer_logo_32.png",
-    "48": "https://s3.amazonaws.com/cdn.zerion.io/images/zer_logo_48.png",
-    "128": "https://s3.amazonaws.com/cdn.zerion.io/images/zer_logo_128.png"
+    "16": "images/logo-icon-16.png",
+    "32": "images/logo-icon-32.png",
+    "48": "images/logo-icon-48.png",
+    "128": "images/logo-icon-128.png"
   },
   "browser_action": {
     "default_icon": {
-      "16": "https://s3.amazonaws.com/cdn.zerion.io/images/zer_logo_16.png",
-      "32": "https://s3.amazonaws.com/cdn.zerion.io/images/zer_logo_32.png",
-      "48": "https://s3.amazonaws.com/cdn.zerion.io/images/zer_logo_48.png",
-      "128": "https://s3.amazonaws.com/cdn.zerion.io/images/zer_logo_128.png"
+      "16": "images/logo-icon-16.png",
+      "32": "images/logo-icon-32.png",
+      "48": "images/logo-icon-48.png",
+      "128": "images/logo-icon-128.png"
     },
     "default_title": "NewWallet",
     "default_popup": "ui/popup.html"
