@@ -18,6 +18,11 @@ jobs:
         uses: actions/setup-node@v3
 
       - name: Install dependencies and build
+        env:
+          ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
+          DEFI_SDK_API_URL: ${{ secrets.DEFI_SDK_API_URL }}
+          DEFI_SDK_API_TOKEN: ${{ secrets.DEFI_SDK_API_TOKEN }}
+          TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
         run: |
           npm install
           npm run build:production
