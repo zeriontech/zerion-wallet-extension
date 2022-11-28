@@ -19,10 +19,10 @@ jobs:
 
       - name: Install dependencies and build
         env:
-          ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
-          DEFI_SDK_API_URL: ${{ secrets.DEFI_SDK_API_URL }}
-          DEFI_SDK_API_TOKEN: ${{ secrets.DEFI_SDK_API_TOKEN }}
-          TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
+          ALCHEMY_KEY: RKg5wIwcuh32powb0blKdPh0UwSsgmFI
+          DEFI_SDK_API_URL: wss://api-v4.zerion.io/
+          DEFI_SDK_API_TOKEN: Zerion.0JOY6zZTTw6yl5Cvz9sdmXc7d5AhzVMG
+          TEST_WALLET_ADDRESS: 0x42b9df65b219b3dd36ff330a4dd8f327a6ada99
         run: |
           npm install
           npm run build:production
