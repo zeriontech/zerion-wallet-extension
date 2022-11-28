@@ -1,11 +1,8 @@
 name: Notify about new build
 
 on:
-  push:
-    tags:
-      - '*'
   release:
-    types: [published, created]
+    types: [published]
   workflow_dispatch:
 
 env:
@@ -16,19 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send notification to Slack
-        # env:
-        #   BUILD_URL: ${{ steps.gcloud.outputs.url }}
-        #   BRANCH_NAME: ${{ steps.branch-detect.outputs.name }}
         run: |
-          # git fetch --all
-          # BASE_BRANCH=${GITHUB_BASE_REF:-master}
-          # BASE_REF="remotes/origin/${BASE_BRANCH}"
-          # commitMessage=$(git log $BASE_REF..HEAD --skip 1 --pretty=format:%B)
-          # message="branch: $BRANCH_NAME"
-          buildUrl="https://github.com/zeriontech/zerion-wallet-extension/archive/refs/tags/${GITHUB_REF}.zip"
-          message="New wallet extension build! ${buildUrl}"
-          # message+='\ndeployed to: '"$BUILD_URL"
-          # message+='\n'"${commitMessage}"
+          message="Wallet Extension Release! *${{ github.event.release.name }}*"
+          message="\n\n ${{ github.event.release.url }}"
           # message=${message//\"/\\\"} # escape double quotes
           # json='{"text":"'$message'", "icon_emoji": ":gift:", "channel": "C01HR720Q7K"}'
           json='{"text":"'$message'", "icon_emoji": ":gift:", "channel": "G017MDDTZGD"}'
