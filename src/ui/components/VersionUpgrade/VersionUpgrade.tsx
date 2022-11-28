@@ -66,7 +66,7 @@ export function VersionUpgrade({ children }: React.PropsWithChildren) {
             <UIText kind="body/regular" style={{ textAlign: 'start' }}>
               Hello, alpha user! I have updated storage schema.
               <br />
-              To upgrade, existing storage needs to cleared. You will have to
+              To upgrade, existing storage needs to be cleared. You will have to
               import everything again.
             </UIText>
             <VStack gap={0}>
