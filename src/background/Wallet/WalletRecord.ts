@@ -51,15 +51,19 @@ function generateGroupName(
 function createGroup({
   name,
   walletContainer,
-}: {
-  walletContainer: WalletContainer;
-  name: string;
-}): WalletGroup {
+  origin,
+  created,
+}: Pick<
+  WalletGroup,
+  'name' | 'walletContainer' | 'origin' | 'created'
+>): WalletGroup {
   return {
     id: nanoid(),
     walletContainer,
     lastBackedUp: null,
     name,
+    origin,
+    created,
   };
 }
 
@@ -162,6 +166,8 @@ export class WalletRecordModel {
             createGroup({
               name: generateGroupName(record, pendingWallet.walletContainer),
               walletContainer: pendingWallet.walletContainer,
+              origin: pendingWallet.origin,
+              created: Date.now(),
             }),
           ],
           currentAddress:
@@ -185,11 +191,12 @@ export class WalletRecordModel {
         if (existingGroup) {
           return draft; // NOTE: private key already exists, should we update record or keep untouched?
         } else {
-          draft.walletManager.internalMnemonicGroupCounter += 1;
           draft.walletManager.groups.push(
             createGroup({
               walletContainer,
               name: generateGroupName(record, walletContainer),
+              origin: pendingWallet.origin,
+              created: Date.now(),
             })
           );
         }
@@ -217,6 +224,8 @@ export class WalletRecordModel {
             createGroup({
               walletContainer,
               name: generateGroupName(record, walletContainer),
+              origin: pendingWallet.origin,
+              created: Date.now(),
             })
           );
         }

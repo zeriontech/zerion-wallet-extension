@@ -1,6 +1,7 @@
 import type { ethers } from 'ethers';
 import type { WalletContainer } from './WalletContainer';
 import { WalletNameFlag } from './WalletNameFlag';
+import { WalletOrigin } from './WalletOrigin';
 
 export interface BareWallet {
   mnemonic: { phrase: string; path: string } | null;
@@ -14,6 +15,8 @@ export interface WalletGroup {
   walletContainer: WalletContainer;
   name: string;
   lastBackedUp: number | null;
+  origin: WalletOrigin | null;
+  created: number;
 }
 
 interface WalletManager {
@@ -61,4 +64,5 @@ export interface WalletRecord {
 export interface PendingWallet {
   walletContainer: WalletContainer;
   groupId: string | null;
+  origin: WalletOrigin;
 }

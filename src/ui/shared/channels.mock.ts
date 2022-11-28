@@ -1,4 +1,5 @@
 import { TestPrivateKeyWalletContainer } from 'src/background/Wallet/model/WalletContainer';
+import { WalletOrigin } from 'src/background/Wallet/model/WalletOrigin';
 import { Chain } from 'src/modules/networks/Chain';
 import { networksStore } from 'src/modules/networks/networks-store';
 import type { BareWallet } from 'src/shared/types/BareWallet';
@@ -40,12 +41,16 @@ const mockRecord: WalletRecord = {
         name: 'Mock Group #1',
         lastBackedUp: null,
         walletContainer: new TestPrivateKeyWalletContainer([testWallet]),
+        origin: WalletOrigin.extension,
+        created: Date.now(),
       },
       {
         id: '123',
-        name: 'Mock Group #1',
+        name: 'Mock Group #2',
         lastBackedUp: null,
         walletContainer: new TestPrivateKeyWalletContainer([testWallet2]),
+        origin: WalletOrigin.imported,
+        created: Date.now(),
       },
     ],
   },
