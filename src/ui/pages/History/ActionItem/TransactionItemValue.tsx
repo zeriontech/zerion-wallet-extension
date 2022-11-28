@@ -61,8 +61,8 @@ function HistoryTokenValue({
   const tokenTitle = asset.symbol?.toUpperCase() || asset.name;
   const sign = getSign(value, direction);
 
-  const infiniteValue = value && value.gt(new BigNumber(1e15));
-  const veryInfiniteValue = value && value.gt(new BigNumber(1e21));
+  const isLargeNumber = value && value.gt(new BigNumber(1e15));
+  const isVeryLargeNumber = value && value.gt(new BigNumber(1e21));
 
   const formattedWithSignificantValue = value
     ? formatTokenValue(value, '', {
@@ -80,12 +80,12 @@ function HistoryTokenValue({
         })}\u00a0`
       : '';
 
-  const displayedValue = veryInfiniteValue ? (
+  const displayedValue = isVeryLargeNumber ? (
     <span>
       <span style={{ position: 'relative', top: -1 }}>{veryMuchGreater}</span>
       1T
     </span>
-  ) : infiniteValue ? (
+  ) : isLargeNumber ? (
     `${muchGreater} 1T`
   ) : (
     `${sign}${(truncated || formattedWithSignificantValue).trim()}`
