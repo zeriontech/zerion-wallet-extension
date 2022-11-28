@@ -66,7 +66,7 @@ function NFTItem({
                 textOverflow: 'ellipsis',
               }}
             >
-              {asset.collection.name || 'Untitled collection'}
+              {asset.collection?.name || 'Untitled collection'}
             </UIText>
           ) : null}
           <UIText

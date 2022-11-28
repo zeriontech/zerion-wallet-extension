@@ -1,4 +1,5 @@
 import { BigNumber } from 'bignumber.js';
+import memoize from 'lodash/memoize';
 import { NBSP } from '../../ui/shared/typography';
 
 function countFractionalZeros(value: string) {
@@ -19,12 +20,20 @@ export function roundTokenValue(rawValue: BigNumber.Value) {
     .toFixed();
 }
 
-const formatter = new Intl.NumberFormat('en', {
-  maximumFractionDigits: 20,
+const getDefaultFormatter = memoize((notation?: 'compact') => {
+  return new Intl.NumberFormat('en', {
+    maximumFractionDigits: notation === 'compact' ? 1 : 20,
+    notation,
+  });
 });
 
-export function formatTokenValue(value: BigNumber.Value, symbol?: string) {
+export function formatTokenValue(
+  value: BigNumber.Value,
+  symbol?: string,
+  { notation }: { notation?: 'compact' } = {}
+) {
   const roundedString = roundTokenValue(value);
+  const formatter = getDefaultFormatter(notation);
   const result = formatter.format(Number(roundedString));
   return symbol ? `${result}${NBSP}${symbol}` : result;
 }

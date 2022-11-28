@@ -1,74 +1,108 @@
-import { AddressTransaction, useSubscription } from 'defi-sdk';
 import React, { useMemo } from 'react';
+import { AddressAction, useAddressActions } from 'defi-sdk';
 import { useQuery } from 'react-query';
-import { toAddressTransaction } from 'src/modules/ethereum/transactions/model';
-import type { PartialAddressTransaction } from 'src/modules/ethereum/transactions/model';
+import {
+  PendingAddressAction,
+  toAddressTransaction,
+} from 'src/modules/ethereum/transactions/model';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { TransactionsList } from './TransactionsList';
+import { ActionsList } from './ActionsList';
 
-function mergeLocalAndBackendTransactions(
-  local: PartialAddressTransaction[],
-  backend: PartialAddressTransaction[]
-) {
-  const backendHashes = new Set(backend.map((tx) => tx.hash));
-  return local
-    .filter((tx) => backendHashes.has(tx.hash) === false)
-    .concat(backend);
+export function sortActions<T extends { datetime?: string }>(actions: T[]) {
+  return actions.sort((a, b) => {
+    const aDate = a.datetime ? new Date(a.datetime).getTime() : Date.now();
+    const bDate = b.datetime ? new Date(b.datetime).getTime() : Date.now();
+    return bDate - aDate;
+  });
 }
 
-function useMinedAndPendingAddressTransactions() {
-  const { params, ready } = useAddressParams();
-  const localTransactions = useLocalAddressTransactions(params);
+function mergeLocalAndBackendActions(
+  local: (AddressAction | PendingAddressAction)[],
+  backend: AddressAction[]
+) {
+  const backendHashes = new Set(backend.map((tx) => tx.transaction.hash));
+  const lastBackendAction = backend[backend.length - 1];
+  return sortActions(
+    local
+      .filter((tx) => backendHashes.has(tx.transaction.hash) === false)
+      .concat(backend)
+  ).filter(
+    (item) =>
+      !lastBackendAction ||
+      (item.datetime &&
+        new Date(item.datetime).getTime() >
+          new Date(lastBackendAction.datetime).getTime())
+  );
+}
 
-  const { data: localAddressTransactions, ...localTransactionsQuery } =
-    useQuery(
-      ['pages/history', localTransactions],
-      () => {
-        return Promise.all(
-          localTransactions.map((transactionObject) =>
-            toAddressTransaction(transactionObject)
-          )
-        );
-      },
-      { useErrorBoundary: true }
-    );
+function useMinedAndPendingAddressActions() {
+  const { params } = useAddressParams();
+  const localActions = useLocalAddressTransactions(params);
 
-  const { value } = useSubscription<
-    AddressTransaction[],
-    'address',
-    'transactions'
-  >({
-    enabled: ready,
-    namespace: 'address',
-    body: useMemo(
-      () => ({
-        scope: ['transactions'],
-        payload: {
-          ...params,
-          currency: 'usd',
-          transactions_limit: 50,
-          transactions_offset: 0,
-        },
-      }),
-      [params]
-    ),
-  });
-  return {
-    data: localAddressTransactions
-      ? mergeLocalAndBackendTransactions(localAddressTransactions, value || [])
-      : null,
-    ...localTransactionsQuery,
-  };
+  const { data: localAddressActions, ...localActionsQuery } = useQuery(
+    ['pages/history', localActions],
+    () => {
+      return Promise.all(
+        localActions.map((transactionObject) =>
+          toAddressTransaction(transactionObject)
+        )
+      );
+    },
+    { useErrorBoundary: true }
+  );
+
+  const {
+    value,
+    isLoading: actionsIsLoading,
+    hasNext,
+    fetchMore,
+  } = useAddressActions(
+    {
+      ...params,
+      currency: 'usd',
+    },
+    {
+      limit: 30,
+      listenForUpdates: true,
+      paginatedCacheMode: 'first-page',
+    }
+  );
+
+  return useMemo(
+    () => ({
+      value: localAddressActions
+        ? mergeLocalAndBackendActions(localAddressActions, value || [])
+        : null,
+      ...localActionsQuery,
+      isLoading: actionsIsLoading || localActionsQuery.isLoading,
+      hasMore: Boolean(hasNext),
+      fetchMore,
+    }),
+    [
+      localAddressActions,
+      value,
+      localActionsQuery,
+      hasNext,
+      actionsIsLoading,
+      fetchMore,
+    ]
+  );
 }
 
 export function HistoryList() {
-  const { data: transactions, isLoading } =
-    useMinedAndPendingAddressTransactions();
-  if (isLoading || !transactions) {
+  const {
+    value: transactions,
+    isLoading,
+    fetchMore,
+    hasMore,
+  } = useMinedAndPendingAddressActions();
+
+  if (!transactions) {
     return null;
   }
+
   if (!transactions.length) {
     return (
       <UIText
@@ -80,5 +114,12 @@ export function HistoryList() {
       </UIText>
     );
   }
-  return <TransactionsList transactions={transactions} />;
+  return (
+    <ActionsList
+      actions={transactions}
+      hasMore={hasMore}
+      isLoading={isLoading}
+      onLoadMore={fetchMore}
+    />
+  );
 }

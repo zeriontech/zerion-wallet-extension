@@ -1,7 +1,8 @@
-import type { AddressTransaction } from 'defi-sdk';
+import { networksStore } from 'src/modules/networks/networks-store';
+import type { AddressAction, ActionType } from 'defi-sdk';
 import { ethers } from 'ethers';
+import { capitalize } from 'capitalize-ts';
 import sortBy from 'lodash/sortBy';
-import { strings } from 'src/ui/transactions/strings';
 import {
   describeTransaction,
   TransactionAction,
@@ -13,50 +14,53 @@ export function dataToModel(transactions: StoredTransactions) {
   return sortBy(transactions, (item) => item.timestamp ?? Infinity).reverse();
 }
 
-type Optional<T, K extends keyof T> = Omit<T, K> & Pick<Partial<T>, K>;
+export type PendingAddressAction = Omit<AddressAction, 'content'> & {
+  asset_code?: string;
+  address: string;
+};
 
-export type PartialAddressTransaction = Optional<
-  AddressTransaction,
-  'block_number'
-> & { chain_id?: string };
-
-function decsriptionToType(
-  description: TransactionDescription
-): AddressTransaction['type'] {
-  const types: { [key in TransactionAction]: AddressTransaction['type'] } = {
-    [TransactionAction.approve]: 'authorize',
-    [TransactionAction.contractInteraction]: 'execution',
+function decsriptionToType(description: TransactionDescription): ActionType {
+  const types: Record<TransactionAction, ActionType> = {
+    [TransactionAction.approve]: 'approve',
+    [TransactionAction.contractInteraction]: 'execute',
     [TransactionAction.swap]: 'trade',
     [TransactionAction.transfer]: 'send',
   };
-  return types[description.action] || 'execution';
+  return types[description.action] || 'execute';
 }
 
 export async function toAddressTransaction(
   transactionObject: TransactionObject
-): Promise<PartialAddressTransaction> {
+): Promise<PendingAddressAction> {
   const description = await describeTransaction(transactionObject.transaction);
+  const networks = await networksStore.load();
   const { transaction, hash, receipt, timestamp } = transactionObject;
   return {
     id: hash,
-    hash: hash,
-    address_from: transaction.from,
-    mined_at: (timestamp ?? Date.now()) / 1000,
-    changes: [],
-    address_to: description.assetReceiver || description.tokenSpender,
-    block_number: transaction.blockNumber,
-    type: decsriptionToType(description),
-    contract: null,
-    direction: 'out',
-    fee: null,
-    meta: {
-      action: strings.actions[description.action],
+    transaction: {
+      hash,
+      chain: transaction.chainId
+        ? networks
+            .getChainById(ethers.utils.hexValue(transaction.chainId))
+            ?.toString()
+        : '',
+      status: receipt ? 'confirmed' : 'pending',
+      fee: null,
+      nonce: transaction.nonce,
     },
-    nonce: transaction.nonce,
-    protocol: null,
-    status: receipt ? 'confirmed' : 'pending',
-    chain_id: transaction.chainId
-      ? ethers.utils.hexValue(transaction.chainId)
-      : undefined,
+    datetime: new Date(timestamp ?? Date.now()).toISOString(),
+    label: {
+      type: 'to',
+      display_value: {
+        text: '',
+      },
+      value: '',
+    },
+    type: {
+      display_value: capitalize(decsriptionToType(description)),
+      value: decsriptionToType(description),
+    },
+    address: transaction.from,
+    asset_code: description.approveAssetCode || description.sendAssetCode,
   };
 }
