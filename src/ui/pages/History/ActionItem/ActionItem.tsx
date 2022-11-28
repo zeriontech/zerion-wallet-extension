@@ -1,6 +1,6 @@
 import React from 'react';
 import { AddressAction, useAssetsPrices } from 'defi-sdk';
-import type { PendingAction } from 'src/modules/ethereum/transactions/model';
+import type { PendingAddressAction } from 'src/modules/ethereum/transactions/model';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
@@ -29,7 +29,7 @@ import {
 } from './TransactionTypeIcon';
 
 function getActionAddress(
-  action: AddressAction | PendingAction,
+  action: AddressAction | PendingAddressAction,
   { truncate }: { truncate?: boolean }
 ) {
   const address =
@@ -239,7 +239,7 @@ function PendingActionView({
   action,
   networks,
 }: {
-  action: PendingAction;
+  action: PendingAddressAction;
   networks: Networks;
 }) {
   const { value } = useAssetsPrices(
@@ -271,7 +271,7 @@ function PendingActionView({
           <div style={{ position: 'relative', ...transactionIconStyle }}>
             {action.transaction.status === 'pending' ? (
               <CircleSpinner
-                size="38px"
+                size={`${TRANSACTION_ICON_SIZE + 2}px`}
                 trackWidth="7%"
                 color="var(--primary)"
                 style={{
@@ -343,7 +343,7 @@ function PendingActionView({
 export function ActionItem({
   addressAction,
 }: {
-  addressAction: AddressAction | PendingAction;
+  addressAction: AddressAction | PendingAddressAction;
 }) {
   const { networks } = useNetworks();
   if (!networks || !addressAction) {

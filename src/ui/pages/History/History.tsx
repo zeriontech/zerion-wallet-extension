@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { AddressAction, useAddressActions } from 'defi-sdk';
 import { useQuery } from 'react-query';
 import {
-  PendingAction,
+  PendingAddressAction,
   toAddressTransaction,
 } from 'src/modules/ethereum/transactions/model';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
@@ -19,7 +19,7 @@ export function sortActions<T extends { datetime?: string }>(actions: T[]) {
 }
 
 function mergeLocalAndBackendActions(
-  local: (AddressAction | PendingAction)[],
+  local: (AddressAction | PendingAddressAction)[],
   backend: AddressAction[]
 ) {
   const backendHashes = new Set(backend.map((tx) => tx.transaction.hash));

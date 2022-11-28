@@ -14,7 +14,7 @@ export function dataToModel(transactions: StoredTransactions) {
   return sortBy(transactions, (item) => item.timestamp ?? Infinity).reverse();
 }
 
-export type PendingAction = Omit<AddressAction, 'content'> & {
+export type PendingAddressAction = Omit<AddressAction, 'content'> & {
   asset_code?: string;
   address: string;
 };
@@ -31,7 +31,7 @@ function decsriptionToType(description: TransactionDescription): ActionType {
 
 export async function toAddressTransaction(
   transactionObject: TransactionObject
-): Promise<PendingAction> {
+): Promise<PendingAddressAction> {
   const description = await describeTransaction(transactionObject.transaction);
   const networks = await networksStore.load();
   const { transaction, hash, receipt, timestamp } = transactionObject;
