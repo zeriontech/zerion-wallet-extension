@@ -21,6 +21,16 @@
   color: var(--actions-on-disabled);
 }
 
+.primary:focus-visible {
+  outline: 2px solid var(--actions-default);
+  outline-offset: 2px;
+}
+
+.regular:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 2px;
+}
+
 .ghost {
   background-color: transparent;
   display: block;
