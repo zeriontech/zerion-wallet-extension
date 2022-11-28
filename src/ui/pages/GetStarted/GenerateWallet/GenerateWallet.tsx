@@ -14,6 +14,7 @@ import { getError } from 'src/shared/errors/getError';
 import { WithPasswordSession } from 'src/ui/components/VerifyUser/WithPasswordSession';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { focusNode } from 'src/ui/shared/focusNode';
+import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import {
   DecorativeMessage,
   DecorativeMessageDone,
@@ -57,7 +58,7 @@ function GenerateWalletView() {
   const finalizeMutation = useMutation(
     async (address: string) => {
       await accountPublicRPCPort.request('saveUserAndWallet');
-      return walletPort.request('setCurrentAddress', { address });
+      return setCurrentAddress({ address });
     },
     {
       onSuccess() {

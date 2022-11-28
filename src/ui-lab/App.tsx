@@ -1,7 +1,8 @@
 import { ethers } from 'ethers';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { QueryClientProvider } from 'react-query';
+import { queryClient } from 'src/ui/shared/requests/queryClient';
 import { DesignTheme } from 'src/ui/components/DesignTheme';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { FillView } from 'src/ui/components/FillView';
@@ -14,7 +15,6 @@ import './lab.module.css';
 
 Object.assign(window, { ethers });
 
-const queryClient = new QueryClient();
 configureClient();
 
 function App() {
