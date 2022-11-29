@@ -317,12 +317,15 @@ function OverviewComponent() {
         </SegmentedControlGroup>
       </PageFullBleedColumn>
       <Spacer height={24} />
-      {isLoadingPortfolio && <OverviewLoading />}
-      <Routes>
-        <Route path="/" element={<Positions />} />
-        <Route path="/nfts" element={<NonFungibleTokens />} />
-        <Route path="/history" element={<HistoryList />} />
-      </Routes>
+      {isLoadingPortfolio ? (
+        <OverviewLoading />
+      ) : (
+        <Routes>
+          <Route path="/" element={<Positions />} />
+          <Route path="/nfts" element={<NonFungibleTokens />} />
+          <Route path="/history" element={<HistoryList />} />
+        </Routes>
+      )}
       <PageBottom />
     </PageColumn>
   );
