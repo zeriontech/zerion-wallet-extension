@@ -37,6 +37,8 @@ import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { FillView } from 'src/ui/components/FillView';
+import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { CurrentNetwork } from './CurrentNetwork';
@@ -170,6 +172,14 @@ function CurrentAccountControls() {
       </Button>
       <CopyButton address={addressToCopy} />
     </HStack>
+  );
+}
+
+function OverviewLoading() {
+  return (
+    <FillView>
+      <CircleSpinner color="var(--primary)" size="48px" />
+    </FillView>
   );
 }
 
@@ -307,6 +317,7 @@ function OverviewComponent() {
         </SegmentedControlGroup>
       </PageFullBleedColumn>
       <Spacer height={24} />
+      {isLoadingPortfolio && <OverviewLoading />}
       <Routes>
         <Route path="/" element={<Positions />} />
         <Route path="/nfts" element={<NonFungibleTokens />} />
