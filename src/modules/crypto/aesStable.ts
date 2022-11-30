@@ -18,7 +18,7 @@ export async function stableEncryptObject<T>(
 ): Promise<StableEncrypted> {
   const dataJSON = JSON.stringify(obj);
   const dataArray = utf8ToUint8Array(dataJSON);
-  const encryptedBuffer = await window.crypto.subtle.encrypt(
+  const encryptedBuffer = await globalThis.crypto.subtle.encrypt(
     { name: 'AES-GCM', iv: getIV() },
     key,
     dataArray
@@ -42,7 +42,7 @@ export async function stableDecryptObject<T>(
   encrypted: StableEncrypted
 ): Promise<T> {
   const encryptedBuffer = base64ToArrayBuffer(encrypted.data);
-  const decryptedBuffer = await window.crypto.subtle.decrypt(
+  const decryptedBuffer = await globalThis.crypto.subtle.decrypt(
     { name: 'AES-GCM', iv: getIV() },
     key,
     encryptedBuffer

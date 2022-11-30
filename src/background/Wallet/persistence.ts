@@ -46,5 +46,3 @@ export class WalletStore extends PersistentStore<WalletStoreState> {
 }
 
 export const walletStore = new WalletStore('wallet', {});
-
-Object.assign(window, { walletStore });

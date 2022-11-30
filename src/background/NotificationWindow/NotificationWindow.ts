@@ -109,4 +109,3 @@ class NotificationWindow extends EventEmitter {
 
 // Make it a singleton so that windows do not conflict
 export const notificationWindow = new NotificationWindow();
-Object.assign(window, { notificationWindow });

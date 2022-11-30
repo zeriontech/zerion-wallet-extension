@@ -6,7 +6,7 @@ import { uint8ArrayToBase64 } from './convert';
  * @param length - The number of bytes.
  */
 export function getRandomUint8Array(length = 32) {
-  return window.crypto.getRandomValues(new Uint8Array(length));
+  return globalThis.crypto.getRandomValues(new Uint8Array(length));
 }
 
 /**

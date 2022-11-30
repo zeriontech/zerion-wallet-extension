@@ -1,7 +1,7 @@
 import browser from 'webextension-polyfill';
 import { ethers } from 'ethers';
 import { networksStore } from 'src/modules/networks/networks-store';
-import { configureBackgroundClient } from 'src/modules/defi-sdk';
+import { configureBackgroundClient } from 'src/modules/defi-sdk/background';
 import { initialize } from './initialize';
 import { HttpConnection } from './messaging/HttpConnection';
 import { PortRegistry } from './messaging/PortRegistry';
@@ -15,7 +15,7 @@ import { MemoryCacheRPC } from './resource/memoryCacheRPC';
 import { start as startIdleTimer } from './idle-time-handler';
 import type { RuntimePort } from './webapis/RuntimePort';
 
-Object.assign(window, { ethers });
+Object.assign(globalThis, { ethers });
 
 configureBackgroundClient();
 networksStore.load();
@@ -31,7 +31,28 @@ function verifyPort(port: RuntimePort) {
   }
 }
 
+function notifyContentScriptsAndUIAboutInitialization() {
+  // To query all tabs, pass empty object to tabs.query({})
+  browser.tabs.query({}).then((tabs) => {
+    tabs.forEach(async (tab) => {
+      if (!tab.id) {
+        return;
+      }
+      try {
+        await chrome.tabs.sendMessage(tab.id, {
+          event: 'background-initialized',
+        });
+      } catch (error) {
+        // "Could not establish connection. Receiving end does not exist."
+        // No problem, this message is only meant for content-scripts which
+        // are still attached to a disconnected extension context
+      }
+    });
+  });
+}
+
 initialize().then(({ account, accountPublicRPC }) => {
+  notifyContentScriptsAndUIAboutInitialization();
   const httpConnection = new HttpConnection(() => account.getCurrentWallet());
   const memoryCacheRPC = new MemoryCacheRPC();
 
@@ -63,7 +84,7 @@ initialize().then(({ account, accountPublicRPC }) => {
   });
   ethereumEventsBroadcaster.startListening();
 
-  chrome.runtime.onConnect.addListener((port) => {
+  browser.runtime.onConnect.addListener((port) => {
     if (verifyPort(port)) {
       portRegistry.register(port);
     }
@@ -78,7 +99,7 @@ initialize().then(({ account, accountPublicRPC }) => {
 
   account.on('reset', () => {
     portRegistry.postMessage({
-      portName: `${chrome.runtime.id}/wallet`,
+      portName: `${browser.runtime.id}/wallet`,
       message: 'session-logout',
     });
   });

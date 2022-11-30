@@ -11,5 +11,3 @@ export const emitter = createNanoEvents<{
   transactionMined: (transaction: TransactionReceipt) => void;
   userActivity: () => void;
 }>();
-
-Object.assign(window, { emitter });

@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill';
 // Taken from: https://github.com/RabbyHub/Rabby/blob/5e2d6f80b86cc1e6fb6c58fb416aa2b7473b6742/src/ui/index.tsx#L30-L62
 
 export function applyDrawFix() {
@@ -7,7 +8,7 @@ export function applyDrawFix() {
     window.screenLeft > window.screen.width ||
     window.screenTop > window.screen.height
   ) {
-    chrome.runtime.getPlatformInfo(function (info) {
+    browser.runtime.getPlatformInfo().then((info) => {
       if (info.os === 'mac') {
         const fontFaceSheet = new CSSStyleSheet();
         fontFaceSheet.insertRule(`

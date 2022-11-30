@@ -67,7 +67,19 @@ const remove = async (winId: number) => {
 const openNotification = ({ route = '', ...rest } = {}): Promise<
   number | undefined
 > => {
-  const url = new URL(`../../ui/dialog.html`, import.meta.url);
+  /**
+   * Normally, we'd get the path to popup.html like this:
+   * new URL(`../../ui/popup.html`, import.meta.url)
+   * But parcel is being too smart, and because we're in
+   * the service worker context here, it bundles the entry for sw context as well,
+   * which makes the popup UI crash
+   */
+  const popupUrl = browser.runtime.getManifest().action?.default_popup;
+  if (!popupUrl) {
+    throw new Error('popupUrl not found');
+  }
+  const url = new URL(browser.runtime.getURL(popupUrl));
+  url.searchParams.append('templateType', 'dialog');
   if (route) {
     url.hash = route;
   }

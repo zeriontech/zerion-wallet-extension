@@ -106,7 +106,7 @@ function testAddTransaction() {
     accessList: [],
     chainId: 137,
     confirmations: 0,
-    data: '0x83d13e0100000000000...',
+    data: '0x095ea7b3000000000000000000000000d7f1dd5d49206349cae8b585fcb0ce3d96f1696fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
     from: '0x42b9dF65B219B3dD36FF330A4dD8f327A6Ada990',
     gasLimit: {},
     gasPrice: null,
@@ -120,4 +120,4 @@ function testAddTransaction() {
   } as unknown as ethers.providers.TransactionResponse);
 }
 
-Object.assign(window, { testAddTransaction });
+Object.assign(globalThis, { testAddTransaction });

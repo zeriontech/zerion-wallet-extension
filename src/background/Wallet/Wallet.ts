@@ -104,7 +104,7 @@ export class Wallet {
     this.walletStore.ready().then(() => {
       this.syncWithWalletStore();
     });
-    Object.assign(window, { encrypt, decrypt });
+    Object.assign(globalThis, { encrypt, decrypt });
     this.publicEthereumController = new PublicController(this);
   }
 
@@ -885,7 +885,6 @@ class PublicController {
     if (!transaction) {
       throw new InvalidParams();
     }
-    Object.assign(window, { transactionToSend: transaction });
     return new Promise((resolve, reject) => {
       notificationWindow.open({
         route: '/sendTransaction',
