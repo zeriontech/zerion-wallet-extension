@@ -8,6 +8,7 @@ import {
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { ActionsList } from './ActionsList';
 
 export function sortActions<T extends { datetime?: string }>(actions: T[]) {
@@ -98,6 +99,10 @@ export function HistoryList() {
     fetchMore,
     hasMore,
   } = useMinedAndPendingAddressActions();
+
+  if (isLoading) {
+    return <ViewLoading size="48px" />;
+  }
 
   if (!transactions) {
     return null;

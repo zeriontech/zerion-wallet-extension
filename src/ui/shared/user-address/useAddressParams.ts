@@ -8,11 +8,16 @@ interface Result {
   singleAddress: string;
   maybeSingleAddress: string | null;
   ready: boolean;
+  isLoading: boolean;
   refetch: () => void;
 }
 
 export function useAddressParams(): Result {
-  const { data: addressResult, refetch } = useQuery(
+  const {
+    data: addressResult,
+    isLoading,
+    refetch,
+  } = useQuery(
     'wallet/getCurrentAddress',
     () =>
       walletPort
@@ -26,6 +31,7 @@ export function useAddressParams(): Result {
     maybeSingleAddress: address || null,
     singleAddress: address,
     ready: Boolean(address),
+    isLoading,
     refetch,
   };
 }
