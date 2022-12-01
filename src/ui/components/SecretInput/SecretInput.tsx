@@ -45,6 +45,42 @@ export const SecretInput = React.forwardRef(
         <VStack gap={4}>
           {label ? <label htmlFor={id}>{label}</label> : null}
           <HStack gap={4} style={{ gridTemplateColumns: '1fr min-content' }}>
+            <Button
+              type="button"
+              kind="ghost"
+              size={46}
+              title="Reveal input"
+              onClick={() => toggleReveal()}
+              style={{
+                /**
+                 * NOTE:
+                 * We're placing this element visually AFTER the input,
+                 * but structurally BEFORE.
+                 * Motivation:
+                 * Visually, we have a form with an input on top and a button on bottom.
+                 * Typical pattern for keyboard users, when they are focused in the input,
+                 * is to press "tab" to move focus from the input to the submit button,
+                 * and then immediatelly press "enter" to submit the form.
+                 * But in our case, the next focusable button after the input
+                 * is the "reveal secret value" button, so the user might
+                 * press the "tab + enter" combination and accidentally reveal the
+                 * sensitive value.
+                 * To help avoid this, we're placing the "reveal" button before input,
+                 * so that the next focusable element after the input is the submit button
+                 */
+                order: 1,
+              }}
+            >
+              {reveal ? (
+                <VisibleIcon
+                  style={{ display: 'block', color: 'var(--neutral-500)' }}
+                />
+              ) : (
+                <InvisibleIcon
+                  style={{ display: 'block', color: 'var(--neutral-500)' }}
+                />
+              )}
+            </Button>
             <Input
               id={id}
               ref={ref}
@@ -58,23 +94,6 @@ export const SecretInput = React.forwardRef(
               placeholder="Recovery phrase or a private key"
               {...inputProps}
             />
-            <Button
-              type="button"
-              kind="ghost"
-              size={46}
-              title="Reveal input"
-              onClick={() => toggleReveal()}
-            >
-              {reveal ? (
-                <VisibleIcon
-                  style={{ display: 'block', color: 'var(--neutral-500)' }}
-                />
-              ) : (
-                <InvisibleIcon
-                  style={{ display: 'block', color: 'var(--neutral-500)' }}
-                />
-              )}
-            </Button>
           </HStack>
           {isTechnicalHint ? (
             <UIText kind="caption/regular" color="var(--notice-500)">
