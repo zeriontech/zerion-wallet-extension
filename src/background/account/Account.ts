@@ -166,7 +166,7 @@ export class Account extends EventEmitter {
   }
 }
 
-Object.assign(window, {
+Object.assign(globalThis, {
   getSHA256HexDigest,
   // account,
   Account,

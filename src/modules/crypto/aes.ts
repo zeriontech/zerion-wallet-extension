@@ -26,7 +26,7 @@ async function encryptObject<T>(
   const iv = getIV();
   const key = await createCryptoKey(password, salt);
 
-  const encryptedBuffer = await window.crypto.subtle.encrypt(
+  const encryptedBuffer = await globalThis.crypto.subtle.encrypt(
     { name: 'AES-GCM', iv },
     key,
     dataArray
@@ -65,7 +65,7 @@ async function decryptObject<T>(
   const iv = base64ToArrayBuffer(ivBase64);
   const key = await createCryptoKey(password, salt);
 
-  const decryptedBuffer = await window.crypto.subtle.decrypt(
+  const decryptedBuffer = await globalThis.crypto.subtle.decrypt(
     { name: 'AES-GCM', iv },
     key,
     dataArray

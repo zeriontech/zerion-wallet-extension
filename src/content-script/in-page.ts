@@ -4,13 +4,22 @@ import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 
 declare global {
   interface Window {
-    myWalletChannelId: string;
     ethereum?: EthereumProvider;
     zerionWallet?: EthereumProvider;
   }
 }
 
-const broadcastChannel = new BroadcastChannel(window.myWalletChannelId);
+const currentScript = document.currentScript;
+if (!currentScript) {
+  throw new Error('document.currentScript not found');
+}
+const walletChannelId = currentScript.dataset.walletChannelId;
+if (!walletChannelId) {
+  throw new Error(
+    'walletChannelId must be defined as a data attribute on the script tag'
+  );
+}
+const broadcastChannel = new BroadcastChannel(walletChannelId);
 const connection = new Connection(broadcastChannel);
 const provider = new EthereumProvider(connection);
 

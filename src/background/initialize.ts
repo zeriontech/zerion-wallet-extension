@@ -22,7 +22,7 @@ export async function initialize() {
   const transactionService = new TransactionService();
   await transactionService.initialize();
 
-  Object.assign(window, {
+  Object.assign(globalThis, {
     account,
     Account,
     accountPublicRPC,

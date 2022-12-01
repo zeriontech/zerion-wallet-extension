@@ -12,7 +12,7 @@ export function arrayBufferToUtf8(buffer: ArrayBuffer) {
 }
 
 export function base64ToUint8Array(base64: string) {
-  const binary = window.atob(base64);
+  const binary = globalThis.atob(base64);
   const array = new Uint8Array(binary.length);
   for (let i = 0; i < array.length; i++) {
     array[i] = binary.charCodeAt(i);
@@ -22,7 +22,7 @@ export function base64ToUint8Array(base64: string) {
 
 export function uint8ArrayToBase64(array: Uint8Array) {
   // Explicit casting is needed to satisfy the typechecker
-  return window.btoa(
+  return globalThis.btoa(
     String.fromCharCode.apply(null, array as unknown as number[])
   );
 }

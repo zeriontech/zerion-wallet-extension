@@ -7,7 +7,7 @@ import { getRandomBase64 } from './random';
 async function createMasterKey(password: string): Promise<CryptoKey> {
   const passArray = utf8ToUint8Array(password);
   // For the PBKDF2 algorithm the baseKey is password.
-  return await window.crypto.subtle.importKey(
+  return await globalThis.crypto.subtle.importKey(
     'raw',
     passArray,
     { name: 'PBKDF2' },
@@ -32,7 +32,7 @@ async function createSecretKey(
   // PBKDF2-HMAC-SHA256 and 120000 for PBKDF2-HMAC-SHA512.
   // Here we use 350000 for better security.
 
-  return await window.crypto.subtle.deriveKey(
+  return await globalThis.crypto.subtle.deriveKey(
     {
       name: 'PBKDF2',
       salt: saltArray,

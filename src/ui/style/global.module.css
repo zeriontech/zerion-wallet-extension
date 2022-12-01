@@ -32,6 +32,15 @@ body {
   line-height: calc(20 / 14);
   color: var(--black);
   background-color: var(--background);
+  width: 400px;
+  height: 600px;
+}
+
+body.isDialog {
+  height: 100vh;
+  width: 100%;
+  max-width: 400px;
+  margin: auto;
 }
 
 :global(#root) {

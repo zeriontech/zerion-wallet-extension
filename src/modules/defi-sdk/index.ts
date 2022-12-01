@@ -10,7 +10,7 @@ export const backgroundCache = new BackgroundMemoryCache();
 
 export async function configureUIClient() {
   // This client instance uses background script's memory as cache
-  backgroundCache.load().then(() => {
+  return backgroundCache.load().then(() => {
     if (!DEFI_SDK_API_URL || !DEFI_SDK_API_TOKEN) {
       throw new Error(
         'DEFI_SDK_API_URL and DEFI_SDK_API_TOKEN must be defined in ENV'
@@ -25,17 +25,5 @@ export async function configureUIClient() {
         ? { query: { backend_env: BACKEND_ENV } }
         : undefined,
     });
-  });
-}
-
-export function configureBackgroundClient() {
-  if (!DEFI_SDK_API_URL || !DEFI_SDK_API_TOKEN) {
-    throw new Error(
-      'DEFI_SDK_API_URL and DEFI_SDK_API_TOKEN must be defined in ENV'
-    );
-  }
-  client.configure({
-    url: DEFI_SDK_API_URL,
-    apiToken: DEFI_SDK_API_TOKEN,
   });
 }

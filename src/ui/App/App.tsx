@@ -340,7 +340,7 @@ export function App() {
             >
               <InactivityDetector />
               <SessionResetHandler />
-              <DesignTheme />
+              <DesignTheme templateType={templateType || 'popup'} />
               <VersionUpgrade>
                 <CloseOtherWindows />
                 <ViewSuspense>

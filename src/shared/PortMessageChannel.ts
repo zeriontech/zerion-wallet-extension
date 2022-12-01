@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill';
 import {
   formatJsonRpcRequest,
   isJsonRpcPayload,
@@ -7,11 +8,16 @@ import {
 import type { JsonRpcPayload } from '@json-rpc-tools/utils';
 
 export class PortMessageChannel {
-  port: chrome.runtime.Port;
+  port: browser.Runtime.Port;
 
   constructor({ name }: { name: string }) {
-    this.port = chrome.runtime.connect({ name });
-    // this.port.onMessage.addListener(console.log);
+    this.port = browser.runtime.connect({ name });
+    browser.runtime.onMessage.addListener((request) => {
+      if (request.event === 'background-initialized') {
+        this.port.disconnect();
+        this.port = browser.runtime.connect({ name });
+      }
+    });
   }
 
   request<Method extends string, Params, Result>(
