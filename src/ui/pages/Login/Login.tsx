@@ -111,19 +111,15 @@ export function Login() {
           <Button disabled={loginMutation.isLoading}>
             {loginMutation.isLoading ? 'Checking...' : 'Unlock'}
           </Button>
-          <div style={{ textAlign: 'center' }}>
-            <UIText
-              as={UnstyledLink}
-              to="/create-account"
-              kind="body/accent"
-              color="var(--primary)"
-            >
-              <span className={s.hoverUnderline}>Create new account</span>
-            </UIText>
-            <UIText kind="button/s_reg">
-              (creating new account will erase the current one)
-            </UIText>
-          </div>
+          <UIText
+            as={UnstyledLink}
+            to="/forgot-password"
+            kind="body/accent"
+            color="var(--primary)"
+            style={{ textAlign: 'center' }}
+          >
+            <span className={s.hoverUnderline}>Forgot password?</span>
+          </UIText>
         </VStack>
       </form>
       <UIText

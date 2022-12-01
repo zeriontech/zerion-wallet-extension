@@ -38,12 +38,12 @@ import { NotFoundPage } from '../components/NotFoundPage';
 import { UIText } from '../ui-kit/UIText';
 import { defaultUIContextValue, UIContext } from '../components/UIContext';
 import { ConnectedSites } from '../pages/ConnectedSites';
-import { InvalidateQueryCache } from '../components/Session/InvalidateQueryCache';
 import { InactivityDetector } from '../components/Session/InactivityDetector';
 import { SessionResetHandler } from '../components/Session/SessionResetHandler';
 import { ViewSuspense } from '../components/ViewSuspense';
 import { VersionUpgrade } from '../components/VersionUpgrade';
 import { queryClient } from '../shared/requests/queryClient';
+import { ForgotPassword } from '../pages/ForgotPassword';
 
 function View() {
   const location = useLocation();
@@ -180,30 +180,10 @@ function Views() {
               />
             }
           />
-          <Route
-            path="/intro"
-            element={
-              <InvalidateQueryCache>
-                <Intro />
-              </InvalidateQueryCache>
-            }
-          />
-          <Route
-            path="/create-account"
-            element={
-              <InvalidateQueryCache>
-                <CreateAccount />
-              </InvalidateQueryCache>
-            }
-          />
-          <Route
-            path="/login"
-            element={
-              <InvalidateQueryCache>
-                <Login />
-              </InvalidateQueryCache>
-            }
-          />
+          <Route path="/intro" element={<Intro />} />
+          <Route path="/create-account" element={<CreateAccount />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/get-started/*" element={<GetStarted />} />
           <Route path="/hello" element={<View />} />
           <Route

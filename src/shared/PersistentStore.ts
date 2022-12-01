@@ -1,5 +1,5 @@
 import { Store } from 'store-unit';
-import { get, set } from 'src/background/webapis/storage';
+import * as browserStorage from 'src/background/webapis/storage';
 
 function remove<T>(arr: T[], item: T) {
   const pos = arr.indexOf(item);
@@ -10,18 +10,20 @@ function remove<T>(arr: T[], item: T) {
 
 export class PersistentStore<T> extends Store<T> {
   isReady: boolean;
+  key: string;
   private pendingReadyStateListeners: Array<() => void>;
 
   constructor(key: string, initialState: T) {
     super({ ...initialState });
     this.load(key);
+    this.key = key;
     this.isReady = false;
     this.pendingReadyStateListeners = [];
-    this.on('change', (state) => set(key, state));
+    this.on('change', (state) => browserStorage.set(key, state));
   }
 
   async load(key: string) {
-    const savedValue = await get(key);
+    const savedValue = await browserStorage.get(key);
     this.isReady = true;
     if (savedValue) {
       this.setState(savedValue as T);

@@ -16,20 +16,24 @@ export interface RpcError {
   error: ErrorResponse;
 }
 
+export function isObj(x: unknown): x is Record<string, unknown> {
+  return typeof x === 'object' && x != null;
+}
+
 export function isRpcResult<T = unknown>(
   payload: Partial<RpcResult<T>> | unknown
 ): payload is RpcResult<T> {
-  return payload != null && 'id' in payload && 'result' in payload;
+  return isObj(payload) && 'id' in payload && 'result' in payload;
 }
 
 export function isRpcError(
   payload: Partial<RpcError> | unknown
 ): payload is RpcError {
-  return payload != null && 'id' in payload && 'error' in payload;
+  return isObj(payload) && 'id' in payload && 'error' in payload;
 }
 
 export function isRpcRequest(
   payload: Partial<RpcRequest> | unknown
 ): payload is RpcRequest {
-  return payload != null && 'id' in payload && 'method' in payload;
+  return isObj(payload) && 'id' in payload && 'method' in payload;
 }

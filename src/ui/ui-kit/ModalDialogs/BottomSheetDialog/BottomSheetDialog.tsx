@@ -4,7 +4,14 @@ import * as s from './styles.module.css';
 
 export const BottomSheetDialog = React.forwardRef(
   (
-    { style, className, ...props }: React.HTMLAttributes<HTMLElement>,
+    {
+      height = '70vh',
+      style,
+      className,
+      ...props
+    }: React.HTMLAttributes<HTMLElement> & {
+      height?: React.CSSProperties['height'];
+    },
     ref: React.Ref<HTMLDialogElement>
   ) => {
     return (
@@ -13,8 +20,9 @@ export const BottomSheetDialog = React.forwardRef(
         className={cx(s.slideUp, s.dialog, className)}
         style={{
           border: 'none',
-          top: '30vh',
-          height: '70vh',
+          bottom: 0,
+          marginBottom: 0,
+          height,
           maxHeight: 'initial',
           width: '100%',
           maxWidth: 'initial',

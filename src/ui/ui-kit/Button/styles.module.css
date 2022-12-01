@@ -47,3 +47,13 @@
     background-color: var(--neutral-300);
   }
 }
+
+.danger {
+  background-color: var(--negative-500);
+  color: var(--always-white);
+}
+
+.danger:disabled {
+  cursor: default;
+  background-color: var(--negative-300);
+}

@@ -103,7 +103,7 @@ initialize().then(({ account, accountPublicRPC }) => {
   account.on('reset', () => {
     portRegistry.postMessage({
       portName: `${browser.runtime.id}/wallet`,
-      message: 'session-logout',
+      message: { payload: 'session-logout' },
     });
   });
 
