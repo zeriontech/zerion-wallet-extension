@@ -87,8 +87,7 @@ const UITextComponent = <As extends ElementType = 'div'>(
   return React.createElement(as || 'div', {
     ref,
     style: {
-      display: inline ? 'inline' : undefined,
-      margin: 0,
+      display: inline ? 'inline-block' : undefined,
       fontFamily: 'Graphik, sans-serif',
       fontSize,
       lineHeight: `${lineHeight}px`,

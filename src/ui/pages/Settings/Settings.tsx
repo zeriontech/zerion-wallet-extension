@@ -12,7 +12,7 @@ import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Media } from 'src/ui/ui-kit/Media';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
-import { ControlledToggle } from 'src/ui/ui-kit/Toggle/Toggle';
+import { Toggle } from 'src/ui/ui-kit/Toggle';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import WalletIcon from 'jsx:src/ui/assets/wallet.svg';
@@ -174,12 +174,12 @@ function UserPreferences() {
                         </UIText>
                       }
                     />
-                    <ControlledToggle
-                      value={isMetaMask}
-                      onChange={(checked) => {
+                    <Toggle
+                      checked={isMetaMask}
+                      onChange={(event) => {
                         setWalletNameFlag({
                           flag: WalletNameFlag.isMetaMask,
-                          checked,
+                          checked: event.target.checked,
                         });
                       }}
                     />
@@ -204,11 +204,11 @@ function UserPreferences() {
                         </UIText>
                       }
                     />
-                    <ControlledToggle
-                      value={preferences?.showNetworkSwitchShortcut}
-                      onChange={(checked) => {
+                    <Toggle
+                      checked={preferences?.showNetworkSwitchShortcut ?? false}
+                      onChange={(event) => {
                         preferencesMutation.mutate({
-                          showNetworkSwitchShortcut: checked,
+                          showNetworkSwitchShortcut: event.target.checked,
                         });
                       }}
                     />

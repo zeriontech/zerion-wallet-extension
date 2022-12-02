@@ -45,8 +45,8 @@ export function BackButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
 ) {
   return (
-    <UnstyledButton style={{ padding: 8 }} {...props}>
-      <IconLeft style={{ display: 'block' }} />
+    <UnstyledButton aria-label="Go back" style={{ padding: 8 }} {...props}>
+      <IconLeft role="presentation" style={{ display: 'block' }} />
     </UnstyledButton>
   );
 }
@@ -73,7 +73,7 @@ export function URLBar() {
   }
 
   return (
-    <div
+    <nav
       style={{
         position: 'sticky',
         top: 0,
@@ -126,6 +126,6 @@ export function URLBar() {
         }}
       />
       <span />
-    </div>
+    </nav>
   );
 }
