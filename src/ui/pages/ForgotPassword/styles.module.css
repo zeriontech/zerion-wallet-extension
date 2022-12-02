@@ -1,0 +1,28 @@
+.styledOl {
+  counter-reset: styledCounter1;
+  list-style: none;
+  padding-inline-start: 32px;
+}
+
+.styledOl li {
+  counter-increment: styledCounter1;
+}
+
+.styledOl li + li {
+  margin-top: 20px;
+}
+
+.styledOl li::before {
+  content: counter(styledCounter1);
+  margin-inline-start: -32px;
+  margin-inline-end: 8px;
+  display: inline-block;
+  vertical-align: top;
+  border-radius: 50%;
+  height: 24px;
+  width: 24px;
+  line-height: 24px;
+  text-align: center;
+  background-color: var(--always-black);
+  color: var(--always-white);
+}
