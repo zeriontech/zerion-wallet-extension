@@ -47,7 +47,7 @@ function ResetWarningForm() {
       </label>
       <Spacer height={16} />
       <Button kind="danger" value="confirm" style={{ width: '100%' }}>
-        Yes, Clear My Data
+        Erase My Data
       </Button>
     </form>
   );
