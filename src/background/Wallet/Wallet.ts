@@ -353,6 +353,7 @@ export class Wallet {
     this.ensureRecord(this.record);
     this.record = Model.removePermission(this.record, { origin, address });
     this.updateWalletStore(this.record);
+    this.emitter.emit('permissionsUpdated');
   }
 
   allowedOrigin(
