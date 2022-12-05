@@ -101,7 +101,7 @@ export function HistoryList() {
   } = useMinedAndPendingAddressActions();
 
   if (isLoading && !transactions?.length) {
-    return <ViewLoading size="48px" />;
+    return <ViewLoading />;
   }
 
   if (!transactions) {

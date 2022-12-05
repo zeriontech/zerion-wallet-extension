@@ -486,7 +486,7 @@ export function Positions() {
   );
 
   if (isLoading) {
-    return <ViewLoading size="48px" />;
+    return <ViewLoading />;
   }
 
   if (!ready || !value) {
