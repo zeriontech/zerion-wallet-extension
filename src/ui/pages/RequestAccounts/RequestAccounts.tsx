@@ -28,6 +28,8 @@ import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog'
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { WalletMedia, Composition } from 'src/ui/components/WalletMedia';
 import { invariant } from 'src/shared/invariant';
+import { focusNode } from 'src/ui/shared/focusNode';
+import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 
 function WalletSelectList({
   wallets,
@@ -280,7 +282,12 @@ function RequestAccountsView({
             paddingBottom: 32,
           }}
         >
-          <Button kind="regular" onClick={onReject}>
+          <Button
+            ref={focusNode}
+            type="button"
+            kind="regular"
+            onClick={onReject}
+          >
             Reject
           </Button>
           <Button
@@ -340,16 +347,19 @@ export function RequestAccounts() {
     return null;
   }
   return (
-    <RequestAccountsView
-      wallet={wallet}
-      wallets={
-        walletGroupsQuery.data?.flatMap(
-          (group) => group.walletContainer.wallets
-        ) ?? []
-      }
-      origin={origin}
-      onConfirm={handleConfirm}
-      onReject={handleReject}
-    />
+    <>
+      <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
+      <RequestAccountsView
+        wallet={wallet}
+        wallets={
+          walletGroupsQuery.data?.flatMap(
+            (group) => group.walletContainer.wallets
+          ) ?? []
+        }
+        origin={origin}
+        onConfirm={handleConfirm}
+        onReject={handleReject}
+      />
+    </>
   );
 }
