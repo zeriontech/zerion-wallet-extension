@@ -448,6 +448,7 @@ function SendTransactionContent({
             </UIText>
           </HStack>
         </div>
+        {/*
         {incomingTransaction.chainId == null ? (
           <>
             <Spacer height={24} />
@@ -470,6 +471,7 @@ function SendTransactionContent({
             </Surface>
           </>
         ) : null}
+        */}
         <Spacer height={24} />
         <VStack gap={16}>
           <VStack gap={12}>
