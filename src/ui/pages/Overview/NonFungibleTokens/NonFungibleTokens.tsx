@@ -1,6 +1,7 @@
 import { AddressNFT, DataStatus } from 'defi-sdk';
 import React, { useMemo } from 'react';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
+import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { useAddressNfts } from 'src/ui/shared/requests/addressNfts/useAddressNftsWithDna';
 import { useAddressNftTotalValue } from 'src/ui/shared/requests/addressNfts/useAddressNftTotalValue';
 import { NBSP } from 'src/ui/shared/typography';
@@ -101,7 +102,7 @@ export function NonFungibleTokens() {
     currency: 'usd',
     value_type: 'floor_price',
   });
-  const { value: items } = useAddressNfts(
+  const { isLoading, value: items } = useAddressNfts(
     {
       ...params,
       currency: 'usd',
@@ -110,6 +111,9 @@ export function NonFungibleTokens() {
   );
   const nftTotalValueIsReady =
     nftTotalValue != null || status === DataStatus.ok;
+  if (isLoading) {
+    return <ViewLoading />;
+  }
   if (!ready || !items || !nftTotalValueIsReady) {
     return null;
   }

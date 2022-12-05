@@ -8,6 +8,7 @@ import {
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { ActionsList } from './ActionsList';
 
 export function sortActions<T extends { datetime?: string }>(actions: T[]) {
@@ -65,7 +66,7 @@ function useMinedAndPendingAddressActions() {
     },
     {
       limit: 30,
-      listenForUpdates: true,
+      listenForUpdates: false,
       paginatedCacheMode: 'first-page',
     }
   );
@@ -98,6 +99,10 @@ export function HistoryList() {
     fetchMore,
     hasMore,
   } = useMinedAndPendingAddressActions();
+
+  if (isLoading && !transactions?.length) {
+    return <ViewLoading />;
+  }
 
   if (!transactions) {
     return null;

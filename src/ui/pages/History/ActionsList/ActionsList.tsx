@@ -6,6 +6,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import type { PendingAddressAction } from 'src/modules/ethereum/transactions/model';
+import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { ActionItem } from '../ActionItem';
 
 export function ActionsList({
@@ -43,6 +44,7 @@ export function ActionsList({
           />
         </VStack>
       ))}
+      {isLoading && <ViewLoading />}
       {hasMore ? (
         <SurfaceList
           items={[

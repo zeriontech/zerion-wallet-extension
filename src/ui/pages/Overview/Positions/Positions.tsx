@@ -36,6 +36,7 @@ import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
+import { ViewLoading } from 'src/ui/components/ViewLoading';
 import * as s from './styles.module.css';
 
 function LineToParent({
@@ -476,13 +477,18 @@ function PositionsList({
 
 export function Positions() {
   const { ready, params, singleAddress } = useAddressParams();
-  const { value } = useAddressPositions(
+  const { value, isLoading } = useAddressPositions(
     {
       ...params,
       currency: 'usd',
     },
     { enabled: ready }
   );
+
+  if (isLoading) {
+    return <ViewLoading />;
+  }
+
   if (!ready || !value) {
     return null;
   }
