@@ -1,0 +1,1 @@
+export { BugReportButton } from './BugReportButton';

@@ -19,6 +19,7 @@ import WalletIcon from 'jsx:src/ui/assets/wallet.svg';
 import LockIcon from 'jsx:src/ui/assets/lock.svg';
 import GlobeIcon from 'jsx:src/ui/assets/globe.svg';
 import SettingsIcon from 'jsx:src/ui/assets/settings.svg';
+import { version } from 'src/shared/packageVersion';
 import { BackupFlowSettingsSection } from '../BackupWallet/BackupSettingsItem';
 
 function SettingsMain() {
@@ -97,6 +98,13 @@ function SettingsMain() {
           ]}
         />
       </VStack>
+      <UIText
+        style={{ marginTop: 'auto', textAlign: 'end' }}
+        kind="small/regular"
+        color="var(--neutral-500)"
+      >
+        {`v${version}`}
+      </UIText>
       <PageBottom />
     </PageColumn>
   );

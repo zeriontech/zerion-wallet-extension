@@ -3,6 +3,8 @@ import React, {
   ComponentPropsWithRef,
   ElementType,
 } from 'react';
+import cx from 'classnames';
+import * as s from './styles.module.css';
 
 export const textParams = {
   // [font-size, line-height, weight, letter-spacing]
@@ -76,6 +78,7 @@ const UITextComponent = <As extends ElementType = 'div'>(
     inline = false,
     kind,
     color = 'currentColor',
+    className,
     style,
     ...props
   }: Props & { as?: As } & ComponentPropsWithoutRef<As> & {
@@ -86,9 +89,9 @@ const UITextComponent = <As extends ElementType = 'div'>(
   const [fontSize, lineHeight, fontWeight, letterSpacing] = getStyles(kind);
   return React.createElement(as || 'div', {
     ref,
+    className: cx(className, s.uitext),
     style: {
       display: inline ? 'inline-block' : undefined,
-      fontFamily: 'Graphik, sans-serif',
       fontSize,
       lineHeight: `${lineHeight}px`,
       fontWeight,
