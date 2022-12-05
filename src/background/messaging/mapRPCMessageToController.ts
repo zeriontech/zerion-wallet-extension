@@ -45,6 +45,8 @@ export function mapRPCMessageToController<T>(
     controllerMethod
       // @ts-ignore
       .call(controller, { params, context })
+      // "slow mode" or "slow network" simulation, useful for debugging UI
+      // .then((result) => new Promise((r) => setTimeout(() => r(result), 1000)))
       .then(
         (result: unknown) => {
           return formatJsonRpcResultForPort(id, result);

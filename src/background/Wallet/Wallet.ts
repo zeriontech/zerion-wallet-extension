@@ -774,10 +774,6 @@ export class Wallet {
     this.verifyInternalOrigin(context);
     return this.record?.transactions || [];
   }
-
-  async logout() {
-    chrome.storage.local.clear();
-  }
 }
 
 interface Web3WalletPermission {

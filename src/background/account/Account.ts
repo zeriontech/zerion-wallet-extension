@@ -2,8 +2,9 @@ import EventEmitter from 'events';
 import { nanoid } from 'nanoid';
 import { createSalt, createCryptoKey } from 'src/modules/crypto';
 import { getSHA256HexDigest } from 'src/modules/crypto/getSHA256HexDigest';
-import { get, remove, set } from 'src/background/webapis/storage';
+import * as browserStorage from 'src/background/webapis/storage';
 import { validate } from 'src/shared/validation/user-input';
+import { eraseAndUpdateToLatestVersion } from 'src/shared/core/version';
 import { Wallet } from '../Wallet/Wallet';
 import { walletStore } from '../Wallet/persistence';
 
@@ -36,15 +37,15 @@ export class Account extends EventEmitter {
   isPendingNewUser: boolean;
 
   private static async writeCurrentUser(user: User) {
-    await set('currentUser', user);
+    await browserStorage.set('currentUser', user);
   }
 
   static async readCurrentUser() {
-    return get<User>('currentUser');
+    return browserStorage.get<User>('currentUser');
   }
 
   private static async removeCurrentUser() {
-    await remove('currentUser');
+    await browserStorage.remove('currentUser');
   }
 
   static async ensureUserAndWallet() {
@@ -239,5 +240,10 @@ export class AccountPublicRPC {
 
   async logout() {
     return this.account.logout();
+  }
+
+  async eraseAllData() {
+    this.account.reset();
+    await eraseAndUpdateToLatestVersion();
   }
 }

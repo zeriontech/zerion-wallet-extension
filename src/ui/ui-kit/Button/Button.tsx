@@ -7,14 +7,12 @@ import cx from 'classnames';
 import { UIText } from '../UIText';
 import * as styles from './styles.module.css';
 
-type Kind = 'primary' | 'regular' | 'ghost';
+type Kind = 'primary' | 'regular' | 'ghost' | 'danger';
 type Size = 60 | 56 | 46 | 44 | 40 | 36 | 32 | 28;
 
 const kinds: { [kind in Kind]: (size: number) => React.CSSProperties } = {
-  primary: () => ({
-    // background: 'var(--actions-default)',
-    // color: 'white',
-  }),
+  primary: () => ({}),
+  danger: () => ({}),
   regular: () => ({
     background: 'var(--white)',
     color: 'var(--black)',

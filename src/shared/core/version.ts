@@ -17,8 +17,10 @@ const upgrades: Record<string | number, () => Promise<void>> = {
   },
 };
 
+const checkExisingData = async () => Boolean(await get('currentUser'));
+
 export async function prepareStorage() {
-  const hasSomeData = Boolean(await get('currentUser'));
+  const hasSomeData = await checkExisingData();
   const storageVersion = await getCurrentVersion();
   if (!hasSomeData) {
     set('STORAGE_VERSION', STORAGE_VERSION);
@@ -33,8 +35,11 @@ export async function prepareStorage() {
 }
 
 export async function checkVersion() {
-  const storageVersion = await getCurrentVersion();
-  if (storageVersion !== STORAGE_VERSION) {
+  const [hasSomeData, storageVersion] = await Promise.all([
+    checkExisingData(),
+    getCurrentVersion(),
+  ]);
+  if (hasSomeData && storageVersion !== STORAGE_VERSION) {
     return {
       storageVersion: {
         mismatch: true,
