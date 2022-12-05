@@ -51,12 +51,21 @@ function notifyContentScriptsAndUIAboutInitialization() {
   });
 }
 
+const portRegistry = new PortRegistry();
+
+// Listeners must be registered synchronously from the start of the page:
+// https://developer.chrome.com/docs/extensions/mv3/service_workers/#listeners
+browser.runtime.onConnect.addListener((port) => {
+  if (verifyPort(port)) {
+    portRegistry.register(port);
+  }
+});
+
 initialize().then(({ account, accountPublicRPC }) => {
   notifyContentScriptsAndUIAboutInitialization();
   const httpConnection = new HttpConnection(() => account.getCurrentWallet());
   const memoryCacheRPC = new MemoryCacheRPC();
 
-  const portRegistry = new PortRegistry();
   portRegistry.addMessageHandler(
     createWalletMessageHandler(() => account.getCurrentWallet())
   );
@@ -83,12 +92,6 @@ initialize().then(({ account, accountPublicRPC }) => {
     getActivePorts: () => portRegistry.getActivePorts(),
   });
   ethereumEventsBroadcaster.startListening();
-
-  browser.runtime.onConnect.addListener((port) => {
-    if (verifyPort(port)) {
-      portRegistry.register(port);
-    }
-  });
 
   portRegistry.addListener('disconnect', (port: RuntimePort) => {
     if (port.name === `${browser.runtime.id}/wallet`) {
