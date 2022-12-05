@@ -2,7 +2,7 @@ name: Notify about new build
 
 on:
   release:
-    types: [published]
+    types: [published, created]
   workflow_dispatch:
 
 env:
