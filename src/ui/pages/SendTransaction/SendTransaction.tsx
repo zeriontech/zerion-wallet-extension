@@ -50,6 +50,8 @@ import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
 import { Networks } from 'src/modules/networks/Networks';
 import { getDecimals } from 'src/modules/networks/asset';
+import { focusNode } from 'src/ui/shared/focusNode';
+import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { NetworkFee } from './NetworkFee';
 
 function UknownIcon({ size }: { size: number }) {
@@ -340,6 +342,11 @@ function SendTransactionContent({
     [transactionStringified]
   );
   const { networks } = useNetworks();
+  const handleReject = () => {
+    const windowId = params.get('windowId');
+    invariant(windowId, 'windowId get-parameter is required');
+    windowPort.reject(windowId);
+  };
   const { data: transaction } = useQuery(
     ['resolveChainAndGasPrice', incomingTransaction, origin],
     async () => {
@@ -398,6 +405,7 @@ function SendTransactionContent({
 
   return (
     <Background backgroundKind="neutral">
+      <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
       <PageColumn>
         <div
           style={{
@@ -518,13 +526,10 @@ function SendTransactionContent({
             }}
           >
             <Button
+              ref={focusNode}
               kind="regular"
               type="button"
-              onClick={() => {
-                const windowId = params.get('windowId');
-                invariant(windowId, 'windowId get-parameter is required');
-                windowPort.reject(windowId);
-              }}
+              onClick={handleReject}
             >
               Cancel
             </Button>
