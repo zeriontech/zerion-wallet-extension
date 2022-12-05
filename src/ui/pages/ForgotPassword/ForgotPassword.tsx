@@ -101,9 +101,9 @@ export function ForgotPassword() {
             <li>
               <UIText inline={true} kind="body/regular">
                 <strong style={{ fontWeight: 500 }}>
-                  We're unable to recover the password
+                  We’re unable to recover the password
                 </strong>{' '}
-                for you because it's stored securely and locally only on your
+                for you because it’s stored securely and locally only on your
                 computer. Try entering the correct password again.
               </UIText>
             </li>
