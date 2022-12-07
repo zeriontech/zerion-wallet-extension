@@ -44,6 +44,7 @@ import { ViewSuspense } from '../components/ViewSuspense';
 import { VersionUpgrade } from '../components/VersionUpgrade';
 import { queryClient } from '../shared/requests/queryClient';
 import { ForgotPassword } from '../pages/ForgotPassword';
+import { BugReportButton } from '../components/BugReportButton';
 
 function View() {
   const location = useLocation();
@@ -328,6 +329,7 @@ export function App() {
                 </ViewSuspense>
               </VersionUpgrade>
             </ErrorBoundary>
+            <BugReportButton />
           </Router>
         </QueryClientProvider>
       </UIContext.Provider>

@@ -9,6 +9,7 @@
     "noUnusedParameters": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
+    "resolveJsonModule": true,
     "esModuleInterop": true,
     "types": ["chrome", "node", "jest"],
     "jsx": "react",
