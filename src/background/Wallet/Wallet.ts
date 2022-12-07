@@ -910,7 +910,7 @@ class PublicController {
     if (normalizeAddress(address) !== normalizeAddress(currentAddress)) {
       throw new Error(
         // TODO?...
-        'Address parameter is different from currently selected address'
+        `Address parameter is different from currently selected address. Expected: ${currentAddress}, received: ${address}`
       );
     }
     const stringifiedData =
@@ -956,7 +956,7 @@ class PublicController {
     ) {
       throw new Error(
         // TODO?...
-        'Address parameter is different from currently selected address'
+        `Address parameter is different from currently selected address. Expected: ${currentAddress}, received: ${address}`
       );
     }
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
