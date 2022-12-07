@@ -2,6 +2,7 @@ import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { WindowSize } from 'src/ui-lab/components/WindowSize';
 import type { Readme } from 'src/ui-lab/types';
+import { ViewSuspense } from 'src/ui/components/ViewSuspense';
 import { Overview } from './Overview';
 
 export const readme: Readme = {
@@ -16,7 +17,9 @@ export const readme: Readme = {
           backgroundColor: 'var(--background)',
         }}
       >
-        <Overview />
+        <ViewSuspense>
+          <Overview />
+        </ViewSuspense>
       </WindowSize>
     </MemoryRouter>
   ),

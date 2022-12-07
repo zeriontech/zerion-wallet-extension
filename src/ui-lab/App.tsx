@@ -35,7 +35,6 @@ function App() {
             {readmes.map((readme, index) => (
               <VStack gap={12} key={index}>
                 <UIText kind="h/6_med">{readme.name}</UIText>
-
                 {React.createElement(readme.component)}
               </VStack>
             ))}

@@ -2,6 +2,7 @@ import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { WindowSize } from 'src/ui-lab/components/WindowSize';
 import type { Readme } from 'src/ui-lab/types';
+import { ViewSuspense } from 'src/ui/components/ViewSuspense';
 import { SendTransaction } from './SendTransaction';
 import { sample } from './transactions.sample';
 
@@ -36,7 +37,9 @@ export const readme: Readme = {
             ]}
           >
             <WindowSize>
-              <SendTransaction />
+              <ViewSuspense>
+                <SendTransaction />
+              </ViewSuspense>
             </WindowSize>
           </MemoryRouter>
         </div>

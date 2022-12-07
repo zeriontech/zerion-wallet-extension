@@ -32,7 +32,6 @@ import { walletPort } from 'src/ui/shared/channels';
 import { NBSP } from 'src/ui/shared/typography';
 import { WalletIcon } from 'src/ui/ui-kit/WalletIcon';
 import { useIsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
-import { ViewSuspense } from 'src/ui/components/ViewSuspense';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
@@ -318,9 +317,5 @@ function OverviewComponent() {
 }
 
 export function Overview() {
-  return (
-    <ViewSuspense>
-      <OverviewComponent />
-    </ViewSuspense>
-  );
+  return <OverviewComponent />;
 }
