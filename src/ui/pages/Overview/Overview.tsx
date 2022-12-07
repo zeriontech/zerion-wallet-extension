@@ -35,6 +35,7 @@ import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
+import { Feed } from '../Feed';
 import { CurrentNetwork } from './CurrentNetwork';
 import { NonFungibleTokens } from './NonFungibleTokens';
 import { Positions } from './Positions';
@@ -258,6 +259,7 @@ function OverviewComponent() {
           <SegmentedControlLink to="/overview/history">
             History <PendingTransactionsIndicator />
           </SegmentedControlLink>
+          <SegmentedControlLink to="/overview/feed">Feed</SegmentedControlLink>
         </SegmentedControlGroup>
       </PageFullBleedColumn>
       <Spacer height={24} />
@@ -275,6 +277,7 @@ function OverviewComponent() {
         />
         <Route path="/nfts" element={<NonFungibleTokens />} />
         <Route path="/history" element={<HistoryList />} />
+        <Route path="/feed" element={<Feed />} />
       </Routes>
       <PageBottom />
     </PageColumn>
