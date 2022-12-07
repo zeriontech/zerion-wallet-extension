@@ -6,15 +6,21 @@ export function WalletIcon({
   active,
   address,
   iconSize,
+  imageUrl,
 }: {
   active: boolean;
   address: string;
   iconSize: number;
+  imageUrl?: string;
 }) {
   return (
     <div className={s.root}>
       <div className={active ? s.activeIndicatorClip : undefined}>
-        <BlockieImg address={address} size={iconSize} />
+        {imageUrl ? (
+          <img className={s.image} src={imageUrl} />
+        ) : (
+          <BlockieImg address={address} size={iconSize} />
+        )}
       </div>
       {active ? <div className={s.activeIndicator} /> : null}
     </div>

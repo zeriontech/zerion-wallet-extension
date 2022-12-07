@@ -2,6 +2,12 @@
   position: relative;
 }
 
+.image {
+  border-radius: 8px;
+  width: 64px;
+  height: 64px;
+}
+
 .activeIndicatorClip {
   --circle-radius: 5px;
 
