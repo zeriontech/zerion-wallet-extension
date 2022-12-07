@@ -1,6 +1,7 @@
 import { isTruthy } from 'is-truthy-ts';
 import React, { useMemo } from 'react';
 import { useQuery } from 'react-query';
+import { ethers } from 'ethers';
 import { getNetworkFeeEstimation } from 'src/modules/ethereum/transactions/gasPrices/feeEstimation';
 import type { GasPriceObject } from 'src/modules/ethereum/transactions/gasPrices/GasPriceObject';
 import {
@@ -20,6 +21,8 @@ import { useNativeAsset } from 'src/ui/shared/requests/useNativeAsset';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import { formatTokenValue } from 'src/shared/units/formatTokenValue';
+import { VStack } from 'src/ui/ui-kit/VStack';
 
 function getGasPriceFromTransaction(
   transaction: IncomingTransaction
@@ -76,31 +79,32 @@ export function NetworkFee({
     { useErrorBoundary: true }
   );
 
-  const gasPriceFromTransaction = useMemo(
-    () => getGasPriceFromTransaction(transaction),
-    [transaction]
-  );
-  const { data: feeEstimation, isLoading } = useQuery(
+  const { data, isLoading } = useQuery(
     ['feeEstimation', chain, transaction],
     async () => {
       const gasPrices = await gasChainPricesSubscription.get();
       const chainGasPrices = gasPrices[chain.toString()];
 
-      return getNetworkFeeEstimation({
+      const gasPriceFromTransaction = getGasPriceFromTransaction(transaction);
+      const gasPrice = gasPriceFromTransaction || {
+        classic: chainGasPrices.info.classic?.fast,
+        eip1559: chainGasPrices.info.eip1559?.fast,
+      };
+      const feeEstimation = await getNetworkFeeEstimation({
         transaction,
         address: transaction.from || null,
         gas: Number(gas),
         gasPrices: chainGasPrices,
-        gasPrice: gasPriceFromTransaction || {
-          classic: chainGasPrices.info.classic?.fast,
-          eip1559: chainGasPrices.info.eip1559?.fast,
-        },
+        gasPrice,
       });
+      return { feeEstimation, gasPrice };
     }
   );
+  const feeEstimation = data?.feeEstimation;
+  const transactionGasPrice = data?.gasPrice;
 
   const time = useMemo(() => {
-    if (gasPriceFromTransaction?.eip1559 && chainGasPrices?.info.eip1559) {
+    if (transactionGasPrice?.eip1559 && chainGasPrices?.info.eip1559) {
       // backend API only has time estimation for eip1559 info
       const findMatchingEip1559 = (
         eip1559GasPrices: EIP1559GasPrices,
@@ -116,44 +120,92 @@ export function NetworkFee({
       };
       const eip1559Info = findMatchingEip1559(
         chainGasPrices.info.eip1559,
-        gasPriceFromTransaction.eip1559
+        transactionGasPrice.eip1559
       );
       const seconds = eip1559Info?.estimation_seconds;
       if (seconds) {
         return `~${formatSeconds(seconds)}`;
       }
     }
-  }, [chainGasPrices?.info.eip1559, gasPriceFromTransaction]);
+  }, [chainGasPrices?.info.eip1559, transactionGasPrice]);
 
-  const fiatValue = useMemo(() => {
-    if (!nativeAsset || !feeEstimation) {
-      return;
-    }
-    const commonQuantity = baseToCommon(
-      feeEstimation.value,
-      getDecimals({ asset: nativeAsset, chain })
-    );
-    const { price } = nativeAsset;
-    if (!price) {
-      return null;
-    }
-    return commonQuantity.times(price.value);
-  }, [chain, feeEstimation, nativeAsset]);
+  const { feeValueFiat, feeValueCommon, totalValueCommon, totalValueFiat } =
+    useMemo(() => {
+      if (!nativeAsset || !feeEstimation) {
+        return {};
+      }
+      const txValue = ethers.BigNumber.from(String(transaction.value ?? 0));
+      const decimals = getDecimals({ asset: nativeAsset, chain });
+      const feeValueCommon = baseToCommon(feeEstimation.value, decimals);
+      const txValueCommon = baseToCommon(txValue.toString(), decimals);
+      const totalValue = txValue.add(
+        typeof feeEstimation.value === 'number'
+          ? String(feeEstimation.value)
+          : feeEstimation.value.toFixed()
+      );
+      const totalValueCommon = baseToCommon(totalValue.toString(), decimals);
+      const { price } = nativeAsset;
+      return {
+        feeValueCommon,
+        feeValueFiat:
+          price?.value != null ? feeValueCommon.times(price.value) : null,
+        txValueCommon,
+        totalValueCommon,
+        totalValueFiat:
+          price?.value != null ? totalValueCommon.times(price.value) : null,
+      };
+    }, [chain, feeEstimation, nativeAsset, transaction.value]);
   return (
-    <HStack gap={8} justifyContent="space-between" alignItems="center">
-      <UIText kind="small/regular">Network Fee</UIText>
-      {isLoading ? (
-        <CircleSpinner />
-      ) : fiatValue == null ? null : (
-        <UIText
-          kind="small/regular"
-          title={getFeeTypeTitle(feeEstimation?.type)}
-        >
-          {[time, formatCurrencyValue(fiatValue, 'en', 'usd')]
-            .filter(isTruthy)
-            .join(' · ')}
+    <HStack gap={8} justifyContent="space-between">
+      <VStack gap={4}>
+        <UIText kind="small/accent" color="var(--neutral-700)">
+          Network Fee
         </UIText>
-      )}
+        {isLoading || feeValueFiat === undefined ? (
+          <CircleSpinner
+            // size of "headline/h3"
+            size="24px"
+          />
+        ) : feeValueFiat === null ? null : (
+          <UIText
+            kind="headline/h3"
+            title={getFeeTypeTitle(feeEstimation?.type)}
+          >
+            {[time, formatCurrencyValue(feeValueFiat, 'en', 'usd')]
+              .filter(isTruthy)
+              .join(' · ')}
+          </UIText>
+        )}
+        {feeValueCommon ? (
+          <UIText
+            kind="small/accent"
+            color="var(--neutral-500)"
+            title={feeValueCommon.toString()}
+          >
+            {formatTokenValue(feeValueCommon, nativeAsset?.symbol)}
+          </UIText>
+        ) : null}
+      </VStack>
+      <VStack gap={4} style={{ textAlign: 'end' }}>
+        <UIText kind="small/accent" color="var(--neutral-700)">
+          Total
+        </UIText>
+
+        {totalValueFiat ? (
+          <UIText kind="headline/h3">
+            {formatCurrencyValue(totalValueFiat, 'en', 'usd')}
+          </UIText>
+        ) : null}
+        {totalValueCommon ? (
+          <UIText
+            kind="small/accent"
+            color="var(--neutral-500)"
+            title={totalValueCommon.toString()}
+          >
+            {formatTokenValue(totalValueCommon, nativeAsset?.symbol)}
+          </UIText>
+        ) : null}
+      </VStack>
     </HStack>
   );
 }

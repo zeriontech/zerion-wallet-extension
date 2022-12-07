@@ -20,6 +20,7 @@ export interface TransactionDescription {
   sendAssetCode?: string;
   sendAssetId?: string;
   sendAmount?: string;
+  isNativeSend?: boolean;
   contractAddress?: string;
 }
 
@@ -73,6 +74,7 @@ function describeSend(
       sendAssetCode: network.native_asset?.address || undefined,
       sendAssetId: network.native_asset?.id,
       sendAmount: ethers.BigNumber.from(transaction.value || '0').toString(),
+      isNativeSend: true,
     };
   }
   const selector = ethers.utils.hexDataSlice(transaction.data, 0, 4);
