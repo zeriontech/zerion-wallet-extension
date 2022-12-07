@@ -537,6 +537,7 @@ export class Wallet {
     this.ensureRecord(this.record);
     return this.record.walletManager.groups
       .filter((group) => group.walletContainer.seedType === SeedType.mnemonic)
+      .filter((group) => group.origin === WalletOrigin.extension)
       .filter((group) => group.lastBackedUp == null).length;
   }
 
