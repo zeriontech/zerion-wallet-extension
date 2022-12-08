@@ -217,7 +217,7 @@ function OverviewComponent() {
         <Spacer height={24} />
         <div style={{ height: isLoadingPortfolio ? 68 : undefined }}>
           <HStack gap={16} alignItems="center">
-            {!isLoadingPortfolio ? <WalletAvatar /> : null}
+            {!isLoadingPortfolio ? <WalletAvatar address={address} /> : null}
             <VStack gap={0}>
               <UIText kind="h/1_med">
                 {value?.total_value != null ? (

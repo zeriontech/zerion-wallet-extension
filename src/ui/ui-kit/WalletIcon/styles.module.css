@@ -4,8 +4,6 @@
 
 .image {
   border-radius: 8px;
-  width: 64px;
-  height: 64px;
 }
 
 .activeIndicatorClip {
@@ -28,4 +26,10 @@
   right: 0;
   bottom: 0;
   background-color: var(--positive-500);
+}
+
+.star {
+  position: absolute;
+  left: -13%;
+  top: -13%;
 }
