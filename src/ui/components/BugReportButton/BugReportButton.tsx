@@ -26,12 +26,27 @@ function BottomFixed({ children }: React.PropsWithChildren) {
     <div
       style={{
         position: 'sticky',
+        height: BUTTON_HEIGHT,
         bottom: 0,
         width: '100%',
         zIndex: 1,
       }}
     >
-      {children}
+      <div
+        style={{
+          // Yes, it's a position: fixed element inside position: sticky element
+          // It's a hack to achieve the following:
+          // * Make the button always visible at the bottom
+          // * When you scroll down, the btn doesn't appear over the last elements of the page
+          // * When page is empty (e.g. loading), the button is still at the bottom
+          // * Not waste more time on this
+          position: 'fixed',
+          bottom: 0,
+          width: '100%',
+        }}
+      >
+        {children}
+      </div>
     </div>
   );
 }
