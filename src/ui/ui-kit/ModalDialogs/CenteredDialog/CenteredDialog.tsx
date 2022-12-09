@@ -9,7 +9,11 @@ const innerWidth = window.innerWidth;
 
 export const CenteredDialog = React.forwardRef(
   (
-    { style, className, ...props }: React.HTMLAttributes<HTMLElement>,
+    {
+      style,
+      className,
+      ...props
+    }: React.DialogHTMLAttributes<HTMLDialogElement>,
     ref: React.Ref<HTMLDialogElement>
   ) => {
     const isLargeViewport = innerWidth > 600;
@@ -20,6 +24,8 @@ export const CenteredDialog = React.forwardRef(
         style={{
           border: 'none',
           height: '100vh',
+          top: 0,
+          zIndex: 'var(--over-layout-index)',
           maxHeight: isLargeViewport ? '70vh' : 'initial',
           width: '100vw',
           maxWidth: isLargeViewport ? 600 : 'initial',

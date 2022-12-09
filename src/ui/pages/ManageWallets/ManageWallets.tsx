@@ -20,6 +20,7 @@ import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { WalletOrigin } from 'src/shared/WalletOrigin';
+import { EraseDataListButton } from 'src/ui/components/EraseData';
 import { WalletAccount as WalletAccountPage } from './WalletAccount';
 import { WalletGroup as WalletGroupPage } from './WalletGroup';
 
@@ -171,7 +172,7 @@ function WalletGroups() {
                   key: 0,
                   to: '/get-started',
                   component: (
-                    <UIText kind="body/s_reg" color="var(--primary)">
+                    <UIText kind="small/regular" color="var(--primary)">
                       Create New Wallet
                     </UIText>
                   ),
@@ -180,13 +181,14 @@ function WalletGroups() {
                   key: 1,
                   to: '/get-started/import',
                   component: (
-                    <UIText kind="body/s_reg" color="var(--primary)">
+                    <UIText kind="small/regular" color="var(--primary)">
                       Import Wallet to Zerion
                     </UIText>
                   ),
                 },
               ]}
             />
+            <EraseDataListButton textKind="small/regular" />
           </VStack>
         </>
       )}
