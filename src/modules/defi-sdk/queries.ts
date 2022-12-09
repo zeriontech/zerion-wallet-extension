@@ -62,7 +62,7 @@ export function useAssetFromCacheOrAPI({
       chain: Chain;
       id: string | null;
     }) {
-  const requestAssetId = isNative ? id : address?.toLowerCase();
+  const requestAssetId = isNative ? id : normalizeNullableAddress(address);
   const {
     value: assets,
     status,
