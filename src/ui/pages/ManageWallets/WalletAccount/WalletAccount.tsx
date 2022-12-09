@@ -13,7 +13,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { Surface } from 'src/ui/ui-kit/Surface';
-import { getWalletDisplayName } from 'src/ui/shared/getWalletDisplayName';
+import { useWalletDisplayName } from 'src/ui/shared/useWalletDisplayName';
 import { Media } from 'src/ui/ui-kit/Media';
 import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
@@ -55,6 +55,11 @@ function EditableWalletName({
     useCallback((value: string) => mutate(value), [mutate]),
     500
   );
+
+  const displayName = useWalletDisplayName(wallet.address, {
+    name: wallet.name,
+  });
+
   return (
     <VStack gap={4}>
       <div
@@ -66,7 +71,7 @@ function EditableWalletName({
         }}
       >
         <UnstyledInput
-          placeholder={getWalletDisplayName(wallet) || 'Account Name'}
+          placeholder={displayName || 'Account Name'}
           type="text"
           value={value}
           onChange={(event) => {
@@ -137,6 +142,9 @@ export function WalletAccount() {
     () => walletPort.request('uiGetWalletByAddress', { address }),
     { useErrorBoundary: true }
   );
+  const displayName = useWalletDisplayName(address, {
+    name: wallet?.name,
+  });
   const removeAddressMutation = useMutation(
     () => walletPort.request('removeAddress', { address }),
     {
@@ -162,7 +170,7 @@ export function WalletAccount() {
 
   return (
     <PageColumn>
-      <NavigationTitle title={getWalletDisplayName(wallet)} />
+      <NavigationTitle title={displayName} />
 
       <BottomSheetDialog ref={dialogRef}>
         <RemoveAddressConfirmationDialog wallet={wallet} />

@@ -1,6 +1,6 @@
 import React from 'react';
 import type { BareWallet } from 'src/shared/types/BareWallet';
-import { getWalletDisplayName } from 'src/ui/shared/getWalletDisplayName';
+import { useWalletDisplayName } from 'src/ui/shared/useWalletDisplayName';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { WalletAvatar } from '../WalletAvatar';
@@ -12,6 +12,11 @@ export function AddressBadge({
   wallet: BareWallet;
   style?: React.CSSProperties;
 }) {
+  const displayName = useWalletDisplayName(wallet.address, {
+    name: wallet.name,
+    padding: 4,
+    maxCharacters: 16,
+  });
   return (
     <HStack
       alignItems="center"
@@ -29,7 +34,7 @@ export function AddressBadge({
         kind="subtitle/s_reg"
         style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
       >
-        {getWalletDisplayName(wallet, { padding: 4, maxCharacters: 16 })}
+        {displayName}
       </UIText>
     </HStack>
   );
