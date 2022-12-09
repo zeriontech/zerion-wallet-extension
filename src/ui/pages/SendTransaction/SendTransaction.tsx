@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
 import { useMutation, useQuery } from 'react-query';
-import { DataStatus, useAssetsPrices } from 'defi-sdk';
+import { ethers } from 'ethers';
+import type { Asset } from 'defi-sdk';
+import { DataStatus } from 'defi-sdk';
 import { useSearchParams } from 'react-router-dom';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -32,7 +34,7 @@ import { FillView } from 'src/ui/components/FillView';
 import { capitalize } from 'capitalize-ts';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
-import { queryCacheForAsset } from 'src/modules/defi-sdk/queries';
+import { useAssetFromCacheOrAPI } from 'src/modules/defi-sdk/queries';
 import { Chain, createChain } from 'src/modules/networks/Chain';
 import { fetchAndAssignGasPrice } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import { hasGasPrice } from 'src/modules/ethereum/transactions/gasPrices/hasGasPrice';
@@ -52,9 +54,11 @@ import { Networks } from 'src/modules/networks/Networks';
 import { getDecimals } from 'src/modules/networks/asset';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
+import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
+import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { NetworkFee } from './NetworkFee';
 
-function UknownIcon({ size }: { size: number }) {
+function UnknownIcon({ size }: { size: number }) {
   return (
     <UIText
       kind="headline/h3"
@@ -114,15 +118,10 @@ function AssetLine({
     transaction.sendAssetId ||
     transaction.approveAssetCode ||
     transaction.sendAssetCode;
-  const { value: assets, status } = useAssetsPrices(
-    { currency: 'usd', asset_codes: [assetCode?.toLowerCase() || ''] },
-    { enabled: Boolean(assetCode) }
-  );
-  const assetFromCache = useMemo(
-    () => (assetCode ? queryCacheForAsset(assetCode) : null),
-    [assetCode]
-  );
-  const asset = assetFromCache || (assetCode ? assets?.[assetCode] : null);
+  const { asset, status } = useAssetFromCacheOrAPI({
+    address: assetCode || '',
+    isNative: false,
+  });
   if (
     status === DataStatus.ok &&
     !asset &&
@@ -239,16 +238,89 @@ function AssetLine({
   return null;
 }
 
+function PayWithLine({
+  asset,
+  value,
+  chain,
+}: {
+  asset: Asset;
+  value: string;
+  chain: Chain;
+}) {
+  const commonQuantity = useMemo(
+    () => baseToCommon(value, getDecimals({ chain, asset })),
+    [asset, chain, value]
+  );
+  const fiatValue =
+    asset.price?.value != null ? commonQuantity.times(asset.price.value) : null;
+  return (
+    <SurfaceList
+      items={[
+        {
+          key: 0,
+          // href: networks.getExplorerAddressUrlByName(chain, contractAddress),
+          target: '_blank',
+          rel: 'noopener noreferrer',
+          component: (
+            <VStack gap={4}>
+              <UIText kind="caption/regular" color="var(--neutral-500)">
+                Pay with
+              </UIText>
+
+              <Media
+                vGap={0}
+                image={
+                  <img
+                    style={{ width: 32, height: 32, borderRadius: '50%' }}
+                    src={asset.icon_url || ''}
+                  />
+                }
+                text={
+                  <UIText kind="headline/h3">
+                    {formatTokenValue(commonQuantity, asset.symbol)}
+                  </UIText>
+                }
+                detailText={
+                  fiatValue ? (
+                    <UIText kind="caption/regular" color="var(--neutral-500)">
+                      {`≈ ${formatCurrencyValue(fiatValue, 'en', 'usd')}`}
+                    </UIText>
+                  ) : null
+                }
+              />
+            </VStack>
+          ),
+        },
+      ]}
+    />
+  );
+}
+
 function TransactionDescription({
+  transaction,
   transactionDescription,
   networks,
   chain,
 }: {
+  transaction: PartiallyRequired<IncomingTransaction, 'chainId'>;
   transactionDescription: TransactionDescriptionType;
   networks: Networks;
   chain: Chain;
 }) {
+  const { chainId } = transaction;
   const { action, contractAddress, assetReceiver } = transactionDescription;
+  const network = networks.getNetworkById(ethers.utils.hexValue(chainId));
+  const nativeAssetInfo = network.native_asset;
+  const nativeValue = useMemo(
+    () => ethers.BigNumber.from(transaction.value ?? 0),
+    [transaction.value]
+  );
+  const { asset: nativeAsset } = useAssetFromCacheOrAPI({
+    address: null,
+    isNative: true,
+    id: nativeAssetInfo?.id ?? null,
+    chain: new Chain(network.chain),
+  });
   return (
     <>
       <AssetLine
@@ -271,7 +343,7 @@ function TransactionDescription({
                 // <AngleRightRow>
                 // </AngleRightRow>
                 <Media
-                  image={<UknownIcon size={32} />}
+                  image={<UnknownIcon size={32} />}
                   text={
                     <UIText kind="caption/reg" color="var(--neutral-500)">
                       Interact with
@@ -286,6 +358,15 @@ function TransactionDescription({
               ),
             },
           ]}
+        />
+      ) : null}
+      {nativeAsset &&
+      !transactionDescription.isNativeSend &&
+      !nativeValue.isZero() ? (
+        <PayWithLine
+          asset={nativeAsset}
+          value={nativeValue.toString()}
+          chain={chain}
         />
       ) : null}
     </>
@@ -318,7 +399,10 @@ async function resolveChainAndGasPrice(
   const networks = await networksStore.load();
   const chain = await resolveChainForTx(transaction, currentChain);
   const chainId = networks.getChainId(chain);
-  const copyWithChainId = { ...transaction, chainId };
+  const copyWithChainId: PartiallyRequired<IncomingTransaction, 'chainId'> = {
+    ...transaction,
+    chainId,
+  };
   if (hasGasPrice(copyWithChainId)) {
     return copyWithChainId;
   } else {
@@ -401,7 +485,9 @@ function SendTransactionContent({
     throw descriptionQuery.error || new Error('testing');
   }
 
-  const chain = networks.getChainById(transaction.chainId);
+  const chain = networks.getChainById(
+    ethers.utils.hexValue(transaction.chainId)
+  );
 
   return (
     <Background backgroundKind="neutral">
@@ -476,6 +562,7 @@ function SendTransactionContent({
         <VStack gap={16}>
           <VStack gap={12}>
             <TransactionDescription
+              transaction={transaction}
               transactionDescription={descriptionQuery.data}
               networks={networks}
               chain={chain}
@@ -492,16 +579,7 @@ function SendTransactionContent({
                 </UIText>
               )}
             >
-              <SurfaceList
-                items={[
-                  {
-                    key: 0,
-                    component: (
-                      <NetworkFee transaction={transaction} chain={chain} />
-                    ),
-                  },
-                ]}
-              />
+              <NetworkFee transaction={transaction} chain={chain} />
             </ErrorBoundary>
           ) : null}
         </VStack>
