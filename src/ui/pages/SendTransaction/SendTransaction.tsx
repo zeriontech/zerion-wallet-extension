@@ -50,6 +50,7 @@ import { WalletIcon } from 'src/ui/ui-kit/WalletIcon';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
+import { CopyButton } from 'src/ui/components/CopyButton';
 import { Networks } from 'src/modules/networks/Networks';
 import { getDecimals } from 'src/modules/networks/asset';
 import { focusNode } from 'src/ui/shared/focusNode';
@@ -135,9 +136,6 @@ function AssetLine({
         items={[
           {
             key: 0,
-            href: networks.getExplorerTokenUrlByName(chain, assetCode),
-            target: '_blank',
-            rel: 'noopener noreferrer',
             component: (
               <AngleRightRow>
                 <Media
@@ -149,9 +147,21 @@ function AssetLine({
                     </UIText>
                   }
                   detailText={
-                    <UIText kind="subtitle/l_reg" title={assetCode}>
-                      {truncateAddress(assetCode, 6)}
-                    </UIText>
+                    <HStack gap={0} alignItems="center">
+                      <UIText kind="subtitle/l_reg" title={assetCode}>
+                        <TextAnchor
+                          href={networks.getExplorerTokenUrlByName(
+                            chain,
+                            assetCode
+                          )}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {truncateAddress(assetCode, 6)}
+                        </TextAnchor>
+                      </UIText>
+                      <CopyButton address={assetCode} />
+                    </HStack>
                   }
                 />
               </AngleRightRow>
@@ -336,15 +346,7 @@ function TransactionDescription({
           items={[
             {
               key: 0,
-              href: networks.getExplorerAddressUrlByName(
-                chain,
-                contractAddress
-              ),
-              target: '_blank',
-              rel: 'noopener noreferrer',
               component: (
-                // <AngleRightRow>
-                // </AngleRightRow>
                 <Media
                   image={<UnknownIcon size={32} />}
                   text={
@@ -353,9 +355,21 @@ function TransactionDescription({
                     </UIText>
                   }
                   detailText={
-                    <UIText kind="subtitle/l_reg" title="contractAddress">
-                      {truncateAddress(contractAddress, 7)}
-                    </UIText>
+                    <HStack gap={0} alignItems="center">
+                      <UIText kind="subtitle/l_reg" title={contractAddress}>
+                        <TextAnchor
+                          href={networks.getExplorerTokenUrlByName(
+                            chain,
+                            contractAddress
+                          )}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {truncateAddress(contractAddress, 7)}
+                        </TextAnchor>
+                      </UIText>
+                      <CopyButton address={contractAddress} />
+                    </HStack>
                   }
                 />
               ),
