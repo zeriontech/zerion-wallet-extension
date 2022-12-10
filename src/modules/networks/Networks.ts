@@ -137,6 +137,12 @@ export class Networks {
     return this.getExplorerTxUrl(this.collection[this.toId(chain)], hash);
   }
 
+  getExplorerAddressUrlByName(chain: Chain, address: string) {
+    const network = this.collection[this.toId(chain)];
+    const url = network?.explorer_home_url;
+    return url ? `${url}/address/${address}` : undefined;
+  }
+
   private getExplorerTokenUrl(
     network: NetworkConfig | undefined,
     address: string

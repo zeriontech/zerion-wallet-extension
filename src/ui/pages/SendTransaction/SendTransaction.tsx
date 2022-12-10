@@ -336,7 +336,10 @@ function TransactionDescription({
           items={[
             {
               key: 0,
-              // href: networks.getExplorerAddressUrlByName(chain, contractAddress),
+              href: networks.getExplorerAddressUrlByName(
+                chain,
+                contractAddress
+              ),
               target: '_blank',
               rel: 'noopener noreferrer',
               component: (
