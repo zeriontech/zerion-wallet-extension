@@ -5,9 +5,14 @@ import type { IncomingTransaction } from '../types/IncomingTransaction';
 import { ensureChainId } from './getChainId';
 
 export enum TransactionAction {
+  multicall,
   approve,
   swap,
   transfer,
+  deposit,
+  withdraw,
+  setApprovalForAll,
+  send,
   contractInteraction,
 }
 
@@ -30,10 +35,113 @@ const encodeSelector = (signature: string) =>
     0,
     4
   );
+
 const selectors = {
+  // Native, ERC20
   approve: encodeSelector('approve(address,uint256)'),
   transfer: encodeSelector('transfer(address,uint256)'),
+  // Common
+  multicall1: encodeSelector('multicall(bytes[])'),
+  multicall2: encodeSelector('multicall(uint256,bytes[])'),
+  // ERC-4626 (Vault)
+  deposit: encodeSelector('deposit(uint256,address)'),
+  withdraw: encodeSelector('withdraw(assets,address,address)'),
+  // ERC-1155 (Multi-token)
+  setApprovalForAll: encodeSelector('setApprovalForAll(address,bool)'),
+  // ERC-777
+  send: encodeSelector('send(address,uint256,bytes)'),
 };
+
+function describeDeposit(
+  transaction: IncomingTransaction
+): TransactionDescription | null {
+  if (!transaction.data) {
+    return null;
+  }
+  const selector = ethers.utils.hexDataSlice(transaction.data, 0, 4);
+
+  if (selector === selectors.deposit) {
+    const abiCoder = new ethers.utils.AbiCoder();
+    const [assets, receiver] = abiCoder.decode(
+      ['uint256', 'address'],
+      ethers.utils.hexDataSlice(transaction.data, 4)
+    );
+
+    return {
+      action: TransactionAction.deposit,
+      contractAddress: transaction.to,
+      sendAssetCode: receiver,
+      sendAmount: assets,
+    };
+  }
+  return null;
+}
+
+function describeWithdraw(
+  transaction: IncomingTransaction
+): TransactionDescription | null {
+  if (!transaction.data) {
+    return null;
+  }
+  const selector = ethers.utils.hexDataSlice(transaction.data, 0, 4);
+
+  if (selector === selectors.withdraw) {
+    const abiCoder = new ethers.utils.AbiCoder();
+    const [assets, receiver, _owner] = abiCoder.decode(
+      ['assets', 'address', 'address'],
+      ethers.utils.hexDataSlice(transaction.data, 4)
+    );
+
+    return {
+      action: TransactionAction.withdraw,
+      contractAddress: transaction.to,
+      sendAmount: assets,
+      assetReceiver: receiver,
+    };
+  }
+  return null;
+}
+
+function describeSetApprovalForAll(
+  transaction: IncomingTransaction
+): TransactionDescription | null {
+  if (!transaction.data) {
+    return null;
+  }
+  const selector = ethers.utils.hexDataSlice(transaction.data, 0, 4);
+
+  if (selector === selectors.setApprovalForAll) {
+    const abiCoder = new ethers.utils.AbiCoder();
+    const [operator, _approved] = abiCoder.decode(
+      ['assets', 'bool'],
+      ethers.utils.hexDataSlice(transaction.data, 4)
+    );
+
+    return {
+      action: TransactionAction.setApprovalForAll,
+      contractAddress: transaction.to,
+      tokenSpender: operator,
+    };
+  }
+  return null;
+}
+
+function describeMulticall(
+  transaction: IncomingTransaction
+): TransactionDescription | null {
+  if (!transaction.data) {
+    return null;
+  }
+  const selector = ethers.utils.hexDataSlice(transaction.data, 0, 4);
+
+  if (selector === selectors.multicall1 || selector === selectors.multicall2) {
+    return {
+      action: TransactionAction.multicall,
+      contractAddress: transaction.to,
+    };
+  }
+  return null;
+}
 
 function describeApprove(
   transaction: IncomingTransaction
@@ -78,15 +186,26 @@ function describeSend(
     };
   }
   const selector = ethers.utils.hexDataSlice(transaction.data, 0, 4);
-
-  if (selector !== selectors.transfer) {
+  if (selector !== selectors.transfer || selector !== selectors.send) {
     return null;
   }
+
+  let address = null;
+  let amount = null;
+
   const abiCoder = new ethers.utils.AbiCoder();
-  const [address, amount] = abiCoder.decode(
-    ['address', 'uint256'],
-    ethers.utils.hexDataSlice(transaction.data, 4)
-  );
+  if (selector === selectors.transfer) {
+    [address, amount] = abiCoder.decode(
+      ['address', 'uint256'],
+      ethers.utils.hexDataSlice(transaction.data, 4)
+    );
+  } else if (selector === selectors.send) {
+    [address, amount] = abiCoder.decode(
+      ['address', 'uint256', 'bytes'],
+      ethers.utils.hexDataSlice(transaction.data, 4)
+    );
+  }
+
   return {
     action: TransactionAction.transfer,
     assetReceiver: address,
@@ -103,7 +222,15 @@ function describeContractInteraction(
     contractAddress: transaction.to,
   };
 }
-const describers = [describeApprove, describeSend, describeContractInteraction];
+const describers = [
+  describeApprove,
+  describeSend,
+  describeDeposit,
+  describeWithdraw,
+  describeSetApprovalForAll,
+  describeMulticall,
+  describeContractInteraction,
+];
 
 export async function describeTransaction(
   transaction: IncomingTransaction
