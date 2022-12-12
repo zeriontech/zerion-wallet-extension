@@ -41,7 +41,7 @@ export class EthereumProvider extends JsonRpcProvider {
   accounts: string[];
   chainId: string;
   networkVersion: string;
-  isZerionWallet = true;
+  isZerion = true;
   isMetaMask?: boolean;
   connection: Connection;
   _openPromise: Promise<void> | null = null;
