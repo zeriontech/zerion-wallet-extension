@@ -80,7 +80,15 @@ export function BugReportButton() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <HStack gap={8}>
+            <HStack
+              gap={8}
+              justifyContent="center"
+              style={{
+                position: 'relative',
+                // small offset for better visual centering because of <BugIcon /> padding
+                left: -2,
+              }}
+            >
               <BugIcon />
               <span>Bug Report</span>
             </HStack>
