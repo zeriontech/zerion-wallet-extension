@@ -97,11 +97,15 @@ export class EthereumProvider extends JsonRpcProvider {
     );
   }
 
-  public async request(
+  /**
+   * Some DApps make unbound calls to request, e.g. https://app.phuture.finance/
+   * To handle this, make request bound to instance
+   */
+  public request = async (
     request: RequestArguments,
     context?: unknown
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): Promise<any> {
+  ): Promise<any> => {
     if (request.method === 'eth_chainId') {
       return Promise.resolve(this.chainId);
     }
@@ -112,7 +116,7 @@ export class EthereumProvider extends JsonRpcProvider {
       formatJsonRpcRequest(request.method, request.params || []),
       context
     );
-  }
+  };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async _getRequestPromise<Result = any, Params = any>(
