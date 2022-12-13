@@ -1,4 +1,6 @@
 import React, { useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { QRCode } from 'react-qrcode-logo';
 import { Background } from 'src/ui/components/Background';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -8,9 +10,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import CopyIcon from 'jsx:src/ui/assets/copy.svg';
-import { QRCode } from 'react-qrcode-logo';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
-import { useSearchParams } from 'react-router-dom';
 import { invariant } from 'src/shared/invariant';
 
 export function Receive() {
