@@ -17,6 +17,17 @@ import type { RuntimePort } from './webapis/RuntimePort';
 
 Object.assign(globalThis, { ethers });
 
+globalThis.addEventListener('install', (_event) => {
+  /** Seems to be recommended when clients always expect a service worker */
+  // @ts-ignore sw service-worker environment
+  globalThis.skipWaiting();
+});
+globalThis.addEventListener('activate', (_event) => {
+  /** Seems to be recommended when clients always expect a service worker */
+  // @ts-ignore sw service-worker environment
+  globalThis.clients.claim();
+});
+
 configureBackgroundClient();
 networksStore.load();
 

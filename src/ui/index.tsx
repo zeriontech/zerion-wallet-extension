@@ -11,10 +11,18 @@ if (!root) {
   throw new Error('#root element not found');
 }
 
-configureUIClient().then(() => {
-  createRoot(root).render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
-  );
-});
+async function registerServiceWorker() {
+  /** Seems to be recommended when clients always expect a service worker */
+  const registration = await navigator.serviceWorker.getRegistration();
+  return registration?.update();
+}
+
+registerServiceWorker()
+  .then(() => configureUIClient())
+  .then(() => {
+    createRoot(root).render(
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    );
+  });
