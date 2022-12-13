@@ -41,6 +41,7 @@ import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { CurrentNetwork } from './CurrentNetwork';
 import { NonFungibleTokens } from './NonFungibleTokens';
 import { Positions } from './Positions';
+import { ActionButtonsRow } from './ActionButtonsRow';
 
 interface ChangeInfo {
   isPositive: boolean;
@@ -284,7 +285,9 @@ function OverviewComponent() {
             )}
           </VStack>
         </div>
-        <Spacer height={24} />
+        <Spacer height={20} />
+        <ActionButtonsRow />
+        <Spacer height={20} />
       </PageFullBleedColumn>
       <PageFullBleedColumn
         padding={false}
@@ -296,10 +299,10 @@ function OverviewComponent() {
         }}
       >
         <SegmentedControlGroup style={{ paddingTop: 4 }}>
-          <SegmentedControlLink to="/overview/nfts">NFTs</SegmentedControlLink>
           <SegmentedControlLink to="/overview" end={true}>
             Tokens
           </SegmentedControlLink>
+          <SegmentedControlLink to="/overview/nfts">NFTs</SegmentedControlLink>
           <SegmentedControlLink to="/overview/history">
             History <PendingTransactionsIndicator />
           </SegmentedControlLink>

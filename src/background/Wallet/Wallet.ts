@@ -330,7 +330,11 @@ export class Wallet {
     this.updateWalletStore(this.record);
   }
 
-  async acceptOrigin(origin: string, address: string) {
+  async acceptOrigin({
+    params: { origin, address },
+    context,
+  }: WalletMethodParams<{ origin: string; address: string }>) {
+    this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
     this.record = Model.addPermission(this.record, { address, origin });
     this.updateWalletStore(this.record);
@@ -837,7 +841,10 @@ class PublicController {
               context: INTERNAL_SYMBOL_CONTEXT,
             });
           }
-          this.wallet.acceptOrigin(origin, address);
+          this.wallet.acceptOrigin({
+            params: { origin, address },
+            context: INTERNAL_SYMBOL_CONTEXT,
+          });
           const accounts = await this.eth_accounts({ context });
           resolve(accounts);
         },
