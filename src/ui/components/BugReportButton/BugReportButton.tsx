@@ -9,10 +9,12 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { version } from 'src/shared/packageVersion';
 import { PageColumn } from '../PageColumn';
 import * as s from './styles.module.css';
+import { detectBrowser } from './detectBrowser';
 
 const BUTTON_HEIGHT = 29;
 
 const urlBlacklist = new Set(['/', '/intro', '/get-started']);
+const { browser, version: browserVersion } = detectBrowser(navigator.userAgent);
 
 function BottomFixed({ children }: React.PropsWithChildren) {
   useLayoutEffect(() => {
@@ -74,6 +76,8 @@ export function BugReportButton() {
               {
                 version,
                 pathname,
+                browser: `${browser}/${browserVersion}`,
+                platform: navigator.platform,
                 search,
               }
             )}`}
