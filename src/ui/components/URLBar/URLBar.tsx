@@ -1,7 +1,7 @@
 import React, { useEffect, useReducer, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import IconLeft from 'jsx:src/ui/assets/chevron-left-medium.svg';
+import IconLeft from 'jsx:src/ui/assets/arrow-left.svg';
 import { RenderArea } from 'react-area';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Store } from 'store-unit';
@@ -125,7 +125,7 @@ export function URLBar() {
           );
         }}
       />
-      <span />
+      <RenderArea name="navigation-bar-right-element" />
     </nav>
   );
 }
