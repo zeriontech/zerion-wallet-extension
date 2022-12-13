@@ -45,9 +45,7 @@ import { VersionUpgrade } from '../components/VersionUpgrade';
 import { queryClient } from '../shared/requests/queryClient';
 import { ForgotPassword } from '../pages/ForgotPassword';
 import { BugReportButton } from '../components/BugReportButton';
-import { DnaPage } from '../components/DnaClaim';
 import { Receive } from '../pages/Receive';
-import { NonFungibleToken } from '../pages/NonFungibleToken';
 
 function View() {
   const location = useLocation();
