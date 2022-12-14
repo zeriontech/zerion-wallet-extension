@@ -79,6 +79,7 @@ function UnknownIcon({ size }: { size: number }) {
     </UIText>
   );
 }
+
 function ItemSurface({ style, ...props }: React.HTMLProps<HTMLDivElement>) {
   const surfaceStyle = {
     ...style,
@@ -147,10 +148,10 @@ function AssetLine({
                     </UIText>
                   }
                   detailText={
-                    <HStack gap={0} alignItems="center">
-                      <UIText kind="subtitle/l_reg" title={assetCode}>
+                    <HStack gap={4} alignItems="center">
+                      <UIText kind="subtitle/m_reg" title={assetCode}>
                         <TextAnchor
-                          href={networks.getExplorerTokenUrlByName(
+                          href={networks.getExplorerAddressUrlByName(
                             chain,
                             assetCode
                           )}
@@ -348,17 +349,18 @@ function TransactionDescription({
               key: 0,
               component: (
                 <Media
-                  image={<UnknownIcon size={32} />}
+                  image={<UnknownIcon size={36} />}
+                  vGap={0}
                   text={
                     <UIText kind="caption/reg" color="var(--neutral-500)">
                       Interact with
                     </UIText>
                   }
                   detailText={
-                    <HStack gap={0} alignItems="center">
-                      <UIText kind="subtitle/l_reg" title={contractAddress}>
+                    <HStack gap={4} alignItems="center">
+                      <UIText kind="subtitle/m_reg" title={contractAddress}>
                         <TextAnchor
-                          href={networks.getExplorerTokenUrlByName(
+                          href={networks.getExplorerAddressUrlByName(
                             chain,
                             contractAddress
                           )}

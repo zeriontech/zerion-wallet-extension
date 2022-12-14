@@ -3,11 +3,16 @@ import { Button } from 'src/ui/ui-kit/Button';
 import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 
-export function CopyButton({ address }: { address: string }) {
+interface Props {
+  address: string;
+  title?: string;
+}
+
+export function CopyButton({ address, title = 'Copy Address' }: Props) {
   const { handleCopy, isSuccess } = useCopyToClipboard({ text: address });
   return (
     <div style={{ position: 'relative' }}>
-      <Button kind="ghost" size={32} title="Copy Address" onClick={handleCopy}>
+      <Button kind="ghost" size={32} title={title} onClick={handleCopy}>
         {isSuccess ? (
           <div style={{ width: 20, height: 20, color: 'var(--positive-500)' }}>
             ✔
