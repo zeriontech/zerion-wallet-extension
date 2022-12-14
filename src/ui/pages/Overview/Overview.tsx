@@ -26,7 +26,6 @@ import {
 } from 'src/ui/ui-kit/SegmentedControl';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import CopyIcon from 'jsx:src/ui/assets/copy.svg';
-import QrCodeIcon from 'jsx:src/ui/assets/qr-code.svg';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { useQuery } from 'react-query';
 import { walletPort } from 'src/ui/shared/channels';
@@ -170,16 +169,6 @@ function CurrentAccountControls() {
         <CurrentAccount wallet={wallet} />
       </Button>
       <CopyButton address={addressToCopy} />
-      <Button
-        kind="ghost"
-        size={32}
-        as={UnstyledLink}
-        to={`/receive?address=${singleAddress}`}
-        title="Show QR code"
-        style={{ width: 32 }}
-      >
-        <QrCodeIcon style={{ display: 'block', width: 24, height: 24 }} />
-      </Button>
     </HStack>
   );
 }

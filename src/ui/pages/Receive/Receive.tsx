@@ -68,7 +68,7 @@ export function Receive() {
           </div>
           <VStack gap={8} style={{ justifyItems: 'center' }}>
             {/* todo: add ens/lens support! */}
-            <UIText kind="headline/h3">test.zerion.eth</UIText>
+            {/* <UIText kind="headline/h3">test.zerion.eth</UIText> */}
             <HStack gap={0} alignItems="center">
               <UIText kind="small/accent">{address.slice(0, 6)}</UIText>
               <UIText kind="small/regular">{address.slice(6, -4)}</UIText>

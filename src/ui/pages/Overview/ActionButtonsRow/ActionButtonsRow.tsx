@@ -99,7 +99,7 @@ export function ActionButtonsRow() {
           title="Receive"
           as={UnstyledLink}
           icon={<ReceiveIcon />}
-          to="/not-implemented"
+          to={`/receive?address=${wallet.address}`}
         />
       </li>
       <li>
