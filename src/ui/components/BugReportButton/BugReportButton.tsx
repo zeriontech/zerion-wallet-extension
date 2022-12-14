@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill';
 import React from 'react';
 import { useLayoutEffect } from 'react';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
@@ -14,7 +15,22 @@ import { detectBrowser } from './detectBrowser';
 const BUTTON_HEIGHT = 29;
 
 const urlBlacklist = new Set(['/', '/intro', '/get-started']);
-const { browser, version: browserVersion } = detectBrowser(navigator.userAgent);
+const { browser: browserName, version: browserVersion } = detectBrowser(
+  navigator.userAgent
+);
+
+function openInNewWindow(
+  event: React.MouseEvent<HTMLAnchorElement, MouseEvent>
+) {
+  // Open report URL in a new _window_ so that extension UI stays open.
+  // This should help the user describe the issue better
+  event.preventDefault();
+  browser.windows.create({
+    url: event.currentTarget.getAttribute('href') as string,
+    width: 600,
+    height: 800,
+  });
+}
 
 function BottomFixed({ children }: React.PropsWithChildren) {
   useLayoutEffect(() => {
@@ -72,11 +88,12 @@ export function BugReportButton() {
         <UIText kind="small/accent" className={helperStyles.hoverUnderline}>
           <UnstyledAnchor
             className={s.link}
+            onClick={openInNewWindow}
             href={`https://zerion-io.typeform.com/bug-report#${new URLSearchParams(
               {
                 version,
                 pathname,
-                browser: `${browser}/${browserVersion}`,
+                browser: `${browserName}/${browserVersion}`,
                 platform: navigator.platform,
                 search,
               }
