@@ -1,0 +1,23 @@
+.icon {
+  height: 44px;
+  width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--neutral-400);
+}
+
+.actionButton:focus .icon {
+  background-color: var(--neutral-200);
+}
+
+.actionButton:active .icon {
+  background-color: var(--neutral-300);
+}
+
+@media (hover: hover) {
+  .actionButton:not(:disabled):hover .icon {
+    background-color: var(--neutral-200);
+  }
+}
