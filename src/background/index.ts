@@ -63,6 +63,7 @@ function notifyContentScriptsAndUIAboutInitialization() {
 }
 
 const portRegistry = new PortRegistry();
+Object.assign(globalThis, { portRegistry });
 
 // Listeners must be registered synchronously from the start of the page:
 // https://developer.chrome.com/docs/extensions/mv3/service_workers/#listeners
