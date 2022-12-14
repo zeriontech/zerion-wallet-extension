@@ -37,7 +37,7 @@ export function NavigationTitle({
         </Content>
       ) : null}
       <Content name="navigation-bar">{title}</Content>
-      <Content name="navigation-bar-right-element">
+      <Content name="navigation-bar-end">
         {address ? (
           <WalletIcon active={false} address={address} iconSize={32} />
         ) : (

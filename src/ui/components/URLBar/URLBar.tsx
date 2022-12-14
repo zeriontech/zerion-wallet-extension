@@ -125,7 +125,7 @@ export function URLBar() {
           );
         }}
       />
-      <RenderArea name="navigation-bar-right-element" />
+      <RenderArea name="navigation-bar-end" />
     </nav>
   );
 }
