@@ -1,14 +1,15 @@
 import React, { ComponentPropsWithoutRef, ElementType, useMemo } from 'react';
+import { useMutation, useQuery } from 'react-query';
 import SwapIcon from 'jsx:src/ui/assets/actions/swap.svg';
 import SendIcon from 'jsx:src/ui/assets/actions/send.svg';
 import ReceiveIcon from 'jsx:src/ui/assets/actions/receive.svg';
 import BridgeIcon from 'jsx:src/ui/assets/actions/bridge.svg';
 import BuyIcon from 'jsx:src/ui/assets/actions/buy.svg';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
-import { useMutation, useQuery } from 'react-query';
 import { walletPort } from 'src/ui/shared/channels';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import * as s from './styles.module.css';
 
 function ActionButton<As extends ElementType = 'a'>({
   as,
@@ -21,20 +22,9 @@ function ActionButton<As extends ElementType = 'a'>({
 } & { as?: As } & ComponentPropsWithoutRef<As>) {
   const Element = as || UnstyledAnchor;
   return (
-    <Element {...props}>
+    <Element {...props} className={s.actionButton}>
       <VStack gap={4} style={{ placeItems: 'center' }}>
-        <div
-          style={{
-            height: 44,
-            width: 44,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: '50%',
-            border: `1px solid var(--neutral-400)`,
-          }}
-          title={title}
-        >
+        <div className={s.icon} title={title}>
           {icon}
         </div>
         {title}
@@ -70,7 +60,7 @@ export function ActionButtonsRow() {
   }
   const addPermission = () =>
     acceptOrigin({
-      origin: 'http://localhost:3000',
+      origin: 'https://app.zerion.io',
       address: wallet.address,
     });
   return (
@@ -88,7 +78,7 @@ export function ActionButtonsRow() {
         <ActionButton
           title="Swap"
           icon={<SwapIcon />}
-          href={`http://localhost:3000/swap?${addWalletParams}`}
+          href={`https://app.zerion.io/swap?${addWalletParams}`}
           onClick={addPermission}
           target="_blank"
           rel="noopener noreferrer"
@@ -98,7 +88,7 @@ export function ActionButtonsRow() {
         <ActionButton
           title="Send"
           icon={<SendIcon />}
-          href={`http://localhost:3000/send?${addWalletParams}`}
+          href={`https://app.zerion.io/send?${addWalletParams}`}
           onClick={addPermission}
           target="_blank"
           rel="noopener noreferrer"
@@ -116,7 +106,7 @@ export function ActionButtonsRow() {
         <ActionButton
           title="Bridge"
           icon={<BridgeIcon />}
-          href={`http://localhost:3000/bridge?${addWalletParams}`}
+          href={`https://app.zerion.io/bridge?${addWalletParams}`}
           onClick={addPermission}
           target="_blank"
           rel="noopener noreferrer"
