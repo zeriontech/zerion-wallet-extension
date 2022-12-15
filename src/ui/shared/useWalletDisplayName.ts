@@ -1,30 +1,15 @@
 import { useCallback } from 'react';
 import { useQuery } from 'react-query';
 import { lookupAddressName } from 'src/modules/name-service';
-import { truncateAddress } from './truncateAddress';
-
-export function emojify(value: string) {
-  const lowerCase = value.toLowerCase();
-  if (
-    lowerCase.includes('hacked') ||
-    lowerCase.includes('leaked') ||
-    lowerCase.includes('lost')
-  ) {
-    return `${value} 😱`;
-  } else {
-    return value;
-  }
-}
-
-interface Options {
-  name?: string | null;
-  padding?: number;
-  maxCharacters?: number;
-}
+import { getWalletDisplayName } from './getWalletDisplayName';
 
 export function useWalletDisplayName(
   address: string,
-  { name, padding = 4, maxCharacters }: Options = {}
+  name?: string | null,
+  {
+    padding = 4,
+    maxCharacters,
+  }: { padding?: number; maxCharacters?: number } = {}
 ) {
   const { isLoading: isDomainLoading, data: domain } = useQuery(
     ['name-service/lookupAddressName', address],
@@ -32,12 +17,9 @@ export function useWalletDisplayName(
   );
 
   const domainName = isDomainLoading ? null : domain;
-  const displayName = name ?? domainName ?? truncateAddress(address, padding);
-  const value = emojify(displayName);
-
-  if (maxCharacters && value.length > maxCharacters) {
-    return truncateAddress(value, Math.floor((maxCharacters - 1) / 2));
-  } else {
-    return value;
-  }
+  return (
+    name ??
+    domainName ??
+    getWalletDisplayName(address, name, { padding, maxCharacters })
+  );
 }

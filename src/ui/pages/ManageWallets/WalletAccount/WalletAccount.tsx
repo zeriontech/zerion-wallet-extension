@@ -56,9 +56,7 @@ function EditableWalletName({
     500
   );
 
-  const displayName = useWalletDisplayName(wallet.address, {
-    name: wallet.name,
-  });
+  const displayName = useWalletDisplayName(wallet.address, wallet.name);
 
   return (
     <VStack gap={4}>
@@ -142,9 +140,7 @@ export function WalletAccount() {
     () => walletPort.request('uiGetWalletByAddress', { address }),
     { useErrorBoundary: true }
   );
-  const displayName = useWalletDisplayName(address, {
-    name: wallet?.name,
-  });
+  const displayName = useWalletDisplayName(address, wallet?.name);
   const removeAddressMutation = useMutation(
     () => walletPort.request('removeAddress', { address }),
     {

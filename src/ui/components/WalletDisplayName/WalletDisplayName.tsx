@@ -11,8 +11,7 @@ export function WalletDisplayName({
   padding?: number;
   maxCharacters?: number;
 }) {
-  const displayName = useWalletDisplayName(wallet.address, {
-    name: wallet.name,
+  const displayName = useWalletDisplayName(wallet.address, wallet.name, {
     padding,
     maxCharacters,
   });
