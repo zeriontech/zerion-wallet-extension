@@ -1,13 +1,23 @@
 .option {
   width: 100%;
   display: block;
-  padding: 6px 6px;
+  padding-block: 6px;
+  padding-inline: 6px;
   text-align: start;
+}
+
+.noSeparator .option {
+  padding-block: 0px;
+}
+
+.noSeparator .decoration {
+  padding-block: 8px;
 }
 
 .decoration {
   border-radius: 6px;
-  padding: 6px 10px;
+  padding-inline: 10px;
+  padding-block: 6px;
 }
 
 @media (hover: hover) {

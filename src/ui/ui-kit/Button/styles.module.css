@@ -10,7 +10,15 @@
   color: currentColor;
 }
 
-.primary {
+/**
+ * I'm so sorry, but if src/ui/ui-kit/UnstyledLink/styles.module.css gets imported
+ * later than the button, and the button is used as `as={UnstyledLink}`
+ * the color becomes "inherit" instead of white.
+ * .primary.primary is semi-legit method to increase specificity of the class
+ * If you know a better approach (e.g., guaranteeing that UnstyledLink styles get imported earlier),
+ * you're welcome to refactor
+ */
+.primary.primary {
   background-color: var(--actions-default);
   color: var(--always-white);
 }
@@ -33,7 +41,6 @@
 
 .ghost {
   background-color: transparent;
-  display: block;
   border-radius: 4px;
   padding: 4px;
 }
@@ -48,7 +55,7 @@
   }
 }
 
-.danger {
+.danger.danger {
   background-color: var(--negative-500);
   color: var(--always-white);
 }

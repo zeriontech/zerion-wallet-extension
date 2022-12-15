@@ -1,6 +1,7 @@
 import type { AddressParams } from 'defi-sdk';
 import { useMemo } from 'react';
 import { useQuery } from 'react-query';
+import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { walletPort } from '../channels';
 
 interface Result {
@@ -20,14 +21,12 @@ export function useAddressParams(): Result {
   } = useQuery(
     'wallet/getCurrentAddress',
     () =>
-      walletPort
-        .request('getCurrentAddress')
-        .then((result) => result?.toLowerCase() || null),
+      walletPort.request('getCurrentAddress').then((result) => result || null),
     { useErrorBoundary: true }
   );
   const address = addressResult || '';
   return {
-    params: useMemo(() => ({ address }), [address]),
+    params: useMemo(() => ({ address: normalizeAddress(address) }), [address]),
     maybeSingleAddress: address || null,
     singleAddress: address,
     ready: Boolean(address),

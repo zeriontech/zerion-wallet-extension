@@ -20,6 +20,7 @@ import LockIcon from 'jsx:src/ui/assets/lock.svg';
 import GlobeIcon from 'jsx:src/ui/assets/globe.svg';
 import SettingsIcon from 'jsx:src/ui/assets/settings.svg';
 import { version } from 'src/shared/packageVersion';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { BackupFlowSettingsSection } from '../BackupWallet/BackupSettingsItem';
 
 function SettingsMain() {
@@ -98,6 +99,7 @@ function SettingsMain() {
           ]}
         />
       </VStack>
+      <Spacer height={8} />
       <UIText
         style={{ marginTop: 'auto', textAlign: 'end' }}
         kind="small/regular"
