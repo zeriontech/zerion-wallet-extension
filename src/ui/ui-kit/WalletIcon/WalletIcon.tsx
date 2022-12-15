@@ -19,12 +19,12 @@ export function WalletIcon({
 }) {
   return (
     <div className={s.root}>
-      {star ? <GenesisStar className={s.star} /> : null}
       <div className={active ? s.activeIndicatorClip : undefined}>
+        {star ? <GenesisStar className={s.star} /> : null}
         {imageUrl ? (
           <Image
             className={s.image}
-            style={{ width: `${iconSize}px`, height: `${iconSize}px` }}
+            style={{ width: iconSize, height: iconSize }}
             src={imageUrl}
             renderError={() => <BlockieImg address={address} size={iconSize} />}
           />

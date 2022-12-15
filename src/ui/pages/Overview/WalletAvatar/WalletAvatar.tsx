@@ -28,7 +28,7 @@ async function fetchWalletNFTImage(
 export function WalletAvatar({ address }: { address: string }) {
   const { data: isConnected } = useIsConnectedToActiveTab(address);
   const { data: nftUrl } = useQuery(
-    'wallet/fetchWalletNFTImage',
+    ['fetchWalletNFTImage', address],
     () => fetchWalletNFTImage(address),
     { suspense: false }
   );
