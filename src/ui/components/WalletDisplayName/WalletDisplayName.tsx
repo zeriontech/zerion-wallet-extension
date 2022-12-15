@@ -15,5 +15,9 @@ export function WalletDisplayName({
     padding,
     maxCharacters,
   });
-  return <span style={{ wordBreak: 'break-all' }}>{displayName}</span>;
+  return (
+    <span style={{ textOverflow: 'ellipsis', overflow: 'hidden' }}>
+      {displayName}
+    </span>
+  );
 }
