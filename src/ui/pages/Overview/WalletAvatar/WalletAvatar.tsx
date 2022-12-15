@@ -2,10 +2,12 @@ import React from 'react';
 import { useQuery } from 'react-query';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { SOCIAL_API_URL } from 'src/env/config';
-import { WalletIcon } from 'src/ui/ui-kit/WalletIcon';
-import { useIsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
-import { useAddressBoost } from 'src/ui/shared/requests/useAddressBoost';
-import { WalletProfilesResponse, WalletProfile } from './types';
+import { AvatarIcon } from './AvatarIcon';
+import {
+  WalletProfilesResponse,
+  WalletProfile,
+  WalletProfileNFT,
+} from './types';
 
 async function fetchWalletProfile(
   address: string
@@ -18,30 +20,23 @@ async function fetchWalletProfile(
   return profiles?.[0];
 }
 
-async function fetchWalletNFTImage(
+async function fetchWalletNFT(
   address: string
-): Promise<string | undefined> {
+): Promise<WalletProfileNFT | undefined> {
   const profile = await fetchWalletProfile(address);
-  return profile?.nft?.preview?.url;
+  return profile?.nft;
 }
 
 export function WalletAvatar({ address }: { address: string }) {
-  const { data: isConnected } = useIsConnectedToActiveTab(address);
-  const { data: nftUrl } = useQuery(
-    ['fetchWalletNFTImage', address],
-    () => fetchWalletNFTImage(address),
+  const { data: nft, isLoading } = useQuery(
+    ['fetchWalletNFT', address],
+    () => fetchWalletNFT(address),
     { suspense: false }
   );
-  const { data: boostData } = useAddressBoost({ address });
-  const star = boostData?.boost?.boost_status != null;
 
-  return (
-    <WalletIcon
-      active={Boolean(isConnected)}
-      star={star}
-      address={address}
-      iconSize={64}
-      imageUrl={nftUrl}
-    />
-  );
+  if (isLoading) {
+    return <div style={{ width: 64, height: 64 }} />;
+  }
+
+  return <AvatarIcon address={address} iconSize={64} nft={nft} />;
 }

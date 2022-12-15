@@ -1,14 +1,14 @@
-interface WalletProfileNFTImage {
+export interface WalletProfileNFTImage {
   url: string;
-  meta: { type: string };
+  meta: null | Record<string, string>;
 }
 
-interface WalletProfileNFT {
+export interface WalletProfileNFT {
   id: string;
   name: string;
   contract?: { address: string };
-  preview?: WalletProfileNFTImage;
-  detail?: WalletProfileNFTImage;
+  preview: WalletProfileNFTImage;
+  detail: WalletProfileNFTImage;
 }
 
 interface WalletProfileMeta {

@@ -27,9 +27,3 @@
   bottom: 0;
   background-color: var(--positive-500);
 }
-
-.star {
-  position: absolute;
-  left: -10px;
-  top: -10px;
-}
