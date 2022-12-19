@@ -1,10 +1,9 @@
 import { ensLookup } from './ens';
 import { lensLookup } from './lens';
-import { unstoppableDomainsLookup } from './unstoppableDomains';
 
 export type Registry = (address: string) => Promise<string | null>;
 
-export const registries = [ensLookup, lensLookup, unstoppableDomainsLookup];
+export const registries = [ensLookup, lensLookup];
 
 export async function lookupAddressNames(address: string): Promise<string[]> {
   const addresses = await Promise.all(
