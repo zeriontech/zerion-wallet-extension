@@ -46,6 +46,7 @@ import { queryClient } from '../shared/requests/queryClient';
 import { ForgotPassword } from '../pages/ForgotPassword';
 import { BugReportButton } from '../components/BugReportButton';
 import { Receive } from '../pages/Receive';
+import { KeyboardShortcut } from '../components/KeyboardShortcut';
 
 function View() {
   const location = useLocation();
@@ -324,6 +325,13 @@ export function App() {
               <InactivityDetector />
               <SessionResetHandler />
               <DesignTheme templateType={templateType || 'popup'} />
+              <KeyboardShortcut
+                combination="ctrl+alt+0"
+                onKeyDown={() => {
+                  // Helper for development and debugging :)
+                  window.open(window.location.href, '_blank');
+                }}
+              />
               <VersionUpgrade>
                 <CloseOtherWindows />
                 <ViewSuspense>
