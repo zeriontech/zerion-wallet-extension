@@ -8,8 +8,14 @@
   border: 1px solid var(--neutral-400);
 }
 
-.actionButton:focus .icon {
+.actionButton:focus {
+  outline: none;
+}
+
+.actionButton:focus:focus-visible .icon {
   background-color: var(--neutral-200);
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .actionButton:active .icon {

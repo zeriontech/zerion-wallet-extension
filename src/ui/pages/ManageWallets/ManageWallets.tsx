@@ -71,6 +71,7 @@ function MnemonicList({ walletGroups }: { walletGroups: WalletGroup[] }) {
       <SurfaceList
         items={walletGroups.map((group) => ({
           key: group.id,
+          separatorTop: true,
           to: `/wallets/groups/${group.id}`,
           component: (
             <HStack gap={4} justifyContent="space-between" alignItems="center">

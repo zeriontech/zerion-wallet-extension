@@ -12,7 +12,6 @@ import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 // import { Twinkle } from 'src/ui/ui-kit/Twinkle';
 // import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
 // import { FillView } from 'src/ui/components/FillView';
-import AddWalletIcon from 'jsx:src/ui/assets/add-wallet.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { usePendingTransactions } from 'src/ui/transactions/usePendingTransactions';
@@ -174,7 +173,7 @@ function CurrentAccountControls() {
 }
 
 function OverviewComponent() {
-  const { params, ready } = useAddressParams();
+  const { singleAddress, params, ready } = useAddressParams();
   const { value, isLoading: isLoadingPortfolio } = useAddressPortfolio(
     {
       ...params,
@@ -217,22 +216,13 @@ function OverviewComponent() {
         <HStack gap={12} justifyContent="space-between" alignItems="center">
           <HStack gap={4} alignItems="center">
             <CurrentAccountControls />
-            {preferences?.showNetworkSwitchShortcut === true ? (
-              <CurrentNetwork />
-            ) : null}
           </HStack>
 
-          <HStack gap={4}>
+          <HStack gap={0} alignItems="center">
+            {preferences?.showNetworkSwitchShortcut === true ? (
+              <CurrentNetwork address={singleAddress} />
+            ) : null}
             <SettingsLinkIcon />
-            <Button
-              kind="ghost"
-              size={32}
-              title="Add Wallet"
-              as={UnstyledLink}
-              to="/get-started"
-            >
-              <AddWalletIcon />
-            </Button>
           </HStack>
         </HStack>
       </PageFullBleedColumn>

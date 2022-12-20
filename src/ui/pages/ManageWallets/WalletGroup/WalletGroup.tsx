@@ -201,7 +201,10 @@ export function WalletGroup() {
       <PageTop />
       <VStack gap={24}>
         {walletGroup.walletContainer.seedType === SeedType.mnemonic ? (
-          <Surface padding="10px 16px">
+          <Surface
+            padding="10px 16px"
+            style={{ border: '1px solid var(--neutral-400)' }}
+          >
             <VStack gap={4}>
               <UIText
                 kind="label/reg"

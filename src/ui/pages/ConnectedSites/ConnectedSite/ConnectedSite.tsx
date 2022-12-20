@@ -141,7 +141,10 @@ export function ConnectedSite() {
                   pad: false,
                   component: (
                     <>
-                      <CenteredDialog ref={selectNetworkDialogRef}>
+                      <CenteredDialog
+                        ref={selectNetworkDialogRef}
+                        style={{ backgroundColor: 'var(--neutral-100)' }}
+                      >
                         <DialogTitle
                           title={
                             <UIText kind="subtitle/m_med">
@@ -149,6 +152,7 @@ export function ConnectedSite() {
                             </UIText>
                           }
                         />
+                        <Spacer height={24} />
                         <NetworkSelectDialog value={siteChain.toString()} />
                       </CenteredDialog>
 

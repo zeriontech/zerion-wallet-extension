@@ -104,7 +104,7 @@ export function SurfaceList({
         {items.map((item, index) => {
           const {
             style,
-            separatorTop = true,
+            separatorTop = false,
             separatorLeadingInset = 0,
             pad = true,
           } = item;
@@ -141,9 +141,15 @@ export function SurfaceList({
           if (item.key == null) {
             throw new Error('No key');
           }
+          // const nextItemHasNoSeparator =
+          //   index === items.length - 1 ||
+          //   items[index + 1].separatorTop !== true;
+          // const noSeparator = !separatorTop && nextItemHasNoSeparator;
           return (
             <div
               key={item.key}
+              // not sure if this looks good yet. Seems too thick
+              // className={noSeparator ? s.noSeparator : undefined}
               style={{
                 padding: isInteractiveItem ? undefined : `0 16px`,
                 ...style,

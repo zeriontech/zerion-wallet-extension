@@ -104,6 +104,7 @@ export function WalletSelect() {
             {
               key: 0,
               to: '/wallets',
+              separatorTop: true,
               component: (
                 <div style={{ color: 'var(--primary)' }}>Manage Wallets</div>
               ),
