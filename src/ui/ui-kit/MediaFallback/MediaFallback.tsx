@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useLayoutEffect, useState } from 'react';
 
 type ImageProps = React.ImgHTMLAttributes<HTMLImageElement>;
 type VideoProps = React.VideoHTMLAttributes<HTMLVideoElement>;
@@ -22,7 +22,7 @@ function MediaFallback<T extends ImageProps | AudioProps | VideoProps>({
   const [isError, setIsError] = useState(false);
   const { src } = props;
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setIsError(false);
     setIsLoading(true);
   }, [src]);
