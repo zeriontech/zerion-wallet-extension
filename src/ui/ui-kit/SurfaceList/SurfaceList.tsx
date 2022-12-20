@@ -84,6 +84,7 @@ export interface Item {
   rel?: React.AnchorHTMLAttributes<HTMLAnchorElement>['rel'];
   isInteractive?: boolean;
   onClick?: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick'];
+  disabled?: React.ButtonHTMLAttributes<HTMLButtonElement>['disabled'];
   style?: React.CSSProperties;
   separatorTop?: boolean;
   separatorLeadingInset?: number;
@@ -130,7 +131,9 @@ export function SurfaceList({
               {item.component}
             </ItemAnchor>
           ) : item.onClick ? (
-            <ItemButton onClick={item.onClick}>{item.component}</ItemButton>
+            <ItemButton disabled={item.disabled} onClick={item.onClick}>
+              {item.component}
+            </ItemButton>
           ) : pad === false ? (
             item.component
           ) : (

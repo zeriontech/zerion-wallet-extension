@@ -57,6 +57,11 @@ export class EthereumProvider extends JsonRpcProvider {
     connection.on(
       'ethereumEvent',
       ({ event, value }: { event: string; value: unknown }) => {
+        if (event === 'connect') {
+          this.events.emit('connect', { chainId: this.chainId });
+          return;
+        }
+
         if (event === 'chainChanged' && typeof value === 'string') {
           if (value === this.chainId) {
             return;

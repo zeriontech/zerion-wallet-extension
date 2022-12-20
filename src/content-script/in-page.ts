@@ -1,6 +1,8 @@
 import { EthereumProvider } from 'src/modules/ethereum/provider';
 import { Connection } from 'src/modules/ethereum/connection';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
+import * as dappDetection from './dapp-detection';
+import * as competingProviders from './competing-providers';
 
 declare global {
   interface Window {
@@ -25,20 +27,25 @@ const provider = new EthereumProvider(connection);
 
 provider.connect();
 
+competingProviders.onBeforeAssignToWindow({
+  foreignProvider: window.ethereum,
+  ourProvider: provider,
+});
+dappDetection.onBeforeAssignToWindow(window.ethereum);
 window.ethereum = provider;
-
-// TODO:
-// Expose other providers similar to how coinbase wallet extension does it:
-// https://docs.cloud.coinbase.com/wallet-sdk/docs/injected-provider-guidance
-const otherProviders = new Set();
 
 Object.defineProperty(window, 'ethereum', {
   configurable: false, // explicitly set to false to disallow redefining the property by other wallets
   get() {
+    dappDetection.onAccessThroughWindow(provider);
     return provider;
   },
   set(value: EthereumProvider) {
-    otherProviders.add(value);
+    dappDetection.handleForeignProvider(value);
+    competingProviders.handleForeignProvider({
+      foreignProvider: value,
+      ourProvider: provider,
+    });
   },
 });
 

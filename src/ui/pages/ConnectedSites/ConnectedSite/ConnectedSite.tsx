@@ -5,7 +5,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { NotFoundPage } from 'src/ui/components/NotFoundPage';
 import { PageColumn } from 'src/ui/components/PageColumn';
-import { getPermissionsWithWallets } from 'src/ui/shared/requests/getPermissionsWithWallets';
+import {
+  ConnectedSiteItem,
+  getPermissionsWithWallets,
+} from 'src/ui/shared/requests/getPermissionsWithWallets';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -27,7 +30,13 @@ import { createChain } from 'src/modules/networks/Chain';
 import { NetworkSelectDialog } from 'src/ui/components/NetworkSelectDialog';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import { getWalletDisplayName } from 'src/ui/shared/getWalletDisplayName';
+import { normalizeAddress } from 'src/shared/normalizeAddress';
+import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
+import { apostrophe } from 'src/ui/shared/typography';
+import { getNameFromOrigin } from 'src/shared/dapps';
 import { CurrentNetworkSettingsItem } from '../../Networks/CurrentNetworkSettingsItem';
+import { ConnectToDappButton } from './ConnectToDappButton';
 
 function useRemovePermissionMutation({ onSuccess }: { onSuccess: () => void }) {
   return useMutation(
@@ -62,7 +71,7 @@ function RevokeAllSurfaceItemButton({
           }
         }}
       >
-        <UIText kind="body/s_reg" color="var(--negative-500)">
+        <UIText kind="small/regular" color="var(--negative-500)">
           {removePermissionMutation.isLoading ? 'Loading...' : 'Revoke All'}
         </UIText>
       </SurfaceItemButton>
@@ -70,27 +79,52 @@ function RevokeAllSurfaceItemButton({
   );
 }
 
+function createConnectedSite({
+  origin,
+}: {
+  origin: string;
+}): ConnectedSiteItem {
+  return {
+    origin,
+    addresses: [],
+    wallets: [],
+  };
+}
+
 export function ConnectedSite() {
   const { originName } = useParams();
   if (!originName) {
     throw new Error('originName parameter is required for this view');
   }
+  const { data: activeTabOrigin } = useQuery(
+    'activeTab/origin',
+    getActiveTabOrigin,
+    { useErrorBoundary: true }
+  );
   const { data: connectedSites, refetch } = useQuery(
     'getPermissionsWithWallets',
     getPermissionsWithWallets,
-    { useErrorBoundary: true, suspense: true }
+    { useErrorBoundary: true }
   );
-  const connectedSite = useMemo(
-    () => connectedSites?.find((site) => site.origin === originName),
-    [connectedSites, originName]
+  const { data: flaggedAsDapp } = useQuery(
+    `wallet/isFlaggedAsDapp(${originName})`,
+    () => walletPort.request('isFlaggedAsDapp', { origin: originName })
   );
+  const connectedSite = useMemo(() => {
+    const found = connectedSites?.find((site) => site.origin === originName);
+    if (found) {
+      return found;
+    } else if (flaggedAsDapp) {
+      return createConnectedSite({ origin: originName });
+    }
+  }, [connectedSites, flaggedAsDapp, originName]);
   const { data: siteChain, ...chainQuery } = useQuery(
     `wallet/requestChainForOrigin(${originName})`,
     () =>
       walletPort
         .request('requestChainForOrigin', { origin: originName })
         .then((chain) => createChain(chain)),
-    { useErrorBoundary: true, suspense: true }
+    { useErrorBoundary: true }
   );
   const switchChainMutation = useMutation(
     (chain: string) =>
@@ -107,6 +141,20 @@ export function ConnectedSite() {
   const selectNetworkDialogRef = useRef<HTMLDialogElementInterface | null>(
     null
   );
+  const { data: currentWallet } = useQuery('wallet/uiGetCurrentWallet', () => {
+    return walletPort.request('uiGetCurrentWallet');
+  });
+  const currentAddress = currentWallet?.address;
+  const currentWalletIsConnected = useMemo(
+    () =>
+      currentAddress
+        ? connectedSite?.addresses.some(
+            (address) =>
+              normalizeAddress(address) === normalizeAddress(currentAddress)
+          )
+        : false,
+    [connectedSite?.addresses, currentAddress]
+  );
   const removePermissionMutation = useRemovePermissionMutation({
     onSuccess: () => {
       refetch();
@@ -118,10 +166,10 @@ export function ConnectedSite() {
   if (!connectedSite) {
     return <NotFoundPage />;
   }
-  if (!siteChain) {
+  if (!siteChain || !currentWallet) {
     return null;
   }
-  const title = new URL(connectedSite.origin).hostname;
+  const title = getNameFromOrigin(connectedSite.origin);
   return (
     <>
       <BottomSheetDialog ref={removeActionDialogRef}>
@@ -131,6 +179,33 @@ export function ConnectedSite() {
       <PageColumn>
         <Spacer height={16} />
         <VStack gap={24}>
+          {!currentWalletIsConnected &&
+          activeTabOrigin === connectedSite.origin ? (
+            <VStack gap={4}>
+              <ConnectToDappButton
+                wallet={currentWallet}
+                origin={connectedSite.origin}
+                originTitle={title}
+                onSuccess={() => {
+                  navigate('/');
+                }}
+              />
+              <UIText kind="small/regular" color="var(--neutral-500)">
+                Connect {getWalletDisplayName(currentWallet)} to {title}. This
+                will notify{' '}
+                <TextAnchor
+                  href={connectedSite.origin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: 'var(--primary)' }}
+                >
+                  {title}
+                </TextAnchor>{' '}
+                that your current address is connected, but it{apostrophe}s up
+                to individual DApp implementation to handle this event
+              </UIText>
+            </VStack>
+          ) : null}
           <VStack gap={8}>
             <UIText kind="subtitle/m_reg">Network</UIText>
             <SurfaceList

@@ -6,6 +6,7 @@ import { Chain, createChain } from 'src/modules/networks/Chain';
 import { stableDecrypt } from 'src/modules/crypto';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getIndexFromPath } from 'src/shared/wallet/getNextAccountPath';
+import { NetworkId } from 'src/modules/networks/NetworkId';
 import { SeedType } from './model/SeedType';
 import type {
   BareWallet,
@@ -455,7 +456,10 @@ export class WalletRecordModel {
   ) {
     return produce(record, (draft) => {
       if (!draft.permissions[origin]) {
-        throw new Error(`Permission for ${origin} not found`);
+        // In UI, we display dapp settings page for detected dapps
+        // even if no permission settings exist for it, so we need to allow changing
+        // chain for an entry that doesn't exist yet
+        draft.permissions[origin] = { addresses: [] };
       }
       draft.permissions[origin].chain = chain.toString();
     });
@@ -487,7 +491,7 @@ export class WalletRecordModel {
       const { addresses: existingPermissions } = permission;
       if (address && existingPermissions.length > 1) {
         spliceItem(existingPermissions, address);
-      } else if (!permission.chain) {
+      } else if (!permission.chain || permission.chain === NetworkId.Ethereum) {
         // remove whole record for `origin` completely
         delete draft.permissions[origin];
       } else {

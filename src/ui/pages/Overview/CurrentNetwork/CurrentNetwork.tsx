@@ -2,6 +2,8 @@ import React, { useMemo, useRef } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
+import { getNameFromOrigin } from 'src/shared/dapps';
+import { invariant } from 'src/shared/invariant';
 import { NetworkSelectDialog } from 'src/ui/components/NetworkSelectDialog';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { walletPort } from 'src/ui/shared/channels';
@@ -20,6 +22,14 @@ import * as s from './styles.module.css';
 export function CurrentNetwork({ address }: { address: string }) {
   const { data: tabOrigin } = useQuery('activeTab/origin', getActiveTabOrigin);
   const { data: isConnected } = useIsConnectedToActiveTab(address);
+  const { data: flaggedAsDapp } = useQuery(
+    `wallet/isFlaggedAsDapp(${tabOrigin})`,
+    () => {
+      invariant(tabOrigin, 'tabOrigin must be defined');
+      return walletPort.request('isFlaggedAsDapp', { origin: tabOrigin });
+    },
+    { enabled: Boolean(tabOrigin) }
+  );
   const { data: siteChain, ...chainQuery } = useQuery(
     `wallet/requestChainForOrigin(${tabOrigin})`,
     async () =>
@@ -48,7 +58,10 @@ export function CurrentNetwork({ address }: { address: string }) {
 
   const { networks } = useNetworks();
 
-  if (!hasSomePermissions || !networks) {
+  if (!networks) {
+    return null;
+  }
+  if (!hasSomePermissions && !flaggedAsDapp) {
     return null;
   }
 
@@ -77,6 +90,7 @@ export function CurrentNetwork({ address }: { address: string }) {
           size={40}
           as={UnstyledLink}
           to={`/connected-sites/${encodeURIComponent(tabOrigin)}`}
+          title={getNameFromOrigin(tabOrigin)}
         >
           <div style={{ position: 'relative' }}>
             <div
@@ -106,7 +120,7 @@ export function CurrentNetwork({ address }: { address: string }) {
           </div>
         </Button>
       ) : null}
-      {siteChain && tabOrigin ? (
+      {hasSomePermissions && siteChain && tabOrigin ? (
         <Button
           kind="ghost"
           size={40}

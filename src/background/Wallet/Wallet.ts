@@ -34,6 +34,7 @@ import { removeSignature } from 'src/modules/ethereum/transactions/removeSignatu
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getTransactionChainId } from 'src/modules/ethereum/transactions/resolveChainForTx';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
+import { flagAsDapp, isFlaggedAsDapp } from 'src/shared/dapps';
 import { emitter } from '../events';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
@@ -360,6 +361,14 @@ export class Wallet {
     this.emitter.emit('permissionsUpdated');
   }
 
+  async emitConnectionEvent({
+    context,
+    params: { origin },
+  }: WalletMethodParams<{ origin: string }>) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('connectToSiteEvent', { origin });
+  }
+
   allowedOrigin(
     context: Partial<ChannelContext> | undefined,
     address: string
@@ -580,6 +589,14 @@ export class Wallet {
       this.record = Model.removeWalletNameFlag(this.record, { flag });
     }
     this.updateWalletStore(this.record);
+  }
+
+  async isFlaggedAsDapp({
+    context,
+    params: { origin },
+  }: WalletMethodParams<{ origin: string }>) {
+    this.verifyInternalOrigin(context);
+    return isFlaggedAsDapp({ origin });
   }
 
   /** @deprecated */
@@ -1044,6 +1061,13 @@ class PublicController {
       context: INTERNAL_SYMBOL_CONTEXT,
     });
     return preferences.walletNameFlags || [];
+  }
+
+  async wallet_flagAsDapp({
+    context: _context,
+    params: { origin },
+  }: PublicMethodParams<{ origin: string }>) {
+    await flagAsDapp({ origin });
   }
 
   private generatePermissionResponse(
