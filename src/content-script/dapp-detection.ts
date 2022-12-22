@@ -5,6 +5,25 @@ let dappDetectionIsPossible = true;
 
 type ForeignProvider = EthereumProvider & { isRabby?: boolean };
 
+const listeners: Array<() => void> = [];
+
+export function onDappDetected(listener: () => void) {
+  listeners.push(listener);
+}
+
+export function initialize(ourProvider: EthereumProvider) {
+  ourProvider
+    .request({
+      method: 'wallet_isKnownDapp',
+      params: { origin: window.location.origin },
+    })
+    .then((isDapp) => {
+      if (isDapp) {
+        listeners.forEach((l) => l());
+      }
+    });
+}
+
 export function handleForeignProvider(provider: ForeignProvider) {
   if (provider.isRabby) {
     // rabby tries to access window.ethereum as well as all its properties,
@@ -23,6 +42,7 @@ export function onAccessThroughWindow(ourProvider: EthereumProvider) {
   if (!didHandleWindowAccess) {
     didHandleWindowAccess = true;
     if (dappDetectionIsPossible) {
+      listeners.forEach((l) => l());
       ourProvider.request({
         method: 'wallet_flagAsDapp',
         params: { origin: window.location.origin },

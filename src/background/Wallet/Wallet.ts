@@ -35,6 +35,7 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getTransactionChainId } from 'src/modules/ethereum/transactions/resolveChainForTx';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { flagAsDapp, isFlaggedAsDapp } from 'src/shared/dapps';
+import { isKnownDapp } from 'src/shared/dapps/known-dapps';
 import { emitter } from '../events';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
@@ -1106,5 +1107,13 @@ class PublicController {
     } else {
       return [];
     }
+  }
+
+  async wallet_isKnownDapp({
+    params: { origin },
+  }: PublicMethodParams<{ origin: string }>) {
+    // unlike wallet.isFlaggedAsDapp(), this method doesn't expose the list of
+    // dapps the user might have visited and uses only an agnostic dapp list
+    return isKnownDapp({ origin });
   }
 }
