@@ -72,6 +72,24 @@ export class EthereumEventsBroadcaster implements Listener {
         });
       })
     );
+
+    this.disposers.push(
+      emitter.on('connectToSiteEvent', ({ origin }) => {
+        this.getClientPorts().forEach((port) => {
+          const portUrl = port.sender?.url;
+          if (!portUrl) {
+            return;
+          }
+          const portOrigin = new URL(portUrl).origin;
+          if (portOrigin === origin) {
+            port.postMessage({
+              type: 'ethereumEvent',
+              event: 'connect',
+            });
+          }
+        });
+      })
+    );
   }
 
   stopListening() {
