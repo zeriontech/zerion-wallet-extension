@@ -2,8 +2,8 @@
   position: relative;
 }
 
-.image {
-  border-radius: 8px;
+.media {
+  display: block;
 }
 
 .activeIndicatorClip {

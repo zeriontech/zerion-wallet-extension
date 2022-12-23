@@ -19,8 +19,8 @@ import { invariant } from 'src/shared/invariant';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { WalletIcon } from 'src/ui/ui-kit/WalletIcon';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
+import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 
 function ItemSurface({ style, ...props }: React.HTMLProps<HTMLDivElement>) {
   const surfaceStyle = {
@@ -134,7 +134,12 @@ function SignMessageContent({
           <Spacer height={8} />
 
           <HStack gap={8} alignItems="center">
-            <WalletIcon address={wallet.address} iconSize={20} active={false} />
+            <WalletAvatar
+              address={wallet.address}
+              size={20}
+              active={false}
+              borderRadius="2px"
+            />
             <UIText kind="small/regular">
               <WalletDisplayName wallet={wallet} />
             </UIText>

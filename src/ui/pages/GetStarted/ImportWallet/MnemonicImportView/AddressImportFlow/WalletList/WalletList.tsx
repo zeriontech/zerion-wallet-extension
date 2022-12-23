@@ -10,7 +10,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Media } from 'src/ui/ui-kit/Media';
-import { WalletIcon } from 'src/ui/ui-kit/WalletIcon';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
@@ -18,6 +17,7 @@ import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { NBSP } from 'src/ui/shared/typography';
 import { getIndexFromPath } from 'src/shared/wallet/getNextAccountPath';
 import { AnimatedCheckmark } from 'src/ui/ui-kit/AnimatedCheckmark';
+import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 
 export function WalletList({
   wallets,
@@ -70,10 +70,11 @@ export function WalletList({
                 </UIText>
                 <Media
                   image={
-                    <WalletIcon
+                    <WalletAvatar
                       address={wallet.address}
                       active={false}
-                      iconSize={40}
+                      size={40}
+                      borderRadius="4px"
                     />
                   }
                   text={<WalletDisplayName wallet={wallet} />}

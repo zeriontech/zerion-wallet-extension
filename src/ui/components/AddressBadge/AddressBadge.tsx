@@ -3,7 +3,7 @@ import type { BareWallet } from 'src/shared/types/BareWallet';
 import { getWalletDisplayName } from 'src/ui/shared/getWalletDisplayName';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { BlockieImg } from '../BlockieImg';
+import { WalletAvatar } from '../WalletAvatar';
 
 export function AddressBadge({
   wallet,
@@ -24,7 +24,7 @@ export function AddressBadge({
         ...style,
       }}
     >
-      <BlockieImg address={wallet.address} size={14} />
+      <WalletAvatar address={wallet.address} size={14} borderRadius="4px" />
       <UIText
         kind="subtitle/s_reg"
         style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}

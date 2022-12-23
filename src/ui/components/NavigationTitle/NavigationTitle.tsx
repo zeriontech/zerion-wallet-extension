@@ -1,8 +1,8 @@
 import React, { useLayoutEffect } from 'react';
 import { Content } from 'react-area';
 import { useNavigate } from 'react-router-dom';
-import { WalletIcon } from 'src/ui/ui-kit/WalletIcon';
 import { BackButton, toggleUrlBar } from '../URLBar/URLBar';
+import { WalletAvatar } from '../WalletAvatar';
 
 export function NavigationTitle({
   title,
@@ -39,7 +39,12 @@ export function NavigationTitle({
       <Content name="navigation-bar">{title}</Content>
       <Content name="navigation-bar-end">
         {address ? (
-          <WalletIcon active={false} address={address} iconSize={32} />
+          <WalletAvatar
+            active={false}
+            address={address}
+            size={32}
+            borderRadius="4px"
+          />
         ) : (
           <span />
         )}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { SeedType } from 'src/shared/SeedType';
 import { WalletOrigin } from 'src/shared/WalletOrigin';
-import { BlockieImg } from 'src/ui/components/BlockieImg';
+import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { useWalletGroups } from 'src/ui/shared/requests/useWalletGroups';
@@ -48,7 +48,11 @@ export function BackupFlowSettingsSection() {
                 <VStack gap={4} style={{ color: 'var(--black)' }}>
                   {group.walletContainer.wallets.map((wallet) => (
                     <HStack key={wallet.address} gap={4} alignItems="center">
-                      <BlockieImg address={wallet.address} size={16} />
+                      <WalletAvatar
+                        address={wallet.address}
+                        size={16}
+                        borderRadius="4px"
+                      />
                       <UIText kind="caption/reg">
                         <WalletDisplayName wallet={wallet} />
                       </UIText>

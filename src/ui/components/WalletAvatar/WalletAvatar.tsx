@@ -27,7 +27,17 @@ async function fetchWalletNFT(
   return profile?.nft;
 }
 
-export function WalletAvatar({ address }: { address: string }) {
+export function WalletAvatar({
+  active = false,
+  address,
+  size,
+  borderRadius = '6px',
+}: {
+  active?: boolean;
+  address: string;
+  size: number;
+  borderRadius?: string;
+}) {
   const { data: nft, isLoading } = useQuery(
     ['fetchWalletNFT', address],
     () => fetchWalletNFT(address),
@@ -35,8 +45,16 @@ export function WalletAvatar({ address }: { address: string }) {
   );
 
   if (isLoading) {
-    return <div style={{ width: 64, height: 64 }} />;
+    return <div style={{ width: size, height: size }} />;
   }
 
-  return <AvatarIcon address={address} iconSize={64} nft={nft} />;
+  return (
+    <AvatarIcon
+      active={active}
+      address={address}
+      size={size}
+      nft={nft}
+      borderRadius={borderRadius}
+    />
+  );
 }

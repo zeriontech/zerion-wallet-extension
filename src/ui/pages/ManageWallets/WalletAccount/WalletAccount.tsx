@@ -15,7 +15,6 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { getWalletDisplayName } from 'src/ui/shared/getWalletDisplayName';
 import { Media } from 'src/ui/ui-kit/Media';
-import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { NBSP } from 'src/ui/shared/typography';
@@ -30,6 +29,7 @@ import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog'
 import { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { invariant } from 'src/shared/invariant';
+import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 
 function EditableWalletName({
   wallet,
@@ -96,7 +96,13 @@ function RemoveAddressConfirmationDialog({ wallet }: { wallet: BareWallet }) {
     >
       <VStack gap={8}>
         <Media
-          image={<BlockieImg address={wallet.address} size={32} />}
+          image={
+            <WalletAvatar
+              address={wallet.address}
+              size={32}
+              borderRadius="4px"
+            />
+          }
           text={
             <UIText kind="subtitle/l_med">
               <WalletDisplayName wallet={wallet} />
@@ -170,7 +176,13 @@ export function WalletAccount() {
         <Surface padding={12}>
           <VStack gap={8}>
             <Media
-              image={<BlockieImg address={wallet.address} size={36} />}
+              image={
+                <WalletAvatar
+                  address={wallet.address}
+                  size={36}
+                  borderRadius="4px"
+                />
+              }
               text={
                 <PortfolioValue
                   address={wallet.address}

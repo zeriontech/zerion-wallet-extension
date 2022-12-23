@@ -6,8 +6,8 @@ import { IsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToA
 import { NBSP } from 'src/ui/shared/typography';
 import { Media } from 'src/ui/ui-kit/Media';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { WalletIcon } from 'src/ui/ui-kit/WalletIcon';
 import { WalletDisplayName } from '../WalletDisplayName';
+import { WalletAvatar } from '../WalletAvatar';
 
 export enum Composition {
   nameAndPortfolio,
@@ -30,9 +30,9 @@ function NameAndPortfolioComposition({
         <IsConnectedToActiveTab
           address={wallet.address}
           render={({ data: isConnected }) => (
-            <WalletIcon
+            <WalletAvatar
               address={wallet.address}
-              iconSize={iconSize}
+              size={iconSize}
               active={Boolean(activeIndicator && isConnected)}
             />
           )}

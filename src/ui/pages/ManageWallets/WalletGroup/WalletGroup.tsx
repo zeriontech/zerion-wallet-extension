@@ -16,7 +16,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
-import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { NBSP } from 'src/ui/shared/typography';
 import { PageBottom } from 'src/ui/components/PageBottom';
@@ -32,6 +31,7 @@ import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog'
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
+import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 
 function noNulls<T>(arr: (T | null)[]) {
   return arr.filter(isTruthy);
@@ -131,7 +131,13 @@ function RemoveGroupConfirmationDialog({
           {walletGroup.walletContainer.wallets.map((wallet) => (
             <Media
               key={wallet.address}
-              image={<BlockieImg address={wallet.address} size={16} />}
+              image={
+                <WalletAvatar
+                  address={wallet.address}
+                  size={16}
+                  borderRadius="4px"
+                />
+              }
               text={
                 <UIText kind="caption/reg">
                   <WalletDisplayName wallet={wallet} maxCharacters={15} />
@@ -269,7 +275,13 @@ export function WalletGroup() {
                   alignItems="center"
                 >
                   <Media
-                    image={<BlockieImg address={wallet.address} size={24} />}
+                    image={
+                      <WalletAvatar
+                        address={wallet.address}
+                        size={24}
+                        borderRadius="4px"
+                      />
+                    }
                     text={<WalletDisplayName wallet={wallet} />}
                     vGap={0}
                     detailText={

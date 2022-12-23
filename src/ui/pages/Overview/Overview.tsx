@@ -34,11 +34,11 @@ import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
+import { WalletAvatar } from '../../components/WalletAvatar';
 import { CurrentNetwork } from './CurrentNetwork';
 import { NonFungibleTokens } from './NonFungibleTokens';
 import { Positions } from './Positions';
 import { ActionButtonsRow } from './ActionButtonsRow';
-import { WalletAvatar } from './WalletAvatar';
 
 interface ChangeInfo {
   isPositive: boolean;
@@ -217,7 +217,13 @@ function OverviewComponent() {
         <Spacer height={24} />
         <div style={{ height: isLoadingPortfolio ? 68 : undefined }}>
           <HStack gap={16} alignItems="center">
-            {!isLoadingPortfolio ? <WalletAvatar address={address} /> : null}
+            {!isLoadingPortfolio ? (
+              <WalletAvatar
+                address={singleAddress}
+                size={64}
+                borderRadius="6px"
+              />
+            ) : null}
             <VStack gap={0}>
               <UIText kind="h/1_med">
                 {value?.total_value != null ? (
