@@ -1,7 +1,7 @@
 import { EthereumProvider } from 'src/modules/ethereum/provider';
 import { Connection } from 'src/modules/ethereum/connection';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
-import { watchAndUpdate } from './dapp-mutation';
+import { observeAndUpdatePageButtons } from './dapp-mutation';
 import * as dappDetection from './dapp-detection';
 import * as competingProviders from './competing-providers';
 
@@ -29,7 +29,7 @@ const provider = new EthereumProvider(connection);
 provider.connect();
 
 dappDetection.onDappDetected(() => {
-  watchAndUpdate();
+  observeAndUpdatePageButtons();
 });
 
 competingProviders.onBeforeAssignToWindow({

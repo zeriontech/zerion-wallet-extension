@@ -11,17 +11,14 @@ export function onDappDetected(listener: () => void) {
   listeners.push(listener);
 }
 
-export function initialize(ourProvider: EthereumProvider) {
-  ourProvider
-    .request({
-      method: 'wallet_isKnownDapp',
-      params: { origin: window.location.origin },
-    })
-    .then((isDapp) => {
-      if (isDapp) {
-        listeners.forEach((l) => l());
-      }
-    });
+export async function initialize(ourProvider: EthereumProvider) {
+  const isDapp = await ourProvider.request({
+    method: 'wallet_isKnownDapp',
+    params: { origin: window.location.origin },
+  });
+  if (isDapp) {
+    listeners.forEach((l) => l());
+  }
 }
 
 export function handleForeignProvider(provider: ForeignProvider) {

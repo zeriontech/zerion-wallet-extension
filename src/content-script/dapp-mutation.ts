@@ -9,19 +9,17 @@ function visitTextNodes(node: Element, cb: (node: Node) => boolean) {
 }
 
 function replaceButtonLabel(textNode: Node): boolean | undefined {
-  const labelsToReplace = [
-    /\bMeta[mM]ask\b/,
-    /\bInjected Wallet\b/,
-    /\bInjected\b/,
-    /\bDetected Wallet\b/,
-    /\bBrowser Wallet\b/,
-    /\bWeb3 Wallet\b/,
-  ];
-  for (const label of labelsToReplace) {
-    if (textNode.textContent && label.test(textNode.textContent)) {
-      textNode.textContent = 'Zerion Wallet';
-      return true;
-    }
+  const { textContent } = textNode;
+  // Another approach would be to have an array of regexes, e.g.:
+  // const labels = [/\bMeta[mM]ask\b/, /\bInjected Wallet\b/, ...],
+  // which is more readable. But I measured in a couple of benchmarks and it seems
+  // to perform slightly slower in Chrome and *much* slower in Safari
+  const labelsRe =
+    /\b(Meta[mM]ask|Injected Wallet|Injected|Detected Wallet|Browser Wallet|Web3 Wallet)\b/;
+
+  if (textContent && labelsRe.test(textContent)) {
+    textNode.textContent = textContent.replace(labelsRe, 'Zerion Wallet');
+    return true;
   }
 }
 
@@ -112,19 +110,27 @@ const documentReady = () =>
     }
   });
 
+const shouldUpdateButtons = window.location.origin !== 'https://app.zerion.io';
 let isObserving = false;
 
-export async function watchAndUpdate() {
-  if (isObserving) {
+export async function observeAndUpdatePageButtons() {
+  /**
+   * This script scans the page and updates generic "Browser Wallet" button
+   * names and icons to help the user connect to the dapp
+   */
+  if (isObserving || !shouldUpdateButtons) {
     return;
   }
   isObserving = true;
   await documentReady();
   new MutationObserver((mutations) => {
     if (mutations.some((m) => m.addedNodes.length || m.type === 'attributes')) {
+      performance.mark('mutatePage-1');
       // is it faster to call mutatePage(mutation.target) for each mutation
       // or call mutatePage() once, but scan whole document.body?
       mutatePage();
+      performance.mark('mutatePage-2');
+      performance.measure('mutatePage', 'mutatePage-1', 'mutatePage-2');
     }
   }).observe(document.body, {
     subtree: true,
