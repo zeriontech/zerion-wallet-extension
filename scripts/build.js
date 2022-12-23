@@ -15,9 +15,8 @@
 /* eslint-env node */
 const fs = require('fs/promises');
 const path = require('path');
-const { exec } = require('child_process');
-
 const originalManifest = require('../src/manifest.json');
+const { execAsync } = require('./execAsync');
 
 const productionManifest = {
   ...originalManifest,
@@ -28,18 +27,6 @@ const productionManifest = {
 };
 
 const src = path.join(__dirname, '../src');
-
-async function execAsync(command) {
-  return new Promise((resolve, reject) => {
-    exec(command, (err) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve();
-      }
-    });
-  });
-}
 
 async function buildWithProductionManifest() {
   // eslint-disable-next-line no-console
