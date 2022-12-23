@@ -18,7 +18,7 @@
       "48": "images/logo-icon-48.png",
       "128": "images/logo-icon-128.png"
     },
-    "default_title": "NewWallet",
+    "default_title": "Zerion",
     "default_popup": "ui/popup.html"
   },
   "commands": {
