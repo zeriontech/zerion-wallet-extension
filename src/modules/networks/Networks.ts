@@ -138,9 +138,17 @@ export class Networks {
   }
 
   getExplorerAddressUrlByName(chain: Chain, address: string) {
-    const network = this.collection[this.toId(chain)];
-    const url = network?.explorer_home_url;
-    return url ? `${url}/address/${address}` : undefined;
+    return this.getExplorerAddressUrl(
+      this.collection[this.toId(chain)],
+      address
+    );
+  }
+
+  private getExplorerAddressUrl(
+    network: NetworkConfig | undefined,
+    address: string
+  ) {
+    return network?.explorer_address_url?.replace('{ADDRESS}', address);
   }
 
   private getExplorerTokenUrl(
