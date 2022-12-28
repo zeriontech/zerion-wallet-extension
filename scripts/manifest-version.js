@@ -31,7 +31,11 @@ async function syncVersion() {
   await execAsync(`git tag --delete ${tag}`);
   await execAsync('git add .');
   await execAsync('git commit --amend --no-edit');
-  await execAsync(`git tag ${tag}`);
+  // Add --message flag because that is what `npm version` does under the hood:
+  // https://github.com/npm/cli/blob/c52cf6bc547268833cde2715fe4f6299240049f8/workspaces/libnpmversion/lib/tag.js#L22
+  // It also creates an "annotated" tag instead of a "lightweight" tag.
+  // Only "annotated" tags are picked up by `git push --follow-tags`
+  await execAsync(`git tag ${tag} --message ${version}`); 
 }
 
 syncVersion();
