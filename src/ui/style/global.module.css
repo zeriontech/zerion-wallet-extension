@@ -3,9 +3,6 @@
 }
 
 :root {
-  /* Extra stuff, to be finalized with design */
-  --background: var(--neutral-100);
-
   --navbar-index: 2;
   --max-layout-index: 2;
   --over-layout-index: 3;
