@@ -3,10 +3,14 @@ import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { SurfaceItemButton, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
+import { ViewLoading } from '../ViewLoading';
 
 export function NetworkSelectDialog({ value }: { value: string }) {
   const { networks } = useNetworks();
 
+  if (!networks && !navigator.onLine) {
+    return <ViewLoading kind="network" />;
+  }
   return (
     <form method="dialog">
       <SurfaceList
