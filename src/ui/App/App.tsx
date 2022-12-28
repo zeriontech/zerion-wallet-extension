@@ -47,6 +47,7 @@ import { ForgotPassword } from '../pages/ForgotPassword';
 import { BugReportButton } from '../components/BugReportButton';
 import { Receive } from '../pages/Receive';
 import { KeyboardShortcut } from '../components/KeyboardShortcut';
+import { followTheme } from '../features/appearance';
 
 function View() {
   const location = useLocation();
@@ -308,6 +309,8 @@ function CloseOtherWindows() {
   }, []);
   return null;
 }
+
+followTheme();
 
 export function App() {
   return (
