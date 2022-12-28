@@ -101,7 +101,7 @@ export function HistoryList() {
   } = useMinedAndPendingAddressActions();
 
   if (isLoading && !transactions?.length) {
-    return <ViewLoading />;
+    return <ViewLoading kind="network" />;
   }
 
   if (!transactions) {

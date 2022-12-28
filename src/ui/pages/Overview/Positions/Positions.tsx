@@ -486,7 +486,7 @@ export function Positions() {
   );
 
   if (isLoading) {
-    return <ViewLoading />;
+    return <ViewLoading kind="network" />;
   }
 
   if (!ready || !value) {
