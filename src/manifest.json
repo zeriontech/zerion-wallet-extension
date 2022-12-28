@@ -42,5 +42,5 @@
       "run_at": "document_start"
     }
   ],
-  "permissions": ["activeTab", "notifications", "storage", "unlimitedStorage"]
+  "permissions": ["activeTab", "storage", "unlimitedStorage"]
 }
