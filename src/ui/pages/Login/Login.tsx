@@ -15,10 +15,11 @@ import { Input } from 'src/ui/ui-kit/Input';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import ZerionLogo from 'jsx:src/ui/assets/zerion-squircle.svg';
 import ZerionLogoText from 'jsx:src/ui/assets/zerion-logo-text.svg';
+import NewWindowIcon from 'jsx:src/ui/assets/new-window.svg';
 import { apostrophe } from 'src/ui/shared/typography';
 import backgroundArts2 from 'src/ui/assets/background-arts-2.svg';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
-import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
+import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 
 export function Login() {
   const [params] = useSearchParams();
@@ -122,15 +123,20 @@ export function Login() {
           </UIText>
         </VStack>
       </form>
-      <UIText
-        kind="caption/regular"
-        style={{ marginTop: 'auto', textAlign: 'center' }}
-        color="var(--neutral-500)"
-      >
-        <TextAnchor href="https://zerio.io" target="_blank">
-          zerion.io
-        </TextAnchor>
-      </UIText>
+      <div style={{ marginTop: 'auto', textAlign: 'center' }}>
+        <Button
+          as={UnstyledAnchor}
+          kind="regular"
+          color="var(--neutral-500)"
+          href="https://app.zerion.io"
+          target="_blank"
+        >
+          <HStack gap={8} alignItems="center">
+            <span>app.zerion.io</span>
+            <NewWindowIcon style={{ width: 20, height: 20 }} />
+          </HStack>
+        </Button>
+      </div>
       <PageBottom />
     </PageColumn>
   );
