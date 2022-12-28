@@ -131,6 +131,9 @@
   --elevation-300: 0px 24px 48px rgba(0, 0, 0, 0.24),
     0px 4px 16px rgba(0, 0, 0, 0.16),
     inset 0px 1px 0px rgba(255, 255, 255, 0.08);
+
+  /* Extra stuff, to be finalized with design */
+  --background: var(--z-index-0);
 }
 
 .theme-dark :global(.theme-dark-invert) {

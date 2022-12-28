@@ -30,6 +30,7 @@ export const BottomSheetDialog = React.forwardRef(
           borderTopRightRadius: 12,
           padding: 16,
           boxShadow: '0 0 500px 50px #00000024',
+          backgroundColor: 'var(--z-index-1)',
           ...style,
         }}
         {...props}
