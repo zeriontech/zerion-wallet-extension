@@ -14,9 +14,9 @@ const kinds: { [kind in Kind]: (size: number) => React.CSSProperties } = {
   primary: () => ({}),
   danger: () => ({}),
   regular: () => ({
-    background: 'var(--white)',
+    background: 'transparent',
     color: 'var(--black)',
-    border: '1px solid var(--neutral-300)',
+    border: '1px solid var(--neutral-400)',
   }),
   ghost: (size) => {
     const padding = size <= 44 ? 4 : 8;
