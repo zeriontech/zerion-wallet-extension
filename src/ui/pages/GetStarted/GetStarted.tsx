@@ -185,6 +185,7 @@ function Options() {
             size={56}
             style={{
               boxShadow: 'var(--elevation-300)',
+              backgroundColor: 'var(--white)',
             }}
           >
             Import Existing Wallet
