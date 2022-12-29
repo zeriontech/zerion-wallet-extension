@@ -4,6 +4,7 @@ import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import { observeAndUpdatePageButtons } from './dapp-mutation';
 import * as dappDetection from './dapp-detection';
 import * as competingProviders from './competing-providers';
+import { dappsWithoutCorrectEIP1193Support } from './dapp-configs';
 
 declare global {
   interface Window {
@@ -54,6 +55,10 @@ Object.defineProperty(window, 'ethereum', {
     });
   },
 });
+
+if (dappsWithoutCorrectEIP1193Support.has(window.location.origin)) {
+  provider.isMetaMask = true;
+}
 
 provider.request({ method: 'wallet_getWalletNameFlags' }).then((result) => {
   if (result.includes(WalletNameFlag.isMetaMask)) {
