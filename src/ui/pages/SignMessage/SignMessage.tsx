@@ -138,7 +138,7 @@ function SignMessageContent({
               address={wallet.address}
               size={20}
               active={false}
-              borderRadius="2px"
+              borderRadius={2}
             />
             <UIText kind="small/regular">
               <WalletDisplayName wallet={wallet} />

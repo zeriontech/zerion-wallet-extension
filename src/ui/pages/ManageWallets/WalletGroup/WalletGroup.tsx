@@ -135,7 +135,7 @@ function RemoveGroupConfirmationDialog({
                 <WalletAvatar
                   address={wallet.address}
                   size={16}
-                  borderRadius="4px"
+                  borderRadius={4}
                 />
               }
               text={
@@ -279,7 +279,7 @@ export function WalletGroup() {
                       <WalletAvatar
                         address={wallet.address}
                         size={24}
-                        borderRadius="4px"
+                        borderRadius={4}
                       />
                     }
                     text={<WalletDisplayName wallet={wallet} />}

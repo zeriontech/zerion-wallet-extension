@@ -44,11 +44,7 @@ function PrivateKeyList({ walletGroups }: { walletGroups: WalletGroup[] }) {
                 alignItems="center"
               >
                 <HStack gap={8} alignItems="center">
-                  <WalletAvatar
-                    address={address}
-                    size={28}
-                    borderRadius="4px"
-                  />
+                  <WalletAvatar address={address} size={28} borderRadius={4} />
                   <UIText kind="subtitle/m_reg" title={address}>
                     <WalletDisplayName wallet={wallet} />
                   </UIText>

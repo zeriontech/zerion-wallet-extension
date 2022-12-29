@@ -179,7 +179,7 @@ export function DecorativeMessageDone({
               }}
             >
               <HStack gap={12} alignItems="center">
-                <WalletAvatar address={address} size={44} borderRadius="4px" />
+                <WalletAvatar address={address} size={44} borderRadius={4} />
                 <div>
                   <UIText kind="subtitle/l_reg" title={address}>
                     {truncateAddress(address, 8)}

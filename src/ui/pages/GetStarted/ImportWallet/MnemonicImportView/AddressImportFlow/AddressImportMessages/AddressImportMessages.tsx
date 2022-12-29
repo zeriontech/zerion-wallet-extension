@@ -128,7 +128,7 @@ function AddressImportMessagesView({ values }: { values: BareWallet[] }) {
                           address={wallet.address}
                           active={false}
                           size={32}
-                          borderRadius="4px"
+                          borderRadius={4}
                         />
                       }
                       text={

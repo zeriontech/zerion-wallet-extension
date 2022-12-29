@@ -223,7 +223,7 @@ function RequestAccountsView({
                           <WalletAvatar
                             address={selectedWallet.address}
                             size={36}
-                            borderRadius="4px"
+                            borderRadius={4}
                           />
                         }
                         text={

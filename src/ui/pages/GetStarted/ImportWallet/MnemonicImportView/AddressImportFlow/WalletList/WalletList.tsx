@@ -74,7 +74,7 @@ export function WalletList({
                       address={wallet.address}
                       active={false}
                       size={40}
-                      borderRadius="4px"
+                      borderRadius={4}
                     />
                   }
                   text={<WalletDisplayName wallet={wallet} />}

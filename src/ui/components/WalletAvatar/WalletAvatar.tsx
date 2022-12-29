@@ -31,12 +31,12 @@ export function WalletAvatar({
   active = false,
   address,
   size,
-  borderRadius = '6px',
+  borderRadius = 6,
 }: {
   active?: boolean;
   address: string;
   size: number;
-  borderRadius?: string;
+  borderRadius?: number;
 }) {
   const { data: nft, isLoading } = useQuery(
     ['fetchWalletNFT', address],

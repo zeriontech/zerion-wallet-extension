@@ -43,7 +43,7 @@ export function NavigationTitle({
             active={false}
             address={address}
             size={32}
-            borderRadius="4px"
+            borderRadius={4}
           />
         ) : (
           <span />

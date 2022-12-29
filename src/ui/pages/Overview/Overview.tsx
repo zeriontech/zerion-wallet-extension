@@ -221,7 +221,7 @@ function OverviewComponent() {
               <WalletAvatar
                 address={singleAddress}
                 size={64}
-                borderRadius="6px"
+                borderRadius={6}
               />
             ) : null}
             <VStack gap={0}>

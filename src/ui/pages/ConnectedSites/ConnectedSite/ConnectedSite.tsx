@@ -280,7 +280,7 @@ export function ConnectedSite() {
                                 address={wallet.address}
                                 active={false}
                                 size={24}
-                                borderRadius="4px"
+                                borderRadius={4}
                               />
                             }
                             text={

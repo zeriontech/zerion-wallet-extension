@@ -97,11 +97,7 @@ function RemoveAddressConfirmationDialog({ wallet }: { wallet: BareWallet }) {
       <VStack gap={8}>
         <Media
           image={
-            <WalletAvatar
-              address={wallet.address}
-              size={32}
-              borderRadius="4px"
-            />
+            <WalletAvatar address={wallet.address} size={32} borderRadius={4} />
           }
           text={
             <UIText kind="subtitle/l_med">
@@ -180,7 +176,7 @@ export function WalletAccount() {
                 <WalletAvatar
                   address={wallet.address}
                   size={36}
-                  borderRadius="4px"
+                  borderRadius={4}
                 />
               }
               text={

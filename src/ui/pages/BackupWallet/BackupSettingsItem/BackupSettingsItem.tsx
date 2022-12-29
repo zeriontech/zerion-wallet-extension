@@ -51,7 +51,7 @@ export function BackupFlowSettingsSection() {
                       <WalletAvatar
                         address={wallet.address}
                         size={16}
-                        borderRadius="4px"
+                        borderRadius={4}
                       />
                       <UIText kind="caption/reg">
                         <WalletDisplayName wallet={wallet} />

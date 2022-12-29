@@ -90,7 +90,7 @@ function WalletLine({ address, label }: { address: string; label: string }) {
     <ItemSurface>
       <Media
         vGap={0}
-        image={<WalletAvatar address={address} size={32} borderRadius="4px" />}
+        image={<WalletAvatar address={address} size={32} borderRadius={4} />}
         text={
           <UIText kind="caption/reg" color="var(--neutral-500)">
             {label}
@@ -531,7 +531,7 @@ function SendTransactionContent({
               address={wallet.address}
               size={20}
               active={false}
-              borderRadius="4px"
+              borderRadius={4}
             />
             <UIText kind="small/regular">
               <WalletDisplayName wallet={wallet} />

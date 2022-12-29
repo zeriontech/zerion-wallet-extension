@@ -73,7 +73,7 @@ export function WalletSelect() {
                               address={wallet.address}
                               size={24}
                               active={Boolean(isConnected)}
-                              borderRadius="4px"
+                              borderRadius={4}
                             />
                           )}
                         />

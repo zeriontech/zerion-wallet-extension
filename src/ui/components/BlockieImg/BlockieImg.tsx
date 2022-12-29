@@ -9,7 +9,7 @@ export function BlockieImg({
 }: {
   address: string;
   size: number;
-  borderRadius: string;
+  borderRadius: number;
 }) {
   const blocksCount = 8;
   const icon = useMemo(
@@ -24,7 +24,7 @@ export function BlockieImg({
   const ref = useRef<HTMLSpanElement | null>(null);
   useLayoutEffect(() => {
     if (ref.current && icon) {
-      icon.style.borderRadius = borderRadius;
+      icon.style.borderRadius = `${borderRadius}px`;
       icon.style.width = `${size}px`;
       icon.style.height = `${size}px`;
       icon.style.display = 'block';

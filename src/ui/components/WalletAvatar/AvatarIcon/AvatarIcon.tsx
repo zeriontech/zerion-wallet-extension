@@ -15,7 +15,7 @@ export function AvatarIcon({
   address: string;
   size: number;
   nft?: WalletProfileNFT;
-  borderRadius: string;
+  borderRadius: number;
 }) {
   return (
     <div className={s.root}>
