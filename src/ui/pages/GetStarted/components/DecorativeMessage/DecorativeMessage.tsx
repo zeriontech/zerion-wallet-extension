@@ -4,8 +4,8 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
+import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import * as s from './styles.module.css';
 
 export function DecorativeMessage({
@@ -179,7 +179,7 @@ export function DecorativeMessageDone({
               }}
             >
               <HStack gap={12} alignItems="center">
-                <BlockieImg address={address} size={44} />
+                <WalletAvatar address={address} size={44} borderRadius={4} />
                 <div>
                   <UIText kind="subtitle/l_reg" title={address}>
                     {truncateAddress(address, 8)}

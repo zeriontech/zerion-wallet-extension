@@ -16,7 +16,6 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { SurfaceList, SurfaceItemButton } from 'src/ui/ui-kit/SurfaceList';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Media } from 'src/ui/ui-kit/Media';
-import { WalletIcon } from 'src/ui/ui-kit/WalletIcon';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -35,6 +34,7 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 import { apostrophe } from 'src/ui/shared/typography';
 import { getNameFromOrigin } from 'src/shared/dapps';
+import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { CurrentNetworkSettingsItem } from '../../Networks/CurrentNetworkSettingsItem';
 import { ConnectToDappButton } from './ConnectToDappButton';
 
@@ -276,10 +276,11 @@ export function ConnectedSite() {
                         >
                           <Media
                             image={
-                              <WalletIcon
+                              <WalletAvatar
                                 address={wallet.address}
                                 active={false}
-                                iconSize={24}
+                                size={24}
+                                borderRadius={4}
                               />
                             }
                             text={

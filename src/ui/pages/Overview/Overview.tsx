@@ -16,7 +16,6 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { usePendingTransactions } from 'src/ui/transactions/usePendingTransactions';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
-import { Media } from 'src/ui/ui-kit/Media';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import {
@@ -29,14 +28,13 @@ import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { useQuery } from 'react-query';
 import { walletPort } from 'src/ui/shared/channels';
 import { NBSP } from 'src/ui/shared/typography';
-import { WalletIcon } from 'src/ui/ui-kit/WalletIcon';
-import { useIsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
+import { WalletAvatar } from '../../components/WalletAvatar';
 import { CurrentNetwork } from './CurrentNetwork';
 import { NonFungibleTokens } from './NonFungibleTokens';
 import { Positions } from './Positions';
@@ -93,24 +91,10 @@ function PercentChange({
 }
 
 function CurrentAccount({ wallet }: { wallet: BareWallet }) {
-  const { data: isConnected } = useIsConnectedToActiveTab(wallet.address);
   return (
-    <Media
-      vGap={0}
-      image={
-        <WalletIcon
-          address={wallet.address}
-          iconSize={24}
-          active={Boolean(isConnected)}
-        />
-      }
-      text={
-        <span style={{ fontWeight: 'normal' }}>
-          <WalletDisplayName wallet={wallet} />
-        </span>
-      }
-      detailText={null}
-    />
+    <span style={{ fontWeight: 'normal' }}>
+      <WalletDisplayName wallet={wallet} />
+    </span>
   );
 }
 
@@ -232,48 +216,61 @@ function OverviewComponent() {
       >
         <Spacer height={24} />
         <div style={{ height: isLoadingPortfolio ? 68 : undefined }}>
-          <VStack gap={0}>
-            <UIText kind="h/1_med">
-              {value?.total_value != null ? (
-                <NeutralDecimals
-                  parts={formatCurrencyToParts(value.total_value, 'en', 'usd')}
+          <HStack gap={16} alignItems="center">
+            {!isLoadingPortfolio ? (
+              <WalletAvatar
+                address={singleAddress}
+                size={64}
+                borderRadius={6}
+              />
+            ) : null}
+            <VStack gap={0}>
+              <UIText kind="h/1_med">
+                {value?.total_value != null ? (
+                  <NeutralDecimals
+                    parts={formatCurrencyToParts(
+                      value.total_value,
+                      'en',
+                      'usd'
+                    )}
+                  />
+                ) : (
+                  NBSP
+                )}
+              </UIText>
+              {value?.relative_change_24h ? (
+                <PercentChange
+                  value={value.relative_change_24h}
+                  locale="en"
+                  render={(change) => {
+                    const sign = change.isPositive ? '+' : '';
+                    return (
+                      <UIText
+                        kind="subtitle/l_reg"
+                        color={
+                          change.isNonNegative
+                            ? 'var(--positive-500)'
+                            : 'var(--negative-500)'
+                        }
+                      >
+                        {`${sign}${change.formatted}`}{' '}
+                        {value?.absolute_change_24h
+                          ? `(${formatCurrencyValue(
+                              value?.absolute_change_24h,
+                              'en',
+                              'usd'
+                            )})`
+                          : ''}{' '}
+                        Today
+                      </UIText>
+                    );
+                  }}
                 />
               ) : (
-                NBSP
+                <UIText kind="subtitle/l_reg">{NBSP}</UIText>
               )}
-            </UIText>
-            {value?.relative_change_24h ? (
-              <PercentChange
-                value={value.relative_change_24h}
-                locale="en"
-                render={(change) => {
-                  const sign = change.isPositive ? '+' : '';
-                  return (
-                    <UIText
-                      kind="subtitle/l_reg"
-                      color={
-                        change.isNonNegative
-                          ? 'var(--positive-500)'
-                          : 'var(--negative-500)'
-                      }
-                    >
-                      {`${sign}${change.formatted}`}{' '}
-                      {value?.absolute_change_24h
-                        ? `(${formatCurrencyValue(
-                            value?.absolute_change_24h,
-                            'en',
-                            'usd'
-                          )})`
-                        : ''}{' '}
-                      Today
-                    </UIText>
-                  );
-                }}
-              />
-            ) : (
-              <UIText kind="subtitle/l_reg">{NBSP}</UIText>
-            )}
-          </VStack>
+            </VStack>
+          </HStack>
         </div>
         <Spacer height={20} />
         <ActionButtonsRow />

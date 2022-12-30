@@ -15,9 +15,9 @@ import { NBSP } from 'src/ui/shared/typography';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
-import { WalletIcon } from 'src/ui/ui-kit/WalletIcon';
 import { IsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
+import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 
 export function WalletSelect() {
   const navigate = useNavigate();
@@ -69,10 +69,11 @@ export function WalletSelect() {
                         <IsConnectedToActiveTab
                           address={wallet.address}
                           render={({ data: isConnected }) => (
-                            <WalletIcon
+                            <WalletAvatar
                               address={wallet.address}
-                              iconSize={24}
+                              size={24}
                               active={Boolean(isConnected)}
+                              borderRadius={4}
                             />
                           )}
                         />

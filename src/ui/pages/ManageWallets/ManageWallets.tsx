@@ -11,7 +11,6 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { SeedType } from 'src/shared/SeedType';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { AddressBadge } from 'src/ui/components/AddressBadge';
 import { Route, Routes } from 'react-router-dom';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
@@ -21,6 +20,7 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { WalletOrigin } from 'src/shared/WalletOrigin';
 import { EraseDataListButton } from 'src/ui/components/EraseData';
+import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { WalletAccount as WalletAccountPage } from './WalletAccount';
 import { WalletGroup as WalletGroupPage } from './WalletGroup';
 
@@ -44,7 +44,7 @@ function PrivateKeyList({ walletGroups }: { walletGroups: WalletGroup[] }) {
                 alignItems="center"
               >
                 <HStack gap={8} alignItems="center">
-                  <BlockieImg address={address} size={28} />
+                  <WalletAvatar address={address} size={28} borderRadius={4} />
                   <UIText kind="subtitle/m_reg" title={address}>
                     <WalletDisplayName wallet={wallet} />
                   </UIText>

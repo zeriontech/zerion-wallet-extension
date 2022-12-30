@@ -13,7 +13,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Surface } from 'src/ui/ui-kit/Surface';
-import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { Media } from 'src/ui/ui-kit/Media';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { NetworkIndicator } from 'src/ui/components/NetworkIndicator';
@@ -46,7 +45,6 @@ import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { PageFullBleedLine } from 'src/ui/components/PageFullBleedLine';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { WalletIcon } from 'src/ui/ui-kit/WalletIcon';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
@@ -56,6 +54,7 @@ import { focusNode } from 'src/ui/shared/focusNode';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
+import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { NetworkFee } from './NetworkFee';
 
 function UnknownIcon({ size }: { size: number }) {
@@ -91,7 +90,7 @@ function WalletLine({ address, label }: { address: string; label: string }) {
     <ItemSurface>
       <Media
         vGap={0}
-        image={<BlockieImg address={address} size={32} />}
+        image={<WalletAvatar address={address} size={32} borderRadius={4} />}
         text={
           <UIText kind="caption/reg" color="var(--neutral-500)">
             {label}
@@ -528,7 +527,12 @@ function SendTransactionContent({
           <Spacer height={8} />
 
           <HStack gap={8} alignItems="center">
-            <WalletIcon address={wallet.address} iconSize={20} active={false} />
+            <WalletAvatar
+              address={wallet.address}
+              size={20}
+              active={false}
+              borderRadius={4}
+            />
             <UIText kind="small/regular">
               <WalletDisplayName wallet={wallet} />
             </UIText>

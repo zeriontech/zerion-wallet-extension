@@ -11,7 +11,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import CheckmarkCheckedIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { Media } from 'src/ui/ui-kit/Media';
-import { WalletIcon } from 'src/ui/ui-kit/WalletIcon';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { BareWallet } from 'src/shared/types/BareWallet';
 import { PageBottom } from 'src/ui/components/PageBottom';
@@ -22,6 +21,7 @@ import { getError } from 'src/shared/errors/getError';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { FillView } from 'src/ui/components/FillView';
 import { ViewError } from 'src/ui/components/ViewError';
+import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 
 export function OnMount({
   children,
@@ -124,10 +124,11 @@ function AddressImportMessagesView({ values }: { values: BareWallet[] }) {
                     <Media
                       key={wallet.address}
                       image={
-                        <WalletIcon
+                        <WalletAvatar
                           address={wallet.address}
                           active={false}
-                          iconSize={32}
+                          size={32}
+                          borderRadius={4}
                         />
                       }
                       text={

@@ -11,7 +11,6 @@ import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Button } from 'src/ui/ui-kit/Button';
-import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { Background } from 'src/ui/components/Background';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
@@ -30,6 +29,7 @@ import { WalletMedia, Composition } from 'src/ui/components/WalletMedia';
 import { invariant } from 'src/shared/invariant';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
+import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 
 function WalletSelectList({
   wallets,
@@ -220,9 +220,10 @@ function RequestAccountsView({
                     >
                       <Media
                         image={
-                          <BlockieImg
+                          <WalletAvatar
                             address={selectedWallet.address}
                             size={36}
+                            borderRadius={4}
                           />
                         }
                         text={

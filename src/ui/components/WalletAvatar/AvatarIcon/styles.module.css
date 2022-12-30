@@ -2,6 +2,10 @@
   position: relative;
 }
 
+.media {
+  display: block;
+}
+
 .activeIndicatorClip {
   --circle-radius: 5px;
 
