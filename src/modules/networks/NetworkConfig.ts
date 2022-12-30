@@ -13,6 +13,7 @@ export interface NetworkConfig {
   external_id: string;
   explorer_token_url: string | null;
   explorer_tx_url: string | null;
+  explorer_address_url: string | null;
   explorer_home_url: string | null;
   explorer_name: string | null;
   rpc_url_internal: string | null;
