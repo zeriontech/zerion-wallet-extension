@@ -276,8 +276,22 @@ function OverviewComponent() {
           }
         />
         <Route path="/nfts" element={<NonFungibleTokens />} />
-        <Route path="/history" element={<HistoryList />} />
-        <Route path="/feed" element={<Feed />} />
+        <Route
+          path="/history"
+          element={
+            <ViewSuspense>
+              <HistoryList />
+            </ViewSuspense>
+          }
+        />
+        <Route
+          path="/feed"
+          element={
+            <ViewSuspense>
+              <Feed />
+            </ViewSuspense>
+          }
+        />
       </Routes>
       <PageBottom />
     </PageColumn>

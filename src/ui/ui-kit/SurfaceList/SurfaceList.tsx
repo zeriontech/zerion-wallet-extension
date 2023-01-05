@@ -56,24 +56,24 @@ export function ItemAnchor({
   );
 }
 
-export function ItemButton({
-  children,
-  style,
-  ...props
-}: {
-  children: React.ReactNode;
-  style?: React.CSSProperties;
-} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+export const ItemButton = React.forwardRef<
+  HTMLButtonElement,
+  {
+    children: React.ReactNode;
+    style?: React.CSSProperties;
+  } & React.ButtonHTMLAttributes<HTMLButtonElement>
+>(({ children, style, ...props }, ref) => {
   return (
     <UnstyledButton
       style={{ color: 'inherit', ...style }}
       className={s.option}
+      ref={ref}
       {...props}
     >
       <div className={s.decoration}>{children}</div>
     </UnstyledButton>
   );
-}
+});
 
 export interface Item {
   key: string | number;

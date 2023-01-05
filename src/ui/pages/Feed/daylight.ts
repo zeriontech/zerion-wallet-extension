@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import ky from 'ky';
+// import ky from 'ky';
 import { useInfiniteQuery } from 'react-query';
 
 type WalletAbilityType =
@@ -70,7 +70,7 @@ type WalletAbilityRequirement =
   | WalletAbilityNFTRequirement
   | WalletAbilityAllowlistTokenRequirement;
 
-interface WalletAbility {
+export interface WalletAbility {
   type: WalletAbilityType;
   title: string;
   description: string;
@@ -115,10 +115,11 @@ async function getWalletAbilities({
 }): Promise<WalletAbilitiesResponse> {
   const searchParams = new URLSearchParams({ limit: '10' });
   const firstPageLink = `/v1/wallets/${address}/abilities?${searchParams}`;
-  const result = await ky
-    .get(`https://api.daylight.xyz${link ?? firstPageLink}`)
-    .json<WalletAbilitiesResponse>();
-  return result;
+  return { links: { next: '' } };
+  // const result = await ky
+  //   .get(`https://api.daylight.xyz${link ?? firstPageLink}`)
+  //   .json<WalletAbilitiesResponse>();
+  // return result;
 }
 
 export function useWalletAbilities(address: string) {
