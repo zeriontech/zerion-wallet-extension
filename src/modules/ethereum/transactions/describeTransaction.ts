@@ -26,6 +26,8 @@ export interface TransactionDescription {
   sendAssetId?: string;
   sendAmount?: string;
   isNativeSend?: boolean;
+  depositAmount?: string;
+  withdrawAmount?: string;
   contractAddress?: string;
 }
 
@@ -70,8 +72,8 @@ function describeDeposit(
     return {
       action: TransactionAction.deposit,
       contractAddress: transaction.to,
-      sendAssetCode: receiver,
-      sendAmount: assets,
+      assetReceiver: receiver,
+      depositAmount: assets,
     };
   }
   return null;
@@ -95,7 +97,7 @@ function describeWithdraw(
     return {
       action: TransactionAction.withdraw,
       contractAddress: transaction.to,
-      sendAmount: assets,
+      withdrawAmount: assets,
       assetReceiver: receiver,
     };
   }
@@ -119,7 +121,7 @@ function describeSetApprovalForAll(
 
     return {
       action: TransactionAction.setApprovalForAll,
-      contractAddress: transaction.to,
+      approveAssetCode: transaction.to,
       tokenSpender: operator,
     };
   }

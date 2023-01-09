@@ -14,6 +14,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { Media } from 'src/ui/ui-kit/Media';
+import { Image } from 'src/ui/ui-kit/MediaFallback';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { NetworkIndicator } from 'src/ui/components/NetworkIndicator';
 import { useNetworks } from 'src/modules/networks/useNetworks';
@@ -119,6 +120,10 @@ function AssetLine({
     transaction.sendAssetId ||
     transaction.approveAssetCode ||
     transaction.sendAssetCode;
+  const amount =
+    transaction.sendAmount ||
+    transaction.depositAmount ||
+    transaction.withdrawAmount;
   const { asset, status } = useAssetFromCacheOrAPI({
     address: assetCode || '',
     isNative: false,
@@ -128,6 +133,7 @@ function AssetLine({
     !asset &&
     assetCode &&
     (transaction.action === TransactionAction.transfer ||
+      transaction.action === TransactionAction.send ||
       transaction.action === TransactionAction.approve)
   ) {
     // Couldn't resolve asset for a send or approve transaction
@@ -213,15 +219,46 @@ function AssetLine({
       />
     );
   }
-  if (transaction.action === TransactionAction.transfer) {
+  if (
+    transaction.action === TransactionAction.deposit ||
+    transaction.action === TransactionAction.withdraw
+  ) {
+    return (
+      <ItemSurface>
+        <Media
+          vGap={0}
+          image={<UnknownIcon size={32} />}
+          text={
+            <UIText kind="caption/reg" color="var(--neutral-500)">
+              Amount
+            </UIText>
+          }
+          detailText={
+            amount == null ? null : (
+              <UIText kind="subtitle/l_reg">
+                {`${formatTokenValue(
+                  baseToCommon(amount, getDecimals({ asset, chain }))
+                )} ${asset.symbol}`}
+              </UIText>
+            )
+          }
+        />
+      </ItemSurface>
+    );
+  }
+  if (
+    transaction.action === TransactionAction.transfer ||
+    transaction.action === TransactionAction.send
+  ) {
     return (
       <ItemSurface>
         <Media
           vGap={0}
           image={
-            <img
+            <Image
               style={{ width: 32, height: 32, borderRadius: '50%' }}
-              src={asset.icon_url || '...'}
+              renderError={() => <UnknownIcon size={32} />}
+              src={asset.icon_url!}
             />
           }
           text={
@@ -230,13 +267,10 @@ function AssetLine({
             </UIText>
           }
           detailText={
-            transaction.sendAmount == null ? null : (
+            amount == null ? null : (
               <UIText kind="subtitle/l_reg">
                 {`${formatTokenValue(
-                  baseToCommon(
-                    transaction.sendAmount,
-                    getDecimals({ asset, chain })
-                  )
+                  baseToCommon(amount, getDecimals({ asset, chain }))
                 )} ${asset.symbol}`}
               </UIText>
             )
@@ -338,7 +372,11 @@ function TransactionDescription({
         networks={networks}
         chain={chain}
       />
-      {action === TransactionAction.transfer && assetReceiver ? (
+      {(action === TransactionAction.transfer ||
+        action === TransactionAction.send ||
+        action === TransactionAction.deposit ||
+        action === TransactionAction.withdraw) &&
+      assetReceiver ? (
         <WalletLine address={assetReceiver} label="Receiver" />
       ) : null}
       {action === TransactionAction.contractInteraction && contractAddress ? (
