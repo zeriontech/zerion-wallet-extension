@@ -92,7 +92,7 @@ function PercentChange({
 function CurrentAccount({ wallet }: { wallet: BareWallet }) {
   return (
     <span style={{ fontWeight: 'normal' }}>
-      <WalletDisplayName wallet={wallet} />
+      <WalletDisplayName wallet={wallet} maxCharacters={16} />
     </span>
   );
 }
