@@ -1,6 +1,6 @@
 import React from 'react';
 import type { BareWallet } from 'src/shared/types/BareWallet';
-import { useWalletDisplayName } from 'src/ui/shared/useWalletDisplayName';
+import { useProfileName } from 'src/ui/shared/useProfileName';
 
 export function WalletDisplayName({
   wallet,
@@ -11,13 +11,9 @@ export function WalletDisplayName({
   padding?: number;
   maxCharacters?: number;
 }) {
-  const displayName = useWalletDisplayName(wallet.address, wallet.name, {
+  const displayName = useProfileName(wallet, {
     padding,
     maxCharacters,
   });
-  return (
-    <span style={{ textOverflow: 'ellipsis', overflow: 'hidden' }}>
-      {displayName}
-    </span>
-  );
+  return <span style={{ wordBreak: 'break-all' }}>{displayName}</span>;
 }

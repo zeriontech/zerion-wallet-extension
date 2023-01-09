@@ -13,7 +13,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { Surface } from 'src/ui/ui-kit/Surface';
-import { useWalletDisplayName } from 'src/ui/shared/useWalletDisplayName';
+import { useProfileName } from 'src/ui/shared/useProfileName';
 import { Media } from 'src/ui/ui-kit/Media';
 import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
@@ -56,7 +56,7 @@ function EditableWalletName({
     500
   );
 
-  const displayName = useWalletDisplayName(wallet.address, wallet.name);
+  const displayName = useProfileName(wallet);
 
   return (
     <VStack gap={4}>
@@ -140,7 +140,7 @@ export function WalletAccount() {
     () => walletPort.request('uiGetWalletByAddress', { address }),
     { useErrorBoundary: true }
   );
-  const displayName = useWalletDisplayName(address, wallet?.name);
+  const displayName = useProfileName({ address, name: wallet?.name || null });
   const removeAddressMutation = useMutation(
     () => walletPort.request('removeAddress', { address }),
     {

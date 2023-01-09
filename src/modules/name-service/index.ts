@@ -5,7 +5,7 @@ export type Registry = (address: string) => Promise<string | null>;
 
 export const registries = [ensLookup, lensLookup];
 
-export async function lookupAddressNames(address: string): Promise<string[]> {
+async function lookupAddressNames(address: string): Promise<string[]> {
   const addresses = await Promise.all(
     registries.map((lookup: Registry) => lookup(address))
   );

@@ -1,3 +1,4 @@
+import type { BareWallet } from 'src/shared/types/BareWallet';
 import { truncateAddress } from './truncateAddress';
 
 export function emojify(value: string) {
@@ -14,14 +15,13 @@ export function emojify(value: string) {
 }
 
 export function getWalletDisplayName(
-  address: string,
-  name?: string | null,
+  wallet: Pick<BareWallet, 'address' | 'name'>,
   {
     padding = 4,
     maxCharacters,
   }: { padding?: number; maxCharacters?: number } = {}
 ) {
-  const displayName = name ?? truncateAddress(address, padding);
+  const displayName = wallet.name ?? truncateAddress(wallet.address, padding);
   const value = emojify(displayName);
 
   if (maxCharacters && value.length > maxCharacters) {
