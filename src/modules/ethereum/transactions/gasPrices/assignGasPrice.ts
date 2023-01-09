@@ -21,7 +21,9 @@ export function assignGasPrice<T extends object>(
       maxPriorityFeePerGas: String(ethers.utils.hexValue(eip1559.priority_fee)),
     });
   } else if (gasPrice.classic != null) {
-    return Object.assign(transaction, { gasPrice: String(gasPrice.classic) });
+    return Object.assign(transaction, {
+      gasPrice: String(ethers.utils.hexValue(gasPrice.classic)),
+    });
   }
   throw new Error(
     'gasPrice object must include either classic or eip1559 field'
