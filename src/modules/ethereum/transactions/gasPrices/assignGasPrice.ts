@@ -17,12 +17,12 @@ export function assignGasPrice<T extends object>(
   if (gasPrice.eip1559) {
     const { eip1559 } = gasPrice;
     return Object.assign(transaction, {
-      maxFeePerGas: String(ethers.utils.hexValue(eip1559.max_fee)),
-      maxPriorityFeePerGas: String(ethers.utils.hexValue(eip1559.priority_fee)),
+      maxFeePerGas: ethers.utils.hexValue(eip1559.max_fee),
+      maxPriorityFeePerGas: ethers.utils.hexValue(eip1559.priority_fee),
     });
   } else if (gasPrice.classic != null) {
     return Object.assign(transaction, {
-      gasPrice: String(ethers.utils.hexValue(gasPrice.classic)),
+      gasPrice: ethers.utils.hexValue(gasPrice.classic),
     });
   }
   throw new Error(
