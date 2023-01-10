@@ -164,9 +164,7 @@ function OverviewComponent() {
       >
         <Spacer height={8} />
         <HStack gap={12} justifyContent="space-between" alignItems="center">
-          <HStack gap={4} alignItems="center">
-            <CurrentAccountControls />
-          </HStack>
+          <CurrentAccountControls />
 
           <HStack gap={0} alignItems="center">
             {preferences?.showNetworkSwitchShortcut === true ? (
