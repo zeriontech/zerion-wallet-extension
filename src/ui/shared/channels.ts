@@ -45,14 +45,14 @@ export const memoryCacheRPCPort = new PortMessageChannel({
 
 class WindowPort extends PortMessageChannel {
   confirm<T>(windowId: string, result?: T) {
-    return this.port.postMessage({
+    return this.port?.postMessage({
       id: windowId,
       result,
     });
   }
 
   reject(windowId: string) {
-    this.port.postMessage({
+    this.port?.postMessage({
       id: windowId,
       error: new UserRejected(),
     });
@@ -60,3 +60,10 @@ class WindowPort extends PortMessageChannel {
 }
 
 export const windowPort = new WindowPort({ name: 'window' });
+
+export function initialize() {
+  walletPort.initialize();
+  accountPublicRPCPort.initialize();
+  memoryCacheRPCPort.initialize();
+  windowPort.initialize();
+}

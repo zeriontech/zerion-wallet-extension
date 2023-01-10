@@ -42,23 +42,29 @@ function verifyPort(port: RuntimePort) {
   }
 }
 
-function notifyContentScriptsAndUIAboutInitialization() {
-  // To query all tabs, pass empty object to tabs.query({})
-  browser.tabs.query({}).then((tabs) => {
-    tabs.forEach(async (tab) => {
-      if (!tab.id) {
-        return;
-      }
-      try {
-        await chrome.tabs.sendMessage(tab.id, {
-          event: 'background-initialized',
-        });
-      } catch (error) {
-        // "Could not establish connection. Receiving end does not exist."
-        // No problem, this message is only meant for content-scripts which
-        // are still attached to a disconnected extension context
-      }
+async function notifyContentScriptsAndUIAboutInitialization() {
+  try {
+    await browser.runtime.sendMessage(browser.runtime.id, {
+      event: 'background-initialized',
     });
+  } catch (e) {
+    /* OK, message is meant only for a running UI */
+  }
+  // To query all tabs, pass empty object to tabs.query({})
+  const tabs = await browser.tabs.query({});
+  tabs.forEach(async (tab) => {
+    if (!tab.id) {
+      return;
+    }
+    try {
+      await browser.tabs.sendMessage(tab.id, {
+        event: 'background-initialized',
+      });
+    } catch (error) {
+      // "Could not establish connection. Receiving end does not exist."
+      // No problem, this message is only meant for content-scripts which
+      // are still attached to a disconnected extension context
+    }
   });
 }
 

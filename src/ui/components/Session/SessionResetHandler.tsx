@@ -18,9 +18,9 @@ export function SessionResetHandler() {
         }
       }
     }
-    walletPort.port.onMessage.addListener(messageHandler);
+    walletPort.port?.onMessage.addListener(messageHandler);
     return () => {
-      walletPort.port.onMessage.removeListener(messageHandler);
+      walletPort.port?.onMessage.removeListener(messageHandler);
     };
   }, [navigate]);
   return null;
