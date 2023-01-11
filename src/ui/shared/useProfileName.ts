@@ -18,5 +18,8 @@ export function useProfileName(
   );
 
   const domainName = isDomainLoading ? null : domain;
-  return domainName ?? getWalletDisplayName(wallet, { padding, maxCharacters });
+
+  return wallet.name
+    ? getWalletDisplayName(wallet, { padding, maxCharacters })
+    : domainName ?? getWalletDisplayName(wallet, { padding, maxCharacters });
 }
