@@ -25,6 +25,7 @@ function decsriptionToType(description: TransactionDescription): ActionType {
     [TransactionAction.approve]: 'approve',
     [TransactionAction.swap]: 'trade',
     [TransactionAction.transfer]: 'send',
+    [TransactionAction.supply]: 'deposit',
     [TransactionAction.deposit]: 'deposit',
     [TransactionAction.withdraw]: 'withdraw',
     [TransactionAction.setApprovalForAll]: 'approve',

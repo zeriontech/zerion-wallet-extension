@@ -9,6 +9,7 @@ export enum TransactionAction {
   approve,
   swap,
   transfer,
+  supply,
   deposit,
   withdraw,
   setApprovalForAll,
@@ -27,6 +28,9 @@ export interface TransactionDescription {
   sendAmount?: string;
   isNativeSend?: boolean;
   depositAmount?: string;
+  supplyAssetCode?: string;
+  supplyAmount?: string;
+  withdrawAssetCode?: string;
   withdrawAmount?: string;
   contractAddress?: string;
 }
@@ -45,14 +49,43 @@ const selectors = {
   // Common
   multicall1: encodeSelector('multicall(bytes[])'),
   multicall2: encodeSelector('multicall(uint256,bytes[])'),
-  // ERC-4626 (Vault)
+  // Vaults (ERC-4626 and others), Compound, YearnFi etc
+  supplyCompound: encodeSelector('supply(address,uint256)'),
   deposit: encodeSelector('deposit(uint256,address)'),
-  withdraw: encodeSelector('withdraw(assets,address,address)'),
+  depositYearnFi: encodeSelector('deposit(address,address,uint256)'),
+  withdraw: encodeSelector('withdraw(uint256,address,address)'),
+  withdrawCompound: encodeSelector('withdraw(address,uint256)'),
+  withdrawYearnFi: encodeSelector('withdraw(uint256)'),
   // ERC-1155 (Multi-token)
   setApprovalForAll: encodeSelector('setApprovalForAll(address,bool)'),
   // ERC-777
   send: encodeSelector('send(address,uint256,bytes)'),
 };
+
+function describeSupply(
+  transaction: IncomingTransaction
+): TransactionDescription | null {
+  if (!transaction.data) {
+    return null;
+  }
+  const selector = ethers.utils.hexDataSlice(transaction.data, 0, 4);
+  if (selector !== selectors.supplyCompound) {
+    return null;
+  }
+
+  const abiCoder = new ethers.utils.AbiCoder();
+  const [asset, amount] = abiCoder.decode(
+    ['address', 'uint256'],
+    ethers.utils.hexDataSlice(transaction.data, 4)
+  );
+
+  return {
+    action: TransactionAction.supply,
+    contractAddress: transaction.to,
+    supplyAssetCode: asset,
+    supplyAmount: ethers.BigNumber.from(amount).toString(),
+  };
+}
 
 function describeDeposit(
   transaction: IncomingTransaction
@@ -61,22 +94,32 @@ function describeDeposit(
     return null;
   }
   const selector = ethers.utils.hexDataSlice(transaction.data, 0, 4);
+  if (selector !== selectors.deposit && selector !== selectors.depositYearnFi) {
+    return null;
+  }
 
+  let assets = null;
+  let receiver = null;
+
+  const abiCoder = new ethers.utils.AbiCoder();
   if (selector === selectors.deposit) {
-    const abiCoder = new ethers.utils.AbiCoder();
-    const [assets, receiver] = abiCoder.decode(
+    [assets, receiver] = abiCoder.decode(
       ['uint256', 'address'],
       ethers.utils.hexDataSlice(transaction.data, 4)
     );
-
-    return {
-      action: TransactionAction.deposit,
-      contractAddress: transaction.to,
-      assetReceiver: receiver,
-      depositAmount: assets,
-    };
+  } else if (selector === selectors.depositYearnFi) {
+    [receiver, , assets] = abiCoder.decode(
+      ['address', 'address', 'uint256'],
+      ethers.utils.hexDataSlice(transaction.data, 4)
+    );
   }
-  return null;
+
+  return {
+    action: TransactionAction.deposit,
+    contractAddress: transaction.to,
+    assetReceiver: receiver,
+    depositAmount: assets,
+  };
 }
 
 function describeWithdraw(
@@ -86,22 +129,43 @@ function describeWithdraw(
     return null;
   }
   const selector = ethers.utils.hexDataSlice(transaction.data, 0, 4);
+  if (
+    selector !== selectors.withdraw &&
+    selector !== selectors.withdrawYearnFi &&
+    selector !== selectors.withdrawCompound
+  ) {
+    return null;
+  }
 
+  let asset = null;
+  let amount = null;
+  let receiver = null;
+
+  const abiCoder = new ethers.utils.AbiCoder();
   if (selector === selectors.withdraw) {
-    const abiCoder = new ethers.utils.AbiCoder();
-    const [assets, receiver, _owner] = abiCoder.decode(
-      ['assets', 'address', 'address'],
+    [amount, receiver] = abiCoder.decode(
+      ['uint256', 'address', 'address'],
       ethers.utils.hexDataSlice(transaction.data, 4)
     );
-
-    return {
-      action: TransactionAction.withdraw,
-      contractAddress: transaction.to,
-      withdrawAmount: assets,
-      assetReceiver: receiver,
-    };
+  } else if (selector === selectors.withdrawYearnFi) {
+    [amount] = abiCoder.decode(
+      ['uint256'],
+      ethers.utils.hexDataSlice(transaction.data, 4)
+    );
+  } else if (selector === selectors.withdrawCompound) {
+    [asset] = abiCoder.decode(
+      ['address', 'uint256'],
+      ethers.utils.hexDataSlice(transaction.data, 4)
+    );
   }
-  return null;
+
+  return {
+    action: TransactionAction.withdraw,
+    contractAddress: transaction.to,
+    withdrawAmount: amount,
+    withdrawAssetCode: asset,
+    assetReceiver: receiver,
+  };
 }
 
 function describeSetApprovalForAll(
@@ -227,6 +291,7 @@ function describeContractInteraction(
 const describers = [
   describeApprove,
   describeSend,
+  describeSupply,
   describeDeposit,
   describeWithdraw,
   describeSetApprovalForAll,
