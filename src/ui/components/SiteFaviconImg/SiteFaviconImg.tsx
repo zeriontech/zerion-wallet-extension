@@ -1,6 +1,7 @@
 import React from 'react';
 import { Image } from 'src/ui/ui-kit/MediaFallback';
 import GlobeIcon from 'jsx:src/ui/assets/globe.svg';
+import { DappIconFetcher } from 'src/ui/components/DappIconFetcher';
 
 export function SiteFaviconImg({
   url,
@@ -16,16 +17,21 @@ export function SiteFaviconImg({
    * to get favicon for that specific url
    */
   return (
-    <Image
-      style={style}
-      src={`${url}/favicon.ico`}
-      {...imgProps}
-      renderError={() => (
+    <DappIconFetcher
+      url={url}
+      renderIcon={(src) => (
         <Image
           style={style}
-          src={`${url}/favicon.png`}
+          src={src}
+          {...imgProps}
           renderError={() => (
-            <GlobeIcon style={{ color: 'var(--primary)', ...style }} />
+            <Image
+              style={style}
+              src={`${url}/favicon.ico`}
+              renderError={() => (
+                <GlobeIcon style={{ color: 'var(--primary)', ...style }} />
+              )}
+            />
           )}
         />
       )}
