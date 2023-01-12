@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
-// import ky from 'ky';
+import ky from 'ky';
 import { useInfiniteQuery } from 'react-query';
 
-type WalletAbilityType =
+export type WalletAbilityType =
   | 'vote'
   | 'claim'
   | 'airdrop'
@@ -106,29 +106,54 @@ interface WalletAbilitiesResponse {
   };
 }
 
+export interface StatusFilterParams {
+  deadline: 'all' | 'expired';
+  showCompleted: boolean;
+}
+
+interface FilterParams extends Partial<StatusFilterParams> {
+  type: WalletAbilityType[];
+}
+
 async function getWalletAbilities({
   address,
+  params,
   link,
 }: {
   address: string;
+  params?: FilterParams;
   link: string;
 }): Promise<WalletAbilitiesResponse> {
-  const searchParams = new URLSearchParams({ limit: '10' });
+  const { type, ...rest } = params || { type: [] };
+  const searchParams = new URLSearchParams([
+    ['limit', '10'],
+    ['sort', 'magic'],
+    ...(type.map((item) => ['type', item]) || []),
+    ...(Object.entries(rest) as [string, string][]),
+  ]);
   const firstPageLink = `/v1/wallets/${address}/abilities?${searchParams}`;
-  return { links: { next: '' } };
-  // const result = await ky
-  //   .get(`https://api.daylight.xyz${link ?? firstPageLink}`)
-  //   .json<WalletAbilitiesResponse>();
-  // return result;
+  const result = await ky
+    .get(`https://api.daylight.xyz${link ?? firstPageLink}`)
+    .json<WalletAbilitiesResponse>();
+  return result;
 }
 
-export function useWalletAbilities(address: string) {
+export function useWalletAbilities({
+  address,
+  params,
+}: {
+  address: string;
+  params: FilterParams;
+}) {
   const { data, ...result } = useInfiniteQuery(
-    `wallet/abilities/${address}`,
-    ({ pageParam = { address } }) => getWalletAbilities(pageParam),
+    `wallet/abilities/${address}/${JSON.stringify(params)}`,
+    ({ pageParam = { address, params } }) => getWalletAbilities(pageParam),
     {
       getNextPageParam: (lastPage) => ({ link: lastPage.links.next, address }),
       refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      suspense: false,
+      keepPreviousData: true,
     }
   );
 
@@ -141,4 +166,15 @@ export function useWalletAbilities(address: string) {
   }, [data]);
 
   return { value, ...result };
+}
+
+export async function getAbility(uid: string) {
+  const result = await ky
+    .get(`https://api.daylight.xyz/v1/abilities/${uid}`)
+    .json<{ ability: WalletAbility }>();
+  return result;
+}
+
+export function getAbilityLinkTitle(ability?: WalletAbility) {
+  return ability?.action.linkUrl?.split('/')[2];
 }

@@ -10,6 +10,8 @@ import {
   Outlet,
   Navigate,
 } from 'react-router-dom';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import { GetStarted } from 'src/ui/pages/GetStarted';
 import { Intro } from 'src/ui/pages/Intro';
 import { Overview } from 'src/ui/pages/Overview';
@@ -45,6 +47,7 @@ import { ViewSuspense } from '../components/ViewSuspense';
 import { VersionUpgrade } from '../components/VersionUpgrade';
 import { queryClient } from '../shared/requests/queryClient';
 import { ForgotPassword } from '../pages/ForgotPassword';
+import { AbilityPage } from '../pages/Feed/Ability';
 import { BugReportButton } from '../components/BugReportButton';
 import { Receive } from '../pages/Receive';
 import { KeyboardShortcut } from '../components/KeyboardShortcut';
@@ -52,6 +55,8 @@ import { followTheme } from '../features/appearance';
 import { VStack } from '../ui-kit/VStack';
 import { UnstyledAnchor } from '../ui-kit/UnstyledAnchor';
 import { openInNewWindow } from '../shared/openInNewWindow';
+
+dayjs.extend(relativeTime);
 
 function View() {
   const location = useLocation();
@@ -280,6 +285,14 @@ function Views() {
             element={
               <RequireAuth>
                 <ConnectedSites />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/ability/:ability_uid"
+            element={
+              <RequireAuth>
+                <AbilityPage />
               </RequireAuth>
             }
           />
