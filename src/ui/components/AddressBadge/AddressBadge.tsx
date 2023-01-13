@@ -1,6 +1,6 @@
 import React from 'react';
 import type { BareWallet } from 'src/shared/types/BareWallet';
-import { getWalletDisplayName } from 'src/ui/shared/getWalletDisplayName';
+import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { WalletAvatar } from '../WalletAvatar';
@@ -29,7 +29,7 @@ export function AddressBadge({
         kind="subtitle/s_reg"
         style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
       >
-        {getWalletDisplayName(wallet, { padding: 4, maxCharacters: 16 })}
+        <WalletDisplayName wallet={wallet} maxCharacters={16} padding={4} />
       </UIText>
     </HStack>
   );

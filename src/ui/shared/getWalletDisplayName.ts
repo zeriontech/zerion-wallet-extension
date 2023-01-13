@@ -15,14 +15,14 @@ export function emojify(value: string) {
 }
 
 export function getWalletDisplayName(
-  wallet: BareWallet,
+  wallet: Pick<BareWallet, 'address' | 'name'>,
   {
     padding = 4,
     maxCharacters,
   }: { padding?: number; maxCharacters?: number } = {}
 ) {
-  const name = wallet.name ?? truncateAddress(wallet.address, padding);
-  const value = emojify(name);
+  const displayName = wallet.name ?? truncateAddress(wallet.address, padding);
+  const value = emojify(displayName);
 
   if (maxCharacters && value.length > maxCharacters) {
     return truncateAddress(value, Math.floor((maxCharacters - 1) / 2));
