@@ -21,10 +21,16 @@ export type PendingAddressAction = Omit<AddressAction, 'content'> & {
 
 function decsriptionToType(description: TransactionDescription): ActionType {
   const types: Record<TransactionAction, ActionType> = {
+    [TransactionAction.multicall]: 'execute',
     [TransactionAction.approve]: 'approve',
-    [TransactionAction.contractInteraction]: 'execute',
     [TransactionAction.swap]: 'trade',
     [TransactionAction.transfer]: 'send',
+    [TransactionAction.supply]: 'deposit',
+    [TransactionAction.deposit]: 'deposit',
+    [TransactionAction.withdraw]: 'withdraw',
+    [TransactionAction.setApprovalForAll]: 'approve',
+    [TransactionAction.send]: 'send',
+    [TransactionAction.contractInteraction]: 'execute',
   };
   return types[description.action] || 'execute';
 }

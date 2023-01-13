@@ -14,6 +14,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { Media } from 'src/ui/ui-kit/Media';
+import { Image } from 'src/ui/ui-kit/MediaFallback';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { NetworkIndicator } from 'src/ui/components/NetworkIndicator';
 import { useNetworks } from 'src/modules/networks/useNetworks';
@@ -87,7 +88,17 @@ function ItemSurface({ style, ...props }: React.HTMLProps<HTMLDivElement>) {
   return <Surface style={surfaceStyle} {...props} />;
 }
 
-function WalletLine({ address, label }: { address: string; label: string }) {
+function WalletLine({
+  address,
+  label,
+  networks,
+  chain,
+}: {
+  address: string;
+  label: string;
+  networks: Networks;
+  chain: Chain;
+}) {
   return (
     <ItemSurface>
       <Media
@@ -99,7 +110,15 @@ function WalletLine({ address, label }: { address: string; label: string }) {
           </UIText>
         }
         detailText={
-          <UIText kind="subtitle/l_reg">{truncateAddress(address, 4)}</UIText>
+          <UIText kind="subtitle/l_reg">
+            <TextAnchor
+              href={networks.getExplorerAddressUrlByName(chain, address)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {truncateAddress(address, 4)}
+            </TextAnchor>
+          </UIText>
         }
       />
     </ItemSurface>
@@ -118,7 +137,14 @@ function AssetLine({
   const assetCode =
     transaction.sendAssetId ||
     transaction.approveAssetCode ||
+    transaction.supplyAssetCode ||
+    transaction.withdrawAssetCode ||
     transaction.sendAssetCode;
+  const amount =
+    transaction.sendAmount ||
+    transaction.depositAmount ||
+    transaction.withdrawAmount ||
+    transaction.supplyAmount;
   const { asset, status } = useAssetFromCacheOrAPI({
     address: assetCode || '',
     isNative: false,
@@ -128,6 +154,7 @@ function AssetLine({
     !asset &&
     assetCode &&
     (transaction.action === TransactionAction.transfer ||
+      transaction.action === TransactionAction.send ||
       transaction.action === TransactionAction.approve)
   ) {
     // Couldn't resolve asset for a send or approve transaction
@@ -171,12 +198,16 @@ function AssetLine({
       />
     );
   }
+
   if (!asset) {
     return status === DataStatus.requested ? (
       <ItemSurface style={{ height: 56 }} />
     ) : null;
   }
-  if (transaction.action === TransactionAction.approve) {
+  if (
+    transaction.action === TransactionAction.approve ||
+    transaction.action === TransactionAction.setApprovalForAll
+  ) {
     return (
       <SurfaceList
         items={[
@@ -213,15 +244,21 @@ function AssetLine({
       />
     );
   }
-  if (transaction.action === TransactionAction.transfer) {
+  if (
+    (transaction.action === TransactionAction.transfer ||
+      transaction.action === TransactionAction.send ||
+      transaction.action === TransactionAction.supply) &&
+    amount
+  ) {
     return (
       <ItemSurface>
         <Media
           vGap={0}
           image={
-            <img
+            <Image
               style={{ width: 32, height: 32, borderRadius: '50%' }}
-              src={asset.icon_url || '...'}
+              renderError={() => <UnknownIcon size={32} />}
+              src={asset.icon_url || ''}
             />
           }
           text={
@@ -230,13 +267,10 @@ function AssetLine({
             </UIText>
           }
           detailText={
-            transaction.sendAmount == null ? null : (
+            amount == null ? null : (
               <UIText kind="subtitle/l_reg">
                 {`${formatTokenValue(
-                  baseToCommon(
-                    transaction.sendAmount,
-                    getDecimals({ asset, chain })
-                  )
+                  baseToCommon(amount, getDecimals({ asset, chain }))
                 )} ${asset.symbol}`}
               </UIText>
             )
@@ -252,10 +286,12 @@ function PayWithLine({
   asset,
   value,
   chain,
+  networks,
 }: {
   asset: Asset;
   value: string;
   chain: Chain;
+  networks: Networks;
 }) {
   const commonQuantity = useMemo(
     () => baseToCommon(value, getDecimals({ chain, asset })),
@@ -268,7 +304,7 @@ function PayWithLine({
       items={[
         {
           key: 0,
-          // href: networks.getExplorerAddressUrlByName(chain, contractAddress),
+          href: networks.getExplorerTokenUrlByName(chain, asset.asset_code),
           target: '_blank',
           rel: 'noopener noreferrer',
           component: (
@@ -338,21 +374,40 @@ function TransactionDescription({
         networks={networks}
         chain={chain}
       />
-      {action === TransactionAction.transfer && assetReceiver ? (
-        <WalletLine address={assetReceiver} label="Receiver" />
+      {(action === TransactionAction.transfer ||
+        action === TransactionAction.send ||
+        action === TransactionAction.deposit ||
+        action === TransactionAction.withdraw) &&
+      assetReceiver ? (
+        <WalletLine
+          address={assetReceiver}
+          label="Receiver"
+          networks={networks}
+          chain={chain}
+        />
       ) : null}
-      {action === TransactionAction.contractInteraction && contractAddress ? (
+      {(action === TransactionAction.contractInteraction ||
+        action === TransactionAction.multicall ||
+        action === TransactionAction.supply ||
+        action === TransactionAction.withdraw) &&
+      contractAddress ? (
         <SurfaceList
           items={[
             {
               key: 0,
+              href: networks.getExplorerAddressUrlByName(
+                chain,
+                contractAddress
+              ),
+              target: '_blank',
+              rel: 'noopener noreferrer',
               component: (
                 <Media
                   image={<UnknownIcon size={36} />}
                   vGap={0}
                   text={
                     <UIText kind="caption/reg" color="var(--neutral-500)">
-                      Interact with
+                      Contract Address
                     </UIText>
                   }
                   detailText={
@@ -385,6 +440,7 @@ function TransactionDescription({
           asset={nativeAsset}
           value={nativeValue.toString()}
           chain={chain}
+          networks={networks}
         />
       ) : null}
     </>
