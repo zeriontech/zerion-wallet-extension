@@ -4,14 +4,14 @@ type IconRenderer = (src: string) => JSX.Element;
 
 interface Props {
   url: string;
-  renderIcon: IconRenderer;
+  render: IconRenderer;
 }
 
-export function DappIconFetcher({ url: dappUrl, renderIcon }: Props) {
+export function DappIconFetcher({ url: dappUrl, render }: Props) {
   const { data: iconUrl, isLoading } = useFetchDappIcon(dappUrl);
   if (isLoading) {
     return null;
   }
-  const src = iconUrl ? iconUrl : `${dappUrl}/favicon.png`;
-  return renderIcon(src);
+  const src = iconUrl || `${dappUrl}/favicon.png`;
+  return render(src);
 }

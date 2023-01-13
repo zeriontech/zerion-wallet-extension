@@ -19,7 +19,7 @@ export function SiteFaviconImg({
   return (
     <DappIconFetcher
       url={url}
-      renderIcon={(src) => (
+      render={(src) => (
         <Image
           style={style}
           src={src}

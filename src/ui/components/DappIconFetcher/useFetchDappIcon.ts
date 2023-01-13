@@ -23,8 +23,16 @@ function extractFaviconUrl(
 }
 
 export function useFetchDappIcon(url: string) {
-  return useQuery(['dappIcon', url], async () => {
-    const html = await fetch(url).then((res) => res.text());
-    return extractFaviconUrl(url, html);
-  });
+  return useQuery(
+    ['dappIcon', url],
+    async () => {
+      const html = await fetch(url).then((res) => res.text());
+      return extractFaviconUrl(url, html);
+    },
+    {
+      retry: false,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+    }
+  );
 }
