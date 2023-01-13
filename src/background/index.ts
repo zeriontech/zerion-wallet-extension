@@ -12,8 +12,9 @@ import { createHttpConnectionMessageHandler } from './messaging/port-message-han
 import { handleAccountEvents } from './messaging/controller-event-handlers/account-events-handler';
 import { EthereumEventsBroadcaster } from './messaging/controller-event-handlers/ethereum-provider-events';
 import { MemoryCacheRPC } from './resource/memoryCacheRPC';
-import { start as startIdleTimer } from './idle-time-handler';
 import type { RuntimePort } from './webapis/RuntimePort';
+import { emitter } from './events';
+import * as userActivity from './user-activity';
 
 Object.assign(globalThis, { ethers });
 
@@ -79,6 +80,13 @@ browser.runtime.onConnect.addListener((port) => {
   }
 });
 
+userActivity.trackLastActive();
+userActivity.scheduleAlarms();
+// Listeners for alarms must also be registered at the top level.
+// It's not mentioned on the Alarms API page, but it's mentioned here:
+// https://developer.chrome.com/docs/extensions/mv3/migrating_to_service_workers/#alarms
+browser.alarms.onAlarm.addListener(userActivity.handleAlarm);
+
 initialize().then(({ account, accountPublicRPC }) => {
   notifyContentScriptsAndUIAboutInitialization();
   const httpConnection = new HttpConnection(() => account.getCurrentWallet());
@@ -125,7 +133,5 @@ initialize().then(({ account, accountPublicRPC }) => {
     });
   });
 
-  startIdleTimer(() => {
-    account.logout();
-  });
+  emitter.on('sessionExpired', () => account.logout());
 });

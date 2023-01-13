@@ -20,6 +20,7 @@ export async function initialize() {
   // Either way, we either create a user from scratch or find one in storage
   await Account.ensureUserAndWallet();
   const account = new Account();
+  await account.initialize();
   const accountPublicRPC = new AccountPublicRPC(account);
   const transactionService = new TransactionService();
   await transactionService.initialize();
