@@ -31,6 +31,7 @@ import type { BareWallet } from 'src/shared/types/BareWallet';
 import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { CopyButton } from 'src/ui/components/CopyButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -263,7 +264,17 @@ function OverviewComponent() {
       </PageFullBleedColumn>
       <Spacer height={24} />
       <Routes>
-        <Route path="/" element={<Positions />} />
+        <Route
+          path="/"
+          element={
+            <DelayedRender
+              /** Cheap perceived performance hack: render expensive Positions component later so that initial UI render is faster */
+              delay={16}
+            >
+              <Positions />
+            </DelayedRender>
+          }
+        />
         <Route path="/nfts" element={<NonFungibleTokens />} />
         <Route path="/history" element={<HistoryList />} />
       </Routes>
