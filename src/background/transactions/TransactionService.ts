@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import { Store } from 'store-unit';
 import { networksStore } from 'src/modules/networks/networks-store';
-import { set, get } from 'src/background/webapis/storage';
+import * as browserStorage from 'src/background/webapis/storage';
 import produce from 'immer';
 import type {
   StoredTransactions,
@@ -14,7 +14,7 @@ class TransactionsStore extends Store<StoredTransactions> {
   constructor(args: StoredTransactions) {
     super(args);
     this.on('change', (state) => {
-      set('transactions', state);
+      browserStorage.set('transactions', state);
     });
   }
 }
@@ -59,7 +59,8 @@ export class TransactionService {
   }
 
   async initialize() {
-    const transactions: StoredTransactions = (await get('transactions')) ?? [];
+    const transactions: StoredTransactions =
+      (await browserStorage.get('transactions')) ?? [];
     this.transactionsStore = new TransactionsStore(transactions);
     this.addListeners();
   }
