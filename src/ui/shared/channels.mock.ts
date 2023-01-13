@@ -28,8 +28,8 @@ const mockedPermissions: WalletRecord['permissions'] = {
 };
 
 const mockRecord: WalletRecord = {
-  version: 2,
-  preferences: {},
+  version: 3,
+  publicPreferences: {},
   permissions: mockedPermissions,
   transactions: [],
   walletManager: {
@@ -64,13 +64,13 @@ class WalletPortMock {
   async setPreference({
     preferences,
   }: {
-    preferences: Partial<WalletRecord['preferences']>;
+    preferences: Partial<WalletRecord['publicPreferences']>;
   }) {
     Object.assign(mockRecord, preferences);
   }
 
   async getPreferences() {
-    return mockRecord.preferences;
+    return mockRecord.publicPreferences;
   }
 
   async request(method: string, ...args: unknown[]) {

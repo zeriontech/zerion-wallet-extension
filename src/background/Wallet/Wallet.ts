@@ -558,7 +558,7 @@ export class Wallet {
     context,
     params: { preferences },
   }: WalletMethodParams<{
-    preferences: Partial<WalletRecord['preferences']>;
+    preferences: Partial<WalletRecord['publicPreferences']>;
   }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);

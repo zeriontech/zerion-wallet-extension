@@ -28,16 +28,13 @@ interface WalletManager {
 type Origin = string;
 type Address = string;
 
-interface Preferences {
+interface PublicPreferences {
+  /**
+   * Named "Public" because these preferences aren't supposed contain any private info
+   * and it's okay to query them from content script (meaning they are technically available to DApps)
+   */
   showNetworkSwitchShortcut?: boolean;
   walletNameFlags?: WalletNameFlag[];
-}
-
-// Previous versions are used to perform migrations ("upgrades")
-export interface WalletRecordVersion0 {
-  walletManager: WalletManager;
-  permissions: Record<Origin, Address[]>;
-  transactions: ethers.providers.TransactionResponse[];
 }
 
 export interface Permission {
@@ -45,20 +42,29 @@ export interface Permission {
   chain?: string;
 }
 
+// Previous versions are used to perform migrations ("upgrades")
 export interface WalletRecordVersion1 {
   version: 1;
   walletManager: WalletManager;
   permissions: Record<Origin, Address[]>;
   transactions: ethers.providers.TransactionResponse[];
-  preferences: Preferences;
+  preferences: PublicPreferences;
 }
 
-export interface WalletRecord {
+export interface WalletRecordVersion2 {
   version: 2;
   walletManager: WalletManager;
   permissions: Record<Origin, Permission>;
   transactions: ethers.providers.TransactionResponse[];
-  preferences: Preferences;
+  preferences: PublicPreferences;
+}
+
+export interface WalletRecord {
+  version: 3;
+  walletManager: WalletManager;
+  permissions: Record<Origin, Permission>;
+  transactions: ethers.providers.TransactionResponse[];
+  publicPreferences: PublicPreferences;
 }
 
 export interface PendingWallet {

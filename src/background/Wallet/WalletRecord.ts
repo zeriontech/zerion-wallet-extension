@@ -161,7 +161,7 @@ export class WalletRecordModel {
       const isMnemonicWallet =
         pendingWallet.walletContainer.seedType === SeedType.mnemonic;
       return {
-        version: 2,
+        version: 3,
         walletManager: {
           groups: [
             createGroup({
@@ -177,7 +177,7 @@ export class WalletRecordModel {
         },
         transactions: [],
         permissions: {},
-        preferences: {},
+        publicPreferences: {},
       };
     }
     return produce(record, (draft) => {
@@ -501,19 +501,19 @@ export class WalletRecordModel {
   }
 
   static getPreferences(record: WalletRecord) {
-    const defaults: WalletRecord['preferences'] = {
+    const defaults: WalletRecord['publicPreferences'] = {
       showNetworkSwitchShortcut: true,
     };
-    const { preferences } = record;
-    return { ...defaults, ...preferences };
+    const { publicPreferences } = record;
+    return { ...defaults, ...publicPreferences };
   }
 
-  static setPreference(
+  static setPreferences(
     record: WalletRecord,
-    { preferences }: { preferences: Partial<WalletRecord['preferences']> }
+    { preferences }: { preferences: Partial<WalletRecord['publicPreferences']> }
   ) {
     return produce(record, (draft) => {
-      Object.assign(draft.preferences, preferences);
+      Object.assign(draft.publicPreferences, preferences);
     });
   }
 
@@ -522,9 +522,9 @@ export class WalletRecordModel {
     { flag }: { flag: WalletNameFlag }
   ) {
     return produce(record, (draft) => {
-      const { walletNameFlags } = draft.preferences;
+      const { walletNameFlags } = draft.publicPreferences;
       const set = new Set(walletNameFlags).add(flag);
-      draft.preferences.walletNameFlags = Array.from(set);
+      draft.publicPreferences.walletNameFlags = Array.from(set);
     });
   }
 
@@ -533,10 +533,10 @@ export class WalletRecordModel {
     { flag }: { flag: WalletNameFlag }
   ) {
     return produce(record, (draft) => {
-      const { walletNameFlags } = draft.preferences;
+      const { walletNameFlags } = draft.publicPreferences;
       const set = new Set(walletNameFlags);
       set.delete(flag);
-      draft.preferences.walletNameFlags = Array.from(set);
+      draft.publicPreferences.walletNameFlags = Array.from(set);
     });
   }
 
