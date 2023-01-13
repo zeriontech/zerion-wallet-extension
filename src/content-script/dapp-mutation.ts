@@ -29,7 +29,7 @@ function getMostLikelyIcon(imageLikeElements: NodeListOf<Element>) {
   } else {
     // it's tricky to know which image to update
     return Array.from(imageLikeElements).find((img) => {
-      const re = /\bmetamask\b/i;
+      const re = /\b(metamask|injected|detected|browser)\b/i;
       return (
         re.test(img.getAttribute('src') || '') ||
         re.test(img.getAttribute('alt') || '')
@@ -56,7 +56,10 @@ function replaceButtonImage(node: HTMLElement, context: Context) {
     context.isOnboardV2 ? iconSelectors.onboardV2 : iconSelectors.default
   );
   const element = getMostLikelyIcon(imageLikeElements);
-  if (!element) {
+  if (
+    !element ||
+    !(element instanceof HTMLElement || element instanceof SVGElement)
+  ) {
     return;
   }
   const image = new Image();
@@ -66,7 +69,8 @@ function replaceButtonImage(node: HTMLElement, context: Context) {
     }
   }
   image.src = zerionLogoSrc;
-  element.replaceWith(image);
+  element.parentNode?.insertBefore(image, element);
+  element.style.display = 'none';
   node.dataset.replacementStep = 'icon';
 }
 

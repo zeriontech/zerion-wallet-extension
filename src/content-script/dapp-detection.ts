@@ -6,9 +6,15 @@ let dappDetectionIsPossible = true;
 type ForeignProvider = EthereumProvider & { isRabby?: boolean };
 
 const listeners: Array<() => void> = [];
+const notify = () => listeners.forEach((l) => l());
+
+let dappDetected = false;
 
 export function onDappDetected(listener: () => void) {
   listeners.push(listener);
+  if (dappDetected) {
+    listener();
+  }
 }
 
 export async function initialize(ourProvider: EthereumProvider) {
@@ -17,7 +23,8 @@ export async function initialize(ourProvider: EthereumProvider) {
     params: { origin: window.location.origin },
   });
   if (isDapp) {
-    listeners.forEach((l) => l());
+    dappDetected = true;
+    notify();
   }
 }
 
@@ -39,7 +46,8 @@ export function onAccessThroughWindow(ourProvider: EthereumProvider) {
   if (!didHandleWindowAccess) {
     didHandleWindowAccess = true;
     if (dappDetectionIsPossible) {
-      listeners.forEach((l) => l());
+      dappDetected = true;
+      notify();
       ourProvider.request({
         method: 'wallet_flagAsDapp',
         params: { origin: window.location.origin },

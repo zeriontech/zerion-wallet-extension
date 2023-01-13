@@ -23,10 +23,10 @@ export class PersistentStore<T> extends Store<T> {
   }
 
   async load(key: string) {
-    const savedValue = await browserStorage.get(key);
+    const savedValue = await browserStorage.get<T>(key);
     this.isReady = true;
     if (savedValue) {
-      this.setState(savedValue as T);
+      this.setState(savedValue);
     }
     this.pendingReadyStateListeners.forEach((cb) => cb());
   }

@@ -1,6 +1,7 @@
 import { EthereumProvider } from 'src/modules/ethereum/provider';
 import { Connection } from 'src/modules/ethereum/connection';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
+import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
 import { observeAndUpdatePageButtons } from './dapp-mutation';
 import * as dappDetection from './dapp-detection';
 import * as competingProviders from './competing-providers';
@@ -29,10 +30,6 @@ const provider = new EthereumProvider(connection);
 
 provider.connect();
 
-dappDetection.onDappDetected(() => {
-  observeAndUpdatePageButtons();
-});
-
 competingProviders.onBeforeAssignToWindow({
   foreignProvider: window.ethereum,
   ourProvider: provider,
@@ -59,6 +56,14 @@ Object.defineProperty(window, 'ethereum', {
 if (dappsWithoutCorrectEIP1193Support.has(window.location.origin)) {
   provider.isMetaMask = true;
 }
+
+provider
+  .request({ method: 'wallet_getGlobalPreferences' })
+  .then((preferences: GlobalPreferences) => {
+    if (preferences.recognizableConnectButtons) {
+      dappDetection.onDappDetected(observeAndUpdatePageButtons);
+    }
+  });
 
 provider.request({ method: 'wallet_getWalletNameFlags' }).then((result) => {
   if (result.includes(WalletNameFlag.isMetaMask)) {

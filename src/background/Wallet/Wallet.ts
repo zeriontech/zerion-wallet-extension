@@ -50,6 +50,8 @@ import type { WalletStore } from './persistence';
 import { walletStore } from './persistence';
 import { WalletNameFlag } from './model/WalletNameFlag';
 import { WalletOrigin } from './model/WalletOrigin';
+import { GlobalPreferences } from './GlobalPreferences';
+import type { State as GlobalPreferencesState } from './GlobalPreferences';
 
 const INTERNAL_SYMBOL_CONTEXT = { origin: INTERNAL_ORIGIN_SYMBOL };
 
@@ -86,6 +88,7 @@ export class Wallet {
   private seedPhraseEncryptionKey: CryptoKey | null;
   private seedPhraseExpiryTimerId: NodeJS.Timeout | number = 0;
   private walletStore: WalletStore;
+  private globalPreferences: GlobalPreferences;
   private pendingWallet: PendingWallet | null = null;
   private record: WalletRecord | null;
 
@@ -99,6 +102,7 @@ export class Wallet {
 
     this.id = id;
     this.walletStore = walletStore;
+    this.globalPreferences = new GlobalPreferences({});
     this.encryptionKey = encryptionKey;
     this.seedPhraseEncryptionKey = null;
     this.record = null;
@@ -555,7 +559,7 @@ export class Wallet {
       .filter((group) => group.lastBackedUp == null).length;
   }
 
-  async setPreference({
+  async setPreferences({
     context,
     params: { preferences },
   }: WalletMethodParams<{
@@ -563,7 +567,7 @@ export class Wallet {
   }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
-    this.record = Model.setPreference(this.record, { preferences });
+    this.record = Model.setPreferences(this.record, { preferences });
     this.updateWalletStore(this.record);
   }
 
@@ -576,6 +580,21 @@ export class Wallet {
     } else {
       return Model.getPreferences(this.record);
     }
+  }
+
+  async getGlobalPreferences({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    await this.globalPreferences.ready();
+    return this.globalPreferences.getPreferences();
+  }
+
+  async setGlobalPreferences({
+    context,
+    params: { preferences },
+  }: WalletMethodParams<{ preferences: Partial<GlobalPreferencesState> }>) {
+    this.verifyInternalOrigin(context);
+    await this.globalPreferences.ready();
+    return this.globalPreferences.setPreferences(preferences);
   }
 
   async wallet_setWalletNameFlag({
@@ -1062,6 +1081,13 @@ class PublicController {
       context: INTERNAL_SYMBOL_CONTEXT,
     });
     return preferences.walletNameFlags || [];
+  }
+
+  async wallet_getGlobalPreferences({ context: _context }: PublicMethodParams) {
+    return this.wallet.getGlobalPreferences({
+      /** wallet.getGlobalPreferences does not return any private data */
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
   }
 
   async wallet_flagAsDapp({
