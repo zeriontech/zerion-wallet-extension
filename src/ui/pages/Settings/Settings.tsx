@@ -130,10 +130,10 @@ function useOptimisticMutation<Args, Res, QueryType = unknown>(
   type OptimisticContext = { previous?: QueryType };
   const client = useQueryClient();
   return useMutation(mutationFn, {
-    onMutate: async (...args): Promise<OptimisticContext> => {
+    onMutate: async (variables): Promise<OptimisticContext> => {
       await client.cancelQueries(queryKey);
       const previous = client.getQueryData<QueryType | undefined>(queryKey);
-      onMutate?.({ client, variables: args[0] });
+      onMutate?.({ client, variables });
       return { previous };
     },
     onError: (_err, _args, context) => {
