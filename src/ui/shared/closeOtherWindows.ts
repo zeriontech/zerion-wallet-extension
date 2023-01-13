@@ -6,5 +6,5 @@ export function closeOtherWindows() {
     id: String(Math.random()),
     method: 'closeCurrentWindow',
   };
-  windowPort.port.postMessage(request);
+  windowPort.port?.postMessage(request);
 }

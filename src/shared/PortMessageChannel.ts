@@ -7,24 +7,36 @@ import {
 } from '@json-rpc-tools/utils';
 import type { JsonRpcPayload } from '@json-rpc-tools/utils';
 
+type Port = browser.Runtime.Port;
 export class PortMessageChannel {
-  port: browser.Runtime.Port;
+  port: Port | undefined;
+  name: string;
 
   constructor({ name }: { name: string }) {
-    this.port = browser.runtime.connect({ name });
-    browser.runtime.onMessage.addListener((request) => {
-      if (request.event === 'background-initialized') {
-        this.port.disconnect();
-        this.port = browser.runtime.connect({ name });
-      }
+    this.name = name;
+  }
+
+  initialize() {
+    this.port = browser.runtime.connect({ name: this.name });
+    this.port.onDisconnect.addListener(() => {
+      this.port = undefined;
     });
   }
 
-  request<Method extends string, Params, Result>(
+  private verifyPort(port: Port | undefined): asserts port is Port {
+    if (!port) {
+      throw new Error(
+        `Cannot use port before it's been initialized: (${this.name})`
+      );
+    }
+  }
+
+  async request<Method extends string, Params, Result>(
     method: Method,
     params: Params,
     id?: number
   ) {
+    this.verifyPort(this.port);
     const payload = formatJsonRpcRequest(method, params, id);
     this.port.postMessage(payload);
     return this.getPromise<Result>(payload.id);
@@ -40,10 +52,12 @@ export class PortMessageChannel {
             } else {
               reject(msg.error);
             }
+            this.verifyPort(this.port);
             this.port.onMessage.removeListener(handler);
           }
         }
       };
+      this.verifyPort(this.port);
       this.port.onMessage.addListener(handler);
     });
   }
