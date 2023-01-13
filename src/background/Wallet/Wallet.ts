@@ -46,8 +46,7 @@ import {
   PrivateKeyWalletContainer,
 } from './model/WalletContainer';
 import { WalletRecordModel as Model } from './WalletRecord';
-import type { WalletStore } from './persistence';
-import { walletStore } from './persistence';
+import { WalletStore } from './persistence';
 import { WalletNameFlag } from './model/WalletNameFlag';
 import { WalletOrigin } from './model/WalletOrigin';
 import { GlobalPreferences } from './GlobalPreferences';
@@ -87,12 +86,13 @@ export class Wallet {
   private encryptionKey: string | null;
   private seedPhraseEncryptionKey: CryptoKey | null;
   private seedPhraseExpiryTimerId: NodeJS.Timeout | number = 0;
-  private walletStore: WalletStore;
   private globalPreferences: GlobalPreferences;
   private pendingWallet: PendingWallet | null = null;
   private record: WalletRecord | null;
 
   private store: Store<{ chainId: string }>;
+
+  walletStore: WalletStore;
 
   emitter: Emitter<WalletEvents>;
 
@@ -101,7 +101,7 @@ export class Wallet {
     this.emitter = createNanoEvents();
 
     this.id = id;
-    this.walletStore = walletStore;
+    this.walletStore = new WalletStore({});
     this.globalPreferences = new GlobalPreferences({});
     this.encryptionKey = encryptionKey;
     this.seedPhraseEncryptionKey = null;
@@ -118,8 +118,8 @@ export class Wallet {
     if (!this.encryptionKey) {
       return;
     }
-    await walletStore.ready();
-    this.record = await walletStore.read(this.id, this.encryptionKey);
+    await this.walletStore.ready();
+    this.record = await this.walletStore.read(this.id, this.encryptionKey);
     if (this.record) {
       this.emitter.emit('recordUpdated');
     }
@@ -149,8 +149,8 @@ export class Wallet {
   async verifyCredentials({
     params: { id, encryptionKey },
   }: PublicMethodParams<{ id: string; encryptionKey: string }>) {
-    await walletStore.ready();
-    await walletStore.check(id, encryptionKey);
+    await this.walletStore.ready();
+    await this.walletStore.check(id, encryptionKey);
   }
 
   hasSeedPhraseEncryptionKey() {
@@ -181,7 +181,7 @@ export class Wallet {
     this.encryptionKey = encryptionKey;
     this.seedPhraseEncryptionKey = seedPhraseEncryptionKey;
     this.setExpirationForSeedPhraseEncryptionKey();
-    await walletStore.ready();
+    await this.walletStore.ready();
     await this.syncWithWalletStore();
   }
 
