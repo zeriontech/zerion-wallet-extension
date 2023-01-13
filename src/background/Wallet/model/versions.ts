@@ -1,10 +1,10 @@
 import type {
   WalletRecord,
-  WalletRecordVersion0,
   WalletRecordVersion1,
+  WalletRecordVersion2,
 } from './types';
 
-type PossibleEntry = WalletRecordVersion0 | WalletRecord;
+type PossibleEntry = WalletRecordVersion1 | WalletRecordVersion2 | WalletRecord;
 
 function mapObject<V, NewValue>(
   object: Record<string, V>,
@@ -13,8 +13,15 @@ function mapObject<V, NewValue>(
   return Object.fromEntries(Object.entries<V>(object).map(callbackFn));
 }
 
-function isWalletVersion0(entry: PossibleEntry): entry is WalletRecordVersion0 {
-  return 'version' in entry === false;
+function assertVersion<T extends PossibleEntry>(
+  entry: PossibleEntry,
+  version: number
+): asserts entry is T {
+  if (entry.version !== version) {
+    throw new Error(
+      `Unexptected version provided. Expected: ${version}, received: ${entry.version}`
+    );
+  }
 }
 
 /**
@@ -23,40 +30,31 @@ function isWalletVersion0(entry: PossibleEntry): entry is WalletRecordVersion0 {
  * https://dexie.org/docs/Version/Version.upgrade()
  */
 const upgrades: Record<string, (entry: PossibleEntry) => PossibleEntry> = {
-  1: (entry: PossibleEntry): WalletRecordVersion1 => {
-    if (!isWalletVersion0(entry)) {
-      throw new Error('Wrong entry version');
-    }
-    return {
-      ...entry,
-      version: 1,
-      preferences: {},
-    };
-  },
-  2: (entry: PossibleEntry): WalletRecord => {
-    function isWalletVersion1(
-      entry: PossibleEntry
-    ): entry is WalletRecordVersion1 {
-      // @ts-ignore
-      return entry?.version === 1;
-    }
-    if (!isWalletVersion1(entry)) {
-      throw new Error('Wrong entry version');
-    }
+  2: (entry: PossibleEntry): WalletRecordVersion2 => {
+    assertVersion<WalletRecordVersion1>(entry, 1);
     return {
       ...entry,
       version: 2,
-      preferences: {},
+      preferences: {}, // reset preferences?
       permissions: mapObject(entry.permissions, ([key, value]) => [
         key,
         { addresses: typeof value === 'string' ? [value] : value },
       ]),
     };
   },
+  3: (entry: PossibleEntry): WalletRecord => {
+    assertVersion<WalletRecordVersion2>(entry, 2);
+    return {
+      version: 3,
+      transactions: entry.transactions,
+      walletManager: entry.walletManager,
+      permissions: entry.permissions,
+      publicPreferences: entry.preferences,
+    };
+  },
 };
 
-const getNextVersion = (entry: PossibleEntry) =>
-  (isWalletVersion0(entry) ? 0 : entry.version) + 1;
+const getNextVersion = (entry: PossibleEntry) => entry.version + 1;
 
 export function upgrade(entry: PossibleEntry): WalletRecord {
   let result = entry;

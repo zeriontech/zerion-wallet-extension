@@ -112,7 +112,7 @@ function SettingsMain() {
   );
 }
 
-type Preferences = WalletRecord['preferences'];
+type Preferences = WalletRecord['publicPreferences'];
 
 function usePreferencesMutation<Args, Res>(
   mutationFn: (...args: Args[]) => Promise<Res>
