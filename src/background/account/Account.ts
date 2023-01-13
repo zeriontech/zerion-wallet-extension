@@ -1,4 +1,4 @@
-import EventEmitter from 'events';
+import { createNanoEvents, EventsMap } from 'nanoevents';
 import { nanoid } from 'nanoid';
 import { createSalt, createCryptoKey } from 'src/modules/crypto';
 import { getSHA256HexDigest } from 'src/modules/crypto/getSHA256HexDigest';
@@ -29,7 +29,24 @@ async function createEncryptionKey({
   return await getSHA256HexDigest(`${salt}:${password}`);
 }
 
-export class Account extends EventEmitter {
+class EventEmitter<Events extends EventsMap> {
+  private emitter = createNanoEvents<Events>();
+
+  on<Event extends keyof Events>(event: Event, cb: Events[Event]) {
+    return this.emitter.on(event, cb);
+  }
+
+  emit<E extends keyof Events>(event: E, ...args: Parameters<Events[E]>) {
+    return this.emitter.emit(event, ...args);
+  }
+}
+
+type AccountEvents = { reset: () => void; authenticated: () => void };
+
+interface Credentials {
+  encryptionKey: string;
+}
+export class Account extends EventEmitter<AccountEvents> {
   private user: User | null;
   private encryptionKey: string | null;
   private wallet: Wallet;
@@ -38,6 +55,18 @@ export class Account extends EventEmitter {
 
   private static async writeCurrentUser(user: User) {
     await browserStorage.set('currentUser', user);
+  }
+
+  private static async writeCredentials(credentials: Credentials) {
+    await browserStorage.set('credentials', credentials);
+  }
+
+  private static async readCredentials() {
+    return await browserStorage.get<Credentials>('credentials');
+  }
+
+  private static async removeCredentials() {
+    return await browserStorage.remove('credentials');
   }
 
   static async readCurrentUser() {
@@ -73,20 +102,33 @@ export class Account extends EventEmitter {
     this.isPendingNewUser = false;
     this.encryptionKey = null;
     this.wallet = new Wallet(TEMPORARY_ID, null);
+    this.on('authenticated', () => {
+      if (this.encryptionKey) {
+        Account.writeCredentials({ encryptionKey: this.encryptionKey });
+      }
+    });
   }
 
-  reset() {
+  async initialize() {
+    // Try to automatically login if credentials are found in storage
+    const credentials = await Account.readCredentials();
+    const user = await Account.readCurrentUser();
+    if (user && credentials) {
+      const valid = await this.verifyCredentials(user, credentials);
+      if (valid) {
+        await this.setUser(user, credentials);
+      }
+    }
+  }
+
+  private reset() {
     this.user = null;
     this.encryptionKey = null;
     this.wallet = new Wallet(TEMPORARY_ID, null);
     this.emit('reset');
   }
 
-  async verifyPassword(user: User, password: string) {
-    const encryptionKey = await createEncryptionKey({
-      password,
-      salt: user.id,
-    });
+  async verifyCredentials(user: User, { encryptionKey }: Credentials) {
     try {
       await this.wallet.verifyCredentials({
         params: { id: user.id, encryptionKey },
@@ -97,19 +139,40 @@ export class Account extends EventEmitter {
     }
   }
 
+  async verifyPassword(user: User, password: string) {
+    const encryptionKey = await createEncryptionKey({
+      password,
+      salt: user.id,
+    });
+    return this.verifyCredentials(user, { encryptionKey });
+  }
+
   async login(user: User, password: string) {
     const passwordIsCorrect = await this.verifyPassword(user, password);
     if (!passwordIsCorrect) {
       throw new Error('Incorrect password');
     }
-    await this.setUser(user, password, { isNewUser: false });
+    await this.setUser(user, { password }, { isNewUser: false });
   }
 
-  async setUser(user: User, password: string, { isNewUser = false } = {}) {
+  async setUser(
+    user: User,
+    credentials: { password: string } | { encryptionKey: string },
+    { isNewUser = false } = {}
+  ) {
     this.user = user;
     this.isPendingNewUser = isNewUser;
-    this.encryptionKey = await createEncryptionKey({ salt: user.id, password });
-    const seedPhraseEncryptionKey = await createCryptoKey(password, user.salt);
+    let seedPhraseEncryptionKey: CryptoKey | null = null;
+    if ('password' in credentials) {
+      const { password } = credentials;
+      this.encryptionKey = await createEncryptionKey({
+        salt: user.id,
+        password,
+      });
+      seedPhraseEncryptionKey = await createCryptoKey(password, user.salt);
+    } else {
+      this.encryptionKey = credentials.encryptionKey;
+    }
     await this.wallet.updateCredentials({
       params: {
         id: user.id,
@@ -117,7 +180,9 @@ export class Account extends EventEmitter {
         seedPhraseEncryptionKey,
       },
     });
-    this.emit('authenticated');
+    if (!this.isPendingNewUser) {
+      this.emit('authenticated');
+    }
   }
 
   getEncryptionKey() {
@@ -146,7 +211,11 @@ export class Account extends EventEmitter {
     }
     await Account.writeCurrentUser(this.user);
     await this.wallet.savePendingWallet();
-    this.isPendingNewUser = false;
+
+    if (this.isPendingNewUser) {
+      this.isPendingNewUser = false;
+      this.emit('authenticated');
+    }
 
     /**
      * Cleaning up:
@@ -162,7 +231,8 @@ export class Account extends EventEmitter {
     }
   }
 
-  logout() {
+  async logout() {
+    await Account.removeCredentials();
     return this.reset();
   }
 }
@@ -226,7 +296,7 @@ export class AccountPublicRPC {
     params: { password },
   }: PublicMethodParams<{ password: string }>): Promise<PublicUser> {
     const user = await Account.createUser(password);
-    await this.account.setUser(user, password, { isNewUser: true });
+    await this.account.setUser(user, { password }, { isNewUser: true });
     return { id: user.id };
   }
 
@@ -243,7 +313,7 @@ export class AccountPublicRPC {
   }
 
   async eraseAllData() {
-    this.account.reset();
+    this.account.logout();
     await eraseAndUpdateToLatestVersion();
   }
 }

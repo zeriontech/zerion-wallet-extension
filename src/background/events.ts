@@ -11,4 +11,5 @@ export const emitter = createNanoEvents<{
   transactionMined: (transaction: TransactionReceipt) => void;
   userActivity: () => void;
   connectToSiteEvent: (info: { origin: string }) => void;
+  sessionExpired: () => void;
 }>();
