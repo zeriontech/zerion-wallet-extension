@@ -19,7 +19,7 @@ function assertVersion<T extends PossibleEntry>(
 ): asserts entry is T {
   if (entry.version !== version) {
     throw new Error(
-      `Unexptected version provided. Expected: ${version}, received: ${entry.version}`
+      `Unexpected version provided. Expected: ${version}, received: ${entry.version}`
     );
   }
 }
@@ -35,7 +35,7 @@ const upgrades: Record<string, (entry: PossibleEntry) => PossibleEntry> = {
     return {
       ...entry,
       version: 2,
-      preferences: {}, // reset preferences?
+      preferences: {}, // reset preferences because shape is changed in version: 2
       permissions: mapObject(entry.permissions, ([key, value]) => [
         key,
         { addresses: typeof value === 'string' ? [value] : value },
