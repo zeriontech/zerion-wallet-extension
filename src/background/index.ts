@@ -95,6 +95,11 @@ initialize().then(({ account, accountPublicRPC }) => {
   portRegistry.addMessageHandler(
     createWalletMessageHandler(() => account.getCurrentWallet())
   );
+  portRegistry.addMessageHandler((port, msg) => {
+    if (port.name === 'handshake') {
+      port.postMessage({ ack: (msg as { syn: number }).syn + 1 });
+    }
+  });
   portRegistry.addMessageHandler(
     createPortMessageHandler({
       check: (port) => port.name === 'accountPublicRPC',
