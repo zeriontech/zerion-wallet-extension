@@ -1,4 +1,5 @@
 import browser from 'webextension-polyfill';
+import * as browserStorage from 'src/background/webapis/storage';
 
 function getRandomInteger() {
   return window.crypto.getRandomValues(new Uint32Array(1))[0];
@@ -19,6 +20,11 @@ async function sendPortMessage<Req, Resp>(
     port.postMessage(request);
   });
 }
+
+const rejectAfterDelay = (ms: number) =>
+  new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error('Request timed out')), ms)
+  );
 
 export class BackgroundScriptUpdateHandler {
   /**
@@ -49,24 +55,33 @@ export class BackgroundScriptUpdateHandler {
     });
   }
 
+  private async handleHandshakeFail() {
+    console.warn('Failed handshake!'); // eslint-disable-line no-console
+    const MAX_ATTEMPTS = 3;
+    const attempts =
+      (await browserStorage.get<number>('sw-reactivation-attempts')) ?? 0;
+    if (attempts >= MAX_ATTEMPTS) {
+      return;
+    }
+    await browserStorage.set('sw-reactivation-attempts', attempts + 1);
+    this.onFailedHandshake();
+  }
+
   private async handshake(port: browser.Runtime.Port) {
     /** Performs a two-way handshake to verify that background script is available */
     const number = getRandomInteger();
     Promise.race([
       sendPortMessage<{ syn: number }, { ack: number }>(port, { syn: number }),
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Request timed out')), 1000)
-      ),
+      rejectAfterDelay(2000),
     ])
       .then((response) => {
         if (!response || response.ack !== number + 1) {
           throw new Error('Unexpected response');
+        } else {
+          return browserStorage.set('sw-reactivation-attempts', 0);
         }
       })
-      .catch(() => {
-        console.warn('Failed handshake!'); // eslint-disable-line no-console
-        this.onFailedHandshake();
-      });
+      .catch(() => this.handleHandshakeFail());
   }
 
   keepAlive() {

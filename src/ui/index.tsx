@@ -31,12 +31,12 @@ async function handleFailedHandshake() {
 
 let reactRoot: Root | null = null;
 
-function initializeUI() {
+async function initializeUI() {
   const root = document.getElementById('root');
   if (!root) {
     throw new Error('#root element not found');
   }
-  registerServiceWorker()
+  return registerServiceWorker()
     .then(() => initializeChannels())
     .then(() => queryClient.clear())
     .then(() => configureUIClient())
@@ -53,9 +53,9 @@ function initializeUI() {
     });
 }
 
-initializeUI();
-
-new BackgroundScriptUpdateHandler({
-  onActivate: () => initializeUI(),
-  onFailedHandshake: () => handleFailedHandshake(),
-}).keepAlive();
+initializeUI().then(() => {
+  new BackgroundScriptUpdateHandler({
+    onActivate: () => initializeUI(),
+    onFailedHandshake: () => handleFailedHandshake(),
+  }).keepAlive();
+});
