@@ -96,7 +96,8 @@ export function WalletSelect() {
                         />
                       }
                     />
-                    {wallet.address.toLowerCase() === singleAddress ? (
+                    {wallet.address.toLowerCase() ===
+                    singleAddress.toLowerCase() ? (
                       <span style={{ color: 'var(--primary)' }}>✔</span>
                     ) : null}
                   </HStack>
