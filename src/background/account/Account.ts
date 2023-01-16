@@ -6,7 +6,7 @@ import * as browserStorage from 'src/background/webapis/storage';
 import { validate } from 'src/shared/validation/user-input';
 import { eraseAndUpdateToLatestVersion } from 'src/shared/core/version';
 import { Wallet } from '../Wallet/Wallet';
-import { walletStore } from '../Wallet/persistence';
+import { WalletStore } from '../Wallet/persistence';
 
 interface User {
   id: string;
@@ -79,7 +79,7 @@ export class Account extends EventEmitter<AccountEvents> {
 
   static async ensureUserAndWallet() {
     const existingUser = await Account.readCurrentUser();
-    const walletTable = await walletStore.getSavedState();
+    const walletTable = await WalletStore.readSavedState();
     if (existingUser && !walletTable?.[existingUser.id]) {
       await Account.removeCurrentUser();
     }
@@ -222,10 +222,10 @@ export class Account extends EventEmitter<AccountEvents> {
      * Right now, only one "currentUser" can exist, so we remove
      * all other entries from walletStore because they become unreachable anyway.
      */
-    const walletTable = await walletStore.getSavedState();
+    const walletTable = await this.wallet.walletStore.getSavedState();
     if (this.user) {
       const { id } = this.user;
-      walletStore.deleteMany(
+      this.wallet.walletStore.deleteMany(
         Object.keys(walletTable).filter((key) => key !== id)
       );
     }
@@ -313,7 +313,7 @@ export class AccountPublicRPC {
   }
 
   async eraseAllData() {
-    this.account.logout();
     await eraseAndUpdateToLatestVersion();
+    await this.account.logout(); // reset account after erasing storage
   }
 }

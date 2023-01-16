@@ -35,6 +35,7 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getTransactionChainId } from 'src/modules/ethereum/transactions/resolveChainForTx';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { flagAsDapp, isFlaggedAsDapp } from 'src/shared/dapps';
+import { isKnownDapp } from 'src/shared/dapps/known-dapps';
 import { emitter } from '../events';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
@@ -45,10 +46,11 @@ import {
   PrivateKeyWalletContainer,
 } from './model/WalletContainer';
 import { WalletRecordModel as Model } from './WalletRecord';
-import type { WalletStore } from './persistence';
-import { walletStore } from './persistence';
+import { WalletStore } from './persistence';
 import { WalletNameFlag } from './model/WalletNameFlag';
 import { WalletOrigin } from './model/WalletOrigin';
+import { GlobalPreferences } from './GlobalPreferences';
+import type { State as GlobalPreferencesState } from './GlobalPreferences';
 
 const INTERNAL_SYMBOL_CONTEXT = { origin: INTERNAL_ORIGIN_SYMBOL };
 
@@ -84,11 +86,13 @@ export class Wallet {
   private encryptionKey: string | null;
   private seedPhraseEncryptionKey: CryptoKey | null;
   private seedPhraseExpiryTimerId: NodeJS.Timeout | number = 0;
-  private walletStore: WalletStore;
+  private globalPreferences: GlobalPreferences;
   private pendingWallet: PendingWallet | null = null;
   private record: WalletRecord | null;
 
   private store: Store<{ chainId: string }>;
+
+  walletStore: WalletStore;
 
   emitter: Emitter<WalletEvents>;
 
@@ -97,7 +101,8 @@ export class Wallet {
     this.emitter = createNanoEvents();
 
     this.id = id;
-    this.walletStore = walletStore;
+    this.walletStore = new WalletStore({});
+    this.globalPreferences = new GlobalPreferences({});
     this.encryptionKey = encryptionKey;
     this.seedPhraseEncryptionKey = null;
     this.record = null;
@@ -113,8 +118,8 @@ export class Wallet {
     if (!this.encryptionKey) {
       return;
     }
-    await walletStore.ready();
-    this.record = await walletStore.read(this.id, this.encryptionKey);
+    await this.walletStore.ready();
+    this.record = await this.walletStore.read(this.id, this.encryptionKey);
     if (this.record) {
       this.emitter.emit('recordUpdated');
     }
@@ -144,8 +149,8 @@ export class Wallet {
   async verifyCredentials({
     params: { id, encryptionKey },
   }: PublicMethodParams<{ id: string; encryptionKey: string }>) {
-    await walletStore.ready();
-    await walletStore.check(id, encryptionKey);
+    await this.walletStore.ready();
+    await this.walletStore.check(id, encryptionKey);
   }
 
   hasSeedPhraseEncryptionKey() {
@@ -176,7 +181,7 @@ export class Wallet {
     this.encryptionKey = encryptionKey;
     this.seedPhraseEncryptionKey = seedPhraseEncryptionKey;
     this.setExpirationForSeedPhraseEncryptionKey();
-    await walletStore.ready();
+    await this.walletStore.ready();
     await this.syncWithWalletStore();
   }
 
@@ -554,7 +559,7 @@ export class Wallet {
       .filter((group) => group.lastBackedUp == null).length;
   }
 
-  async setPreference({
+  async setPreferences({
     context,
     params: { preferences },
   }: WalletMethodParams<{
@@ -562,7 +567,7 @@ export class Wallet {
   }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
-    this.record = Model.setPreference(this.record, { preferences });
+    this.record = Model.setPreferences(this.record, { preferences });
     this.updateWalletStore(this.record);
   }
 
@@ -575,6 +580,21 @@ export class Wallet {
     } else {
       return Model.getPreferences(this.record);
     }
+  }
+
+  async getGlobalPreferences({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    await this.globalPreferences.ready();
+    return this.globalPreferences.getPreferences();
+  }
+
+  async setGlobalPreferences({
+    context,
+    params: { preferences },
+  }: WalletMethodParams<{ preferences: Partial<GlobalPreferencesState> }>) {
+    this.verifyInternalOrigin(context);
+    await this.globalPreferences.ready();
+    return this.globalPreferences.setPreferences(preferences);
   }
 
   async wallet_setWalletNameFlag({
@@ -1063,6 +1083,13 @@ class PublicController {
     return preferences.walletNameFlags || [];
   }
 
+  async wallet_getGlobalPreferences({ context: _context }: PublicMethodParams) {
+    return this.wallet.getGlobalPreferences({
+      /** wallet.getGlobalPreferences does not return any private data */
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
+  }
+
   async wallet_flagAsDapp({
     context: _context,
     params: { origin },
@@ -1106,5 +1133,13 @@ class PublicController {
     } else {
       return [];
     }
+  }
+
+  async wallet_isKnownDapp({
+    params: { origin },
+  }: PublicMethodParams<{ origin: string }>) {
+    // unlike wallet.isFlaggedAsDapp(), this method doesn't expose the list of
+    // dapps the user might have visited and uses only an agnostic dapp list
+    return isKnownDapp({ origin });
   }
 }

@@ -1,5 +1,4 @@
 import * as browserStorage from 'src/background/webapis/storage';
-import { knownDapps } from './known-dapps';
 
 type Registry = Record<string, true>;
 
@@ -28,9 +27,6 @@ export async function isFlaggedAsDapp({
 }: {
   origin: string;
 }): Promise<boolean> {
-  if (knownDapps.has(origin)) {
-    return true;
-  }
   const maybeRegistry = await browserStorage.get<Registry>('dappRegistry');
   return maybeRegistry ? maybeRegistry[origin] : false;
 }

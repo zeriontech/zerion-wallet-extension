@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import type { QueryClient } from 'react-query';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
@@ -21,6 +22,8 @@ import GlobeIcon from 'jsx:src/ui/assets/globe.svg';
 import SettingsIcon from 'jsx:src/ui/assets/settings.svg';
 import { version } from 'src/shared/packageVersion';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { apostrophe } from 'src/ui/shared/typography';
+import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
 import { BackupFlowSettingsSection } from '../BackupWallet/BackupSettingsItem';
 
 function SettingsMain() {
@@ -114,23 +117,29 @@ function SettingsMain() {
 
 type Preferences = WalletRecord['publicPreferences'];
 
-function usePreferencesMutation<Args, Res>(
-  mutationFn: (...args: Args[]) => Promise<Res>
+function useOptimisticMutation<Args, Res, QueryType = unknown>(
+  mutationFn: (...args: Args[]) => Promise<Res>,
+  {
+    relatedQueryKey: queryKey,
+    onMutate,
+  }: {
+    relatedQueryKey: string;
+    onMutate?: (info: { client: QueryClient; variables: Args }) => unknown;
+  }
 ) {
-  type OptimisticContext = { previous?: Preferences };
+  type OptimisticContext = { previous?: QueryType };
   const client = useQueryClient();
   return useMutation(mutationFn, {
-    onMutate: async (): Promise<OptimisticContext> => {
-      await client.cancelQueries('wallet/getPreferences');
-      const previous = client.getQueryData<Preferences | undefined>(
-        'wallet/getPreferences'
-      );
+    onMutate: async (variables): Promise<OptimisticContext> => {
+      await client.cancelQueries(queryKey);
+      const previous = client.getQueryData<QueryType | undefined>(queryKey);
+      onMutate?.({ client, variables });
       return { previous };
     },
     onError: (_err, _args, context) => {
-      client.setQueryData('wallet/getPreferences', context?.previous);
+      client.setQueryData(queryKey, context?.previous);
     },
-    onSettled: () => client.invalidateQueries('wallet/getPreferences'),
+    onSettled: () => client.invalidateQueries(queryKey),
   });
 }
 
@@ -143,8 +152,12 @@ async function walletSetWalletNameFlag({
 }) {
   return walletPort.request('wallet_setWalletNameFlag', { flag, checked });
 }
-async function setPreference(preferences: Preferences) {
-  walletPort.request('setPreference', { preferences });
+async function setPreferences(preferences: Preferences) {
+  walletPort.request('setPreferences', { preferences });
+}
+
+async function setGlobalPreferences(preferences: GlobalPreferences) {
+  walletPort.request('setGlobalPreferences', { preferences });
 }
 
 function UserPreferences() {
@@ -153,10 +166,34 @@ function UserPreferences() {
     () => walletPort.request('getPreferences'),
     { useErrorBoundary: true, suspense: true }
   );
-  const { mutate: setWalletNameFlag } = usePreferencesMutation(
-    walletSetWalletNameFlag
+  const { data: globalPreferences } = useQuery(
+    'wallet/getGlobalPreferences',
+    () => walletPort.request('getGlobalPreferences'),
+    { useErrorBoundary: true, suspense: true }
   );
-  const preferencesMutation = usePreferencesMutation(setPreference);
+
+  const { mutate: setWalletNameFlag } = useOptimisticMutation(
+    walletSetWalletNameFlag,
+    { relatedQueryKey: 'wallet/getPreferences' }
+  );
+  const preferencesMutation = useOptimisticMutation(setPreferences, {
+    relatedQueryKey: 'wallet/getPreferences',
+    onMutate: ({ client, variables }) => {
+      client.setQueryData<Preferences>(
+        'wallet/getPreferences',
+        (preferences) => ({ ...preferences, ...variables })
+      );
+    },
+  });
+  const globalPreferenesMutation = useOptimisticMutation(setGlobalPreferences, {
+    relatedQueryKey: 'wallet/getGlobalPreferences',
+    onMutate: ({ client, variables }) =>
+      client.setQueryData<GlobalPreferences>(
+        'wallet/getGlobalPreferences',
+        (globalPreferences) => ({ ...globalPreferences, ...variables })
+      ),
+  });
+
   const isMetaMask = useMemo(
     () => preferences?.walletNameFlags?.includes(WalletNameFlag.isMetaMask),
     [preferences?.walletNameFlags]
@@ -176,7 +213,7 @@ function UserPreferences() {
                     <Media
                       image={null}
                       text={<UIText kind="body/s_reg">MetaMask Mode</UIText>}
-                      vGap={0}
+                      vGap={4}
                       detailText={
                         <UIText kind="body/s_reg" color="var(--neutral-500)">
                           Some DApps only work with MetaMask. Zerion Wallet can
@@ -207,7 +244,7 @@ function UserPreferences() {
                           Show DApp Network Switch in Header
                         </UIText>
                       }
-                      vGap={0}
+                      vGap={4}
                       detailText={
                         <UIText kind="body/s_reg" color="var(--neutral-500)">
                           For a cleaner UI, try turning this off
@@ -219,6 +256,46 @@ function UserPreferences() {
                       onChange={(event) => {
                         preferencesMutation.mutate({
                           showNetworkSwitchShortcut: event.target.checked,
+                        });
+                      }}
+                    />
+                  </HStack>
+                ),
+              },
+            ]}
+          />
+        </VStack>
+        <VStack gap={8}>
+          <UIText kind="body/s_reg">More</UIText>
+          <SurfaceList
+            items={[
+              {
+                key: 0,
+                component: (
+                  <HStack gap={4} justifyContent="space-between">
+                    <Media
+                      image={null}
+                      text={
+                        <UIText kind="body/s_reg">
+                          Recognizable Connect Buttons
+                        </UIText>
+                      }
+                      vGap={4}
+                      detailText={
+                        <UIText kind="body/s_reg" color="var(--neutral-500)">
+                          When enabled, we add Zerion Wallet label to connect
+                          buttons in DApps so that they{apostrophe}re easier to
+                          spot
+                        </UIText>
+                      }
+                    />
+                    <Toggle
+                      checked={
+                        globalPreferences?.recognizableConnectButtons || false
+                      }
+                      onChange={(event) => {
+                        globalPreferenesMutation.mutate({
+                          recognizableConnectButtons: event.target.checked,
                         });
                       }}
                     />
