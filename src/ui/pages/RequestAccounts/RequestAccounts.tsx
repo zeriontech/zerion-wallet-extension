@@ -283,15 +283,11 @@ function RequestAccountsView({
             paddingBottom: 32,
           }}
         >
-          <Button
-            ref={focusNode}
-            type="button"
-            kind="regular"
-            onClick={onReject}
-          >
+          <Button type="button" kind="regular" onClick={onReject}>
             Reject
           </Button>
           <Button
+            ref={focusNode}
             onClick={() => onConfirm({ address: selectedWallet.address })}
           >
             Connect
