@@ -27,6 +27,13 @@ export class WalletStore extends Store<WalletStoreState> {
     });
   }
 
+  getState() {
+    if (!this.isReady) {
+      throw new Error('Do not access getState() before checking ready()');
+    }
+    return super.getState();
+  }
+
   async restore() {
     const saved = await browserStorage.get<WalletStoreState>(this.key);
     if (saved) {
