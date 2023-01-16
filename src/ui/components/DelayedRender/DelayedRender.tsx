@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-export function DelayedRender({
-  children,
-  delay = 500,
-}: React.PropsWithChildren<{ delay?: number }>) {
+export function useRenderDelay(delay: number) {
   const [render, setRender] = useState(false);
 
   useEffect(() => {
@@ -12,6 +9,14 @@ export function DelayedRender({
       clearTimeout(timerId);
     };
   }, [delay]);
+  return render;
+}
+
+export function DelayedRender({
+  children,
+  delay = 500,
+}: React.PropsWithChildren<{ delay?: number }>) {
+  const render = useRenderDelay(delay);
 
   if (render) {
     return children as JSX.Element;
