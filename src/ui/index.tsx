@@ -1,4 +1,5 @@
 import React from 'react';
+import browser from 'webextension-polyfill';
 import { createRoot, Root } from 'react-dom/client';
 import { configureUIClient } from 'src/modules/defi-sdk';
 import { BackgroundScriptUpdateHandler } from 'src/shared/core/BackgroundScriptUpdateHandler';
@@ -12,7 +13,20 @@ applyDrawFix();
 async function registerServiceWorker() {
   /** Seems to be recommended when clients always expect a service worker */
   const registration = await navigator.serviceWorker.getRegistration();
-  return registration?.update();
+  if (registration) {
+    return registration.update();
+  } else {
+    const { background } = browser.runtime.getManifest();
+    if (background && 'service_worker' in background) {
+      await navigator.serviceWorker.register(background.service_worker);
+    }
+  }
+}
+
+async function handleFailedHandshake() {
+  const registration = await navigator.serviceWorker.getRegistration();
+  await registration?.unregister();
+  window.location.reload(); // MUST reload to be able to register new service worker
 }
 
 let reactRoot: Root | null = null;
@@ -43,4 +57,5 @@ initializeUI();
 
 new BackgroundScriptUpdateHandler({
   onActivate: () => initializeUI(),
+  onFailedHandshake: () => handleFailedHandshake(),
 }).keepAlive();
