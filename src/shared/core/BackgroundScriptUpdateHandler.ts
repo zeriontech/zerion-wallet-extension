@@ -26,6 +26,8 @@ const rejectAfterDelay = (ms: number) =>
     setTimeout(() => reject(new Error('Request timed out')), ms)
   );
 
+const PERFORM_HANSHAKE_CHECK = false;
+
 export class BackgroundScriptUpdateHandler {
   /**
    * Problem: background script disconnects and reactivates on its own and we can't control that
@@ -89,7 +91,9 @@ export class BackgroundScriptUpdateHandler {
     if (port.error) {
       return;
     }
-    this.handshake(port);
+    if (PERFORM_HANSHAKE_CHECK) {
+      this.handshake(port);
+    }
     port.onDisconnect.addListener(() => {
       // This means that the background-script (service-worker) went to sleep
       // We "wake" it up by creating a new runtime connection
