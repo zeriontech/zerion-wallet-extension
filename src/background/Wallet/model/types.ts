@@ -1,4 +1,5 @@
 import type { ethers } from 'ethers';
+import type { WalletAbility } from 'src/ui/pages/Feed/daylight';
 import type { WalletContainer } from './WalletContainer';
 import { WalletNameFlag } from './WalletNameFlag';
 import { WalletOrigin } from './WalletOrigin';
@@ -59,12 +60,25 @@ export interface WalletRecordVersion2 {
   preferences: PublicPreferences;
 }
 
+interface WalletFeed {
+  lastSeenAbilityId: string;
+  dissmissedAbilities: WalletAbility[];
+  completedAbilities: WalletAbility[];
+}
+
+interface WalletFeed {
+  lastSeenAbilityId: string;
+  dissmissedAbilities: WalletAbility[];
+  completedAbilities: WalletAbility[];
+}
+
 export interface WalletRecord {
   version: 3;
   walletManager: WalletManager;
   permissions: Record<Origin, Permission>;
   transactions: ethers.providers.TransactionResponse[];
-  publicPreferences: PublicPreferences;
+  preferences: PublicPreferences;
+  feed?: WalletFeed;
 }
 
 export interface PendingWallet {

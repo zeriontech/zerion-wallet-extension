@@ -251,7 +251,7 @@ function AbilityCard({ ability }: { ability: WalletAbility }) {
       </UnstyledLink>
       <HStack gap={8} style={{ gridTemplateColumns: '1fr 40px 40px' }}>
         <Button
-          style={{ width: '100%' }}
+          style={{ width: 240, overflow: 'hidden', textOverflow: 'ellipsis' }}
           size={40}
           as={UnstyledAnchor}
           href={ability.action.linkUrl}
