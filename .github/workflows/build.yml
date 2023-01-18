@@ -2,6 +2,9 @@ name: Build
 
 on: push
 
+env:
+  SLACK_AUTH_TOKEN: ${{ secrets.SLACK_AUTH_TOKEN }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
