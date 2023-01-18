@@ -26,6 +26,13 @@ jobs:
           npm install
           npm run build:production
 
+      - name: Compress build artifacts
+        shell: bash
+        run: |
+          mv dist zerion-wallet-extension-${{github.sha}}
+          zip -r zerion-wallet-extension-${{github.sha}}.zip zerion-wallet-extension-${{github.sha}}
+          tar czf zerion-wallet-extension-${{github.sha}}.tar.gz --directory=zerion-wallet-extension-${{github.sha}} .
+
       - name: Notify build succeeded
         id: notify-build-succeeded
         if: ${{ success() }}
@@ -114,5 +121,23 @@ jobs:
         if: ${{ success() }}
         uses: actions/upload-artifact@v3
         with:
-          name: zerion-wallet-extension-${{github.sha}}
-          path: dist/
+          name: zerion-wallet-extension
+          path: zerion-wallet-extension-${{github.sha}}.zip
+
+      - name: Download artifacts
+        id: download-artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: zerion-wallet-extension
+          path: zerion-wallet-extension-${{github.sha}}.zip
+
+      - name: Attach build artifacts to the PR thread
+        uses: actions/github-script@v3
+        env:
+          BUILD_URL: ${{ steps.download-artifacts.outputs.download-path }}
+        with:
+          script: |
+            const createOrEditComment = require(`${process.env.GITHUB_WORKSPACE}/.github/workflows/createOrEditComment.js`)
+            const { BUILD_URL } = process.env;
+            const message = `build ${BUILD_URL}`
+            createOrEditComment({ github, context, pattern: 'build', message })
