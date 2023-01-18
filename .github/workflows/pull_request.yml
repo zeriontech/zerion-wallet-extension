@@ -105,23 +105,10 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_AUTH_TOKEN }}
 
-      - name: Upload artifacts
-        if: ${{ success() }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: zerion-wallet-extension
-          path: zerion-wallet-extension-${{github.sha}}.zip
-
-      - name: Download artifacts
-        id: download-artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: zerion-wallet-extension
-
       - name: Attach build artifacts to the PR thread
         uses: actions/github-script@v3
         env:
-          BUILD_URL: ${{ steps.download-artifacts.outputs.download-path }}
+          BUILD_URL: zerion-wallet-extension-${{github.sha}}.zip
         with:
           script: |
             const createOrEditComment = require(`${process.env.GITHUB_WORKSPACE}/.github/workflows/createOrEditComment.js`)
