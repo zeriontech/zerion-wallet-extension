@@ -3,7 +3,7 @@ name: Build
 on: push
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -58,7 +58,7 @@ jobs:
 
       - name: Create release
         uses: ncipollo/release-action@v1
-        if: ${{ github.ref_type == 'tag" }}
+        if: ${{ github.ref_type == 'tag' }}
         with:
           generateReleaseNotes: true
           artifacts: 'zerion-wallet-extension-${{github.ref_name}}.zip,zerion-wallet-extension-${{github.ref_name}}.tar.gz'
