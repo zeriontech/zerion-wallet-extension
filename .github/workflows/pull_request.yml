@@ -47,7 +47,7 @@ jobs:
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": ":rocket: Build succeeded"
+                    "text": ":rocket: <${{ format('{0}/{1}/pull/{2}', github.server_url, github.repository, github.event.number)}}|${{ github.event.pull_request.title }}>"
                   }
                 },
                 {
@@ -62,13 +62,6 @@ jobs:
                       "text": "*Attempt:* ${{ github.run_attempt }}"
                     }
                   ]
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "<${{ format('{0}/{1}/pull/{2}', github.server_url, github.repository, github.event.number)}}|${{ github.event.pull_request.title }}>"
-                  }
                 }
               ]
             }
@@ -89,7 +82,7 @@ jobs:
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": ":x: Build failed"
+                    "text": ":x: <${{ format('{0}/{1}/pull/{2}', github.server_url, github.repository, github.event.number)}}|${{ github.event.pull_request.title }}>"
                   }
                 },
                 {
@@ -104,13 +97,6 @@ jobs:
                       "text": "*Attempt:* ${{ github.run_attempt }}"
                     }
                   ]
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "<${{ format('{0}/{1}/{2}', github.server_url, github.repository, github.event.number)}}|${{ github.ref_name }}>"
-                  }
                 }
               ]
             }
@@ -129,7 +115,6 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: zerion-wallet-extension
-          path: zerion-wallet-extension-${{github.sha}}.zip
 
       - name: Attach build artifacts to the PR thread
         uses: actions/github-script@v3
