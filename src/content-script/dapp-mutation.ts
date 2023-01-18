@@ -8,18 +8,23 @@ function visitTextNodes(node: Element, cb: (node: Node) => boolean) {
   }
 }
 
-function replaceButtonLabel(textNode: Node): boolean | undefined {
-  const { textContent } = textNode;
-  // Another approach would be to have an array of regexes, e.g.:
-  // const labels = [/\bMeta[mM]ask\b/, /\bInjected Wallet\b/, ...],
-  // which is more readable. But I measured in a couple of benchmarks and it seems
-  // to perform slightly slower in Chrome and *much* slower in Safari
-  const labelsRe =
-    /\b(Meta[mM]ask|Injected Wallet|Injected|Detected Wallet|Browser Wallet|Web3 Wallet)\b/;
+// Another approach would be to have an array of regexes, e.g.:
+// const labels = [/\bMeta[mM]ask\b/, /\bInjected Wallet\b/, ...],
+// which is more readable. But I measured in a couple of benchmarks and it seems
+// to perform slightly slower in Chrome and *much* slower in Safari
+const labelsInjectedRe =
+  /\b(Injected Wallet|Injected|Detected Wallet|Browser Wallet|Web3 Wallet)\b/;
+const labelsMetamaskRe = /\bMeta[mM]ask\b/;
 
-  if (textContent && labelsRe.test(textContent)) {
-    textNode.textContent = textContent.replace(labelsRe, 'Zerion Wallet');
-    return true;
+function isReplacementMatch(textNode: Node, regex: RegExp) {
+  const { textContent } = textNode;
+  return textContent && regex.test(textContent);
+}
+
+function replaceButtonLabel(textNode: Node, regex: RegExp) {
+  const { textContent } = textNode;
+  if (textContent) {
+    textNode.textContent = textContent.replace(regex, 'Zerion Wallet');
   }
 }
 
@@ -58,19 +63,21 @@ function replaceButtonImage(node: HTMLElement, context: Context) {
   const element = getMostLikelyIcon(imageLikeElements);
   if (
     !element ||
-    !(element instanceof HTMLElement || element instanceof SVGElement)
+    !(element instanceof HTMLElement || element instanceof SVGElement) ||
+    element.dataset.zerionReplaced === 'true'
   ) {
     return;
   }
-  const image = new Image();
-  for (const { name, value } of element.attributes) {
-    if (name !== 'src' && name !== 'srcset') {
-      image.setAttribute(name, value);
+  element.dataset.zerionReplaced = 'true';
+  if (element.nodeName === 'IMG') {
+    (element as HTMLImageElement).src = zerionLogoSrc;
+  } else {
+    element.style.background = `url("${zerionLogoSrc}") no-repeat center/contain`;
+    for (const child of element.children) {
+      // @ts-ignore style property is expected
+      child.style?.display = 'none';
     }
   }
-  image.src = zerionLogoSrc;
-  element.parentNode?.insertBefore(image, element);
-  element.style.display = 'none';
   node.dataset.replacementStep = 'icon';
 }
 
@@ -98,26 +105,63 @@ function rewriteConnectButtons(
   const buttonLikeElements = node.querySelectorAll<HTMLElement>(
     buttonLikeSelectors[window.location.origin] || buttonLikeSelectors.default
   );
-  /**
-   * NOTE: Candidate elements are marked using data-replacement-step attribute
-   * to avoid repeating work: 'text' is the first step, 'icon' is the final step
-   */
-  for (const element of buttonLikeElements) {
-    if (element.dataset.replacementStep === 'icon' || isExternalLink(element)) {
-      continue;
+
+  type Item = { element: HTMLElement; textNode: Node };
+  const metamaskCandidates: Item[] = [];
+  let didMutateSomething = false;
+
+  function mutateButton(element: HTMLElement, textNode: Node, regex: RegExp) {
+    replaceButtonLabel(textNode, regex);
+    didMutateSomething = true;
+    element.dataset.replacementStep = 'text';
+    replaceButtonImage(element, context);
+  }
+
+  function analyzeElement(element: HTMLElement) {
+    /**
+     * NOTE: Candidate elements are marked using data-replacement-step attribute
+     * to avoid repeating work: 'text' is the first step, 'icon' is the final step
+     */
+    if (element.dataset.replacementStep === 'icon') {
+      didMutateSomething = true;
+      return;
+    }
+    if (isExternalLink(element)) {
+      return;
     }
     if (element.dataset.replacementStep === 'text') {
+      didMutateSomething = true;
       replaceButtonImage(element, context);
     } else {
+      /**
+       * - if we find metamask button, save it to list of candidates,
+       * - if we find injected button, mutate it immediately
+       * This is to avoid mutating both Metamask and Injected buttons to Zerion
+       */
       visitTextNodes(element, (textNode) => {
-        const didMatch = replaceButtonLabel(textNode);
-        if (didMatch) {
-          element.dataset.replacementStep = 'text';
-          replaceButtonImage(element, context);
+        const matchesInjected = isReplacementMatch(textNode, labelsInjectedRe);
+        const matchesMetamask = isReplacementMatch(textNode, labelsMetamaskRe);
+
+        if (matchesMetamask) {
+          metamaskCandidates.push({ element, textNode });
+        }
+        if (matchesInjected) {
+          mutateButton(element, textNode, labelsInjectedRe);
           return true;
         }
         return false;
       });
+    }
+  }
+  for (const element of buttonLikeElements) {
+    analyzeElement(element);
+    if (didMutateSomething) {
+      break;
+    }
+  }
+  if (!didMutateSomething) {
+    for (const item of metamaskCandidates) {
+      mutateButton(item.element, item.textNode, labelsMetamaskRe);
     }
   }
 }
