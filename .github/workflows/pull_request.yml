@@ -1,9 +1,11 @@
-name: Build
+name: Pull Request
 
-on: push
+on:
+  pull_request:
+    types: [opened, synchronize]
 
 jobs:
-  build:
+  pull_reuqest:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -31,16 +33,9 @@ jobs:
           zip -r zerion-wallet-extension-${{github.sha}}.zip zerion-wallet-extension-${{github.sha}}
           tar czf zerion-wallet-extension-${{github.sha}}.tar.gz --directory=zerion-wallet-extension-${{github.sha}} .
 
-      - name: Create release
-        uses: ncipollo/release-action@v1
-        if: ${{ github.ref_type == 'tag' }}
-        with:
-          generateReleaseNotes: true
-          artifacts: 'zerion-wallet-extension-${{github.sha}}.zip,zerion-wallet-extension-${{github.sha}}.tar.gz'
-
       - name: Notify build succeeded
         id: notify-build-succeeded
-        if: ${{ success() && github.ref_type == 'branch' }}
+        if: ${{ success() }}
         uses: slackapi/slack-github-action@v1.23.0
         with:
           channel-id: 'C04JLLQRB43'
@@ -52,7 +47,7 @@ jobs:
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": ":gift: Build succeeded"
+                    "text": ":rocket: Build succeeded"
                   }
                 },
                 {
@@ -82,7 +77,7 @@ jobs:
 
       - name: Notify build failed
         id: notify-build-failed
-        if: ${{ failure() && github.ref_type == 'branch' }}
+        if: ${{ failure() }}
         uses: slackapi/slack-github-action@v1.23.0
         with:
           channel-id: 'C04JLLQRB43'
@@ -123,7 +118,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_AUTH_TOKEN }}
 
       - name: Upload artifacts
-        if: ${{ success() && github.ref_type == 'branch' }}
+        if: ${{ success() }}
         uses: actions/upload-artifact@v3
         with:
           name: zerion-wallet-extension
