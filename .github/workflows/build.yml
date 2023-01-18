@@ -8,47 +8,6 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Notify build started
-        id: notify-build-started
-        uses: slackapi/slack-github-action@v1.23.0
-        with:
-          channel-id: 'C04JLLQRB43'
-          payload: |
-            {
-              "text": "Build started",
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "New build"
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Initiated by:*\n${{ github.triggering_actor }}"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Attempt:*\n${{ github.run_attempt }}"
-                    }
-                  ]
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Ref:*\n<${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.ref_name }}>"
-                  }
-                }
-              ]
-            }
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_AUTH_TOKEN }}
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -65,28 +24,19 @@ jobs:
           npm install
           npm run build:production
 
-      - name: Compress build branch artifacts
-        if: ${{ github.ref_type == 'branch' }}
+      - name: Compress build artifacts
         shell: bash
         run: |
           mv dist zerion-wallet-extension-${{github.sha}}
           zip -r zerion-wallet-extension-${{github.sha}}.zip zerion-wallet-extension-${{github.sha}}
           tar czf zerion-wallet-extension-${{github.sha}}.tar.gz --directory=zerion-wallet-extension-${{github.sha}} .
 
-      - name: Compress build release artifacts
-        if: ${{ github.ref_type == 'tag' }}
-        shell: bash
-        run: |
-          mv dist zerion-wallet-extension-${{github.ref_name}}
-          zip -r zerion-wallet-extension-${{github.ref_name}}.zip zerion-wallet-extension-${{github.ref_name}}
-          tar czf zerion-wallet-extension-${{github.ref_name}}.tar.gz --directory=zerion-wallet-extension-${{github.ref_name}} .
-
       - name: Create release
         uses: ncipollo/release-action@v1
         if: ${{ github.ref_type == 'tag' }}
         with:
           generateReleaseNotes: true
-          artifacts: 'zerion-wallet-extension-${{github.ref_name}}.zip,zerion-wallet-extension-${{github.ref_name}}.tar.gz'
+          artifacts: 'zerion-wallet-extension-${{github.sha}}.zip,zerion-wallet-extension-${{github.sha}}.tar.gz'
 
       - name: Notify build succeeded
         id: notify-build-succeeded
@@ -94,21 +44,44 @@ jobs:
         if: ${{ success() }}
         with:
           channel-id: 'C04JLLQRB43'
-          update-ts: ${{ steps.slack.outputs.ts }}
           payload: |
             {
-              "text": "Build success",
-              "attachments": [
+              "text": "Build succeeded",
+              "blocks": [
                 {
-                  "pretext": "Build succeeded",
-                  "color": "28a745",
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": ":gift: Build succeeded"
+                  }
+                },
+                {
+                  "type": "section",
                   "fields": [
                     {
-                      "title": "Status",
-                      "short": true,
-                      "value": "Success"
+                      "type": "mrkdwn",
+                      "text": "*Initiated by:*\n${{ github.triggering_actor }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Attempt:*\n${{ github.run_attempt }}"
                     }
                   ]
+                  "accessory": {
+                    "type": "image",
+                    "image_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+                    "alt_text": "GitHub"
+                  }
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Ref:* <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.ref_name }}>"
+                  }
                 }
               ]
             }
@@ -121,23 +94,54 @@ jobs:
         uses: slackapi/slack-github-action@v1.23.0
         with:
           channel-id: 'C04JLLQRB43'
-          update-ts: ${{ steps.slack.outputs.ts }}
           payload: |
             {
-              "text": "Build failure",
-              "attachments": [
+              "text": "Build failed",
+              "blocks": [
                 {
-                  "pretext": "Build failed",
-                  "color": "ff0000",
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": ":x: Build failed"
+                  }
+                },
+                {
+                  "type": "section",
                   "fields": [
                     {
-                      "title": "Status",
-                      "short": true,
-                      "value": "Failed"
+                      "type": "mrkdwn",
+                      "text": "*Initiated by:*\n${{ github.triggering_actor }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Attempt:*\n${{ github.run_attempt }}"
                     }
-                  ]
+                  ],
+                  "accessory": {
+                    "type": "image",
+                    "image_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+                    "alt_text": "GitHub"
+                  }
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Ref:* <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.ref_name }}>"
+                  }
                 }
               ]
             }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_AUTH_TOKEN }}
+
+      - name: Upload build artifacts to Slack
+        if: ${{ success() }}
+        run: |
+          curl https://slack.com/api/files.upload \
+            -F file=@zerion-wallet-extension-${{github.sha}}.zip \
+            -F channels=C04JLLQRB43 \
+            -H "Authorization: Bearer $SLACK_AUTH_TOKEN"
