@@ -1,0 +1,118 @@
+name: Build
+
+on: push
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Notify build started
+        id: notify-build-started
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: 'C04JLLQRB43'
+          payload: |
+            {
+              "text": "Build in started",
+              "attachments": [
+                {
+                  "pretext": "Build in progress",
+                  "color": "dbab09",
+                  "fields": [
+                    {
+                      "title": "Status",
+                      "short": true,
+                      "value": "In Progress"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_AUTH_TOKEN }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
+
+      - name: Install dependencies and build
+        env:
+          ALCHEMY_KEY: RKg5wIwcuh32powb0blKdPh0UwSsgmFI
+          DEFI_SDK_API_URL: wss://api-v4.zerion.io/
+          DEFI_SDK_API_TOKEN: Zerion.0JOY6zZTTw6yl5Cvz9sdmXc7d5AhzVMG
+          SOCIAL_API_URL: https://social.zerion.io/
+        run: |
+          npm install
+          npm run build:production
+
+      - name: Compress build artifacts
+        shell: bash
+        run: |
+          mv dist zerion-wallet-extension-${{github.ref_name}}
+          zip -r zerion-wallet-extension-${{github.ref_name}}.zip zerion-wallet-extension-${{github.ref_name}}
+          tar czf zerion-wallet-extension-${{github.ref_name}}.tar.gz --directory=zerion-wallet-extension-${{github.ref_name}} .
+
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        if: ${{ github.ref_type == 'tag" }}
+        with:
+          generateReleaseNotes: true
+          artifacts: 'zerion-wallet-extension-${{github.ref_name}}.zip,zerion-wallet-extension-${{github.ref_name}}.tar.gz'
+
+      - name: Notify build succeeded
+        id: notify-build-succeeded
+        uses: slackapi/slack-github-action@v1.23.0
+        if: ${{ success() }}
+        with:
+          channel-id: 'C04JLLQRB43'
+          update-ts: ${{ steps.slack.outputs.ts }}
+          payload: |
+            {
+              "text": "Build success",
+              "attachments": [
+                {
+                  "pretext": "Build succeeded",
+                  "color": "28a745",
+                  "fields": [
+                    {
+                      "title": "Status",
+                      "short": true,
+                      "value": "Success"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_AUTH_TOKEN }}
+
+      - name: Notify build failed
+        id: notify-build-failed
+        if: ${{ failure() }}
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: 'C04JLLQRB43'
+          update-ts: ${{ steps.slack.outputs.ts }}
+          payload: |
+            {
+              "text": "Build failure",
+              "attachments": [
+                {
+                  "pretext": "Build failed",
+                  "color": "ff0000",
+                  "fields": [
+                    {
+                      "title": "Status",
+                      "short": true,
+                      "value": "Failed"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_AUTH_TOKEN }}
