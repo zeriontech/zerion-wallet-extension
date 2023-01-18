@@ -15,19 +15,38 @@ jobs:
           channel-id: 'C04JLLQRB43'
           payload: |
             {
-              "text": "Build in started",
-              "attachments": [
+              "text": "Build started",
+              "blocks": [
                 {
-                  "pretext": "Build in progress",
-                  "color": "dbab09",
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "New build",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
                   "fields": [
                     {
-                      "title": "Status",
-                      "short": true,
-                      "value": "In Progress"
+                      "type": "mrkdwn",
+                      "text": "*Initiated by:*\n${{ github.triggering_actor }}"
+                      "emoji": true
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Attempt:*\n${{ github.run_attempt }}"
                     }
                   ]
-                }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Branch/tag:*\n<${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.ref_name }}>",
+                    "emoji": true
+                  }
+                },
               ]
             }
         env:
