@@ -5,7 +5,7 @@ on:
     types: [opened, synchronize]
 
 jobs:
-  pull_reuqest:
+  pull_request:
     runs-on: ubuntu-latest
     permissions:
       contents: write
