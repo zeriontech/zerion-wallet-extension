@@ -3,3 +3,13 @@
     text-decoration: underline;
   }
 }
+
+.hoverNoUnderline {
+  text-decoration: underline;
+}
+
+@media (hover: hover) {
+  .hoverNoUnderline:hover {
+    text-decoration: none;
+  }
+}

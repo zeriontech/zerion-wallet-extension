@@ -23,15 +23,9 @@ async function registerServiceWorker() {
   }
 }
 
-async function handleFailedHandshake() {
-  const registration = await navigator.serviceWorker.getRegistration();
-  await registration?.unregister();
-  window.location.reload(); // MUST reload to be able to register new service worker
-}
-
 let reactRoot: Root | null = null;
 
-async function initializeUI() {
+async function initializeUI(opts?: { handshakeFailure?: boolean }) {
   const root = document.getElementById('root');
   if (!root) {
     throw new Error('#root element not found');
@@ -47,10 +41,23 @@ async function initializeUI() {
       reactRoot = createRoot(root);
       reactRoot.render(
         <React.StrictMode>
-          <App />
+          <App {...opts} />
         </React.StrictMode>
       );
     });
+}
+
+async function handleFailedHandshake() {
+  /**
+   * This code (which is commented out) works in local development,
+   * but also can lead to unwanted page refreshes. I'll leave it here as
+   * a reference to a working method for force-updating the service_worker,
+   * but maybe it's only worth to use during development.
+   */
+  // const registration = await navigator.serviceWorker.getRegistration();
+  // await registration?.unregister();
+  // window.location.reload(); // MUST reload to be able to register new service worker
+  initializeUI({ handshakeFailure: true });
 }
 
 initializeUI().then(() => {

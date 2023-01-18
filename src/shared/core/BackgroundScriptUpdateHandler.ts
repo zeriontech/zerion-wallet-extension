@@ -1,5 +1,4 @@
 import browser from 'webextension-polyfill';
-import * as browserStorage from 'src/background/webapis/storage';
 
 function getRandomInteger() {
   return window.crypto.getRandomValues(new Uint32Array(1))[0];
@@ -26,7 +25,7 @@ const rejectAfterDelay = (ms: number) =>
     setTimeout(() => reject(new Error('Request timed out')), ms)
   );
 
-const PERFORM_HANSHAKE_CHECK = false;
+const PERFORM_HANSHAKE_CHECK = true;
 
 export class BackgroundScriptUpdateHandler {
   /**
@@ -38,6 +37,7 @@ export class BackgroundScriptUpdateHandler {
 
   private onActivate: () => void;
   private onFailedHandshake: () => void;
+  private finishedHandshake = false;
 
   constructor({
     onActivate,
@@ -59,18 +59,14 @@ export class BackgroundScriptUpdateHandler {
 
   private async handleHandshakeFail() {
     console.warn('Failed handshake!'); // eslint-disable-line no-console
-    const MAX_ATTEMPTS = 3;
-    const attempts =
-      (await browserStorage.get<number>('sw-reactivation-attempts')) ?? 0;
-    if (attempts >= MAX_ATTEMPTS) {
-      return;
-    }
-    await browserStorage.set('sw-reactivation-attempts', attempts + 1);
     this.onFailedHandshake();
   }
 
   private async handshake(port: browser.Runtime.Port) {
     /** Performs a two-way handshake to verify that background script is available */
+    if (this.finishedHandshake) {
+      return;
+    }
     const number = getRandomInteger();
     Promise.race([
       sendPortMessage<{ syn: number }, { ack: number }>(port, { syn: number }),
@@ -79,11 +75,12 @@ export class BackgroundScriptUpdateHandler {
       .then((response) => {
         if (!response || response.ack !== number + 1) {
           throw new Error('Unexpected response');
-        } else {
-          return browserStorage.set('sw-reactivation-attempts', 0);
         }
       })
-      .catch(() => this.handleHandshakeFail());
+      .catch(() => this.handleHandshakeFail())
+      .finally(() => {
+        this.finishedHandshake = true;
+      });
   }
 
   keepAlive() {
