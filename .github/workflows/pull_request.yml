@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      issues: write
+      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -45,9 +45,9 @@ jobs:
               "text": "Build succeeded",
               "blocks": [
                 {
-                  "type": "header",
+                  "type": "section",
                   "text": {
-                    "type": "plain_text",
+                    "type": "mrkdwn",
                     "text": ":rocket: <${{ format('{0}/{1}/pull/{2}', github.server_url, github.repository, github.event.number)}}|${{ github.event.pull_request.title }}>"
                   }
                 },
@@ -80,8 +80,9 @@ jobs:
               "text": "Build failed",
               "blocks": [
                 {
-                  "type": "header",
+                  "type": "section",
                   "text": {
+                    "type": "mrkdwn",
                     "type": "plain_text",
                     "text": ":x: <${{ format('{0}/{1}/pull/{2}', github.server_url, github.repository, github.event.number)}}|${{ github.event.pull_request.title }}>"
                   }
