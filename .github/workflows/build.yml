@@ -22,7 +22,6 @@ jobs:
                   "text": {
                     "type": "plain_text",
                     "text": "New build",
-                    "emoji": true
                   }
                 },
                 {
@@ -31,7 +30,6 @@ jobs:
                     {
                       "type": "mrkdwn",
                       "text": "*Initiated by:*\n${{ github.triggering_actor }}"
-                      "emoji": true
                     },
                     {
                       "type": "mrkdwn",
@@ -43,10 +41,9 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Branch/tag:*\n<${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.ref_name }}>",
-                    "emoji": true
+                    "text": "*Ref:*\n<${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.ref_name }}>",
                   }
-                },
+                }
               ]
             }
         env:
