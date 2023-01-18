@@ -64,9 +64,9 @@ jobs:
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Attempt:*\n${{ github.run_attempt }}"
+                      "text": "*Attempt:* ${{ github.run_attempt }}"
                     }
-                  ]
+                  ],
                   "accessory": {
                     "type": "image",
                     "image_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
@@ -114,7 +114,7 @@ jobs:
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Attempt:*\n${{ github.run_attempt }}"
+                      "text": "*Attempt:* ${{ github.run_attempt }}"
                     }
                   ],
                   "accessory": {
