@@ -17,6 +17,7 @@ import { RouteResolver } from 'src/ui/pages/RouteResolver';
 import { RequestAccounts } from 'src/ui/pages/RequestAccounts';
 import { SendTransaction } from 'src/ui/pages/SendTransaction';
 import { SignMessage } from 'src/ui/pages/SignMessage';
+import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { Login } from '../pages/Login';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { accountPublicRPCPort, walletPort } from '../shared/channels';
@@ -48,6 +49,9 @@ import { BugReportButton } from '../components/BugReportButton';
 import { Receive } from '../pages/Receive';
 import { KeyboardShortcut } from '../components/KeyboardShortcut';
 import { followTheme } from '../features/appearance';
+import { VStack } from '../ui-kit/VStack';
+import { UnstyledAnchor } from '../ui-kit/UnstyledAnchor';
+import { openInNewWindow } from '../shared/openInNewWindow';
 
 function View() {
   const location = useLocation();
@@ -312,7 +316,33 @@ function CloseOtherWindows() {
 
 followTheme();
 
-export function App() {
+export function App({ handshakeFailure }: { handshakeFailure?: boolean }) {
+  if (handshakeFailure) {
+    return (
+      <FillView>
+        <VStack gap={4} style={{ padding: 20, textAlign: 'center' }}>
+          <span style={{ fontSize: 20 }}>💔</span>
+          <UIText kind="body/regular">
+            Background Script is not responding
+          </UIText>
+          <UIText kind="small/regular" color="var(--neutral-500)">
+            If this keeps happening, try refreshing the extension on{' '}
+            <UnstyledAnchor
+              href="chrome://extensions"
+              // chrome://extensions is not allowed to be linked to, but
+              // can be opened programmatically
+              onClick={openInNewWindow}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={helperStyles.hoverNoUnderline}
+            >
+              extensions page
+            </UnstyledAnchor>
+          </UIText>
+        </VStack>
+      </FillView>
+    );
+  }
   return (
     <AreaProvider>
       <UIContext.Provider value={defaultUIContextValue}>
