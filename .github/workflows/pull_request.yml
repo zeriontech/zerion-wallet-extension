@@ -39,7 +39,7 @@ jobs:
         if: ${{ success() }}
         uses: slackapi/slack-github-action@v1.23.0
         with:
-          channel-id: 'C04JLLQRB43'
+          channel-id: 'C04KLJV3HFV'
           payload: |
             {
               "text": "Build succeeded",
@@ -48,7 +48,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": ":rocket: <${{ format('{0}/{1}/pull/{2}', github.server_url, github.repository, github.event.number)}}|${{ github.event.pull_request.title }}>"
+                    "text": ":rocket: <${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> ${{ github.pull_request.draft && ':construction' || '' }}"
                   }
                 },
                 {
@@ -57,6 +57,10 @@ jobs:
                     {
                       "type": "mrkdwn",
                       "text": "*Initiated by:* ${{ github.triggering_actor }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Mergeable:* ${{ github.pull_request.mergeable && 'Yes' || 'No' }}"
                     },
                     {
                       "type": "mrkdwn",
@@ -74,7 +78,7 @@ jobs:
         if: ${{ failure() }}
         uses: slackapi/slack-github-action@v1.23.0
         with:
-          channel-id: 'C04JLLQRB43'
+          channel-id: 'C04KLJV3HFV'
           payload: |
             {
               "text": "Build failed",
@@ -84,7 +88,7 @@ jobs:
                   "text": {
                     "type": "mrkdwn",
                     "type": "plain_text",
-                    "text": ":x: <${{ format('{0}/{1}/pull/{2}', github.server_url, github.repository, github.event.number)}}|${{ github.event.pull_request.title }}>"
+                    "text": ":x: <${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> ${{ github.pull_request.draft && ':construction' || '' }}"
                   }
                 },
                 {
@@ -93,6 +97,10 @@ jobs:
                     {
                       "type": "mrkdwn",
                       "text": "*Initiated by: ${{ github.triggering_actor }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Mergeable:* ${{ github.pull_request.mergeable && 'Yes' || 'No' }}"
                     },
                     {
                       "type": "mrkdwn",

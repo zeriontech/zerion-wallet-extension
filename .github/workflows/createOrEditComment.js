@@ -11,7 +11,7 @@ module.exports = async ({ github, context, pattern, filePath }) => {
   });
   const comment = comments.find((c) => c.body.startsWith(pattern));
   const repo = { owner: context.repo.owner, repo: context.repo.repo };
-  const body = fs.readFileSync(filePath, 'utf8');
+  const body = fs.readFileSync(filePath);
 
   const updateComment = ({ comment_id, body }) =>
     github.issues.updateComment({ ...repo, comment_id, body });
