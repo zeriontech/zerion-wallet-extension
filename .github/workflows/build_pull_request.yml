@@ -27,6 +27,7 @@ jobs:
           npm run build:production
 
       - name: Save PR number
+        if: ${{ success() }}
         env:
           PR_NUMBER: ${{ github.event.number }}
         run: |
@@ -38,6 +39,7 @@ jobs:
           path: pr/
 
       - name: Compress build artifacts
+        if: ${{ success() }}
         shell: bash
         run: |
           mv dist zerion-wallet-extension-${{github.sha}}
