@@ -155,9 +155,6 @@ function rewriteConnectButtons(
   }
   for (const element of buttonLikeElements) {
     analyzeElement(element);
-    if (didMutateSomething) {
-      break;
-    }
   }
   if (!didMutateSomething) {
     for (const item of metamaskCandidates) {
