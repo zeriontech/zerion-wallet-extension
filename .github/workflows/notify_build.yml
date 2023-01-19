@@ -1,39 +1,15 @@
-name: Pull Request
+name: Notify build
 
 on:
-  pull_request:
-    types: [opened, synchronize]
+  workflow_run:
+    workflows: [Build pull request]
+    types: [completed]
 
 jobs:
-  pull_request:
+  notify-build-success:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Setup NodeJS
-        uses: actions/setup-node@v3
-
-      - name: Install dependencies and build
-        env:
-          ALCHEMY_KEY: RKg5wIwcuh32powb0blKdPh0UwSsgmFI
-          DEFI_SDK_API_URL: wss://api-v4.zerion.io/
-          DEFI_SDK_API_TOKEN: Zerion.0JOY6zZTTw6yl5Cvz9sdmXc7d5AhzVMG
-          SOCIAL_API_URL: https://social.zerion.io/
-        run: |
-          npm install
-          npm run build:production
-
-      - name: Compress build artifacts
-        shell: bash
-        run: |
-          mv dist zerion-wallet-extension-${{github.sha}}
-          zip -r zerion-wallet-extension-${{github.sha}}.zip zerion-wallet-extension-${{github.sha}}
-          tar czf zerion-wallet-extension-${{github.sha}}.tar.gz --directory=zerion-wallet-extension-${{github.sha}} .
-
       - name: Notify build succeeded
         id: notify-build-succeeded
         if: ${{ success() }}
@@ -60,10 +36,6 @@ jobs:
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Mergeable:* ${{ github.pull_request.mergeable && 'Yes' || 'No' }}"
-                    },
-                    {
-                      "type": "mrkdwn",
                       "text": "*Attempt:* ${{ github.run_attempt }}"
                     }
                   ]
@@ -73,9 +45,12 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_AUTH_TOKEN }}
 
+  notify-build-failure:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Notify build failed
         id: notify-build-failed
-        if: ${{ failure() }}
         uses: slackapi/slack-github-action@v1.23.0
         with:
           channel-id: 'C04KLJV3HFV'
@@ -100,10 +75,6 @@ jobs:
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Mergeable:* ${{ github.pull_request.mergeable && 'Yes' || 'No' }}"
-                    },
-                    {
-                      "type": "mrkdwn",
                       "text": "*Attempt:* ${{ github.run_attempt }}"
                     }
                   ]
@@ -112,14 +83,3 @@ jobs:
             }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_AUTH_TOKEN }}
-
-      - name: Attach build artifacts to the PR thread
-        if: ${{ success() }}
-        uses: actions/github-script@v3
-        env:
-          BUILD_PATH: zerion-wallet-extension-${{github.sha}}.zip
-        with:
-          script: |
-            const createOrEditComment = require(`${process.env.GITHUB_WORKSPACE}/.github/workflows/createOrEditComment.js`)
-            const { BUILD_PATH } = process.env;
-            createOrEditComment({ github, context, pattern: 'build', filePath: BUILD_PATH })

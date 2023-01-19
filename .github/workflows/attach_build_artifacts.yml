@@ -1,0 +1,43 @@
+name: Attach build artifacts
+
+# We attach build artifacts in a separate workflow,
+# since they are not available in the same workflow
+
+on:
+  workflow_run:
+    workflows: [Pull Request]
+    types: [completed]
+
+jobs:
+  attach_build_artifacts:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Attach build artifacts to the PR thread
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+        uses: actions/github-script@v3
+        env:
+          BUILD_PATH: zerion-wallet-extension-${{github.sha}}.zip
+        with:
+          run: |
+            set -x
+            run_id=${{ github.event.workflow_run.id }}
+            run_number=${{ github.event.workflow_run.run_number }}
+            check_suite_id=${{ github.event.workflow_run.check_suite_id }}
+            repository_url=${{ github.server_url }}/${{ github.repository }}
+
+            artifacts=$(curl -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${{ github.repository }}/actions/runs/${run_id}/artifacts")
+            pr_number_artifact_id=$($artifacts | jq '.artifacts[0].id')
+            build_artifact_id=$($artifacts | jq '.artifacts[1].id')
+
+            # We can not use "url" or "archive_download_url" here,
+            # hence we need to figure our the artifact's URL "manually"
+            build_download_url="${repository_url}/suites/${check_suite_id}/artifacts/${artifact_id}"
+            set +x
+
+            curl -X POST \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/${pr_number}/comments" \
+              -d '{"body":"URL: $build_download_url"}'
