@@ -2,7 +2,7 @@ name: Notify build
 
 on:
   workflow_run:
-    workflows: [Build pull request]
+    workflows: ['Build pull request']
     types: [completed]
 
 jobs:
