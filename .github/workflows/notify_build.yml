@@ -3,7 +3,7 @@ name: Notify build
 on:
   workflow_run:
     workflows: ['Build pull request']
-    types: [completed]
+    types: ['completed']
 
 jobs:
   notify-build-success:
@@ -12,7 +12,6 @@ jobs:
     steps:
       - name: Notify build succeeded
         id: notify-build-succeeded
-        if: ${{ success() }}
         uses: slackapi/slack-github-action@v1.23.0
         with:
           channel-id: 'C04KLJV3HFV'

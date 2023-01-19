@@ -6,7 +6,7 @@ name: Attach build artifacts
 on:
   workflow_run:
     workflows: ['Build pull request']
-    types: [completed]
+    types: ['completed']
 
 jobs:
   attach_build_artifacts:
@@ -17,8 +17,6 @@ jobs:
       - name: Attach build artifacts to the PR thread
         if: ${{ github.event.workflow_run.conclusion == 'success' }}
         uses: actions/github-script@v3
-        env:
-          BUILD_PATH: zerion-wallet-extension-${{github.sha}}.zip
         with:
           run: |
             set -x
