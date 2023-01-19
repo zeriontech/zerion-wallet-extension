@@ -1,7 +1,7 @@
 /* eslint-env node */
 /* eslint-disable import/no-commonjs, import/no-nodejs-modules */
 
-import fs from 'fs';
+const fs = require('fs');
 
 module.exports = async ({ github, context, pattern, filePath }) => {
   const { data: comments } = await github.issues.listComments({
