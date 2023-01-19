@@ -94,8 +94,8 @@ function isExternalLink(node: Element) {
 }
 
 const buttonLikeSelectors: Record<string, string> = {
-  default: 'button,[role=button],a',
-  'https://unstoppabledomains.com': 'button,[role=button],a,.MuiGrid-item',
+  default: 'button,[role=button]',
+  'https://unstoppabledomains.com': 'button,[role=button],.MuiGrid-item',
 };
 
 function rewriteConnectButtons(
