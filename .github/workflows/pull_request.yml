@@ -106,12 +106,12 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_AUTH_TOKEN }}
 
       - name: Attach build artifacts to the PR thread
+        if: ${{ success() }}
         uses: actions/github-script@v3
         env:
-          BUILD_URL: zerion-wallet-extension-${{github.sha}}.zip
+          BUILD_PATH: zerion-wallet-extension-${{github.sha}}.zip
         with:
           script: |
             const createOrEditComment = require(`${process.env.GITHUB_WORKSPACE}/.github/workflows/createOrEditComment.js`)
-            const { BUILD_URL } = process.env;
-            const message = `build ${BUILD_URL}`
-            createOrEditComment({ github, context, pattern: 'build', message })
+            const { BUILD_PATH } = process.env;
+            createOrEditComment({ github, context, pattern: 'build', filePath: BUILD_PATH })
