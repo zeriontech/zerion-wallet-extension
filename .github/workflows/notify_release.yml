@@ -2,8 +2,10 @@ name: Notify release
 
 on:
   workflow_run:
-    workflows: ['Create release']
-    types: [completed]
+    workflows:
+      - Create release
+    types:
+      - completed
 
 jobs:
   notify_release:

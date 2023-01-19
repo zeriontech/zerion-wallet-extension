@@ -5,8 +5,10 @@ name: Attach build artifacts
 
 on:
   workflow_run:
-    workflows: ['Build pull request']
-    types: ['completed']
+    workflows:
+      - Build pull request
+    types:
+      - completed
 
 jobs:
   attach_build_artifacts:
