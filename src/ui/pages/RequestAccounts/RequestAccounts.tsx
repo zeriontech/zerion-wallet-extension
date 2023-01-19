@@ -175,7 +175,10 @@ function RequestAccountsView({
   );
   return (
     <Background backgroundKind="neutral">
-      <PageColumn>
+      <PageColumn
+        // different surface color on backgroundKind="neutral"
+        style={{ ['--surface-background-color' as string]: 'var(--z-index-0)' }}
+      >
         <PageTop />
         <PageTop />
         <VStack gap={8} style={{ placeItems: 'center' }}>

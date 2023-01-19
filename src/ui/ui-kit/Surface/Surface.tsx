@@ -12,8 +12,10 @@ export function Surface({
       style={{
         // @ts-ignore
         ['--surface-border-radius']: '12px',
+        ['--local-surface-background-color']:
+          'var(--surface-background-color, var(--z-index-1))',
         borderRadius: 'var(--surface-border-radius)',
-        backgroundColor: 'var(--z-index-1)',
+        backgroundColor: 'var(--local-surface-background-color)',
         padding,
         ...style,
       }}

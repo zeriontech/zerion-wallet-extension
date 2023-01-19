@@ -118,7 +118,10 @@ function SignMessageContent({
 
   return (
     <Background backgroundKind="neutral">
-      <PageColumn>
+      <PageColumn
+        // different surface color on backgroundKind="neutral"
+        style={{ ['--surface-background-color' as string]: 'var(--z-index-0)' }}
+      >
         <PageTop />
         <div style={{ display: 'grid', placeItems: 'center' }}>
           <SiteFaviconImg style={{ width: 44, height: 44 }} url={origin} />

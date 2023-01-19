@@ -566,7 +566,10 @@ function SendTransactionContent({
   return (
     <Background backgroundKind="neutral">
       <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
-      <PageColumn>
+      <PageColumn
+        // different surface color on backgroundKind="neutral"
+        style={{ ['--surface-background-color' as string]: 'var(--z-index-0)' }}
+      >
         <div
           style={{
             position: 'sticky',
