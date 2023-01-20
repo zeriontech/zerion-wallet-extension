@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
+      contents: write
     steps:
       - name: 'Download PR number'
         uses: actions/github-script@v6

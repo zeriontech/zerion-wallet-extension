@@ -2,12 +2,12 @@
 /* eslint-disable import/no-commonjs, import/no-nodejs-modules */
 
 module.exports = async ({ github, context, name }) => {
-  let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
+  let artifacts = await github.rest.actions.listWorkflowRunArtifacts({
     owner: context.repo.owner,
     repo: context.repo.repo,
     run_id: context.payload.workflow_run.id,
   });
-  let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
+  let matchArtifact = artifacts.data.artifacts.filter((artifact) => {
     return artifact.name == name;
   })[0];
   let download = await github.rest.actions.downloadArtifact({
