@@ -16,6 +16,30 @@ jobs:
     permissions:
       pull-requests: write
     steps:
+      - name: 'Download PR number'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               run_id: context.payload.workflow_run.id,
+            });
+            let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == "pr_number"
+            })[0];
+            let download = await github.rest.actions.downloadArtifact({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               artifact_id: matchArtifact.id,
+               archive_format: 'zip',
+            });
+            let fs = require('fs');
+            fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/pr_number.zip`, Buffer.from(download.data));
+
+      - name: 'Unzip artifact'
+        run: unzip pr_number.zip
+
       - name: Attach build artifacts to the PR thread
         if: ${{ github.event.workflow_run.conclusion == 'success' }}
         uses: actions/github-script@v3
@@ -26,7 +50,7 @@ jobs:
             check_suite_id=${{ github.event.workflow_run.check_suite_id }}
             repository_url=${{ github.server_url }}/${{ github.repository }}
 
-            pr_number=$(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $GITHUB_TOKEN" "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts" | jq ".artifacts[0].id")
+            pr_number=$(cat ./pr_number)
             build_artifact_id=$(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $GITHUB_TOKEN" "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts" | jq ".artifacts[1].id")
 
             # We can not use "url" or "archive_download_url" here,
@@ -37,5 +61,5 @@ jobs:
             curl -X POST \
               -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer $GITHUB_TOKEN" \
-              "https://api.github.com/repos/${{ github.repository }}/issues/${pr_number}/comments" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/5/comments" \
               -d '{"body":"<a href='$build_download_url'>zerion-wallet-extension.zip</a>"}'
