@@ -22,13 +22,12 @@ jobs:
         with:
           run: |
             set -x
-            run_id=${{ github.event.workflow_run.id }}
             run_number=${{ github.event.workflow_run.run_number }}
             check_suite_id=${{ github.event.workflow_run.check_suite_id }}
             repository_url=${{ github.server_url }}/${{ github.repository }}
 
-            pr_number=$(curl -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${{ github.repository }}/actions/runs/${run_id}/artifacts" | jq '.artifacts[0].id')
-            build_artifact_id=$(curl -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${{ github.repository }}/actions/runs/${run_id}/artifacts" | jq '.artifacts[1].id')
+            pr_number=$(curl -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts" | jq ".artifacts[0].id")
+            build_artifact_id=$(curl -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts" | jq ".artifacts[1].id")
 
             # We can not use "url" or "archive_download_url" here,
             # hence we need to figure our the artifact's URL "manually"
