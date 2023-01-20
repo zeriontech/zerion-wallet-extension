@@ -45,7 +45,7 @@ jobs:
         if: ${{ success() }}
         uses: slackapi/slack-github-action@v1.23.0
         with:
-          channel-id: 'C04KLJV3HFV'
+          channel-id: 'C04JLLQRB43'
           payload: |
             {
               "text": "New release",
