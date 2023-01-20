@@ -49,4 +49,4 @@ jobs:
               -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer $GITHUB_TOKEN" \
               "https://api.github.com/repos/${{ github.repository }}/issues/$pr_number/comments" \
-              -d '{"body":":package: <a href='$build_download_url'>zerion-wallet-extension.zip</a>"}'
+              -d '{"body":":package: <a href='$build_download_url'>build.zip</a>"}'
