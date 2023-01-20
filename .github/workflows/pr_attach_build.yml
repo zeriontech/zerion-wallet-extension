@@ -53,13 +53,13 @@ jobs:
           check_suite_id=${{ github.event.workflow_run.check_suite_id }}
           repository_url=${{ github.server_url }}/${{ github.repository }}
           pr_number=$(cat ./pr_number)
-          build_artifact_id=$(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $GITHUB_TOKEN" "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts" | jq ".artifacts[1].id")
+          build_artifact_id=$(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts" | jq ".artifacts[1].id")
           # We can not use "url" or "archive_download_url" here,
           # hence we need to figure our the artifact's URL "manually"
           build_download_url=${repository_url}/suites/${check_suite_id}/artifacts/${build_artifact_id}
           set +x
           curl -X POST \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/${{ github.repository }}/issues/$pr_number/comments" \
             -d '{"body":":package: <a href='$build_download_url'>build.zip</a>"}'
