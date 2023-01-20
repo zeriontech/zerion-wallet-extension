@@ -21,7 +21,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const downloadPrNumber = require(`${process.env.GITHUB_WORKSPACE}/.github/workflows/scripts/downloadPRNumber.js`)
+            const downloadPrNumber = require(`${process.env.GITHUB_WORKSPACE}/.github/workflows/downloadPRNumber.js`)
             downloadPrNumber({ github, context, name: 'pr_number' })
 
       - name: 'Unzip artifact'
