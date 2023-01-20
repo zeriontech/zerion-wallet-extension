@@ -58,6 +58,7 @@ jobs:
           # hence we need to figure our the artifact's URL "manually"
           build_download_url=${repository_url}/suites/${check_suite_id}/artifacts/${build_artifact_id}
           set +x
+
           curl -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
