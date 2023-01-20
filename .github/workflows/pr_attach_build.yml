@@ -24,7 +24,7 @@ jobs:
             const downloadPrNumber = require(`${process.env.GITHUB_WORKSPACE}/.github/workflows/downloadPRNumber.js`)
             downloadPrNumber({ github, context, name: 'pr_number' })
 
-      - name: 'Unzip artifact'
+      - name: 'Unzip PR number'
         run: unzip pr_number.zip
 
       - name: Attach build artifacts to the PR thread
