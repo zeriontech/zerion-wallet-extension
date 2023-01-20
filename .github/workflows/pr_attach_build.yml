@@ -21,8 +21,8 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const downloadPrNumber = require('./downloadPRNumber.js')
-            downloadPrNumber({ github, context, name: 'pr_number' })
+            const downloadPRNumber = require('./downloadPRNumber.js')
+            downloadPRNumber({ github, context, name: 'pr_number' })
 
       - name: 'Unzip PR number'
         run: unzip pr_number.zip
