@@ -53,7 +53,6 @@ jobs:
             run_number=${{ github.event.workflow_run.run_number }}
             check_suite_id=${{ github.event.workflow_run.check_suite_id }}
             repository_url=${{ github.server_url }}/${{ github.repository }}
-
             pr_number=$(cat ./pr_number)
             build_artifact_id=$(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $GITHUB_TOKEN" "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts" | jq ".artifacts[1].id")
 
