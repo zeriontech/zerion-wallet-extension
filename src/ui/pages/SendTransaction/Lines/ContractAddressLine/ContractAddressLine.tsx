@@ -8,7 +8,7 @@ import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { CopyButton } from 'src/ui/components/CopyButton';
-import { UnknownIcon } from '../../UnknownIcon';
+import { BlockieImg } from 'src/ui/components/BlockieImg';
 
 export function ContractAddressLine({
   address,
@@ -29,7 +29,9 @@ export function ContractAddressLine({
           rel: 'noopener noreferrer',
           component: (
             <Media
-              image={<UnknownIcon size={36} />}
+              image={
+                <BlockieImg address={address} size={36} borderRadius={6} />
+              }
               vGap={0}
               text={
                 <UIText kind="caption/reg" color="var(--neutral-500)">
