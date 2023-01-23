@@ -260,7 +260,7 @@ function OverviewComponent() {
           <SegmentedControlLink to="/overview/history">
             History <PendingTransactionsIndicator />
           </SegmentedControlLink>
-          <SegmentedControlLink to="/overview/feed">Feed</SegmentedControlLink>
+          <SegmentedControlLink to="/overview/feed">Perks</SegmentedControlLink>
         </SegmentedControlGroup>
       </PageFullBleedColumn>
       <Spacer height={24} />
