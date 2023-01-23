@@ -13,6 +13,10 @@ export enum TransactionAction {
   deposit,
   withdraw,
   setApprovalForAll,
+  stake,
+  unstake,
+  claim,
+  mint,
   send,
   contractInteraction,
 }
@@ -30,6 +34,7 @@ export interface TransactionDescription {
   depositAmount?: string;
   supplyAssetCode?: string;
   supplyAmount?: string;
+  stakeAmount?: string;
   withdrawAssetCode?: string;
   withdrawAmount?: string;
   contractAddress?: string;
@@ -56,11 +61,31 @@ const selectors = {
   withdraw: encodeSelector('withdraw(uint256,address,address)'),
   withdrawCompound: encodeSelector('withdraw(address,uint256)'),
   withdrawYearnFi: encodeSelector('withdraw(uint256)'),
+  // Lido Finance
+  submitLido: encodeSelector('submit(address)'),
   // ERC-1155 (Multi-token)
   setApprovalForAll: encodeSelector('setApprovalForAll(address,bool)'),
   // ERC-777
   send: encodeSelector('send(address,uint256,bytes)'),
 };
+
+function describeStake(
+  transaction: IncomingTransaction
+): TransactionDescription | null {
+  if (!transaction.data) {
+    return null;
+  }
+  const selector = ethers.utils.hexDataSlice(transaction.data, 0, 4);
+  if (selector !== selectors.submitLido) {
+    return null;
+  }
+
+  return {
+    action: TransactionAction.stake,
+    contractAddress: transaction.to,
+    stakeAmount: ethers.BigNumber.from(transaction.value || '0').toString(),
+  };
+}
 
 function describeSupply(
   transaction: IncomingTransaction
@@ -295,6 +320,7 @@ const describers = [
   describeDeposit,
   describeWithdraw,
   describeSetApprovalForAll,
+  describeStake,
   describeMulticall,
   describeContractInteraction,
 ];
