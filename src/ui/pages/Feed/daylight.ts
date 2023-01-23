@@ -11,8 +11,12 @@ export type WalletAbilityType =
   | 'access'
   | 'result'
   | 'event'
-  | 'product'
-  | 'misc';
+  | 'merch'
+  | 'misc'
+  | 'raffle'
+  | 'discount'
+  | 'stake'
+  | 'revoke';
 
 interface WalletAbilitySupplier {
   id: number;

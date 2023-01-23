@@ -589,7 +589,7 @@ export class WalletRecordModel {
             (item) => item.uid === ability.uid
           )
         ) {
-          draft.feed.completedAbilities.push(ability);
+          draft.feed.completedAbilities.unshift(ability);
         }
       }
       if (action === 'dismiss') {
@@ -598,7 +598,7 @@ export class WalletRecordModel {
             (item) => item.uid === ability.uid
           )
         ) {
-          draft.feed.dissmissedAbilities.push(ability);
+          draft.feed.dissmissedAbilities.unshift(ability);
         }
       }
     });

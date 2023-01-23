@@ -142,7 +142,6 @@ const TypeItems: FeedType[] = [
 function getAbilityTypeParams(type: FeedType): WalletAbilityType[] {
   if (type === 'all') {
     // we exlude article type from feed
-    // also result filter is broken for now on Daylight's side
     return [
       'vote',
       'claim',
@@ -151,12 +150,26 @@ function getAbilityTypeParams(type: FeedType): WalletAbilityType[] {
       'access',
       'result',
       'event',
-      // 'result',
+      'merch',
       'misc',
+      'raffle',
+      'discount',
+      'stake',
+      'revoke',
     ];
   }
   if (type === 'other') {
-    return ['access', 'event', 'misc', 'product', 'result'];
+    return [
+      'access',
+      'event',
+      'misc',
+      'merch',
+      'result',
+      'raffle',
+      'discount',
+      'stake',
+      'revoke',
+    ];
   }
   return [type];
 }
