@@ -1,5 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useSelect } from 'downshift';
+import cn from 'classnames';
+import { useMutation } from 'react-query';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { SurfaceItemButton, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -8,11 +10,13 @@ import FiltersIcon from 'jsx:src/ui/assets/filters.svg';
 import DoubleCheckIcon from 'jsx:src/ui/assets/check_double.svg';
 import CloseIcon from 'jsx:src/ui/assets/close.svg';
 import LinkIcon from 'jsx:src/ui/assets/link.svg';
+import SyncIcon from 'jsx:src/ui/assets/sync.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { useNavigationState } from 'src/ui/shared/useNavigationState';
 import { getAbilityLinkTitle, useWalletAbilities } from './daylight';
 import type {
   WalletAbility,
@@ -20,8 +24,13 @@ import type {
   StatusFilterParams,
 } from './daylight';
 import { Ability } from './Ability/Ability';
+import { markAbility, unmarkAbility, useFeedInfo } from './stored';
+import * as styles from './styles.module.css';
+import { FeedSkeleton } from './Loader';
 
 type FeedStatus = 'open' | 'completed' | 'expired' | 'dismissed';
+
+const ABILITIES_PER_PAGE = 10;
 
 const StatusToTitle: Record<FeedStatus, string> = {
   open: 'Open',
@@ -76,6 +85,7 @@ function StatusFilter({
           borderRadius: 8,
           width: 180,
           overflow: 'hidden',
+          zIndex: 2,
         }}
       >
         <SurfaceList
@@ -131,10 +141,22 @@ const TypeItems: FeedType[] = [
 
 function getAbilityTypeParams(type: FeedType): WalletAbilityType[] {
   if (type === 'all') {
-    return [];
+    // we exlude article type from feed
+    // also result filter is broken for now on Daylight's side
+    return [
+      'vote',
+      'claim',
+      'airdrop',
+      'mint',
+      'access',
+      'result',
+      'event',
+      // 'result',
+      'misc',
+    ];
   }
   if (type === 'other') {
-    return ['access', 'article', 'event', 'misc', 'product', 'result'];
+    return ['access', 'event', 'misc', 'product', 'result'];
   }
   return [type];
 }
@@ -205,6 +227,7 @@ function TypeFilter({
           borderRadius: 8,
           width: 180,
           overflow: 'hidden',
+          zIndex: 2,
         }}
       >
         <SurfaceList
@@ -238,20 +261,100 @@ function TypeFilter({
   );
 }
 
-function AbilityCard({ ability }: { ability: WalletAbility }) {
+function AbilityCard({
+  ability,
+  onMark,
+  filter,
+  status: initialStatus,
+}: {
+  ability: WalletAbility;
+  onMark(): void;
+  filter: FeedStatus;
+  status: null | 'completed' | 'dismissed';
+}) {
+  const [marking, setMarking] = useState<boolean>(false);
+  const [status, setStatus] = useState<
+    'completed' | 'dismissed' | 'restored' | null
+  >(null);
+
   const linkTitle = useMemo(() => {
     return getAbilityLinkTitle(ability);
   }, [ability]);
 
+  const { mutate: mark } = useMutation(
+    (action: 'complete' | 'dismiss') => markAbility({ ability, action }),
+    {
+      onSuccess: (_, action) => {
+        setMarking(false);
+        setStatus(action === 'complete' ? 'completed' : 'dismissed');
+        setTimeout(onMark, 500);
+      },
+    }
+  );
+
+  const { mutate: unmark } = useMutation(
+    () => unmarkAbility({ abilityId: ability.uid }),
+    {
+      onSuccess: () => {
+        setMarking(false);
+        setStatus('restored');
+        setTimeout(onMark, 500);
+      },
+    }
+  );
+
+  const handleMarkButtonClick = useCallback(
+    (action: 'dismiss' | 'complete') => {
+      mark(action);
+      setMarking(true);
+    },
+    [mark]
+  );
+
+  const handleUnmarkButtonClick = useCallback(() => {
+    unmark();
+    setMarking(true);
+  }, [unmark]);
+
+  const isVisible = !(
+    (filter === 'open' || filter === 'expired') &&
+    Boolean(initialStatus)
+  );
+
+  const showRestoreButton =
+    initialStatus && (filter === 'completed' || filter === 'dismissed');
+
   return (
-    <VStack gap={16}>
+    <VStack
+      gap={16}
+      style={{ padding: '0 16px' }}
+      className={cn(isVisible ? styles.visible : styles.hidden, {
+        [styles.marking]: marking,
+        [styles.completed]:
+          status === 'completed' && (filter === 'open' || filter === 'expired'),
+        [styles.dismissed]:
+          status === 'dismissed' && (filter === 'open' || filter === 'expired'),
+        [styles.restored]:
+          status === 'restored' &&
+          (filter === 'completed' || filter === 'dismissed'),
+      })}
+    >
       <div />
       <UnstyledLink to={`/ability/${ability.uid}`}>
-        <Ability ability={ability} mode="compact" />
+        <Ability ability={ability} mode="compact" status={initialStatus} />
       </UnstyledLink>
-      <HStack gap={8} style={{ gridTemplateColumns: '1fr 40px 40px' }}>
+      <HStack
+        gap={8}
+        style={{
+          gridTemplateColumns: showRestoreButton ? '1fr 40px' : '1fr 40px 40px',
+        }}
+      >
         <Button
-          style={{ width: 240, overflow: 'hidden', textOverflow: 'ellipsis' }}
+          style={{
+            width: '100%',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
           size={40}
           as={UnstyledAnchor}
           href={ability.action.linkUrl}
@@ -263,12 +366,39 @@ function AbilityCard({ ability }: { ability: WalletAbility }) {
             <LinkIcon />
           </HStack>
         </Button>
-        <Button style={{ padding: 8 }} kind="regular" size={40}>
-          <DoubleCheckIcon />
-        </Button>
-        <Button style={{ padding: 7 }} kind="regular" size={40}>
-          <CloseIcon />
-        </Button>
+        {showRestoreButton ? null : (
+          <Button
+            style={{ padding: 8 }}
+            kind="regular"
+            size={40}
+            disabled={marking}
+            onClick={() => handleMarkButtonClick('complete')}
+          >
+            <DoubleCheckIcon />
+          </Button>
+        )}
+        {showRestoreButton ? null : (
+          <Button
+            style={{ padding: 7 }}
+            kind="regular"
+            size={40}
+            disabled={marking}
+            onClick={() => handleMarkButtonClick('dismiss')}
+          >
+            <CloseIcon />
+          </Button>
+        )}
+        {showRestoreButton ? (
+          <Button
+            style={{ padding: 7 }}
+            kind="regular"
+            size={40}
+            disabled={marking}
+            onClick={() => handleUnmarkButtonClick()}
+          >
+            <SyncIcon />
+          </Button>
+        ) : null}
       </HStack>
       <div />
     </VStack>
@@ -277,8 +407,23 @@ function AbilityCard({ ability }: { ability: WalletAbility }) {
 
 export function Feed() {
   const { singleAddress } = useAddressParams();
-  const [statusFilter, setStatusFilter] = useState<FeedStatus>('open');
-  const [typeFilter, setTypeFilter] = useState<FeedType>('all');
+  const [statusFilter, setStatusFilter] = useNavigationState<FeedStatus>(
+    'status',
+    'open'
+  );
+  const [typeFilter, setTypeFilter] = useNavigationState<FeedType>(
+    'type',
+    'all'
+  );
+
+  const {
+    data,
+    refetch,
+    completedSet,
+    dismissedSet,
+    isFetching: isLocalFetching,
+  } = useFeedInfo();
+
   const {
     value,
     fetchNextPage,
@@ -295,9 +440,44 @@ export function Feed() {
       }),
       [typeFilter, statusFilter]
     ),
+    limit: ABILITIES_PER_PAGE,
+    onSuccess: (data) => {
+      // we want to fetch next page imidiatelly
+      // if we've already marked as completed more then half of fetched page
+      const lastPage = data.pages[data.pages.length - 1];
+      if (!lastPage.links.next) {
+        return;
+      }
+      const filteredAbilities = lastPage.abilities.filter(
+        (item) => !dismissedSet.has(item.uid) && !completedSet.has(item.uid)
+      );
+      if (filteredAbilities.length < ABILITIES_PER_PAGE / 2) {
+        fetchNextPage({
+          cancelRefetch: false,
+          pageParam: { link: lastPage.links.next, address: singleAddress },
+        });
+      }
+    },
   });
 
-  const fetching = isFetchingNextPage || isFetching;
+  const abilities = useMemo(() => {
+    if (statusFilter === 'completed') {
+      return data?.completedAbilities || [];
+    }
+    if (statusFilter === 'dismissed') {
+      return data?.dissmissedAbilities || [];
+    }
+    if (statusFilter === 'expired') {
+      return value?.filter((item) => item.isClosed) || [];
+    }
+    return value;
+  }, [data, value, statusFilter]);
+
+  const fetching =
+    ((isFetchingNextPage || isFetching) &&
+      (statusFilter === 'open' || statusFilter === 'expired')) ||
+    (isLocalFetching &&
+      (statusFilter === 'completed' || statusFilter === 'dismissed'));
 
   return (
     <VStack gap={16}>
@@ -311,19 +491,60 @@ export function Feed() {
           onChange={(value) => setTypeFilter(value || 'all')}
         />
       </HStack>
-      {isFetching && !value.length ? (
-        <ViewLoading />
-      ) : (
-        <SurfaceList
-          style={isPreviousData ? { opacity: 0.6 } : undefined}
-          items={value.map((ability) => ({
+      {!fetching && !abilities?.length ? (
+        <VStack gap={8} style={{ justifyItems: 'center', width: '100%' }}>
+          <Spacer height={50} />
+          <span style={{ fontSize: 40 }}>🥺</span>
+          <UIText kind="small/accent">No abilities yet</UIText>
+        </VStack>
+      ) : null}
+      <SurfaceList
+        style={
+          isPreviousData &&
+          (statusFilter === 'open' || statusFilter === 'expired')
+            ? { opacity: 0.6 }
+            : undefined
+        }
+        items={[
+          ...(abilities?.map((ability) => ({
             key: ability.uid,
             pad: false,
-            component: <AbilityCard ability={ability} />,
-          }))}
-        />
-      )}
-      {hasNextPage ? (
+            style: { padding: 0 },
+            component: (
+              <AbilityCard
+                ability={ability}
+                onMark={refetch}
+                filter={statusFilter}
+                status={
+                  completedSet.has(ability.uid)
+                    ? 'completed'
+                    : dismissedSet.has(ability.uid)
+                    ? 'dismissed'
+                    : null
+                }
+              />
+            ),
+          })) || []),
+          ...(fetching
+            ? [
+                {
+                  key: 'loader-1',
+                  pad: false,
+                  style: { padding: 0 },
+                  component: <FeedSkeleton />,
+                },
+                {
+                  key: 'loader-2',
+                  pad: false,
+                  style: { padding: 0 },
+                  component: <FeedSkeleton />,
+                },
+              ]
+            : []),
+        ]}
+      />
+      {(statusFilter === 'open' || statusFilter === 'expired') &&
+      hasNextPage ? (
         <SurfaceList
           items={[
             {

@@ -12,9 +12,13 @@ import type { WalletAbility } from '../daylight';
 export function Ability({
   ability,
   mode,
+  status,
+  loading,
 }: {
   ability: WalletAbility;
   mode: 'full' | 'compact';
+  status: 'dismissed' | 'completed' | null;
+  loading?: boolean;
 }) {
   const { singleAddress } = useAddressParams();
 
@@ -40,6 +44,15 @@ export function Ability({
           <Tag>{ability.type.toUpperCase()}</Tag>
           {ability.supplier ? (
             <Tag>{ability.supplier.name.toUpperCase()}</Tag>
+          ) : null}
+          {status || loading ? (
+            <Tag kind={status === 'completed' ? 'positive' : 'negative'}>
+              {status === 'completed'
+                ? 'COMPLETED'
+                : status === 'dismissed'
+                ? 'DISMISSED'
+                : null}
+            </Tag>
           ) : null}
         </div>
         {mode === 'compact' ? (

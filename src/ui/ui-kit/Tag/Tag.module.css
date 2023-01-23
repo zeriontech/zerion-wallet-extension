@@ -1,5 +1,21 @@
-.primary {
-  background-color: var(--neutral-200);
+.tag {
   padding: 4px 6px;
   border-radius: 6px;
+  display: flex;
+  align-items: center;
+}
+
+.primary {
+  background-color: var(--neutral-200);
+  color: var(--neutral-600);
+}
+
+.positive {
+  background-color: var(--positive-200);
+  color: var(--positive-500);
+}
+
+.negative {
+  background-color: var(--negative-200);
+  color: var(--negative-500);
 }

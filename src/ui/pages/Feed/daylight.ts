@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import ky from 'ky';
-import { useInfiniteQuery } from 'react-query';
+import { InfiniteData, useInfiniteQuery } from 'react-query';
 
 export type WalletAbilityType =
   | 'vote'
@@ -118,22 +118,23 @@ interface FilterParams extends Partial<StatusFilterParams> {
 async function getWalletAbilities({
   address,
   params,
+  limit,
   link,
 }: {
   address: string;
   params?: FilterParams;
+  limit?: number;
   link: string;
 }): Promise<WalletAbilitiesResponse> {
   const { type, ...rest } = params || { type: [] };
   const searchParams = new URLSearchParams([
-    ['limit', '10'],
-    ['sort', 'magic'],
+    ['limit', limit?.toString() || '10'],
     ...(type.map((item) => ['type', item]) || []),
     ...(Object.entries(rest) as [string, string][]),
   ]);
   const firstPageLink = `/v1/wallets/${address}/abilities?${searchParams}`;
   const result = await ky
-    .get(`https://api.daylight.xyz${link ?? firstPageLink}`)
+    .get(`https://api.daylight.xyz${link ?? firstPageLink}`, { timeout: 20000 })
     .json<WalletAbilitiesResponse>();
   return result;
 }
@@ -141,19 +142,28 @@ async function getWalletAbilities({
 export function useWalletAbilities({
   address,
   params,
+  limit,
+  onSuccess,
 }: {
   address: string;
   params: FilterParams;
+  limit?: number;
+  onSuccess?(data: InfiniteData<WalletAbilitiesResponse>): void;
 }) {
   const { data, ...result } = useInfiniteQuery(
     `wallet/abilities/${address}/${JSON.stringify(params)}`,
-    ({ pageParam = { address, params } }) => getWalletAbilities(pageParam),
+    ({ pageParam = { address, params, limit } }) =>
+      getWalletAbilities(pageParam),
     {
-      getNextPageParam: (lastPage) => ({ link: lastPage.links.next, address }),
+      getNextPageParam: (lastPage) =>
+        lastPage.links.next
+          ? { link: lastPage.links.next, address }
+          : undefined,
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       suspense: false,
       keepPreviousData: true,
+      onSuccess,
     }
   );
 
@@ -170,7 +180,7 @@ export function useWalletAbilities({
 
 export async function getAbility(uid: string) {
   const result = await ky
-    .get(`https://api.daylight.xyz/v1/abilities/${uid}`)
+    .get(`https://api.daylight.xyz/v1/abilities/${uid}`, { timeout: 20000 })
     .json<{ ability: WalletAbility }>();
   return result;
 }

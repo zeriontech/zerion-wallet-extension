@@ -60,25 +60,27 @@ export interface WalletRecordVersion2 {
   preferences: PublicPreferences;
 }
 
-interface WalletFeed {
-  lastSeenAbilityId: string;
-  dissmissedAbilities: WalletAbility[];
-  completedAbilities: WalletAbility[];
+export interface WalletRecordVersion3 {
+  version: 3;
+  walletManager: WalletManager;
+  permissions: Record<Origin, Permission>;
+  transactions: ethers.providers.TransactionResponse[];
+  publicPreferences: PublicPreferences;
 }
 
-interface WalletFeed {
-  lastSeenAbilityId: string;
+export interface WalletFeed {
+  lastSeenAbilityId: string | null;
   dissmissedAbilities: WalletAbility[];
   completedAbilities: WalletAbility[];
 }
 
 export interface WalletRecord {
-  version: 3;
+  version: 4;
   walletManager: WalletManager;
   permissions: Record<Origin, Permission>;
   transactions: ethers.providers.TransactionResponse[];
-  preferences: PublicPreferences;
-  feed?: WalletFeed;
+  publicPreferences: PublicPreferences;
+  feed: WalletFeed;
 }
 
 export interface PendingWallet {

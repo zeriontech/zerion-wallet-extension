@@ -3,7 +3,7 @@ import cn from 'classnames';
 import { UIText } from '../UIText';
 import * as styles from './Tag.module.css';
 
-type Kind = 'primary';
+type Kind = 'primary' | 'positive' | 'negative';
 
 export function Tag({
   children,
@@ -12,10 +12,8 @@ export function Tag({
   ...props
 }: React.HTMLAttributes<HTMLDivElement> & { kind?: Kind }) {
   return (
-    <div {...props} className={cn(className, styles[kind])}>
-      <UIText kind="caption/accent" color="var(--neutral-600)">
-        {children}
-      </UIText>
+    <div {...props} className={cn(className, styles.tag, styles[kind])}>
+      <UIText kind="caption/accent">{children}</UIText>
     </div>
   );
 }
