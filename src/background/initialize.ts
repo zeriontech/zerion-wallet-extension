@@ -1,5 +1,6 @@
 import { prepareStorage } from 'src/shared/core/version';
 import { initialize as dappRegistryInitialize } from 'src/shared/dapps';
+import { initializeRemoteConfig } from 'src/modules/remote-config';
 import { Account, AccountPublicRPC } from './account/Account';
 import { TransactionService } from './transactions/TransactionService';
 
@@ -24,6 +25,8 @@ export async function initialize() {
   const accountPublicRPC = new AccountPublicRPC(account);
   const transactionService = new TransactionService();
   await transactionService.initialize();
+
+  await initializeRemoteConfig();
 
   Object.assign(globalThis, {
     account,

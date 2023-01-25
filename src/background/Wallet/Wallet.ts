@@ -36,6 +36,7 @@ import { getTransactionChainId } from 'src/modules/ethereum/transactions/resolve
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { flagAsDapp, isFlaggedAsDapp } from 'src/shared/dapps';
 import { isKnownDapp } from 'src/shared/dapps/known-dapps';
+import { getRemoteConfigValue } from 'src/modules/remote-config';
 import { emitter } from '../events';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
@@ -595,6 +596,14 @@ export class Wallet {
     this.verifyInternalOrigin(context);
     await this.globalPreferences.ready();
     return this.globalPreferences.setPreferences(preferences);
+  }
+
+  async getRemoteConfigValue({
+    context,
+    params: { key },
+  }: WalletMethodParams<{ key: string }>) {
+    this.verifyInternalOrigin(context);
+    return getRemoteConfigValue(key);
   }
 
   async wallet_setWalletNameFlag({
