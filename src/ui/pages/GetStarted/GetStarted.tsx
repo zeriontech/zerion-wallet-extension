@@ -11,6 +11,7 @@ import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { FillView } from 'src/ui/components/FillView';
 import { AddressBadge } from 'src/ui/components/AddressBadge';
 import { useWalletGroups } from 'src/ui/shared/requests/useWalletGroups';
+import { walletPort } from 'src/ui/shared/channels';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
@@ -18,6 +19,7 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
 import { Background } from 'src/ui/components/Background';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
+import { useQuery } from 'react-query';
 import { ImportWallet } from './ImportWallet';
 import { GenerateWallet } from './GenerateWallet';
 
@@ -81,6 +83,15 @@ function Options() {
     [walletGroups]
   );
 
+  const { data: allowCreateWallet } = useQuery(
+    `wallet/getRemoteConfigValue(allow_create_wallet)`,
+    () =>
+      walletPort.request('getRemoteConfigValue', {
+        key: 'allow_create_wallet',
+      }),
+    { useErrorBoundary: true, suspense: true }
+  );
+
   if (isLoading) {
     return null;
   }
@@ -109,10 +120,12 @@ function Options() {
         </FillView>
 
         <VStack gap={16}>
-          <NewWalletOption
-            beforeCreate={beforeCreate}
-            mnemonicWalletGroups={mnemonicGroups || null}
-          />
+          {allowCreateWallet && (
+            <NewWalletOption
+              beforeCreate={beforeCreate}
+              mnemonicWalletGroups={mnemonicGroups || null}
+            />
+          )}
           <Button
             kind="regular"
             as={Link}

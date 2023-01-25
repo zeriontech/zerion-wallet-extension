@@ -2,6 +2,7 @@ import { prepareStorage } from 'src/shared/core/version';
 import { DnaService } from 'src/ui/components/DnaClaim/dna.background';
 import { initialize as dappRegistryInitialize } from 'src/shared/dapps';
 import { initialize as initializeAnalytics } from 'src/shared/analytics/analytics.background';
+import { initialize as initializeRemoteConfig } from 'src/modules/remote-config';
 import { Account, AccountPublicRPC } from './account/Account';
 import { TransactionService } from './transactions/TransactionService';
 
@@ -29,6 +30,8 @@ export async function initialize() {
   dnaService.initialize();
   await transactionService.initialize();
   initializeAnalytics({ account });
+
+  await initializeRemoteConfig();
 
   Object.assign(globalThis, {
     account,

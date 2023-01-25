@@ -117,9 +117,42 @@ function WalletGroups() {
       [SeedType, typeof grouped['string']]
     >;
   }, [walletGroups]);
+
+  const { data: allowCreateWallet } = useQuery(
+    `wallet/getRemoteConfigValue(allow_create_wallet)`,
+    () =>
+      walletPort.request('getRemoteConfigValue', {
+        key: 'allow_create_wallet',
+      }),
+    { useErrorBoundary: true, suspense: true }
+  );
+
   if (isLoading) {
     return null;
   }
+
+  const actionItems = [];
+  if (allowCreateWallet) {
+    actionItems.push({
+      key: 0,
+      to: '/get-started',
+      component: (
+        <UIText kind="small/regular" color="var(--primary)">
+          Create New Wallet
+        </UIText>
+      ),
+    });
+  }
+  actionItems.push({
+    key: 1,
+    to: '/get-started/import',
+    component: (
+      <UIText kind="small/regular" color="var(--primary)">
+        Import Wallet to Zerion
+      </UIText>
+    ),
+  });
+
   return (
     <PageColumn>
       {groupedBySeedType == null ? (
@@ -141,28 +174,7 @@ function WalletGroups() {
                 return <div>Unknown seed type</div>;
               }
             })}
-            <SurfaceList
-              items={[
-                {
-                  key: 0,
-                  to: '/get-started',
-                  component: (
-                    <UIText kind="small/regular" color="var(--primary)">
-                      Create New Wallet
-                    </UIText>
-                  ),
-                },
-                {
-                  key: 1,
-                  to: '/get-started/import',
-                  component: (
-                    <UIText kind="small/regular" color="var(--primary)">
-                      Import Wallet to Zerion
-                    </UIText>
-                  ),
-                },
-              ]}
-            />
+            <SurfaceList items={actionItems} />
             <EraseDataListButton textKind="small/regular" />
           </VStack>
         </>

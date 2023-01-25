@@ -44,6 +44,7 @@ import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { isSiweLike } from 'src/modules/ethereum/message-signing/SIWE';
 import { DaylightEventParams, emitter, ScreenViewParams } from '../events';
+import { getRemoteConfigValue } from 'src/modules/remote-config';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import { SeedType } from './model/SeedType';
@@ -650,6 +651,14 @@ export class Wallet {
       event_name: 'Perks: Reopen Tab Clicked',
       ability_id: abilityId,
     });
+  }
+
+  async getRemoteConfigValue({
+    context,
+    params: { key },
+  }: WalletMethodParams<{ key: string }>) {
+    this.verifyInternalOrigin(context);
+    return getRemoteConfigValue(key);
   }
 
   async wallet_setWalletNameFlag({
