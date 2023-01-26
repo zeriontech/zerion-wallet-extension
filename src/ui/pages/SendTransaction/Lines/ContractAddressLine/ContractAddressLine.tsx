@@ -24,7 +24,6 @@ export function ContractAddressLine({
       items={[
         {
           key: 0,
-          href: networks.getExplorerAddressUrlByName(chain, address),
           target: '_blank',
           rel: 'noopener noreferrer',
           component: (
