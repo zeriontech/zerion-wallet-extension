@@ -3,50 +3,56 @@ import {
   RemoteConfigParameter,
   RemoteConfigParameterValueType,
 } from './types';
-import { mockConfig } from './mock';
 import { FirebaseConfig, firebaseConfig } from './config';
 
-/**
- * Defines a successful response (200 or 304).
- */
-// interface FirebaseFetchResponse {
-//   /**
-//    * The HTTP status, which is useful for differentiating success responses with data from
-//    * those without.
-//    */
-//   status: number;
-//
-//   /**
-//    * Defines the ETag response header value.
-//    * Only defined to 204 and 304 reponses.
-//    */
-//   eTag?: string;
-//
-//   /**
-//    * Defines the map of parameters returned as "entries" in the fetch response body.
-//    * Only defined for 200 responses.
-//    */
-//   config?: FirebaseRemoteConfig;
-// }
+interface FetchRequest {
+  sdk_version: string;
+  app_instance_id: string;
+  app_instance_id_token: string;
+  app_id: string;
+  language_code: string;
+}
 
-export const defaultParameters: Record<string, RemoteConfigParameter> = {
-  extension_allow_create_wallet: {
-    defaultValue: { value: 'false' },
-    valueType: RemoteConfigParameterValueType.boolean,
-  },
-};
+function getInstallationId(config: FirebaseConfig): Promise<string> {
+  return Promise.resolve('fake-instance-id');
+}
 
-export const defaultConfig = {
-  version: {
-    versionNumber: '0.1.0',
-    updateTime: '12345678',
-  },
-  parameterGroups: {},
-  parameters: defaultParameters,
-};
+function getInstallationToken(config: FirebaseConfig): Promise<string> {
+  return Promise.resolve('fake-instance-token');
+}
 
-export function fetchRemoteConfig(): Promise<FirebaseRemoteConfig> {
-  return Promise.resolve(mockConfig);
+export async function fetchRemoteConfig(): Promise<FirebaseRemoteConfig | null> {
+  const baseURL = 'https://firebaseremoteconfig.googleapis.com';
+  const namespace = 'firebase';
+  const url = `${baseURL}/v1/projects/${firebaseConfig.projectId}/namespaces/${namespace}:fetch?key=${firebaseConfig.apiKey}`;
+  const headers = {
+    'Content-Type': 'application/json',
+    'Content-Encoding': 'gzip',
+    'If-None-Match': '*',
+  };
+
+  const instanceId = await getInstallationId(firebaseConfig);
+  const instanceToken = await getInstallationToken(firebaseConfig);
+
+  const request: FetchRequest = {
+    sdk_version: '7.20.0',
+    app_instance_id: instanceId,
+    app_instance_id_token: instanceToken,
+    app_id: firebaseConfig.appId,
+    language_code: 'en-US',
+  };
+  const options = {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(request),
+  };
+
+  const response = await fetch(url, options);
+  if (response.status === 200) {
+    const body = await response.json();
+    return body['entries'] as FirebaseRemoteConfig;
+  }
+  return null;
 }
 
 export function decodeValue(parameter: RemoteConfigParameter) {

@@ -1,2 +1,3 @@
-export type { FirebaseRemoteConfig } from './types';
-export { fetchRemoteConfig, defaultConfig, decodeValue } from './client';
+export type { FirebaseRemoteConfig, RemoteConfigParameter } from './types';
+export { RemoteConfigParameterValueType } from './types';
+export { fetchRemoteConfig, decodeValue } from './client';

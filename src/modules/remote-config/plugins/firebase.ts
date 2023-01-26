@@ -1,11 +1,29 @@
 import {
   decodeValue,
   fetchRemoteConfig,
-  defaultConfig,
   FirebaseRemoteConfig,
+  RemoteConfigParameter,
+  RemoteConfigParameterValueType,
 } from 'src/modules/firebase';
+
 import type { ConfigPlugin } from '../ConfigPlugin';
 import { promises, resolvers } from '../pluginSystem';
+
+const defaultParameters: Record<string, RemoteConfigParameter> = {
+  extension_allow_create_wallet: {
+    defaultValue: { value: 'false' },
+    valueType: RemoteConfigParameterValueType.boolean,
+  },
+};
+
+const defaultConfig = {
+  version: {
+    versionNumber: '0.1.0',
+    updateTime: '12345678',
+  },
+  parameterGroups: {},
+  parameters: defaultParameters,
+};
 
 let firebaseRemoteConfig: null | FirebaseRemoteConfig = null;
 
