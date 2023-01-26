@@ -2,6 +2,9 @@ import { useMemo } from 'react';
 import ky from 'ky';
 import { InfiniteData, useInfiniteQuery } from 'react-query';
 
+// const DAYLIGHT_API_URL = 'https://api.daylight.xyz';
+const LOCAL_DAYLIGHT_SERVER_URL = 'https://proxy.zerion.io/daylight';
+
 export type WalletAbilityType =
   | 'vote'
   | 'claim'
@@ -138,7 +141,9 @@ async function getWalletAbilities({
   ]);
   const firstPageLink = `/v1/wallets/${address}/abilities?${searchParams}`;
   const result = await ky
-    .get(`https://api.daylight.xyz${link ?? firstPageLink}`, { timeout: 20000 })
+    .get(`${LOCAL_DAYLIGHT_SERVER_URL}${link ?? firstPageLink}`, {
+      timeout: 20000,
+    })
     .json<WalletAbilitiesResponse>();
   return result;
 }
@@ -184,7 +189,7 @@ export function useWalletAbilities({
 
 export async function getAbility(uid: string) {
   const result = await ky
-    .get(`https://api.daylight.xyz/v1/abilities/${uid}`, { timeout: 20000 })
+    .get(`${LOCAL_DAYLIGHT_SERVER_URL}/v1/abilities/${uid}`, { timeout: 20000 })
     .json<{ ability: WalletAbility }>();
   return result;
 }
