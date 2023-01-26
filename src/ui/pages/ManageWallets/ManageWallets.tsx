@@ -132,7 +132,7 @@ function WalletGroups() {
   }
 
   const actionItems = [];
-  if (allowCreateWallet) {
+  if (allowCreateWallet === 'true') {
     actionItems.push({
       key: 0,
       to: '/get-started',

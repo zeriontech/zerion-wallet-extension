@@ -1,9 +1,10 @@
-import {
-  FirebaseRemoteConfig,
-  RemoteConfigParameter,
-  RemoteConfigParameterValueType,
-} from './types';
-import { FirebaseConfig, firebaseConfig } from './config';
+import { firebaseConfig } from './config';
+
+// Firebase Installation Id
+const FID = 'dGJKrFY0eS17nAuIX-u2US';
+// Firebase Installation Token
+const FIT =
+  'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBJZCI6IjE6MTE3MzI1NTk0NTU1OndlYjoyYmI4YWVlZjBmOGUxODJlMzljZTllIiwiZXhwIjoxNjc1MzQ2MTIxLCJmaWQiOiJkR0pLckZZMGVTMTduQXVJWC11MlVTIiwicHJvamVjdE51bWJlciI6MTE3MzI1NTk0NTU1fQ.AB2LPV8wRAIgD-mtLFsq7Jcjcp4V3I5yjXlFb4R7cXB4Rh27PlAoKOoCIEyu8h9CGVuN4GVdB_BYHDfmgYzL-1JFqzjd7nw82zoz';
 
 interface FetchRequest {
   sdk_version: string;
@@ -13,13 +14,7 @@ interface FetchRequest {
   language_code: string;
 }
 
-function getInstallationId(config: FirebaseConfig): Promise<string> {
-  return Promise.resolve('fake-instance-id');
-}
-
-function getInstallationToken(config: FirebaseConfig): Promise<string> {
-  return Promise.resolve('fake-instance-token');
-}
+export type FirebaseRemoteConfig = Record<string, string>;
 
 export async function fetchRemoteConfig(): Promise<FirebaseRemoteConfig | null> {
   const baseURL = 'https://firebaseremoteconfig.googleapis.com';
@@ -31,13 +26,10 @@ export async function fetchRemoteConfig(): Promise<FirebaseRemoteConfig | null> 
     'If-None-Match': '*',
   };
 
-  const instanceId = await getInstallationId(firebaseConfig);
-  const instanceToken = await getInstallationToken(firebaseConfig);
-
   const request: FetchRequest = {
     sdk_version: '7.20.0',
-    app_instance_id: instanceId,
-    app_instance_id_token: instanceToken,
+    app_instance_id: FID,
+    app_instance_id_token: FIT,
     app_id: firebaseConfig.appId,
     language_code: 'en-US',
   };
@@ -53,20 +45,4 @@ export async function fetchRemoteConfig(): Promise<FirebaseRemoteConfig | null> 
     return body['entries'] as FirebaseRemoteConfig;
   }
   return null;
-}
-
-export function decodeValue(parameter: RemoteConfigParameter) {
-  const value = parameter.defaultValue.value;
-  switch (parameter.valueType) {
-    case RemoteConfigParameterValueType.json:
-      return JSON.parse(value);
-    case RemoteConfigParameterValueType.number:
-      return Number(value);
-    case RemoteConfigParameterValueType.boolean:
-      return value.toLowerCase() === 'true';
-    case RemoteConfigParameterValueType.unspecified:
-    case RemoteConfigParameterValueType.string:
-    default:
-      return value;
-  }
 }
