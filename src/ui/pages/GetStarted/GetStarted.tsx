@@ -185,7 +185,7 @@ function Options() {
         <Spacer height={24} />
 
         <VStack gap={16}>
-          {allowCreateWallet && (
+          {allowCreateWallet === 'true' && (
             <NewWalletOption
               beforeCreate={beforeCreate}
               mnemonicWalletGroups={mnemonicGroups || null}
