@@ -27,7 +27,6 @@ export const firebase: ConfigPlugin = {
   initialize() {
     fetchRemoteConfig().then((config) => {
       remoteConfig = config;
-      console.log(config);
       resolvers.firebaseRemoteConfig();
     });
   },
