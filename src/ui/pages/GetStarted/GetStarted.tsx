@@ -120,7 +120,7 @@ function Options() {
         </FillView>
 
         <VStack gap={16}>
-          {allowCreateWallet === 'true' && (
+          {allowCreateWallet && (
             <NewWalletOption
               beforeCreate={beforeCreate}
               mnemonicWalletGroups={mnemonicGroups || null}

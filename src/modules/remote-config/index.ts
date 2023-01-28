@@ -1,6 +1,8 @@
 import { firebase as firebasePlugin } from './plugins/firebase';
 import { activatePlugins, registerConfigPlugin, get } from './pluginSystem';
 
+export { RemoteConfig } from './types';
+
 // Register plugins
 registerConfigPlugin(firebasePlugin);
 

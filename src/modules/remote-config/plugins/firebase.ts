@@ -1,12 +1,21 @@
-import { fetchRemoteConfig, FirebaseRemoteConfig } from 'src/modules/firebase';
 import type { ConfigPlugin } from '../ConfigPlugin';
 import { promises, resolvers } from '../pluginSystem';
+import { RemoteConfig } from '../types';
 
-const defaultConfig: FirebaseRemoteConfig = {
-  extension_allow_create_wallet: 'false',
+const REMOTE_CONFIG_API_URL = 'http://localhost:8080';
+
+const defaultConfig: RemoteConfig = {
+  allow_create_wallet: false,
 };
 
-let firebaseRemoteConfig: null | FirebaseRemoteConfig = null;
+async function fetchRemoteConfig(): Promise<RemoteConfig | undefined> {
+  const url = new URL('/remote-config', REMOTE_CONFIG_API_URL);
+  url.searchParams.append('prefix', 'extension_');
+  const response = await fetch(url);
+  return (await response.json()) as unknown as RemoteConfig;
+}
+
+let remoteConfig: RemoteConfig | undefined;
 
 export const firebase: ConfigPlugin = {
   onRegister() {
@@ -17,18 +26,18 @@ export const firebase: ConfigPlugin = {
 
   initialize() {
     fetchRemoteConfig().then((config) => {
-      firebaseRemoteConfig = config;
+      remoteConfig = config;
+      console.log(config);
       resolvers.firebaseRemoteConfig();
     });
   },
 
   /**
    * Reads the parameter value by a given key.
-   * The provded key should not include the "extension_' prefix.
    */
-  get(key: string) {
-    const config = firebaseRemoteConfig ?? defaultConfig;
-    const value = config[`extension_${key}`];
+  get(key: keyof RemoteConfig) {
+    const config = remoteConfig ?? defaultConfig;
+    const value = config[key];
     return { value };
   },
 };
