@@ -37,6 +37,7 @@ import { NetworkId } from 'src/modules/networks/NetworkId';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
+import { ViewEmpty } from 'src/ui/components/ViewEmpty';
 import * as s from './styles.module.css';
 
 function LineToParent({
@@ -493,15 +494,7 @@ export function Positions() {
     return null;
   }
   if (value.positions.length === 0) {
-    return (
-      <UIText
-        kind="subtitle/l_reg"
-        color="var(--neutral-500)"
-        style={{ textAlign: 'center' }}
-      >
-        No positions
-      </UIText>
-    );
+    return <ViewEmpty text="No assets yet" />;
   }
   return <PositionsList address={singleAddress} items={value.positions} />;
 }

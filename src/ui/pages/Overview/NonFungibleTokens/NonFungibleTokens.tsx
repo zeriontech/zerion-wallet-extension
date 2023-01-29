@@ -1,6 +1,7 @@
 import { AddressNFT, DataStatus } from 'defi-sdk';
 import React, { useMemo } from 'react';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
+import { ViewEmpty } from 'src/ui/components/ViewEmpty';
 import { ViewLoading } from 'src/ui/components/ViewLoading/ViewLoading';
 import { useAddressNfts } from 'src/ui/shared/requests/addressNfts/useAddressNftsWithDna';
 import { useAddressNftTotalValue } from 'src/ui/shared/requests/addressNfts/useAddressNftTotalValue';
@@ -119,15 +120,7 @@ export function NonFungibleTokens() {
     return null;
   }
   if (items.length === 0) {
-    return (
-      <UIText
-        kind="subtitle/l_reg"
-        color="var(--neutral-500)"
-        style={{ textAlign: 'center' }}
-      >
-        No nfts
-      </UIText>
-    );
+    return <ViewEmpty text="No NFTs yet" />;
   }
   return (
     <VStack gap={24}>
