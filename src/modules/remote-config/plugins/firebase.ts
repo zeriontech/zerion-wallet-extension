@@ -2,7 +2,7 @@ import type { ConfigPlugin } from '../ConfigPlugin';
 import { promises, resolvers } from '../pluginSystem';
 import { RemoteConfig } from '../types';
 
-const REMOTE_CONFIG_API_URL = 'http://localhost:8080';
+const REMOTE_CONFIG_API_URL = 'https://proxy.zerion.io';
 
 const defaultConfig: RemoteConfig = {
   allow_create_wallet: false,
