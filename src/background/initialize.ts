@@ -1,5 +1,6 @@
 import { prepareStorage } from 'src/shared/core/version';
 import { initialize as dappRegistryInitialize } from 'src/shared/dapps';
+import { initialize as initializeAnalytics } from 'src/shared/analytics/analytics.background';
 import { Account, AccountPublicRPC } from './account/Account';
 import { TransactionService } from './transactions/TransactionService';
 
@@ -24,6 +25,7 @@ export async function initialize() {
   const accountPublicRPC = new AccountPublicRPC(account);
   const transactionService = new TransactionService();
   await transactionService.initialize();
+  initializeAnalytics({ account });
 
   Object.assign(globalThis, {
     account,

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
-import type { PublicUser } from 'src/background/account/Account';
+import type { PublicUser } from 'src/shared/types/PublicUser';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { accountPublicRPCPort } from 'src/ui/shared/channels';

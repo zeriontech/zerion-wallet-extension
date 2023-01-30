@@ -3,10 +3,13 @@ import browser from 'webextension-polyfill';
 import { createRoot, Root } from 'react-dom/client';
 import { configureUIClient } from 'src/modules/defi-sdk';
 import { BackgroundScriptUpdateHandler } from 'src/shared/core/BackgroundScriptUpdateHandler';
+import { initializeClientAnalytics } from 'src/shared/analytics/analytics.client';
+import { HandshakeFailed } from 'src/shared/errors/errors';
 import { applyDrawFix } from './shared/applyDrawFix';
 import { App } from './App';
 import { initialize as initializeChannels } from './shared/channels';
 import { queryClient } from './shared/requests/queryClient';
+import { emitter } from './shared/events';
 
 applyDrawFix();
 
@@ -34,6 +37,7 @@ async function initializeUI(opts?: { handshakeFailure?: boolean }) {
     .then(() => initializeChannels())
     .then(() => queryClient.clear())
     .then(() => configureUIClient())
+    .then(() => initializeClientAnalytics())
     .then(() => {
       if (reactRoot) {
         reactRoot.unmount();
@@ -57,6 +61,7 @@ async function handleFailedHandshake() {
   // const registration = await navigator.serviceWorker.getRegistration();
   // await registration?.unregister();
   // window.location.reload(); // MUST reload to be able to register new service worker
+  emitter.emit('error', new HandshakeFailed());
   initializeUI({ handshakeFailure: true });
 }
 

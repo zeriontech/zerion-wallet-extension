@@ -1,1 +1,1 @@
-export type { PublicUser } from 'src/background/account/Account';
+export type { PublicUser } from 'src/background/account/types';

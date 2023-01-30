@@ -6,6 +6,11 @@ export const queryClient = new QueryClient({
     queries: {
       suspense: true,
     },
+    mutations: {
+      onError(error, variables, context) {
+        emitter.emit('mutationError', error, variables, context);
+      },
+    },
   },
 });
 

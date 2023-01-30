@@ -7,15 +7,8 @@ import { validate } from 'src/shared/validation/user-input';
 import { eraseAndUpdateToLatestVersion } from 'src/shared/core/version';
 import { Wallet } from '../Wallet/Wallet';
 import { WalletStore } from '../Wallet/persistence';
-
-interface User {
-  id: string;
-  salt: string;
-}
-
-export interface PublicUser {
-  id: User['id'];
-}
+import { credentialsKey, currentUserKey } from './storage-keys';
+import type { PublicUser, User } from './types';
 
 const TEMPORARY_ID = 'temporary';
 
@@ -54,27 +47,27 @@ export class Account extends EventEmitter<AccountEvents> {
   isPendingNewUser: boolean;
 
   private static async writeCurrentUser(user: User) {
-    await browserStorage.set('currentUser', user);
+    await browserStorage.set(currentUserKey, user);
   }
 
   private static async writeCredentials(credentials: Credentials) {
-    await browserStorage.set('credentials', credentials);
+    await browserStorage.set(credentialsKey, credentials);
   }
 
   private static async readCredentials() {
-    return await browserStorage.get<Credentials>('credentials');
+    return await browserStorage.get<Credentials>(credentialsKey);
   }
 
   private static async removeCredentials() {
-    return await browserStorage.remove('credentials');
+    return await browserStorage.remove(credentialsKey);
   }
 
   static async readCurrentUser() {
-    return browserStorage.get<User>('currentUser');
+    return browserStorage.get<User>(currentUserKey);
   }
 
   private static async removeCurrentUser() {
-    await browserStorage.remove('currentUser');
+    await browserStorage.remove(currentUserKey);
   }
 
   static async ensureUserAndWallet() {

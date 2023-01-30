@@ -1,5 +1,5 @@
 import { isTruthy } from 'is-truthy-ts';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useQuery } from 'react-query';
 import { ethers } from 'ethers';
 import { getNetworkFeeEstimation } from 'src/modules/ethereum/transactions/gasPrices/feeEstimation';
@@ -59,9 +59,11 @@ function getFeeTypeTitle(type: keyof ChainGasPrice['info'] | undefined) {
 export function NetworkFee({
   transaction,
   chain,
+  onFeeValueCommonReady,
 }: {
   transaction: IncomingTransaction;
   chain: Chain;
+  onFeeValueCommonReady: (value: string) => void;
 }) {
   const gas = getGas(transaction);
   if (!gas) {
@@ -155,6 +157,12 @@ export function NetworkFee({
           price?.value != null ? totalValueCommon.times(price.value) : null,
       };
     }, [chain, feeEstimation, nativeAsset, transaction.value]);
+
+  useEffect(() => {
+    if (feeValueCommon) {
+      onFeeValueCommonReady?.(feeValueCommon.toString());
+    }
+  }, [feeValueCommon, onFeeValueCommonReady]);
   return (
     <HStack gap={8} justifyContent="space-between">
       <VStack gap={4}>

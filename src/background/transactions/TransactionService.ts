@@ -66,10 +66,11 @@ export class TransactionService {
   }
 
   addListeners() {
-    emitter.on('pendingTransactionCreated', (transaction) => {
+    emitter.on('transactionSent', ({ transaction, initiator }) => {
       const newItem = {
         transaction,
         hash: transaction.hash,
+        initiator,
         timestamp: Date.now(),
       };
       this.waitForTransaction(newItem);
@@ -103,22 +104,26 @@ export class TransactionService {
 }
 
 function testAddTransaction() {
-  emitter.emit('pendingTransactionCreated', {
-    accessList: [],
-    chainId: 137,
-    confirmations: 0,
-    data: '0x095ea7b3000000000000000000000000d7f1dd5d49206349cae8b585fcb0ce3d96f1696fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
-    from: '0x42b9dF65B219B3dD36FF330A4dD8f327A6Ada990',
-    gasLimit: {},
-    gasPrice: null,
-    hash: DEBUGGING_TX_HASH,
-    maxFeePerGas: {},
-    maxPriorityFeePerGas: {},
-    nonce: 239,
-    to: '0xd7F1Dd5D49206349CaE8b585fcB0Ce3D96f1696F',
-    type: 2,
-    value: {},
-  } as unknown as ethers.providers.TransactionResponse);
+  emitter.emit('transactionSent', {
+    transaction: {
+      accessList: [],
+      chainId: 137,
+      confirmations: 0,
+      data: '0x095ea7b3000000000000000000000000d7f1dd5d49206349cae8b585fcb0ce3d96f1696fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+      from: '0x42b9dF65B219B3dD36FF330A4dD8f327A6Ada990',
+      gasLimit: ethers.BigNumber.from(1337),
+      gasPrice: null,
+      hash: DEBUGGING_TX_HASH,
+      maxFeePerGas: {},
+      maxPriorityFeePerGas: {},
+      nonce: 239,
+      to: '0xd7F1Dd5D49206349CaE8b585fcB0Ce3D96f1696F',
+      type: 2,
+      value: {},
+    } as unknown as ethers.providers.TransactionResponse,
+    initiator: 'https://app.zerion.io',
+    feeValueCommon: '0.123',
+  });
 }
 
 Object.assign(globalThis, { testAddTransaction });
