@@ -7,7 +7,7 @@ export function ViewEmpty({
   emoji = '🥺',
   text,
 }: {
-  emoji?: string;
+  emoji?: React.ReactNode;
   text: string;
 }) {
   return (
