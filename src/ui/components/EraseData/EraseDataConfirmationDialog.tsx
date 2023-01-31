@@ -2,7 +2,6 @@ import React from 'react';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
-import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Toggle } from 'src/ui/ui-kit/Toggle';
@@ -58,7 +57,6 @@ export const EraseDataConfirmationDialog = React.forwardRef(
         style={{ height: 'max-content', minHeight: '48vh' }}
         ref={ref}
       >
-        <DialogTitle title={null} />
         <ResetWarningForm />
       </BottomSheetDialog>
     );
