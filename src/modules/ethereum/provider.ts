@@ -208,7 +208,6 @@ export class EthereumProvider extends JsonRpcProvider {
     if (this.connection === connection && this.connection.connected) return;
     if (this.connection.connected) this.close();
     this.connection = connection; // this.setConnection();
-    await this._prepareState();
     await Promise.all([this.connection.open(), this._prepareState()]);
     this.connection.on('payload', (payload: JsonRpcPayload) => {
       this.onPayload(payload);
