@@ -148,6 +148,7 @@ initialize().then(({ account, accountPublicRPC }) => {
   emitter.on('sessionExpired', () => account.logout());
 });
 
+// we init our in-page script here to make in run before the page code
 chrome.scripting.registerContentScripts([
   {
     id: 'zerion-extension',

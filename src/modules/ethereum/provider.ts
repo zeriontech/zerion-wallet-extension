@@ -52,7 +52,6 @@ export class EthereumProvider extends JsonRpcProvider {
     this.shimLegacy();
     this.chainId = '0x1';
     this.networkVersion = '1';
-    // this.accounts = undefined;
 
     connection.on(
       'ethereumEvent',
