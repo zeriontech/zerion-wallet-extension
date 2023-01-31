@@ -61,12 +61,13 @@ jobs:
           payload: |
             {
               "text": "Build succeeded",
+              "icon-emoji": ":nyancat:",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": ":rocket: <${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> ${{ github.pull_request.draft && ':construction' || '' }}"
+                    "text": "<${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> ${{ github.pull_request.draft && ':construction' || '' }}"
                   }
                 },
                 {
@@ -96,13 +97,14 @@ jobs:
           payload: |
             {
               "text": "Build failed",
+              "icon-emoji": ":cry-cat:",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
                     "type": "plain_text",
-                    "text": ":x: <${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> ${{ github.pull_request.draft && ':construction' || '' }}"
+                    "text": "<${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> ${{ github.pull_request.draft && ':construction' || '' }}"
                   }
                 },
                 {
