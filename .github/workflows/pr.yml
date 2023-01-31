@@ -44,7 +44,6 @@ jobs:
         run: |
           mv dist zerion-wallet-extension-${{github.sha}}
           zip -r zerion-wallet-extension-${{github.sha}}.zip zerion-wallet-extension-${{github.sha}}
-          tar czf zerion-wallet-extension-${{github.sha}}.tar.gz --directory=zerion-wallet-extension-${{github.sha}} .
 
       - name: Upload build
         if: ${{ success() }}
