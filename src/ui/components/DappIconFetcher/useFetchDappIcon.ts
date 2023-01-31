@@ -30,6 +30,7 @@ export function useFetchDappIcon(url: string) {
       return extractFaviconUrl(url, html);
     },
     {
+      suspense: false,
       retry: false,
       refetchOnMount: false,
       refetchOnWindowFocus: false,

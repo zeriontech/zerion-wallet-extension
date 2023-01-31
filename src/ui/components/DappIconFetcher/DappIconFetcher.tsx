@@ -1,6 +1,6 @@
 import { useFetchDappIcon } from './useFetchDappIcon';
 
-type IconRenderer = (src: string) => JSX.Element;
+type IconRenderer = (src: string | null) => JSX.Element;
 
 interface Props {
   url: string;
@@ -10,7 +10,7 @@ interface Props {
 export function DappIconFetcher({ url: dappUrl, render }: Props) {
   const { data: iconUrl, isLoading } = useFetchDappIcon(dappUrl);
   if (isLoading) {
-    return null;
+    return render(null);
   }
   const src = iconUrl || `${dappUrl}/favicon.png`;
   return render(src);
