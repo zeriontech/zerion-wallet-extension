@@ -49,7 +49,7 @@ jobs:
           payload: |
             {
               "text": "New release",
-              "icon-emoji": ":gift:",
+              "icon_emoji": ":gift:",
               "blocks": [
                 {
                   "type": "section",

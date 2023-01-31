@@ -61,7 +61,7 @@ jobs:
           payload: |
             {
               "text": "Build succeeded",
-              "icon-emoji": ":nyancat:",
+              "icon_emoji": ":nyancat:",
               "blocks": [
                 {
                   "type": "section",
@@ -97,7 +97,7 @@ jobs:
           payload: |
             {
               "text": "Build failed",
-              "icon-emoji": ":cry-cat:",
+              "icon_emoji": ":cry-cat:",
               "blocks": [
                 {
                   "type": "section",
