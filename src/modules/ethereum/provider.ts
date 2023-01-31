@@ -38,7 +38,7 @@ function updateChainId(self: EthereumProvider, chainId: string) {
 }
 
 export class EthereumProvider extends JsonRpcProvider {
-  accounts?: string[];
+  accounts: string[];
   chainId: string;
   networkVersion: string;
   isZerion = true;
@@ -52,6 +52,7 @@ export class EthereumProvider extends JsonRpcProvider {
     this.shimLegacy();
     this.chainId = '0x1';
     this.networkVersion = '1';
+    this.accounts = [];
 
     connection.on(
       'ethereumEvent',
@@ -70,7 +71,7 @@ export class EthereumProvider extends JsonRpcProvider {
         if (event === 'accountsChanged' && Array.isArray(value)) {
           // it's okay to perform search like this because `this.accounts`
           // always has at most one element
-          if (accountsEquals(value, this.accounts || [])) {
+          if (accountsEquals(value, this.accounts)) {
             // Do not emit accountChanged because value hasn't changed
             return;
           } else {
@@ -113,7 +114,7 @@ export class EthereumProvider extends JsonRpcProvider {
     if (request.method === 'eth_chainId') {
       return Promise.resolve(this.chainId);
     }
-    if (request.method === 'eth_accounts' && this.accounts) {
+    if (request.method === 'eth_accounts' && this.accounts.length) {
       return Promise.resolve(this.accounts);
     }
     return this._getRequestPromise(

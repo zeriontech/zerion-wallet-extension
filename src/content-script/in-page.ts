@@ -14,14 +14,16 @@ declare global {
   }
 }
 
-const scriptWithId = document.getElementById('zerion-extension');
+const scriptWithId = document.getElementById('zerion-extension-channel');
 if (!scriptWithId) {
   throw new Error('script with id not found');
 }
 
 const walletChannelId = scriptWithId.dataset.walletChannelId;
 if (!walletChannelId) {
-  throw new Error('no wallet channel id was found in script tag');
+  throw new Error(
+    'walletChannelId must be defined as a data attribute on the script tag'
+  );
 }
 
 const broadcastChannel = new BroadcastChannel(walletChannelId);

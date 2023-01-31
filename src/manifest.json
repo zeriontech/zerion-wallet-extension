@@ -51,9 +51,9 @@
   "permissions": [
     "activeTab",
     "alarms",
+    "scripting",
     "storage",
-    "unlimitedStorage",
-    "scripting"
+    "unlimitedStorage"
   ],
   "host_permissions": ["http://*/*", "https://*/*"]
 }
