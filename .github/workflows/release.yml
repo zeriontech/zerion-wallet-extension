@@ -39,3 +39,34 @@ jobs:
         with:
           generateReleaseNotes: true
           artifacts: 'zerion-wallet-extension-${{github.ref_name}}.zip,zerion-wallet-extension-${{github.ref_name}}.tar.gz'
+
+      - name: Notify release
+        id: notify-release
+        if: ${{ success() }}
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: 'C04JLLQRB43'
+          payload: |
+            {
+              "text": "New release",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":gift: <${{ format('{0}/{1}/releases/tag/{2}', github.server_url, github.repository, github.ref_name)}}|${{ github.ref_name }}>"
+                  }
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Created by:* ${{ github.triggering_actor }}"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_AUTH_TOKEN }}
