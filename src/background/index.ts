@@ -147,3 +147,14 @@ initialize().then(({ account, accountPublicRPC }) => {
 
   emitter.on('sessionExpired', () => account.logout());
 });
+
+chrome.scripting.registerContentScripts([
+  {
+    id: 'zerion-extension',
+    // @ts-ignore
+    js: browser.runtime.getManifest().web_accessible_resources?.[0].resources,
+    matches: ['<all_urls>'],
+    world: 'MAIN',
+    runAt: 'document_start',
+  },
+]);

@@ -14,16 +14,16 @@ declare global {
   }
 }
 
-const currentScript = document.currentScript;
-if (!currentScript) {
-  throw new Error('document.currentScript not found');
+const scriptWithId = document.getElementById('zerion-extension');
+if (!scriptWithId) {
+  throw new Error('script with id not found');
 }
-const walletChannelId = currentScript.dataset.walletChannelId;
+
+const walletChannelId = scriptWithId.dataset.walletChannelId;
 if (!walletChannelId) {
-  throw new Error(
-    'walletChannelId must be defined as a data attribute on the script tag'
-  );
+  throw new Error('no wallet channel id was found in script tag');
 }
+
 const broadcastChannel = new BroadcastChannel(walletChannelId);
 const connection = new Connection(broadcastChannel);
 const provider = new EthereumProvider(connection);

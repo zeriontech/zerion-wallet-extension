@@ -42,5 +42,18 @@
       "run_at": "document_start"
     }
   ],
-  "permissions": ["activeTab", "alarms", "storage", "unlimitedStorage"]
+  "web_accessible_resources": [
+    {
+      "resources": ["content-script/in-page.ts"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "permissions": [
+    "activeTab",
+    "alarms",
+    "storage",
+    "unlimitedStorage",
+    "scripting"
+  ],
+  "host_permissions": ["http://*/*", "https://*/*"]
 }
