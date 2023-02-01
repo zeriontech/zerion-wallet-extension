@@ -420,10 +420,8 @@ export function Feed() {
   );
 
   const {
-    data,
+    data: feedData,
     refetch,
-    completedSet,
-    dismissedSet,
     isFetching: isLocalFetching,
   } = useFeedInfo();
 
@@ -452,7 +450,9 @@ export function Feed() {
         return;
       }
       const filteredAbilities = lastPage.abilities.filter(
-        (item) => !dismissedSet.has(item.uid) && !completedSet.has(item.uid)
+        (item) =>
+          !feedData?.dismissedSet.has(item.uid) &&
+          !feedData?.completedSet.has(item.uid)
       );
       if (filteredAbilities.length < ABILITIES_PER_PAGE / 2) {
         fetchNextPage({
@@ -465,16 +465,16 @@ export function Feed() {
 
   const abilities = useMemo(() => {
     if (statusFilter === 'completed') {
-      return data?.completedAbilities || [];
+      return feedData?.feed.completedAbilities || [];
     }
     if (statusFilter === 'dismissed') {
-      return data?.dismissedAbilities || [];
+      return feedData?.feed.dismissedAbilities || [];
     }
     if (statusFilter === 'expired') {
       return value?.filter((item) => item.isClosed) || [];
     }
     return value;
-  }, [data, value, statusFilter]);
+  }, [feedData, value, statusFilter]);
 
   const fetching =
     ((isFetchingNextPage || isFetching) &&
@@ -519,9 +519,9 @@ export function Feed() {
                 onMark={refetch}
                 filter={statusFilter}
                 status={
-                  completedSet.has(ability.uid)
+                  feedData?.completedSet.has(ability.uid)
                     ? 'completed'
-                    : dismissedSet.has(ability.uid)
+                    : feedData?.dismissedSet.has(ability.uid)
                     ? 'dismissed'
                     : null
                 }

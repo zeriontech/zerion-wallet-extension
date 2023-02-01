@@ -33,10 +33,10 @@ async function getWalletAbilities({
   limit,
   link,
 }: {
-  address: string;
+  address?: string;
   params?: FilterParams;
   limit?: number;
-  link: string;
+  link?: string;
 }): Promise<WalletAbilitiesResponse> {
   const { type, ...rest } = params || { type: [] };
   const searchParams = new URLSearchParams([
@@ -70,9 +70,7 @@ export function useWalletAbilities({
       getWalletAbilities(pageParam),
     {
       getNextPageParam: (lastPage) =>
-        lastPage.links.next
-          ? { link: lastPage.links.next, address }
-          : undefined,
+        lastPage.links.next ? { link: lastPage.links.next } : undefined,
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       suspense: false,

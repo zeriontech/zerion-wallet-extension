@@ -568,7 +568,7 @@ export class WalletRecordModel {
     });
   }
 
-  static getFeedInfo(record: WalletRecord): Partial<WalletFeed> {
+  static getFeedInfo(record: WalletRecord): WalletFeed {
     return record.feed;
   }
 

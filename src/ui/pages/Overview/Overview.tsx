@@ -285,14 +285,7 @@ function OverviewComponent() {
             </ViewSuspense>
           }
         />
-        <Route
-          path="/feed"
-          element={
-            <ViewSuspense>
-              <Feed />
-            </ViewSuspense>
-          }
-        />
+        <Route path="/feed" element={<Feed />} />
       </Routes>
       <PageBottom />
     </PageColumn>

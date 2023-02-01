@@ -1,21 +1,17 @@
-import { useMemo } from 'react';
 import { useQuery } from 'react-query';
 import { walletPort } from 'src/ui/shared/channels';
 import type { WalletAbility } from 'src/shared/types/Daylight';
 
 export function useFeedInfo() {
-  const { data, ...queryResult } = useQuery(`getWalletFeed`, () =>
-    walletPort.request('getFeedInfo')
-  );
-  const completedSet = useMemo(
-    () => new Set(data?.completedAbilities?.map((item) => item.uid) || []),
-    [data]
-  );
-  const dismissedSet = useMemo(
-    () => new Set(data?.dismissedAbilities?.map((item) => item.uid) || []),
-    [data]
-  );
-  return { ...queryResult, data, completedSet, dismissedSet };
+  return useQuery('getFeedInfo', async () => {
+    const feed = await walletPort.request('getFeedInfo');
+    const { completedAbilities, dismissedAbilities } = feed;
+    return {
+      feed,
+      completedSet: new Set(completedAbilities.map((item) => item.uid)),
+      dismissedSet: new Set(dismissedAbilities.map((item) => item.uid)),
+    };
+  });
 }
 
 export async function markAbility(params: {

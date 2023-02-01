@@ -155,7 +155,7 @@ export function AbilityPage() {
     return getAbilityLinkTitle(data?.ability);
   }, [data]);
 
-  const { completedSet, dismissedSet, refetch, isFetching } = useFeedInfo();
+  const { data: feedData, refetch, isFetching } = useFeedInfo();
 
   const { mutate: mark, isLoading: markLoading } = useMutation(
     ({
@@ -196,12 +196,12 @@ export function AbilityPage() {
 
   const status = useMemo(
     () =>
-      completedSet.has(ability_uid)
+      feedData?.completedSet.has(ability_uid)
         ? 'completed'
-        : dismissedSet.has(ability_uid)
+        : feedData?.dismissedSet.has(ability_uid)
         ? 'dismissed'
         : null,
-    [completedSet, dismissedSet, ability_uid]
+    [feedData, ability_uid]
   );
 
   const loading = markLoading || unmarkLoading;
