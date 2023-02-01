@@ -190,6 +190,12 @@ export class WalletRecordModel {
     return produce(record, (draft) => {
       const { walletContainer } = pendingWallet;
       const { seedType } = walletContainer;
+      if (!draft.feed.completedAbilities) {
+        draft.feed.completedAbilities = [];
+      }
+      if (!draft.feed.dismissedAbilities) {
+        draft.feed.dismissedAbilities = [];
+      }
       if (seedType === SeedType.privateKey) {
         const { privateKey } = walletContainer.getFirstWallet();
         const existingGroup = draft.walletManager.groups.find(
