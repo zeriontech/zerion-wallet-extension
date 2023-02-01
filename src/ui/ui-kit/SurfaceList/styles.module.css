@@ -20,6 +20,10 @@
   padding-block: 6px;
 }
 
+.option.highlighted .decoration {
+  background-color: var(--neutral-200);
+}
+
 @media (hover: hover) {
   .option:hover .decoration {
     background-color: var(--neutral-200);

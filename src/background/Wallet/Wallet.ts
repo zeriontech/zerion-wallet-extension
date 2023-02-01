@@ -36,8 +36,8 @@ import { getTransactionChainId } from 'src/modules/ethereum/transactions/resolve
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { flagAsDapp, isFlaggedAsDapp } from 'src/shared/dapps';
 import { isKnownDapp } from 'src/shared/dapps/known-dapps';
+import type { WalletAbility } from 'src/shared/types/Daylight';
 import { emitter } from '../events';
-import type { WalletAbility } from './../../ui/pages/Feed/daylight';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import { SeedType } from './model/SeedType';
@@ -602,9 +602,7 @@ export class Wallet {
     context,
   }: WalletMethodParams): Promise<ReturnType<typeof Model.getFeedInfo>> {
     this.verifyInternalOrigin(context);
-    if (!this.record) {
-      return {};
-    }
+    this.ensureRecord(this.record);
     return Model.getFeedInfo(this.record);
   }
 

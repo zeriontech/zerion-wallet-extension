@@ -9,7 +9,7 @@ import { Button } from 'src/ui/ui-kit/Button';
 import FiltersIcon from 'jsx:src/ui/assets/filters.svg';
 import DoubleCheckIcon from 'jsx:src/ui/assets/check_double.svg';
 import CloseIcon from 'jsx:src/ui/assets/close.svg';
-import LinkIcon from 'jsx:src/ui/assets/link.svg';
+import LinkIcon from 'jsx:src/ui/assets/new-window.svg';
 import SyncIcon from 'jsx:src/ui/assets/sync.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -17,12 +17,12 @@ import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useNavigationState } from 'src/ui/shared/useNavigationState';
-import { getAbilityLinkTitle, useWalletAbilities } from './daylight';
 import type {
   WalletAbility,
   WalletAbilityType,
-  StatusFilterParams,
-} from './daylight';
+} from 'src/shared/types/Daylight';
+import { getAbilityLinkTitle, useWalletAbilities } from './daylight';
+import type { StatusFilterParams } from './daylight';
 import { Ability } from './Ability/Ability';
 import { markAbility, unmarkAbility, useFeedInfo } from './stored';
 import * as styles from './styles.module.css';
@@ -96,12 +96,7 @@ function StatusFilter({
             separatorTop: false,
             component: (
               <SurfaceItemButton
-                style={{
-                  backgroundColor:
-                    highlightedIndex === index
-                      ? 'var(--neutral-200)'
-                      : undefined,
-                }}
+                highlighted={highlightedIndex === index}
                 {...getItemProps({ item, index })}
               >
                 <HStack gap={4} justifyContent="space-between">
@@ -251,12 +246,7 @@ function TypeFilter({
             separatorTop: false,
             component: (
               <SurfaceItemButton
-                style={{
-                  backgroundColor:
-                    highlightedIndex === index
-                      ? 'var(--neutral-200)'
-                      : undefined,
-                }}
+                highlighted={highlightedIndex === index}
                 {...getItemProps({ item, index })}
               >
                 <HStack gap={4} justifyContent="space-between">
@@ -478,7 +468,7 @@ export function Feed() {
       return data?.completedAbilities || [];
     }
     if (statusFilter === 'dismissed') {
-      return data?.dissmissedAbilities || [];
+      return data?.dismissedAbilities || [];
     }
     if (statusFilter === 'expired') {
       return value?.filter((item) => item.isClosed) || [];

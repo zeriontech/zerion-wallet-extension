@@ -7,7 +7,7 @@ import { Tag } from 'src/ui/ui-kit/Tag';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
-import type { WalletAbility } from '../daylight';
+import type { WalletAbility } from 'src/shared/types/Daylight';
 
 export function Ability({
   ability,
@@ -37,6 +37,21 @@ export function Ability({
     return null;
   }, [ability]);
 
+  const dateTitle = useMemo(() => {
+    if (ability.closeAt) {
+      return `${ability.isClosed ? 'Closed' : 'Closes'} ${dayjs(
+        ability.closeAt
+      )}`;
+    }
+    if (ability.openAt) {
+      return `Opened ${dayjs(ability.openAt)}`;
+    }
+    if (ability.createdAt) {
+      return `Created ${dayjs(ability.createdAt)}`;
+    }
+    return undefined;
+  }, [ability]);
+
   return (
     <VStack gap={8}>
       <VStack gap={12}>
@@ -55,21 +70,21 @@ export function Ability({
             </Tag>
           ) : null}
         </div>
-        {mode === 'compact' ? (
-          <UIText
-            kind="headline/h2"
-            style={{
-              display: '-webkit-box',
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-            }}
-          >
-            {ability.title}
-          </UIText>
-        ) : (
-          <UIText kind="headline/h2">{ability.title}</UIText>
-        )}
+        <UIText
+          kind="headline/h2"
+          style={
+            mode === 'compact'
+              ? {
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }
+              : undefined
+          }
+        >
+          {ability.title}
+        </UIText>
       </VStack>
       <HStack gap={16} justifyContent="space-between" alignItems="center">
         <VStack gap={8}>
@@ -118,6 +133,7 @@ export function Ability({
             color={
               ability.isClosed ? 'var(--negative-500)' : 'var(--neutral-600)'
             }
+            title={dateTitle}
           >
             {dateString}
           </UIText>
@@ -135,7 +151,7 @@ export function Ability({
           {ability.description}
         </UIText>
       ) : (
-        <UIText kind="body/regular">{ability.description}...</UIText>
+        <UIText kind="body/regular">{ability.description}</UIText>
       )}
     </VStack>
   );

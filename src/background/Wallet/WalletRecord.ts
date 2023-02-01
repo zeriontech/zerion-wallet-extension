@@ -7,7 +7,7 @@ import { stableDecrypt } from 'src/modules/crypto';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getIndexFromPath } from 'src/shared/wallet/getNextAccountPath';
 import { NetworkId } from 'src/modules/networks/NetworkId';
-import type { WalletAbility } from './../../ui/pages/Feed/daylight';
+import type { WalletAbility } from 'src/shared/types/Daylight';
 import { SeedType } from './model/SeedType';
 import type {
   BareWallet,
@@ -182,7 +182,7 @@ export class WalletRecordModel {
         publicPreferences: {},
         feed: {
           completedAbilities: [],
-          dissmissedAbilities: [],
+          dismissedAbilities: [],
           lastSeenAbilityId: null,
         },
       };
@@ -583,23 +583,15 @@ export class WalletRecordModel {
     }: { ability: WalletAbility; action: 'dismiss' | 'complete' }
   ) {
     return produce(record, (draft) => {
-      if (action === 'complete') {
-        if (
-          !draft.feed.completedAbilities.some(
-            (item) => item.uid === ability.uid
-          )
-        ) {
-          draft.feed.completedAbilities.unshift(ability);
-        }
-      }
-      if (action === 'dismiss') {
-        if (
-          !draft.feed.dissmissedAbilities.some(
-            (item) => item.uid === ability.uid
-          )
-        ) {
-          draft.feed.dissmissedAbilities.unshift(ability);
-        }
+      const { completedAbilities, dismissedAbilities } = draft.feed;
+      const abilities =
+        action === 'complete'
+          ? completedAbilities
+          : action === 'dismiss'
+          ? dismissedAbilities
+          : undefined;
+      if (!abilities?.some((item) => item.uid === ability.uid)) {
+        abilities?.unshift(ability);
       }
     });
   }
@@ -609,17 +601,17 @@ export class WalletRecordModel {
     { abilityId }: { abilityId: string }
   ) {
     return produce(record, (draft) => {
-      const completedIndex = draft.feed.completedAbilities.findIndex(
+      const completedIndex = draft.feed.completedAbilities?.findIndex(
         (item) => item.uid === abilityId
       );
-      const dismissedIndex = draft.feed.dissmissedAbilities.findIndex(
+      const dismissedIndex = draft.feed.dismissedAbilities?.findIndex(
         (item) => item.uid === abilityId
       );
       if (completedIndex >= 0) {
         draft.feed.completedAbilities.splice(completedIndex, 1);
       }
       if (dismissedIndex >= 0) {
-        draft.feed.dissmissedAbilities.splice(dismissedIndex, 1);
+        draft.feed.dismissedAbilities.splice(dismissedIndex, 1);
       }
     });
   }

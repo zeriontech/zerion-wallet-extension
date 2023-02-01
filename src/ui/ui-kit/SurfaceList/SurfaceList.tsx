@@ -1,4 +1,5 @@
 import React from 'react';
+import cn from 'classnames';
 import { LinkProps } from 'react-router-dom';
 import { Surface } from '../Surface/Surface';
 import { UnstyledAnchor } from '../UnstyledAnchor';
@@ -61,12 +62,13 @@ export const ItemButton = React.forwardRef<
   {
     children: React.ReactNode;
     style?: React.CSSProperties;
+    highlighted?: boolean;
   } & React.ButtonHTMLAttributes<HTMLButtonElement>
->(({ children, style, ...props }, ref) => {
+>(({ children, style, highlighted, ...props }, ref) => {
   return (
     <UnstyledButton
       style={{ color: 'inherit', ...style }}
-      className={s.option}
+      className={cn(s.option, highlighted ? s.highlighted : undefined)}
       ref={ref}
       {...props}
     >

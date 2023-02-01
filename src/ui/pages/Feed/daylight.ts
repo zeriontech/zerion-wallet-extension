@@ -1,108 +1,13 @@
 import { useMemo } from 'react';
 import ky from 'ky';
 import { InfiniteData, useInfiniteQuery } from 'react-query';
+import type {
+  WalletAbility,
+  WalletAbilityType,
+} from 'src/shared/types/Daylight';
 
 // const DAYLIGHT_API_URL = 'https://api.daylight.xyz';
-const LOCAL_DAYLIGHT_SERVER_URL = 'https://proxy.zerion.io/daylight';
-
-export type WalletAbilityType =
-  | 'vote'
-  | 'claim'
-  | 'airdrop'
-  | 'mint'
-  | 'article'
-  | 'access'
-  | 'result'
-  | 'event'
-  | 'merch'
-  | 'misc'
-  | 'raffle'
-  | 'discount'
-  | 'stake'
-  | 'revoke';
-
-interface WalletAbilitySupplier {
-  id: number;
-  name: string;
-  slug: string;
-  url: string;
-}
-
-type CommunityType = 'ERC-20' | 'ERC-721' | 'ERC-1155';
-
-interface WalletAbilityTokenRequirement {
-  chain: 'ethereum';
-  type: 'hasTokenBalance';
-  address: string;
-  minAmount: number;
-  community: {
-    title: string;
-    contractAddress: string;
-    type: CommunityType;
-    chain: 'ethereum';
-    imageUrl: string;
-    linkUrl: string;
-    description: string;
-    currencyCode: string;
-    slug: string;
-  };
-}
-
-interface WalletAbilityNFTRequirement {
-  chain: 'ethereum';
-  type: 'hasNftWithSpecificId';
-  address: string;
-  id: string[];
-  community: {
-    title: string;
-    contractAddress: string;
-    type: CommunityType;
-    chain: 'ethereum';
-    imageUrl: string;
-    linkUrl: string;
-    description: string;
-    currencyCode: string;
-    slug: string;
-  };
-}
-
-interface WalletAbilityAllowlistTokenRequirement {
-  chain: 'ethereum';
-  type: 'onAllowlist';
-  addresses: string[];
-}
-
-type WalletAbilityRequirement =
-  | WalletAbilityTokenRequirement
-  | WalletAbilityNFTRequirement
-  | WalletAbilityAllowlistTokenRequirement;
-
-export interface WalletAbility {
-  type: WalletAbilityType;
-  title: string;
-  description: string;
-  imageUrl: string;
-  openAt: string;
-  closeAt: string;
-  isClosed: boolean;
-  createdAt: string;
-  slug: string;
-  sourceId: string;
-  chain: 'ethereum';
-  uid: string;
-  supplier: WalletAbilitySupplier;
-  action: {
-    linkUrl: string;
-    // in the future here will be more info for completing the ability
-  };
-  requirements: WalletAbilityRequirement[];
-  submitter: {
-    publicKey: string;
-    chain: 'ethereum';
-  };
-  walletMetadata: object;
-  walletCompleted: boolean;
-}
+const DAYLIGHT_PROXY_URL = 'https://proxy.zerion.io/daylight';
 
 interface WalletAbilitiesResponse {
   abilities: WalletAbility[];
@@ -141,7 +46,7 @@ async function getWalletAbilities({
   ]);
   const firstPageLink = `/v1/wallets/${address}/abilities?${searchParams}`;
   const result = await ky
-    .get(`${LOCAL_DAYLIGHT_SERVER_URL}${link ?? firstPageLink}`, {
+    .get(`${DAYLIGHT_PROXY_URL}${link ?? firstPageLink}`, {
       timeout: 20000,
     })
     .json<WalletAbilitiesResponse>();
@@ -189,11 +94,13 @@ export function useWalletAbilities({
 
 export async function getAbility(uid: string) {
   const result = await ky
-    .get(`${LOCAL_DAYLIGHT_SERVER_URL}/v1/abilities/${uid}`, { timeout: 20000 })
+    .get(`${DAYLIGHT_PROXY_URL}/v1/abilities/${uid}`, { timeout: 20000 })
     .json<{ ability: WalletAbility }>();
   return result;
 }
 
 export function getAbilityLinkTitle(ability?: WalletAbility) {
-  return ability?.action.linkUrl?.split('/')[2];
+  return ability?.action.linkUrl
+    ? new URL(ability?.action.linkUrl).hostname
+    : undefined;
 }

@@ -78,7 +78,7 @@
   bottom: 0;
   right: 0;
   left: 0;
-  background-color: var(--negative-500);
+  background-color: var(--neutral-500);
   animation: appear 500ms;
 }
 

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { useParams } from 'react-router-dom';
 import { Content } from 'react-area';
@@ -8,7 +8,7 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { Button } from 'src/ui/ui-kit/Button';
-import LinkIcon from 'jsx:src/ui/assets/link.svg';
+import LinkIcon from 'jsx:src/ui/assets/new-window.svg';
 import DotsIcon from 'jsx:src/ui/assets/dots.svg';
 import SyncIcon from 'jsx:src/ui/assets/sync.svg';
 import DoubleCheckIcon from 'jsx:src/ui/assets/check_double.svg';
@@ -16,7 +16,9 @@ import CloseIcon from 'jsx:src/ui/assets/close.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { SurfaceItemButton, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
-import { getAbility, getAbilityLinkTitle, WalletAbility } from '../daylight';
+import type { WalletAbility } from 'src/shared/types/Daylight';
+import { invariant } from 'src/shared/invariant';
+import { getAbility, getAbilityLinkTitle } from '../daylight';
 import { markAbility, unmarkAbility, useFeedInfo } from '../stored';
 import { Ability } from './Ability';
 
@@ -73,12 +75,7 @@ function AbilityMenu({
                     separatorTop: false,
                     component: (
                       <SurfaceItemButton
-                        style={{
-                          backgroundColor:
-                            highlightedIndex === 0
-                              ? 'var(--neutral-200)'
-                              : undefined,
-                        }}
+                        highlighted={highlightedIndex === 0}
                         {...getItemProps({
                           item: 'complete',
                           index: 0,
@@ -99,12 +96,7 @@ function AbilityMenu({
                     separatorTop: false,
                     component: (
                       <SurfaceItemButton
-                        style={{
-                          backgroundColor:
-                            highlightedIndex === 1
-                              ? 'var(--neutral-200)'
-                              : undefined,
-                        }}
+                        highlighted={highlightedIndex === 1}
                         {...getItemProps({
                           item: 'dissmiss',
                           index: 1,
@@ -127,12 +119,7 @@ function AbilityMenu({
                     separatorTop: false,
                     component: (
                       <SurfaceItemButton
-                        style={{
-                          backgroundColor:
-                            highlightedIndex === 1
-                              ? 'var(--neutral-200)'
-                              : undefined,
-                        }}
+                        highlighted={highlightedIndex === 0}
                         {...getItemProps({
                           item: 'dissmiss',
                           index: 1,
@@ -156,12 +143,12 @@ function AbilityMenu({
 
 export function AbilityPage() {
   const { ability_uid } = useParams();
-  const [loading, setLoading] = useState(false);
+  invariant(ability_uid, 'ability_uid path segment is required');
 
   const { data } = useQuery(
     `ability/${ability_uid}`,
-    () => getAbility(ability_uid || ''),
-    { enabled: Boolean(ability_uid), suspense: false }
+    () => getAbility(ability_uid),
+    { suspense: false }
   );
 
   const linkTitle = useMemo(() => {
@@ -170,7 +157,7 @@ export function AbilityPage() {
 
   const { completedSet, dismissedSet, refetch, isFetching } = useFeedInfo();
 
-  const { mutate: mark } = useMutation(
+  const { mutate: mark, isLoading: markLoading } = useMutation(
     ({
       ability,
       action,
@@ -181,17 +168,15 @@ export function AbilityPage() {
     {
       onSuccess: () => {
         refetch();
-        setLoading(false);
       },
     }
   );
 
-  const { mutate: unmark } = useMutation(
+  const { mutate: unmark, isLoading: unmarkLoading } = useMutation(
     (abilityId: string) => unmarkAbility({ abilityId }),
     {
       onSuccess: () => {
         refetch();
-        setLoading(false);
       },
     }
   );
@@ -200,30 +185,26 @@ export function AbilityPage() {
     (action: 'dismiss' | 'complete') => {
       if (data?.ability) {
         mark({ ability: data.ability, action });
-        setLoading(true);
       }
     },
     [mark, data]
   );
 
   const handleUnmarkButtonClick = useCallback(() => {
-    if (ability_uid) {
-      unmark(ability_uid);
-      setLoading(true);
-    }
+    unmark(ability_uid);
   }, [unmark, ability_uid]);
 
   const status = useMemo(
     () =>
-      !ability_uid
-        ? null
-        : completedSet.has(ability_uid)
+      completedSet.has(ability_uid)
         ? 'completed'
         : dismissedSet.has(ability_uid)
         ? 'dismissed'
         : null,
     [completedSet, dismissedSet, ability_uid]
   );
+
+  const loading = markLoading || unmarkLoading;
 
   return (
     <Background backgroundKind="transparent">
@@ -236,7 +217,7 @@ export function AbilityPage() {
       <PageColumn style={{ paddingTop: 18 }}>
         <NavigationTitle title={null} />
         <div style={{ paddingBottom: 80 }}>
-          {ability_uid && data?.ability ? (
+          {data?.ability ? (
             <Ability
               ability={data.ability}
               mode="full"

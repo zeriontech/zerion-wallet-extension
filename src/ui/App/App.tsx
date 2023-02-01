@@ -56,8 +56,6 @@ import { VStack } from '../ui-kit/VStack';
 import { UnstyledAnchor } from '../ui-kit/UnstyledAnchor';
 import { openInNewWindow } from '../shared/openInNewWindow';
 
-dayjs.extend(relativeTime);
-
 function View() {
   const location = useLocation();
   return (
@@ -328,6 +326,7 @@ function CloseOtherWindows() {
 }
 
 followTheme();
+dayjs.extend(relativeTime);
 
 export function App({ handshakeFailure }: { handshakeFailure?: boolean }) {
   if (handshakeFailure) {

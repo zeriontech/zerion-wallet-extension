@@ -65,7 +65,7 @@ const upgrades: Record<string, (entry: PossibleEntry) => PossibleEntry> = {
       feed: {
         lastSeenAbilityId: null,
         completedAbilities: [],
-        dissmissedAbilities: [],
+        dismissedAbilities: [],
       },
     };
   },

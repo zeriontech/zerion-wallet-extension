@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from 'react-query';
 import { walletPort } from 'src/ui/shared/channels';
-import type { WalletAbility } from './daylight';
+import type { WalletAbility } from 'src/shared/types/Daylight';
 
 export function useFeedInfo() {
   const { data, ...queryResult } = useQuery(`getWalletFeed`, () =>
@@ -12,7 +12,7 @@ export function useFeedInfo() {
     [data]
   );
   const dismissedSet = useMemo(
-    () => new Set(data?.dissmissedAbilities?.map((item) => item.uid) || []),
+    () => new Set(data?.dismissedAbilities?.map((item) => item.uid) || []),
     [data]
   );
   return { ...queryResult, data, completedSet, dismissedSet };
