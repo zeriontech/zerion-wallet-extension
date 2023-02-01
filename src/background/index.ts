@@ -152,9 +152,7 @@ const inPageScriptLocation =
   browser.runtime.getManifest().web_accessible_resources?.[0];
 
 if (!inPageScriptLocation || typeof inPageScriptLocation === 'string') {
-  throw new Error(
-    'Manifest contain bad information about web_accessible_resources'
-  );
+  throw new Error('Missing manifest field: web_accessible_resources');
 }
 // Register script with "world: 'MAIN'" environment so that it can write to page window
 // See: https://developer.chrome.com/docs/extensions/mv3/content_scripts/#isolated_world
