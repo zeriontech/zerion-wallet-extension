@@ -420,7 +420,7 @@ function PositionsList({
           for (const position of nameIndex[name]) {
             items.push({
               key: position.id,
-              href: `https://app.zerion.io/explore/asset/${position.asset.symbol}-${position.asset.asset_code}?address=${address}`,
+              href: `https://app.zerion.io/tokens/${position.asset.symbol}-${position.asset.asset_code}?address=${address}`,
               target: '_blank',
               separatorLeadingInset: position.parent_id ? 26 : 0,
               component: (

@@ -7,10 +7,12 @@ import { stableDecrypt } from 'src/modules/crypto';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getIndexFromPath } from 'src/shared/wallet/getNextAccountPath';
 import { NetworkId } from 'src/modules/networks/NetworkId';
+import type { WalletAbility } from 'src/shared/types/Daylight';
 import { SeedType } from './model/SeedType';
 import type {
   BareWallet,
   PendingWallet,
+  WalletFeed,
   WalletGroup,
   WalletRecord,
 } from './model/types';
@@ -161,7 +163,7 @@ export class WalletRecordModel {
       const isMnemonicWallet =
         pendingWallet.walletContainer.seedType === SeedType.mnemonic;
       return {
-        version: 3,
+        version: 4,
         walletManager: {
           groups: [
             createGroup({
@@ -178,11 +180,21 @@ export class WalletRecordModel {
         transactions: [],
         permissions: {},
         publicPreferences: {},
+        feed: {
+          completedAbilities: [],
+          dismissedAbilities: [],
+        },
       };
     }
     return produce(record, (draft) => {
       const { walletContainer } = pendingWallet;
       const { seedType } = walletContainer;
+      if (!draft.feed.completedAbilities) {
+        draft.feed.completedAbilities = [];
+      }
+      if (!draft.feed.dismissedAbilities) {
+        draft.feed.dismissedAbilities = [];
+      }
       if (seedType === SeedType.privateKey) {
         const { privateKey } = walletContainer.getFirstWallet();
         const existingGroup = draft.walletManager.groups.find(
@@ -552,6 +564,55 @@ export class WalletRecordModel {
         throw new Error(`Group with id ${groupId} not found`);
       }
       group.lastBackedUp = timestamp;
+    });
+  }
+
+  static getFeedInfo(record: WalletRecord): WalletFeed {
+    return record.feed;
+  }
+
+  static markAbility(
+    record: WalletRecord,
+    {
+      ability,
+      action,
+    }: { ability: WalletAbility; action: 'dismiss' | 'complete' }
+  ) {
+    return produce(record, (draft) => {
+      const { completedAbilities, dismissedAbilities } = draft.feed;
+      if (action === 'complete') {
+        if (!completedAbilities.some((item) => item.uid === ability.uid)) {
+          completedAbilities.unshift(ability);
+        }
+      } else if (action === 'dismiss') {
+        if (!dismissedAbilities.some((item) => item.uid === ability.uid)) {
+          dismissedAbilities.unshift(ability);
+        }
+      } else {
+        throw new Error(
+          'Unexpected ability marking type. Try "complete" or "dismiss"'
+        );
+      }
+    });
+  }
+
+  static unmarkAbility(
+    record: WalletRecord,
+    { abilityId }: { abilityId: string }
+  ) {
+    return produce(record, (draft) => {
+      const completedIndex = draft.feed.completedAbilities?.findIndex(
+        (item) => item.uid === abilityId
+      );
+      const dismissedIndex = draft.feed.dismissedAbilities?.findIndex(
+        (item) => item.uid === abilityId
+      );
+      if (completedIndex >= 0) {
+        draft.feed.completedAbilities.splice(completedIndex, 1);
+      }
+      if (dismissedIndex >= 0) {
+        draft.feed.dismissedAbilities.splice(dismissedIndex, 1);
+      }
     });
   }
 }

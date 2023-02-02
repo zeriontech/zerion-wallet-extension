@@ -1,4 +1,5 @@
 import React from 'react';
+import cn from 'classnames';
 import { LinkProps } from 'react-router-dom';
 import { Surface } from '../Surface/Surface';
 import { UnstyledAnchor } from '../UnstyledAnchor';
@@ -56,24 +57,25 @@ export function ItemAnchor({
   );
 }
 
-export function ItemButton({
-  children,
-  style,
-  ...props
-}: {
-  children: React.ReactNode;
-  style?: React.CSSProperties;
-} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+export const ItemButton = React.forwardRef<
+  HTMLButtonElement,
+  {
+    children: React.ReactNode;
+    style?: React.CSSProperties;
+    highlighted?: boolean;
+  } & React.ButtonHTMLAttributes<HTMLButtonElement>
+>(({ children, style, highlighted, ...props }, ref) => {
   return (
     <UnstyledButton
       style={{ color: 'inherit', ...style }}
-      className={s.option}
+      className={cn(s.option, highlighted ? s.highlighted : undefined)}
+      ref={ref}
       {...props}
     >
       <div className={s.decoration}>{children}</div>
     </UnstyledButton>
   );
-}
+});
 
 export interface Item {
   key: string | number;

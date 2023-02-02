@@ -259,6 +259,13 @@ function PendingActionView({
   const address = 'address' in params ? params.address : undefined;
   const asset = value?.[action.asset_code?.toLowerCase() || ''];
 
+  const explorerHref = action.transaction.chain
+    ? networks.getExplorerTxUrlByName(
+        createChain(action.transaction.chain),
+        action.transaction.hash
+      )
+    : null;
+
   return (
     <HStack
       gap={24}
@@ -289,7 +296,23 @@ function PendingActionView({
           </div>
         }
         text={
-          <UIText kind="subtitle/m_med">{action.type.display_value}</UIText>
+          explorerHref ? (
+            <TextAnchor
+              href={explorerHref}
+              target="_blank"
+              title={explorerHref}
+              rel="noopener noreferrer"
+              style={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <UIText kind="subtitle/m_med">{action.type.display_value}</UIText>
+            </TextAnchor>
+          ) : (
+            <UIText kind="subtitle/m_med">{action.type.display_value}</UIText>
+          )
         }
         detailText={
           <HStack alignItems="center" gap={4}>
@@ -310,11 +333,11 @@ function PendingActionView({
                 )}
               />
             ) : null}
-            {action.transaction.status === 'pending' ? (
-              <UIText kind="subtitle/s_reg" color="var(--neutral-500)">
-                Pending
-              </UIText>
-            ) : null}
+            <UIText kind="subtitle/s_reg" color="var(--neutral-500)">
+              {action.transaction.status === 'pending'
+                ? 'Pending'
+                : networks?.getChainName(createChain(action.transaction.chain))}
+            </UIText>
           </HStack>
         }
       />

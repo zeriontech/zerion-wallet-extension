@@ -28,7 +28,7 @@ const mockedPermissions: WalletRecord['permissions'] = {
 };
 
 const mockRecord: WalletRecord = {
-  version: 3,
+  version: 4,
   publicPreferences: {},
   permissions: mockedPermissions,
   transactions: [],
@@ -53,6 +53,10 @@ const mockRecord: WalletRecord = {
         created: Date.now(),
       },
     ],
+  },
+  feed: {
+    completedAbilities: [],
+    dismissedAbilities: [],
   },
 };
 

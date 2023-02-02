@@ -36,6 +36,7 @@ import { getTransactionChainId } from 'src/modules/ethereum/transactions/resolve
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { flagAsDapp, isFlaggedAsDapp } from 'src/shared/dapps';
 import { isKnownDapp } from 'src/shared/dapps/known-dapps';
+import type { WalletAbility } from 'src/shared/types/Daylight';
 import { emitter } from '../events';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
@@ -595,6 +596,39 @@ export class Wallet {
     this.verifyInternalOrigin(context);
     await this.globalPreferences.ready();
     return this.globalPreferences.setPreferences(preferences);
+  }
+
+  async getFeedInfo({
+    context,
+  }: WalletMethodParams): Promise<ReturnType<typeof Model.getFeedInfo>> {
+    this.verifyInternalOrigin(context);
+    this.ensureRecord(this.record);
+    return Model.getFeedInfo(this.record);
+  }
+
+  async markAbility({
+    context,
+    params: { ability, action },
+  }: WalletMethodParams<{
+    ability: WalletAbility;
+    action: 'dismiss' | 'complete';
+  }>) {
+    this.verifyInternalOrigin(context);
+    this.ensureRecord(this.record);
+    this.record = Model.markAbility(this.record, { ability, action });
+    this.updateWalletStore(this.record);
+  }
+
+  async unmarkAbility({
+    context,
+    params: { abilityId },
+  }: WalletMethodParams<{
+    abilityId: string;
+  }>) {
+    this.verifyInternalOrigin(context);
+    this.ensureRecord(this.record);
+    this.record = Model.unmarkAbility(this.record, { abilityId });
+    this.updateWalletStore(this.record);
   }
 
   async wallet_setWalletNameFlag({

@@ -2,9 +2,14 @@ import type {
   WalletRecord,
   WalletRecordVersion1,
   WalletRecordVersion2,
+  WalletRecordVersion3,
 } from './types';
 
-type PossibleEntry = WalletRecordVersion1 | WalletRecordVersion2 | WalletRecord;
+type PossibleEntry =
+  | WalletRecordVersion1
+  | WalletRecordVersion2
+  | WalletRecordVersion3
+  | WalletRecord;
 
 function mapObject<V, NewValue>(
   object: Record<string, V>,
@@ -42,7 +47,7 @@ const upgrades: Record<string, (entry: PossibleEntry) => PossibleEntry> = {
       ]),
     };
   },
-  3: (entry: PossibleEntry): WalletRecord => {
+  3: (entry: PossibleEntry): WalletRecordVersion3 => {
     assertVersion<WalletRecordVersion2>(entry, 2);
     return {
       version: 3,
@@ -50,6 +55,17 @@ const upgrades: Record<string, (entry: PossibleEntry) => PossibleEntry> = {
       walletManager: entry.walletManager,
       permissions: entry.permissions,
       publicPreferences: entry.preferences,
+    };
+  },
+  4: (entry: PossibleEntry): WalletRecord => {
+    assertVersion<WalletRecordVersion3>(entry, 3);
+    return {
+      ...entry,
+      version: 4,
+      feed: {
+        completedAbilities: [],
+        dismissedAbilities: [],
+      },
     };
   },
 };
