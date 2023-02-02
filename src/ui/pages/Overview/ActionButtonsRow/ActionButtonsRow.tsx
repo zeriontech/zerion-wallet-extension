@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill';
 import React, { ComponentPropsWithoutRef, ElementType, useMemo } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import SwapIcon from 'jsx:src/ui/assets/actions/swap.svg';
@@ -33,6 +34,21 @@ function ActionButton<As extends ElementType = 'a'>({
   );
 }
 
+const ZERION_ORIGIN = 'https://app.zerion.io';
+
+function findActionTab(
+  tabs: browser.Tabs.Tab[],
+  pathname: string
+): browser.Tabs.Tab | undefined {
+  return tabs.find((tab) => {
+    if (!tab.url) {
+      return false;
+    }
+    const url = new URL(tab.url);
+    return url.origin === ZERION_ORIGIN && url.pathname === pathname;
+  });
+}
+
 export function ActionButtonsRow() {
   const { data: wallet } = useQuery('wallet/uiGetCurrentWallet', () => {
     return walletPort.request('uiGetCurrentWallet');
@@ -55,14 +71,42 @@ export function ActionButtonsRow() {
     }
     return params;
   }, [wallet]);
+
+  const { data: tabs } = useQuery('browser/tabs', () => browser.tabs.query({}));
+  const { mutate: updateTab } = useMutation(
+    async ({
+      tab,
+      params,
+    }: {
+      tab: browser.Tabs.Tab;
+      params: URLSearchParams;
+    }) => {
+      if (tab.url) {
+        const url = new URL(tab.url);
+        url.search = params.toString();
+        browser.tabs.update(tab.id, { active: true, url: url.toString() });
+      }
+    }
+  );
+
   if (!addWalletParams || !wallet) {
     return null;
   }
-  const addPermission = () =>
-    acceptOrigin({
-      origin: 'https://app.zerion.io',
-      address: wallet.address,
-    });
+
+  const createActionHandler =
+    (pathname: string) => (event: React.MouseEvent<HTMLElement>) => {
+      acceptOrigin({
+        origin: ZERION_ORIGIN,
+        address: wallet.address,
+      });
+
+      const actionTab = tabs ? findActionTab(tabs, pathname) : null;
+      if (actionTab) {
+        updateTab({ tab: actionTab, params: addWalletParams });
+        event.preventDefault();
+      }
+    };
+
   return (
     <ul
       style={{
@@ -79,7 +123,7 @@ export function ActionButtonsRow() {
           title="Swap"
           icon={<SwapIcon />}
           href={`https://app.zerion.io/swap?${addWalletParams}`}
-          onClick={addPermission}
+          onClick={createActionHandler('/swap')}
           target="_blank"
           rel="noopener noreferrer"
         />
@@ -89,7 +133,7 @@ export function ActionButtonsRow() {
           title="Send"
           icon={<SendIcon />}
           href={`https://app.zerion.io/send?${addWalletParams}`}
-          onClick={addPermission}
+          onClick={createActionHandler('/send/token')}
           target="_blank"
           rel="noopener noreferrer"
         />
@@ -107,7 +151,7 @@ export function ActionButtonsRow() {
           title="Bridge"
           icon={<BridgeIcon />}
           href={`https://app.zerion.io/bridge?${addWalletParams}`}
-          onClick={addPermission}
+          onClick={createActionHandler('/bridge')}
           target="_blank"
           rel="noopener noreferrer"
         />
