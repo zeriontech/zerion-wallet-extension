@@ -151,7 +151,9 @@ export function Ability({
           {ability.description}
         </UIText>
       ) : (
-        <UIText kind="body/regular">{ability.description}</UIText>
+        <UIText kind="body/regular" style={{ whiteSpace: 'pre-line' }}>
+          {ability.description}
+        </UIText>
       )}
     </VStack>
   );
