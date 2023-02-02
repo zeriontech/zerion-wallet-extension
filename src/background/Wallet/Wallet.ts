@@ -606,16 +606,6 @@ export class Wallet {
     return Model.getFeedInfo(this.record);
   }
 
-  async setLastSeenAbility({
-    context,
-    params: { abilityId },
-  }: WalletMethodParams<{ abilityId: string }>) {
-    this.verifyInternalOrigin(context);
-    this.ensureRecord(this.record);
-    this.record = Model.setLastSeenAbility(this.record, { abilityId });
-    this.updateWalletStore(this.record);
-  }
-
   async markAbility({
     context,
     params: { ability, action },

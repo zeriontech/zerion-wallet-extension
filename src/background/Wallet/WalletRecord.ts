@@ -183,7 +183,6 @@ export class WalletRecordModel {
         feed: {
           completedAbilities: [],
           dismissedAbilities: [],
-          lastSeenAbilityId: null,
         },
       };
     }
@@ -572,15 +571,6 @@ export class WalletRecordModel {
     return record.feed;
   }
 
-  static setLastSeenAbility(
-    record: WalletRecord,
-    { abilityId }: { abilityId: string }
-  ) {
-    return produce(record, (draft) => {
-      draft.feed.lastSeenAbilityId = abilityId;
-    });
-  }
-
   static markAbility(
     record: WalletRecord,
     {
@@ -590,14 +580,18 @@ export class WalletRecordModel {
   ) {
     return produce(record, (draft) => {
       const { completedAbilities, dismissedAbilities } = draft.feed;
-      const abilities =
-        action === 'complete'
-          ? completedAbilities
-          : action === 'dismiss'
-          ? dismissedAbilities
-          : undefined;
-      if (!abilities?.some((item) => item.uid === ability.uid)) {
-        abilities?.unshift(ability);
+      if (action === 'complete') {
+        if (!completedAbilities.some((item) => item.uid === ability.uid)) {
+          completedAbilities.unshift(ability);
+        }
+      } else if (action === 'dismiss') {
+        if (!dismissedAbilities.some((item) => item.uid === ability.uid)) {
+          dismissedAbilities.unshift(ability);
+        }
+      } else {
+        throw new Error(
+          'Unexpected ability marking type. Try "complete" or "dismiss"'
+        );
       }
     });
   }

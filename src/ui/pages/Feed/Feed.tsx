@@ -32,14 +32,19 @@ type FeedStatus = 'open' | 'completed' | 'expired' | 'dismissed';
 
 const ABILITIES_PER_PAGE = 10;
 
-const StatusToTitle: Record<FeedStatus, string> = {
+const STATUS_TO_TITLE: Record<FeedStatus, string> = {
   open: 'Open',
   completed: 'Completed',
   expired: 'Expired',
   dismissed: 'Dissmised',
 };
 
-const StatusItems: FeedStatus[] = ['open', 'completed', 'expired', 'dismissed'];
+const STATUS_ITEMS: FeedStatus[] = [
+  'open',
+  'completed',
+  'expired',
+  'dismissed',
+];
 
 function StatusFilter({
   value,
@@ -56,7 +61,7 @@ function StatusFilter({
     selectedItem,
     highlightedIndex,
   } = useSelect({
-    items: StatusItems,
+    items: STATUS_ITEMS,
     selectedItem: value,
     onSelectedItemChange: ({ selectedItem }) => onChange(selectedItem),
   });
@@ -71,7 +76,9 @@ function StatusFilter({
       >
         <HStack gap={4} alignItems="center">
           <FiltersIcon />
-          <UIText kind="button/s_med">{StatusToTitle[value]} Abilities</UIText>
+          <UIText kind="button/s_med">
+            {STATUS_TO_TITLE[value]} Abilities
+          </UIText>
         </HStack>
       </Button>
       <div
@@ -85,11 +92,11 @@ function StatusFilter({
           borderRadius: 8,
           width: 180,
           overflow: 'hidden',
-          zIndex: 2,
+          zIndex: 'var(--over-layout-index)',
         }}
       >
         <SurfaceList
-          items={StatusItems.map((item, index) => ({
+          items={STATUS_ITEMS.map((item, index) => ({
             key: item,
             isInteractive: true,
             pad: false,
@@ -100,7 +107,7 @@ function StatusFilter({
                 {...getItemProps({ item, index })}
               >
                 <HStack gap={4} justifyContent="space-between">
-                  <span>{StatusToTitle[item]}</span>
+                  <span>{STATUS_TO_TITLE[item]}</span>
                   {selectedItem === item ? (
                     <span style={{ color: 'var(--primary)' }}>✔</span>
                   ) : null}
@@ -116,7 +123,7 @@ function StatusFilter({
 
 type FeedType = 'all' | 'claim' | 'airdrop' | 'mint' | 'vote' | 'other';
 
-const TypeToTitle: Record<FeedType, string> = {
+const TYPE_TO_TITLE: Record<FeedType, string> = {
   all: 'All',
   claim: 'Claim',
   airdrop: 'Airdrop',
@@ -125,7 +132,7 @@ const TypeToTitle: Record<FeedType, string> = {
   other: 'Other',
 };
 
-const TypeItems: FeedType[] = [
+const TYPE_ITEMS: FeedType[] = [
   'all',
   'claim',
   'airdrop',
@@ -204,7 +211,7 @@ function TypeFilter({
     selectedItem,
     highlightedIndex,
   } = useSelect({
-    items: TypeItems,
+    items: TYPE_ITEMS,
     selectedItem: value,
     onSelectedItemChange: ({ selectedItem }) => onChange(selectedItem),
   });
@@ -220,7 +227,7 @@ function TypeFilter({
         <HStack gap={4} alignItems="center">
           <FiltersIcon />
           <UIText kind="button/s_med">
-            {value === 'all' ? 'All Types' : `Type: ${TypeToTitle[value]}`}
+            {value === 'all' ? 'All Types' : `Type: ${TYPE_TO_TITLE[value]}`}
           </UIText>
         </HStack>
       </Button>
@@ -235,11 +242,11 @@ function TypeFilter({
           borderRadius: 8,
           width: 180,
           overflow: 'hidden',
-          zIndex: 2,
+          zIndex: 'var(--over-layout-index)',
         }}
       >
         <SurfaceList
-          items={TypeItems.map((item, index) => ({
+          items={TYPE_ITEMS.map((item, index) => ({
             key: item,
             isInteractive: true,
             pad: false,
@@ -250,7 +257,7 @@ function TypeFilter({
                 {...getItemProps({ item, index })}
               >
                 <HStack gap={4} justifyContent="space-between">
-                  <span>{TypeToTitle[item]}</span>
+                  <span>{TYPE_TO_TITLE[item]}</span>
                   {selectedItem === item ? (
                     <span style={{ color: 'var(--primary)' }}>✔</span>
                   ) : null}
@@ -330,7 +337,6 @@ function AbilityCard({
   return (
     <VStack
       gap={16}
-      style={{ padding: '0 16px' }}
       className={cn(isVisible ? styles.visible : styles.hidden, {
         [styles.marking]: marking,
         [styles.completed]:
@@ -342,7 +348,6 @@ function AbilityCard({
           (filter === 'completed' || filter === 'dismissed'),
       })}
     >
-      <div />
       <UnstyledLink to={`/ability/${ability.uid}`}>
         <Ability ability={ability} mode="compact" status={initialStatus} />
       </UnstyledLink>
@@ -403,7 +408,6 @@ function AbilityCard({
           </Button>
         ) : null}
       </HStack>
-      <div />
     </VStack>
   );
 }
@@ -559,7 +563,7 @@ export function Feed() {
                     color: fetching ? 'var(--neutral-500)' : 'var(--primary)',
                   }}
                 >
-                  More abilities
+                  More Abilities
                 </span>
               ),
             },

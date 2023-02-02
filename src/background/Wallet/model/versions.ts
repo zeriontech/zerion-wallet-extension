@@ -63,7 +63,6 @@ const upgrades: Record<string, (entry: PossibleEntry) => PossibleEntry> = {
       ...entry,
       version: 4,
       feed: {
-        lastSeenAbilityId: null,
         completedAbilities: [],
         dismissedAbilities: [],
       },

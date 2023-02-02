@@ -69,7 +69,6 @@ export interface WalletRecordVersion3 {
 }
 
 export interface WalletFeed {
-  lastSeenAbilityId: string | null;
   dismissedAbilities: WalletAbility[];
   completedAbilities: WalletAbility[];
 }

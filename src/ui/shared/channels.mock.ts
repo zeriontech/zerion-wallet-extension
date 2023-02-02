@@ -57,7 +57,6 @@ const mockRecord: WalletRecord = {
   feed: {
     completedAbilities: [],
     dismissedAbilities: [],
-    lastSeenAbilityId: null,
   },
 };
 

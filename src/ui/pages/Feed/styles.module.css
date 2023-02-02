@@ -18,11 +18,13 @@
 
 .visible {
   max-height: 400px;
+  padding: 16px;
 }
 
 .hidden {
   max-height: 0;
   overflow: hidden;
+  padding: 0 16px;
 }
 
 .marking {
@@ -36,7 +38,9 @@
   overflow: hidden;
   transform: scale(0.95);
   opacity: 0.8;
-  transition: max-height 500ms, transform 500ms, filter 500ms, opacity 500ms;
+  padding: 0 16px;
+  transition: max-height 500ms, transform 500ms, filter 500ms, opacity 500ms,
+    padding 500ms;
 }
 
 @keyframes appear {
@@ -67,7 +71,9 @@
   overflow: hidden;
   transform: scale(0.95);
   opacity: 0.8;
-  transition: max-height 500ms, transform 500ms, filter 500ms, opacity 500ms;
+  padding: 0 16px;
+  transition: max-height 500ms, transform 500ms, filter 500ms, opacity 500ms,
+    padding 500ms;
 }
 
 .dismissed::after {
@@ -88,5 +94,7 @@
   overflow: hidden;
   transform: scale(0.8);
   opacity: 0.8;
-  transition: max-height 500ms, transform 500ms, filter 500ms, opacity 500ms;
+  padding: 0 16px;
+  transition: max-height 500ms, transform 500ms, filter 500ms, opacity 500ms,
+    padding 500ms;
 }
