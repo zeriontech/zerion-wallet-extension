@@ -147,3 +147,21 @@ initialize().then(({ account, accountPublicRPC }) => {
 
   emitter.on('sessionExpired', () => account.logout());
 });
+
+const inPageScriptLocation =
+  browser.runtime.getManifest().web_accessible_resources?.[0];
+
+if (!inPageScriptLocation || typeof inPageScriptLocation === 'string') {
+  throw new Error('Missing manifest field: web_accessible_resources');
+}
+// Register script with "world: 'MAIN'" environment so that it can write to page window
+// See: https://developer.chrome.com/docs/extensions/mv3/content_scripts/#isolated_world
+chrome.scripting.registerContentScripts([
+  {
+    id: 'zerion-extension',
+    js: inPageScriptLocation.resources,
+    matches: ['<all_urls>'],
+    world: 'MAIN',
+    runAt: 'document_start',
+  },
+]);

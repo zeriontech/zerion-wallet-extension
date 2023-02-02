@@ -114,7 +114,7 @@ export class EthereumProvider extends JsonRpcProvider {
     if (request.method === 'eth_chainId') {
       return Promise.resolve(this.chainId);
     }
-    if (request.method === 'eth_accounts') {
+    if (request.method === 'eth_accounts' && this.accounts.length) {
       return Promise.resolve(this.accounts);
     }
     return this._getRequestPromise(

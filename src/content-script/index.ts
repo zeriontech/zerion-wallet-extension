@@ -80,11 +80,10 @@ broadcastChannel.addEventListener('message', (event) => {
   }
 });
 
-// Insert script with ethereum provider _after_ creating a BroadcastChannel
+// Insert script with id for provider _after_ creating a BroadcastChannel
 const script = document.createElement('script');
-script.setAttribute('src', new URL('./in-page', import.meta.url).href);
+script.setAttribute('id', 'zerion-extension-channel');
 script.dataset.walletChannelId = id;
 script.dataset.walletExtension = 'true';
-
 const container = document.head || document.documentElement;
 container.appendChild(script);
