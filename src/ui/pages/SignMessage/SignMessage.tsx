@@ -68,21 +68,38 @@ type SignMutationProps = { onSuccess: (value: string) => void };
 
 function useSignTypedData_v4Mutation({ onSuccess }: SignMutationProps) {
   return useMutation(
-    async ({ typedData }: { typedData: TypedData | string }) => {
+    async ({
+      typedData,
+      initiator,
+    }: {
+      typedData: TypedData | string;
+      initiator: string;
+    }) => {
       return await walletPort.request('signTypedData_v4', {
         typedData,
+        initiator,
       });
     },
-    { onSuccess }
+    {
+      // onMutate creates a context that we can use in global onError handler
+      // to know more about a mutation (in react-query@v4 you should use "context" instead)
+      onMutate: () => '_signTypedData',
+      onSuccess,
+    }
   );
 }
 
 function usePersonalSignMutation({ onSuccess }: SignMutationProps) {
   return useMutation(
-    async ([message]: [string]) => {
-      return await walletPort.request('personalSign', [message]);
+    async (params: { params: [string]; initiator: string }) => {
+      return await walletPort.request('personalSign', params);
     },
-    { onSuccess }
+    {
+      // onMutate creates a context that we can use in global onError handler
+      // to know more about a mutation (in react-query@v4 you should use "context" instead)
+      onMutate: () => 'signMessage',
+      onSuccess,
+    }
   );
 }
 
@@ -193,7 +210,10 @@ function SignMessageContent({
               <Button
                 disabled={signTypedData_v4Mutation.isLoading}
                 onClick={() => {
-                  signTypedData_v4Mutation.mutate({ typedData });
+                  signTypedData_v4Mutation.mutate({
+                    typedData,
+                    initiator: origin,
+                  });
                 }}
               >
                 {signTypedData_v4Mutation.isLoading ? 'Signing...' : 'Sign'}
@@ -202,7 +222,10 @@ function SignMessageContent({
               <Button
                 disabled={personalSignMutation.isLoading}
                 onClick={() => {
-                  personalSignMutation.mutate([message]);
+                  personalSignMutation.mutate({
+                    params: [message],
+                    initiator: origin,
+                  });
                 }}
               >
                 {personalSignMutation.isLoading ? 'Signing...' : 'Sign'}

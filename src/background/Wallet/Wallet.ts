@@ -37,7 +37,7 @@ import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired'
 import { flagAsDapp, isFlaggedAsDapp } from 'src/shared/dapps';
 import { isKnownDapp } from 'src/shared/dapps/known-dapps';
 import type { WalletAbility } from 'src/shared/types/Daylight';
-import { emitter } from '../events';
+import { emitter, ScreenViewParams } from '../events';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import { SeedType } from './model/SeedType';
@@ -741,10 +741,12 @@ export class Wallet {
     incomingTransaction: IncomingTransaction,
     {
       context,
-      transactionOrigin,
+      initiator,
+      feeValueCommon,
     }: {
       context: Partial<ChannelContext> | undefined;
-      transactionOrigin: string;
+      initiator: string;
+      feeValueCommon: string | null;
     }
   ): Promise<ethers.providers.TransactionResponse> {
     this.verifyInternalOrigin(context);
@@ -764,7 +766,7 @@ export class Wallet {
       );
     }
     const chainId = await this.getChainIdForOrigin({
-      origin: transactionOrigin,
+      origin: new URL(initiator).origin,
     });
     const targetChainId = getTransactionChainId(incomingTransaction);
     if (targetChainId && chainId !== targetChainId) {
@@ -792,30 +794,37 @@ export class Wallet {
       type: transaction.type || undefined,
     });
     const safeTx = removeSignature(transactionResponse);
-    emitter.emit('pendingTransactionCreated', safeTx);
+    emitter.emit('transactionSent', {
+      transaction: safeTx,
+      initiator,
+      feeValueCommon,
+    });
     return safeTx;
   }
 
   async signAndSendTransaction({
     params,
     context,
-  }: WalletMethodParams<[IncomingTransaction, { origin: string }]>) {
+  }: WalletMethodParams<
+    [IncomingTransaction, { initiator: string; feeValueCommon: string | null }]
+  >) {
     this.verifyInternalOrigin(context);
     this.ensureStringOrigin(context);
-    const [transaction, { origin }] = params;
+    const [transaction, { initiator, feeValueCommon }] = params;
     if (!transaction) {
       throw new InvalidParams();
     }
     return this.sendTransaction(transaction, {
       context,
-      transactionOrigin: origin,
+      initiator,
+      feeValueCommon,
     });
   }
 
   async signTypedData_v4({
-    params: { typedData: rawTypedData },
+    params: { typedData: rawTypedData, initiator },
     context,
-  }: WalletMethodParams<{ typedData: TypedData | string }>) {
+  }: WalletMethodParams<{ typedData: TypedData | string; initiator: string }>) {
     this.verifyInternalOrigin(context);
     if (!rawTypedData) {
       throw new InvalidParams();
@@ -828,13 +837,24 @@ export class Wallet {
       typedData.types,
       typedData.message
     );
+    emitter.emit('typedDataSigned', {
+      typedData,
+      initiator,
+      address: signer.address,
+    });
     return signature;
   }
 
   async personalSign({
-    params: [message],
+    params: {
+      params: [message],
+      initiator,
+    },
     context,
-  }: WalletMethodParams<[string, string?, string?]>) {
+  }: WalletMethodParams<{
+    params: [string, string?, string?];
+    initiator: string;
+  }>) {
     this.verifyInternalOrigin(context);
     if (message == null) {
       throw new InvalidParams();
@@ -843,12 +863,24 @@ export class Wallet {
     const signer = await this.getSigner(chainId);
     const messageAsUtf8String = toUtf8String(message);
     const signature = await signer.signMessage(messageAsUtf8String);
+    emitter.emit('messageSigned', {
+      message: messageAsUtf8String,
+      initiator,
+      address: signer.address,
+    });
     return signature;
   }
 
   async getPendingTransactions({ context }: PublicMethodParams) {
     this.verifyInternalOrigin(context);
     return this.record?.transactions || [];
+  }
+
+  async screenView({ context, params }: WalletMethodParams<ScreenViewParams>) {
+    // NOTE: maybe consider adding a more generic method, e.g.:
+    // walletPort.request('sendEvent', { eventName, params }).
+    this.verifyInternalOrigin(context);
+    emitter.emit('screenView', params);
   }
 }
 
@@ -887,6 +919,8 @@ class PublicController {
   async eth_requestAccounts({ context }: PublicMethodParams) {
     const currentAddress = this.wallet.readCurrentAddress();
     if (currentAddress && this.wallet.allowedOrigin(context, currentAddress)) {
+      const { origin } = context;
+      emitter.emit('dappConnection', { origin, address: currentAddress });
       return [currentAddress];
     }
     if (!context?.origin) {
@@ -917,6 +951,7 @@ class PublicController {
             context: INTERNAL_SYMBOL_CONTEXT,
           });
           const accounts = await this.eth_accounts({ context });
+          emitter.emit('dappConnection', { origin, address });
           resolve(accounts);
         },
         onDismiss: () => {

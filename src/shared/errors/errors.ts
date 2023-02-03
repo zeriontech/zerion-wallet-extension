@@ -67,3 +67,5 @@ export class SessionExpired extends ErrorWithEnumerableMessage {
     super(message);
   }
 }
+
+export class HandshakeFailed extends Error {}

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { ethers } from 'ethers';
 import type { Asset } from 'defi-sdk';
@@ -529,15 +529,28 @@ function SendTransactionContent({
       refetchOnWindowFocus: false,
     }
   );
-  const { mutate: signAndSendTransaction, ...signMutation } = useMutation(
+  const feeValueCommonRef = useRef<string>(); /** for analytics only */
+  const handleFeeValueCommonReady = useCallback((value: string) => {
+    feeValueCommonRef.current = value;
+  }, []);
+
+  const {
+    mutate: signAndSendTransaction,
+    context,
+    ...signMutation
+  } = useMutation(
     async (transaction: IncomingTransaction) => {
       await new Promise((r) => setTimeout(r, 1000));
+      const feeValueCommon = feeValueCommonRef.current || null;
       return await walletPort.request('signAndSendTransaction', [
         transaction,
-        { origin },
+        { initiator: origin, feeValueCommon },
       ]);
     },
     {
+      // onMutate creates a context that we can use in global onError handler
+      // to know more about a mutation (in react-query@v4 you should use "context" instead)
+      onMutate: () => 'sendTransaction',
       onSuccess: ({ hash }) => {
         const windowId = params.get('windowId');
         invariant(windowId, 'windowId get-parameter is required');
@@ -661,7 +674,11 @@ function SendTransactionContent({
                 </UIText>
               )}
             >
-              <NetworkFee transaction={transaction} chain={chain} />
+              <NetworkFee
+                transaction={transaction}
+                chain={chain}
+                onFeeValueCommonReady={handleFeeValueCommonReady}
+              />
             </ErrorBoundary>
           ) : null}
         </VStack>

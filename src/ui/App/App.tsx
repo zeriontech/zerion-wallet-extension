@@ -6,8 +6,6 @@ import {
   Routes,
   Route,
   useLocation,
-  Link,
-  Outlet,
   Navigate,
 } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -19,7 +17,6 @@ import { RouteResolver } from 'src/ui/pages/RouteResolver';
 import { RequestAccounts } from 'src/ui/pages/RequestAccounts';
 import { SendTransaction } from 'src/ui/pages/SendTransaction';
 import { SignMessage } from 'src/ui/pages/SignMessage';
-import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { Login } from '../pages/Login';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { accountPublicRPCPort, walletPort } from '../shared/channels';
@@ -52,36 +49,8 @@ import { BugReportButton } from '../components/BugReportButton';
 import { Receive } from '../pages/Receive';
 import { KeyboardShortcut } from '../components/KeyboardShortcut';
 import { followTheme } from '../features/appearance';
-import { VStack } from '../ui-kit/VStack';
-import { UnstyledAnchor } from '../ui-kit/UnstyledAnchor';
-import { openInNewWindow } from '../shared/openInNewWindow';
-
-function View() {
-  const location = useLocation();
-  return (
-    <div>
-      <div>Path: {location.pathname}</div>
-      <div>window pathname: {window.location.pathname}</div>
-      <div>window hash: {window.location.hash}</div>
-      <div style={{ wordBreak: 'break-all' }}>
-        window href: {window.location.href}
-      </div>
-      <div>
-        <Link to="/hello">go to hello</Link>
-      </div>
-      <div>
-        <Link to="/hello?param=one&hello=two">go to hello with params</Link>
-      </div>
-      <div>
-        <Link to="/requestAccounts?param=one&hello=two">
-          go to requestAccounts
-        </Link>
-      </div>
-      outlet:
-      <Outlet />
-    </div>
-  );
-}
+import { HandshakeFailure } from '../components/HandshakeFailure';
+import { useScreenViewChange } from '../shared/useScreenViewChange';
 
 const useAuthState = () => {
   const { data, isFetching } = useQuery(
@@ -175,12 +144,16 @@ function RequireAuth({ children }: { children: JSX.Element }) {
 
 const templateType = getPageTemplateType();
 
-function Views() {
+function Views({ initialRoute }: { initialRoute?: string }) {
+  useScreenViewChange();
   return (
     <RouteResolver>
       <ViewArea>
         <URLBar />
         <Routes>
+          {initialRoute ? (
+            <Route path="/" element={<Navigate to={initialRoute} />} />
+          ) : null}
           <Route
             path="/"
             element={
@@ -196,7 +169,6 @@ function Views() {
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/get-started/*" element={<GetStarted />} />
-          <Route path="/hello" element={<View />} />
           <Route path="/receive" element={<Receive />} />
           <Route
             path="/overview/*"
@@ -286,6 +258,7 @@ function Views() {
               </RequireAuth>
             }
           />
+          <Route path="/handshake-failure" element={<HandshakeFailure />} />
           <Route
             path="/ability/:ability_uid"
             element={
@@ -329,32 +302,6 @@ followTheme();
 dayjs.extend(relativeTime);
 
 export function App({ handshakeFailure }: { handshakeFailure?: boolean }) {
-  if (handshakeFailure) {
-    return (
-      <FillView>
-        <VStack gap={4} style={{ padding: 20, textAlign: 'center' }}>
-          <span style={{ fontSize: 20 }}>💔</span>
-          <UIText kind="body/regular">
-            Background Script is not responding
-          </UIText>
-          <UIText kind="small/regular" color="var(--neutral-500)">
-            If this keeps happening, try refreshing the extension on{' '}
-            <UnstyledAnchor
-              href="chrome://extensions"
-              // chrome://extensions is not allowed to be linked to, but
-              // can be opened programmatically
-              onClick={openInNewWindow}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={helperStyles.hoverNoUnderline}
-            >
-              extensions page
-            </UnstyledAnchor>
-          </UIText>
-        </VStack>
-      </FillView>
-    );
-  }
   return (
     <AreaProvider>
       <UIContext.Provider value={defaultUIContextValue}>
@@ -380,7 +327,11 @@ export function App({ handshakeFailure }: { handshakeFailure?: boolean }) {
               <VersionUpgrade>
                 <CloseOtherWindows />
                 <ViewSuspense>
-                  <Views />
+                  <Views
+                    initialRoute={
+                      handshakeFailure ? '/handshake-failure' : undefined
+                    }
+                  />
                 </ViewSuspense>
               </VersionUpgrade>
             </ErrorBoundary>
