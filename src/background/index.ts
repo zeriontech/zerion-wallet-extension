@@ -28,6 +28,7 @@ globalThis.addEventListener('activate', (_event) => {
   // @ts-ignore sw service-worker environment
   globalThis.clients.claim();
 });
+
 if (process.env.NODE_ENV === 'development') {
   // Set different icon for development
   const icon = new URL(`../images/logo-icon-dev-128.png`, import.meta.url);
@@ -84,6 +85,14 @@ Object.assign(globalThis, { portRegistry });
 browser.runtime.onConnect.addListener((port) => {
   if (verifyPort(port)) {
     portRegistry.register(port);
+  } else if (port.name === 'content-script/keepAlive') {
+    // This is an attempt to keep service worker alive. By sending a disconnect
+    // to the connected port, we force the content script to create a new
+    // connection (custom logic), which, in turn, should keep service worker running.
+    const WAIT_TIME_MS = 240000; // some heuristic, maybe should be sooner
+    setTimeout(() => {
+      port.disconnect();
+    }, WAIT_TIME_MS);
   }
 });
 

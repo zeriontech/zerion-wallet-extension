@@ -36,18 +36,26 @@ export class BackgroundScriptUpdateHandler {
    */
 
   private onActivate: () => void;
-  private onFailedHandshake: () => void;
+  private onFailedHandshake?: () => void;
+  private portName: string;
+  private performHandshake: boolean;
   private finishedHandshake = false;
 
   constructor({
     onActivate,
     onFailedHandshake,
+    portName = 'handshake',
+    performHandshake = true,
   }: {
     onActivate: () => void;
-    onFailedHandshake: () => void;
+    onFailedHandshake?: () => void;
+    portName?: string;
+    performHandshake?: boolean;
   }) {
     this.onActivate = onActivate;
     this.onFailedHandshake = onFailedHandshake;
+    this.portName = portName;
+    this.performHandshake = performHandshake;
     browser.runtime.onMessage.addListener((request) => {
       if (request.event === 'background-initialized') {
         // this is a custom event that we emit from the background-script
@@ -59,7 +67,7 @@ export class BackgroundScriptUpdateHandler {
 
   private async handleHandshakeFail() {
     console.warn('Failed handshake!'); // eslint-disable-line no-console
-    this.onFailedHandshake();
+    this.onFailedHandshake?.();
   }
 
   private async handshake(port: browser.Runtime.Port) {
@@ -84,11 +92,11 @@ export class BackgroundScriptUpdateHandler {
   }
 
   keepAlive() {
-    const port = browser.runtime.connect({ name: 'handshake' });
+    const port = browser.runtime.connect({ name: this.portName });
     if (port.error) {
       return;
     }
-    if (PERFORM_HANSHAKE_CHECK) {
+    if (PERFORM_HANSHAKE_CHECK && this.performHandshake) {
       this.handshake(port);
     }
     port.onDisconnect.addListener(() => {
