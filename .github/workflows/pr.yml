@@ -60,14 +60,14 @@ jobs:
           channel-id: 'C04JLLQRB43'
           payload: |
             {
-              "text": "Build succeeded",
+              "text": "Build: ${{ github.event.pull_request.title }}",
               "icon_emoji": ":nyancat:",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "<${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> ${{ github.pull_request.draft && ':construction' || '' }}"
+                    "text": "<${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> ${{ github.pull_request.draft && ':construction:' || '' }}"
                   }
                 },
                 {
@@ -96,7 +96,7 @@ jobs:
           channel-id: 'C04JLLQRB43'
           payload: |
             {
-              "text": "Build failed",
+              "text": "Build: ${{ github.event.pull_request.title }}",
               "icon_emoji": ":cry-cat:",
               "blocks": [
                 {
