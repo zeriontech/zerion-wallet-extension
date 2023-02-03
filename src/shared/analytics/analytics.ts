@@ -11,13 +11,21 @@ type MetabaseEvent =
 
 type BaseParams<E = MetabaseEvent> = { request_name: E };
 
+function onIdle(callback: () => void) {
+  if ('requestIdleCallback' in globalThis) {
+    globalThis.requestIdleCallback(callback);
+  } else {
+    setTimeout(callback);
+  }
+}
+
 export function sendToMetabase<
   E extends MetabaseEvent,
   T extends BaseParams<E>
 >(event: E, params: T) {
   logTable(Loglevel.info, params);
   if (process.env.NODE_ENV !== 'development') {
-    requestIdleCallback(() => {
+    onIdle(() => {
       fetch(`https://event-collector.zerion.io/${event}/`, {
         method: 'POST',
         body: JSON.stringify(params),
