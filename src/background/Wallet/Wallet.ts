@@ -878,6 +878,8 @@ export class Wallet {
   }
 
   async screenView({ context, params }: WalletMethodParams<ScreenViewParams>) {
+    // NOTE: maybe consider adding a more generic method, e.g.:
+    // walletPort.request('sendEvent', { eventName, params }).
     this.verifyInternalOrigin(context);
     appEvents.emit('screenView', params);
   }

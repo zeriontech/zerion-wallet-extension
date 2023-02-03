@@ -9,12 +9,14 @@ export enum Loglevel {
 
 const loglevelState = new Store<{ level: Loglevel }>({ level: Loglevel.none });
 
-browserStorage.get<Loglevel>('LOGLEVEL').then((v) => {
+const STORAGE_KEY = 'LOGLEVEL';
+
+browserStorage.get<Loglevel>(STORAGE_KEY).then((v) => {
   loglevelState.setState({ level: v ?? Loglevel.none });
 });
 
 loglevelState.on('change', (state) => {
-  browserStorage.set('LOGLEVEL', state.level);
+  browserStorage.set(STORAGE_KEY, state.level);
 });
 
 async function setLoglevel(flag: Loglevel) {
