@@ -37,8 +37,7 @@ import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired'
 import { flagAsDapp, isFlaggedAsDapp } from 'src/shared/dapps';
 import { isKnownDapp } from 'src/shared/dapps/known-dapps';
 import type { WalletAbility } from 'src/shared/types/Daylight';
-import { emitter } from '../events';
-import { appEvents, ScreenViewParams } from '../app-events.background';
+import { emitter, ScreenViewParams } from '../events';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import { SeedType } from './model/SeedType';
@@ -881,7 +880,7 @@ export class Wallet {
     // NOTE: maybe consider adding a more generic method, e.g.:
     // walletPort.request('sendEvent', { eventName, params }).
     this.verifyInternalOrigin(context);
-    appEvents.emit('screenView', params);
+    emitter.emit('screenView', params);
   }
 }
 
@@ -921,7 +920,7 @@ class PublicController {
     const currentAddress = this.wallet.readCurrentAddress();
     if (currentAddress && this.wallet.allowedOrigin(context, currentAddress)) {
       const { origin } = context;
-      appEvents.emit('dappConnection', { origin, address: currentAddress });
+      emitter.emit('dappConnection', { origin, address: currentAddress });
       return [currentAddress];
     }
     if (!context?.origin) {
@@ -952,7 +951,7 @@ class PublicController {
             context: INTERNAL_SYMBOL_CONTEXT,
           });
           const accounts = await this.eth_accounts({ context });
-          appEvents.emit('dappConnection', { origin, address });
+          emitter.emit('dappConnection', { origin, address });
           resolve(accounts);
         },
         onDismiss: () => {

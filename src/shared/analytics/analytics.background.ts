@@ -1,6 +1,5 @@
 import { ethers } from 'ethers';
 import type { Account } from 'src/background/account/Account';
-import { appEvents } from 'src/background/app-events.background';
 import { emitter } from 'src/background/events';
 import { networksStore } from 'src/modules/networks/networks-store';
 import { createParams as createBaseParams, sendToMetabase } from './analytics';
@@ -12,7 +11,7 @@ function trackAppEvents({ account }: { account: Account }) {
       ...params,
       userId: getUserId(),
     });
-  appEvents.on('dappConnection', async ({ origin, address }) => {
+  emitter.on('dappConnection', async ({ origin, address }) => {
     const params = createParams({
       request_name: 'dapp_connection',
       dapp_domain: origin,
@@ -21,7 +20,7 @@ function trackAppEvents({ account }: { account: Account }) {
     sendToMetabase('dapp_connection', params);
   });
 
-  appEvents.on('screenView', (data) => {
+  emitter.on('screenView', (data) => {
     const params = createParams({
       request_name: 'screen_view',
       wallet_address: data.address,

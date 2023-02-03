@@ -5,6 +5,12 @@ import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 type TransactionResponse = ethers.providers.TransactionResponse;
 type TransactionReceipt = ethers.providers.TransactionReceipt;
 
+export interface ScreenViewParams {
+  pathname: string;
+  previous: string | null;
+  address: string | null;
+}
+
 export const emitter = createNanoEvents<{
   accountsChanged: () => void;
   chainChanged: () => void;
@@ -27,4 +33,6 @@ export const emitter = createNanoEvents<{
   userActivity: () => void;
   connectToSiteEvent: (info: { origin: string }) => void;
   sessionExpired: () => void;
+  dappConnection: (data: { origin: string; address: string }) => void;
+  screenView: (data: ScreenViewParams) => void;
 }>();
