@@ -60,7 +60,7 @@ jobs:
           channel-id: 'C04JLLQRB43'
           payload: |
             {
-              "text": "Build succeeded",
+              "text": "Build succeeded: ${{ github.event.pull_request.title }}",
               "icon_emoji": ":nyancat:",
               "blocks": [
                 {
@@ -96,7 +96,7 @@ jobs:
           channel-id: 'C04JLLQRB43'
           payload: |
             {
-              "text": "Build failed",
+              "text": "Build failed: ${{ github.event.pull_request.title }}",
               "icon_emoji": ":cry-cat:",
               "blocks": [
                 {
