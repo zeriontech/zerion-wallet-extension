@@ -36,19 +36,6 @@ function ActionButton<As extends ElementType = 'a'>({
 
 const ZERION_ORIGIN = 'https://app.zerion.io';
 
-function findActionTab(
-  tabs: browser.Tabs.Tab[],
-  pathname: string
-): browser.Tabs.Tab | undefined {
-  return tabs.find((tab) => {
-    if (!tab.url) {
-      return false;
-    }
-    const url = new URL(tab.url);
-    return url.origin === ZERION_ORIGIN && url.pathname === pathname;
-  });
-}
-
 export function ActionButtonsRow() {
   const { data: wallet } = useQuery('wallet/uiGetCurrentWallet', () => {
     return walletPort.request('uiGetCurrentWallet');
@@ -71,41 +58,27 @@ export function ActionButtonsRow() {
     }
     return params;
   }, [wallet]);
-
-  const { data: tabs } = useQuery('browser/tabs', () => browser.tabs.query({}));
-  const { mutate: updateTab } = useMutation(
-    async ({
-      tab,
-      params,
-    }: {
-      tab: browser.Tabs.Tab;
-      params: URLSearchParams;
-    }) => {
-      if (tab.url) {
-        const url = new URL(tab.url);
-        url.search = params.toString();
-        browser.tabs.update(tab.id, { active: true, url: url.toString() });
-      }
-    }
+  const { data: activeTabs } = useQuery('browser/activeTab', () =>
+    browser.tabs.query({ active: true, currentWindow: true })
   );
-
+  const activeTab = activeTabs ? activeTabs[0] : null;
+  const { mutate: updateTab } = useMutation(
+    async ({ tab, url }: { tab: browser.Tabs.Tab; url: URL }) =>
+      browser.tabs.update(tab.id, { url: url.toString() })
+  );
   if (!addWalletParams || !wallet) {
     return null;
   }
-
-  const createActionHandler =
-    (pathname: string) => (event: React.MouseEvent<HTMLElement>) => {
-      acceptOrigin({
-        origin: ZERION_ORIGIN,
-        address: wallet.address,
-      });
-
-      const actionTab = tabs ? findActionTab(tabs, pathname) : null;
-      if (actionTab) {
-        updateTab({ tab: actionTab, params: addWalletParams });
-        event.preventDefault();
-      }
-    };
+  const performAction = (event: React.MouseEvent<HTMLElement>) => {
+    acceptOrigin({ origin: ZERION_ORIGIN, address: wallet.address });
+    const href = event.currentTarget.getAttribute('href');
+    const url = activeTab?.url ? new URL(activeTab.url) : null;
+    if (href && activeTab && url && url.origin == ZERION_ORIGIN) {
+      url.search = addWalletParams.toString();
+      updateTab({ tab: activeTab, url });
+      event.preventDefault();
+    }
+  };
 
   return (
     <ul
@@ -123,7 +96,7 @@ export function ActionButtonsRow() {
           title="Swap"
           icon={<SwapIcon />}
           href={`https://app.zerion.io/swap?${addWalletParams}`}
-          onClick={createActionHandler('/swap')}
+          onClick={performAction}
           target="_blank"
           rel="noopener noreferrer"
         />
@@ -133,7 +106,7 @@ export function ActionButtonsRow() {
           title="Send"
           icon={<SendIcon />}
           href={`https://app.zerion.io/send?${addWalletParams}`}
-          onClick={createActionHandler('/send/token')}
+          onClick={performAction}
           target="_blank"
           rel="noopener noreferrer"
         />
@@ -151,7 +124,7 @@ export function ActionButtonsRow() {
           title="Bridge"
           icon={<BridgeIcon />}
           href={`https://app.zerion.io/bridge?${addWalletParams}`}
-          onClick={createActionHandler('/bridge')}
+          onClick={performAction}
           target="_blank"
           rel="noopener noreferrer"
         />
