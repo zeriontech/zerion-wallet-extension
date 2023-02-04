@@ -37,7 +37,7 @@ function RevokeAllPermissionsComponent({
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   return (
     <>
-      <BottomSheetDialog ref={dialogRef}>
+      <BottomSheetDialog ref={dialogRef} style={{ height: '30vh' }}>
         <GenericPrompt message="The websites will no longer see your addresses, but they can request access again" />
       </BottomSheetDialog>
       <SurfaceList
