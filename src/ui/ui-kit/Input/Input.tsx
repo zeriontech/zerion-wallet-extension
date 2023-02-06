@@ -1,5 +1,7 @@
 import React from 'react';
+import cx from 'classnames';
 import { textParams } from 'src/ui/ui-kit/UIText/UIText';
+import * as s from './styles.module.css';
 
 const [fontSize, lineHeight, fontWeight, letterSpacing] =
   textParams['body/regular'];
@@ -11,19 +13,16 @@ const inputFontStyle = {
 };
 
 const InputComponent = (
-  { style, ...props }: React.InputHTMLAttributes<HTMLInputElement>,
+  { style, className, ...props }: React.InputHTMLAttributes<HTMLInputElement>,
   ref: React.Ref<HTMLInputElement>
 ) => {
   return (
     <input
       ref={ref}
+      className={cx(className, s.input)}
       {...props}
       style={{
         ...inputFontStyle,
-        backgroundColor: 'var(--neutral-200)',
-        padding: '10px 12px',
-        border: '1px solid var(--neutral-200)',
-        borderRadius: 8,
         ...style,
       }}
     />
