@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useId, useMemo } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import type { PublicUser } from 'src/shared/types/PublicUser';
@@ -14,12 +14,7 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { Input } from 'src/ui/ui-kit/Input';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import ZerionLogo from 'jsx:src/ui/assets/zerion-squircle.svg';
-import ZerionLogoText from 'jsx:src/ui/assets/zerion-logo-text.svg';
-import NewWindowIcon from 'jsx:src/ui/assets/new-window.svg';
-import { apostrophe } from 'src/ui/shared/typography';
-import backgroundArts2 from 'src/ui/assets/background-arts-2.svg';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
-import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 
 export function Login() {
   const [params] = useSearchParams();
@@ -32,6 +27,8 @@ export function Login() {
   } = useQuery('user', () => {
     return accountPublicRPCPort.request('getExistingUser');
   });
+  const formId = useId();
+  const inputId = useId();
   const loginMutation = useMutation(
     ({ user, password }: { user: PublicUser; password: string }) =>
       accountPublicRPCPort.request('login', { user, password }),
@@ -44,10 +41,10 @@ export function Login() {
   useBodyStyle(
     useMemo(
       () => ({
-        backgroundColor: 'var(--neutral-100)',
-        backgroundImage: `url(${backgroundArts2})`,
-        backgroundRepeat: 'no-repeat',
-        backgroundSize: 'cover',
+        backgroundColor: 'var(--white)',
+        // backgroundImage: `url(${backgroundArts2})`,
+        // backgroundRepeat: 'no-repeat',
+        // backgroundSize: 'cover',
       }),
       []
     )
@@ -70,15 +67,10 @@ export function Login() {
         style={{ placeSelf: 'center', alignSelf: 'center' }}
       >
         <ZerionLogo style={{ width: 54, height: 54 }} />
-        <ZerionLogoText style={{ height: 17 }} />
       </HStack>
       <Spacer height={86} />
-      <VStack gap={8} style={{ textAlign: 'center' }}>
-        <UIText kind="headline/h1">Welcome back!</UIText>
-        <UIText kind="body/regular">{`It${apostrophe}s nice to see you again`}</UIText>
-      </VStack>
-      <Spacer height={24} />
       <form
+        id={formId}
         onSubmit={(event) => {
           event.preventDefault();
           const password = new FormData(event.currentTarget).get('password') as
@@ -93,9 +85,18 @@ export function Login() {
           loginMutation.mutate({ user, password });
         }}
       >
-        <VStack gap={16}>
+        <VStack gap={24}>
+          <UIText
+            as="label"
+            htmlFor={inputId}
+            kind="headline/h1"
+            style={{ textAlign: 'center' }}
+          >
+            Enter Password
+          </UIText>
           <VStack gap={4}>
             <Input
+              id={inputId}
               style={{ backgroundColor: 'var(--white)' }}
               autoFocus={true}
               type="password"
@@ -109,34 +110,25 @@ export function Login() {
               </UIText>
             ) : null}
           </VStack>
-          <Button disabled={loginMutation.isLoading}>
-            {loginMutation.isLoading ? 'Checking...' : 'Unlock'}
-          </Button>
           <UIText
             as={UnstyledLink}
             to="/forgot-password"
             kind="body/accent"
-            color="var(--primary)"
+            color="var(--neutral-500)"
             style={{ textAlign: 'center' }}
           >
             <span className={s.hoverUnderline}>Forgot password?</span>
           </UIText>
         </VStack>
       </form>
-      <div style={{ marginTop: 'auto', textAlign: 'center' }}>
-        <Button
-          as={UnstyledAnchor}
-          kind="regular"
-          color="var(--neutral-500)"
-          href="https://app.zerion.io"
-          target="_blank"
-        >
-          <HStack gap={8} alignItems="center">
-            <span>app.zerion.io</span>
-            <NewWindowIcon style={{ width: 20, height: 20 }} />
-          </HStack>
-        </Button>
-      </div>
+      <Spacer height={24} />
+      <Button
+        style={{ marginTop: 'auto' }}
+        form={formId}
+        disabled={loginMutation.isLoading}
+      >
+        {loginMutation.isLoading ? 'Checking...' : 'Unlock'}
+      </Button>
       <PageBottom />
     </PageColumn>
   );
