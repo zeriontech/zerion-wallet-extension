@@ -516,7 +516,12 @@ export function Feed() {
       (statusFilter === 'completed' || statusFilter === 'dismissed'));
 
   useEffect(() => {
-    if (!fetching && !abilities?.length) {
+    if (
+      !fetching &&
+      !abilities?.length &&
+      statusFilter === 'open' &&
+      typeFilter === 'all'
+    ) {
       walletPort.request('daylightAction', {
         eventName: 'user has no abilities',
         params: {
@@ -524,7 +529,7 @@ export function Feed() {
         },
       });
     }
-  }, [fetching, abilities?.length, singleAddress]);
+  }, [fetching, abilities?.length, singleAddress, statusFilter, typeFilter]);
 
   return (
     <VStack gap={16}>
