@@ -59,12 +59,6 @@ export function VerifyUser({
               name="password"
               placeholder="Enter password"
               required={true}
-              style={{
-                backgroundColor: 'var(--neutral-200)',
-                padding: '7px 11px',
-                border: '1px solid var(--neutral-200)',
-                borderRadius: 8,
-              }}
             />
             {loginMutation.error ? (
               <UIText kind="caption/reg" color="var(--negative-500)">

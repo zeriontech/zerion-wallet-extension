@@ -95,7 +95,7 @@ function ImportForm({
           required={true}
           label={
             <UIText kind="caption/regular" color="var(--neutral-600)">
-              Use spaces between words if using a seed phrase
+              Use spaces between words if using a recovery phrase
             </UIText>
           }
           hint={

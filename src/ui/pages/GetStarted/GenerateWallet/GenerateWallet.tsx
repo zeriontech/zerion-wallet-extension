@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useMutation } from 'react-query';
-import { useNavigate } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageHeading } from 'src/ui/components/PageHeading';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -9,12 +8,14 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { getError } from 'src/shared/errors/getError';
 import { WithPasswordSession } from 'src/ui/components/VerifyUser/WithPasswordSession';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
+import { IdempotentRequest } from 'src/ui/shared/IdempotentRequest';
 import {
   DecorativeMessage,
   DecorativeMessageDone,
@@ -26,9 +27,10 @@ enum Step {
 }
 
 function GenerateWalletView() {
-  const navigate = useNavigate();
   const [steps, setSteps] = useState(() => new Set<Step>());
   const addStep = (step: Step) => setSteps((steps) => new Set(steps).add(step));
+
+  const [idempotentRequest] = useState(() => new IdempotentRequest());
 
   const {
     mutate: generateMnemonicWallet,
@@ -55,17 +57,22 @@ function GenerateWalletView() {
     }
   }, [generateMnemonicWallet, status]);
 
-  const finalizeMutation = useMutation(
+  const { mutate: finalize, ...finalizeMutation } = useMutation(
     async (address: string) => {
-      await accountPublicRPCPort.request('saveUserAndWallet');
-      return setCurrentAddress({ address });
-    },
-    {
-      onSuccess() {
-        navigate('/overview');
-      },
+      return idempotentRequest.request(address, async () => {
+        await accountPublicRPCPort.request('saveUserAndWallet');
+        return setCurrentAddress({ address });
+      });
     }
   );
+
+  const address = data?.address;
+  useEffect(() => {
+    if (address) {
+      // NOTE: Make sure "finalize" is idempotent
+      finalize(address);
+    }
+  }, [address, finalize]);
 
   return (
     <PageColumn>
@@ -126,13 +133,7 @@ function GenerateWalletView() {
               {getError(finalizeMutation.error).message}
             </UIText>
           ) : null}
-          <Button
-            ref={focusNode}
-            disabled={finalizeMutation.isLoading}
-            onClick={async () => {
-              finalizeMutation.mutate(data.address);
-            }}
-          >
+          <Button as={UnstyledLink} to="/overview" ref={focusNode}>
             Finish
           </Button>
         </VStack>
