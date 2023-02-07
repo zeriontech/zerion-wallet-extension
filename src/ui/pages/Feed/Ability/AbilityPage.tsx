@@ -18,6 +18,7 @@ import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { SurfaceItemButton, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import type { WalletAbility } from 'src/shared/types/Daylight';
 import { invariant } from 'src/shared/invariant';
+import { walletPort } from 'src/ui/shared/channels';
 import { getAbility, getAbilityLinkTitle } from '../daylight';
 import { markAbility, unmarkAbility, useFeedInfo } from '../stored';
 import { Ability } from './Ability';
@@ -236,6 +237,12 @@ export function AbilityPage() {
             target="_blank"
             rel="noopener noreferrer"
             style={{ position: 'fixed', bottom: 48, left: 16, right: 16 }}
+            onClick={() => {
+              walletPort.request('daylightAction', {
+                eventName: 'click on ability link',
+                abilityId: data.ability.uid,
+              });
+            }}
           >
             <HStack gap={8} justifyContent="center">
               {linkTitle}

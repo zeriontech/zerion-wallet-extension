@@ -21,6 +21,7 @@ import type {
   WalletAbility,
   WalletAbilityType,
 } from 'src/shared/types/Daylight';
+import { walletPort } from 'src/ui/shared/channels';
 import { getAbilityLinkTitle, useWalletAbilities } from './daylight';
 import type { StatusFilterParams } from './daylight';
 import { Ability } from './Ability/Ability';
@@ -63,7 +64,15 @@ function StatusFilter({
   } = useSelect({
     items: STATUS_ITEMS,
     selectedItem: value,
-    onSelectedItemChange: ({ selectedItem }) => onChange(selectedItem),
+    onSelectedItemChange: ({ selectedItem }) => {
+      onChange(selectedItem);
+      if (selectedItem) {
+        walletPort.request('daylightAction', {
+          eventName: 'change abilities status filter',
+          type: selectedItem,
+        });
+      }
+    },
   });
 
   return (
@@ -213,7 +222,15 @@ function TypeFilter({
   } = useSelect({
     items: TYPE_ITEMS,
     selectedItem: value,
-    onSelectedItemChange: ({ selectedItem }) => onChange(selectedItem),
+    onSelectedItemChange: ({ selectedItem }) => {
+      onChange(selectedItem);
+      if (selectedItem) {
+        walletPort.request('daylightAction', {
+          eventName: 'change abilities type filter',
+          type: selectedItem,
+        });
+      }
+    },
   });
 
   return (
@@ -368,6 +385,12 @@ function AbilityCard({
           href={ability.action.linkUrl}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() =>
+            walletPort.request('daylightAction', {
+              eventName: 'click on ability link',
+              abilityId: ability.uid,
+            })
+          }
         >
           <HStack gap={8} justifyContent="center">
             {linkTitle}
@@ -447,6 +470,16 @@ export function Feed() {
     ),
     limit: ABILITIES_PER_PAGE,
     onSuccess: (data) => {
+      if (
+        !data.pages[0]?.abilities.length &&
+        statusFilter === 'open' &&
+        typeFilter === 'all'
+      ) {
+        walletPort.request('daylightAction', {
+          eventName: 'user has no abilities',
+          address: singleAddress,
+        });
+      }
       // we want to fetch next page imidiatelly
       // if we've already marked as completed more then half of fetched page
       const lastPage = data.pages[data.pages.length - 1];

@@ -37,7 +37,7 @@ import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired'
 import { flagAsDapp, isFlaggedAsDapp } from 'src/shared/dapps';
 import { isKnownDapp } from 'src/shared/dapps/known-dapps';
 import type { WalletAbility } from 'src/shared/types/Daylight';
-import { emitter, ScreenViewParams } from '../events';
+import { DaylightEventParams, emitter, ScreenViewParams } from '../events';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import { SeedType } from './model/SeedType';
@@ -617,6 +617,11 @@ export class Wallet {
     this.ensureRecord(this.record);
     this.record = Model.markAbility(this.record, { ability, action });
     this.updateWalletStore(this.record);
+    emitter.emit('daylightAction', {
+      eventName: 'user mark ability',
+      abilityId: ability.uid,
+      action,
+    });
   }
 
   async unmarkAbility({
@@ -629,6 +634,10 @@ export class Wallet {
     this.ensureRecord(this.record);
     this.record = Model.unmarkAbility(this.record, { abilityId });
     this.updateWalletStore(this.record);
+    emitter.emit('daylightAction', {
+      eventName: 'user unmark ability',
+      abilityId,
+    });
   }
 
   async wallet_setWalletNameFlag({
@@ -881,6 +890,14 @@ export class Wallet {
     // walletPort.request('sendEvent', { eventName, params }).
     this.verifyInternalOrigin(context);
     emitter.emit('screenView', params);
+  }
+
+  async daylightAction({
+    context,
+    params,
+  }: WalletMethodParams<DaylightEventParams>) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('daylightAction', params);
   }
 }
 
