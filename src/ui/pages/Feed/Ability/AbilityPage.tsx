@@ -240,9 +240,7 @@ export function AbilityPage() {
             onClick={() => {
               walletPort.request('daylightAction', {
                 eventName: 'click on ability link',
-                params: {
-                  abilityId: data.ability.uid,
-                },
+                abilityId: data.ability.uid,
               });
             }}
           >

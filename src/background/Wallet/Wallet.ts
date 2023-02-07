@@ -619,10 +619,8 @@ export class Wallet {
     this.updateWalletStore(this.record);
     emitter.emit('daylightAction', {
       eventName: 'user mark ability',
-      params: {
-        abilityId: ability.uid,
-        action,
-      },
+      abilityId: ability.uid,
+      action,
     });
   }
 
@@ -638,9 +636,7 @@ export class Wallet {
     this.updateWalletStore(this.record);
     emitter.emit('daylightAction', {
       eventName: 'user unmark ability',
-      params: {
-        abilityId,
-      },
+      abilityId,
     });
   }
 

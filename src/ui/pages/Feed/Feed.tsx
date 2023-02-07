@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useSelect } from 'downshift';
 import cn from 'classnames';
 import { useMutation } from 'react-query';
@@ -69,9 +69,7 @@ function StatusFilter({
       if (selectedItem) {
         walletPort.request('daylightAction', {
           eventName: 'change abilities status filter',
-          params: {
-            type: selectedItem,
-          },
+          type: selectedItem,
         });
       }
     },
@@ -229,9 +227,7 @@ function TypeFilter({
       if (selectedItem) {
         walletPort.request('daylightAction', {
           eventName: 'change abilities type filter',
-          params: {
-            type: selectedItem,
-          },
+          type: selectedItem,
         });
       }
     },
@@ -392,9 +388,7 @@ function AbilityCard({
           onClick={() =>
             walletPort.request('daylightAction', {
               eventName: 'click on ability link',
-              params: {
-                abilityId: ability.uid,
-              },
+              abilityId: ability.uid,
             })
           }
         >
@@ -476,6 +470,16 @@ export function Feed() {
     ),
     limit: ABILITIES_PER_PAGE,
     onSuccess: (data) => {
+      if (
+        !data.pages[0]?.abilities.length &&
+        statusFilter === 'open' &&
+        typeFilter === 'all'
+      ) {
+        walletPort.request('daylightAction', {
+          eventName: 'user has no abilities',
+          address: singleAddress,
+        });
+      }
       // we want to fetch next page imidiatelly
       // if we've already marked as completed more then half of fetched page
       const lastPage = data.pages[data.pages.length - 1];
@@ -514,22 +518,6 @@ export function Feed() {
       (statusFilter === 'open' || statusFilter === 'expired')) ||
     (isLocalFetching &&
       (statusFilter === 'completed' || statusFilter === 'dismissed'));
-
-  useEffect(() => {
-    if (
-      !fetching &&
-      !abilities?.length &&
-      statusFilter === 'open' &&
-      typeFilter === 'all'
-    ) {
-      walletPort.request('daylightAction', {
-        eventName: 'user has no abilities',
-        params: {
-          address: singleAddress,
-        },
-      });
-    }
-  }, [fetching, abilities?.length, singleAddress, statusFilter, typeFilter]);
 
   return (
     <VStack gap={16}>
