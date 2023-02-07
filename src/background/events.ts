@@ -11,6 +11,11 @@ export interface ScreenViewParams {
   address: string | null;
 }
 
+export interface DaylightEventParams {
+  eventName: string;
+  params: object;
+}
+
 export const emitter = createNanoEvents<{
   accountsChanged: () => void;
   chainChanged: () => void;
@@ -35,4 +40,5 @@ export const emitter = createNanoEvents<{
   sessionExpired: () => void;
   dappConnection: (data: { origin: string; address: string }) => void;
   screenView: (data: ScreenViewParams) => void;
+  daylightAction: (data: DaylightEventParams) => void;
 }>();

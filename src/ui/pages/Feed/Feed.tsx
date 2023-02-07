@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelect } from 'downshift';
 import cn from 'classnames';
 import { useMutation } from 'react-query';
@@ -21,6 +21,7 @@ import type {
   WalletAbility,
   WalletAbilityType,
 } from 'src/shared/types/Daylight';
+import { walletPort } from 'src/ui/shared/channels';
 import { getAbilityLinkTitle, useWalletAbilities } from './daylight';
 import type { StatusFilterParams } from './daylight';
 import { Ability } from './Ability/Ability';
@@ -63,7 +64,17 @@ function StatusFilter({
   } = useSelect({
     items: STATUS_ITEMS,
     selectedItem: value,
-    onSelectedItemChange: ({ selectedItem }) => onChange(selectedItem),
+    onSelectedItemChange: ({ selectedItem }) => {
+      onChange(selectedItem);
+      if (selectedItem) {
+        walletPort.request('daylightAction', {
+          eventName: 'change abilities status filter',
+          params: {
+            type: selectedItem,
+          },
+        });
+      }
+    },
   });
 
   return (
@@ -213,7 +224,17 @@ function TypeFilter({
   } = useSelect({
     items: TYPE_ITEMS,
     selectedItem: value,
-    onSelectedItemChange: ({ selectedItem }) => onChange(selectedItem),
+    onSelectedItemChange: ({ selectedItem }) => {
+      onChange(selectedItem);
+      if (selectedItem) {
+        walletPort.request('daylightAction', {
+          eventName: 'change abilities type filter',
+          params: {
+            type: selectedItem,
+          },
+        });
+      }
+    },
   });
 
   return (
@@ -368,6 +389,14 @@ function AbilityCard({
           href={ability.action.linkUrl}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() =>
+            walletPort.request('daylightAction', {
+              eventName: 'click on ability link',
+              params: {
+                abilityId: ability.uid,
+              },
+            })
+          }
         >
           <HStack gap={8} justifyContent="center">
             {linkTitle}
@@ -485,6 +514,17 @@ export function Feed() {
       (statusFilter === 'open' || statusFilter === 'expired')) ||
     (isLocalFetching &&
       (statusFilter === 'completed' || statusFilter === 'dismissed'));
+
+  useEffect(() => {
+    if (!fetching && !abilities?.length) {
+      walletPort.request('daylightAction', {
+        eventName: 'user has no abilities',
+        params: {
+          address: singleAddress,
+        },
+      });
+    }
+  }, [fetching, abilities?.length, singleAddress]);
 
   return (
     <VStack gap={16}>

@@ -7,7 +7,8 @@ type MetabaseEvent =
   | 'dapp_connection'
   | 'signed_message'
   | 'signed_transaction'
-  | 'client_error';
+  | 'client_error'
+  | 'daylight_action';
 
 type BaseParams<E = MetabaseEvent> = { request_name: E };
 
