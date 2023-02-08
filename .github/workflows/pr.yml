@@ -107,7 +107,7 @@ jobs:
                   "elements": [
                     {
                       "type": "mrkdwn",
-                      "text": "*Initiated by: ${{ github.triggering_actor }}"
+                      "text": "*Initiated by*: ${{ github.triggering_actor }}"
                     }
                   ]
                 }

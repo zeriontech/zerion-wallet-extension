@@ -1,4 +1,4 @@
-import React from 'React';
+import React from 'react';
 import type { Asset } from 'defi-sdk';
 import { Chain } from 'src/modules/networks/Chain';
 import { Networks } from 'src/modules/networks/Networks';
