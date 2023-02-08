@@ -39,7 +39,7 @@ export function PayWithLine({
           component: (
             <VStack gap={4}>
               <UIText kind="caption/regular" color="var(--neutral-500)">
-                Pay with
+                Send
               </UIText>
 
               <Media
