@@ -17,7 +17,7 @@ export function scheduleAlarms() {
     // To my understanding, if an alarm with an existing name is created, it's
     // not gonna create duplicate alarms. Only one will be active and that's what we need
     browser.alarms.create('lastActiveCheck', {
-      periodInMinutes: 20, // Is this too frequent or too infrequent?
+      periodInMinutes: 5, // Is this too frequent or too infrequent?
     });
   });
 

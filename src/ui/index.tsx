@@ -17,7 +17,9 @@ async function registerServiceWorker() {
   /** Seems to be recommended when clients always expect a service worker */
   const registration = await navigator.serviceWorker.getRegistration();
   if (registration) {
-    return registration.update();
+    // We can try calling an update method here, but I'm not sure
+    // it does anything useful. I'll comment it out for now as an experiment.
+    // return registration.update();
   } else {
     const { background } = browser.runtime.getManifest();
     if (background && 'service_worker' in background) {

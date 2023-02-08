@@ -5,6 +5,7 @@ import {
   isJsonRpcRequest,
   isJsonRpcResponse,
 } from '@json-rpc-tools/utils';
+import { BackgroundScriptUpdateHandler } from 'src/shared/core/BackgroundScriptUpdateHandler';
 
 const id = nanoid();
 
@@ -40,13 +41,15 @@ function createPort() {
 
 let port = createPort();
 
-browser.runtime.onMessage.addListener((request) => {
-  if (request.event === 'background-initialized') {
+new BackgroundScriptUpdateHandler({
+  portName: 'content-script/keepAlive',
+  performHandshake: false,
+  onActivate: () => {
     // content-scripts may hear this event when the background service worker
     // is re-activated, meaning we need to establish new port connections
     port = createPort();
-  }
-});
+  },
+}).keepAlive();
 
 broadcastChannel.addEventListener('message', (event) => {
   const { data } = event;
