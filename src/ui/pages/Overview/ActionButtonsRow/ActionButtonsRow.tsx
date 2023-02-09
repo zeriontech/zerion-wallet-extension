@@ -74,9 +74,9 @@ export function ActionButtonsRow() {
     const href = event.currentTarget.getAttribute('href');
     const url = activeTab?.url ? new URL(activeTab.url) : null;
     if (href && activeTab && url && url.origin == ZERION_ORIGIN) {
-      url.search = addWalletParams.toString();
-      updateTab({ tab: activeTab, url });
       event.preventDefault();
+      url.href = href;
+      updateTab({ tab: activeTab, url });
     }
   };
 
