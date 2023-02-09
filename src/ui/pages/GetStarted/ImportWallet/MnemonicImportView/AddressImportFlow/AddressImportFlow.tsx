@@ -98,7 +98,7 @@ function AddressImportList({
         <PageBottom />
       </PageColumn>
 
-      <PageStickyFooter lineColor="var(--neutral-300)" style={{ bottom: 29 }}>
+      <PageStickyFooter lineColor="var(--neutral-300)">
         <VStack
           style={{
             marginTop: 8,
