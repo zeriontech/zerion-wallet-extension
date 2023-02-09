@@ -113,11 +113,7 @@ function RemoveGroupConfirmationDialog({
   return (
     <form
       method="dialog"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-      }}
+      style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
     >
       <VStack gap={8}>
         <WarningIcon
