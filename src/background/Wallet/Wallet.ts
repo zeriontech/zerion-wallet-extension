@@ -43,8 +43,8 @@ import { chainConfigStore } from 'src/modules/ethereum/chains/ChainConfigStore';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { isSiweLike } from 'src/modules/ethereum/message-signing/SIWE';
-import { DaylightEventParams, emitter, ScreenViewParams } from '../events';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
+import { DaylightEventParams, emitter, ScreenViewParams } from '../events';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import { SeedType } from './model/SeedType';
@@ -653,12 +653,9 @@ export class Wallet {
     });
   }
 
-  async getRemoteConfigValue({
-    context,
-    params: { key },
-  }: WalletMethodParams<{ key: string }>) {
+  async canCreateInitialWallet({ context }: WalletMethodParams) {
     this.verifyInternalOrigin(context);
-    return getRemoteConfigValue(key);
+    return getRemoteConfigValue('can_create_initial_wallet');
   }
 
   async wallet_setWalletNameFlag({

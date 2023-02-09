@@ -83,12 +83,9 @@ function Options() {
     [walletGroups]
   );
 
-  const { data: allowCreateWallet } = useQuery(
-    `wallet/getRemoteConfigValue(allow_create_wallet)`,
-    () =>
-      walletPort.request('getRemoteConfigValue', {
-        key: 'allow_create_wallet',
-      }),
+  const { data: canCreateInitialWallet } = useQuery(
+    `wallet/canCreateInitialWallet`,
+    () => walletPort.request('canCreateInitialWallet'),
     { useErrorBoundary: true, suspense: true }
   );
 
@@ -120,7 +117,7 @@ function Options() {
         </FillView>
 
         <VStack gap={16}>
-          {allowCreateWallet && (
+          {canCreateInitialWallet && (
             <NewWalletOption
               beforeCreate={beforeCreate}
               mnemonicWalletGroups={mnemonicGroups || null}

@@ -5,7 +5,7 @@ import { RemoteConfig } from '../types';
 const REMOTE_CONFIG_API_URL = 'https://proxy.zerion.io';
 
 const defaultConfig: RemoteConfig = {
-  allow_create_wallet: false,
+  can_create_initial_wallet: false,
 };
 
 async function fetchRemoteConfig(): Promise<RemoteConfig | undefined> {
@@ -31,9 +31,6 @@ export const firebase: ConfigPlugin = {
     });
   },
 
-  /**
-   * Reads the parameter value by a given key.
-   */
   get(key: keyof RemoteConfig) {
     const config = remoteConfig ?? defaultConfig;
     const value = config[key];
