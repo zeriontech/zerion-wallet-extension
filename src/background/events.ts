@@ -12,7 +12,7 @@ export interface ScreenViewParams {
 }
 
 export interface DaylightEventParams {
-  eventName: string;
+  event_name: string;
   [key: string]: string;
 }
 

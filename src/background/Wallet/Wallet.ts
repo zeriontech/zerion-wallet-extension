@@ -618,9 +618,12 @@ export class Wallet {
     this.record = Model.markAbility(this.record, { ability, action });
     this.updateWalletStore(this.record);
     emitter.emit('daylightAction', {
-      eventName: 'user mark ability',
-      abilityId: ability.uid,
-      action,
+      event_name:
+        action === 'complete'
+          ? 'Perks: Complete Tab Clicked'
+          : 'Perks: Dismiss Tab Clicked',
+      ability_id: ability.uid,
+      perk_type: ability.type,
     });
   }
 
@@ -635,8 +638,8 @@ export class Wallet {
     this.record = Model.unmarkAbility(this.record, { abilityId });
     this.updateWalletStore(this.record);
     emitter.emit('daylightAction', {
-      eventName: 'user unmark ability',
-      abilityId,
+      event_name: 'Perks: Reopen Tab Clicked',
+      ability_id: abilityId,
     });
   }
 
@@ -887,7 +890,7 @@ export class Wallet {
 
   async screenView({ context, params }: WalletMethodParams<ScreenViewParams>) {
     // NOTE: maybe consider adding a more generic method, e.g.:
-    // walletPort.request('sendEvent', { eventName, params }).
+    // walletPort.request('sendEvent', { event_name, params }).
     this.verifyInternalOrigin(context);
     emitter.emit('screenView', params);
   }

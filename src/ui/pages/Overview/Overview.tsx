@@ -260,7 +260,17 @@ function OverviewComponent() {
           <SegmentedControlLink to="/overview/history">
             History <PendingTransactionsIndicator />
           </SegmentedControlLink>
-          <SegmentedControlLink to="/overview/feed">Perks</SegmentedControlLink>
+          <SegmentedControlLink
+            to="/overview/feed"
+            onClick={() => {
+              walletPort.request('daylightAction', {
+                event_name: 'Perks: Card Opened',
+                address: singleAddress,
+              });
+            }}
+          >
+            Perks
+          </SegmentedControlLink>
         </SegmentedControlGroup>
       </PageFullBleedColumn>
       <Spacer height={24} />

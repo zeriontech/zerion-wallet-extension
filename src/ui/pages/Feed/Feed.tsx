@@ -68,8 +68,8 @@ function StatusFilter({
       onChange(selectedItem);
       if (selectedItem) {
         walletPort.request('daylightAction', {
-          eventName: 'change abilities status filter',
-          type: selectedItem,
+          event_name: 'Perks: Select Status Filter',
+          perk_status: selectedItem,
         });
       }
     },
@@ -226,8 +226,8 @@ function TypeFilter({
       onChange(selectedItem);
       if (selectedItem) {
         walletPort.request('daylightAction', {
-          eventName: 'change abilities type filter',
-          type: selectedItem,
+          event_name: 'Perks: Select Type Filter',
+          perk_type: selectedItem,
         });
       }
     },
@@ -365,7 +365,16 @@ function AbilityCard({
           (filter === 'completed' || filter === 'dismissed'),
       })}
     >
-      <UnstyledLink to={`/ability/${ability.uid}`}>
+      <UnstyledLink
+        to={`/ability/${ability.uid}`}
+        onClick={() => {
+          walletPort.request('daylightAction', {
+            event_name: 'Perks: Card Opened',
+            ability_id: ability.uid,
+            perk_type: ability.type,
+          });
+        }}
+      >
         <Ability ability={ability} mode="compact" status={initialStatus} />
       </UnstyledLink>
       <HStack
@@ -385,12 +394,14 @@ function AbilityCard({
           href={ability.action.linkUrl}
           target="_blank"
           rel="noopener noreferrer"
-          onClick={() =>
+          onClick={() => {
             walletPort.request('daylightAction', {
-              eventName: 'click on ability link',
-              abilityId: ability.uid,
-            })
-          }
+              event_name: 'Perks: Link Clicked',
+              ability_id: ability.uid,
+              perk_type: ability.type,
+              source: 'feed',
+            });
+          }}
         >
           <HStack gap={8} justifyContent="center">
             {linkTitle}
@@ -476,7 +487,7 @@ export function Feed() {
         typeFilter === 'all'
       ) {
         walletPort.request('daylightAction', {
-          eventName: 'user has no abilities',
+          event_name: 'Perks: Empty List Shown',
           address: singleAddress,
         });
       }

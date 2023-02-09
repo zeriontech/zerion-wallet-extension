@@ -30,10 +30,10 @@ function trackAppEvents({ account }: { account: Account }) {
     sendToMetabase('screen_view', params);
   });
 
-  emitter.on('daylightAction', ({ eventName, ...data }) => {
+  emitter.on('daylightAction', ({ event_name, ...data }) => {
     const params = createParams({
       request_name: 'daylight_action',
-      eventName,
+      event_name,
       ...data,
     });
     sendToMetabase('daylight_action', params);
