@@ -90,6 +90,7 @@ function ImportForm({
         }}
       >
         <SecretInput
+          showRevealElement={false}
           autoFocus={true}
           name="seedOrPrivateKey"
           required={true}

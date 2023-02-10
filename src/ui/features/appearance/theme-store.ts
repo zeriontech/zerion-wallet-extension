@@ -27,13 +27,17 @@ const colorSchemeMedia = window.matchMedia('(prefers-color-scheme: dark)');
 
 export const isSupported = true;
 
-class ThemeStore extends Store<{ theme: Theme }> {
-  isDark() {
-    return this.state.theme === Theme.dark;
+interface State {
+  theme: Theme;
+}
+
+export class ThemeStore extends Store<State> {
+  static isDark(state: State) {
+    return state.theme === Theme.dark;
   }
 
-  isLight() {
-    return this.state.theme === Theme.light;
+  static isLight(state: State) {
+    return state.theme === Theme.light;
   }
 }
 

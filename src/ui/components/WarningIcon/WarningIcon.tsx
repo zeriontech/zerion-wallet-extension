@@ -1,4 +1,5 @@
 import React from 'react';
+import WarningIconTrimmed from 'jsx:src/ui/assets/warning-icon-trimmed.svg';
 
 const colors = {
   notice: { color: 'var(--notice-500)', glowColor: 'var(--notice-400)' },
@@ -10,7 +11,6 @@ export function WarningIcon({
   kind = 'notice',
   outlineStrokeWidth = 3,
   size = 22,
-  borderWidth = '2px',
   style,
 }: {
   kind?: 'notice' | 'negative';
@@ -21,20 +21,18 @@ export function WarningIcon({
   style?: React.CSSProperties;
 }) {
   const { color, glowColor } = colors[kind];
+  const iconSize = size - outlineStrokeWidth * 2;
   return (
     <div
       style={{
         userSelect: 'none',
-        width: size - outlineStrokeWidth * 2,
-        height: size - outlineStrokeWidth * 2,
+        width: iconSize,
+        height: iconSize,
         borderRadius: '50%',
         color,
-        border: `${borderWidth} solid ${color}`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontSize: size >= 44 ? 20 : 12,
-        fontWeight: size >= 44 ? 500 : undefined,
         margin: glow ? outlineStrokeWidth : undefined,
         boxShadow: glow
           ? `0 0 0px ${outlineStrokeWidth}px ${glowColor}`
@@ -42,7 +40,7 @@ export function WarningIcon({
         ...style,
       }}
     >
-      !
+      <WarningIconTrimmed style={{ width: iconSize, height: iconSize }} />
     </div>
   );
 }

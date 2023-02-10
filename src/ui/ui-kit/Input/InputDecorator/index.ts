@@ -1,0 +1,1 @@
+export { InputDecorator } from './InputDecorator';

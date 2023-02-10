@@ -12,6 +12,7 @@ import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 // import { Twinkle } from 'src/ui/ui-kit/Twinkle';
 // import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
 // import { FillView } from 'src/ui/components/FillView';
+import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { usePendingTransactions } from 'src/ui/transactions/usePendingTransactions';
@@ -119,6 +120,7 @@ function CurrentAccountControls() {
         title="Select Account"
       >
         <CurrentAccount wallet={wallet} />
+        <ArrowDownIcon />
       </Button>
       <CopyButton address={addressToCopy} />
     </HStack>

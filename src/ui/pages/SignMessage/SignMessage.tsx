@@ -22,7 +22,10 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 
-function ItemSurface({ style, ...props }: React.HTMLProps<HTMLDivElement>) {
+function ItemSurface({
+  style,
+  ...props
+}: Omit<React.HTMLProps<HTMLDivElement>, 'as' | 'ref'>) {
   const surfaceStyle = {
     ...style,
     padding: '10px 12px',

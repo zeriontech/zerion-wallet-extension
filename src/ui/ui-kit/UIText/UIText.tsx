@@ -53,7 +53,7 @@ export const textParams = {
   'small/accent': [14, 20, 500, '-0.2px'],
   'small/regular': [14, 20, 400, '-0.2px'],
   'caption/accent': [12, 16, 500, 'normal'],
-  'caption/regular': [12, 16, 400, 'normal'],
+  'caption/regular': [12, 16, 400, '0.01em'],
 } as const;
 
 export type Kind = keyof typeof textParams;
