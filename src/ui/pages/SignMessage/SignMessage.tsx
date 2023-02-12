@@ -25,7 +25,7 @@ import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 function ItemSurface({
   style,
   ...props
-}: Omit<React.HTMLProps<HTMLDivElement>, 'as' | 'ref'>) {
+}: React.HTMLAttributes<HTMLDivElement>) {
   const surfaceStyle = {
     ...style,
     padding: '10px 12px',
