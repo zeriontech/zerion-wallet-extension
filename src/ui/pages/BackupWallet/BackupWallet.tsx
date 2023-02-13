@@ -123,39 +123,18 @@ function Initial({ onSubmit }: { onSubmit: () => void }) {
 
 type BackupKind = 'reveal' | 'verify';
 
-function isInsideButton(node: HTMLElement | SVGElement | null) {
-  while (node) {
-    if (node.nodeName === 'BUTTON') {
-      return true;
-    }
-    node = node.parentElement;
-  }
-  return false;
-}
-
 function BlurredToggle({ children }: React.PropsWithChildren) {
   const [hidden, toggleHidden] = useReducer((x) => !x, true);
   const ref = useRef<HTMLButtonElement | null>(null);
   return (
-    <ZStack
-      // click handler here is just for a larger click area;
-      // semantically, click handler on the child button is enough
-      onClick={
-        hidden
-          ? (event) => {
-              if (!isInsideButton(event.target as HTMLElement)) {
-                toggleHidden();
-              }
-            }
-          : undefined
-      }
-      style={{ cursor: hidden ? 'pointer' : undefined }}
-    >
-      <UnstyledButton
+    <ZStack>
+      <Button
+        kind="ghost"
         ref={ref}
         type="button"
         aria-label="Visually reveal value"
-        style={{ placeSelf: 'end', zIndex: 1, padding: 12 }}
+        size={32}
+        style={{ placeSelf: 'end', zIndex: 1, marginRight: 4, marginBottom: 4 }}
         onClick={() => {
           toggleHidden();
         }}
@@ -168,7 +147,7 @@ function BlurredToggle({ children }: React.PropsWithChildren) {
             color: 'var(--primary)',
           },
         })}
-      </UnstyledButton>
+      </Button>
       <div
         style={{
           filter: hidden ? 'blur(5px)' : undefined,
@@ -243,13 +222,16 @@ function RevealSecret({
       <Spacer height={24} />
       <VStack gap={16}>
         <BlurredToggle>
-          <Surface padding={16}>
+          <Surface
+            padding={16}
+            style={{
+              paddingRight: 36, // because of toggle button on the right
+            }}
+          >
             <UIText
               kind={isMnemonic ? 'body/accent' : 'body/regular'}
               style={{
-                wordSpacing: 10,
-                lineHeight: 1.6,
-                textTransform: isMnemonic ? 'uppercase' : undefined,
+                textTransform: isMnemonic ? 'capitalize' : undefined,
                 wordBreak: 'break-word',
               }}
             >
