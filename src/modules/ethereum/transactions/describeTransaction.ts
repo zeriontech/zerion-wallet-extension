@@ -204,7 +204,7 @@ function describeSetApprovalForAll(
   if (selector === selectors.setApprovalForAll) {
     const abiCoder = new ethers.utils.AbiCoder();
     const [operator, _approved] = abiCoder.decode(
-      ['assets', 'bool'],
+      ['address', 'bool'],
       ethers.utils.hexDataSlice(transaction.data, 4)
     );
 
