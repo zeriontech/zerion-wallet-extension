@@ -6,7 +6,7 @@ import * as browserStorage from 'src/background/webapis/storage';
 import { validate } from 'src/shared/validation/user-input';
 import { eraseAndUpdateToLatestVersion } from 'src/shared/core/version';
 import { Wallet } from '../Wallet/Wallet';
-import { WalletStore } from '../Wallet/persistence';
+import { peakSavedWalletState } from '../Wallet/persistence';
 import { credentialsKey, currentUserKey } from './storage-keys';
 import type { PublicUser, User } from './types';
 
@@ -72,7 +72,7 @@ export class Account extends EventEmitter<AccountEvents> {
 
   static async ensureUserAndWallet() {
     const existingUser = await Account.readCurrentUser();
-    const walletTable = await WalletStore.readSavedState();
+    const walletTable = await peakSavedWalletState();
     if (existingUser && !walletTable?.[existingUser.id]) {
       await Account.removeCurrentUser();
     }

@@ -1,6 +1,5 @@
 import produce from 'immer';
-import { Store } from 'store-unit';
-import * as browserStorage from 'src/background/webapis/storage';
+import { PersistentStore } from 'src/modules/persistent-store';
 import type { WalletRecord } from './model/types';
 import { WalletRecordModel as Model } from './WalletRecord';
 
@@ -8,47 +7,11 @@ type EncryptedWalletRecord = string;
 
 type WalletStoreState = Record<string, EncryptedWalletRecord | undefined>;
 
-export class WalletStore extends Store<WalletStoreState> {
-  private key: string;
-  private isReady: boolean;
-  private readyPromise: Promise<void>;
+export class WalletStore extends PersistentStore<WalletStoreState> {
+  static key = 'wallet';
 
-  static async readSavedState(key = 'wallet') {
-    return browserStorage.get<WalletStoreState>(key);
-  }
-
-  constructor(initialState: WalletStoreState, key = 'wallet') {
-    super(initialState);
-    this.key = key;
-    this.isReady = false;
-    this.readyPromise = this.restore();
-    this.on('change', (state) => {
-      browserStorage.set(this.key, state);
-    });
-  }
-
-  getState() {
-    if (!this.isReady) {
-      throw new Error('Do not access getState() before checking ready()');
-    }
-    return super.getState();
-  }
-
-  async restore() {
-    const saved = await browserStorage.get<WalletStoreState>(this.key);
-    if (saved) {
-      this.setState(saved);
-    }
-    this.isReady = true;
-  }
-
-  async ready(): Promise<void> {
-    return this.isReady ? Promise.resolve() : this.readyPromise;
-  }
-
-  async getSavedState() {
-    await this.ready();
-    return this.getState();
+  constructor(initialState: WalletStoreState, key = WalletStore.key) {
+    super(initialState, key);
   }
 
   /** throws if encryptionKey is wrong */
@@ -86,4 +49,8 @@ export class WalletStore extends Store<WalletStoreState> {
       })
     );
   }
+}
+
+export function peakSavedWalletState(key = WalletStore.key) {
+  return WalletStore.readSavedState<WalletStoreState>(key);
 }
