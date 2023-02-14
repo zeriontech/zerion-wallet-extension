@@ -102,8 +102,8 @@ export class Wallet {
     this.emitter = createNanoEvents();
 
     this.id = id;
-    this.walletStore = new WalletStore({});
-    this.globalPreferences = new GlobalPreferences({});
+    this.walletStore = new WalletStore({}, 'wallet');
+    this.globalPreferences = new GlobalPreferences({}, 'globalPreferences');
     this.encryptionKey = encryptionKey;
     this.seedPhraseEncryptionKey = null;
     this.record = null;
