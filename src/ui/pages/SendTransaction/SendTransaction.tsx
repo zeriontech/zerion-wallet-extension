@@ -41,6 +41,7 @@ import { focusNode } from 'src/ui/shared/focusNode';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
+import { DNA_MINT_CONTRACT_ADDRESS } from 'src/ui/components/DnaClaim/dnaAddress';
 import { NetworkFee } from './NetworkFee';
 import { TransactionDescription } from './TransactionDescription';
 
