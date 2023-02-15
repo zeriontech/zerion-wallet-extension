@@ -51,6 +51,8 @@ import { KeyboardShortcut } from '../components/KeyboardShortcut';
 import { initialize as initializeApperance } from '../features/appearance';
 import { HandshakeFailure } from '../components/HandshakeFailure';
 import { useScreenViewChange } from '../shared/useScreenViewChange';
+import { DnaPage } from '../components/DnaClaim';
+import { NonFungibleToken } from '../pages/NonFungibleToken';
 
 const useAuthState = () => {
   const { data, isFetching } = useQuery(
@@ -170,6 +172,22 @@ function Views({ initialRoute }: { initialRoute?: string }) {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/get-started/*" element={<GetStarted />} />
           <Route path="/receive" element={<Receive />} />
+          <Route
+            path="/nft/:asset_code"
+            element={
+              <RequireAuth>
+                <NonFungibleToken />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/dna-claim"
+            element={
+              <RequireAuth>
+                <DnaPage />
+              </RequireAuth>
+            }
+          />
           <Route
             path="/overview/*"
             element={

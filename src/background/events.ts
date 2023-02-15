@@ -1,6 +1,8 @@
 import type { ethers } from 'ethers';
 import { createNanoEvents } from 'nanoevents';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
+import { WalletContainer } from './Wallet/model/WalletContainer';
+import type { WalletOrigin } from './Wallet/model/WalletOrigin';
 
 type TransactionResponse = ethers.providers.TransactionResponse;
 type TransactionReceipt = ethers.providers.TransactionReceipt;
@@ -41,4 +43,9 @@ export const emitter = createNanoEvents<{
   dappConnection: (data: { origin: string; address: string }) => void;
   screenView: (data: ScreenViewParams) => void;
   daylightAction: (data: DaylightEventParams) => void;
+  walletCreated: (wallet: {
+    walletContainer: WalletContainer;
+    origin: WalletOrigin;
+    groupId: string | null;
+  }) => void;
 }>();

@@ -1,4 +1,5 @@
 import { prepareStorage } from 'src/shared/core/version';
+import { DnaService } from 'src/ui/components/DnaClaim/dna.background';
 import { initialize as dappRegistryInitialize } from 'src/shared/dapps';
 import { initialize as initializeAnalytics } from 'src/shared/analytics/analytics.background';
 import { Account, AccountPublicRPC } from './account/Account';
@@ -24,6 +25,8 @@ export async function initialize() {
   await account.initialize();
   const accountPublicRPC = new AccountPublicRPC(account);
   const transactionService = new TransactionService();
+  const dnaService = new DnaService(account);
+  dnaService.initialize();
   await transactionService.initialize();
   initializeAnalytics({ account });
 
@@ -31,7 +34,8 @@ export async function initialize() {
     account,
     Account,
     accountPublicRPC,
+    dnaService,
     transactionService,
   });
-  return { account, accountPublicRPC, transactionService };
+  return { account, accountPublicRPC, transactionService, dnaService };
 }

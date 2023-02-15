@@ -22,7 +22,7 @@ const { browser: browserName, version: browserVersion } = detectBrowser(
 function BottomFixed({ children }: React.PropsWithChildren) {
   useLayoutEffect(() => {
     const prevPaddingBottom = document.body.style.paddingBottom;
-    document.body.style.paddingBottom = `${BUTTON_HEIGHT}px`;
+    document.body.style.paddingBottom = `${BUG_BUTTON_HEIGHT}px`;
     return () => {
       document.body.style.paddingBottom = prevPaddingBottom;
     };
@@ -31,7 +31,7 @@ function BottomFixed({ children }: React.PropsWithChildren) {
     <div
       style={{
         position: 'sticky',
-        height: BUTTON_HEIGHT,
+        height: BUG_BUTTON_HEIGHT,
         bottom: 0,
         width: '100%',
         zIndex: 1,

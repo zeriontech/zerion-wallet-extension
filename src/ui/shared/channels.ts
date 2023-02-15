@@ -4,6 +4,8 @@ import type { Wallet } from 'src/shared/types/Wallet';
 import type { AccountPublicRPC } from 'src/shared/types/AccountPublicRPC';
 import type { MemoryCacheRPC } from 'src/shared/types/MemoryCacheRPC';
 import { UserRejected } from 'src/shared/errors/errors';
+import type { DnaService } from '../components/DnaClaim/dna.background';
+import { initDnaApi } from '../components/DnaClaim/dna.client';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SomeMethod = (...args: any) => Promise<any>;
@@ -43,6 +45,10 @@ export const memoryCacheRPCPort = new PortMessageChannel({
   name: 'memoryCacheRPC',
 }) as RPCPort<MemoryCacheRPC>;
 
+export const dnaServicePort = new PortMessageChannel({
+  name: 'dnaService',
+}) as RPCPort<DnaService>;
+
 class WindowPort extends PortMessageChannel {
   confirm<T>(windowId: string, result?: T) {
     return this.port?.postMessage({
@@ -66,4 +72,6 @@ export function initialize() {
   accountPublicRPCPort.initialize();
   memoryCacheRPCPort.initialize();
   windowPort.initialize();
+  dnaServicePort.initialize();
+  initDnaApi();
 }

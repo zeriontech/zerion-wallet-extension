@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { ethers } from 'ethers';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -87,10 +87,12 @@ function SendTransactionContent({
   transactionStringified,
   origin,
   wallet,
+  next,
 }: {
   transactionStringified: string;
   origin: string;
   wallet: BareWallet;
+  next: string | null;
 }) {
   const [params] = useSearchParams();
   const incomingTransaction = useMemo(
@@ -98,10 +100,12 @@ function SendTransactionContent({
     [transactionStringified]
   );
   const { networks } = useNetworks();
+  const navigate = useNavigate();
   const handleReject = () => {
     const windowId = params.get('windowId');
     invariant(windowId, 'windowId get-parameter is required');
     windowPort.reject(windowId);
+    navigate(-1);
   };
   const { data: transaction } = useQuery(
     ['resolveChainAndGasPrice', incomingTransaction, origin],
@@ -149,10 +153,13 @@ function SendTransactionContent({
       // onMutate creates a context that we can use in global onError handler
       // to know more about a mutation (in react-query@v4 you should use "context" instead)
       onMutate: () => 'sendTransaction',
-      onSuccess: ({ hash }) => {
+      onSuccess: (tx) => {
         const windowId = params.get('windowId');
         invariant(windowId, 'windowId get-parameter is required');
-        windowPort.confirm(windowId, hash);
+        windowPort.confirm(windowId, tx.hash);
+        if (next) {
+          navigate(next);
+        }
       },
     }
   );
@@ -202,7 +209,11 @@ function SendTransactionContent({
         </div>
         <PageTop />
         <div style={{ display: 'grid', placeItems: 'center' }}>
-          <SiteFaviconImg style={{ width: 44, height: 44 }} url={origin} />
+          {origin === 'https://app.zerion.io' ? (
+            <ZerionSquircle width={44} height={44} />
+          ) : (
+            <SiteFaviconImg style={{ width: 44, height: 44 }} url={origin} />
+          )}
           <Spacer height={16} />
           <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
             {strings.actions[descriptionQuery.data.action] ||
@@ -350,11 +361,14 @@ export function SendTransaction() {
   if (!transactionStringified) {
     throw new Error('transaction get-parameter is required for this view');
   }
+  const next = params.get('next');
+
   return (
     <SendTransactionContent
       transactionStringified={transactionStringified}
       origin={origin}
       wallet={wallet}
+      next={next}
     />
   );
 }

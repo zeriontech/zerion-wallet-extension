@@ -331,6 +331,7 @@ export class Wallet {
     if (!this.encryptionKey) {
       throw new Error('Cannot save pending wallet: encryptionKey is null');
     }
+    emitter.emit('walletCreated', this.pendingWallet);
     this.record = Model.createOrUpdateRecord(this.record, this.pendingWallet);
     this.pendingWallet = null;
     this.seedPhraseEncryptionKey = null;
