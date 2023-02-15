@@ -33,6 +33,8 @@ import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { CopyButton } from 'src/ui/components/CopyButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
+import { SetNFTAsAvatarWrapper } from 'src/ui/components/WalletAvatar/SetNFTAsAvatarWrapper';
+import { fetchWalletNFT } from 'src/ui/components/WalletAvatar/WalletAvatar';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -156,6 +158,15 @@ function OverviewComponent() {
   //     </FillView>
   //   );
   // }
+
+  const { data: nft, isLoading } = useQuery(
+    ['fetchWalletNFT', singleAddress],
+    () => fetchWalletNFT(singleAddress),
+    {
+      suspense: false,
+    }
+  );
+
   return (
     <PageColumn>
       <PageFullBleedColumn
@@ -187,11 +198,13 @@ function OverviewComponent() {
         <div style={{ height: isLoadingPortfolio ? 68 : undefined }}>
           <HStack gap={16} alignItems="center">
             {!isLoadingPortfolio ? (
-              <WalletAvatar
-                address={singleAddress}
-                size={64}
-                borderRadius={6}
-              />
+              <SetNFTAsAvatarWrapper value={nft?.id} disabled={isLoading}>
+                <WalletAvatar
+                  address={singleAddress}
+                  size={64}
+                  borderRadius={6}
+                />
+              </SetNFTAsAvatarWrapper>
             ) : null}
             <VStack gap={0}>
               <UIText kind="headline/hero">

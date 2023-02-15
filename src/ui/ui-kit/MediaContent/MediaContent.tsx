@@ -12,10 +12,12 @@ export const MediaError = ({
   image = '🖼',
   src,
   style,
+  className,
 }: {
   image?: string;
   src?: string | null;
   style?: React.CSSProperties;
+  className?: string;
 }) => (
   <div
     title="Content failed to load"
@@ -32,6 +34,7 @@ export const MediaError = ({
       fontSize: 32,
       ...style,
     }}
+    className={className}
   >
     <span style={{ lineHeight: 1 }}>{image}</span>
   </div>
@@ -146,7 +149,11 @@ export function MediaContent({
         style={style}
         className={className}
         renderError={() => (
-          <MediaError style={errorStyle} src={content.image_preview_url} />
+          <MediaError
+            style={errorStyle}
+            src={content.image_preview_url}
+            className={className}
+          />
         )}
         renderLoading={renderLoading}
       />
@@ -164,7 +171,12 @@ export function MediaContent({
         style={style}
         className={className}
         renderError={() => (
-          <MediaError image="📹" style={errorStyle} src={content.video_url} />
+          <MediaError
+            image="📹"
+            style={errorStyle}
+            src={content.video_url}
+            className={className}
+          />
         )}
         renderLoading={renderLoading}
       >

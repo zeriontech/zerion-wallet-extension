@@ -1,0 +1,27 @@
+.wrapper {
+  position: relative;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+}
+
+.edit {
+  display: flex;
+  padding: 6;
+  border-radius: 8;
+  background-color: var(--primary);
+}
+
+.wrapper:hover .overlay,
+.wrapper:focus-visible .overlay {
+  display: flex;
+}

@@ -30,7 +30,12 @@ export function AvatarIcon({
         {nft ? (
           <MediaContent
             className={s.media}
-            style={{ width: size, height: size, borderRadius }}
+            style={{
+              width: size,
+              height: size,
+              borderRadius,
+              objectFit: 'cover',
+            }}
             errorStyle={{ width: size, height: size }}
             content={mediaContent}
             alt={`${nft.name} image`}

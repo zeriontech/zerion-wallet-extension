@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useQuery } from 'react-query';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { SOCIAL_API_URL } from 'src/env/config';
+import { emitter } from 'src/ui/shared/events';
 import { AvatarIcon } from './AvatarIcon';
 import {
   WalletProfilesResponse,
@@ -20,7 +21,7 @@ async function fetchWalletProfile(
   return profiles?.[0];
 }
 
-async function fetchWalletNFT(
+export async function fetchWalletNFT(
   address: string
 ): Promise<WalletProfileNFT | undefined> {
   const profile = await fetchWalletProfile(address);
@@ -38,11 +39,21 @@ export function WalletAvatar({
   size: number;
   borderRadius?: number;
 }) {
-  const { data: nft, isLoading } = useQuery(
-    ['fetchWalletNFT', address],
-    () => fetchWalletNFT(address),
-    { suspense: false }
-  );
+  const {
+    data: nft,
+    isLoading,
+    refetch,
+  } = useQuery(['fetchWalletNFT', address], () => fetchWalletNFT(address), {
+    suspense: false,
+  });
+
+  useEffect(() => {
+    return emitter.on('setWalletAvatar', (walletAddress) => {
+      if (walletAddress === address) {
+        refetch();
+      }
+    });
+  }, [refetch, address]);
 
   if (isLoading) {
     return <div style={{ width: size, height: size }} />;

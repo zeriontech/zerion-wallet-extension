@@ -1,22 +1,24 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation, useQuery } from 'react-query';
 import { useParams } from 'react-router-dom';
+import { profileManager } from 'src/shared/profileSevice';
 import { Background } from 'src/ui/components/Background';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { dnaServicePort } from 'src/ui/shared/channels';
+import { fetchWalletNFT } from 'src/ui/components/WalletAvatar/WalletAvatar';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { Button } from 'src/ui/ui-kit/Button';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { MediaContent } from 'src/ui/ui-kit/MediaContent';
-import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useNFTPosition } from './useNftPosition';
 
 export function NonFungibleToken() {
@@ -73,6 +75,32 @@ export function NonFungibleToken() {
   useEffect(() => window.scrollTo(0, 0), []);
 
   const nftTags = useMemo(() => new Set(nft?.metadata.tags || []), [nft]);
+  const {
+    data: nft,
+    isLoading: isProfileLoading,
+    refetch,
+  } = useQuery(
+    ['fetchWalletNFT', singleAddress],
+    () => fetchWalletNFT(singleAddress),
+    {
+      suspense: false,
+    }
+  );
+
+  const { mutate: updateAvatar, isLoading: updateAvatarIsLoading } =
+    useMutation(
+      async () => {
+        if (!value) {
+          return;
+        }
+        return profileManager.updateProfileAvatar(
+          singleAddress,
+          value.asset.asset_code
+        );
+      },
+      { onSuccess: () => refetch() }
+    );
+
   const isPrimary = promotedPrimary || nftTags.has('#primary');
 
   return (
@@ -80,7 +108,22 @@ export function NonFungibleToken() {
       <PageColumn style={{ paddingTop: 18 }}>
         <NavigationTitle
           title={
-            nft ? `${nft.collection.name} • ${nft.metadata.name}` : 'NFT Info'
+            <div
+              style={{
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+              title={
+                value
+                  ? `${value.collection_info?.name} • ${value.asset.name}`
+                  : undefined
+              }
+            >
+              {value
+                ? `${value.collection_info?.name} • ${value.asset.name}`
+                : 'NFT Info'}
+            </div>
           }
         />
         {nft ? (
@@ -143,17 +186,35 @@ export function NonFungibleToken() {
                 </HStack>
               </VStack>
             ) : null}
-            {nftTags.has('#dna') ? (
+            <HStack
+              gap={24}
+              alignItems="center"
+              style={{ gridAutoColumns: '1fr' }}
+            >
+              {nftTags.has('#dna') ? (
+                <Button
+                  disabled={isPrimary || isLoading}
+                  onClick={() => promoteTokenMutation()}
+                  style={{ paddingLeft: 24, paddingRight: 24 }}
+                >
+                  <HStack gap={8} alignItems="center" justifyContent="center">
+                    <div>{isPrimary ? 'Active' : 'Set as Active'}</div>
+                    {isLoading ? <CircleSpinner /> : null}
+                  </HStack>
+                </Button>
+              ) : null}
               <Button
-                disabled={isPrimary || isLoading}
-                onClick={() => promoteTokenMutation()}
+                onClick={() => updateAvatar()}
+                style={{ paddingLeft: 24, paddingRight: 24 }}
+                disabled={
+                  updateAvatarIsLoading ||
+                  isProfileLoading ||
+                  nft?.id === asset_code
+                }
               >
-                <HStack gap={8} alignItems="center" justifyContent="center">
-                  <div>{isPrimary ? 'Active' : 'Set as Active'}</div>
-                  {isLoading ? <CircleSpinner /> : null}
-                </HStack>
+                Set as Avatar
               </Button>
-            ) : null}
+            </HStack>
           </VStack>
         ) : null}
         <Spacer height={24} />
