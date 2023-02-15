@@ -6,9 +6,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-
-export const DNA_NFT_COLLECTION_ADDRESS =
-  '0x932261f9fc8da46c4a22e31b45c4de60623848bf';
+import { DNA_NFT_COLLECTION_ADDRESS } from './constants';
 
 export function DnaNFTBanner({ address }: { address: string }) {
   const { value } = useAddressNftContracts({
