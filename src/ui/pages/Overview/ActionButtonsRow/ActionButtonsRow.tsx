@@ -75,8 +75,7 @@ export function ActionButtonsRow() {
     const url = activeTab?.url ? new URL(activeTab.url) : null;
     if (href && activeTab && url && url.origin == ZERION_ORIGIN) {
       event.preventDefault();
-      url.href = href;
-      updateTab({ tab: activeTab, url });
+      updateTab({ tab: activeTab, url: new URL(href) });
     }
   };
 
