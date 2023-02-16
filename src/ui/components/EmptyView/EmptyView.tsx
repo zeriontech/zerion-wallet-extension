@@ -8,7 +8,7 @@ export function EmptyView({
   text,
 }: {
   emoji?: React.ReactNode;
-  text: string;
+  text: React.ReactNode;
 }) {
   return (
     <FillView>
