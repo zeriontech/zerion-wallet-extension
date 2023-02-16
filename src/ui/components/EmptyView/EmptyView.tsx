@@ -3,7 +3,7 @@ import { FillView } from 'src/ui/components/FillView';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 
-export function ViewEmpty({
+export function EmptyView({
   emoji = '🥺',
   text,
 }: {

@@ -7,7 +7,7 @@ import {
 } from 'src/modules/ethereum/transactions/model';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
-import { ViewEmpty } from 'src/ui/components/ViewEmpty';
+import { EmptyView } from 'src/ui/components/EmptyView';
 import { ActionsList } from './ActionsList';
 
 export function sortActions<T extends { datetime?: string }>(actions: T[]) {
@@ -108,7 +108,7 @@ export function HistoryList() {
   }
 
   if (!transactions.length) {
-    return <ViewEmpty text="No transactions yet" />;
+    return <EmptyView text="No transactions yet" />;
   }
   return (
     <ActionsList
