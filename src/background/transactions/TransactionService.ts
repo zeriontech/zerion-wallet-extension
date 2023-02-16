@@ -17,6 +17,10 @@ class TransactionsStore extends Store<StoredTransactions> {
       browserStorage.set('transactions', state);
     });
   }
+
+  getPending() {
+    return this.state.filter((t) => !t.receipt);
+  }
 }
 
 const DEBUGGING_TX_HASH = '0x123123';
@@ -63,6 +67,11 @@ export class TransactionService {
       (await browserStorage.get('transactions')) ?? [];
     this.transactionsStore = new TransactionsStore(transactions);
     this.addListeners();
+    this.waitForPendingTransactions();
+  }
+
+  waitForPendingTransactions() {
+    this.transactionsStore.getPending().map((t) => this.waitForTransaction(t));
   }
 
   addListeners() {
