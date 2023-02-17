@@ -4,7 +4,7 @@ import { Surface } from 'src/ui/ui-kit/Surface';
 export function ItemSurface({
   style,
   ...props
-}: React.HTMLProps<HTMLDivElement>) {
+}: React.HTMLAttributes<HTMLDivElement>) {
   const surfaceStyle = {
     ...style,
     padding: '10px 12px',

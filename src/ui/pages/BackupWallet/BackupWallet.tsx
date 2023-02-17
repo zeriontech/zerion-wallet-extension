@@ -30,7 +30,6 @@ import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { SecretInput } from 'src/ui/components/SecretInput';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
-import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { metaAppState } from 'src/ui/shared/meta-app-state';
 import { WithConfetti } from '../GetStarted/components/DecorativeMessage/DecorativeMessage';
