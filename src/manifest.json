@@ -21,14 +21,6 @@
     "default_title": "Zerion",
     "default_popup": "ui/popup.html"
   },
-  "commands": {
-    "_execute_browser_action": {
-      "suggested_key": {
-        "default": "Ctrl+Shift+Y",
-        "mac": "Command+Shift+Y"
-      }
-    }
-  },
   "author": "https://zerion.io/",
   "background": {
     "service_worker": "background/index.ts",
