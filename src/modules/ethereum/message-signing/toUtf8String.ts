@@ -1,9 +1,13 @@
 import { ethers } from 'ethers';
 
-export function toUtf8String(value: string) {
+export function toUtf8String(value: ethers.utils.BytesLike) {
   try {
     return ethers.utils.toUtf8String(value);
   } catch (e) {
-    return value;
+    if (typeof value === 'string') {
+      return value;
+    } else {
+      throw e;
+    }
   }
 }

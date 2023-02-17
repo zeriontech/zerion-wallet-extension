@@ -29,7 +29,7 @@ import { hasGasPrice } from 'src/modules/ethereum/transactions/gasPrices/hasGasP
 import { fetchAndAssignGasPrice } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { prepareTypedData } from 'src/modules/ethereum/message-signing/prepareTypedData';
-import { toUtf8String } from 'ethers/lib/utils';
+import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
 import { removeSignature } from 'src/modules/ethereum/transactions/removeSignature';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getTransactionChainId } from 'src/modules/ethereum/transactions/resolveChainForTx';
