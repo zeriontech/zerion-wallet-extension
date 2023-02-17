@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -9,6 +9,9 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
 import { isValidPrivateKey } from 'src/shared/validation/wallet';
+import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
+import { getError } from 'src/shared/errors/getError';
+import { IdempotentRequest } from 'src/ui/shared/IdempotentRequest';
 import {
   DecorativeMessage,
   DecorativeMessageDone,
@@ -22,15 +25,15 @@ function PrivateKeyImportFlow({
   address,
   errorMessage,
   onSubmit,
-  isSubmitting,
+  isPreparing,
 }: {
   address: string | null;
   errorMessage: string | null;
   onSubmit: () => void;
-  isSubmitting: boolean;
+  isPreparing: boolean;
 }) {
   const autoFocusRef = useRef<HTMLButtonElement | null>(null);
-  const isDonePreparing = !isSubmitting;
+  const isDonePreparing = !isPreparing;
   useEffect(() => {
     if (isDonePreparing) {
       autoFocusRef.current?.focus();
@@ -61,9 +64,9 @@ function PrivateKeyImportFlow({
         ref={autoFocusRef}
         style={{ marginTop: 'auto', marginBottom: 16 }}
         onClick={onSubmit}
-        disabled={isSubmitting}
+        disabled={isPreparing}
       >
-        {isSubmitting ? 'Recovering...' : 'Finish'}
+        {isPreparing ? 'Recovering...' : 'Finish'}
       </Button>
     </>
   );
@@ -74,6 +77,7 @@ export function PrivateKeyImportView({
 }: {
   locationStateStore: MemoryLocationState;
 }) {
+  const [idempotentRequest] = useState(() => new IdempotentRequest());
   const { value: privateKey } = useMemoryLocationState(locationStateStore);
   if (!privateKey) {
     throw new Error(
@@ -81,24 +85,29 @@ export function PrivateKeyImportView({
     );
   }
   const navigate = useNavigate();
-  const { data, mutate, isIdle, ...importWallet } = useMutation(
+  const { data, mutate, isIdle, isError, ...importWallet } = useMutation(
     async (input: string) => {
       await new Promise((r) => setTimeout(r, 1000));
       if (isValidPrivateKey(input)) {
-        return walletPort.request('uiImportPrivateKey', input);
+        return idempotentRequest.request(input, async () => {
+          const wallet = await walletPort.request('uiImportPrivateKey', input);
+          await accountPublicRPCPort.request('saveUserAndWallet');
+          await setCurrentAddress({ address: wallet.address });
+          return wallet;
+        });
       } else {
         throw new Error('Not a private key');
       }
     }
   );
-  const importError = importWallet.error ? (importWallet.error as Error) : null;
+  const importError = isError ? getError(importWallet.error) : null;
 
   useEffect(() => {
     // NOTE:
     // In React.StrictMode this gets called twice >:
     // Creating a ref guard didn't work: the component does not receive the success
     // result from useMutation.
-    // I'll leave this as is, this doesn't break anything atm
+    // The current implementation of "mutate" is idempotent, that's why this is safe
     mutate(privateKey);
   }, [privateKey, mutate]);
 
@@ -112,16 +121,8 @@ export function PrivateKeyImportView({
       <PrivateKeyImportFlow
         address={data?.address ?? null}
         errorMessage={importError?.message ?? null}
-        isSubmitting={importWallet.isLoading}
-        onSubmit={async () => {
-          await accountPublicRPCPort.request('saveUserAndWallet');
-          if (data?.address) {
-            await walletPort.request('setCurrentAddress', {
-              address: data.address,
-            });
-          }
-          navigate('/overview');
-        }}
+        isPreparing={importWallet.isLoading}
+        onSubmit={() => navigate('/overview')}
       />
       <PageBottom />
     </PageColumn>

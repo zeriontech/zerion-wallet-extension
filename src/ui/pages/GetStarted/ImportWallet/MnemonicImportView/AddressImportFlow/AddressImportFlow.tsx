@@ -69,7 +69,7 @@ function AddressImportList({
         <PageTop />
         <VStack gap={8}>
           <UIText kind="body/regular">
-            We found these wallets associated with your seedphrase
+            We found these wallets associated with your recovery phrase
           </UIText>
           <VStack gap={20}>
             {active ? (

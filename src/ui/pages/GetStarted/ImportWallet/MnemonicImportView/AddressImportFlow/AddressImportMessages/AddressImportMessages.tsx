@@ -2,7 +2,6 @@ import { animated } from 'react-spring';
 import { isTruthy } from 'is-truthy-ts';
 import React, { useEffect, useRef, useState } from 'react';
 import { useMutation } from 'react-query';
-import { useNavigate } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
@@ -22,6 +21,9 @@ import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { FillView } from 'src/ui/components/FillView';
 import { ViewError } from 'src/ui/components/ViewError';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
+import { IdempotentRequest } from 'src/ui/shared/IdempotentRequest';
+import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 
 export function OnMount({
   children,
@@ -38,26 +40,20 @@ export function OnMount({
 function AddressImportMessagesView({ values }: { values: BareWallet[] }) {
   const [ready, setReady] = useState(false);
   const [messages, setMessages] = useState(() => new Set<React.ReactNode>());
-  const navigate = useNavigate();
   const addMessage = (message: React.ReactNode) =>
     setMessages((messages) => new Set(messages).add(message));
+  const [idempotentRequest] = useState(() => new IdempotentRequest());
 
-  const finalizeMutation = useMutation(
+  const { mutate: finalize, ...finalizeMutation } = useMutation(
     async (mnemonics: NonNullable<BareWallet['mnemonic']>[]) => {
       await new Promise((r) => setTimeout(r, 1000));
-      const data = await walletPort.request('uiImportSeedPhrase', mnemonics);
-      await accountPublicRPCPort.request('saveUserAndWallet');
-      if (data?.address) {
-        await walletPort.request('setCurrentAddress', {
-          address: data.address,
-        });
-      }
-    },
-    {
-      useErrorBoundary: true,
-      onSuccess() {
-        navigate('/overview');
-      },
+      return idempotentRequest.request(JSON.stringify(mnemonics), async () => {
+        const data = await walletPort.request('uiImportSeedPhrase', mnemonics);
+        await accountPublicRPCPort.request('saveUserAndWallet');
+        if (data?.address) {
+          await setCurrentAddress({ address: data.address });
+        }
+      });
     }
   );
   useEffect(() => {
@@ -160,12 +156,19 @@ function AddressImportMessagesView({ values }: { values: BareWallet[] }) {
       trigger();
     }
   }, [ready, trigger]);
-  const autoFocusRef = useRef<HTMLButtonElement | null>(null);
+
+  const autoFocusRef = useRef<HTMLAnchorElement | null>(null);
   useEffect(() => {
     if (ready) {
       autoFocusRef.current?.focus();
+      const mnemonics = values
+        .map((wallet) => wallet.mnemonic)
+        .filter(isTruthy);
+      // NOTE: Make sure "finalize" is idempotent
+      finalize(mnemonics);
     }
-  }, [ready]);
+  }, [finalize, ready, values]);
+
   return (
     <PageColumn>
       <PageTop />
@@ -183,20 +186,18 @@ function AddressImportMessagesView({ values }: { values: BareWallet[] }) {
             {getError(finalizeMutation.error).message}
           </UIText>
         ) : null}
-        <Button
-          as={animated.button}
-          ref={autoFocusRef}
-          disabled={!ready || finalizeMutation.isLoading}
-          style={style}
-          onClick={() => {
-            const mnemonics = values
-              .map((wallet) => wallet.mnemonic)
-              .filter(isTruthy);
-            finalizeMutation.mutate(mnemonics);
-          }}
-        >
-          {finalizeMutation.isLoading ? 'Submitting' : 'Finish'}
-        </Button>
+        {ready ? (
+          <animated.div style={style}>
+            <Button
+              as={UnstyledLink}
+              to="/overview"
+              style={{ width: '100%' }}
+              ref={autoFocusRef}
+            >
+              Finish
+            </Button>
+          </animated.div>
+        ) : null}
       </VStack>
       <PageBottom />
     </PageColumn>
