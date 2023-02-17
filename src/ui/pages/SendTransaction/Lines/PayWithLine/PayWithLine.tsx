@@ -5,7 +5,6 @@ import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import type { Asset } from 'defi-sdk';
 import { Chain } from 'src/modules/networks/Chain';
-import { Networks } from 'src/modules/networks/Networks';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
@@ -15,12 +14,10 @@ export function PayWithLine({
   asset,
   value,
   chain,
-  networks,
 }: {
   asset: Asset;
   value: string;
   chain: Chain;
-  networks: Networks;
 }) {
   const commonQuantity = useMemo(
     () => baseToCommon(value, getDecimals({ chain, asset })),
@@ -33,7 +30,6 @@ export function PayWithLine({
       items={[
         {
           key: 0,
-          href: networks.getExplorerTokenUrlByName(chain, asset.asset_code),
           target: '_blank',
           rel: 'noopener noreferrer',
           component: (

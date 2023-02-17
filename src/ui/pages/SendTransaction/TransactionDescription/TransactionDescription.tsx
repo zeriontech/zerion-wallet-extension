@@ -78,7 +78,6 @@ export function TransactionDescription({
           asset={nativeAsset}
           value={nativeValue.toString()}
           chain={chain}
-          networks={networks}
         />
       ) : null}
     </>
