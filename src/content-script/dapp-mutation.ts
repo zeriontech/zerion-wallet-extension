@@ -24,7 +24,7 @@ function isReplacementMatch(textNode: Node, regex: RegExp) {
 function replaceButtonLabel(textNode: Node, regex: RegExp) {
   const { textContent } = textNode;
   if (textContent) {
-    textNode.textContent = textContent.replace(regex, 'Zerion Wallet');
+    textNode.textContent = textContent.replace(regex, 'Zerion');
   }
 }
 
