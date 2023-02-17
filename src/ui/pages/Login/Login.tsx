@@ -97,7 +97,6 @@ export function Login() {
           <VStack gap={4}>
             <Input
               id={inputId}
-              style={{ backgroundColor: 'var(--white)' }}
               autoFocus={true}
               type="password"
               name="password"

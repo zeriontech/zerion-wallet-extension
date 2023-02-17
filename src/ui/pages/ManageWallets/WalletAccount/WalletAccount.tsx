@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useId, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery } from 'react-query';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -30,11 +30,14 @@ import { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialo
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { invariant } from 'src/shared/invariant';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
+import { InputDecorator } from 'src/ui/ui-kit/Input/InputDecorator';
 
 function EditableWalletName({
+  id,
   wallet,
   onRename,
 }: {
+  id: string;
   wallet: BareWallet;
   onRename?: () => void;
 }) {
@@ -69,6 +72,7 @@ function EditableWalletName({
         }}
       >
         <UnstyledInput
+          id={id}
           placeholder={displayName || 'Account Name'}
           type="text"
           value={value}
@@ -83,7 +87,7 @@ function EditableWalletName({
         ) : null}
       </div>
       {renameMutation.isError ? (
-        <UIText kind="caption/reg" color="var(--negative-500)">
+        <UIText kind="caption/regular" color="var(--negative-500)">
           {(renameMutation.error as Error | null)?.message || 'Unknown Error'}
         </UIText>
       ) : null}
@@ -152,6 +156,7 @@ export function WalletAccount() {
     }
   );
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const nameInputId = useId();
   if (isLoading) {
     return <NavigationTitle title={null} />;
   }
@@ -213,19 +218,18 @@ export function WalletAccount() {
             </UIText>
           </VStack>
         </Surface>
-        <Surface
-          padding="10px 16px"
-          style={{ border: '1px solid var(--neutral-400)' }}
-        >
-          <VStack gap={4}>
-            <UIText kind="label/reg" color="var(--neutral-500)">
-              Name
-            </UIText>
-            <UIText kind="body/s_reg">
-              <EditableWalletName wallet={wallet} onRename={refetchWallet} />
-            </UIText>
-          </VStack>
-        </Surface>
+        <InputDecorator
+          label="Name"
+          htmlFor={nameInputId}
+          inputTextKind="body/accent"
+          input={
+            <EditableWalletName
+              id={nameInputId}
+              wallet={wallet}
+              onRename={refetchWallet}
+            />
+          }
+        />
         <VStack gap={8}>
           <UIText kind="subtitle/s_reg" color="var(--neutral-500)">
             Export Wallet

@@ -47,6 +47,7 @@ function BottomFixed({ children }: React.PropsWithChildren) {
           // * Not waste more time on this
           position: 'fixed',
           bottom: 0,
+          left: 0,
           width: '100%',
         }}
       >

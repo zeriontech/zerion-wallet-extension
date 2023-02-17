@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useReducer, useRef } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { SeedType } from 'src/shared/SeedType';
@@ -7,7 +7,6 @@ import { Background } from 'src/ui/components/Background';
 import { FillView } from 'src/ui/components/FillView';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
-import { PageHeading } from 'src/ui/components/PageHeading';
 import { PageTop } from 'src/ui/components/PageTop';
 import { VerifyUser } from 'src/ui/components/VerifyUser';
 import { walletPort } from 'src/ui/shared/channels';
@@ -18,8 +17,11 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
 import InvisibleIcon from 'jsx:src/ui/assets/invisible.svg';
+import VisibleIcon from 'jsx:src/ui/assets/visible.svg';
+import CheckIcon from 'jsx:src/ui/assets/check.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
@@ -27,26 +29,51 @@ import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { SecretInput } from 'src/ui/components/SecretInput';
-import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { focusNode } from 'src/ui/shared/focusNode';
+import { metaAppState } from 'src/ui/shared/meta-app-state';
 import { WithConfetti } from '../GetStarted/components/DecorativeMessage/DecorativeMessage';
 import { DecorativeMessage } from '../GetStarted/components/DecorativeMessage';
 import { clipboardWarning } from './clipboardWarning';
 
 function Initial({ onSubmit }: { onSubmit: () => void }) {
+  useBodyStyle(
+    useMemo(
+      () => ({
+        ['--background' as string]: 'transparent',
+        backgroundColor: 'var(--primary-100)',
+        backgroundImage:
+          'radial-gradient(circle at top right, #2962ef3d,  transparent 374px)',
+        backgroundRepeat: 'no-repeat',
+      }),
+      []
+    )
+  );
   return (
     <PageColumn>
       <NavigationTitle title={null} />
-      <PageTop />
-      <PageHeading>Backup Your Wallet</PageHeading>
+      <div
+        style={{
+          position: 'fixed',
+          pointerEvents: 'none',
+          zIndex: -1,
+          width: '100%',
+          height: '100vh',
+          bottom: '-50vh',
+          background:
+            'conic-gradient(from 180deg at 50% 50%, #FF0000 0deg, rgba(255, 246, 39, 0.848958) 78.75deg, #53FF5A 136.88deg, #00FFFF 200.63deg, #0500FF 268.13deg, #700092 307.5deg, #FF0000 360deg)',
+          opacity: 0.1,
+          filter: 'blur(60px)',
+        }}
+      ></div>
 
-      <Spacer height={32} />
+      <Spacer height={48} />
 
       <VStack gap={16}>
         <VStack gap={8}>
           <DecorativeMessage
             text={
-              <UIText kind="subtitle/m_reg">
+              <UIText kind="small/regular">
                 Hi there! 👋 We're about to display your recovery phrase that
                 will help secure your wallet and funds.
               </UIText>
@@ -54,9 +81,9 @@ function Initial({ onSubmit }: { onSubmit: () => void }) {
           />
           <DecorativeMessage
             isConsecutive={true}
-            style={{ animationDelay: '300ms' }}
+            style={{ animationDelay: '1200ms' }}
             text={
-              <UIText kind="subtitle/m_reg">
+              <UIText kind="small/regular">
                 🔐 Backing up your wallet with a recovery phrase helps ensure
                 you can access your assets even if you uninstall the extension
                 or stop using Zerion
@@ -64,13 +91,22 @@ function Initial({ onSubmit }: { onSubmit: () => void }) {
             }
           />
           <DecorativeMessage
-            isConsecutive={true}
-            style={{ animationDelay: '600ms' }}
+            isConsecutive={false}
+            style={{ animationDelay: '2200ms' }}
             text={
-              <UIText kind="subtitle/m_reg">
+              <UIText kind="small/regular">
                 ☝️ Make sure you're ready to write down this recovery phrase and
                 have a safe place to keep it. If you lose it, you'll never be
                 able to access your funds again.
+              </UIText>
+            }
+          />
+          <DecorativeMessage
+            isConsecutive={true}
+            style={{ animationDelay: '3500ms' }}
+            text={
+              <UIText kind="small/accent">
+                Reminder: Never share this recovery phrase with anyone.
               </UIText>
             }
           />
@@ -87,25 +123,30 @@ function Initial({ onSubmit }: { onSubmit: () => void }) {
 type BackupKind = 'reveal' | 'verify';
 
 function BlurredToggle({ children }: React.PropsWithChildren) {
-  const [hidden, setHidden] = useState(true);
-  const reveal = () => setHidden(false);
+  const [hidden, toggleHidden] = useReducer((x) => !x, true);
+  const ref = useRef<HTMLButtonElement | null>(null);
   return (
-    <ZStack
-      // click handler here is just for a larger click area;
-      // semantically, click handler on the child button is enough
-      onClick={reveal}
-      style={{ cursor: hidden ? 'pointer' : undefined }}
-    >
-      <UnstyledButton
+    <ZStack>
+      <Button
+        kind="ghost"
+        ref={ref}
         type="button"
         aria-label="Visually reveal value"
-        style={{ placeSelf: 'center', zIndex: 1 }}
-        onClick={reveal}
+        size={32}
+        style={{ placeSelf: 'end', zIndex: 1, marginRight: 4, marginBottom: 4 }}
+        onClick={() => {
+          toggleHidden();
+        }}
       >
-        {hidden ? (
-          <InvisibleIcon style={{ display: 'block', width: 36, height: 36 }} />
-        ) : null}
-      </UnstyledButton>
+        {React.createElement(hidden ? InvisibleIcon : VisibleIcon, {
+          style: {
+            display: 'block',
+            width: 24,
+            height: 24,
+            color: 'var(--primary)',
+          },
+        })}
+      </Button>
       <div
         style={{
           filter: hidden ? 'blur(5px)' : undefined,
@@ -164,16 +205,32 @@ function RevealSecret({
     <PageColumn>
       <PageTop />
 
-      <NavigationTitle title="Write this down" />
+      <UIText kind="body/regular">
+        {isMnemonic ? (
+          <span>
+            Save these {secretValue.split(/\s+/).length} words to a password
+            manager, or write them down and store them in a secure place
+          </span>
+        ) : (
+          <span>
+            Your private key can be used to access all of your funds. Do not
+            share it with anyone
+          </span>
+        )}
+      </UIText>
+      <Spacer height={24} />
       <VStack gap={16}>
         <BlurredToggle>
-          <Surface padding={16}>
+          <Surface
+            padding={16}
+            style={{
+              paddingRight: 36, // because of toggle button on the right
+            }}
+          >
             <UIText
               kind={isMnemonic ? 'body/accent' : 'body/regular'}
               style={{
-                wordSpacing: 10,
-                lineHeight: 1.6,
-                textTransform: isMnemonic ? 'uppercase' : undefined,
+                textTransform: isMnemonic ? 'capitalize' : undefined,
                 wordBreak: 'break-word',
               }}
             >
@@ -181,33 +238,24 @@ function RevealSecret({
             </UIText>
           </Surface>
         </BlurredToggle>
-        <div>
+        <div style={{ textAlign: 'center' }}>
           <Button
             kind="regular"
+            size={36}
             type="button"
             onClick={copyRecoveryPhrase}
-            style={{ paddingLeft: 28, paddingRight: 28 }}
+            style={{ paddingLeft: 16, paddingRight: 16 }}
           >
             <HStack gap={8}>
-              {isCopySuccess ? (
-                <div
-                  style={{
-                    width: 20,
-                    height: 20,
-                    color: 'var(--positive-500)',
-                  }}
-                >
-                  ✔
-                </div>
-              ) : (
-                <CopyIcon style={{ display: 'block', width: 20, height: 20 }} />
-              )}
+              {React.createElement(isCopySuccess ? CheckIcon : CopyIcon, {
+                style: { display: 'block', width: 20, height: 20 },
+              })}
               <ZStack
                 hideLowerElements={true}
                 justifyContent="start"
                 style={{ textAlign: 'left' }}
               >
-                {isCopySuccess ? <span>Copied!</span> : null}
+                {isCopySuccess ? <span>Copied to Clipboard</span> : null}
                 <span aria-hidden={isCopySuccess}>Copy to Clipboard</span>
               </ZStack>
             </HStack>
@@ -222,9 +270,9 @@ function RevealSecret({
         {backupKind === 'reveal' ? (
           'Done'
         ) : (
-          <HStack gap={8} justifyContent="center">
+          <HStack gap={8} alignItems="center" justifyContent="center">
             <span>Verify Backup</span>
-            <ArrowRightIcon />
+            <ArrowRightIcon style={{ position: 'relative', bottom: -1 }} />
           </HStack>
         )}
       </Button>
@@ -284,6 +332,12 @@ function VerifyBackup({
   return (
     <Background backgroundKind="white">
       <PageColumn>
+        <PageTop />
+        <UIText kind="body/regular">
+          This process is aimed to ensure you’ve saved your recovery phrase
+          correctly
+        </UIText>
+        <Spacer height={24} />
         <form
           style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}
           onSubmit={(event) => {
@@ -296,11 +350,15 @@ function VerifyBackup({
             );
           }}
         >
-          <PageTop />
           <VStack gap={12}>
             <SecretInput
+              showRevealElement={false}
               ref={autoFocusRef}
-              label={<UIText kind="subtitle/l_reg">Recovery Phrase</UIText>}
+              label={
+                <UIText kind="small/accent">
+                  Validate Your Recovery Phrase
+                </UIText>
+              }
               name="seedOrPrivateKey"
               required={true}
               hint={
@@ -327,7 +385,7 @@ function VerifySuccess({ seedType }: { seedType: SeedType }) {
     <PageColumn>
       <WithConfetti
         fireDelay={0}
-        originY={0.55}
+        originY={0.5}
         leftOriginX={0.25}
         rightOriginX={0.75}
         gravity={0.2}
@@ -348,14 +406,25 @@ function VerifySuccess({ seedType }: { seedType: SeedType }) {
             <span style={{ fontSize: 48, lineHeight: 1 }}>🥳</span>
             <UIText kind="headline/h1">Nicely done!</UIText>
             <UIText kind="body/regular" color="var(--neutral-500)">
-              Find a secure location for your{' '}
+              Be sure to store your{' '}
               {seedType === SeedType.privateKey
                 ? 'private key'
                 : 'recovery phrase'}{' '}
-              and remember:
+              in a secure location and remember:
               <br />
               <UIText kind="body/accent" inline={true}>
-                never share it with anyone
+                {metaAppState.getState().hasTestWallet ? (
+                  <UnstyledAnchor
+                    href="https://www.youtube.com/watch?v=HKD_BxFcnN4"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Easter egg for holders of zerion testing wallet 😘"
+                  >
+                    RESPECT IS EVERYTHING
+                  </UnstyledAnchor>
+                ) : (
+                  'Never share it with anyone'
+                )}
               </UIText>
             </UIText>
           </VStack>

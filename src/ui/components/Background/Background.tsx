@@ -1,25 +1,43 @@
 import React, { useContext, useEffect, useLayoutEffect, useRef } from 'react';
 import { UIContext } from '../UIContext';
 
+function setStyleProperty(node: HTMLElement, key: string, value: unknown) {
+  if (key.startsWith('--')) {
+    node.style.setProperty(key, value as string);
+  } else {
+    // @ts-ignore
+    node.style[key] = value;
+  }
+}
+
+function getStylePropery(node: HTMLElement, key: string) {
+  if (key.startsWith('--')) {
+    return node.style.getPropertyValue(key);
+  } else {
+    // @ts-ignore key is keyof CSSProperties
+    return node.style[key];
+  }
+}
+
 export function useBodyStyle(style: React.CSSProperties) {
   const prevValuesRef = useRef<React.CSSProperties>({});
 
   useLayoutEffect(() => {
-    for (const key in style) {
+    for (const untypedKey in style) {
+      const key = untypedKey as keyof typeof style;
       if (key in prevValuesRef.current === false) {
-        // @ts-ignore key is keyof CSSProperties
-        prevValuesRef.current[key] = document.body.style[key];
+        // @ts-ignore
+        prevValuesRef.current[key] = getStylePropery(document.body, key);
       }
-      // @ts-ignore key is keyof CSSProperties
-      document.body.style[key] = style[key];
+      setStyleProperty(document.body, key, style[key]);
     }
   }, [style]);
   useLayoutEffect(() => {
     const prevValues = prevValuesRef.current;
     return () => {
-      for (const key in prevValues) {
-        // @ts-ignore key is keyof CSSProperties
-        document.body.style[key] = prevValues[key];
+      for (const untypedKey in prevValues) {
+        const key = untypedKey as keyof typeof style;
+        setStyleProperty(document.body, key, prevValues[key]);
       }
     };
   }, []);

@@ -4,8 +4,7 @@ export const clipboardWarning = {
   getMessage: (seedType: SeedType) => {
     const secretName =
       seedType === SeedType.privateKey ? 'private key' : 'recovery phrase';
-    return `You can copy and paste ${secretName} from where you saved it`;
+    return `Did you save the ${secretName}?`;
   },
-  isWarningMessage: (value: string) =>
-    value.startsWith('You can copy and paste'),
+  isWarningMessage: (value: string) => value.startsWith('Did you save'),
 };

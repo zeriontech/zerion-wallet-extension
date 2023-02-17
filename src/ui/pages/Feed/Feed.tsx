@@ -546,7 +546,7 @@ export function Feed() {
         <VStack gap={8} style={{ justifyItems: 'center', width: '100%' }}>
           <Spacer height={50} />
           <span style={{ fontSize: 40 }}>🥺</span>
-          <UIText kind="small/accent">No abilities yet</UIText>
+          <UIText kind="small/accent">No perks yet</UIText>
         </VStack>
       ) : null}
       <SurfaceList

@@ -28,10 +28,11 @@ import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
-import { Surface } from 'src/ui/ui-kit/Surface';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
+import { InputDecorator } from 'src/ui/ui-kit/Input/InputDecorator';
+import { BackupInfoNote } from 'src/ui/components/BackupInfoNote';
 
 function noNulls<T>(arr: (T | null)[]) {
   return arr.filter(isTruthy);
@@ -207,61 +208,47 @@ export function WalletGroup() {
       <PageTop />
       <VStack gap={24}>
         {walletGroup.walletContainer.seedType === SeedType.mnemonic ? (
-          <Surface
-            padding="10px 16px"
-            style={{ border: '1px solid var(--neutral-400)' }}
-          >
-            <VStack gap={4}>
-              <UIText
-                kind="label/reg"
-                color="var(--neutral-500)"
-                as="label"
-                htmlFor={groupInputId}
-              >
-                Name
-              </UIText>
-              <UIText kind="body/s_reg">
-                <EditableWalletGroupName
-                  id={groupInputId}
-                  walletGroup={walletGroup}
-                  onRename={refetchWalletGroup}
-                />
-              </UIText>
-            </VStack>
-          </Surface>
+          <InputDecorator
+            label="Name"
+            htmlFor={groupInputId}
+            inputTextKind="body/accent"
+            input={
+              <EditableWalletGroupName
+                id={groupInputId}
+                walletGroup={walletGroup}
+                onRename={refetchWalletGroup}
+              />
+            }
+          />
         ) : null}
-        <SurfaceList
-          items={noNulls([
-            {
-              key: 1,
-              to: `/backup-wallet?groupId=${walletGroup.id}&backupKind=verify`,
-              component: (
-                <HStack
-                  gap={4}
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <UIText kind="body/s_reg">
-                    {seedType === SeedType.mnemonic
-                      ? strings.recoveryPhraseTitle
-                      : strings.privateKeyTitle}
-                    {walletGroup.lastBackedUp != null ? (
-                      <UIText kind="caption/reg" color="var(--neutral-500)">
-                        Last Backup:{' '}
-                        {new Intl.DateTimeFormat('en', {
-                          dateStyle: 'medium',
-                        }).format(walletGroup.lastBackedUp)}
-                      </UIText>
-                    ) : null}
-                  </UIText>
-                  <span>
+        <VStack gap={8}>
+          <UIText kind="small/accent" color="var(--neutral-500)">
+            Backup
+          </UIText>
+          <SurfaceList
+            items={noNulls([
+              {
+                key: 1,
+                to: `/backup-wallet?groupId=${walletGroup.id}&backupKind=verify`,
+                component: (
+                  <HStack
+                    gap={4}
+                    justifyContent="space-between"
+                    alignItems="center"
+                  >
+                    <UIText kind="body/accent">
+                      {seedType === SeedType.mnemonic
+                        ? strings.recoveryPhraseTitle
+                        : strings.privateKeyTitle}
+                      <BackupInfoNote group={walletGroup} />
+                    </UIText>
                     <ChevronRightIcon />
-                  </span>
-                </HStack>
-              ),
-            },
-          ])}
-        />
+                  </HStack>
+                ),
+              },
+            ])}
+          />
+        </VStack>
 
         <SurfaceList
           items={[
@@ -301,9 +288,7 @@ export function WalletGroup() {
                       />
                     }
                   />
-                  <span>
-                    <ChevronRightIcon />
-                  </span>
+                  <ChevronRightIcon />
                 </HStack>
               ),
             })),

@@ -6,6 +6,8 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
+import { useStore } from '@store-unit/react';
+import { themeStore, ThemeStore } from 'src/ui/features/appearance';
 import * as s from './styles.module.css';
 
 export function DecorativeMessage({
@@ -19,6 +21,7 @@ export function DecorativeMessage({
   style?: React.CSSProperties;
   animate?: boolean;
 }) {
+  const themeState = useStore(themeStore);
   return (
     <HStack
       gap={8}
@@ -34,19 +37,19 @@ export function DecorativeMessage({
         style={{
           visibility: isConsecutive ? 'hidden' : undefined,
           borderRadius: '50%',
-          padding: 4,
-          border: '2px solid var(--white)',
-          textAlign: 'center',
-          display: 'flex',
-          alignItems: 'center',
           boxShadow: '0px 4px 12px -4px rgba(0, 0, 0, 0.16)',
         }}
       >
         <img
-          src={require('src/ui/assets/zerion-logo-round@2x.png')}
+          src={
+            ThemeStore.isDark(themeState)
+              ? require('src/ui/assets/system-avatar-dark.svg')
+              : require('src/ui/assets/system-avatar-light.svg')
+          }
           style={{
-            width: 32,
-            height: 32,
+            display: 'block',
+            width: 44,
+            height: 44,
           }}
         />
       </div>
@@ -134,8 +137,8 @@ export function WithConfetti({
           position: 'fixed',
           inset: 0,
           zIndex: -1,
-          width: '100%',
-          height: '100%',
+          width: 'var(--body-width)',
+          height: 'var(--body-height)',
         }}
       ></canvas>
       {children}
@@ -175,7 +178,7 @@ export function DecorativeMessageDone({
             <Surface
               style={{
                 padding: 12,
-                backgroundColor: 'var(--background)',
+                backgroundColor: 'var(--z-index-1)',
               }}
             >
               <HStack gap={12} alignItems="center">

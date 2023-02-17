@@ -17,10 +17,9 @@ import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { PageBottom } from 'src/ui/components/PageBottom';
-import { WarningIcon } from 'src/ui/components/WarningIcon';
-import { WalletOrigin } from 'src/shared/WalletOrigin';
 import { EraseDataListButton } from 'src/ui/components/EraseData';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
+import { BackupInfoNote } from 'src/ui/components/BackupInfoNote';
 import { WalletAccount as WalletAccountPage } from './WalletAccount';
 import { WalletGroup as WalletGroupPage } from './WalletGroup';
 
@@ -28,7 +27,7 @@ function PrivateKeyList({ walletGroups }: { walletGroups: WalletGroup[] }) {
   return (
     <VStack gap={8}>
       <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
-        Imported by Private Key (i)
+        Imported by Private Key
       </UIText>
       <SurfaceList
         items={walletGroups.map((group) => {
@@ -65,7 +64,7 @@ function MnemonicList({ walletGroups }: { walletGroups: WalletGroup[] }) {
   return (
     <VStack gap={8}>
       <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
-        Wallets (i)
+        Wallets
       </UIText>
 
       <SurfaceList
@@ -87,29 +86,7 @@ function MnemonicList({ walletGroups }: { walletGroups: WalletGroup[] }) {
                     <AddressBadge key={wallet.address} wallet={wallet} />
                   ))}
                 </div>
-                {group.lastBackedUp != null ? (
-                  <UIText kind="caption/reg" color="var(--neutral-500)">
-                    Last Backup:{' '}
-                    {new Intl.DateTimeFormat('en', {
-                      dateStyle: 'medium',
-                    }).format(group.lastBackedUp)}
-                  </UIText>
-                ) : group.origin === WalletOrigin.extension ? (
-                  <HStack gap={4}>
-                    <WarningIcon />
-                    <UIText kind="caption/reg" color="var(--notice-500)">
-                      Never backed up
-                    </UIText>
-                  </HStack>
-                ) : group.origin === WalletOrigin.imported ? (
-                  <UIText kind="caption/reg" color="var(--neutral-500)">
-                    Imported on{' '}
-                    {new Intl.DateTimeFormat('en', {
-                      dateStyle: 'medium',
-                      timeStyle: 'medium',
-                    }).format(group.created)}
-                  </UIText>
-                ) : null}
+                <BackupInfoNote group={group} />
               </VStack>
               <span>
                 <ChevronRightIcon />

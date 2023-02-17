@@ -29,8 +29,10 @@ body {
   line-height: calc(20 / 14);
   color: var(--black);
   background-color: var(--background);
-  width: 400px;
-  height: 600px;
+  --body-width: 400px;
+  --body-height: 600px;
+  width: var(--body-width);
+  height: var(--body-height);
 }
 
 body.isDialog {
