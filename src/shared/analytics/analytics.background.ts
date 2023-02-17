@@ -58,9 +58,9 @@ function trackAppEvents({ account }: { account: Account }) {
         chain,
         gas: transaction.gasLimit.toString(),
         hash: transaction.hash,
-        asset_amount_sent: ['TODO'],
-        gas_price: 'TODO',
-        network_fee: 'TODO',
+        asset_amount_sent: [], // TODO
+        gas_price: null, // TODO
+        network_fee: null, // TODO
         network_fee_value: feeValueCommon,
       });
       sendToMetabase('signed_transaction', params);
