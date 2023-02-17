@@ -1,0 +1,1 @@
+export { TransactionDescription } from './TransactionDescription';
