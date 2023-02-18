@@ -107,7 +107,7 @@ function RemoveAddressConfirmationDialog({ wallet }: { wallet: BareWallet }) {
         />
         <UIText kind="headline/h3">Do you want to remove this wallet?</UIText>
         <UIText kind="body/regular">
-          You can always import it again using recovery phrase or a private key
+          You can always import it again using recovery phrase or private key
         </UIText>
         <Media
           image={
