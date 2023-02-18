@@ -12,7 +12,7 @@ import { PageColumn } from '../PageColumn';
 import * as s from './styles.module.css';
 import { detectBrowser } from './detectBrowser';
 
-const BUTTON_HEIGHT = 29;
+export const BUTTON_HEIGHT = 29;
 
 const urlBlacklist = new Set(['/', '/intro', '/get-started']);
 const { browser: browserName, version: browserVersion } = detectBrowser(

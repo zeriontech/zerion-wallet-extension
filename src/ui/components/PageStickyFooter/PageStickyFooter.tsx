@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { BUG_REPORT_BUTTON_HEIGHT } from '../BugReportButton';
 import { PageColumn } from '../PageColumn';
 import { PageFullBleedLine } from '../PageFullBleedLine';
 import { UIContext } from '../UIContext';
@@ -40,7 +41,7 @@ export function PageStickyFooter({
       style={{
         flexGrow: 0,
         position: 'sticky',
-        bottom: 0,
+        bottom: BUG_REPORT_BUTTON_HEIGHT,
         backgroundColor: 'var(--background)',
         ...style,
       }}
