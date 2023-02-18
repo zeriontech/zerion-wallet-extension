@@ -16,6 +16,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { EmptyView } from 'src/ui/components/EmptyView';
 import { useNavigationState } from 'src/ui/shared/useNavigationState';
 import type {
   WalletAbility,
@@ -543,11 +544,10 @@ export function Feed() {
         />
       </HStack>
       {!fetching && !abilities?.length ? (
-        <VStack gap={8} style={{ justifyItems: 'center', width: '100%' }}>
-          <Spacer height={50} />
-          <span style={{ fontSize: 40 }}>🥺</span>
-          <UIText kind="small/accent">No perks yet</UIText>
-        </VStack>
+        <>
+          <Spacer height={24} />
+          <EmptyView text="No perks yet" />
+        </>
       ) : null}
       <SurfaceList
         style={
