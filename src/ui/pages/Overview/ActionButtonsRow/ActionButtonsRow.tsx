@@ -63,8 +63,8 @@ export function ActionButtonsRow() {
   );
   const activeTab = activeTabs ? activeTabs[0] : null;
   const { mutate: updateTab } = useMutation(
-    async ({ tab, url }: { tab: browser.Tabs.Tab; url: URL }) =>
-      browser.tabs.update(tab.id, { url: url.toString() })
+    async ({ tab, url }: { tab: browser.Tabs.Tab; url: string }) =>
+      browser.tabs.update(tab.id, { url })
   );
   if (!addWalletParams || !wallet) {
     return null;
@@ -72,10 +72,10 @@ export function ActionButtonsRow() {
   const performAction = (event: React.MouseEvent<HTMLElement>) => {
     acceptOrigin({ origin: ZERION_ORIGIN, address: wallet.address });
     const href = event.currentTarget.getAttribute('href');
-    const url = activeTab?.url ? new URL(activeTab.url) : null;
-    if (href && activeTab && url && url.origin == ZERION_ORIGIN) {
+    const activeTabUrl = activeTab?.url ? new URL(activeTab.url) : null;
+    if (href && activeTab && activeTabUrl?.origin == ZERION_ORIGIN) {
       event.preventDefault();
-      updateTab({ tab: activeTab, url: new URL(href) });
+      updateTab({ tab: activeTab, url: href });
     }
   };
 
