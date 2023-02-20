@@ -192,7 +192,6 @@ export function SurfaceList({
             >
               {index > 0 && separatorTop ? (
                 <div
-                  className={s.separatorTop}
                   style={{
                     height: 1,
                     marginLeft:
