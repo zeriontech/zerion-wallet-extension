@@ -193,6 +193,7 @@ const Crypto = () => {
 };
 
 export const readme: Readme = {
+  id: 'crypto',
   name: 'Crypto',
   description: null,
   component: () => (

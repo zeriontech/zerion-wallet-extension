@@ -1,4 +1,5 @@
-body {
+body,
+:global(.ui-lab) {
   background-color: transparent;
   width: auto;
 }

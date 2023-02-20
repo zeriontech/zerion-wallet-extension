@@ -12,6 +12,7 @@ const sampleOrigins = [
   'https://app.sushi.com/',
 ];
 export const readme: Readme = {
+  id: 'send-transaction',
   name: 'SendTransaction',
   description: null,
   component: () => (

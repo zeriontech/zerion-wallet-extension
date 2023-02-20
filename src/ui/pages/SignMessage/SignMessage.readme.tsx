@@ -20,6 +20,7 @@ const sampleOrigins = [
 ];
 
 export const readme: Readme = {
+  id: 'signMessage',
   name: 'SignMessage',
   description: null,
   component: () => (

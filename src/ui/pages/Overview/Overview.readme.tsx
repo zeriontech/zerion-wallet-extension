@@ -6,6 +6,7 @@ import { ViewSuspense } from 'src/ui/components/ViewSuspense';
 import { Overview } from './Overview';
 
 export const readme: Readme = {
+  id: 'overview',
   name: 'Overview',
   description: null,
   component: () => (

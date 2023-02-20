@@ -6,6 +6,7 @@ import { ViewSuspense } from 'src/ui/components/ViewSuspense';
 import { RequestAccounts } from './RequestAccounts';
 
 export const readme: Readme = {
+  id: 'requestAccounts',
   name: 'RequestAccounts',
   description: null,
   component: () => (
