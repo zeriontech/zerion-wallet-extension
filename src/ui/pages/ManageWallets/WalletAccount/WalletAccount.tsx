@@ -26,6 +26,7 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { Button } from 'src/ui/ui-kit/Button';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
+import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { invariant } from 'src/shared/invariant';
@@ -68,7 +69,6 @@ function EditableWalletName({
           display: 'grid',
           gap: 4,
           gridTemplateColumns: '1fr auto',
-          alignItems: 'center',
         }}
       >
         <UnstyledInput
@@ -102,6 +102,17 @@ function RemoveAddressConfirmationDialog({ wallet }: { wallet: BareWallet }) {
       style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
     >
       <VStack gap={8}>
+        <WarningIcon
+          size={44}
+          outlineStrokeWidth={7}
+          borderWidth="3px"
+          kind="negative"
+          glow={true}
+        />
+        <UIText kind="headline/h3">Do you want to remove this wallet?</UIText>
+        <UIText kind="body/regular">
+          You can always import it again using recovery phrase or private key
+        </UIText>
         <Media
           image={
             <WalletAvatar address={wallet.address} size={32} borderRadius={4} />
@@ -113,13 +124,17 @@ function RemoveAddressConfirmationDialog({ wallet }: { wallet: BareWallet }) {
           }
           detailText={null}
         />
-        <UIText kind="body/s_reg">Do you want to remove this wallet?</UIText>
       </VStack>
-      <HStack gap={12} style={{ marginTop: 'auto' }}>
-        <Button value="cancel" kind="regular">
+      <HStack
+        gap={12}
+        style={{ marginTop: 'auto', gridAutoColumns: '1fr 1fr' }}
+      >
+        <Button value="cancel" kind="regular" style={{ width: '100%' }}>
           Cancel
         </Button>
-        <Button value="confirm">Yes</Button>
+        <Button value="confirm" kind="danger" style={{ width: '100%' }}>
+          Yes
+        </Button>
       </HStack>
     </form>
   );
@@ -172,8 +187,7 @@ export function WalletAccount() {
   return (
     <PageColumn>
       <NavigationTitle title={displayName} />
-
-      <BottomSheetDialog ref={dialogRef}>
+      <BottomSheetDialog ref={dialogRef} style={{ height: '48vh' }}>
         <RemoveAddressConfirmationDialog wallet={wallet} />
       </BottomSheetDialog>
       <PageTop />

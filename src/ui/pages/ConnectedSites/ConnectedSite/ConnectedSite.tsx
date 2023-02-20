@@ -59,7 +59,7 @@ function RevokeAllSurfaceItemButton({
 
   return (
     <>
-      <BottomSheetDialog ref={removeActionDialogRef}>
+      <BottomSheetDialog ref={removeActionDialogRef} style={{ height: '30vh' }}>
         <GenericPrompt message="The site will ask for permission next time" />
       </BottomSheetDialog>
       <SurfaceItemButton
@@ -172,7 +172,7 @@ export function ConnectedSite() {
   const title = getNameFromOrigin(connectedSite.origin);
   return (
     <>
-      <BottomSheetDialog ref={removeActionDialogRef}>
+      <BottomSheetDialog ref={removeActionDialogRef} style={{ height: '30vh' }}>
         <GenericPrompt message="The site will ask for permission next time" />
       </BottomSheetDialog>
       <NavigationTitle title={title} />
