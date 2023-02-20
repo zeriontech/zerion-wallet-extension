@@ -1,0 +1,1 @@
+export { DappIconFetcher } from './DappIconFetcher';
