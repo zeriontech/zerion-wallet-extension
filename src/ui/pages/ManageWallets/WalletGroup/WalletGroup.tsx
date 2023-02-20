@@ -201,8 +201,8 @@ export function WalletGroup() {
     privateKeyTitle: 'Private Key',
     removeWalletSubtitle:
       seedType === SeedType.mnemonic
-        ? 'You can always import it again using recovery phrase'
-        : 'You can always import it again using a private key',
+        ? 'You can always import it again using your recovery phrase'
+        : 'You can always import it again using your private key',
   };
 
   return (

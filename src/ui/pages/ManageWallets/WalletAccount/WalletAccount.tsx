@@ -111,7 +111,8 @@ function RemoveAddressConfirmationDialog({ wallet }: { wallet: BareWallet }) {
         />
         <UIText kind="headline/h3">Do you want to remove this wallet?</UIText>
         <UIText kind="body/regular">
-          You can always import it again using recovery phrase or private key
+          You can always import it again using your recovery phrase or private
+          key
         </UIText>
         <Media
           image={
@@ -298,7 +299,7 @@ export function WalletAccount() {
             ]}
           />
           <UIText kind="caption/reg" color="var(--neutral-500)">
-            You can always import it again using recovery phrase or a private
+            You can always import it again using your recovery phrase or private
             key
           </UIText>
         </VStack>
