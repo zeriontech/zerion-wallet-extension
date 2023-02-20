@@ -117,31 +117,35 @@ function RemoveGroupConfirmationDialog({
       style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
     >
       <VStack gap={8}>
-        <WarningIcon kind="negative" glow={true} />
-        <UIText kind="subtitle/l_med">
-          Did you backup your recovery phrase?
-        </UIText>
-        <UIText kind="body/s_reg">
+        <WarningIcon
+          size={44}
+          outlineStrokeWidth={7}
+          borderWidth="3px"
+          kind="negative"
+          glow={true}
+        />
+        <UIText kind="headline/h3">Did you backup your recovery phrase?</UIText>
+        <UIText kind="body/regular">
           You will need your recovery phrase to import this group of wallets in
           the future
         </UIText>
         <UIText kind="caption/reg" color="var(--neutral-500)">
           Wallets to remove
         </UIText>
-        <VStack gap={4} style={{ maxHeight: 200, overflowY: 'auto' }}>
+        <VStack gap={8} style={{ maxHeight: 180, overflowY: 'auto' }}>
           {walletGroup.walletContainer.wallets.map((wallet) => (
             <Media
               key={wallet.address}
               image={
                 <WalletAvatar
                   address={wallet.address}
-                  size={16}
+                  size={24}
                   borderRadius={4}
                 />
               }
               text={
                 <UIText kind="caption/reg">
-                  <WalletDisplayName wallet={wallet} maxCharacters={15} />
+                  <WalletDisplayName wallet={wallet} />
                 </UIText>
               }
               detailText={null}
@@ -149,11 +153,13 @@ function RemoveGroupConfirmationDialog({
           ))}
         </VStack>
       </VStack>
-      <HStack gap={12} style={{ marginTop: 'auto' }}>
+      <HStack gap={12} justifyContent="center" style={{ marginTop: 'auto' }}>
         <Button value="cancel" kind="regular">
           Cancel
         </Button>
-        <Button value="confirm">Yes</Button>
+        <Button kind="danger" value="confirm">
+          Remove Wallets
+        </Button>
       </HStack>
     </form>
   );
