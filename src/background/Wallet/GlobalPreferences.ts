@@ -9,11 +9,11 @@ export interface State {
  * need to be accessible even before the user logs in
  */
 export class GlobalPreferences extends PersistentStore<State> {
-  private static defaults: State = {
+  private static defaults: Required<State> = {
     recognizableConnectButtons: true,
   };
 
-  getPreferences() {
+  getPreferences(): Required<State> {
     const state = this.getState();
     return { ...GlobalPreferences.defaults, ...state };
   }
