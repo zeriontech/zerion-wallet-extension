@@ -23,6 +23,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { noValueDash } from 'src/ui/shared/typography';
 
 function getGasPriceFromTransaction(
   transaction: IncomingTransaction
@@ -69,7 +70,8 @@ export function NetworkFee({
   if (!gas) {
     throw new Error('gas field is expected to be found on Transaction object');
   }
-  const { value: nativeAsset } = useNativeAsset(chain);
+  const { value: nativeAsset, isLoading: isLoadingNativeAsset } =
+    useNativeAsset(chain);
 
   const { data: chainGasPrices } = useQuery(
     ['defi-sdk/gasPrices', chain.toString()],
@@ -81,7 +83,7 @@ export function NetworkFee({
     { useErrorBoundary: true }
   );
 
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, isSuccess } = useQuery(
     ['feeEstimation', chain, transaction],
     async () => {
       const gasPrices = await gasChainPricesSubscription.get();
@@ -103,6 +105,7 @@ export function NetworkFee({
     }
   );
   const feeEstimation = data?.feeEstimation;
+  const noFeeData = isSuccess && !feeEstimation;
   const transactionGasPrice = data?.gasPrice;
 
   const time = useMemo(() => {
@@ -169,12 +172,12 @@ export function NetworkFee({
         <UIText kind="small/accent" color="var(--neutral-700)">
           Network Fee
         </UIText>
-        {isLoading || feeValueFiat === undefined ? (
+        {isLoading || (isLoadingNativeAsset && feeValueFiat == null) ? (
           <CircleSpinner
             // size of "headline/h3"
             size="24px"
           />
-        ) : feeValueFiat === null ? null : (
+        ) : feeValueFiat ? (
           <UIText
             kind="headline/h3"
             title={getFeeTypeTitle(feeEstimation?.type)}
@@ -183,7 +186,11 @@ export function NetworkFee({
               .filter(isTruthy)
               .join(' · ')}
           </UIText>
-        )}
+        ) : noFeeData ? (
+          <UIText kind="body/regular" title="No fee data">
+            {noValueDash}
+          </UIText>
+        ) : null}
         {feeValueCommon ? (
           <UIText
             kind="small/accent"
