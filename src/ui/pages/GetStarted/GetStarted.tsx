@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Link, Route, Routes, useSearchParams } from 'react-router-dom';
+import { useQuery } from 'react-query';
 import { Button } from 'src/ui/ui-kit/Button';
 import { PageTop } from 'src/ui/components/PageTop';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -19,7 +20,6 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
 import { Background } from 'src/ui/components/Background';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
-import { useQuery } from 'react-query';
 import { ImportWallet } from './ImportWallet';
 import { GenerateWallet } from './GenerateWallet';
 
@@ -82,9 +82,10 @@ function Options() {
       ),
     [walletGroups]
   );
+  const hasMnemonicWallets = mnemonicGroups ? mnemonicGroups.length > 0 : false;
 
   const { data: canCreateInitialWallet } = useQuery(
-    `wallet/canCreateInitialWallet`,
+    'wallet/canCreateInitialWallet',
     () => walletPort.request('canCreateInitialWallet'),
     { useErrorBoundary: true, suspense: true }
   );
@@ -117,7 +118,7 @@ function Options() {
         </FillView>
 
         <VStack gap={16}>
-          {canCreateInitialWallet && (
+          {(hasMnemonicWallets || canCreateInitialWallet) && (
             <NewWalletOption
               beforeCreate={beforeCreate}
               mnemonicWalletGroups={mnemonicGroups || null}

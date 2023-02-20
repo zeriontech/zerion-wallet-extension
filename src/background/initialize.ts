@@ -30,8 +30,7 @@ export async function initialize() {
   dnaService.initialize();
   await transactionService.initialize();
   initializeAnalytics({ account });
-
-  await initializeRemoteConfig();
+  initializeRemoteConfig();
 
   Object.assign(globalThis, {
     account,
