@@ -1,22 +1,16 @@
 import { Store } from 'store-unit';
 import { retrieve } from './persistence';
 
-export enum Preference {
+export enum ThemePreference {
   system,
   light,
   dark,
 }
 
 export interface State {
-  mode: Preference;
+  mode: ThemePreference;
 }
 
-export const preferenceStore = new Store<State>({
-  mode: Preference.system,
-});
+const initialState = retrieve() || { mode: ThemePreference.system };
 
-retrieve().then((value) => {
-  if (value && value.mode !== preferenceStore.getState().mode) {
-    preferenceStore.setState(value);
-  }
-});
+export const preferenceStore = new Store<State>(initialState);

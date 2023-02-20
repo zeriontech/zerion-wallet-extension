@@ -1,6 +1,6 @@
 import { Store } from 'store-unit';
 import s from 'src/ui/style/theme.module.css';
-import { preferenceStore, Preference } from './preference-store';
+import { preferenceStore, ThemePreference } from './preference-store';
 
 export enum Theme {
   light,
@@ -15,10 +15,10 @@ function getTheme(
   preference: typeof preferenceStore,
   colorSchemeMedia: MediaQueryList
 ) {
-  if (preference.getState().mode === Preference.system) {
+  if (preference.getState().mode === ThemePreference.system) {
     return getSystemMode(colorSchemeMedia);
   }
-  return preferenceStore.getState().mode === Preference.dark
+  return preferenceStore.getState().mode === ThemePreference.dark
     ? Theme.dark
     : Theme.light;
 }

@@ -20,10 +20,12 @@ import WalletIcon from 'jsx:src/ui/assets/wallet.svg';
 import LockIcon from 'jsx:src/ui/assets/lock.svg';
 import GlobeIcon from 'jsx:src/ui/assets/globe.svg';
 import SettingsIcon from 'jsx:src/ui/assets/settings.svg';
+import DarkModeLampIcon from 'jsx:src/ui/assets/dark-mode-lamp.svg';
 import { version } from 'src/shared/packageVersion';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { apostrophe } from 'src/ui/shared/typography';
 import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
+import { AppearancePage } from 'src/ui/features/appearance/AppearancePage';
 import { BackupFlowSettingsSection } from '../BackupWallet/BackupSettingsItem';
 
 function SettingsMain() {
@@ -43,7 +45,7 @@ function SettingsMain() {
                 <AngleRightRow>
                   <HStack gap={4} alignItems="center">
                     <WalletIcon />
-                    <UIText kind="body/s_reg">Manage Wallets</UIText>
+                    <UIText kind="body/regular">Manage Wallets</UIText>
                   </HStack>
                 </AngleRightRow>
               ),
@@ -58,25 +60,37 @@ function SettingsMain() {
                       // This icon doesn't fit, temporary hack to make it look better
                       style={{ color: 'var(--neutral-800)' }}
                     />
-                    <UIText kind="body/s_reg">Connected Sites</UIText>
+                    <UIText kind="body/regular">Connected Sites</UIText>
                   </HStack>
                 </AngleRightRow>
               ),
             },
             {
               key: 3,
-              to: '/settings/user-preferences',
+              to: '/settings/appearance',
               component: (
                 <AngleRightRow>
                   <HStack gap={4} alignItems="center">
-                    <SettingsIcon />
-                    <UIText kind="body/s_reg">Preferences</UIText>
+                    <DarkModeLampIcon />
+                    <UIText kind="body/regular">Appearance</UIText>
                   </HStack>
                 </AngleRightRow>
               ),
             },
             {
               key: 4,
+              to: '/settings/user-preferences',
+              component: (
+                <AngleRightRow>
+                  <HStack gap={4} alignItems="center">
+                    <SettingsIcon />
+                    <UIText kind="body/regular">Preferences</UIText>
+                  </HStack>
+                </AngleRightRow>
+              ),
+            },
+            {
+              key: 5,
               onClick: async () => {
                 await logout.mutateAsync();
                 navigate('/login');
@@ -89,11 +103,11 @@ function SettingsMain() {
                 >
                   <HStack gap={4} alignItems="center">
                     <LockIcon style={{ color: 'var(--negative-500)' }} />
-                    <UIText kind="body/s_reg" color="var(--negative-500)">
+                    <UIText kind="body/regular" color="var(--negative-500)">
                       {logout.isLoading ? 'Locking...' : 'Lock'}
                     </UIText>
                   </HStack>
-                  <UIText kind="body/s_reg" color="var(--neutral-500)">
+                  <UIText kind="body/regular" color="var(--neutral-500)">
                     Log Out
                   </UIText>
                 </HStack>
@@ -203,7 +217,7 @@ function UserPreferences() {
       <PageTop />
       <VStack gap={24}>
         <VStack gap={8}>
-          <UIText kind="body/s_reg">Advanced Settings</UIText>
+          <UIText kind="body/regular">Advanced Settings</UIText>
           <SurfaceList
             items={[
               {
@@ -212,10 +226,10 @@ function UserPreferences() {
                   <HStack gap={4} justifyContent="space-between">
                     <Media
                       image={null}
-                      text={<UIText kind="body/s_reg">MetaMask Mode</UIText>}
+                      text={<UIText kind="body/regular">MetaMask Mode</UIText>}
                       vGap={4}
                       detailText={
-                        <UIText kind="body/s_reg" color="var(--neutral-500)">
+                        <UIText kind="body/regular" color="var(--neutral-500)">
                           Some DApps only work with MetaMask. Zerion Wallet can
                           work with them by appearing as MetaMask
                         </UIText>
@@ -240,13 +254,13 @@ function UserPreferences() {
                     <Media
                       image={null}
                       text={
-                        <UIText kind="body/s_reg">
+                        <UIText kind="body/regular">
                           Show DApp Network Switch in Header
                         </UIText>
                       }
                       vGap={4}
                       detailText={
-                        <UIText kind="body/s_reg" color="var(--neutral-500)">
+                        <UIText kind="body/regular" color="var(--neutral-500)">
                           For a cleaner UI, try turning this off
                         </UIText>
                       }
@@ -266,7 +280,7 @@ function UserPreferences() {
           />
         </VStack>
         <VStack gap={8}>
-          <UIText kind="body/s_reg">More</UIText>
+          <UIText kind="body/regular">More</UIText>
           <SurfaceList
             items={[
               {
@@ -276,13 +290,13 @@ function UserPreferences() {
                     <Media
                       image={null}
                       text={
-                        <UIText kind="body/s_reg">
+                        <UIText kind="body/regular">
                           Recognizable Connect Buttons
                         </UIText>
                       }
                       vGap={4}
                       detailText={
-                        <UIText kind="body/s_reg" color="var(--neutral-500)">
+                        <UIText kind="body/regular" color="var(--neutral-500)">
                           When enabled, we add Zerion Wallet label to connect
                           buttons in DApps so that they{apostrophe}re easier to
                           spot
@@ -327,6 +341,14 @@ export function Settings() {
         element={
           <ViewSuspense>
             <UserPreferences />
+          </ViewSuspense>
+        }
+      />
+      <Route
+        path="/appearance"
+        element={
+          <ViewSuspense>
+            <AppearancePage />
           </ViewSuspense>
         }
       />

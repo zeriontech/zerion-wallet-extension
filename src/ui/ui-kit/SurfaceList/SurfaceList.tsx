@@ -77,6 +77,26 @@ export const ItemButton = React.forwardRef<
   );
 });
 
+export const ItemLabel = React.forwardRef<
+  HTMLLabelElement,
+  {
+    children: React.ReactNode;
+    style?: React.CSSProperties;
+    highlighted?: boolean;
+  } & React.LabelHTMLAttributes<HTMLLabelElement>
+>(({ children, style, highlighted, ...props }, ref) => {
+  return (
+    <label
+      style={{ color: 'inherit', ...style }}
+      className={cn(s.option, highlighted ? s.highlighted : undefined)}
+      ref={ref}
+      {...props}
+    >
+      <div className={s.decoration}>{children}</div>
+    </label>
+  );
+});
+
 export interface Item {
   key: string | number;
   component: JSX.Element;
@@ -93,6 +113,10 @@ export interface Item {
   pad?: boolean;
 }
 
+function isInteractive(item: Item): boolean {
+  return item.isInteractive ?? Boolean(item.to || item.href || item.onClick);
+}
+
 export function SurfaceList({
   items,
   style,
@@ -100,9 +124,18 @@ export function SurfaceList({
   items: Item[];
   style?: React.CSSProperties;
 }) {
-  const vGap = 12;
+  const vGap = 8;
+  const firstItemIsInteractive = items.length && isInteractive(items[0]);
+  const lastItemIsInteractive =
+    items.length && isInteractive(items[items.length - 1]);
   return (
-    <Surface style={style}>
+    <Surface
+      style={{
+        paddingBlockStart: firstItemIsInteractive ? 6 : 0,
+        paddingBlockEnd: lastItemIsInteractive ? 6 : 0,
+        ...style,
+      }}
+    >
       <VStack gap={0}>
         {items.map((item, index) => {
           const {
@@ -111,8 +144,7 @@ export function SurfaceList({
             separatorLeadingInset = 0,
             pad = true,
           } = item;
-          const isInteractiveItem =
-            item.isInteractive ?? Boolean(item.to || item.href || item.onClick);
+          const isInteractiveItem = isInteractive(item);
           const component = item.to ? (
             <ItemLink
               to={item.to}
@@ -139,9 +171,7 @@ export function SurfaceList({
           ) : pad === false ? (
             item.component
           ) : (
-            <div style={{ paddingTop: vGap, paddingBottom: vGap }}>
-              {item.component}
-            </div>
+            <div style={{ paddingBlock: vGap }}>{item.component}</div>
           );
           if (item.key == null) {
             throw new Error('No key');
@@ -162,11 +192,14 @@ export function SurfaceList({
             >
               {index > 0 && separatorTop ? (
                 <div
+                  className={s.separatorTop}
                   style={{
                     height: 1,
                     marginLeft:
                       (isInteractiveItem ? 16 : 0) + separatorLeadingInset,
                     marginRight: isInteractiveItem ? 16 : 0,
+                    marginBottom: 4,
+                    marginTop: 4,
                     backgroundColor: 'var(--neutral-300)',
                   }}
                 />

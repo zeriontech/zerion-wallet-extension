@@ -48,7 +48,7 @@ import { AbilityPage } from '../pages/Feed/Ability';
 import { BugReportButton } from '../components/BugReportButton';
 import { Receive } from '../pages/Receive';
 import { KeyboardShortcut } from '../components/KeyboardShortcut';
-import { followTheme } from '../features/appearance';
+import { initialize as initializeApperance } from '../features/appearance';
 import { HandshakeFailure } from '../components/HandshakeFailure';
 import { useScreenViewChange } from '../shared/useScreenViewChange';
 
@@ -298,7 +298,7 @@ function CloseOtherWindows() {
   return null;
 }
 
-followTheme();
+initializeApperance();
 dayjs.extend(relativeTime);
 
 export function App({ handshakeFailure }: { handshakeFailure?: boolean }) {
