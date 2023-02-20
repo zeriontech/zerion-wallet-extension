@@ -18,7 +18,7 @@ function RadioGroupExample() {
   return (
     <VStack gap={8}>
       <UIText kind="body/regular">Radio group</UIText>
-      <Input placeholder="focusable element to test tab navigation" />
+      <Input placeholder="focusable element to test keyboard navigation" />
       <SurfaceList
         items={['apple', 'mango', 'cherry'].map((fruit, index) => ({
           key: index,
@@ -48,7 +48,7 @@ function RadioGroupExample() {
           ),
         }))}
       />
-      <Input placeholder="focusable element to test tab navigation" />
+      <Input placeholder="focusable element to test keyboard navigation" />
     </VStack>
   );
 }
