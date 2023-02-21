@@ -180,3 +180,17 @@ chrome.scripting.registerContentScripts([
     runAt: 'document_start',
   },
 ]);
+
+browser.runtime.onInstalled.addListener(({ reason }) => {
+  if (reason === chrome.runtime.OnInstalledReason.INSTALL) {
+    const popupUrl = browser.runtime.getManifest().action?.default_popup;
+    if (!popupUrl) {
+      throw new Error('popupUrl not found');
+    }
+    const url = new URL(browser.runtime.getURL(popupUrl));
+
+    browser.tabs.create({
+      url: url.toString(),
+    });
+  }
+});

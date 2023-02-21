@@ -34,7 +34,7 @@ async function registerServiceWorker() {
 let reactRoot: Root | null = null;
 
 async function initializeUI(opts?: { handshakeFailure?: boolean }) {
-  const isPopup = document.currentScript?.getAttribute('env') === 'popup';
+  const isPopup = browser.extension.getViews({ type: 'popup' }).length > 0;
   const root = document.getElementById('root');
   if (!root) {
     throw new Error('#root element not found');
