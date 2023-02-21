@@ -44,8 +44,8 @@ export const textParams = {
   'label/s_med': [11, 12, 500, 'normal'],
 
   /** Updated naming scheme */
-  'headline/hero': [36, 48, 500, '-1.8px'],
-  'headline/h1': [36, 48, 600, '-1px'],
+  'headline/hero': [40, 48, 500, '-1.8px'],
+  'headline/h1': [36, 48, 500, '-1px'],
   'headline/h2': [24, 28, 500, '-1px'],
   'headline/h3': [20, 24, 500, '-0.4px'],
   'body/accent': [16, 24, 500, 'normal'],

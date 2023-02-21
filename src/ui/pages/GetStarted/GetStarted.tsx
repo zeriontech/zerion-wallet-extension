@@ -95,7 +95,7 @@ function Options() {
         <FillView>
           <ZerionSquircle style={{ width: 64, height: 64 }} />
           <Spacer height={46} />
-          <UIText kind="headline/hero">Zerion Wallet</UIText>
+          <UIText kind="headline/h1">Zerion Wallet</UIText>
           <Spacer height={8} />
           <UIText kind="body/regular" style={{ textAlign: 'center' }}>
             All your crypto and NFTs. 10+ chains.
