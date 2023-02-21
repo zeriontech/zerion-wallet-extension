@@ -95,7 +95,7 @@ function ImportForm({
           name="seedOrPrivateKey"
           required={true}
           label={
-            <UIText kind="caption/regular" color="var(--neutral-600)">
+            <UIText kind="body/s_med">
               Use spaces between words if using a recovery phrase
             </UIText>
           }
