@@ -133,7 +133,7 @@ export function ActionButtonsRow() {
           title="Buy"
           icon={<BuyIcon />}
           href={`https://app.zerion.io/deposit?${addWalletParams}`}
-          onClick={addPermission}
+          onClick={performAction}
           target="_blank"
           rel="noopener noreferrer"
         />
