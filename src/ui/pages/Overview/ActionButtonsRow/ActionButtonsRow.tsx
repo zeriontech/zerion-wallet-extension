@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill';
 import React, { ComponentPropsWithoutRef, ElementType, useMemo } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import SwapIcon from 'jsx:src/ui/assets/actions/swap.svg';
@@ -33,6 +34,8 @@ function ActionButton<As extends ElementType = 'a'>({
   );
 }
 
+const ZERION_ORIGIN = 'https://app.zerion.io';
+
 export function ActionButtonsRow() {
   const { data: wallet } = useQuery('wallet/uiGetCurrentWallet', () => {
     return walletPort.request('uiGetCurrentWallet');
@@ -55,14 +58,27 @@ export function ActionButtonsRow() {
     }
     return params;
   }, [wallet]);
+  const { data: activeTabs } = useQuery('browser/activeTab', () =>
+    browser.tabs.query({ active: true, currentWindow: true })
+  );
+  const activeTab = activeTabs ? activeTabs[0] : null;
+  const { mutate: updateTab } = useMutation(
+    async ({ tab, url }: { tab: browser.Tabs.Tab; url: string }) =>
+      browser.tabs.update(tab.id, { url })
+  );
   if (!addWalletParams || !wallet) {
     return null;
   }
-  const addPermission = () =>
-    acceptOrigin({
-      origin: 'https://app.zerion.io',
-      address: wallet.address,
-    });
+  const performAction = (event: React.MouseEvent<HTMLElement>) => {
+    acceptOrigin({ origin: ZERION_ORIGIN, address: wallet.address });
+    const href = event.currentTarget.getAttribute('href');
+    const activeTabUrl = activeTab?.url ? new URL(activeTab.url) : null;
+    if (href && activeTab && activeTabUrl?.origin == ZERION_ORIGIN) {
+      event.preventDefault();
+      updateTab({ tab: activeTab, url: href });
+    }
+  };
+
   return (
     <ul
       style={{
@@ -79,7 +95,7 @@ export function ActionButtonsRow() {
           title="Swap"
           icon={<SwapIcon />}
           href={`https://app.zerion.io/swap?${addWalletParams}`}
-          onClick={addPermission}
+          onClick={performAction}
           target="_blank"
           rel="noopener noreferrer"
         />
@@ -89,7 +105,7 @@ export function ActionButtonsRow() {
           title="Send"
           icon={<SendIcon />}
           href={`https://app.zerion.io/send?${addWalletParams}`}
-          onClick={addPermission}
+          onClick={performAction}
           target="_blank"
           rel="noopener noreferrer"
         />
@@ -107,7 +123,7 @@ export function ActionButtonsRow() {
           title="Bridge"
           icon={<BridgeIcon />}
           href={`https://app.zerion.io/bridge?${addWalletParams}`}
-          onClick={addPermission}
+          onClick={performAction}
           target="_blank"
           rel="noopener noreferrer"
         />
