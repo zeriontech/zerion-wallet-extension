@@ -84,9 +84,9 @@ function Options() {
   );
   const hasMnemonicWallets = mnemonicGroups ? mnemonicGroups.length > 0 : false;
 
-  const { data: canCreateInitialWallet } = useQuery(
-    'wallet/canCreateInitialWallet',
-    () => walletPort.request('canCreateInitialWallet'),
+  const { data: userCanCreateInitialWallet } = useQuery(
+    'wallet/userCanCreateInitialWallet',
+    () => walletPort.request('userCanCreateInitialWallet'),
     { useErrorBoundary: true, suspense: true }
   );
 
@@ -118,7 +118,7 @@ function Options() {
         </FillView>
 
         <VStack gap={16}>
-          {(hasMnemonicWallets || canCreateInitialWallet) && (
+          {(hasMnemonicWallets || userCanCreateInitialWallet) && (
             <NewWalletOption
               beforeCreate={beforeCreate}
               mnemonicWalletGroups={mnemonicGroups || null}

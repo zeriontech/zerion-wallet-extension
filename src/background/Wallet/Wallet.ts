@@ -653,9 +653,9 @@ export class Wallet {
     });
   }
 
-  async canCreateInitialWallet({ context }: WalletMethodParams) {
+  async userCanCreateInitialWallet({ context }: WalletMethodParams) {
     this.verifyInternalOrigin(context);
-    return getRemoteConfigValue('can_create_initial_wallet');
+    return getRemoteConfigValue('user_can_create_initial_wallet');
   }
 
   async wallet_setWalletNameFlag({

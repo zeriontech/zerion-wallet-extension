@@ -1,3 +1,3 @@
 export interface RemoteConfig {
-  can_create_initial_wallet: boolean;
+  user_can_create_initial_wallet: boolean;
 }

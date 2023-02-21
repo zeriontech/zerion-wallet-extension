@@ -5,12 +5,16 @@ import { RemoteConfig } from '../types';
 const REMOTE_CONFIG_API_URL = 'https://proxy.zerion.io';
 
 const defaultConfig: RemoteConfig = {
-  can_create_initial_wallet: false,
+  user_can_create_initial_wallet: false,
 };
+
+const knownKeys = ['user_can_create_initial_wallet'];
 
 async function fetchRemoteConfig(): Promise<RemoteConfig | undefined> {
   const url = new URL('/remote-config', REMOTE_CONFIG_API_URL);
-  url.searchParams.append('prefix', 'extension_');
+  for (const key of knownKeys) {
+    url.searchParams.append('key', key);
+  }
   const response = await fetch(url);
   return (await response.json()) as unknown as RemoteConfig;
 }
