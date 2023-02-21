@@ -114,10 +114,12 @@ export function ActionButtonsRow() {
       </li>
       <li>
         <ActionButton
-          as={UnstyledLink}
-          to="/not-implemented"
           title="Buy"
           icon={<BuyIcon />}
+          href={`https://app.zerion.io/deposit?${addWalletParams}&openDeposit=true`}
+          onClick={addPermission}
+          target="_blank"
+          rel="noopener noreferrer"
         />
       </li>
     </ul>
