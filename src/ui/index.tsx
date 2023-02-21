@@ -7,7 +7,10 @@ import { initializeClientAnalytics } from 'src/shared/analytics/analytics.client
 import { HandshakeFailed } from 'src/shared/errors/errors';
 import { applyDrawFix } from './shared/applyDrawFix';
 import { App } from './App';
-import { initialize as initializeChannels } from './shared/channels';
+import {
+  initialize as initializeChannels,
+  walletPort,
+} from './shared/channels';
 import { queryClient } from './shared/requests/queryClient';
 import { emitter } from './shared/events';
 
@@ -31,14 +34,23 @@ async function registerServiceWorker() {
 let reactRoot: Root | null = null;
 
 async function initializeUI(opts?: { handshakeFailure?: boolean }) {
+  const isPopup = document.currentScript?.getAttribute('env') === 'popup';
   const root = document.getElementById('root');
   if (!root) {
     throw new Error('#root element not found');
   }
-  return registerServiceWorker()
-    .then(() => initializeChannels())
-    .then(() => queryClient.clear())
-    .then(() => configureUIClient())
+  await registerServiceWorker();
+  await initializeChannels();
+  walletPort.request('getCurrentAddress').then((wallet) => {
+    if (isPopup && (!wallet || true)) {
+      const url = new URL('./index.html', import.meta.url);
+      browser.tabs.create({
+        url: url.toString(),
+      });
+    }
+  });
+  queryClient.clear();
+  return configureUIClient()
     .then(() => initializeClientAnalytics())
     .then(() => {
       if (reactRoot) {
