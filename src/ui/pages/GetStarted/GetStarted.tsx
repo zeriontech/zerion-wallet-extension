@@ -119,7 +119,7 @@ function Options() {
               backgroundColor: 'var(--white)',
             }}
           >
-            I Already Have a Walet
+            Import Existing Wallet
           </Button>
         </VStack>
         <PageBottom />
