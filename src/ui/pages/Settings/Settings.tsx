@@ -96,19 +96,10 @@ function SettingsMain() {
                 navigate('/login');
               },
               component: (
-                <HStack
-                  gap={8}
-                  alignItems="center"
-                  justifyContent="space-between"
-                >
-                  <HStack gap={4} alignItems="center">
-                    <LockIcon style={{ color: 'var(--negative-500)' }} />
-                    <UIText kind="body/regular" color="var(--negative-500)">
-                      {logout.isLoading ? 'Locking...' : 'Lock'}
-                    </UIText>
-                  </HStack>
-                  <UIText kind="body/regular" color="var(--neutral-500)">
-                    Log Out
+                <HStack gap={4} alignItems="center">
+                  <LockIcon style={{ color: 'var(--negative-500)' }} />
+                  <UIText kind="body/regular" color="var(--negative-500)">
+                    {logout.isLoading ? 'Locking...' : 'Lock'}
                   </UIText>
                 </HStack>
               ),
