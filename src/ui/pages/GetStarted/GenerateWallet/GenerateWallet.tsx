@@ -133,9 +133,11 @@ function GenerateWalletView() {
               {getError(finalizeMutation.error).message}
             </UIText>
           ) : null}
-          <Button as={UnstyledLink} to="/overview" ref={focusNode}>
-            Finish
-          </Button>
+          {finalizeMutation.isSuccess ? (
+            <Button as={UnstyledLink} to="/overview" ref={focusNode}>
+              Finish
+            </Button>
+          ) : null}
         </VStack>
       ) : null}
       <PageBottom />

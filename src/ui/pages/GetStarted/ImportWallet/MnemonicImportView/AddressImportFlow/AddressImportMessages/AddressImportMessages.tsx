@@ -44,18 +44,19 @@ function AddressImportMessagesView({ values }: { values: BareWallet[] }) {
     setMessages((messages) => new Set(messages).add(message));
   const [idempotentRequest] = useState(() => new IdempotentRequest());
 
-  const { mutate: finalize, ...finalizeMutation } = useMutation(
-    async (mnemonics: NonNullable<BareWallet['mnemonic']>[]) => {
-      await new Promise((r) => setTimeout(r, 1000));
-      return idempotentRequest.request(JSON.stringify(mnemonics), async () => {
-        const data = await walletPort.request('uiImportSeedPhrase', mnemonics);
-        await accountPublicRPCPort.request('saveUserAndWallet');
-        if (data?.address) {
-          await setCurrentAddress({ address: data.address });
-        }
-      });
-    }
-  );
+  const {
+    mutate: finalize,
+    isSuccess,
+    ...finalizeMutation
+  } = useMutation(async (mnemonics: NonNullable<BareWallet['mnemonic']>[]) => {
+    return idempotentRequest.request(JSON.stringify(mnemonics), async () => {
+      const data = await walletPort.request('uiImportSeedPhrase', mnemonics);
+      await accountPublicRPCPort.request('saveUserAndWallet');
+      if (data?.address) {
+        await setCurrentAddress({ address: data.address });
+      }
+    });
+  });
   useEffect(() => {
     const ids: NodeJS.Timeout[] = [];
     const msg = (msg: React.ReactNode, delay: number) =>
@@ -152,10 +153,10 @@ function AddressImportMessagesView({ values }: { values: BareWallet[] }) {
     timing: 100,
   });
   useEffect(() => {
-    if (ready) {
+    if (ready && isSuccess) {
       trigger();
     }
-  }, [ready, trigger]);
+  }, [isSuccess, ready, trigger]);
 
   const autoFocusRef = useRef<HTMLAnchorElement | null>(null);
   useEffect(() => {
@@ -186,7 +187,7 @@ function AddressImportMessagesView({ values }: { values: BareWallet[] }) {
             {getError(finalizeMutation.error).message}
           </UIText>
         ) : null}
-        {ready ? (
+        {ready && isSuccess ? (
           <animated.div style={style}>
             <Button
               as={UnstyledLink}
