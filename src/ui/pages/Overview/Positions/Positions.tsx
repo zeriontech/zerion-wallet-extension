@@ -10,7 +10,7 @@ import { Media } from 'src/ui/ui-kit/Media';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Image } from 'src/ui/ui-kit/MediaFallback';
-import WalletPositionIcon from 'jsx:src/ui/assets/wallet-position.svg';
+import WalletIcon from 'jsx:src/ui/assets/wallet.svg';
 // import { VirtualizedSurfaceList } from 'src/ui/ui-kit/SurfaceList/VirtualizedSurfaceList';
 import { Item, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import {
@@ -38,7 +38,6 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { EmptyView } from 'src/ui/components/EmptyView';
-import * as s from './styles.module.css';
 
 function LineToParent({
   hasPreviosNestedPosition,
@@ -127,22 +126,29 @@ function AddressPositionItem({
       ) : null}
       <HStack gap={4} justifyContent="space-between" style={{ flexGrow: 1 }}>
         <Media
+          vGap={0}
+          gap={12}
           image={
             <TokenIcon
-              size={24}
+              size={36}
               symbol={position.asset.symbol}
               src={position.asset.icon_url}
             />
           }
           text={
-            <UIText kind="subtitle/m_med" style={textOverflowStyle}>
+            <UIText kind="body/accent" style={textOverflowStyle}>
               {position.asset.name}
             </UIText>
           }
           detailText={
-            <div
-              style={{ color: 'var(--neutral-500)' }}
-              className={s.childrenVAlignMiddle}
+            <UIText
+              kind="small/regular"
+              style={{
+                color: 'var(--neutral-500)',
+                display: 'flex',
+                gap: 4,
+                alignItems: 'center',
+              }}
             >
               {intersperce(
                 [
@@ -150,8 +156,8 @@ function AddressPositionItem({
                     <React.Fragment key={-1}>
                       <Image
                         style={{
-                          width: 12,
-                          height: 12,
+                          width: 16,
+                          height: 16,
                           borderRadius: 2,
                           overflow: 'hidden',
                         }}
@@ -169,10 +175,8 @@ function AddressPositionItem({
                     </span>
                   ) : undefined,
                   position.type !== 'asset' ? (
-                    <UIText
+                    <span
                       key="position-type"
-                      inline={true}
-                      kind="subtitle/s_reg"
                       color={
                         position.type === 'loan'
                           ? 'var(--negative-500)'
@@ -180,14 +184,9 @@ function AddressPositionItem({
                       }
                     >
                       {positionTypeToStringMap[position.type]}
-                    </UIText>
+                    </span>
                   ) : position.quantity ? (
-                    <UIText
-                      key="position-quantity"
-                      inline={true}
-                      kind="subtitle/s_reg"
-                      style={textOverflowStyle}
-                    >
+                    <span key="position-quantity" style={textOverflowStyle}>
                       {formatTokenValue(
                         getCommonQuantity({
                           asset: position.asset,
@@ -196,24 +195,24 @@ function AddressPositionItem({
                         }),
                         position.asset.symbol
                       )}
-                    </UIText>
+                    </span>
                   ) : null,
                 ].filter(Boolean),
                 (index) => (
                   <span key={index}> · </span>
                 )
               )}
-            </div>
+            </UIText>
           }
         />
         {position.value != null ? (
-          <VStack gap={4} style={{ textAlign: 'right' }}>
-            <UIText kind="subtitle/m_reg">
+          <VStack gap={0} style={{ textAlign: 'right' }}>
+            <UIText kind="body/regular">
               {formatCurrencyValue(position.value, 'en', 'usd')}
             </UIText>
             {position.asset.price?.relative_change_24h ? (
               <UIText
-                kind="subtitle/s_reg"
+                kind="small/regular"
                 color={
                   position.asset.price.relative_change_24h < 0
                     ? 'var(--negative-500)'
@@ -358,7 +357,22 @@ function PositionsList({
           component: (
             <HStack gap={8} alignItems="center">
               {protocol === DEFAULT_PROTOCOL ? (
-                <WalletPositionIcon style={{ width: 28, height: 28 }} />
+                <div
+                  style={{
+                    backgroundColor: 'var(--actions-default)',
+                    padding: 4,
+                    borderRadius: 4,
+                  }}
+                >
+                  <WalletIcon
+                    style={{
+                      display: 'block',
+                      width: 20,
+                      height: 20,
+                      color: 'var(--always-white)',
+                    }}
+                  />
+                </div>
               ) : (
                 <Image
                   src={getProtocolIconURL(protocol)}
@@ -378,21 +392,22 @@ function PositionsList({
                   )}
                 />
               )}
-              <UIText kind="subtitle/l_med">
+              <UIText kind="body/accent">
                 {protocol}
                 {' · '}
                 {formatCurrencyValue(totalValue, 'en', 'usd')}{' '}
-                <UIText
-                  inline={true}
-                  kind="caption/med"
-                  style={{
-                    padding: 4,
-                    backgroundColor: 'var(--neutral-200)',
-                    borderRadius: 4,
-                  }}
-                >
-                  {`${formatPercent(relativeValue, 'en')}%`}
-                </UIText>
+              </UIText>
+              <UIText
+                inline={true}
+                kind="caption/accent"
+                style={{
+                  paddingBlock: 4,
+                  paddingInline: 6,
+                  backgroundColor: 'var(--neutral-200)',
+                  borderRadius: 4,
+                }}
+              >
+                {`${formatPercent(relativeValue, 'en')}%`}
               </UIText>
             </HStack>
           ),
@@ -464,7 +479,7 @@ function PositionsList({
         }
         return (
           <SurfaceList
-            style={{ position: 'relative' }}
+            style={{ position: 'relative', paddingTop: 6 }}
             key={protocol}
             // estimateSize={(index) => (index === 0 ? 52 : 60 + 1)}
             // overscan={5} // the library detects window edge incorrectly, increasing overscan just visually hides the problem
