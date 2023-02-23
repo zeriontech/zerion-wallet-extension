@@ -33,6 +33,8 @@ async function registerServiceWorker() {
 
 let reactRoot: Root | null = null;
 
+const FORCE_OPEN_ONBOARDING = true;
+
 async function initializeUI(opts?: { handshakeFailure?: boolean }) {
   const isPopup = browser.extension.getViews({ type: 'popup' }).length > 0;
   const root = document.getElementById('root');
@@ -41,14 +43,17 @@ async function initializeUI(opts?: { handshakeFailure?: boolean }) {
   }
   await registerServiceWorker();
   await initializeChannels();
-  walletPort.request('getCurrentAddress').then((wallet) => {
-    if (isPopup && (!wallet || true)) {
-      const url = new URL('./index.html', import.meta.url);
-      browser.tabs.create({
-        url: url.toString(),
-      });
-    }
-  });
+  const walletGroups = await Promise.race([
+    walletPort.request('uiGetWalletGroups'),
+    new Promise<null>((res) => setTimeout(() => res(null), 1000)),
+  ]);
+  const userHasNoWallets = walletGroups && !walletGroups?.length;
+  if (isPopup && (userHasNoWallets || FORCE_OPEN_ONBOARDING)) {
+    const url = new URL('./index.html', import.meta.url);
+    browser.tabs.create({
+      url: url.toString(),
+    });
+  }
   queryClient.clear();
   return configureUIClient()
     .then(() => initializeClientAnalytics())
@@ -59,7 +64,16 @@ async function initializeUI(opts?: { handshakeFailure?: boolean }) {
       reactRoot = createRoot(root);
       reactRoot.render(
         <React.StrictMode>
-          <App {...opts} />
+          <App
+            defaultView={
+              opts?.handshakeFailure ? 'handshakeFailure' : undefined
+            }
+            mode={
+              (!isPopup && userHasNoWallets) || FORCE_OPEN_ONBOARDING
+                ? 'onboarding'
+                : 'wallet'
+            }
+          />
         </React.StrictMode>
       );
     });

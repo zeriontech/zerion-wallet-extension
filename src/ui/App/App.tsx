@@ -53,6 +53,8 @@ import { HandshakeFailure } from '../components/HandshakeFailure';
 import { useScreenViewChange } from '../shared/useScreenViewChange';
 import { DnaPage } from '../components/DnaClaim';
 import { NonFungibleToken } from '../pages/NonFungibleToken';
+import { Onboarding } from '../Onboarding';
+
 
 const useAuthState = () => {
   const { data, isFetching } = useQuery(
@@ -319,7 +321,13 @@ function CloseOtherWindows() {
 initializeApperance();
 dayjs.extend(relativeTime);
 
-export function App({ handshakeFailure }: { handshakeFailure?: boolean }) {
+export function App({
+  defaultView,
+  mode,
+}: {
+  mode: 'onboarding' | 'wallet';
+  defaultView?: 'handshakeFailure';
+}) {
   return (
     <AreaProvider>
       <UIContext.Provider value={defaultUIContextValue}>
@@ -345,11 +353,17 @@ export function App({ handshakeFailure }: { handshakeFailure?: boolean }) {
               <VersionUpgrade>
                 <CloseOtherWindows />
                 <ViewSuspense>
-                  <Views
-                    initialRoute={
-                      handshakeFailure ? '/handshake-failure' : undefined
-                    }
-                  />
+                  {mode === 'onboarding' ? (
+                    <Onboarding />
+                  ) : (
+                    <Views
+                      initialRoute={
+                        defaultView === 'handshakeFailure'
+                          ? '/handshake-failure'
+                          : undefined
+                      }
+                    />
+                  )}
                 </ViewSuspense>
               </VersionUpgrade>
             </ErrorBoundary>
