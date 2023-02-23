@@ -7,6 +7,7 @@ import { SurfaceItemButton, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import FiltersIcon from 'jsx:src/ui/assets/filters.svg';
+import CheckIcon from 'jsx:src/ui/assets/check.svg';
 import DoubleCheckIcon from 'jsx:src/ui/assets/check_double.svg';
 import CloseIcon from 'jsx:src/ui/assets/close.svg';
 import LinkIcon from 'jsx:src/ui/assets/new-window.svg';
@@ -119,7 +120,11 @@ function StatusFilter({
                 <HStack gap={4} justifyContent="space-between">
                   <span>{STATUS_TO_TITLE[item]}</span>
                   {selectedItem === item ? (
-                    <span style={{ color: 'var(--primary)' }}>✔</span>
+                    <CheckIcon
+                      width={16}
+                      height={16}
+                      style={{ color: 'var(--primary)' }}
+                    />
                   ) : null}
                 </HStack>
               </SurfaceItemButton>
@@ -277,7 +282,11 @@ function TypeFilter({
                 <HStack gap={4} justifyContent="space-between">
                   <span>{TYPE_TO_TITLE[item]}</span>
                   {selectedItem === item ? (
-                    <span style={{ color: 'var(--primary)' }}>✔</span>
+                    <CheckIcon
+                      width={16}
+                      height={16}
+                      style={{ color: 'var(--primary)' }}
+                    />
                   ) : null}
                 </HStack>
               </SurfaceItemButton>

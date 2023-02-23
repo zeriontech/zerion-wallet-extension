@@ -19,6 +19,7 @@ import { SurfaceItemButton, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import type { WalletAbility } from 'src/shared/types/Daylight';
 import { invariant } from 'src/shared/invariant';
 import { walletPort } from 'src/ui/shared/channels';
+import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { getAbility, getAbilityLinkTitle } from '../daylight';
 import { markAbility, unmarkAbility, useFeedInfo } from '../stored';
 import { Ability } from './Ability';
@@ -45,7 +46,7 @@ function AbilityMenu({
       <Button
         kind="ghost"
         size={40}
-        style={{ padding: 8 }}
+        style={{ padding: 8, backgroundColor: 'var(--white)', borderRadius: 8 }}
         {...getToggleButtonProps()}
       >
         <DotsIcon />
@@ -129,7 +130,7 @@ function AbilityMenu({
                       >
                         <HStack gap={4} alignItems="center">
                           <SyncIcon />
-                          Open
+                          Reopen
                         </HStack>
                       </SurfaceItemButton>
                     ),
@@ -203,6 +204,15 @@ export function AbilityPage() {
         ? 'dismissed'
         : null,
     [feedData, ability_uid]
+  );
+
+  useBodyStyle(
+    useMemo(
+      () => ({
+        backgroundColor: 'var(--white)',
+      }),
+      []
+    )
   );
 
   const loading = markLoading || unmarkLoading;

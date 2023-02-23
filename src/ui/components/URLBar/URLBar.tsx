@@ -46,7 +46,11 @@ export function BackButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
 ) {
   return (
-    <UnstyledButton aria-label="Go back" style={{ padding: 8 }} {...props}>
+    <UnstyledButton
+      aria-label="Go back"
+      style={{ padding: 8, backgroundColor: 'var(--white)', borderRadius: 8 }}
+      {...props}
+    >
       <IconLeft role="presentation" style={{ display: 'block' }} />
     </UnstyledButton>
   );
