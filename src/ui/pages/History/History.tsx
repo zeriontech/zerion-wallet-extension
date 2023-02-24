@@ -23,18 +23,13 @@ function mergeLocalAndBackendActions(
   backend: AddressAction[]
 ) {
   const backendHashes = new Set(backend.map((tx) => tx.transaction.hash));
-  const lastBackendAction = backend[backend.length - 1];
-  return sortActions(
-    local
-      .filter((tx) => backendHashes.has(tx.transaction.hash) === false)
-      .concat(backend)
-  ).filter(
-    (item) =>
-      !lastBackendAction ||
-      (item.datetime &&
-        new Date(item.datetime).getTime() >
-          new Date(lastBackendAction.datetime).getTime())
-  );
+  const toMs = (value?: string) => (value ? new Date(value).getTime() : 0);
+  const mostRecentBackendAction = toMs(backend[0]?.datetime);
+  const merged = local
+    .filter((tx) => backendHashes.has(tx.transaction.hash) === false)
+    .filter((tx) => toMs(tx.datetime) > mostRecentBackendAction)
+    .concat(backend);
+  return sortActions(merged);
 }
 
 function useMinedAndPendingAddressActions() {
