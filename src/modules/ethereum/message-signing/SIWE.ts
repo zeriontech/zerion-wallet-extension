@@ -1,7 +1,22 @@
+export interface MessageFields {
+  readonly domain: string;
+  readonly address: string;
+  readonly statement?: string;
+  readonly uri: string;
+  readonly version: string;
+  readonly chainId: number;
+  readonly nonce: string;
+  readonly issuedAt: string;
+  readonly expirationTime?: string;
+  readonly notBefore?: string;
+  readonly requestId?: string;
+  readonly resources?: Array<string>;
+}
+
 /**
  * EIP-4361 message.
  */
-export class Message {
+export class Message implements MessageFields {
   private static readonly DOMAIN =
     '(?<domain>([^?#]*)) wants you to sign in with your Ethereum account:';
   private static readonly ADDRESS = '\\n(?<address>0x[a-zA-Z0-9]{40})\\n\\n';
@@ -50,7 +65,7 @@ $\
    * A human-readable ASCII assertion that the user will sign,
    * and it must not contain '\n' (the byte 0x0a)
    */
-  readonly statement: string | null;
+  readonly statement?: string;
   /**
    * An RFC 3986 URI referring to the resource that is
    * the subject of the signing (as in the subject of a claim)
@@ -78,22 +93,22 @@ $\
    * The ISO 8601 datetime string that,
    * if present, indicates when the signed authentication message is no longer valid
    */
-  readonly expirationTime: string | null;
+  readonly expirationTime?: string;
   /**
    * The ISO 8601 datetime string that, if present,
    * indicates when the signed authentication message will become valid
    */
-  readonly notBefore: string | null;
+  readonly notBefore?: string;
   /**
    * An system-specific identifier that may be used to uniquely refer to the sign-in request
    */
-  readonly requestId: string | null;
+  readonly requestId?: string;
   /**
    * A list of information or references to information the user wishes to
    * have resolved as part of authentication by the relying party.
    * They are expressed as RFC 3986 URIs separated by "\n- " where \n is the byte 0x0a
    */
-  readonly resources: Array<string> | null;
+  readonly resources?: Array<string>;
 
   private constructor(match: Record<string, string>) {
     if (match.domain.length === 0 || !/[^#?]*/.test(match.domain)) {
