@@ -1,0 +1,19 @@
+.container {
+  background: linear-gradient(112.46deg, #0a0a9b 0%, #06003c 75.74%), #06003c;
+  box-shadow: 0px 12px 40px rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  padding: 80px 0 120px;
+}
+
+.input {
+  border: none;
+  box-shadow: none;
+  text-align: center;
+  padding: 10px 12px;
+  width: 100%;
+  background: var(--white);
+  border-radius: 8px;
+}
