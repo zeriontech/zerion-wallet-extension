@@ -8,5 +8,14 @@ export async function ensLookup(address: string): Promise<string | null> {
     networks.getChainById(ChainId.Mainnet)
   );
   const provider = new ethers.providers.JsonRpcProvider(nodeUrl);
-  return await provider.lookupAddress(address);
+  return provider.lookupAddress(address);
+}
+
+export async function ensResolve(domain: string): Promise<string | null> {
+  const networks = await networksStore.load();
+  const nodeUrl = networks.getRpcUrlInternal(
+    networks.getChainById(ChainId.Mainnet)
+  );
+  const provider = new ethers.providers.JsonRpcProvider(nodeUrl);
+  return provider.resolveName(domain);
 }

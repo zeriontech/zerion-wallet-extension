@@ -43,12 +43,13 @@ async function initializeUI(opts?: { handshakeFailure?: boolean }) {
   }
   await registerServiceWorker();
   await initializeChannels();
-  const walletGroups = await Promise.race([
-    walletPort.request('uiGetWalletGroups'),
-    new Promise<null>((res) => setTimeout(() => res(null), 1000)),
+  const userHasNoWallets = await Promise.race([
+    walletPort
+      .request('uiGetWalletGroups')
+      .then((result) => !result?.length || FORCE_OPEN_ONBOARDING),
+    new Promise<false>((resolve) => setTimeout(() => resolve(false), 2500)),
   ]);
-  const userHasNoWallets = walletGroups && !walletGroups?.length;
-  if (isPopup && (userHasNoWallets || FORCE_OPEN_ONBOARDING)) {
+  if (isPopup && userHasNoWallets) {
     const url = new URL('./index.html', import.meta.url);
     browser.tabs.create({
       url: url.toString(),
