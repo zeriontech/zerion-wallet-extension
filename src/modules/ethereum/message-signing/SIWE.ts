@@ -1,56 +1,92 @@
-export interface MessageFields {
-  readonly domain: string;
-  readonly address: string;
-  readonly statement?: string;
-  readonly uri: string;
-  readonly version: string;
-  readonly chainId: number;
-  readonly nonce: string;
-  readonly issuedAt: string;
-  readonly expirationTime?: string;
-  readonly notBefore?: string;
-  readonly requestId?: string;
-  readonly resources?: Array<string>;
+import { toChecksumAddress } from '../toChecksumAddress';
+
+/**
+ * Possible message error types.
+ */
+export enum SiweErrorType {
+  /** `domain` is not provided */
+  MISSING_DOMAIN = 'Domain cannot be empty',
+  /** `domain` is not a valid */
+  INVALID_DOMAIN = 'Invalid domain',
+  /** `domain` doesn't match the origin */
+  DOMAIN_MISMATCH = 'Domain does not match origin',
+  /** `address` is not provided */
+  MISSING_ADDRESS = 'Address cannot be empty',
+  /** `address` does not conform to EIP-55 (not a checksum address) */
+  INVALID_ADDRESS = 'Invalid address',
+  /** `URI` is not provided */
+  MISSING_URI = '"URI" cannot be empty',
+  /** 'Version' is not provided */
+  MISSING_VERSION = '"Version" cannot be empty',
+  /** `Version` is not 1 */
+  INVALID_VERSION = 'Invalid message version',
+  /** `Nonce` is not provided */
+  MISSING_NONCE = '"Nonce" cannot be empty',
+  /** 'Chain ID' is not provided */
+  MISSING_CHAIN_ID = '"Chain ID" cannot be empty',
+  /** 'Issued At' is not provided */
+  MISSING_ISSUED_AT = '"Issued At" cannot be empty',
+  /** `Expiration Time` is present and in the past */
+  EXPIRED_MESSAGE = 'Expired message',
+  /** `Not Before` is present and in the future */
+  INVALID_NOT_BEFORE = 'Message is not valid yet',
+  /** `Expiration Time`, `Not Before` or `Issued At` not complient to ISO-8601 */
+  INVALID_TIME_FORMAT = 'Invalid time format',
+  /** Thrown when the message doesn't match regex */
+  UNABLE_TO_PARSE = 'Unable to parse the message',
+}
+
+export class SiweError {
+  readonly type: SiweErrorType;
+
+  constructor(type: SiweErrorType) {
+    this.type = type;
+  }
 }
 
 /**
  * EIP-4361 message.
  */
-export class Message implements MessageFields {
+export class SiweMessage {
+  private static readonly URI =
+    '(([^:?#]+):)?(([^?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?';
+  // ISO8601
+  private static readonly DATETIME =
+    '[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])[Tt]([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(.[0-9]+)?(([Zz])|([+|-]([01][0-9]|2[0-3]):[0-5][0-9]))';
+
   private static readonly DOMAIN =
     '(?<domain>([^?#]*)) wants you to sign in with your Ethereum account:';
   private static readonly ADDRESS = '\\n(?<address>0x[a-zA-Z0-9]{40})\\n\\n';
   private static readonly STATEMENT = '((?<statement>[^\\n]+)\\n)?';
-  private static readonly URI =
-    '(([^:?#]+):)?(([^?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?';
-  private static readonly URI_LINE = `\\nURI: (?<uri>${Message.URI}?)`;
+  private static readonly URI_LINE = `\\nURI: (?<uri>${SiweMessage.URI}?)`;
   private static readonly VERSION = '\\nVersion: (?<version>1)';
   private static readonly CHAIN_ID = '\\nChain ID: (?<chainId>[0-9]+)';
   private static readonly NONCE = '\\nNonce: (?<nonce>[a-zA-Z0-9]{8,})';
-  private static readonly DATETIME = `[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])[Tt]([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(.[0-9]+)?(([Zz])|([+|-]([01][0-9]|2[0-3]):[0-5][0-9]))`;
-  private static readonly ISSUED_AT = `\\nIssued At: (?<issuedAt>${Message.DATETIME})`;
-  private static readonly EXPIRATION_TIME = `(\\nExpiration Time: (?<expirationTime>${Message.DATETIME}))?`;
-  private static readonly NOT_BEFORE = `(\\nNot Before: (?<notBefore>${Message.DATETIME}))?`;
+  private static readonly ISSUED_AT = `\\nIssued At: (?<issuedAt>${SiweMessage.DATETIME})`;
+  private static readonly EXPIRATION_TIME = `(\\nExpiration Time: (?<expirationTime>${SiweMessage.DATETIME}))?`;
+  private static readonly NOT_BEFORE = `(\\nNot Before: (?<notBefore>${SiweMessage.DATETIME}))?`;
   private static readonly REQUEST_ID =
     "(\\nRequest ID: (?<requestId>[-._~!$&'()*+,;=:@%a-zA-Z0-9]*))?";
-  private static readonly RESOURCES = `(\\nResources:(?<resources>(\\n- ${Message.URI}?)+))?`;
+  private static readonly RESOURCES = `(\\nResources:(?<resources>(\\n- ${SiweMessage.URI}?)+))?`;
 
   private static readonly PATTERN = `\
 ^\
-${Message.DOMAIN}\
-${Message.ADDRESS}\
-${Message.STATEMENT}\
-${Message.URI_LINE}\
-${Message.VERSION}\
-${Message.CHAIN_ID}\
-${Message.NONCE}\
-${Message.ISSUED_AT}\
-${Message.EXPIRATION_TIME}\
-${Message.NOT_BEFORE}\
-${Message.REQUEST_ID}\
-${Message.RESOURCES}\
+${SiweMessage.DOMAIN}\
+${SiweMessage.ADDRESS}\
+${SiweMessage.STATEMENT}\
+${SiweMessage.URI_LINE}\
+${SiweMessage.VERSION}\
+${SiweMessage.CHAIN_ID}\
+${SiweMessage.NONCE}\
+${SiweMessage.ISSUED_AT}\
+${SiweMessage.EXPIRATION_TIME}\
+${SiweMessage.NOT_BEFORE}\
+${SiweMessage.REQUEST_ID}\
+${SiweMessage.RESOURCES}\
 $\
 `;
+
+  readonly rawMessage: string;
 
   /**
    * The RFC 3986 authority that is requesting the signing
@@ -110,49 +146,83 @@ $\
    */
   readonly resources?: Array<string>;
 
-  private constructor(match: Record<string, string>) {
-    if (match.domain.length === 0 || !/[^#?]*/.test(match.domain)) {
-      throw new Error('"Domain" cannot be empty.');
+  private constructor(rawMessage: string, fields: Record<string, string>) {
+    if (!fields.domain) {
+      throw new SiweError(SiweErrorType.MISSING_DOMAIN);
     }
-    if (!match.address) {
-      throw new Error('"Address" cannot be empty');
+    if (!fields.address) {
+      throw new SiweError(SiweErrorType.MISSING_ADDRESS);
     }
-    if (!match.nonce) {
-      throw new Error('"Nonce" cannot be empty');
+    if (fields.address !== toChecksumAddress(fields.address)) {
+      throw new SiweError(SiweErrorType.INVALID_ADDRESS);
     }
-    if (!match.chainId) {
-      throw new Error('"Chain ID" cannot be empty');
+    if (!fields.nonce) {
+      throw new SiweError(SiweErrorType.MISSING_NONCE);
     }
-    if (!match.version) {
-      throw new Error('"Version" cannot be empty');
+    if (!fields.chainId) {
+      throw new SiweError(SiweErrorType.MISSING_CHAIN_ID);
     }
-    if (!match.uri) {
-      throw new Error('"URI" cannot be empty');
+    if (!fields.version) {
+      throw new SiweError(SiweErrorType.MISSING_VERSION);
     }
-    if (!match.issuedAt) {
-      throw new Error('"Issued At" cannot be empty');
+    if (fields.version !== '1') {
+      throw new SiweError(SiweErrorType.INVALID_VERSION);
+    }
+    if (!fields.uri) {
+      throw new SiweError(SiweErrorType.MISSING_URI);
+    }
+    if (!fields.issuedAt) {
+      throw new SiweError(SiweErrorType.MISSING_ISSUED_AT);
     }
 
-    this.domain = match.domain;
-    this.address = match.address;
-    this.statement = match.statement;
-    this.uri = match.uri;
-    this.version = match.version;
-    this.nonce = match.nonce;
-    this.chainId = parseInt(match.chainId);
-    this.issuedAt = match.issuedAt;
-    this.expirationTime = match.expirationTime;
-    this.notBefore = match.notBefore;
-    this.requestId = match.requestId;
-    this.resources = match.resources?.split('\n- ').slice(1);
+    this.rawMessage = rawMessage;
+    this.domain = fields.domain;
+    this.address = fields.address;
+    this.statement = fields.statement;
+    this.uri = fields.uri;
+    this.version = fields.version;
+    this.nonce = fields.nonce;
+    this.chainId = parseInt(fields.chainId);
+    this.issuedAt = fields.issuedAt;
+    this.expirationTime = fields.expirationTime;
+    this.notBefore = fields.notBefore;
+    this.requestId = fields.requestId;
+    this.resources = fields.resources?.split('\n- ').slice(1);
   }
 
+  validate(origin: URL) {
+    const domain = this.domain.startsWith('http')
+      ? new URL(this.domain)
+      : new URL(`https://${this.domain}`);
+    const originAuthority = `${origin.hostname}:${origin.port}`;
+    const domainAuthority = `${domain.hostname}:${domain.port}`;
+
+    if (domainAuthority !== originAuthority) {
+      throw new SiweError(SiweErrorType.DOMAIN_MISMATCH);
+    }
+
+    const now = new Date();
+    if (
+      this.expirationTime &&
+      now.getTime() >= new Date(this.expirationTime).getTime()
+    ) {
+      throw new SiweError(SiweErrorType.EXPIRED_MESSAGE);
+    }
+
+    if (this.notBefore && now.getTime() < new Date(this.notBefore).getTime()) {
+      throw new SiweError(SiweErrorType.INVALID_NOT_BEFORE);
+    }
+  }
+
+  /**
+   * Parses a Sign-In with Ethereum Message (EIP-4361) object from string.
+   */
   public static parse(rawMessage: string) {
-    const REGEX = new RegExp(Message.PATTERN, 'g');
+    const REGEX = new RegExp(SiweMessage.PATTERN, 'g');
     const match = REGEX.exec(rawMessage);
     if (!match?.groups) {
-      throw new Error('Message did not match the regular expression.');
+      throw new SiweError(SiweErrorType.UNABLE_TO_PARSE);
     }
-    return new Message(match.groups);
+    return new SiweMessage(rawMessage, match.groups);
   }
 }
