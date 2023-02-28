@@ -20,6 +20,7 @@ if (!scriptWithId) {
 }
 
 const walletChannelId = scriptWithId.dataset.walletChannelId;
+scriptWithId.remove(); // Remove script to preserve initial DOM shape
 if (!walletChannelId) {
   throw new Error(
     'walletChannelId must be defined as a data attribute on the script tag'
