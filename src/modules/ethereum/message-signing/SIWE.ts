@@ -65,6 +65,7 @@ export class SiweMessage {
   private static readonly ISSUED_AT = `\\nIssued At: (?<issuedAt>${SiweMessage.DATETIME})`;
   private static readonly EXPIRATION_TIME = `(\\nExpiration Time: (?<expirationTime>${SiweMessage.DATETIME}))?`;
   private static readonly NOT_BEFORE = `(\\nNot Before: (?<notBefore>${SiweMessage.DATETIME}))?`;
+
   private static readonly REQUEST_ID =
     "(\\nRequest ID: (?<requestId>[-._~!$&'()*+,;=:@%a-zA-Z0-9]*))?";
   private static readonly RESOURCES = `(\\nResources:(?<resources>(\\n- ${SiweMessage.URI}?)+))?`;
@@ -218,8 +219,8 @@ $\
    * Parses a Sign-In with Ethereum Message (EIP-4361) object from string.
    */
   public static parse(rawMessage: string) {
-    const REGEX = new RegExp(SiweMessage.PATTERN, 'g');
-    const match = REGEX.exec(rawMessage);
+    const regExp = new RegExp(SiweMessage.PATTERN, 'g');
+    const match = regExp.exec(rawMessage);
     if (!match?.groups) {
       throw new SiweError(SiweErrorType.UNABLE_TO_PARSE);
     }
