@@ -1,0 +1,82 @@
+.importOption {
+  border-radius: 20px;
+  padding: 24px;
+  background-color: var(--white);
+}
+
+.importIcon {
+  border-radius: 20px;
+  padding: 10px;
+  width: 40px;
+  height: 40px;
+  background-color: var(--neutral-100);
+}
+
+.importIcon img {
+  width: 20px;
+  height: 20px;
+}
+
+.preview {
+  height: 320px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 40px 0 40px 40px;
+  border-radius: 20px;
+  background-color: var(--white);
+}
+
+.iconGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 72px 72px 72px;
+  grid-template-rows: 72px 72px 72px;
+  filter: drop-shadow(4px 4px 12px rgba(0, 0, 0, 0.32));
+  transform: translateX(28px);
+}
+
+@keyframes moveLeft {
+  from {
+    transform: translateX(-36px);
+  }
+  50% {
+    transform: translateX(-26px);
+  }
+  to {
+    transform: translateX(-36px);
+  }
+}
+
+@keyframes moveRight {
+  from {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-10px);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.assetIcon {
+  animation: moveRight 5000ms infinite;
+}
+
+.assetIcon img {
+  transition: transform 300ms;
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+}
+
+.assetIcon:hover img {
+  transform: scale(1.05);
+}
+
+.assetIcon:nth-child(n + 4):nth-child(-n + 6) {
+  transform: translateX(-36px);
+  animation: moveLeft 5000ms infinite;
+}

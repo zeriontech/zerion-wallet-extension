@@ -7,7 +7,7 @@ export function WalletDisplayName({
   padding,
   maxCharacters,
 }: {
-  wallet: BareWallet;
+  wallet: Pick<BareWallet, 'address' | 'name'>;
   padding?: number;
   maxCharacters?: number;
 }) {

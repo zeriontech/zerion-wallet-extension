@@ -3,12 +3,14 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import * as styles from './styles.module.css';
 
-function Skeleton({
+export function Skeleton({
   width,
   height,
+  borderRadius = 4,
 }: {
   width: React.CSSProperties['width'];
   height: React.CSSProperties['height'];
+  borderRadius?: React.CSSProperties['borderRadius'];
 }) {
   return (
     <div
@@ -16,7 +18,7 @@ function Skeleton({
       style={{
         width,
         height,
-        borderRadius: 4,
+        borderRadius,
         backgroundColor: 'var(--neutral-500)',
       }}
     />

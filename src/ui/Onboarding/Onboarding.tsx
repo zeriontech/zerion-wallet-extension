@@ -74,7 +74,16 @@ function Header() {
 
 export function Onboarding() {
   useScreenViewChange();
-  useBodyStyle(useMemo(() => ({ width: 'auto', height: 'auto' }), []));
+  useBodyStyle(
+    useMemo(
+      () => ({
+        width: 'auto',
+        height: 'auto',
+        backgroundColor: 'var(--neutral-100)',
+      }),
+      []
+    )
+  );
 
   return (
     <PageLayout>

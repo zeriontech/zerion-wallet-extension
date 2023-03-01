@@ -5,7 +5,9 @@
   text-align: center;
   display: flex;
   justify-content: center;
-  padding: 80px 0 120px;
+  padding: 80px 0 0;
+  height: 500px;
+  color: var(--always-white);
 }
 
 .input {
@@ -14,6 +16,27 @@
   text-align: center;
   padding: 10px 12px;
   width: 100%;
-  background: var(--white);
+  background: var(--always-white);
+  color: var(--always-black);
   border-radius: 8px;
+}
+
+.faqButton {
+  background: linear-gradient(0deg, #07013d, #07013d),
+    linear-gradient(272.02deg, #ff7583 0%, #3232dc 100%);
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.arrow {
+  background: rgba(245, 245, 247, 0.4);
+  border-radius: 8px;
+  display: flex;
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+}
+
+.faqButton:hover .arrow {
+  background: rgba(245, 245, 247, 0.6);
 }
