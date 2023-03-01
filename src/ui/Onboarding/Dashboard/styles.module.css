@@ -1,3 +1,24 @@
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  1% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.importOptions {
+  animation: appear 500ms ease-in-out;
+  animation-delay: 500ms;
+  animation-fill-mode: both;
+}
+
 .importOption {
   border-radius: 20px;
   padding: 24px;
@@ -17,7 +38,19 @@
   height: 20px;
 }
 
+@keyframes previewAppear {
+  from {
+    opacity: 0.8;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .preview {
+  position: relative;
   height: 320px;
   overflow: hidden;
   display: flex;
@@ -26,6 +59,7 @@
   padding: 40px 0 40px 40px;
   border-radius: 20px;
   background-color: var(--white);
+  animation: previewAppear 500ms ease-in-out;
 }
 
 .iconGrid {
@@ -79,4 +113,34 @@
 .assetIcon:nth-child(n + 4):nth-child(-n + 6) {
   transform: translateX(-36px);
   animation: moveLeft 5000ms infinite;
+}
+
+.avatarWrapper {
+  position: relative;
+  transition: transform 300ms;
+}
+
+.avatarWrapper:hover {
+  transform: scale(1.05);
+}
+
+.avatarWrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 12px;
+  background-color: var(--neutral-300);
+}
+
+.accessBadge {
+  padding: 8px 12px;
+  gap: 4px;
+  position: absolute;
+  left: 40px;
+  top: 40px;
+  background: linear-gradient(90deg, #ff7583 0%, #3232dc 98.61%);
+  border-radius: 40px;
 }

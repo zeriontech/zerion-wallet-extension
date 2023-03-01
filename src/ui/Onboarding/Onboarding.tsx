@@ -6,7 +6,9 @@ import { useScreenViewChange } from '../shared/useScreenViewChange';
 import { HStack } from '../ui-kit/HStack';
 import { useBodyStyle } from '../components/Background/Background';
 import { Dashboard } from './Dashboard';
-import { Welcome } from './Welcome/Welcome';
+import { Welcome } from './Welcome';
+import { Import } from './Import';
+import { Success } from './Success';
 
 const HEADER_HEIGHT = 72;
 const MAX_CONTENT_WIDTH = 870;
@@ -90,7 +92,12 @@ export function Onboarding() {
       <Header />
       <Routes>
         <Route path="/" element={<Welcome />} />
-        <Route path="welcome/:walletAddress" element={<Dashboard />} />
+        <Route path="/welcome/:walletAddress" element={<Dashboard />} />
+        <Route
+          path="/import/:walletAddress/:type(key|phrase)"
+          element={<Import />}
+        />
+        <Route path="/success" element={<Success />} />
       </Routes>
     </PageLayout>
   );

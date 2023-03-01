@@ -352,10 +352,10 @@ export function App({
               />
               <VersionUpgrade>
                 <CloseOtherWindows />
-                <ViewSuspense>
-                  {mode === 'onboarding' ? (
-                    <Onboarding />
-                  ) : (
+                {mode === 'onboarding' ? (
+                  <Onboarding />
+                ) : (
+                  <ViewSuspense>
                     <Views
                       initialRoute={
                         defaultView === 'handshakeFailure'
@@ -363,8 +363,8 @@ export function App({
                           : undefined
                       }
                     />
-                  )}
-                </ViewSuspense>
+                  </ViewSuspense>
+                )}
               </VersionUpgrade>
             </ErrorBoundary>
             <BugReportButton />

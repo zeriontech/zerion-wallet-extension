@@ -1,6 +1,7 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router';
+import { useAddressPositions } from 'defi-sdk';
 import { resolveDomain } from 'src/modules/name-service';
 import { isEthereumAddress } from 'src/ui/shared/isEthereumAddress';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -10,7 +11,8 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
-// import { checkWhitelistStatus } from '../checkWhitelistStatus';
+import { useAddressNfts } from 'src/ui/shared/requests/addressNfts/useAddressNfts';
+import { checkWhitelistStatus } from '../checkWhitelistStatus';
 import * as styles from './styles.module.css';
 
 class UnsupportedAddressError extends Error {}
@@ -51,8 +53,8 @@ function MainForm({
         throw new UnsupportedAddressError();
       }
       try {
-        // const status = await checkWhitelistStatus(address);
-        return { address, status: true };
+        const status = await checkWhitelistStatus(address);
+        return { address, status };
       } catch {
         throw new WaitlistCheckError();
       }
@@ -177,18 +179,43 @@ function EligibleFAQ({ show }: { show: boolean }) {
 
 export function Welcome() {
   const [showFAQ, setShowFAQ] = useState(false);
+  const [address, setAddress] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  const { value: positions } = useAddressPositions(
+    {
+      address: address || '',
+      currency: 'usd',
+    },
+    { enabled: Boolean(address) }
+  );
+
+  const { value: nfts } = useAddressNfts(
+    {
+      address: address || '',
+      currency: 'usd',
+      limit: 9,
+      sorted_by: 'floor_price_high',
+    },
+    { enabled: Boolean(address) }
+  );
 
   const handleCheck = useCallback(
     ({ address, status }: { address: string; status: boolean }) => {
       if (!status) {
         setShowFAQ(true);
       } else {
-        navigate(`/welcome/${address}`);
+        setAddress(address);
       }
     },
-    [navigate]
+    []
   );
+
+  useEffect(() => {
+    if (nfts && positions && address) {
+      navigate(`/welcome/${address}`);
+    }
+  }, [address, nfts, positions, navigate]);
 
   return (
     <VStack gap={40}>

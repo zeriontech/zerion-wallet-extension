@@ -1,5 +1,5 @@
 import { useAddressPortfolio, useAddressPositions } from 'defi-sdk';
-import React, { useMemo } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
@@ -9,7 +9,9 @@ import { NBSP } from 'src/ui/shared/typography';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import MedalIcon from 'jsx:./medal.svg';
 import * as styles from './styles.module.css';
 
 function getRandomArbitrary(min: number, max: number) {
@@ -28,63 +30,111 @@ const POPULAR_TOKENS_URLS = [
   'https://s3.amazonaws.com/token-icons/0x6b175474e89094c44da98b954eedeac495271d0f.png',
 ];
 
+function getAssetCodeFromIconUrl(url: string) {
+  return url.split('/').slice(-1)[0].slice(0, -4);
+}
 interface IconConfig {
   iconUrl: string;
+  zerionUrl: string;
   type: 'token' | 'nft';
 }
 
 function useAssetsIcons(address: string) {
-  const { value: positions } = useAddressPositions({
-    address,
-    currency: 'usd',
-  });
+  const [result, setResult] = useState<IconConfig[] | null>(null);
 
-  const { value: nfts } = useAddressNfts({
-    address,
-    currency: 'usd',
-    limit: 9,
-    sorted_by: 'floor_price_high',
-  });
+  const { value: positions } = useAddressPositions(
+    {
+      address,
+      currency: 'usd',
+    },
+    { cachePolicy: 'cache-first' }
+  );
 
-  return useMemo<IconConfig[] | null>(() => {
-    if (!positions || !nfts) {
-      return null;
+  const { value: nfts } = useAddressNfts(
+    {
+      address,
+      currency: 'usd',
+      limit: ICON_NUMBER,
+      sorted_by: 'floor_price_high',
+    },
+    { cachePolicy: 'cache-first' }
+  );
+
+  useEffect(() => {
+    if (!positions || !nfts || result) {
+      return;
     }
-    const nftIconUrls = nfts
-      .map((item) => item.metadata.content?.image_preview_url)
-      .filter(Boolean) as string[];
-    const tokenIconUrls = positions.positions
-      .map((item) => item.asset.icon_url)
-      .filter(Boolean) as string[];
-    const nftsNumber = Math.min(getRandomArbitrary(4, 6), tokenIconUrls.length);
+    const filteredNfts = nfts.filter((item) =>
+      Boolean(item.metadata.content?.image_preview_url)
+    );
+    const filteredTokens = positions.positions.filter((item) =>
+      Boolean(item.asset.icon_url)
+    );
+    const nftsNumber = Math.min(getRandomArbitrary(4, 6), filteredNfts.length);
     const tokensNumber = Math.min(
       ICON_NUMBER - nftsNumber,
-      tokenIconUrls.length
+      filteredTokens.length
     );
     const defaultIconsNumber = ICON_NUMBER - nftsNumber - tokensNumber;
 
-    console.log(nftsNumber, tokensNumber, defaultIconsNumber);
-
     const resultArray: IconConfig[] = [
-      ...nftIconUrls
-        .slice(0, nftsNumber)
-        .map((item) => ({ iconUrl: item, type: 'nft' as const })),
-      ...tokenIconUrls
-        .slice(0, tokensNumber)
-        .map((item) => ({ iconUrl: item, type: 'token' as const })),
+      ...filteredNfts.slice(0, nftsNumber).map((item) => ({
+        iconUrl: item.metadata.content?.image_preview_url || '',
+        type: 'nft' as const,
+        zerionUrl: `https://app.zerion.io/nfts/${item.chain}/${item.contract_address}:${item.token_id}?address=${address}`,
+      })),
+      ...filteredTokens.slice(0, tokensNumber).map((item) => ({
+        iconUrl: item.asset.icon_url || '',
+        type: 'token' as const,
+        zerionUrl: `https://app.zerion.io/tokens/${item.asset.asset_code}?address=${address}`,
+      })),
       ...POPULAR_TOKENS_URLS.slice(0, defaultIconsNumber).map((item) => ({
         iconUrl: item,
         type: 'token' as const,
+        zerionUrl: `https://app.zerion.io/tokens/${getAssetCodeFromIconUrl(
+          item
+        )}`,
       })),
     ];
 
     // shuffle array
-    return resultArray.sort((_, __) => 0.5 - Math.random());
-  }, [positions, nfts]);
+    setResult(resultArray.sort((_, __) => 0.5 - Math.random()));
+  }, [positions, nfts, result, address]);
+
+  return result;
 }
 
-export function Preview({ address }: { address: string }) {
-  const { value } = useAddressPortfolio({
+function Icon({ iconUrl, zerionUrl, type }: IconConfig) {
+  const ref = useRef<HTMLImageElement | null>(null);
+
+  return (
+    <UnstyledAnchor
+      className={styles.assetIcon}
+      href={zerionUrl}
+      target="_blank"
+    >
+      <img
+        src={iconUrl}
+        ref={ref}
+        style={{
+          borderRadius: type === 'nft' ? 12 : '50%',
+          opacity: 0.01,
+          transition: 'opacity 300ms',
+        }}
+        onLoad={() => ref.current?.style.setProperty('opacity', '1')}
+      />
+    </UnstyledAnchor>
+  );
+}
+
+export function Preview({
+  address,
+  isWhitelisted,
+}: {
+  address: string;
+  isWhitelisted: boolean;
+}) {
+  const { value, isLoading: valueIsLoading } = useAddressPortfolio({
     address,
     currency: 'usd',
     portfolio_fields: 'all',
@@ -93,18 +143,34 @@ export function Preview({ address }: { address: string }) {
 
   const icons = useAssetsIcons(address);
 
-  console.log(icons);
-
   return (
     <div className={styles.preview}>
+      {isWhitelisted ? (
+        <div className={styles.accessBadge}>
+          <HStack gap={8} alignItems="center">
+            <MedalIcon />
+            <UIText kind="small/accent" color="var(--always-white)">
+              Exclusive early access
+            </UIText>
+          </HStack>
+        </div>
+      ) : null}
       <HStack gap={20} alignItems="center">
-        <WalletAvatar size={72} address={address} borderRadius={12} />
+        <UnstyledAnchor
+          className={styles.avatarWrapper}
+          href={`https://app.zerion.io/${address}`}
+          target="_blank"
+        >
+          <WalletAvatar size={72} address={address} borderRadius={12} />
+        </UnstyledAnchor>
         <VStack gap={8}>
           <UIText kind="headline/h3">
             <WalletDisplayName wallet={{ address, name: null }} />
           </UIText>
           <UIText kind="headline/hero">
-            {value?.total_value != null ? (
+            {valueIsLoading ? (
+              <Skeleton width={200} height={36} borderRadius={8} />
+            ) : value?.total_value != null ? (
               <NeutralDecimals
                 parts={formatCurrencyToParts(value.total_value, 'en', 'usd')}
               />
@@ -116,18 +182,10 @@ export function Preview({ address }: { address: string }) {
       </HStack>
       <div className={styles.iconGrid}>
         {icons
-          ? icons.map(({ iconUrl, type }, index) => (
-              <div className={styles.assetIcon}>
-                <img
-                  key={index}
-                  src={iconUrl}
-                  style={{ borderRadius: type === 'nft' ? 12 : '50%' }}
-                />
-              </div>
+          ? icons.map((iconConfig, index) => (
+              <Icon key={index} {...iconConfig} />
             ))
-          : [...Array(9).keys()].map((index) => (
-              <Skeleton key={index} width={72} height={72} borderRadius={12} />
-            ))}
+          : null}
       </div>
     </div>
   );

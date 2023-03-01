@@ -1,6 +1,5 @@
-const WAITLIST_API_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsaXN0SWQiOiJhT2ZrSmhjcHdESHBKVmt6TzZGQiIsIm1lbWJlcklkIjoiYkhaTDl0Um5IQ1puWkFkSzN5WXMiLCJpYXQiOjE2Nzc0OTE2MzEsImV4cCI6MTY4MDk0NzYzMSwiYXVkIjoiem9vdG9vbHMtbWVtYmVyLWFjY2Vzcy1qd3QifQ.nYHkfP1T4YvQCNU32ZrTNlhPpuJMMKoeOjTmY8DGoQk';
 const WAITLIST_ID = 'aOfkJhcpwDHpJVkzO6FB';
+const WAITLIST_URL = 'http://localhost:8080/pandatools'; // 'https://proxy.zerion.io/pandatools';
 
 interface WaitlistResponse {
   cryptoAddress: string;
@@ -19,11 +18,10 @@ interface WaitlistResponse {
 
 export async function checkWhitelistStatus(address: string) {
   const rawResponse = await fetch(
-    `https://audience-consumer-api.zootools.co/lists/${WAITLIST_ID}/members/search`,
+    `${WAITLIST_URL}/lists/${WAITLIST_ID}/members/search`,
     {
-      method: 'post',
+      method: 'POST',
       headers: {
-        Authorization: `Bearer ${WAITLIST_API_KEY}`,
         'Content-type': 'application/json',
       },
       body: JSON.stringify({

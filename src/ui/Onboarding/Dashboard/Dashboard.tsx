@@ -6,6 +6,8 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { useQuery } from 'react-query';
+import { checkWhitelistStatus } from '../checkWhitelistStatus';
 import { Preview } from './Preview';
 import * as styles from './styles.module.css';
 import DialogIcon from './dialog.png';
@@ -36,7 +38,7 @@ function ImportOption({
         {title}
       </UIText>
       {comingSoon ? (
-        <Button kind="primary" size={40} disabled={true}>
+        <Button kind="primary" size={40} disabled={true} style={{ padding: 0 }}>
           Coming soon
         </Button>
       ) : (
@@ -57,24 +59,24 @@ const IMPORT_OPTIONS: ImportOptionConfig[] = [
   {
     title: 'Recovery phrase',
     icon: <img src={DialogIcon} alt="Recovery phrase" />,
-    getLink: (address) => '',
+    getLink: (address) => `/import/${address}/phrase`,
   },
   {
     title: 'Private key',
     icon: <img src={KeyIcon} alt="Private key" />,
-    getLink: (address) => '',
+    getLink: (address) => `/import/${address}/key`,
   },
   {
     title: 'Hardware wallet',
     icon: <img src={WalletIcon} alt="Hardware wallet" />,
-    getLink: (address) => '',
+    getLink: () => '',
     comingSoon: true,
   },
 ];
 
 function ImportOptions({ address }: { address?: string }) {
   return (
-    <VStack gap={20}>
+    <VStack gap={20} className={styles.importOptions}>
       <UIText kind="headline/h2">
         How would you like to activate your wallet.
       </UIText>
@@ -91,6 +93,17 @@ export function Dashboard() {
   const navigate = useNavigate();
   const { walletAddress } = useParams();
 
+  const { data: isWhitelisted } = useQuery(
+    `check waitlist status for ${walletAddress}`,
+    async () => {
+      if (!walletAddress) {
+        return false;
+      }
+      return checkWhitelistStatus(walletAddress);
+    },
+    { enabled: Boolean(walletAddress) }
+  );
+
   return (
     <>
       <Content name="header-end">
@@ -105,8 +118,8 @@ export function Dashboard() {
       </Content>
       {walletAddress ? (
         <VStack gap={40}>
-          <Preview address={walletAddress} />
-          <ImportOptions address={walletAddress} />
+          <Preview address={walletAddress} isWhitelisted={!!isWhitelisted} />
+          {isWhitelisted ? <ImportOptions address={walletAddress} /> : null}
         </VStack>
       ) : null}
     </>
