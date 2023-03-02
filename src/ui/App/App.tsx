@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { AreaProvider } from 'react-area';
 import { QueryClientProvider, useQuery } from 'react-query';
 import {
@@ -54,6 +54,7 @@ import { useScreenViewChange } from '../shared/useScreenViewChange';
 import { DnaPage } from '../components/DnaClaim';
 import { NonFungibleToken } from '../pages/NonFungibleToken';
 import { Onboarding } from '../Onboarding';
+import { useBodyStyle } from '../components/Background/Background';
 
 
 const useAuthState = () => {
@@ -328,6 +329,19 @@ export function App({
   mode: 'onboarding' | 'wallet';
   defaultView?: 'handshakeFailure';
 }) {
+  useBodyStyle(
+    useMemo(
+      () =>
+        mode === 'onboarding'
+          ? {
+              width: 'auto',
+              minHeight: 500,
+            }
+          : {},
+      [mode]
+    )
+  );
+
   return (
     <AreaProvider>
       <UIContext.Provider value={defaultUIContextValue}>
@@ -352,10 +366,10 @@ export function App({
               />
               <VersionUpgrade>
                 <CloseOtherWindows />
-                {mode === 'onboarding' ? (
-                  <Onboarding />
-                ) : (
-                  <ViewSuspense>
+                <ViewSuspense>
+                  {mode === 'onboarding' ? (
+                    <Onboarding />
+                  ) : (
                     <Views
                       initialRoute={
                         defaultView === 'handshakeFailure'
@@ -363,8 +377,8 @@ export function App({
                           : undefined
                       }
                     />
-                  </ViewSuspense>
-                )}
+                  )}
+                </ViewSuspense>
               </VersionUpgrade>
             </ErrorBoundary>
             <BugReportButton />

@@ -119,7 +119,6 @@ function Icon({ iconUrl, zerionUrl, type }: IconConfig) {
         style={{
           borderRadius: type === 'nft' ? 12 : '50%',
           opacity: 0.01,
-          transition: 'opacity 300ms',
         }}
         onLoad={() => ref.current?.style.setProperty('opacity', '1')}
       />

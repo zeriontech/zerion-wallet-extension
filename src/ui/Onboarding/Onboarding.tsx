@@ -79,8 +79,6 @@ export function Onboarding() {
   useBodyStyle(
     useMemo(
       () => ({
-        width: 'auto',
-        height: 'auto',
         backgroundColor: 'var(--neutral-100)',
       }),
       []
@@ -93,10 +91,7 @@ export function Onboarding() {
       <Routes>
         <Route path="/" element={<Welcome />} />
         <Route path="/welcome/:walletAddress" element={<Dashboard />} />
-        <Route
-          path="/import/:walletAddress/:type(key|phrase)"
-          element={<Import />}
-        />
+        <Route path="/import/:walletAddress/:type" element={<Import />} />
         <Route path="/success" element={<Success />} />
       </Routes>
     </PageLayout>

@@ -33,7 +33,7 @@ async function registerServiceWorker() {
 
 let reactRoot: Root | null = null;
 
-const FORCE_OPEN_ONBOARDING = true;
+const FORCE_OPEN_ONBOARDING = false;
 
 async function initializeUI(opts?: { handshakeFailure?: boolean }) {
   const isPopup = browser.extension.getViews({ type: 'popup' }).length > 0;

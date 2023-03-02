@@ -1,0 +1,64 @@
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.container {
+  background-image: url('../assets/success_background.png');
+  background-size: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20;
+  text-align: center;
+  padding: 82px 40px;
+  position: relative;
+  animation: appear 500ms ease-in-out;
+}
+
+.title {
+  color: var(--always-white);
+  font-weight: 500;
+  font-size: 60px;
+  line-height: 72px;
+  letter-spacing: -0.005em;
+}
+
+.pinner {
+  position: fixed;
+  z-index: 2;
+  top: 12px;
+  right: 12px;
+  background: var(--white);
+  box-shadow: 0px 12px 44px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 20px 24px;
+}
+
+@keyframes float {
+  0% {
+    transform: translatey(0px);
+  }
+  50% {
+    transform: translatey(-20px);
+  }
+  100% {
+    transform: translatey(0px);
+  }
+}
+
+.pointer {
+  position: absolute;
+  right: -80px;
+  top: 45%;
+}
+
+.pointer img {
+  animation: float 6s ease-in-out infinite;
+}

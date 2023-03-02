@@ -68,6 +68,7 @@ export function WithConfetti({
   decay = 0.9,
   particleCount = 150,
   startVelocity = 30,
+  zIndex = -1,
 }: React.PropsWithChildren<{
   fireDelay?: number;
   originY?: number;
@@ -77,6 +78,7 @@ export function WithConfetti({
   decay?: number;
   particleCount?: number;
   startVelocity?: number;
+  zIndex?: number;
 }>) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   useEffect(() => {
@@ -136,7 +138,7 @@ export function WithConfetti({
         style={{
           position: 'fixed',
           inset: 0,
-          zIndex: -1,
+          zIndex: zIndex,
           width: 'var(--body-width)',
           height: 'var(--body-height)',
         }}

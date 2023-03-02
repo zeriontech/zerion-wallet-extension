@@ -100,7 +100,7 @@
 }
 
 .assetIcon img {
-  transition: transform 300ms;
+  transition: transform 300ms, opacity 300ms;
   width: 72px;
   height: 72px;
   object-fit: cover;

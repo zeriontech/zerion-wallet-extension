@@ -35,7 +35,7 @@ function getSeedType(value: string) {
   }
 }
 
-function validate({
+export function validate({
   recoveryInput,
 }: {
   recoveryInput: string;

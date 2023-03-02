@@ -8,11 +8,11 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { useQuery } from 'react-query';
 import { checkWhitelistStatus } from '../checkWhitelistStatus';
-import { Preview } from './Preview';
+import DialogIcon from '../assets/dialog.png';
+import KeyIcon from '../assets/key.png';
+import WalletIcon from '../assets/wallet.png';
 import * as styles from './styles.module.css';
-import DialogIcon from './dialog.png';
-import KeyIcon from './key.png';
-import WalletIcon from './wallet.png';
+import { Preview } from './Preview';
 
 interface ImportOptionConfig {
   icon: React.ReactNode;
