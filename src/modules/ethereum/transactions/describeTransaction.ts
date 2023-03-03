@@ -277,7 +277,7 @@ function describeSend(
     };
   }
   const selector = ethers.utils.hexDataSlice(transaction.data, 0, 4);
-  if (selector !== selectors.transfer || selector !== selectors.send) {
+  if (selector !== selectors.transfer && selector !== selectors.send) {
     return null;
   }
 
