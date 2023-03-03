@@ -169,6 +169,16 @@ function Views({ initialRoute }: { initialRoute?: string }) {
               />
             }
           />
+          <Route
+            path="/success"
+            element={
+              <SomeKindOfResolver
+                noUser={<Navigate to="/intro" replace={true} />}
+                notAuthenticated={<Navigate to="/login" replace={true} />}
+                authenticated={<Navigate to="/overview" replace={true} />}
+              />
+            }
+          />
           <Route path="/intro" element={<Intro />} />
           <Route path="/create-account" element={<CreateAccount />} />
           <Route path="/login" element={<Login />} />
