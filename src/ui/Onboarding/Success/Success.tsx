@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -6,11 +6,12 @@ import ZerionIcon from 'jsx:../assets/zerion.svg';
 import PinIcon from 'jsx:../assets/pin.svg';
 import JigsawIcon from 'jsx:../assets/jigsaw.svg';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import PointerIcon from '../assets/pointer.png';
 import * as styles from './styles.module.css';
 
 export function Success() {
-  const pointerRef = useRef<HTMLDivElement | null>(null);
+  const pointerRef = useRef<HTMLButtonElement | null>(null);
   useEffect(() => {
     const handleMove = (event: MouseEvent) => {
       if (pointerRef.current) {
@@ -27,15 +28,15 @@ export function Success() {
   }, []);
 
   const confettiRef = useRef<HTMLCanvasElement | null>(null);
-  useEffect(() => {
+  const fireConfetti = useCallback(() => {
     function fire(confettiInstance: confetti.CreateTypes) {
       confettiInstance({
         disableForReducedMotion: true,
         particleCount: 100,
         startVelocity: 30,
-        angle: 50,
+        angle: 180 - Math.random() * 90,
         spread: 50,
-        origin: { x: 0.8, y: 0.6 },
+        origin: { x: 0.7 + Math.random() * 0.2, y: 0.5 + Math.random() * 0.2 },
         gravity: 1,
         decay: 0.9,
       });
@@ -43,9 +44,9 @@ export function Success() {
         disableForReducedMotion: true,
         particleCount: 70,
         startVelocity: 25,
-        angle: 130,
+        angle: Math.random() * 180,
         spread: 50,
-        origin: { x: 0.5, y: 0.8 },
+        origin: { x: 0.4 + Math.random() * 0.2, y: 0.7 + Math.random() * 0.2 },
         gravity: 1,
         decay: 0.9,
       });
@@ -53,9 +54,9 @@ export function Success() {
         disableForReducedMotion: true,
         particleCount: 130,
         startVelocity: 35,
-        angle: 90,
+        angle: 90 + Math.random() * 90,
         spread: 50,
-        origin: { x: 0.1, y: 0.3 },
+        origin: { x: Math.random() * 0.2, y: 0.2 + Math.random() * 0.2 },
         gravity: 1,
         decay: 0.9,
       });
@@ -71,13 +72,17 @@ export function Success() {
     });
     Object.assign(window, { customConfetti });
 
+    fire(customConfetti);
+  }, []);
+
+  useEffect(() => {
     const timerId = setTimeout(() => {
-      fire(customConfetti);
+      fireConfetti();
     }, 500);
     return () => {
       clearTimeout(timerId);
     };
-  }, []);
+  }, [fireConfetti]);
 
   return (
     <>
@@ -138,9 +143,13 @@ export function Success() {
             to make exploring web3 feel better than ever.
           </UIText>
         </VStack>
-        <div className={styles.pointer} ref={pointerRef}>
+        <UnstyledButton
+          className={styles.pointer}
+          ref={pointerRef}
+          onClick={fireConfetti}
+        >
           <img src={PointerIcon} width={113} height={150} />
-        </div>
+        </UnstyledButton>
       </div>
     </>
   );

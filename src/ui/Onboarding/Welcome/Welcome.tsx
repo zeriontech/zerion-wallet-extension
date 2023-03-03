@@ -213,7 +213,7 @@ export function Welcome() {
 
   useEffect(() => {
     if (nfts && positions && address) {
-      navigate(`/welcome/${address}`);
+      navigate(`/onboarding/welcome/${address}`);
     }
   }, [address, nfts, positions, navigate]);
 

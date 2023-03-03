@@ -135,3 +135,15 @@
 .loadingTitle {
   animation: textAppear 500ms ease-in-out;
 }
+
+.phraseInputGrip {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  overflow: hidden;
+  padding: 2px;
+  position: relative;
+  top: -2px;
+  left: -2px;
+  width: calc(100% + 4px);
+}

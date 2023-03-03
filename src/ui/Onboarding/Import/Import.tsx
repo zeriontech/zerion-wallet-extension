@@ -9,13 +9,13 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { BareWallet } from 'src/shared/types/BareWallet';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
-import { accountPublicRPCPort } from 'src/ui/shared/channels';
+import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import LockIcon from '../assets/lock.png';
 import * as styles from './styles.module.css';
 import { FAQ } from './FAQ';
 import { ImportKey } from './ImportKey';
 import { Password } from './Password';
-// import { ImportPhrase } from './ImportPhrase';
+import { ImportPhrase } from './ImportPhrase';
 
 function Step({ active }: { active: boolean }) {
   return (
@@ -38,7 +38,7 @@ export function Import() {
 
   const handleBackClick = useCallback(() => {
     if (step === 'secret') {
-      navigate(`/welcome/${walletAddress}`);
+      navigate(`/onboarding/welcome/${walletAddress}`);
     } else if (step === 'password') {
       setStep('secret');
     }
@@ -56,12 +56,15 @@ export function Import() {
       await accountPublicRPCPort.request('createUser', {
         password,
       });
+      if (type === 'phrase' && wallet.mnemonic) {
+        await walletPort.request('uiImportSeedPhrase', [wallet.mnemonic]);
+      }
       await accountPublicRPCPort.request('saveUserAndWallet');
       await setCurrentAddress({ address: wallet.address });
     },
     {
       onSuccess: () => {
-        navigate('/success');
+        navigate('/onboarding/success');
       },
     }
   );
@@ -105,9 +108,11 @@ export function Import() {
                 onWalletCreate={handleWallet}
               />
             ) : type === 'phrase' ? (
-              <div />
-            ) : // <ImportPhrase />
-            null}
+              <ImportPhrase
+                address={walletAddress}
+                onWalletCreate={handleWallet}
+              />
+            ) : null}
             <FAQ type={step === 'password' ? 'password' : type} />
           </HStack>
         ) : null}

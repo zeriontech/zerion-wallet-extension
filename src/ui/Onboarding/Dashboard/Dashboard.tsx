@@ -59,12 +59,12 @@ const IMPORT_OPTIONS: ImportOptionConfig[] = [
   {
     title: 'Recovery phrase',
     icon: <img src={DialogIcon} alt="Recovery phrase" />,
-    getLink: (address) => `/import/${address}/phrase`,
+    getLink: (address) => `/onboarding/import/${address}/phrase`,
   },
   {
     title: 'Private key',
     icon: <img src={KeyIcon} alt="Private key" />,
-    getLink: (address) => `/import/${address}/key`,
+    getLink: (address) => `/onboarding/import/${address}/key`,
   },
   {
     title: 'Hardware wallet',

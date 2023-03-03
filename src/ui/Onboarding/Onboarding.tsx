@@ -90,9 +90,15 @@ export function Onboarding() {
       <Header />
       <Routes>
         <Route path="/" element={<Welcome />} />
-        <Route path="/welcome/:walletAddress" element={<Dashboard />} />
-        <Route path="/import/:walletAddress/:type" element={<Import />} />
-        <Route path="/success" element={<Success />} />
+        <Route
+          path="/onboarding/welcome/:walletAddress"
+          element={<Dashboard />}
+        />
+        <Route
+          path="/onboarding/import/:walletAddress/:type"
+          element={<Import />}
+        />
+        <Route path="/onboarding/success" element={<Success />} />
       </Routes>
     </PageLayout>
   );

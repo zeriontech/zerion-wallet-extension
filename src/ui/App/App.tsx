@@ -170,7 +170,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             }
           />
           <Route
-            path="/success"
+            path="/onboarding/*"
             element={
               <SomeKindOfResolver
                 noUser={<Navigate to="/intro" replace={true} />}
