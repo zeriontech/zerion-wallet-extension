@@ -176,6 +176,8 @@ export function useTransactionFee({
     totalValueCommon,
     nativeAsset,
     isLoading,
+    isLoadingNativeAsset,
+    noFeeData,
   };
 }
 
@@ -197,6 +199,8 @@ export function NetworkFee({
     nativeAsset,
     totalValueCommon,
     totalValueFiat,
+    isLoadingNativeAsset,
+    noFeeData,
   } = useTransactionFee({ transaction, chain, onFeeValueCommonReady });
 
   return (
