@@ -189,7 +189,7 @@ export function NonFungibleTokens() {
           <DnaNFTBanner address={normalizeAddress(maybeSingleAddress)} />
         ) : null}
 
-         <EmptyView text="No NFTs yet" />;
+        <EmptyView text="No NFTs yet" />
       </VStack>
     );
   }
