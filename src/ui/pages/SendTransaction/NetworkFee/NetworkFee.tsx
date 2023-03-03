@@ -57,7 +57,7 @@ function getFeeTypeTitle(type: keyof ChainGasPrice['info'] | undefined) {
   return labels[type];
 }
 
-export function NetworkFee({
+export function useTransactionFee({
   transaction,
   chain,
   onFeeValueCommonReady,
@@ -166,6 +166,43 @@ export function NetworkFee({
       onFeeValueCommonReady?.(feeValueCommon.toString());
     }
   }, [feeValueCommon, onFeeValueCommonReady]);
+
+  return {
+    time,
+    feeValueFiat,
+    feeEstimation,
+    feeValueCommon,
+    totalValueFiat,
+    totalValueCommon,
+    nativeAsset,
+    isLoading,
+    isLoadingNativeAsset,
+    noFeeData,
+  };
+}
+
+export function NetworkFee({
+  transaction,
+  chain,
+  onFeeValueCommonReady,
+}: {
+  transaction: IncomingTransaction;
+  chain: Chain;
+  onFeeValueCommonReady: (value: string) => void;
+}) {
+  const {
+    isLoading,
+    time,
+    feeValueCommon,
+    feeValueFiat,
+    feeEstimation,
+    nativeAsset,
+    totalValueCommon,
+    totalValueFiat,
+    isLoadingNativeAsset,
+    noFeeData,
+  } = useTransactionFee({ transaction, chain, onFeeValueCommonReady });
+
   return (
     <HStack gap={8} justifyContent="space-between">
       <VStack gap={4}>

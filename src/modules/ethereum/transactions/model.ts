@@ -64,7 +64,7 @@ export async function toAddressTransaction(
       display_value: {
         text: '',
       },
-      value: '',
+      value: transaction.to || '',
     },
     type: {
       display_value: capitalize(decsriptionToType(description)),

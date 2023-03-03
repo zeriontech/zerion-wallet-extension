@@ -9,7 +9,7 @@ export const BottomSheetDialog = React.forwardRef(
       style,
       className,
       ...props
-    }: React.HTMLAttributes<HTMLElement> & {
+    }: React.DialogHTMLAttributes<HTMLDialogElement> & {
       height?: React.CSSProperties['height'];
     },
     ref: React.Ref<HTMLDialogElement>

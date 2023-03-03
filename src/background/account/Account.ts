@@ -236,7 +236,7 @@ Object.assign(globalThis, {
   Account,
 });
 
-type PublicMethodParams<T = undefined> = T extends undefined
+export type PublicMethodParams<T = undefined> = T extends undefined
   ? never
   : { params: T };
 

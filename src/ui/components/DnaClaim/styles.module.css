@@ -1,0 +1,42 @@
+.banner {
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  background: none;
+}
+
+.banner:not(:focus-visible) {
+  outline: none;
+}
+
+@keyframes progress {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.step {
+  width: 72px;
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+  background-color: var(--primary-300);
+}
+
+.stepProgress {
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background-color: var(--primary);
+}
+
+.stepProgress.active {
+  animation: progress 3000ms infinite linear;
+}
+
+.stepProgress.active.paused {
+  animation-play-state: paused;
+}

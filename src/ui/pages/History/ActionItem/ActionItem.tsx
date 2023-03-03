@@ -16,6 +16,9 @@ import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { Image } from 'src/ui/ui-kit/MediaFallback';
 import { getChainIconURL } from 'src/ui/components/Positions/helpers';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
+import ZerionIcon from 'jsx:src/ui/assets/zerion-squircle.svg';
+import { DNA_MINT_CONTRACT_ADDRESS } from 'src/ui/components/DnaClaim/dnaAddress';
+import { normalizeAddress } from 'src/shared/normalizeAddress';
 import {
   getFungibleAsset,
   HistoryItemValue,
@@ -266,6 +269,9 @@ function PendingActionView({
       )
     : null;
 
+  const isMintingDna =
+    normalizeAddress(action.label?.value || '') === DNA_MINT_CONTRACT_ADDRESS;
+
   return (
     <HStack
       gap={24}
@@ -288,11 +294,18 @@ function PendingActionView({
                 }}
               />
             ) : null}
-            <AssetIcon
-              size={TRANSACTION_ICON_SIZE}
-              asset={asset ? { fungible: asset } : undefined}
-              type={action.type.value}
-            />
+            {isMintingDna ? (
+              <ZerionIcon
+                width={TRANSACTION_ICON_SIZE}
+                height={TRANSACTION_ICON_SIZE}
+              />
+            ) : (
+              <AssetIcon
+                size={TRANSACTION_ICON_SIZE}
+                asset={asset ? { fungible: asset } : undefined}
+                type={action.type.value}
+              />
+            )}
           </div>
         }
         text={
@@ -308,10 +321,14 @@ function PendingActionView({
                 whiteSpace: 'nowrap',
               }}
             >
-              <UIText kind="subtitle/m_med">{action.type.display_value}</UIText>
+              <UIText kind="subtitle/m_med">
+                {isMintingDna ? 'Mint DNA' : action.type.display_value}
+              </UIText>
             </TextAnchor>
           ) : (
-            <UIText kind="subtitle/m_med">{action.type.display_value}</UIText>
+            <UIText kind="subtitle/m_med">
+              {isMintingDna ? 'Mint DNA' : action.type.display_value}
+            </UIText>
           )
         }
         detailText={

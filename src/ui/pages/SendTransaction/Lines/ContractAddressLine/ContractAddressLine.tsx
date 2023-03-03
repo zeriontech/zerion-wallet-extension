@@ -9,6 +9,8 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { CopyButton } from 'src/ui/components/CopyButton';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
+import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
+import { DNA_MINT_CONTRACT_ADDRESS } from 'src/ui/components/DnaClaim/dnaAddress';
 
 export function ContractAddressLine({
   address,
@@ -26,36 +28,51 @@ export function ContractAddressLine({
           key: 0,
           target: '_blank',
           rel: 'noopener noreferrer',
-          component: (
-            <Media
-              image={
-                <BlockieImg address={address} size={36} borderRadius={6} />
-              }
-              vGap={0}
-              text={
-                <UIText kind="caption/reg" color="var(--neutral-500)">
-                  Contract Address
-                </UIText>
-              }
-              detailText={
-                <HStack gap={4} alignItems="center">
-                  <UIText kind="subtitle/m_reg" title={address}>
-                    <TextAnchor
-                      href={networks.getExplorerAddressUrlByName(
-                        chain,
-                        address
-                      )}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {truncateAddress(address, 7)}
-                    </TextAnchor>
+          component:
+            address === DNA_MINT_CONTRACT_ADDRESS ? (
+              <Media
+                image={<ZerionSquircle width={32} height={32} />}
+                text={
+                  <UIText kind="caption/reg" color="var(--neutral-500)">
+                    Zerion
                   </UIText>
-                  <CopyButton address={address} />
-                </HStack>
-              }
-            />
-          ),
+                }
+                detailText={
+                  <UIText kind="subtitle/l_reg" title="contractAddress">
+                    mint DNA
+                  </UIText>
+                }
+              />
+            ) : (
+              <Media
+                image={
+                  <BlockieImg address={address} size={36} borderRadius={6} />
+                }
+                vGap={0}
+                text={
+                  <UIText kind="caption/reg" color="var(--neutral-500)">
+                    Contract Address
+                  </UIText>
+                }
+                detailText={
+                  <HStack gap={4} alignItems="center">
+                    <UIText kind="subtitle/m_reg" title={address}>
+                      <TextAnchor
+                        href={networks.getExplorerAddressUrlByName(
+                          chain,
+                          address
+                        )}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {truncateAddress(address, 7)}
+                      </TextAnchor>
+                    </UIText>
+                    <CopyButton address={address} />
+                  </HStack>
+                }
+              />
+            ),
         },
       ]}
     />

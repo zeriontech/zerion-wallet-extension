@@ -1,5 +1,4 @@
-import React, { useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import React, { useCallback, useMemo } from 'react';
 import { QRCode } from 'react-qrcode-logo';
 import { Background } from 'src/ui/components/Background';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
@@ -11,7 +10,11 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
+import { useSearchParams } from 'react-router-dom';
 import { invariant } from 'src/shared/invariant';
+import { useQuery } from 'react-query';
+import { lookupAddressName } from 'src/modules/name-service';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 
 export function Receive() {
   const [params] = useSearchParams();
@@ -26,6 +29,12 @@ export function Receive() {
       }),
       []
     )
+  );
+
+  const { data: domain } = useQuery(
+    ['name-service/lookupAddressName', address],
+    useCallback(() => lookupAddressName(address), [address]),
+    { suspense: false }
   );
 
   return (
@@ -67,8 +76,11 @@ export function Receive() {
             />
           </div>
           <VStack gap={8} style={{ justifyItems: 'center' }}>
-            {/* todo: add ens/lens support! */}
-            {/* <UIText kind="headline/h3">test.zerion.eth</UIText> */}
+            {domain ? (
+              <UIText kind="headline/h3">{domain}</UIText>
+            ) : (
+              <Spacer height={24} />
+            )}
             <HStack gap={0} alignItems="center">
               <UIText kind="small/accent">{address.slice(0, 6)}</UIText>
               <UIText kind="small/regular">{address.slice(6, -4)}</UIText>

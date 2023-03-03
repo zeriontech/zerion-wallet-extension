@@ -58,3 +58,8 @@ body.isDialog {
 :global(.fadeIn) {
   animation: fadeIn 0.2s;
 }
+
+:global(#friendly-captcha) {
+  position: fixed;
+  top: 2000px;
+}
