@@ -14,7 +14,13 @@ export function useProfileName(
   const { isLoading: isDomainLoading, data: domain } = useQuery(
     ['name-service/lookupAddressName', wallet.address],
     useCallback(() => lookupAddressName(wallet.address), [wallet.address]),
-    { suspense: false }
+    {
+      suspense: false,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      retryOnMount: false,
+      retry: 0,
+    }
   );
 
   const domainName = isDomainLoading ? null : domain;
