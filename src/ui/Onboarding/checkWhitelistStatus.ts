@@ -1,5 +1,7 @@
+import { PROXY_URL } from 'src/env/config';
+
 const WAITLIST_ID = 'aOfkJhcpwDHpJVkzO6FB';
-const WAITLIST_URL = 'http://localhost:8080/pandatools'; // 'https://proxy.zerion.io/pandatools';
+const WAITLIST_URL = `${PROXY_URL}pandatools`;
 
 interface WaitlistResponse {
   cryptoAddress: string;

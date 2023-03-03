@@ -21,6 +21,7 @@ jobs:
         env:
           ALCHEMY_KEY: RKg5wIwcuh32powb0blKdPh0UwSsgmFI
           DEFI_SDK_API_URL: wss://api-v4.zerion.io/
+          PROXY_URL: https://proxy.zerion.io/
           DEFI_SDK_API_TOKEN: Zerion.0JOY6zZTTw6yl5Cvz9sdmXc7d5AhzVMG
           SOCIAL_API_URL: https://social.zerion.io/
           TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}

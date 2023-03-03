@@ -5,10 +5,9 @@ import type {
   WalletAbility,
   WalletAbilityType,
 } from 'src/shared/types/Daylight';
+import { PROXY_URL } from 'src/env/config';
 
-// const DAYLIGHT_API_URL = 'https://api.daylight.xyz';
-const DAYLIGHT_PROXY_URL = 'https://proxy.zerion.io/daylight';
-// const DAYLIGHT_PROXY_URL = 'http://localhost:8080/daylight';
+const DAYLIGHT_PROXY_URL = `${PROXY_URL}daylight`;
 
 interface WalletAbilitiesResponse {
   abilities: WalletAbility[];

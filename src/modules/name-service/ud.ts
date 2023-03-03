@@ -1,8 +1,6 @@
-// const UNSTOPPABLE_DOMAINS_PROXY_URL =
-//   'https://proxy.zerion.io/unstoppable-domains/';
+import { PROXY_URL } from 'src/env/config';
 
-const UNSTOPPABLE_DOMAINS_PROXY_URL =
-  'http://localhost:8080/unstoppable-domains/';
+const UNSTOPPABLE_DOMAINS_PROXY_URL = `${PROXY_URL}unstoppable-domains/`;
 
 interface UnstoppableDomainsResponse {
   meta: {
@@ -18,7 +16,7 @@ export async function udLookup(address: string): Promise<string | null> {
       { method: 'get' }
     );
     const response: UnstoppableDomainsResponse = await rawResonse.json();
-    return response.meta.domain;
+    return response.meta.domain || null;
   } catch {
     return null;
   }
@@ -31,7 +29,7 @@ export async function udResolve(domain: string): Promise<string | null> {
       { method: 'get' }
     );
     const response: UnstoppableDomainsResponse = await rawResonse.json();
-    return response.meta.owner;
+    return response.meta.owner || null;
   } catch {
     return null;
   }
