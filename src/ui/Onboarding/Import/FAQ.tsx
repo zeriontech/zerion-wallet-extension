@@ -69,7 +69,10 @@ function SecretKeyFAQ() {
       >
         <VStack gap={20}>
           <div className={styles.faqIcon}>
-            <img src={WalletIcon} style={{ width: 20, height: 20 }} />
+            <img
+              src={WalletIcon}
+              style={{ width: 20, height: 20, borderRadius: 10 }}
+            />
           </div>
           <VStack gap={8}>
             <UIText kind="body/accent">Where can I find my private key?</UIText>
@@ -127,7 +130,10 @@ function SecretKeyFAQ() {
             onClick={() => setShowWalletPanel(true)}
           >
             <HStack gap={8} alignItems="center">
-              <img style={{ width: 20, height: 20 }} src={WalletIcon} />
+              <img
+                style={{ width: 20, height: 20, borderRadius: 10 }}
+                src={WalletIcon}
+              />
               <HStack
                 gap={0}
                 alignItems="center"
@@ -187,7 +193,10 @@ function PhraseFAQ() {
       >
         <VStack gap={20}>
           <div className={styles.faqIcon}>
-            <img src={WalletIcon} style={{ width: 20, height: 20 }} />
+            <img
+              src={WalletIcon}
+              style={{ width: 20, height: 20, borderRadius: 10 }}
+            />
           </div>
           <VStack gap={8}>
             <UIText kind="body/accent">
@@ -238,7 +247,10 @@ function PhraseFAQ() {
             onClick={() => setShowWalletPanel(true)}
           >
             <HStack gap={8} alignItems="center">
-              <img style={{ width: 20, height: 20 }} src={WalletIcon} />
+              <img
+                style={{ width: 20, height: 20, borderRadius: 10 }}
+                src={WalletIcon}
+              />
               <HStack
                 gap={0}
                 alignItems="center"

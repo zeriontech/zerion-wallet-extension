@@ -65,7 +65,7 @@
 .sidePanel {
   position: relative;
   border-radius: 20px;
-  background-color: VAR(--white);
+  background-color: var(--z-index-1);
   height: calc(100vh - 64px);
   overflow-y: auto;
   width: 410px;
