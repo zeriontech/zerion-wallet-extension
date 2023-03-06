@@ -88,7 +88,9 @@ export function Success() {
     <>
       <div className={styles.pinner}>
         <VStack gap={0}>
-          <ZerionIcon style={{ width: 16, height: 16 }} />
+          <ZerionIcon
+            style={{ width: 16, height: 16, color: 'var(--black)' }}
+          />
           <Spacer height={16} />
           <UIText kind="headline/h3">Pin Zerion extension</UIText>
           <Spacer height={24} />
