@@ -8,8 +8,8 @@ import { HandshakeFailed } from 'src/shared/errors/errors';
 import { applyDrawFix } from './shared/applyDrawFix';
 import { App } from './App';
 import {
+  accountPublicRPCPort,
   initialize as initializeChannels,
-  walletPort,
 } from './shared/channels';
 import { queryClient } from './shared/requests/queryClient';
 import { emitter } from './shared/events';
@@ -44,9 +44,9 @@ async function initializeUI(opts?: { handshakeFailure?: boolean }) {
   await registerServiceWorker();
   await initializeChannels();
   const userHasNoWallets = await Promise.race([
-    walletPort
-      .request('uiGetWalletGroups')
-      .then((result) => !result?.length || FORCE_OPEN_ONBOARDING),
+    accountPublicRPCPort
+      .request('getExistingUser')
+      .then((result) => !result || FORCE_OPEN_ONBOARDING),
     new Promise<false>((resolve) => setTimeout(() => resolve(false), 2500)),
   ]);
   if (isPopup && userHasNoWallets) {
