@@ -56,7 +56,6 @@ import { NonFungibleToken } from '../pages/NonFungibleToken';
 import { Onboarding } from '../Onboarding';
 import { useBodyStyle } from '../components/Background/Background';
 
-
 const useAuthState = () => {
   const { data, isFetching } = useQuery(
     'authState',
@@ -334,21 +333,23 @@ dayjs.extend(relativeTime);
 
 export function App({
   defaultView,
+  viewMode,
   mode,
 }: {
   mode: 'onboarding' | 'wallet';
+  viewMode: 'popup' | 'window';
   defaultView?: 'handshakeFailure';
 }) {
   useBodyStyle(
     useMemo(
       () =>
-        mode === 'onboarding'
+        mode === 'onboarding' || viewMode === 'window'
           ? {
-              width: 'auto',
-              minHeight: 500,
+              width: 'calc(100vw - 24px)',
+              height: '100vh',
             }
           : {},
-      [mode]
+      [mode, viewMode]
     )
   );
 

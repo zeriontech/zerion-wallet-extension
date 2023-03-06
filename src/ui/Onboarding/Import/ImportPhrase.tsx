@@ -130,6 +130,7 @@ export function ImportPhrase({
             onClick={() =>
               setPhraseMode((current) => (current === 12 ? 24 : 12))
             }
+            className={styles.modeSelector}
           >
             <UIText kind="caption/accent" color="var(--neutral-600)">
               {`Use ${36 - phraseMode} word phrase`}

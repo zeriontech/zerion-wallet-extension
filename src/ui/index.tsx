@@ -69,6 +69,7 @@ async function initializeUI(opts?: { handshakeFailure?: boolean }) {
             defaultView={
               opts?.handshakeFailure ? 'handshakeFailure' : undefined
             }
+            viewMode={isPopup ? 'popup' : 'window'}
             mode={
               (!isPopup && userHasNoWallets) || FORCE_OPEN_ONBOARDING
                 ? 'onboarding'

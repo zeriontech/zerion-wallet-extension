@@ -41,6 +41,7 @@
 }
 
 .faqButton:hover {
+  color: var(--primary);
   text-decoration: underline;
 }
 
@@ -56,6 +57,7 @@
   padding: 32px;
   align-items: center;
   background-color: rgba(0, 0, 0, 0.3);
+  z-index: var(--over-layout-index);
 }
 
 .sidePanelBackdrop.show {
@@ -79,8 +81,13 @@
   width: 32px;
   height: 32px;
   padding: 6px;
-  background: var(--neutral-100);
+  background-color: var(--neutral-100);
+  transition: background-color 150ms;
   border-radius: 8px;
+}
+
+.sidePanelCloseButton:hover {
+  background-color: var(--neutral-300);
 }
 
 .input {
@@ -129,7 +136,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: var(--white);
 }
 
 .loadingTitle {
@@ -146,4 +153,9 @@
   top: -2px;
   left: -2px;
   width: calc(100% + 4px);
+}
+
+.modeSelector:hover {
+  color: var(--neutral-600);
+  text-decoration: underline;
 }

@@ -1,4 +1,5 @@
 import React from 'react';
+import cn from 'classnames';
 import { Content } from 'react-area';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -28,8 +29,11 @@ function ImportOption({
   title,
   comingSoon,
 }: ImportOptionConfig & { address?: string }) {
-  return (
-    <VStack gap={24} className={styles.importOption}>
+  const content = (
+    <VStack
+      gap={24}
+      className={cn(styles.importOption, { [styles.disabled]: comingSoon })}
+    >
       <div className={styles.importIcon}>{icon}</div>
       <UIText
         kind="headline/h3"
@@ -38,21 +42,31 @@ function ImportOption({
         {title}
       </UIText>
       {comingSoon ? (
-        <Button kind="primary" size={40} disabled={true} style={{ padding: 0 }}>
-          Coming soon
-        </Button>
+        <div>
+          <Button
+            kind="primary"
+            size={40}
+            disabled={true}
+            style={{ padding: '0 20px' }}
+          >
+            Coming soon
+          </Button>
+        </div>
       ) : (
-        <Button
-          kind="primary"
-          size={40}
-          as={UnstyledLink}
-          to={getLink(address)}
-        >
-          Import
-        </Button>
+        <div>
+          <Button as="div" kind="primary" size={40}>
+            Import
+          </Button>
+        </div>
       )}
     </VStack>
   );
+
+  if (comingSoon) {
+    return content;
+  }
+
+  return <UnstyledLink to={getLink(address)}>{content}</UnstyledLink>;
 }
 
 const IMPORT_OPTIONS: ImportOptionConfig[] = [
@@ -116,10 +130,10 @@ export function Dashboard() {
           <UIText kind="caption/accent">Change wallet</UIText>
         </Button>
       </Content>
-      {walletAddress ? (
+      {walletAddress && isWhitelisted ? (
         <VStack gap={40}>
-          <Preview address={walletAddress} isWhitelisted={!!isWhitelisted} />
-          {isWhitelisted ? <ImportOptions address={walletAddress} /> : null}
+          <Preview address={walletAddress} isWhitelisted={true} />
+          <ImportOptions address={walletAddress} />
         </VStack>
       ) : null}
     </>

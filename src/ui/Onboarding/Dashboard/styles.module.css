@@ -15,7 +15,7 @@
 
 .importOptions {
   animation: appear 500ms ease-in-out;
-  animation-delay: 500ms;
+  animation-delay: 300ms;
   animation-fill-mode: both;
 }
 
@@ -23,6 +23,11 @@
   border-radius: 20px;
   padding: 24px;
   background-color: var(--white);
+  transition: box-shadow 300ms;
+}
+
+.importOption:not(.disabled):hover {
+  box-shadow: var(--elevation-300);
 }
 
 .importIcon {
@@ -59,7 +64,7 @@
   padding: 40px 0 40px 40px;
   border-radius: 20px;
   background-color: var(--white);
-  animation: previewAppear 500ms ease-in-out;
+  animation: previewAppear 400ms ease-in-out;
 }
 
 .iconGrid {
@@ -71,36 +76,9 @@
   transform: translateX(28px);
 }
 
-@keyframes moveLeft {
-  from {
-    transform: translateX(-36px);
-  }
-  50% {
-    transform: translateX(-26px);
-  }
-  to {
-    transform: translateX(-36px);
-  }
-}
-
-@keyframes moveRight {
-  from {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(-10px);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
-.assetIcon {
-  animation: moveRight 5000ms infinite;
-}
-
 .assetIcon img {
   transition: transform 300ms, opacity 300ms;
+  background-color: var(--z-index-1);
   width: 72px;
   height: 72px;
   object-fit: cover;
@@ -112,7 +90,6 @@
 
 .assetIcon:nth-child(n + 4):nth-child(-n + 6) {
   transform: translateX(-36px);
-  animation: moveLeft 5000ms infinite;
 }
 
 .avatarWrapper {
