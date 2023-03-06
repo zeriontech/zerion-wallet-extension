@@ -11,6 +11,7 @@ import { BareWallet } from 'src/shared/types/BareWallet';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import LockIcon from '../assets/lock.png';
+import { useSizeStore } from '../useSizeStore';
 import * as styles from './styles.module.css';
 import { FAQ } from './FAQ';
 import { ImportKey } from './ImportKey';
@@ -29,6 +30,7 @@ function Step({ active }: { active: boolean }) {
 }
 
 export function Import() {
+  const { isNarrowView } = useSizeStore();
   const navigate = useNavigate();
   const [step, setStep] = useState<'secret' | 'password'>('secret');
   const { walletAddress, type } = useParams<{
@@ -80,7 +82,7 @@ export function Import() {
   );
 
   return (
-    <VStack gap={56}>
+    <VStack gap={isNarrowView ? 16 : 56}>
       <div className={styles.container}>
         {isLoading ? (
           <div className={styles.loadingOverlay}>
@@ -99,7 +101,12 @@ export function Import() {
           <Step active={step === 'password'} />
         </HStack>
         {walletAddress && type ? (
-          <HStack gap={60} style={{ gridTemplateColumns: '380px auto' }}>
+          <HStack
+            gap={60}
+            style={{
+              gridTemplateColumns: isNarrowView ? undefined : '380px auto',
+            }}
+          >
             {step === 'password' ? (
               <Password onSubmit={handlePasswordSubmit} />
             ) : type === 'key' ? (
@@ -113,10 +120,17 @@ export function Import() {
                 onWalletCreate={handleWallet}
               />
             ) : null}
-            <FAQ type={step === 'password' ? 'password' : type} />
+            {isNarrowView ? null : (
+              <FAQ type={step === 'password' ? 'password' : type} />
+            )}
           </HStack>
         ) : null}
       </div>
+      {isNarrowView && type ? (
+        <div className={styles.container}>
+          <FAQ type={step === 'password' ? 'password' : type} />
+        </div>
+      ) : null}
       <HStack gap={16} justifyContent="center" alignItems="center">
         <img src={LockIcon} style={{ width: 20, height: 20 }} />
         <UIText kind="small/accent" color="var(--neutral-600)" inline={true}>

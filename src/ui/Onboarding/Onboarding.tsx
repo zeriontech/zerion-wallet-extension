@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { RenderArea } from 'react-area';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Logo from 'jsx:src/ui/assets/zerion-full-logo.svg';
 import { useScreenViewChange } from '../shared/useScreenViewChange';
 import { HStack } from '../ui-kit/HStack';
@@ -99,6 +99,7 @@ export function Onboarding() {
           element={<Import />}
         />
         <Route path="/onboarding/success" element={<Success />} />
+        <Route path="*" element={<Navigate to="/" replace={true} />} />
       </Routes>
     </PageLayout>
   );

@@ -69,6 +69,9 @@
 
 .iconGrid {
   display: grid;
+  position: absolute;
+  bottom: 40px;
+  right: 0;
   gap: 12px;
   grid-template-columns: 72px 72px 72px;
   grid-template-rows: 72px 72px 72px;
@@ -86,10 +89,6 @@
 
 .assetIcon:hover img {
   transform: scale(1.05);
-}
-
-.assetIcon:nth-child(n + 4):nth-child(-n + 6) {
-  transform: translateX(-36px);
 }
 
 .avatarWrapper {
@@ -120,4 +119,32 @@
   top: 40px;
   background: linear-gradient(90deg, #ff7583 0%, #3232dc 98.61%);
   border-radius: 40px;
+}
+
+@media (min-width: 769px) {
+  .assetIcon:nth-child(n + 4):nth-child(-n + 6) {
+    transform: translateX(-36px);
+  }
+}
+
+@media (max-width: 768px) {
+  .importOption {
+    padding: 16px;
+  }
+
+  .iconGrid {
+    bottom: -88px;
+    right: 0;
+    grid-template-columns: 48px 48px 48px 48px;
+    grid-template-rows: 48px 48px 48px;
+  }
+
+  .assetIcon img {
+    width: 48px;
+    height: 48px;
+  }
+
+  .assetIcon:nth-child(n + 5) {
+    transform: translateX(-24px);
+  }
 }

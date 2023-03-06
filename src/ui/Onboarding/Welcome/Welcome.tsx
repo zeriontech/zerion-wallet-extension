@@ -14,6 +14,8 @@ import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
 import { useAddressNfts } from 'src/ui/shared/requests/addressNfts/useAddressNfts';
 import { checkWhitelistStatus } from '../checkWhitelistStatus';
 import { FaqSidePanel } from '../Import/SidePanel';
+import { useSizeStore } from '../useSizeStore';
+import { Stack } from '../Stack';
 import * as styles from './styles.module.css';
 
 class UnsupportedAddressError extends Error {}
@@ -43,6 +45,7 @@ function MainForm({
   onError?(e: WaitlistCheckError | UnsupportedAddressError): void;
 }) {
   const [error, setError] = useState<FormErrorType | null>(null);
+  const { isNarrowView } = useSizeStore();
 
   const { mutate: checkAddress, isLoading } = useMutation(
     async (addressOrDomain: string) => {
@@ -99,7 +102,7 @@ function MainForm({
           maxWidth: 516,
         }}
       >
-        <UIText kind="headline/h1">
+        <UIText kind={isNarrowView ? 'headline/h2' : 'headline/h1'}>
           Zerion Extension Mode:
           <br />
           Activated
@@ -116,19 +119,25 @@ function MainForm({
           required={true}
           autoComplete="off"
         />
-        <Spacer height={22} />
+        <Spacer height={isNarrowView ? 4 : 22} />
         <UIText
-          kind="small/regular"
+          kind={isNarrowView ? 'caption/regular' : 'small/regular'}
           color="var(--notice-500)"
           style={{
             maxHeight: error ? 20 : 0,
             transition: 'max-height 300ms',
+            textAlign: isNarrowView ? 'left' : undefined,
           }}
         >
           {error ? ERRORS_DESCRIPTIOINS[error] : null}
         </UIText>
         <Spacer height={22} />
-        <Button kind="primary" size={44} disabled={isLoading}>
+        <Button
+          kind="primary"
+          size={44}
+          disabled={isLoading}
+          style={{ width: isNarrowView ? '100%' : undefined }}
+        >
           {isLoading ? 'Checking' : 'Check Eligibility'}
         </Button>
       </div>
@@ -159,6 +168,7 @@ function FAQButton({ text, onClick }: { text: string; onClick(): void }) {
 }
 
 function EligibleFAQ({ show }: { show: boolean }) {
+  const { isNarrowView } = useSizeStore();
   const [showJoinPanel, setShowJoinPanel] = useState(false);
   const [showInvitePanel, setShowInvitePanel] = useState(false);
 
@@ -190,7 +200,11 @@ function EligibleFAQ({ show }: { show: boolean }) {
         }}
       >
         <UIText kind="headline/h2">How can I become eligible?</UIText>
-        <HStack gap={16} style={{ gridTemplateColumns: '1fr 1fr' }}>
+        <Stack
+          gap={16}
+          direction={isNarrowView ? 'vertical' : 'horisontal'}
+          style={{ gridTemplateColumns: isNarrowView ? undefined : '1fr 1fr' }}
+        >
           <FAQButton
             text="Join the waitlist"
             onClick={() => setShowJoinPanel(true)}
@@ -199,7 +213,7 @@ function EligibleFAQ({ show }: { show: boolean }) {
             text="Earn an invite"
             onClick={() => setShowInvitePanel(true)}
           />
-        </HStack>
+        </Stack>
       </VStack>
     </>
   );

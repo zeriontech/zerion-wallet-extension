@@ -159,3 +159,15 @@
   color: var(--neutral-600);
   text-decoration: underline;
 }
+
+@media (max-width: 980px) {
+  .container {
+    padding: 88px 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 88px 16px;
+  }
+}

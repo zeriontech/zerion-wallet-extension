@@ -3,7 +3,6 @@ import cn from 'classnames';
 import { Content } from 'react-area';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from 'src/ui/ui-kit/Button';
-import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -12,6 +11,8 @@ import { checkWhitelistStatus } from '../checkWhitelistStatus';
 import DialogIcon from '../assets/dialog.png';
 import KeyIcon from '../assets/key.png';
 import WalletIcon from '../assets/wallet.png';
+import { useSizeStore } from '../useSizeStore';
+import { Stack } from '../Stack';
 import * as styles from './styles.module.css';
 import { Preview } from './Preview';
 
@@ -29,18 +30,25 @@ function ImportOption({
   title,
   comingSoon,
 }: ImportOptionConfig & { address?: string }) {
+  const { isNarrowView } = useSizeStore();
   const content = (
     <VStack
       gap={24}
       className={cn(styles.importOption, { [styles.disabled]: comingSoon })}
     >
-      <div className={styles.importIcon}>{icon}</div>
-      <UIText
-        kind="headline/h3"
-        color={comingSoon ? 'var(--neutral-600)' : 'var(--black)'}
+      <Stack
+        direction={isNarrowView ? 'horisontal' : 'vertical'}
+        gap={isNarrowView ? 8 : 16}
+        style={{ alignItems: isNarrowView ? 'center' : undefined }}
       >
-        {title}
-      </UIText>
+        <div className={styles.importIcon}>{icon}</div>
+        <UIText
+          kind="headline/h3"
+          color={comingSoon ? 'var(--neutral-600)' : 'var(--black)'}
+        >
+          {title}
+        </UIText>
+      </Stack>
       {comingSoon ? (
         <div>
           <Button
@@ -89,16 +97,26 @@ const IMPORT_OPTIONS: ImportOptionConfig[] = [
 ];
 
 function ImportOptions({ address }: { address?: string }) {
+  const { isNarrowView } = useSizeStore();
   return (
-    <VStack gap={20} className={styles.importOptions}>
-      <UIText kind="headline/h2">
+    <VStack gap={isNarrowView ? 16 : 20} className={styles.importOptions}>
+      <UIText
+        kind={isNarrowView ? 'body/accent' : 'headline/h2'}
+        color={isNarrowView ? 'var(--neutral-600)' : 'var(--black)'}
+      >
         How would you like to activate your wallet.
       </UIText>
-      <HStack gap={16} style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+      <Stack
+        gap={16}
+        direction={isNarrowView ? 'vertical' : 'horisontal'}
+        style={{
+          gridTemplateColumns: isNarrowView ? undefined : '1fr 1fr 1fr',
+        }}
+      >
         {IMPORT_OPTIONS.map((option) => (
           <ImportOption key={option.title} address={address} {...option} />
         ))}
-      </HStack>
+      </Stack>
     </VStack>
   );
 }
