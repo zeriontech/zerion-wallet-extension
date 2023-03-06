@@ -345,7 +345,7 @@ export function App({
       () =>
         mode === 'onboarding' || viewMode === 'window'
           ? {
-              width: 'calc(100vw - 24px)',
+              width: mode === 'wallet' ? 'calc(100vw - 24px)' : '100vw',
               height: '100vh',
             }
           : {},

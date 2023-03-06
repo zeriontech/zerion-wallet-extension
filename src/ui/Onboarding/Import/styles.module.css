@@ -5,7 +5,6 @@
   padding: 88px;
   border-radius: 20px;
   background-color: var(--white);
-  animation: previewAppear 500ms ease-in-out;
 }
 
 .backButton {
@@ -15,8 +14,13 @@
   height: 32px;
   left: 12px;
   top: 12px;
-  background: var(--neutral-100);
+  background-color: var(--neutral-100);
+  transition: background-color 150ms;
   border-radius: 8px;
+}
+
+.backButton:hover {
+  background-color: var(--neutral-300);
 }
 
 .step {
@@ -160,6 +164,12 @@
   text-decoration: underline;
 }
 
+.faqContainer {
+  padding: 16px;
+  border-radius: 20px;
+  background-color: var(--white);
+}
+
 @media (max-width: 980px) {
   .container {
     padding: 88px 40px;
@@ -168,6 +178,6 @@
 
 @media (max-width: 768px) {
   .container {
-    padding: 88px 16px;
+    padding: 88px 16px 16px;
   }
 }

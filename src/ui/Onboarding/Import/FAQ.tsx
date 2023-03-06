@@ -12,10 +12,13 @@ import LockIcon from '../assets/dialog.png';
 import MetamaskIcon from '../assets/metamask.png';
 import MetamaskInstruction from '../assets/metamask_instruction.png';
 import WalletIcon from '../assets/wallet2.png';
+import { Stack } from '../Stack';
+import { useSizeStore } from '../useSizeStore';
 import * as styles from './styles.module.css';
 import { FaqSidePanel } from './SidePanel';
 
 function SecretKeyFAQ() {
+  const { isNarrowView } = useSizeStore();
   const [showMetamaskPanel, setShowMetamaskPanel] = useState(false);
   const [showWalletPanel, setShowWalletPanel] = useState(false);
 
@@ -98,52 +101,60 @@ function SecretKeyFAQ() {
         </VStack>
       </FaqSidePanel>
       <VStack gap={24} style={{ alignContent: 'start' }}>
-        <div className={styles.faqIcon}>
-          <img src={KeyIcon} style={{ width: 20, height: 20 }} />
-        </div>
-        <VStack gap={8}>
-          <UIText kind="small/regular">Your keys, your crypto. Always.</UIText>
-          <UIText kind="small/regular" color="var(--neutral-600)">
-            Zerion cannot access or save them. Your keys stay on this device
-          </UIText>
-        </VStack>
+        {isNarrowView ? null : (
+          <div className={styles.faqIcon}>
+            <img src={KeyIcon} style={{ width: 20, height: 20 }} />
+          </div>
+        )}
+        {isNarrowView ? null : (
+          <VStack gap={8}>
+            <UIText kind="small/regular">
+              Your keys, your crypto. Always.
+            </UIText>
+            <UIText kind="small/regular" color="var(--neutral-600)">
+              Zerion cannot access or save them. Your keys stay on this device
+            </UIText>
+          </VStack>
+        )}
         <VStack gap={8}>
           <UIText kind="small/regular">Where can I find my private key?</UIText>
-          <UnstyledButton
-            className={styles.faqButton}
-            onClick={() => setShowMetamaskPanel(true)}
-          >
-            <HStack gap={8} alignItems="center">
-              <img style={{ width: 20, height: 20 }} src={MetamaskIcon} />
-              <HStack
-                gap={0}
-                alignItems="center"
-                style={{ color: 'var(--primary)' }}
-              >
-                <UIText kind="small/regular">MetaMask</UIText>
-                <RightAngleIcon />
+          <Stack gap={8} direction={isNarrowView ? 'horisontal' : 'vertical'}>
+            <UnstyledButton
+              className={styles.faqButton}
+              onClick={() => setShowMetamaskPanel(true)}
+            >
+              <HStack gap={8} alignItems="center">
+                <img style={{ width: 20, height: 20 }} src={MetamaskIcon} />
+                <HStack
+                  gap={0}
+                  alignItems="center"
+                  style={{ color: 'var(--primary)' }}
+                >
+                  <UIText kind="small/regular">MetaMask</UIText>
+                  <RightAngleIcon />
+                </HStack>
               </HStack>
-            </HStack>
-          </UnstyledButton>
-          <UnstyledButton
-            className={styles.faqButton}
-            onClick={() => setShowWalletPanel(true)}
-          >
-            <HStack gap={8} alignItems="center">
-              <img
-                style={{ width: 20, height: 20, borderRadius: 10 }}
-                src={WalletIcon}
-              />
-              <HStack
-                gap={0}
-                alignItems="center"
-                style={{ color: 'var(--primary)' }}
-              >
-                <UIText kind="small/regular">Other wallets</UIText>
-                <RightAngleIcon />
+            </UnstyledButton>
+            <UnstyledButton
+              className={styles.faqButton}
+              onClick={() => setShowWalletPanel(true)}
+            >
+              <HStack gap={8} alignItems="center">
+                <img
+                  style={{ width: 20, height: 20, borderRadius: 10 }}
+                  src={WalletIcon}
+                />
+                <HStack
+                  gap={0}
+                  alignItems="center"
+                  style={{ color: 'var(--primary)' }}
+                >
+                  <UIText kind="small/regular">Other wallets</UIText>
+                  <RightAngleIcon />
+                </HStack>
               </HStack>
-            </HStack>
-          </UnstyledButton>
+            </UnstyledButton>
+          </Stack>
         </VStack>
       </VStack>
     </>
@@ -151,6 +162,7 @@ function SecretKeyFAQ() {
 }
 
 function PhraseFAQ() {
+  const { isNarrowView } = useSizeStore();
   const [showMetamaskPanel, setShowMetamaskPanel] = useState(false);
   const [showWalletPanel, setShowWalletPanel] = useState(false);
 
@@ -219,48 +231,52 @@ function PhraseFAQ() {
         </VStack>
       </FaqSidePanel>
       <VStack gap={24} style={{ alignContent: 'start' }}>
-        <div className={styles.faqIcon}>
-          <img src={DialogIcon} style={{ width: 20, height: 20 }} />
-        </div>
+        {isNarrowView ? null : (
+          <div className={styles.faqIcon}>
+            <img src={DialogIcon} style={{ width: 20, height: 20 }} />
+          </div>
+        )}
         <VStack gap={8}>
           <UIText kind="small/regular">
             Where can I find my recovery phrase?
           </UIText>
-          <UnstyledButton
-            className={styles.faqButton}
-            onClick={() => setShowMetamaskPanel(true)}
-          >
-            <HStack gap={8} alignItems="center">
-              <img style={{ width: 20, height: 20 }} src={MetamaskIcon} />
-              <HStack
-                gap={0}
-                alignItems="center"
-                style={{ color: 'var(--primary)' }}
-              >
-                <UIText kind="small/regular">MetaMask</UIText>
-                <RightAngleIcon />
+          <Stack gap={8} direction={isNarrowView ? 'horisontal' : 'vertical'}>
+            <UnstyledButton
+              className={styles.faqButton}
+              onClick={() => setShowMetamaskPanel(true)}
+            >
+              <HStack gap={8} alignItems="center">
+                <img style={{ width: 20, height: 20 }} src={MetamaskIcon} />
+                <HStack
+                  gap={0}
+                  alignItems="center"
+                  style={{ color: 'var(--primary)' }}
+                >
+                  <UIText kind="small/regular">MetaMask</UIText>
+                  <RightAngleIcon />
+                </HStack>
               </HStack>
-            </HStack>
-          </UnstyledButton>
-          <UnstyledButton
-            className={styles.faqButton}
-            onClick={() => setShowWalletPanel(true)}
-          >
-            <HStack gap={8} alignItems="center">
-              <img
-                style={{ width: 20, height: 20, borderRadius: 10 }}
-                src={WalletIcon}
-              />
-              <HStack
-                gap={0}
-                alignItems="center"
-                style={{ color: 'var(--primary)' }}
-              >
-                <UIText kind="small/regular">Other wallets</UIText>
-                <RightAngleIcon />
+            </UnstyledButton>
+            <UnstyledButton
+              className={styles.faqButton}
+              onClick={() => setShowWalletPanel(true)}
+            >
+              <HStack gap={8} alignItems="center">
+                <img
+                  style={{ width: 20, height: 20, borderRadius: 10 }}
+                  src={WalletIcon}
+                />
+                <HStack
+                  gap={0}
+                  alignItems="center"
+                  style={{ color: 'var(--primary)' }}
+                >
+                  <UIText kind="small/regular">Other wallets</UIText>
+                  <RightAngleIcon />
+                </HStack>
               </HStack>
-            </HStack>
-          </UnstyledButton>
+            </UnstyledButton>
+          </Stack>
         </VStack>
       </VStack>
     </>
@@ -268,11 +284,15 @@ function PhraseFAQ() {
 }
 
 function PasswordFaq() {
+  const { isNarrowView } = useSizeStore();
+
   return (
     <VStack gap={24} style={{ alignContent: 'start' }}>
-      <div className={styles.faqIcon}>
-        <img src={LockIcon} style={{ width: 20, height: 20 }} />
-      </div>
+      {isNarrowView ? null : (
+        <div className={styles.faqIcon}>
+          <img src={LockIcon} style={{ width: 20, height: 20 }} />
+        </div>
+      )}
       <VStack gap={8}>
         <UIText kind="small/regular">Why do I need a password?</UIText>
         <UIText kind="small/regular" color="var(--neutral-600)">

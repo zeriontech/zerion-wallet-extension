@@ -8,9 +8,11 @@ import JigsawIcon from 'jsx:../assets/jigsaw.svg';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import PointerIcon from '../assets/pointer.png';
+import { useSizeStore } from '../useSizeStore';
 import * as styles from './styles.module.css';
 
 export function Success() {
+  const { isNarrowView } = useSizeStore();
   const pointerRef = useRef<HTMLButtonElement | null>(null);
   useEffect(() => {
     const handleMove = (event: MouseEvent) => {
@@ -86,40 +88,6 @@ export function Success() {
 
   return (
     <>
-      <div className={styles.pinner}>
-        <VStack gap={0}>
-          <ZerionIcon
-            style={{ width: 16, height: 16, color: 'var(--black)' }}
-          />
-          <Spacer height={16} />
-          <UIText kind="headline/h3">Pin Zerion extension</UIText>
-          <Spacer height={24} />
-          <UIText kind="body/regular">
-            Click
-            <JigsawIcon
-              style={{
-                display: 'inline',
-                height: 17,
-                width: 17,
-                margin: '0 8px',
-              }}
-            />
-            in your browser
-            <br />
-            and click the
-            <PinIcon
-              style={{
-                display: 'inline',
-                height: 17,
-                width: 12,
-                margin: '0 8px',
-              }}
-            />
-            button
-          </UIText>
-        </VStack>
-      </div>
-
       <canvas
         ref={confettiRef}
         style={{
@@ -131,28 +99,64 @@ export function Success() {
           pointerEvents: 'none',
         }}
       ></canvas>
-
-      <div className={styles.container}>
-        <VStack gap={24}>
-          <div className={styles.title}>
-            Welcome
-            <br />
-            Self-Custodial Human!
-          </div>
-          <UIText kind="headline/h3" color="var(--always-white)">
-            Zerion's browser extension is designed
-            <br />
-            to make exploring web3 feel better than ever.
-          </UIText>
-        </VStack>
-        <UnstyledButton
-          className={styles.pointer}
-          ref={pointerRef}
-          onClick={fireConfetti}
-        >
-          <img src={PointerIcon} width={113} height={150} />
-        </UnstyledButton>
-      </div>
+      <VStack gap={24}>
+        <div className={styles.container}>
+          <VStack gap={24}>
+            <div className={styles.title}>
+              Welcome
+              <br />
+              Self-Custodial Human!
+            </div>
+            <UIText kind="headline/h3" color="var(--always-white)">
+              Zerion's browser extension is designed
+              {isNarrowView ? ' ' : <br />}
+              to make exploring web3 feel better than ever.
+            </UIText>
+          </VStack>
+          {isNarrowView ? null : (
+            <UnstyledButton
+              className={styles.pointer}
+              ref={pointerRef}
+              onClick={fireConfetti}
+            >
+              <img src={PointerIcon} width={113} height={150} />
+            </UnstyledButton>
+          )}
+        </div>
+        <div className={styles.pinner}>
+          <VStack gap={0}>
+            <ZerionIcon
+              style={{ width: 16, height: 16, color: 'var(--black)' }}
+            />
+            <Spacer height={16} />
+            <UIText kind="headline/h3">Pin Zerion extension</UIText>
+            <Spacer height={24} />
+            <UIText kind="body/regular">
+              Click
+              <JigsawIcon
+                style={{
+                  display: 'inline',
+                  height: 17,
+                  width: 17,
+                  margin: '0 8px',
+                }}
+              />
+              in your browser
+              <br />
+              and click the
+              <PinIcon
+                style={{
+                  display: 'inline',
+                  height: 17,
+                  width: 12,
+                  margin: '0 8px',
+                }}
+              />
+              button
+            </UIText>
+          </VStack>
+        </div>
+      </VStack>
     </>
   );
 }

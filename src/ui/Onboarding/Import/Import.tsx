@@ -12,6 +12,7 @@ import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import LockIcon from '../assets/lock.png';
 import { useSizeStore } from '../useSizeStore';
+import { Stack } from '../Stack';
 import * as styles from './styles.module.css';
 import { FAQ } from './FAQ';
 import { ImportKey } from './ImportKey';
@@ -101,8 +102,9 @@ export function Import() {
           <Step active={step === 'password'} />
         </HStack>
         {walletAddress && type ? (
-          <HStack
-            gap={60}
+          <Stack
+            gap={isNarrowView ? 0 : 60}
+            direction={isNarrowView ? 'vertical' : 'horisontal'}
             style={{
               gridTemplateColumns: isNarrowView ? undefined : '380px auto',
             }}
@@ -123,11 +125,11 @@ export function Import() {
             {isNarrowView ? null : (
               <FAQ type={step === 'password' ? 'password' : type} />
             )}
-          </HStack>
+          </Stack>
         ) : null}
       </div>
       {isNarrowView && type ? (
-        <div className={styles.container}>
+        <div className={styles.faqContainer}>
           <FAQ type={step === 'password' ? 'password' : type} />
         </div>
       ) : null}

@@ -9,6 +9,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { walletPort } from 'src/ui/shared/channels';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
+import { useSizeStore } from '../useSizeStore';
 import { Input } from './Input';
 
 export function ImportKey({
@@ -18,6 +19,7 @@ export function ImportKey({
   address?: string;
   onWalletCreate(wallet: BareWallet): void;
 }) {
+  const { isNarrowView } = useSizeStore();
   const [validation, setValidation] = useState<ValidationResult | null>(null);
 
   const { mutate, isLoading } = useMutation(
@@ -52,7 +54,7 @@ export function ImportKey({
   );
 
   return (
-    <VStack gap={52}>
+    <VStack gap={isNarrowView ? 16 : 52}>
       <VStack gap={8}>
         <UIText kind="headline/h2">Private key</UIText>
         <UIText kind="body/regular">

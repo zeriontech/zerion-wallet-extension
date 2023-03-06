@@ -62,3 +62,21 @@
 .pointer img {
   animation: float 6s ease-in-out infinite;
 }
+
+@media (max-width: 768px) {
+  .title {
+    font-weight: 500;
+    font-size: 36px;
+    line-height: 48px;
+  }
+
+  .container {
+    padding: 74px 24px;
+  }
+
+  .pinner {
+    position: relative;
+    top: 0;
+    right: 0;
+  }
+}
