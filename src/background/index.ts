@@ -1,10 +1,9 @@
 import browser from 'webextension-polyfill';
 import { ethers } from 'ethers';
-import { networksStore } from 'src/modules/networks/networks-store';
+import { networksStore } from 'src/modules/networks/networks-store.background';
 import { configureBackgroundClient } from 'src/modules/defi-sdk/background';
 import { FEATURE_WAITLIST_ONBOARDING } from 'src/env/config';
 import { initialize } from './initialize';
-import { HttpConnection } from './messaging/HttpConnection';
 import { PortRegistry } from './messaging/PortRegistry';
 import { createWalletMessageHandler } from './messaging/port-message-handlers/createWalletMessageHandler';
 import { createPortMessageHandler } from './messaging/port-message-handlers/createPortMessageHandler';
@@ -106,7 +105,7 @@ browser.alarms.onAlarm.addListener(userActivity.handleAlarm);
 
 initialize().then(({ account, accountPublicRPC, dnaService }) => {
   notifyContentScriptsAndUIAboutInitialization();
-  const httpConnection = new HttpConnection(() => account.getCurrentWallet());
+  // const httpConnection = new HttpConnection(() => account.getCurrentWallet());
   const memoryCacheRPC = new MemoryCacheRPC();
 
   portRegistry.addMessageHandler(
@@ -137,7 +136,8 @@ initialize().then(({ account, accountPublicRPC, dnaService }) => {
   );
   portRegistry.addMessageHandler(createNotificationWindowMessageHandler());
   portRegistry.addMessageHandler(
-    createHttpConnectionMessageHandler(httpConnection)
+    // createHttpConnectionMessageHandler(httpConnection)
+    createHttpConnectionMessageHandler(() => account.getCurrentWallet())
   );
 
   handleAccountEvents({ account });

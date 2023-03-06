@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import { Store } from 'store-unit';
-import { networksStore } from 'src/modules/networks/networks-store';
+import { networksStore } from 'src/modules/networks/networks-store.background';
 import * as browserStorage from 'src/background/webapis/storage';
 import produce from 'immer';
 import type {

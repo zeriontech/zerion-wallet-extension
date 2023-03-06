@@ -29,13 +29,19 @@ interface WalletManager {
 type Origin = string;
 type Address = string;
 
+/**
+ * Named "Public" because these preferences aren't supposed contain any private info
+ * and it's okay to query them from content script (meaning they are technically available to DApps)
+ */
 interface PublicPreferences {
   /**
-   * Named "Public" because these preferences aren't supposed contain any private info
-   * and it's okay to query them from content script (meaning they are technically available to DApps)
+   * DEPRECATED
+   * Whether to show DApp Network Switch in Header
+   * Defaults to `true`
    */
   showNetworkSwitchShortcut?: boolean;
   walletNameFlags?: WalletNameFlag[];
+  overviewChain?: string;
 }
 
 export interface Permission {

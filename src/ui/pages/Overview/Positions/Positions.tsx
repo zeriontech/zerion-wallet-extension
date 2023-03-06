@@ -1,6 +1,6 @@
-import type { AddressPosition } from 'defi-sdk';
+import type { AddressParams, AddressPosition } from 'defi-sdk';
 import { useAddressPositions } from 'defi-sdk';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { getCommonQuantity } from 'src/shared/units/assetQuantity';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
@@ -11,6 +11,7 @@ import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Image } from 'src/ui/ui-kit/MediaFallback';
 import WalletIcon from 'jsx:src/ui/assets/wallet.svg';
+import AllNetworksIcon from 'jsx:src/ui/assets/all-networks.svg';
 // import { VirtualizedSurfaceList } from 'src/ui/ui-kit/SurfaceList/VirtualizedSurfaceList';
 import { Item, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import {
@@ -38,6 +39,23 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { EmptyView } from 'src/ui/components/EmptyView';
+import { Button } from 'src/ui/ui-kit/Button';
+import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
+import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
+import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
+import { invariant } from 'src/shared/invariant';
+import { NetworkSelectDialog } from 'src/ui/components/NetworkSelectDialog';
+import { DelayedRender } from 'src/ui/components/DelayedRender';
+import { httpConnectionPort } from 'src/ui/shared/channels';
+import { useQuery } from 'react-query';
+import { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import { capitalize } from 'capitalize-ts';
+import { Networks } from 'src/modules/networks/Networks';
+import { ethers } from 'ethers';
+import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
+import { FillView } from 'src/ui/components/FillView';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import * as helperStyles from 'src/ui/style/helpers.module.css';
 
 function LineToParent({
   hasPreviosNestedPosition,
@@ -288,7 +306,10 @@ function usePreparedPositions({
       }
       protocolIndex[protocol] = {
         totalValue: currentTotalValue,
-        relativeValue: (currentTotalValue / totalValue) * 100,
+        relativeValue:
+          currentTotalValue === 0 && totalValue === 0
+            ? 0
+            : (currentTotalValue / totalValue) * 100,
         items,
         names,
         nameIndex,
@@ -303,12 +324,121 @@ function usePreparedPositions({
   }, [groupType, items, totalValue]);
 }
 
+function NetworkSelect({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const chain = createChain(value);
+  const { networks } = useNetworks();
+  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  return (
+    <>
+      <BottomSheetDialog ref={dialogRef} style={{ padding: 0 }}>
+        <NetworkSelectDialog value={value} />
+      </BottomSheetDialog>
+      <Button
+        size={32}
+        kind="ghost"
+        onClick={() => {
+          invariant(dialogRef.current, 'Dialog element not found');
+          showConfirmDialog(dialogRef.current).then((chain) => onChange(chain));
+        }}
+      >
+        <HStack gap={8} alignItems="center">
+          <AllNetworksIcon
+            style={{ width: 24, height: 24 }}
+            role="presentation"
+          />
+          <span>{value ? networks?.getChainName(chain) : 'All Networks'}</span>
+        </HStack>
+      </Button>
+    </>
+  );
+}
+
+function ProtocolHeading({
+  protocol,
+  value,
+  relativeValue,
+  displayImage = true,
+}: {
+  protocol: string;
+  value: number;
+  relativeValue: number;
+  displayImage?: boolean;
+}) {
+  return (
+    <HStack gap={8} alignItems="center">
+      {!displayImage ? null : protocol === DEFAULT_PROTOCOL ? (
+        <div
+          style={{
+            backgroundColor: 'var(--actions-default)',
+            padding: 4,
+            borderRadius: 4,
+          }}
+        >
+          <WalletIcon
+            style={{
+              display: 'block',
+              width: 20,
+              height: 20,
+              color: 'var(--always-white)',
+            }}
+          />
+        </div>
+      ) : (
+        <Image
+          src={getProtocolIconURL(protocol)}
+          alt=""
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 4,
+            overflow: 'hidden',
+          }}
+          renderError={() => (
+            <TokenIcon
+              symbol={protocol}
+              size={32}
+              style={{ borderRadius: 8 }}
+            />
+          )}
+        />
+      )}
+      <UIText kind="body/accent">
+        {protocol}
+        {' · '}
+        {formatCurrencyValue(value, 'en', 'usd')}{' '}
+      </UIText>
+      <UIText
+        inline={true}
+        kind="caption/accent"
+        style={{
+          paddingBlock: 4,
+          paddingInline: 6,
+          backgroundColor: 'var(--neutral-200)',
+          borderRadius: 4,
+        }}
+      >
+        {`${formatPercent(relativeValue, 'en')}%`}
+      </UIText>
+    </HStack>
+  );
+}
+
 function PositionsList({
   items,
   address,
+  chainValue,
+  onChainChange,
 }: {
   items: AddressPosition[];
-  address: string;
+  address: string | null;
+  chainValue: string;
+  onChainChange: (value: string) => void;
 }) {
   const COLLAPSED_COUNT = 8;
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
@@ -335,7 +465,7 @@ function PositionsList({
 
   return (
     <VStack gap={24}>
-      {preparedPositions.protocols.map((protocol) => {
+      {preparedPositions.protocols.map((protocol, index) => {
         const items: Item[] = [];
         const {
           totalValue,
@@ -344,74 +474,6 @@ function PositionsList({
           nameIndex,
           items: protocolItems,
         } = preparedPositions.protocolIndex[protocol];
-        items.push({
-          key: 0,
-          style: {
-            position: 'sticky',
-            zIndex: 1,
-            top: 35 + 40, // header + tabs
-            borderTopLeftRadius: 'var(--surface-border-radius)',
-            borderTopRightRadius: 'var(--surface-border-radius)',
-            backgroundColor: 'var(--z-index-1)',
-          },
-          component: (
-            <HStack gap={8} alignItems="center">
-              {protocol === DEFAULT_PROTOCOL ? (
-                <div
-                  style={{
-                    backgroundColor: 'var(--actions-default)',
-                    padding: 4,
-                    borderRadius: 4,
-                  }}
-                >
-                  <WalletIcon
-                    style={{
-                      display: 'block',
-                      width: 20,
-                      height: 20,
-                      color: 'var(--always-white)',
-                    }}
-                  />
-                </div>
-              ) : (
-                <Image
-                  src={getProtocolIconURL(protocol)}
-                  alt=""
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 4,
-                    overflow: 'hidden',
-                  }}
-                  renderError={() => (
-                    <TokenIcon
-                      symbol={protocol}
-                      size={32}
-                      style={{ borderRadius: 8 }}
-                    />
-                  )}
-                />
-              )}
-              <UIText kind="body/accent">
-                {protocol}
-                {' · '}
-                {formatCurrencyValue(totalValue, 'en', 'usd')}{' '}
-              </UIText>
-              <UIText
-                inline={true}
-                kind="caption/accent"
-                style={{
-                  paddingBlock: 4,
-                  paddingInline: 6,
-                  backgroundColor: 'var(--neutral-200)',
-                  borderRadius: 4,
-                }}
-              >
-                {`${formatPercent(relativeValue, 'en')}%`}
-              </UIText>
-            </HStack>
-          ),
-        });
         let count = 0;
         // do not hide if only one item is left
         const stopAt =
@@ -436,7 +498,9 @@ function PositionsList({
           for (const position of nameIndex[name]) {
             items.push({
               key: position.id,
-              href: `https://app.zerion.io/tokens/${position.asset.symbol}-${position.asset.asset_code}?address=${address}`,
+              href: `https://app.zerion.io/tokens/${position.asset.symbol}-${
+                position.asset.asset_code
+              }${address ? `?address=${address}` : ''}`,
               target: '_blank',
               separatorLeadingInset: position.parent_id ? 26 : 0,
               component: (
@@ -478,38 +542,265 @@ function PositionsList({
           });
         }
         return (
-          <SurfaceList
-            style={{ position: 'relative', paddingTop: 6 }}
-            key={protocol}
-            // estimateSize={(index) => (index === 0 ? 52 : 60 + 1)}
-            // overscan={5} // the library detects window edge incorrectly, increasing overscan just visually hides the problem
-            items={items}
-          />
+          <VStack gap={12} key={protocol}>
+            <HStack gap={4} justifyContent="space-between" alignItems="center">
+              <ProtocolHeading
+                protocol={protocol}
+                value={totalValue}
+                relativeValue={relativeValue}
+                displayImage={protocol !== DEFAULT_PROTOCOL}
+              />
+              {index === 0 ? (
+                <NetworkSelect value={chainValue} onChange={onChainChange} />
+              ) : null}
+            </HStack>
+            <SurfaceList
+              style={{ position: 'relative', paddingTop: 6 }}
+              // estimateSize={(index) => (index === 0 ? 52 : 60 + 1)}
+              // overscan={5} // the library detects window edge incorrectly, increasing overscan just visually hides the problem
+              items={items}
+            />
+          </VStack>
         );
       })}
     </VStack>
   );
 }
 
-export function Positions() {
-  const { ready, params, singleAddress } = useAddressParams();
-  const { value, isLoading } = useAddressPositions(
-    {
-      ...params,
-      currency: 'usd',
-    },
-    { enabled: ready }
+function MultiChainPositions({
+  addressParams,
+  chainValue,
+  address,
+  onChainChange,
+}: {
+  addressParams: AddressParams;
+  chainValue: string;
+  address: string | null;
+  onChainChange: (value: string) => void;
+}) {
+  const { value, isLoading } = useAddressPositions({
+    ...addressParams,
+    currency: 'usd',
+  });
+
+  const positions = value?.positions;
+  const items = useMemo(
+    () =>
+      chainValue === '' || !positions
+        ? positions
+        : positions.filter((position) => position.chain === chainValue),
+    [chainValue, positions]
   );
 
   if (isLoading) {
     return <ViewLoading kind="network" />;
   }
 
-  if (!ready || !value) {
-    return null;
-  }
-  if (value.positions.length === 0) {
+  if (!items || items.length === 0) {
     return <EmptyView text="No assets yet" />;
   }
-  return <PositionsList address={singleAddress} items={value.positions} />;
+  return (
+    <PositionsList
+      address={address}
+      items={items}
+      chainValue={chainValue}
+      onChainChange={onChainChange}
+    />
+  );
+}
+
+function createAddressPosition({
+  balance,
+  network,
+}: {
+  balance: string;
+  network: NetworkConfig;
+}): AddressPosition {
+  return {
+    chain: network.chain,
+    value: null,
+    apy: null,
+    id: `${network.native_asset?.symbol}-${network.chain}-asset`,
+    included_in_chart: false,
+    name: 'Asset',
+    quantity: balance,
+    protocol: null,
+    type: 'asset',
+    is_displayable: true,
+    asset: {
+      is_displayable: true,
+      type: null,
+      name: network.native_asset?.name || `${capitalize(network.name)} Token`,
+      symbol: network.native_asset?.symbol || '<unknown-symbol>',
+      id:
+        network.native_asset?.id ||
+        network.native_asset?.symbol.toLowerCase() ||
+        '<unknown-id>',
+      asset_code:
+        network.native_asset?.address ||
+        network.native_asset?.symbol.toLowerCase() ||
+        '<unknown-id>',
+      decimals: network.native_asset?.decimals || 0,
+      icon_url: network.icon_url,
+      is_verified: false,
+      price: null,
+      implementations: {
+        [network.chain]: {
+          address: network.native_asset?.address ?? null,
+          decimals: network.native_asset?.decimals || 0,
+        },
+      },
+    },
+    parent_id: null,
+  };
+}
+
+async function getEvmAddressPositions({
+  address,
+  chainId,
+  networks,
+}: {
+  address: string;
+  chainId: string;
+  networks: Networks;
+}) {
+  const balanceInHex = await httpConnectionPort.request('eth_getBalance', {
+    params: [address],
+    context: { chainId },
+  });
+  const network = networks.getNetworkById(chainId);
+  const balance = ethers.BigNumber.from(balanceInHex).toString();
+  return [createAddressPosition({ balance, network })];
+}
+
+function useEvmAddressPositions({
+  address,
+  chainId,
+}: {
+  address: string | null;
+  chainId: string;
+}) {
+  const { networks } = useNetworks();
+  return useQuery(
+    ['eth_getBalance', address, chainId],
+    async () => {
+      return !networks || !address
+        ? null
+        : getEvmAddressPositions({ address, chainId, networks });
+    },
+    { enabled: Boolean(networks) && Boolean(address) }
+  );
+}
+
+function RawChainPositions({
+  addressParams,
+  chainValue,
+  chainId,
+  address,
+  onChainChange,
+}: {
+  addressParams: AddressParams;
+  chainValue: string;
+  chainId: string;
+  address: string | null;
+  onChainChange: (value: string) => void;
+}) {
+  const addressParam =
+    'address' in addressParams ? addressParams.address : address;
+  const { data: addressPositions, isLoading } = useEvmAddressPositions({
+    address,
+    chainId,
+  });
+  if (!addressParam) {
+    return <div>Can't display this view for multiple addresss mode.</div>;
+  }
+
+  if (isLoading) {
+    return <ViewLoading kind="network" />;
+  }
+  if (!addressPositions || !addressPositions.length) {
+    return <EmptyView text="No assets found" />;
+  }
+  return (
+    <div>
+      RawChainPositions
+      <PositionsList
+        address={address}
+        items={addressPositions}
+        chainValue={chainValue}
+        onChainChange={onChainChange}
+      />
+    </div>
+  );
+}
+
+export function Positions({
+  chain: chainValue,
+  onChainChange,
+}: {
+  chain: string;
+  onChainChange: (value: string) => void;
+}) {
+  const { ready, params, singleAddress } = useAddressParams();
+  const { networks } = useNetworks();
+  if (!networks || !ready) {
+    return (
+      <DelayedRender delay={2000}>
+        <ViewLoading kind="network" />
+      </DelayedRender>
+    );
+  }
+  const chain = createChain(chainValue);
+  const isSupportedByBackend =
+    chainValue === ''
+      ? true
+      : networks.isSupportedByBackend(createChain(chainValue));
+  if (isSupportedByBackend) {
+    return (
+      <MultiChainPositions
+        addressParams={params}
+        address={singleAddress}
+        chainValue={chainValue}
+        onChainChange={onChainChange}
+      />
+    );
+  } else {
+    const network = networks.getNetworkByName(chain);
+    if (!network || !network.external_id) {
+      throw new Error(`Custom network must have an external_id: ${chainValue}`);
+    }
+
+    return (
+      <ErrorBoundary
+        renderError={() => (
+          <FillView>
+            <VStack gap={4} style={{ padding: 20, textAlign: 'center' }}>
+              <span style={{ fontSize: 20 }}>💔</span>
+              <UIText kind="body/regular">
+                Error fetching for {chainValue}
+              </UIText>
+              <UIText kind="small/regular" color="var(--primary)">
+                <UnstyledButton
+                  // chrome://extensions is not allowed to be linked to, but
+                  // can be opened programmatically
+                  onClick={() => onChainChange('')}
+                  className={helperStyles.hoverUnderline}
+                >
+                  Show All Networks
+                </UnstyledButton>
+              </UIText>
+            </VStack>
+          </FillView>
+        )}
+      >
+        <RawChainPositions
+          addressParams={params}
+          address={singleAddress}
+          chainValue={chainValue}
+          chainId={network.external_id}
+          onChainChange={onChainChange}
+        />
+      </ErrorBoundary>
+    );
+  }
 }

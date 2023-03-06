@@ -91,7 +91,11 @@ function Options() {
   return (
     <Background backgroundKind="white">
       <PageColumn>
-        <NavigationTitle urlBar={isIntro ? 'none' : undefined} title={null} />
+        <NavigationTitle
+          urlBar={isIntro ? 'none' : undefined}
+          title={null}
+          documentTitle="Get Started"
+        />
         <FillView>
           <ZerionSquircle style={{ width: 64, height: 64 }} />
           <Spacer height={46} />

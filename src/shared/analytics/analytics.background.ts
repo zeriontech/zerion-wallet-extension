@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import type { Account } from 'src/background/account/Account';
 import { emitter } from 'src/background/events';
-import { networksStore } from 'src/modules/networks/networks-store';
+import { networksStore } from 'src/modules/networks/networks-store.background';
 import { createParams as createBaseParams, sendToMetabase } from './analytics';
 
 function trackAppEvents({ account }: { account: Account }) {

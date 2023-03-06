@@ -5,6 +5,7 @@ import * as s from './styles.module.css';
 
 const [fontSize, lineHeight, fontWeight, letterSpacing] =
   textParams['body/regular'];
+
 const inputFontStyle = {
   fontSize,
   lineHeight: `${lineHeight}px`,
@@ -13,13 +14,20 @@ const inputFontStyle = {
 };
 
 const InputComponent = (
-  { style, className, ...props }: React.InputHTMLAttributes<HTMLInputElement>,
+  {
+    style,
+    className,
+    boxHeight = 44,
+    ...props
+  }: { boxHeight?: 40 | 44 } & React.InputHTMLAttributes<HTMLInputElement>,
   ref: React.Ref<HTMLInputElement>
 ) => {
   return (
     <input
       ref={ref}
-      className={cx(className, s.input)}
+      className={cx(className, s.input, {
+        [s.height40]: boxHeight === 40,
+      })}
       {...props}
       style={{
         ...inputFontStyle,

@@ -190,7 +190,7 @@ export function WalletGroup() {
   if (!walletGroup) {
     return (
       <>
-        <NavigationTitle title={null} />
+        <NavigationTitle title={null} documentTitle="Page not Found" />
         <NotFoundPage />
       </>
     );

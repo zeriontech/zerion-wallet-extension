@@ -22,7 +22,7 @@ import {
   INTERNAL_ORIGIN,
   INTERNAL_ORIGIN_SYMBOL,
 } from 'src/background/constants';
-import { networksStore } from 'src/modules/networks/networks-store';
+import { networksStore } from 'src/modules/networks/networks-store.background';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { prepareTransaction } from 'src/modules/ethereum/transactions/prepareTransaction';
 import { Chain, createChain } from 'src/modules/networks/Chain';
@@ -38,6 +38,8 @@ import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired'
 import { flagAsDapp, isFlaggedAsDapp } from 'src/shared/dapps';
 import { isKnownDapp } from 'src/shared/dapps/known-dapps';
 import type { WalletAbility } from 'src/shared/types/Daylight';
+import { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
+import { chainConfigStore } from 'src/modules/ethereum/chains/ChainConfigStore';
 import { DaylightEventParams, emitter, ScreenViewParams } from '../events';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
@@ -53,6 +55,7 @@ import { WalletNameFlag } from './model/WalletNameFlag';
 import { WalletOrigin } from './model/WalletOrigin';
 import { GlobalPreferences } from './GlobalPreferences';
 import type { State as GlobalPreferencesState } from './GlobalPreferences';
+import { NetworkId } from 'src/modules/networks/NetworkId';
 
 const INTERNAL_SYMBOL_CONTEXT = { origin: INTERNAL_ORIGIN_SYMBOL };
 
@@ -105,6 +108,14 @@ export class Wallet {
     this.id = id;
     this.walletStore = new WalletStore({}, 'wallet');
     this.globalPreferences = new GlobalPreferences({}, 'globalPreferences');
+    // this.chainConfigStore = new ChainConfigStore(
+    //   ChainConfigStore.initialState,
+    //   'chain-configs'
+    // );
+    // networksStore = new NetworksStoreWithCustomNetworks(
+    //   { networks: null },
+    //   this.chainConfigStore
+    // );
     this.encryptionKey = encryptionKey;
     this.seedPhraseEncryptionKey = null;
     this.record = null;
@@ -578,11 +589,7 @@ export class Wallet {
     context,
   }: WalletMethodParams): Promise<ReturnType<typeof Model.getPreferences>> {
     this.verifyInternalOrigin(context);
-    if (!this.record) {
-      return {};
-    } else {
-      return Model.getPreferences(this.record);
-    }
+    return Model.getPreferences(this.record);
   }
 
   async getGlobalPreferences({ context }: WalletMethodParams) {
@@ -665,15 +672,6 @@ export class Wallet {
   }: WalletMethodParams<{ origin: string }>) {
     this.verifyInternalOrigin(context);
     return isFlaggedAsDapp({ origin });
-  }
-
-  /** @deprecated */
-  async switchChain({
-    params: _chainStr,
-    context,
-  }: WalletMethodParams<string>) {
-    this.verifyInternalOrigin(context);
-    throw new Error('switchChain is deprecated');
   }
 
   async switchChainForOrigin({
@@ -797,9 +795,10 @@ export class Wallet {
       console.warn('chainId field is missing from transaction object');
       incomingTransaction.chainId = chainId;
     }
+    const networks = await networksStore.load();
     const transaction = prepareTransaction(incomingTransaction);
     if (!hasGasPrice(transaction)) {
-      await fetchAndAssignGasPrice(transaction);
+      await fetchAndAssignGasPrice(transaction, networks);
     }
 
     const signer = await this.getSigner(chainId);
@@ -883,6 +882,42 @@ export class Wallet {
       address: signer.address,
     });
     return signature;
+  }
+
+  async addEthereumChain({
+    context,
+    params: { values, origin },
+  }: WalletMethodParams<{
+    values: [AddEthereumChainParameter];
+    origin: string;
+  }>) {
+    this.verifyInternalOrigin(context);
+    return chainConfigStore.addEthereumChain(values[0], origin);
+  }
+
+  async removeEthereumChain({
+    context,
+    params: { chain: chainStr },
+  }: WalletMethodParams<{ chain: string }>) {
+    this.verifyInternalOrigin(context);
+    this.ensureRecord(this.record);
+    const chain = createChain(chainStr);
+    chainConfigStore.removeEthereumChain(chain);
+    // We need to update all permissions permissions
+    // which point to the removed chain
+    const affectedPermissions = Model.getPermissionsByChain(this.record, {
+      chain,
+    });
+    affectedPermissions.forEach(({ origin }) => {
+      this.setChainForOrigin(createChain(NetworkId.Ethereum), origin);
+    });
+  }
+
+  async getCustomEthereumChains({ context }: PublicMethodParams) {
+    this.verifyInternalOrigin(context);
+    return networksStore
+      .load()
+      .then(() => networksStore.getState().networks?.ethereumChainSources);
   }
 
   async getPendingTransactions({ context }: PublicMethodParams) {
@@ -1239,6 +1274,42 @@ class PublicController {
     } else {
       return [];
     }
+  }
+
+  async wallet_addEthereumChain({
+    context,
+    params,
+  }: PublicMethodParams<[AddEthereumChainParameter]>) {
+    console.log('wallet_addEthereumChain', params);
+    if (!context?.origin) {
+      throw new Error('This method requires origin');
+    }
+    const { origin } = context;
+    // return this.wallet.addEthereumChain({
+    //   context: INTERNAL_SYMBOL_CONTEXT,
+    //   params: {
+    //     values: params,
+    //     origin: context.origin,
+    //   },
+    // });
+    return new Promise((resolve, reject) => {
+      notificationWindow.open({
+        route: '/addEthereumChain',
+        search: `?${new URLSearchParams({
+          origin,
+          addEthereumChainParameter: JSON.stringify(params[0]),
+          // transaction: JSON.stringify(transaction),
+        })}`,
+        height: 700,
+        onResolve: () => {
+          resolve(null); // null indicated success as per spec
+        },
+        onDismiss: () => {
+          reject(new UserRejected());
+        },
+      });
+    });
+    // throw new Error('wallet_addEthereumChain is WIP');
   }
 
   async wallet_isKnownDapp({

@@ -8,7 +8,7 @@ import { version } from 'src/shared/packageVersion';
 import * as browserStorage from 'src/background/webapis/storage';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { Account } from 'src/background/account/Account';
-import { networksStore } from 'src/modules/networks/networks-store';
+import { networksStore } from 'src/modules/networks/networks-store.background';
 import { emitter } from 'src/background/events';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import type { DnaAction } from './types';

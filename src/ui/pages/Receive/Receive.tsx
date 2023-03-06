@@ -15,6 +15,7 @@ import { invariant } from 'src/shared/invariant';
 import { useQuery } from 'react-query';
 import { lookupAddressName } from 'src/modules/name-service';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 
 export function Receive() {
   const [params] = useSearchParams();
@@ -40,7 +41,17 @@ export function Receive() {
   return (
     <Background backgroundKind="transparent">
       <PageColumn style={{ paddingTop: 40 }}>
-        <NavigationTitle title="Receive" address={address} />
+        <NavigationTitle
+          title="Receive"
+          elementEnd={
+            <WalletAvatar
+              active={false}
+              address={address}
+              size={32}
+              borderRadius={4}
+            />
+          }
+        />
         <VStack gap={16} style={{ justifyItems: 'center' }}>
           <div
             style={{

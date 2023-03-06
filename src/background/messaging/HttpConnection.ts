@@ -6,16 +6,23 @@ import {
   JsonRpcPayload,
   JsonRpcResult,
 } from '@json-rpc-tools/utils';
-import { networksStore } from 'src/modules/networks/networks-store';
+import { networksStore } from 'src/modules/networks/networks-store.background';
 import type { ChannelContext } from 'src/shared/types/ChannelContext';
-import type { Wallet } from '../Wallet/Wallet';
+// import type { Wallet } from '../Wallet/Wallet';
 
 export class HttpConnection extends EventEmitter {
-  private walletGetter: () => Wallet;
+  // private walletGetter: () => Wallet;
+  private chainId: string;
 
-  constructor(getWallet: () => Wallet) {
+  // constructor(getWallet: () => Wallet) {
+  //   super();
+  //   this.walletGetter = getWallet;
+  // }
+  constructor({ chainId }: { chainId: string }) {
     super();
-    this.walletGetter = getWallet;
+    /** TODO: Should we save just the URL instead of chainId? */
+    this.chainId = chainId;
+    // this.walletGetter = getWallet;
   }
 
   async send(
@@ -27,13 +34,15 @@ export class HttpConnection extends EventEmitter {
       return Promise.reject('not a request');
     }
     const networks = await networksStore.load();
-    const wallet = this.walletGetter();
-    const chainId = await wallet.publicEthereumController.eth_chainId({
-      context,
-    });
+    // const wallet = this.walletGetter();
 
-    const chain = networks.getChainById(chainId);
+    // const chainId = await wallet.publicEthereumController.eth_chainId({
+    //   context,
+    // });
+
+    const chain = networks.getChainById(this.chainId);
     const url = networks.getRpcUrlInternal(chain);
+    console.log({ chain, url, chainId: this.chainId, context });
     return fetch(url, {
       method: 'post',
       body: JSON.stringify(request),

@@ -9,7 +9,7 @@ export function ViewSuspense({ children }: React.PropsWithChildren) {
       fallback={
         <>
           {/* empty navigation title to avoid flickering during route change */}
-          <NavigationTitle title={null} />
+          <NavigationTitle title={null} documentTitle="" />
           <DelayedRender>
             <ViewLoading />
           </DelayedRender>

@@ -31,8 +31,10 @@ import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { CopyButton } from 'src/ui/components/CopyButton';
+import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
+import { usePreferences } from 'src/ui/features/preferences';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -163,6 +165,9 @@ function RenderTimeMeasure() {
 
 function OverviewComponent() {
   const { singleAddress, params, ready } = useAddressParams();
+  // const [chain, setChain] = useState('');
+  const { preferences, setPreferences } = usePreferences();
+  const setChain = (overviewChain: string) => setPreferences({ overviewChain });
   const { value, isLoading: isLoadingPortfolio } = useAddressPortfolio(
     {
       ...params,
@@ -172,11 +177,11 @@ function OverviewComponent() {
     },
     { enabled: ready }
   );
-  const { data: preferences } = useQuery(
-    'wallet/getPreferences',
-    () => walletPort.request('getPreferences'),
-    { useErrorBoundary: true, suspense: true }
-  );
+  // const { data: preferences } = useQuery(
+  //   'wallet/getPreferences',
+  //   () => walletPort.request('getPreferences'),
+  //   { useErrorBoundary: true, suspense: true }
+  // );
   // if (!value) {
   //   return (
   //     <FillView>
@@ -190,6 +195,9 @@ function OverviewComponent() {
   //     </FillView>
   //   );
   // }
+  if (!preferences) {
+    return <ViewLoading />;
+  }
   return (
     <PageColumn>
       <PageFullBleedColumn
@@ -321,7 +329,12 @@ function OverviewComponent() {
               /** Cheap perceived performance hack: render expensive Positions component later so that initial UI render is faster */
               delay={16}
             >
-              <Positions />
+              <ViewSuspense>
+                <Positions
+                  chain={preferences?.overviewChain}
+                  onChainChange={setChain}
+                />
+              </ViewSuspense>
             </DelayedRender>
           }
         />

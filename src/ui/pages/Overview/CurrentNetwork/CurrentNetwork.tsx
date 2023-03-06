@@ -10,12 +10,9 @@ import { walletPort } from 'src/ui/shared/channels';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 import { useIsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
 import { Button } from 'src/ui/ui-kit/Button';
-import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
-import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
-import { Spacer } from 'src/ui/ui-kit/Spacer';
-import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import * as s from './styles.module.css';
 
@@ -68,20 +65,16 @@ export function CurrentNetwork({ address }: { address: string }) {
   return (
     <>
       {tabOrigin && siteChain ? (
-        <CenteredDialog
+        <BottomSheetDialog
           ref={ref}
-          style={{ backgroundColor: 'var(--neutral-100)' }}
+          style={{
+            height: '82vh',
+            backgroundColor: 'var(--neutral-100)',
+            padding: 0,
+          }}
         >
-          <DialogTitle
-            title={
-              <UIText kind="small/accent">
-                Network for {new URL(tabOrigin).hostname}
-              </UIText>
-            }
-          />
-          <Spacer height={24} />
           <NetworkSelectDialog value={siteChain.toString()} />
-        </CenteredDialog>
+        </BottomSheetDialog>
       ) : null}
 
       {tabOrigin ? (

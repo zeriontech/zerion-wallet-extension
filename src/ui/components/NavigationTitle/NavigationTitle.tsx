@@ -2,18 +2,23 @@ import React, { useLayoutEffect } from 'react';
 import { Content } from 'react-area';
 import { useNavigate } from 'react-router-dom';
 import { BackButton, toggleUrlBar } from '../URLBar/URLBar';
-import { WalletAvatar } from '../WalletAvatar';
 
 export function NavigationTitle({
   title,
+  documentTitle,
   urlBar,
   backTo,
-  address,
-}: {
-  title: React.ReactNode;
+  elementEnd,
+}: (
+  | {
+      title: string;
+      documentTitle?: undefined;
+    }
+  | { title: React.ReactNode; documentTitle: string }
+) & {
   urlBar?: 'none';
   backTo?: string;
-  address?: string | null;
+  elementEnd?: React.ReactNode;
 }) {
   const navigate = useNavigate();
   useLayoutEffect(() => {
@@ -24,6 +29,11 @@ export function NavigationTitle({
       toggleUrlBar(true);
     };
   }, [urlBar]);
+
+  const stringTitle = documentTitle ?? String(title);
+  useLayoutEffect(() => {
+    document.title = stringTitle;
+  }, [stringTitle]);
 
   if (urlBar === 'none') {
     return null;
@@ -38,16 +48,7 @@ export function NavigationTitle({
       ) : null}
       <Content name="navigation-bar">{title}</Content>
       <Content name="navigation-bar-end">
-        {address ? (
-          <WalletAvatar
-            active={false}
-            address={address}
-            size={32}
-            borderRadius={4}
-          />
-        ) : (
-          <span />
-        )}
+        {elementEnd ? elementEnd : <span />}
       </Content>
     </>
   );

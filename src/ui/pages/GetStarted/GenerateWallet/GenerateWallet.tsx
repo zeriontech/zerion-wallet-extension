@@ -77,7 +77,7 @@ function GenerateWalletView() {
   return (
     <PageColumn>
       <PageTop />
-      <NavigationTitle title={null} />
+      <NavigationTitle title={null} documentTitle="Get Started" />
       <PageHeading>Get Started</PageHeading>
 
       <Spacer height={32} />

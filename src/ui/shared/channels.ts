@@ -6,6 +6,7 @@ import type { MemoryCacheRPC } from 'src/shared/types/MemoryCacheRPC';
 import { UserRejected } from 'src/shared/errors/errors';
 import type { DnaService } from '../components/DnaClaim/dna.background';
 import { initDnaApi } from '../components/DnaClaim/dna.client';
+import { RpcRequestWithContext } from 'src/shared/custom-rpc';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SomeMethod = (...args: any) => Promise<any>;
@@ -37,6 +38,14 @@ export const walletPort = new PortMessageChannel({
   name: `${browser.runtime.id}/wallet`,
 }) as RPCPort<Wallet>;
 
+interface NodeMethods {
+  eth_getBalance(request: RpcRequestWithContext<[string]>): Promise<string>;
+}
+
+export const httpConnectionPort = new PortMessageChannel({
+  name: `${browser.runtime.id}/http-connection-ui`,
+}) as RPCPort<NodeMethods>;
+
 export const accountPublicRPCPort = new PortMessageChannel({
   name: 'accountPublicRPC',
 }) as RPCPort<AccountPublicRPC>;
@@ -50,7 +59,13 @@ export const dnaServicePort = new PortMessageChannel({
 }) as RPCPort<DnaService>;
 
 class WindowPort extends PortMessageChannel {
-  confirm<T>(windowId: string, result?: T) {
+  confirm<T>(
+    windowId: string,
+    // result MUST NOT be undefined, otherwise the payload will not be interpreter
+    // as JsonRpcResult or RpcResult, because `undefined` propertires get removed
+    // when sent via ports
+    result: T
+  ) {
     return this.port?.postMessage({
       id: windowId,
       result,
@@ -69,6 +84,7 @@ export const windowPort = new WindowPort({ name: 'window' });
 
 export function initialize() {
   walletPort.initialize();
+  httpConnectionPort.initialize();
   accountPublicRPCPort.initialize();
   memoryCacheRPCPort.initialize();
   windowPort.initialize();

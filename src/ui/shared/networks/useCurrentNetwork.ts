@@ -1,3 +1,4 @@
+/** TODO: remove file */
 import { useQuery } from 'react-query';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { walletPort } from '../channels';

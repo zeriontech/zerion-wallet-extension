@@ -2,6 +2,7 @@ import type { Asset } from 'defi-sdk';
 import { isTruthy } from 'is-truthy-ts';
 import { capitalize } from 'capitalize-ts';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
+import type { ChainConfig } from 'src/modules/ethereum/chains/ChainConfigStore';
 import type { Chain } from './Chain';
 import { createChain } from './Chain';
 import { NetworkConfig } from './NetworkConfig';
@@ -9,6 +10,9 @@ import { applyKeyToEndpoint, keys as defaultKeys } from './keys';
 import type { Keys } from './keys';
 import type { TransactionPurpose } from './TransactionPurpose';
 import { getAddress } from './asset';
+import { toNetworkConfigs } from './helpers';
+import { UnsupportedNetwork } from './errors';
+// import { EthereumChainConfig } from '../ethereum/chains/AddEthereumChainParameter';
 
 function toCollection<T, K>(
   items: T[],
@@ -38,11 +42,38 @@ function localeCompareWithPriority(
   return str1.localeCompare(str2);
 }
 
+export type EthereumChainSources = Record<string, ChainConfig>;
+
+type EthereumChainSourcesNormalized = Record<string, NetworkConfig[]>;
+
+export interface NetworkConfigMetaData {
+  created: number;
+  updated: number;
+  origin: string;
+}
+
+function normalizeSources(
+  sources: EthereumChainSources | undefined
+): EthereumChainSourcesNormalized {
+  if (!sources) {
+    return {};
+  }
+  const ethereumChainSourcesNormalized: Record<string, NetworkConfig[]> = {};
+  for (const [key, value] of Object.entries(sources)) {
+    const networkConfigs = toNetworkConfigs(value.ethereumChains);
+    ethereumChainSourcesNormalized[key] = networkConfigs;
+  }
+  return ethereumChainSourcesNormalized;
+}
+
 export class Networks {
   private networks: NetworkConfig[];
+  ethereumChainSources?: EthereumChainSources;
+  private sourcesNormalized?: EthereumChainSourcesNormalized;
   private keys: Keys;
   private collection: { [key: string]: NetworkConfig | undefined };
   private nameToId: { [key: string]: string };
+  private supportedByBackend: Set<string>;
   static purposeKeyMap = {
     sending: 'supports_sending',
     trading: 'supports_trading',
@@ -52,24 +83,63 @@ export class Networks {
   constructor({
     networks,
     keys = defaultKeys,
+    ethereumChainSources,
   }: {
     networks: NetworkConfig[];
+    ethereumChainSources?: EthereumChainSources;
     keys?: Keys;
   }) {
     this.networks = networks.sort((a, b) =>
       localeCompareWithPriority(a.name, b.name, 'Ethereum')
     );
+    this.ethereumChainSources = ethereumChainSources;
     this.keys = keys;
-    this.collection = toCollection(
+    const { collection, nameToId } = this.prepare();
+    this.collection = collection;
+    this.nameToId = nameToId;
+    this.supportedByBackend = new Set(networks.map((n) => n.chain));
+    Object.assign(globalThis, { networksInstance: this });
+  }
+
+  private prepare() {
+    const collection = toCollection(
       this.networks,
       (network) => network.external_id,
       (x) => x
     );
-    this.nameToId = toCollection(
+    const nameToId = toCollection(
       this.networks,
-      (networks) => networks.chain,
+      (network) => network.chain,
       (network) => network.external_id
     );
+    const sourcesNormalized = normalizeSources(this.ethereumChainSources);
+    this.sourcesNormalized = sourcesNormalized;
+    for (const value of Object.values(sourcesNormalized)) {
+      Object.assign(
+        collection,
+        toCollection(
+          value,
+          (item) => item.external_id,
+          (x) => x
+        )
+      );
+      Object.assign(
+        nameToId,
+        toCollection(
+          value,
+          (item) => item.chain,
+          (item) => item.external_id
+        )
+      );
+    }
+    return { collection, nameToId };
+  }
+
+  updateEthereumChainSources(ethereumChainSources: EthereumChainSources) {
+    this.ethereumChainSources = ethereumChainSources;
+    const { collection, nameToId } = this.prepare();
+    this.collection = collection;
+    this.nameToId = nameToId;
   }
 
   static getName(network: NetworkConfig) {
@@ -82,6 +152,87 @@ export class Networks {
 
   getNetworks() {
     return this.networks;
+  }
+
+  getNetworksMetaData(): Record<string, NetworkConfigMetaData> {
+    const originalCollection = toCollection(
+      this.networks,
+      (network) => network.external_id, // TODO: use "chain"
+      (x) => x
+    );
+    const result: Record<string, NetworkConfigMetaData> = {};
+    const values = ['predefined', 'custom']
+      .map((key) => this.ethereumChainSources?.[key])
+      .filter(isTruthy);
+    console.log({ originalCollection });
+    for (const value of values) {
+      for (const config of value.ethereumChains) {
+        if (result[config.chain.chainId]) {
+          // do not overwrite "created" field
+          result[config.chain.chainId].updated = config.updated;
+          result[config.chain.chainId].origin = config.origin;
+        } else {
+          const created = originalCollection[config.chain.chainId]
+            ? 0
+            : config.created;
+          result[config.chain.chainId] = {
+            created: created,
+            updated: config.updated,
+            origin: config.origin,
+          };
+        }
+      }
+    }
+    return result;
+  }
+
+  getTestNetworks() {
+    console.log({ sourcesNormalized: this.sourcesNormalized });
+    const customCollection = toCollection(
+      this.sourcesNormalized?.['custom'] || [],
+      (item) => item.external_id,
+      (x) => x
+    );
+    const items = this.sourcesNormalized?.['predefined'];
+    return (items || []).map((item) => {
+      if (item.external_id in customCollection) {
+        return customCollection[item.external_id];
+      } else {
+        return item;
+      }
+    });
+  }
+
+  getCustomNetworks() {
+    const predefinedCollection = toCollection(
+      this.sourcesNormalized?.['predefined'] || [],
+      (item) => item.external_id,
+      (x) => x
+    );
+    const originalCollection = toCollection(
+      this.networks,
+      (network) => network.external_id,
+      (x) => x
+    );
+    const items = this.sourcesNormalized?.['custom'];
+    return (items || []).filter(
+      (item) =>
+        item.external_id in predefinedCollection === false &&
+        item.external_id in originalCollection === false
+    );
+  }
+
+  findEthereumChainById(id: string) {
+    const find = (id: string, config?: ChainConfig) =>
+      config?.ethereumChains?.find((item) => item.chain.chainId === id);
+    return (
+      find(id, this.ethereumChainSources?.['predefined']) ||
+      find(id, this.ethereumChainSources?.['custom'])
+    );
+  }
+
+  isSupportedByBackend(chain: Chain) {
+    return this.supportedByBackend.has(chain.toString());
   }
 
   getChainId(chain: Chain) {
@@ -102,7 +253,7 @@ export class Networks {
   getNetworkById(chainId: string) {
     const network = this.collection[chainId];
     if (!network) {
-      throw new Error(`Unsupported network id: ${chainId}`);
+      throw new UnsupportedNetwork(`Unsupported network id: ${chainId}`);
     }
     return network;
   }
@@ -126,7 +277,11 @@ export class Networks {
   }
 
   private getExplorerTxUrl(network: NetworkConfig | undefined, hash: string) {
-    return network?.explorer_tx_url?.replace('{HASH}', hash);
+    if (network?.explorer_tx_url) {
+      return network.explorer_tx_url?.replace('{HASH}', hash);
+    } else if (network?.explorer_home_url) {
+      return new URL(`/tx/${hash}`, network?.explorer_home_url).toString();
+    }
   }
 
   getExplorerTxUrlById(chainId: string, hash: string) {
@@ -173,14 +328,14 @@ export class Networks {
   getEthereumChainParameter(chainId: string): AddEthereumChainParameter {
     const network = this.collection[chainId];
     if (!network || !network.rpc_url_public || !network.native_asset) {
-      throw new Error(`Unsupported network id: ${chainId}`);
+      throw new UnsupportedNetwork(`Unsupported network id: ${chainId}`);
     }
     return {
       chainId,
       rpcUrls: network.rpc_url_public,
       chainName: network.name,
       nativeCurrency: {
-        code: network.native_asset.address,
+        // code: network.native_asset.address,
         name: network.native_asset.name,
         symbol: network.native_asset.symbol,
         decimals: network.native_asset.decimals as 18, // ¯\_(ツ)_/¯

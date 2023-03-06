@@ -51,7 +51,7 @@ function Initial({ onSubmit }: { onSubmit: () => void }) {
   );
   return (
     <PageColumn>
-      <NavigationTitle title={null} />
+      <NavigationTitle title={null} documentTitle="Backup Your Wallet" />
       <div
         style={{
           position: 'fixed',

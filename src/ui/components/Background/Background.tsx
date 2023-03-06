@@ -49,6 +49,23 @@ const bgClassNames = {
   transparent: 'transparent-bg',
 } as const;
 
+export function useBackgroundKind({
+  kind,
+}: {
+  kind: 'neutral' | 'white' | 'transparent';
+}) {
+  const { uiScrollRootElement } = useContext(UIContext);
+
+  useEffect(() => {
+    const className = bgClassNames[kind];
+    uiScrollRootElement.classList.add(className);
+    return () => {
+      uiScrollRootElement.classList.remove(className);
+    };
+  }, [kind, uiScrollRootElement.classList]);
+}
+
+/** TODO: Deprecate <Background /> in favour of useBackgroundKind() */
 export function Background({
   children,
   backgroundColor,

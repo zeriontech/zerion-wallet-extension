@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { networksStore } from 'src/modules/networks/networks-store';
+import { networksStore } from 'src/modules/networks/networks-store.client';
 import { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 
 export async function ensLookup(address: string): Promise<string | null> {

@@ -1,11 +1,17 @@
 .input {
   background-color: var(--neutral-200);
-  padding: 10px 12px;
+  padding: 9px 12px;
   border: 1px solid var(--neutral-200);
   border-radius: 8;
 }
 
+.height40 {
+  padding-top: 7px;
+  padding-bottom: 7px;
+}
+
 .input:focus-visible {
+  outline-offset: 0;
   outline: 2px solid var(--primary-300);
   border: 1px solid var(--primary);
 }

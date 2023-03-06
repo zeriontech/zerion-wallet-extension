@@ -16,16 +16,17 @@ export function TokenSymbolLine({
   chain: Chain;
   networks: Networks;
 }) {
+  const explorerTokenUrl = networks.getExplorerTokenUrlByName(chain, asset.asset_code)
   return (
     <SurfaceList
       items={[
         {
           key: 0,
-          href: networks.getExplorerTokenUrlByName(chain, asset.asset_code),
+          href: explorerTokenUrl,
           target: '_blank',
           rel: 'noopener noreferrer',
           component: (
-            <AngleRightRow>
+            <AngleRightRow hideIcon={!explorerTokenUrl}>
               <Media
                 vGap={0}
                 image={

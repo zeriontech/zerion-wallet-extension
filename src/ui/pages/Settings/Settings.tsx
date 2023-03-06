@@ -91,6 +91,18 @@ function SettingsMain() {
             },
             {
               key: 5,
+              to: '/networks',
+              component: (
+                <AngleRightRow>
+                  <HStack gap={4} alignItems="center">
+                    <SettingsIcon />
+                    <UIText kind="body/regular">Networks</UIText>
+                  </HStack>
+                </AngleRightRow>
+              ),
+            },
+            {
+              key: 6,
               onClick: async () => {
                 await logout.mutateAsync();
                 navigate('/login');

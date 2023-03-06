@@ -64,9 +64,13 @@ const remove = async (winId: number) => {
   return browser.windows.remove(winId);
 };
 
-const openNotification = ({ route = '', ...rest } = {}): Promise<
-  number | undefined
-> => {
+const openNotification = ({
+  route,
+  ...rest
+}: {
+  route: string;
+  height?: number;
+}): Promise<number | undefined> => {
   /**
    * Normally, we'd get the path to popup.html like this:
    * new URL(`../../ui/popup.html`, import.meta.url)

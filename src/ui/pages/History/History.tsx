@@ -8,6 +8,7 @@ import {
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import { EmptyView } from 'src/ui/components/EmptyView';
+import { networksStore } from 'src/modules/networks/networks-store.client';
 import { ActionsList } from './ActionsList';
 
 export function sortActions<T extends { datetime?: string }>(actions: T[]) {
@@ -39,10 +40,11 @@ function useMinedAndPendingAddressActions() {
 
   const { data: localAddressActions, ...localActionsQuery } = useQuery(
     ['pages/history', localActions],
-    () => {
+    async () => {
+      const networks = await networksStore.load();
       return Promise.all(
         localActions.map((transactionObject) =>
-          toAddressTransaction(transactionObject)
+          toAddressTransaction(transactionObject, networks)
         )
       );
     },

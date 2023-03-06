@@ -174,12 +174,12 @@ export function WalletAccount() {
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const nameInputId = useId();
   if (isLoading) {
-    return <NavigationTitle title={null} />;
+    return <NavigationTitle title={null} documentTitle="" />;
   }
   if (!wallet) {
     return (
       <>
-        <NavigationTitle title={null} />
+        <NavigationTitle title={null} documentTitle="" />
         <NotFoundPage />
       </>
     );

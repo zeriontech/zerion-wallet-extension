@@ -1,7 +1,7 @@
 import type BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import memoize from 'lodash/memoize';
-import { networksStore } from 'src/modules/networks/networks-store';
+import { networksStore } from 'src/modules/networks/networks-store.client';
 import { getRpcProvider } from '../../requests/getRpcProvider';
 import type { IncomingTransaction } from '../../types/IncomingTransaction';
 import { estimateFee } from './eip1559/estimateFee';

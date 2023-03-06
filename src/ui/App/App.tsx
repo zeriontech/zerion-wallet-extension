@@ -55,6 +55,7 @@ import { useScreenViewChange } from '../shared/useScreenViewChange';
 import { DnaPage } from '../components/DnaClaim';
 import { NonFungibleToken } from '../pages/NonFungibleToken';
 import { Onboarding } from '../Onboarding';
+import { AddEthereumChain } from '../pages/AddEthereumChain';
 
 const useAuthState = () => {
   const { data, isFetching } = useQuery(
@@ -207,7 +208,15 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             }
           />
           <Route
-            path="/networks"
+            path="/networks-select"
+            element={
+              <RequireAuth>
+                <Networks />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/networks/*"
             element={
               <RequireAuth>
                 <Networks />
@@ -251,6 +260,14 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             element={
               <RequireAuth>
                 <SwitchEthereumChain />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/addEthereumChain"
+            element={
+              <RequireAuth>
+                <AddEthereumChain />
               </RequireAuth>
             }
           />

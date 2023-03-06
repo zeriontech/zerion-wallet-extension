@@ -74,7 +74,7 @@ export function SwitchEthereumChain() {
           onClick={() => {
             const windowId = params.get('windowId');
             invariant(windowId, 'windowId get-parameter is required');
-            windowPort.confirm(windowId);
+            windowPort.confirm(windowId, null);
           }}
         >
           Approve

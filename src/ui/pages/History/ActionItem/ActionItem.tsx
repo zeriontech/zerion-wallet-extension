@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { AddressAction, useAssetsPrices } from 'defi-sdk';
 import type { PendingAddressAction } from 'src/modules/ethereum/transactions/model';
 import { useNetworks } from 'src/modules/networks/useNetworks';
@@ -13,9 +13,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
-import { Image } from 'src/ui/ui-kit/MediaFallback';
-import { getChainIconURL } from 'src/ui/components/Positions/helpers';
-import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
+import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import ZerionIcon from 'jsx:src/ui/assets/zerion-squircle.svg';
 import { DNA_MINT_CONTRACT_ADDRESS } from 'src/ui/components/DnaClaim/dnaAddress';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
@@ -30,6 +28,8 @@ import {
   TransactionItemIcon,
   TRANSACTION_ICON_SIZE,
 } from './TransactionTypeIcon';
+
+type AnyAddressAction = AddressAction | PendingAddressAction;
 
 function getActionAddress(
   action: AddressAction | PendingAddressAction,
@@ -46,7 +46,107 @@ function getActionAddress(
     : action.label?.display_value.text;
 }
 
-function ActionView({
+function checkIsDnaMint(action: AnyAddressAction) {
+  return (
+    normalizeAddress(action.label?.value || '') === DNA_MINT_CONTRACT_ADDRESS
+  );
+}
+
+function ActionTitle({
+  action,
+  networks,
+}: {
+  action: AnyAddressAction;
+  networks: Networks;
+}) {
+  const { chain: chainStr } = action.transaction;
+  const chain = chainStr ? createChain(chainStr) : null;
+
+  const explorerHref = chain
+    ? networks.getExplorerTxUrlByName(chain, action.transaction.hash)
+    : null;
+
+  const isMintingDna = checkIsDnaMint(action);
+  const titlePrefix = action.transaction.status === 'failed' ? 'Failed ' : '';
+  const actionTitle = isMintingDna
+    ? 'Mint DNA'
+    : `${titlePrefix}${action.type.display_value}`;
+  return (
+    <UIText kind="small/accent">
+      {explorerHref ? (
+        <TextAnchor
+          href={explorerHref}
+          target="_blank"
+          title={explorerHref}
+          rel="noopener noreferrer"
+          style={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {actionTitle}
+        </TextAnchor>
+      ) : (
+        actionTitle
+      )}
+    </UIText>
+  );
+}
+
+function ActionDetail({
+  action,
+  networks,
+  address,
+}: {
+  action: AnyAddressAction;
+  networks: Networks;
+  address?: string;
+}) {
+  const { chain: chainStr } = action.transaction;
+  const chain = chainStr ? createChain(chainStr) : null;
+  const network = useMemo(
+    () => (chain ? networks.getNetworkByName(chain) : null),
+    [chain, networks]
+  );
+  const isAddressAction = 'content' in action;
+  const incomingTransfers = isAddressAction
+    ? action.content?.transfers?.incoming
+    : null;
+  const outgoingTransfers = isAddressAction
+    ? action.content?.transfers?.outgoing
+    : null;
+
+  return (
+    <HStack alignItems="center" gap={4}>
+      <NetworkIcon
+        size={12}
+        src={network?.icon_url}
+        chainId={network?.external_id || ''}
+      />
+      <UIText kind="small/regular" color="var(--neutral-500)">
+        {action.transaction.status === 'pending' ? (
+          'Pending'
+        ) : incomingTransfers?.length && outgoingTransfers?.length && chain ? (
+          <HistoryItemValue
+            transfers={outgoingTransfers}
+            direction="out"
+            chain={chain}
+            address={address}
+          />
+        ) : isAddressAction ? (
+          <span title={getActionAddress(action, { truncate: false })}>
+            {getActionAddress(action, { truncate: true })}
+          </span>
+        ) : (
+          networks?.getChainName(createChain(action.transaction.chain))
+        )}
+      </UIText>
+    </HStack>
+  );
+}
+
+function ActionItemBackend({
   action,
   networks,
 }: {
@@ -71,14 +171,6 @@ function ActionView({
   const chain = action.transaction.chain
     ? createChain(action.transaction.chain)
     : null;
-
-  const explorerHref = chain
-    ? networks.getExplorerTxUrlByName(chain, action.transaction.hash)
-    : null;
-
-  const actionTitle = `${
-    action.transaction.status === 'failed' ? 'Failed ' : ''
-  }${action.type.display_value}`;
 
   return (
     <HStack
@@ -110,69 +202,9 @@ function ActionView({
             <TransactionItemIcon action={action} />
           )
         }
-        text={
-          <UIText kind="small/accent">
-            {explorerHref ? (
-              <TextAnchor
-                href={explorerHref}
-                target="_blank"
-                title={explorerHref}
-                rel="noopener noreferrer"
-                style={{
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {actionTitle}
-              </TextAnchor>
-            ) : (
-              actionTitle
-            )}
-          </UIText>
-        }
+        text={<ActionTitle action={action} networks={networks} />}
         detailText={
-          <HStack alignItems="center" gap={4}>
-            {chain ? (
-              <Image
-                style={{
-                  width: 12,
-                  height: 12,
-                  borderRadius: 2,
-                  overflow: 'hidden',
-                }}
-                title={networks?.getChainName(chain)}
-                src={getChainIconURL(action.transaction.chain)}
-                renderError={() => (
-                  <TokenIcon symbol={action.transaction.chain} size={12} />
-                )}
-              />
-            ) : null}
-            <UIText
-              kind="small/regular"
-              color="var(--neutral-500)"
-              style={{
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {incomingTransfers?.length &&
-              outgoingTransfers?.length &&
-              chain ? (
-                <HistoryItemValue
-                  transfers={outgoingTransfers}
-                  direction="out"
-                  chain={chain}
-                  address={address}
-                />
-              ) : (
-                <span title={getActionAddress(action, { truncate: false })}>
-                  {getActionAddress(action, { truncate: true })}
-                </span>
-              )}
-            </UIText>
-          </HStack>
+          <ActionDetail networks={networks} action={action} address={address} />
         }
       />
       <VStack
@@ -238,13 +270,14 @@ function ActionView({
   );
 }
 
-function PendingActionView({
+function ActionItemLocal({
   action,
   networks,
 }: {
   action: PendingAddressAction;
   networks: Networks;
 }) {
+  console.log({ action });
   const { value } = useAssetsPrices(
     {
       asset_codes: action.asset_code ? [action.asset_code.toLowerCase()] : [],
@@ -262,15 +295,7 @@ function PendingActionView({
   const address = 'address' in params ? params.address : undefined;
   const asset = value?.[action.asset_code?.toLowerCase() || ''];
 
-  const explorerHref = action.transaction.chain
-    ? networks.getExplorerTxUrlByName(
-        createChain(action.transaction.chain),
-        action.transaction.hash
-      )
-    : null;
-
-  const isMintingDna =
-    normalizeAddress(action.label?.value || '') === DNA_MINT_CONTRACT_ADDRESS;
+  const isMintingDna = checkIsDnaMint(action);
 
   return (
     <HStack
@@ -308,54 +333,9 @@ function PendingActionView({
             )}
           </div>
         }
-        text={
-          explorerHref ? (
-            <TextAnchor
-              href={explorerHref}
-              target="_blank"
-              title={explorerHref}
-              rel="noopener noreferrer"
-              style={{
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <UIText kind="small/accent">
-                {isMintingDna ? 'Mint DNA' : action.type.display_value}
-              </UIText>
-            </TextAnchor>
-          ) : (
-            <UIText kind="small/accent">
-              {isMintingDna ? 'Mint DNA' : action.type.display_value}
-            </UIText>
-          )
-        }
+        text={<ActionTitle action={action} networks={networks} />}
         detailText={
-          <HStack alignItems="center" gap={4}>
-            {action.transaction.chain ? (
-              <Image
-                style={{
-                  width: 12,
-                  height: 12,
-                  borderRadius: 2,
-                  overflow: 'hidden',
-                }}
-                title={networks?.getChainName(
-                  createChain(action.transaction.chain)
-                )}
-                src={getChainIconURL(action.transaction.chain)}
-                renderError={() => (
-                  <TokenIcon symbol={action.transaction.chain} size={12} />
-                )}
-              />
-            ) : null}
-            <UIText kind="small/regular" color="var(--neutral-500)">
-              {action.transaction.status === 'pending'
-                ? 'Pending'
-                : networks?.getChainName(createChain(action.transaction.chain))}
-            </UIText>
-          </HStack>
+          <ActionDetail networks={networks} action={action} address={address} />
         }
       />
       <UIText kind="small/regular">
@@ -383,7 +363,7 @@ function PendingActionView({
 export function ActionItem({
   addressAction,
 }: {
-  addressAction: AddressAction | PendingAddressAction;
+  addressAction: AnyAddressAction;
 }) {
   const { networks } = useNetworks();
   if (!networks || !addressAction) {
@@ -391,8 +371,11 @@ export function ActionItem({
   }
   if ('content' in addressAction) {
     return (
-      <ActionView action={addressAction as AddressAction} networks={networks} />
+      <ActionItemBackend
+        action={addressAction as AddressAction}
+        networks={networks}
+      />
     );
   }
-  return <PendingActionView action={addressAction} networks={networks} />;
+  return <ActionItemLocal action={addressAction} networks={networks} />;
 }

@@ -1,7 +1,7 @@
 import { TestPrivateKeyWalletContainer } from 'src/background/Wallet/model/WalletContainer';
 import { WalletOrigin } from 'src/background/Wallet/model/WalletOrigin';
 import { Chain } from 'src/modules/networks/Chain';
-import { networksStore } from 'src/modules/networks/networks-store';
+import { networksStore } from 'src/modules/networks/networks-store.client';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { Wallet } from 'src/shared/types/Wallet';
 import type { WalletRecord } from 'src/shared/types/WalletRecord';
