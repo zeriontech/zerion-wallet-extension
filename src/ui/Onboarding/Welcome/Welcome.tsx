@@ -13,6 +13,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
 import { useAddressNfts } from 'src/ui/shared/requests/addressNfts/useAddressNfts';
 import { checkWhitelistStatus } from '../checkWhitelistStatus';
+import { FaqSidePanel } from '../Import/SidePanel';
 import * as styles from './styles.module.css';
 
 class UnsupportedAddressError extends Error {}
@@ -158,22 +159,49 @@ function FAQButton({ text, onClick }: { text: string; onClick(): void }) {
 }
 
 function EligibleFAQ({ show }: { show: boolean }) {
+  const [showJoinPanel, setShowJoinPanel] = useState(false);
+  const [showInvitePanel, setShowInvitePanel] = useState(false);
+
   return (
-    <VStack
-      gap={20}
-      style={{
-        opacity: show ? 1 : 0,
-        transform: show ? 'translateY(0)' : 'translateY(-10px)',
-        transition: 'opacity 300ms ease-in-out, transform 300ms ease-in-out',
-        width: '100%',
-      }}
-    >
-      <UIText kind="headline/h2">How can I become eligible?</UIText>
-      <HStack gap={16} style={{ gridTemplateColumns: '1fr 1fr' }}>
-        <FAQButton text="Join the waitlist" onClick={() => null} />
-        <FAQButton text="Earn an invite" onClick={() => null} />
-      </HStack>
-    </VStack>
+    <>
+      <FaqSidePanel
+        show={showJoinPanel}
+        onDismiss={() => setShowJoinPanel(false)}
+      >
+        <VStack gap={0}>
+          <UIText kind="body/accent">Here will be instruction</UIText>
+        </VStack>
+      </FaqSidePanel>
+      <FaqSidePanel
+        show={showInvitePanel}
+        onDismiss={() => setShowInvitePanel(false)}
+      >
+        <VStack gap={0}>
+          <UIText kind="body/accent">Here will be instruction</UIText>
+        </VStack>
+      </FaqSidePanel>
+      <VStack
+        gap={20}
+        style={{
+          opacity: show ? 1 : 0,
+          transform: show ? 'translateY(0)' : 'translateY(-10px)',
+          transition: 'opacity 300ms ease-in-out, transform 300ms ease-in-out',
+          width: '100%',
+        }}
+      >
+        <UIText kind="headline/h2">How can I become eligible?</UIText>
+        <HStack gap={16} style={{ gridTemplateColumns: '1fr 1fr' }}>
+          <FAQButton
+            text="Join the waitlist"
+            onClick={() => setShowJoinPanel(true)}
+          />
+          <FAQButton
+            text="Earn an invite"
+            onClick={() => setShowInvitePanel(true)}
+          />
+        </HStack>
+      </VStack>
+    </>
   );
 }
 
