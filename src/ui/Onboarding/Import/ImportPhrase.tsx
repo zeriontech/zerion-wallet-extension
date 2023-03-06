@@ -83,6 +83,47 @@ export function ImportPhrase({
     ]);
   }, []);
 
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+      if (e.code === 'Space' && index + 1 < phraseMode) {
+        e.preventDefault();
+        document.getElementById(`word-${index + 1}`)?.focus();
+        (
+          document.getElementById(`word-${index + 1}`) as HTMLInputElement
+        )?.select();
+      }
+      if (e.code === 'Backspace' && !e.currentTarget.value?.length) {
+        e.preventDefault();
+        document.getElementById(`word-${index - 1}`)?.focus();
+      }
+      if (e.code === 'ArrowLeft' && e.currentTarget.selectionStart === 0) {
+        e.preventDefault();
+        document.getElementById(`word-${index - 1}`)?.focus();
+      }
+      if (
+        e.code === 'ArrowRight' &&
+        index + 1 < phraseMode &&
+        (e.currentTarget.selectionStart || 0) >=
+          (e.currentTarget.value?.length || 0)
+      ) {
+        e.preventDefault();
+        document.getElementById(`word-${index + 1}`)?.focus();
+        (
+          document.getElementById(`word-${index + 1}`) as HTMLInputElement
+        )?.setSelectionRange(0, 0);
+      }
+      if (e.code === 'ArrowUp') {
+        e.preventDefault();
+        document.getElementById(`word-${index - 3}`)?.focus();
+      }
+      if (e.code === 'ArrowDown' && index + 3 < phraseMode) {
+        e.preventDefault();
+        document.getElementById(`word-${index + 3}`)?.focus();
+      }
+    },
+    [phraseMode]
+  );
+
   return (
     <VStack gap={20}>
       <VStack gap={8}>
@@ -100,29 +141,38 @@ export function ImportPhrase({
         <VStack gap={28} style={{ position: 'relative' }}>
           <animated.div className={styles.phraseInputGrip} style={gridStyle}>
             {ARRAY_OF_NUMBERS.map((index) => (
-              <Input
-                key={index}
-                name={`word-${index}`}
-                placeholder={`${index + 1}`}
-                style={{ width: '100%' }}
-                type="password"
-                required={index < phraseMode}
-                value={value[index]}
-                onChange={(e) =>
-                  setValue((current) => {
-                    return [
-                      ...current.slice(0, index),
-                      e.target.value,
-                      ...current.slice(index + 1),
-                    ];
-                  })
-                }
-                onPaste={(e) => {
-                  e.preventDefault();
-                  const value = e.clipboardData.getData('text/plain');
-                  handlePaste(index, value);
-                }}
-              />
+              <div key={index} style={{ position: 'relative' }}>
+                <Input
+                  id={`word-${index}`}
+                  name={`word-${index}`}
+                  style={{ width: '100%', paddingLeft: 40 }}
+                  type="password"
+                  required={index < phraseMode}
+                  value={value[index]}
+                  onKeyDown={(e) => handleKeyDown(e, index)}
+                  onChange={(e) =>
+                    setValue((current) => {
+                      return [
+                        ...current.slice(0, index),
+                        e.target.value,
+                        ...current.slice(index + 1),
+                      ];
+                    })
+                  }
+                  onPaste={(e) => {
+                    e.preventDefault();
+                    const value = e.clipboardData.getData('text/plain');
+                    handlePaste(index, value);
+                  }}
+                />
+                <UIText
+                  kind="body/regular"
+                  color="var(--neutral-600)"
+                  style={{ position: 'absolute', left: 12, top: 10 }}
+                >
+                  {index}.
+                </UIText>
+              </div>
             ))}
           </animated.div>
           <UnstyledButton
