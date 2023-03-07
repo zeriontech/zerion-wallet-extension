@@ -180,7 +180,7 @@ export function ImportPhrase({
                   color="var(--neutral-600)"
                   style={{ position: 'absolute', left: 12, top: 10 }}
                 >
-                  {index}.
+                  {index + 1}.
                 </UIText>
               </div>
             ))}
