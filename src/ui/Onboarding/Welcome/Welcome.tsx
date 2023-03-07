@@ -12,6 +12,7 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
 import { useAddressNfts } from 'src/ui/shared/requests/addressNfts/useAddressNfts';
+import { validateEmail } from 'src/ui/shared/validateEmail';
 import { checkWhitelistStatus } from '../checkWhitelistStatus';
 import { FaqSidePanel } from '../Import/SidePanel';
 import { useSizeStore } from '../useSizeStore';
@@ -50,6 +51,18 @@ function MainForm({
   const { mutate: checkAddress, isLoading } = useMutation(
     async (addressOrDomain: string) => {
       setError(null);
+
+      if (validateEmail(addressOrDomain)) {
+        try {
+          const { status, address } = await checkWhitelistStatus(
+            addressOrDomain
+          );
+          return { address, status };
+        } catch {
+          throw new WaitlistCheckError();
+        }
+      }
+
       const address = isEthereumAddress(addressOrDomain)
         ? addressOrDomain
         : await resolveDomain(addressOrDomain);
@@ -57,7 +70,7 @@ function MainForm({
         throw new UnsupportedAddressError();
       }
       try {
-        const status = await checkWhitelistStatus(address);
+        const { status } = await checkWhitelistStatus(address);
         return { address, status };
       } catch {
         throw new WaitlistCheckError();

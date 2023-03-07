@@ -27,6 +27,8 @@ export function ImportPhrase({
   const [validation, setValidation] = useState<ValidationResult | null>(null);
   const [phraseMode, setPhraseMode] = useState<12 | 24>(12);
   const [value, setValue] = useState<string[]>(ARRAY_OF_NUMBERS.map(() => ''));
+  const [hoveredInput, setHoveredInput] = useState<number | null>(null);
+  const [focusedInput, setFocusedInput] = useState<number | null>(null);
 
   const { mutate, isLoading } = useMutation(
     async (value: string) => {
@@ -146,7 +148,11 @@ export function ImportPhrase({
                   id={`word-${index}`}
                   name={`word-${index}`}
                   style={{ width: '100%', paddingLeft: 40 }}
-                  type="password"
+                  type={
+                    hoveredInput === index || focusedInput === index
+                      ? 'text'
+                      : 'password'
+                  }
                   required={index < phraseMode}
                   value={value[index]}
                   onKeyDown={(e) => handleKeyDown(e, index)}
@@ -159,6 +165,10 @@ export function ImportPhrase({
                       ];
                     })
                   }
+                  onFocus={() => setFocusedInput(index)}
+                  onBlur={() => setFocusedInput(null)}
+                  onMouseEnter={() => setHoveredInput(index)}
+                  onMouseLeave={() => setHoveredInput(null)}
                   onPaste={(e) => {
                     e.preventDefault();
                     const value = e.clipboardData.getData('text/plain');
