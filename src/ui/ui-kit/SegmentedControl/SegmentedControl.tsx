@@ -16,12 +16,12 @@ const labelParams: Record<
   primary: {
     checked: 'var(--primary)',
     blured: 'currentColor',
-    kind: 'subtitle/l_med',
+    kind: 'body/accent',
   },
   secondary: {
     checked: 'var(--black)',
     blured: 'var(--black)',
-    kind: 'button/s_med',
+    kind: 'caption/accent',
   },
 };
 

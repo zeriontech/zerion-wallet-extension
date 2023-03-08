@@ -425,7 +425,7 @@ function PositionsList({
             pad: false,
             component: (
               <UIText
-                kind="label/med"
+                kind="caption/accent"
                 color="var(--neutral-700)"
                 style={{ paddingBottom: 4, paddingTop: 12 }}
               >
@@ -469,7 +469,7 @@ function PositionsList({
               }
             },
             component: (
-              <UIText kind="body/s_reg" color="var(--primary)">
+              <UIText kind="body/regular" color="var(--primary)">
                 {expanded.has(protocol)
                   ? 'Show Less'
                   : `Show More (${howMuchMore})`}

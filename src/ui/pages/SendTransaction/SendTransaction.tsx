@@ -219,7 +219,7 @@ function SendTransactionContent({
             {strings.actions[descriptionQuery.data.action] ||
               strings.actions[TransactionAction.contractInteraction]}
           </UIText>
-          <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
+          <UIText kind="small/regular" color="var(--neutral-500)">
             <TextAnchor href={origin} target="_blank" rel="noopener noreferrer">
               {hostname}
             </TextAnchor>
@@ -247,12 +247,12 @@ function SendTransactionContent({
                 alignItems="start"
                 image={<WarningIcon glow={true} />}
                 text={
-                  <UIText kind="body/s_reg" color="var(--notice-500)">
+                  <UIText kind="body/regular" color="var(--notice-500)">
                     {capitalize(hostname)} did not provide chainId
                   </UIText>
                 }
                 detailText={
-                  <UIText kind="body/s_reg">
+                  <UIText kind="body/regular">
                     The transaction will be sent to{' '}
                     {networks?.getNetworkById(transaction.chainId)?.name}
                   </UIText>
@@ -275,7 +275,7 @@ function SendTransactionContent({
           {transaction && chain ? (
             <ErrorBoundary
               renderError={() => (
-                <UIText kind="body/s_reg">
+                <UIText kind="body/regular">
                   <span style={{ display: 'inline-block' }}>
                     <WarningIcon />
                   </span>{' '}
@@ -301,7 +301,7 @@ function SendTransactionContent({
           }}
           gap={8}
         >
-          <UIText kind="body/s_reg" color="var(--negative-500)">
+          <UIText kind="body/regular" color="var(--negative-500)">
             {signMutation.isError
               ? errorToMessage(signMutation.error as SendTransactionError)
               : null}

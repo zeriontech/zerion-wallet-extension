@@ -31,12 +31,12 @@ export function AmountLine({
           />
         }
         text={
-          <UIText kind="caption/reg" color="var(--neutral-500)">
+          <UIText kind="caption/regular" color="var(--neutral-500)">
             Amount
           </UIText>
         }
         detailText={
-          <UIText kind="subtitle/l_reg">
+          <UIText kind="body/regular">
             {`${formatTokenValue(
               baseToCommon(amount, getDecimals({ asset, chain }))
             )} ${asset.symbol}`}

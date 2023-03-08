@@ -119,7 +119,7 @@ function RemoveAddressConfirmationDialog({ wallet }: { wallet: BareWallet }) {
             <WalletAvatar address={wallet.address} size={32} borderRadius={4} />
           }
           text={
-            <UIText kind="subtitle/l_med">
+            <UIText kind="body/accent">
               <WalletDisplayName wallet={wallet} />
             </UIText>
           }
@@ -207,7 +207,7 @@ export function WalletAccount() {
                 <PortfolioValue
                   address={wallet.address}
                   render={(entry) => (
-                    <UIText kind="subtitle/l_med">
+                    <UIText kind="body/accent">
                       {entry.value ? (
                         <NeutralDecimals
                           parts={formatCurrencyToParts(
@@ -225,7 +225,7 @@ export function WalletAccount() {
               }
               detailText={null}
             />
-            <UIText kind="caption/reg" color="var(--neutral-500)">
+            <UIText kind="caption/regular" color="var(--neutral-500)">
               <div>{wallet.address}</div>
               {wallet.mnemonic ? (
                 <div>Derivation path: {wallet.mnemonic?.path}</div>
@@ -246,7 +246,7 @@ export function WalletAccount() {
           }
         />
         <VStack gap={8}>
-          <UIText kind="subtitle/s_reg" color="var(--neutral-500)">
+          <UIText kind="small/regular" color="var(--neutral-500)">
             Export Wallet
           </UIText>
           <SurfaceList
@@ -264,7 +264,7 @@ export function WalletAccount() {
                     justifyContent="space-between"
                     alignItems="center"
                   >
-                    <UIText kind="body/s_reg">Private key</UIText>
+                    <UIText kind="body/regular">Private key</UIText>
                     <span>
                       <ChevronRightIcon />
                     </span>
@@ -298,7 +298,7 @@ export function WalletAccount() {
               },
             ]}
           />
-          <UIText kind="caption/reg" color="var(--neutral-500)">
+          <UIText kind="caption/regular" color="var(--neutral-500)">
             You can always import it again using your recovery phrase or private
             key
           </UIText>

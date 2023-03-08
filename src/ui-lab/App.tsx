@@ -56,7 +56,7 @@ function App() {
       >
         <DesignTheme templateType="popup" />
         <div style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 16 }}>
-          <UIText kind="h/2_sb">Hello, UI Lab</UIText>
+          <UIText kind="headline/h1">Hello, UI Lab</UIText>
 
           <VStack gap={12}>
             {readmes.map((readme, index) => (
@@ -73,7 +73,7 @@ function App() {
                       }}
                     >
                       <HStack gap={8} justifyContent="space-between">
-                        <UIText kind="h/6_med">{readme.name}</UIText>
+                        <UIText kind="headline/h3">{readme.name}</UIText>
                         <ChevronRightIcon
                           style={
                             isOpen ? { transform: 'rotate(90deg)' } : undefined

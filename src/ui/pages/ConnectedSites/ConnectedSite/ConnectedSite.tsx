@@ -207,7 +207,7 @@ export function ConnectedSite() {
             </VStack>
           ) : null}
           <VStack gap={8}>
-            <UIText kind="subtitle/m_reg">Network</UIText>
+            <UIText kind="small/regular">Network</UIText>
             <SurfaceList
               items={[
                 {
@@ -222,7 +222,7 @@ export function ConnectedSite() {
                       >
                         <DialogTitle
                           title={
-                            <UIText kind="subtitle/m_med">
+                            <UIText kind="small/accent">
                               Network for {new URL(originName).hostname}
                             </UIText>
                           }
@@ -253,7 +253,7 @@ export function ConnectedSite() {
           {connectedSite.wallets.length ? (
             <>
               <VStack gap={12}>
-                <UIText kind="subtitle/m_reg">
+                <UIText kind="small/regular">
                   <TextAnchor
                     href={connectedSite.origin}
                     target="_blank"
@@ -285,7 +285,7 @@ export function ConnectedSite() {
                             }
                             text={
                               <UIText
-                                kind="body/s_reg"
+                                kind="body/regular"
                                 style={{ wordBreak: 'break-all' }}
                               >
                                 <WalletDisplayName wallet={wallet} />
@@ -294,7 +294,7 @@ export function ConnectedSite() {
                             detailText={
                               wallet.name ? (
                                 <UIText
-                                  kind="caption/reg"
+                                  kind="caption/regular"
                                   color="var(--neutral-500)"
                                 >
                                   {truncateAddress(wallet.address)}

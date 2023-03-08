@@ -48,7 +48,7 @@ const ButtonElement = <As extends ElementType = 'button'>(
     <UIText
       as={as || 'button'}
       ref={ref}
-      kind="button/m_med"
+      kind="small/accent"
       className={cx(className, styles[kind], styles.button, {
         [styles.asButton]: !isButton,
       })}

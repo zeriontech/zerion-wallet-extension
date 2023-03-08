@@ -104,7 +104,7 @@ export function Login() {
               required={true}
             />
             {loginMutation.error ? (
-              <UIText kind="caption/reg" color="var(--negative-500)">
+              <UIText kind="caption/regular" color="var(--negative-500)">
                 {(loginMutation.error as Error).message || 'unknown error'}
               </UIText>
             ) : null}

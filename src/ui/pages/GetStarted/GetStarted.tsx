@@ -151,7 +151,7 @@ function WalletGroupSelect() {
       <PageTop />
       <VStack gap={20}>
         <VStack gap={8}>
-          <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
+          <UIText kind="small/regular" color="var(--neutral-500)">
             Add new address to an existing group
           </UIText>
 
@@ -166,7 +166,7 @@ function WalletGroupSelect() {
                 component: (
                   <AngleRightRow>
                     <VStack gap={4}>
-                      <UIText kind="subtitle/m_med">
+                      <UIText kind="small/accent">
                         {getGroupDisplayName(group.name)}
                       </UIText>
                       <div
@@ -184,7 +184,7 @@ function WalletGroupSelect() {
           />
         </VStack>
         <VStack gap={8}>
-          <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
+          <UIText kind="small/regular" color="var(--neutral-500)">
             Or create a new wallet group
           </UIText>
           <SurfaceList
@@ -208,7 +208,7 @@ function WalletGroupSelect() {
             ]}
           />
 
-          <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
+          <UIText kind="small/regular" color="var(--neutral-500)">
             This will create a new recovery phrase
           </UIText>
         </VStack>

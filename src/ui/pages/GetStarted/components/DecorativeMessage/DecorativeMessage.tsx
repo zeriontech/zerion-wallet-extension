@@ -159,7 +159,7 @@ export function DecorativeMessageDone({
     <WithConfetti originY={confettiOriginY}>
       <DecorativeMessage
         text={
-          <UIText kind="h/6_med">
+          <UIText kind="headline/h3">
             All done!{' '}
             <span style={{ color: 'var(--primary)' }}>
               {messageKind === 'import'
@@ -174,7 +174,7 @@ export function DecorativeMessageDone({
         style={{ animationDelay: '300ms' }}
         text={
           <VStack gap={8}>
-            <UIText kind="subtitle/m_reg">You can now use</UIText>
+            <UIText kind="small/regular">You can now use</UIText>
             <Surface
               style={{
                 padding: 12,
@@ -184,7 +184,7 @@ export function DecorativeMessageDone({
               <HStack gap={12} alignItems="center">
                 <WalletAvatar address={address} size={44} borderRadius={4} />
                 <div>
-                  <UIText kind="subtitle/l_reg" title={address}>
+                  <UIText kind="body/regular" title={address}>
                     {truncateAddress(address, 8)}
                   </UIText>
                 </div>

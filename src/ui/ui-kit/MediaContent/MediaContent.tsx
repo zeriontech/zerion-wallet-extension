@@ -117,7 +117,7 @@ export function MediaContent({
   if (type === 'video') {
     if (!url) {
       return (
-        <UIText kind="body/s_reg" className={className}>
+        <UIText kind="body/regular" className={className}>
           Unknown video
         </UIText>
       );
@@ -156,7 +156,7 @@ export function MediaContent({
     );
   }
   return (
-    <UIText kind="body/s_reg" className={className}>
+    <UIText kind="body/regular" className={className}>
       Unsupported content
     </UIText>
   );

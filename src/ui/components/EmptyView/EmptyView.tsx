@@ -13,8 +13,8 @@ export function EmptyView({
   return (
     <FillView>
       <VStack gap={6} style={{ textAlign: 'center' }}>
-        <UIText kind="h/1_reg">{emoji}</UIText>
-        <UIText kind="subtitle/l_reg" color="var(--neutral-500)">
+        <UIText kind="headline/hero">{emoji}</UIText>
+        <UIText kind="body/regular" color="var(--neutral-500)">
           {text}
         </UIText>
       </VStack>

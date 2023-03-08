@@ -74,7 +74,7 @@ export function CurrentNetwork({ address }: { address: string }) {
         >
           <DialogTitle
             title={
-              <UIText kind="subtitle/m_med">
+              <UIText kind="small/accent">
                 Network for {new URL(tabOrigin).hostname}
               </UIText>
             }

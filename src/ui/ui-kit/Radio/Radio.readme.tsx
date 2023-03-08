@@ -56,7 +56,7 @@ export const readme: Readme = {
   id: 'radio-button',
   name: 'Radio Button',
   description: () => (
-    <UIText kind="subtitle/l_reg">Decorated radio button</UIText>
+    <UIText kind="body/regular">Decorated radio button</UIText>
   ),
   component: () => (
     <WindowSize

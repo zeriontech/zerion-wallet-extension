@@ -363,7 +363,7 @@ function VerifyBackup({
               required={true}
               hint={
                 verifyMutation.error ? (
-                  <UIText kind="caption/reg" color="var(--negative-500)">
+                  <UIText kind="caption/regular" color="var(--negative-500)">
                     {(verifyMutation.error as Error).message || 'unknown error'}
                   </UIText>
                 ) : null

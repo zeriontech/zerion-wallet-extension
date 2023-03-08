@@ -20,7 +20,7 @@ export function NetworkIndicator({
         alt=""
         style={{ width: size, height: size }}
       />
-      <UIText kind="subtitle/m_reg">{networks.getChainName(chain)}</UIText>
+      <UIText kind="small/regular">{networks.getChainName(chain)}</UIText>
     </HStack>
   );
 }

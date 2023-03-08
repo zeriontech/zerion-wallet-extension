@@ -31,7 +31,7 @@ export function ActionsList({
     <VStack gap={24}>
       {Object.entries(groupedByDate).map(([timestamp, items]) => (
         <VStack gap={12} key={timestamp}>
-          <UIText kind="subtitle/l_med">
+          <UIText kind="body/accent">
             {new Intl.DateTimeFormat('en', {
               dateStyle: 'medium',
             }).format(Number(timestamp))}

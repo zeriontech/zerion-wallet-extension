@@ -28,13 +28,13 @@ export function TokenAddressLine({
               vGap={0}
               image={null}
               text={
-                <UIText kind="caption/reg" color="var(--neutral-500)">
+                <UIText kind="caption/regular" color="var(--neutral-500)">
                   Token
                 </UIText>
               }
               detailText={
                 <HStack gap={4} alignItems="center">
-                  <UIText kind="subtitle/m_reg" title={address}>
+                  <UIText kind="small/regular" title={address}>
                     <TextAnchor
                       href={networks.getExplorerTokenUrlByName(chain, address)}
                       target="_blank"

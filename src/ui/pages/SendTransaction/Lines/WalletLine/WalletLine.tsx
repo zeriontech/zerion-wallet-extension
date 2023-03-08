@@ -25,12 +25,12 @@ export function WalletLine({
         vGap={0}
         image={<WalletAvatar address={address} size={32} borderRadius={4} />}
         text={
-          <UIText kind="caption/reg" color="var(--neutral-500)">
+          <UIText kind="caption/regular" color="var(--neutral-500)">
             {label}
           </UIText>
         }
         detailText={
-          <UIText kind="subtitle/l_reg">
+          <UIText kind="body/regular">
             <TextAnchor
               href={networks.getExplorerAddressUrlByName(chain, address)}
               target="_blank"

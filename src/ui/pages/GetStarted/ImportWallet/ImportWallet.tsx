@@ -95,7 +95,7 @@ function ImportForm({
           name="seedOrPrivateKey"
           required={true}
           label={
-            <UIText kind="body/s_med">
+            <UIText kind="small/accent">
               Use spaces between words if using a recovery phrase
             </UIText>
           }
@@ -112,7 +112,7 @@ function ImportForm({
           }
         />
         <VStack gap={16} style={{ marginTop: 'auto' }}>
-          <UIText kind="caption/reg" color="var(--neutral-500)">
+          <UIText kind="caption/regular" color="var(--neutral-500)">
             <HStack
               gap={4}
               alignItems="center"
@@ -147,7 +147,7 @@ function ImportWalletView({
       <Background backgroundKind="white">
         <PageColumn>
           <PageTop />
-          <UIText kind="h/5_med">
+          <UIText kind="headline/h2">
             Enter Recovery Phrase{' '}
             <QuestionHintIcon
               style={{ color: 'var(--neutral-500)', verticalAlign: 'middle' }}

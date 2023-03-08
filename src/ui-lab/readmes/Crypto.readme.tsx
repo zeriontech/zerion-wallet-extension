@@ -93,7 +93,7 @@ const Crypto = () => {
             </UIText>
           )}
           <VStack gap={4}>
-            <UIText kind="subtitle/s_reg" color="var(--neutral-500)">
+            <UIText kind="small/regular" color="var(--neutral-500)">
               Text
             </UIText>
             <Input
@@ -107,7 +107,7 @@ const Crypto = () => {
             />
           </VStack>
           <VStack gap={4}>
-            <UIText kind="subtitle/s_reg" color="var(--neutral-500)">
+            <UIText kind="small/regular" color="var(--neutral-500)">
               Password
             </UIText>
             <Input
@@ -120,7 +120,7 @@ const Crypto = () => {
             />
           </VStack>
           <VStack gap={8}>
-            <UIText kind="subtitle/s_reg" color="var(--neutral-500)">
+            <UIText kind="small/regular" color="var(--neutral-500)">
               Salt
             </UIText>
             <UIText
@@ -132,12 +132,12 @@ const Crypto = () => {
             <Button onClick={onGenerateSalt}>Generate salt</Button>
           </VStack>
           <VStack gap={8}>
-            <UIText kind="subtitle/s_reg" color="var(--neutral-500)">
+            <UIText kind="small/regular" color="var(--neutral-500)">
               Encrypted JSON
             </UIText>
             <Surface padding="10px 12px">
               <UIText
-                kind="body/s_reg"
+                kind="small/regular"
                 color="var(--neutral-700)"
                 style={{
                   fontFamily: 'monospace',
@@ -151,12 +151,12 @@ const Crypto = () => {
             </Surface>
           </VStack>
           <VStack gap={8}>
-            <UIText kind="subtitle/s_reg" color="var(--neutral-500)">
+            <UIText kind="small/regular" color="var(--neutral-500)">
               Decrypted text
             </UIText>
             <Surface padding="10px 12px">
               <UIText
-                kind="body/s_reg"
+                kind="small/regular"
                 color="var(--neutral-700)"
                 style={{
                   fontFamily: 'monospace',
@@ -171,7 +171,7 @@ const Crypto = () => {
           <VStack gap={8}>
             <Surface padding="10px 12px">
               <UIText
-                kind="body/s_reg"
+                kind="small/regular"
                 color="var(--neutral-700)"
                 style={{
                   fontFamily: 'monospace',

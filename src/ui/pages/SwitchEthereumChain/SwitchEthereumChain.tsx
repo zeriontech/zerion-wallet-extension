@@ -46,11 +46,11 @@ export function SwitchEthereumChain() {
       <div style={{ display: 'grid', placeItems: 'center' }}>
         <ZerionSquircle style={{ width: 44, height: 44 }} />
         <Spacer height={16} />
-        <UIText kind="h/5_med" style={{ textAlign: 'center' }}>
+        <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
           Switch Chain Request ({chainId})
         </UIText>
         <Spacer height={8} />
-        <UIText kind="subtitle/m_reg" color="var(--primary)">
+        <UIText kind="small/regular" color="var(--primary)">
           {originName}
         </UIText>
         <Spacer height={8} />
@@ -60,7 +60,7 @@ export function SwitchEthereumChain() {
         />
       </div>
       <Spacer height={24} />
-      <UIText kind="subtitle/m_reg" style={{ textAlign: 'center' }}>
+      <UIText kind="small/regular" style={{ textAlign: 'center' }}>
         <i>Screen to be completed</i>
       </UIText>
       <Spacer height={16} />

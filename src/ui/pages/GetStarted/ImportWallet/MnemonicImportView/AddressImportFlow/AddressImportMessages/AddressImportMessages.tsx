@@ -66,7 +66,7 @@ function AddressImportMessagesView({ values }: { values: BareWallet[] }) {
         <DecorativeMessage
           key={0}
           text={
-            <UIText kind="subtitle/m_reg">
+            <UIText kind="small/regular">
               ⏳ Checking your wallet history on the blockchain...
             </UIText>
           }
@@ -78,7 +78,7 @@ function AddressImportMessagesView({ values }: { values: BareWallet[] }) {
           key={1}
           isConsecutive={true}
           text={
-            <UIText kind="subtitle/m_reg">
+            <UIText kind="small/regular">
               🔐 Encrypting your wallet with your password...
             </UIText>
           }
@@ -181,7 +181,7 @@ function AddressImportMessagesView({ values }: { values: BareWallet[] }) {
         {finalizeMutation.isError ? (
           <UIText
             style={{ textAlign: 'center', wordBreak: 'break-all' }}
-            kind="caption/reg"
+            kind="caption/regular"
             color="var(--negative-500)"
           >
             {getError(finalizeMutation.error).message}

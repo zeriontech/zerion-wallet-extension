@@ -26,7 +26,7 @@ import { WalletGroup as WalletGroupPage } from './WalletGroup';
 function PrivateKeyList({ walletGroups }: { walletGroups: WalletGroup[] }) {
   return (
     <VStack gap={8}>
-      <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
+      <UIText kind="small/regular" color="var(--neutral-500)">
         Imported by Private Key
       </UIText>
       <SurfaceList
@@ -44,7 +44,7 @@ function PrivateKeyList({ walletGroups }: { walletGroups: WalletGroup[] }) {
               >
                 <HStack gap={8} alignItems="center">
                   <WalletAvatar address={address} size={28} borderRadius={4} />
-                  <UIText kind="subtitle/m_reg" title={address}>
+                  <UIText kind="small/regular" title={address}>
                     <WalletDisplayName wallet={wallet} />
                   </UIText>
                 </HStack>
@@ -63,7 +63,7 @@ function PrivateKeyList({ walletGroups }: { walletGroups: WalletGroup[] }) {
 function MnemonicList({ walletGroups }: { walletGroups: WalletGroup[] }) {
   return (
     <VStack gap={8}>
-      <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
+      <UIText kind="small/regular" color="var(--neutral-500)">
         Wallets
       </UIText>
 
@@ -75,10 +75,7 @@ function MnemonicList({ walletGroups }: { walletGroups: WalletGroup[] }) {
           component: (
             <HStack gap={4} justifyContent="space-between" alignItems="center">
               <VStack gap={8}>
-                <UIText
-                  kind="subtitle/m_med"
-                  style={{ wordBreak: 'break-all' }}
-                >
+                <UIText kind="small/accent" style={{ wordBreak: 'break-all' }}>
                   {getGroupDisplayName(group.name)}
                 </UIText>
                 <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
@@ -127,7 +124,7 @@ function WalletGroups() {
     <PageColumn>
       {groupedBySeedType == null ? (
         <FillView>
-          <UIText kind="h/5_reg" color="var(--neutral-500)">
+          <UIText kind="headline/h2" color="var(--neutral-500)">
             Empty State
           </UIText>
         </FillView>

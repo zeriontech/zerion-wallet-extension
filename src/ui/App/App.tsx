@@ -290,7 +290,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             element={
               <FillView>
                 <UIText
-                  kind="subtitle/l_reg"
+                  kind="body/regular"
                   color="var(--neutral-500)"
                   style={{ padding: 20, textAlign: 'center' }}
                 >

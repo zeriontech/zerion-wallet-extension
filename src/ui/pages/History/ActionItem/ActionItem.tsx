@@ -111,7 +111,7 @@ function ActionView({
           )
         }
         text={
-          <UIText kind="subtitle/m_med">
+          <UIText kind="small/accent">
             {explorerHref ? (
               <TextAnchor
                 href={explorerHref}
@@ -149,7 +149,7 @@ function ActionView({
               />
             ) : null}
             <UIText
-              kind="subtitle/s_reg"
+              kind="small/regular"
               color="var(--neutral-500)"
               style={{
                 overflow: 'hidden',
@@ -180,7 +180,7 @@ function ActionView({
         style={{ justifyItems: 'end', overflow: 'hidden', textAlign: 'left' }}
       >
         <UIText
-          kind="subtitle/m_reg"
+          kind="small/regular"
           color={
             shouldUsePositiveColor ? 'var(--positive-500)' : 'var(--black)'
           }
@@ -220,7 +220,7 @@ function ActionView({
             />
           ) : null}
         </UIText>
-        <UIText kind="subtitle/s_reg" color="var(--neutral-500)">
+        <UIText kind="small/regular" color="var(--neutral-500)">
           {incomingTransfers?.length && chain ? (
             <TransactionCurrencyValue
               transfers={incomingTransfers}
@@ -321,12 +321,12 @@ function PendingActionView({
                 whiteSpace: 'nowrap',
               }}
             >
-              <UIText kind="subtitle/m_med">
+              <UIText kind="small/accent">
                 {isMintingDna ? 'Mint DNA' : action.type.display_value}
               </UIText>
             </TextAnchor>
           ) : (
-            <UIText kind="subtitle/m_med">
+            <UIText kind="small/accent">
               {isMintingDna ? 'Mint DNA' : action.type.display_value}
             </UIText>
           )
@@ -350,7 +350,7 @@ function PendingActionView({
                 )}
               />
             ) : null}
-            <UIText kind="subtitle/s_reg" color="var(--neutral-500)">
+            <UIText kind="small/regular" color="var(--neutral-500)">
               {action.transaction.status === 'pending'
                 ? 'Pending'
                 : networks?.getChainName(createChain(action.transaction.chain))}
@@ -358,7 +358,7 @@ function PendingActionView({
           </HStack>
         }
       />
-      <UIText kind="subtitle/m_reg">
+      <UIText kind="small/regular">
         {asset ? (
           <TextAnchor
             href={`https://app.zerion.io/explore/asset/${asset.symbol}-${asset.asset_code}?address=${address}`}
