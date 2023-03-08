@@ -44,16 +44,16 @@ export const textParams = {
   'label/s_med': [11, 12, 500, 'normal'],
 
   /** Updated naming scheme */
-  'headline/hero': [40, 48, 500, '-1.8px'],
-  'headline/h1': [36, 48, 500, '-1px'],
-  'headline/h2': [24, 28, 500, '-1px'],
-  'headline/h3': [20, 24, 500, '-0.4px'],
-  'body/accent': [16, 24, 500, 'normal'],
-  'body/regular': [16, 24, 400, 'normal'],
-  'small/accent': [14, 20, 500, '-0.2px'],
-  'small/regular': [14, 20, 400, '-0.2px'],
-  'caption/accent': [12, 16, 500, 'normal'],
-  'caption/regular': [12, 16, 400, '0.01em'],
+  'headline/hero': [40, 48, 500, '-0.5px'],
+  'headline/h1': [36, 48, 500, '-0.25px'],
+  'headline/h2': [24, 28, 500, 'normal'],
+  'headline/h3': [20, 24, 500, 'normal'],
+  'body/accent': [16, 24, 500, '0.25px'],
+  'body/regular': [16, 24, 400, '0.1px'],
+  'small/accent': [14, 20, 500, '0.3px'],
+  'small/regular': [14, 20, 400, '0.2px'],
+  'caption/accent': [12, 16, 500, '0.38px'],
+  'caption/regular': [12, 16, 400, '0.38px'],
 } as const;
 
 export type Kind = keyof typeof textParams;
