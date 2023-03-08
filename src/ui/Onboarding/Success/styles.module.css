@@ -71,6 +71,10 @@
   top: 40px;
 }
 
+.decoration {
+  transition: transform 100ms ease-in-out;
+}
+
 .decoration img {
   animation: float 6s ease-in-out infinite;
 }
