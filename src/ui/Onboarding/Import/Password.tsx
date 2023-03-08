@@ -124,7 +124,7 @@ export function Password({ onSubmit }: { onSubmit(key: string): void }) {
                 </div>
               </ZStack>
               {formError?.type === 'confirmPassword' ? (
-                <UIText kind="caption/reg" color="var(--negative-500)">
+                <UIText kind="caption/regular" color="var(--negative-500)">
                   {formError.message}
                 </UIText>
               ) : null}
