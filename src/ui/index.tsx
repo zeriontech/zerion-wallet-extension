@@ -33,8 +33,6 @@ async function registerServiceWorker() {
 
 let reactRoot: Root | null = null;
 
-const FORCE_OPEN_ONBOARDING = false;
-
 async function initializeUI(opts?: { handshakeFailure?: boolean }) {
   const isPopup = browser.extension.getViews({ type: 'popup' }).length > 0;
   const root = document.getElementById('root');
@@ -44,9 +42,7 @@ async function initializeUI(opts?: { handshakeFailure?: boolean }) {
   await registerServiceWorker();
   await initializeChannels();
   const userHasNoWallets = await Promise.race([
-    accountPublicRPCPort
-      .request('getExistingUser')
-      .then((result) => !result || FORCE_OPEN_ONBOARDING),
+    accountPublicRPCPort.request('getExistingUser').then((result) => !result),
     new Promise<false>((resolve) => setTimeout(() => resolve(false), 2500)),
   ]);
   if (isPopup && userHasNoWallets) {
@@ -55,6 +51,7 @@ async function initializeUI(opts?: { handshakeFailure?: boolean }) {
       url: url.toString(),
     });
   }
+  const hasOnboardingUrl = document.location.hash.startsWith('#/onboarding');
   queryClient.clear();
   return configureUIClient()
     .then(() => initializeClientAnalytics())
@@ -71,7 +68,7 @@ async function initializeUI(opts?: { handshakeFailure?: boolean }) {
             }
             viewMode={isPopup ? 'popup' : 'window'}
             mode={
-              (!isPopup && userHasNoWallets) || FORCE_OPEN_ONBOARDING
+              (!isPopup && userHasNoWallets) || hasOnboardingUrl
                 ? 'onboarding'
                 : 'wallet'
             }

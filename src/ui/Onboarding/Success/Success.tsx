@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef } from 'react';
+import cn from 'classnames';
 import confetti from 'canvas-confetti';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -7,24 +8,25 @@ import PinIcon from 'jsx:../assets/pin.svg';
 import JigsawIcon from 'jsx:../assets/jigsaw.svg';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { Button } from 'src/ui/ui-kit/Button';
-import PointerIcon from '../assets/pointer.png';
+import CoinImg from '../assets/zer_coin.png';
+import SparkImg from '../assets/zer_spark.png';
+import StarImg from '../assets/zer_star.png';
 import { useSizeStore } from '../useSizeStore';
 import * as styles from './styles.module.css';
 
 export function Success() {
   const { isNarrowView } = useSizeStore();
-  const pointerRef = useRef<HTMLButtonElement | null>(null);
+  const coinRef = useRef<HTMLButtonElement | null>(null);
+  const starRef = useRef<HTMLButtonElement | null>(null);
+  const sparkRef = useRef<HTMLButtonElement | null>(null);
   useEffect(() => {
     const handleMove = (event: MouseEvent) => {
-      if (pointerRef.current) {
-        const xShift = (-10 * event.pageX) / window.innerWidth;
-        const yShift = (-10 * event.pageY) / window.innerHeight;
-        pointerRef.current.style.setProperty(
-          'transform',
-          `translate(${xShift}px, ${yShift}px)`
-        );
-      }
+      const xShift = (-10 * event.pageX) / window.innerWidth;
+      const yShift = (-10 * event.pageY) / window.innerHeight;
+      const newTransformProperty = `translate(${xShift}px, ${yShift}px)`;
+      coinRef.current?.style.setProperty('transform', newTransformProperty);
+      starRef.current?.style.setProperty('transform', newTransformProperty);
+      sparkRef.current?.style.setProperty('transform', newTransformProperty);
     };
     document.addEventListener('mousemove', handleMove);
     return () => document.removeEventListener('mousemove', handleMove);
@@ -115,23 +117,30 @@ export function Success() {
             </UIText>
           </VStack>
           {isNarrowView ? null : (
-            <UnstyledButton
-              className={styles.pointer}
-              ref={pointerRef}
-              onClick={fireConfetti}
-            >
-              <img src={PointerIcon} width={113} height={150} />
-            </UnstyledButton>
+            <>
+              <UnstyledButton
+                className={cn(styles.decoration, styles.coinDecoration)}
+                ref={coinRef}
+                onClick={fireConfetti}
+              >
+                <img src={CoinImg} width={120} height={120} />
+              </UnstyledButton>
+              <UnstyledButton
+                className={cn(styles.decoration, styles.starDecoration)}
+                ref={starRef}
+                onClick={fireConfetti}
+              >
+                <img src={StarImg} width={80} height={80} />
+              </UnstyledButton>
+              <UnstyledButton
+                className={cn(styles.decoration, styles.sparkDecoration)}
+                ref={sparkRef}
+                onClick={fireConfetti}
+              >
+                <img src={SparkImg} width={60} height={60} />
+              </UnstyledButton>
+            </>
           )}
-        </div>
-        <div className={styles.buttonContainer}>
-          <Button
-            kind="primary"
-            onClick={() => window.location.reload()}
-            style={{ width: isNarrowView ? '100%' : 300 }}
-          >
-            Go to Wallet
-          </Button>
         </div>
         <div className={styles.pinner}>
           <VStack gap={0}>

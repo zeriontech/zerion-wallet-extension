@@ -156,9 +156,17 @@ function MainForm({
   );
 }
 
-function FAQButton({ text, onClick }: { text: string; onClick(): void }) {
+function FAQButton({
+  text,
+  onClick,
+  disabled,
+}: {
+  text: string;
+  onClick(): void;
+  disabled?: boolean;
+}) {
   return (
-    <UnstyledButton onClick={onClick}>
+    <UnstyledButton onClick={onClick} disabled={disabled}>
       <HStack
         gap={24}
         justifyContent="space-between"
@@ -215,10 +223,12 @@ function EligibleFAQ({ show }: { show: boolean }) {
         >
           <FAQButton
             text="Join the waitlist"
+            disabled={!show}
             onClick={() => setShowJoinPanel(true)}
           />
           <FAQButton
             text="Earn an invite"
+            disabled={!show}
             onClick={() => setShowInvitePanel(true)}
           />
         </Stack>

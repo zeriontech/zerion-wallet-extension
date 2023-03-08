@@ -54,7 +54,7 @@ function App() {
           </FillView>
         )}
       >
-        <DesignTheme templateType="popup" />
+        <DesignTheme />
         <div style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 16 }}>
           <UIText kind="headline/h1">Hello, UI Lab</UIText>
 

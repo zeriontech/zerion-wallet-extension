@@ -1,18 +1,20 @@
 import 'normalize.css';
 import 'src/ui/style/theme.module.css';
 import 'src/ui/style/fonts.module.css';
-import * as styles from 'src/ui/style/global.module.css';
 import { useLayoutEffect } from 'react';
-import type { TemplateType } from 'src/ui/shared/getPageTemplateName';
 
-export function DesignTheme({ templateType }: { templateType: TemplateType }) {
+export function DesignTheme({
+  bodyClassList = [],
+}: {
+  bodyClassList?: string[];
+}) {
   useLayoutEffect(() => {
-    if (templateType === 'dialog') {
-      document.body.classList.add(styles.isDialog);
+    if (bodyClassList?.length) {
+      document.body.classList.add(...bodyClassList);
       return () => {
-        document.body.classList.remove(styles.isDialog);
+        document.body.classList.remove(...bodyClassList);
       };
     }
-  }, [templateType]);
+  }, [bodyClassList]);
   return null;
 }

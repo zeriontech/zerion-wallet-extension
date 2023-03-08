@@ -9,6 +9,7 @@ import {
   Navigate,
 } from 'react-router-dom';
 import dayjs from 'dayjs';
+import * as styles from 'src/ui/style/global.module.css';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { GetStarted } from 'src/ui/pages/GetStarted';
 import { Intro } from 'src/ui/pages/Intro';
@@ -160,16 +161,6 @@ function Views({ initialRoute }: { initialRoute?: string }) {
           ) : null}
           <Route
             path="/"
-            element={
-              <SomeKindOfResolver
-                noUser={<Navigate to="/intro" replace={true} />}
-                notAuthenticated={<Navigate to="/login" replace={true} />}
-                authenticated={<Navigate to="/overview" replace={true} />}
-              />
-            }
-          />
-          <Route
-            path="/onboarding/*"
             element={
               <SomeKindOfResolver
                 noUser={<Navigate to="/intro" replace={true} />}
@@ -353,6 +344,17 @@ export function App({
     )
   );
 
+  const bodyClassList = useMemo(() => {
+    const result = [];
+    if (templateType === 'dialog') {
+      result.push(styles.isDialog);
+    }
+    if (mode === 'onboarding') {
+      result.push(styles.isOnboarding);
+    }
+    return result;
+  }, [mode]);
+
   return (
     <AreaProvider>
       <UIContext.Provider value={defaultUIContextValue}>
@@ -367,7 +369,7 @@ export function App({
             >
               <InactivityDetector />
               <SessionResetHandler />
-              <DesignTheme templateType={templateType || 'popup'} />
+              <DesignTheme bodyClassList={bodyClassList} />
               <KeyboardShortcut
                 combination="ctrl+alt+0"
                 onKeyDown={() => {

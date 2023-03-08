@@ -53,20 +53,34 @@
   }
 }
 
-.pointer {
+.coinDecoration {
   position: absolute;
   right: -80px;
   top: 45%;
 }
 
-.pointer img {
+.sparkDecoration {
+  position: absolute;
+  left: 74px;
+  top: 400px;
+}
+
+.starDecoration {
+  position: absolute;
+  left: -120px;
+  top: 40px;
+}
+
+.decoration img {
   animation: float 6s ease-in-out infinite;
 }
 
-.buttonContainer {
-  display: flex;
-  justify-content: center;
-  animation: appear 500ms ease-in-out;
+.sparkDecoration img {
+  animation-duration: 5s;
+}
+
+.starDecoration img {
+  animation-duration: 7s;
 }
 
 @media (max-width: 768px) {
