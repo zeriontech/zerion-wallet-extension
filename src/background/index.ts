@@ -187,10 +187,8 @@ browser.runtime.onInstalled.addListener(({ reason }) => {
     if (!popupUrl) {
       throw new Error('popupUrl not found');
     }
-    const url = new URL(browser.runtime.getURL(popupUrl));
-
     browser.tabs.create({
-      url: url.toString(),
+      url: browser.runtime.getURL(popupUrl),
     });
   }
 });

@@ -63,6 +63,12 @@
   animation: float 6s ease-in-out infinite;
 }
 
+.buttonContainer {
+  display: flex;
+  justify-content: center;
+  animation: appear 500ms ease-in-out;
+}
+
 @media (max-width: 768px) {
   .title {
     font-weight: 500;

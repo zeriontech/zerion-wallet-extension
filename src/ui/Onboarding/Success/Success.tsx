@@ -7,6 +7,7 @@ import PinIcon from 'jsx:../assets/pin.svg';
 import JigsawIcon from 'jsx:../assets/jigsaw.svg';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { Button } from 'src/ui/ui-kit/Button';
 import PointerIcon from '../assets/pointer.png';
 import { useSizeStore } from '../useSizeStore';
 import * as styles from './styles.module.css';
@@ -122,6 +123,15 @@ export function Success() {
               <img src={PointerIcon} width={113} height={150} />
             </UnstyledButton>
           )}
+        </div>
+        <div className={styles.buttonContainer}>
+          <Button
+            kind="primary"
+            onClick={() => window.location.reload()}
+            style={{ width: isNarrowView ? '100%' : 300 }}
+          >
+            Go to Wallet
+          </Button>
         </div>
         <div className={styles.pinner}>
           <VStack gap={0}>
