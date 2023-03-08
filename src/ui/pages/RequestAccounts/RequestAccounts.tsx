@@ -86,7 +86,7 @@ function WalletSelectDialog({
         <WalletSelectList value={value} wallets={wallets} />
       ) : (
         <FillView>
-          <UIText kind="h/5_reg" color="var(--neutral-500)">
+          <UIText kind="headline/h2" color="var(--neutral-500)">
             No Wallets
           </UIText>
         </FillView>

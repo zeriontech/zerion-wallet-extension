@@ -98,7 +98,7 @@ function EditableWalletGroupName({
         ) : null}
       </div>
       {renameMutation.isError ? (
-        <UIText kind="caption/reg" color="var(--negative-500)">
+        <UIText kind="caption/regular" color="var(--negative-500)">
           {(renameMutation.error as Error | null)?.message || 'Unknown Error'}
         </UIText>
       ) : null}
@@ -129,7 +129,7 @@ function RemoveGroupConfirmationDialog({
           You will need your recovery phrase to import this group of wallets in
           the future
         </UIText>
-        <UIText kind="caption/reg" color="var(--neutral-500)">
+        <UIText kind="caption/regular" color="var(--neutral-500)">
           Wallets to remove
         </UIText>
         <VStack gap={8} style={{ maxHeight: 180, overflowY: 'auto' }}>
@@ -144,7 +144,7 @@ function RemoveGroupConfirmationDialog({
                 />
               }
               text={
-                <UIText kind="caption/reg">
+                <UIText kind="caption/regular">
                   <WalletDisplayName wallet={wallet} />
                 </UIText>
               }
@@ -281,7 +281,7 @@ export function WalletGroup() {
                       <PortfolioValue
                         address={wallet.address}
                         render={(entry) => (
-                          <UIText kind="label/reg">
+                          <UIText kind="caption/regular">
                             {entry.value
                               ? formatCurrencyValue(
                                   entry.value?.total_value || 0,
@@ -333,7 +333,7 @@ export function WalletGroup() {
               },
             ]}
           />
-          <UIText kind="caption/reg" color="var(--neutral-500)">
+          <UIText kind="caption/regular" color="var(--neutral-500)">
             {strings.removeWalletSubtitle}
           </UIText>
         </VStack>

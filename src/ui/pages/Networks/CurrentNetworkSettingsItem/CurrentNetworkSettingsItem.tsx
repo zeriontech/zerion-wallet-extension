@@ -20,7 +20,7 @@ export function CurrentNetworkSettingsItem({ chain }: { chain: Chain }) {
         {networks.getChainName(createChain(network.name))}
       </HStack>
       <UIText
-        kind="caption/reg"
+        kind="caption/regular"
         color="var(--neutral-500)"
         style={{
           overflow: 'hidden',

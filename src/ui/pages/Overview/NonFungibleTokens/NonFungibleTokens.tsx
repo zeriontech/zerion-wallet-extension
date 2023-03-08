@@ -89,7 +89,7 @@ function NFTItem({
       <VStack gap={4} style={{ marginTop: 'auto' }}>
         {showCollection ? (
           <UIText
-            kind="subtitle/s_med"
+            kind="small/accent"
             color="var(--neutral-500)"
             style={{
               whiteSpace: 'nowrap',
@@ -101,7 +101,7 @@ function NFTItem({
           </UIText>
         ) : null}
         <UIText
-          kind="subtitle/l_med"
+          kind="body/accent"
           style={{
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
@@ -111,13 +111,13 @@ function NFTItem({
           {asset.name || 'Untitled Asset'}
         </UIText>
         {price ? (
-          <UIText kind="subtitle/l_med">
+          <UIText kind="body/accent">
             <NeutralDecimals
               parts={formatCurrencyToParts(price, 'en', 'usd')}
             />
           </UIText>
         ) : someHavePrice ? (
-          <UIText kind="subtitle/l_med">{NBSP}</UIText>
+          <UIText kind="body/accent">{NBSP}</UIText>
         ) : null}
       </VStack>
     </Surface>
@@ -196,8 +196,8 @@ export function NonFungibleTokens() {
   return (
     <VStack gap={24}>
       <VStack gap={4}>
-        <UIText kind="subtitle/s_med">Total Value</UIText>
-        <UIText kind="h/2_med">
+        <UIText kind="small/accent">Total Value</UIText>
+        <UIText kind="headline/h1">
           <NeutralDecimals
             parts={formatCurrencyToParts(nftTotalValue || 0, 'en', 'usd')}
           />

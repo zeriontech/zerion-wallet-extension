@@ -36,10 +36,10 @@ export function BackupFlowSettingsSection() {
         />
         <div>
           <VStack gap={4}>
-            <UIText kind="subtitle/l_med" color="var(--notice-600)">
+            <UIText kind="body/accent" color="var(--notice-600)">
               Secure Your Wallet
             </UIText>
-            <UIText kind="subtitle/m_reg" color="var(--neutral-700)">
+            <UIText kind="small/regular" color="var(--neutral-700)">
               You will lose access to your funds forever if your device is lost
               or stolen
             </UIText>
@@ -65,7 +65,7 @@ export function BackupFlowSettingsSection() {
                           size={16}
                           borderRadius={4}
                         />
-                        <UIText kind="caption/reg">
+                        <UIText kind="caption/regular">
                           <WalletDisplayName wallet={wallet} />
                         </UIText>
                       </HStack>

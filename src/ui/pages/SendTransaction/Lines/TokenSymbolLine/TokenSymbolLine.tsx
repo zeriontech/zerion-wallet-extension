@@ -35,12 +35,12 @@ export function TokenSymbolLine({
                   />
                 }
                 text={
-                  <UIText kind="caption/reg" color="var(--neutral-500)">
+                  <UIText kind="caption/regular" color="var(--neutral-500)">
                     Token
                   </UIText>
                 }
                 detailText={
-                  <UIText kind="subtitle/l_reg">{asset.symbol || '...'}</UIText>
+                  <UIText kind="body/regular">{asset.symbol || '...'}</UIText>
                 }
               />
             </AngleRightRow>

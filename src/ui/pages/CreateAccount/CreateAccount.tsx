@@ -77,7 +77,7 @@ export function CreateAccount() {
         >
           <VStack gap={24}>
             <VStack gap={4}>
-              <UIText kind="body/s_med" color="var(--black)">
+              <UIText kind="small/accent" color="var(--black)">
                 Password
               </UIText>
               <ZStack>
@@ -116,14 +116,14 @@ export function CreateAccount() {
                 </div>
               </ZStack>
               {createUserMutation.error ? (
-                <UIText kind="caption/reg" color="var(--negative-500)">
+                <UIText kind="caption/regular" color="var(--negative-500)">
                   {(createUserMutation.error as Error).message ||
                     'unknown error'}
                 </UIText>
               ) : null}
             </VStack>
             <VStack gap={4}>
-              <UIText kind="body/s_med" color="var(--black)">
+              <UIText kind="small/accent" color="var(--black)">
                 Confirm Password
               </UIText>
               <ZStack>
@@ -158,7 +158,7 @@ export function CreateAccount() {
                 </div>
               </ZStack>
               {formError?.type === 'confirmPassword' ? (
-                <UIText kind="caption/reg" color="var(--negative-500)">
+                <UIText kind="caption/regular" color="var(--negative-500)">
                   {formError.message}
                 </UIText>
               ) : null}

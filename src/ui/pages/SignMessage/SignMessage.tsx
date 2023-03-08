@@ -36,11 +36,11 @@ function ItemSurface({
 function MessageRow({ message }: { message: string }) {
   return (
     <VStack gap={8}>
-      <UIText kind="body/s_reg" color="var(--neutral-500)">
+      <UIText kind="body/regular" color="var(--neutral-500)">
         Data to Sign
       </UIText>
       <ItemSurface>
-        <UIText kind="body/s_reg" color="var(--neutral-700)">
+        <UIText kind="body/regular" color="var(--neutral-700)">
           {toUtf8String(message)}
         </UIText>
       </ItemSurface>
@@ -51,12 +51,12 @@ function MessageRow({ message }: { message: string }) {
 function TypedDataRow({ typedData }: { typedData: string }) {
   return (
     <VStack gap={8}>
-      <UIText kind="body/s_reg" color="var(--neutral-500)">
+      <UIText kind="body/regular" color="var(--neutral-500)">
         Data to Sign
       </UIText>
       <ItemSurface style={{ maxHeight: 160, overflow: 'auto' }}>
         <UIText
-          kind="body/s_reg"
+          kind="body/regular"
           color="var(--neutral-700)"
           style={{ fontFamily: 'monospace' }}
         >
@@ -149,7 +149,7 @@ function SignMessageContent({
           <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
             Signature Request
           </UIText>
-          <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
+          <UIText kind="small/regular" color="var(--neutral-500)">
             <TextAnchor href={origin} target="_blank" rel="noopener noreferrer">
               {hostname}
             </TextAnchor>
@@ -189,7 +189,7 @@ function SignMessageContent({
           gap={8}
         >
           {someMutationError ? (
-            <UIText kind="caption/reg" color="var(--negative-500)">
+            <UIText kind="caption/regular" color="var(--negative-500)">
               {someMutationError?.message}
             </UIText>
           ) : null}

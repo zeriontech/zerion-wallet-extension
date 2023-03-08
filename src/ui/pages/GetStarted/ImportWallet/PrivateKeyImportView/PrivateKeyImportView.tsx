@@ -44,7 +44,7 @@ function PrivateKeyImportFlow({
       <VStack gap={8}>
         <DecorativeMessage
           text={
-            <UIText kind="subtitle/m_reg">
+            <UIText kind="small/regular">
               Hi 👋 We're generating your wallet and making sure it's encrypted
               with your passcode. This should only take a couple of minutes.
             </UIText>
@@ -54,7 +54,7 @@ function PrivateKeyImportFlow({
           <DecorativeMessageDone messageKind="import" address={address} />
         ) : null}
         {errorMessage ? (
-          <UIText kind="subtitle/m_reg" color="var(--negative-500)">
+          <UIText kind="small/regular" color="var(--negative-500)">
             Could not import wallet {errorMessage ? `(${errorMessage})` : null}
           </UIText>
         ) : null}

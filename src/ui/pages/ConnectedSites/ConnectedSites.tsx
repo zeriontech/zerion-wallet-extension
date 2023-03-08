@@ -52,7 +52,7 @@ function RevokeAllPermissionsComponent({
               }
             },
             component: (
-              <UIText kind="body/s_reg" color="var(--negative-500)">
+              <UIText kind="body/regular" color="var(--negative-500)">
                 {removeAllOriginsMutation.isLoading
                   ? 'Loading...'
                   : 'Revoke All'}
@@ -169,7 +169,7 @@ function ConnectedSitesMain() {
       ) : (
         <FillView>
           <UIText
-            kind="subtitle/l_reg"
+            kind="body/regular"
             color="var(--neutral-500)"
             style={{ padding: 20, textAlign: 'center' }}
           >

@@ -20,7 +20,7 @@ export function TokenIcon({ src, symbol, size = 32, style }: Props) {
     </div>
   ) : (
     <UIText
-      kind="body/s_reg"
+      kind="body/regular"
       style={{
         userSelect: 'none',
         backgroundColor: 'var(--neutral-300)',

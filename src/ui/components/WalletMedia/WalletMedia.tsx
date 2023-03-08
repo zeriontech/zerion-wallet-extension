@@ -43,7 +43,7 @@ function NameAndPortfolioComposition({
         <PortfolioValue
           address={wallet.address}
           render={(entry) => (
-            <UIText kind="label/reg">
+            <UIText kind="caption/regular">
               {entry.value
                 ? formatCurrencyValue(
                     entry.value?.total_value || 0,

@@ -87,7 +87,7 @@ function GenerateWalletView() {
           <DecorativeMessage
             animate={false}
             text={
-              <UIText kind="subtitle/m_reg">
+              <UIText kind="small/regular">
                 Wallet will be encrypted with your password
               </UIText>
             }
@@ -95,7 +95,7 @@ function GenerateWalletView() {
           {steps.has(Step.loading) ? (
             <DecorativeMessage
               text={
-                <UIText kind="subtitle/m_reg">
+                <UIText kind="small/regular">
                   Hi 👋 We're generating your wallet and making sure it's
                   encrypted with your passcode. This should only take a couple
                   of minutes.
@@ -127,7 +127,7 @@ function GenerateWalletView() {
           {finalizeMutation.isError ? (
             <UIText
               style={{ textAlign: 'center', wordBreak: 'break-all' }}
-              kind="caption/reg"
+              kind="caption/regular"
               color="var(--negative-500)"
             >
               {getError(finalizeMutation.error).message}

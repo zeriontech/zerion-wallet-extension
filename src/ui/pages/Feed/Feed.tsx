@@ -86,7 +86,7 @@ function StatusFilter({
       >
         <HStack gap={4} alignItems="center">
           <FiltersIcon />
-          <UIText kind="button/s_med">
+          <UIText kind="caption/accent">
             {STATUS_TO_TITLE[value]} Abilities
           </UIText>
         </HStack>
@@ -244,7 +244,7 @@ function TypeFilter({
       >
         <HStack gap={4} alignItems="center">
           <FiltersIcon />
-          <UIText kind="button/s_med">
+          <UIText kind="caption/accent">
             {value === 'all' ? 'All Types' : `Type: ${TYPE_TO_TITLE[value]}`}
           </UIText>
         </HStack>

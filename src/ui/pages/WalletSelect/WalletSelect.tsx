@@ -44,7 +44,7 @@ export function WalletSelect() {
       <PageTop />
       {!walletGroups?.length ? (
         <FillView>
-          <UIText kind="h/5_reg" color="var(--neutral-500)">
+          <UIText kind="headline/h2" color="var(--neutral-500)">
             No Wallets
           </UIText>
         </FillView>
@@ -83,7 +83,7 @@ export function WalletSelect() {
                         <PortfolioValue
                           address={wallet.address}
                           render={(entry) => (
-                            <UIText kind="label/reg">
+                            <UIText kind="caption/regular">
                               {entry.value
                                 ? formatCurrencyValue(
                                     entry.value?.total_value || 0,

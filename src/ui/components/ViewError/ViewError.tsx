@@ -16,13 +16,13 @@ export function ViewError({
       gap={8}
       style={{ textAlign: 'center', paddingLeft: 8, paddingRight: 8 }}
     >
-      <UIText kind="h/2_med">{title}</UIText>
+      <UIText kind="headline/h1">{title}</UIText>
       {subtitle ? (
-        <UIText kind="subtitle/m_reg" color="var(--neutral-500)">
+        <UIText kind="small/regular" color="var(--neutral-500)">
           {subtitle}
         </UIText>
       ) : null}
-      <UIText kind="subtitle/s_reg">
+      <UIText kind="small/regular">
         {error?.message || "We crashed. And don't know why"}
       </UIText>
     </VStack>

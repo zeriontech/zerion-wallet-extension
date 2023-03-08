@@ -33,12 +33,12 @@ export function ContractAddressLine({
               <Media
                 image={<ZerionSquircle width={32} height={32} />}
                 text={
-                  <UIText kind="caption/reg" color="var(--neutral-500)">
+                  <UIText kind="caption/regular" color="var(--neutral-500)">
                     Zerion
                   </UIText>
                 }
                 detailText={
-                  <UIText kind="subtitle/l_reg" title="contractAddress">
+                  <UIText kind="body/regular" title="contractAddress">
                     mint DNA
                   </UIText>
                 }
@@ -50,13 +50,13 @@ export function ContractAddressLine({
                 }
                 vGap={0}
                 text={
-                  <UIText kind="caption/reg" color="var(--neutral-500)">
+                  <UIText kind="caption/regular" color="var(--neutral-500)">
                     Contract Address
                   </UIText>
                 }
                 detailText={
                   <HStack gap={4} alignItems="center">
-                    <UIText kind="subtitle/m_reg" title={address}>
+                    <UIText kind="small/regular" title={address}>
                       <TextAnchor
                         href={networks.getExplorerAddressUrlByName(
                           chain,

@@ -150,7 +150,7 @@ function OverviewComponent() {
   //         <ZerionSquircle style={{ width: 64, height: 64 }} />
   //       </Twinkle>
   //       <Spacer height={12} />
-  //       <UIText kind="caption/reg">
+  //       <UIText kind="caption/regular">
   //         (address portfolio might take long...)
   //       </UIText>
   //     </FillView>
@@ -194,7 +194,7 @@ function OverviewComponent() {
               />
             ) : null}
             <VStack gap={0}>
-              <UIText kind="h/1_med">
+              <UIText kind="headline/hero">
                 {value?.total_value != null ? (
                   <NeutralDecimals
                     parts={formatCurrencyToParts(
@@ -215,7 +215,7 @@ function OverviewComponent() {
                     const sign = change.isPositive ? '+' : '';
                     return (
                       <UIText
-                        kind="subtitle/l_reg"
+                        kind="body/regular"
                         color={
                           change.isNonNegative
                             ? 'var(--positive-500)'
@@ -236,7 +236,7 @@ function OverviewComponent() {
                   }}
                 />
               ) : (
-                <UIText kind="subtitle/l_reg">{NBSP}</UIText>
+                <UIText kind="body/regular">{NBSP}</UIText>
               )}
             </VStack>
           </HStack>

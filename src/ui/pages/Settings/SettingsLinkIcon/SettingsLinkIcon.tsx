@@ -19,7 +19,7 @@ export function SettingsLinkIcon() {
         <SettingsIcon style={{ display: 'block' }} />
         {count > 0 ? (
           <UIText
-            kind="body/s_reg"
+            kind="body/regular"
             style={{
               borderRadius: '50%',
               width: 12,
