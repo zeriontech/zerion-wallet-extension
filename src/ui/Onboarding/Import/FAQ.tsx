@@ -283,7 +283,7 @@ function PhraseFAQ() {
   );
 }
 
-function PasswordFaq() {
+function PasswordFAQ() {
   const { isNarrowView } = useSizeStore();
 
   return (
@@ -304,12 +304,16 @@ function PasswordFaq() {
   );
 }
 
-export function FAQ({ type }: { type: 'key' | 'phrase' | 'password' }) {
-  return type === 'key' ? (
+export function FAQ({
+  type,
+}: {
+  type: 'private-key' | 'mnemonic' | 'password';
+}) {
+  return type === 'private-key' ? (
     <SecretKeyFAQ />
-  ) : type === 'phrase' ? (
+  ) : type === 'mnemonic' ? (
     <PhraseFAQ />
   ) : (
-    <PasswordFaq />
+    <PasswordFAQ />
   );
 }

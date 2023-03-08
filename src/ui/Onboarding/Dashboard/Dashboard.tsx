@@ -6,8 +6,7 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { useQuery } from 'react-query';
-import { checkWhitelistStatus } from '../checkWhitelistStatus';
+import { useWhitelistStatus } from '../checkWhitelistStatus';
 import DialogIcon from '../assets/dialog.png';
 import KeyIcon from '../assets/key.png';
 import WalletIcon from '../assets/wallet.png';
@@ -81,12 +80,12 @@ const IMPORT_OPTIONS: ImportOptionConfig[] = [
   {
     title: 'Recovery phrase',
     icon: <img src={DialogIcon} alt="Recovery phrase" />,
-    getLink: (address) => `/onboarding/import/${address}/phrase`,
+    getLink: (address) => `/onboarding/import/${address}/mnemonic`,
   },
   {
     title: 'Private key',
     icon: <img src={KeyIcon} alt="Private key" />,
-    getLink: (address) => `/onboarding/import/${address}/key`,
+    getLink: (address) => `/onboarding/import/${address}/private-key`,
   },
   {
     title: 'Hardware wallet',
@@ -125,16 +124,7 @@ export function Dashboard() {
   const navigate = useNavigate();
   const { walletAddress } = useParams();
 
-  const { data: isWhitelisted } = useQuery(
-    `check waitlist status for ${walletAddress}`,
-    async () => {
-      if (!walletAddress) {
-        return false;
-      }
-      return checkWhitelistStatus(walletAddress);
-    },
-    { enabled: Boolean(walletAddress) }
-  );
+  const { data: isWhitelisted, isLoading } = useWhitelistStatus(walletAddress);
 
   return (
     <>
@@ -148,10 +138,13 @@ export function Dashboard() {
           <UIText kind="caption/accent">Change wallet</UIText>
         </Button>
       </Content>
-      {walletAddress && isWhitelisted ? (
+      {walletAddress && !isLoading ? (
         <VStack gap={40}>
-          <Preview address={walletAddress} isWhitelisted={true} />
-          <ImportOptions address={walletAddress} />
+          <Preview
+            address={walletAddress}
+            isWhitelisted={Boolean(isWhitelisted)}
+          />
+          {isWhitelisted ? <ImportOptions address={walletAddress} /> : null}
         </VStack>
       ) : null}
     </>

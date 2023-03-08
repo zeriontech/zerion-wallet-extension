@@ -9,22 +9,30 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { walletPort } from 'src/ui/shared/channels';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
+import { getError } from 'src/shared/errors/getError';
 import { useSizeStore } from '../useSizeStore';
+import { useWhitelistStatus } from '../checkWhitelistStatus';
 import { Input } from './Input';
 
 export function ImportKey({
   address,
   onWalletCreate,
 }: {
-  address?: string;
+  address: string;
   onWalletCreate(wallet: BareWallet): void;
 }) {
   const { isNarrowView } = useSizeStore();
   const [validation, setValidation] = useState<ValidationResult | null>(null);
 
+  const { data: isWhitelisted, isLoading: isWhitelistStatusLoading } =
+    useWhitelistStatus(address);
+
   const { mutate, isLoading } = useMutation(
     async (value: string) => {
       setValidation(null);
+      if (!isWhitelisted) {
+        throw new Error("You're not whitelisted");
+      }
       const secretKey = prepareUserInputSeedOrPrivateKey(value);
       const validity = validate({ recoveryInput: secretKey });
       setValidation(validity);
@@ -36,12 +44,9 @@ export function ImportKey({
         address &&
         normalizeAddress(wallet.address) !== normalizeAddress(address)
       ) {
-        setValidation({
-          valid: false,
-          message: "You're trying to import another wallet",
-        });
-        return;
+        throw new Error("You're trying to import another wallet");
       }
+
       return wallet;
     },
     {
@@ -49,6 +54,12 @@ export function ImportKey({
         if (wallet) {
           onWalletCreate(wallet);
         }
+      },
+      onError: (error) => {
+        setValidation({
+          valid: false,
+          message: getError(error).message,
+        });
       },
     }
   );
@@ -76,7 +87,11 @@ export function ImportKey({
             type="password"
             required={true}
           />
-          <Button kind="primary" style={{ width: '100%' }} disabled={isLoading}>
+          <Button
+            kind="primary"
+            style={{ width: '100%' }}
+            disabled={isLoading || isWhitelistStatusLoading}
+          >
             Import wallet
           </Button>
           {!validation || validation.valid ? null : (

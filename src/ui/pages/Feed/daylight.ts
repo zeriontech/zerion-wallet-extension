@@ -7,8 +7,6 @@ import type {
 } from 'src/shared/types/Daylight';
 import { PROXY_URL } from 'src/env/config';
 
-const DAYLIGHT_PROXY_URL = `${PROXY_URL}daylight`;
-
 interface WalletAbilitiesResponse {
   abilities: WalletAbility[];
   status: 'synced' | 'pending';
@@ -46,7 +44,7 @@ async function getWalletAbilities({
   ]);
   const firstPageLink = `/v1/wallets/${address}/abilities?${searchParams}`;
   const result = await ky
-    .get(`${DAYLIGHT_PROXY_URL}${link ?? firstPageLink}`, {
+    .get(new URL(`daylight${link ?? firstPageLink}`, PROXY_URL), {
       timeout: 20000,
     })
     .json<WalletAbilitiesResponse>();
@@ -92,7 +90,7 @@ export function useWalletAbilities({
 
 export async function getAbility(uid: string) {
   const result = await ky
-    .get(`${DAYLIGHT_PROXY_URL}/v1/abilities/${uid}`, { timeout: 20000 })
+    .get(new URL(`daylight/v1/abilities/${uid}`, PROXY_URL), { timeout: 20000 })
     .json<{ ability: WalletAbility }>();
   return result;
 }

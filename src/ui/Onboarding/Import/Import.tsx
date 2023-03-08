@@ -36,7 +36,7 @@ export function Import() {
   const [step, setStep] = useState<'secret' | 'password'>('secret');
   const { walletAddress, type } = useParams<{
     walletAddress: string;
-    type: 'key' | 'phrase';
+    type: 'private-key' | 'mnemonic';
   }>();
 
   const handleBackClick = useCallback(() => {
@@ -59,7 +59,7 @@ export function Import() {
       await accountPublicRPCPort.request('createUser', {
         password,
       });
-      if (type === 'phrase' && wallet.mnemonic) {
+      if (type === 'mnemonic' && wallet.mnemonic) {
         await walletPort.request('uiImportSeedPhrase', [wallet.mnemonic]);
       }
       await accountPublicRPCPort.request('saveUserAndWallet');
@@ -111,12 +111,12 @@ export function Import() {
           >
             {step === 'password' ? (
               <Password onSubmit={handlePasswordSubmit} />
-            ) : type === 'key' ? (
+            ) : type === 'private-key' ? (
               <ImportKey
                 address={walletAddress}
                 onWalletCreate={handleWallet}
               />
-            ) : type === 'phrase' ? (
+            ) : type === 'mnemonic' ? (
               <ImportPhrase
                 address={walletAddress}
                 onWalletCreate={handleWallet}

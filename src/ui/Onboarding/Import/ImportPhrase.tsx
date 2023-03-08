@@ -1,6 +1,7 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { animated, useSpring } from 'react-spring';
 import { useMutation } from 'react-query';
+import debounce from 'lodash/debounce';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { validate } from 'src/ui/pages/GetStarted/ImportWallet/ImportWallet';
 import { ValidationResult } from 'src/shared/validation/ValidationResult';
@@ -11,6 +12,9 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { getFirstNMnemonicWallets } from 'src/ui/pages/GetStarted/ImportWallet/MnemonicImportView/getFirstNMnemonicWallets';
+import { getError } from 'src/shared/errors/getError';
+import { useSizeStore } from '../useSizeStore';
+import { useWhitelistStatus } from '../checkWhitelistStatus';
 import * as styles from './styles.module.css';
 import { Input } from './Input';
 
@@ -21,18 +25,32 @@ export function ImportPhrase({
   address,
   onWalletCreate,
 }: {
-  address?: string;
+  address: string;
   onWalletCreate(wallet: BareWallet): void;
 }) {
+  const { isNarrowView } = useSizeStore();
   const [validation, setValidation] = useState<ValidationResult | null>(null);
   const [phraseMode, setPhraseMode] = useState<12 | 24>(12);
   const [value, setValue] = useState<string[]>(ARRAY_OF_NUMBERS.map(() => ''));
   const [hoveredInput, setHoveredInput] = useState<number | null>(null);
   const [focusedInput, setFocusedInput] = useState<number | null>(null);
 
+  const debouncedSetHoverRef = useRef<(index: number | null) => void>();
+  if (!debouncedSetHoverRef.current) {
+    debouncedSetHoverRef.current = debounce((index: number | null) => {
+      setHoveredInput(index);
+    }, 150);
+  }
+
+  const { data: isWhitelisted, isLoading: isWhitelistStatusLoading } =
+    useWhitelistStatus(address);
+
   const { mutate, isLoading } = useMutation(
     async (value: string) => {
       setValidation(null);
+      if (!isWhitelisted) {
+        throw new Error("You're not whitelisted");
+      }
       const phrase = prepareUserInputSeedOrPrivateKey(value);
       const validity = validate({ recoveryInput: phrase });
       setValidation(validity);
@@ -48,11 +66,7 @@ export function ImportPhrase({
         : null;
 
       if (address && !wallet) {
-        setValidation({
-          valid: false,
-          message: "We can't find your wallet by this phrase",
-        });
-        return;
+        throw new Error("We can't find your wallet by this phrase");
       }
       if (!wallet?.mnemonic) {
         return;
@@ -64,6 +78,12 @@ export function ImportPhrase({
         if (wallet) {
           onWalletCreate(wallet);
         }
+      },
+      onError: (error) => {
+        setValidation({
+          valid: false,
+          message: getError(error).message,
+        });
       },
     }
   );
@@ -126,6 +146,20 @@ export function ImportPhrase({
     [phraseMode]
   );
 
+  const errorStyle = useMemo<React.CSSProperties>(
+    () =>
+      isNarrowView
+        ? {
+            position: 'absolute',
+            bottom: 48,
+            left: 0,
+            right: 0,
+            textAlign: 'center',
+          }
+        : { position: 'absolute', bottom: -24 },
+    [isNarrowView]
+  );
+
   return (
     <VStack gap={20}>
       <VStack gap={8}>
@@ -155,6 +189,7 @@ export function ImportPhrase({
                   }
                   required={index < phraseMode}
                   value={value[index]}
+                  disabled={index >= phraseMode}
                   onKeyDown={(e) => handleKeyDown(e, index)}
                   onChange={(e) =>
                     setValue((current) => {
@@ -167,8 +202,8 @@ export function ImportPhrase({
                   }
                   onFocus={() => setFocusedInput(index)}
                   onBlur={() => setFocusedInput(null)}
-                  onMouseEnter={() => setHoveredInput(index)}
-                  onMouseLeave={() => setHoveredInput(null)}
+                  onMouseEnter={() => debouncedSetHoverRef.current?.(index)}
+                  onMouseLeave={() => debouncedSetHoverRef.current?.(null)}
                   onPaste={(e) => {
                     e.preventDefault();
                     const value = e.clipboardData.getData('text/plain');
@@ -178,7 +213,12 @@ export function ImportPhrase({
                 <UIText
                   kind="body/regular"
                   color="var(--neutral-600)"
-                  style={{ position: 'absolute', left: 12, top: 10 }}
+                  style={{
+                    position: 'absolute',
+                    left: 12,
+                    top: 10,
+                    userSelect: 'none',
+                  }}
                 >
                   {index + 1}.
                 </UIText>
@@ -196,23 +236,24 @@ export function ImportPhrase({
               {`Use ${36 - phraseMode} word phrase`}
             </UIText>
           </UnstyledButton>
-          <Button kind="primary" style={{ width: '100%' }} disabled={isLoading}>
+          <Button
+            kind="primary"
+            style={{ width: '100%' }}
+            disabled={isLoading || isWhitelistStatusLoading}
+          >
             Import wallet
           </Button>
           {!validation || validation.valid ? null : (
             <UIText
               kind="caption/regular"
               color="var(--negative-500)"
-              style={{ position: 'absolute', bottom: -24 }}
+              style={errorStyle}
             >
               {validation.message}
             </UIText>
           )}
           {isLoading ? (
-            <UIText
-              kind="caption/regular"
-              style={{ position: 'absolute', bottom: -24 }}
-            >
+            <UIText kind="caption/regular" style={errorStyle}>
               Parsing secret key
             </UIText>
           ) : null}

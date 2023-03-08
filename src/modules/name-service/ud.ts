@@ -1,7 +1,5 @@
 import { PROXY_URL } from 'src/env/config';
 
-const UNSTOPPABLE_DOMAINS_PROXY_URL = `${PROXY_URL}unstoppable-domains/`;
-
 interface UnstoppableDomainsResponse {
   meta: {
     domain: string;
@@ -12,8 +10,10 @@ interface UnstoppableDomainsResponse {
 export async function udLookup(address: string): Promise<string | null> {
   try {
     const rawResonse = await fetch(
-      `${UNSTOPPABLE_DOMAINS_PROXY_URL}reverse/${address}`,
-      { method: 'get' }
+      new URL(`unstoppable-domains/reverse/${address}`, PROXY_URL),
+      {
+        method: 'get',
+      }
     );
     const response: UnstoppableDomainsResponse = await rawResonse.json();
     return response.meta.domain || null;
@@ -25,8 +25,10 @@ export async function udLookup(address: string): Promise<string | null> {
 export async function udResolve(domain: string): Promise<string | null> {
   try {
     const rawResonse = await fetch(
-      `${UNSTOPPABLE_DOMAINS_PROXY_URL}domains/${domain}`,
-      { method: 'get' }
+      new URL(`unstoppable-domains/domains/${domain}`, PROXY_URL),
+      {
+        method: 'get',
+      }
     );
     const response: UnstoppableDomainsResponse = await rawResonse.json();
     return response.meta.owner || null;

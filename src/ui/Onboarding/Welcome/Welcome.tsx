@@ -17,10 +17,8 @@ import { checkWhitelistStatus } from '../checkWhitelistStatus';
 import { FaqSidePanel } from '../Import/SidePanel';
 import { useSizeStore } from '../useSizeStore';
 import { Stack } from '../Stack';
+import { UnsupportedAddressError, WaitlistCheckError } from '../errors';
 import * as styles from './styles.module.css';
-
-class UnsupportedAddressError extends Error {}
-class WaitlistCheckError extends Error {}
 
 type FormErrorType =
   | 'unsupported-address'
