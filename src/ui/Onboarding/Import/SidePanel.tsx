@@ -11,7 +11,7 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import CloseIcon from 'jsx:src/ui/assets/close.svg';
 import * as styles from './styles.module.css';
 
-export function FaqSidePanel({
+export function SidePanel({
   show,
   children,
   onDismiss,
@@ -46,7 +46,7 @@ export function FaqSidePanel({
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key == 'Escape') {
+      if (e.key === 'Escape') {
         onDismiss();
       }
     };

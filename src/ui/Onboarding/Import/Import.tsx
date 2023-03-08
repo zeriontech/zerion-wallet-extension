@@ -17,7 +17,7 @@ import * as styles from './styles.module.css';
 import { FAQ } from './FAQ';
 import { ImportKey } from './ImportKey';
 import { Password } from './Password';
-import { ImportPhrase } from './ImportPhrase';
+import { ImportMnemonic } from './ImportMnemonic';
 
 function Step({ active }: { active: boolean }) {
   return (
@@ -117,7 +117,7 @@ export function Import() {
                 onWalletCreate={handleWallet}
               />
             ) : type === 'mnemonic' ? (
-              <ImportPhrase
+              <ImportMnemonic
                 address={walletAddress}
                 onWalletCreate={handleWallet}
               />

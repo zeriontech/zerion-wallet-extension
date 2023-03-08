@@ -14,7 +14,7 @@ import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
 import { useAddressNfts } from 'src/ui/shared/requests/addressNfts/useAddressNfts';
 import { validateEmail } from 'src/ui/shared/validateEmail';
 import { checkWhitelistStatus } from '../checkWhitelistStatus';
-import { FaqSidePanel } from '../Import/SidePanel';
+import { SidePanel } from '../Import/SidePanel';
 import { useSizeStore } from '../useSizeStore';
 import { Stack } from '../Stack';
 import { UnsupportedAddressError, WaitlistCheckError } from '../errors';
@@ -185,22 +185,19 @@ function EligibleFAQ({ show }: { show: boolean }) {
 
   return (
     <>
-      <FaqSidePanel
-        show={showJoinPanel}
-        onDismiss={() => setShowJoinPanel(false)}
-      >
+      <SidePanel show={showJoinPanel} onDismiss={() => setShowJoinPanel(false)}>
         <VStack gap={0}>
           <UIText kind="body/accent">Here will be instruction</UIText>
         </VStack>
-      </FaqSidePanel>
-      <FaqSidePanel
+      </SidePanel>
+      <SidePanel
         show={showInvitePanel}
         onDismiss={() => setShowInvitePanel(false)}
       >
         <VStack gap={0}>
           <UIText kind="body/accent">Here will be instruction</UIText>
         </VStack>
-      </FaqSidePanel>
+      </SidePanel>
       <VStack
         gap={20}
         style={{

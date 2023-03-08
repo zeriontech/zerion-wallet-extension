@@ -15,7 +15,7 @@ import WalletIcon from '../assets/wallet2.png';
 import { Stack } from '../Stack';
 import { useSizeStore } from '../useSizeStore';
 import * as styles from './styles.module.css';
-import { FaqSidePanel } from './SidePanel';
+import { SidePanel } from './SidePanel';
 
 function SecretKeyFAQ() {
   const { isNarrowView } = useSizeStore();
@@ -24,7 +24,7 @@ function SecretKeyFAQ() {
 
   return (
     <>
-      <FaqSidePanel
+      <SidePanel
         show={showMetamaskPanel}
         onDismiss={() => setShowMetamaskPanel(false)}
       >
@@ -65,8 +65,8 @@ function SecretKeyFAQ() {
             </TextAnchor>
           </UIText>
         </VStack>
-      </FaqSidePanel>
-      <FaqSidePanel
+      </SidePanel>
+      <SidePanel
         show={showWalletPanel}
         onDismiss={() => setShowWalletPanel(false)}
       >
@@ -99,7 +99,7 @@ function SecretKeyFAQ() {
             <UIText kind="body/regular">5. That's it! You did it 🎉</UIText>
           </VStack>
         </VStack>
-      </FaqSidePanel>
+      </SidePanel>
       <VStack gap={24} style={{ alignContent: 'start' }}>
         {isNarrowView ? null : (
           <div className={styles.faqIcon}>
@@ -168,7 +168,7 @@ function PhraseFAQ() {
 
   return (
     <>
-      <FaqSidePanel
+      <SidePanel
         show={showMetamaskPanel}
         onDismiss={() => setShowMetamaskPanel(false)}
       >
@@ -198,8 +198,8 @@ function PhraseFAQ() {
             <UIText kind="body/regular">5. Tada 🎉</UIText>
           </VStack>
         </VStack>
-      </FaqSidePanel>
-      <FaqSidePanel
+      </SidePanel>
+      <SidePanel
         show={showWalletPanel}
         onDismiss={() => setShowWalletPanel(false)}
       >
@@ -229,7 +229,7 @@ function PhraseFAQ() {
             <UIText kind="body/regular">4: That it 🎉</UIText>
           </VStack>
         </VStack>
-      </FaqSidePanel>
+      </SidePanel>
       <VStack gap={24} style={{ alignContent: 'start' }}>
         {isNarrowView ? null : (
           <div className={styles.faqIcon}>

@@ -21,7 +21,7 @@ import { Input } from './Input';
 const INPUT_NUMBER = 24;
 const ARRAY_OF_NUMBERS = [...Array(INPUT_NUMBER).keys()];
 
-export function ImportPhrase({
+export function ImportMnemonic({
   address,
   onWalletCreate,
 }: {
