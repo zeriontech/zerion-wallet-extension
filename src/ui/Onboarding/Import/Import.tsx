@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation } from 'react-query';
 import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
@@ -38,6 +38,10 @@ export function Import() {
     walletAddress: string;
     type: 'private-key' | 'mnemonic';
   }>();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleBackClick = useCallback(() => {
     if (step === 'secret') {

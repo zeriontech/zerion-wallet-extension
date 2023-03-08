@@ -51,10 +51,12 @@ function Header() {
         top: 0,
         left: 0,
         right: 0,
-        height: HEADER_HEIGHT,
+        height: `calc(${HEADER_HEIGHT} - 24px)`,
         paddingTop: 24,
         paddingLeft: CONTENT_PADDING,
         paddingRight: CONTENT_PADDING,
+        zIndex: 'var(--navbar-index)',
+        backgroundColor: 'var(--neutral-100)',
       }}
     >
       <HStack

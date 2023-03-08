@@ -32,7 +32,7 @@
 
 .pinner {
   position: fixed;
-  z-index: 2;
+  z-index: var(--over-layout-index);
   top: 12px;
   right: 12px;
   background: var(--white);
@@ -98,5 +98,7 @@
     position: relative;
     top: 0;
     right: 0;
+    z-index: 1;
+    margin-bottom: 24px;
   }
 }

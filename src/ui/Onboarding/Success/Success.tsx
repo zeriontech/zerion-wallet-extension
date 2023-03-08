@@ -8,6 +8,7 @@ import PinIcon from 'jsx:../assets/pin.svg';
 import JigsawIcon from 'jsx:../assets/jigsaw.svg';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { useSpring, animated } from 'react-spring';
 import CoinImg from '../assets/zer_coin.png';
 import SparkImg from '../assets/zer_spark.png';
 import StarImg from '../assets/zer_star.png';
@@ -19,6 +20,11 @@ export function Success() {
   const coinRef = useRef<HTMLButtonElement | null>(null);
   const starRef = useRef<HTMLButtonElement | null>(null);
   const sparkRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   useEffect(() => {
     const handleMove = (event: MouseEvent) => {
       const xShift = (-10 * event.pageX) / window.innerWidth;
@@ -89,6 +95,19 @@ export function Success() {
     };
   }, [fireConfetti]);
 
+  const pinnerStyle = useSpring({
+    config: { mass: 1, tension: 150, friction: 8 },
+    delay: 1000,
+    from: {
+      opacity: 0,
+      x: 30,
+    },
+    to: {
+      opacity: 1,
+      x: 0,
+    },
+  });
+
   return (
     <>
       <canvas
@@ -142,7 +161,7 @@ export function Success() {
             </>
           )}
         </div>
-        <div className={styles.pinner}>
+        <animated.div className={styles.pinner} style={pinnerStyle}>
           <VStack gap={0}>
             <ZerionIcon
               style={{ width: 16, height: 16, color: 'var(--black)' }}
@@ -174,7 +193,7 @@ export function Success() {
               button
             </UIText>
           </VStack>
-        </div>
+        </animated.div>
       </VStack>
     </>
   );
