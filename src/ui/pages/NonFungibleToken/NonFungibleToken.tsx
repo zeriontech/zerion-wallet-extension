@@ -81,8 +81,8 @@ export function NonFungibleToken() {
           <VStack gap={24}>
             <div
               style={{
-                maxWidth: 240,
-                minHeight: 240,
+                maxWidth: 320,
+                minHeight: 320,
                 marginLeft: 'auto',
                 marginRight: 'auto',
                 borderRadius: 8,
@@ -94,10 +94,10 @@ export function NonFungibleToken() {
               <ParcedMediaContent
                 content={nft.metadata.content}
                 alt={`${nft.metadata.name} content`}
-                style={{ display: 'block', width: '100%' }}
+                style={{ display: 'block', maxHeight: 320 }}
                 errorStyle={{
-                  width: 276,
-                  height: 276,
+                  width: 320,
+                  height: 320,
                 }}
               />
             </div>
