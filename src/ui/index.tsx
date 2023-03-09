@@ -42,7 +42,10 @@ async function initializeUI(opts?: { handshakeFailure?: boolean }) {
   await registerServiceWorker();
   initializeChannels();
   const userHasNoWallets = await Promise.race([
-    accountPublicRPCPort.request('getExistingUser').then((result) => !result),
+    accountPublicRPCPort
+      .request('getExistingUser')
+      .then((result) => !result)
+      .catch(() => false),
     new Promise<false>((resolve) => setTimeout(() => resolve(false), 2500)),
   ]);
   if (isPopup && userHasNoWallets) {
