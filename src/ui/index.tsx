@@ -40,7 +40,7 @@ async function initializeUI(opts?: { handshakeFailure?: boolean }) {
     throw new Error('#root element not found');
   }
   await registerServiceWorker();
-  await initializeChannels();
+  initializeChannels();
   const userHasNoWallets = await Promise.race([
     accountPublicRPCPort.request('getExistingUser').then((result) => !result),
     new Promise<false>((resolve) => setTimeout(() => resolve(false), 2500)),

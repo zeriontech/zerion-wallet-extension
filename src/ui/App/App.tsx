@@ -380,7 +380,8 @@ export function App({
               <VersionUpgrade>
                 <CloseOtherWindows />
                 <ViewSuspense>
-                  {mode === 'onboarding' ? (
+                  {mode === 'onboarding' &&
+                  defaultView !== 'handshakeFailure' ? (
                     <Onboarding />
                   ) : (
                     <Views
