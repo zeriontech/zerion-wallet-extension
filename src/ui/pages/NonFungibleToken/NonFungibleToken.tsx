@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useMutation } from 'react-query';
 import { useParams } from 'react-router-dom';
 import { Background } from 'src/ui/components/Background';
@@ -11,50 +11,50 @@ import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { Button } from 'src/ui/ui-kit/Button';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { MediaContent } from 'src/ui/ui-kit/MediaContent';
+import { ParcedMediaContent } from 'src/ui/ui-kit/MediaContent';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { useNftInfo } from './useNftInfo';
+import { useNFTPosition } from './useNftPosition';
 
 export function NonFungibleToken() {
-  const { asset_code } = useParams();
+  const { asset_code, chain } = useParams();
   const { singleAddress } = useAddressParams();
+
+  const [contract_address, token_id] = asset_code?.split(':') || [];
 
   // for optimistic update the dna's status after promotion
   const [promotedPrimary, setPromotedAsPrimary] = useState(false);
 
-  const { value } = useNftInfo({
-    asset_code: asset_code || '',
+  const { value: nft } = useNFTPosition({
+    chain: chain || '',
+    contract_address,
+    token_id,
     currency: 'usd',
+    address: singleAddress,
   });
-
-  const nftTags = useMemo(
-    () => new Set(value?.asset.tags?.split(' ')),
-    [value]
-  );
 
   const url = useMemo(() => {
     const urlObject = new URL(
-      `https://app.zerion.io/nfts/${value?.asset.asset_code}`
+      `https://app.zerion.io/nfts/${nft?.chain}/${nft?.contract_address}:${nft?.token_id}`
     );
     if (singleAddress) {
       urlObject.searchParams.append('address', singleAddress);
     }
     return urlObject.toString();
-  }, [singleAddress, value?.asset.asset_code]);
+  }, [singleAddress, nft]);
 
   const { mutate: promoteTokenMutation, isLoading } = useMutation(
     async () => {
-      if (!value?.asset.collection_info) {
+      if (!nft?.collection.name) {
         return;
       }
       await dnaServicePort.request('promoteDnaToken', {
         address: singleAddress,
-        collectionName: value.asset.collection_info.name,
-        tokenName: value.asset.token_id,
+        collectionName: nft.collection.name,
+        tokenName: nft.token_id,
       });
       return;
     },
@@ -64,19 +64,20 @@ export function NonFungibleToken() {
     }
   );
 
+  useEffect(() => window.scrollTo(0, 0), []);
+
+  const nftTags = useMemo(() => new Set(nft?.metadata.tags || []), [nft]);
   const isPrimary = promotedPrimary || nftTags.has('#primary');
 
   return (
-    <Background backgroundKind="transparent">
+    <Background backgroundKind="white">
       <PageColumn style={{ paddingTop: 18 }}>
         <NavigationTitle
           title={
-            value
-              ? `${value.collection_info?.name} • ${value.asset.name}`
-              : 'NFT Info'
+            nft ? `${nft.collection.name} • ${nft.metadata.name}` : 'NFT Info'
           }
         />
-        {value ? (
+        {nft ? (
           <VStack gap={24}>
             <div
               style={{
@@ -90,9 +91,9 @@ export function NonFungibleToken() {
                 position: 'relative',
               }}
             >
-              <MediaContent
-                content={value.asset.detail}
-                alt={`${value.asset.name} content`}
+              <ParcedMediaContent
+                content={nft.metadata.content}
+                alt={`${nft.metadata.name} content`}
                 style={{ display: 'block', width: '100%' }}
                 errorStyle={{
                   width: 276,

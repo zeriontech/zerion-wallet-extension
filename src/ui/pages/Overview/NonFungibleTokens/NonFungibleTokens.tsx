@@ -1,180 +1,190 @@
-import { AddressNFT, DataStatus } from 'defi-sdk';
 import React, { useMemo } from 'react';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { EmptyView } from 'src/ui/components/EmptyView';
 import { DnaNFTBanner } from 'src/ui/components/DnaClaim';
 import TickIcon from 'jsx:src/ui/assets/check.svg';
 import { ViewLoading } from 'src/ui/components/ViewLoading/ViewLoading';
-import { useAddressNfts } from 'src/ui/shared/requests/addressNfts/useAddressNftsWithDna';
-import { useAddressNftTotalValue } from 'src/ui/shared/requests/addressNfts/useAddressNftTotalValue';
 import { NBSP } from 'src/ui/shared/typography';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
-import { MediaContent } from 'src/ui/ui-kit/MediaContent';
+import { ParcedMediaContent } from 'src/ui/ui-kit/MediaContent';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { SquareElement } from 'src/ui/ui-kit/SquareElement';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { DNA_NFT_COLLECTION_ADDRESS } from 'src/ui/components/DnaClaim/DnaBanner';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
+import { useNftsTotalValue } from 'src/ui/shared/requests/addressNfts/useNftsTotalValue';
+import {
+  getNftId,
+  useAddressNfts,
+} from 'src/ui/shared/requests/addressNfts/useAddressNfts';
+import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
+import type { AddressNFT } from 'src/ui/shared/requests/addressNfts/types';
+import { Image } from 'src/ui/ui-kit/MediaFallback';
+import { getChainIconURL } from 'src/ui/components/Positions/helpers';
+import { useNetworks } from 'src/modules/networks/useNetworks';
+import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
+import { createChain } from 'src/modules/networks/Chain';
+import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
+import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
 
 function NFTItem({
   item,
-  address,
   showCollection = false,
   someHavePrice = false,
 }: {
   item: AddressNFT;
-  address: string | null;
   showCollection?: boolean;
   someHavePrice?: boolean;
 }) {
-  const { asset } = item;
-  const url = useMemo(() => {
-    const urlObject = new URL(`https://app.zerion.io/nfts/${asset.asset_code}`);
-    if (address) {
-      urlObject.searchParams.append('address', address);
-    }
-    return urlObject.toString();
-  }, [address, asset.asset_code]);
-  const price = asset.floor_price;
-
   const isPrimary = useMemo(() => {
-    return asset.tags?.includes('#primary');
-  }, [asset.tags]);
+    return item.metadata.tags?.includes('#primary');
+  }, [item]);
 
-  const content = (
-    <Surface padding={8} style={{ width: '100%', position: 'relative' }}>
-      <SquareElement
-        render={(style) => (
-          <MediaContent
-            content={asset.preview.url ? asset.preview : asset.detail}
-            alt={`${asset.name} image`}
-            errorStyle={
-              CSS.supports('aspect-ratio: 1 / 1')
-                ? undefined
-                : { position: 'absolute', height: '100%' }
-            }
+  const price = item.prices.converted?.total_floor_price;
+  const { networks } = useNetworks();
+
+  return (
+    <UnstyledLink to={getNftEntityUrl(item)} style={{ display: 'flex' }}>
+      <Surface padding={8} style={{ width: '100%', position: 'relative' }}>
+        {isPrimary ? (
+          <div
             style={{
-              ...style,
-              borderRadius: 8,
-              objectFit: 'cover',
-            }}
-          />
-        )}
-      />
-      <Spacer height={16} />
-      <VStack gap={4} style={{ marginTop: 'auto' }}>
-        {showCollection ? (
-          <UIText
-            kind="small/accent"
-            color="var(--neutral-500)"
-            style={{
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
+              position: 'absolute',
+              color: 'var(--always-white)',
+              backgroundColor: 'var(--positive-500)',
+              borderRadius: 10,
+              height: 20,
+              width: 20,
+              padding: 2,
+              top: 0,
+              left: 0,
+              zIndex: 2,
+              boxShadow: 'var(--elevation-100)',
             }}
           >
-            {asset.collection?.name || 'Untitled collection'}
-          </UIText>
+            <TickIcon width={16} height={16} />
+          </div>
         ) : null}
-        <UIText
-          kind="body/accent"
-          style={{
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-          }}
-        >
-          {asset.name || 'Untitled Asset'}
-        </UIText>
-        {price ? (
-          <UIText kind="body/accent">
-            <NeutralDecimals
-              parts={formatCurrencyToParts(price, 'en', 'usd')}
-            />
+        <SquareElement
+          style={{ position: 'relative' }}
+          render={(style) => (
+            <>
+              <ParcedMediaContent
+                forcePreview={true}
+                content={item.metadata.content}
+                alt={`${item.metadata.name} image`}
+                errorStyle={
+                  CSS.supports('aspect-ratio: 1 / 1')
+                    ? undefined
+                    : { position: 'absolute', height: '100%' }
+                }
+                style={{
+                  ...style,
+                  borderRadius: 8,
+                  objectFit: 'cover',
+                }}
+              />
+              <Image
+                style={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: 4,
+                  overflow: 'hidden',
+                  position: 'absolute',
+                  bottom: 8,
+                  left: 8,
+                  border: '1px solid var(--white)',
+                }}
+                title={networks?.getChainName(createChain(item.chain))}
+                src={getChainIconURL(item.chain)}
+                renderError={() => <TokenIcon symbol={item.chain} size={12} />}
+              />
+            </>
+          )}
+        />
+        <Spacer height={16} />
+        <VStack gap={4} style={{ marginTop: 'auto' }}>
+          {showCollection ? (
+            <UIText
+              kind="small/accent"
+              color="var(--neutral-500)"
+              style={{
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {item.collection?.name || 'Untitled collection'}
+            </UIText>
+          ) : null}
+          <UIText
+            kind="body/accent"
+            style={{
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+            }}
+          >
+            {item.metadata.name || 'Untitled Asset'}
           </UIText>
-        ) : someHavePrice ? (
-          <UIText kind="body/accent">{NBSP}</UIText>
+          {price ? (
+            <UIText kind="body/accent">
+              <NeutralDecimals
+                parts={formatCurrencyToParts(price, 'en', 'usd')}
+              />
+            </UIText>
+          ) : someHavePrice ? (
+            <UIText kind="body/accent">{NBSP}</UIText>
+          ) : null}
+        </VStack>
+        {isPrimary ? (
+          <div
+            style={{
+              position: 'absolute',
+              color: 'var(--always-white)',
+              backgroundColor: 'var(--positive-500)',
+              borderRadius: 10,
+              height: 20,
+              width: 20,
+              padding: 2,
+              top: 0,
+              left: 0,
+              boxShadow: 'var(--elevation-100)',
+            }}
+          >
+            <TickIcon width={16} height={16} />
+          </div>
         ) : null}
-      </VStack>
-      {isPrimary ? (
-        <div
-          style={{
-            position: 'absolute',
-            color: 'var(--always-white)',
-            backgroundColor: 'var(--positive-500)',
-            borderRadius: 10,
-            height: 20,
-            width: 20,
-            padding: 2,
-            top: 0,
-            left: 0,
-            boxShadow: 'var(--elevation-100)',
-          }}
-        >
-          <TickIcon width={16} height={16} />
-        </div>
-      ) : null}
-    </Surface>
-  );
-
-  return normalizeAddress(item.asset.contract_address) ===
-    DNA_NFT_COLLECTION_ADDRESS ? (
-    <UnstyledLink
-      to={`/nft/${item.asset.asset_code}`}
-      style={{ display: 'flex' }}
-    >
-      {content}
+      </Surface>
     </UnstyledLink>
-  ) : (
-    <UnstyledAnchor href={url} target="_blank" style={{ display: 'flex' }}>
-      {content}
-    </UnstyledAnchor>
   );
 }
 
 export function NonFungibleTokens() {
   const { ready, params, maybeSingleAddress } = useAddressParams();
-  const { value: nftTotalValue, status } = useAddressNftTotalValue({
-    ...params,
-    currency: 'usd',
-    value_type: 'floor_price',
-  });
-  const { isLoading, value: allItems } = useAddressNfts(
+  const { value: nftTotalValue, isLoading: totalValueIsLoading } =
+    useNftsTotalValue(params);
+
+  const {
+    value: items,
+    isLoading,
+    fetchMore,
+    hasNext,
+  } = useAddressNfts(
     {
       ...params,
       currency: 'usd',
+      sorted_by: 'floor_price_high',
     },
-    { enabled: ready }
+    { limit: 30, paginatedCacheMode: 'first-page' }
   );
 
-  const { value: dnaCollectionItems } = useAddressNfts(
-    {
-      ...params,
-      currency: 'usd',
-      contract_addresses: [DNA_NFT_COLLECTION_ADDRESS],
-    },
-    { enabled: ready }
-  );
+  const nftTotalValueIsReady = nftTotalValue != null || totalValueIsLoading;
 
-  const items = useMemo(() => {
-    return [
-      ...(dnaCollectionItems || []),
-      ...(allItems?.filter(
-        (item) =>
-          normalizeAddress(item.asset.contract_address) !==
-          DNA_NFT_COLLECTION_ADDRESS
-      ) || []),
-    ];
-  }, [allItems, dnaCollectionItems]);
-
-  const nftTotalValueIsReady =
-    nftTotalValue != null || status === DataStatus.ok;
-  if (isLoading) {
+  if (totalValueIsLoading) {
     return <ViewLoading kind="network" />;
   }
 
@@ -216,13 +226,32 @@ export function NonFungibleTokens() {
       >
         {items.map((addressNft) => (
           <NFTItem
-            key={addressNft.id}
+            key={getNftId(addressNft)}
             item={addressNft}
-            address={maybeSingleAddress}
             showCollection={true}
           />
         ))}
       </div>
+      {isLoading ? <CircleSpinner /> : null}
+      {hasNext ? (
+        <SurfaceList
+          items={[
+            {
+              key: 0,
+              onClick: isLoading ? undefined : fetchMore,
+              component: (
+                <span
+                  style={{
+                    color: isLoading ? 'var(--neutral-500)' : 'var(--primary)',
+                  }}
+                >
+                  More NFTs
+                </span>
+              ),
+            },
+          ]}
+        />
+      ) : null}
     </VStack>
   );
 }

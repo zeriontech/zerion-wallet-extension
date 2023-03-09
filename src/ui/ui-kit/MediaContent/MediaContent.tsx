@@ -8,7 +8,7 @@ interface MediaDescription {
   meta: null | Record<string, string>;
 }
 
-const MediaError = ({
+export const MediaError = ({
   image = '🖼',
   src,
   style,
@@ -152,6 +152,104 @@ export function MediaContent({
         renderError={() => (
           <MediaError image="🎵" style={errorStyle} src={url} />
         )}
+      />
+    );
+  }
+  return (
+    <UIText kind="body/regular" className={className}>
+      Unsupported content
+    </UIText>
+  );
+}
+
+export interface MediaContentValue {
+  image_preview_url?: string;
+  image_url: string;
+  audio_url: string;
+  video_url: string;
+  type: 'video' | 'image' | 'audio';
+}
+
+export function ParcedMediaContent({
+  content,
+  alt,
+  style,
+  errorStyle,
+  renderLoading,
+  className,
+  forcePreview,
+}: {
+  content?: MediaContentValue;
+  alt: string;
+  errorStyle?: React.CSSProperties;
+  renderLoading?(): React.ReactNode;
+  style?: React.CSSProperties;
+  className?: string;
+  forcePreview?: boolean;
+}) {
+  if (forcePreview && content?.image_preview_url) {
+    return (
+      <Image
+        // safari doesn't emit img onError for empty string src
+        src={content.image_preview_url || 'no-image'}
+        alt={alt}
+        style={style}
+        className={className}
+        renderError={() => (
+          <MediaError style={errorStyle} src={content.image_preview_url} />
+        )}
+        renderLoading={renderLoading}
+      />
+    );
+  }
+  if (content?.type === 'video' && content?.video_url) {
+    return (
+      <Video
+        controls={false}
+        muted={true}
+        autoPlay={true}
+        width="100%"
+        loop={true}
+        playsInline={true}
+        style={style}
+        className={className}
+        renderError={() => (
+          <MediaError image="📹" style={errorStyle} src={content.video_url} />
+        )}
+        renderLoading={renderLoading}
+      >
+        <source src={content.video_url} />
+        Sorry, your browser doesn't support embedded videos.
+      </Video>
+    );
+  }
+  if (content?.type === 'audio' && content?.audio_url) {
+    return (
+      <Audio
+        src={content.audio_url || ''}
+        controls={true}
+        autoPlay={false}
+        style={style}
+        className={className}
+        renderError={() => (
+          <MediaError image="🎵" style={errorStyle} src={content.audio_url} />
+        )}
+        renderLoading={renderLoading}
+      />
+    );
+  }
+  if (content?.image_url) {
+    return (
+      <Image
+        // safari doesn't emit img onError for empty string src
+        src={content.image_url || 'no-image'}
+        alt={alt}
+        style={style}
+        className={className}
+        renderError={() => (
+          <MediaError style={errorStyle} src={content.image_url} />
+        )}
+        renderLoading={renderLoading}
       />
     );
   }

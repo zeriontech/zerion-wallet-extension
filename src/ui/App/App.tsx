@@ -173,7 +173,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
           <Route path="/get-started/*" element={<GetStarted />} />
           <Route path="/receive" element={<Receive />} />
           <Route
-            path="/nft/:asset_code"
+            path="/nft/:chain/:asset_code"
             element={
               <RequireAuth>
                 <NonFungibleToken />

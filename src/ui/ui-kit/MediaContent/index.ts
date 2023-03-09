@@ -1,1 +1,1 @@
-export { MediaContent } from './MediaContent';
+export { MediaContent, ParcedMediaContent } from './MediaContent';
