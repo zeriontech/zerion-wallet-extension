@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { isChromeBrowser } from 'src/ui/shared/isChromeBrowser';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Image, Audio, Video } from 'src/ui/ui-kit/MediaFallback';
@@ -86,91 +86,41 @@ function inferMediaType(content: MediaDescription): MimeType | null {
     : null;
 }
 
-export function MediaContent({
-  content,
-  alt,
-  style,
-  errorStyle,
-  className,
-}: {
-  content: MediaDescription;
-  alt: string;
-  errorStyle?: React.CSSProperties;
-  style?: React.CSSProperties;
-  className?: string;
-}) {
-  const { url } = content;
-  const mimeTypeObject = useMemo(() => inferMediaType(content), [content]);
-  if (mimeTypeObject == null || mimeTypeObject.type === 'image') {
-    return (
-      <Image
-        // safari doesn't emit img onError for empty string src
-        src={url || 'no-image'}
-        alt={alt}
-        style={style}
-        className={className}
-        renderError={() => <MediaError style={errorStyle} src={url} />}
-      />
-    );
-  }
-  const { type, mimeType } = mimeTypeObject;
-  if (type === 'video') {
-    if (!url) {
-      return (
-        <UIText kind="body/regular" className={className}>
-          Unknown video
-        </UIText>
-      );
-    }
-    return (
-      <Video
-        controls={false}
-        muted={true}
-        autoPlay={true}
-        width="100%"
-        loop={true}
-        playsInline={true}
-        style={style}
-        className={className}
-        renderError={() => (
-          <MediaError image="📹" style={errorStyle} src={url} />
-        )}
-      >
-        <source src={url} type={mimeType} />
-        Sorry, your browser doesn't support embedded videos.
-      </Video>
-    );
-  }
-  if (type === 'audio') {
-    return (
-      <Audio
-        src={url || ''}
-        controls={true}
-        autoPlay={false}
-        style={style}
-        className={className}
-        renderError={() => (
-          <MediaError image="🎵" style={errorStyle} src={url} />
-        )}
-      />
-    );
-  }
-  return (
-    <UIText kind="body/regular" className={className}>
-      Unsupported content
-    </UIText>
-  );
-}
-
 export interface MediaContentValue {
   image_preview_url?: string;
-  image_url: string;
-  audio_url: string;
-  video_url: string;
+  image_url?: string | null;
+  audio_url?: string | null;
+  video_url?: string | null;
   type: 'video' | 'image' | 'audio';
 }
 
-export function ParcedMediaContent({
+export function getMediaContent(
+  content: MediaDescription
+): MediaContentValue | undefined {
+  const { url } = content;
+  const mimeTypeObject = inferMediaType(content);
+  if (mimeTypeObject == null || mimeTypeObject.type === 'image') {
+    return {
+      type: 'image',
+      image_url: url,
+    };
+  }
+  if (mimeTypeObject.type === 'video') {
+    return {
+      type: 'video',
+      video_url: url,
+    };
+  }
+  if (mimeTypeObject.type === 'audio') {
+    return {
+      type: 'audio',
+      audio_url: url,
+    };
+  }
+  return undefined;
+}
+
+export function MediaContent({
   content,
   alt,
   style,

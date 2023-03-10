@@ -6,7 +6,7 @@ import TickIcon from 'jsx:src/ui/assets/check.svg';
 import { ViewLoading } from 'src/ui/components/ViewLoading/ViewLoading';
 import { NBSP } from 'src/ui/shared/typography';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
-import { ParcedMediaContent } from 'src/ui/ui-kit/MediaContent';
+import { MediaContent } from 'src/ui/ui-kit/MediaContent';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { SquareElement } from 'src/ui/ui-kit/SquareElement';
@@ -72,7 +72,7 @@ function NFTItem({
           style={{ position: 'relative' }}
           render={(style) => (
             <>
-              <ParcedMediaContent
+              <MediaContent
                 forcePreview={true}
                 content={item.metadata.content}
                 alt={`${item.metadata.name} image`}

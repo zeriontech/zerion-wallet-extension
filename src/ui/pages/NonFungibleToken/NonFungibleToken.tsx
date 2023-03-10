@@ -11,7 +11,7 @@ import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { Button } from 'src/ui/ui-kit/Button';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { ParcedMediaContent } from 'src/ui/ui-kit/MediaContent';
+import { MediaContent } from 'src/ui/ui-kit/MediaContent';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -23,7 +23,10 @@ export function NonFungibleToken() {
   const { asset_code, chain } = useParams();
   const { singleAddress } = useAddressParams();
 
-  const [contract_address, token_id] = asset_code?.split(':') || [];
+  const [contract_address, token_id] = useMemo(
+    () => asset_code?.split(':') || [],
+    [asset_code]
+  );
 
   // for optimistic update the dna's status after promotion
   const [promotedPrimary, setPromotedAsPrimary] = useState(false);
@@ -37,8 +40,11 @@ export function NonFungibleToken() {
   });
 
   const url = useMemo(() => {
+    if (!nft?.chain || !nft.contract_address || !nft.token_id) {
+      return null;
+    }
     const urlObject = new URL(
-      `https://app.zerion.io/nfts/${nft?.chain}/${nft?.contract_address}:${nft?.token_id}`
+      `https://app.zerion.io/nfts/${nft.chain}/${nft.contract_address}:${nft.token_id}`
     );
     if (singleAddress) {
       urlObject.searchParams.append('address', singleAddress);
@@ -91,7 +97,7 @@ export function NonFungibleToken() {
                 position: 'relative',
               }}
             >
-              <ParcedMediaContent
+              <MediaContent
                 content={nft.metadata.content}
                 alt={`${nft.metadata.name} content`}
                 style={{ display: 'block', maxHeight: 320 }}
@@ -152,22 +158,24 @@ export function NonFungibleToken() {
         ) : null}
         <Spacer height={24} />
       </PageColumn>
-      <PageStickyFooter
-        lineColor="var(--neutral-300)"
-        style={{ backgroundColor: 'var(--white)' }}
-      >
-        <Spacer height={24} />
-        <Button
-          as={UnstyledAnchor}
-          href={url}
-          target="_blank"
-          kind="regular"
-          style={{ width: '100%' }}
+      {url ? (
+        <PageStickyFooter
+          lineColor="var(--neutral-300)"
+          style={{ backgroundColor: 'var(--white)' }}
         >
-          Open in Zerion Web
-        </Button>
-        <PageBottom />
-      </PageStickyFooter>
+          <Spacer height={24} />
+          <Button
+            as={UnstyledAnchor}
+            href={url}
+            target="_blank"
+            kind="regular"
+            style={{ width: '100%' }}
+          >
+            Open in Zerion Web
+          </Button>
+          <PageBottom />
+        </PageStickyFooter>
+      ) : null}
     </Background>
   );
 }
