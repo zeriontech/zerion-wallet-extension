@@ -372,7 +372,7 @@ describe('SIWE (EIP-4361)', () => {
         'https://lenster.xyz wants you to sign in with your Ethereum account:\n0x3083A9c26582C01Ec075373A8327016A15c1269B\n\nSign in with ethereum to lens\n\nURI: https://lenster.xyz\nVersion: 1\nChain ID: 137\nNonce: a83183e64822e4a4\nIssued At: 2023-02-25T14:34:03.642Z';
       const parsed = SiweMessage.parse(message);
       try {
-        parsed.validate(new URL('https://whatever'));
+        parsed.validate(new URL('https://whatever'), new Date().getTime());
       } catch (error) {
         expect((error as SiweError).type).toBe(SiweErrorType.DOMAIN_MISMATCH);
       }
@@ -383,7 +383,7 @@ describe('SIWE (EIP-4361)', () => {
         'service.org wants you to sign in with your Ethereum account:\n0xe5A12547fe4E872D192E3eCecb76F2Ce1aeA4946\n\nI accept the ServiceOrg Terms of Service: https://service.org/tos\n\nURI: https://service.org/login\nVersion: 1\nChain ID: 1\nNonce: 12341234\nIssued At: 2022-03-17T12:45:13.610Z\nExpiration Time: 2023-02-17T12:45:13.610Z\nNot Before: 2022-03-17T12:45:13.610Z\nRequest ID: some_id\nResources:\n- https://service.org/login';
       const parsed = SiweMessage.parse(message);
       try {
-        parsed.validate(new URL('https://service.org'));
+        parsed.validate(new URL('https://service.org'), new Date().getTime());
       } catch (error) {
         expect((error as SiweError).type).toBe(SiweErrorType.EXPIRED_MESSAGE);
       }
@@ -394,7 +394,7 @@ describe('SIWE (EIP-4361)', () => {
         'service.org wants you to sign in with your Ethereum account:\n0xe5A12547fe4E872D192E3eCecb76F2Ce1aeA4946\n\nI accept the ServiceOrg Terms of Service: https://service.org/tos\n\nURI: https://service.org/login\nVersion: 1\nChain ID: 1\nNonce: 12341234\nIssued At: 2022-03-17T12:45:13.610Z\nExpiration Time: 3023-02-17T12:45:13.610Z\nNot Before: 3023-03-17T12:45:13.610Z\nRequest ID: some_id\nResources:\n- https://service.org/login';
       const parsed = SiweMessage.parse(message);
       try {
-        parsed.validate(new URL('https://service.org'));
+        parsed.validate(new URL('https://service.org'), new Date().getTime());
       } catch (error) {
         expect((error as SiweError).type).toBe(
           SiweErrorType.INVALID_NOT_BEFORE

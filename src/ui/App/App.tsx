@@ -53,6 +53,7 @@ import { HandshakeFailure } from '../components/HandshakeFailure';
 import { useScreenViewChange } from '../shared/useScreenViewChange';
 import { DnaPage } from '../components/DnaClaim';
 import { NonFungibleToken } from '../pages/NonFungibleToken';
+import { SignInWithEthereum } from '../pages/SignInWithEthereum';
 
 const useAuthState = () => {
   const { data, isFetching } = useQuery(
@@ -233,6 +234,14 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             element={
               <RequireAuth>
                 <SendTransaction />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/siwe/*"
+            element={
+              <RequireAuth>
+                <SignInWithEthereum />
               </RequireAuth>
             }
           />

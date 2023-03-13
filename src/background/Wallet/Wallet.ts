@@ -37,6 +37,7 @@ import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired'
 import { flagAsDapp, isFlaggedAsDapp } from 'src/shared/dapps';
 import { isKnownDapp } from 'src/shared/dapps/known-dapps';
 import type { WalletAbility } from 'src/shared/types/Daylight';
+import { isSiweLike } from 'src/modules/ethereum/message-signing/SIWE';
 import { DaylightEventParams, emitter, ScreenViewParams } from '../events';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
@@ -921,8 +922,8 @@ interface Web3WalletPermission {
 class PublicController {
   wallet: Wallet;
 
-  constructor(walletController: Wallet) {
-    this.wallet = walletController;
+  constructor(wallet: Wallet) {
+    this.wallet = wallet;
   }
 
   async eth_accounts({ context }: PublicMethodParams) {
@@ -947,10 +948,6 @@ class PublicController {
     if (!context?.origin) {
       throw new Error('This method requires origin');
     }
-    // if (!this.wallet) {
-    //   console.log('Must create wallet first');
-    //   throw new Error('Must create wallet first');
-    // }
     const { origin } = context;
     return new Promise((resolve, reject) => {
       notificationWindow.open({
@@ -1097,13 +1094,16 @@ class PublicController {
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
       throw new OriginNotAllowed();
     }
+
+    const route = isSiweLike(message) ? '/siwe' : '/signMessage';
+
     return new Promise((resolve, reject) => {
       notificationWindow.open({
-        route: '/signMessage',
+        route,
         search: `?${new URLSearchParams({
+          method: 'personal_sign',
           origin: context.origin,
           message,
-          method: 'personal_sign',
         })}`,
         onResolve: (signature) => {
           resolve(signature);
