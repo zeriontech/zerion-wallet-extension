@@ -2,21 +2,14 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useQuery } from 'react-query';
 import { useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
-import { PageTop } from 'src/ui/components/PageTop';
 import { walletPort, windowPort } from 'src/ui/shared/channels';
-import { Media } from 'src/ui/ui-kit/Media';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Background } from 'src/ui/components/Background';
 import { Surface } from 'src/ui/ui-kit/Surface';
-import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
-import InfoIcon from 'jsx:src/ui/assets/info-icon-trimmed.svg';
-import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle-2.svg';
-import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { SurfaceList, SurfaceItemButton } from 'src/ui/ui-kit/SurfaceList';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
@@ -26,10 +19,19 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { WalletMedia, Composition } from 'src/ui/components/WalletMedia';
+import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { invariant } from 'src/shared/invariant';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
+import CheckmarkAllowedIcon from 'jsx:src/ui/assets/checkmark-allowed.svg';
+import CheckmarkDeniedIcon from 'jsx:src/ui/assets/checkmark-denied.svg';
+import ConnectIcon from 'jsx:src/ui/assets/connect.svg';
+import { Badge } from 'src/ui/components/Badge';
+import { PageTop } from 'src/ui/components/PageTop';
+import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
+import { Address } from 'src/ui/components/Address';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 
 function WalletSelectList({
   wallets,
@@ -95,30 +97,21 @@ function WalletSelectDialog({
   );
 }
 
-function GlowInfoIcon() {
+function ChangeWalletButton(
+  props: React.ButtonHTMLAttributes<HTMLButtonElement>
+) {
   return (
-    <div
+    <UnstyledButton
       style={{
-        boxShadow: `0 0 0px 3px var(--primary-300)`,
-        color: 'var(--primary)',
-        borderRadius: '50%',
-        width: 'max-content',
+        padding: '6px 12px',
+        borderRadius: 40,
+        backgroundColor: 'var(--primary-200)',
+        color: 'var(--primary-500)',
       }}
+      {...props}
     >
-      <InfoIcon
-        style={{
-          display: 'block',
-        }}
-      />
-    </div>
-  );
-}
-
-function ChevronDownIcon() {
-  return (
-    <ChevronRightIcon
-      style={{ display: 'block', transform: 'rotate(90deg)' }}
-    />
+      <UIText kind="caption/accent">Change</UIText>
+    </UnstyledButton>
   );
 }
 
@@ -154,6 +147,32 @@ function useRedirectIfOriginAlreadyAllowed({
   );
 }
 
+function RequestAccountsPermissions({ originName }: { originName: string }) {
+  return (
+    <Surface padding={16} style={{ border: '1px solid var(--neutral-300)' }}>
+      <HStack gap={12}>
+        <VStack gap={8}>
+          <UIText kind="small/accent">Allow {originName} to:</UIText>
+          <HStack gap={8} alignItems="center">
+            <CheckmarkAllowedIcon />
+            <UIText kind="small/regular">See your balance and activity</UIText>
+          </HStack>
+          <HStack gap={8} alignItems="center">
+            <CheckmarkAllowedIcon />
+            <UIText kind="small/regular">Send request for approvals</UIText>
+          </HStack>
+          <HStack gap={8} alignItems="center">
+            <CheckmarkDeniedIcon />
+            <UIText kind="small/regular">
+              Sign transactions without your approval
+            </UIText>
+          </HStack>
+        </VStack>
+      </HStack>
+    </Surface>
+  );
+}
+
 function RequestAccountsView({
   origin,
   wallet,
@@ -174,110 +193,71 @@ function RequestAccountsView({
     () => new Map(wallets.map((wallet) => [wallet.address, wallet])),
     [wallets]
   );
+  const iconSize = 32;
+  const iconBorderRadius = 6;
   return (
-    <Background backgroundKind="neutral">
+    <Background backgroundKind="white">
+      <PageTop />
       <PageColumn
-        // different surface color on backgroundKind="neutral"
         style={{ ['--surface-background-color' as string]: 'var(--z-index-0)' }}
       >
-        <PageTop />
-        <PageTop />
-        <VStack gap={8} style={{ placeItems: 'center' }}>
-          <ZerionSquircle style={{ width: 40, height: 40 }} />
-          <UIText kind="headline/h2">Connect to {originName}</UIText>
-          <UIText kind="body/accent" color="var(--primary)">
-            <TextAnchor href={origin} rel="noopener noreferrer" target="_blank">
-              {originName}
-            </TextAnchor>
-          </UIText>
-        </VStack>
-        <Spacer height={24} />
-        <SurfaceList
-          items={[
-            {
-              key: 0,
-              isInteractive: true,
-              pad: false,
-              component: (
-                <>
-                  <WalletSelectDialog
-                    value={normalizeAddress(selectedWallet.address)}
-                    wallets={wallets}
-                    dialogRef={dialogRef}
-                  />
-                  <SurfaceItemButton
-                    onClick={async () => {
-                      if (!dialogRef.current) {
-                        return;
-                      }
-                      const result = await showConfirmDialog(dialogRef.current);
-                      const wallet = walletsMap.get(result);
-                      if (wallet) {
-                        setSelectedWallet(wallet);
-                      }
-                    }}
-                  >
-                    <HStack
-                      gap={8}
-                      justifyContent="space-between"
-                      alignItems="center"
-                    >
-                      <Media
-                        image={
-                          <WalletAvatar
-                            address={selectedWallet.address}
-                            size={36}
-                            borderRadius={4}
-                          />
-                        }
-                        text={
-                          <UIText
-                            kind="caption/regular"
-                            color="var(--neutral-500)"
-                          >
-                            Wallet
-                          </UIText>
-                        }
-                        detailText={
-                          <UIText kind="small/accent">
-                            {truncateAddress(selectedWallet.address, 4)}
-                          </UIText>
-                        }
-                      />
-                      <ChevronDownIcon />
-                    </HStack>
-                  </SurfaceItemButton>
-                </>
-              ),
-            },
-          ]}
-        ></SurfaceList>
+        <Badge icon={<ConnectIcon />} text="Connect Wallet" />
         <Spacer height={16} />
-        <Surface padding={12} style={{ backgroundColor: 'var(--primary-200)' }}>
-          <HStack gap={12}>
-            <div>
-              <GlowInfoIcon />
-            </div>
-            <VStack gap={4}>
-              <UIText kind="small/accent" color="var(--primary)">
-                By connecting, you allow to:
-              </UIText>
-              <UIText kind="small/regular">
-                <ul
-                  style={{
-                    margin: 0,
-                    paddingInlineStart: 16,
-                    color: 'var(--neutral-700)',
-                  }}
-                >
-                  <li>See your balance and activity</li>
-                  <li>Request approval for transactions</li>
-                </ul>
-              </UIText>
-            </VStack>
+        <VStack gap={8}>
+          <UIText kind="small/accent" color="var(--neutral-500)">
+            To application
+          </UIText>
+          <HStack gap={8} alignItems="center">
+            <SiteFaviconImg
+              style={{
+                width: iconSize,
+                height: iconSize,
+                borderRadius: iconBorderRadius,
+              }}
+              url={origin}
+              alt={`Logo for ${origin}`}
+            />
+            <UIText kind="headline/h2">{new URL(origin).hostname}</UIText>
           </HStack>
-        </Surface>
-
+        </VStack>
+        <Spacer height={16} />
+        <VStack gap={8}>
+          <UIText kind="small/accent" color="var(--neutral-500)">
+            With wallet
+          </UIText>
+          <HStack gap={8} alignItems="center" justifyContent="space-between">
+            <WalletSelectDialog
+              value={normalizeAddress(selectedWallet.address)}
+              wallets={wallets}
+              dialogRef={dialogRef}
+            />
+            <HStack gap={8} alignItems="center">
+              <WalletAvatar
+                address={selectedWallet.address}
+                size={iconSize}
+                borderRadius={iconBorderRadius}
+              />
+              <UIText kind="headline/h2">
+                <WalletDisplayName wallet={selectedWallet} />
+              </UIText>
+            </HStack>
+            <ChangeWalletButton
+              onClick={async () => {
+                if (!dialogRef.current) {
+                  return;
+                }
+                const result = await showConfirmDialog(dialogRef.current);
+                const wallet = walletsMap.get(result);
+                if (wallet) {
+                  setSelectedWallet(wallet);
+                }
+              }}
+            />
+          </HStack>
+          <Address address={normalizeAddress(selectedWallet.address)} />
+        </VStack>
+        <Spacer height={16} />
+        <RequestAccountsPermissions originName={originName} />
         <div
           style={{
             display: 'grid',
@@ -288,7 +268,7 @@ function RequestAccountsView({
           }}
         >
           <Button type="button" kind="regular" onClick={onReject}>
-            Reject
+            Cancel
           </Button>
           <Button
             ref={focusNode}

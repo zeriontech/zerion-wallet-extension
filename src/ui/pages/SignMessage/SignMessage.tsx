@@ -21,6 +21,7 @@ import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
+import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 
 function ItemSurface({
   style,
@@ -136,6 +137,8 @@ function SignMessageContent({
     : null;
   const hostname = useMemo(() => new URL(origin).hostname, [origin]);
 
+  const handleReject = () => windowPort.reject(windowId);
+
   return (
     <Background backgroundKind="neutral">
       <PageColumn
@@ -200,13 +203,7 @@ function SignMessageContent({
               gap: 8,
             }}
           >
-            <Button
-              kind="regular"
-              type="button"
-              onClick={() => {
-                windowPort.reject(windowId);
-              }}
-            >
+            <Button kind="regular" type="button" onClick={handleReject}>
               Cancel
             </Button>
             {typedData ? (
@@ -237,6 +234,7 @@ function SignMessageContent({
           </div>
         </VStack>
       </PageStickyFooter>
+      <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
     </Background>
   );
 }

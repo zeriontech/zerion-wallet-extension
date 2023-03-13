@@ -1,4 +1,18 @@
 import { toChecksumAddress } from '../toChecksumAddress';
+import { toUtf8String } from './toUtf8String';
+
+// https://eips.ethereum.org/EIPS/eip-4361
+// https://docs.login.xyz/general-information/siwe-overview/eip-4361
+
+/**
+ * Checks if it looks like SIWE (Sign-in With Ethereum) message.
+ */
+export function isSiweLike(rawMessage: string) {
+  // As suggested here: https://eips.ethereum.org/EIPS/eip-4361#verifying-message
+  return toUtf8String(rawMessage).includes(
+    'wants you to sign in with your Ethereum account'
+  );
+}
 
 /**
  * Possible message error types.
@@ -27,11 +41,11 @@ export enum SiweErrorType {
   /** 'Issued At' is not provided */
   MISSING_ISSUED_AT = '"Issued At" cannot be empty',
   /** `Expiration Time` is present and in the past */
-  EXPIRED_MESSAGE = 'Expired message',
+  EXPIRED_MESSAGE = 'Message expired',
   /** `Not Before` is present and in the future */
   INVALID_NOT_BEFORE = 'Message is not valid yet',
   /** `Expiration Time`, `Not Before` or `Issued At` not complient to ISO-8601 */
-  INVALID_TIME_FORMAT = 'Invalid time format',
+  INVALID_TIME_FORMAT = 'Invalid expiration time format',
   /** Thrown when the message doesn't match regex */
   UNABLE_TO_PARSE = 'Unable to parse the message',
 }
@@ -148,34 +162,6 @@ $\
   readonly resources?: Array<string>;
 
   private constructor(rawMessage: string, fields: Record<string, string>) {
-    if (!fields.domain) {
-      throw new SiweError(SiweErrorType.MISSING_DOMAIN);
-    }
-    if (!fields.address) {
-      throw new SiweError(SiweErrorType.MISSING_ADDRESS);
-    }
-    if (fields.address !== toChecksumAddress(fields.address)) {
-      throw new SiweError(SiweErrorType.INVALID_ADDRESS);
-    }
-    if (!fields.nonce) {
-      throw new SiweError(SiweErrorType.MISSING_NONCE);
-    }
-    if (!fields.chainId) {
-      throw new SiweError(SiweErrorType.MISSING_CHAIN_ID);
-    }
-    if (!fields.version) {
-      throw new SiweError(SiweErrorType.MISSING_VERSION);
-    }
-    if (fields.version !== '1') {
-      throw new SiweError(SiweErrorType.INVALID_VERSION);
-    }
-    if (!fields.uri) {
-      throw new SiweError(SiweErrorType.MISSING_URI);
-    }
-    if (!fields.issuedAt) {
-      throw new SiweError(SiweErrorType.MISSING_ISSUED_AT);
-    }
-
     this.rawMessage = rawMessage;
     this.domain = fields.domain;
     this.address = fields.address;
@@ -191,7 +177,7 @@ $\
     this.resources = fields.resources?.split('\n- ').slice(1);
   }
 
-  validate(origin: URL) {
+  validate(origin: URL, currentTime: number) {
     const domain = this.domain.startsWith('http')
       ? new URL(this.domain)
       : new URL(`https://${this.domain}`);
@@ -202,17 +188,48 @@ $\
       throw new SiweError(SiweErrorType.DOMAIN_MISMATCH);
     }
 
-    const now = new Date();
-    if (
-      this.expirationTime &&
-      now.getTime() >= new Date(this.expirationTime).getTime()
-    ) {
-      throw new SiweError(SiweErrorType.EXPIRED_MESSAGE);
+    const errors = [];
+
+    if (!this.domain) {
+      errors.push(SiweErrorType.MISSING_DOMAIN);
+    }
+    if (!this.address) {
+      errors.push(SiweErrorType.MISSING_ADDRESS);
+    }
+    if (this.address !== toChecksumAddress(this.address)) {
+      errors.push(SiweErrorType.INVALID_ADDRESS);
+    }
+    if (!this.nonce) {
+      errors.push(SiweErrorType.MISSING_NONCE);
+    }
+    if (!this.chainId) {
+      errors.push(SiweErrorType.MISSING_CHAIN_ID);
+    }
+    if (!this.version) {
+      errors.push(SiweErrorType.MISSING_VERSION);
+    }
+    if (this.version !== '1') {
+      errors.push(SiweErrorType.INVALID_VERSION);
+    }
+    if (!this.uri) {
+      errors.push(SiweErrorType.MISSING_URI);
+    }
+    if (!this.issuedAt) {
+      errors.push(SiweErrorType.MISSING_ISSUED_AT);
     }
 
-    if (this.notBefore && now.getTime() < new Date(this.notBefore).getTime()) {
-      throw new SiweError(SiweErrorType.INVALID_NOT_BEFORE);
+    if (
+      this.expirationTime &&
+      currentTime >= new Date(this.expirationTime).getTime()
+    ) {
+      errors.push(SiweErrorType.EXPIRED_MESSAGE);
     }
+
+    if (this.notBefore && currentTime < new Date(this.notBefore).getTime()) {
+      errors.push(SiweErrorType.INVALID_NOT_BEFORE);
+    }
+
+    return errors;
   }
 
   /**

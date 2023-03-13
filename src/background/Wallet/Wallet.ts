@@ -42,6 +42,7 @@ import { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereu
 import { chainConfigStore } from 'src/modules/ethereum/chains/ChainConfigStore';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import { isSiweLike } from 'src/modules/ethereum/message-signing/SIWE';
 import { DaylightEventParams, emitter, ScreenViewParams } from '../events';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
@@ -977,8 +978,8 @@ interface Web3WalletPermission {
 class PublicController {
   wallet: Wallet;
 
-  constructor(walletController: Wallet) {
-    this.wallet = walletController;
+  constructor(wallet: Wallet) {
+    this.wallet = wallet;
   }
 
   async eth_accounts({ context }: PublicMethodParams) {
@@ -1168,13 +1169,16 @@ class PublicController {
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
       throw new OriginNotAllowed();
     }
+
+    const route = isSiweLike(message) ? '/siwe' : '/signMessage';
+
     return new Promise((resolve, reject) => {
       notificationWindow.open({
-        route: '/signMessage',
+        route,
         search: `?${new URLSearchParams({
+          method: 'personal_sign',
           origin: context.origin,
           message,
-          method: 'personal_sign',
         })}`,
         onResolve: (signature) => {
           resolve(signature);
