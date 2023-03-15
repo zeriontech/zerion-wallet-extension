@@ -41,6 +41,7 @@ import type { WalletAbility } from 'src/shared/types/Daylight';
 import { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import { chainConfigStore } from 'src/modules/ethereum/chains/ChainConfigStore';
 import { NetworkId } from 'src/modules/networks/NetworkId';
+import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { DaylightEventParams, emitter, ScreenViewParams } from '../events';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
@@ -888,7 +889,7 @@ export class Wallet {
     context,
     params: { values, origin },
   }: WalletMethodParams<{
-    values: [AddEthereumChainParameter];
+    values: [NetworkConfig];
     origin: string;
   }>) {
     this.verifyInternalOrigin(context);

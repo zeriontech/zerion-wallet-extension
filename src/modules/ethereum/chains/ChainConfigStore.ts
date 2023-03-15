@@ -1,16 +1,16 @@
-import { ethers } from 'ethers';
 import { produce } from 'immer';
 import { equal } from 'src/modules/fast-deep-equal';
 import type { Chain } from 'src/modules/networks/Chain';
+import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { PersistentStore } from 'src/modules/persistent-store';
+import { invariant } from 'src/shared/invariant';
 import { upsert } from 'src/shared/upsert';
-import type { AddEthereumChainParameter } from '../types/AddEthereumChainParameter';
 
 export interface EthereumChainConfig {
   created: number;
   updated: number;
   origin: string;
-  chain: AddEthereumChainParameter;
+  value: NetworkConfig;
 }
 
 export interface ChainConfig {
@@ -27,44 +27,40 @@ function remove<T>(arr: T[], predicate: (item: T) => boolean) {
 export class ChainConfigStore extends PersistentStore<ChainConfig> {
   static initialState: ChainConfig = { ethereumChains: [] };
 
-  addEthereumChain(
-    value: AddEthereumChainParameter,
-    origin: string
-  ): EthereumChainConfig {
+  addEthereumChain(value: NetworkConfig, origin: string): EthereumChainConfig {
+    invariant(value.chain, 'chain property is required for NetworkConfig');
     const state = this.getState();
     const existingItems = new Map(
-      state.ethereumChains.map((chain) => [chain.chain.chainId, chain])
+      state.ethereumChains.map((config) => [config.value.chain, config])
     );
-    const chainId = ethers.utils.hexValue(value.chainId);
-    const existing = existingItems.get(chainId);
+    const chainId = value.external_id; // ethers.utils.hexValue(value.chainId);
+    const existingEntry = existingItems.get(chainId);
     const now = Date.now();
-    const newValue = {
+    const newEntry = {
       origin,
-      created: existing ? existing.created : now,
+      created: existingEntry ? existingEntry.created : now,
       updated: now,
-      chain: { ...value, chainId },
+      value,
     };
     if (
-      existing &&
-      existing.origin === newValue.origin &&
-      equal(existing.chain, newValue.chain)
+      existingEntry &&
+      existingEntry.origin === newEntry.origin &&
+      equal(existingEntry.value, newEntry.value)
     ) {
-      return existing;
+      return existingEntry;
     }
     const newState = produce(state, (draft) => {
-      upsert(draft.ethereumChains, newValue, (x) => x.chain.chainId);
-      // remove(draft.ethereumChains, (x) => x.chain.chainId === chainId);
-      // draft.ethereumChains.push(newValue);
+      upsert(draft.ethereumChains, newEntry, (x) => x.value.chain);
     });
     this.setState(newState);
-    return newValue;
+    return newEntry;
   }
 
   removeEthereumChain(chain: Chain) {
     const chainStr = chain.toString();
     this.setState((state) =>
       produce(state, (draft) => {
-        remove(draft.ethereumChains, (x) => x.chain.chainId === chainStr);
+        remove(draft.ethereumChains, (x) => x.value.chain === chainStr);
       })
     );
   }

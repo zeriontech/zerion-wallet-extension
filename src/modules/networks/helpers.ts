@@ -1,4 +1,3 @@
-import type { ChainConfig } from '../ethereum/chains/ChainConfigStore';
 import type { AddEthereumChainParameter } from '../ethereum/types/AddEthereumChainParameter';
 import type { NetworkConfig } from './NetworkConfig';
 
@@ -29,12 +28,6 @@ export function toNetworkConfig(
     rpc_url_public: value.rpcUrls,
     wrapped_native_asset: null,
   };
-}
-
-export function toNetworkConfigs(
-  items: ChainConfig['ethereumChains']
-): NetworkConfig[] {
-  return items.map((item) => toNetworkConfig(item.chain));
 }
 
 export function toAddEthereumChainParamer(

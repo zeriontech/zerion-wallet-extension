@@ -506,6 +506,7 @@ function PositionsList({
                   value={chainValue}
                   onChange={onChainChange}
                   type="overview"
+                  valueMaxWidth={180}
                 />
               ) : null}
             </HStack>
@@ -703,15 +704,12 @@ function RawChainPositions({
     return <EmptyView text="No assets found" />;
   }
   return (
-    <div>
-      RawChainPositions
-      <PositionsList
-        address={address}
-        items={addressPositions}
-        chainValue={chainValue}
-        onChainChange={onChainChange}
-      />
-    </div>
+    <PositionsList
+      address={address}
+      items={addressPositions}
+      chainValue={chainValue}
+      onChainChange={onChainChange}
+    />
   );
 }
 

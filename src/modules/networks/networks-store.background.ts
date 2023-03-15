@@ -3,7 +3,6 @@ import { getPredefinedChains } from '../ethereum/chains/getPredefinedChains';
 import { Networks } from './Networks';
 import { NetworksStore } from './networks-store';
 
-console.log('networksStore background');
 export const networksStore = new NetworksStore(
   { networks: null },
   {

@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import { Content } from 'react-area';
 import { produce } from 'immer';
 import merge from 'lodash/merge';
 import lodashSet from 'lodash/set';
@@ -11,7 +12,13 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
-import { Content } from 'react-area';
+
+type InitialNetworkConfig = Omit<NetworkConfig, 'chain'> & {
+  chain: string | null;
+};
+function isCompleteNetwork(x: InitialNetworkConfig): x is NetworkConfig {
+  return x.chain != null && x.chain !== '';
+}
 
 function Field({
   label,
@@ -21,10 +28,11 @@ function Field({
   label: React.ReactNode;
   error?: string;
 } & React.InputHTMLAttributes<HTMLInputElement>) {
+  const id = useId();
   return (
     <VStack gap={4}>
-      {label}
-      <Input error={Boolean(error)} {...inputProps} />
+      <label htmlFor={id}>{label}</label>
+      <Input id={id} error={Boolean(error)} {...inputProps} />
       {error ? (
         <UIText kind="caption/regular" style={{ color: 'var(--negative-500)' }}>
           {error}
@@ -112,7 +120,7 @@ export function NetworkForm({
   onReset,
   footerRenderArea,
 }: {
-  network: NetworkConfig;
+  network: InitialNetworkConfig;
   isSubmitting: boolean;
   submitText?: string;
   onSubmit: (result: NetworkConfig) => void;
@@ -166,7 +174,11 @@ export function NetworkForm({
           }
           const formObject = collectData(event.currentTarget, parsers);
           const result = produce(network, (draft) => merge(draft, formObject));
-          onSubmit(result);
+          if (!isCompleteNetwork(result)) {
+            onSubmit({ ...result, chain: result.external_id });
+          } else {
+            onSubmit(result);
+          }
         }}
       >
         <VStack gap={8}>

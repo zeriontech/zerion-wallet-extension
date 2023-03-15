@@ -14,10 +14,12 @@ export function NetworkSelect({
   value,
   onChange,
   type,
+  valueMaxWidth,
 }: {
   value: string;
   onChange: (value: string) => void;
   type: 'overview' | 'connection';
+  valueMaxWidth?: number;
 }) {
   const chain = createChain(value);
   const { networks } = useNetworks();
@@ -42,7 +44,20 @@ export function NetworkSelect({
             style={{ width: 24, height: 24 }}
             role="presentation"
           />
-          <span>{value ? networks?.getChainName(chain) : 'All Networks'}</span>
+          <span
+            style={
+              valueMaxWidth
+                ? {
+                    maxWidth: valueMaxWidth,
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap',
+                    textOverflow: 'ellipsis',
+                  }
+                : undefined
+            }
+          >
+            {value ? networks?.getChainName(chain) : 'All Networks'}
+          </span>
         </HStack>
       </Button>
     </>

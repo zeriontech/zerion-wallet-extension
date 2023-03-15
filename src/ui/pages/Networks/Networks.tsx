@@ -14,10 +14,7 @@ import {
 } from 'react-router-dom';
 import groupBy from 'lodash/groupBy';
 import { Chain, createChain } from 'src/modules/networks/Chain';
-import {
-  toAddEthereumChainParamer,
-  toNetworkConfig,
-} from 'src/modules/networks/helpers';
+import { toNetworkConfig } from 'src/modules/networks/helpers';
 import { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type {
   NetworkConfigMetaData,
@@ -230,8 +227,10 @@ function CustomList({ networks }: { networks: NetworksType }) {
   );
 }
 
-const createEmptyNetwork = (): NetworkConfig => ({
-  chain: '',
+const createEmptyNetwork = (): Omit<NetworkConfig, 'chain'> & {
+  chain: null;
+} => ({
+  chain: null,
   external_id: '',
   explorer_address_url: '',
   explorer_home_url: null,
@@ -261,7 +260,7 @@ async function saveNetworkConfig(network: NetworkConfig) {
     network.external_id
   );
   return walletPort.request('addEthereumChain', {
-    values: [toAddEthereumChainParamer(network)],
+    values: [network],
     origin: ethereumChainConfig?.origin ?? window.location.origin,
   });
 }
@@ -285,7 +284,7 @@ function NetworkCreatePage({
   const mutation = useMutation(saveNetworkConfig, {
     onSuccess(result) {
       networksStore.update();
-      onSuccess(toNetworkConfig(result.chain));
+      onSuccess(result.value);
       navigate(-1);
     },
   });
@@ -340,7 +339,7 @@ function NetworkPage({
   const mutation = useMutation(saveNetworkConfig, {
     onSuccess(result) {
       networksStore.update();
-      onSuccess(toNetworkConfig(result.chain));
+      onSuccess(result.value);
       navigate(-1);
     },
   });

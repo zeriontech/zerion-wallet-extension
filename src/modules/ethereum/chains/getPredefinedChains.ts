@@ -1,7 +1,8 @@
+import { toNetworkConfig } from 'src/modules/networks/helpers';
 import type { AddEthereumChainParameter } from '../types/AddEthereumChainParameter';
 import { ChainConfig } from './ChainConfigStore';
 
-const chains: AddEthereumChainParameter[] = [
+const values: AddEthereumChainParameter[] = [
   {
     chainName: 'Arbitrum Goerli',
     chainId: '0x66eed',
@@ -65,14 +66,13 @@ const chains: AddEthereumChainParameter[] = [
 ];
 
 export async function getPredefinedChains(): Promise<ChainConfig> {
-  console.log('pgepredegined chains');
   await new Promise((r) => setTimeout(r, 800));
   return Promise.resolve({
-    ethereumChains: chains.map((chain) => ({
+    ethereumChains: values.map((value) => ({
       created: 0,
       updated: 0,
       origin: 'predefined',
-      chain,
+      value: toNetworkConfig(value),
     })),
   });
 }
