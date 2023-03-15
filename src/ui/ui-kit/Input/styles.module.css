@@ -15,3 +15,11 @@
   outline: 2px solid var(--primary-300);
   border: 1px solid var(--primary);
 }
+
+.input.error {
+  border: 1px solid var(--negative-500);
+}
+
+.input.error:focus-visible {
+  outline-color: var(--negative-300);
+}

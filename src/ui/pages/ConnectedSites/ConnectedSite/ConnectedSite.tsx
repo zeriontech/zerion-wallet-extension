@@ -228,7 +228,10 @@ export function ConnectedSite() {
                           }
                         />
                         <Spacer height={24} />
-                        <NetworkSelectDialog value={siteChain.toString()} />
+                        <NetworkSelectDialog
+                          value={siteChain.toString()}
+                          type="connection"
+                        />
                       </CenteredDialog>
 
                       <SurfaceItemButton

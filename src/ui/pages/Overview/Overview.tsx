@@ -195,6 +195,7 @@ function OverviewComponent() {
   //     </FillView>
   //   );
   // }
+
   if (!preferences) {
     return <ViewLoading />;
   }
@@ -331,7 +332,7 @@ function OverviewComponent() {
             >
               <ViewSuspense>
                 <Positions
-                  chain={preferences?.overviewChain}
+                  chain={preferences.overviewChain}
                   onChainChange={setChain}
                 />
               </ViewSuspense>
@@ -343,7 +344,10 @@ function OverviewComponent() {
           path="/history"
           element={
             <ViewSuspense>
-              <HistoryList />
+              <HistoryList
+                chain={preferences.overviewChain}
+                onChainChange={setChain}
+              />
             </ViewSuspense>
           }
         />

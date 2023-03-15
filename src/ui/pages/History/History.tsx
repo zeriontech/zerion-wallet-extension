@@ -9,6 +9,9 @@ import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import { EmptyView } from 'src/ui/components/EmptyView';
 import { networksStore } from 'src/modules/networks/networks-store.client';
+import { NetworkSelect } from 'src/ui/pages/Networks/NetworkSelect';
+import { Chain, createChain } from 'src/modules/networks/Chain';
+import { useNetworks } from 'src/modules/networks/useNetworks';
 import { ActionsList } from './ActionsList';
 
 export function sortActions<T extends { datetime?: string }>(actions: T[]) {
@@ -34,19 +37,30 @@ function mergeLocalAndBackendActions(
   return sortActions(merged);
 }
 
-function useMinedAndPendingAddressActions() {
+function useMinedAndPendingAddressActions({ chain }: { chain: Chain | null }) {
   const { params } = useAddressParams();
+  const { networks } = useNetworks();
+  const isSupportedByBackend = chain
+    ? networks?.isSupportedByBackend(chain)
+    : true;
   const localActions = useLocalAddressTransactions(params);
 
   const { data: localAddressActions, ...localActionsQuery } = useQuery(
-    ['pages/history', localActions],
+    ['pages/history', localActions, chain],
     async () => {
       const networks = await networksStore.load();
-      return Promise.all(
+      const items = await Promise.all(
         localActions.map((transactionObject) =>
           toAddressTransaction(transactionObject, networks)
         )
       );
+      if (chain) {
+        return items.filter(
+          (item) => item.transaction.chain === chain.toString()
+        );
+      } else {
+        return items;
+      }
     },
     { useErrorBoundary: true }
   );
@@ -60,42 +74,53 @@ function useMinedAndPendingAddressActions() {
     {
       ...params,
       currency: 'usd',
+      actions_chains:
+        chain && isSupportedByBackend ? [chain.toString()] : undefined,
     },
     {
       limit: 30,
       listenForUpdates: false,
       paginatedCacheMode: 'first-page',
+      enabled: isSupportedByBackend,
     }
   );
 
-  return useMemo(
-    () => ({
+  return useMemo(() => {
+    const backendItems = isSupportedByBackend && value ? value : [];
+    return {
       value: localAddressActions
-        ? mergeLocalAndBackendActions(localAddressActions, value || [])
+        ? mergeLocalAndBackendActions(localAddressActions, backendItems)
         : null,
       ...localActionsQuery,
       isLoading: actionsIsLoading || localActionsQuery.isLoading,
-      hasMore: Boolean(hasNext),
+      hasMore: Boolean(isSupportedByBackend && hasNext),
       fetchMore,
-    }),
-    [
-      localAddressActions,
-      value,
-      localActionsQuery,
-      hasNext,
-      actionsIsLoading,
-      fetchMore,
-    ]
-  );
+    };
+  }, [
+    isSupportedByBackend,
+    value,
+    localAddressActions,
+    localActionsQuery,
+    actionsIsLoading,
+    hasNext,
+    fetchMore,
+  ]);
 }
 
-export function HistoryList() {
+export function HistoryList({
+  chain: chainValue,
+  onChainChange,
+}: {
+  chain: string;
+  onChainChange: (value: string) => void;
+}) {
+  const chain = chainValue ? createChain(chainValue) : null;
   const {
     value: transactions,
     isLoading,
     fetchMore,
     hasMore,
-  } = useMinedAndPendingAddressActions();
+  } = useMinedAndPendingAddressActions({ chain });
 
   if (isLoading && !transactions?.length) {
     return null;
@@ -114,6 +139,13 @@ export function HistoryList() {
       hasMore={hasMore}
       isLoading={isLoading}
       onLoadMore={fetchMore}
+      firstHeaderItemEnd={
+        <NetworkSelect
+          type="overview"
+          value={chainValue}
+          onChange={onChainChange}
+        />
+      }
     />
   );
 }

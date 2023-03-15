@@ -14,12 +14,14 @@ import { toNetworkConfigs } from './helpers';
 import { UnsupportedNetwork } from './errors';
 // import { EthereumChainConfig } from '../ethereum/chains/AddEthereumChainParameter';
 
+type Collection<T> = { [key: string]: T };
+
 function toCollection<T, K>(
   items: T[],
   getKey: (item: T) => string,
   getItem: (item: T) => K
 ) {
-  const result: { [key: string]: ReturnType<typeof getItem> } = {};
+  const result: Collection<ReturnType<typeof getItem>> = {};
   for (const item of items) {
     result[getKey(item)] = getItem(item);
   }
@@ -44,7 +46,10 @@ function localeCompareWithPriority(
 
 export type EthereumChainSources = Record<string, ChainConfig>;
 
-type EthereumChainSourcesNormalized = Record<string, NetworkConfig[]>;
+type EthereumChainSourcesNormalized = Record<
+  string,
+  { items: NetworkConfig[]; collection: Collection<NetworkConfig> }
+>;
 
 export interface NetworkConfigMetaData {
   created: number;
@@ -58,10 +63,17 @@ function normalizeSources(
   if (!sources) {
     return {};
   }
-  const ethereumChainSourcesNormalized: Record<string, NetworkConfig[]> = {};
+  const ethereumChainSourcesNormalized: EthereumChainSourcesNormalized = {};
   for (const [key, value] of Object.entries(sources)) {
     const networkConfigs = toNetworkConfigs(value.ethereumChains);
-    ethereumChainSourcesNormalized[key] = networkConfigs;
+    ethereumChainSourcesNormalized[key] = {
+      items: networkConfigs,
+      collection: toCollection(
+        networkConfigs,
+        (item) => item.external_id,
+        (x) => x
+      ),
+    };
   }
   return ethereumChainSourcesNormalized;
 }
@@ -72,6 +84,7 @@ export class Networks {
   private sourcesNormalized?: EthereumChainSourcesNormalized;
   private keys: Keys;
   private collection: { [key: string]: NetworkConfig | undefined };
+  private originalCollection: { [key: string]: NetworkConfig | undefined };
   private nameToId: { [key: string]: string };
   private supportedByBackend: Set<string>;
   static purposeKeyMap = {
@@ -94,15 +107,16 @@ export class Networks {
     );
     this.ethereumChainSources = ethereumChainSources;
     this.keys = keys;
-    const { collection, nameToId } = this.prepare();
+    const { collection, originalCollection, nameToId } = this.prepare();
     this.collection = collection;
+    this.originalCollection = originalCollection;
     this.nameToId = nameToId;
     this.supportedByBackend = new Set(networks.map((n) => n.chain));
     Object.assign(globalThis, { networksInstance: this });
   }
 
   private prepare() {
-    const collection = toCollection(
+    const originalCollection = toCollection(
       this.networks,
       (network) => network.external_id,
       (x) => x
@@ -114,25 +128,19 @@ export class Networks {
     );
     const sourcesNormalized = normalizeSources(this.ethereumChainSources);
     this.sourcesNormalized = sourcesNormalized;
+    const collection = { ...originalCollection };
     for (const value of Object.values(sourcesNormalized)) {
-      Object.assign(
-        collection,
-        toCollection(
-          value,
-          (item) => item.external_id,
-          (x) => x
-        )
-      );
+      Object.assign(collection, value.collection);
       Object.assign(
         nameToId,
         toCollection(
-          value,
+          value.items,
           (item) => item.chain,
           (item) => item.external_id
         )
       );
     }
-    return { collection, nameToId };
+    return { collection, originalCollection, nameToId };
   }
 
   updateEthereumChainSources(ethereumChainSources: EthereumChainSources) {
@@ -155,16 +163,10 @@ export class Networks {
   }
 
   getNetworksMetaData(): Record<string, NetworkConfigMetaData> {
-    const originalCollection = toCollection(
-      this.networks,
-      (network) => network.external_id, // TODO: use "chain"
-      (x) => x
-    );
     const result: Record<string, NetworkConfigMetaData> = {};
     const values = ['predefined', 'custom']
       .map((key) => this.ethereumChainSources?.[key])
       .filter(isTruthy);
-    console.log({ originalCollection });
     for (const value of values) {
       for (const config of value.ethereumChains) {
         if (result[config.chain.chainId]) {
@@ -172,7 +174,7 @@ export class Networks {
           result[config.chain.chainId].updated = config.updated;
           result[config.chain.chainId].origin = config.origin;
         } else {
-          const created = originalCollection[config.chain.chainId]
+          const created = this.originalCollection[config.chain.chainId]
             ? 0
             : config.created;
           result[config.chain.chainId] = {
@@ -187,14 +189,10 @@ export class Networks {
   }
 
   getTestNetworks() {
-    console.log({ sourcesNormalized: this.sourcesNormalized });
-    const customCollection = toCollection(
-      this.sourcesNormalized?.['custom'] || [],
-      (item) => item.external_id,
-      (x) => x
-    );
-    const items = this.sourcesNormalized?.['predefined'];
-    return (items || []).map((item) => {
+    const customCollection =
+      this.sourcesNormalized?.['custom'].collection || {};
+    const items = this.sourcesNormalized?.['predefined'].items || [];
+    return items.map((item) => {
       if (item.external_id in customCollection) {
         return customCollection[item.external_id];
       } else {
@@ -204,22 +202,32 @@ export class Networks {
   }
 
   getCustomNetworks() {
-    const predefinedCollection = toCollection(
-      this.sourcesNormalized?.['predefined'] || [],
-      (item) => item.external_id,
-      (x) => x
-    );
-    const originalCollection = toCollection(
-      this.networks,
-      (network) => network.external_id,
-      (x) => x
-    );
-    const items = this.sourcesNormalized?.['custom'];
-    return (items || []).filter(
+    const predefinedCollection =
+      this.sourcesNormalized?.['predefined'].collection || {};
+    const items = this.sourcesNormalized?.['custom'].items || [];
+    return items.filter(
       (item) =>
         item.external_id in predefinedCollection === false &&
-        item.external_id in originalCollection === false
+        item.external_id in this.originalCollection === false
     );
+  }
+
+  getSourceType(chain: Chain): 'mainnets' | 'testnets' | 'custom' {
+    const chainStr = chain.toString();
+    if (chainStr in this.originalCollection) {
+      return 'mainnets';
+    } else if (
+      this.sourcesNormalized?.['predefined'] &&
+      chainStr in this.sourcesNormalized['predefined'].collection
+    ) {
+      return 'testnets';
+    } else if (
+      this.sourcesNormalized?.['custom'] &&
+      chainStr in this.sourcesNormalized['custom'].collection
+    ) {
+      return 'custom';
+    }
+    return 'custom';
   }
 
   findEthereumChainById(id: string) {
@@ -256,6 +264,10 @@ export class Networks {
       throw new UnsupportedNetwork(`Unsupported network id: ${chainId}`);
     }
     return network;
+  }
+
+  hasNetworkById(chainId: string) {
+    return Boolean(this.collection[chainId]);
   }
 
   getNetworkByName(chain: Chain) {

@@ -3,6 +3,7 @@ import { produce } from 'immer';
 import { equal } from 'src/modules/fast-deep-equal';
 import type { Chain } from 'src/modules/networks/Chain';
 import { PersistentStore } from 'src/modules/persistent-store';
+import { upsert } from 'src/shared/upsert';
 import type { AddEthereumChainParameter } from '../types/AddEthereumChainParameter';
 
 export interface EthereumChainConfig {
@@ -51,8 +52,9 @@ export class ChainConfigStore extends PersistentStore<ChainConfig> {
       return existing;
     }
     const newState = produce(state, (draft) => {
-      remove(draft.ethereumChains, (x) => x.chain.chainId === chainId);
-      draft.ethereumChains.push(newValue);
+      upsert(draft.ethereumChains, newValue, (x) => x.chain.chainId);
+      // remove(draft.ethereumChains, (x) => x.chain.chainId === chainId);
+      // draft.ethereumChains.push(newValue);
     });
     this.setState(newState);
     return newValue;

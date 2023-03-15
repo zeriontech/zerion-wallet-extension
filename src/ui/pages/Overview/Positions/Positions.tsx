@@ -1,6 +1,6 @@
 import type { AddressParams, AddressPosition } from 'defi-sdk';
 import { useAddressPositions } from 'defi-sdk';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { getCommonQuantity } from 'src/shared/units/assetQuantity';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
@@ -11,7 +11,6 @@ import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Image } from 'src/ui/ui-kit/MediaFallback';
 import WalletIcon from 'jsx:src/ui/assets/wallet.svg';
-import AllNetworksIcon from 'jsx:src/ui/assets/all-networks.svg';
 // import { VirtualizedSurfaceList } from 'src/ui/ui-kit/SurfaceList/VirtualizedSurfaceList';
 import { Item, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import {
@@ -39,12 +38,6 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { EmptyView } from 'src/ui/components/EmptyView';
-import { Button } from 'src/ui/ui-kit/Button';
-import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
-import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
-import { invariant } from 'src/shared/invariant';
-import { NetworkSelectDialog } from 'src/ui/components/NetworkSelectDialog';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { httpConnectionPort } from 'src/ui/shared/channels';
 import { useQuery } from 'react-query';
@@ -56,6 +49,8 @@ import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { FillView } from 'src/ui/components/FillView';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
+import { NetworkSelect } from 'src/ui/pages/Networks/NetworkSelect';
+import { intersperce } from 'src/ui/shared/intersperce';
 
 function LineToParent({
   hasPreviosNestedPosition,
@@ -106,17 +101,6 @@ function LineToParent({
       />
     </svg>
   );
-}
-
-function intersperce<T>(arr: T[], getJoiner: (index: number) => T): T[] {
-  const result: T[] = [];
-  arr.forEach((el, index) => {
-    result.push(el);
-    if (index < arr.length - 1) {
-      result.push(getJoiner(index));
-    }
-  });
-  return result;
 }
 
 const textOverflowStyle: React.CSSProperties = {
@@ -184,7 +168,9 @@ function AddressPositionItem({
                           <TokenIcon symbol={position.chain} size={16} />
                         )}
                       />{' '}
-                      <span>{getChainName(position.chain)}</span>
+                      <span style={textOverflowStyle}>
+                        {getChainName(position.chain)}
+                      </span>
                     </React.Fragment>
                   ) : undefined,
                   groupType === PositionsGroupType.position ? (
@@ -215,9 +201,9 @@ function AddressPositionItem({
                       )}
                     </span>
                   ) : null,
-                ].filter(Boolean),
-                (index) => (
-                  <span key={index}> · </span>
+                ],
+                (key) => (
+                  <span key={key}> · </span>
                 )
               )}
             </UIText>
@@ -322,41 +308,6 @@ function usePreparedPositions({
       protocolIndex,
     };
   }, [groupType, items, totalValue]);
-}
-
-function NetworkSelect({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  const chain = createChain(value);
-  const { networks } = useNetworks();
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
-  return (
-    <>
-      <BottomSheetDialog ref={dialogRef} style={{ padding: 0 }}>
-        <NetworkSelectDialog value={value} />
-      </BottomSheetDialog>
-      <Button
-        size={32}
-        kind="ghost"
-        onClick={() => {
-          invariant(dialogRef.current, 'Dialog element not found');
-          showConfirmDialog(dialogRef.current).then((chain) => onChange(chain));
-        }}
-      >
-        <HStack gap={8} alignItems="center">
-          <AllNetworksIcon
-            style={{ width: 24, height: 24 }}
-            role="presentation"
-          />
-          <span>{value ? networks?.getChainName(chain) : 'All Networks'}</span>
-        </HStack>
-      </Button>
-    </>
-  );
 }
 
 function ProtocolHeading({
@@ -551,7 +502,11 @@ function PositionsList({
                 displayImage={protocol !== DEFAULT_PROTOCOL}
               />
               {index === 0 ? (
-                <NetworkSelect value={chainValue} onChange={onChainChange} />
+                <NetworkSelect
+                  value={chainValue}
+                  onChange={onChainChange}
+                  type="overview"
+                />
               ) : null}
             </HStack>
             <SurfaceList
@@ -564,6 +519,19 @@ function PositionsList({
         );
       })}
     </VStack>
+  );
+}
+
+function ResetNetworkButton({ onClick }: { onClick: () => void }) {
+  return (
+    <UnstyledButton
+      // chrome://extensions is not allowed to be linked to, but
+      // can be opened programmatically
+      onClick={onClick}
+      className={helperStyles.hoverUnderline}
+    >
+      <div>Show All Networks</div>
+    </UnstyledButton>
   );
 }
 
@@ -597,7 +565,20 @@ function MultiChainPositions({
   }
 
   if (!items || items.length === 0) {
-    return <EmptyView text="No assets yet" />;
+    return (
+      <EmptyView
+        text={
+          <VStack gap={4}>
+            <div>No assets yet</div>
+            {chainValue !== '' ? (
+              <UIText kind="small/regular" color="var(--primary)">
+                <ResetNetworkButton onClick={() => onChainChange('')} />
+              </UIText>
+            ) : null}
+          </VStack>
+        }
+      />
+    );
   }
   return (
     <PositionsList
@@ -665,7 +646,7 @@ async function getEvmAddressPositions({
   networks: Networks;
 }) {
   const balanceInHex = await httpConnectionPort.request('eth_getBalance', {
-    params: [address],
+    params: [address, 'latest'],
     context: { chainId },
   });
   const network = networks.getNetworkById(chainId);
@@ -780,14 +761,7 @@ export function Positions({
                 Error fetching for {chainValue}
               </UIText>
               <UIText kind="small/regular" color="var(--primary)">
-                <UnstyledButton
-                  // chrome://extensions is not allowed to be linked to, but
-                  // can be opened programmatically
-                  onClick={() => onChainChange('')}
-                  className={helperStyles.hoverUnderline}
-                >
-                  Show All Networks
-                </UnstyledButton>
+                <ResetNetworkButton onClick={() => onChainChange('')} />
               </UIText>
             </VStack>
           </FillView>

@@ -106,7 +106,7 @@ export class TransactionService {
   private upsertTransaction(value: TransactionObject) {
     this.transactionsStore.setState((state) =>
       produce(state, (draft) => {
-        upsert(draft, value, 'hash');
+        upsert(draft, value, (x) => x.hash);
       })
     );
   }

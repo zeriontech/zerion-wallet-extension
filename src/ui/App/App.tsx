@@ -363,7 +363,14 @@ export function App({ initialView, mode }: AppProps) {
             <ErrorBoundary
               renderError={(error) => (
                 <FillView>
-                  <ViewError error={error} />
+                  {error instanceof Response ? (
+                    <ViewError
+                      title="404"
+                      error={new Error(error.statusText)}
+                    />
+                  ) : (
+                    <ViewError error={error} />
+                  )}
                 </FillView>
               )}
             >

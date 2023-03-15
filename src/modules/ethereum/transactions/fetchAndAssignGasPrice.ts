@@ -36,6 +36,13 @@ async function fetchGasPrice(
   const chainId = ethers.utils.hexValue(incomingChainId);
   const network = wrappedGetNetworkById(networks, chainId);
   const chain = createChain(network.chain);
+  console.log(
+    'isSupportedByBackend',
+    networks,
+    network,
+    chain,
+    networks.isSupportedByBackend(chain)
+  );
   if (networks.isSupportedByBackend(chain)) {
     /** Use gas price info from our API */
     const gasChainPrices = await gasChainPricesSubscription.get();
@@ -46,7 +53,7 @@ async function fetchGasPrice(
     return gasPricesInfo;
   } else {
     /** Query the node directly */
-    const url = network.rpc_url_internal;
+    const url = networks.getRpcUrlInternal(chain); //network.rpc_url_internal;
     if (!url) {
       throw new Error(`RPC URL is missing from network config for ${chain}`);
     }

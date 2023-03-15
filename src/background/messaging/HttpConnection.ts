@@ -7,7 +7,7 @@ import {
   JsonRpcResult,
 } from '@json-rpc-tools/utils';
 import { networksStore } from 'src/modules/networks/networks-store.background';
-import type { ChannelContext } from 'src/shared/types/ChannelContext';
+// import type { ChannelContext } from 'src/shared/types/ChannelContext';
 // import type { Wallet } from '../Wallet/Wallet';
 
 export class HttpConnection extends EventEmitter {
@@ -27,7 +27,8 @@ export class HttpConnection extends EventEmitter {
 
   async send(
     request: JsonRpcPayload,
-    context: Partial<ChannelContext>
+    _context: unknown
+    // context: Partial<ChannelContext>
   ): Promise<JsonRpcResult | JsonRpcError> {
     if (!isJsonRpcRequest(request)) {
       console.log('not a request:', request); // eslint-disable-line no-console
@@ -42,10 +43,10 @@ export class HttpConnection extends EventEmitter {
 
     const chain = networks.getChainById(this.chainId);
     const url = networks.getRpcUrlInternal(chain);
-    console.log({ chain, url, chainId: this.chainId, context });
     return fetch(url, {
       method: 'post',
       body: JSON.stringify(request),
+      headers: { 'Content-Type': 'application/json' },
     })
       .then((r) => r.json())
       .then(

@@ -1,5 +1,6 @@
 import { ALCHEMY_KEY } from 'src/env/config';
 
+console.log({ ALCHEMY_KEY });
 export const keys = {
   ARBITRUM_INFURA_API_KEY: 'e2e40a30dc83445e8b4d5d7c88f85276',
   AURORA_API_KEY: '2ZaW4eTLoH9wrr3N5jMfSkyGXA9PLJDRb5jZdHV591mr',

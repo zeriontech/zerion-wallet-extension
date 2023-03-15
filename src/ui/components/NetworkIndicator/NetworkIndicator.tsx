@@ -21,6 +21,7 @@ export function NetworkIndicator({
         src={network?.icon_url}
         chainId={network?.external_id || ''}
         size={size}
+        name={network?.name || null}
       />
       <UIText kind="small/regular">{networks.getChainName(chain)}</UIText>
     </HStack>

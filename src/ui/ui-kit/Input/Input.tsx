@@ -18,8 +18,12 @@ const InputComponent = (
     style,
     className,
     boxHeight = 44,
+    error = false,
     ...props
-  }: { boxHeight?: 40 | 44 } & React.InputHTMLAttributes<HTMLInputElement>,
+  }: {
+    boxHeight?: 40 | 44;
+    error?: boolean;
+  } & React.InputHTMLAttributes<HTMLInputElement>,
   ref: React.Ref<HTMLInputElement>
 ) => {
   return (
@@ -27,6 +31,7 @@ const InputComponent = (
       ref={ref}
       className={cx(className, s.input, {
         [s.height40]: boxHeight === 40,
+        [s.error]: error,
       })}
       {...props}
       style={{

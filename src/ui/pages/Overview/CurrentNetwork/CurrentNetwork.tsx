@@ -73,7 +73,7 @@ export function CurrentNetwork({ address }: { address: string }) {
             padding: 0,
           }}
         >
-          <NetworkSelectDialog value={siteChain.toString()} />
+          <NetworkSelectDialog value={siteChain.toString()} type="connection" />
         </BottomSheetDialog>
       ) : null}
 

@@ -3,8 +3,49 @@ import { ChainConfig } from './ChainConfigStore';
 
 const chains: AddEthereumChainParameter[] = [
   {
+    chainName: 'Arbitrum Goerli',
+    chainId: '0x66eed',
+    iconUrls: ['https://chain-icons.s3.amazonaws.com/ethereum.png'],
+    nativeCurrency: {
+      name: 'Arbitrum Goerli Ether',
+      symbol: 'AGOR',
+      decimals: 18,
+    },
+    rpcUrls: ['https://goerli-rollup.arbitrum.io/rpc/'],
+    blockExplorerUrls: ['https://goerli-rollup-explorer.arbitrum.io'],
+  },
+  {
+    iconUrls: ['https://chain-icons.s3.amazonaws.com/avalanche.png'],
+    chainName: 'Avalanche Fuji Testnet',
+    rpcUrls: ['https://api.avax-test.network/ext/bc/C/rpc'],
+    nativeCurrency: {
+      name: 'Avalanche',
+      symbol: 'AVAX',
+      decimals: 18,
+    },
+    chainId: '0xa869',
+    blockExplorerUrls: ['https://testnet.snowtrace.io'],
+  },
+  {
+    chainName: 'Polygon Testnet Mumbai',
+    iconUrls: ['https://chain-icons.s3.amazonaws.com/polygon.png'],
+    rpcUrls: [
+      'https://matic-mumbai.chainstacklabs.com',
+      'https://rpc-mumbai.maticvigil.com',
+      'https://matic-testnet-archive-rpc.bwarelabs.com',
+    ],
+    nativeCurrency: {
+      name: 'MATIC',
+      symbol: 'MATIC',
+      decimals: 18,
+    },
+    chainId: '0x13881',
+    blockExplorerUrls: ['https://mumbai.polygonscan.com'],
+  },
+  {
     chainId: '0x5',
     chainName: 'Goerli',
+    iconUrls: ['https://chain-icons.s3.amazonaws.com/ethereum.png'],
     nativeCurrency: {
       name: 'Goerli Ether',
       symbol: 'ETH',
@@ -24,6 +65,8 @@ const chains: AddEthereumChainParameter[] = [
 ];
 
 export async function getPredefinedChains(): Promise<ChainConfig> {
+  console.log('pgepredegined chains');
+  await new Promise((r) => setTimeout(r, 800));
   return Promise.resolve({
     ethereumChains: chains.map((chain) => ({
       created: 0,

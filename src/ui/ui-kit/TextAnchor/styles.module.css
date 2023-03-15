@@ -1,3 +1,8 @@
+:where(.anchor) {
+  color: inherit;
+  font-family: inherit;
+}
+
 .anchor {
   text-decoration: none;
 }

@@ -123,6 +123,7 @@ function ActionDetail({
         size={12}
         src={network?.icon_url}
         chainId={network?.external_id || ''}
+        name={network?.name || null}
       />
       <UIText kind="small/regular" color="var(--neutral-500)">
         {action.transaction.status === 'pending' ? (
@@ -277,7 +278,6 @@ function ActionItemLocal({
   action: PendingAddressAction;
   networks: Networks;
 }) {
-  console.log({ action });
   const { value } = useAssetsPrices(
     {
       asset_codes: action.asset_code ? [action.asset_code.toLowerCase()] : [],

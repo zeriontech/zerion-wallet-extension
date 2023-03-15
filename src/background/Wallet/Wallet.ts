@@ -40,6 +40,7 @@ import { isKnownDapp } from 'src/shared/dapps/known-dapps';
 import type { WalletAbility } from 'src/shared/types/Daylight';
 import { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import { chainConfigStore } from 'src/modules/ethereum/chains/ChainConfigStore';
+import { NetworkId } from 'src/modules/networks/NetworkId';
 import { DaylightEventParams, emitter, ScreenViewParams } from '../events';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
@@ -55,7 +56,6 @@ import { WalletNameFlag } from './model/WalletNameFlag';
 import { WalletOrigin } from './model/WalletOrigin';
 import { GlobalPreferences } from './GlobalPreferences';
 import type { State as GlobalPreferencesState } from './GlobalPreferences';
-import { NetworkId } from 'src/modules/networks/NetworkId';
 
 const INTERNAL_SYMBOL_CONTEXT = { origin: INTERNAL_ORIGIN_SYMBOL };
 
@@ -1280,36 +1280,26 @@ class PublicController {
     context,
     params,
   }: PublicMethodParams<[AddEthereumChainParameter]>) {
-    console.log('wallet_addEthereumChain', params);
     if (!context?.origin) {
       throw new Error('This method requires origin');
     }
     const { origin } = context;
-    // return this.wallet.addEthereumChain({
-    //   context: INTERNAL_SYMBOL_CONTEXT,
-    //   params: {
-    //     values: params,
-    //     origin: context.origin,
-    //   },
-    // });
     return new Promise((resolve, reject) => {
       notificationWindow.open({
         route: '/addEthereumChain',
         search: `?${new URLSearchParams({
           origin,
           addEthereumChainParameter: JSON.stringify(params[0]),
-          // transaction: JSON.stringify(transaction),
         })}`,
         height: 700,
         onResolve: () => {
-          resolve(null); // null indicated success as per spec
+          resolve(null); // null indicates success as per spec
         },
         onDismiss: () => {
           reject(new UserRejected());
         },
       });
     });
-    // throw new Error('wallet_addEthereumChain is WIP');
   }
 
   async wallet_isKnownDapp({

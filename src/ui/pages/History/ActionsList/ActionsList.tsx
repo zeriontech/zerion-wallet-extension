@@ -7,10 +7,12 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import type { PendingAddressAction } from 'src/modules/ethereum/transactions/model';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
+import { HStack } from 'src/ui/ui-kit/HStack';
 import { ActionItem } from '../ActionItem';
 
 export function ActionsList({
   actions,
+  firstHeaderItemEnd,
   hasMore,
   isLoading,
   onLoadMore,
@@ -18,6 +20,7 @@ export function ActionsList({
   actions: (AddressAction | PendingAddressAction)[];
   hasMore: boolean;
   isLoading: boolean;
+  firstHeaderItemEnd?: React.ReactNode;
   onLoadMore?(): void;
 }) {
   const groupedByDate = useMemo(
@@ -29,13 +32,16 @@ export function ActionsList({
   );
   return (
     <VStack gap={24}>
-      {Object.entries(groupedByDate).map(([timestamp, items]) => (
+      {Object.entries(groupedByDate).map(([timestamp, items], index) => (
         <VStack gap={12} key={timestamp}>
-          <UIText kind="body/accent">
-            {new Intl.DateTimeFormat('en', {
-              dateStyle: 'medium',
-            }).format(Number(timestamp))}
-          </UIText>
+          <HStack gap={8} justifyContent="space-between">
+            <UIText kind="body/accent">
+              {new Intl.DateTimeFormat('en', {
+                dateStyle: 'medium',
+              }).format(Number(timestamp))}
+            </UIText>
+            {index === 0 ? firstHeaderItemEnd : null}
+          </HStack>
           <SurfaceList
             items={items.map((addressTransaction) => ({
               key: addressTransaction.transaction.hash,

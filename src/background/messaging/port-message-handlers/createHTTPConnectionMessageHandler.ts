@@ -1,13 +1,13 @@
 import browser from 'webextension-polyfill';
 import { isJsonRpcPayload, isJsonRpcRequest } from '@json-rpc-tools/utils';
 import type { Wallet } from 'src/shared/types/Wallet';
-import { getPortContext } from '../getPortContext';
-import { HttpConnection } from '../HttpConnection';
-import type { PortMessageHandler } from '../PortRegistry';
 import {
   isRpcRequestWithContext,
   requestWithContextToRpcRequest,
 } from 'src/shared/custom-rpc';
+import { getPortContext } from '../getPortContext';
+import { HttpConnection } from '../HttpConnection';
+import type { PortMessageHandler } from '../PortRegistry';
 
 export function createHttpConnectionMessageHandler(
   getWallet: () => Wallet
