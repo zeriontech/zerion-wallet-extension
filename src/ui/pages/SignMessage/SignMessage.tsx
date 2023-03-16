@@ -41,7 +41,11 @@ function MessageRow({ message }: { message: string }) {
         Data to Sign
       </UIText>
       <ItemSurface style={{ overflow: 'auto' }}>
-        <UIText kind="body/regular" color="var(--neutral-700)">
+        <UIText
+          kind="body/regular"
+          color="var(--neutral-700)"
+          style={{ wordBreak: 'break-word' }}
+        >
           {toUtf8String(message)}
         </UIText>
       </ItemSurface>

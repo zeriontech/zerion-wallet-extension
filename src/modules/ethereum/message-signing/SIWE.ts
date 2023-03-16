@@ -1,3 +1,4 @@
+import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { toChecksumAddress } from '../toChecksumAddress';
 import { toUtf8String } from './toUtf8String';
 
@@ -15,47 +16,37 @@ export function isSiweLike(rawMessage: string) {
 }
 
 /**
- * Possible message error types.
+ * Possible SIWE validation errors.
  */
-export enum SiweErrorType {
+export enum SiweValidationError {
   /** `domain` is not provided */
-  MISSING_DOMAIN = 'Domain cannot be empty',
-  /** `domain` is not a valid */
-  INVALID_DOMAIN = 'Invalid domain',
+  missingDomain = 1 << 0,
   /** `domain` doesn't match the origin */
-  DOMAIN_MISMATCH = 'Domain does not match origin',
+  domainMismatch = 1 << 1,
   /** `address` is not provided */
-  MISSING_ADDRESS = 'Address cannot be empty',
+  missingAddress = 1 << 2,
   /** `address` does not conform to EIP-55 (not a checksum address) */
-  INVALID_ADDRESS = 'Invalid address',
+  invalidAddress = 1 << 3,
+  /** The address in the signing data doesn’t match the address associated with your wallet */
+  addressMismatch = 1 << 4,
   /** `URI` is not provided */
-  MISSING_URI = '"URI" cannot be empty',
+  missingURI = 1 << 5,
   /** 'Version' is not provided */
-  MISSING_VERSION = '"Version" cannot be empty',
+  missionVersion = 1 << 6,
   /** `Version` is not 1 */
-  INVALID_VERSION = 'Invalid message version',
+  invalidVersion = 1 << 7,
   /** `Nonce` is not provided */
-  MISSING_NONCE = '"Nonce" cannot be empty',
+  missingNonce = 1 << 8,
   /** 'Chain ID' is not provided */
-  MISSING_CHAIN_ID = '"Chain ID" cannot be empty',
+  missingChainId = 1 << 9,
   /** 'Issued At' is not provided */
-  MISSING_ISSUED_AT = '"Issued At" cannot be empty',
+  missingIssuedAt = 1 << 10,
   /** `Expiration Time` is present and in the past */
-  EXPIRED_MESSAGE = 'Message expired',
+  expiredMessage = 1 << 11,
   /** `Not Before` is present and in the future */
-  INVALID_NOT_BEFORE = 'Message is not valid yet',
+  invalidNotBefore = 1 << 12,
   /** `Expiration Time`, `Not Before` or `Issued At` not complient to ISO-8601 */
-  INVALID_TIME_FORMAT = 'Invalid expiration time format',
-  /** Thrown when the message doesn't match regex */
-  UNABLE_TO_PARSE = 'Unable to parse the message',
-}
-
-export class SiweError {
-  readonly type: SiweErrorType;
-
-  constructor(type: SiweErrorType) {
-    this.type = type;
-  }
+  invalidTimeFormat = 1 << 13,
 }
 
 /**
@@ -161,8 +152,12 @@ $\
    */
   readonly resources?: Array<string>;
 
+  private error: SiweValidationError;
+
   private constructor(rawMessage: string, fields: Record<string, string>) {
+    this.error = 0;
     this.rawMessage = rawMessage;
+
     this.domain = fields.domain;
     this.address = fields.address;
     this.statement = fields.statement;
@@ -177,7 +172,7 @@ $\
     this.resources = fields.resources?.split('\n- ').slice(1);
   }
 
-  validate(origin: URL, currentTime: number) {
+  validate(origin: URL, walletAddress: string, currentTime: number) {
     const domain = this.domain.startsWith('http')
       ? new URL(this.domain)
       : new URL(`https://${this.domain}`);
@@ -185,51 +180,57 @@ $\
     const domainAuthority = `${domain.hostname}:${domain.port}`;
 
     if (domainAuthority !== originAuthority) {
-      throw new SiweError(SiweErrorType.DOMAIN_MISMATCH);
+      this.error |= SiweValidationError.domainMismatch;
     }
-
-    const errors = [];
-
     if (!this.domain) {
-      errors.push(SiweErrorType.MISSING_DOMAIN);
+      this.error |= SiweValidationError.missingDomain;
     }
     if (!this.address) {
-      errors.push(SiweErrorType.MISSING_ADDRESS);
+      this.error |= SiweValidationError.missingAddress;
     }
-    if (this.address !== toChecksumAddress(this.address)) {
-      errors.push(SiweErrorType.INVALID_ADDRESS);
+    if (normalizeAddress(this.address) !== normalizeAddress(walletAddress)) {
+      this.error |= SiweValidationError.addressMismatch;
+    }
+    if (this.address && this.address !== toChecksumAddress(this.address)) {
+      this.error |= SiweValidationError.invalidAddress;
     }
     if (!this.nonce) {
-      errors.push(SiweErrorType.MISSING_NONCE);
+      this.error |= SiweValidationError.missingNonce;
     }
     if (!this.chainId) {
-      errors.push(SiweErrorType.MISSING_CHAIN_ID);
+      this.error |= SiweValidationError.missingChainId;
     }
     if (!this.version) {
-      errors.push(SiweErrorType.MISSING_VERSION);
+      this.error |= SiweValidationError.missionVersion;
     }
     if (this.version !== '1') {
-      errors.push(SiweErrorType.INVALID_VERSION);
+      this.error |= SiweValidationError.invalidVersion;
     }
     if (!this.uri) {
-      errors.push(SiweErrorType.MISSING_URI);
+      this.error |= SiweValidationError.missingURI;
     }
     if (!this.issuedAt) {
-      errors.push(SiweErrorType.MISSING_ISSUED_AT);
+      this.error |= SiweValidationError.missingIssuedAt;
     }
 
     if (
       this.expirationTime &&
       currentTime >= new Date(this.expirationTime).getTime()
     ) {
-      errors.push(SiweErrorType.EXPIRED_MESSAGE);
+      this.error |= SiweValidationError.expiredMessage;
     }
 
     if (this.notBefore && currentTime < new Date(this.notBefore).getTime()) {
-      errors.push(SiweErrorType.INVALID_NOT_BEFORE);
+      this.error |= SiweValidationError.invalidNotBefore;
     }
+  }
 
-    return errors;
+  isValid() {
+    return this.error == 0;
+  }
+
+  hasError(error: SiweValidationError) {
+    return this.error & error;
   }
 
   /**
@@ -238,9 +239,6 @@ $\
   public static parse(rawMessage: string) {
     const regExp = new RegExp(SiweMessage.PATTERN, 'g');
     const match = regExp.exec(rawMessage);
-    if (!match?.groups) {
-      throw new SiweError(SiweErrorType.UNABLE_TO_PARSE);
-    }
-    return new SiweMessage(rawMessage, match.groups);
+    return match?.groups ? new SiweMessage(rawMessage, match.groups) : null;
   }
 }

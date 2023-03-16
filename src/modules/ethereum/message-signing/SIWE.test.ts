@@ -1,4 +1,4 @@
-import { SiweMessage, SiweError, SiweErrorType } from './SIWE';
+import { SiweMessage, SiweValidationError } from './SIWE';
 
 export interface SiweMessageFields {
   domain: string;
@@ -331,37 +331,39 @@ const testCases: {
   },
 };
 
+function expectParsed(
+  message: SiweMessage | null
+): asserts message is SiweMessage {
+  expect(message).not.toBeNull();
+}
+
 describe('SIWE (EIP-4361)', () => {
   describe('parse', () => {
     test.concurrent.each(Object.entries(testCases.positive))(
       'successfully parses message: %s',
       (_name: string, { message, fields }: PositiveTestCase) => {
-        const parsed = SiweMessage.parse(message);
-        expect(parsed.domain).toBe(fields.domain);
-        expect(parsed.address).toBe(fields.address);
-        expect(parsed.statement).toBe(fields.statement);
-        expect(parsed.uri).toBe(fields.uri);
-        expect(parsed.version).toBe(fields.version);
-        expect(parsed.chainId).toBe(fields.chainId);
-        expect(parsed.nonce).toBe(fields.nonce);
-        expect(parsed.issuedAt).toBe(fields.issuedAt);
-        expect(parsed.expirationTime).toBe(fields.expirationTime);
-        expect(parsed.notBefore).toBe(fields.notBefore);
-        expect(parsed.requestId).toBe(fields.requestId);
-        expect(parsed.resources).toStrictEqual(fields.resources);
+        const siwe = SiweMessage.parse(message);
+        expectParsed(siwe);
+        expect(siwe.domain).toBe(fields.domain);
+        expect(siwe.address).toBe(fields.address);
+        expect(siwe.statement).toBe(fields.statement);
+        expect(siwe.uri).toBe(fields.uri);
+        expect(siwe.version).toBe(fields.version);
+        expect(siwe.chainId).toBe(fields.chainId);
+        expect(siwe.nonce).toBe(fields.nonce);
+        expect(siwe.issuedAt).toBe(fields.issuedAt);
+        expect(siwe.expirationTime).toBe(fields.expirationTime);
+        expect(siwe.notBefore).toBe(fields.notBefore);
+        expect(siwe.requestId).toBe(fields.requestId);
+        expect(siwe.resources).toStrictEqual(fields.resources);
       }
     );
 
     test.concurrent.each(Object.entries(testCases.negative))(
       'fails to parse message: %s',
       (_name: string, message: string) => {
-        try {
-          SiweMessage.parse(message);
-        } catch (error) {
-          expect(
-            Object.values(SiweErrorType).includes((error as SiweError).type)
-          );
-        }
+        const siwe = SiweMessage.parse(message);
+        expect(siwe).toBeNull();
       }
     );
   });
@@ -370,36 +372,40 @@ describe('SIWE (EIP-4361)', () => {
     it('fails if domain does not equal origin', () => {
       const message =
         'https://lenster.xyz wants you to sign in with your Ethereum account:\n0x3083A9c26582C01Ec075373A8327016A15c1269B\n\nSign in with ethereum to lens\n\nURI: https://lenster.xyz\nVersion: 1\nChain ID: 137\nNonce: a83183e64822e4a4\nIssued At: 2023-02-25T14:34:03.642Z';
-      const parsed = SiweMessage.parse(message);
-      try {
-        parsed.validate(new URL('https://whatever'), new Date().getTime());
-      } catch (error) {
-        expect((error as SiweError).type).toBe(SiweErrorType.DOMAIN_MISMATCH);
-      }
+      const siwe = SiweMessage.parse(message);
+      expectParsed(siwe);
+      const errors = siwe.validate(
+        new URL('https://whatever'),
+        '0x3083A9c26582C01Ec075373A8327016A15c1269B',
+        new Date().getTime()
+      );
+      expect(errors).toContain(SiweValidationError.domainMismatch);
     });
 
     it('fails if "Expiration Time" is in the past', () => {
       const message =
         'service.org wants you to sign in with your Ethereum account:\n0xe5A12547fe4E872D192E3eCecb76F2Ce1aeA4946\n\nI accept the ServiceOrg Terms of Service: https://service.org/tos\n\nURI: https://service.org/login\nVersion: 1\nChain ID: 1\nNonce: 12341234\nIssued At: 2022-03-17T12:45:13.610Z\nExpiration Time: 2023-02-17T12:45:13.610Z\nNot Before: 2022-03-17T12:45:13.610Z\nRequest ID: some_id\nResources:\n- https://service.org/login';
-      const parsed = SiweMessage.parse(message);
-      try {
-        parsed.validate(new URL('https://service.org'), new Date().getTime());
-      } catch (error) {
-        expect((error as SiweError).type).toBe(SiweErrorType.EXPIRED_MESSAGE);
-      }
+      const siwe = SiweMessage.parse(message);
+      expectParsed(siwe);
+      const errors = siwe.validate(
+        new URL('https://service.org'),
+        '0xe5A12547fe4E872D192E3eCecb76F2Ce1aeA4946',
+        new Date().getTime()
+      );
+      expect(errors).toContain(SiweValidationError.expiredMessage);
     });
 
     it('fails if "Not Before" is in the future', () => {
       const message =
         'service.org wants you to sign in with your Ethereum account:\n0xe5A12547fe4E872D192E3eCecb76F2Ce1aeA4946\n\nI accept the ServiceOrg Terms of Service: https://service.org/tos\n\nURI: https://service.org/login\nVersion: 1\nChain ID: 1\nNonce: 12341234\nIssued At: 2022-03-17T12:45:13.610Z\nExpiration Time: 3023-02-17T12:45:13.610Z\nNot Before: 3023-03-17T12:45:13.610Z\nRequest ID: some_id\nResources:\n- https://service.org/login';
-      const parsed = SiweMessage.parse(message);
-      try {
-        parsed.validate(new URL('https://service.org'), new Date().getTime());
-      } catch (error) {
-        expect((error as SiweError).type).toBe(
-          SiweErrorType.INVALID_NOT_BEFORE
-        );
-      }
+      const siwe = SiweMessage.parse(message);
+      expectParsed(siwe);
+      const errors = siwe.validate(
+        new URL('https://service.org'),
+        '0xe5A12547fe4E872D192E3eCecb76F2Ce1aeA4946',
+        new Date().getTime()
+      );
+      expect(errors).toContain(SiweValidationError.invalidNotBefore);
     });
   });
 });
