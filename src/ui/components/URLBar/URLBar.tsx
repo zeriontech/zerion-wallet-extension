@@ -7,6 +7,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { Store } from 'store-unit';
 import { useStore } from '@store-unit/react';
 import { getPageTemplateType } from 'src/ui/shared/getPageTemplateName';
+import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 
 function capitalize(str: string) {
   return `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
@@ -95,7 +96,13 @@ export function URLBar() {
           return children.length ? (
             children
           ) : (
-            <BackButton onClick={() => navigate(-1)} />
+            <>
+              <BackButton onClick={() => navigate(-1)} />
+              <KeyboardShortcut
+                combination="backspace"
+                onKeyDown={() => navigate(-1)}
+              />
+            </>
           );
         }}
       />
