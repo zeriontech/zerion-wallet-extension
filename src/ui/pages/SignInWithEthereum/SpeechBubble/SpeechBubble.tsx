@@ -9,7 +9,7 @@ export function SpeechBubble({
   ...props
 }: React.HTMLProps<HTMLDivElement> & { text: React.ReactNode }) {
   return (
-    <div {...props} className={cx(className, styles.speechBubble, styles.left)}>
+    <div {...props} className={cx(className, styles.speechBubble)}>
       {text}
       <AngleIcon className={styles.angle} />
     </div>
