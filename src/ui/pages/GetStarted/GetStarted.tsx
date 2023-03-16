@@ -82,7 +82,7 @@ function Options() {
       ),
     [walletGroups]
   );
-  const hasMnemonicWallets = mnemonicGroups ? mnemonicGroups.length > 0 : false;
+  const hasWallets = walletGroups ? walletGroups?.length > 0 : false;
 
   const { data: userCanCreateInitialWallet } = useQuery(
     'wallet/userCanCreateInitialWallet',
@@ -118,7 +118,7 @@ function Options() {
         </FillView>
 
         <VStack gap={16}>
-          {(hasMnemonicWallets || userCanCreateInitialWallet) && (
+          {(hasWallets || userCanCreateInitialWallet) && (
             <NewWalletOption
               beforeCreate={beforeCreate}
               mnemonicWalletGroups={mnemonicGroups || null}
