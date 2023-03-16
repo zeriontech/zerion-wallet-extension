@@ -3,21 +3,10 @@ import { MemoryRouter } from 'react-router-dom';
 import { WindowSize } from 'src/ui-lab/components/WindowSize';
 import type { Readme } from 'src/ui-lab/types';
 import { ViewSuspense } from 'src/ui/components/ViewSuspense';
-import { SignIn } from './SignInWithEthereum';
-import { DataToSign } from './DataToSign';
-import { DataVerificationFailed } from './DataVerificationFailed';
-import { ConfirmWithPassword } from './ConfirmWithPassword';
+import { SignInWithEthereum } from './SignInWithEthereum';
 
 const MESSAGE =
   'https://lenster.xyz wants you to sign in with your Ethereum account:\n0x3083A9c26582C01Ec075373A8327016A15c1269B\n\nSign in with ethereum to lens\n\nURI: https://lenster.xyz\nVersion: 1\nChain ID: 137\nNonce: a83183e64822e4a4\nIssued At: 2023-02-25T14:34:03.642Z';
-
-function Screen({ children }: React.PropsWithChildren) {
-  return (
-    <WindowSize>
-      <ViewSuspense>{children}</ViewSuspense>
-    </WindowSize>
-  );
-}
 
 export const readme: Readme = {
   id: 'siwe',
@@ -41,18 +30,11 @@ export const readme: Readme = {
           })}`,
         ]}
       >
-        <Screen>
-          <SignIn />
-        </Screen>
-        <Screen>
-          <DataToSign />
-        </Screen>
-        <Screen>
-          <DataVerificationFailed />
-        </Screen>
-        <Screen>
-          <ConfirmWithPassword />
-        </Screen>
+        <WindowSize>
+          <ViewSuspense>
+            <SignInWithEthereum />
+          </ViewSuspense>
+        </WindowSize>
       </MemoryRouter>
     </div>
   ),
