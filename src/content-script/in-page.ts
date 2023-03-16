@@ -2,7 +2,7 @@ import { EthereumProvider } from 'src/modules/ethereum/provider';
 import { Connection } from 'src/modules/ethereum/connection';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
-import { observeAndUpdatePageButtons } from './dapp-mutation';
+import { pageObserver } from './dapp-mutation';
 import * as dappDetection from './dapp-detection';
 import * as competingProviders from './competing-providers';
 import { dappsWithoutCorrectEIP1193Support } from './dapp-configs';
@@ -41,6 +41,12 @@ dappDetection.initialize(provider);
 dappDetection.onBeforeAssignToWindow(window.ethereum);
 window.ethereum = provider;
 
+dappDetection.onChange(({ dappIsZerionAware }) => {
+  if (dappIsZerionAware) {
+    pageObserver.stop();
+  }
+});
+
 Object.defineProperty(window, 'ethereum', {
   configurable: false, // explicitly set to false to disallow redefining the property by other wallets
   get() {
@@ -64,7 +70,11 @@ provider
   .request({ method: 'wallet_getGlobalPreferences' })
   .then((preferences: GlobalPreferences) => {
     if (preferences.recognizableConnectButtons) {
-      dappDetection.onDappDetected(observeAndUpdatePageButtons);
+      dappDetection.onChange(({ dappDetected, dappIsZerionAware }) => {
+        if (dappDetected && !dappIsZerionAware) {
+          pageObserver.start();
+        }
+      });
     }
   });
 

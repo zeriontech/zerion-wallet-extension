@@ -5,25 +5,39 @@ let dappDetectionIsPossible = true;
 
 type ForeignProvider = EthereumProvider & { isRabby?: boolean };
 
-const listeners: Array<() => void> = [];
-const notify = () => listeners.forEach((l) => l());
+const state = {
+  dappDetected: false,
+  dappIsZerionAware: false,
+};
 
-let dappDetected = false;
+const listeners: Array<(value: typeof state) => void> = [];
+const notify = () => listeners.forEach((l) => l(state));
 
-export function onDappDetected(listener: () => void) {
+export function onChange(listener: (value: typeof state) => void) {
   listeners.push(listener);
-  if (dappDetected) {
-    listener();
+  if (state.dappDetected) {
+    listener(state);
   }
 }
 
+function trackZerionFlagAccess(ourProvider: EthereumProvider) {
+  Object.defineProperty(ourProvider, 'isZerion', {
+    get() {
+      state.dappIsZerionAware = true;
+      notify();
+      return true;
+    },
+  });
+}
+
 export async function initialize(ourProvider: EthereumProvider) {
+  trackZerionFlagAccess(ourProvider);
   const isDapp = await ourProvider.request({
     method: 'wallet_isKnownDapp',
     params: { origin: window.location.origin },
   });
   if (isDapp) {
-    dappDetected = true;
+    state.dappDetected = true;
     notify();
   }
 }
@@ -46,7 +60,7 @@ export function onAccessThroughWindow(ourProvider: EthereumProvider) {
   if (!didHandleWindowAccess) {
     didHandleWindowAccess = true;
     if (dappDetectionIsPossible) {
-      dappDetected = true;
+      state.dappDetected = true;
       notify();
       ourProvider.request({
         method: 'wallet_flagAsDapp',

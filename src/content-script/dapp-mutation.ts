@@ -13,7 +13,7 @@ function visitTextNodes(node: Element, cb: (node: Node) => boolean) {
 // which is more readable. But I measured in a couple of benchmarks and it seems
 // to perform slightly slower in Chrome and *much* slower in Safari
 const labelsInjectedRe =
-  /\b(Injected Wallet|Injected|Detected Wallet|Browser Wallet|Web3 Wallet)\b/;
+  /\b(Injected Wallet|Injected|Detected Wallet|Browser Wallet|Web3 Wallet)\b/i;
 const labelsMetamaskRe = /\bMeta[mM]ask\b/;
 
 function isReplacementMatch(textNode: Node, regex: RegExp) {
@@ -167,38 +167,48 @@ function onTagMounted(
   tagName: string,
   cb: (collection: HTMLCollectionOf<Element>) => void
 ) {
-  new MutationObserver((mutations) => {
+  const observer = new MutationObserver((mutations) => {
     mutations
       .filter((mutation) => mutation.addedNodes)
       .filter((mutation) => mutation.target instanceof HTMLElement)
       .forEach((mutation) => {
         cb((mutation.target as HTMLElement).getElementsByTagName(tagName));
       });
-  }).observe(document.body, { childList: true /* only direct children */ });
+  });
+  observer.observe(document.body, {
+    childList: true /* only direct children */,
+  });
+  return () => observer.disconnect();
 }
 
 function observeConnectButtons(
   node: ParentNode = document.body,
   context: Context
 ) {
-  new MutationObserver((mutations) => {
+  const observer = new MutationObserver((mutations) => {
     if (mutations.some((m) => m.addedNodes.length || m.type === 'attributes')) {
       // can we narrow down the algorithm to use rewriteConnectButtons(mutation.target)?
       rewriteConnectButtons(node, context);
     }
-  }).observe(node, {
+  });
+  observer.observe(node, {
     subtree: true,
     childList: true,
     attributeFilter: ['src'],
   });
+  return () => observer.disconnect();
 }
 
 function observeShadowRootCollection(htmlCollection: HTMLCollection) {
+  const unlisteners: Array<() => void> = [];
   for (const node of htmlCollection) {
     if (node.shadowRoot) {
-      observeConnectButtons(node.shadowRoot, { isOnboardV2: true });
+      unlisteners.push(
+        observeConnectButtons(node.shadowRoot, { isOnboardV2: true })
+      );
     }
   }
+  return () => unlisteners.forEach((l) => l());
 }
 
 const documentReady = () =>
@@ -210,20 +220,42 @@ const documentReady = () =>
     }
   });
 
-const shouldUpdateButtons = window.location.origin !== 'https://app.zerion.io';
-let isObserving = false;
-
-export async function observeAndUpdatePageButtons() {
+async function observeAndUpdatePageButtons() {
   /**
    * This script scans the page and updates generic "Browser Wallet" button
    * names and icons to help the user connect to the dapp
    */
-  if (isObserving || !shouldUpdateButtons) {
-    return;
-  }
-  isObserving = true;
   await documentReady();
-  observeConnectButtons(document.body, {});
-  observeShadowRootCollection(document.body.getElementsByTagName('onboard-v2'));
-  onTagMounted('onboard-v2', observeShadowRootCollection);
+  const unlisteners: Array<() => void> = [
+    observeConnectButtons(document.body, {}),
+    observeShadowRootCollection(
+      document.body.getElementsByTagName('onboard-v2')
+    ),
+    onTagMounted('onboard-v2', observeShadowRootCollection),
+  ];
+  return () => unlisteners.forEach((l) => l());
 }
+
+class PageObserver {
+  private unlisten: null | (() => void) = null;
+  private isStarting = false;
+  isObserving = false;
+
+  async start() {
+    if (this.isObserving || this.isStarting) {
+      return;
+    }
+    this.isStarting = true;
+    this.unlisten = await observeAndUpdatePageButtons();
+    this.isStarting = false;
+    this.isObserving = true;
+  }
+
+  stop() {
+    this.unlisten?.();
+    this.isObserving = false;
+    this.unlisten = null;
+  }
+}
+
+export const pageObserver = new PageObserver();
