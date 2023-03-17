@@ -1,4 +1,4 @@
-import { normalizeAddress } from 'src/shared/normalizeAddress';
+import dayjs from 'dayjs';
 import { toChecksumAddress } from '../toChecksumAddress';
 import { toUtf8String } from './toUtf8String';
 
@@ -32,7 +32,7 @@ export enum SiweValidationError {
   /** `URI` is not provided */
   missingURI = 1 << 5,
   /** 'Version' is not provided */
-  missionVersion = 1 << 6,
+  missingVersion = 1 << 6,
   /** `Version` is not 1 */
   invalidVersion = 1 << 7,
   /** `Nonce` is not provided */
@@ -45,7 +45,7 @@ export enum SiweValidationError {
   expiredMessage = 1 << 11,
   /** `Not Before` is present and in the future */
   invalidNotBefore = 1 << 12,
-  /** `Expiration Time`, `Not Before` or `Issued At` not complient to ISO-8601 */
+  /** `Expiration Time`, `Not Before` or `Issued At` not compliant to ISO-8601 */
   invalidTimeFormat = 1 << 13,
 }
 
@@ -56,8 +56,8 @@ export class SiweMessage {
   private static readonly URI =
     '(([^:?#]+):)?(([^?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?';
   // ISO8601
-  private static readonly DATETIME =
-    '[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])[Tt]([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(.[0-9]+)?(([Zz])|([+|-]([01][0-9]|2[0-3]):[0-5][0-9]))';
+
+  private static readonly DATETIME = `[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])[Tt]([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(.[0-9]+)?(([Zz])|([+|-]([01][0-9]|2[0-3]):[0-5][0-9]))`;
 
   private static readonly DOMAIN =
     '(?<domain>([^?#]*)) wants you to sign in with your Ethereum account:';
@@ -77,6 +77,7 @@ export class SiweMessage {
 
   private static readonly PATTERN = `\
 ^\
+[\\n\\r\\s]*\
 ${SiweMessage.DOMAIN}\
 ${SiweMessage.ADDRESS}\
 ${SiweMessage.STATEMENT}\
@@ -89,6 +90,7 @@ ${SiweMessage.EXPIRATION_TIME}\
 ${SiweMessage.NOT_BEFORE}\
 ${SiweMessage.REQUEST_ID}\
 ${SiweMessage.RESOURCES}\
+[\\n\\r\\s]*\
 $\
 `;
 
@@ -164,7 +166,7 @@ $\
     this.uri = fields.uri;
     this.version = fields.version;
     this.nonce = fields.nonce;
-    this.chainId = parseInt(fields.chainId);
+    this.chainId = this.parseChainId(fields.chainId);
     this.issuedAt = fields.issuedAt;
     this.expirationTime = fields.expirationTime;
     this.notBefore = fields.notBefore;
@@ -188,7 +190,7 @@ $\
     if (!this.address) {
       this.error |= SiweValidationError.missingAddress;
     }
-    if (normalizeAddress(this.address) !== normalizeAddress(walletAddress)) {
+    if (toChecksumAddress(this.address) !== toChecksumAddress(walletAddress)) {
       this.error |= SiweValidationError.addressMismatch;
     }
     if (this.address && this.address !== toChecksumAddress(this.address)) {
@@ -201,7 +203,7 @@ $\
       this.error |= SiweValidationError.missingChainId;
     }
     if (!this.version) {
-      this.error |= SiweValidationError.missionVersion;
+      this.error |= SiweValidationError.missingVersion;
     }
     if (this.version !== '1') {
       this.error |= SiweValidationError.invalidVersion;
@@ -211,17 +213,24 @@ $\
     }
     if (!this.issuedAt) {
       this.error |= SiweValidationError.missingIssuedAt;
+    } else if (!dayjs(this.expirationTime).isValid()) {
+      this.error |= SiweValidationError.invalidTimeFormat;
     }
 
-    if (
-      this.expirationTime &&
-      currentTime >= new Date(this.expirationTime).getTime()
-    ) {
-      this.error |= SiweValidationError.expiredMessage;
+    if (this.expirationTime) {
+      if (!dayjs(this.expirationTime).isValid()) {
+        this.error |= SiweValidationError.invalidTimeFormat;
+      } else if (currentTime >= new Date(this.expirationTime).getTime()) {
+        this.error |= SiweValidationError.expiredMessage;
+      }
     }
 
-    if (this.notBefore && currentTime < new Date(this.notBefore).getTime()) {
-      this.error |= SiweValidationError.invalidNotBefore;
+    if (this.notBefore) {
+      if (!dayjs(this.notBefore).isValid()) {
+        this.error |= SiweValidationError.invalidTimeFormat;
+      } else if (currentTime < new Date(this.notBefore).getTime()) {
+        this.error |= SiweValidationError.invalidNotBefore;
+      }
     }
   }
 
@@ -240,5 +249,13 @@ $\
     const regExp = new RegExp(SiweMessage.PATTERN, 'g');
     const match = regExp.exec(rawMessage);
     return match?.groups ? new SiweMessage(rawMessage, match.groups) : null;
+  }
+
+  private parseChainId(value: string) {
+    const parsed = parseInt(value);
+    if (isNaN(parsed) || parsed === Infinity) {
+      throw new Error('Invalid number');
+    }
+    return parsed;
   }
 }

@@ -17,7 +17,7 @@ const errorMessages: Record<string, SiweValidationErrorMessage> = {
   notParsed: {
     kind: 'danger',
     title: 'Invalid Signing Data',
-    text: 'The signing data looks like a SIWE (EIP-4361) siwe but has invalid structure',
+    text: 'The signing data looks like a SIWE (EIP-4361) but has invalid structure',
   },
   domainMismatch: {
     kind: 'warning',
