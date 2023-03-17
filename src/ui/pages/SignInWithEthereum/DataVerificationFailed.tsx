@@ -26,7 +26,7 @@ function getErrors(siwe: SiweMessage) {
   if (siwe.hasError(SiweValidationError.missingURI)) {
     errors.push('Missing "URI"');
   }
-  if (siwe.hasError(SiweValidationError.missionVersion)) {
+  if (siwe.hasError(SiweValidationError.missingVersion)) {
     errors.push('Missing "Version"');
   }
   if (siwe.hasError(SiweValidationError.invalidVersion)) {
@@ -48,7 +48,7 @@ function getErrors(siwe: SiweMessage) {
     errors.push('"Not before" is in the future');
   }
   if (siwe.hasError(SiweValidationError.invalidTimeFormat)) {
-    errors.push('One or more datetime fields are not complient to ISO-8601');
+    errors.push('Datetime fields are not ISO-8601 compliant');
   }
 
   return errors;
@@ -74,23 +74,15 @@ export function DataVerificationFailed({ siwe }: { siwe: SiweMessage }) {
           </TextAnchor>{' '}
           Zerion found an issue with the data received from the dapp:
         </UIText>
-        <ul style={{ color: 'var(--negative-500)' }}>
+        <VStack gap={4}>
           {errors.map((error, index) => (
-            <li key={index}>
-              <HStack
-                gap={8}
-                alignItems="center"
-                style={{ color: 'var(--negative-500)' }}
-              >
-                <WarningIcon
-                  kind="negative"
-                  style={{ width: 16, height: 16 }}
-                />
-                <UIText kind="body/regular">{error}</UIText>
-              </HStack>
-            </li>
+            <HStack key={index} gap={8} alignItems="center">
+              <UIText kind="body/regular">•</UIText>
+              <UIText kind="body/regular">{error}</UIText>
+              <WarningIcon kind="negative" size={20} />
+            </HStack>
           ))}
-        </ul>
+        </VStack>
         <div>
           <UIText kind="body/regular" inline={true}>
             Try to repeat the request and review the signing data by clicking{' '}
