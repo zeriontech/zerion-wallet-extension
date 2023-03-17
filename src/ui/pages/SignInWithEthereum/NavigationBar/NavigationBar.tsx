@@ -1,20 +1,8 @@
 import React from 'react';
-import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import IconLeft from 'jsx:src/ui/assets/arrow-left.svg';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { useNavigate } from 'react-router-dom';
-
-function BackButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  return (
-    <UnstyledButton
-      aria-label="Go back"
-      style={{ padding: '8px 0' }}
-      {...props}
-    >
-      <IconLeft role="presentation" style={{ display: 'block' }} />
-    </UnstyledButton>
-  );
-}
+import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
+import { BackButton } from 'src/ui/components/BackButton';
 
 export function NavigationBar({ title }: { title: string }) {
   const navigate = useNavigate();
@@ -31,7 +19,7 @@ export function NavigationBar({ title }: { title: string }) {
         gridTemplateColumns: '40px 1fr 40px',
       }}
     >
-      <BackButton onClick={() => navigate(-1)} />
+      <BackButton style={{ padding: '8px 0' }} onClick={() => navigate(-1)} />
       <UIText
         kind="body/accent"
         style={{
@@ -42,6 +30,10 @@ export function NavigationBar({ title }: { title: string }) {
       >
         {title}
       </UIText>
+      <KeyboardShortcut
+        combination="backspace"
+        onKeyDown={() => navigate(-1)}
+      />
     </nav>
   );
 }
