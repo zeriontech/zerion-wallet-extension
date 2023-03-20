@@ -13,7 +13,10 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
 import { useAddressNfts } from 'src/ui/shared/requests/addressNfts/useAddressNfts';
 import { validateEmail } from 'src/ui/shared/validateEmail';
-import { checkWhitelistStatus } from '../checkWhitelistStatus';
+import {
+  checkWhitelistStatus,
+  getWaitlistStatus,
+} from '../checkWhitelistStatus';
 import { SidePanel } from '../Import/SidePanel';
 import { useSizeStore } from '../useSizeStore';
 import { Stack } from '../Stack';
@@ -52,9 +55,7 @@ function MainForm({
 
       if (validateEmail(addressOrDomain)) {
         try {
-          const { status, address } = await checkWhitelistStatus(
-            addressOrDomain
-          );
+          const { status, address } = await getWaitlistStatus(addressOrDomain);
           return { address, status };
         } catch {
           throw new WaitlistCheckError();

@@ -124,7 +124,8 @@ export function Dashboard() {
   const navigate = useNavigate();
   const { walletAddress } = useParams();
 
-  const { data: isWhitelisted, isLoading } = useWhitelistStatus(walletAddress);
+  const { status: isWhitelisted, isLoading } =
+    useWhitelistStatus(walletAddress);
 
   return (
     <>

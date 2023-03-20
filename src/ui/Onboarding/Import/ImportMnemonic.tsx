@@ -42,7 +42,7 @@ export function ImportMnemonic({
     }, 150);
   }
 
-  const { data: isWhitelisted, isLoading: isWhitelistStatusLoading } =
+  const { status: isWhitelisted, isLoading: isWhitelistStatusLoading } =
     useWhitelistStatus(address);
 
   const { mutate, isLoading } = useMutation(

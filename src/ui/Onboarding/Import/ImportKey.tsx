@@ -24,7 +24,7 @@ export function ImportKey({
   const { isNarrowView } = useSizeStore();
   const [validation, setValidation] = useState<ValidationResult | null>(null);
 
-  const { data: isWhitelisted, isLoading: isWhitelistStatusLoading } =
+  const { status: isWhitelisted, isLoading: isWhitelistStatusLoading } =
     useWhitelistStatus(address);
 
   const { mutate, isLoading } = useMutation(
