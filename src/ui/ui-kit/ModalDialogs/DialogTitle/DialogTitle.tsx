@@ -1,6 +1,10 @@
 import React from 'react';
 import { Button } from 'src/ui/ui-kit/Button';
 
+export enum DialogButtonValue {
+  cancel = 'cancel',
+}
+
 export function DialogTitle({
   title,
   alignTitle = 'center',
@@ -26,7 +30,7 @@ export function DialogTitle({
       </div>
       <form method="dialog" style={{ placeSelf: 'end' }}>
         <Button
-          value="cancel"
+          value={DialogButtonValue.cancel}
           kind="ghost"
           size={32}
           aria-label="Close"

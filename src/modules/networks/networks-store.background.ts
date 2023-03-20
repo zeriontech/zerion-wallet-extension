@@ -31,43 +31,6 @@ chainConfigStore.on('change', () => {
       }),
     };
   });
+  // Should we call this?
+  // networksStore.update();
 });
-
-// export class NetworksStoreWithCustomNetworks extends NetworksStore {
-//   private readyPromise: Promise<void>;
-//
-//   constructor(
-//     initialState: { networks: null },
-//     chainConfigStore: ChainConfigStore
-//   ) {
-//     super(initialState, {
-//       async getEthereumChainSources() {
-//         const [predefined, custom] = await Promise.all([]);
-//         await chainConfigStore.ready();
-//
-//         const custom = chainConfigStore.getState();
-//         return { custom };
-//       },
-//     });
-//
-//     this.readyPromise = chainConfigStore.ready().then(() => {
-//       chainConfigStore.on('change', async () => {
-//         const { networks } = this.getState();
-//         if (!networks) {
-//           return;
-//         }
-//         const currentSources = networks.ethereumChainSources;
-//         this.getState().networks?.updateEthereumChainSources({
-//           ...currentSources,
-//           custom: chainConfigStore.getState(),
-//         });
-//       });
-//     });
-//   }
-//
-//   async load() {
-//     const value = await super.load();
-//     await this.readyPromise;
-//     return value;
-//   }
-// }

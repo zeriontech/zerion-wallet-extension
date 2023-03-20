@@ -31,6 +31,8 @@ export const BottomSheetDialog = React.forwardRef(
           padding: 16,
           boxShadow: '0 0 500px 50px #00000024',
           backgroundColor: 'var(--z-index-1)',
+          overscrollBehaviorY: 'contain',
+          WebkitOverflowScrolling: 'touch',
           ...style,
         }}
         {...props}

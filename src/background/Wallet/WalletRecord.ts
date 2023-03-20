@@ -8,6 +8,7 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getIndexFromPath } from 'src/shared/wallet/getNextAccountPath';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { WalletAbility } from 'src/shared/types/Daylight';
+import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { SeedType } from './model/SeedType';
 import type {
   BareWallet,
@@ -541,6 +542,23 @@ export class WalletRecordModel {
     return produce(record, (draft) => {
       Object.assign(draft.publicPreferences, preferences);
     });
+  }
+
+  static verifyOverviewChain(
+    record: WalletRecord,
+    { availableChains }: { availableChains: Chain[] }
+  ) {
+    const { overviewChain } = record.publicPreferences;
+    if (
+      overviewChain &&
+      !availableChains.includes(createChain(overviewChain))
+    ) {
+      return produce(record, (draft) => {
+        draft.publicPreferences.overviewChain = NetworkSelectValue.All;
+      });
+    } else {
+      return record;
+    }
   }
 
   static setWalletNameFlag(

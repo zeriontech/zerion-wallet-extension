@@ -9,12 +9,16 @@ import { Input } from 'src/ui/ui-kit/Input';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Media } from 'src/ui/ui-kit/Media';
 import IconLeft from 'jsx:src/ui/assets/arrow-left.svg';
+import IconClose from 'jsx:src/ui/assets/close.svg';
 import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
 import AddCircleIcon from 'jsx:src/ui/assets/add-circle-outlined.svg';
 import FiltersIcon from 'jsx:src/ui/assets/filters-24.svg';
 import AllNetworksIcon from 'jsx:src/ui/assets/all-networks.svg';
 import CheckIcon from 'jsx:src/ui/assets/check.svg';
-import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import {
+  DialogButtonValue,
+  DialogTitle,
+} from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import {
   SegmentedControlGroup,
   SegmentedControlRadio,
@@ -26,8 +30,10 @@ import {
   SurfaceList,
 } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import { VStack } from 'src/ui/ui-kit/VStack';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { filterNetworksByQuery } from 'src/modules/ethereum/chains/filterNetworkByQuery';
+import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { DelayedRender } from '../DelayedRender';
 import { NetworkIcon } from '../NetworkIcon';
 import { PageBottom } from '../PageBottom';
@@ -37,7 +43,9 @@ import { ViewLoading } from '../ViewLoading';
 function NetworkList({
   networks,
   networkList,
+  value,
 }: {
+  value?: string;
   networks: Networks;
   networkList: NetworkConfig[];
 }) {
@@ -64,9 +72,15 @@ function NetworkList({
                 detailText={null}
               />
 
-              <UIText kind="small/regular" color="var(--neutral-500)">
-                $1234.34
-              </UIText>
+              {network.chain === value ? (
+                <CheckIcon
+                  style={{
+                    width: 20,
+                    height: 20,
+                    color: 'var(--primary)',
+                  }}
+                />
+              ) : null}
             </HStack>
           </SurfaceItemButton>
         ),
@@ -80,16 +94,17 @@ function MainNetworkView({
   value,
   onOpenMore,
   type,
+  mainViewLeadingComponent,
 }: {
   networks: Networks;
   value: string;
   onOpenMore: () => void;
   type: 'overview' | 'connection';
+  mainViewLeadingComponent?: React.ReactNode;
 }) {
-  const chain = value === '' ? null : createChain(value);
+  const chain = value === NetworkSelectValue.All ? null : createChain(value);
   const networksItems = useMemo(() => {
-    const allItems = networks.getNetworks();
-    // let is
+    const allItems = networks.getMainnets();
     const selectedItemIndex = chain
       ? allItems.findIndex((item) => item.chain === value)
       : -1;
@@ -177,30 +192,69 @@ function MainNetworkView({
     }))
   );
 
-  options.push({
-    key: 'more-button',
-    separatorTop: true,
-    isInteractive: true,
-    pad: false,
-    component: (
-      <SurfaceItemButton type="button" onClick={onOpenMore}>
-        <HStack gap={8} alignItems="center" style={{ color: 'var(--primary)' }}>
-          <UIText kind="body/regular">Available networks</UIText>
-          <ArrowRightIcon />
-        </HStack>
-      </SurfaceItemButton>
-    ),
-  });
-
   return (
     <>
       <Spacer height={16} />
-      <UIText kind="headline/h3" style={{ paddingInline: 16 }}>
-        <DialogTitle alignTitle="start" title="Filter by Network" />
-      </UIText>
-      <form method="dialog">
-        <SurfaceList items={options} />
-      </form>
+      <div style={{ paddingInline: 16 }}>
+        {type === 'overview' ? (
+          <UIText kind="headline/h3">
+            <DialogTitle alignTitle="start" title="Filter by Network" />
+          </UIText>
+        ) : (
+          <form
+            method="dialog"
+            style={{
+              position: 'absolute',
+              insetInlineEnd: 8,
+              insetBlockStart: 8,
+            }}
+          >
+            <Button
+              kind="ghost"
+              value={DialogButtonValue.cancel}
+              aria-label="Close"
+              style={{ padding: 8 }}
+              size={40}
+            >
+              <IconClose
+                role="presentation"
+                style={{ display: 'block', marginInline: 'auto' }}
+              />
+            </Button>
+          </form>
+        )}
+      </div>
+      {mainViewLeadingComponent}
+      <VStack gap={12}>
+        <form method="dialog">
+          <VStack gap={4}>
+            {type === 'overview' ? null : (
+              <UIText
+                style={{ paddingInline: 16 }}
+                kind="small/accent"
+                color="var(--neutral-500)"
+              >
+                Networks
+              </UIText>
+            )}
+            <SurfaceList items={options} style={{ paddingBottom: 0 }} />
+          </VStack>
+        </form>
+        <div style={{ paddingInline: 16 }}>
+          <Button
+            style={{ width: '100%' }}
+            kind="regular"
+            type="button"
+            onClick={onOpenMore}
+          >
+            <HStack gap={8} alignItems="center" justifyContent="center">
+              <UIText kind="body/regular">Available networks</UIText>
+              <ArrowRightIcon />
+            </HStack>
+          </Button>
+        </div>
+      </VStack>
+      <PageBottom />
     </>
   );
 }
@@ -228,12 +282,14 @@ function TabsView({
   tab,
   networks,
   onTabChange,
+  value,
 }: {
   tab: Tab;
+  value: string;
   networks: Networks;
   onTabChange: (event: React.FormEvent<HTMLInputElement>) => void;
 }) {
-  const mainnetList = networks.getNetworks();
+  const mainnetList = networks.getMainnets();
   const testnetList = useMemo(() => networks.getTestNetworks(), [networks]);
   const customList = useMemo(() => networks.getCustomNetworks(), [networks]);
   return (
@@ -269,7 +325,11 @@ function TabsView({
         when={tab === Tab.mainnets}
         component={
           <form method="dialog">
-            <NetworkList networks={networks} networkList={mainnetList} />
+            <NetworkList
+              value={value}
+              networks={networks}
+              networkList={mainnetList}
+            />
           </form>
         }
       />
@@ -277,7 +337,11 @@ function TabsView({
         when={tab === Tab.testnets}
         component={
           <form method="dialog">
-            <NetworkList networks={networks} networkList={testnetList} />
+            <NetworkList
+              value={value}
+              networks={networks}
+              networkList={testnetList}
+            />
           </form>
         }
       />
@@ -285,7 +349,11 @@ function TabsView({
         when={tab === Tab.customList}
         component={
           <form method="dialog">
-            <NetworkList networks={networks} networkList={customList} />
+            <NetworkList
+              value={value}
+              networks={networks}
+              networkList={customList}
+            />
           </form>
         }
       />
@@ -308,13 +376,19 @@ function SearchView({
     ];
     return allNetworks.filter(filterNetworksByQuery(query));
   }, [networks, query]);
-  return <NetworkList networkList={items} networks={networks} />;
+  return (
+    <form method="dialog">
+      <NetworkList networkList={items} networks={networks} />
+    </form>
+  );
 }
 
 function CompleteNetworkList({
+  value,
   networks,
   onGoBack,
 }: {
+  value: string;
   networks: Networks;
   onGoBack: () => void;
 }) {
@@ -395,6 +469,7 @@ function CompleteNetworkList({
             tab={tab}
             onTabChange={handleTabChange}
             networks={networks}
+            value={value}
           />
         )}
         <PageBottom />
@@ -410,9 +485,11 @@ enum View {
 export function NetworkSelectDialog({
   value,
   type,
+  mainViewLeadingComponent,
 }: {
   value: string;
   type: 'overview' | 'connection';
+  mainViewLeadingComponent?: React.ReactNode;
 }) {
   const { networks } = useNetworks();
   const [view, setView] = useState<View>(View.main);
@@ -429,10 +506,11 @@ export function NetworkSelectDialog({
         when={view === View.main}
         component={
           <MainNetworkView
+            type={type}
             value={value}
             networks={networks}
             onOpenMore={() => setView(View.completeList)}
-            type={type}
+            mainViewLeadingComponent={mainViewLeadingComponent}
           />
         }
       />
@@ -440,7 +518,7 @@ export function NetworkSelectDialog({
         when={view === View.completeList}
         component={
           <CompleteNetworkList
-            // value={value}
+            value={value}
             networks={networks}
             onGoBack={() => setView(View.main)}
           />

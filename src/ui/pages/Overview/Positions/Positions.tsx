@@ -37,7 +37,6 @@ import { NetworkId } from 'src/modules/networks/NetworkId';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
-import { EmptyView } from 'src/ui/components/EmptyView';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { httpConnectionPort } from 'src/ui/shared/channels';
 import { useQuery } from 'react-query';
@@ -47,10 +46,11 @@ import { Networks } from 'src/modules/networks/Networks';
 import { ethers } from 'ethers';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { FillView } from 'src/ui/components/FillView';
-import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { NetworkSelect } from 'src/ui/pages/Networks/NetworkSelect';
 import { intersperce } from 'src/ui/shared/intersperce';
+import { NetworkResetButton } from 'src/ui/components/NetworkResetButton';
+import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
+import { EmptyViewForNetwork } from 'src/ui/components/EmptyViewForNetwork';
 
 function LineToParent({
   hasPreviosNestedPosition,
@@ -155,7 +155,7 @@ function AddressPositionItem({
               {intersperce(
                 [
                   position.chain !== NetworkId.Ethereum ? (
-                    <React.Fragment key={-1}>
+                    <React.Fragment key={0}>
                       <Image
                         style={{
                           width: 16,
@@ -174,7 +174,7 @@ function AddressPositionItem({
                     </React.Fragment>
                   ) : undefined,
                   groupType === PositionsGroupType.position ? (
-                    <span key={-2}>
+                    <span key={1}>
                       protocol: {position.protocol || DEFAULT_PROTOCOL}
                     </span>
                   ) : undefined,
@@ -380,16 +380,14 @@ function ProtocolHeading({
   );
 }
 
-function PositionsList({
+function PositionList({
   items,
   address,
-  chainValue,
-  onChainChange,
+  firstHeaderItemEnd,
 }: {
   items: AddressPosition[];
   address: string | null;
-  chainValue: string;
-  onChainChange: (value: string) => void;
+  firstHeaderItemEnd?: React.ReactNode;
 }) {
   const COLLAPSED_COUNT = 8;
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
@@ -501,14 +499,7 @@ function PositionsList({
                 relativeValue={relativeValue}
                 displayImage={protocol !== DEFAULT_PROTOCOL}
               />
-              {index === 0 ? (
-                <NetworkSelect
-                  value={chainValue}
-                  onChange={onChainChange}
-                  type="overview"
-                  valueMaxWidth={180}
-                />
-              ) : null}
+              {index === 0 && firstHeaderItemEnd ? firstHeaderItemEnd : null}
             </HStack>
             <SurfaceList
               style={{ position: 'relative', paddingTop: 6 }}
@@ -523,30 +514,16 @@ function PositionsList({
   );
 }
 
-function ResetNetworkButton({ onClick }: { onClick: () => void }) {
-  return (
-    <UnstyledButton
-      // chrome://extensions is not allowed to be linked to, but
-      // can be opened programmatically
-      onClick={onClick}
-      className={helperStyles.hoverUnderline}
-    >
-      <div>Show All Networks</div>
-    </UnstyledButton>
-  );
-}
-
 function MultiChainPositions({
   addressParams,
   chainValue,
-  address,
-  onChainChange,
+  renderEmptyView,
+  ...positionListProps
 }: {
   addressParams: AddressParams;
   chainValue: string;
-  address: string | null;
-  onChainChange: (value: string) => void;
-}) {
+  renderEmptyView: () => React.ReactNode;
+} & Omit<React.ComponentProps<typeof PositionList>, 'items'>) {
   const { value, isLoading } = useAddressPositions({
     ...addressParams,
     currency: 'usd',
@@ -555,7 +532,7 @@ function MultiChainPositions({
   const positions = value?.positions;
   const items = useMemo(
     () =>
-      chainValue === '' || !positions
+      chainValue === NetworkSelectValue.All || !positions
         ? positions
         : positions.filter((position) => position.chain === chainValue),
     [chainValue, positions]
@@ -566,29 +543,9 @@ function MultiChainPositions({
   }
 
   if (!items || items.length === 0) {
-    return (
-      <EmptyView
-        text={
-          <VStack gap={4}>
-            <div>No assets yet</div>
-            {chainValue !== '' ? (
-              <UIText kind="small/regular" color="var(--primary)">
-                <ResetNetworkButton onClick={() => onChainChange('')} />
-              </UIText>
-            ) : null}
-          </VStack>
-        }
-      />
-    );
+    return renderEmptyView() as JSX.Element;
   }
-  return (
-    <PositionsList
-      address={address}
-      items={items}
-      chainValue={chainValue}
-      onChainChange={onChainChange}
-    />
-  );
+  return <PositionList items={items} {...positionListProps} />;
 }
 
 function createAddressPosition({
@@ -676,21 +633,19 @@ function useEvmAddressPositions({
 
 function RawChainPositions({
   addressParams,
-  chainValue,
   chainId,
   address,
-  onChainChange,
+  renderEmptyView,
+  ...positionListProps
 }: {
   addressParams: AddressParams;
-  chainValue: string;
   chainId: string;
-  address: string | null;
-  onChainChange: (value: string) => void;
-}) {
+  renderEmptyView: () => React.ReactNode;
+} & Omit<React.ComponentProps<typeof PositionList>, 'items'>) {
   const addressParam =
     'address' in addressParams ? addressParams.address : address;
   const { data: addressPositions, isLoading } = useEvmAddressPositions({
-    address,
+    address: addressParam,
     chainId,
   });
   if (!addressParam) {
@@ -701,14 +656,13 @@ function RawChainPositions({
     return <ViewLoading kind="network" />;
   }
   if (!addressPositions || !addressPositions.length) {
-    return <EmptyView text="No assets found" />;
+    return renderEmptyView() as JSX.Element;
   }
   return (
-    <PositionsList
+    <PositionList
       address={address}
       items={addressPositions}
-      chainValue={chainValue}
-      onChainChange={onChainChange}
+      {...positionListProps}
     />
   );
 }
@@ -731,16 +685,37 @@ export function Positions({
   }
   const chain = createChain(chainValue);
   const isSupportedByBackend =
-    chainValue === ''
+    chainValue === NetworkSelectValue.All
       ? true
       : networks.isSupportedByBackend(createChain(chainValue));
+  const networkSelect = (
+    <NetworkSelect
+      value={chainValue}
+      onChange={onChainChange}
+      type="overview"
+      valueMaxWidth={180}
+    />
+  );
+  const renderEmptyViewForNetwork = () => (
+    <>
+      <div style={{ display: 'flex', justifyContent: 'end' }}>
+        {networkSelect}
+      </div>
+      <EmptyViewForNetwork
+        message="No assets yet"
+        chainValue={chainValue}
+        onChainChange={onChainChange}
+      />
+    </>
+  );
   if (isSupportedByBackend) {
     return (
       <MultiChainPositions
         addressParams={params}
         address={singleAddress}
         chainValue={chainValue}
-        onChainChange={onChainChange}
+        renderEmptyView={renderEmptyViewForNetwork}
+        firstHeaderItemEnd={networkSelect}
       />
     );
   } else {
@@ -759,7 +734,9 @@ export function Positions({
                 Error fetching for {chainValue}
               </UIText>
               <UIText kind="small/regular" color="var(--primary)">
-                <ResetNetworkButton onClick={() => onChainChange('')} />
+                <NetworkResetButton
+                  onClick={() => onChainChange(NetworkSelectValue.All)}
+                />
               </UIText>
             </VStack>
           </FillView>
@@ -768,9 +745,9 @@ export function Positions({
         <RawChainPositions
           addressParams={params}
           address={singleAddress}
-          chainValue={chainValue}
           chainId={network.external_id}
-          onChainChange={onChainChange}
+          renderEmptyView={renderEmptyViewForNetwork}
+          firstHeaderItemEnd={networkSelect}
         />
       </ErrorBoundary>
     );

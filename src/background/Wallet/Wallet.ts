@@ -109,14 +109,9 @@ export class Wallet {
     this.id = id;
     this.walletStore = new WalletStore({}, 'wallet');
     this.globalPreferences = new GlobalPreferences({}, 'globalPreferences');
-    // this.chainConfigStore = new ChainConfigStore(
-    //   ChainConfigStore.initialState,
-    //   'chain-configs'
-    // );
-    // networksStore = new NetworksStoreWithCustomNetworks(
-    //   { networks: null },
-    //   this.chainConfigStore
-    // );
+    networksStore.on('change', () => {
+      this.verifyOverviewChain();
+    });
     this.encryptionKey = encryptionKey;
     this.seedPhraseEncryptionKey = null;
     this.record = null;
@@ -142,6 +137,9 @@ export class Wallet {
   private async updateWalletStore(record: WalletRecord) {
     if (!this.encryptionKey) {
       throw new Error('Cannot save pending wallet: encryptionKey is null');
+    }
+    if (record === this.record) {
+      return;
     }
     this.walletStore.save(this.id, this.encryptionKey, record);
   }
@@ -912,6 +910,19 @@ export class Wallet {
     affectedPermissions.forEach(({ origin }) => {
       this.setChainForOrigin(createChain(NetworkId.Ethereum), origin);
     });
+    this.verifyOverviewChain();
+  }
+
+  private async verifyOverviewChain() {
+    const networks = await networksStore.load();
+    if (this.record) {
+      this.record = Model.verifyOverviewChain(this.record, {
+        availableChains: networks
+          .getAllNetworks()
+          .map((n) => createChain(n.chain)),
+      });
+      this.updateWalletStore(this.record);
+    }
   }
 
   async getCustomEthereumChains({ context }: PublicMethodParams) {

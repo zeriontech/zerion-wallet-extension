@@ -1,5 +1,9 @@
 import browser from 'webextension-polyfill';
-import { isJsonRpcPayload, isJsonRpcRequest } from '@json-rpc-tools/utils';
+import {
+  formatJsonRpcError,
+  isJsonRpcPayload,
+  isJsonRpcRequest,
+} from '@json-rpc-tools/utils';
 import type { Wallet } from 'src/shared/types/Wallet';
 import {
   isRpcRequestWithContext,
@@ -45,9 +49,12 @@ export function createHttpConnectionMessageHandler(
         const httpConnection = new HttpConnection({
           chainId: requestContext.chainId,
         });
-        httpConnection.send(request, context).then((result) => {
-          port.postMessage(result);
-        });
+        httpConnection
+          .send(request, context)
+          .catch((error) => formatJsonRpcError(request.id, error.message))
+          .then((result) => {
+            port.postMessage(result);
+          });
         return true;
       }
     } else {

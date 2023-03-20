@@ -9,6 +9,7 @@ import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog'
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import AllNetworksIcon from 'jsx:src/ui/assets/all-networks.svg';
+import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 
 export function NetworkSelect({
   value,
@@ -35,7 +36,7 @@ export function NetworkSelect({
         onClick={() => {
           invariant(dialogRef.current, 'Dialog element not found');
           showConfirmDialog(dialogRef.current).then((chain) =>
-            onChange(chain === 'all' ? '' : chain)
+            onChange(chain === 'all' ? NetworkSelectValue.All : chain)
           );
         }}
       >

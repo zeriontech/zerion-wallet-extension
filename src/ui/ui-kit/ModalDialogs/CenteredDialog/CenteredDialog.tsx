@@ -32,6 +32,8 @@ export const CenteredDialog = React.forwardRef(
           borderRadius: isLargeViewport ? 12 : 0,
           padding: 16,
           overflowY: 'auto',
+          overscrollBehaviorY: 'contain',
+          WebkitOverflowScrolling: 'touch',
           ...style,
         }}
         {...props}

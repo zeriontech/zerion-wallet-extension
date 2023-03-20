@@ -53,7 +53,6 @@ class NotificationWindow extends EventEmitter {
     params.append('windowId', String(id));
     route = route + `?${params.toString()}`;
     const windowId = await windowManager.openNotification({ route, height });
-    console.log('openining windowId', windowId);
     if (windowId) {
       this.idsMap.set(id, windowId);
       disposables.push(() => this.idsMap.delete(id));
@@ -72,7 +71,6 @@ class NotificationWindow extends EventEmitter {
       }
     };
     const handleWindowRemoved = (windowId: number) => {
-      console.log('handleWindowRemoved', id);
       if (this.windowId === windowId) {
         this.windowId = null;
       }
@@ -85,14 +83,12 @@ class NotificationWindow extends EventEmitter {
     });
 
     const handleResolve = ({ id, result }: RpcResult<T>) => {
-      console.log('handleResolve', { id, result });
       if (this.getWindowId(id) === windowId) {
         onResolve(result);
         onDone();
       }
     };
     const handleReject = (payload: RpcError) => {
-      console.log('handleReject', payload);
       const windowId = this.getWindowId(payload.id);
       if (windowId != null) {
         handleDismiss(windowId, payload.error);

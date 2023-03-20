@@ -41,10 +41,17 @@ export class NetworksStore extends Store<State> {
     if (!this.loaderPromise) {
       this.loaderPromise = this.fetchAndUpdate();
     }
-    return this.loaderPromise;
+    return this.loaderPromise.then(() => {
+      const { networks } = this.getState();
+      if (!networks) {
+        throw new Error('networks are expected to be not null after load()');
+      }
+      return networks;
+    });
   }
 
   async update() {
+    this.loaderPromise = null;
     return this.fetchAndUpdate();
   }
 }

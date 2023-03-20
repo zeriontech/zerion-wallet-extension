@@ -7,11 +7,11 @@ import {
 } from 'src/modules/ethereum/transactions/model';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
-import { EmptyView } from 'src/ui/components/EmptyView';
 import { networksStore } from 'src/modules/networks/networks-store.client';
 import { NetworkSelect } from 'src/ui/pages/Networks/NetworkSelect';
 import { Chain, createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
+import { EmptyViewForNetwork } from 'src/ui/components/EmptyViewForNetwork';
 import { ActionsList } from './ActionsList';
 
 export function sortActions<T extends { datetime?: string }>(actions: T[]) {
@@ -130,8 +130,26 @@ export function HistoryList({
     return null;
   }
 
+  const networkSelect = (
+    <NetworkSelect
+      type="overview"
+      value={chainValue}
+      onChange={onChainChange}
+    />
+  );
   if (!transactions.length) {
-    return <EmptyView text="No transactions yet" />;
+    return (
+      <>
+        <div style={{ display: 'flex', justifyContent: 'end' }}>
+          {networkSelect}
+        </div>
+        <EmptyViewForNetwork
+          message="No transactions yet"
+          chainValue={chainValue}
+          onChainChange={onChainChange}
+        />
+      </>
+    );
   }
   return (
     <ActionsList
@@ -139,13 +157,7 @@ export function HistoryList({
       hasMore={hasMore}
       isLoading={isLoading}
       onLoadMore={fetchMore}
-      firstHeaderItemEnd={
-        <NetworkSelect
-          type="overview"
-          value={chainValue}
-          onChange={onChainChange}
-        />
-      }
+      firstHeaderItemEnd={networkSelect}
     />
   );
 }

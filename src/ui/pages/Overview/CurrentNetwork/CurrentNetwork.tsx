@@ -4,16 +4,20 @@ import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { getNameFromOrigin } from 'src/shared/dapps';
 import { invariant } from 'src/shared/invariant';
+import { AngleRightRow } from 'src/ui/components/AngleRightRow';
 import { NetworkSelectDialog } from 'src/ui/components/NetworkSelectDialog';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { walletPort } from 'src/ui/shared/channels';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 import { useIsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
 import { Button } from 'src/ui/ui-kit/Button';
+import { Media } from 'src/ui/ui-kit/Media';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
-import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
+import { UIText } from 'src/ui/ui-kit/UIText';
+import { VStack } from 'src/ui/ui-kit/VStack';
 import * as s from './styles.module.css';
 
 export function CurrentNetwork({ address }: { address: string }) {
@@ -35,7 +39,7 @@ export function CurrentNetwork({ address }: { address: string }) {
         : walletPort
             .request('requestChainForOrigin', { origin: tabOrigin })
             .then((chain) => createChain(chain)),
-    { enabled: Boolean(tabOrigin), useErrorBoundary: true, suspense: true }
+    { enabled: Boolean(tabOrigin), useErrorBoundary: true, suspense: false }
   );
   const switchChainMutation = useMutation(
     ({ chain, origin }: { chain: string; origin: string }) =>
@@ -55,7 +59,7 @@ export function CurrentNetwork({ address }: { address: string }) {
 
   const { networks } = useNetworks();
 
-  if (!networks) {
+  if (!networks || !siteChain || !tabOrigin) {
     return null;
   }
   if (!hasSomePermissions && !flaggedAsDapp) {
@@ -64,76 +68,88 @@ export function CurrentNetwork({ address }: { address: string }) {
 
   return (
     <>
-      {tabOrigin && siteChain ? (
-        <BottomSheetDialog
-          ref={ref}
-          style={{
-            height: '82vh',
-            backgroundColor: 'var(--neutral-100)',
-            padding: 0,
-          }}
-        >
-          <NetworkSelectDialog value={siteChain.toString()} type="connection" />
-        </BottomSheetDialog>
-      ) : null}
-
-      {tabOrigin ? (
-        <Button
-          kind="ghost"
-          size={40}
-          as={UnstyledLink}
-          to={`/connected-sites/${encodeURIComponent(tabOrigin)}`}
-          title={getNameFromOrigin(tabOrigin)}
-        >
-          <div style={{ position: 'relative' }}>
-            <div
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: '50%',
-                border: '2px solid',
-                borderColor: isConnected
-                  ? 'var(--positive-400)'
-                  : 'var(--primary)',
-                padding: 2,
-              }}
-              className={isConnected ? s.activeIndicatorClip : undefined}
-            >
-              <SiteFaviconImg
-                url={tabOrigin}
-                style={{
-                  width: 24,
-                  height: 24,
-                  display: 'block',
-                  borderRadius: '50%',
-                }}
+      <BottomSheetDialog ref={ref} style={{ height: '82vh', padding: 0 }}>
+        <NetworkSelectDialog
+          value={siteChain.toString()}
+          type="connection"
+          mainViewLeadingComponent={
+            <VStack gap={0} style={{ paddingTop: 8, paddingBottom: 16 }}>
+              <UIText
+                kind="small/accent"
+                color="var(--neutral-500)"
+                style={{ paddingInline: 16 }}
+              >
+                {isConnected ? 'Connected to' : 'Connect to'}
+              </UIText>
+              <SurfaceList
+                items={[
+                  {
+                    key: 0,
+                    to: `/connected-sites/${encodeURIComponent(tabOrigin)}`,
+                    component: (
+                      <AngleRightRow>
+                        <Media
+                          image={
+                            <SiteFaviconImg
+                              url={tabOrigin}
+                              style={{
+                                width: 24,
+                                height: 24,
+                                display: 'block',
+                              }}
+                            />
+                          }
+                          text={getNameFromOrigin(tabOrigin)}
+                          detailText={null}
+                        />
+                      </AngleRightRow>
+                    ),
+                  },
+                ]}
               />
-            </div>
-            {isConnected ? <div className={s.activeIndicator} /> : null}
+            </VStack>
+          }
+        />
+      </BottomSheetDialog>
+      <Button
+        kind="ghost"
+        size={40}
+        title={getNameFromOrigin(tabOrigin)}
+        onClick={() => {
+          if (ref.current) {
+            showConfirmDialog(ref.current).then((value) => {
+              switchChainMutation.mutate({ chain: value, origin: tabOrigin });
+            });
+          }
+        }}
+      >
+        <div style={{ position: 'relative' }}>
+          <div
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: '50%',
+              border: '2px solid',
+              borderColor: isConnected
+                ? 'var(--positive-400)'
+                : 'var(--primary)',
+              padding: 2,
+            }}
+            className={isConnected ? s.activeIndicatorClip : undefined}
+          >
+            <SiteFaviconImg
+              url={tabOrigin}
+              style={{
+                width: 24,
+                height: 24,
+                display: 'block',
+                borderRadius: '50%',
+              }}
+            />
           </div>
-        </Button>
-      ) : null}
-      {hasSomePermissions && siteChain && tabOrigin ? (
-        <Button
-          kind="ghost"
-          size={40}
-          style={{ fontWeight: 400, paddingInline: 8 }}
-          disabled={!hasSomePermissions}
-          onClick={() => {
-            if (ref.current) {
-              showConfirmDialog(ref.current).then((value) => {
-                switchChainMutation.mutate({ chain: value, origin: tabOrigin });
-              });
-            }
-          }}
-        >
-          <img
-            src={networks.getNetworkByName(siteChain)?.icon_url || ''}
-            alt=""
-            style={{ width: 24, height: 24, display: 'block' }}
-          />
-        </Button>
-      ) : null}
+          {isConnected ? <div className={s.activeIndicator} /> : null}
+        </div>
+      </Button>
     </>
   );
 }

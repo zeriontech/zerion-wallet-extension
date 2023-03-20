@@ -295,7 +295,7 @@ function OverviewComponent() {
         padding={false}
         style={{
           position: 'sticky',
-          top: 40,
+          top: 44,
           zIndex: 'var(--max-layout-index)',
           backgroundColor: 'var(--white)',
         }}

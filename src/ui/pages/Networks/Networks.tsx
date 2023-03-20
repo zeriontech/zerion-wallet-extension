@@ -183,7 +183,7 @@ function NetworkList({
 
 function MainnetList({ networks }: { networks: NetworksType }) {
   return (
-    <NetworkList networks={networks} networkList={networks.getNetworks()} />
+    <NetworkList networks={networks} networkList={networks.getMainnets()} />
   );
 }
 
@@ -491,7 +491,7 @@ function SearchView({
   return (
     <VStack gap={16} style={isPreviousData ? { opacity: 0.6 } : undefined}>
       {grouped.map(({ title, items }) => (
-        <VStack gap={8}>
+        <VStack key={title} gap={8}>
           <UIText kind="small/accent" color="var(--neutral-600)">
             {title}
           </UIText>

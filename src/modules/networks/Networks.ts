@@ -169,6 +169,14 @@ export class Networks {
   }
 
   getNetworks() {
+    return this.networks;
+  }
+
+  getAllNetworks() {
+    return Object.values(this.collection).filter(isTruthy);
+  }
+
+  getMainnets() {
     const customCollection =
       this.sourcesNormalized?.['custom'].collection || {};
     return this.networks.map(
