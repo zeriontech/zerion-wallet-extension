@@ -87,14 +87,13 @@ export class BackgroundScriptUpdateHandler {
     ])
       .then((response) => {
         if (!response || response.ack !== number + 1) {
-          this.handshakeRetries -= 1;
           throw new Error('Unexpected response');
         }
       })
       .catch((e) => {
-        this.handshakeRetries -= 1;
         throw e;
-      });
+      })
+      .finally(() => (this.handshakeRetries -= 1));
   }
 
   keepAlive(reactivate?: boolean) {
