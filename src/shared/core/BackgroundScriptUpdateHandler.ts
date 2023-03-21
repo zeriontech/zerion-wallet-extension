@@ -76,10 +76,6 @@ export class BackgroundScriptUpdateHandler {
 
   private async handshake(port: browser.Runtime.Port) {
     /** Performs a two-way handshake to verify that background script is available */
-    if (!this.handshakeRetries) {
-      this.handleHandshakeFail();
-      return;
-    }
     const number = getRandomInteger();
     return Promise.race([
       sendPortMessage<{ syn: number }, { ack: number }>(port, { syn: number }),
@@ -90,7 +86,14 @@ export class BackgroundScriptUpdateHandler {
           throw new Error('Unexpected response');
         }
       })
-      .finally(() => (this.handshakeRetries -= 1));
+      .catch((e) => {
+        this.handshakeRetries -= 1;
+        if (!this.handshakeRetries) {
+          this.handleHandshakeFail();
+        } else {
+          throw e;
+        }
+      });
   }
 
   keepAlive(reactivate?: boolean) {
