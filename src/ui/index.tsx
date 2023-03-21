@@ -2,18 +2,13 @@ import React from 'react';
 import browser from 'webextension-polyfill';
 import { createRoot, Root } from 'react-dom/client';
 import { configureUIClient } from 'src/modules/defi-sdk';
-import {
-  BackgroundScriptUpdateHandler,
-  rejectAfterDelay,
-} from 'src/shared/core/BackgroundScriptUpdateHandler';
+import { BackgroundScriptUpdateHandler } from 'src/shared/core/BackgroundScriptUpdateHandler';
 import { initializeClientAnalytics } from 'src/shared/analytics/analytics.client';
 import { HandshakeFailed } from 'src/shared/errors/errors';
+import { getCurrentUser } from 'src/shared/getCurrentUser';
 import { applyDrawFix } from './shared/applyDrawFix';
 import { App } from './App';
-import {
-  accountPublicRPCPort,
-  initialize as initializeChannels,
-} from './shared/channels';
+import { initialize as initializeChannels } from './shared/channels';
 import { queryClient } from './shared/requests/queryClient';
 import { emitter } from './shared/events';
 
@@ -38,36 +33,24 @@ let reactRoot: Root | null = null;
 
 async function initializeUI(opts?: { handshakeFailure?: boolean }) {
   const isPopup = browser.extension.getViews({ type: 'popup' }).length > 0;
+  const hasOnboardingUrl = document.location.hash.startsWith('#/onboarding');
+
   const root = document.getElementById('root');
   if (!root) {
     throw new Error('#root element not found');
   }
   await registerServiceWorker();
+  initializeChannels();
 
-  let channesInited = false;
-  let userHasNoWallets = false;
-  while (!channesInited) {
-    initializeChannels();
-    try {
-      userHasNoWallets = await Promise.race([
-        accountPublicRPCPort
-          .request('getExistingUser')
-          .then((result) => !result),
-        rejectAfterDelay(1000),
-      ]);
-      channesInited = true;
-    } catch {
-      channesInited = false;
-    }
-  }
-
-  if (isPopup && userHasNoWallets) {
+  const currentUser = await getCurrentUser();
+  const userHasWallets = Boolean(Object.keys(currentUser).length);
+  if (isPopup && !userHasWallets) {
     const url = new URL('./index.html', import.meta.url);
     browser.tabs.create({
       url: url.toString(),
     });
   }
-  const hasOnboardingUrl = document.location.hash.startsWith('#/onboarding');
+
   queryClient.clear();
   return configureUIClient()
     .then(() => initializeClientAnalytics())
@@ -84,7 +67,7 @@ async function initializeUI(opts?: { handshakeFailure?: boolean }) {
             }
             viewMode={isPopup ? 'popup' : 'window'}
             mode={
-              (!isPopup && userHasNoWallets) || hasOnboardingUrl
+              hasOnboardingUrl || (!isPopup && !userHasWallets)
                 ? 'onboarding'
                 : 'wallet'
             }
