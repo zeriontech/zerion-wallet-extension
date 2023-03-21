@@ -9,13 +9,17 @@ async function sendPortMessage<Req, Resp>(
   request: Req
 ) {
   return new Promise<Resp>((resolve, reject) => {
+    const onDisconnect = () => {
+      console.warn('Port disconnected!'); // eslint-disable-line no-console
+      reject();
+    };
     const onMessage = (response: Resp) => {
       port.onMessage.removeListener(onMessage);
-      port.onDisconnect.removeListener(reject);
+      port.onDisconnect.removeListener(onDisconnect);
       resolve(response);
     };
     port.onMessage.addListener(onMessage);
-    port.onDisconnect.addListener(reject);
+    port.onDisconnect.addListener(onDisconnect);
     port.postMessage(request);
   });
 }
@@ -40,7 +44,7 @@ export class BackgroundScriptUpdateHandler {
   private onReactivate?: () => void;
   private portName: string;
   private performHandshake: boolean;
-  private finishedHandshake = false;
+  private handshakeRetries = 2;
 
   constructor({
     onActivate,
@@ -76,22 +80,24 @@ export class BackgroundScriptUpdateHandler {
 
   private async handshake(port: browser.Runtime.Port) {
     /** Performs a two-way handshake to verify that background script is available */
-    if (this.finishedHandshake) {
+    if (!this.handshakeRetries) {
+      this.handleHandshakeFail();
       return;
     }
     const number = getRandomInteger();
-    Promise.race([
+    return Promise.race([
       sendPortMessage<{ syn: number }, { ack: number }>(port, { syn: number }),
-      rejectAfterDelay(2000),
+      rejectAfterDelay(1000),
     ])
       .then((response) => {
         if (!response || response.ack !== number + 1) {
+          this.handshakeRetries -= 1;
           throw new Error('Unexpected response');
         }
       })
-      .catch(() => this.handleHandshakeFail())
-      .finally(() => {
-        this.finishedHandshake = true;
+      .catch((e) => {
+        this.handshakeRetries -= 1;
+        throw e;
       });
   }
 
@@ -101,12 +107,17 @@ export class BackgroundScriptUpdateHandler {
       return;
     }
     if (reactivate) {
+      console.log('Reactivated!'); // eslint-disable-line no-console
       this.onReactivate?.();
     }
     if (PERFORM_HANSHAKE_CHECK && this.performHandshake) {
-      this.handshake(port);
+      this.handshake(port).catch(() => {
+        console.log('Handshake catched!'); // eslint-disable-line no-console
+        port.disconnect();
+      });
     }
     port.onDisconnect.addListener(() => {
+      console.log('On dissconnect!'); // eslint-disable-line no-console
       // This means that the background-script (service-worker) went to sleep
       // We "wake" it up by creating a new runtime connection
       this.keepAlive(true);
