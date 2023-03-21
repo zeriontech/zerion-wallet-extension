@@ -90,9 +90,6 @@ export class BackgroundScriptUpdateHandler {
           throw new Error('Unexpected response');
         }
       })
-      .catch((e) => {
-        throw e;
-      })
       .finally(() => (this.handshakeRetries -= 1));
   }
 
