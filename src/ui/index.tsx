@@ -2,7 +2,10 @@ import React from 'react';
 import browser from 'webextension-polyfill';
 import { createRoot, Root } from 'react-dom/client';
 import { configureUIClient } from 'src/modules/defi-sdk';
-import { BackgroundScriptUpdateHandler } from 'src/shared/core/BackgroundScriptUpdateHandler';
+import {
+  BackgroundScriptUpdateHandler,
+  rejectAfterDelay,
+} from 'src/shared/core/BackgroundScriptUpdateHandler';
 import { initializeClientAnalytics } from 'src/shared/analytics/analytics.client';
 import { HandshakeFailed } from 'src/shared/errors/errors';
 import { applyDrawFix } from './shared/applyDrawFix';
@@ -40,14 +43,24 @@ async function initializeUI(opts?: { handshakeFailure?: boolean }) {
     throw new Error('#root element not found');
   }
   await registerServiceWorker();
-  initializeChannels();
-  const userHasNoWallets = await Promise.race([
-    accountPublicRPCPort
-      .request('getExistingUser')
-      .then((result) => !result)
-      .catch(() => false),
-    new Promise<false>((resolve) => setTimeout(() => resolve(false), 2500)),
-  ]);
+
+  let channesInited = false;
+  let userHasNoWallets = false;
+  while (!channesInited) {
+    initializeChannels();
+    try {
+      userHasNoWallets = await Promise.race([
+        accountPublicRPCPort
+          .request('getExistingUser')
+          .then((result) => !result),
+        rejectAfterDelay(1000),
+      ]);
+      channesInited = true;
+    } catch {
+      channesInited = false;
+    }
+  }
+
   if (isPopup && userHasNoWallets) {
     const url = new URL('./index.html', import.meta.url);
     browser.tabs.create({
