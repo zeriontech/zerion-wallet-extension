@@ -15,7 +15,6 @@ import type { PortMessageHandler } from '../PortRegistry';
 
 export function createHttpConnectionMessageHandler(
   getWallet: () => Wallet
-  // httpConnection: HttpConnection
 ): PortMessageHandler {
   return function httpConnectionMessageHandler(port, msg) {
     const context = getPortContext(port);
@@ -40,7 +39,6 @@ export function createHttpConnectionMessageHandler(
         return true;
       }
     } else if (port.name === `${browser.runtime.id}/http-connection-ui`) {
-      console.log('http-connection-ui', msg);
       if (isRpcRequestWithContext(msg)) {
         const {
           params: { context: requestContext },
@@ -60,15 +58,5 @@ export function createHttpConnectionMessageHandler(
     } else {
       return;
     }
-    // if (port.name !== `${browser.runtime.id}/ethereum`) {
-    //   return;
-    // }
-    // const context = getPortContext(port);
-    // if (isJsonRpcPayload(msg) && isJsonRpcRequest(msg) && Boolean(msg.method)) {
-    //   httpConnection.send(msg, context).then((result) => {
-    //     port.postMessage(result);
-    //   });
-    //   return true;
-    // }
   };
 }

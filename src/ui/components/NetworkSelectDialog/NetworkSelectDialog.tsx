@@ -440,7 +440,7 @@ function CompleteNetworkList({
 
           <Button
             as={UnstyledLink}
-            to="/networks/create"
+            to="/networks/create/search"
             kind="ghost"
             title="Add Network"
             size={40}

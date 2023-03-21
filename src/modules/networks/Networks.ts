@@ -125,11 +125,6 @@ export class Networks {
       (x) => x.external_id,
       (x) => x
     );
-    // const nameToId = toCollection(
-    //   this.networks,
-    //   (network) => network.chain,
-    //   (network) => network.external_id
-    // );
     const sourcesNormalized = normalizeSources(this.ethereumChainSources);
     this.sourcesNormalized = sourcesNormalized;
     const collection = { ...originalCollection };

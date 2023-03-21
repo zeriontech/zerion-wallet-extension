@@ -902,8 +902,7 @@ export class Wallet {
     this.ensureRecord(this.record);
     const chain = createChain(chainStr);
     chainConfigStore.removeEthereumChain(chain);
-    // We need to update all permissions permissions
-    // which point to the removed chain
+    // We need to update all permissions which point to the removed chain
     const affectedPermissions = Model.getPermissionsByChain(this.record, {
       chain,
     });
