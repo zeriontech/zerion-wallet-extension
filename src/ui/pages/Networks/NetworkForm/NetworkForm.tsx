@@ -11,7 +11,9 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import LockIcon from 'jsx:src/ui/assets/lock.svg';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
+import { ZStack } from 'src/ui/ui-kit/ZStack';
 
 type InitialNetworkConfig = Omit<NetworkConfig, 'chain'> & {
   chain: string | null;
@@ -23,16 +25,41 @@ function isCompleteNetwork(x: InitialNetworkConfig): x is NetworkConfig {
 function Field({
   label,
   error,
+  disabled,
   ...inputProps
 }: {
   label: React.ReactNode;
   error?: string;
 } & React.InputHTMLAttributes<HTMLInputElement>) {
   const id = useId();
+  const ICON_SIZE = 24;
+  const ICON_OFFSET = 8;
   return (
     <VStack gap={4}>
       <label htmlFor={id}>{label}</label>
-      <Input id={id} error={Boolean(error)} {...inputProps} />
+      <ZStack>
+        <Input
+          id={id}
+          error={Boolean(error)}
+          disabled={disabled}
+          style={
+            disabled ? { paddingRight: ICON_OFFSET * 2 + ICON_SIZE } : undefined
+          }
+          {...inputProps}
+        />
+        {disabled ? (
+          <LockIcon
+            style={{
+              color: 'var(--neutral-500)',
+              width: ICON_SIZE,
+              height: ICON_SIZE,
+              alignSelf: 'center',
+              justifySelf: 'end',
+              marginRight: ICON_OFFSET,
+            }}
+          />
+        ) : null}
+      </ZStack>
       {error ? (
         <UIText kind="caption/regular" style={{ color: 'var(--negative-500)' }}>
           {error}
@@ -93,7 +120,7 @@ const parsers: Parsers = {
   external_id: (untypedValue) => {
     const value = untypedValue as string;
     if (value.startsWith('0x')) {
-      return value;
+      return ethers.utils.hexValue(value);
     } else {
       return ethers.utils.hexValue(Number(value));
     }
@@ -119,6 +146,8 @@ export function NetworkForm({
   onCancel,
   onReset,
   footerRenderArea,
+  restrictedChainIds,
+  disabledFields,
 }: {
   network: InitialNetworkConfig;
   isSubmitting: boolean;
@@ -126,13 +155,15 @@ export function NetworkForm({
   onSubmit: (result: NetworkConfig) => void;
   onCancel: () => void;
   onReset?: () => void;
-
   footerRenderArea?: string;
+  restrictedChainIds: Set<string>;
+  disabledFields: null | Set<string>;
 }) {
   const id = useId();
   const validators: Validators = {
     external_id: (element) => {
-      if (element.value === '137') {
+      const hexValue = parsers.external_id(element.value);
+      if (restrictedChainIds.has(hexValue)) {
         return 'Network already exists';
       }
     },
@@ -186,6 +217,7 @@ export function NetworkForm({
             label="Network Name"
             name="name"
             defaultValue={network.name}
+            disabled={disabledFields?.has('name')}
             required
           />
           <Field
@@ -194,12 +226,16 @@ export function NetworkForm({
             type="url"
             defaultValue={network.rpc_url_internal || ''}
             error={errors.rpc_url_internal}
+            disabled={disabledFields?.has('rpc_url_internal')}
             required
           />
           <Field
-            label="Chain ID"
+            label={<span title={network.external_id}>Chain ID</span>}
             name="external_id"
-            defaultValue={network.external_id || ''}
+            title={network.external_id}
+            defaultValue={
+              network.external_id ? String(parseInt(network.external_id)) : ''
+            }
             pattern="^0x[\dabcdef]+|\d+"
             error={errors.external_id}
             onInvalid={(event) =>
@@ -208,6 +244,7 @@ export function NetworkForm({
               )
             }
             onInput={(event) => event.currentTarget.setCustomValidity('')}
+            disabled={disabledFields?.has('external_id')}
             required
           />
           <Field
@@ -222,6 +259,7 @@ export function NetworkForm({
               )
             }
             onInput={(event) => event.currentTarget.setCustomValidity('')}
+            disabled={disabledFields?.has('native_asset.symbol')}
             required
           />
           <Field
@@ -232,6 +270,7 @@ export function NetworkForm({
             inputMode="decimal"
             pattern="\d+"
             defaultValue={network.native_asset?.decimals || ''}
+            disabled={disabledFields?.has('native_asset.decimals')}
             required={false}
           />
           <Field
@@ -242,6 +281,7 @@ export function NetworkForm({
             error={errors.explorer_home_url}
             placeholder="https://..."
             defaultValue={network.explorer_home_url || ''}
+            disabled={disabledFields?.has('explorer_home_url')}
             required={false}
           />
         </VStack>

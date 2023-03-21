@@ -35,28 +35,28 @@ function getUpdatedFromMetadata(metadata: NetworkConfigMetaData) {
 }
 
 function NetworkDetail({
-  metadata,
+  metadataRecord,
   network,
   networks,
 }: {
-  metadata: Record<string, NetworkConfigMetaData>;
+  metadataRecord: Record<string, NetworkConfigMetaData | undefined>;
   network: NetworkConfig;
   networks: Networks;
 }) {
   const chainId = network.external_id;
   const chain = createChain(network.chain);
+  const metadata = metadataRecord[network.chain];
   const { originUrl, updated, sourceType } = useMemo(() => {
-    if (!chainId || !metadata || !metadata[chainId]) {
+    if (!chainId || !metadata) {
       return {};
     }
-    const value = metadata[chainId];
     return {
-      originUrl: getOriginUrlFromMetaData(value),
-      updated: getUpdatedFromMetadata(value),
+      originUrl: getOriginUrlFromMetaData(metadata),
+      updated: getUpdatedFromMetadata(metadata),
       sourceType: networks.getSourceType(chain),
     };
   }, [chainId, metadata, networks, chain]);
-  if (!chainId || !metadata[chainId]) {
+  if (!chainId || !metadata) {
     return null;
   }
   const isCustom = sourceType === 'custom';
@@ -99,7 +99,10 @@ export function NetworkList({
   getItemTo?: (item: NetworkConfig) => string;
   getItemIcon?: (item: NetworkConfig) => React.ReactNode;
 }) {
-  const metadata = useMemo(() => networks.getNetworksMetaData(), [networks]);
+  const metadataRecord = useMemo(
+    () => networks.getNetworksMetaData(),
+    [networks]
+  );
   return (
     <SurfaceList
       items={networkList.map((network) => ({
@@ -122,7 +125,7 @@ export function NetworkList({
                 <NetworkDetail
                   networks={networks}
                   network={network}
-                  metadata={metadata}
+                  metadataRecord={metadataRecord}
                 />
               }
             />

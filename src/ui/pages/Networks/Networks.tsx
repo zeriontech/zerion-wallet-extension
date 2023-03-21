@@ -138,6 +138,7 @@ function NetworkCreateSearchPage() {
         ) : (
           <ViewLoading kind="network" />
         )}
+        <PageBottom />
       </PageColumn>
       <PageStickyFooter>
         <Spacer height={8} />
@@ -180,6 +181,15 @@ function NetworkCreatePage({
     },
   });
   useBackgroundKind({ kind: 'white' });
+  const { networks } = useNetworks();
+  const restrictedChainIds = useMemo(() => {
+    return networks
+      ? new Set(networks.getAllNetworks().map((n) => n.external_id))
+      : null;
+  }, [networks]);
+  if (!restrictedChainIds) {
+    return <ViewLoading kind="network" />;
+  }
   return (
     <PageColumn>
       <NavigationTitle title="Create Network" />
@@ -190,10 +200,14 @@ function NetworkCreatePage({
         isSubmitting={mutation.isLoading}
         onReset={undefined}
         onCancel={goBack}
+        restrictedChainIds={restrictedChainIds}
+        disabledFields={null}
       />
     </PageColumn>
   );
 }
+
+const forbiddenFields = new Set(['external_id', 'native_asset.decimals']);
 
 function NetworkPage({
   onSuccess,
@@ -207,26 +221,39 @@ function NetworkPage({
   const goBack = useCallback(() => navigate(-1), [navigate]);
   const { networks } = useNetworks();
   const network = networks?.getNetworkByName(chain);
-  const chainId = network?.external_id;
 
-  const { isCustomNetwork, isEditedPredefinedNetwork } = useMemo(() => {
-    const customNetworks = networks?.getCustomNetworks();
-    const metadata = networks?.getNetworksMetaData();
-    const isCustomNetwork = customNetworks?.some(
-      (item) => item.chain === chainId
-    );
-    let isEditedPredefinedNetwork = false;
-    const sourceType = networks?.getSourceType(chain);
-    const isPredefined = sourceType === 'mainnets' || sourceType === 'testnets';
-    if (isPredefined && metadata && chainId && metadata[chainId]) {
-      const { updated, created } = metadata[chainId];
-      if (updated !== created) {
-        isEditedPredefinedNetwork = true;
+  const { isCustomNetwork, isPredefinedNetwork, isEditedPredefinedNetwork } =
+    useMemo(() => {
+      const customNetworks = networks?.getCustomNetworks();
+      const metadataRecord = networks?.getNetworksMetaData();
+      const metadata = metadataRecord?.[chainStr];
+      const isCustomNetwork = customNetworks?.some(
+        (item) => item.chain === chainStr
+      );
+      let isEditedPredefinedNetwork = false;
+      const sourceType = networks?.getSourceType(chain);
+      const isPredefined =
+        sourceType === 'mainnets' || sourceType === 'testnets';
+      if (isPredefined && metadataRecord && metadata) {
+        const { updated, created } = metadata;
+        if (updated !== created) {
+          isEditedPredefinedNetwork = true;
+        }
       }
-    }
-    return { isCustomNetwork, isEditedPredefinedNetwork };
-  }, [networks, chainId, chain]);
+      return {
+        isCustomNetwork,
+        isEditedPredefinedNetwork,
+        isPredefinedNetwork: isPredefined,
+      };
+    }, [networks, chain, chainStr]);
 
+  const restrictedChainIds = useMemo(() => {
+    const set = new Set(networks?.getAllNetworks().map((n) => n.external_id));
+    if (network) {
+      set.delete(network?.external_id);
+    }
+    return set;
+  }, [network, networks]);
   const mutation = useMutation(saveNetworkConfig, {
     onSuccess(result) {
       networksStore.update();
@@ -257,7 +284,7 @@ function NetworkPage({
         <NavigationTitle
           title={chainStr}
           elementEnd={
-            isCustomNetwork ? (
+            isCustomNetwork && !isPredefinedNetwork ? (
               <Button
                 kind="ghost"
                 title="Remove Network"
@@ -281,6 +308,8 @@ function NetworkPage({
           }
           onCancel={goBack}
           footerRenderArea={footerRenderArea}
+          disabledFields={isPredefinedNetwork ? forbiddenFields : null}
+          restrictedChainIds={restrictedChainIds}
         />
       </PageColumn>
       <PageStickyFooter>

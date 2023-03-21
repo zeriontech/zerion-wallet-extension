@@ -179,7 +179,7 @@ export class Networks {
     );
   }
 
-  getNetworksMetaData(): Record<string, NetworkConfigMetaData> {
+  getNetworksMetaData(): Record<string, NetworkConfigMetaData | undefined> {
     const result: Record<string, NetworkConfigMetaData> = {};
     const values = ['predefined', 'custom']
       .map((key) => this.ethereumChainSources?.[key])

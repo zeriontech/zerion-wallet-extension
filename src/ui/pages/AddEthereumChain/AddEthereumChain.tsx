@@ -19,6 +19,8 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { noValueDash } from 'src/ui/shared/typography';
+import { useNetworks } from 'src/modules/networks/useNetworks';
+import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { NetworkForm } from '../Networks/NetworkForm';
 
 function AddChain({
@@ -26,8 +28,7 @@ function AddChain({
   addEthereumChainParameterStringified,
   onReject,
   onSuccess,
-}: // onConfirm,
-{
+}: {
   origin: string;
   addEthereumChainParameterStringified: string;
   onReject: () => void;
@@ -50,6 +51,15 @@ function AddChain({
     },
     { onSuccess: (result) => onSuccess(result) }
   );
+  const { networks } = useNetworks();
+  const restrictedChainIds = useMemo(() => {
+    return networks
+      ? new Set(networks.getAllNetworks().map((n) => n.external_id))
+      : null;
+  }, [networks]);
+  if (!restrictedChainIds) {
+    return <ViewLoading kind="network" />;
+  }
   return (
     <PageColumn>
       <PageTop />
@@ -83,6 +93,8 @@ function AddChain({
         onSubmit={(result) => {
           addEthereumChainMutation.mutate(result);
         }}
+        restrictedChainIds={restrictedChainIds}
+        disabledFields={null}
       />
       <PageBottom />
     </PageColumn>
