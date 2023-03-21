@@ -95,19 +95,21 @@ export class BackgroundScriptUpdateHandler {
       });
   }
 
-  keepAlive() {
+  keepAlive(reactivate?: boolean) {
     const port = browser.runtime.connect({ name: this.portName });
     if (port.error) {
       return;
     }
-    this.onReactivate?.();
+    if (reactivate) {
+      this.onReactivate?.();
+    }
     if (PERFORM_HANSHAKE_CHECK && this.performHandshake) {
       this.handshake(port);
     }
     port.onDisconnect.addListener(() => {
       // This means that the background-script (service-worker) went to sleep
       // We "wake" it up by creating a new runtime connection
-      this.keepAlive();
+      this.keepAlive(true);
     });
   }
 }
