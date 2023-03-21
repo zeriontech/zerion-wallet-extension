@@ -9,17 +9,13 @@ async function sendPortMessage<Req, Resp>(
   request: Req
 ) {
   return new Promise<Resp>((resolve, reject) => {
-    const onDisconnect = () => {
-      console.warn('Port disconnected!'); // eslint-disable-line no-console
-      reject();
-    };
     const onMessage = (response: Resp) => {
       port.onMessage.removeListener(onMessage);
-      port.onDisconnect.removeListener(onDisconnect);
+      port.onDisconnect.removeListener(reject);
       resolve(response);
     };
     port.onMessage.addListener(onMessage);
-    port.onDisconnect.addListener(onDisconnect);
+    port.onDisconnect.addListener(reject);
     port.postMessage(request);
   });
 }
@@ -107,17 +103,14 @@ export class BackgroundScriptUpdateHandler {
       return;
     }
     if (reactivate) {
-      console.log('Reactivated!'); // eslint-disable-line no-console
       this.onReactivate?.();
     }
     if (PERFORM_HANSHAKE_CHECK && this.performHandshake) {
       this.handshake(port).catch(() => {
-        console.log('Handshake catched!'); // eslint-disable-line no-console
         port.disconnect();
       });
     }
     port.onDisconnect.addListener(() => {
-      console.log('On dissconnect!'); // eslint-disable-line no-console
       // This means that the background-script (service-worker) went to sleep
       // We "wake" it up by creating a new runtime connection
       this.keepAlive(true);
