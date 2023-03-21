@@ -94,6 +94,7 @@ async function handleFailedHandshake() {
 initializeUI().then(() => {
   new BackgroundScriptUpdateHandler({
     onActivate: () => initializeUI(),
+    onReactivate: () => initializeChannels(),
     onFailedHandshake: () => handleFailedHandshake(),
   }).keepAlive();
 });

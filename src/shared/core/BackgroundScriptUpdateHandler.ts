@@ -37,23 +37,27 @@ export class BackgroundScriptUpdateHandler {
 
   private onActivate: () => void;
   private onFailedHandshake?: () => void;
+  private onReactivate?: () => void;
   private portName: string;
   private performHandshake: boolean;
   private finishedHandshake = false;
 
   constructor({
     onActivate,
+    onReactivate,
     onFailedHandshake,
     portName = 'handshake',
     performHandshake = true,
   }: {
     onActivate: () => void;
+    onReactivate?: () => void;
     onFailedHandshake?: () => void;
     portName?: string;
     performHandshake?: boolean;
   }) {
     this.onActivate = onActivate;
     this.onFailedHandshake = onFailedHandshake;
+    this.onReactivate = onReactivate;
     this.portName = portName;
     this.performHandshake = performHandshake;
     browser.runtime.onMessage.addListener((request) => {
@@ -96,6 +100,7 @@ export class BackgroundScriptUpdateHandler {
     if (port.error) {
       return;
     }
+    this.onReactivate?.();
     if (PERFORM_HANSHAKE_CHECK && this.performHandshake) {
       this.handshake(port);
     }
