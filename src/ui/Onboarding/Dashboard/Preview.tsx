@@ -54,10 +54,9 @@ function useAssetsIcons(address: string) {
     {
       address,
       currency: 'usd',
-      limit: ICON_NUMBER,
       sorted_by: 'floor_price_high',
     },
-    { cachePolicy: 'cache-first' }
+    { cachePolicy: 'cache-first', limit: ICON_NUMBER }
   );
 
   useEffect(() => {
