@@ -49,25 +49,6 @@ function NFTItem({
   return (
     <UnstyledLink to={getNftEntityUrl(item)} style={{ display: 'flex' }}>
       <Surface padding={8} style={{ width: '100%', position: 'relative' }}>
-        {isPrimary ? (
-          <div
-            style={{
-              position: 'absolute',
-              color: 'var(--always-white)',
-              backgroundColor: 'var(--positive-500)',
-              borderRadius: 10,
-              height: 20,
-              width: 20,
-              padding: 2,
-              top: 0,
-              left: 0,
-              zIndex: 2,
-              boxShadow: 'var(--elevation-100)',
-            }}
-          >
-            <TickIcon width={16} height={16} />
-          </div>
-        ) : null}
         <SquareElement
           style={{ position: 'relative' }}
           render={(style) => (
