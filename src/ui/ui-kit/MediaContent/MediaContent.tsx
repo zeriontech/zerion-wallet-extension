@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { isChromeBrowser } from 'src/ui/shared/isChromeBrowser';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Image, Audio, Video } from 'src/ui/ui-kit/MediaFallback';
@@ -8,7 +8,7 @@ interface MediaDescription {
   meta: null | Record<string, string>;
 }
 
-const MediaError = ({
+export const MediaError = ({
   image = '🖼',
   src,
   style,
@@ -86,42 +86,73 @@ function inferMediaType(content: MediaDescription): MimeType | null {
     : null;
 }
 
+export interface MediaContentValue {
+  image_preview_url?: string;
+  image_url?: string | null;
+  audio_url?: string | null;
+  video_url?: string | null;
+  type: 'video' | 'image' | 'audio';
+}
+
+export function getMediaContent(
+  content: MediaDescription
+): MediaContentValue | undefined {
+  const { url } = content;
+  const mimeTypeObject = inferMediaType(content);
+  if (mimeTypeObject == null || mimeTypeObject.type === 'image') {
+    return {
+      type: 'image',
+      image_url: url,
+    };
+  }
+  if (mimeTypeObject.type === 'video') {
+    return {
+      type: 'video',
+      video_url: url,
+    };
+  }
+  if (mimeTypeObject.type === 'audio') {
+    return {
+      type: 'audio',
+      audio_url: url,
+    };
+  }
+  return undefined;
+}
+
 export function MediaContent({
   content,
   alt,
   style,
   errorStyle,
+  renderLoading,
   className,
+  forcePreview,
 }: {
-  content: MediaDescription;
+  content?: MediaContentValue;
   alt: string;
   errorStyle?: React.CSSProperties;
+  renderLoading?(): React.ReactNode;
   style?: React.CSSProperties;
   className?: string;
+  forcePreview?: boolean;
 }) {
-  const { url } = content;
-  const mimeTypeObject = useMemo(() => inferMediaType(content), [content]);
-  if (mimeTypeObject == null || mimeTypeObject.type === 'image') {
+  if (forcePreview && content?.image_preview_url) {
     return (
       <Image
         // safari doesn't emit img onError for empty string src
-        src={url || 'no-image'}
+        src={content.image_preview_url || 'no-image'}
         alt={alt}
         style={style}
         className={className}
-        renderError={() => <MediaError style={errorStyle} src={url} />}
+        renderError={() => (
+          <MediaError style={errorStyle} src={content.image_preview_url} />
+        )}
+        renderLoading={renderLoading}
       />
     );
   }
-  const { type, mimeType } = mimeTypeObject;
-  if (type === 'video') {
-    if (!url) {
-      return (
-        <UIText kind="body/regular" className={className}>
-          Unknown video
-        </UIText>
-      );
-    }
+  if (content?.type === 'video' && content?.video_url) {
     return (
       <Video
         controls={false}
@@ -133,25 +164,42 @@ export function MediaContent({
         style={style}
         className={className}
         renderError={() => (
-          <MediaError image="📹" style={errorStyle} src={url} />
+          <MediaError image="📹" style={errorStyle} src={content.video_url} />
         )}
+        renderLoading={renderLoading}
       >
-        <source src={url} type={mimeType} />
+        <source src={content.video_url} />
         Sorry, your browser doesn't support embedded videos.
       </Video>
     );
   }
-  if (type === 'audio') {
+  if (content?.type === 'audio' && content?.audio_url) {
     return (
       <Audio
-        src={url || ''}
+        src={content.audio_url || ''}
         controls={true}
         autoPlay={false}
         style={style}
         className={className}
         renderError={() => (
-          <MediaError image="🎵" style={errorStyle} src={url} />
+          <MediaError image="🎵" style={errorStyle} src={content.audio_url} />
         )}
+        renderLoading={renderLoading}
+      />
+    );
+  }
+  if (content?.image_url) {
+    return (
+      <Image
+        // safari doesn't emit img onError for empty string src
+        src={content.image_url || 'no-image'}
+        alt={alt}
+        style={style}
+        className={className}
+        renderError={() => (
+          <MediaError style={errorStyle} src={content.image_url} />
+        )}
+        renderLoading={renderLoading}
       />
     );
   }

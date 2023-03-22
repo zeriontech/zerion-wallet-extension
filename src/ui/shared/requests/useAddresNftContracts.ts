@@ -1,6 +1,6 @@
 import { createDomainHook } from 'defi-sdk';
 import type { AddressParams } from 'defi-sdk';
-import { NFTSortedByParamType } from './addressNfts/useAddressNftsWithDna';
+import type { NFTSortedByParamType } from './addressNfts/useAddressNfts';
 
 type Payload = AddressParams & {
   currency: string;

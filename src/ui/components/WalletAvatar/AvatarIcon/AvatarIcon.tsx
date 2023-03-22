@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
-import { MediaContent } from 'src/ui/ui-kit/MediaContent';
+import { getMediaContent, MediaContent } from 'src/ui/ui-kit/MediaContent';
 import { WalletProfileNFT } from '../types';
 import * as s from './styles.module.css';
 
@@ -17,6 +17,13 @@ export function AvatarIcon({
   nft?: WalletProfileNFT;
   borderRadius: number;
 }) {
+  const mediaContent = useMemo(
+    () =>
+      nft
+        ? getMediaContent(nft.preview.url ? nft.preview : nft.detail)
+        : undefined,
+    [nft]
+  );
   return (
     <div className={s.root}>
       <div className={active ? s.activeIndicatorClip : undefined}>
@@ -25,7 +32,7 @@ export function AvatarIcon({
             className={s.media}
             style={{ width: size, height: size, borderRadius }}
             errorStyle={{ width: size, height: size }}
-            content={nft.preview.url ? nft.preview : nft.detail}
+            content={mediaContent}
             alt={`${nft.name} image`}
           />
         ) : (
