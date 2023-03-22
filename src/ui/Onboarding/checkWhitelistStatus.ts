@@ -1,12 +1,12 @@
+import ky from 'ky';
 import { useQuery } from 'react-query';
 import { validateEmail } from 'src/ui/shared/validateEmail';
 import { PROXY_URL } from 'src/env/config';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import { getAddressNfts } from './../shared/requests/addressNfts/useAddressNftsWithDna';
+import { getAddressNfts } from '../shared/requests/addressNfts/useAddressNfts';
 import { WaitlistCheckError } from './errors';
 
 const WAITLIST_ID = 'aOfkJhcpwDHpJVkzO6FB';
-const ACCESS_NFT_ADDRESS = '0x74ee68a33f6c9f113e22b3b77418b75f85d07d22'; // genesis nft for now
 
 interface WaitlistResponse {
   cryptoAddress: string;
@@ -47,13 +47,35 @@ export async function getWaitlistStatus(addressOrEmail: string) {
   };
 }
 
+interface FirebaseConfig {
+  extension_access_nft_collections: string[];
+}
+
+const FIREBASE_PARAMS = ['extension_access_nft_collections'];
+
 async function getNftStatus(address: string) {
-  const { data } = await getAddressNfts({
+  const params = new URLSearchParams(
+    FIREBASE_PARAMS.map((key) => ['key', key])
+  );
+  const firebaseConfig = await ky
+    .get(`https://proxy.zerion.io/remote-config?${params.toString()}`, {
+      timeout: 30000,
+      retry: 0,
+    })
+    .json<FirebaseConfig>();
+
+  if (!firebaseConfig.extension_access_nft_collections?.length) {
+    return { status: false };
+  }
+
+  const { value } = await getAddressNfts({
     address: address?.toLowerCase() || '',
     currency: 'usd',
-    contract_addresses: [ACCESS_NFT_ADDRESS],
+    collection_ids: firebaseConfig.extension_access_nft_collections,
+    sorted_by: 'created_recently',
   });
-  return { status: (data?.nft.length || 0) > 0 };
+
+  return { status: (value?.length || 0) > 0 };
 }
 
 async function checkAllowance(promises: Promise<{ status: boolean }>[]) {
