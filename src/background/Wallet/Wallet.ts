@@ -138,9 +138,6 @@ export class Wallet {
     if (!this.encryptionKey) {
       throw new Error('Cannot save pending wallet: encryptionKey is null');
     }
-    if (record === this.record) {
-      return;
-    }
     this.walletStore.save(this.id, this.encryptionKey, record);
   }
 
@@ -891,6 +888,7 @@ export class Wallet {
     origin: string;
   }>) {
     this.verifyInternalOrigin(context);
+    this.emitter.emit('chainChanged', createChain(values[0].chain), origin);
     return chainConfigStore.addEthereumChain(values[0], origin);
   }
 
