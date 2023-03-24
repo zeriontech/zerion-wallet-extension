@@ -1,4 +1,5 @@
 import EventEmitter from 'events';
+import ky from 'ky';
 import {
   formatJsonRpcError,
   isJsonRpcRequest,
@@ -29,7 +30,9 @@ export class HttpConnection extends EventEmitter {
 
     const chain = networks.getChainById(this.chainId);
     const url = networks.getRpcUrlInternal(chain);
-    return fetch(url, {
+    return ky(url, {
+      timeout: 20000,
+      retry: 1,
       method: 'post',
       body: JSON.stringify(request),
       headers: { 'Content-Type': 'application/json' },

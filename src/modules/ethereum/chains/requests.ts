@@ -1,11 +1,8 @@
 import { ethers } from 'ethers';
 import ky from 'ky';
-import { normalizedContains } from 'normalized-contains';
+import { toNetworkConfig } from 'src/modules/networks/helpers';
 import { AddEthereumChainParameter } from '../types/AddEthereumChainParameter';
-
-function contains(str1: string, str2: string) {
-  return normalizedContains(str1.toLowerCase(), str2.toLowerCase());
-}
+import { filterNetworksByQuery } from './filterNetworkByQuery';
 
 interface ResponseItem {
   name: string;
@@ -41,18 +38,8 @@ export async function getNetworksBySearch({ query }: { query: string }) {
         })
       );
     })
+    .then((items) => items.map((item) => toNetworkConfig(item)))
     .then((items) => {
-      return items
-        .filter(
-          (item) =>
-            contains(item.chainName, query) ||
-            contains(item.nativeCurrency.name, query) ||
-            contains(item.nativeCurrency.symbol, query) ||
-            contains(item.rpcUrls.join(' '), query) ||
-            contains(item.blockExplorerUrls?.join(' ') || '', query) ||
-            contains(item.chainId, query) ||
-            contains(String(parseInt(item.chainId)), query)
-        )
-        .slice(0, 20);
+      return items.filter(filterNetworksByQuery(query)).slice(0, 20);
     });
 }

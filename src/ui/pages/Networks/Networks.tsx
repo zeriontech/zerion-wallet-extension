@@ -44,6 +44,16 @@ import { NetworkList } from './shared/NetworkList';
 import { SearchResults } from './shared/SearchResults';
 import { LocationStateHelperStore } from './shared/LocationStateHelperStore';
 import { createEmptyNetwork } from './shared/createEmptyNetwork';
+import { NetworkCreateSuccess } from './NetworkCreateSuccess';
+
+/**
+ * TODO before merge
+ * [x] Check that when custom network is connected to dapp, and we edit its chain id,
+ * changeChanged event is sent to dapp
+ *
+ * [x] When chain id is edited, chain (==identificator) is not incorrect
+ * [ ] Analytics
+ */
 
 function MainnetList({ networks }: { networks: NetworksType }) {
   return (
@@ -174,10 +184,8 @@ function NetworkCreatePage({
   const navigate = useNavigate();
   const goBack = useCallback(() => navigate(-1), [navigate]);
   const mutation = useMutation(saveNetworkConfig, {
-    onSuccess(result) {
+    onSuccess(_result) {
       networksStore.update();
-      onSuccess(result.value);
-      navigate(isFromSearch ? -2 : -1);
     },
   });
   useBackgroundKind({ kind: 'white' });
@@ -189,6 +197,17 @@ function NetworkCreatePage({
   }, [networks]);
   if (!restrictedChainIds) {
     return <ViewLoading kind="network" />;
+  }
+  if (mutation.isSuccess) {
+    return (
+      <NetworkCreateSuccess
+        result={mutation.data}
+        onDone={() => {
+          onSuccess(mutation.data.value);
+          navigate(isFromSearch ? -2 : -1);
+        }}
+      />
+    );
   }
   return (
     <PageColumn>
@@ -203,6 +222,7 @@ function NetworkCreatePage({
         restrictedChainIds={restrictedChainIds}
         disabledFields={null}
       />
+      <PageBottom />
     </PageColumn>
   );
 }
@@ -282,7 +302,7 @@ function NetworkPage({
     <>
       <PageColumn>
         <NavigationTitle
-          title={chainStr}
+          title={network.name || network.external_id || network.chain}
           elementEnd={
             isCustomNetwork && !isPredefinedNetwork ? (
               <Button

@@ -16,12 +16,10 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { Button } from 'src/ui/ui-kit/Button';
-import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
-import { noValueDash } from 'src/ui/shared/typography';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { NetworkForm } from '../Networks/NetworkForm';
+import { NetworkCreateSuccess } from '../Networks/NetworkCreateSuccess';
 
 function AddChain({
   origin,
@@ -101,78 +99,6 @@ function AddChain({
   );
 }
 
-function ValueCell({ label, value }: { label: string; value: string }) {
-  return (
-    <VStack gap={4}>
-      <UIText kind="small/accent" color="var(--neutral-500)">
-        {label}
-      </UIText>
-      <UIText kind="body/accent">{value}</UIText>
-    </VStack>
-  );
-}
-
-function Success({
-  result,
-  onDone,
-}: {
-  result: EthereumChainConfig;
-  onDone: () => void;
-}) {
-  const network = result.value;
-  return (
-    <PageColumn>
-      <Spacer height={64} />
-      <CheckIcon
-        style={{
-          display: 'block',
-          marginInline: 'auto',
-          width: 60,
-          height: 60,
-          color: 'var(--positive-500)',
-        }}
-      />
-      <Spacer height={16} />
-      <UIText
-        kind="headline/h1"
-        style={{
-          textAlign: 'center',
-
-          display: '-webkit-box',
-          WebkitLineClamp: 3,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden',
-        }}
-      >
-        {network.name || network.external_id}
-      </UIText>
-      <UIText kind="headline/h3" style={{ textAlign: 'center' }}>
-        added successfully
-      </UIText>
-      <Spacer height={32} />
-      <VStack gap={8} style={{ textAlign: 'center' }}>
-        <ValueCell
-          label="RPC URL"
-          value={network.rpc_url_internal || noValueDash}
-        />
-        <ValueCell label="Chain ID" value={network.external_id} />
-        <ValueCell
-          label="Currency Symbol"
-          value={network.native_asset?.symbol ?? noValueDash}
-        />
-        <ValueCell
-          label="Block Explorer URL"
-          value={network.explorer_home_url || noValueDash}
-        />
-      </VStack>
-      <Button style={{ marginTop: 'auto' }} onClick={onDone}>
-        Close
-      </Button>
-      <PageBottom />
-    </PageColumn>
-  );
-}
-
 function AddEthereumChainContent({
   origin,
   addEthereumChainParameterStringified,
@@ -188,7 +114,7 @@ function AddEthereumChainContent({
   useBackgroundKind({ kind: 'white' });
 
   if (result) {
-    return <Success result={result} onDone={onDone} />;
+    return <NetworkCreateSuccess result={result} onDone={onDone} />;
   }
   return (
     <AddChain
@@ -198,7 +124,6 @@ function AddEthereumChainContent({
       origin={origin}
       onReject={onReject}
       onSuccess={(result) => setResult(result)}
-      // onAccept={onAccept}
     />
   );
 }

@@ -1,3 +1,4 @@
+import { nanoid } from 'nanoid';
 import type { AddEthereumChainParameter } from '../ethereum/types/AddEthereumChainParameter';
 import type { NetworkConfig } from './NetworkConfig';
 
@@ -10,7 +11,7 @@ export function toNetworkConfig(
     supports_bridge: false,
     name: value.chainName,
     external_id: value.chainId,
-    chain: value.chainId,
+    chain: nanoid(),
     explorer_home_url: value.blockExplorerUrls?.[0] || null,
     explorer_address_url: null,
     explorer_name: null,

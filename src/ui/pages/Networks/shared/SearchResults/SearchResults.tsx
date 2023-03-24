@@ -5,7 +5,6 @@ import { useMemo } from 'react';
 import { useQuery } from 'react-query';
 import { useLocation } from 'react-router-dom';
 import { getNetworksBySearch } from 'src/modules/ethereum/chains/requests';
-import { toNetworkConfig } from 'src/modules/networks/helpers';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { Networks } from 'src/modules/networks/Networks';
 import { EmptyView } from 'src/ui/components/EmptyView';
@@ -24,10 +23,7 @@ export function SearchResults({
   const { pathname } = useLocation();
   const { data: itemsForQuery, isPreviousData } = useQuery(
     ['getNetworksBySearch', query],
-    () =>
-      getNetworksBySearch({ query }).then((items) =>
-        items.map((item) => toNetworkConfig(item))
-      ),
+    () => getNetworksBySearch({ query }),
     { suspense: false, keepPreviousData: true }
   );
   const grouped = useMemo((): null | Array<{
