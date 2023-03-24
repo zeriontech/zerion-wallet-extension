@@ -55,29 +55,26 @@ export enum SiweValidationError {
 export class SiweMessage {
   private static readonly URI =
     '(([^:?#]+):)?(([^?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?';
-  // ISO8601
-
-  private static readonly DATETIME = `[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])[Tt]([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(.[0-9]+)?(([Zz])|([+|-]([01][0-9]|2[0-3]):[0-5][0-9]))`;
 
   private static readonly DOMAIN =
     '(?<domain>([^?#]*)) wants you to sign in with your Ethereum account:';
-  private static readonly ADDRESS = '\\n(?<address>0x[a-zA-Z0-9]{40})\\n\\n';
-  private static readonly STATEMENT = '((?<statement>[^\\n]+)\\n)?';
-  private static readonly URI_LINE = `\\nURI: (?<uri>${SiweMessage.URI}?)`;
-  private static readonly VERSION = '\\nVersion: (?<version>1)';
-  private static readonly CHAIN_ID = '\\nChain ID: (?<chainId>[0-9]+)';
-  private static readonly NONCE = '\\nNonce: (?<nonce>[a-zA-Z0-9]{8,})';
-  private static readonly ISSUED_AT = `\\nIssued At: (?<issuedAt>${SiweMessage.DATETIME})`;
-  private static readonly EXPIRATION_TIME = `(\\nExpiration Time: (?<expirationTime>${SiweMessage.DATETIME}))?`;
-  private static readonly NOT_BEFORE = `(\\nNot Before: (?<notBefore>${SiweMessage.DATETIME}))?`;
+  private static readonly ADDRESS = '\\n+(?<address>0x[a-zA-Z0-9]{40})?\\n+';
+  private static readonly STATEMENT = '((?<statement>[^\\n]+)\\n+)?';
+  private static readonly URI_LINE = `(\\n+URI: (?<uri>${SiweMessage.URI}?))?`;
+  private static readonly VERSION = '\\n+Version: (?<version>[0-9]+)?';
+  private static readonly CHAIN_ID = '(\\n+Chain ID: (?<chainId>[0-9]+))?';
+  private static readonly NONCE = '(\\n+Nonce: (?<nonce>[a-zA-Z0-9]{8,}))?';
+  private static readonly ISSUED_AT = `(\\n+Issued At: (?<issuedAt>(.*)))?`;
+  private static readonly EXPIRATION_TIME = `(\\n+Expiration Time: (?<expirationTime>(.*)))?`;
+  private static readonly NOT_BEFORE = `(\\n+Not Before: (?<notBefore>(.*)))?`;
 
   private static readonly REQUEST_ID =
-    "(\\nRequest ID: (?<requestId>[-._~!$&'()*+,;=:@%a-zA-Z0-9]*))?";
-  private static readonly RESOURCES = `(\\nResources:(?<resources>(\\n- ${SiweMessage.URI}?)+))?`;
+    "(\\n+Request ID: (?<requestId>[-._~!$&'()*+,;=:@%a-zA-Z0-9]*))?";
+  private static readonly RESOURCES = `(\\n+Resources:(?<resources>(\\n- ${SiweMessage.URI}?)+))?`;
 
   private static readonly PATTERN = `\
 ^\
-[\\n\\r\\s]*\
+\\s*\
 ${SiweMessage.DOMAIN}\
 ${SiweMessage.ADDRESS}\
 ${SiweMessage.STATEMENT}\
@@ -90,7 +87,7 @@ ${SiweMessage.EXPIRATION_TIME}\
 ${SiweMessage.NOT_BEFORE}\
 ${SiweMessage.REQUEST_ID}\
 ${SiweMessage.RESOURCES}\
-[\\n\\r\\s]*\
+\\s*\
 $\
 `;
 
@@ -123,7 +120,7 @@ $\
    * The EIP-155 Chain ID to which the session is bound,
    * and the network where Contract Accounts MUST be resolved
    */
-  readonly chainId: number;
+  readonly chainId?: number;
   /**
    * A randomized token typically chosen by the relying party and
    * used to prevent replay attacks, at least 8 alphanumeric characters
@@ -166,7 +163,9 @@ $\
     this.uri = fields.uri;
     this.version = fields.version;
     this.nonce = fields.nonce;
-    this.chainId = this.parseChainId(fields.chainId);
+    this.chainId = fields.chainId
+      ? this.parseChainId(fields.chainId)
+      : undefined;
     this.issuedAt = fields.issuedAt;
     this.expirationTime = fields.expirationTime;
     this.notBefore = fields.notBefore;
@@ -175,26 +174,31 @@ $\
   }
 
   validate(origin: URL, walletAddress: string, currentTime: number) {
-    const domain = this.domain.startsWith('http')
-      ? new URL(this.domain)
-      : new URL(`https://${this.domain}`);
-    const originAuthority = `${origin.hostname}:${origin.port}`;
-    const domainAuthority = `${domain.hostname}:${domain.port}`;
-
-    if (domainAuthority !== originAuthority) {
-      this.error |= SiweValidationError.domainMismatch;
-    }
     if (!this.domain) {
       this.error |= SiweValidationError.missingDomain;
+    } else {
+      const domain = this.domain.startsWith('http')
+        ? new URL(this.domain)
+        : new URL(`https://${this.domain}`);
+      const originAuthority = `${origin.hostname}:${origin.port}`;
+      const domainAuthority = `${domain.hostname}:${domain.port}`;
+
+      if (domainAuthority !== originAuthority) {
+        this.error |= SiweValidationError.domainMismatch;
+      }
     }
+
     if (!this.address) {
       this.error |= SiweValidationError.missingAddress;
-    }
-    if (toChecksumAddress(this.address) !== toChecksumAddress(walletAddress)) {
-      this.error |= SiweValidationError.addressMismatch;
-    }
-    if (this.address && this.address !== toChecksumAddress(this.address)) {
-      this.error |= SiweValidationError.invalidAddress;
+    } else {
+      if (
+        toChecksumAddress(this.address) !== toChecksumAddress(walletAddress)
+      ) {
+        this.error |= SiweValidationError.addressMismatch;
+      }
+      if (this.address && this.address !== toChecksumAddress(this.address)) {
+        this.error |= SiweValidationError.invalidAddress;
+      }
     }
     if (!this.nonce) {
       this.error |= SiweValidationError.missingNonce;
@@ -213,12 +217,14 @@ $\
     }
     if (!this.issuedAt) {
       this.error |= SiweValidationError.missingIssuedAt;
-    } else if (!dayjs(this.expirationTime).isValid()) {
+    } else if (!dayjs(this.issuedAt).isValid()) {
+      // Not ISO8601-compliant
       this.error |= SiweValidationError.invalidTimeFormat;
     }
 
     if (this.expirationTime) {
       if (!dayjs(this.expirationTime).isValid()) {
+        // Not ISO8601-compliant
         this.error |= SiweValidationError.invalidTimeFormat;
       } else if (currentTime >= new Date(this.expirationTime).getTime()) {
         this.error |= SiweValidationError.expiredMessage;
@@ -227,6 +233,7 @@ $\
 
     if (this.notBefore) {
       if (!dayjs(this.notBefore).isValid()) {
+        // Not ISO8601-compliant
         this.error |= SiweValidationError.invalidTimeFormat;
       } else if (currentTime < new Date(this.notBefore).getTime()) {
         this.error |= SiweValidationError.invalidNotBefore;

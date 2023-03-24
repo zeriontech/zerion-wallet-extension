@@ -317,7 +317,7 @@ const testCases: {
     'nonce with less then 8 chars':
       'service.org wants you to sign in with your Ethereum account:\n0xe5A12547fe4E872D192E3eCecb76F2Ce1aeA4946\n\nI accept the ServiceOrg Terms of Service: https://service.org/tos\n\nURI: https://service.org/login\nVersion: 1\nChain ID: 1\nNonce: 1234567\nIssued At: 2022-03-17T12:45:13.610Z\nExpiration Time: 2023-03-17T12:45:13.610Z\nNot Before: 2022-03-17T12:45:13.610Z\nRequest ID: some_id\nResources:\n- https://service.org/login',
     'non-ISO 8601 issuedAt':
-      'service.org wants you to sign in with your Ethereum account:\n0xe5A12547fe4E872D192E3eCecb76F2Ce1aeA4946\n\nI accept the ServiceOrg Terms of Service: https://service.org/tos\n\nURI: https://service.org/login\nVersion: 1\nChain ID: 1\nNonce: 12341234\nIssued At: Wed Oct 05 2011 16:48:00 GMT+0200 (CEST)\nExpiration Time: 2023-03-17T12:45:13.610Z\nNot Before: 2022-03-17T12:45:13.610Z\nRequest ID: some_id\nResources:\n- https://service.org/login',
+      'service.org wants you to sign in with your Ethereum account:\n0xe5A12547fe4E872D192E3eCecb76F2Ce1aeA4946\n\nI accept the ServiceOrg Terms of Service: https://service.org/tos\n\nURI: https://service.org/login\nVersion: 1\nChain ID: 1\nNonce: 12341234\nIssued At: Wed Oct 05 20a11 16:48:00 GMT+0200 (CEST)\nExpiration Time: 2023-03-17T12:45:13.610Z\nNot Before: 2022-03-17T12:45:13.610Z\nRequest ID: some_id\nResources:\n- https://service.org/login',
     'non-ISO 8601 expirationTime':
       'service.org wants you to sign in with your Ethereum account:\n0xe5A12547fe4E872D192E3eCecb76F2Ce1aeA4946\n\nI accept the ServiceOrg Terms of Service: https://service.org/tos\n\nURI: https://service.org/login\nVersion: 1\nChain ID: 1\nNonce: 12341234\nIssued At: 2022-03-17T12:45:13.610Z\nExpiration Time: Wed Oct 05 2011 16:48:00 GMT+0200 (CEST)\nNot Before: 2022-03-17T12:45:13.610Z\nRequest ID: some_id\nResources:\n- https://service.org/login',
     'non-ISO 8601 notBefore':
@@ -358,44 +358,120 @@ describe('SIWE (EIP-4361)', () => {
         expect(siwe.resources).toStrictEqual(fields.resources);
       }
     );
-
-    // test.concurrent.each(Object.entries(testCases.negative))(
-    //   'fails to parse message: %s',
-    //   (_name: string, message: string) => {
-    //     const siwe = SiweMessage.parse(message);
-    //     expect(siwe).toBeNull();
-    //   }
-    // );
   });
 
   describe('validate', () => {
-    // it('fails if domain is missing', () => {});
-    //
-    // it('fails if address is missing', () => {});
-    //
-    // it('fails if address does not conform to EIP-55 (is not a checksum address)', () => {});
-    //
+    it('fails if domain is missing', () => {
+      const message = testCases.negative['missing domain'];
+      const siwe = SiweMessage.parse(message);
+      expectParsed(siwe);
+      siwe.validate(
+        new URL('https://example.com'),
+        '0x3083A9c26582C01Ec075373A8327016A15c1269B',
+        new Date().getTime()
+      );
+      expect(siwe.hasError(SiweValidationError.missingDomain)).toBeTruthy();
+    });
+
+    it('fails if address is missing', () => {
+      const message = testCases.negative['missing address'];
+      const siwe = SiweMessage.parse(message);
+      expectParsed(siwe);
+      siwe.validate(
+        new URL('https://whatever.io'),
+        '0x3083A9c26582C01Ec075373A8327016A15c1269B',
+        new Date().getTime()
+      );
+      expect(siwe.hasError(SiweValidationError.missingAddress)).toBeTruthy();
+    });
+
+    it('fails if address does not conform to EIP-55 (is not a checksum address)', () => {
+      const message = testCases.negative['address not EIP-55'];
+      const siwe = SiweMessage.parse(message);
+      expectParsed(siwe);
+      siwe.validate(
+        new URL('https://whatever.io'),
+        '0x3083A9c26582C01Ec075373A8327016A15c1269B',
+        new Date().getTime()
+      );
+      expect(siwe.hasError(SiweValidationError.invalidAddress)).toBeTruthy();
+    });
+
     // it('fails if address in the signing data doesn’t match the address associated with signer', () => {});
-    //
-    // it('fails if URI is missing', () => {});
-    //
-    // it('fails if Version is missing', () => {});
-    //
-    // it('fails if Version is not equal to 1', () => {});
-    //
-    // it('fails if Nonce is missing', () => {});
-    //
-    // it('fails if Chain ID is missing', () => {});
-    //
-    // it('fails if Issued At is missing', () => {});
-    //
-    // it('fails if Expiration Time is missing', () => {});
-    //
-    // it('fails if Expiration Time is in the past', () => {});
-    //
-    // it('fails if Not Before is in the future', () => {});
-    //
-    // it('fails if one of the datetime fields is not compliant to ISO-8601', () => {});
+
+    it('fails if URI is missing', () => {
+      const message = testCases.negative['missing uri'];
+      const siwe = SiweMessage.parse(message);
+      expectParsed(siwe);
+      siwe.validate(
+        new URL('https://whatever.io'),
+        '0x3083A9c26582C01Ec075373A8327016A15c1269B',
+        new Date().getTime()
+      );
+      expect(siwe.hasError(SiweValidationError.missingURI)).toBeTruthy();
+    });
+
+    // it('fails if Version is missing', () => { });
+
+    it('fails if Version is not equal to 1', () => {
+      const message = testCases.negative['version not 1'];
+      const siwe = SiweMessage.parse(message);
+      expectParsed(siwe);
+      siwe.validate(
+        new URL('https://whatever.io'),
+        '0x3083A9c26582C01Ec075373A8327016A15c1269B',
+        new Date().getTime()
+      );
+      expect(siwe.hasError(SiweValidationError.invalidVersion)).toBeTruthy();
+    });
+
+    it('fails if Nonce is missing', () => {
+      const message = testCases.negative['missing nonce'];
+      const siwe = SiweMessage.parse(message);
+      expectParsed(siwe);
+      siwe.validate(
+        new URL('https://whatever.io'),
+        '0x3083A9c26582C01Ec075373A8327016A15c1269B',
+        new Date().getTime()
+      );
+      expect(siwe.hasError(SiweValidationError.missingNonce)).toBeTruthy();
+    });
+
+    it('fails if Chain ID is missing', () => {
+      const message = testCases.negative['missing chainId'];
+      const siwe = SiweMessage.parse(message);
+      expectParsed(siwe);
+      siwe.validate(
+        new URL('https://whatever.io'),
+        '0x3083A9c26582C01Ec075373A8327016A15c1269B',
+        new Date().getTime()
+      );
+      expect(siwe.hasError(SiweValidationError.missingChainId)).toBeTruthy();
+    });
+
+    it('fails if Issued At is missing', () => {
+      const message = testCases.negative['missing issuedAt'];
+      const siwe = SiweMessage.parse(message);
+      expectParsed(siwe);
+      siwe.validate(
+        new URL('https://whatever.io'),
+        '0x3083A9c26582C01Ec075373A8327016A15c1269B',
+        new Date().getTime()
+      );
+      expect(siwe.hasError(SiweValidationError.missingIssuedAt)).toBeTruthy();
+    });
+
+    it('fails if issuedAt is not compliant to ISO-8601', () => {
+      const message = testCases.negative['non-ISO 8601 issuedAt'];
+      const siwe = SiweMessage.parse(message);
+      expectParsed(siwe);
+      siwe.validate(
+        new URL('https://whatever.io'),
+        '0x3083A9c26582C01Ec075373A8327016A15c1269B',
+        new Date().getTime()
+      );
+      expect(siwe.hasError(SiweValidationError.invalidTimeFormat)).toBeTruthy();
+    });
 
     it('fails if domain does not equal origin', () => {
       const message =
