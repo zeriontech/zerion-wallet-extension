@@ -86,6 +86,7 @@ export function ImportKey({
             style={{ width: '100%' }}
             type="password"
             required={true}
+            autoFocus={true}
           />
           <Button
             kind="primary"

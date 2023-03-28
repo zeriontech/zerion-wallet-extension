@@ -209,6 +209,7 @@ export function ImportMnemonic({
                     const value = e.clipboardData.getData('text/plain');
                     handlePaste(index, value);
                   }}
+                  autoFocus={index === 0}
                 />
                 <UIText
                   kind="body/regular"
