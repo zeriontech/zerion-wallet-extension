@@ -100,6 +100,19 @@ function trackAppEvents({ account }: { account: Account }) {
   emitter.on('messageSigned', ({ message, ...rest }) => {
     handleSign({ type: 'messageSigned', ...rest });
   });
+
+  emitter.on('addEthereumChain', ({ values: [network], origin }) => {
+    const params = createParams({
+      request_name: 'add_custom_evm',
+      source: origin,
+      network_external_id: network.external_id,
+      network_rpc_url_internal: network.rpc_url_internal,
+      network_name: network.name,
+      network_native_asset_symbol: network.native_asset?.symbol || null,
+      network_explorer_home_url: network.explorer_home_url,
+    });
+    sendToMetabase('add_custom_evm', params);
+  });
 }
 
 export function initialize({ account }: { account: Account }) {
