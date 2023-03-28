@@ -36,7 +36,7 @@ function ImportOption({
       className={cn(styles.importOption, { [styles.disabled]: comingSoon })}
     >
       <Stack
-        direction={isNarrowView ? 'horisontal' : 'vertical'}
+        direction={isNarrowView ? 'horizontal' : 'vertical'}
         gap={isNarrowView ? 8 : 16}
         style={{ alignItems: isNarrowView ? 'center' : undefined }}
       >
@@ -107,7 +107,7 @@ function ImportOptions({ address }: { address?: string }) {
       </UIText>
       <Stack
         gap={16}
-        direction={isNarrowView ? 'vertical' : 'horisontal'}
+        direction={isNarrowView ? 'vertical' : 'horizontal'}
         style={{
           gridTemplateColumns: isNarrowView ? undefined : '1fr 1fr 1fr',
         }}

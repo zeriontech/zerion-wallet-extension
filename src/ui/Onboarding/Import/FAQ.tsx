@@ -118,7 +118,7 @@ function SecretKeyFAQ() {
         )}
         <VStack gap={8}>
           <UIText kind="small/regular">Where can I find my private key?</UIText>
-          <Stack gap={8} direction={isNarrowView ? 'horisontal' : 'vertical'}>
+          <Stack gap={8} direction={isNarrowView ? 'horizontal' : 'vertical'}>
             <UnstyledButton
               className={styles.faqButton}
               onClick={() => setShowMetamaskPanel(true)}
@@ -240,7 +240,7 @@ function PhraseFAQ() {
           <UIText kind="small/regular">
             Where can I find my recovery phrase?
           </UIText>
-          <Stack gap={8} direction={isNarrowView ? 'horisontal' : 'vertical'}>
+          <Stack gap={8} direction={isNarrowView ? 'horizontal' : 'vertical'}>
             <UnstyledButton
               className={styles.faqButton}
               onClick={() => setShowMetamaskPanel(true)}

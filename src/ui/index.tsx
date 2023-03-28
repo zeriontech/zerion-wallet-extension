@@ -2,6 +2,7 @@ import React from 'react';
 import browser from 'webextension-polyfill';
 import { createRoot, Root } from 'react-dom/client';
 import { configureUIClient } from 'src/modules/defi-sdk';
+import { FEATURE_WAITLIST_ONBOARDING } from 'src/env/config';
 import { BackgroundScriptUpdateHandler } from 'src/shared/core/BackgroundScriptUpdateHandler';
 import { initializeClientAnalytics } from 'src/shared/analytics/analytics.client';
 import { HandshakeFailed } from 'src/shared/errors/errors';
@@ -44,7 +45,7 @@ async function initializeUI(opts?: { handshakeFailure?: boolean }) {
 
   const currentUser = await getCurrentUser();
   const userHasWallets = Boolean(Object.keys(currentUser).length);
-  if (isPopup && !userHasWallets) {
+  if (FEATURE_WAITLIST_ONBOARDING && isPopup && !userHasWallets) {
     const url = new URL('./index.html', import.meta.url);
     browser.tabs.create({
       url: url.toString(),
@@ -65,9 +66,9 @@ async function initializeUI(opts?: { handshakeFailure?: boolean }) {
             defaultView={
               opts?.handshakeFailure ? 'handshakeFailure' : undefined
             }
-            viewMode={isPopup ? 'popup' : 'window'}
             mode={
-              hasOnboardingUrl || (!isPopup && !userHasWallets)
+              FEATURE_WAITLIST_ONBOARDING &&
+              (hasOnboardingUrl || (!isPopup && !userHasWallets))
                 ? 'onboarding'
                 : 'wallet'
             }

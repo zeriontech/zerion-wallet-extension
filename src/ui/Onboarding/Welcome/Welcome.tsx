@@ -217,7 +217,7 @@ function EligibleFAQ({ show }: { show: boolean }) {
         <UIText kind="headline/h2">How can I become eligible?</UIText>
         <Stack
           gap={16}
-          direction={isNarrowView ? 'vertical' : 'horisontal'}
+          direction={isNarrowView ? 'vertical' : 'horizontal'}
           style={{ gridTemplateColumns: isNarrowView ? undefined : '1fr 1fr' }}
         >
           <FAQButton

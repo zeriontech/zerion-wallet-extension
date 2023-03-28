@@ -108,7 +108,7 @@ export function Import() {
         {walletAddress && type ? (
           <Stack
             gap={isNarrowView ? 0 : 60}
-            direction={isNarrowView ? 'vertical' : 'horisontal'}
+            direction={isNarrowView ? 'vertical' : 'horizontal'}
             style={{
               gridTemplateColumns: isNarrowView ? undefined : '380px auto',
             }}

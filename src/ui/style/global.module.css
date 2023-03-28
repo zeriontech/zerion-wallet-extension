@@ -41,6 +41,11 @@ body.isDialog {
   margin: auto;
 }
 
+body.isOnboarding {
+  height: 100vh;
+  width: 100%;
+}
+
 body.isDialog:not(.isOnboarding) {
   max-width: 400px;
 }

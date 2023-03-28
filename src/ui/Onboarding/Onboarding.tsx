@@ -5,6 +5,7 @@ import Logo from 'jsx:src/ui/assets/zerion-full-logo.svg';
 import { useScreenViewChange } from '../shared/useScreenViewChange';
 import { HStack } from '../ui-kit/HStack';
 import { useBodyStyle } from '../components/Background/Background';
+import { PageBottom } from '../components/PageBottom';
 import { Dashboard } from './Dashboard';
 import { Welcome } from './Welcome';
 import { Import } from './Import';
@@ -103,6 +104,7 @@ export function Onboarding() {
         <Route path="/onboarding/success" element={<Success />} />
         <Route path="*" element={<Navigate to="/" replace={true} />} />
       </Routes>
+      <PageBottom />
     </PageLayout>
   );
 }
