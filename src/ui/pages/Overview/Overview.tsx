@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { useAddressPortfolio } from 'defi-sdk';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -127,6 +127,40 @@ function CurrentAccountControls() {
   );
 }
 
+function DevelopmentOnly({ children }: React.PropsWithChildren) {
+  if (process.env.NODE_ENV === 'development') {
+    return children as JSX.Element;
+  } else {
+    return null;
+  }
+}
+
+let didRenderOnce = false;
+let didRunEffectOnce = false;
+function RenderTimeMeasure() {
+  // Expected measures:
+  // TAB
+  // Overview render: ~30ms
+  // Overview render effect: ~75ms
+  //
+  // POPUP
+  // Overview render: ~40ms
+  // Overview render effect: ~74ms
+  //
+  if (!didRenderOnce) {
+    console.timeEnd('UI render'); // eslint-disable-line no-console
+  }
+
+  useEffect(() => {
+    if (!didRunEffectOnce) {
+      console.timeEnd('UI render effect'); // eslint-disable-line no-console
+    }
+    didRunEffectOnce = true;
+  }, []);
+  didRenderOnce = true;
+  return null;
+}
+
 function OverviewComponent() {
   const { singleAddress, params, ready } = useAddressParams();
   const { value, isLoading: isLoadingPortfolio } = useAddressPortfolio(
@@ -243,6 +277,9 @@ function OverviewComponent() {
         </div>
         <Spacer height={20} />
         <ActionButtonsRow />
+        <DevelopmentOnly>
+          <RenderTimeMeasure />
+        </DevelopmentOnly>
         <Spacer height={20} />
       </PageFullBleedColumn>
       <PageFullBleedColumn
