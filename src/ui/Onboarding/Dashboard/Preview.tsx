@@ -1,5 +1,5 @@
 import { useAddressPortfolio, useAddressPositions } from 'defi-sdk';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useMemo } from 'react';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
@@ -40,8 +40,6 @@ interface IconConfig {
 }
 
 function useAssetsIcons(address: string) {
-  const [result, setResult] = useState<IconConfig[] | null>(null);
-
   const { value: positions } = useAddressPositions(
     {
       address,
@@ -59,8 +57,8 @@ function useAssetsIcons(address: string) {
     { cachePolicy: 'cache-first', limit: ICON_NUMBER }
   );
 
-  useEffect(() => {
-    if (!positions || !nfts || result) {
+  return useMemo(() => {
+    if (!positions || !nfts) {
       return;
     }
     const filteredNfts = nfts.filter((item) =>
@@ -97,15 +95,11 @@ function useAssetsIcons(address: string) {
     ];
 
     // shuffle array
-    setResult(resultArray.sort((_, __) => 0.5 - Math.random()));
-  }, [positions, nfts, result, address]);
-
-  return result;
+    return resultArray.sort((_, __) => 0.5 - Math.random());
+  }, [positions, nfts, address]);
 }
 
 function Icon({ iconUrl, zerionUrl, type }: IconConfig) {
-  const ref = useRef<HTMLImageElement | null>(null);
-
   return (
     <UnstyledAnchor
       className={styles.assetIcon}
@@ -115,12 +109,11 @@ function Icon({ iconUrl, zerionUrl, type }: IconConfig) {
     >
       <img
         src={iconUrl}
-        ref={ref}
         style={{
           borderRadius: type === 'nft' ? 12 : '50%',
           opacity: 0.01,
         }}
-        onLoad={() => ref.current?.style.setProperty('opacity', '1')}
+        onLoad={(e) => e.currentTarget.style.setProperty('opacity', '1')}
       />
     </UnstyledAnchor>
   );
