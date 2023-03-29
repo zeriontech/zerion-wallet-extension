@@ -55,7 +55,7 @@ export function TransactionDescription({
       assetReceiver ? (
         <WalletLine
           address={assetReceiver}
-          label="Recepient"
+          label="Recipient"
           networks={networks}
           chain={chain}
         />
