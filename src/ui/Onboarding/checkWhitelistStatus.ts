@@ -78,35 +78,36 @@ async function getNftStatus(address: string) {
   return { status: (value?.length || 0) > 0 };
 }
 
-async function checkAllowance(promises: Promise<{ status: boolean }>[]) {
-  return new Promise<{ status: boolean }>((resolve, reject) => {
-    let settledChecks = 0;
-    let error: Error | null = null;
-    for (let i = 0; i < promises.length; i++) {
-      promises[i]
-        .then((result) => {
-          if (result.status) {
-            resolve(result);
-          }
-        })
-        .catch((e) => {
-          error = e;
-        })
-        .finally(() => {
-          settledChecks += 1;
-          if (settledChecks === promises.length) {
-            if (error) {
-              reject(error);
-            }
-            resolve({ status: false });
-          }
-        });
-    }
-  });
+function anyFallback<T>(values: Array<PromiseLike<T>>): Promise<Awaited<T>> {
+  const identity = <T>(x: T) => x;
+  return Promise.all(
+    values.map((promise) =>
+      promise.then((result) => {
+        throw result;
+      }, identity)
+    )
+  ).then(() => {
+    throw new Error('AggregateError (Promise.all)');
+  }, identity);
+}
+
+function anyPromise<T>(values: Array<PromiseLike<T>>): Promise<Awaited<T>> {
+  // @ts-ignore Promise.any
+  const any = Promise.any ? (values) => Promise.any(values) : null;
+  return any ? any(values) : anyFallback(values);
 }
 
 export async function checkWhitelistStatus(address: string) {
-  return checkAllowance([getNftStatus(address), getWaitlistStatus(address)]);
+  const handler = (result: { status: boolean }) => {
+    if (!result.status) {
+      throw new WaitlistCheckError();
+    }
+    return result;
+  };
+  return anyPromise([
+    getNftStatus(address).then(handler),
+    getWaitlistStatus(address).then(handler),
+  ]);
 }
 
 export function useWhitelistStatus(address?: string) {
