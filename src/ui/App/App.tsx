@@ -322,11 +322,11 @@ initializeApperance();
 dayjs.extend(relativeTime);
 
 export function App({
-  defaultView,
+  initialView,
   mode,
 }: {
   mode: 'onboarding' | 'wallet';
-  defaultView?: 'handshakeFailure';
+  initialView?: 'handshakeFailure';
 }) {
   const bodyClassList = useMemo(() => {
     const result = [];
@@ -365,12 +365,12 @@ export function App({
                 <CloseOtherWindows />
                 <ViewSuspense>
                   {mode === 'onboarding' &&
-                  defaultView !== 'handshakeFailure' ? (
+                  initialView !== 'handshakeFailure' ? (
                     <Onboarding />
                   ) : (
                     <Views
                       initialRoute={
-                        defaultView === 'handshakeFailure'
+                        initialView === 'handshakeFailure'
                           ? '/handshake-failure'
                           : undefined
                       }

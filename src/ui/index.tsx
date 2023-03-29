@@ -44,7 +44,7 @@ async function initializeUI(opts?: { handshakeFailure?: boolean }) {
   initializeChannels();
 
   const currentUser = await getCurrentUser();
-  const userHasWallets = Boolean(Object.keys(currentUser).length);
+  const userHasWallets = Boolean(Object.keys(currentUser || {}).length);
   if (FEATURE_WAITLIST_ONBOARDING === 'on' && isPopup && !userHasWallets) {
     const url = new URL('./index.html', import.meta.url);
     browser.tabs.create({
@@ -63,7 +63,7 @@ async function initializeUI(opts?: { handshakeFailure?: boolean }) {
       reactRoot.render(
         <React.StrictMode>
           <App
-            defaultView={
+            initialView={
               opts?.handshakeFailure ? 'handshakeFailure' : undefined
             }
             mode={

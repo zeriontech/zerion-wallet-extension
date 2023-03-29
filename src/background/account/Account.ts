@@ -5,10 +5,11 @@ import { getSHA256HexDigest } from 'src/modules/crypto/getSHA256HexDigest';
 import * as browserStorage from 'src/background/webapis/storage';
 import { validate } from 'src/shared/validation/user-input';
 import { eraseAndUpdateToLatestVersion } from 'src/shared/core/version';
+import { currentUserKey, User } from 'src/shared/getCurrentUser';
 import { Wallet } from '../Wallet/Wallet';
 import { peakSavedWalletState } from '../Wallet/persistence';
-import { credentialsKey, currentUserKey } from './storage-keys';
-import type { PublicUser, User } from './types';
+import { credentialsKey } from './storage-keys';
+import type { PublicUser } from './types';
 
 const TEMPORARY_ID = 'temporary';
 

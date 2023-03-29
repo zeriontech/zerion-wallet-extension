@@ -1,7 +1,4 @@
-export interface User {
-  id: string;
-  salt: string;
-}
+import { User } from 'src/shared/getCurrentUser';
 
 export interface PublicUser {
   id: User['id'];
