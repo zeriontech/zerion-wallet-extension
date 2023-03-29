@@ -128,6 +128,7 @@ function MainForm({
           placeholder="Enter your address or domain"
           required={true}
           autoComplete="off"
+          autoFocus={true}
         />
         <Spacer height={isNarrowView ? 4 : 22} />
         <UIText

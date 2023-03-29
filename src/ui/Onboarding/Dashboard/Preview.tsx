@@ -111,6 +111,7 @@ function Icon({ iconUrl, zerionUrl, type }: IconConfig) {
       className={styles.assetIcon}
       href={zerionUrl}
       target="_blank"
+      tabIndex={-1}
     >
       <img
         src={iconUrl}
