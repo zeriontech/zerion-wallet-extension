@@ -50,7 +50,11 @@ export async function getAddressNfts(payload: Payload) {
         scope: [scope],
         payload,
       },
-      onData: resolve,
+      onData: (data) => {
+        if (data.isDone) {
+          resolve(data);
+        }
+      },
     });
   });
 }
