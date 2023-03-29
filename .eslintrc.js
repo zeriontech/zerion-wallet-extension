@@ -14,6 +14,7 @@ module.exports = {
       .concat(confusingBrowserGlobals)
       .concat(['origin']),
     'import/order': 'error',
+    '@typescript-eslint/consistent-type-imports': 'error',
   },
   overrides: [
     {
