@@ -1,9 +1,5 @@
 import * as browserStorage from 'src/background/webapis/storage';
-
-export interface User {
-  id: string;
-  salt: string;
-}
+import type { User } from './types/User';
 
 export const currentUserKey = 'currentUser';
 

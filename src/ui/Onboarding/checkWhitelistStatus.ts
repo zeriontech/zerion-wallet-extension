@@ -114,7 +114,7 @@ export function useWhitelistStatus(address?: string) {
     `check waitlist status for ${address}`,
     async () => {
       if (!address) {
-        return false;
+        return { status: false };
       }
       try {
         return checkWhitelistStatus(address);

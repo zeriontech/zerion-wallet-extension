@@ -42,13 +42,13 @@ export function ImportMnemonic({
     }, 150);
   }
 
-  const { status: isWhitelisted, isLoading: isWhitelistStatusLoading } =
+  const { data: isWhiteListedResponse, isLoading: isWhitelistStatusLoading } =
     useWhitelistStatus(address);
 
   const { mutate, isLoading } = useMutation(
     async (value: string) => {
       setValidation(null);
-      if (!isWhitelisted) {
+      if (!isWhiteListedResponse?.status) {
         throw new Error("You're not whitelisted");
       }
       const phrase = prepareUserInputSeedOrPrivateKey(value);

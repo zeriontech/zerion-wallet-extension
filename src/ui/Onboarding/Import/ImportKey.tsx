@@ -24,13 +24,13 @@ export function ImportKey({
   const { isNarrowView } = useSizeStore();
   const [validation, setValidation] = useState<ValidationResult | null>(null);
 
-  const { status: isWhitelisted, isLoading: isWhitelistStatusLoading } =
+  const { data: isWhiteListedResponse, isLoading: isWhitelistStatusLoading } =
     useWhitelistStatus(address);
 
   const { mutate, isLoading } = useMutation(
     async (value: string) => {
       setValidation(null);
-      if (!isWhitelisted) {
+      if (!isWhiteListedResponse?.status) {
         throw new Error("You're not whitelisted");
       }
       const secretKey = prepareUserInputSeedOrPrivateKey(value);

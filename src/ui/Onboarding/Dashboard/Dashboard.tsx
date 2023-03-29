@@ -124,7 +124,7 @@ export function Dashboard() {
   const navigate = useNavigate();
   const { walletAddress } = useParams();
 
-  const { status: isWhitelisted, isLoading } =
+  const { data: isWhiteListedResponse, isLoading } =
     useWhitelistStatus(walletAddress);
 
   return (
@@ -143,9 +143,11 @@ export function Dashboard() {
         <VStack gap={40}>
           <Preview
             address={walletAddress}
-            isWhitelisted={Boolean(isWhitelisted)}
+            isWhitelisted={Boolean(isWhiteListedResponse?.status)}
           />
-          {isWhitelisted ? <ImportOptions address={walletAddress} /> : null}
+          {isWhiteListedResponse?.status ? (
+            <ImportOptions address={walletAddress} />
+          ) : null}
         </VStack>
       ) : null}
     </>
