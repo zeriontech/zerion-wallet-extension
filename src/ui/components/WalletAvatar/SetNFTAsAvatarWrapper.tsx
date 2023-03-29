@@ -122,11 +122,11 @@ export function SetNFTAsAvatarWrapper({
   const ref = useRef<HTMLDialogElementInterface | null>(null);
   const { singleAddress } = useAddressParams();
   const { mutate: updateAvatar, isLoading: isUpdating } = useMutation(
-    async (asset_code?: string) => {
-      if (!asset_code) {
+    async (tokenId?: string) => {
+      if (!tokenId) {
         return;
       }
-      return profileManager.updateProfileAvatar(singleAddress, asset_code);
+      return profileManager.updateProfileAvatar(singleAddress, tokenId);
     }
   );
 
@@ -161,11 +161,12 @@ export function SetNFTAsAvatarWrapper({
         }}
       >
         <DialogTitle
-          title={<UIText kind="subtitle/m_med">Set New NFT as Avatar</UIText>}
+          title={<UIText kind="body/accent">Set New NFT as Avatar</UIText>}
         />
         <Spacer height={24} />
         <NFTSelector
           key={value}
+          address={singleAddress}
           defaultValue={value}
           onSubmit={(value) => {
             ref.current?.close();

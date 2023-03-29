@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { EmptyView } from 'src/ui/components/EmptyView';
 import { DnaNFTBanner } from 'src/ui/components/DnaClaim';
+import TickIcon from 'jsx:src/ui/assets/check.svg';
 import { ViewLoading } from 'src/ui/components/ViewLoading/ViewLoading';
 import { NBSP } from 'src/ui/shared/typography';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
@@ -23,6 +24,10 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { createChain } from 'src/modules/networks/Chain';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
+import { Surface } from 'src/ui/ui-kit/Surface';
+import { SquareElement } from 'src/ui/ui-kit/SquareElement';
+import { MediaContent } from 'src/ui/ui-kit/MediaContent';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
 
 function NFTItem({

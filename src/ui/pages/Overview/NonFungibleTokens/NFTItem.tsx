@@ -1,4 +1,3 @@
-import type { AddressNFT } from 'defi-sdk';
 import React, { useMemo } from 'react';
 import TickIcon from 'jsx:src/ui/assets/check.svg';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
@@ -10,6 +9,7 @@ import { SquareElement } from 'src/ui/ui-kit/SquareElement';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { AddressNFT } from 'src/ui/shared/requests/addressNfts/types';
 
 export function NFTItem({
   item,
@@ -20,12 +20,11 @@ export function NFTItem({
   showCollection?: boolean;
   someHavePrice?: boolean;
 }) {
-  const { asset } = item;
-  const price = asset.floor_price;
+  const price = item.prices.converted?.floor_price;
 
   const isPrimary = useMemo(() => {
-    return asset.tags?.includes('#primary');
-  }, [asset.tags]);
+    return item.metadata.tags?.includes('#primary');
+  }, [item]);
 
   return (
     <Surface padding={8} style={{ width: '100%', position: 'relative' }}>
@@ -51,8 +50,8 @@ export function NFTItem({
       <SquareElement
         render={(style) => (
           <MediaContent
-            content={asset.preview.url ? asset.preview : asset.detail}
-            alt={`${asset.name} image`}
+            content={item.metadata.content}
+            alt={`${item.metadata.name} image`}
             errorStyle={
               CSS.supports('aspect-ratio: 1 / 1')
                 ? undefined
@@ -72,7 +71,7 @@ export function NFTItem({
       <VStack gap={4} style={{ marginTop: 'auto' }}>
         {showCollection ? (
           <UIText
-            kind="subtitle/s_med"
+            kind="caption/regular"
             color="var(--neutral-500)"
             style={{
               whiteSpace: 'nowrap',
@@ -80,27 +79,27 @@ export function NFTItem({
               textOverflow: 'ellipsis',
             }}
           >
-            {asset.collection?.name || 'Untitled collection'}
+            {item.collection?.name || 'Untitled collection'}
           </UIText>
         ) : null}
         <UIText
-          kind="subtitle/l_med"
+          kind="small/accent"
           style={{
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
           }}
         >
-          {asset.name || 'Untitled Asset'}
+          {item.metadata.name || 'Untitled Asset'}
         </UIText>
         {price ? (
-          <UIText kind="subtitle/l_med">
+          <UIText kind="small/accent">
             <NeutralDecimals
               parts={formatCurrencyToParts(price, 'en', 'usd')}
             />
           </UIText>
         ) : someHavePrice ? (
-          <UIText kind="subtitle/l_med">{NBSP}</UIText>
+          <UIText kind="small/accent">{NBSP}</UIText>
         ) : null}
       </VStack>
     </Surface>

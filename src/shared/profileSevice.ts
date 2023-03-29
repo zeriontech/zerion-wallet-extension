@@ -73,8 +73,10 @@ class ProfileManager {
     }
   }
 
-  async updateProfileAvatar(address: string, asset_code: string) {
+  async updateProfileAvatar(address: string, tokenId: string) {
     try {
+      // remove chain from tokenId
+      const asset_code = tokenId.split(':').slice(1).join(':');
       const token = await this.getAuthToken(address);
       if (!token) {
         return false;

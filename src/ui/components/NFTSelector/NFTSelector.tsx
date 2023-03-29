@@ -1,34 +1,48 @@
 import React from 'react';
 import { NFTItem } from 'src/ui/pages/Overview/NonFungibleTokens/NFTItem';
-import { useAddressNFTList } from 'src/ui/pages/Overview/NonFungibleTokens/useAddressNFTList';
 import { Button } from 'src/ui/ui-kit/Button';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import CheckIcon from 'jsx:src/ui/assets/check_circle.svg';
+import {
+  getNftId,
+  useAddressNfts,
+} from 'src/ui/shared/requests/addressNfts/useAddressNfts';
+import { NetworkId } from 'src/modules/networks/NetworkId';
 import * as styles from './styles.module.css';
 
 export function NFTSelector({
+  address,
   defaultValue,
   onSubmit,
   onDismiss,
 }: {
+  address: string;
   defaultValue?: string;
   onSubmit?(value: string): void;
   onDismiss?(): void;
 }) {
-  const { value: items, isLoading } = useAddressNFTList();
+  const { value: items, isLoading } = useAddressNfts(
+    {
+      address,
+      currency: 'usd',
+      sorted_by: 'floor_price_high',
+      chains: [NetworkId.Ethereum],
+    },
+    { limit: 30, paginatedCacheMode: 'first-page' }
+  );
 
   if (isLoading) {
     return <CircleSpinner />;
   }
 
-  if (items.length === 0) {
+  if (!items?.length) {
     return (
       <VStack gap={32}>
         <UIText
-          kind="subtitle/l_reg"
+          kind="body/regular"
           color="var(--neutral-500)"
           style={{ textAlign: 'center' }}
         >
@@ -59,17 +73,20 @@ export function NFTSelector({
         }}
       >
         {items.map((addressNft) => (
-          <div key={addressNft.id} style={{ display: 'flex' }}>
+          <div key={getNftId(addressNft)} style={{ display: 'flex' }}>
             <input
               className={styles.radio}
               type="radio"
               name="nft"
-              id={`nft-${addressNft.id}`}
-              value={addressNft.asset.asset_code}
+              id={`nft-${getNftId(addressNft)}`}
+              value={getNftId(addressNft)}
               style={{ width: 0, height: 0 }}
-              defaultChecked={defaultValue === addressNft.asset.asset_code}
+              defaultChecked={defaultValue === getNftId(addressNft)}
             />
-            <label htmlFor={`nft-${addressNft.id}`} className={styles.nft}>
+            <label
+              htmlFor={`nft-${getNftId(addressNft)}`}
+              className={styles.nft}
+            >
               <NFTItem item={addressNft} showCollection={true} />
               <CheckIcon className={styles.check} />
             </label>

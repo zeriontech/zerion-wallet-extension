@@ -19,14 +19,19 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { invariant } from 'src/shared/invariant';
+import { getNftId } from 'src/ui/shared/requests/addressNfts/useAddressNfts';
+import { NetworkId } from 'src/modules/networks/NetworkId';
 import { useNFTPosition } from './useNftPosition';
 
 export function NonFungibleToken() {
   const { asset_code, chain } = useParams();
   const { singleAddress } = useAddressParams();
 
+  invariant(asset_code, 'NFT asset code is required');
+
   const [contract_address, token_id] = useMemo(
-    () => asset_code?.split(':') || [],
+    () => asset_code.split(':'),
     [asset_code]
   );
 
@@ -76,7 +81,7 @@ export function NonFungibleToken() {
 
   const nftTags = useMemo(() => new Set(nft?.metadata.tags || []), [nft]);
   const {
-    data: nft,
+    data: profileNft,
     isLoading: isProfileLoading,
     refetch,
   } = useQuery(
@@ -90,13 +95,10 @@ export function NonFungibleToken() {
   const { mutate: updateAvatar, isLoading: updateAvatarIsLoading } =
     useMutation(
       async () => {
-        if (!value) {
+        if (!nft) {
           return;
         }
-        return profileManager.updateProfileAvatar(
-          singleAddress,
-          value.asset.asset_code
-        );
+        return profileManager.updateProfileAvatar(singleAddress, getNftId(nft));
       },
       { onSuccess: () => refetch() }
     );
@@ -115,13 +117,13 @@ export function NonFungibleToken() {
                 textOverflow: 'ellipsis',
               }}
               title={
-                value
-                  ? `${value.collection_info?.name} • ${value.asset.name}`
+                nft
+                  ? `${nft.collection.name} • ${nft.metadata.name}`
                   : undefined
               }
             >
-              {value
-                ? `${value.collection_info?.name} • ${value.asset.name}`
+              {nft
+                ? `${nft.collection.name} • ${nft.metadata.name}`
                 : 'NFT Info'}
             </div>
           }
@@ -203,17 +205,19 @@ export function NonFungibleToken() {
                   </HStack>
                 </Button>
               ) : null}
-              <Button
-                onClick={() => updateAvatar()}
-                style={{ paddingLeft: 24, paddingRight: 24 }}
-                disabled={
-                  updateAvatarIsLoading ||
-                  isProfileLoading ||
-                  nft?.id === asset_code
-                }
-              >
-                Set as Avatar
-              </Button>
+              {nft.chain === NetworkId.Ethereum ? (
+                <Button
+                  onClick={() => updateAvatar()}
+                  style={{ paddingLeft: 24, paddingRight: 24 }}
+                  disabled={
+                    updateAvatarIsLoading ||
+                    isProfileLoading ||
+                    profileNft?.id === asset_code
+                  }
+                >
+                  Set as Avatar
+                </Button>
+              ) : null}
             </HStack>
           </VStack>
         ) : null}

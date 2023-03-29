@@ -216,7 +216,11 @@ export function MediaContent({
     );
   }
   return (
-    <UIText kind="body/regular" className={className}>
+    <UIText
+      kind="small/regular"
+      className={className}
+      style={{ height: '100%' }}
+    >
       Unsupported content
     </UIText>
   );
