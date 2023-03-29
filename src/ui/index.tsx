@@ -45,7 +45,7 @@ async function initializeUI(opts?: { handshakeFailure?: boolean }) {
 
   const currentUser = await getCurrentUser();
   const userHasWallets = Boolean(Object.keys(currentUser).length);
-  if (FEATURE_WAITLIST_ONBOARDING && isPopup && !userHasWallets) {
+  if (FEATURE_WAITLIST_ONBOARDING === 'on' && isPopup && !userHasWallets) {
     const url = new URL('./index.html', import.meta.url);
     browser.tabs.create({
       url: url.toString(),

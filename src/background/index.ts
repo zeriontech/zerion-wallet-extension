@@ -183,8 +183,8 @@ chrome.scripting.registerContentScripts([
 ]);
 
 browser.runtime.onInstalled.addListener(({ reason }) => {
-  if (reason === chrome.runtime.OnInstalledReason.INSTALL) {
-    if (!FEATURE_WAITLIST_ONBOARDING) {
+  if (reason === 'install') {
+    if (FEATURE_WAITLIST_ONBOARDING !== 'on') {
       return;
     }
     const popupUrl = browser.runtime.getManifest().action?.default_popup;
