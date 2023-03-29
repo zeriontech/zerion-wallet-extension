@@ -10,7 +10,6 @@ import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { BareWallet } from 'src/shared/types/BareWallet';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
-import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import LockIcon from '../assets/lock.png';
 import { useSizeStore } from '../useSizeStore';
 import { Stack } from '../Stack';
@@ -89,7 +88,6 @@ export function Import() {
 
   return (
     <VStack gap={isNarrowView ? 16 : 56}>
-      <KeyboardShortcut combination="esc" onKeyDown={handleBackClick} />
       <div className={styles.container}>
         {isLoading ? (
           <div className={styles.loadingOverlay}>
