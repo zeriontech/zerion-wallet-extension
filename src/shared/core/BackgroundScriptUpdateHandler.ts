@@ -1,4 +1,5 @@
 import browser from 'webextension-polyfill';
+import { rejectAfterDelay } from '../rejectAfterDelay';
 
 function getRandomInteger() {
   return window.crypto.getRandomValues(new Uint32Array(1))[0];
@@ -19,11 +20,6 @@ async function sendPortMessage<Req, Resp>(
     port.postMessage(request);
   });
 }
-
-const rejectAfterDelay = (ms: number) =>
-  new Promise<never>((_, reject) =>
-    setTimeout(() => reject(new Error('Request timed out')), ms)
-  );
 
 const PERFORM_HANSHAKE_CHECK = true;
 

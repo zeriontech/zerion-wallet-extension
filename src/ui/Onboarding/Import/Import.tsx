@@ -10,6 +10,8 @@ import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { BareWallet } from 'src/shared/types/BareWallet';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
+import { HandshakeFailure } from 'src/ui/components/HandshakeFailure';
+import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 import lockIconSrc from '../assets/lock.png';
 import { useSizeStore } from '../useSizeStore';
 import { Stack } from '../Stack';
@@ -34,6 +36,7 @@ export function Import() {
   const { isNarrowView } = useSizeStore();
   const navigate = useNavigate();
   const [step, setStep] = useState<'secret' | 'password'>('secret');
+  const [showError, setShowError] = useState(false);
   const { walletAddress, type } = useParams<{
     walletAddress: string;
     type: 'private-key' | 'mnemonic';
@@ -44,12 +47,12 @@ export function Import() {
   }, []);
 
   const handleBackClick = useCallback(() => {
-    if (step === 'secret') {
+    if (step === 'secret' || showError) {
       navigate(`/onboarding/welcome/${walletAddress}`);
     } else if (step === 'password') {
       setStep('secret');
     }
-  }, [navigate, step, walletAddress]);
+  }, [navigate, step, walletAddress, showError]);
 
   const [wallet, setWallet] = useState<BareWallet | null>(null);
   const handleWallet = useCallback((wallet: BareWallet) => {
@@ -59,19 +62,28 @@ export function Import() {
 
   const { mutate, isLoading } = useMutation(
     async ({ password, wallet }: { password: string; wallet: BareWallet }) => {
-      await new Promise((r) => setTimeout(r, 1000));
-      await accountPublicRPCPort.request('createUser', {
-        password,
-      });
-      if (type === 'mnemonic' && wallet.mnemonic) {
-        await walletPort.request('uiImportSeedPhrase', [wallet.mnemonic]);
-      }
-      await accountPublicRPCPort.request('saveUserAndWallet');
-      await setCurrentAddress({ address: wallet.address });
+      setShowError(false);
+      return Promise.race([
+        (async () => {
+          await new Promise((r) => setTimeout(r, 1000));
+          await accountPublicRPCPort.request('createUser', {
+            password,
+          });
+          if (type === 'mnemonic' && wallet.mnemonic) {
+            await walletPort.request('uiImportSeedPhrase', [wallet.mnemonic]);
+          }
+          await accountPublicRPCPort.request('saveUserAndWallet');
+          await setCurrentAddress({ address: wallet.address });
+        })(),
+        rejectAfterDelay(3000),
+      ]);
     },
     {
       onSuccess: () => {
         navigate('/onboarding/success');
+      },
+      onError: () => {
+        setShowError(true);
       },
     }
   );
@@ -112,10 +124,14 @@ export function Import() {
             gap={isNarrowView ? 0 : 60}
             direction={isNarrowView ? 'vertical' : 'horizontal'}
             style={{
-              gridTemplateColumns: isNarrowView ? undefined : '380px auto',
+              gridTemplateColumns:
+                isNarrowView || showError ? undefined : '380px auto',
+              justifyContent: 'center',
             }}
           >
-            {step === 'password' ? (
+            {showError ? (
+              <HandshakeFailure />
+            ) : step === 'password' ? (
               <Password onSubmit={handlePasswordSubmit} />
             ) : type === 'private-key' ? (
               <ImportKey
@@ -128,7 +144,7 @@ export function Import() {
                 onWalletCreate={handleWallet}
               />
             ) : null}
-            {isNarrowView ? null : (
+            {isNarrowView || showError ? null : (
               <FAQ type={step === 'password' ? 'password' : type} />
             )}
           </Stack>

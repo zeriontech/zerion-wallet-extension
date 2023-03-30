@@ -95,7 +95,7 @@ export function ImportKey({
             style={{ width: '100%' }}
             disabled={isLoading || isWhitelistStatusLoading}
           >
-            <HStack gap={8} alignItems="center">
+            <HStack gap={8} alignItems="center" justifyContent="center">
               <span>Import wallet</span>
               {isLoading ? <CircleSpinner /> : null}
             </HStack>
