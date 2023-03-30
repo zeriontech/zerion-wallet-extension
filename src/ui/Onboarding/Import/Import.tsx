@@ -10,7 +10,7 @@ import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { BareWallet } from 'src/shared/types/BareWallet';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
-import LockIcon from '../assets/lock.png';
+import lockIconSrc from '../assets/lock.png';
 import { useSizeStore } from '../useSizeStore';
 import { Stack } from '../Stack';
 import * as styles from './styles.module.css';
@@ -96,10 +96,12 @@ export function Import() {
             </UIText>
           </div>
         ) : null}
-        <UnstyledButton onClick={handleBackClick}>
-          <div className={styles.backButton}>
-            <ArrowLeftIcon style={{ width: 20, height: 20 }} />
-          </div>
+        <UnstyledButton
+          onClick={handleBackClick}
+          aria-label="Back button"
+          className={styles.backButton}
+        >
+          <ArrowLeftIcon style={{ width: 20, height: 20 }} />
         </UnstyledButton>
         <HStack gap={4} className={styles.steps} justifyContent="center">
           <Step active={step === 'secret'} />
@@ -138,7 +140,7 @@ export function Import() {
         </div>
       ) : null}
       <HStack gap={16} justifyContent="center" alignItems="center">
-        <img src={LockIcon} style={{ width: 20, height: 20 }} />
+        <img src={lockIconSrc} style={{ width: 20, height: 20 }} />
         <UIText kind="small/accent" color="var(--neutral-600)" inline={true}>
           We never store your keys, collect your full IP address, sell or share
           your data. See here for our{' '}

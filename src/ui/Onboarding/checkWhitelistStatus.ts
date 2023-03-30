@@ -1,10 +1,10 @@
 import ky from 'ky';
 import { useQuery } from 'react-query';
-import { validateEmail } from 'src/ui/shared/validateEmail';
+import { isEmail } from 'src/shared/isEmail';
 import { PROXY_URL } from 'src/env/config';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getAddressNfts } from '../shared/requests/addressNfts/useAddressNfts';
-import { WaitlistCheckError } from './errors';
+import { WaitlistCheckError, NotAllowedError } from './errors';
 
 const WAITLIST_ID = 'aOfkJhcpwDHpJVkzO6FB';
 
@@ -32,7 +32,7 @@ export async function getWaitlistStatus(addressOrEmail: string) {
         'Content-type': 'application/json',
       },
       body: JSON.stringify(
-        validateEmail(addressOrEmail)
+        isEmail(addressOrEmail)
           ? { email: addressOrEmail }
           : {
               cryptoAddress: addressOrEmail,
@@ -98,16 +98,25 @@ function anyPromise<T>(values: Array<PromiseLike<T>>): Promise<Awaited<T>> {
 }
 
 export async function checkWhitelistStatus(address: string) {
+  let foundAddressInWaitlist = false;
   const handler = (result: { status: boolean }) => {
     if (!result.status) {
-      throw new WaitlistCheckError();
+      throw new NotAllowedError();
     }
     return result;
   };
   return anyPromise([
     getNftStatus(address).then(handler),
-    getWaitlistStatus(address).then(handler),
-  ]);
+    getWaitlistStatus(address).then((result) => {
+      foundAddressInWaitlist = true;
+      return handler(result);
+    }),
+  ]).catch(() => {
+    if (foundAddressInWaitlist) {
+      throw new NotAllowedError();
+    }
+    throw new WaitlistCheckError();
+  });
 }
 
 export function useWhitelistStatus(address?: string) {

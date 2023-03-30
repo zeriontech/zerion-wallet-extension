@@ -5,6 +5,7 @@ function getDocumentName() {
 
 const templates = {
   popup: (name?: string) => name && /popup\.\w+\.html$/.test(name),
+  tab: (name?: string) => name && /popup\.\w+\.html$/.test(name),
   dialog: (name?: string) => name && /dialog\.\w+\.html$/.test(name),
 };
 

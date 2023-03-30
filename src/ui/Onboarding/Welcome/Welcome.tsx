@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router';
 import { resolveDomain } from 'src/modules/name-service';
@@ -10,7 +10,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
-import { validateEmail } from 'src/ui/shared/validateEmail';
+import { isEmail } from 'src/shared/isEmail';
 import {
   checkWhitelistStatus,
   getWaitlistStatus,
@@ -18,7 +18,11 @@ import {
 import { SidePanel } from '../Import/SidePanel';
 import { useSizeStore } from '../useSizeStore';
 import { Stack } from '../Stack';
-import { UnsupportedAddressError, WaitlistCheckError } from '../errors';
+import {
+  NotAllowedError,
+  UnsupportedAddressError,
+  WaitlistCheckError,
+} from '../errors';
 import * as styles from './styles.module.css';
 
 type FormErrorType =
@@ -38,10 +42,10 @@ const ERRORS_DESCRIPTIOINS: Record<FormErrorType, string> = {
 };
 
 function MainForm({
-  onCheck,
+  onSuccess,
   onError,
 }: {
-  onCheck(params: { address: string; status: boolean }): void;
+  onSuccess(params: { address: string }): void;
   onError?(e: WaitlistCheckError | UnsupportedAddressError): void;
 }) {
   const [error, setError] = useState<FormErrorType | null>(null);
@@ -51,7 +55,7 @@ function MainForm({
     async (addressOrDomain: string) => {
       setError(null);
 
-      if (validateEmail(addressOrDomain)) {
+      if (isEmail(addressOrDomain)) {
         try {
           const { status, address } = await getWaitlistStatus(addressOrDomain);
           return { address, status };
@@ -66,23 +70,16 @@ function MainForm({
       if (!address) {
         throw new UnsupportedAddressError();
       }
-      try {
-        const { status } = await checkWhitelistStatus(address);
-        return { address, status };
-      } catch {
-        throw new WaitlistCheckError();
-      }
+      const { status } = await checkWhitelistStatus(address);
+      return { address, status };
     },
     {
-      onSuccess: ({ address, status }) => {
-        if (!status) {
-          setError('no-access');
-        }
-        onCheck({ address, status });
-      },
+      onSuccess,
       onError: (e: Error) => {
         setError(
-          e instanceof UnsupportedAddressError
+          e instanceof NotAllowedError
+            ? 'no-access'
+            : e instanceof UnsupportedAddressError
             ? 'unsupported-address'
             : e instanceof WaitlistCheckError
             ? 'waitlist-not-found'
@@ -239,29 +236,14 @@ function EligibleFAQ({ show }: { show: boolean }) {
 
 export function Welcome() {
   const [showFAQ, setShowFAQ] = useState(false);
-  const [address, setAddress] = useState<string | null>(null);
   const navigate = useNavigate();
-
-  const handleCheck = useCallback(
-    ({ address, status }: { address: string; status: boolean }) => {
-      if (!status) {
-        setShowFAQ(true);
-      } else {
-        setAddress(address);
-      }
-    },
-    []
-  );
-
-  useEffect(() => {
-    if (address) {
-      navigate(`/onboarding/welcome/${address}`);
-    }
-  }, [address, navigate]);
 
   return (
     <VStack gap={40}>
-      <MainForm onCheck={handleCheck} onError={() => setShowFAQ(true)} />
+      <MainForm
+        onSuccess={({ address }) => navigate(`/onboarding/welcome/${address}`)}
+        onError={() => setShowFAQ(true)}
+      />
       <EligibleFAQ show={showFAQ} />
     </VStack>
   );

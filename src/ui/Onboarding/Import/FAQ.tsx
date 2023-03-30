@@ -6,12 +6,12 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import RightAngleIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
-import KeyIcon from '../assets/key.png';
-import DialogIcon from '../assets/dialog.png';
-import LockIcon from '../assets/dialog.png';
-import MetamaskIcon from '../assets/metamask.png';
-import MetamaskInstruction from '../assets/metamask_instruction.png';
-import WalletIcon from '../assets/wallet2.png';
+import keyIconSrc from '../assets/key.png';
+import dialogIconSrc from '../assets/dialog.png';
+import lockIconSrc from '../assets/dialog.png';
+import metamaskIconSrc from '../assets/metamask.png';
+import metamaskInstructionSrc from '../assets/metamask_instruction.png';
+import walletIconSrc from '../assets/wallet2.png';
 import { Stack } from '../Stack';
 import { useSizeStore } from '../useSizeStore';
 import * as styles from './styles.module.css';
@@ -30,7 +30,7 @@ function SecretKeyFAQ() {
       >
         <VStack gap={0}>
           <div className={styles.faqIcon}>
-            <img src={MetamaskIcon} style={{ width: 20, height: 20 }} />
+            <img src={metamaskIconSrc} style={{ width: 20, height: 20 }} />
           </div>
           <Spacer height={20} />
           <UIText kind="body/accent">Where can I find my private key?</UIText>
@@ -39,7 +39,10 @@ function SecretKeyFAQ() {
             1. Open the menu from your Metamask browser extension.
           </UIText>
           <Spacer height={8} />
-          <img src={MetamaskInstruction} style={{ width: 320, height: 269 }} />
+          <img
+            src={metamaskInstructionSrc}
+            style={{ width: 320, height: 269 }}
+          />
           <Spacer height={16} />
           <UIText kind="body/regular">
             2. Select account details and export private key.
@@ -73,7 +76,7 @@ function SecretKeyFAQ() {
         <VStack gap={20}>
           <div className={styles.faqIcon}>
             <img
-              src={WalletIcon}
+              src={walletIconSrc}
               style={{ width: 20, height: 20, borderRadius: 10 }}
             />
           </div>
@@ -103,7 +106,7 @@ function SecretKeyFAQ() {
       <VStack gap={24} style={{ alignContent: 'start' }}>
         {isNarrowView ? null : (
           <div className={styles.faqIcon}>
-            <img src={KeyIcon} style={{ width: 20, height: 20 }} />
+            <img src={keyIconSrc} style={{ width: 20, height: 20 }} />
           </div>
         )}
         {isNarrowView ? null : (
@@ -124,7 +127,7 @@ function SecretKeyFAQ() {
               onClick={() => setShowMetamaskPanel(true)}
             >
               <HStack gap={8} alignItems="center">
-                <img style={{ width: 20, height: 20 }} src={MetamaskIcon} />
+                <img style={{ width: 20, height: 20 }} src={metamaskIconSrc} />
                 <HStack
                   gap={0}
                   alignItems="center"
@@ -142,7 +145,7 @@ function SecretKeyFAQ() {
               <HStack gap={8} alignItems="center">
                 <img
                   style={{ width: 20, height: 20, borderRadius: 10 }}
-                  src={WalletIcon}
+                  src={walletIconSrc}
                 />
                 <HStack
                   gap={0}
@@ -174,7 +177,7 @@ function PhraseFAQ() {
       >
         <VStack gap={20}>
           <div className={styles.faqIcon}>
-            <img src={MetamaskIcon} style={{ width: 20, height: 20 }} />
+            <img src={metamaskIconSrc} style={{ width: 20, height: 20 }} />
           </div>
           <VStack gap={8}>
             <UIText kind="body/accent">
@@ -206,7 +209,7 @@ function PhraseFAQ() {
         <VStack gap={20}>
           <div className={styles.faqIcon}>
             <img
-              src={WalletIcon}
+              src={walletIconSrc}
               style={{ width: 20, height: 20, borderRadius: 10 }}
             />
           </div>
@@ -233,7 +236,7 @@ function PhraseFAQ() {
       <VStack gap={24} style={{ alignContent: 'start' }}>
         {isNarrowView ? null : (
           <div className={styles.faqIcon}>
-            <img src={DialogIcon} style={{ width: 20, height: 20 }} />
+            <img src={dialogIconSrc} style={{ width: 20, height: 20 }} />
           </div>
         )}
         <VStack gap={8}>
@@ -246,7 +249,7 @@ function PhraseFAQ() {
               onClick={() => setShowMetamaskPanel(true)}
             >
               <HStack gap={8} alignItems="center">
-                <img style={{ width: 20, height: 20 }} src={MetamaskIcon} />
+                <img style={{ width: 20, height: 20 }} src={metamaskIconSrc} />
                 <HStack
                   gap={0}
                   alignItems="center"
@@ -264,7 +267,7 @@ function PhraseFAQ() {
               <HStack gap={8} alignItems="center">
                 <img
                   style={{ width: 20, height: 20, borderRadius: 10 }}
-                  src={WalletIcon}
+                  src={walletIconSrc}
                 />
                 <HStack
                   gap={0}
@@ -290,7 +293,7 @@ function PasswordFAQ() {
     <VStack gap={24} style={{ alignContent: 'start' }}>
       {isNarrowView ? null : (
         <div className={styles.faqIcon}>
-          <img src={LockIcon} style={{ width: 20, height: 20 }} />
+          <img src={lockIconSrc} style={{ width: 20, height: 20 }} />
         </div>
       )}
       <VStack gap={8}>

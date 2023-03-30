@@ -191,8 +191,10 @@ browser.runtime.onInstalled.addListener(({ reason }) => {
     if (!popupUrl) {
       throw new Error('popupUrl not found');
     }
+    const url = new URL(browser.runtime.getURL(popupUrl));
+    url.searchParams.append('templateType', 'tab');
     browser.tabs.create({
-      url: browser.runtime.getURL(popupUrl),
+      url: url.toString(),
     });
   }
 });

@@ -9,9 +9,9 @@ import JigsawIcon from 'jsx:../assets/jigsaw.svg';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { useSpring, animated } from 'react-spring';
-import CoinImg from '../assets/zer_coin.png';
-import SparkImg from '../assets/zer_spark.png';
-import StarImg from '../assets/zer_star.png';
+import coinImgSrc from '../assets/zer_coin.png';
+import sparkImgSrc from '../assets/zer_spark.png';
+import starImgSrc from '../assets/zer_star.png';
 import { useSizeStore } from '../useSizeStore';
 import * as styles from './styles.module.css';
 
@@ -81,7 +81,6 @@ export function Success() {
       useWorker: true,
       resize: true,
     });
-    Object.assign(window, { customConfetti });
 
     fire(customConfetti);
   }, []);
@@ -125,12 +124,12 @@ export function Success() {
         <div className={styles.container}>
           <VStack gap={24}>
             <div className={styles.title}>
-              Welcome
+              Welcome,
               <br />
               Self-Custodial Human!
             </div>
             <UIText kind="headline/h3" color="var(--always-white)">
-              Zerion's browser extension is designed
+              Zerion’s browser extension is designed
               {isNarrowView ? ' ' : <br />}
               to make exploring web3 feel better than ever.
             </UIText>
@@ -142,21 +141,21 @@ export function Success() {
                 ref={coinRef}
                 onClick={fireConfetti}
               >
-                <img src={CoinImg} width={120} height={120} />
+                <img src={coinImgSrc} width={120} height={120} />
               </UnstyledButton>
               <UnstyledButton
                 className={cn(styles.decoration, styles.starDecoration)}
                 ref={starRef}
                 onClick={fireConfetti}
               >
-                <img src={StarImg} width={80} height={80} />
+                <img src={starImgSrc} width={80} height={80} />
               </UnstyledButton>
               <UnstyledButton
                 className={cn(styles.decoration, styles.sparkDecoration)}
                 ref={sparkRef}
                 onClick={fireConfetti}
               >
-                <img src={SparkImg} width={60} height={60} />
+                <img src={sparkImgSrc} width={60} height={60} />
               </UnstyledButton>
             </>
           )}

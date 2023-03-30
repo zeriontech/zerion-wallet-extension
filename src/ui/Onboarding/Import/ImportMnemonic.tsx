@@ -1,7 +1,7 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { animated, useSpring } from 'react-spring';
 import { useMutation } from 'react-query';
-import debounce from 'lodash/debounce';
+import produce from 'immer';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { validate } from 'src/ui/pages/GetStarted/ImportWallet/ImportWallet';
 import { ValidationResult } from 'src/shared/validation/ValidationResult';
@@ -13,13 +13,16 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { getFirstNMnemonicWallets } from 'src/ui/pages/GetStarted/ImportWallet/MnemonicImportView/getFirstNMnemonicWallets';
 import { getError } from 'src/shared/errors/getError';
+import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { useSizeStore } from '../useSizeStore';
 import { useWhitelistStatus } from '../checkWhitelistStatus';
 import * as styles from './styles.module.css';
 import { Input } from './Input';
 
 const INPUT_NUMBER = 24;
-const ARRAY_OF_NUMBERS = [...Array(INPUT_NUMBER).keys()];
+const ARRAY_OF_NUMBERS = Array.from({ length: INPUT_NUMBER }, (_, i) => i);
 
 export function ImportMnemonic({
   address,
@@ -31,16 +34,11 @@ export function ImportMnemonic({
   const { isNarrowView } = useSizeStore();
   const [validation, setValidation] = useState<ValidationResult | null>(null);
   const [phraseMode, setPhraseMode] = useState<12 | 24>(12);
-  const [value, setValue] = useState<string[]>(ARRAY_OF_NUMBERS.map(() => ''));
+  const [value, setValue] = useState(() => ARRAY_OF_NUMBERS.map(() => ''));
   const [hoveredInput, setHoveredInput] = useState<number | null>(null);
   const [focusedInput, setFocusedInput] = useState<number | null>(null);
 
-  const debouncedSetHoverRef = useRef<(index: number | null) => void>();
-  if (!debouncedSetHoverRef.current) {
-    debouncedSetHoverRef.current = debounce((index: number | null) => {
-      setHoveredInput(index);
-    }, 150);
-  }
+  const setHoveredInputDebounced = useDebouncedCallback(setHoveredInput, 150);
 
   const { data: isWhiteListedResponse, isLoading: isWhitelistStatusLoading } =
     useWhitelistStatus(address);
@@ -89,17 +87,17 @@ export function ImportMnemonic({
   );
 
   const gridStyle = useSpring({
-    maxHeight: phraseMode === 24 ? '440px' : '216px',
-    height: phraseMode === 24 ? '440px' : '216px',
+    maxHeight: phraseMode === 24 ? 440 : 216,
+    height: phraseMode === 24 ? 440 : 216,
   });
 
   const handlePaste = useCallback((index: number, value: string) => {
-    const splittedValue = value.trim().split(/\s+/);
+    const splitValue = value.trim().split(/\s+/);
     setValue((current) => [
       ...current.slice(0, index),
-      ...splittedValue,
-      ...(index + splittedValue.length < current.length
-        ? current.slice(index + splittedValue.length)
+      ...splitValue,
+      ...(index + splitValue.length < current.length
+        ? current.slice(index + splitValue.length)
         : []
       ).slice(0, INPUT_NUMBER),
     ]);
@@ -193,17 +191,15 @@ export function ImportMnemonic({
                   onKeyDown={(e) => handleKeyDown(e, index)}
                   onChange={(e) =>
                     setValue((current) => {
-                      return [
-                        ...current.slice(0, index),
-                        e.target.value,
-                        ...current.slice(index + 1),
-                      ];
+                      return produce(current, (draft) => {
+                        draft[index] = e.target.value;
+                      });
                     })
                   }
                   onFocus={() => setFocusedInput(index)}
                   onBlur={() => setFocusedInput(null)}
-                  onMouseEnter={() => debouncedSetHoverRef.current?.(index)}
-                  onMouseLeave={() => debouncedSetHoverRef.current?.(null)}
+                  onMouseEnter={() => setHoveredInputDebounced(index)}
+                  onMouseLeave={() => setHoveredInputDebounced(null)}
                   onPaste={(e) => {
                     e.preventDefault();
                     const value = e.clipboardData.getData('text/plain');
@@ -242,7 +238,10 @@ export function ImportMnemonic({
             style={{ width: '100%' }}
             disabled={isLoading || isWhitelistStatusLoading}
           >
-            Import wallet
+            <HStack gap={8} alignItems="center">
+              <span>Import wallet</span>
+              {isLoading ? <CircleSpinner /> : null}
+            </HStack>
           </Button>
           {!validation || validation.valid ? null : (
             <UIText
@@ -253,11 +252,6 @@ export function ImportMnemonic({
               {validation.message}
             </UIText>
           )}
-          {isLoading ? (
-            <UIText kind="caption/regular" style={errorStyle}>
-              Parsing secret key
-            </UIText>
-          ) : null}
         </VStack>
       </form>
     </VStack>

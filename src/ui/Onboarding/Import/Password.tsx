@@ -23,13 +23,11 @@ export function Password({ onSubmit }: { onSubmit(key: string): void }) {
   const handleSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-
-      const password = new FormData(e.currentTarget).get('password') as
+      const formData = new FormData(e.currentTarget);
+      const password = formData.get('password') as string | undefined;
+      const repeatedPassword = formData.get('confirmPassword') as
         | string
         | undefined;
-      const repeatedPassword = new FormData(e.currentTarget).get(
-        'confirmPassword'
-      ) as string | undefined;
       if (!password) {
         return;
       }

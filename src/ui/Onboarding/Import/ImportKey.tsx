@@ -10,6 +10,8 @@ import type { BareWallet } from 'src/shared/types/BareWallet';
 import { walletPort } from 'src/ui/shared/channels';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getError } from 'src/shared/errors/getError';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { useSizeStore } from '../useSizeStore';
 import { useWhitelistStatus } from '../checkWhitelistStatus';
 import { Input } from './Input';
@@ -93,7 +95,10 @@ export function ImportKey({
             style={{ width: '100%' }}
             disabled={isLoading || isWhitelistStatusLoading}
           >
-            Import wallet
+            <HStack gap={8} alignItems="center">
+              <span>Import wallet</span>
+              {isLoading ? <CircleSpinner /> : null}
+            </HStack>
           </Button>
           {!validation || validation.valid ? null : (
             <UIText
@@ -104,14 +109,6 @@ export function ImportKey({
               {validation.message}
             </UIText>
           )}
-          {isLoading ? (
-            <UIText
-              kind="caption/regular"
-              style={{ position: 'absolute', top: 48 }}
-            >
-              Parsing secret key
-            </UIText>
-          ) : null}
         </VStack>
       </form>
     </VStack>

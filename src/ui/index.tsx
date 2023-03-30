@@ -12,6 +12,7 @@ import { App } from './App';
 import { initialize as initializeChannels } from './shared/channels';
 import { queryClient } from './shared/requests/queryClient';
 import { emitter } from './shared/events';
+import { getPageTemplateType } from './shared/getPageTemplateName';
 
 applyDrawFix();
 
@@ -32,8 +33,10 @@ async function registerServiceWorker() {
 
 let reactRoot: Root | null = null;
 
+const templateType = getPageTemplateType();
+
 async function initializeUI(opts?: { handshakeFailure?: boolean }) {
-  const isPopup = browser.extension.getViews({ type: 'popup' }).length > 0;
+  const isPopup = templateType === 'popup';
   const hasOnboardingUrl = document.location.hash.startsWith('#/onboarding');
 
   const root = document.getElementById('root');
@@ -46,10 +49,12 @@ async function initializeUI(opts?: { handshakeFailure?: boolean }) {
   const currentUser = await getCurrentUser();
   const userHasWallets = Boolean(Object.keys(currentUser || {}).length);
   if (FEATURE_WAITLIST_ONBOARDING === 'on' && isPopup && !userHasWallets) {
-    const url = new URL('./index.html', import.meta.url);
+    const url = new URL('./popup.html', import.meta.url);
+    url.searchParams.append('templateType', 'tab');
     browser.tabs.create({
       url: url.toString(),
     });
+    return;
   }
 
   queryClient.clear();
