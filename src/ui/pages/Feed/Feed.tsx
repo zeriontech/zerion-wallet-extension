@@ -397,7 +397,7 @@ function AbilityCard({
           rel="noopener noreferrer"
           onClick={() => {
             walletPort.request('daylightAction', {
-              event_name: 'Perks:External Link Clicked',
+              event_name: 'Perks: External Link Clicked',
               ability_id: ability.uid,
               perk_type: ability.type,
               source: 'feed',
