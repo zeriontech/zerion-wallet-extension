@@ -239,7 +239,7 @@ export function AbilityPage() {
             style={{ position: 'fixed', bottom: 48, left: 16, right: 16 }}
             onClick={() => {
               walletPort.request('daylightAction', {
-                event_name: 'Perks: Link Clicked',
+                event_name: 'Perks:External Link Clicked',
                 ability_id: data.ability.uid,
                 perk_type: data.ability.type,
                 source: 'page',
