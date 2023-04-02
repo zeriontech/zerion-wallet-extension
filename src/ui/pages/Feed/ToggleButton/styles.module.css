@@ -1,0 +1,24 @@
+.toggleButton {
+  height: 32px;
+  padding: 8px;
+  background: transparent;
+  color: var(--black);
+  border: 1px solid var(--neutral-400);
+  border-radius: 8px;
+}
+
+.toggleButton:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 2px;
+}
+
+.toggleButton:hover {
+  color: var(--black);
+  border-color: var(--black);
+}
+
+.toggleButton.active,
+.toggleButton.active:hover {
+  color: var(--primary-500);
+  border-color: var(--primary-500);
+}

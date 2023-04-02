@@ -1,34 +1,43 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { useSelect } from 'downshift';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import cn from 'classnames';
 import { useMutation } from '@tanstack/react-query';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
-import { SurfaceItemButton, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
-import { VStack } from 'src/ui/ui-kit/VStack';
-import { Button } from 'src/ui/ui-kit/Button';
-import FiltersIcon from 'jsx:src/ui/assets/filters.svg';
-import DoubleCheckIcon from 'jsx:src/ui/assets/check_double.svg';
-import CloseIcon from 'jsx:src/ui/assets/close.svg';
-import LinkIcon from 'jsx:src/ui/assets/new-window.svg';
-import SyncIcon from 'jsx:src/ui/assets/sync.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
-import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
-import { Spacer } from 'src/ui/ui-kit/Spacer';
-import { EmptyView } from 'src/ui/components/EmptyView';
+import { VStack } from 'src/ui/ui-kit/VStack';
+import CheckIcon from 'jsx:src/ui/assets/check.svg';
+import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { useNavigationState } from 'src/ui/shared/useNavigationState';
 import type {
   WalletAbility,
   WalletAbilityType,
 } from 'src/shared/types/Daylight';
+import { Button } from 'src/ui/ui-kit/Button';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { EmptyView } from 'src/ui/components/EmptyView';
+import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
+import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
+import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
+import { invariant } from 'src/shared/invariant';
+import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
+import { Surface } from 'src/ui/ui-kit/Surface';
 import { walletPort } from 'src/ui/shared/channels';
-import { getAbilityLinkTitle, useWalletAbilities } from './daylight';
-import type { StatusFilterParams } from './daylight';
-import { Ability } from './Ability/Ability';
 import { markAbility, unmarkAbility, useFeedInfo } from './stored';
-import * as styles from './styles.module.css';
+import type { StatusFilterParams } from './daylight';
+import { useWalletAbilities } from './daylight';
 import { FeedSkeleton } from './Loader';
+import { ToggleButton } from './ToggleButton';
+import * as styles from './styles.module.css';
+import { Ability } from './Ability/Ability';
+import { AbilityMenu } from './AbilityMenu';
 
 type FeedStatus = 'open' | 'completed' | 'expired' | 'dismissed';
 
@@ -55,83 +64,74 @@ function StatusFilter({
   value: FeedStatus;
   onChange(value: FeedStatus | null | undefined): void;
 }) {
-  const {
-    isOpen,
-    getToggleButtonProps,
-    getMenuProps,
-    getItemProps,
-    selectedItem,
-    highlightedIndex,
-  } = useSelect({
-    items: STATUS_ITEMS,
-    selectedItem: value,
-    onSelectedItemChange: ({ selectedItem }) => {
-      onChange(selectedItem);
-      if (selectedItem) {
-        walletPort.request('daylightAction', {
-          event_name: 'Perks: Select Status Filter',
-          perk_status: selectedItem,
-        });
-      }
-    },
-  });
-
+  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   return (
     <div style={{ position: 'relative' }}>
-      <Button
-        kind="regular"
-        size={28}
-        style={{ padding: '0 16px' }}
-        {...getToggleButtonProps()}
+      <ToggleButton
+        onClick={() => {
+          invariant(dialogRef.current, 'dialog element must be mounted');
+          showConfirmDialog(dialogRef.current);
+        }}
+        isActive={value !== 'open'}
       >
         <HStack gap={4} alignItems="center">
-          <FiltersIcon />
           <UIText kind="caption/accent">
             {STATUS_TO_TITLE[value]} Abilities
           </UIText>
         </HStack>
-      </Button>
-      <div
-        {...getMenuProps()}
+      </ToggleButton>
+      <BottomSheetDialog
+        ref={dialogRef}
         style={{
-          display: isOpen ? 'block' : 'none',
-          position: 'absolute',
-          top: 'calc(100% + 8px)',
-          background: 'var(--white)',
-          boxShadow: '0px 8px 16px rgba(22, 22, 26, 0.16)',
-          borderRadius: 8,
-          width: 180,
-          overflow: 'hidden',
-          zIndex: 'var(--over-layout-index)',
+          height: 'max-content',
+          minHeight: '42vh',
+          backgroundColor: 'var(--neutral-100)',
         }}
       >
-        <SurfaceList
-          items={STATUS_ITEMS.map((item, index) => ({
-            key: item,
-            isInteractive: true,
-            pad: false,
-            separatorTop: false,
-            component: (
-              <SurfaceItemButton
-                highlighted={highlightedIndex === index}
-                {...getItemProps({ item, index })}
-              >
-                <HStack gap={4} justifyContent="space-between">
-                  <span>{STATUS_TO_TITLE[item]}</span>
-                  {selectedItem === item ? (
-                    <span style={{ color: 'var(--primary)' }}>✔</span>
+        <DialogTitle alignTitle="start" title="Status" />
+        <Spacer height={14} />
+        <form method="dialog">
+          <SurfaceList
+            items={STATUS_ITEMS.map((item) => ({
+              key: item,
+              isInteractive: true,
+              onClick: () => {
+                onChange(item);
+                walletPort.request('daylightAction', {
+                  event_name: 'Perks: Select Status Filter',
+                  perk_status: item,
+                });
+              },
+              component: (
+                <HStack
+                  gap={4}
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <UIText kind="body/regular">{STATUS_TO_TITLE[item]}</UIText>
+                  {value === item ? (
+                    <CheckIcon
+                      style={{
+                        color: 'var(--primary)',
+                        width: 24,
+                        height: 24,
+                      }}
+                    />
                   ) : null}
                 </HStack>
-              </SurfaceItemButton>
-            ),
-          }))}
-        />
-      </div>
+              ),
+            }))}
+          />
+        </form>
+      </BottomSheetDialog>
     </div>
   );
 }
 
-type FeedType = 'all' | 'claim' | 'airdrop' | 'mint' | 'vote' | 'other';
+type FeedAbilityType = 'claim' | 'airdrop' | 'mint' | 'vote';
+type FeedAbilityTypeGroup = 'all' | 'other';
+
+type FeedType = FeedAbilityType | FeedAbilityTypeGroup;
 
 const TYPE_TO_TITLE: Record<FeedType, string> = {
   all: 'All',
@@ -151,39 +151,47 @@ const TYPE_ITEMS: FeedType[] = [
   'other',
 ];
 
-function getAbilityTypeParams(type: FeedType): WalletAbilityType[] {
-  if (type === 'all') {
-    // we exlude article type from feed
-    return [
-      'vote',
-      'claim',
-      'airdrop',
-      'mint',
-      'access',
-      'result',
-      'event',
-      'merch',
-      'misc',
-      'raffle',
-      'discount',
-      'stake',
-      'revoke',
-    ];
+// we exlude article type from feed
+const ABILITY_TYPE_GROUPS: Record<FeedAbilityTypeGroup, WalletAbilityType[]> = {
+  all: [
+    'vote',
+    'claim',
+    'airdrop',
+    'mint',
+    'access',
+    'result',
+    'event',
+    'merch',
+    'misc',
+    'raffle',
+    'discount',
+    'stake',
+    'revoke',
+  ],
+  other: [
+    'access',
+    'event',
+    'misc',
+    'merch',
+    'result',
+    'raffle',
+    'discount',
+    'stake',
+    'revoke',
+  ],
+};
+
+function areFeedAbilityTypes(types: FeedType[]): types is FeedAbilityType[] {
+  return !(types.includes('all') || types.includes('other'));
+}
+
+function getAbilityTypeParams(types: FeedType[]): WalletAbilityType[] {
+  if (areFeedAbilityTypes(types)) {
+    return types;
   }
-  if (type === 'other') {
-    return [
-      'access',
-      'event',
-      'misc',
-      'merch',
-      'result',
-      'raffle',
-      'discount',
-      'stake',
-      'revoke',
-    ];
-  }
-  return [type];
+  return types.includes('other')
+    ? ABILITY_TYPE_GROUPS.other
+    : ABILITY_TYPE_GROUPS.all;
 }
 
 function getAbilityStatusParams(
@@ -207,85 +215,136 @@ function getAbilityStatusParams(
 }
 
 function TypeFilter({
-  value,
+  values,
   onChange,
 }: {
-  value: FeedType;
-  onChange(value: FeedType | null | undefined): void;
+  values: FeedType[];
+  onChange(value: FeedType[] | null | undefined): void;
 }) {
-  const {
-    isOpen,
-    getToggleButtonProps,
-    getMenuProps,
-    getItemProps,
-    selectedItem,
-    highlightedIndex,
-  } = useSelect({
-    items: TYPE_ITEMS,
-    selectedItem: value,
-    onSelectedItemChange: ({ selectedItem }) => {
-      onChange(selectedItem);
-      if (selectedItem) {
-        walletPort.request('daylightAction', {
-          event_name: 'Perks: Select Type Filter',
-          perk_type: selectedItem,
-        });
+  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const [selectedItems, setSelectedItems] = useState(new Set(values));
+  const selectedItemsRef = useRef(selectedItems);
+
+  const updateSelectedItems = useCallback((items: Set<FeedType>) => {
+    selectedItemsRef.current = items;
+    setSelectedItems(items);
+  }, []);
+
+  useEffect(() => {
+    updateSelectedItems(new Set(values));
+  }, [values, updateSelectedItems]);
+
+  const toggleItem = useCallback(
+    (item: FeedType) => {
+      const set = new Set(selectedItems);
+      if (set.has(item)) {
+        set.delete(item);
+      } else {
+        set.add(item).delete('all');
       }
+      updateSelectedItems(set);
     },
-  });
+    [selectedItems, updateSelectedItems]
+  );
+
+  const handleShowDialog = () => {
+    invariant(dialogRef.current, 'dialog element must be mounted');
+    showConfirmDialog(dialogRef.current).then(() => {
+      const set = selectedItemsRef.current;
+      if (set.size == 0) {
+        set.add('all');
+      }
+      const newValues = Array.from(set);
+      onChange(newValues);
+      walletPort.request('daylightAction', {
+        event_name: 'Perks: Select Type Filter',
+        perk_types: newValues,
+      });
+    });
+  };
+
+  const buttonText = useMemo(() => {
+    if (values.includes('all')) {
+      return 'All Types';
+    }
+    return values.length === 1
+      ? `Type: ${TYPE_TO_TITLE[values[0]]}`
+      : `Types: ${values.length}`;
+  }, [values]);
 
   return (
     <div style={{ position: 'relative' }}>
-      <Button
-        kind="regular"
-        size={28}
-        style={{ padding: '0 16px' }}
-        {...getToggleButtonProps()}
+      <ToggleButton
+        onClick={handleShowDialog}
+        isActive={!values.includes('all')}
       >
         <HStack gap={4} alignItems="center">
-          <FiltersIcon />
-          <UIText kind="caption/accent">
-            {value === 'all' ? 'All Types' : `Type: ${TYPE_TO_TITLE[value]}`}
-          </UIText>
+          <UIText kind="caption/accent">{buttonText}</UIText>
         </HStack>
-      </Button>
-      <div
-        {...getMenuProps()}
+      </ToggleButton>
+      <BottomSheetDialog
+        ref={dialogRef}
         style={{
-          display: isOpen ? 'block' : 'none',
-          position: 'absolute',
-          top: 'calc(100% + 8px)',
-          background: 'var(--white)',
-          boxShadow: '0px 8px 16px rgba(22, 22, 26, 0.16)',
-          borderRadius: 8,
-          width: 180,
-          overflow: 'hidden',
-          zIndex: 'var(--over-layout-index)',
+          height: 'max-content',
+          minHeight: '34vh',
+          overflowY: 'auto',
+          backgroundColor: 'var(--neutral-100)',
         }}
       >
+        <DialogTitle alignTitle="start" title="Types" />
+        <Spacer height={14} />
         <SurfaceList
-          items={TYPE_ITEMS.map((item, index) => ({
+          items={TYPE_ITEMS.map((item) => ({
             key: item,
-            isInteractive: true,
-            pad: false,
-            separatorTop: false,
+            onClick: () => {
+              if (dialogRef.current && item === 'all') {
+                onChange(['all']);
+                dialogRef.current.close();
+              } else {
+                toggleItem(item);
+              }
+            },
             component: (
-              <SurfaceItemButton
-                highlighted={highlightedIndex === index}
-                {...getItemProps({ item, index })}
+              <HStack
+                gap={4}
+                justifyContent="space-between"
+                alignItems="center"
               >
-                <HStack gap={4} justifyContent="space-between">
-                  <span>{TYPE_TO_TITLE[item]}</span>
-                  {selectedItem === item ? (
-                    <span style={{ color: 'var(--primary)' }}>✔</span>
-                  ) : null}
-                </HStack>
-              </SurfaceItemButton>
+                <UIText kind="body/regular">{TYPE_TO_TITLE[item]}</UIText>
+                {selectedItems.has(item) ? (
+                  <CheckIcon
+                    style={{
+                      color: 'var(--primary)',
+                      width: 24,
+                      height: 24,
+                    }}
+                  />
+                ) : null}
+              </HStack>
             ),
           }))}
         />
-      </div>
+        <VStack gap={8}>
+          <Spacer height={14} />
+          <form method="dialog">
+            <Button value="apply" kind="primary" style={{ width: '100%' }}>
+              Apply
+            </Button>
+          </form>
+        </VStack>
+      </BottomSheetDialog>
     </div>
+  );
+}
+
+function Separator() {
+  return (
+    <div
+      style={{
+        height: 1,
+        backgroundColor: 'var(--neutral-300)',
+      }}
+    />
   );
 }
 
@@ -304,10 +363,6 @@ function AbilityCard({
   const [status, setStatus] = useState<
     'completed' | 'dismissed' | 'restored' | null
   >(null);
-
-  const linkTitle = useMemo(() => {
-    return getAbilityLinkTitle(ability);
-  }, [ability]);
 
   const { mutate: mark } = useMutation({
     mutationFn: (action: 'complete' | 'dismiss') =>
@@ -346,12 +401,15 @@ function AbilityCard({
     Boolean(initialStatus)
   );
 
-  const showRestoreButton =
-    initialStatus && (filter === 'completed' || filter === 'dismissed');
+  const showSeparator =
+    isVisible ||
+    (status === 'completed' && (filter === 'open' || filter === 'expired')) ||
+    (status === 'dismissed' && (filter === 'open' || filter === 'expired'));
 
   return (
     <VStack
-      gap={16}
+      key={ability.uid}
+      gap={4}
       className={cn(isVisible ? styles.visible : styles.hidden, {
         [styles.marking]: marking,
         [styles.completed]:
@@ -363,97 +421,48 @@ function AbilityCard({
           (filter === 'completed' || filter === 'dismissed'),
       })}
     >
-      <UnstyledLink
-        to={`/ability/${ability.uid}`}
-        onClick={() => {
-          walletPort.request('daylightAction', {
-            event_name: 'Perks: Card Opened',
-            ability_id: ability.uid,
-            perk_type: ability.type,
-          });
-        }}
-      >
-        <Ability ability={ability} mode="compact" status={initialStatus} />
-      </UnstyledLink>
-      <HStack
-        gap={8}
-        style={{
-          gridTemplateColumns: showRestoreButton ? '1fr 40px' : '1fr 40px 40px',
-        }}
-      >
-        <Button
-          style={{
-            width: '100%',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-          size={40}
-          as={UnstyledAnchor}
-          href={ability.action.linkUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+      <VStack gap={16}>
+        <UnstyledLink
+          to={`/ability/${ability.uid}`}
           onClick={() => {
             walletPort.request('daylightAction', {
-              event_name: 'Perks: External Link Clicked',
+              event_name: 'Perks: Card Opened',
               ability_id: ability.uid,
               perk_type: ability.type,
-              source: 'feed',
             });
           }}
         >
-          <HStack gap={8} justifyContent="center">
-            {linkTitle}
-            <LinkIcon />
-          </HStack>
-        </Button>
-        {showRestoreButton ? null : (
-          <Button
-            style={{ padding: 8 }}
-            kind="regular"
-            size={40}
-            disabled={marking}
-            onClick={() => handleMarkButtonClick('complete')}
-          >
-            <DoubleCheckIcon />
-          </Button>
-        )}
-        {showRestoreButton ? null : (
-          <Button
-            style={{ padding: 7 }}
-            kind="regular"
-            size={40}
-            disabled={marking}
-            onClick={() => handleMarkButtonClick('dismiss')}
-          >
-            <CloseIcon />
-          </Button>
-        )}
-        {showRestoreButton ? (
-          <Button
-            style={{ padding: 7 }}
-            kind="regular"
-            size={40}
-            disabled={marking}
-            onClick={() => handleUnmarkButtonClick()}
-          >
-            <SyncIcon />
-          </Button>
-        ) : null}
-      </HStack>
+          <Ability
+            ability={ability}
+            mode="compact"
+            status={initialStatus}
+            showStatus={false}
+          />
+        </UnstyledLink>
+        <div style={{ position: 'absolute', top: 10, right: 16 }}>
+          <AbilityMenu
+            isInline={true}
+            onMark={initialStatus ? undefined : handleMarkButtonClick}
+            onUnmark={initialStatus ? handleUnmarkButtonClick : undefined}
+          />
+        </div>
+        {showSeparator ? <Separator /> : null}
+      </VStack>
     </VStack>
   );
 }
 
+interface FeedFilters {
+  status: FeedStatus;
+  types: FeedType[];
+}
+
 export function Feed() {
   const { singleAddress } = useAddressParams();
-  const [statusFilter, setStatusFilter] = useNavigationState<FeedStatus>(
-    'status',
-    'open'
-  );
-  const [typeFilter, setTypeFilter] = useNavigationState<FeedType>(
-    'type',
-    'all'
-  );
+  const [filters, setFilters] = useNavigationState<FeedFilters>('filters', {
+    status: 'open',
+    types: ['all'],
+  });
 
   const {
     data: feedData,
@@ -472,24 +481,24 @@ export function Feed() {
     address: singleAddress,
     params: useMemo(
       () => ({
-        type: getAbilityTypeParams(typeFilter),
-        ...(getAbilityStatusParams(statusFilter) || {}),
+        type: getAbilityTypeParams(filters.types),
+        ...(getAbilityStatusParams(filters.status) || {}),
       }),
-      [typeFilter, statusFilter]
+      [filters]
     ),
     limit: ABILITIES_PER_PAGE,
     onSuccess: (data) => {
       if (
         !data.pages[0]?.abilities.length &&
-        statusFilter === 'open' &&
-        typeFilter === 'all'
+        filters.status === 'open' &&
+        filters.types.includes('all')
       ) {
         walletPort.request('daylightAction', {
           event_name: 'Perks: Empty List Shown',
           address: singleAddress,
         });
       }
-      // we want to fetch next page imidiatelly
+      // we want to fetch next page immediately
       // if we've already marked as completed more then half of fetched page
       const lastPage = data.pages[data.pages.length - 1];
       if (!lastPage.links.next) {
@@ -510,23 +519,34 @@ export function Feed() {
   });
 
   const abilities = useMemo(() => {
-    if (statusFilter === 'completed') {
-      return feedData?.feed.completedAbilities || [];
+    let filtered: WalletAbility[] = [];
+    if (filters.status === 'completed') {
+      filtered = feedData?.feed.completedAbilities || [];
+    } else if (filters.status === 'dismissed') {
+      filtered = feedData?.feed.dismissedAbilities || [];
+    } else if (filters.status === 'expired') {
+      filtered = value?.filter((item) => item.isClosed) || [];
+    } else {
+      filtered = value;
     }
-    if (statusFilter === 'dismissed') {
-      return feedData?.feed.dismissedAbilities || [];
+    if (!filters.types.includes('all')) {
+      const typesVisible = getAbilityTypeParams(filters.types);
+      filtered = filtered.filter((item) => typesVisible.includes(item.type));
     }
-    if (statusFilter === 'expired') {
-      return value?.filter((item) => item.isClosed) || [];
-    }
-    return value;
-  }, [feedData, value, statusFilter]);
+    return filtered;
+  }, [feedData, value, filters.status, filters.types]);
 
   const fetching =
     ((isFetchingNextPage || isFetching) &&
-      (statusFilter === 'open' || statusFilter === 'expired')) ||
+      (filters.status === 'open' || filters.status === 'expired')) ||
     (isLocalFetching &&
-      (statusFilter === 'completed' || statusFilter === 'dismissed'));
+      (filters.status === 'completed' || filters.status === 'dismissed'));
+
+  const setStatusFilter = (status: FeedStatus) =>
+    setFilters({ ...filters, status });
+  const setTypesFilter = (types: FeedType[]) =>
+    setFilters({ ...filters, types });
+  const resetFilters = () => setFilters({ status: 'open', types: ['all'] });
 
   return (
     <VStack gap={16}>
@@ -535,67 +555,60 @@ export function Feed() {
         alignItems="center"
         style={{ paddingInline: 'var(--column-padding-inline)' }}
       >
-        <StatusFilter
-          value={statusFilter}
-          onChange={(value) => setStatusFilter(value || 'open')}
-        />
-        <TypeFilter
-          value={typeFilter}
-          onChange={(value) => setTypeFilter(value || 'all')}
-        />
+        <StatusFilter value={filters.status} onChange={setStatusFilter} />
+        <TypeFilter values={filters.types} onChange={setTypesFilter} />
+        {filters.status !== 'open' || !filters.types.includes('all') ? (
+          <UIText kind="small/accent" color="var(--primary)">
+            <TextAnchor
+              onClick={resetFilters}
+              style={{
+                display: 'inline',
+                color: 'var(--primary)',
+                cursor: 'pointer',
+              }}
+            >
+              Reset
+            </TextAnchor>
+          </UIText>
+        ) : null}
       </HStack>
-      {!fetching && !abilities?.length ? (
-        <>
-          <Spacer height={24} />
-          <EmptyView text="No perks yet" />
-        </>
-      ) : null}
-      <SurfaceList
+      <Surface
         style={
           isPreviousData &&
-          (statusFilter === 'open' || statusFilter === 'expired')
+          (filters.status === 'open' || filters.status === 'expired')
             ? { opacity: 0.6 }
             : undefined
         }
-        items={[
-          ...(abilities?.map((ability) => ({
-            key: ability.uid,
-            pad: false,
-            style: { padding: 0 },
-            component: (
-              <AbilityCard
-                ability={ability}
-                onMark={refetch}
-                filter={statusFilter}
-                status={
-                  feedData?.completedSet.has(ability.uid)
-                    ? 'completed'
-                    : feedData?.dismissedSet.has(ability.uid)
-                    ? 'dismissed'
-                    : null
-                }
-              />
-            ),
-          })) || []),
-          ...(fetching
-            ? [
-                {
-                  key: 'loader-1',
-                  pad: false,
-                  style: { padding: 0 },
-                  component: <FeedSkeleton />,
-                },
-                {
-                  key: 'loader-2',
-                  pad: false,
-                  style: { padding: 0 },
-                  component: <FeedSkeleton />,
-                },
-              ]
-            : []),
-        ]}
-      />
-      {(statusFilter === 'open' || statusFilter === 'expired') &&
+      >
+        {!fetching && !abilities.length ? (
+          <>
+            <Spacer height={24} />
+            <EmptyView text="No perks yet" />
+          </>
+        ) : null}
+        {fetching ? (
+          <>
+            <FeedSkeleton />
+            <FeedSkeleton />
+          </>
+        ) : null}
+        {abilities.map((ability) => (
+          <AbilityCard
+            key={ability.uid}
+            ability={ability}
+            onMark={refetch}
+            filter={filters.status}
+            status={
+              feedData?.completedSet.has(ability.uid)
+                ? 'completed'
+                : feedData?.dismissedSet.has(ability.uid)
+                ? 'dismissed'
+                : null
+            }
+          />
+        ))}
+      </Surface>
+      {(filters.status === 'open' || filters.status === 'expired') &&
       hasNextPage ? (
         <SurfaceList
           items={[
@@ -608,7 +621,7 @@ export function Feed() {
                     color: fetching ? 'var(--neutral-500)' : 'var(--primary)',
                   }}
                 >
-                  More Abilities
+                  {fetching ? 'Fetching...' : 'More Abilities'}
                 </span>
               ),
             },
