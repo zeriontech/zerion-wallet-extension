@@ -225,4 +225,15 @@ export class EthereumProvider extends JsonRpcProvider {
     }
     return this._openPromise;
   }
+
+  /**
+   * Not part of EIP-1193
+   */
+  removeAllListeners(event?: string) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      'ethereum.removeAllListeners() is not part of EIP-1193 standard and you should not rely on it'
+    );
+    this.events.removeAllListeners(event);
+  }
 }
