@@ -3,6 +3,7 @@
   padding: 9px 12px;
   border: 1px solid var(--neutral-200);
   border-radius: 8;
+  width: 100%;
 }
 
 .height40 {

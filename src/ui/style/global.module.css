@@ -33,6 +33,7 @@ body {
   --body-height: 600px;
   width: var(--body-width);
   height: var(--body-height);
+  margin-inline: auto;
 }
 
 body.isDialog {

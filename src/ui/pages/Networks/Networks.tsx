@@ -39,6 +39,7 @@ import { TextLink } from 'src/ui/ui-kit/TextLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { ViewSuspense } from 'src/ui/components/ViewSuspense';
 import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
+import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
 import { NetworkForm } from './NetworkForm';
 import { NetworkList } from './shared/NetworkList';
 import { SearchResults } from './shared/SearchResults';
@@ -71,7 +72,10 @@ function TestnetList({ networks }: { networks: NetworksType }) {
         <VStack gap={8}>
           <div>No Networks</div>
           <div>
-            <TextLink style={{ color: 'var(--primary)' }} to="/networks/create">
+            <TextLink
+              style={{ color: 'var(--primary)' }}
+              to="/networks/create/search"
+            >
               Add First
             </TextLink>
           </div>
@@ -91,7 +95,10 @@ function CustomList({ networks }: { networks: NetworksType }) {
         <VStack gap={8}>
           <div>No Custom Networks</div>
           <div>
-            <TextLink style={{ color: 'var(--primary)' }} to="/networks/create">
+            <TextLink
+              style={{ color: 'var(--primary)' }}
+              to="/networks/create/search"
+            >
               Add First
             </TextLink>
           </div>
@@ -131,7 +138,7 @@ function NetworkCreateSearchPage() {
       <PageColumn>
         <NavigationTitle title="Add Network" />
         <Spacer height={16} />
-        <Input
+        <SearchInput
           autoFocus={true}
           boxHeight={40}
           type="search"
@@ -200,13 +207,20 @@ function NetworkCreatePage({
   }
   if (mutation.isSuccess) {
     return (
-      <NetworkCreateSuccess
-        result={mutation.data}
-        onDone={() => {
-          onSuccess(mutation.data.value);
-          navigate(isFromSearch ? -2 : -1);
-        }}
-      />
+      <>
+        <NavigationTitle
+          title={null}
+          documentTitle={`Create Network: ${mutation.data.value.name}`}
+        />
+        <NetworkCreateSuccess
+          paddingTop={24}
+          result={mutation.data}
+          onDone={() => {
+            onSuccess(mutation.data.value);
+            navigate(isFromSearch ? -2 : -1);
+          }}
+        />
+      </>
     );
   }
   return (
@@ -250,16 +264,11 @@ function NetworkPage({
       const isCustomNetwork = customNetworks?.some(
         (item) => item.chain === chainStr
       );
-      let isEditedPredefinedNetwork = false;
       const sourceType = networks?.getSourceType(chain);
       const isPredefined =
         sourceType === 'mainnets' || sourceType === 'testnets';
-      if (isPredefined && metadataRecord && metadata) {
-        const { updated, created } = metadata;
-        if (updated !== created) {
-          isEditedPredefinedNetwork = true;
-        }
-      }
+      const isEditedPredefinedNetwork =
+        isPredefined && metadata?.updated !== metadata?.created;
       return {
         isCustomNetwork,
         isEditedPredefinedNetwork,

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { invariant } from 'src/shared/invariant';
@@ -10,6 +10,10 @@ import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTML
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import AllNetworksIcon from 'jsx:src/ui/assets/all-networks.svg';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
+import { useAddressPortfolioDecomposition } from 'defi-sdk';
+import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
+import { NetworkIcon } from 'src/ui/components/NetworkIcon';
+import { noValueDash } from 'src/ui/shared/typography';
 
 export function NetworkSelect({
   value,
@@ -22,13 +26,26 @@ export function NetworkSelect({
   type: 'overview' | 'connection';
   valueMaxWidth?: number;
 }) {
-  const chain = createChain(value);
+  const { params } = useAddressParams();
+  const { value: portfolioDecomposition } = useAddressPortfolioDecomposition({
+    ...params,
+    currency: 'usd',
+  });
+  const chain = value === NetworkSelectValue.All ? null : createChain(value);
   const { networks } = useNetworks();
+  const network = useMemo(
+    () => (chain && networks ? networks.getNetworkByName(chain) : null),
+    [chain, networks]
+  );
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   return (
     <>
       <BottomSheetDialog ref={dialogRef} style={{ padding: 0 }}>
-        <NetworkSelectDialog value={value} type={type} />
+        <NetworkSelectDialog
+          value={value}
+          type={type}
+          chainDistribution={portfolioDecomposition}
+        />
       </BottomSheetDialog>
       <Button
         size={32}
@@ -41,10 +58,19 @@ export function NetworkSelect({
         }}
       >
         <HStack gap={8} alignItems="center">
-          <AllNetworksIcon
-            style={{ width: 24, height: 24 }}
-            role="presentation"
-          />
+          {!network || value === NetworkSelectValue.All || !network.icon_url ? (
+            <AllNetworksIcon
+              style={{ width: 24, height: 24 }}
+              role="presentation"
+            />
+          ) : (
+            <NetworkIcon
+              size={24}
+              src={network.icon_url}
+              name={network.name}
+              chainId={network.external_id}
+            />
+          )}
           <span
             style={
               valueMaxWidth
@@ -57,7 +83,11 @@ export function NetworkSelect({
                 : undefined
             }
           >
-            {value ? networks?.getChainName(chain) : 'All Networks'}
+            {value === NetworkSelectValue.All
+              ? 'All Networks'
+              : chain
+              ? networks?.getChainName(chain)
+              : noValueDash}
           </span>
         </HStack>
       </Button>

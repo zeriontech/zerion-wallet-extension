@@ -1,5 +1,9 @@
 import { client } from 'defi-sdk';
-import { DEFI_SDK_API_URL, DEFI_SDK_API_TOKEN } from 'src/env/config';
+import {
+  DEFI_SDK_API_URL,
+  DEFI_SDK_API_TOKEN,
+  BACKEND_ENV,
+} from 'src/env/config';
 
 export function configureBackgroundClient() {
   if (!DEFI_SDK_API_URL || !DEFI_SDK_API_TOKEN) {
@@ -10,5 +14,8 @@ export function configureBackgroundClient() {
   client.configure({
     url: DEFI_SDK_API_URL,
     apiToken: DEFI_SDK_API_TOKEN,
+    ioOptions: BACKEND_ENV
+      ? { query: { backend_env: BACKEND_ENV } }
+      : undefined,
   });
 }

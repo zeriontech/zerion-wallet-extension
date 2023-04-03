@@ -14,7 +14,6 @@ import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
 import AddCircleIcon from 'jsx:src/ui/assets/add-circle-outlined.svg';
 import FiltersIcon from 'jsx:src/ui/assets/filters-24.svg';
 import AllNetworksIcon from 'jsx:src/ui/assets/all-networks.svg';
-import CheckIcon from 'jsx:src/ui/assets/check.svg';
 import {
   DialogButtonValue,
   DialogTitle,
@@ -34,21 +33,46 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { filterNetworksByQuery } from 'src/modules/ethereum/chains/filterNetworkByQuery';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
+import { TextLink } from 'src/ui/ui-kit/TextLink';
+import type { ChainDistribution } from 'src/ui/shared/requests/PortfolioValue/ChainValue';
+import { ChainValue } from 'src/ui/shared/requests/PortfolioValue/ChainValue';
 import { DelayedRender } from '../DelayedRender';
 import { NetworkIcon } from '../NetworkIcon';
 import { PageBottom } from '../PageBottom';
 import { PageColumn } from '../PageColumn';
 import { ViewLoading } from '../ViewLoading';
+import { EmptyView } from '../EmptyView';
 
 function NetworkList({
   networks,
   networkList,
   value,
+  chainDistribution,
 }: {
   value?: string;
   networks: Networks;
   networkList: NetworkConfig[];
+  chainDistribution: ChainDistribution | null;
 }) {
+  if (!networkList.length) {
+    return (
+      <EmptyView
+        text={
+          <VStack gap={8}>
+            <div>No Networks</div>
+            <div>
+              <TextLink
+                style={{ color: 'var(--primary)' }}
+                to="/networks/create/search"
+              >
+                Add First
+              </TextLink>
+            </div>
+          </VStack>
+        }
+      />
+    );
+  }
   return (
     <SurfaceList
       items={networkList.map((network) => ({
@@ -56,7 +80,10 @@ function NetworkList({
         isInteractive: true,
         pad: false,
         component: (
-          <SurfaceItemButton value={network.chain}>
+          <SurfaceItemButton
+            value={network.chain}
+            outlined={network.chain === value}
+          >
             <HStack gap={4} justifyContent="space-between" alignItems="center">
               <Media
                 image={
@@ -71,16 +98,12 @@ function NetworkList({
                 vGap={0}
                 detailText={null}
               />
-
-              {network.chain === value ? (
-                <CheckIcon
-                  style={{
-                    width: 20,
-                    height: 20,
-                    color: 'var(--primary)',
-                  }}
+              <UIText kind="small/regular" color="var(--neutral-500)">
+                <ChainValue
+                  chain={createChain(network.chain)}
+                  chainDistribution={chainDistribution}
                 />
-              ) : null}
+              </UIText>
             </HStack>
           </SurfaceItemButton>
         ),
@@ -95,12 +118,14 @@ function MainNetworkView({
   onOpenMore,
   type,
   mainViewLeadingComponent,
+  chainDistribution,
 }: {
   networks: Networks;
   value: string;
   onOpenMore: () => void;
   type: 'overview' | 'connection';
   mainViewLeadingComponent?: React.ReactNode;
+  chainDistribution: ChainDistribution | null;
 }) {
   const chain = value === NetworkSelectValue.All ? null : createChain(value);
   const networksItems = useMemo(() => {
@@ -128,12 +153,15 @@ function MainNetworkView({
       separatorTop: true,
       pad: false,
       component: (
-        <SurfaceItemButton value="all">
-          <HStack gap={4} justifyContent="space-between">
+        <SurfaceItemButton
+          value="all"
+          outlined={value === NetworkSelectValue.All}
+        >
+          <HStack gap={4} justifyContent="space-between" alignItems="center">
             <Media
-              image={<AllNetworksIcon style={{ width: 16, height: 16 }} />}
+              image={<AllNetworksIcon style={{ width: 24, height: 24 }} />}
               vGap={0}
-              text={<div>All Networks</div>}
+              text={<UIText kind="body/accent">All Networks</UIText>}
               detailText={
                 !chain || networks.isSupportedByBackend(chain) ? null : (
                   <UIText kind="caption/regular" color="var(--neutral-500)">
@@ -143,53 +171,53 @@ function MainNetworkView({
               }
             />
 
-            {value === '' ? (
-              <CheckIcon
-                style={{
-                  width: 20,
-                  height: 20,
-                  color: 'var(--primary)',
-                }}
+            <UIText kind="small/regular" color="var(--neutral-500)">
+              <ChainValue
+                chainDistribution={chainDistribution}
+                chain={NetworkSelectValue.All}
               />
-            ) : null}
+            </UIText>
           </HStack>
         </SurfaceItemButton>
       ),
     });
   }
   options.push(
-    ...networksItems.map((network) => ({
-      key: network.external_id || network.chain,
-      isInteractive: true,
-      separatorTop: true,
-      pad: false,
-      component: (
-        <SurfaceItemButton value={network.chain}>
-          <HStack gap={4} justifyContent="space-between">
-            <HStack gap={8} alignItems="center">
-              <NetworkIcon
-                src={network.icon_url}
-                chainId={network.external_id}
-                size={16}
-                name={network.name}
-              />
+    ...networksItems.map((network) => {
+      const chain = createChain(network.chain);
+      const isSelected = network.chain === value;
+      return {
+        key: network.external_id || network.chain,
+        isInteractive: true,
+        separatorTop: false,
+        pad: false,
+        component: (
+          <SurfaceItemButton value={network.chain} outlined={isSelected}>
+            <HStack gap={4} justifyContent="space-between" alignItems="center">
+              <HStack gap={8} alignItems="center">
+                <NetworkIcon
+                  src={network.icon_url}
+                  chainId={network.external_id}
+                  size={24}
+                  name={network.name}
+                />
 
-              {networks.getChainName(createChain(network.chain))}
+                <UIText kind="body/accent">
+                  {networks.getChainName(chain)}
+                </UIText>
+              </HStack>
+
+              <UIText kind="small/regular" color="var(--neutral-500)">
+                <ChainValue
+                  chainDistribution={chainDistribution}
+                  chain={chain}
+                />
+              </UIText>
             </HStack>
-
-            {network.chain === value ? (
-              <CheckIcon
-                style={{
-                  width: 20,
-                  height: 20,
-                  color: 'var(--primary)',
-                }}
-              />
-            ) : null}
-          </HStack>
-        </SurfaceItemButton>
-      ),
-    }))
+          </SurfaceItemButton>
+        ),
+      };
+    })
   );
 
   return (
@@ -283,11 +311,13 @@ function TabsView({
   networks,
   onTabChange,
   value,
+  chainDistribution,
 }: {
   tab: Tab;
   value: string;
   networks: Networks;
   onTabChange: (event: React.FormEvent<HTMLInputElement>) => void;
+  chainDistribution: ChainDistribution | null;
 }) {
   const mainnetList = networks.getMainnets();
   const testnetList = useMemo(() => networks.getTestNetworks(), [networks]);
@@ -321,42 +351,54 @@ function TabsView({
         </SegmentedControlRadio>
       </SegmentedControlGroup>
       <Spacer height={8} />
-      <PseudoRoute
-        when={tab === Tab.mainnets}
-        component={
-          <form method="dialog">
-            <NetworkList
-              value={value}
-              networks={networks}
-              networkList={mainnetList}
-            />
-          </form>
-        }
-      />
-      <PseudoRoute
-        when={tab === Tab.testnets}
-        component={
-          <form method="dialog">
-            <NetworkList
-              value={value}
-              networks={networks}
-              networkList={testnetList}
-            />
-          </form>
-        }
-      />
-      <PseudoRoute
-        when={tab === Tab.customList}
-        component={
-          <form method="dialog">
-            <NetworkList
-              value={value}
-              networks={networks}
-              networkList={customList}
-            />
-          </form>
-        }
-      />
+      <div
+        style={{
+          display: 'flex',
+          flexGrow: 1,
+          flexDirection: 'column',
+          justifyContent: 'center',
+        }}
+      >
+        <PseudoRoute
+          when={tab === Tab.mainnets}
+          component={
+            <form method="dialog">
+              <NetworkList
+                value={value}
+                networks={networks}
+                networkList={mainnetList}
+                chainDistribution={chainDistribution}
+              />
+            </form>
+          }
+        />
+        <PseudoRoute
+          when={tab === Tab.testnets}
+          component={
+            <form method="dialog">
+              <NetworkList
+                value={value}
+                networks={networks}
+                networkList={testnetList}
+                chainDistribution={chainDistribution}
+              />
+            </form>
+          }
+        />
+        <PseudoRoute
+          when={tab === Tab.customList}
+          component={
+            <form method="dialog">
+              <NetworkList
+                value={value}
+                networks={networks}
+                networkList={customList}
+                chainDistribution={chainDistribution}
+              />
+            </form>
+          }
+        />
+      </div>
     </>
   );
 }
@@ -364,13 +406,15 @@ function TabsView({
 function SearchView({
   query,
   networks,
+  chainDistribution,
 }: {
   query: string;
   networks: Networks;
+  chainDistribution: ChainDistribution | null;
 }) {
   const items = useMemo(() => {
     const allNetworks = [
-      ...networks.getTestNetworks(),
+      ...networks.getMainnets(),
       ...networks.getTestNetworks(),
       ...networks.getCustomNetworks(),
     ];
@@ -378,7 +422,11 @@ function SearchView({
   }, [networks, query]);
   return (
     <form method="dialog">
-      <NetworkList networkList={items} networks={networks} />
+      <NetworkList
+        networkList={items}
+        networks={networks}
+        chainDistribution={chainDistribution}
+      />
     </form>
   );
 }
@@ -387,10 +435,12 @@ function CompleteNetworkList({
   value,
   networks,
   onGoBack,
+  chainDistribution,
 }: {
   value: string;
   networks: Networks;
   onGoBack: () => void;
+  chainDistribution: ChainDistribution | null;
 }) {
   const [searchValue, setSearchValue] = useState('');
   const [query, setQuery] = useState('');
@@ -452,6 +502,7 @@ function CompleteNetworkList({
       </div>
       <PageColumn>
         <Input
+          autoFocus={true}
           boxHeight={40}
           type="search"
           placeholder="Search"
@@ -463,13 +514,18 @@ function CompleteNetworkList({
         />
         <Spacer height={16} />
         {query ? (
-          <SearchView query={query} networks={networks} />
+          <SearchView
+            query={query}
+            networks={networks}
+            chainDistribution={chainDistribution}
+          />
         ) : (
           <TabsView
             tab={tab}
             onTabChange={handleTabChange}
             networks={networks}
             value={value}
+            chainDistribution={chainDistribution}
           />
         )}
         <PageBottom />
@@ -486,10 +542,12 @@ export function NetworkSelectDialog({
   value,
   type,
   mainViewLeadingComponent,
+  chainDistribution,
 }: {
   value: string;
   type: 'overview' | 'connection';
   mainViewLeadingComponent?: React.ReactNode;
+  chainDistribution: ChainDistribution | null;
 }) {
   const { networks } = useNetworks();
   const [view, setView] = useState<View>(View.main);
@@ -501,7 +559,9 @@ export function NetworkSelectDialog({
     return <DelayedRender delay={4000}>No Data</DelayedRender>;
   }
   return (
-    <>
+    <div
+      style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}
+    >
       <PseudoRoute
         when={view === View.main}
         component={
@@ -511,6 +571,7 @@ export function NetworkSelectDialog({
             networks={networks}
             onOpenMore={() => setView(View.completeList)}
             mainViewLeadingComponent={mainViewLeadingComponent}
+            chainDistribution={chainDistribution}
           />
         }
       />
@@ -520,10 +581,11 @@ export function NetworkSelectDialog({
           <CompleteNetworkList
             value={value}
             networks={networks}
+            chainDistribution={chainDistribution}
             onGoBack={() => setView(View.main)}
           />
         }
       />
-    </>
+    </div>
   );
 }

@@ -146,6 +146,7 @@ export function URLBar() {
                   textAlign: 'center',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
                 }}
               >
                 {text}

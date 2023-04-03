@@ -1,7 +1,8 @@
 import { client } from 'defi-sdk';
+import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 import type { NetworkConfig } from './NetworkConfig';
 
-export function get(): Promise<NetworkConfig[]> {
+function fetchNetworks(): Promise<NetworkConfig[]> {
   return new Promise((resolve) => {
     client.cachedSubscribe<NetworkConfig[], 'chains', 'info'>({
       namespace: 'chains',
@@ -16,4 +17,8 @@ export function get(): Promise<NetworkConfig[]> {
       },
     });
   });
+}
+
+export function get(): Promise<NetworkConfig[]> {
+  return Promise.race([fetchNetworks(), rejectAfterDelay(20000)]);
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Button } from 'src/ui/ui-kit/Button';
-import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
+import CheckIcon from 'jsx:src/ui/assets/check-circle-thin.svg';
 import { noValueDash } from 'src/ui/shared/typography';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -22,22 +22,24 @@ function ValueCell({ label, value }: { label: string; value: string }) {
 
 export function NetworkCreateSuccess({
   result,
+  paddingTop = 64,
   onDone,
 }: {
   result: EthereumChainConfig;
+  paddingTop?: number;
   onDone: () => void;
 }) {
   const network = result.value;
   return (
     <PageColumn>
-      <Spacer height={64} />
+      <Spacer height={paddingTop} />
       <CheckIcon
         style={{
           display: 'block',
           marginInline: 'auto',
-          width: 60,
-          height: 60,
-          color: 'var(--positive-500)',
+          width: 62,
+          height: 62,
+          color: 'var(--primary-500)',
         }}
       />
       <Spacer height={16} />
@@ -61,7 +63,7 @@ export function NetworkCreateSuccess({
       <VStack gap={8} style={{ textAlign: 'center' }}>
         <ValueCell
           label="RPC URL"
-          value={network.rpc_url_internal || noValueDash}
+          value={network.rpc_url_public?.[0] || noValueDash}
         />
         <ValueCell label="Chain ID" value={network.external_id} />
         <ValueCell

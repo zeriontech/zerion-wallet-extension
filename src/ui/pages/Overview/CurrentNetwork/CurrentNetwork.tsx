@@ -1,3 +1,4 @@
+import { useAddressPortfolioDecomposition } from 'defi-sdk';
 import React, { useMemo, useRef } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { createChain } from 'src/modules/networks/Chain';
@@ -21,6 +22,10 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import * as s from './styles.module.css';
 
 export function CurrentNetwork({ address }: { address: string }) {
+  const { value: portfolioDecomposition } = useAddressPortfolioDecomposition({
+    address,
+    currency: 'usd',
+  });
   const { data: tabOrigin } = useQuery('activeTab/origin', getActiveTabOrigin);
   const { data: isConnected } = useIsConnectedToActiveTab(address);
   const { data: flaggedAsDapp } = useQuery(
@@ -72,6 +77,7 @@ export function CurrentNetwork({ address }: { address: string }) {
         <NetworkSelectDialog
           value={siteChain.toString()}
           type="connection"
+          chainDistribution={portfolioDecomposition}
           mainViewLeadingComponent={
             <VStack gap={0} style={{ paddingTop: 8, paddingBottom: 16 }}>
               <UIText

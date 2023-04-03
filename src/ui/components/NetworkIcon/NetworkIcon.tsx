@@ -4,7 +4,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 
 interface BaseProps {
   src?: string | null;
-  chainId?: string | number;
+  chainId: string | number | null;
   size?: number;
   style?: React.CSSProperties;
   name: string | null;
@@ -19,7 +19,7 @@ function TextFallback({
 }: {
   size: number;
   name: string | null;
-  chainId?: string | number;
+  chainId: string | number | null;
   style?: React.CSSProperties;
 }) {
   const value = chainId
@@ -28,6 +28,7 @@ function TextFallback({
 
   return (
     <UIText
+      aria-hidden={true}
       kind="body/regular"
       style={{
         userSelect: 'none',

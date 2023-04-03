@@ -11,6 +11,7 @@ import { EmptyView } from 'src/ui/components/EmptyView';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
+import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { NetworkList } from '../NetworkList';
 
 export function SearchResults({
@@ -21,7 +22,11 @@ export function SearchResults({
   networks: Networks;
 }) {
   const { pathname } = useLocation();
-  const { data: itemsForQuery, isPreviousData } = useQuery(
+  const {
+    data: itemsForQuery,
+    isPreviousData,
+    isLoading,
+  } = useQuery(
     ['getNetworksBySearch', query],
     () => getNetworksBySearch({ query }),
     { suspense: false, keepPreviousData: true }
@@ -48,6 +53,9 @@ export function SearchResults({
       groups.testnets ? { title: 'Testnets', items: groups.testnets } : null,
     ].filter(isTruthy);
   }, [itemsForQuery]);
+  if (isLoading) {
+    return <ViewLoading kind="network" />;
+  }
   if (!itemsForQuery) {
     return null;
   }

@@ -61,7 +61,15 @@ function NetworkDetail({
   }
   const isCustom = sourceType === 'custom';
   return (
-    <UIText kind="caption/regular" color="var(--neutral-500)">
+    <UIText
+      kind="caption/regular"
+      color="var(--neutral-500)"
+      style={{
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+      }}
+    >
       {intersperce(
         [
           originUrl ? (

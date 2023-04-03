@@ -46,7 +46,7 @@ export type EthereumChainSources = Record<string, ChainConfig>;
 
 type EthereumChainSourcesNormalized = Record<
   string,
-  { items: NetworkConfig[]; collection: Collection<NetworkConfig> }
+  undefined | { items: NetworkConfig[]; collection: Collection<NetworkConfig> }
 >;
 
 export interface NetworkConfigMetaData {
@@ -129,6 +129,9 @@ export class Networks {
     this.sourcesNormalized = sourcesNormalized;
     const collection = { ...originalCollection };
     for (const value of Object.values(sourcesNormalized)) {
+      if (!value) {
+        continue;
+      }
       Object.assign(collection, value.collection);
       Object.assign(
         collectionByEvmId,
@@ -173,7 +176,7 @@ export class Networks {
 
   getMainnets() {
     const customCollection =
-      this.sourcesNormalized?.['custom'].collection || {};
+      this.sourcesNormalized?.['custom']?.collection || {};
     return this.networks.map(
       (network) => customCollection[network.chain] || network
     );
@@ -207,8 +210,8 @@ export class Networks {
 
   getTestNetworks() {
     const customCollection =
-      this.sourcesNormalized?.['custom'].collection || {};
-    const items = this.sourcesNormalized?.['predefined'].items || [];
+      this.sourcesNormalized?.['custom']?.collection || {};
+    const items = this.sourcesNormalized?.['predefined']?.items || [];
     return items.map((item) => {
       if (item.chain in customCollection) {
         return customCollection[item.chain];
@@ -220,12 +223,12 @@ export class Networks {
 
   getCustomNetworks() {
     const predefinedCollection =
-      this.sourcesNormalized?.['predefined'].collection || {};
-    const items = this.sourcesNormalized?.['custom'].items || [];
+      this.sourcesNormalized?.['predefined']?.collection || {};
+    const items = this.sourcesNormalized?.['custom']?.items || [];
     return items.filter(
       (item) =>
-        item.external_id in predefinedCollection === false &&
-        item.external_id in this.originalCollection === false
+        item.chain in predefinedCollection === false &&
+        item.chain in this.originalCollection === false
     );
   }
 
@@ -408,9 +411,10 @@ export class Networks {
     if (!network) {
       throw new Error(`Cannot find network: ${chain}`);
     }
-    if (!network.rpc_url_internal) {
+    const url = network.rpc_url_internal || network.rpc_url_public?.[0];
+    if (!url) {
       throw new Error(`Network url missing: ${chain}`);
     }
-    return applyKeyToEndpoint(network.rpc_url_internal, this.keys);
+    return applyKeyToEndpoint(url, this.keys);
   }
 }

@@ -65,6 +65,18 @@ function SettingsMain() {
             },
             {
               key: 3,
+              to: '/networks',
+              component: (
+                <AngleRightRow>
+                  <HStack gap={8} alignItems="center">
+                    <NetworksIcon />
+                    <UIText kind="body/regular">Networks</UIText>
+                  </HStack>
+                </AngleRightRow>
+              ),
+            },
+            {
+              key: 4,
               to: '/settings/appearance',
               component: (
                 <AngleRightRow>
@@ -76,25 +88,13 @@ function SettingsMain() {
               ),
             },
             {
-              key: 4,
+              key: 5,
               to: '/settings/user-preferences',
               component: (
                 <AngleRightRow>
                   <HStack gap={8} alignItems="center">
                     <SettingsIcon />
                     <UIText kind="body/regular">Preferences</UIText>
-                  </HStack>
-                </AngleRightRow>
-              ),
-            },
-            {
-              key: 5,
-              to: '/networks',
-              component: (
-                <AngleRightRow>
-                  <HStack gap={8} alignItems="center">
-                    <NetworksIcon />
-                    <UIText kind="body/regular">Networks</UIText>
                   </HStack>
                 </AngleRightRow>
               ),

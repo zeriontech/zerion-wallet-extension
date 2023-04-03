@@ -222,11 +222,11 @@ export function NetworkForm({
           />
           <Field
             label="RPC URL"
-            name="rpc_url_internal"
+            name="rpc_url_public[]"
             type="url"
-            defaultValue={network.rpc_url_internal || ''}
-            error={errors.rpc_url_internal}
-            disabled={disabledFields?.has('rpc_url_internal')}
+            defaultValue={network.rpc_url_public?.[0] || ''}
+            error={errors['rpc_url_public[]']}
+            disabled={disabledFields?.has('rpc_url_public[]')}
             required
           />
           <Field

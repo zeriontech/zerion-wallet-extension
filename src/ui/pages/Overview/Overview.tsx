@@ -164,7 +164,8 @@ function RenderTimeMeasure() {
 }
 
 function OverviewComponent() {
-  const { singleAddress, params, ready } = useAddressParams();
+  const { singleAddress, singleAddressNormalized, params, ready } =
+    useAddressParams();
   // const [chain, setChain] = useState('');
   const { preferences, setPreferences } = usePreferences();
   const setChain = (overviewChain: string) => setPreferences({ overviewChain });
@@ -216,7 +217,7 @@ function OverviewComponent() {
 
           <HStack gap={0} alignItems="center">
             {preferences?.showNetworkSwitchShortcut === true ? (
-              <CurrentNetwork address={singleAddress} />
+              <CurrentNetwork address={singleAddressNormalized} />
             ) : null}
             <SettingsLinkIcon />
           </HStack>

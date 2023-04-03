@@ -1,45 +1,64 @@
-import { ethers } from 'ethers';
-import ky from 'ky';
-import { toNetworkConfig } from 'src/modules/networks/helpers';
-import { AddEthereumChainParameter } from '../types/AddEthereumChainParameter';
-import { filterNetworksByQuery } from './filterNetworkByQuery';
+import { client } from 'defi-sdk';
+import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
+import type { ChainConfig } from './ChainConfigStore';
 
-interface ResponseItem {
-  name: string;
-  rpc: string[];
-  icon: string;
-  nativeCurrency: {
-    name: string;
-    symbol: string;
-    decimals: 18;
-  };
-  chainId: number;
-  explorers?: [
-    {
-      name: string;
-      url: string;
-      standard: string;
-    }
-  ];
+function fetchChains(
+  payload: {
+    supported_only?: boolean;
+    include_testnets?: boolean;
+    group?: 'testnets';
+    search_query?: string;
+  } = { supported_only: true }
+): Promise<NetworkConfig[]> {
+  return new Promise((resolve) => {
+    const { unsubscribe } = client.cachedSubscribe<
+      NetworkConfig[],
+      'chains',
+      'info'
+    >({
+      namespace: 'chains',
+      body: {
+        scope: ['info'],
+        payload,
+      },
+      onData: ({ value }) => {
+        if (value) {
+          resolve(value);
+          unsubscribe();
+        }
+      },
+    });
+  });
 }
 
 export async function getNetworksBySearch({ query }: { query: string }) {
-  return ky('http://chainid.network/chains.json')
-    .json<ResponseItem[]>()
-    .then((result) => {
-      return result.map(
-        (item): AddEthereumChainParameter => ({
-          chainId: ethers.utils.hexValue(item.chainId),
-          chainName: item.name,
-          nativeCurrency: item.nativeCurrency,
-          rpcUrls: item.rpc,
-          blockExplorerUrls: item.explorers?.map((e) => e.url),
-          iconUrls: [`https://chain-icons.s3.amazonaws.com/${item.icon}.png`],
-        })
-      );
-    })
-    .then((items) => items.map((item) => toNetworkConfig(item)))
-    .then((items) => {
-      return items.filter(filterNetworksByQuery(query)).slice(0, 20);
-    });
+  const networks = await fetchChains({
+    include_testnets: true,
+    supported_only: false,
+    search_query: query,
+  });
+  return networks.slice(0, 20);
+}
+
+async function fetchTestnets() {
+  const networks = await fetchChains({
+    include_testnets: true,
+    group: 'testnets',
+    supported_only: false,
+  });
+  return {
+    ethereumChains: networks.map((network) => ({
+      created: 0,
+      updated: 0,
+      origin: 'predefined',
+      value: network,
+    })),
+  };
+}
+
+const MAX_WAIT_TIME_MS = 30000;
+
+export async function getPredefinedChains(): Promise<ChainConfig> {
+  return Promise.race([fetchTestnets(), rejectAfterDelay(MAX_WAIT_TIME_MS)]);
 }
