@@ -110,7 +110,7 @@ export function Import() {
         ) : null}
         <UnstyledButton
           onClick={handleBackClick}
-          aria-label="Back button"
+          aria-label="Go Back"
           className={styles.backButton}
         >
           <ArrowLeftIcon style={{ width: 20, height: 20 }} />

@@ -33,8 +33,7 @@ function PageLayout({
         style={{
           paddingTop: HEADER_HEIGHT,
           maxWidth: MAX_CONTENT_WIDTH,
-          marginLeft: 'auto',
-          marginRight: 'auto',
+          marginInline: 'auto',
           ...style,
         }}
       >

@@ -93,14 +93,16 @@ export function ImportMnemonic({
 
   const handlePaste = useCallback((index: number, value: string) => {
     const splitValue = value.trim().split(/\s+/);
-    setValue((current) => [
-      ...current.slice(0, index),
-      ...splitValue,
-      ...(index + splitValue.length < current.length
-        ? current.slice(index + splitValue.length)
-        : []
-      ).slice(0, INPUT_NUMBER),
-    ]);
+    setValue((current) => {
+      return produce(current, (draft) => {
+        splitValue.forEach((item, i) => {
+          if (i + index >= INPUT_NUMBER) {
+            return;
+          }
+          draft[index + i] = item;
+        });
+      });
+    });
   }, []);
 
   const handleKeyDown = useCallback(

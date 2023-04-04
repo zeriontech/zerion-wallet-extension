@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router';
 import { resolveDomain } from 'src/modules/name-service';
-import { isEthereumAddress } from 'src/ui/shared/isEthereumAddress';
+import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
