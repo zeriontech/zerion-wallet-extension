@@ -5,7 +5,7 @@ import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEt
 import type { ChainConfig } from 'src/modules/ethereum/chains/ChainConfigStore';
 import type { Chain } from './Chain';
 import { createChain } from './Chain';
-import { NetworkConfig } from './NetworkConfig';
+import type { NetworkConfig } from './NetworkConfig';
 import { applyKeyToEndpoint, keys as defaultKeys } from './keys';
 import type { Keys } from './keys';
 import type { TransactionPurpose } from './TransactionPurpose';
@@ -417,7 +417,10 @@ export class Networks {
     if (!network) {
       throw new Error(`Cannot find network: ${chain}`);
     }
-    const url = network.rpc_url_internal || network.rpc_url_public?.[0];
+    const url =
+      network.rpc_url_user ||
+      network.rpc_url_internal ||
+      network.rpc_url_public?.[0];
     if (!url) {
       throw new Error(`Network url missing: ${chain}`);
     }
@@ -429,7 +432,10 @@ export class Networks {
     if (!network) {
       throw new Error(`Cannot find network: ${chain}`);
     }
-    const url = network.rpc_url_public?.[0] || network.rpc_url_internal;
+    const url =
+      network.rpc_url_user ||
+      network.rpc_url_public?.[0] ||
+      network.rpc_url_internal;
     if (!url) {
       throw new Error(`Network url missing: ${chain}`);
     }

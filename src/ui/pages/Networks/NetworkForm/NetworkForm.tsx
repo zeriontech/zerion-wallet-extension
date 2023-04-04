@@ -258,15 +258,34 @@ export function NetworkForm({
             disabled={disabledFields?.has('name')}
             required
           />
-          <Field
-            label="RPC URL"
-            name="rpc_url_public[]"
-            type="url"
-            defaultValue={network.rpc_url_public?.[0] || ''}
-            error={errors['rpc_url_public[]']}
-            disabled={disabledFields?.has('rpc_url_public[]')}
-            required
-          />
+          {network.rpc_url_internal ? (
+            /**
+             * If network HAS `rpc_url_internal`, we introduce a `rpc_url_user` field
+             * as a mechanism to overwrite it,
+             * else - we use `rpc_url_public`
+             */
+            <Field
+              label="RPC URL"
+              name="rpc_url_user"
+              placeholder={new URL(network.rpc_url_internal).hostname}
+              type="url"
+              defaultValue={network.rpc_url_user || ''}
+              error={errors.rpc_url_user}
+              disabled={disabledFields?.has('rpc_url_user')}
+              // not required because rpc_url_internal is defined
+              required={false}
+            />
+          ) : (
+            <Field
+              label="RPC URL"
+              name="rpc_url_public[]"
+              type="url"
+              defaultValue={network.rpc_url_public?.[0] || ''}
+              error={errors['rpc_url_public[]']}
+              disabled={disabledFields?.has('rpc_url_public[]')}
+              required={true}
+            />
+          )}
           <Field
             label={<span title={network.external_id}>Chain ID</span>}
             name="external_id"
