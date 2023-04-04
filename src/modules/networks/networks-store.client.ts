@@ -5,10 +5,7 @@ export const networksStore = new NetworksStore(
   { networks: null },
   {
     getEthereumChainSources: async () => {
-      const value = await walletPort.request('getCustomEthereumChains');
-      return value;
+      return walletPort.request('getEthereumChainSources');
     },
   }
 );
-
-Object.assign(window, { networksStore });

@@ -9,7 +9,7 @@ interface BaseProps {
   style?: React.CSSProperties;
   name: string | null;
 }
-type Props = BaseProps & ({ src: string } | { chainId: string });
+type Props = BaseProps & ({ src: string } | { chainId: string | number });
 
 function TextFallback({
   size,

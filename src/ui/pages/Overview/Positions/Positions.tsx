@@ -27,7 +27,6 @@ import {
 } from 'src/ui/components/Positions/groupPositions';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import {
-  getChainIconURL,
   getFullPositionsValue,
   getProtocolIconURL,
   positionTypeToStringMap,
@@ -51,6 +50,8 @@ import { intersperce } from 'src/ui/shared/intersperce';
 import { NetworkResetButton } from 'src/ui/components/NetworkResetButton';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { EmptyViewForNetwork } from 'src/ui/components/EmptyViewForNetwork';
+import { NetworkIcon } from 'src/ui/components/NetworkIcon';
+import { networksStore } from 'src/modules/networks/networks-store.client';
 
 function LineToParent({
   hasPreviosNestedPosition,
@@ -120,6 +121,8 @@ function AddressPositionItem({
   groupType: PositionsGroupType;
 }) {
   const isNested = Boolean(position.parent_id);
+  const { networks } = useNetworks();
+  const network = networks?.getNetworkByName(createChain(position.chain));
 
   return (
     <div style={{ position: 'relative', paddingLeft: isNested ? 26 : 0 }}>
@@ -156,17 +159,11 @@ function AddressPositionItem({
                 [
                   position.chain !== NetworkId.Ethereum ? (
                     <React.Fragment key={0}>
-                      <Image
-                        style={{
-                          width: 16,
-                          height: 16,
-                          borderRadius: 2,
-                          overflow: 'hidden',
-                        }}
-                        src={getChainIconURL(position.chain)}
-                        renderError={() => (
-                          <TokenIcon symbol={position.chain} size={16} />
-                        )}
+                      <NetworkIcon
+                        size={16}
+                        name={network?.name || null}
+                        chainId={network?.external_id || null}
+                        src={network?.icon_url || ''}
                       />{' '}
                       <span style={textOverflowStyle}>
                         {getChainName(position.chain)}
@@ -362,7 +359,7 @@ function ProtocolHeading({
       <UIText kind="body/accent">
         {protocol}
         {' · '}
-        {formatCurrencyValue(value, 'en', 'usd')}{' '}
+        {formatCurrencyValue(value, 'en', 'usd')}
       </UIText>
       <UIText
         inline={true}
@@ -579,14 +576,14 @@ function createAddressPosition({
         network.native_asset?.address ||
         network.native_asset?.symbol.toLowerCase() ||
         '<unknown-id>',
-      decimals: network.native_asset?.decimals || 0,
+      decimals: network.native_asset?.decimals || NaN,
       icon_url: network.icon_url,
       is_verified: false,
       price: null,
       implementations: {
         [network.chain]: {
           address: network.native_asset?.address ?? null,
-          decimals: network.native_asset?.decimals || 0,
+          decimals: network.native_asset?.decimals || NaN,
         },
       },
     },
@@ -619,15 +616,15 @@ function useEvmAddressPositions({
   address: string | null;
   chainId: string;
 }) {
-  const { networks } = useNetworks();
   return useQuery(
     ['eth_getBalance', address, chainId],
     async () => {
-      return !networks || !address
+      const networks = await networksStore.load();
+      return !address
         ? null
         : getEvmAddressPositions({ address, chainId, networks });
     },
-    { enabled: Boolean(networks) && Boolean(address) }
+    { enabled: Boolean(address) }
   );
 }
 
@@ -674,7 +671,7 @@ export function Positions({
   chain: string;
   onChainChange: (value: string) => void;
 }) {
-  const { ready, params, singleAddress } = useAddressParams();
+  const { ready, params, singleAddressNormalized } = useAddressParams();
   const { networks } = useNetworks();
   if (!networks || !ready) {
     return (
@@ -712,7 +709,7 @@ export function Positions({
     return (
       <MultiChainPositions
         addressParams={params}
-        address={singleAddress}
+        address={singleAddressNormalized}
         chainValue={chainValue}
         renderEmptyView={renderEmptyViewForNetwork}
         firstHeaderItemEnd={networkSelect}
@@ -744,7 +741,7 @@ export function Positions({
       >
         <RawChainPositions
           addressParams={params}
-          address={singleAddress}
+          address={singleAddressNormalized}
           chainId={network.external_id}
           renderEmptyView={renderEmptyViewForNetwork}
           firstHeaderItemEnd={networkSelect}

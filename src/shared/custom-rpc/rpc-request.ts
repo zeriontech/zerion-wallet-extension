@@ -14,14 +14,14 @@ import type {
 import { getError } from '../errors/getError';
 
 /**
- * sendRpcPayload always resolves with JsonRpcResult | JsonRpcError
+ * fulfillRpcRequest always resolves with JsonRpcResult | JsonRpcError
  */
-export async function sendRpcPayload<T>(
+export async function fulfillRpcRequest<T>(
   url: string,
   request: JsonRpcRequest
 ): Promise<JsonRpcResult<T> | JsonRpcError> {
   if (!isJsonRpcRequest(request)) {
-    console.log('not a request:', request); // eslint-disable-line no-console
+    console.warn('not a request:', request); // eslint-disable-line no-console
     return Promise.reject('not a request');
   }
   try {
@@ -55,7 +55,7 @@ export async function sendRpcRequest<T>(
     request.params,
     request.id
   );
-  const result = await sendRpcPayload<T>(url, payload);
+  const result = await fulfillRpcRequest<T>(url, payload);
   if (isJsonRpcError(result)) {
     throw result;
   }

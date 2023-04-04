@@ -166,7 +166,6 @@ function RenderTimeMeasure() {
 function OverviewComponent() {
   const { singleAddress, singleAddressNormalized, params, ready } =
     useAddressParams();
-  // const [chain, setChain] = useState('');
   const { preferences, setPreferences } = usePreferences();
   const setChain = (overviewChain: string) => setPreferences({ overviewChain });
   const { value, isLoading: isLoadingPortfolio } = useAddressPortfolio(
@@ -178,24 +177,6 @@ function OverviewComponent() {
     },
     { enabled: ready }
   );
-  // const { data: preferences } = useQuery(
-  //   'wallet/getPreferences',
-  //   () => walletPort.request('getPreferences'),
-  //   { useErrorBoundary: true, suspense: true }
-  // );
-  // if (!value) {
-  //   return (
-  //     <FillView>
-  //       <Twinkle>
-  //         <ZerionSquircle style={{ width: 64, height: 64 }} />
-  //       </Twinkle>
-  //       <Spacer height={12} />
-  //       <UIText kind="caption/regular">
-  //         (address portfolio might take long...)
-  //       </UIText>
-  //     </FillView>
-  //   );
-  // }
 
   if (!preferences) {
     return <ViewLoading />;

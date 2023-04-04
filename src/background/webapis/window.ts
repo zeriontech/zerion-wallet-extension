@@ -22,9 +22,11 @@ const WINDOW_SIZE = {
 type BrowserWindow = browser.Windows.Window | chrome.windows.Window;
 const create = async ({
   url,
+  height = WINDOW_SIZE.height,
   ...rest
 }: {
   url: string;
+  height?: number;
 }): Promise<BrowserWindow['id']> => {
   const {
     top: currentWindowTop,

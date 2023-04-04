@@ -2,14 +2,12 @@ import { produce } from 'immer';
 import { equal } from 'src/modules/fast-deep-equal';
 import type { Chain } from 'src/modules/networks/Chain';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkConfigMetaData } from 'src/modules/networks/Networks';
 import { PersistentStore } from 'src/modules/persistent-store';
 import { invariant } from 'src/shared/invariant';
 import { upsert } from 'src/shared/upsert';
 
-export interface EthereumChainConfig {
-  created: number;
-  updated: number;
-  origin: string;
+export interface EthereumChainConfig extends NetworkConfigMetaData {
   value: NetworkConfig;
 }
 
@@ -27,7 +25,10 @@ function remove<T>(arr: T[], predicate: (item: T) => boolean) {
 export class ChainConfigStore extends PersistentStore<ChainConfig> {
   static initialState: ChainConfig = { ethereumChains: [] };
 
-  addEthereumChain(value: NetworkConfig, origin: string): EthereumChainConfig {
+  addEthereumChain(
+    value: NetworkConfig,
+    { origin }: { origin: string }
+  ): EthereumChainConfig {
     invariant(value.chain, 'chain property is required for NetworkConfig');
     const state = this.getState();
     const existingItems = new Map(

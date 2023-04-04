@@ -29,7 +29,7 @@ export class HttpConnection extends EventEmitter {
     const networks = await networksStore.load();
 
     const chain = networks.getChainById(this.chainId);
-    const url = networks.getRpcUrlInternal(chain);
+    const url = networks.getRpcUrlPublic(chain);
     return ky(url, {
       timeout: 20000,
       retry: 1,

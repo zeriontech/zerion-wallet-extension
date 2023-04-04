@@ -14,6 +14,8 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import LockIcon from 'jsx:src/ui/assets/lock.svg';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
+import { Toggle } from 'src/ui/ui-kit/Toggle';
+import { HStack } from 'src/ui/ui-kit/HStack';
 
 type InitialNetworkConfig = Omit<NetworkConfig, 'chain'> & {
   chain: string | null;
@@ -36,12 +38,15 @@ function Field({
   const ICON_OFFSET = 8;
   return (
     <VStack gap={4}>
-      <label htmlFor={id}>{label}</label>
+      <UIText kind="small/accent" as="label" htmlFor={id}>
+        {label}
+      </UIText>
       <ZStack>
         <Input
           id={id}
           error={Boolean(error)}
           disabled={disabled}
+          boxHeight={40}
           style={
             disabled ? { paddingRight: ICON_OFFSET * 2 + ICON_SIZE } : undefined
           }
@@ -71,7 +76,7 @@ function Field({
 
 function naiveFormDataToObject(
   formData: FormData,
-  modifier: (key: string, value: unknown) => string
+  modifier: (key: string, value: unknown) => unknown
 ) {
   const result: Record<string, unknown> = {};
   for (const key of new Set(formData.keys())) {
@@ -114,7 +119,7 @@ function findInput(
   });
 }
 
-type Parsers = Record<string, (untypedValue: unknown) => string>;
+type Parsers = Record<string, (untypedValue: unknown) => unknown>;
 
 const parsers: Parsers = {
   external_id: (untypedValue) => {
@@ -124,6 +129,10 @@ const parsers: Parsers = {
     } else {
       return ethers.utils.hexValue(Number(value));
     }
+  },
+  hidden: (untypedValue) => {
+    const value = untypedValue as 'on' | null;
+    return Boolean(value);
   },
 };
 
@@ -135,6 +144,35 @@ function collectData(form: HTMLFormElement, parsers: Parsers) {
       return untypedValue as string;
     }
   });
+}
+
+function NetworkHiddenFieldLine({
+  name,
+  defaultChecked,
+}: {
+  name: string;
+  defaultChecked?: boolean;
+}) {
+  const id = useId();
+  const [checked, setState] = useState(defaultChecked);
+  return (
+    <HStack gap={4} justifyContent="space-between">
+      <UIText kind="body/accent" as="label" htmlFor={id}>
+        Visible in Networks List
+      </UIText>
+      <Toggle
+        id={id}
+        /**
+         * This input intentionally has no "name" attribute,
+         * its value will not be part of form data.
+         * It is a visual inversion of the "hidden" attribute
+         */
+        checked={!checked}
+        onChange={(event) => setState(!event.currentTarget.checked)}
+      />
+      <input name={name} type="hidden" value={checked ? 'on' : ''} />
+    </HStack>
+  );
 }
 
 const EMPTY_OBJECT = {};
@@ -162,7 +200,7 @@ export function NetworkForm({
   const id = useId();
   const validators: Validators = {
     external_id: (element) => {
-      const hexValue = parsers.external_id(element.value);
+      const hexValue = parsers.external_id(element.value) as string;
       if (restrictedChainIds.has(hexValue)) {
         return 'Network already exists';
       }
@@ -255,7 +293,7 @@ export function NetworkForm({
             error={errors['native_asset.symbol']}
             onInvalid={(event) =>
               event.currentTarget.setCustomValidity(
-                'At least 3 letters, maximum 8 letters'
+                'At least 2 letters, maximum 8 letters'
               )
             }
             onInput={(event) => event.currentTarget.setCustomValidity('')}
@@ -285,6 +323,13 @@ export function NetworkForm({
             required={false}
           />
         </VStack>
+        <Spacer height={20} />
+        {disabledFields?.has('hidden') ? null : (
+          <NetworkHiddenFieldLine
+            name="hidden"
+            defaultChecked={network.hidden}
+          />
+        )}
         {onReset ? (
           <>
             <Spacer height={24} />

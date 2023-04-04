@@ -13,6 +13,7 @@ import { Media } from 'src/ui/ui-kit/Media';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
+import InvisibleIcon from 'jsx:src/ui/assets/invisible.svg';
 
 function getOriginUrlFromMetaData(metadata: NetworkConfigMetaData) {
   if (
@@ -100,12 +101,12 @@ export function NetworkList({
   networks,
   networkList,
   getItemTo,
-  getItemIcon,
+  getItemIconEnd,
 }: {
   networks: Networks;
   networkList: NetworkConfig[];
   getItemTo?: (item: NetworkConfig) => string;
-  getItemIcon?: (item: NetworkConfig) => React.ReactNode;
+  getItemIconEnd?: (item: NetworkConfig) => React.ReactNode;
 }) {
   const metadataRecord = useMemo(
     () => networks.getNetworksMetaData(),
@@ -120,14 +121,22 @@ export function NetworkList({
           <HStack gap={4} justifyContent="space-between" alignItems="center">
             <Media
               image={
-                <NetworkIcon // TODO: Create NetworkIcon component
+                <NetworkIcon
                   size={24}
                   src={network.icon_url}
                   chainId={network.external_id}
                   name={network.name}
                 />
               }
-              text={networks.getChainName(createChain(network.name))}
+              text={
+                <span
+                  style={
+                    network.hidden ? { color: 'var(--neutral-700)' } : undefined
+                  }
+                >
+                  {networks.getChainName(createChain(network.name))}
+                </span>
+              }
               vGap={0}
               detailText={
                 <NetworkDetail
@@ -138,9 +147,16 @@ export function NetworkList({
               }
             />
 
-            {getItemIcon?.(network) ?? (
-              <ChevronRightIcon style={{ color: 'var(--neutral-400)' }} />
-            )}
+            <HStack gap={8} alignItems="center">
+              {network.hidden ? (
+                <InvisibleIcon
+                  style={{ width: 20, height: 20, color: 'var(--neutral-400)' }}
+                />
+              ) : null}
+              {getItemIconEnd?.(network) ?? (
+                <ChevronRightIcon style={{ color: 'var(--neutral-400)' }} />
+              )}
+            </HStack>
           </HStack>
         ),
       }))}

@@ -319,7 +319,7 @@ function TabsView({
   onTabChange: (event: React.FormEvent<HTMLInputElement>) => void;
   chainDistribution: ChainDistribution | null;
 }) {
-  const mainnetList = networks.getMainnets();
+  const mainnetList = useMemo(() => networks.getMainnets(), [networks]);
   const testnetList = useMemo(() => networks.getTestNetworks(), [networks]);
   const customList = useMemo(() => networks.getCustomNetworks(), [networks]);
   return (

@@ -82,7 +82,7 @@ export function SearchResults({
                     network: JSON.stringify(item),
                   })}`
             }
-            getItemIcon={(item) =>
+            getItemIconEnd={(item) =>
               networks.hasNetworkById(item.external_id) ? (
                 <CheckIcon
                   style={{

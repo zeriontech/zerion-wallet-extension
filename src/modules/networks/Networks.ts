@@ -44,8 +44,7 @@ function localeCompareWithPriority(
 
 export type EthereumChainSources = Record<string, ChainConfig>;
 
-type EthereumChainSourcesNormalized = Record<
-  string,
+type EthereumChainSourcesNormalized = Collection<
   undefined | { items: NetworkConfig[]; collection: Collection<NetworkConfig> }
 >;
 
@@ -105,13 +104,17 @@ export class Networks {
     );
     this.ethereumChainSources = ethereumChainSources;
     this.keys = keys;
-    const { collection, originalCollection, collectionByEvmId } =
-      this.prepare();
+    const {
+      collection,
+      originalCollection,
+      collectionByEvmId,
+      sourcesNormalized,
+    } = this.prepare();
     this.collection = collection;
     this.originalCollection = originalCollection;
     this.collectionByEvmId = collectionByEvmId;
+    this.sourcesNormalized = sourcesNormalized;
     this.supportedByBackend = new Set(networks.map((n) => n.chain));
-    Object.assign(globalThis, { networksInstance: this });
   }
 
   private prepare() {
@@ -126,7 +129,6 @@ export class Networks {
       (x) => x
     );
     const sourcesNormalized = normalizeSources(this.ethereumChainSources);
-    this.sourcesNormalized = sourcesNormalized;
     const collection = { ...originalCollection };
     for (const value of Object.values(sourcesNormalized)) {
       if (!value) {
@@ -142,16 +144,26 @@ export class Networks {
         )
       );
     }
-    return { collection, originalCollection, collectionByEvmId };
+    return {
+      collection,
+      originalCollection,
+      collectionByEvmId,
+      sourcesNormalized,
+    };
   }
 
   updateEthereumChainSources(ethereumChainSources: EthereumChainSources) {
     this.ethereumChainSources = ethereumChainSources;
-    const { collection, collectionByEvmId, originalCollection } =
-      this.prepare();
+    const {
+      collection,
+      collectionByEvmId,
+      originalCollection,
+      sourcesNormalized,
+    } = this.prepare();
     this.collection = collection;
     this.originalCollection = originalCollection;
     this.collectionByEvmId = collectionByEvmId;
+    this.sourcesNormalized = sourcesNormalized;
   }
 
   static getName(network: NetworkConfig) {
@@ -175,10 +187,9 @@ export class Networks {
   }
 
   getMainnets() {
-    const customCollection =
-      this.sourcesNormalized?.['custom']?.collection || {};
+    const customCollection = this.sourcesNormalized?.['custom']?.collection;
     return this.networks.map(
-      (network) => customCollection[network.chain] || network
+      (network) => customCollection?.[network.chain] || network
     );
   }
 
@@ -209,15 +220,10 @@ export class Networks {
   }
 
   getTestNetworks() {
-    const customCollection =
-      this.sourcesNormalized?.['custom']?.collection || {};
+    const customCollection = this.sourcesNormalized?.['custom']?.collection;
     const items = this.sourcesNormalized?.['predefined']?.items || [];
     return items.map((item) => {
-      if (item.chain in customCollection) {
-        return customCollection[item.chain];
-      } else {
-        return item;
-      }
+      return customCollection?.[item.chain] || item;
     });
   }
 
@@ -412,6 +418,18 @@ export class Networks {
       throw new Error(`Cannot find network: ${chain}`);
     }
     const url = network.rpc_url_internal || network.rpc_url_public?.[0];
+    if (!url) {
+      throw new Error(`Network url missing: ${chain}`);
+    }
+    return applyKeyToEndpoint(url, this.keys);
+  }
+
+  getRpcUrlPublic(chain: Chain) {
+    const network = this.getNetworkByName(chain);
+    if (!network) {
+      throw new Error(`Cannot find network: ${chain}`);
+    }
+    const url = network.rpc_url_public?.[0] || network.rpc_url_internal;
     if (!url) {
       throw new Error(`Network url missing: ${chain}`);
     }

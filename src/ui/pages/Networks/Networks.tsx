@@ -53,13 +53,13 @@ import { NetworkCreateSuccess } from './NetworkCreateSuccess';
  * changeChanged event is sent to dapp
  *
  * [x] When chain id is edited, chain (==identificator) is not incorrect
- * [ ] Analytics
+ * [x] Analytics
+ * [ ] Analytics for Search
  */
 
 function MainnetList({ networks }: { networks: NetworksType }) {
-  return (
-    <NetworkList networks={networks} networkList={networks.getMainnets()} />
-  );
+  const items = useMemo(() => networks.getMainnets(), [networks]);
+  return <NetworkList networks={networks} networkList={items} />;
 }
 
 function TestnetList({ networks }: { networks: NetworksType }) {
@@ -241,7 +241,11 @@ function NetworkCreatePage({
   );
 }
 
-const forbiddenFields = new Set(['external_id', 'native_asset.decimals']);
+const forbiddenFields = new Set([
+  'external_id',
+  'native_asset.decimals',
+  'hidden',
+]);
 
 function NetworkPage({
   onSuccess,
