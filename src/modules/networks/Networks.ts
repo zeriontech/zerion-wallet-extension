@@ -373,7 +373,6 @@ export class Networks {
       rpcUrls: network.rpc_url_public,
       chainName: network.name,
       nativeCurrency: {
-        // code: network.native_asset.address,
         name: network.native_asset.name,
         symbol: network.native_asset.symbol,
         decimals: network.native_asset.decimals as 18, // ¯\_(ツ)_/¯

@@ -6,6 +6,7 @@
   --navbar-index: 2;
   --max-layout-index: 2;
   --over-layout-index: 3;
+  --sheet-dialog-max-width: 600px;
 }
 
 :global(.neutral-bg) {

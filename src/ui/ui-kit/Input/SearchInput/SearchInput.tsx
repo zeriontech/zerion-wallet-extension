@@ -7,7 +7,9 @@ export function SearchInput(props: InputProps) {
   return (
     <div style={{ position: 'relative' }}>
       <SearchIcon
+        role="presentation"
         style={{
+          pointerEvents: 'none',
           position: 'absolute',
           left: 12,
           top: 8,

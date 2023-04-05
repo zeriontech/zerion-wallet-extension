@@ -888,11 +888,11 @@ export class Wallet {
     origin: string;
   }>) {
     this.verifyInternalOrigin(context);
-    this.emitter.emit('chainChanged', createChain(values[0].chain), origin);
     const result = chainConfigStore.addEthereumChain(values[0], {
       origin,
     });
 
+    this.emitter.emit('chainChanged', createChain(values[0].chain), origin);
     emitter.emit('addEthereumChain', {
       values: [result.value],
       origin: result.origin,

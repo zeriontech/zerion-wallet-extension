@@ -5,7 +5,6 @@ import type { Networks } from 'src/modules/networks/Networks';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { Input } from 'src/ui/ui-kit/Input';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Media } from 'src/ui/ui-kit/Media';
 import IconLeft from 'jsx:src/ui/assets/arrow-left.svg';
@@ -36,6 +35,7 @@ import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
 import type { ChainDistribution } from 'src/ui/shared/requests/PortfolioValue/ChainValue';
 import { ChainValue } from 'src/ui/shared/requests/PortfolioValue/ChainValue';
+import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
 import { DelayedRender } from '../DelayedRender';
 import { NetworkIcon } from '../NetworkIcon';
 import { PageBottom } from '../PageBottom';
@@ -353,10 +353,8 @@ function TabsView({
       <Spacer height={8} />
       <div
         style={{
-          display: 'flex',
+          display: 'grid',
           flexGrow: 1,
-          flexDirection: 'column',
-          justifyContent: 'center',
         }}
       >
         <PseudoRoute
@@ -509,7 +507,7 @@ function CompleteNetworkList({
         </HStack>
       </div>
       <PageColumn>
-        <Input
+        <SearchInput
           autoFocus={true}
           boxHeight={40}
           type="search"

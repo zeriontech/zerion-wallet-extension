@@ -23,7 +23,6 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { walletPort } from 'src/ui/shared/channels';
 import AddCircleIcon from 'jsx:src/ui/assets/add-circle-outlined.svg';
 import TrashIcon from 'jsx:src/ui/assets/trash.svg';
-import { Input } from 'src/ui/ui-kit/Input';
 import {
   SegmentedControlGroup,
   SegmentedControlLink,
@@ -231,7 +230,7 @@ function NetworkCreatePage({
   );
 }
 
-const forbiddenFields = new Set([
+const FORBIDDEN_FIELS = new Set([
   'external_id',
   'native_asset.decimals',
   'hidden',
@@ -331,7 +330,7 @@ function NetworkPage({
           }
           onCancel={goBack}
           footerRenderArea={footerRenderArea}
-          disabledFields={isPredefinedNetwork ? forbiddenFields : null}
+          disabledFields={isPredefinedNetwork ? FORBIDDEN_FIELS : null}
           restrictedChainIds={restrictedChainIds}
         />
       </PageColumn>
@@ -439,7 +438,7 @@ function NetworksView({
         }
       />
       <Spacer height={16} />
-      <Input
+      <SearchInput
         boxHeight={40}
         type="search"
         placeholder="Search"
