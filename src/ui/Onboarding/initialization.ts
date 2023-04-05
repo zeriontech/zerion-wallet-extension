@@ -13,7 +13,7 @@ export async function maybeOpenOboarding() {
   const currentUser = await getCurrentUser();
   const userHasWallets = Boolean(currentUser);
   if (FEATURE_WAITLIST_ONBOARDING === 'on' && isPopup && !userHasWallets) {
-    const url = new URL('./popup.html', import.meta.url);
+    const url = new URL('../popup.html', import.meta.url);
     url.searchParams.append('templateType', 'tab');
     browser.tabs.create({
       url: url.toString(),
