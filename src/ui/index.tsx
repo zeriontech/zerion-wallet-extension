@@ -50,7 +50,9 @@ function renderApp({ initialView, mode }: AppProps) {
   );
 }
 
-async function initializeUI({ initialView }: Pick<Props, 'initialView'> = {}) {
+async function initializeUI({
+  initialView,
+}: Pick<AppProps, 'initialView'> = {}) {
   try {
     await registerServiceWorker();
     initializeChannels();
