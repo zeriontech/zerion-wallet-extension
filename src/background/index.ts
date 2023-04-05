@@ -2,6 +2,7 @@ import browser from 'webextension-polyfill';
 import { ethers } from 'ethers';
 import { networksStore } from 'src/modules/networks/networks-store';
 import { configureBackgroundClient } from 'src/modules/defi-sdk/background';
+import { FEATURE_WAITLIST_ONBOARDING } from 'src/env/config';
 import { initialize } from './initialize';
 import { HttpConnection } from './messaging/HttpConnection';
 import { PortRegistry } from './messaging/PortRegistry';
@@ -180,3 +181,20 @@ chrome.scripting.registerContentScripts([
     runAt: 'document_start',
   },
 ]);
+
+browser.runtime.onInstalled.addListener(({ reason }) => {
+  if (reason === 'install') {
+    if (FEATURE_WAITLIST_ONBOARDING !== 'on') {
+      return;
+    }
+    const popupUrl = browser.runtime.getManifest().action?.default_popup;
+    if (!popupUrl) {
+      throw new Error('popupUrl not found');
+    }
+    const url = new URL(browser.runtime.getURL(popupUrl));
+    url.searchParams.append('templateType', 'tab');
+    browser.tabs.create({
+      url: url.toString(),
+    });
+  }
+});

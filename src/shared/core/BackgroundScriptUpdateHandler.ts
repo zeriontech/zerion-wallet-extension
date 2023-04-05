@@ -1,4 +1,5 @@
 import browser from 'webextension-polyfill';
+import { rejectAfterDelay } from '../rejectAfterDelay';
 
 function getRandomInteger() {
   return window.crypto.getRandomValues(new Uint32Array(1))[0];
@@ -20,11 +21,6 @@ async function sendPortMessage<Req, Resp>(
   });
 }
 
-const rejectAfterDelay = (ms: number) =>
-  new Promise<never>((_, reject) =>
-    setTimeout(() => reject(new Error('Request timed out')), ms)
-  );
-
 const PERFORM_HANSHAKE_CHECK = true;
 
 export class BackgroundScriptUpdateHandler {
@@ -37,23 +33,27 @@ export class BackgroundScriptUpdateHandler {
 
   private onActivate: () => void;
   private onFailedHandshake?: () => void;
+  private onReactivate?: () => void;
   private portName: string;
   private performHandshake: boolean;
-  private finishedHandshake = false;
+  private handshakeRetries = 2;
 
   constructor({
     onActivate,
+    onReactivate,
     onFailedHandshake,
     portName = 'handshake',
     performHandshake = true,
   }: {
     onActivate: () => void;
+    onReactivate?: () => void;
     onFailedHandshake?: () => void;
     portName?: string;
     performHandshake?: boolean;
   }) {
     this.onActivate = onActivate;
     this.onFailedHandshake = onFailedHandshake;
+    this.onReactivate = onReactivate;
     this.portName = portName;
     this.performHandshake = performHandshake;
     browser.runtime.onMessage.addListener((request) => {
@@ -72,37 +72,43 @@ export class BackgroundScriptUpdateHandler {
 
   private async handshake(port: browser.Runtime.Port) {
     /** Performs a two-way handshake to verify that background script is available */
-    if (this.finishedHandshake) {
-      return;
-    }
     const number = getRandomInteger();
-    Promise.race([
+    return Promise.race([
       sendPortMessage<{ syn: number }, { ack: number }>(port, { syn: number }),
-      rejectAfterDelay(2000),
+      rejectAfterDelay(1000),
     ])
       .then((response) => {
         if (!response || response.ack !== number + 1) {
           throw new Error('Unexpected response');
         }
       })
-      .catch(() => this.handleHandshakeFail())
-      .finally(() => {
-        this.finishedHandshake = true;
+      .catch((e) => {
+        this.handshakeRetries -= 1;
+        if (!this.handshakeRetries) {
+          this.handleHandshakeFail();
+        } else {
+          throw e;
+        }
       });
   }
 
-  keepAlive() {
+  keepAlive(reactivate?: boolean) {
     const port = browser.runtime.connect({ name: this.portName });
     if (port.error) {
       return;
     }
+    if (reactivate) {
+      this.onReactivate?.();
+    }
     if (PERFORM_HANSHAKE_CHECK && this.performHandshake) {
-      this.handshake(port);
+      this.handshake(port).catch(() => {
+        port.disconnect();
+      });
     }
     port.onDisconnect.addListener(() => {
       // This means that the background-script (service-worker) went to sleep
       // We "wake" it up by creating a new runtime connection
-      this.keepAlive();
+      this.keepAlive(true);
     });
   }
 }

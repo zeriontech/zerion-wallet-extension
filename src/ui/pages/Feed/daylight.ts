@@ -5,10 +5,7 @@ import type {
   WalletAbility,
   WalletAbilityType,
 } from 'src/shared/types/Daylight';
-
-// const DAYLIGHT_API_URL = 'https://api.daylight.xyz';
-const DAYLIGHT_PROXY_URL = 'https://proxy.zerion.io/daylight';
-// const DAYLIGHT_PROXY_URL = 'http://localhost:8080/daylight';
+import { PROXY_URL } from 'src/env/config';
 
 interface WalletAbilitiesResponse {
   abilities: WalletAbility[];
@@ -47,7 +44,7 @@ async function getWalletAbilities({
   ]);
   const firstPageLink = `/v1/wallets/${address}/abilities?${searchParams}`;
   const result = await ky
-    .get(`${DAYLIGHT_PROXY_URL}${link ?? firstPageLink}`, {
+    .get(new URL(`daylight${link ?? firstPageLink}`, PROXY_URL), {
       timeout: 20000,
     })
     .json<WalletAbilitiesResponse>();
@@ -93,7 +90,7 @@ export function useWalletAbilities({
 
 export async function getAbility(uid: string) {
   const result = await ky
-    .get(`${DAYLIGHT_PROXY_URL}/v1/abilities/${uid}`, { timeout: 20000 })
+    .get(new URL(`daylight/v1/abilities/${uid}`, PROXY_URL), { timeout: 20000 })
     .json<{ ability: WalletAbility }>();
   return result;
 }

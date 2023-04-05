@@ -1,4 +1,9 @@
-import { AddressParams, createPaginatedDomainHook } from 'defi-sdk';
+import {
+  AddressParams,
+  Result,
+  client,
+  createPaginatedDomainHook,
+} from 'defi-sdk';
 import type { AddressNFT } from './types';
 
 export function getNftId(nft: AddressNFT) {
@@ -36,3 +41,20 @@ export const useAddressNfts = createPaginatedDomainHook<
   method: 'get',
   getId: getNftId,
 });
+
+export async function getAddressNfts(payload: Payload) {
+  return new Promise<Result<AddressNFT[], typeof scope>>((resolve) => {
+    client.cachedSubscribe<AddressNFT[], typeof namespace, typeof scope>({
+      namespace,
+      body: {
+        scope: [scope],
+        payload,
+      },
+      onData: (data) => {
+        if (data.isDone) {
+          resolve(data);
+        }
+      },
+    });
+  });
+}

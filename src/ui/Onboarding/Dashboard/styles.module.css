@@ -1,0 +1,149 @@
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  1% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.importOptions {
+  animation: appear 500ms ease-in-out;
+  animation-delay: 300ms;
+  animation-fill-mode: both;
+}
+
+.importOption {
+  border-radius: 20px;
+  padding: 24px;
+  background-color: var(--white);
+  transition: box-shadow 300ms;
+}
+
+.importOption:not(.disabled):hover {
+  box-shadow: var(--elevation-300);
+}
+
+.importIcon {
+  border-radius: 20px;
+  padding: 10px;
+  width: 40px;
+  height: 40px;
+  background-color: var(--neutral-100);
+}
+
+.importIcon img {
+  width: 20px;
+  height: 20px;
+}
+
+@keyframes previewAppear {
+  from {
+    opacity: 0.8;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.preview {
+  position: relative;
+  height: 320px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 40px 0 40px 40px;
+  border-radius: 20px;
+  background-color: var(--white);
+  animation: previewAppear 400ms ease-in-out;
+}
+
+.iconGrid {
+  display: grid;
+  position: absolute;
+  bottom: 40px;
+  right: 0;
+  gap: 12px;
+  grid-template-columns: 72px 72px 72px;
+  grid-template-rows: 72px 72px 72px;
+  filter: drop-shadow(4px 4px 12px rgba(0, 0, 0, 0.32));
+  transform: translateX(28px);
+}
+
+.assetIcon img {
+  transition: transform 300ms, opacity 300ms;
+  background-color: var(--z-index-1);
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+}
+
+.assetIcon:hover img {
+  transform: scale(1.05);
+}
+
+.avatarWrapper {
+  position: relative;
+  transition: transform 300ms;
+}
+
+.avatarWrapper:hover {
+  transform: scale(1.05);
+}
+
+.avatarWrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 12px;
+  background-color: var(--neutral-300);
+}
+
+.accessBadge {
+  padding: 8px 12px;
+  position: absolute;
+  left: 40px;
+  top: 40px;
+  background: linear-gradient(90deg, #ff7583 0%, #3232dc 98.61%);
+  border-radius: 40px;
+}
+
+@media (min-width: 769px) {
+  .assetIcon:nth-child(n + 4):nth-child(-n + 6) {
+    transform: translateX(-36px);
+  }
+}
+
+@media (max-width: 768px) {
+  .importOption {
+    padding: 16px;
+  }
+
+  .iconGrid {
+    bottom: -88px;
+    right: 0;
+    grid-template-columns: 48px 48px 48px 48px;
+    grid-template-rows: 48px 48px 48px;
+  }
+
+  .assetIcon img {
+    width: 48px;
+    height: 48px;
+  }
+
+  .assetIcon:nth-child(n + 5) {
+    transform: translateX(-24px);
+  }
+}

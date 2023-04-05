@@ -1,0 +1,108 @@
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.container {
+  background-image: url('../assets/success_background.png');
+  background-size: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20;
+  text-align: center;
+  padding: 82px 40px;
+  position: relative;
+  animation: appear 500ms ease-in-out;
+}
+
+.title {
+  color: var(--always-white);
+  font-weight: 500;
+  font-size: 60px;
+  line-height: 72px;
+  letter-spacing: -0.005em;
+}
+
+.pinner {
+  position: fixed;
+  z-index: var(--over-layout-index);
+  top: 12px;
+  right: 12px;
+  background: var(--white);
+  box-shadow: 0px 12px 44px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 20px 24px;
+}
+
+@keyframes float {
+  0% {
+    transform: translatey(0px);
+  }
+  50% {
+    transform: translatey(-20px);
+  }
+  100% {
+    transform: translatey(0px);
+  }
+}
+
+.coinDecoration {
+  position: absolute;
+  right: -80px;
+  top: 45%;
+}
+
+.sparkDecoration {
+  position: absolute;
+  left: 74px;
+  top: 400px;
+}
+
+.starDecoration {
+  position: absolute;
+  left: -120px;
+  top: 40px;
+}
+
+.decoration {
+  transition: transform 100ms ease-in-out;
+}
+
+.decoration img {
+  animation: float 6s ease-in-out infinite;
+}
+
+.sparkDecoration img {
+  animation-duration: 5s;
+}
+
+.starDecoration img {
+  animation-duration: 7s;
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-weight: 500;
+    font-size: 36px;
+    line-height: 48px;
+  }
+
+  .container {
+    padding: 74px 24px;
+  }
+
+  .pinner {
+    position: relative;
+    top: 0;
+    right: 0;
+    z-index: 1;
+    margin-bottom: 24px;
+  }
+}

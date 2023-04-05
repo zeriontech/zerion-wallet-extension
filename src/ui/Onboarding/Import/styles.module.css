@@ -1,0 +1,183 @@
+.container {
+  display: grid;
+  position: relative;
+  overflow: hidden;
+  padding: 88px;
+  border-radius: 20px;
+  background-color: var(--white);
+}
+
+.backButton {
+  padding: 6px;
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  left: 12px;
+  top: 12px;
+  background-color: var(--neutral-100);
+  transition: background-color 150ms;
+  border-radius: 8px;
+}
+
+.backButton:hover {
+  background-color: var(--neutral-300);
+}
+
+.step {
+  width: 20px;
+  height: 2px;
+  border-radius: 12px;
+}
+
+.steps {
+  position: absolute;
+  top: 22px;
+  left: 0;
+  right: 0;
+}
+
+.faqIcon {
+  border-radius: 20px;
+  padding: 10px;
+  width: 40px;
+  height: 40px;
+  background-color: var(--neutral-100);
+}
+
+.faqButton:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.sidePanelBackdrop {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 29;
+  display: flex;
+  justify-content: flex-end;
+  padding: 32px;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: var(--over-layout-index);
+}
+
+.sidePanelBackdrop.show {
+  pointer-events: auto;
+}
+
+.sidePanel {
+  position: relative;
+  border-radius: 20px;
+  background-color: var(--z-index-1);
+  height: calc(100vh - 64px);
+  overflow-y: auto;
+  width: 410px;
+  padding: 72px 48px 32px;
+}
+
+.sidePanelCloseButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  background-color: var(--neutral-100);
+  transition: background-color 150ms;
+  border-radius: 8px;
+}
+
+.sidePanelCloseButton:hover {
+  background-color: var(--neutral-300);
+}
+
+.input {
+  padding: 10px 12px;
+  background: var(--neutral-100);
+  border-radius: 8px;
+  border: none;
+
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.input::placeholder {
+  color: var(--neutral-600);
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes textAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.loadingOverlay {
+  position: absolute;
+  z-index: 2;
+  animation: appear 500ms ease-in-out;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--white);
+}
+
+.loadingTitle {
+  animation: textAppear 500ms ease-in-out;
+}
+
+.phraseInputGrip {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  overflow: hidden;
+  padding: 2px;
+  position: relative;
+  top: -2px;
+  left: -2px;
+  width: calc(100% + 4px);
+}
+
+.modeSelector:hover {
+  color: var(--neutral-600);
+  text-decoration: underline;
+}
+
+.faqContainer {
+  padding: 16px;
+  border-radius: 20px;
+  background-color: var(--white);
+}
+
+@media (max-width: 980px) {
+  .container {
+    padding: 88px 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 88px 16px 16px;
+  }
+}

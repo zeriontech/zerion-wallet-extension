@@ -1,22 +1,30 @@
 import React from 'react';
+import cn from 'classnames';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import * as styles from './styles.module.css';
 
-function Skeleton({
+export function Skeleton({
   width,
   height,
-}: {
+  borderRadius = 4,
+  className,
+  style,
+  ...props
+}: React.HTMLProps<HTMLDivElement> & {
   width: React.CSSProperties['width'];
   height: React.CSSProperties['height'];
+  borderRadius?: React.CSSProperties['borderRadius'];
 }) {
   return (
     <div
-      className={styles.skeleton}
+      {...props}
+      className={cn(styles.skeleton, className)}
       style={{
+        ...style,
         width,
         height,
-        borderRadius: 4,
+        borderRadius,
         backgroundColor: 'var(--neutral-500)',
       }}
     />

@@ -8,6 +8,8 @@ export function ViewArea(props: React.HTMLAttributes<HTMLDivElement>) {
         minHeight: '100%',
         display: 'flex',
         flexDirection: 'column',
+        marginRight: 'auto',
+        marginLeft: 'auto',
       }}
     />
   );

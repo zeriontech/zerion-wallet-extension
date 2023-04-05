@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { AreaProvider } from 'react-area';
 import { QueryClientProvider, useQuery } from 'react-query';
 import {
@@ -9,6 +9,7 @@ import {
   Navigate,
 } from 'react-router-dom';
 import dayjs from 'dayjs';
+import * as styles from 'src/ui/style/global.module.css';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { GetStarted } from 'src/ui/pages/GetStarted';
 import { Intro } from 'src/ui/pages/Intro';
@@ -53,6 +54,7 @@ import { HandshakeFailure } from '../components/HandshakeFailure';
 import { useScreenViewChange } from '../shared/useScreenViewChange';
 import { DnaPage } from '../components/DnaClaim';
 import { NonFungibleToken } from '../pages/NonFungibleToken';
+import { Onboarding } from '../Onboarding';
 
 const useAuthState = () => {
   const { data, isFetching } = useQuery(
@@ -319,7 +321,23 @@ function CloseOtherWindows() {
 initializeApperance();
 dayjs.extend(relativeTime);
 
-export function App({ handshakeFailure }: { handshakeFailure?: boolean }) {
+export interface AppProps {
+  mode: 'onboarding' | 'wallet';
+  initialView?: 'handshakeFailure';
+}
+
+export function App({ initialView, mode }: AppProps) {
+  const bodyClassList = useMemo(() => {
+    const result = [];
+    if (templateType === 'dialog') {
+      result.push(styles.isDialog);
+    }
+    if (mode === 'onboarding') {
+      result.push(styles.isOnboarding);
+    }
+    return result;
+  }, [mode]);
+
   return (
     <AreaProvider>
       <UIContext.Provider value={defaultUIContextValue}>
@@ -334,7 +352,7 @@ export function App({ handshakeFailure }: { handshakeFailure?: boolean }) {
             >
               <InactivityDetector />
               <SessionResetHandler />
-              <DesignTheme templateType={templateType || 'popup'} />
+              <DesignTheme bodyClassList={bodyClassList} />
               <KeyboardShortcut
                 combination="ctrl+alt+0"
                 onKeyDown={() => {
@@ -345,11 +363,18 @@ export function App({ handshakeFailure }: { handshakeFailure?: boolean }) {
               <VersionUpgrade>
                 <CloseOtherWindows />
                 <ViewSuspense>
-                  <Views
-                    initialRoute={
-                      handshakeFailure ? '/handshake-failure' : undefined
-                    }
-                  />
+                  {mode === 'onboarding' &&
+                  initialView !== 'handshakeFailure' ? (
+                    <Onboarding />
+                  ) : (
+                    <Views
+                      initialRoute={
+                        initialView === 'handshakeFailure'
+                          ? '/handshake-failure'
+                          : undefined
+                      }
+                    />
+                  )}
                 </ViewSuspense>
               </VersionUpgrade>
             </ErrorBoundary>
