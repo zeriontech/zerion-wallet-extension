@@ -47,16 +47,6 @@ import { LocationStateHelperStore } from './shared/LocationStateHelperStore';
 import { createEmptyNetwork } from './shared/createEmptyNetwork';
 import { NetworkCreateSuccess } from './NetworkCreateSuccess';
 
-/**
- * TODO before merge
- * [x] Check that when custom network is connected to dapp, and we edit its chain id,
- * changeChanged event is sent to dapp
- *
- * [x] When chain id is edited, chain (==identificator) is not incorrect
- * [x] Analytics
- * [ ] Analytics for Search
- */
-
 function MainnetList({ networks }: { networks: NetworksType }) {
   const items = useMemo(() => networks.getMainnets(), [networks]);
   return <NetworkList networks={networks} networkList={items} />;

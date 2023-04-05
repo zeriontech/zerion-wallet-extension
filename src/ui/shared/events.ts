@@ -10,6 +10,7 @@ export const emitter = createNanoEvents<{
   error: (error: Error) => void;
   signingError: (type: EthersSignMethod, message: string) => void;
   mutationError: (error: unknown, variables: unknown, context: unknown) => void;
+  networksSearchResponse: (query: string, resultsCount: number) => void;
 }>();
 
 emitter.on('mutationError', (error, _variables, context) => {

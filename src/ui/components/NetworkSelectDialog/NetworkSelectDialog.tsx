@@ -421,13 +421,21 @@ function SearchView({
     return allNetworks.filter(filterNetworksByQuery(query));
   }, [networks, query]);
   return (
-    <form method="dialog">
-      <NetworkList
-        networkList={items}
-        networks={networks}
-        chainDistribution={chainDistribution}
-      />
-    </form>
+    <div
+      style={{
+        /** To center inner "empty view" state */
+        display: 'grid',
+        flexGrow: 1,
+      }}
+    >
+      <form method="dialog">
+        <NetworkList
+          networkList={items}
+          networks={networks}
+          chainDistribution={chainDistribution}
+        />
+      </form>
+    </div>
   );
 }
 

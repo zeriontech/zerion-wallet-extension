@@ -12,6 +12,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
+import { emitter } from 'src/ui/shared/events';
 import { NetworkList } from '../NetworkList';
 
 export function SearchResults({
@@ -28,8 +29,14 @@ export function SearchResults({
     isLoading,
   } = useQuery(
     ['getNetworksBySearch', query],
-    () => getNetworksBySearch({ query }),
-    { suspense: false, keepPreviousData: true }
+    () => getNetworksBySearch({ query: query.trim().toLowerCase() }),
+    {
+      suspense: false,
+      keepPreviousData: true,
+      onSuccess(results) {
+        emitter.emit('networksSearchResponse', query, results.length);
+      },
+    }
   );
   const grouped = useMemo((): null | Array<{
     title: string;

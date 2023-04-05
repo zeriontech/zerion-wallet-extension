@@ -36,7 +36,7 @@ export async function getNetworksBySearch({ query }: { query: string }) {
   const networks = await fetchChains({
     include_testnets: true,
     supported_only: false,
-    search_query: query,
+    search_query: query.trim().toLowerCase(),
   });
   return networks.slice(0, 20);
 }

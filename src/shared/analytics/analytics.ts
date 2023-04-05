@@ -9,7 +9,8 @@ type MetabaseEvent =
   | 'signed_transaction'
   | 'client_error'
   | 'daylight_action'
-  | 'add_custom_evm';
+  | 'add_custom_evm'
+  | 'network_search';
 
 type BaseParams<E = MetabaseEvent> = { request_name: E };
 
