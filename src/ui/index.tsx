@@ -47,7 +47,7 @@ async function initializeUI(opts?: { handshakeFailure?: boolean }) {
   initializeChannels();
 
   const currentUser = await getCurrentUser();
-  const userHasWallets = Boolean(Object.keys(currentUser || {}).length);
+  const userHasWallets = Boolean(currentUser);
   if (FEATURE_WAITLIST_ONBOARDING === 'on' && isPopup && !userHasWallets) {
     const url = new URL('./popup.html', import.meta.url);
     url.searchParams.append('templateType', 'tab');
