@@ -321,13 +321,12 @@ function CloseOtherWindows() {
 initializeApperance();
 dayjs.extend(relativeTime);
 
-export function App({
-  initialView,
-  mode,
-}: {
+export interface AppProps {
   mode: 'onboarding' | 'wallet';
   initialView?: 'handshakeFailure';
-}) {
+}
+
+export function App({ initialView, mode }: AppProps) {
   const bodyClassList = useMemo(() => {
     const result = [];
     if (templateType === 'dialog') {
