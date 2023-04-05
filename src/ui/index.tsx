@@ -15,6 +15,10 @@ import { maybeOpenOboarding } from './Onboarding/initialization';
 import { OnboardingInterrupt } from './Onboarding/errors';
 
 applyDrawFix();
+if (process.env.NODE_ENV === 'development') {
+  console.time('UI render'); // eslint-disable-line no-console
+  console.time('UI render effect'); // eslint-disable-line no-console
+}
 
 async function registerServiceWorker() {
   /** Seems to be recommended when clients always expect a service worker */
