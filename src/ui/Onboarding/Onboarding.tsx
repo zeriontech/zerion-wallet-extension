@@ -91,7 +91,11 @@ export function Onboarding() {
     <PageLayout>
       <Header />
       <Routes>
-        <Route path="/" element={<Welcome />} />
+        <Route
+          path="/"
+          element={<Navigate to="/onboarding" replace={true} />}
+        />
+        <Route path="/onboarding" element={<Welcome />} />
         <Route
           path="/onboarding/welcome/:walletAddress"
           element={<Dashboard />}
@@ -101,7 +105,10 @@ export function Onboarding() {
           element={<Import />}
         />
         <Route path="/onboarding/success" element={<Success />} />
-        <Route path="*" element={<Navigate to="/" replace={true} />} />
+        <Route
+          path="*"
+          element={<Navigate to="/onboarding" replace={true} />}
+        />
       </Routes>
     </PageLayout>
   );
