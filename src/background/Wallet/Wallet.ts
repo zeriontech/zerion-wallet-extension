@@ -943,9 +943,7 @@ class PublicController {
     if (currentAddress && this.wallet.allowedOrigin(context, currentAddress)) {
       const { origin } = context;
       emitter.emit('dappConnection', { origin, address: currentAddress });
-      // MM is returning lower case here.
-      // As a result, some dapps wait for a lowercase address.
-      return [currentAddress.toLowerCase()];
+      // Some dapps expect lowercase to be returned, otherwise they crash the moment after connection
     }
     if (!context?.origin) {
       throw new Error('This method requires origin');
@@ -1082,22 +1080,21 @@ class PublicController {
     if (!params.length) {
       throw new InvalidParams();
     }
-    const [mayBeMessage, mayBeAddress, _password] = params;
+    const [shouldBeMessage, shouldBeAddress, _password] = params;
     const currentAddress = this.wallet.ensureCurrentAddress();
 
     let address = '';
     let message = '';
-    if (isEthereumAddress(mayBeAddress)) {
-      address = mayBeAddress;
-      message = mayBeMessage;
-    } else if (isEthereumAddress(mayBeMessage)) {
-      // Workaround for the case when dapp sends sign params in wrong order
-      // https://zerion-tech.atlassian.net/browse/WLT-285
-      address = mayBeMessage;
-      message = mayBeAddress;
+    if (isEthereumAddress(shouldBeAddress)) {
+      address = shouldBeAddress;
+      message = shouldBeMessage;
+    } else if (isEthereumAddress(shouldBeMessage)) {
+      // Some dapps send personal_sign params in wrong order
+      address = shouldBeMessage;
+      message = shouldBeAddress;
     } else {
       throw new Error(
-        `No address was provided in sigh params. Expected: ${currentAddress}, received [${message}, ${address}]`
+        `Address is required for "personal_sign" method. Expected: ${currentAddress}, received [${message}, ${address}]`
       );
     }
 
