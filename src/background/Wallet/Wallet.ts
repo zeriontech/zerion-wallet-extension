@@ -944,6 +944,7 @@ class PublicController {
       const { origin } = context;
       emitter.emit('dappConnection', { origin, address: currentAddress });
       // Some dapps expect lowercase to be returned, otherwise they crash the moment after connection
+      return [currentAddress.toLowerCase()];
     }
     if (!context?.origin) {
       throw new Error('This method requires origin');
@@ -970,7 +971,7 @@ class PublicController {
           });
           const accounts = await this.eth_accounts({ context });
           emitter.emit('dappConnection', { origin, address });
-          resolve(accounts);
+          resolve(accounts.map((item) => item.toLowerCase()));
         },
         onDismiss: () => {
           reject(new UserRejected('User Rejected the Request'));
