@@ -8,6 +8,7 @@ import type {
   ChannelContext,
   PrivateChannelContext,
 } from 'src/shared/types/ChannelContext';
+import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import {
   InvalidParams,
   MethodNotImplemented,
@@ -942,15 +943,13 @@ class PublicController {
     if (currentAddress && this.wallet.allowedOrigin(context, currentAddress)) {
       const { origin } = context;
       emitter.emit('dappConnection', { origin, address: currentAddress });
-      return [currentAddress];
+      // MM is returning lower case here.
+      // As a result, some dapps wait for a lowercase address.
+      return [currentAddress.toLowerCase()];
     }
     if (!context?.origin) {
       throw new Error('This method requires origin');
     }
-    // if (!this.wallet) {
-    //   console.log('Must create wallet first');
-    //   throw new Error('Must create wallet first');
-    // }
     const { origin } = context;
     return new Promise((resolve, reject) => {
       notificationWindow.open({
@@ -1083,8 +1082,25 @@ class PublicController {
     if (!params.length) {
       throw new InvalidParams();
     }
-    const [message, address, _password] = params;
+    const [shouldBeMessage, shouldBeAddress, _password] = params;
     const currentAddress = this.wallet.ensureCurrentAddress();
+
+    let address = '';
+    let message = '';
+    if (isEthereumAddress(shouldBeAddress)) {
+      address = shouldBeAddress;
+      message = shouldBeMessage;
+    } else if (isEthereumAddress(shouldBeMessage)) {
+      // Workarond for the case when dapp sends sign params in wrong order
+      // https://zerion-tech.atlassian.net/browse/WLT-285
+      address = shouldBeMessage;
+      message = shouldBeAddress;
+    } else {
+      throw new Error(
+        `No address was provided in sigh params. Expected: ${currentAddress}, received [${message}, ${address}]`
+      );
+    }
+
     if (
       address &&
       normalizeAddress(address) !== normalizeAddress(currentAddress)
