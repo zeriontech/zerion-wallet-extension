@@ -25,6 +25,11 @@
   padding-bottom: 10px;
   text-decoration: none;
 }
+
+.radio:focus-within:has(:focus-visible) {
+  outline: 1px solid var(--primary);
+}
+
 .wrap.secondary .radio {
   padding-bottom: 0;
   height: 32px;

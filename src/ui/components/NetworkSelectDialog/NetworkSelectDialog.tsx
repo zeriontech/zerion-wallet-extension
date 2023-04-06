@@ -42,6 +42,7 @@ import { PageBottom } from '../PageBottom';
 import { PageColumn } from '../PageColumn';
 import { ViewLoading } from '../ViewLoading';
 import { EmptyView } from '../EmptyView';
+import { KeyboardShortcut } from '../KeyboardShortcut';
 
 function NetworkList({
   networks,
@@ -219,6 +220,17 @@ function MainNetworkView({
       };
     })
   );
+  options.push({
+    key: -1,
+    onClick: onOpenMore,
+    buttonType: 'button',
+    component: (
+      <HStack gap={8} alignItems="center" style={{ color: 'var(--primary)' }}>
+        <UIText kind="body/regular">Available networks</UIText>
+        <ArrowRightIcon />
+      </HStack>
+    ),
+  });
 
   return (
     <>
@@ -253,35 +265,20 @@ function MainNetworkView({
         )}
       </div>
       {mainViewLeadingComponent}
-      <VStack gap={12}>
-        <form method="dialog">
-          <VStack gap={4}>
-            {type === 'overview' ? null : (
-              <UIText
-                style={{ paddingInline: 16 }}
-                kind="small/accent"
-                color="var(--neutral-500)"
-              >
-                Networks
-              </UIText>
-            )}
-            <SurfaceList items={options} style={{ paddingBottom: 0 }} />
-          </VStack>
-        </form>
-        <div style={{ paddingInline: 16 }}>
-          <Button
-            style={{ width: '100%' }}
-            kind="regular"
-            type="button"
-            onClick={onOpenMore}
-          >
-            <HStack gap={8} alignItems="center" justifyContent="center">
-              <UIText kind="body/regular">Available networks</UIText>
-              <ArrowRightIcon />
-            </HStack>
-          </Button>
-        </div>
-      </VStack>
+      <form method="dialog">
+        <VStack gap={4}>
+          {type === 'overview' ? null : (
+            <UIText
+              style={{ paddingInline: 16 }}
+              kind="small/accent"
+              color="var(--neutral-500)"
+            >
+              Networks
+            </UIText>
+          )}
+          <SurfaceList items={options} />
+        </VStack>
+      </form>
       <PageBottom />
     </>
   );
@@ -467,6 +464,7 @@ function CompleteNetworkList({
         style={{ padding: 8, display: 'flex', justifyContent: 'space-between' }}
       >
         <HStack gap={8} alignItems="center">
+          <KeyboardShortcut combination="backspace" onKeyDown={onGoBack} />
           <Button
             kind="ghost"
             aria-label="Go back"
