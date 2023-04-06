@@ -1089,7 +1089,9 @@ class PublicController {
       address = shouldBeAddress;
       message = shouldBeMessage;
     } else if (isEthereumAddress(shouldBeMessage)) {
-      // Some dapps send personal_sign params in wrong order
+      // specification obliges us to send [message, address] params in this particular order
+      // https://web3js.readthedocs.io/en/v1.2.11/web3-eth-personal.html#id15
+      // but some dapps send personal_sign params in wrong order
       address = shouldBeMessage;
       message = shouldBeAddress;
     } else {
