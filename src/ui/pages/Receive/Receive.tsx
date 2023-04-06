@@ -81,11 +81,11 @@ export function Receive() {
             ) : (
               <Spacer height={24} />
             )}
-            <HStack gap={0} alignItems="center">
-              <UIText kind="small/accent">{address.slice(0, 6)}</UIText>
-              <UIText kind="small/regular">{address.slice(6, -4)}</UIText>
-              <UIText kind="small/accent">{address.slice(-4)}</UIText>
-            </HStack>
+            <UIText kind="small/regular">
+              <b>{address.slice(0, 6)}</b>
+              {address.slice(6, -4)}
+              <b>{address.slice(-4)}</b>
+            </UIText>
           </VStack>
           <Button
             kind="regular"
