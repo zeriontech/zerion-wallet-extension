@@ -44,7 +44,12 @@ import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { NetworkFee } from './NetworkFee';
 import { TransactionDescription } from './TransactionDescription';
 
-type SendTransactionError = null | Error | { body: string };
+type SendTransactionError =
+  | null
+  | Error
+  | { body: string }
+  | { reason: string }
+  | { error: { body: string } };
 
 function errorToMessage(error?: SendTransactionError) {
   const fallbackString = 'Unknown Error';
@@ -57,6 +62,11 @@ function errorToMessage(error?: SendTransactionError) {
         ? error.message
         : 'body' in error
         ? capitalize(JSON.parse(error.body).error.message) || fallbackString
+        : 'reason' in error && error.reason
+        ? capitalize(error.reason)
+        : 'error' in error
+        ? capitalize(JSON.parse(error.error.body).error.message) ||
+          fallbackString
         : fallbackString;
     return `Error: ${result}`;
   } catch (e) {
