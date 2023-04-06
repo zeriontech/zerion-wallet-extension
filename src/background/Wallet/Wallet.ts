@@ -1082,19 +1082,19 @@ class PublicController {
     if (!params.length) {
       throw new InvalidParams();
     }
-    const [shouldBeMessage, shouldBeAddress, _password] = params;
+    const [mayBeMessage, mayBeAddress, _password] = params;
     const currentAddress = this.wallet.ensureCurrentAddress();
 
     let address = '';
     let message = '';
-    if (isEthereumAddress(shouldBeAddress)) {
-      address = shouldBeAddress;
-      message = shouldBeMessage;
-    } else if (isEthereumAddress(shouldBeMessage)) {
-      // Workarond for the case when dapp sends sign params in wrong order
+    if (isEthereumAddress(mayBeAddress)) {
+      address = mayBeAddress;
+      message = mayBeMessage;
+    } else if (isEthereumAddress(mayBeMessage)) {
+      // Workaround for the case when dapp sends sign params in wrong order
       // https://zerion-tech.atlassian.net/browse/WLT-285
-      address = shouldBeMessage;
-      message = shouldBeAddress;
+      address = mayBeMessage;
+      message = mayBeAddress;
     } else {
       throw new Error(
         `No address was provided in sigh params. Expected: ${currentAddress}, received [${message}, ${address}]`
