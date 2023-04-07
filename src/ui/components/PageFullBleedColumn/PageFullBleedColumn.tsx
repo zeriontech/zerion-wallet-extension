@@ -3,17 +3,16 @@ import { PAGE_PADDING_HORIZONTAL } from '../PageColumn';
 
 export function PageFullBleedColumn({
   style,
-  padding,
+  paddingInline,
   ...props
-}: React.HTMLProps<HTMLDivElement> & { padding: boolean }) {
+}: React.HTMLProps<HTMLDivElement> & { paddingInline: boolean }) {
   return (
     <div
       {...props}
       style={{
         marginLeft: 0 - PAGE_PADDING_HORIZONTAL,
         marginRight: 0 - PAGE_PADDING_HORIZONTAL,
-        paddingLeft: padding ? PAGE_PADDING_HORIZONTAL : undefined,
-        paddingRight: padding ? PAGE_PADDING_HORIZONTAL : undefined,
+        paddingInline: paddingInline ? PAGE_PADDING_HORIZONTAL : undefined,
         ...style,
       }}
     />

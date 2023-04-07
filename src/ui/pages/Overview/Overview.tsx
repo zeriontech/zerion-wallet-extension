@@ -13,6 +13,7 @@ import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 // import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
 // import { FillView } from 'src/ui/components/FillView';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
+import PersonIcon from 'jsx:src/ui/assets/person.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { usePendingTransactions } from 'src/ui/transactions/usePendingTransactions';
@@ -121,8 +122,13 @@ function CurrentAccountControls() {
         to="/wallet-select"
         title="Select Account"
       >
-        <CurrentAccount wallet={wallet} />
-        <ArrowDownIcon />
+        <HStack gap={4} alignItems="center">
+          <PersonIcon />
+          <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+            <CurrentAccount wallet={wallet} />
+            <ArrowDownIcon />
+          </span>
+        </HStack>
       </Button>
       <CopyButton address={addressToCopy} />
     </HStack>
@@ -184,7 +190,7 @@ function OverviewComponent() {
   return (
     <PageColumn>
       <PageFullBleedColumn
-        padding={true}
+        paddingInline={true}
         style={{
           position: 'sticky',
           top: 0,
@@ -205,7 +211,7 @@ function OverviewComponent() {
         </HStack>
       </PageFullBleedColumn>
       <PageFullBleedColumn
-        padding={true}
+        paddingInline={true}
         style={{ backgroundColor: 'var(--white)' }}
       >
         <Spacer height={24} />
@@ -274,7 +280,7 @@ function OverviewComponent() {
         <Spacer height={20} />
       </PageFullBleedColumn>
       <PageFullBleedColumn
-        padding={false}
+        paddingInline={false}
         style={{
           position: 'sticky',
           top: 44,
