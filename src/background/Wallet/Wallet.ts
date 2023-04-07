@@ -8,6 +8,7 @@ import type {
   ChannelContext,
   PrivateChannelContext,
 } from 'src/shared/types/ChannelContext';
+import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import {
   InvalidParams,
   MethodNotImplemented,
@@ -942,15 +943,12 @@ class PublicController {
     if (currentAddress && this.wallet.allowedOrigin(context, currentAddress)) {
       const { origin } = context;
       emitter.emit('dappConnection', { origin, address: currentAddress });
-      return [currentAddress];
+      // Some dapps expect lowercase to be returned, otherwise they crash the moment after connection
+      return [currentAddress.toLowerCase()];
     }
     if (!context?.origin) {
       throw new Error('This method requires origin');
     }
-    // if (!this.wallet) {
-    //   console.log('Must create wallet first');
-    //   throw new Error('Must create wallet first');
-    // }
     const { origin } = context;
     return new Promise((resolve, reject) => {
       notificationWindow.open({
@@ -973,7 +971,7 @@ class PublicController {
           });
           const accounts = await this.eth_accounts({ context });
           emitter.emit('dappConnection', { origin, address });
-          resolve(accounts);
+          resolve(accounts.map((item) => item.toLowerCase()));
         },
         onDismiss: () => {
           reject(new UserRejected('User Rejected the Request'));
@@ -1083,8 +1081,26 @@ class PublicController {
     if (!params.length) {
       throw new InvalidParams();
     }
-    const [message, address, _password] = params;
+    const [shouldBeMessage, shouldBeAddress, _password] = params;
     const currentAddress = this.wallet.ensureCurrentAddress();
+
+    let address = '';
+    let message = '';
+    if (isEthereumAddress(shouldBeAddress)) {
+      address = shouldBeAddress;
+      message = shouldBeMessage;
+    } else if (isEthereumAddress(shouldBeMessage)) {
+      // specification obliges us to send [message, address] params in this particular order
+      // https://web3js.readthedocs.io/en/v1.2.11/web3-eth-personal.html#id15
+      // but some dapps send personal_sign params in wrong order
+      address = shouldBeMessage;
+      message = shouldBeAddress;
+    } else {
+      throw new Error(
+        `Address is required for "personal_sign" method. Expected: ${currentAddress}, received [${message}, ${address}]`
+      );
+    }
+
     if (
       address &&
       normalizeAddress(address) !== normalizeAddress(currentAddress)
