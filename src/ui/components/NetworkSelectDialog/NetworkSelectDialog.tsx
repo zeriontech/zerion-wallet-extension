@@ -561,7 +561,12 @@ export function NetworkSelectDialog({
   }
   return (
     <div
-      style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100%',
+        ['--surface-background-color' as string]: 'var(--z-index-1)',
+      }}
     >
       <PseudoRoute
         when={view === View.main}

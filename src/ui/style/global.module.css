@@ -43,6 +43,17 @@ body.isDialog {
   margin: auto;
 }
 
+:root:has(body.isTab) {
+  background-color: var(--neutral-200);
+}
+
+body.isTab {
+  --body-height: 100vh;
+  --body-width: 450px;
+  border-inline: 1px solid var(--neutral-300);
+  margin-inline: auto;
+}
+
 body.isOnboarding {
   height: 100vh;
   width: 100%;

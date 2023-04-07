@@ -2,7 +2,7 @@ import React from 'react';
 import cx from 'classnames';
 import * as styles from './styles.module.css';
 
-export const PAGE_PADDING_HORIZONTAL = 16;
+export const PAGE_PADDING_INLINE = 16;
 
 export function PageColumn({
   style,
@@ -13,8 +13,8 @@ export function PageColumn({
     <div
       className={cx(className, styles.column)}
       style={{
-        paddingLeft: PAGE_PADDING_HORIZONTAL,
-        paddingRight: PAGE_PADDING_HORIZONTAL,
+        ['--column-padding-inline' as string]: `${PAGE_PADDING_INLINE}px`,
+        paddingInline: 'var(--column-padding-inline)',
         flexGrow: 1,
         display: 'flex',
         flexDirection: 'column',

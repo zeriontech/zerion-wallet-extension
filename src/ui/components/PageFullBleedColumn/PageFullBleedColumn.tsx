@@ -1,5 +1,5 @@
 import React from 'react';
-import { PAGE_PADDING_HORIZONTAL } from '../PageColumn';
+import { PAGE_PADDING_INLINE } from '../PageColumn';
 
 export function PageFullBleedColumn({
   style,
@@ -10,9 +10,8 @@ export function PageFullBleedColumn({
     <div
       {...props}
       style={{
-        marginLeft: 0 - PAGE_PADDING_HORIZONTAL,
-        marginRight: 0 - PAGE_PADDING_HORIZONTAL,
-        paddingInline: paddingInline ? PAGE_PADDING_HORIZONTAL : undefined,
+        marginInline: 0 - PAGE_PADDING_INLINE,
+        paddingInline: paddingInline ? PAGE_PADDING_INLINE : undefined,
         ...style,
       }}
     />

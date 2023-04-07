@@ -87,15 +87,22 @@ export function SegmentedControlLink({
 interface SegmentedControlGroupProps extends HTMLProps<HTMLDivElement> {
   children: ReactNode;
   kind?: Kind;
+  childrenLayout?: 'spread-children-evenly' | 'start';
 }
 
 export function SegmentedControlGroup({
   kind = 'primary',
+  childrenLayout = 'spread-children-evenly',
   children,
   ...props
 }: SegmentedControlGroupProps) {
   return (
-    <div className={cx(s.wrap, s[kind])} {...props}>
+    <div
+      className={cx(s.wrap, s[kind], {
+        [s.spreadChildrenEvenly]: childrenLayout === 'spread-children-evenly',
+      })}
+      {...props}
+    >
       <SegmentedControlGroupContext.Provider value={{ kind }}>
         {children}
       </SegmentedControlGroupContext.Provider>

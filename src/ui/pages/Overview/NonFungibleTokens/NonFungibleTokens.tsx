@@ -10,7 +10,6 @@ import { MediaContent } from 'src/ui/ui-kit/MediaContent';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { SquareElement } from 'src/ui/ui-kit/SquareElement';
-import { Surface } from 'src/ui/ui-kit/Surface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -20,7 +19,6 @@ import {
   getNftId,
   useAddressNfts,
 } from 'src/ui/shared/requests/addressNfts/useAddressNfts';
-import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import type { AddressNFT } from 'src/ui/shared/requests/addressNfts/types';
 import { Image } from 'src/ui/ui-kit/MediaFallback';
 import { getChainIconURL } from 'src/ui/components/Positions/helpers';
@@ -28,7 +26,10 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { createChain } from 'src/modules/networks/Chain';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
+import { Button } from 'src/ui/ui-kit/Button';
+import { HStack } from 'src/ui/ui-kit/HStack';
 import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
+import * as s from './styles.module.css';
 
 function NFTItem({
   item,
@@ -47,10 +48,15 @@ function NFTItem({
   const { networks } = useNetworks();
 
   return (
-    <UnstyledLink to={getNftEntityUrl(item)} style={{ display: 'flex' }}>
-      <Surface padding={8} style={{ width: '100%', position: 'relative' }}>
+    <UnstyledLink
+      to={getNftEntityUrl(item)}
+      style={{ display: 'flex' }}
+      className={s.link}
+    >
+      <div style={{ width: '100%', position: 'relative' }}>
         <SquareElement
           style={{ position: 'relative' }}
+          className={s.mediaWrapper}
           render={(style) => (
             <>
               <MediaContent
@@ -139,7 +145,7 @@ function NFTItem({
             <TickIcon width={16} height={16} />
           </div>
         ) : null}
-      </Surface>
+      </div>
     </UnstyledLink>
   );
 }
@@ -184,15 +190,14 @@ export function NonFungibleTokens() {
     );
   }
   return (
-    <VStack gap={24}>
-      <VStack gap={4}>
-        <UIText kind="small/accent">Total Value</UIText>
-        <UIText kind="headline/h1">
-          <NeutralDecimals
-            parts={formatCurrencyToParts(nftTotalValue || 0, 'en', 'usd')}
-          />
-        </UIText>
-      </VStack>
+    <VStack gap={24} style={{ paddingInline: 'var(--column-padding-inline)' }}>
+      <UIText kind="body/accent">
+        Total Value
+        {' · '}
+        <NeutralDecimals
+          parts={formatCurrencyToParts(nftTotalValue || 0, 'en', 'usd')}
+        />
+      </UIText>
 
       {maybeSingleAddress ? (
         <DnaNFTBanner address={normalizeAddress(maybeSingleAddress)} />
@@ -203,6 +208,7 @@ export function NonFungibleTokens() {
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(112px, 1fr))',
           gridGap: 12,
+          rowGap: 24,
         }}
       >
         {items.map((addressNft) => (
@@ -213,25 +219,19 @@ export function NonFungibleTokens() {
           />
         ))}
       </div>
-      {isLoading ? <CircleSpinner /> : null}
+
       {hasNext ? (
-        <SurfaceList
-          items={[
-            {
-              key: 0,
-              onClick: isLoading ? undefined : fetchMore,
-              component: (
-                <span
-                  style={{
-                    color: isLoading ? 'var(--neutral-500)' : 'var(--primary)',
-                  }}
-                >
-                  More NFTs
-                </span>
-              ),
-            },
-          ]}
-        />
+        <Button
+          kind="regular"
+          onClick={fetchMore}
+          disabled={isLoading}
+          style={{ paddingInline: 16 }}
+        >
+          <HStack gap={8} alignItems="center">
+            <span>More NFTs</span>
+            {isLoading ? <CircleSpinner /> : null}
+          </HStack>
+        </Button>
       ) : null}
     </VStack>
   );

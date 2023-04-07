@@ -1,5 +1,5 @@
 import React from 'react';
-import { PAGE_PADDING_HORIZONTAL } from '../PageColumn';
+import { PAGE_PADDING_INLINE } from '../PageColumn';
 
 export function PageFullBleedLine({
   lineColor = 'var(--neutral-200)',
@@ -11,8 +11,7 @@ export function PageFullBleedLine({
       style={{
         height: 1,
         backgroundColor: lineColor,
-        marginLeft: 0 - PAGE_PADDING_HORIZONTAL,
-        marginRight: 0 - PAGE_PADDING_HORIZONTAL,
+        marginInline: 0 - PAGE_PADDING_INLINE,
         ...style,
       }}
       {...props}

@@ -2,7 +2,10 @@ import type { AddressParams, AddressPosition } from 'defi-sdk';
 import { useAddressPositions } from 'defi-sdk';
 import React, { useCallback, useMemo, useState } from 'react';
 import { getCommonQuantity } from 'src/shared/units/assetQuantity';
-import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
+import {
+  formatCurrencyToParts,
+  formatCurrencyValue,
+} from 'src/shared/units/formatCurrencyValue';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -53,6 +56,7 @@ import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { EmptyViewForNetwork } from 'src/ui/components/EmptyViewForNetwork';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { networksStore } from 'src/modules/networks/networks-store.client';
+import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 
 function LineToParent({
   hasPreviosNestedPosition,
@@ -360,7 +364,7 @@ function ProtocolHeading({
       <UIText kind="body/accent">
         {protocol}
         {' · '}
-        {formatCurrencyValue(value, 'en', 'usd')}
+        <NeutralDecimals parts={formatCurrencyToParts(value, 'en', 'usd')} />
       </UIText>
       <UIText
         inline={true}
@@ -490,7 +494,12 @@ function PositionList({
         }
         return (
           <VStack gap={12} key={protocol}>
-            <HStack gap={4} justifyContent="space-between" alignItems="center">
+            <HStack
+              gap={4}
+              justifyContent="space-between"
+              alignItems="center"
+              style={{ paddingInline: 'var(--column-padding-inline)' }}
+            >
               <ProtocolHeading
                 protocol={protocol}
                 value={totalValue}
