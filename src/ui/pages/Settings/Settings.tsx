@@ -19,6 +19,7 @@ import LockIcon from 'jsx:src/ui/assets/lock.svg';
 import GlobeIcon from 'jsx:src/ui/assets/globe.svg';
 import SettingsIcon from 'jsx:src/ui/assets/settings.svg';
 import DarkModeLampIcon from 'jsx:src/ui/assets/dark-mode-lamp.svg';
+import NetworksIcon from 'jsx:src/ui/assets/network.svg';
 import { version } from 'src/shared/packageVersion';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { apostrophe } from 'src/ui/shared/typography';
@@ -43,7 +44,7 @@ function SettingsMain() {
               to: '/wallets',
               component: (
                 <AngleRightRow>
-                  <HStack gap={4} alignItems="center">
+                  <HStack gap={8} alignItems="center">
                     <WalletIcon />
                     <UIText kind="body/regular">Manage Wallets</UIText>
                   </HStack>
@@ -55,11 +56,8 @@ function SettingsMain() {
               to: '/connected-sites',
               component: (
                 <AngleRightRow>
-                  <HStack gap={4} alignItems="center">
-                    <GlobeIcon
-                      // This icon doesn't fit, temporary hack to make it look better
-                      style={{ color: 'var(--neutral-800)' }}
-                    />
+                  <HStack gap={8} alignItems="center">
+                    <GlobeIcon />
                     <UIText kind="body/regular">Connected Sites</UIText>
                   </HStack>
                 </AngleRightRow>
@@ -67,10 +65,22 @@ function SettingsMain() {
             },
             {
               key: 3,
+              to: '/networks',
+              component: (
+                <AngleRightRow>
+                  <HStack gap={8} alignItems="center">
+                    <NetworksIcon />
+                    <UIText kind="body/regular">Networks</UIText>
+                  </HStack>
+                </AngleRightRow>
+              ),
+            },
+            {
+              key: 4,
               to: '/settings/appearance',
               component: (
                 <AngleRightRow>
-                  <HStack gap={4} alignItems="center">
+                  <HStack gap={8} alignItems="center">
                     <DarkModeLampIcon />
                     <UIText kind="body/regular">Appearance</UIText>
                   </HStack>
@@ -78,11 +88,11 @@ function SettingsMain() {
               ),
             },
             {
-              key: 4,
+              key: 5,
               to: '/settings/user-preferences',
               component: (
                 <AngleRightRow>
-                  <HStack gap={4} alignItems="center">
+                  <HStack gap={8} alignItems="center">
                     <SettingsIcon />
                     <UIText kind="body/regular">Preferences</UIText>
                   </HStack>
@@ -90,13 +100,13 @@ function SettingsMain() {
               ),
             },
             {
-              key: 5,
+              key: 6,
               onClick: async () => {
                 await logout.mutateAsync();
                 navigate('/login');
               },
               component: (
-                <HStack gap={4} alignItems="center">
+                <HStack gap={8} alignItems="center">
                   <LockIcon style={{ color: 'var(--negative-500)' }} />
                   <UIText kind="body/regular" color="var(--negative-500)">
                     {logout.isLoading ? 'Locking...' : 'Lock'}

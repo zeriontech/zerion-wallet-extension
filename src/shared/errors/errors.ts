@@ -1,6 +1,6 @@
 import { STANDARD_ERROR_MAP } from '@json-rpc-tools/utils';
 
-class ErrorWithEnumerableMessage extends Error {
+export class ErrorWithEnumerableMessage extends Error {
   constructor(message: string) {
     super(message);
     Object.defineProperty(this, 'message', {

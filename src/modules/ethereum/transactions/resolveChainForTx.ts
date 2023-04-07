@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import type { Chain } from 'src/modules/networks/Chain';
-import { networksStore } from 'src/modules/networks/networks-store';
+import { Networks } from 'src/modules/networks/Networks';
 import type { IncomingTransaction } from '../types/IncomingTransaction';
 
 export function getTransactionChainId(
@@ -11,11 +11,11 @@ export function getTransactionChainId(
     : null;
 }
 
-export async function resolveChainForTx(
+export function resolveChainForTx(
   transaction: IncomingTransaction,
-  originChain: Chain
-): Promise<Chain> {
-  const networks = await networksStore.load();
+  originChain: Chain,
+  networks: Networks
+): Chain {
   const targetChainId = getTransactionChainId(transaction);
   return targetChainId ? networks.getChainById(targetChainId) : originChain;
 }

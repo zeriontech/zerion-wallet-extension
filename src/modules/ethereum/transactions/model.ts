@@ -1,8 +1,8 @@
-import { networksStore } from 'src/modules/networks/networks-store';
 import type { AddressAction, ActionType } from 'defi-sdk';
 import { ethers } from 'ethers';
 import { capitalize } from 'capitalize-ts';
 import sortBy from 'lodash/sortBy';
+import { Networks } from 'src/modules/networks/Networks';
 import {
   describeTransaction,
   TransactionAction,
@@ -40,10 +40,13 @@ function decsriptionToType(description: TransactionDescription): ActionType {
 }
 
 export async function toAddressTransaction(
-  transactionObject: TransactionObject
+  transactionObject: TransactionObject,
+  networks: Networks
 ): Promise<PendingAddressAction> {
-  const description = await describeTransaction(transactionObject.transaction);
-  const networks = await networksStore.load();
+  const description = await describeTransaction(
+    transactionObject.transaction,
+    networks
+  );
   const { transaction, hash, receipt, timestamp } = transactionObject;
   return {
     id: hash,

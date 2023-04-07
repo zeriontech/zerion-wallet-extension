@@ -6,6 +6,7 @@ import { walletPort } from '../channels';
 
 interface Result {
   params: AddressParams;
+  singleAddressNormalized: string;
   singleAddress: string;
   maybeSingleAddress: string | null;
   ready: boolean;
@@ -25,8 +26,13 @@ export function useAddressParams(): Result {
     { useErrorBoundary: true }
   );
   const address = addressResult || '';
+  const addressNormalized = normalizeAddress(address);
   return {
-    params: useMemo(() => ({ address: normalizeAddress(address) }), [address]),
+    params: useMemo(
+      () => ({ address: addressNormalized }),
+      [addressNormalized]
+    ),
+    singleAddressNormalized: addressNormalized,
     maybeSingleAddress: address || null,
     singleAddress: address,
     ready: Boolean(address),

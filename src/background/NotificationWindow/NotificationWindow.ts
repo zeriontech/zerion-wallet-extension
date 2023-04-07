@@ -27,11 +27,13 @@ class NotificationWindow extends EventEmitter {
   async open<T>({
     route: initialRoute,
     search,
+    height,
     onDismiss,
     onResolve,
   }: {
     route: string;
     search?: string;
+    height?: number;
     onDismiss: (error?: ErrorResponse) => void;
     onResolve: (data: T) => void;
   }) {
@@ -50,7 +52,7 @@ class NotificationWindow extends EventEmitter {
     const params = new URLSearchParams(search);
     params.append('windowId', String(id));
     route = route + `?${params.toString()}`;
-    const windowId = await windowManager.openNotification({ route });
+    const windowId = await windowManager.openNotification({ route, height });
     if (windowId) {
       this.idsMap.set(id, windowId);
       disposables.push(() => this.idsMap.delete(id));

@@ -63,8 +63,9 @@ export const ItemButton = React.forwardRef<
     children: React.ReactNode;
     style?: React.CSSProperties;
     highlighted?: boolean;
+    outlined?: boolean;
   } & React.ButtonHTMLAttributes<HTMLButtonElement>
->(({ children, style, highlighted, ...props }, ref) => {
+>(({ children, style, highlighted, outlined = false, ...props }, ref) => {
   return (
     <UnstyledButton
       style={{ color: 'inherit', ...style }}
@@ -72,7 +73,12 @@ export const ItemButton = React.forwardRef<
       ref={ref}
       {...props}
     >
-      <div className={s.decoration}>{children}</div>
+      <div
+        className={s.decoration}
+        style={outlined ? { border: '1px solid var(--primary)' } : undefined}
+      >
+        {children}
+      </div>
     </UnstyledButton>
   );
 });
@@ -106,6 +112,7 @@ export interface Item {
   rel?: React.AnchorHTMLAttributes<HTMLAnchorElement>['rel'];
   isInteractive?: boolean;
   onClick?: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick'];
+  buttonType?: 'button' | 'submit';
   disabled?: React.ButtonHTMLAttributes<HTMLButtonElement>['disabled'];
   style?: React.CSSProperties;
   separatorTop?: boolean;
@@ -165,7 +172,11 @@ export function SurfaceList({
               {item.component}
             </ItemAnchor>
           ) : item.onClick ? (
-            <ItemButton disabled={item.disabled} onClick={item.onClick}>
+            <ItemButton
+              disabled={item.disabled}
+              onClick={item.onClick}
+              type={item.buttonType}
+            >
               {item.component}
             </ItemButton>
           ) : pad === false ? (

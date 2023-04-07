@@ -45,7 +45,7 @@ export function CreateAccount() {
     <Background backgroundKind="white">
       <PageColumn>
         <PageTop />
-        <NavigationTitle title={null} />
+        <NavigationTitle title={null} documentTitle="Create Account" />
         <PageHeading>Create Password</PageHeading>
         <UIText kind="body/regular" color="var(--neutral-500)">
           Protect your wallet by setting a password

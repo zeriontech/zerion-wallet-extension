@@ -33,11 +33,10 @@ export class PortMessageChannel {
 
   async request<Method extends string, Params, Result>(
     method: Method,
-    params: Params,
-    id?: number
+    params: Params
   ) {
     this.verifyPort(this.port);
-    const payload = formatJsonRpcRequest(method, params, id);
+    const payload = formatJsonRpcRequest(method, params);
     this.port.postMessage(payload);
     return this.getPromise<Result>(payload.id);
   }

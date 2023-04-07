@@ -14,6 +14,7 @@ function trackAppEvents() {
     });
     sendToMetabase('client_error', params);
   });
+
   emitter.on('error', async (error) => {
     const userId = await getUserId();
     if (error instanceof HandshakeFailed) {
@@ -25,6 +26,17 @@ function trackAppEvents() {
       });
       sendToMetabase('client_error', params);
     }
+  });
+
+  emitter.on('networksSearchResponse', async (query, resultsCount) => {
+    const userId = await getUserId();
+    const params = createParams({
+      request_name: 'network_search',
+      query,
+      number_of_results: resultsCount,
+      user_id: userId,
+    });
+    sendToMetabase('network_search', params);
   });
 }
 

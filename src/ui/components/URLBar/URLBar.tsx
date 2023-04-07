@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer, useRef } from 'react';
+import React, { useEffect, useLayoutEffect, useReducer, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import IconLeft from 'jsx:src/ui/assets/arrow-left.svg';
@@ -16,7 +16,10 @@ function capitalize(str: string) {
 function titleFromPathname(pathname: string) {
   const parts = pathname.split('/');
   const last = parts[parts.length - 1];
-  return last.split('-').map(capitalize).join(' ');
+  return last
+    .split(/(?:-|%20)/)
+    .map(capitalize)
+    .join(' ');
 }
 
 const URLBarBlacklist = new Set([
@@ -57,6 +60,12 @@ export function BackButton(
 // If styles are changed, this value needs to be updated manually
 export const NAVIGATION_BAR_HEIGHT = 46;
 
+function DocumentTitle({ title }: { title: string }) {
+  useLayoutEffect(() => {
+    document.title = title;
+  }, [title]);
+  return null;
+}
 export function URLBar() {
   const navigate = useNavigate();
   const [, rerender] = useReducer((n) => n + 1, 0);
@@ -117,22 +126,32 @@ export function URLBar() {
           // This check is done to work around an unavoidable inconsistent state
           // where this callback function is called first because of pathname change
           // and then later because some <Content /> element was added
+          let automaticTitle: null | string = null;
           if (!children.length && pathnameRef.current !== pathname) {
             text = null;
           } else {
-            text = children.length ? children : titleFromPathname(pathname);
+            if (children.length) {
+              text = children;
+            } else {
+              automaticTitle = titleFromPathname(pathname);
+              text = automaticTitle;
+            }
           }
           return (
-            <UIText
-              kind="body/accent"
-              style={{
-                textAlign: 'center',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}
-            >
-              {text}
-            </UIText>
+            <>
+              {automaticTitle ? <DocumentTitle title={automaticTitle} /> : null}
+              <UIText
+                kind="body/accent"
+                style={{
+                  textAlign: 'center',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {text}
+              </UIText>
+            </>
           );
         }}
       />

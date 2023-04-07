@@ -23,4 +23,14 @@ export interface NetworkConfig {
   supports_bridge: boolean;
   native_asset: NetworkAsset | null;
   wrapped_native_asset: NetworkAsset | null;
+  /**
+   * Client-side value.
+   * Whether to display this network among select options
+   */
+  hidden?: boolean;
+  /**
+   * Client-side value.
+   * User-defined rpc url that has priority over rpc_url_internal
+   */
+  rpc_url_user?: string;
 }

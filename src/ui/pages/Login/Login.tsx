@@ -1,4 +1,4 @@
-import React, { useId, useMemo } from 'react';
+import React, { useEffect, useId, useMemo } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import type { PublicUser } from 'src/shared/types/User';
@@ -38,6 +38,11 @@ export function Login() {
       },
     }
   );
+  const { reset } = loginMutation;
+  useEffect(() => {
+    return () => reset();
+  }, [reset]);
+
   useBodyStyle(
     useMemo(
       () => ({

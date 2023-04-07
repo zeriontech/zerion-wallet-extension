@@ -27,14 +27,14 @@ import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog'
 import { walletPort } from 'src/ui/shared/channels';
 import { createChain } from 'src/modules/networks/Chain';
 import { NetworkSelectDialog } from 'src/ui/components/NetworkSelectDialog';
-import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
-import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { getWalletDisplayName } from 'src/ui/shared/getWalletDisplayName';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 import { apostrophe } from 'src/ui/shared/typography';
 import { getNameFromOrigin } from 'src/shared/dapps';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
+import { useAddressPortfolioDecomposition } from 'defi-sdk';
+import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { CurrentNetworkSettingsItem } from '../../Networks/CurrentNetworkSettingsItem';
 import { ConnectToDappButton } from './ConnectToDappButton';
 
@@ -131,6 +131,11 @@ export function ConnectedSite() {
       walletPort.request('switchChainForOrigin', { chain, origin: originName }),
     { useErrorBoundary: true, onSuccess: () => chainQuery.refetch() }
   );
+  const { params } = useAddressParams();
+  const { value: portfolioDecomposition } = useAddressPortfolioDecomposition({
+    ...params,
+    currency: 'usd',
+  });
   const navigate = useNavigate();
   const handleAllRemoveSuccess = useCallback(() => {
     refetch();
@@ -216,20 +221,16 @@ export function ConnectedSite() {
                   pad: false,
                   component: (
                     <>
-                      <CenteredDialog
+                      <BottomSheetDialog
                         ref={selectNetworkDialogRef}
-                        style={{ backgroundColor: 'var(--neutral-100)' }}
+                        style={{ padding: 0 }}
                       >
-                        <DialogTitle
-                          title={
-                            <UIText kind="small/accent">
-                              Network for {new URL(originName).hostname}
-                            </UIText>
-                          }
+                        <NetworkSelectDialog
+                          value={siteChain.toString()}
+                          type="connection"
+                          chainDistribution={portfolioDecomposition}
                         />
-                        <Spacer height={24} />
-                        <NetworkSelectDialog value={siteChain.toString()} />
-                      </CenteredDialog>
+                      </BottomSheetDialog>
 
                       <SurfaceItemButton
                         onClick={() => {

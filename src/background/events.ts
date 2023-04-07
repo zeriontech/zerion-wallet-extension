@@ -1,6 +1,7 @@
 import type { ethers } from 'ethers';
 import { createNanoEvents } from 'nanoevents';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
+import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { WalletContainer } from './Wallet/model/WalletContainer';
 import type { WalletOrigin } from './Wallet/model/WalletOrigin';
 
@@ -48,4 +49,5 @@ export const emitter = createNanoEvents<{
     origin: WalletOrigin;
     groupId: string | null;
   }) => void;
+  addEthereumChain: (data: { values: [NetworkConfig]; origin: string }) => void;
 }>();

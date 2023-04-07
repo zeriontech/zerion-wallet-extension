@@ -8,6 +8,7 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getIndexFromPath } from 'src/shared/wallet/getNextAccountPath';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { WalletAbility } from 'src/shared/types/Daylight';
+import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { SeedType } from './model/SeedType';
 import type {
   BareWallet,
@@ -482,7 +483,16 @@ export class WalletRecordModel {
     { origin }: { origin: string }
   ): Chain {
     const chain = record.permissions[origin]?.chain;
-    return createChain(chain || 'ethereum');
+    return createChain(chain || NetworkId.Ethereum);
+  }
+
+  static getPermissionsByChain(
+    record: WalletRecord,
+    { chain }: { chain: Chain }
+  ) {
+    return Object.entries(record.permissions)
+      .filter(([, permission]) => permission.chain === chain.toString())
+      .map(([origin, permission]) => ({ origin, permission }));
   }
 
   static removeAllOriginPermissions(record: WalletRecord): WalletRecord {
@@ -512,10 +522,15 @@ export class WalletRecordModel {
     });
   }
 
-  static getPreferences(record: WalletRecord) {
-    const defaults: WalletRecord['publicPreferences'] = {
+  static getPreferences(record: WalletRecord | null) {
+    const defaults: Required<WalletRecord['publicPreferences']> = {
       showNetworkSwitchShortcut: true,
+      walletNameFlags: [],
+      overviewChain: '',
     };
+    if (!record) {
+      return defaults;
+    }
     const { publicPreferences } = record;
     return { ...defaults, ...publicPreferences };
   }
@@ -527,6 +542,23 @@ export class WalletRecordModel {
     return produce(record, (draft) => {
       Object.assign(draft.publicPreferences, preferences);
     });
+  }
+
+  static verifyOverviewChain(
+    record: WalletRecord,
+    { availableChains }: { availableChains: Chain[] }
+  ) {
+    const { overviewChain } = record.publicPreferences;
+    if (
+      overviewChain &&
+      !availableChains.includes(createChain(overviewChain))
+    ) {
+      return produce(record, (draft) => {
+        draft.publicPreferences.overviewChain = NetworkSelectValue.All;
+      });
+    } else {
+      return record;
+    }
   }
 
   static setWalletNameFlag(

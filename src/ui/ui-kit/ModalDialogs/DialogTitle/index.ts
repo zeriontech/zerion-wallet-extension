@@ -1,1 +1,1 @@
-export { DialogTitle } from './DialogTitle';
+export { DialogTitle, DialogButtonValue } from './DialogTitle';

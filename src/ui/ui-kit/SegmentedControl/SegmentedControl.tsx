@@ -11,16 +11,16 @@ type Kind = typeof kinds[number];
 
 const labelParams: Record<
   Kind,
-  { checked: string; blured: string; kind: UITextKind }
+  { checked: string; blurred: string; kind: UITextKind }
 > = {
   primary: {
     checked: 'var(--primary)',
-    blured: 'currentColor',
+    blurred: 'var(--neutral-600)',
     kind: 'body/accent',
   },
   secondary: {
     checked: 'var(--black)',
-    blured: 'var(--black)',
+    blurred: 'var(--black)',
     kind: 'caption/accent',
   },
 };
@@ -41,7 +41,7 @@ export function SegmentedControlRadio({
     <label className={s.radio}>
       <UIText
         kind={labelParams[kind].kind}
-        color={checked ? labelParams[kind].checked : labelParams[kind].blured}
+        color={checked ? labelParams[kind].checked : labelParams[kind].blurred}
       >
         {children}
       </UIText>
@@ -72,7 +72,7 @@ export function SegmentedControlLink({
       style={({ isActive }) => ({
         color: isActive
           ? labelParams[groupKind].checked
-          : labelParams[groupKind].blured,
+          : labelParams[groupKind].blurred,
         ...style,
       })}
     >

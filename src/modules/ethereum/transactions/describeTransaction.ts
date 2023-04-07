@@ -1,6 +1,5 @@
 import { ethers } from 'ethers';
 import { Networks } from 'src/modules/networks/Networks';
-import { networksStore } from 'src/modules/networks/networks-store';
 import type { IncomingTransaction } from '../types/IncomingTransaction';
 import { ensureChainId } from './getChainId';
 
@@ -326,9 +325,9 @@ const describers = [
 ];
 
 export async function describeTransaction(
-  transaction: IncomingTransaction
+  transaction: IncomingTransaction,
+  networks: Networks
 ): Promise<TransactionDescription> {
-  const networks = await networksStore.load();
   for (const describer of describers) {
     const description = describer(transaction, networks);
     if (description) {

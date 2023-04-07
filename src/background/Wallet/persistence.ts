@@ -9,6 +9,8 @@ type WalletStoreState = Record<string, EncryptedWalletRecord | undefined>;
 
 export class WalletStore extends PersistentStore<WalletStoreState> {
   static key = 'wallet';
+  /** Store unencrypted "lastRecord" to avoid unnecessary stringifications */
+  private lastRecord: WalletRecord | null = null;
 
   constructor(initialState: WalletStoreState, key = WalletStore.key) {
     super(initialState, key);
@@ -28,16 +30,24 @@ export class WalletStore extends PersistentStore<WalletStoreState> {
     if (!encryptedRecord) {
       return null;
     }
-    return await Model.decryptAndRestoreRecord(encryptionKey, encryptedRecord);
+    this.lastRecord = await Model.decryptAndRestoreRecord(
+      encryptionKey,
+      encryptedRecord
+    );
+    return this.lastRecord;
   }
 
   async save(id: string, encryptionKey: string, record: WalletRecord) {
+    if (this.lastRecord === record) {
+      return;
+    }
     const encryptedRecord = await Model.encryptRecord(encryptionKey, record);
     this.setState((state) =>
       produce(state, (draft) => {
         draft[id] = encryptedRecord;
       })
     );
+    this.lastRecord = record;
   }
 
   deleteMany(keys: string[]) {
@@ -48,6 +58,7 @@ export class WalletStore extends PersistentStore<WalletStoreState> {
         }
       })
     );
+    this.lastRecord = null;
   }
 }
 

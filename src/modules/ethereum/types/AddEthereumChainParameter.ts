@@ -2,7 +2,7 @@ export interface AddEthereumChainParameter {
   chainId: string; // A 0x-prefixed hexadecimal string
   chainName: string;
   nativeCurrency: {
-    code: string | null;
+    // code: string | null;
     name: string;
     symbol: string; // 2-6 characters long
     decimals: 18;

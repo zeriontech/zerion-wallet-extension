@@ -20,5 +20,6 @@ emitter.on('uiAccountsChanged', () => {
 });
 
 emitter.on('sessionLogout', () => {
+  queryClient.getMutationCache().clear();
   queryClient.removeQueries();
 });

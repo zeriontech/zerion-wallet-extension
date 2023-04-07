@@ -12,6 +12,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { NetworkIndicator } from 'src/ui/components/NetworkIndicator';
 import { useNetworks } from 'src/modules/networks/useNetworks';
+import { networksStore } from 'src/modules/networks/networks-store.client';
 import {
   describeTransaction,
   TransactionAction,
@@ -29,7 +30,6 @@ import { Chain, createChain } from 'src/modules/networks/Chain';
 import { fetchAndAssignGasPrice } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import { hasGasPrice } from 'src/modules/ethereum/transactions/gasPrices/hasGasPrice';
 import { resolveChainForTx } from 'src/modules/ethereum/transactions/resolveChainForTx';
-import { networksStore } from 'src/modules/networks/networks-store';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { invariant } from 'src/shared/invariant';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
@@ -79,7 +79,7 @@ async function resolveChainAndGasPrice(
   currentChain: Chain
 ) {
   const networks = await networksStore.load();
-  const chain = await resolveChainForTx(transaction, currentChain);
+  const chain = resolveChainForTx(transaction, currentChain, networks);
   const chainId = networks.getChainId(chain);
   const copyWithChainId: PartiallyRequired<IncomingTransaction, 'chainId'> = {
     ...transaction,
@@ -88,7 +88,7 @@ async function resolveChainAndGasPrice(
   if (hasGasPrice(copyWithChainId)) {
     return copyWithChainId;
   } else {
-    await fetchAndAssignGasPrice(copyWithChainId);
+    await fetchAndAssignGasPrice(copyWithChainId, networks);
     return copyWithChainId;
   }
 }
@@ -132,8 +132,11 @@ function SendTransactionContent({
   );
 
   const descriptionQuery = useQuery(
-    ['description', transaction],
-    () => (transaction ? describeTransaction(transaction) : null),
+    ['description', transaction, networks],
+    () =>
+      transaction && networks
+        ? describeTransaction(transaction, networks)
+        : null,
     {
       retry: false,
       refetchOnMount: false,

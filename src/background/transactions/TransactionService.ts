@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import { Store } from 'store-unit';
-import { networksStore } from 'src/modules/networks/networks-store';
+import { networksStore } from 'src/modules/networks/networks-store.background';
 import * as browserStorage from 'src/background/webapis/storage';
 import produce from 'immer';
 import type {
@@ -106,7 +106,7 @@ export class TransactionService {
   private upsertTransaction(value: TransactionObject) {
     this.transactionsStore.setState((state) =>
       produce(state, (draft) => {
-        upsert(draft, value, 'hash');
+        upsert(draft, value, (x) => x.hash);
       })
     );
   }
