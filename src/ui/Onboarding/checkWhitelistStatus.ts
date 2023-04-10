@@ -4,6 +4,7 @@ import { isEmail } from 'src/shared/isEmail';
 import { PROXY_URL } from 'src/env/config';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getAddressNfts } from '../shared/requests/addressNfts/useAddressNfts';
+import { anyPromise } from '../shared/anyPromise';
 import { WaitlistCheckError, NotAllowedError } from './errors';
 
 const WAITLIST_ID = 'aOfkJhcpwDHpJVkzO6FB';
@@ -90,25 +91,6 @@ async function getNftStatus(address: string) {
   });
 
   return { status: (value?.length || 0) > 0 };
-}
-
-function anyFallback<T>(values: Array<PromiseLike<T>>): Promise<Awaited<T>> {
-  const identity = <T>(x: T) => x;
-  return Promise.all(
-    values.map((promise) =>
-      promise.then((result) => {
-        throw result;
-      }, identity)
-    )
-  ).then(() => {
-    throw new Error('AggregateError (Promise.all)');
-  }, identity);
-}
-
-function anyPromise<T>(values: Array<PromiseLike<T>>): Promise<Awaited<T>> {
-  // @ts-ignore Promise.any
-  const any = Promise.any ? (values) => Promise.any(values) : null;
-  return any ? any(values) : anyFallback(values);
 }
 
 export async function checkWhitelistStatus(address: string) {

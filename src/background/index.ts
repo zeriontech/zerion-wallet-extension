@@ -103,7 +103,7 @@ userActivity.scheduleAlarms();
 // https://developer.chrome.com/docs/extensions/mv3/migrating_to_service_workers/#alarms
 browser.alarms.onAlarm.addListener(userActivity.handleAlarm);
 
-initialize().then(({ account, accountPublicRPC, dnaService, queryService }) => {
+initialize().then(({ account, accountPublicRPC, dnaService, cacheService }) => {
   notifyContentScriptsAndUIAboutInitialization();
   // const httpConnection = new HttpConnection(() => account.getCurrentWallet());
   const memoryCacheRPC = new MemoryCacheRPC();
@@ -136,8 +136,8 @@ initialize().then(({ account, accountPublicRPC, dnaService, queryService }) => {
   );
   portRegistry.addMessageHandler(
     createPortMessageHandler({
-      check: (port) => port.name === 'queryService',
-      controller: queryService,
+      check: (port) => port.name === 'cacheService',
+      controller: cacheService,
     })
   );
   portRegistry.addMessageHandler(createNotificationWindowMessageHandler());

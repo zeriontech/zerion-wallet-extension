@@ -2,6 +2,7 @@ import React from 'react';
 import { useQuery } from 'react-query';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { SOCIAL_API_URL } from 'src/env/config';
+import { requestWithCache } from 'src/ui/shared/requests/requestCache/requestWithCache';
 import { AvatarIcon } from './AvatarIcon';
 import type {
   WalletProfilesResponse,
@@ -23,7 +24,10 @@ async function fetchWalletProfile(
 async function fetchWalletNFT(
   address: string
 ): Promise<WalletProfileNFT | undefined> {
-  const profile = await fetchWalletProfile(address);
+  const profile = await requestWithCache(
+    `fetchWalletNFT ${address}`,
+    fetchWalletProfile(address)
+  );
   return profile?.nft;
 }
 

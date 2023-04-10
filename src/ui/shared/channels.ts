@@ -7,7 +7,7 @@ import { UserRejected } from 'src/shared/errors/errors';
 import type { RpcRequestWithContext } from 'src/shared/custom-rpc';
 import type { DnaService } from '../components/DnaClaim/dna.background';
 import { initDnaApi } from '../components/DnaClaim/dna.client';
-import { QueryService } from './requests/queries/queryCache.background';
+import { CacheService } from './requests/requestCache/cacheService.background';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SomeMethod = (...args: any) => Promise<any>;
@@ -62,9 +62,9 @@ export const dnaServicePort = new PortMessageChannel({
   name: 'dnaService',
 }) as RPCPort<DnaService>;
 
-export const queryServicePort = new PortMessageChannel({
-  name: 'queryService',
-}) as RPCPort<QueryService>;
+export const cacheServicePort = new PortMessageChannel({
+  name: 'cacheService',
+}) as RPCPort<CacheService>;
 
 class WindowPort extends PortMessageChannel {
   confirm<T>(
@@ -97,6 +97,6 @@ export function initialize() {
   memoryCacheRPCPort.initialize();
   windowPort.initialize();
   dnaServicePort.initialize();
-  queryServicePort.initialize();
+  cacheServicePort.initialize();
   initDnaApi();
 }

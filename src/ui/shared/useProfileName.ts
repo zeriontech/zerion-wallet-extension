@@ -11,7 +11,7 @@ export function useProfileName(
     maxCharacters,
   }: { padding?: number; maxCharacters?: number } = {}
 ) {
-  const { data: domainName } = useQuery(
+  const { isLoading: isDomainLoading, data: domain } = useQuery(
     ['name-service/lookupAddressName', wallet.address],
     useCallback(() => lookupAddressName(wallet.address), [wallet.address]),
     {
@@ -25,6 +25,8 @@ export function useProfileName(
       },
     }
   );
+
+  const domainName = isDomainLoading ? null : domain;
 
   return wallet.name
     ? getWalletDisplayName(wallet, { padding, maxCharacters })

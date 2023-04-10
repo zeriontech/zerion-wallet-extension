@@ -1,6 +1,6 @@
 import { prepareStorage } from 'src/shared/core/version';
 import { DnaService } from 'src/ui/components/DnaClaim/dna.background';
-import { QueryService } from 'src/ui/shared/requests/queries/queryCache.background';
+import { CacheService } from 'src/ui/shared/requests/requestCache/cacheService.background';
 import { initialize as dappRegistryInitialize } from 'src/shared/dapps';
 import { initialize as initializeAnalytics } from 'src/shared/analytics/analytics.background';
 import { initialize as initializeRemoteConfig } from 'src/modules/remote-config';
@@ -28,7 +28,7 @@ export async function initialize() {
   const accountPublicRPC = new AccountPublicRPC(account);
   const transactionService = new TransactionService();
   const dnaService = new DnaService(account);
-  const queryService = new QueryService();
+  const cacheService = new CacheService();
   dnaService.initialize();
   await transactionService.initialize();
   initializeAnalytics({ account });
@@ -39,7 +39,7 @@ export async function initialize() {
     Account,
     accountPublicRPC,
     dnaService,
-    queryService,
+    cacheService,
     transactionService,
   });
   return {
@@ -47,6 +47,6 @@ export async function initialize() {
     accountPublicRPC,
     transactionService,
     dnaService,
-    queryService,
+    cacheService,
   };
 }
