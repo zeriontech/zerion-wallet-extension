@@ -10,7 +10,10 @@ import { applyDrawFix } from './shared/applyDrawFix';
 import { App } from './App';
 import type { AppProps } from './App/App';
 import { initialize as initializeChannels } from './shared/channels';
-import { queryClient } from './shared/requests/queryClient';
+import {
+  initQueryCache,
+  queryClient,
+} from './shared/requests/queries/queryClient.client';
 import { emitter } from './shared/events';
 import { maybeOpenOboarding } from './Onboarding/initialization';
 import { OnboardingInterrupt } from './Onboarding/errors';
@@ -64,6 +67,7 @@ async function initializeUI({
     const { mode } = await maybeOpenOboarding();
     queryClient.clear();
     await configureUIClient();
+    await initQueryCache();
     initializeClientAnalytics();
     renderApp({ initialView, mode });
   } catch (error) {
