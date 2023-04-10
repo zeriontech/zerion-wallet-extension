@@ -72,14 +72,6 @@ function ConnectedSitesList({
   items: ConnectedSiteItem[];
   onRevokeAll: () => void;
 }) {
-  const iconStyle = {
-    width: 16,
-    height: 16,
-    /* maxWidth, maxHeight and overflow hidden are required to avoid jumping at img onError */
-    maxWidth: 16,
-    maxHeight: 16,
-    overflow: 'hidden',
-  };
   return (
     <VStack gap={24}>
       <SurfaceList
@@ -98,7 +90,13 @@ function ConnectedSitesList({
                   image={
                     <div>
                       <SiteFaviconImg
-                        style={iconStyle}
+                        size={16}
+                        style={{
+                          /* maxWidth, maxHeight and overflow hidden are required to avoid jumping at img onError */
+                          maxWidth: 16,
+                          maxHeight: 16,
+                          overflow: 'hidden',
+                        }}
                         url={item.origin}
                         alt={alt}
                       />

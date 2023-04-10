@@ -98,11 +98,8 @@ export function CurrentNetwork({ address }: { address: string }) {
                           image={
                             <SiteFaviconImg
                               url={tabOrigin}
-                              style={{
-                                width: 24,
-                                height: 24,
-                                display: 'block',
-                              }}
+                              size={24}
+                              style={{ display: 'block' }}
                             />
                           }
                           text={getNameFromOrigin(tabOrigin)}
@@ -145,12 +142,8 @@ export function CurrentNetwork({ address }: { address: string }) {
           >
             <SiteFaviconImg
               url={tabOrigin}
-              style={{
-                width: 24,
-                height: 24,
-                display: 'block',
-                borderRadius: '50%',
-              }}
+              size={24}
+              style={{ display: 'block', borderRadius: '50%' }}
             />
           </div>
           {isConnected ? <div className={s.activeIndicator} /> : null}

@@ -70,11 +70,7 @@ function AddChain({
       >
         <VStack gap={8}>
           <HStack gap={8} alignItems="center">
-            <SiteFaviconImg
-              url={origin}
-              alt=""
-              style={{ width: 32, height: 32 }}
-            />
+            <SiteFaviconImg url={origin} alt="" size={32} />
             <UIText kind="headline/h2">{hostname}</UIText>
           </HStack>
           <UIText kind="small/accent" color="var(--neutral-500)">
