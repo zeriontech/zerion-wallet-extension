@@ -21,6 +21,9 @@ import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { SeedType } from 'src/shared/SeedType';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import AddWalletIcon from 'jsx:src/ui/assets/add-wallet.svg';
+import { Button } from 'src/ui/ui-kit/Button';
 
 export function WalletSelect() {
   const navigate = useNavigate();
@@ -49,7 +52,22 @@ export function WalletSelect() {
   if (isLoading) {
     return null;
   }
-  const title = <NavigationTitle title="Wallets" />;
+  const title = (
+    <NavigationTitle
+      title="Wallets"
+      elementEnd={
+        <Button
+          kind="ghost"
+          size={40}
+          as={UnstyledLink}
+          to="/get-started"
+          title="Add Wallet"
+        >
+          <AddWalletIcon style={{ width: 24, height: 24 }} />
+        </Button>
+      }
+    />
+  );
   if (!walletGroups?.length) {
     return (
       <PageColumn>
@@ -143,19 +161,12 @@ export function WalletSelect() {
       });
     }
   }
-  items.push(
-    {
-      key: 0,
-      to: '/wallets',
-      separatorTop: true,
-      component: <div style={{ color: 'var(--primary)' }}>Manage Wallets</div>,
-    },
-    {
-      key: 1,
-      to: '/get-started',
-      component: <div style={{ color: 'var(--primary)' }}>+ Add Wallet</div>,
-    }
-  );
+  items.push({
+    key: 0,
+    to: '/wallets',
+    separatorTop: true,
+    component: <div style={{ color: 'var(--primary)' }}>Manage Wallets</div>,
+  });
   return (
     <PageColumn>
       {title}
