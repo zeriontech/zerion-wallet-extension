@@ -20,9 +20,6 @@ export function useProfileName(
       refetchOnMount: false,
       retryOnMount: false,
       retry: 0,
-      meta: {
-        cache: true,
-      },
     }
   );
 

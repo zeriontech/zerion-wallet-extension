@@ -45,7 +45,7 @@ export function WalletAvatar({
   const { data: nft, isLoading } = useQuery(
     ['fetchWalletNFT', address],
     () => fetchWalletNFT(address),
-    { suspense: false, meta: { cache: true } }
+    { suspense: false }
   );
 
   if (isLoading) {
