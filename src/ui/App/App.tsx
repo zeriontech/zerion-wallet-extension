@@ -43,7 +43,7 @@ import { InactivityDetector } from '../components/Session/InactivityDetector';
 import { SessionResetHandler } from '../components/Session/SessionResetHandler';
 import { ViewSuspense } from '../components/ViewSuspense';
 import { VersionUpgrade } from '../components/VersionUpgrade';
-import { queryClient } from '../shared/requests/queries/queryClient.client';
+import { queryClient } from '../shared/requests/queries/queryClient';
 import { ForgotPassword } from '../pages/ForgotPassword';
 import { AbilityPage } from '../pages/Feed/Ability';
 import { BugReportButton } from '../components/BugReportButton';

@@ -7,7 +7,7 @@ import { UserRejected } from 'src/shared/errors/errors';
 import type { RpcRequestWithContext } from 'src/shared/custom-rpc';
 import type { DnaService } from '../components/DnaClaim/dna.background';
 import { initDnaApi } from '../components/DnaClaim/dna.client';
-import { QueryService } from './requests/queries/queryClient.background';
+import { QueryService } from './requests/queries/queryCache.background';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SomeMethod = (...args: any) => Promise<any>;

@@ -13,7 +13,7 @@ import { initialize as initializeChannels } from './shared/channels';
 import {
   initQueryCache,
   queryClient,
-} from './shared/requests/queries/queryClient.client';
+} from './shared/requests/queries/queryClient';
 import { emitter } from './shared/events';
 import { maybeOpenOboarding } from './Onboarding/initialization';
 import { OnboardingInterrupt } from './Onboarding/errors';
