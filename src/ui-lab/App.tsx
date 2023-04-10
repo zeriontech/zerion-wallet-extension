@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClientProvider } from 'react-query';
 import { Button } from 'src/ui/ui-kit/Button';
-import { queryClient } from 'src/ui/shared/requests/queryClient';
+import { queryClient } from 'src/ui/shared/requests/queries/queryClient.client';
 import { DesignTheme } from 'src/ui/components/DesignTheme';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { FillView } from 'src/ui/components/FillView';
