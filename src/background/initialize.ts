@@ -1,6 +1,6 @@
 import { prepareStorage } from 'src/shared/core/version';
 import { DnaService } from 'src/ui/components/DnaClaim/dna.background';
-import { QueryService } from 'src/ui/shared/requests/queries/queryClient.background';
+import { QueryService } from 'src/ui/shared/requests/queries/queryCache.background';
 import { initialize as dappRegistryInitialize } from 'src/shared/dapps';
 import { initialize as initializeAnalytics } from 'src/shared/analytics/analytics.background';
 import { Account, AccountPublicRPC } from './account/Account';

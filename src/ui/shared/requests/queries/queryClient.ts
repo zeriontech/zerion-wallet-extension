@@ -1,3 +1,4 @@
+import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 import { QueryCache, QueryClient } from 'react-query';
 import { queryServicePort } from '../../channels';
 import { emitter } from '../../events';
@@ -38,8 +39,13 @@ emitter.on('sessionLogout', () => {
 });
 
 export async function initQueryCache() {
-  const cache = await queryServicePort.request('getAll');
-  Object.entries(cache).forEach(([key, value]) => {
-    queryClient.setQueryData(JSON.parse(key), value);
-  });
+  const cache = await Promise.race([
+    queryServicePort.request('getAll'),
+    rejectAfterDelay(1000),
+  ]);
+  if (cache) {
+    Object.entries(cache).forEach(([key, value]) => {
+      queryClient.setQueryData(JSON.parse(key), value);
+    });
+  }
 }
