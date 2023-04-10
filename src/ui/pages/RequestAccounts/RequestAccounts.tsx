@@ -144,7 +144,8 @@ function useRedirectIfOriginAlreadyAllowed({
         if (!address) {
           return;
         }
-        const isAllowed = result[origin]?.addresses.includes(address);
+        const normalizedAddress = normalizeAddress(address);
+        const isAllowed = result[origin]?.addresses.includes(normalizedAddress);
         if (isAllowed) {
           onIsAllowed();
         }

@@ -79,9 +79,15 @@ export interface WalletFeed {
   completedAbilities: WalletAbility[];
 }
 
-export interface WalletRecord extends Omit<WalletRecordVersion3, 'version'> {
+export interface WalletRecordVersion4
+  extends Omit<WalletRecordVersion3, 'version'> {
   version: 4;
   feed: WalletFeed;
+}
+
+export interface WalletRecord extends Omit<WalletRecordVersion4, 'version'> {
+  version: 5;
+  /** This version introduces normalized addresses in "permissions" */
 }
 
 export interface PendingWallet {

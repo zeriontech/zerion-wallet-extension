@@ -2,6 +2,7 @@ import { TestPrivateKeyWalletContainer } from 'src/background/Wallet/model/Walle
 import { WalletOrigin } from 'src/background/Wallet/model/WalletOrigin';
 import { Chain } from 'src/modules/networks/Chain';
 import { networksStore } from 'src/modules/networks/networks-store.client';
+import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { Wallet } from 'src/shared/types/Wallet';
 import type { WalletRecord } from 'src/shared/types/WalletRecord';
@@ -22,13 +23,13 @@ const testWallet2: BareWallet = {
 
 const mockedPermissions: WalletRecord['permissions'] = {
   'https://app.zerion.io': {
-    addresses: [testAddress],
+    addresses: [normalizeAddress(testAddress)],
     chain: 'ethereum',
   },
 };
 
 const mockRecord: WalletRecord = {
-  version: 4,
+  version: 5,
   publicPreferences: {},
   permissions: mockedPermissions,
   transactions: [],
@@ -77,7 +78,7 @@ class WalletPortMock {
     return mockRecord.publicPreferences;
   }
 
-  async request(method: string, ...args: unknown[]) {
+  async request(method: keyof Wallet, ...args: unknown[]) {
     // @ts-ignore
     if (typeof this[method] === 'function') {
       // @ts-ignore
@@ -96,12 +97,14 @@ class WalletPortMock {
       return 3;
     } else if (method === 'getOriginPermissions') {
       return mockedPermissions;
-    } else if (method === 'hasPermission') {
+    } else if (method === 'isAccountAvailableToOrigin') {
       const { address, origin } = args[0] as {
         address: string;
         origin: string;
       };
-      return mockedPermissions[origin]?.addresses.includes(address);
+      return mockedPermissions[origin]?.addresses.includes(
+        normalizeAddress(address)
+      );
     } else if (method === 'requestChainForOrigin') {
       const { origin } = args[0] as { origin: string };
       return mockedPermissions[origin]?.chain || 'ethereum';
@@ -109,12 +112,14 @@ class WalletPortMock {
       return Promise.resolve(testWallet.address);
     } else if (method === 'signAndSendTransaction') {
       return Promise.resolve({ hash: '0x12345' });
-    } else if (method === 'getChainId' || method === 'eth_chainId') {
+    } else if (method === 'getChainId') {
       return Promise.resolve(this.state.chainId);
-    } else if (method === 'switchChain') {
+    } else if (method === 'switchChainForOrigin') {
       const networks = await networksStore.load();
-
-      this.state.chainId = networks.getChainId(new Chain(args[0] as string));
+      this.state.chainId = networks.getChainId(
+        // @ts-ignore
+        new Chain(args[0].chain as string)
+      );
       return;
     } else {
       throw new Error(`Mock method not implemented: ${method}`);

@@ -394,20 +394,23 @@ export class Wallet {
     if (context.origin === INTERNAL_ORIGIN) {
       return true;
     }
-    return (
-      this.record?.permissions[context.origin]?.addresses.includes(address) ||
-      false
-    );
+    if (!this.record) {
+      return false;
+    }
+    return Model.isAccountAvailable(this.record, {
+      address,
+      origin: context.origin,
+    });
   }
 
-  async hasPermission({
+  async isAccountAvailableToOrigin({
     params: { address, origin },
     context,
   }: WalletMethodParams<{ address: string; origin: string }>) {
     this.verifyInternalOrigin(context);
-    return (
-      this.record?.permissions[origin]?.addresses.includes(address) || false
-    );
+    return !this.record
+      ? false
+      : Model.isAccountAvailable(this.record, { address, origin });
   }
 
   async getOriginPermissions({ context }: PublicMethodParams) {

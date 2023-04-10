@@ -164,7 +164,7 @@ export class WalletRecordModel {
       const isMnemonicWallet =
         pendingWallet.walletContainer.seedType === SeedType.mnemonic;
       return {
-        version: 4,
+        version: 5,
         walletManager: {
           groups: [
             createGroup({
@@ -451,9 +451,10 @@ export class WalletRecordModel {
     { address, origin }: { address: string; origin: string }
   ): WalletRecord {
     return produce(record, (draft) => {
+      const normalizedAddress = normalizeAddress(address);
       const existingPermissions = draft.permissions[origin]?.addresses;
       const existingPermissionsSet = new Set(existingPermissions || []);
-      existingPermissionsSet.add(address);
+      existingPermissionsSet.add(normalizedAddress);
       const updatedAddresses = Array.from(existingPermissionsSet);
       if (!draft.permissions[origin]) {
         draft.permissions[origin] = { addresses: updatedAddresses };
@@ -461,6 +462,15 @@ export class WalletRecordModel {
         draft.permissions[origin].addresses = updatedAddresses;
       }
     });
+  }
+
+  /** EIP-1193 uses the wording "available" */
+  static isAccountAvailable(
+    record: WalletRecord,
+    { address, origin }: { address: string; origin: string }
+  ): boolean {
+    const normalizedAddress = normalizeAddress(address);
+    return record.permissions[origin]?.addresses.includes(normalizedAddress);
   }
 
   static setChainForOrigin(
@@ -512,7 +522,8 @@ export class WalletRecordModel {
       const permission = draft.permissions[origin];
       const { addresses: existingPermissions } = permission;
       if (address && existingPermissions.length > 1) {
-        spliceItem(existingPermissions, address);
+        const normalizedAddress = normalizeAddress(address);
+        spliceItem(existingPermissions, normalizedAddress);
       } else if (!permission.chain || permission.chain === NetworkId.Ethereum) {
         // remove whole record for `origin` completely
         delete draft.permissions[origin];

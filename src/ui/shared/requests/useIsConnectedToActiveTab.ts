@@ -10,7 +10,7 @@ export function useIsConnectedToActiveTab(address: string) {
     `hasPermission(${address}, ${tabOrigin})`,
     async () => {
       if (tabOrigin) {
-        return walletPort.request('hasPermission', {
+        return walletPort.request('isAccountAvailableToOrigin', {
           address,
           origin: tabOrigin,
         });
