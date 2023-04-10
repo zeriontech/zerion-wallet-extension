@@ -144,7 +144,7 @@ function SignMessageContent({
       >
         <PageTop />
         <div style={{ display: 'grid', placeItems: 'center' }}>
-          <SiteFaviconImg style={{ width: 44, height: 44 }} url={origin} />
+          <SiteFaviconImg size={44} url={origin} />
           <Spacer height={16} />
           <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
             Signature Request
