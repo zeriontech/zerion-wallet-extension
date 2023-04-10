@@ -4,10 +4,12 @@ import { emitter } from '../../events';
 
 const queryCache = new QueryCache({
   onSuccess: (data, query) => {
-    queryServicePort.request('setQuery', {
-      key: query.queryKey,
-      value: data,
-    });
+    if (query.options.meta?.cache) {
+      queryServicePort.request('setQuery', {
+        key: query.queryKey,
+        value: data,
+      });
+    }
   },
 });
 
