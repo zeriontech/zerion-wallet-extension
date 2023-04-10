@@ -1,3 +1,6 @@
+import { ethers } from 'ethers';
+import { isEthereumAddress } from 'src/shared/isEthereumAddress';
+import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { Permission } from 'src/shared/types/Permission';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
@@ -12,7 +15,9 @@ export type ConnectedSiteItem = Permission & {
 
 function createBareWallet(address: string): BareWallet {
   return {
-    address,
+    address: isEthereumAddress(address)
+      ? ethers.utils.getAddress(address)
+      : address,
     mnemonic: null,
     privateKey: '<privateKey>',
     name: null,
@@ -26,7 +31,7 @@ function updatePermissionsWithWallets(
   const walletsMap = new Map(
     walletGroups
       .flatMap((group) => group.walletContainer.wallets)
-      .map((wallet) => [wallet.address, wallet])
+      .map((wallet) => [normalizeAddress(wallet.address), wallet])
   );
   const result: ConnectedSiteItem[] = [];
   for (const origin in permissions) {
@@ -34,9 +39,9 @@ function updatePermissionsWithWallets(
     result.push({
       ...permission,
       origin,
-      wallets: permission.addresses.map((address) => {
-        const wallet = walletsMap.get(address);
-        return wallet || createBareWallet(address);
+      wallets: permission.addresses.map((normalizedAddress) => {
+        const wallet = walletsMap.get(normalizedAddress);
+        return wallet || createBareWallet(normalizedAddress);
       }),
     });
   }

@@ -1,14 +1,17 @@
+import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type {
   WalletRecord,
   WalletRecordVersion1,
   WalletRecordVersion2,
   WalletRecordVersion3,
+  WalletRecordVersion4,
 } from './types';
 
 type PossibleEntry =
   | WalletRecordVersion1
   | WalletRecordVersion2
   | WalletRecordVersion3
+  | WalletRecordVersion4
   | WalletRecord;
 
 function mapObject<V, NewValue>(
@@ -57,7 +60,7 @@ const upgrades: Record<string, (entry: PossibleEntry) => PossibleEntry> = {
       publicPreferences: entry.preferences,
     };
   },
-  4: (entry: PossibleEntry): WalletRecord => {
+  4: (entry: PossibleEntry): WalletRecordVersion4 => {
     assertVersion<WalletRecordVersion3>(entry, 3);
     return {
       ...entry,
@@ -66,6 +69,19 @@ const upgrades: Record<string, (entry: PossibleEntry) => PossibleEntry> = {
         completedAbilities: [],
         dismissedAbilities: [],
       },
+    };
+  },
+  5: (entry: PossibleEntry): WalletRecord => {
+    assertVersion<WalletRecordVersion4>(entry, 4);
+    return {
+      ...entry,
+      version: 5,
+      permissions: mapObject(entry.permissions, ([key, value]) => {
+        const addresses = value.addresses.map((address) =>
+          normalizeAddress(address)
+        );
+        return [key, { ...value, addresses }];
+      }),
     };
   },
 };
