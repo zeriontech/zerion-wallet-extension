@@ -200,7 +200,10 @@ function RequestAccountsView({
       <PageColumn
         style={{ ['--surface-background-color' as string]: 'var(--z-index-0)' }}
       >
-        <Badge icon={<ConnectIcon />} text="Connect Wallet" />
+        <Badge
+          icon={<ConnectIcon style={{ color: 'var(--neutral-500)' }} />}
+          text="Connect Wallet"
+        />
         <Spacer height={16} />
         <VStack gap={8}>
           <UIText kind="small/accent" color="var(--neutral-500)">
@@ -253,7 +256,10 @@ function RequestAccountsView({
               }}
             />
           </HStack>
-          <Address address={normalizeAddress(selectedWallet.address)} />
+          <Address
+            address={normalizeAddress(selectedWallet.address)}
+            infixColor="var(--neutral-500)"
+          />
         </VStack>
         <Spacer height={16} />
         <RequestAccountsPermissions originName={originName} />
