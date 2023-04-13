@@ -118,12 +118,12 @@ function Options() {
         </FillView>
 
         <VStack gap={16}>
-          {(hasWallets || userCanCreateInitialWallet) && (
+          {hasWallets || userCanCreateInitialWallet ? (
             <NewWalletOption
               beforeCreate={beforeCreate}
               mnemonicWalletGroups={mnemonicGroups || null}
             />
-          )}
+          ) : null}
           <Button
             kind="regular"
             as={Link}
