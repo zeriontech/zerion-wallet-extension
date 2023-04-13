@@ -1,6 +1,7 @@
 import React from 'react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
-import { Item, SurfaceList } from '../SurfaceList';
+import type { Item } from '../SurfaceList';
+import { SurfaceList } from '../SurfaceList';
 
 export function VirtualizedSurfaceList({
   items,

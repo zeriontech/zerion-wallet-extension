@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { GasPriceObject } from './GasPriceObject';
+import type { GasPriceObject } from './GasPriceObject';
 
 interface EIP1559Props {
   maxFeePerGas: string;

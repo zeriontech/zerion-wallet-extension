@@ -1,8 +1,8 @@
 import React from 'react';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { Networks } from 'src/modules/networks/Networks';
-import { Chain } from 'src/modules/networks/Chain';
+import type { Networks } from 'src/modules/networks/Networks';
+import type { Chain } from 'src/modules/networks/Chain';
 import { NetworkIcon } from '../NetworkIcon';
 
 export function NetworkIndicator({

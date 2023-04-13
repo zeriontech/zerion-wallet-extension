@@ -10,7 +10,7 @@ import {
   useSearchParams,
 } from 'react-router-dom';
 import { createChain } from 'src/modules/networks/Chain';
-import { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { Networks as NetworksType } from 'src/modules/networks/Networks';
 import { networksStore } from 'src/modules/networks/networks-store.client';
 import { useNetworks } from 'src/modules/networks/useNetworks';

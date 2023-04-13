@@ -1,5 +1,5 @@
-import { BigNumberish } from 'ethers';
-import { IncomingTransaction } from '../../types/IncomingTransaction';
+import type { BigNumberish } from 'ethers';
+import type { IncomingTransaction } from '../../types/IncomingTransaction';
 
 function isNotEmpty(value: null | undefined | string | number | BigNumberish) {
   return value != null && value !== '';

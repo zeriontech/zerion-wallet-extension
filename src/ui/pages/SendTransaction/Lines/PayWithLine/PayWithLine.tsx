@@ -4,7 +4,7 @@ import { getDecimals } from 'src/modules/networks/asset';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import type { Asset } from 'defi-sdk';
-import { Chain } from 'src/modules/networks/Chain';
+import type { Chain } from 'src/modules/networks/Chain';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';

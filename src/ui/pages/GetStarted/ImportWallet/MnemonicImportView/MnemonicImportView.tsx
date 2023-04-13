@@ -8,10 +8,8 @@ import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { walletPort } from 'src/ui/shared/channels';
-import {
-  MemoryLocationState,
-  useMemoryLocationState,
-} from '../memoryLocationState';
+import type { MemoryLocationState } from '../memoryLocationState';
+import { useMemoryLocationState } from '../memoryLocationState';
 import { AddressImportFlow } from './AddressImportFlow';
 import { getFirstNMnemonicWallets } from './getFirstNMnemonicWallets';
 import { useStaleTime } from './useStaleTime';

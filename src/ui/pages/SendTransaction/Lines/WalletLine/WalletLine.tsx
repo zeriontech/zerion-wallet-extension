@@ -1,6 +1,6 @@
 import React from 'react';
-import { Networks } from 'src/modules/networks/Networks';
-import { Chain } from 'src/modules/networks/Chain';
+import type { Networks } from 'src/modules/networks/Networks';
+import type { Chain } from 'src/modules/networks/Chain';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { UIText } from 'src/ui/ui-kit/UIText';

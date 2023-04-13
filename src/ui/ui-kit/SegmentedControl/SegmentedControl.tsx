@@ -1,8 +1,10 @@
-import React, { ReactNode, HTMLProps, createContext, useContext } from 'react';
+import type { ReactNode, HTMLProps } from 'react';
+import React, { createContext, useContext } from 'react';
 import cx from 'classnames';
 import { NavLink } from 'react-router-dom';
 import type { NavLinkProps } from 'react-router-dom';
-import { UIText, Kind as UITextKind } from 'src/ui/ui-kit/UIText';
+import type { Kind as UITextKind } from 'src/ui/ui-kit/UIText';
+import { UIText } from 'src/ui/ui-kit/UIText';
 import * as s from './SegmentedControl.module.css';
 
 export const kinds = ['primary', 'secondary'] as const;

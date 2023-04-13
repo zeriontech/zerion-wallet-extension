@@ -2,7 +2,8 @@ import { decrypt, encrypt } from 'src/modules/crypto';
 import produce from 'immer';
 import { nanoid } from 'nanoid';
 import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
-import { Chain, createChain } from 'src/modules/networks/Chain';
+import type { Chain } from 'src/modules/networks/Chain';
+import { createChain } from 'src/modules/networks/Chain';
 import { stableDecrypt } from 'src/modules/crypto';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getIndexFromPath } from 'src/shared/wallet/getNextAccountPath';
@@ -23,7 +24,7 @@ import {
   MnemonicWalletContainer,
   PrivateKeyWalletContainer,
 } from './model/WalletContainer';
-import { WalletNameFlag } from './model/WalletNameFlag';
+import type { WalletNameFlag } from './model/WalletNameFlag';
 
 function generateGroupName(
   record: WalletRecord | null,

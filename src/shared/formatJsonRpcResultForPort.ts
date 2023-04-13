@@ -1,4 +1,5 @@
-import { formatJsonRpcResult, JsonRpcResult } from '@json-rpc-tools/utils';
+import type { JsonRpcResult } from '@json-rpc-tools/utils';
+import { formatJsonRpcResult } from '@json-rpc-tools/utils';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function formatJsonRpcResultForPort<T = any | null | undefined>(

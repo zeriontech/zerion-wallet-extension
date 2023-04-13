@@ -1,6 +1,7 @@
 import React from 'react';
 import browser from 'webextension-polyfill';
-import { createRoot, Root } from 'react-dom/client';
+import type { Root } from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 import { configureUIClient } from 'src/modules/defi-sdk';
 import { BackgroundScriptUpdateHandler } from 'src/shared/core/BackgroundScriptUpdateHandler';
 import { initializeClientAnalytics } from 'src/shared/analytics/analytics.client';

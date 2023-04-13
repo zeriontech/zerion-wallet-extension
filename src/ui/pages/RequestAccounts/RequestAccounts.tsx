@@ -14,7 +14,7 @@ import { SurfaceList, SurfaceItemButton } from 'src/ui/ui-kit/SurfaceList';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { FillView } from 'src/ui/components/FillView';
-import { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
+import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';

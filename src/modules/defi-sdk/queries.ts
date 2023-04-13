@@ -1,7 +1,8 @@
-import { Asset, AddressPosition, useAssetsPrices } from 'defi-sdk';
+import type { Asset, AddressPosition } from 'defi-sdk';
+import { useAssetsPrices } from 'defi-sdk';
 import { useMemo } from 'react';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import { Chain } from '../networks/Chain';
+import type { Chain } from '../networks/Chain';
 import { backgroundCache } from './index';
 
 function normalizeNullableAddress(address: string | null) {

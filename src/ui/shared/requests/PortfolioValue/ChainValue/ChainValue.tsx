@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import type { PortfolioDecomposition } from 'defi-sdk';
 import type { Chain } from 'src/modules/networks/Chain';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';

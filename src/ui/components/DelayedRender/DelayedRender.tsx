@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 
 export function useRenderDelay(delay: number) {
   const [render, setRender] = useState(false);

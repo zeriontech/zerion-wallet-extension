@@ -1,5 +1,6 @@
 import browser from 'webextension-polyfill';
-import React, { ComponentPropsWithoutRef, ElementType, useMemo } from 'react';
+import type { ComponentPropsWithoutRef, ElementType } from 'react';
+import React, { useMemo } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import SwapIcon from 'jsx:src/ui/assets/actions/swap.svg';
 import SendIcon from 'jsx:src/ui/assets/actions/send.svg';

@@ -2,12 +2,10 @@ import React from 'react';
 import type { Asset } from 'defi-sdk';
 import { DataStatus } from 'defi-sdk';
 import { useAssetFromCacheOrAPI } from 'src/modules/defi-sdk/queries';
-import {
-  TransactionAction,
-  TransactionDescription as TransactionDescriptionType,
-} from 'src/modules/ethereum/transactions/describeTransaction';
-import { Networks } from 'src/modules/networks/Networks';
-import { Chain } from 'src/modules/networks/Chain';
+import type { TransactionDescription as TransactionDescriptionType } from 'src/modules/ethereum/transactions/describeTransaction';
+import { TransactionAction } from 'src/modules/ethereum/transactions/describeTransaction';
+import type { Networks } from 'src/modules/networks/Networks';
+import type { Chain } from 'src/modules/networks/Chain';
 import { TokenAddressLine } from '../TokenAddressLine';
 import { TokenSymbolLine } from '../TokenSymbolLine';
 import { AmountLine } from '../AmountLine';

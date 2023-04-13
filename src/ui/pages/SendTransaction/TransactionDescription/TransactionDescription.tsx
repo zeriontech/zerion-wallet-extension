@@ -2,12 +2,10 @@ import React, { useMemo } from 'react';
 import { ethers } from 'ethers';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
-import { Networks } from 'src/modules/networks/Networks';
+import type { Networks } from 'src/modules/networks/Networks';
 import { Chain } from 'src/modules/networks/Chain';
-import {
-  TransactionAction,
-  TransactionDescription as TransactionDescriptionType,
-} from 'src/modules/ethereum/transactions/describeTransaction';
+import type { TransactionDescription as TransactionDescriptionType } from 'src/modules/ethereum/transactions/describeTransaction';
+import { TransactionAction } from 'src/modules/ethereum/transactions/describeTransaction';
 import { useAssetFromCacheOrAPI } from 'src/modules/defi-sdk/queries';
 
 import { AssetLine } from '../Lines/AssetLine';

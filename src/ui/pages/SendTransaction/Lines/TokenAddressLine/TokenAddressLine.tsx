@@ -1,7 +1,7 @@
 import React from 'react';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
-import { Networks } from 'src/modules/networks/Networks';
-import { Chain } from 'src/modules/networks/Chain';
+import type { Networks } from 'src/modules/networks/Networks';
+import type { Chain } from 'src/modules/networks/Chain';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';

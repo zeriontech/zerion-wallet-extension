@@ -11,7 +11,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import CheckmarkCheckedIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { Media } from 'src/ui/ui-kit/Media';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
-import { BareWallet } from 'src/shared/types/BareWallet';
+import type { BareWallet } from 'src/shared/types/BareWallet';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
 import { DecorativeMessage } from 'src/ui/pages/GetStarted/components/DecorativeMessage';

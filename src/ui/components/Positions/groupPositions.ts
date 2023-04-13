@@ -3,7 +3,7 @@
  */
 import type { AddressPosition } from 'defi-sdk';
 import groupBy from 'lodash/groupBy';
-import { Chain } from 'src/modules/networks/Chain';
+import type { Chain } from 'src/modules/networks/Chain';
 import { getPositionValue, getFullPositionsValue } from './helpers';
 import { DEFAULT_NAME, DEFAULT_PROTOCOL } from './types';
 

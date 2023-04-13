@@ -4,16 +4,16 @@ import { useQuery } from 'react-query';
 import { ethers } from 'ethers';
 import { getNetworkFeeEstimation } from 'src/modules/ethereum/transactions/gasPrices/feeEstimation';
 import type { GasPriceObject } from 'src/modules/ethereum/transactions/gasPrices/GasPriceObject';
-import {
+import type {
   ChainGasPrice,
   EIP1559GasPrices,
-  gasChainPricesSubscription,
 } from 'src/modules/ethereum/transactions/gasPrices/requests';
+import { gasChainPricesSubscription } from 'src/modules/ethereum/transactions/gasPrices/requests';
 import type { EIP1559 } from 'src/modules/ethereum/transactions/gasPrices/EIP1559';
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { getDecimals } from 'src/modules/networks/asset';
-import { Chain } from 'src/modules/networks/Chain';
+import type { Chain } from 'src/modules/networks/Chain';
 import { baseToCommon } from 'src/shared/units/convert';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatSeconds } from 'src/shared/units/formatSeconds';

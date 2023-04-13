@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import { BareWallet } from 'src/shared/types/BareWallet';
-import {
-  Item,
-  SurfaceItemButton,
-  SurfaceList,
-} from 'src/ui/ui-kit/SurfaceList';
+import type { BareWallet } from 'src/shared/types/BareWallet';
+import type { Item } from 'src/ui/ui-kit/SurfaceList';
+import { SurfaceItemButton, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';

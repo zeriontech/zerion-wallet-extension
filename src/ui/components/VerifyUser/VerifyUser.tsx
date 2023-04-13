@@ -1,6 +1,6 @@
 import React, { useId } from 'react';
 import { useMutation, useQuery } from 'react-query';
-import { PublicUser } from 'src/shared/types/User';
+import type { PublicUser } from 'src/shared/types/User';
 import { accountPublicRPCPort } from 'src/ui/shared/channels';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Input } from 'src/ui/ui-kit/Input';

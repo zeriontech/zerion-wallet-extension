@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { getMediaContent, MediaContent } from 'src/ui/ui-kit/MediaContent';
-import { WalletProfileNFT } from '../types';
+import type { WalletProfileNFT } from '../types';
 import * as s from './styles.module.css';
 
 export function AvatarIcon({

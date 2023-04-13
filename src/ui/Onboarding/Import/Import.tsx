@@ -7,7 +7,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
-import { BareWallet } from 'src/shared/types/BareWallet';
+import type { BareWallet } from 'src/shared/types/BareWallet';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { HandshakeFailure } from 'src/ui/components/HandshakeFailure';

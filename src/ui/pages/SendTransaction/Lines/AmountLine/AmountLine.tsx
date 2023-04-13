@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Asset } from 'defi-sdk';
-import { Chain } from 'src/modules/networks/Chain';
+import type { Chain } from 'src/modules/networks/Chain';
 import { getDecimals } from 'src/modules/networks/asset';
 import { baseToCommon } from 'src/shared/units/convert';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';

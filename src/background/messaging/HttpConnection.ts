@@ -1,12 +1,11 @@
 import EventEmitter from 'events';
 import ky from 'ky';
-import {
-  formatJsonRpcError,
-  isJsonRpcRequest,
+import type {
   JsonRpcError,
   JsonRpcPayload,
   JsonRpcResult,
 } from '@json-rpc-tools/utils';
+import { formatJsonRpcError, isJsonRpcRequest } from '@json-rpc-tools/utils';
 import { networksStore } from 'src/modules/networks/networks-store.background';
 
 export class HttpConnection extends EventEmitter {

@@ -2,12 +2,9 @@ import type { AddressAction, ActionType } from 'defi-sdk';
 import { ethers } from 'ethers';
 import { capitalize } from 'capitalize-ts';
 import sortBy from 'lodash/sortBy';
-import { Networks } from 'src/modules/networks/Networks';
-import {
-  describeTransaction,
-  TransactionAction,
-  TransactionDescription,
-} from './describeTransaction';
+import type { Networks } from 'src/modules/networks/Networks';
+import type { TransactionDescription } from './describeTransaction';
+import { describeTransaction, TransactionAction } from './describeTransaction';
 import type { StoredTransactions, TransactionObject } from './types';
 
 export function dataToModel(transactions: StoredTransactions) {

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import ky from 'ky';
-import { InfiniteData, useInfiniteQuery } from 'react-query';
+import type { InfiniteData } from 'react-query';
+import { useInfiniteQuery } from 'react-query';
 import type {
   WalletAbility,
   WalletAbilityType,

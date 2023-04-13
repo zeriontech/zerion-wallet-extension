@@ -22,11 +22,8 @@ import {
   SegmentedControlRadio,
 } from 'src/ui/ui-kit/SegmentedControl';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
-import {
-  Item as ListItemType,
-  SurfaceItemButton,
-  SurfaceList,
-} from 'src/ui/ui-kit/SurfaceList';
+import type { Item as ListItemType } from 'src/ui/ui-kit/SurfaceList';
+import { SurfaceItemButton, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';

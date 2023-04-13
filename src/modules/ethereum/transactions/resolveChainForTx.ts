@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import type { Chain } from 'src/modules/networks/Chain';
-import { Networks } from 'src/modules/networks/Networks';
+import type { Networks } from 'src/modules/networks/Networks';
 import type { IncomingTransaction } from '../types/IncomingTransaction';
 
 export function getTransactionChainId(
