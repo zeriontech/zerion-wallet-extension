@@ -1,13 +1,12 @@
 import React, { useEffect, useLayoutEffect, useReducer, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import IconLeft from 'jsx:src/ui/assets/arrow-left.svg';
 import { RenderArea } from 'react-area';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Store } from 'store-unit';
 import { useStore } from '@store-unit/react';
 import { getPageTemplateType } from 'src/ui/shared/getPageTemplateName';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
+import { BackButton } from '../BackButton';
 
 function capitalize(str: string) {
   return `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
@@ -44,16 +43,6 @@ const isDialog = templateType === 'dialog';
 
 export function toggleUrlBar(on: boolean) {
   urlBarStore.setState(on);
-}
-
-export function BackButton(
-  props: React.ButtonHTMLAttributes<HTMLButtonElement>
-) {
-  return (
-    <UnstyledButton aria-label="Go back" style={{ padding: 8 }} {...props}>
-      <IconLeft role="presentation" style={{ display: 'block' }} />
-    </UnstyledButton>
-  );
 }
 
 // This value is just a result of inner components
@@ -107,6 +96,7 @@ export function URLBar() {
           ) : (
             <>
               <BackButton
+                style={{ padding: 8 }}
                 onClick={() => navigate(-1)}
                 title={`Press "backspace" to navigate back`}
               />

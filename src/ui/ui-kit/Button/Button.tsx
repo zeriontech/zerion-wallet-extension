@@ -7,7 +7,7 @@ import cx from 'classnames';
 import { UIText } from '../UIText';
 import * as styles from './styles.module.css';
 
-type Kind = 'primary' | 'regular' | 'ghost' | 'danger';
+type Kind = 'primary' | 'regular' | 'neutral' | 'ghost' | 'danger';
 type Size = 60 | 56 | 46 | 44 | 40 | 36 | 32 | 28;
 
 const kinds: { [kind in Kind]: (size: number) => React.CSSProperties } = {
@@ -18,6 +18,7 @@ const kinds: { [kind in Kind]: (size: number) => React.CSSProperties } = {
     color: 'var(--black)',
     border: '1px solid var(--neutral-400)',
   }),
+  neutral: () => ({}),
   ghost: (size) => {
     const padding = size <= 44 ? 4 : 8;
     return { paddingLeft: padding, paddingRight: padding };

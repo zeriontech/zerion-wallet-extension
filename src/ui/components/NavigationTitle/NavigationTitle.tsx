@@ -1,7 +1,13 @@
 import React, { useLayoutEffect } from 'react';
 import { Content } from 'react-area';
 import { useNavigate } from 'react-router-dom';
+<<<<<<< HEAD
 import { BackButton, toggleUrlBar } from '../URLBar/URLBar';
+=======
+import { BackButton } from '../BackButton';
+import { toggleUrlBar } from '../URLBar/URLBar';
+import { WalletAvatar } from '../WalletAvatar';
+>>>>>>> 6e12284 (Extract BackButton component)
 
 export function NavigationTitle({
   title,
@@ -43,7 +49,7 @@ export function NavigationTitle({
     <>
       {backTo ? (
         <Content name="navigation-bar-back-button">
-          <BackButton onClick={() => navigate(backTo)} />
+          <BackButton style={{ padding: 8 }} onClick={() => navigate(backTo)} />
         </Content>
       ) : null}
       <Content name="navigation-bar">{title}</Content>

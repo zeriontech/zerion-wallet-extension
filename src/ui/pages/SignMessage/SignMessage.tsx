@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useMutation, useQuery } from 'react-query';
+import { useQuery } from 'react-query';
 import { useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -12,7 +12,6 @@ import { Surface } from 'src/ui/ui-kit/Surface';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { Background } from 'src/ui/components/Background';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
-import { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
 import { getError } from 'src/shared/errors/getError';
 import { invariant } from 'src/shared/invariant';
@@ -21,6 +20,11 @@ import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
+import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
+import {
+  usePersonalSignMutation,
+  useSignTypedData_v4Mutation,
+} from 'src/ui/shared/requests/message-signing';
 
 function ItemSurface({
   style,
@@ -40,7 +44,11 @@ function MessageRow({ message }: { message: string }) {
         Data to Sign
       </UIText>
       <ItemSurface style={{ overflow: 'auto' }}>
-        <UIText kind="body/regular" color="var(--neutral-700)">
+        <UIText
+          kind="body/regular"
+          color="var(--neutral-700)"
+          style={{ wordBreak: 'break-word' }}
+        >
           {toUtf8String(message)}
         </UIText>
       </ItemSurface>
@@ -64,45 +72,6 @@ function TypedDataRow({ typedData }: { typedData: string }) {
         </UIText>
       </ItemSurface>
     </VStack>
-  );
-}
-
-type SignMutationProps = { onSuccess: (value: string) => void };
-
-function useSignTypedData_v4Mutation({ onSuccess }: SignMutationProps) {
-  return useMutation(
-    async ({
-      typedData,
-      initiator,
-    }: {
-      typedData: TypedData | string;
-      initiator: string;
-    }) => {
-      return await walletPort.request('signTypedData_v4', {
-        typedData,
-        initiator,
-      });
-    },
-    {
-      // onMutate creates a context that we can use in global onError handler
-      // to know more about a mutation (in react-query@v4 you should use "context" instead)
-      onMutate: () => '_signTypedData',
-      onSuccess,
-    }
-  );
-}
-
-function usePersonalSignMutation({ onSuccess }: SignMutationProps) {
-  return useMutation(
-    async (params: { params: [string]; initiator: string }) => {
-      return await walletPort.request('personalSign', params);
-    },
-    {
-      // onMutate creates a context that we can use in global onError handler
-      // to know more about a mutation (in react-query@v4 you should use "context" instead)
-      onMutate: () => 'signMessage',
-      onSuccess,
-    }
   );
 }
 
@@ -135,6 +104,8 @@ function SignMessageContent({
     ? getError(personalSignMutation.error)
     : null;
   const hostname = useMemo(() => new URL(origin).hostname, [origin]);
+
+  const handleReject = () => windowPort.reject(windowId);
 
   return (
     <Background backgroundKind="neutral">
@@ -200,13 +171,7 @@ function SignMessageContent({
               gap: 8,
             }}
           >
-            <Button
-              kind="regular"
-              type="button"
-              onClick={() => {
-                windowPort.reject(windowId);
-              }}
-            >
+            <Button kind="regular" type="button" onClick={handleReject}>
               Cancel
             </Button>
             {typedData ? (
@@ -237,6 +202,7 @@ function SignMessageContent({
           </div>
         </VStack>
       </PageStickyFooter>
+      <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
     </Background>
   );
 }

@@ -1,0 +1,13 @@
+.speechBubble {
+  position: relative;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: var(--neutral-100);
+}
+
+.angle {
+  position: absolute;
+  top: -8px;
+  left: 10%;
+  color: var(--neutral-100);
+}

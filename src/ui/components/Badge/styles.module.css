@@ -1,0 +1,12 @@
+.badge {
+  /* kinda make it behave like an inline-block, but without creating undesired line-height */
+  width: max-content;
+  max-width: 100%;
+}
+
+.badgeContent {
+  border-radius: 24px;
+  padding: 4px 12px 4px 8px;
+  border: 1px solid var(--neutral-500);
+  background-color: var(--white);
+}
