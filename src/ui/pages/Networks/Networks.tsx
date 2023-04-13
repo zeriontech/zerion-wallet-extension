@@ -346,7 +346,7 @@ function NetworkPage({
 function TabsView({ networks }: { networks: NetworksType }) {
   return (
     <>
-      <PageFullBleedColumn padding={false}>
+      <PageFullBleedColumn paddingInline={false}>
         <SegmentedControlGroup style={{ paddingTop: 4, paddingInline: 16 }}>
           <SegmentedControlLink to="/networks" replace={true} end={true}>
             Mainnets

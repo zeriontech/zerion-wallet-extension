@@ -3,7 +3,6 @@ import { useMutation, useQuery } from 'react-query';
 import { useParams } from 'react-router-dom';
 import { Content } from 'react-area';
 import { useSelect } from 'downshift';
-import { Background } from 'src/ui/components/Background';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
@@ -19,6 +18,9 @@ import { SurfaceItemButton, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import type { WalletAbility } from 'src/shared/types/Daylight';
 import { invariant } from 'src/shared/invariant';
 import { walletPort } from 'src/ui/shared/channels';
+import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
+import { PageBottom } from 'src/ui/components/PageBottom';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { getAbility, getAbilityLinkTitle } from '../daylight';
 import { markAbility, unmarkAbility, useFeedInfo } from '../stored';
 import { Ability } from './Ability';
@@ -208,7 +210,7 @@ export function AbilityPage() {
   const loading = markLoading || unmarkLoading;
 
   return (
-    <Background backgroundKind="transparent">
+    <>
       <Content name="navigation-bar-end">
         <AbilityMenu
           onMark={status ? undefined : handleMarkButtonClick}
@@ -232,14 +234,17 @@ export function AbilityPage() {
             <ViewLoading />
           )}
         </div>
-        {data?.ability ? (
+      </PageColumn>
+      {data?.ability ? (
+        <PageStickyFooter>
+          <Spacer height={8} />
           <Button
             size={40}
             as={UnstyledAnchor}
             href={data.ability.action.linkUrl}
             target="_blank"
             rel="noopener noreferrer"
-            style={{ position: 'fixed', bottom: 48, left: 16, right: 16 }}
+            style={{ position: 'sticky', bottom: 48 }}
             onClick={() => {
               walletPort.request('daylightAction', {
                 event_name: 'Perks: External Link Clicked',
@@ -254,8 +259,9 @@ export function AbilityPage() {
               <LinkIcon />
             </HStack>
           </Button>
-        ) : null}
-      </PageColumn>
-    </Background>
+          <PageBottom />
+        </PageStickyFooter>
+      ) : null}
+    </>
   );
 }

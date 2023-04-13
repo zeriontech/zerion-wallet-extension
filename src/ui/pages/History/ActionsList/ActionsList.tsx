@@ -34,7 +34,11 @@ export function ActionsList({
     <VStack gap={24}>
       {Object.entries(groupedByDate).map(([timestamp, items], index) => (
         <VStack gap={12} key={timestamp}>
-          <HStack gap={8} justifyContent="space-between">
+          <HStack
+            gap={8}
+            justifyContent="space-between"
+            style={{ paddingInline: 'var(--column-padding-inline)' }}
+          >
             <UIText kind="body/accent">
               {new Intl.DateTimeFormat('en', {
                 dateStyle: 'medium',

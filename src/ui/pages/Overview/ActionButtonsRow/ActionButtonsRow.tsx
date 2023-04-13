@@ -1,4 +1,5 @@
 import browser from 'webextension-polyfill';
+import cx from 'classnames';
 import type { ComponentPropsWithoutRef, ElementType } from 'react';
 import React, { useMemo } from 'react';
 import { useMutation, useQuery } from 'react-query';
@@ -11,6 +12,8 @@ import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { walletPort } from 'src/ui/shared/channels';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import { ThemeStore, themeStore } from 'src/ui/features/appearance';
+import { useStore } from '@store-unit/react';
 import * as s from './styles.module.css';
 
 function ActionButton<As extends ElementType = 'a'>({
@@ -23,8 +26,15 @@ function ActionButton<As extends ElementType = 'a'>({
   title: React.AnchorHTMLAttributes<HTMLAnchorElement>['title'];
 } & { as?: As } & ComponentPropsWithoutRef<As>) {
   const Element = as || UnstyledAnchor;
+  const themeState = useStore(themeStore);
   return (
-    <Element {...props} className={s.actionButton}>
+    <Element
+      {...props}
+      className={cx(
+        s.actionButton,
+        ThemeStore.isDark(themeState) ? s.dark : undefined
+      )}
+    >
       <VStack gap={4} style={{ placeItems: 'center' }}>
         <div className={s.icon} title={title}>
           {icon}
@@ -80,6 +90,7 @@ export function ActionButtonsRow() {
     }
   };
 
+  const iconStyle = { width: 28, height: 28 };
   return (
     <ul
       style={{
@@ -94,7 +105,7 @@ export function ActionButtonsRow() {
       <li>
         <ActionButton
           title="Swap"
-          icon={<SwapIcon />}
+          icon={<SwapIcon style={iconStyle} />}
           href={`https://app.zerion.io/swap?${addWalletParams}`}
           onClick={performAction}
           target="_blank"
@@ -104,7 +115,7 @@ export function ActionButtonsRow() {
       <li>
         <ActionButton
           title="Send"
-          icon={<SendIcon />}
+          icon={<SendIcon style={iconStyle} />}
           href={`https://app.zerion.io/send?${addWalletParams}`}
           onClick={performAction}
           target="_blank"
@@ -115,14 +126,14 @@ export function ActionButtonsRow() {
         <ActionButton
           title="Receive"
           as={UnstyledLink}
-          icon={<ReceiveIcon />}
+          icon={<ReceiveIcon style={iconStyle} />}
           to={`/receive?address=${wallet.address}`}
         />
       </li>
       <li>
         <ActionButton
           title="Bridge"
-          icon={<BridgeIcon />}
+          icon={<BridgeIcon style={iconStyle} />}
           href={`https://app.zerion.io/bridge?${addWalletParams}`}
           onClick={performAction}
           target="_blank"
@@ -132,7 +143,7 @@ export function ActionButtonsRow() {
       <li>
         <ActionButton
           title="Buy"
-          icon={<BuyIcon />}
+          icon={<BuyIcon style={iconStyle} />}
           href={`https://app.zerion.io/deposit?${addWalletParams}`}
           onClick={performAction}
           target="_blank"

@@ -357,6 +357,8 @@ export function App({ initialView, mode }: AppProps) {
     const result = [];
     if (templateType === 'dialog') {
       result.push(styles.isDialog);
+    } else if (templateType === 'tab') {
+      result.push(styles.isTab);
     }
     if (mode === 'onboarding') {
       result.push(styles.isOnboarding);
@@ -390,7 +392,9 @@ export function App({ initialView, mode }: AppProps) {
                 combination="ctrl+alt+0"
                 onKeyDown={() => {
                   // Helper for development and debugging :)
-                  window.open(window.location.href, '_blank');
+                  const url = new URL(window.location.href);
+                  url.searchParams.append('templateType', 'tab');
+                  window.open(url, '_blank');
                 }}
               />
               <VersionUpgrade>

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { useAddressPortfolio } from 'defi-sdk';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -13,6 +13,7 @@ import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 // import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
 // import { FillView } from 'src/ui/components/FillView';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
+import PersonIcon from 'jsx:src/ui/assets/person.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { usePendingTransactions } from 'src/ui/transactions/usePendingTransactions';
@@ -35,6 +36,7 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { usePreferences } from 'src/ui/features/preferences';
+import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -121,8 +123,13 @@ function CurrentAccountControls() {
         to="/wallet-select"
         title="Select Account"
       >
-        <CurrentAccount wallet={wallet} />
-        <ArrowDownIcon />
+        <HStack gap={4} alignItems="center">
+          <PersonIcon />
+          <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+            <CurrentAccount wallet={wallet} />
+            <ArrowDownIcon />
+          </span>
+        </HStack>
       </Button>
       <CopyButton address={addressToCopy} />
     </HStack>
@@ -164,6 +171,9 @@ function RenderTimeMeasure() {
 }
 
 function OverviewComponent() {
+  useBodyStyle(
+    useMemo(() => ({ ['--background' as string]: 'var(--neutral-100)' }), [])
+  );
   const { singleAddress, singleAddressNormalized, params, ready } =
     useAddressParams();
   const { preferences, setPreferences } = usePreferences();
@@ -184,12 +194,12 @@ function OverviewComponent() {
   return (
     <PageColumn>
       <PageFullBleedColumn
-        padding={true}
+        paddingInline={true}
         style={{
           position: 'sticky',
           top: 0,
           zIndex: 'var(--navbar-index)',
-          backgroundColor: 'var(--white)',
+          backgroundColor: 'var(--background)',
         }}
       >
         <Spacer height={8} />
@@ -204,138 +214,153 @@ function OverviewComponent() {
           </HStack>
         </HStack>
       </PageFullBleedColumn>
-      <PageFullBleedColumn
-        padding={true}
-        style={{ backgroundColor: 'var(--white)' }}
-      >
-        <Spacer height={24} />
-        <div style={{ height: isLoadingPortfolio ? 68 : undefined }}>
-          <HStack gap={16} alignItems="center">
-            {!isLoadingPortfolio ? (
-              <WalletAvatar
-                address={singleAddress}
-                size={64}
-                borderRadius={6}
-              />
-            ) : null}
-            <VStack gap={0}>
-              <UIText kind="headline/hero">
-                {value?.total_value != null ? (
-                  <NeutralDecimals
-                    parts={formatCurrencyToParts(
-                      value.total_value,
-                      'en',
-                      'usd'
-                    )}
-                  />
-                ) : (
-                  NBSP
-                )}
-              </UIText>
-              {value?.relative_change_24h ? (
-                <PercentChange
-                  value={value.relative_change_24h}
-                  locale="en"
-                  render={(change) => {
-                    const sign = change.isPositive ? '+' : '';
-                    return (
-                      <UIText
-                        kind="body/regular"
-                        color={
-                          change.isNonNegative
-                            ? 'var(--positive-500)'
-                            : 'var(--negative-500)'
-                        }
-                      >
-                        {`${sign}${change.formatted}`}{' '}
-                        {value?.absolute_change_24h
-                          ? `(${formatCurrencyValue(
-                              value?.absolute_change_24h,
-                              'en',
-                              'usd'
-                            )})`
-                          : ''}{' '}
-                        Today
-                      </UIText>
-                    );
-                  }}
+      <Spacer height={24} />
+      <div style={{ height: isLoadingPortfolio ? 68 : undefined }}>
+        <HStack gap={16} alignItems="center">
+          {!isLoadingPortfolio ? (
+            <WalletAvatar address={singleAddress} size={64} borderRadius={6} />
+          ) : null}
+          <VStack gap={0}>
+            <UIText kind="headline/hero">
+              {value?.total_value != null ? (
+                <NeutralDecimals
+                  parts={formatCurrencyToParts(value.total_value, 'en', 'usd')}
                 />
               ) : (
-                <UIText kind="body/regular">{NBSP}</UIText>
+                NBSP
               )}
-            </VStack>
-          </HStack>
-        </div>
-        <Spacer height={20} />
-        <ActionButtonsRow />
-        <DevelopmentOnly>
-          <RenderTimeMeasure />
-        </DevelopmentOnly>
-        <Spacer height={20} />
-      </PageFullBleedColumn>
+            </UIText>
+            {value?.relative_change_24h ? (
+              <PercentChange
+                value={value.relative_change_24h}
+                locale="en"
+                render={(change) => {
+                  const sign = change.isPositive ? '+' : '';
+                  return (
+                    <UIText
+                      kind="body/regular"
+                      color={
+                        change.isNonNegative
+                          ? 'var(--positive-500)'
+                          : 'var(--negative-500)'
+                      }
+                    >
+                      {`${sign}${change.formatted}`}{' '}
+                      {value?.absolute_change_24h
+                        ? `(${formatCurrencyValue(
+                            value?.absolute_change_24h,
+                            'en',
+                            'usd'
+                          )})`
+                        : ''}{' '}
+                      Today
+                    </UIText>
+                  );
+                }}
+              />
+            ) : (
+              <UIText kind="body/regular">{NBSP}</UIText>
+            )}
+          </VStack>
+        </HStack>
+      </div>
+      <Spacer height={20} />
+      <ActionButtonsRow />
+      <DevelopmentOnly>
+        <RenderTimeMeasure />
+      </DevelopmentOnly>
+      <Spacer height={20} />
       <PageFullBleedColumn
-        padding={false}
+        paddingInline={false}
         style={{
           position: 'sticky',
-          top: 44,
+          top: 48,
           zIndex: 'var(--max-layout-index)',
-          backgroundColor: 'var(--white)',
+          backgroundColor: 'var(--background)',
         }}
       >
-        <SegmentedControlGroup style={{ paddingTop: 4 }}>
-          <SegmentedControlLink to="/overview" end={true}>
-            Tokens
-          </SegmentedControlLink>
-          <SegmentedControlLink to="/overview/nfts">NFTs</SegmentedControlLink>
-          <SegmentedControlLink to="/overview/history">
-            History <PendingTransactionsIndicator />
-          </SegmentedControlLink>
-          <SegmentedControlLink
-            to="/overview/feed"
-            onClick={() => {
-              walletPort.request('daylightAction', {
-                event_name: 'Perks: Card Opened',
-                address: singleAddress,
-              });
+        <div
+          style={{
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            backgroundColor: 'var(--white)',
+            paddingTop: 12,
+          }}
+        >
+          <SegmentedControlGroup
+            style={{
+              paddingTop: 4,
+              paddingInline: 16,
+              gap: 24,
+              borderBottom: 'none',
             }}
+            childrenLayout="start"
           >
-            Perks
-          </SegmentedControlLink>
-        </SegmentedControlGroup>
-      </PageFullBleedColumn>
-      <Spacer height={24} />
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <DelayedRender
-              /** Cheap perceived performance hack: render expensive Positions component later so that initial UI render is faster */
-              delay={16}
+            <SegmentedControlLink to="/overview" end={true}>
+              Tokens
+            </SegmentedControlLink>
+            <SegmentedControlLink to="/overview/nfts">
+              NFTs
+            </SegmentedControlLink>
+            <SegmentedControlLink to="/overview/history">
+              History <PendingTransactionsIndicator />
+            </SegmentedControlLink>
+            <SegmentedControlLink
+              to="/overview/feed"
+              onClick={() => {
+                walletPort.request('daylightAction', {
+                  event_name: 'Perks: Card Opened',
+                  address: singleAddress,
+                });
+              }}
             >
+              Perks
+            </SegmentedControlLink>
+          </SegmentedControlGroup>
+        </div>
+      </PageFullBleedColumn>
+      <PageFullBleedColumn
+        paddingInline={false}
+        style={{
+          flexGrow: 1,
+          backgroundColor: 'var(--white)',
+          ['--surface-background-color' as string]: 'var(--white)',
+        }}
+      >
+        <Spacer height={24} />
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <DelayedRender
+                /** Cheap perceived performance hack: render expensive Positions component later so that initial UI render is faster */
+                delay={16}
+              >
+                <ViewSuspense>
+                  <Positions
+                    chain={preferences.overviewChain}
+                    onChainChange={setChain}
+                  />
+                </ViewSuspense>
+              </DelayedRender>
+            }
+          />
+          <Route path="/nfts" element={<NonFungibleTokens />} />
+          <Route
+            path="/history"
+            element={
               <ViewSuspense>
-                <Positions
+                <HistoryList
                   chain={preferences.overviewChain}
                   onChainChange={setChain}
                 />
               </ViewSuspense>
-            </DelayedRender>
-          }
-        />
-        <Route path="/nfts" element={<NonFungibleTokens />} />
-        <Route
-          path="/history"
-          element={
-            <ViewSuspense>
-              <HistoryList
-                chain={preferences.overviewChain}
-                onChainChange={setChain}
-              />
-            </ViewSuspense>
-          }
-        />
-        <Route path="/feed" element={<Feed />} />
-      </Routes>
-      <PageBottom />
+            }
+          />
+          <Route path="/feed" element={<Feed />} />
+        </Routes>
+        <PageBottom />
+      </PageFullBleedColumn>
     </PageColumn>
   );
 }

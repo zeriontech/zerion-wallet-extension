@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { FillView } from 'src/ui/components/FillView';
@@ -8,9 +8,9 @@ import { walletPort } from 'src/ui/shared/channels';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Media } from 'src/ui/ui-kit/Media';
-import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
+import { Item, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
+import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { NBSP } from 'src/ui/shared/typography';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
@@ -18,6 +18,12 @@ import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { IsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
+import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
+import { SeedType } from 'src/shared/SeedType';
+import { NavigationTitle } from 'src/ui/components/NavigationTitle';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import AddWalletIcon from 'jsx:src/ui/assets/add-wallet.svg';
+import { Button } from 'src/ui/ui-kit/Button';
 
 export function WalletSelect() {
   const navigate = useNavigate();
@@ -36,91 +42,136 @@ export function WalletSelect() {
       },
     }
   );
+  const hasMnemonicWallets = useMemo(
+    () =>
+      walletGroups?.some(
+        (group) => group.walletContainer.seedType === SeedType.mnemonic
+      ),
+    [walletGroups]
+  );
   if (isLoading) {
     return null;
   }
-  return (
-    <PageColumn>
-      <PageTop />
-      {!walletGroups?.length ? (
+  const title = (
+    <NavigationTitle
+      title="Wallets"
+      elementEnd={
+        <Button
+          kind="ghost"
+          size={40}
+          as={UnstyledLink}
+          to="/get-started"
+          title="Add Wallet"
+        >
+          <AddWalletIcon style={{ width: 24, height: 24 }} />
+        </Button>
+      }
+    />
+  );
+  if (!walletGroups?.length) {
+    return (
+      <PageColumn>
+        {title}
         <FillView>
           <UIText kind="headline/h2" color="var(--neutral-500)">
             No Wallets
           </UIText>
         </FillView>
-      ) : (
-        <SurfaceList
-          items={[
-            ...walletGroups
-              .flatMap((group) => group.walletContainer.wallets)
-              .map((wallet) => ({
-                key: wallet.address,
-                onClick: () => {
-                  setCurrentAddressMutation.mutate(wallet.address);
-                },
-                component: (
-                  <HStack
-                    gap={4}
-                    justifyContent="space-between"
-                    alignItems="center"
-                  >
-                    <Media
-                      image={
-                        <IsConnectedToActiveTab
-                          address={wallet.address}
-                          render={({ data: isConnected }) => (
-                            <WalletAvatar
-                              address={wallet.address}
-                              size={24}
-                              active={Boolean(isConnected)}
-                              borderRadius={4}
-                            />
-                          )}
-                        />
-                      }
-                      text={<WalletDisplayName wallet={wallet} />}
-                      detailText={
-                        <PortfolioValue
-                          address={wallet.address}
-                          render={(entry) => (
-                            <UIText kind="caption/regular">
-                              {entry.value
-                                ? formatCurrencyValue(
-                                    entry.value?.total_value || 0,
-                                    'en',
-                                    'usd'
-                                  )
-                                : NBSP}
-                            </UIText>
-                          )}
-                        />
-                      }
+      </PageColumn>
+    );
+  }
+  const items: Item[] = [];
+  for (const group of walletGroups) {
+    if (hasMnemonicWallets && walletGroups.length > 1) {
+      items.push({
+        key: group.id,
+        pad: false,
+        component: (
+          <UIText
+            kind="caption/accent"
+            color="var(--neutral-700)"
+            style={{
+              paddingBottom: 4,
+              paddingTop: 12,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {group.walletContainer.seedType === SeedType.privateKey
+              ? 'Private Key'
+              : group.name}
+          </UIText>
+        ),
+      });
+    }
+    for (const wallet of group.walletContainer.wallets) {
+      items.push({
+        key: wallet.address,
+        onClick: () => {
+          setCurrentAddressMutation.mutate(wallet.address);
+        },
+        component: (
+          <HStack gap={4} justifyContent="space-between" alignItems="center">
+            <Media
+              image={
+                <IsConnectedToActiveTab
+                  address={wallet.address}
+                  render={({ data: isConnected }) => (
+                    <WalletAvatar
+                      address={wallet.address}
+                      size={40}
+                      active={Boolean(isConnected)}
+                      borderRadius={4}
                     />
-                    {wallet.address.toLowerCase() ===
-                    singleAddress.toLowerCase() ? (
-                      <span style={{ color: 'var(--primary)' }}>✔</span>
-                    ) : null}
-                  </HStack>
-                ),
-              })),
-            {
-              key: 0,
-              to: '/wallets',
-              separatorTop: true,
-              component: (
-                <div style={{ color: 'var(--primary)' }}>Manage Wallets</div>
-              ),
-            },
-            {
-              key: 1,
-              to: '/get-started',
-              component: (
-                <div style={{ color: 'var(--primary)' }}>+ Add Wallet</div>
-              ),
-            },
-          ]}
-        />
-      )}
+                  )}
+                />
+              }
+              text={
+                <UIText kind="small/regular">
+                  <WalletDisplayName wallet={wallet} />
+                </UIText>
+              }
+              detailText={
+                <PortfolioValue
+                  address={wallet.address}
+                  render={(entry) => (
+                    <UIText kind="headline/h3">
+                      {entry.value ? (
+                        <NeutralDecimals
+                          parts={formatCurrencyToParts(
+                            entry.value?.total_value || 0,
+                            'en',
+                            'usd'
+                          )}
+                        />
+                      ) : (
+                        NBSP
+                      )}
+                    </UIText>
+                  )}
+                />
+              }
+            />
+            {wallet.address.toLowerCase() === singleAddress.toLowerCase() ? (
+              <span style={{ color: 'var(--primary)' }}>✔</span>
+            ) : null}
+          </HStack>
+        ),
+      });
+    }
+  }
+  items.push({
+    key: 0,
+    to: '/wallets',
+    separatorTop: true,
+    component: <div style={{ color: 'var(--primary)' }}>Manage Wallets</div>,
+  });
+  return (
+    <PageColumn>
+      {title}
+      <PageTop />
+      <SurfaceList items={items} />
       <PageBottom />
     </PageColumn>
   );

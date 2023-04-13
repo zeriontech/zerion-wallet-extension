@@ -1,0 +1,9 @@
+.mediaWrapper {
+  border-radius: 8px;
+}
+
+@media (hover: hover) {
+  .link:hover .mediaWrapper {
+    outline: 2px solid var(--primary);
+  }
+}

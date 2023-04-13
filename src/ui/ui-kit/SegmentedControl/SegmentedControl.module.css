@@ -13,7 +13,7 @@
   box-shadow: 0 0 0px 1px var(--white), 0 0 0px 3px var(--primary);
 }
 
-.wrap > * {
+.wrap.spreadChildrenEvenly > * {
   flex: 1;
 }
 
@@ -22,7 +22,7 @@
   position: relative;
   text-align: center;
   cursor: pointer;
-  padding-bottom: 10px;
+  padding-bottom: 7px;
   text-decoration: none;
 }
 

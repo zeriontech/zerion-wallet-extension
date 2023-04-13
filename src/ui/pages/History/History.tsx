@@ -140,7 +140,13 @@ export function HistoryList({
   if (!transactions.length) {
     return (
       <>
-        <div style={{ display: 'flex', justifyContent: 'end' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'end',
+            paddingInline: 'var(--column-padding-inline)',
+          }}
+        >
           {networkSelect}
         </div>
         <EmptyViewForNetwork

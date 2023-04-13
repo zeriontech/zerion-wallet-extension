@@ -1,6 +1,8 @@
 import React from 'react';
 import cn from 'classnames';
 import type { LinkProps } from 'react-router-dom';
+import { useStore } from '@store-unit/react';
+import { ThemeStore, themeStore } from 'src/ui/features/appearance';
 import { Surface } from '../Surface/Surface';
 import { UnstyledAnchor } from '../UnstyledAnchor';
 import { UnstyledButton } from '../UnstyledButton';
@@ -135,8 +137,10 @@ export function SurfaceList({
   const firstItemIsInteractive = items.length && isInteractive(items[0]);
   const lastItemIsInteractive =
     items.length && isInteractive(items[items.length - 1]);
+  const themeState = useStore(themeStore);
   return (
     <Surface
+      className={cn(s.root, ThemeStore.isDark(themeState) ? s.dark : undefined)}
       style={{
         paddingBlockStart: firstItemIsInteractive ? 6 : 0,
         paddingBlockEnd: lastItemIsInteractive ? 6 : 0,

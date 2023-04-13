@@ -1,3 +1,11 @@
+.root {
+  --highlight-color: var(--neutral-100);
+}
+
+.root.dark {
+  --highlight-color: var(--neutral-200);
+}
+
 .option {
   width: 100%;
   display: block;
@@ -21,12 +29,12 @@
 }
 
 .option.highlighted .decoration {
-  background-color: var(--neutral-200);
+  background-color: var(--highlight-color);
 }
 
 @media (hover: hover) {
   .option:hover .decoration {
-    background-color: var(--neutral-200);
+    background-color: var(--highlight-color);
   }
 }
 
@@ -35,5 +43,5 @@
 }
 
 .option:focus:focus-visible .decoration {
-  background-color: var(--neutral-200);
+  background-color: var(--highlight-color);
 }
