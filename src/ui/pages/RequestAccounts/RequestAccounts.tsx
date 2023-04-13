@@ -212,11 +212,8 @@ function RequestAccountsView({
           </UIText>
           <HStack gap={8} alignItems="center">
             <SiteFaviconImg
-              style={{
-                width: iconSize,
-                height: iconSize,
-                borderRadius: iconBorderRadius,
-              }}
+              size={iconSize}
+              style={{ borderRadius: iconBorderRadius }}
               url={origin}
               alt={`Logo for ${origin}`}
             />

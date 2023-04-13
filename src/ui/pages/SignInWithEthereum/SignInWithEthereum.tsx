@@ -111,11 +111,8 @@ export function SignInWithEthereum() {
                 </UIText>
                 <HStack gap={8} alignItems="center">
                   <SiteFaviconImg
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 6,
-                    }}
+                    size={32}
+                    style={{ borderRadius: 6 }}
                     url={origin}
                     alt={`Logo for ${origin}`}
                   />

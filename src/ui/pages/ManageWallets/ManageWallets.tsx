@@ -117,9 +117,11 @@ function WalletGroups() {
       [SeedType, typeof grouped['string']]
     >;
   }, [walletGroups]);
+
   if (isLoading) {
     return null;
   }
+
   return (
     <PageColumn>
       {groupedBySeedType == null ? (

@@ -43,6 +43,7 @@ import { chainConfigStore } from 'src/modules/ethereum/chains/ChainConfigStore';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { isSiweLike } from 'src/modules/ethereum/message-signing/SIWE';
+import { getRemoteConfigValue } from 'src/modules/remote-config';
 import { DaylightEventParams, emitter, ScreenViewParams } from '../events';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
@@ -650,6 +651,11 @@ export class Wallet {
       event_name: 'Perks: Reopen Tab Clicked',
       ability_id: abilityId,
     });
+  }
+
+  async userCanCreateInitialWallet({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    return getRemoteConfigValue('user_can_create_initial_wallet');
   }
 
   async wallet_setWalletNameFlag({
