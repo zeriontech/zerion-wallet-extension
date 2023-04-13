@@ -1,4 +1,5 @@
-import React, { useContext, useEffect, useLayoutEffect, useRef } from 'react';
+import type React from 'react';
+import { useContext, useEffect, useLayoutEffect, useRef } from 'react';
 import { UIContext } from '../UIContext';
 
 function setStyleProperty(node: HTMLElement, key: string, value: unknown) {

@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { IncomingTransaction } from '../../types/IncomingTransaction';
+import type { IncomingTransaction } from '../../types/IncomingTransaction';
 
 const fields = ['data', 'value', 'gas'] as const;
 type Keys = typeof fields[number];

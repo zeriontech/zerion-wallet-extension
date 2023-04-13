@@ -1,4 +1,5 @@
-import { QueryClient, useMutation, useQueryClient } from 'react-query';
+import type { QueryClient } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 
 export function useOptimisticMutation<Args, Res, QueryType = unknown>(
   mutationFn: (...args: Args[]) => Promise<Res>,

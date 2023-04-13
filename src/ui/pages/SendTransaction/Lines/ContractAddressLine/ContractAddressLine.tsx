@@ -1,6 +1,6 @@
 import React from 'react';
-import { Chain } from 'src/modules/networks/Chain';
-import { Networks } from 'src/modules/networks/Networks';
+import type { Chain } from 'src/modules/networks/Chain';
+import type { Networks } from 'src/modules/networks/Networks';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Media } from 'src/ui/ui-kit/Media';

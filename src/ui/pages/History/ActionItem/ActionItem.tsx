@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { AddressAction, useAssetsPrices } from 'defi-sdk';
+import type { AddressAction } from 'defi-sdk';
+import { useAssetsPrices } from 'defi-sdk';
 import type { PendingAddressAction } from 'src/modules/ethereum/transactions/model';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
@@ -7,7 +8,7 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Media } from 'src/ui/ui-kit/Media';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import FailedIcon from 'jsx:src/ui/assets/failed.svg';
-import { Networks } from 'src/modules/networks/Networks';
+import type { Networks } from 'src/modules/networks/Networks';
 import { createChain } from 'src/modules/networks/Chain';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';

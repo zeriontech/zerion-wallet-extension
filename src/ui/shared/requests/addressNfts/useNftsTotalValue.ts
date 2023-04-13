@@ -1,4 +1,5 @@
-import { AddressParams, createDomainHook } from 'defi-sdk';
+import type { AddressParams } from 'defi-sdk';
+import { createDomainHook } from 'defi-sdk';
 import { useMemo } from 'react';
 
 interface NFTPortfolioDecomposition {

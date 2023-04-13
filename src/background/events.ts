@@ -2,7 +2,7 @@ import type { ethers } from 'ethers';
 import { createNanoEvents } from 'nanoevents';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import { WalletContainer } from './Wallet/model/WalletContainer';
+import type { WalletContainer } from './Wallet/model/WalletContainer';
 import type { WalletOrigin } from './Wallet/model/WalletOrigin';
 
 type TransactionResponse = ethers.providers.TransactionResponse;

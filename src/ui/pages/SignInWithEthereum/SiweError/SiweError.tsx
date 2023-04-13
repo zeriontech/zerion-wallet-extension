@@ -1,8 +1,6 @@
 import React from 'react';
-import {
-  SiweMessage,
-  SiweValidationError,
-} from 'src/modules/ethereum/message-signing/SIWE';
+import type { SiweMessage } from 'src/modules/ethereum/message-signing/SIWE';
+import { SiweValidationError } from 'src/modules/ethereum/message-signing/SIWE';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { ValidationMessage } from '../ValidationMessage';

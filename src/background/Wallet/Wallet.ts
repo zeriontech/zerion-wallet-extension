@@ -1,5 +1,7 @@
-import { ethers, UnsignedTransaction } from 'ethers';
-import { createNanoEvents, Emitter } from 'nanoevents';
+import type { UnsignedTransaction } from 'ethers';
+import { ethers } from 'ethers';
+import type { Emitter } from 'nanoevents';
+import { createNanoEvents } from 'nanoevents';
 import { Store } from 'store-unit';
 import { isTruthy } from 'is-truthy-ts';
 import { encrypt, decrypt } from 'src/modules/crypto';
@@ -25,7 +27,8 @@ import {
 import { networksStore } from 'src/modules/networks/networks-store.background';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { prepareTransaction } from 'src/modules/ethereum/transactions/prepareTransaction';
-import { Chain, createChain } from 'src/modules/networks/Chain';
+import type { Chain } from 'src/modules/networks/Chain';
+import { createChain } from 'src/modules/networks/Chain';
 import { hasGasPrice } from 'src/modules/ethereum/transactions/gasPrices/hasGasPrice';
 import { fetchAndAssignGasPrice } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
@@ -38,13 +41,14 @@ import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired'
 import { flagAsDapp, isFlaggedAsDapp } from 'src/shared/dapps';
 import { isKnownDapp } from 'src/shared/dapps/known-dapps';
 import type { WalletAbility } from 'src/shared/types/Daylight';
-import { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
+import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import { chainConfigStore } from 'src/modules/ethereum/chains/ChainConfigStore';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { isSiweLike } from 'src/modules/ethereum/message-signing/SIWE';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
-import { DaylightEventParams, emitter, ScreenViewParams } from '../events';
+import type { DaylightEventParams, ScreenViewParams } from '../events';
+import { emitter } from '../events';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import { SeedType } from './model/SeedType';
@@ -55,7 +59,7 @@ import {
 } from './model/WalletContainer';
 import { WalletRecordModel as Model } from './WalletRecord';
 import { WalletStore } from './persistence';
-import { WalletNameFlag } from './model/WalletNameFlag';
+import type { WalletNameFlag } from './model/WalletNameFlag';
 import { WalletOrigin } from './model/WalletOrigin';
 import { GlobalPreferences } from './GlobalPreferences';
 import type { State as GlobalPreferencesState } from './GlobalPreferences';

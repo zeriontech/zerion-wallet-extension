@@ -1,8 +1,9 @@
-import React, {
+import type {
   ComponentPropsWithoutRef,
   ComponentPropsWithRef,
   ElementType,
 } from 'react';
+import React from 'react';
 import cx from 'classnames';
 import { UIText } from '../UIText';
 import * as styles from './styles.module.css';

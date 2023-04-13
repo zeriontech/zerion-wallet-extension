@@ -11,7 +11,7 @@ import { minus, muchGreater, veryMuchGreater } from 'src/ui/shared/typography';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { middleTruncate } from 'src/ui/shared/middleTruncate';
-import { Chain } from 'src/modules/networks/Chain';
+import type { Chain } from 'src/modules/networks/Chain';
 import { getDecimals } from 'src/modules/networks/asset';
 import { baseToCommon } from 'src/shared/units/convert';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';

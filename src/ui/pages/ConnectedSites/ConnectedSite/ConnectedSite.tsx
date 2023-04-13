@@ -5,10 +5,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { NotFoundPage } from 'src/ui/components/NotFoundPage';
 import { PageColumn } from 'src/ui/components/PageColumn';
-import {
-  ConnectedSiteItem,
-  getPermissionsWithWallets,
-} from 'src/ui/shared/requests/getPermissionsWithWallets';
+import type { ConnectedSiteItem } from 'src/ui/shared/requests/getPermissionsWithWallets';
+import { getPermissionsWithWallets } from 'src/ui/shared/requests/getPermissionsWithWallets';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';

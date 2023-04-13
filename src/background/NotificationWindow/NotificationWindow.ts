@@ -1,5 +1,5 @@
 import EventEmitter from 'events';
-import { ErrorResponse } from '@json-rpc-tools/utils';
+import type { ErrorResponse } from '@json-rpc-tools/utils';
 import { nanoid } from 'nanoid';
 import type { RpcError, RpcResult } from 'src/shared/custom-rpc';
 import { UserRejected } from 'src/shared/errors/errors';

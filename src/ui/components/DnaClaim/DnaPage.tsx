@@ -21,7 +21,7 @@ import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { isTruthy } from 'is-truthy-ts';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
-import { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
+import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';

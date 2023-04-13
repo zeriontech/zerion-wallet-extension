@@ -1,11 +1,10 @@
 import { JsonRpcProvider } from '@json-rpc-tools/provider';
-import {
-  formatJsonRpcRequest,
-  isJsonRpcError,
+import type {
   JsonRpcPayload,
   JsonRpcRequest,
   RequestArguments,
 } from '@json-rpc-tools/utils';
+import { formatJsonRpcRequest, isJsonRpcError } from '@json-rpc-tools/utils';
 import { InvalidParams } from 'src/shared/errors/errors';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import type { Connection } from './connection';

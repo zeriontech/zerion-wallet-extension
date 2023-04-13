@@ -1,8 +1,9 @@
-import React, {
+import type {
   ComponentPropsWithoutRef,
   ComponentPropsWithRef,
   ElementType,
 } from 'react';
+import React from 'react';
 
 interface Props {
   padding?: React.CSSProperties['padding'];

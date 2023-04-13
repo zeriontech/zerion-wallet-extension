@@ -4,7 +4,7 @@ import type { Wallet } from 'src/shared/types/Wallet';
 import type { AccountPublicRPC } from 'src/shared/types/AccountPublicRPC';
 import type { MemoryCacheRPC } from 'src/shared/types/MemoryCacheRPC';
 import { UserRejected } from 'src/shared/errors/errors';
-import { RpcRequestWithContext } from 'src/shared/custom-rpc';
+import type { RpcRequestWithContext } from 'src/shared/custom-rpc';
 import type { DnaService } from '../components/DnaClaim/dna.background';
 import { initDnaApi } from '../components/DnaClaim/dna.client';
 

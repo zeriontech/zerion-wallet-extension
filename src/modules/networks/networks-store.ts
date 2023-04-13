@@ -1,5 +1,6 @@
 import { Store } from 'store-unit';
-import { EthereumChainSources, Networks } from './Networks';
+import type { EthereumChainSources } from './Networks';
+import { Networks } from './Networks';
 import { get as getNetworks } from './networks-api';
 
 interface State {

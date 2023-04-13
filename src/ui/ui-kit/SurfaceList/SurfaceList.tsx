@@ -1,6 +1,6 @@
 import React from 'react';
 import cn from 'classnames';
-import { LinkProps } from 'react-router-dom';
+import type { LinkProps } from 'react-router-dom';
 import { Surface } from '../Surface/Surface';
 import { UnstyledAnchor } from '../UnstyledAnchor';
 import { UnstyledButton } from '../UnstyledButton';

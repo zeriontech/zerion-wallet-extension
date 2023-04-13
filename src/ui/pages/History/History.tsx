@@ -1,15 +1,15 @@
 import React, { useMemo } from 'react';
-import { AddressAction, useAddressActions } from 'defi-sdk';
+import type { AddressAction } from 'defi-sdk';
+import { useAddressActions } from 'defi-sdk';
 import { useQuery } from 'react-query';
-import {
-  PendingAddressAction,
-  toAddressTransaction,
-} from 'src/modules/ethereum/transactions/model';
+import type { PendingAddressAction } from 'src/modules/ethereum/transactions/model';
+import { toAddressTransaction } from 'src/modules/ethereum/transactions/model';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import { networksStore } from 'src/modules/networks/networks-store.client';
 import { NetworkSelect } from 'src/ui/pages/Networks/NetworkSelect';
-import { Chain, createChain } from 'src/modules/networks/Chain';
+import type { Chain } from 'src/modules/networks/Chain';
+import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { EmptyViewForNetwork } from 'src/ui/components/EmptyViewForNetwork';
 import { ActionsList } from './ActionsList';

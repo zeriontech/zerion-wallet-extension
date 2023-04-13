@@ -12,7 +12,8 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { Image } from 'src/ui/ui-kit/MediaFallback';
 import WalletIcon from 'jsx:src/ui/assets/wallet.svg';
 // import { VirtualizedSurfaceList } from 'src/ui/ui-kit/SurfaceList/VirtualizedSurfaceList';
-import { Item, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
+import type { Item } from 'src/ui/ui-kit/SurfaceList';
+import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import {
   DEFAULT_PROTOCOL,
   PositionsGroupType,
@@ -39,9 +40,9 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { httpConnectionPort } from 'src/ui/shared/channels';
 import { useQuery } from 'react-query';
-import { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { capitalize } from 'capitalize-ts';
-import { Networks } from 'src/modules/networks/Networks';
+import type { Networks } from 'src/modules/networks/Networks';
 import { ethers } from 'ethers';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { FillView } from 'src/ui/components/FillView';

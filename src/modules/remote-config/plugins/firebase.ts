@@ -1,6 +1,6 @@
 import type { ConfigPlugin } from '../ConfigPlugin';
 import { promises, resolvers } from '../pluginSystem';
-import { RemoteConfig } from '../types';
+import type { RemoteConfig } from '../types';
 
 const REMOTE_CONFIG_API_URL = 'https://proxy.zerion.io';
 

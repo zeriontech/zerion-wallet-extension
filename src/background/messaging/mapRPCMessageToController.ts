@@ -1,11 +1,10 @@
-import browser from 'webextension-polyfill';
-import {
+import type browser from 'webextension-polyfill';
+import type {
   ErrorResponse,
-  isJsonRpcPayload,
-  isJsonRpcRequest,
   JsonRpcPayload,
   JsonRpcResponse,
 } from '@json-rpc-tools/utils';
+import { isJsonRpcPayload, isJsonRpcRequest } from '@json-rpc-tools/utils';
 import { formatJsonRpcResultForPort } from 'src/shared/formatJsonRpcResultForPort';
 import { formatJsonRpcWalletError } from 'src/shared/formatJsonRpcWalletError';
 import { isClassProperty } from 'src/shared/core/isClassProperty';

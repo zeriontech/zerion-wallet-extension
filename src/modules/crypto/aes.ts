@@ -7,7 +7,7 @@ import {
 } from './convert';
 import { createCryptoKey, createSalt } from './key';
 import { getRandomUint8Array } from './random';
-import { Encrypted } from './types';
+import type { Encrypted } from './types';
 
 const VERSION = 1;
 

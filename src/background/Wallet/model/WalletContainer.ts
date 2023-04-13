@@ -1,7 +1,7 @@
 import { immerable } from 'immer';
 import { stableEncrypt } from 'src/modules/crypto';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
+import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { restoreBareWallet, walletToObject } from 'src/shared/wallet/create';
 import { SeedType } from './SeedType';
 import type { BareWallet } from './types';

@@ -3,7 +3,7 @@ import { useQuery } from 'react-query';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { SOCIAL_API_URL } from 'src/env/config';
 import { AvatarIcon } from './AvatarIcon';
-import {
+import type {
   WalletProfilesResponse,
   WalletProfile,
   WalletProfileNFT,

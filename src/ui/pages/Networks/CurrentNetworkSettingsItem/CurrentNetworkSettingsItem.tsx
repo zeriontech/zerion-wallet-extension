@@ -1,5 +1,6 @@
 import React from 'react';
-import { Chain, createChain } from 'src/modules/networks/Chain';
+import type { Chain } from 'src/modules/networks/Chain';
+import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';

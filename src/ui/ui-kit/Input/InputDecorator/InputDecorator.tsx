@@ -1,7 +1,9 @@
-import React, { ForwardedRef } from 'react';
+import type { ForwardedRef } from 'react';
+import React from 'react';
 import { Surface } from '../../Surface';
 import { VStack } from '../../VStack';
-import { UIText, UITextProps } from '../../UIText';
+import type { UITextProps } from '../../UIText';
+import { UIText } from '../../UIText';
 
 interface Props extends React.FieldsetHTMLAttributes<HTMLFieldSetElement> {
   labelTextKind?: UITextProps['kind'];

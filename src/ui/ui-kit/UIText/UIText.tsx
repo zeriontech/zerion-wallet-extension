@@ -1,8 +1,9 @@
-import React, {
+import type {
   ComponentPropsWithoutRef,
   ComponentPropsWithRef,
   ElementType,
 } from 'react';
+import React from 'react';
 import cx from 'classnames';
 import * as s from './styles.module.css';
 

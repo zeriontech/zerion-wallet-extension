@@ -1,11 +1,10 @@
 import EventEmitter from 'events';
-import {
+import type {
   IJsonRpcConnection,
-  isJsonRpcError,
-  isJsonRpcResponse,
   JsonRpcPayload,
   JsonRpcResult,
 } from '@json-rpc-tools/utils';
+import { isJsonRpcError, isJsonRpcResponse } from '@json-rpc-tools/utils';
 
 export class Connection extends EventEmitter implements IJsonRpcConnection {
   public events = new EventEmitter();

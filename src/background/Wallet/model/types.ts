@@ -1,8 +1,8 @@
 import type { ethers } from 'ethers';
 import type { WalletAbility } from 'src/shared/types/Daylight';
 import type { WalletContainer } from './WalletContainer';
-import { WalletNameFlag } from './WalletNameFlag';
-import { WalletOrigin } from './WalletOrigin';
+import type { WalletNameFlag } from './WalletNameFlag';
+import type { WalletOrigin } from './WalletOrigin';
 
 export interface BareWallet {
   mnemonic: { phrase: string; path: string } | null;

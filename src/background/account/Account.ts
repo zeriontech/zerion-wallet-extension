@@ -1,4 +1,5 @@
-import { createNanoEvents, EventsMap } from 'nanoevents';
+import type { EventsMap } from 'nanoevents';
+import { createNanoEvents } from 'nanoevents';
 import { nanoid } from 'nanoid';
 import { createSalt, createCryptoKey } from 'src/modules/crypto';
 import { getSHA256HexDigest } from 'src/modules/crypto/getSHA256HexDigest';

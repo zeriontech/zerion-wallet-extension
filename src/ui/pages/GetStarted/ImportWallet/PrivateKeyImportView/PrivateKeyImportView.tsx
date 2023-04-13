@@ -16,10 +16,8 @@ import {
   DecorativeMessage,
   DecorativeMessageDone,
 } from '../../components/DecorativeMessage';
-import {
-  MemoryLocationState,
-  useMemoryLocationState,
-} from '../memoryLocationState';
+import type { MemoryLocationState } from '../memoryLocationState';
+import { useMemoryLocationState } from '../memoryLocationState';
 
 function PrivateKeyImportFlow({
   address,

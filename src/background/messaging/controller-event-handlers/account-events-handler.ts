@@ -1,4 +1,4 @@
-import { Wallet } from 'src/shared/types/Wallet';
+import type { Wallet } from 'src/shared/types/Wallet';
 import type { Account } from 'src/background/account/Account';
 import { emitter } from 'src/background/events';
 

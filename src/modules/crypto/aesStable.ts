@@ -4,7 +4,7 @@ import {
   arrayBufferToUtf8,
   utf8ToUint8Array,
 } from './convert';
-import { StableEncrypted } from './types';
+import type { StableEncrypted } from './types';
 
 const VERSION = 1;
 

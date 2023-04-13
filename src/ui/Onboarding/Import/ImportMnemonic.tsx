@@ -4,7 +4,7 @@ import { useMutation } from 'react-query';
 import produce from 'immer';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { validate } from 'src/ui/pages/GetStarted/ImportWallet/ImportWallet';
-import { ValidationResult } from 'src/shared/validation/ValidationResult';
+import type { ValidationResult } from 'src/shared/validation/ValidationResult';
 import { prepareUserInputSeedOrPrivateKey } from 'src/ui/shared/prepareUserInputSeedOrPrivateKey';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UIText } from 'src/ui/ui-kit/UIText';

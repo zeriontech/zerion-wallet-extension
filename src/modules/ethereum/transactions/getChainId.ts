@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { IncomingTransaction } from '../types/IncomingTransaction';
+import type { IncomingTransaction } from '../types/IncomingTransaction';
 import { ChainId } from './ChainId';
 
 export function getChainId(transaction: IncomingTransaction) {

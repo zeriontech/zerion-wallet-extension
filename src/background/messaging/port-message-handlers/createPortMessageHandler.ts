@@ -1,4 +1,4 @@
-import browser from 'webextension-polyfill';
+import type browser from 'webextension-polyfill';
 import type { PortMessageHandler } from '../PortRegistry';
 import { mapRPCMessageToController } from '../mapRPCMessageToController';
 import { getPortContext } from '../getPortContext';

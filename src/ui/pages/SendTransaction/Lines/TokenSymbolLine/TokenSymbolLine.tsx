@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Asset } from 'defi-sdk';
-import { Chain } from 'src/modules/networks/Chain';
-import { Networks } from 'src/modules/networks/Networks';
+import type { Chain } from 'src/modules/networks/Chain';
+import type { Networks } from 'src/modules/networks/Networks';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { Media } from 'src/ui/ui-kit/Media';
@@ -16,7 +16,10 @@ export function TokenSymbolLine({
   chain: Chain;
   networks: Networks;
 }) {
-  const explorerTokenUrl = networks.getExplorerTokenUrlByName(chain, asset.asset_code)
+  const explorerTokenUrl = networks.getExplorerTokenUrlByName(
+    chain,
+    asset.asset_code
+  );
   return (
     <SurfaceList
       items={[

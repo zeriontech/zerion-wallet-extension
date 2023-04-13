@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { Networks } from 'src/modules/networks/Networks';
+import type { Networks } from 'src/modules/networks/Networks';
 import type { IncomingTransaction } from '../types/IncomingTransaction';
 import { ensureChainId } from './getChainId';
 
