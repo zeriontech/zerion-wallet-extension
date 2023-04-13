@@ -1,3 +1,12 @@
+.actionButton {
+  --btn-bg-color: var(--white);
+  --btn-active-bg-color: var(--neutral-300);
+}
+
+.actionButton.dark {
+  --btn-bg-color: var(--neutral-200);
+}
+
 .icon {
   height: 44px;
   padding-inline: 16px;
@@ -6,7 +15,7 @@
   justify-content: center;
   border-radius: 12px;
   border: none;
-  background-color: var(--white);
+  background-color: var(--btn-bg-color);
   color: var(--neutral-800);
   box-shadow: 0px 2px 4px rgba(22, 22, 26, 0.06);
 }
@@ -21,7 +30,7 @@
 }
 
 .actionButton:active .icon {
-  background-color: var(--neutral-300);
+  background-color: var(--btn-active-bg-color);
 }
 
 @media (hover: hover) {

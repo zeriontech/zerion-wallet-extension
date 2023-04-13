@@ -705,7 +705,13 @@ export function Positions({
   );
   const renderEmptyViewForNetwork = () => (
     <>
-      <div style={{ display: 'flex', justifyContent: 'end' }}>
+      <div
+        style={{
+          paddingInline: 'var(--column-padding-inline)',
+          display: 'flex',
+          justifyContent: 'end',
+        }}
+      >
         {networkSelect}
       </div>
       <EmptyViewForNetwork

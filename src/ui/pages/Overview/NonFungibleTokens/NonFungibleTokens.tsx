@@ -182,7 +182,9 @@ export function NonFungibleTokens() {
     return (
       <VStack gap={32}>
         {maybeSingleAddress ? (
-          <DnaNFTBanner address={normalizeAddress(maybeSingleAddress)} />
+          <div style={{ paddingInline: 'var(--column-padding-inline)' }}>
+            <DnaNFTBanner address={normalizeAddress(maybeSingleAddress)} />
+          </div>
         ) : null}
 
         <EmptyView text="No NFTs yet" />

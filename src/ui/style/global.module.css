@@ -59,6 +59,14 @@ body.isOnboarding {
   width: 100%;
 }
 
+:global(.popup-only) {
+  display: none;
+}
+
+body:not(.isOnboarding):not(.isTab):not(.isDialog) :global(.popup-only) {
+  display: block;
+}
+
 body.isDialog:not(.isOnboarding) {
   max-width: 400px;
 }

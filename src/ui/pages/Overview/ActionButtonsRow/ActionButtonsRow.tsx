@@ -1,4 +1,5 @@
 import browser from 'webextension-polyfill';
+import cx from 'classnames';
 import type { ComponentPropsWithoutRef, ElementType } from 'react';
 import React, { useMemo } from 'react';
 import { useMutation, useQuery } from 'react-query';
@@ -11,6 +12,8 @@ import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { walletPort } from 'src/ui/shared/channels';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import { ThemeStore, themeStore } from 'src/ui/features/appearance';
+import { useStore } from '@store-unit/react';
 import * as s from './styles.module.css';
 
 function ActionButton<As extends ElementType = 'a'>({
@@ -23,8 +26,15 @@ function ActionButton<As extends ElementType = 'a'>({
   title: React.AnchorHTMLAttributes<HTMLAnchorElement>['title'];
 } & { as?: As } & ComponentPropsWithoutRef<As>) {
   const Element = as || UnstyledAnchor;
+  const themeState = useStore(themeStore);
   return (
-    <Element {...props} className={s.actionButton}>
+    <Element
+      {...props}
+      className={cx(
+        s.actionButton,
+        ThemeStore.isDark(themeState) ? s.dark : undefined
+      )}
+    >
       <VStack gap={4} style={{ placeItems: 'center' }}>
         <div className={s.icon} title={title}>
           {icon}
