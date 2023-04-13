@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useMutation, useQuery } from 'react-query';
+import { useQuery } from 'react-query';
 import { useSearchParams } from 'react-router-dom';
 import { invariant } from 'src/shared/invariant';
 import { Background } from 'src/ui/components/Background';
@@ -20,32 +20,17 @@ import { Address } from 'src/ui/components/Address';
 import { Button } from 'src/ui/ui-kit/Button';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { SiweMessage } from 'src/modules/ethereum/message-signing/SIWE';
-import { toUtf8String } from 'ethers/lib/utils';
+import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
 import SignInIcon from 'jsx:src/ui/assets/sign-in.svg';
 import { FillView } from 'src/ui/components/FillView';
 import { VerifyUser } from 'src/ui/components/VerifyUser';
 import { Surface } from 'src/ui/ui-kit/Surface';
+import { usePersonalSignMutation } from 'src/ui/shared/requests/message-signing';
 import { SpeechBubble } from './SpeechBubble/SpeechBubble';
 import { useFetchUTCTime } from './useFetchUTCTime';
 import { SiweError } from './SiweError';
 import { DataVerificationFailed } from './DataVerificationFailed';
 import { NavigationBar } from './NavigationBar';
-
-type SignMutationProps = { onSuccess: (value: string) => void };
-
-function usePersonalSignMutation({ onSuccess }: SignMutationProps) {
-  return useMutation(
-    async (params: { params: [string]; initiator: string }) => {
-      return await walletPort.request('personalSign', params);
-    },
-    {
-      // onMutate creates a context that we can use in global onError handler
-      // to know more about a mutation (in react-query@v4 you should use "context" instead)
-      onMutate: () => 'signMessage',
-      onSuccess,
-    }
-  );
-}
 
 export function SignInWithEthereum() {
   const [params, setSearchParams] = useSearchParams();
@@ -115,7 +100,10 @@ export function SignInWithEthereum() {
           {params.has('step') === false ? (
             <>
               <PageTop />
-              <Badge icon={<SignInIcon />} text="Signing In" />
+              <Badge
+                icon={<SignInIcon style={{ color: 'var(--neutral-500)' }} />}
+                text="Signing In"
+              />
               <Spacer height={16} />
               <VStack gap={8}>
                 <UIText kind="small/accent" color="var(--neutral-500)">
@@ -161,7 +149,10 @@ export function SignInWithEthereum() {
                     </UIText>
                   </HStack>
                 </HStack>
-                <Address address={normalizeAddress(wallet.address)} />
+                <Address
+                  address={normalizeAddress(wallet.address)}
+                  infixColor="var(--neutral-500)"
+                />
               </VStack>
               <Spacer height={16} />
               <Button

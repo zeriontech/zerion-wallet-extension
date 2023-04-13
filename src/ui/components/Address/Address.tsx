@@ -1,13 +1,14 @@
 import React from 'react';
-import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 
 export function Address({
   address,
   padding = 4,
+  infixColor,
 }: {
   address: string;
   padding?: number;
+  infixColor?: string;
 }) {
   const leadingPadding = address.startsWith('0x') ? 2 + padding : padding;
   const prefix = address.slice(0, leadingPadding);
@@ -15,12 +16,14 @@ export function Address({
   const suffix = address.slice(-padding);
 
   return (
-    <HStack gap={0}>
-      <UIText kind="small/accent">{prefix}</UIText>
-      <UIText kind="small/regular" color="var(--neutral-500)">
-        {infix}
+    <UIText kind="small/regular">
+      <UIText kind="small/accent" inline={true}>
+        {prefix}
       </UIText>
-      <UIText kind="small/accent">{suffix}</UIText>
-    </HStack>
+      <span style={{ color: infixColor }}>{infix}</span>
+      <UIText kind="small/accent" inline={true}>
+        {suffix}
+      </UIText>
+    </UIText>
   );
 }

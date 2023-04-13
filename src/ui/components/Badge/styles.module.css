@@ -1,5 +1,7 @@
 .badge {
-  display: flex;
+  /* kinda make it behave like an inline-block, but without creating undesired line-height */
+  width: max-content;
+  max-width: 100%;
 }
 
 .badgeContent {
