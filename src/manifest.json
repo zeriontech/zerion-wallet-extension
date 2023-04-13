@@ -30,7 +30,12 @@
     {
       "all_frames": true,
       "js": ["content-script/index.ts"],
-      "matches": ["http://*/*", "https://*/*"],
+      "matches": [
+        "http://*/*",
+        "https://*/*",
+        "http://localhost/*",
+        "http://0.0.0.0/*"
+      ],
       "run_at": "document_start"
     }
   ],

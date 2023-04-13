@@ -22,7 +22,7 @@ const productionManifest = {
   ...originalManifest,
   content_scripts: originalManifest.content_scripts.map((entry) => ({
     ...entry,
-    matches: ['https://*/*'],
+    matches: entry.matches.filter((pattern) => !pattern.startsWith('http://*')),
   })),
 };
 
