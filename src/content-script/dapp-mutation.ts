@@ -163,17 +163,20 @@ function rewriteConnectButtons(
   }
 }
 
-function onTagMounted(
-  tagName: string,
-  cb: (collection: HTMLCollectionOf<Element>) => void
-) {
+function monitorAddedNodes(cb: (element: HTMLElement) => boolean | void) {
   const observer = new MutationObserver((mutations) => {
-    mutations
-      .filter((mutation) => mutation.addedNodes)
-      .filter((mutation) => mutation.target instanceof HTMLElement)
-      .forEach((mutation) => {
-        cb((mutation.target as HTMLElement).getElementsByTagName(tagName));
-      });
+    for (const mutation of mutations) {
+      if (mutation.addedNodes) {
+        for (const addedNode of mutation.addedNodes) {
+          if (addedNode instanceof HTMLElement) {
+            if (cb(addedNode)) {
+              observer.disconnect();
+              break;
+            }
+          }
+        }
+      }
+    }
   });
   observer.observe(document.body, {
     childList: true /* only direct children */,
@@ -199,16 +202,51 @@ function observeConnectButtons(
   return () => observer.disconnect();
 }
 
-function observeShadowRootCollection(htmlCollection: HTMLCollection) {
-  const unlisteners: Array<() => void> = [];
-  for (const node of htmlCollection) {
-    if (node.shadowRoot) {
-      unlisteners.push(
-        observeConnectButtons(node.shadowRoot, { isOnboardV2: true })
-      );
-    }
+function monitorOnboardV2() {
+  const context = { isOnboardV2: true };
+  const candidate = document.body.getElementsByTagName('onboard-v2')[0];
+  if (candidate && candidate.shadowRoot) {
+    return observeConnectButtons(candidate.shadowRoot, context);
   }
-  return () => unlisteners.forEach((l) => l());
+  const unlisteners: Array<() => void> = [];
+  const unlisten = monitorAddedNodes((element) => {
+    if (element.tagName === 'ONBOARD-V2' && element.shadowRoot) {
+      unlisteners.push(observeConnectButtons(element.shadowRoot, context));
+      return true;
+    }
+  });
+  return () => {
+    unlisten();
+    unlisteners.forEach((l) => l());
+  };
+}
+
+function monitorDynamicModal() {
+  const findShadowRoot = (element: HTMLElement | null) => {
+    return (
+      element &&
+      element.getAttribute('id') === 'dynamic-modal' &&
+      element.firstElementChild instanceof HTMLElement &&
+      element.firstElementChild.dataset?.testid === 'dynamic-modal-shadow' &&
+      element.firstElementChild.shadowRoot
+    );
+  };
+  const candidate = findShadowRoot(document.getElementById('dynamic-modal'));
+  if (candidate) {
+    return observeConnectButtons(candidate, {});
+  }
+  const unlisteners: Array<() => void> = [];
+  const unlisten = monitorAddedNodes((element) => {
+    const candidate = findShadowRoot(element);
+    if (candidate) {
+      unlisteners.push(observeConnectButtons(candidate, {}));
+      return true;
+    }
+  });
+  return () => {
+    unlisten();
+    unlisteners.forEach((l) => l());
+  };
 }
 
 const documentReady = () =>
@@ -228,10 +266,8 @@ async function observeAndUpdatePageButtons() {
   await documentReady();
   const unlisteners: Array<() => void> = [
     observeConnectButtons(document.body, {}),
-    observeShadowRootCollection(
-      document.body.getElementsByTagName('onboard-v2')
-    ),
-    onTagMounted('onboard-v2', observeShadowRootCollection),
+    monitorOnboardV2(),
+    monitorDynamicModal(),
   ];
   return () => unlisteners.forEach((l) => l());
 }
