@@ -104,7 +104,7 @@ export function CreateAccount() {
                   }}
                 >
                   {(focusedInput === 'password' && value !== repeatValue) ||
-                  !value ? (
+                  (value?.length || 0) < PASSWORD_MIN_LENGTH ? (
                     <StrengthIndicator value={value} />
                   ) : (
                     <AnimatedCheckmark
@@ -146,7 +146,7 @@ export function CreateAccount() {
                     minWidth: 24,
                   }}
                 >
-                  {value &&
+                  {(value?.length || 0) >= PASSWORD_MIN_LENGTH &&
                   (focusedInput === 'confirmPassword' ||
                     value === repeatValue) ? (
                     <AnimatedCheckmark

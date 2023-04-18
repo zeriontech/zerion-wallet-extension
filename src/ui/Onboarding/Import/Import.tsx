@@ -104,7 +104,7 @@ export function Import() {
         {isLoading ? (
           <div className={styles.loadingOverlay}>
             <UIText kind="headline/hero" className={styles.loadingTitle}>
-              Creating wallet
+              Importing wallet
             </UIText>
           </div>
         ) : null}

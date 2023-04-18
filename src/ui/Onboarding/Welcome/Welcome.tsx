@@ -23,6 +23,7 @@ import {
   UnsupportedAddressError,
   WaitlistCheckError,
 } from '../errors';
+import walletIconSrc from '../assets/wallet2.png';
 import * as styles from './styles.module.css';
 
 type FormErrorType =
@@ -191,16 +192,43 @@ function EligibleFAQ({ show }: { show: boolean }) {
   return (
     <>
       <SidePanel show={showJoinPanel} onDismiss={() => setShowJoinPanel(false)}>
-        <VStack gap={0}>
-          <UIText kind="body/accent">Here will be instruction</UIText>
+        <VStack gap={20}>
+          <div className={styles.faqIcon}>
+            <img
+              src={walletIconSrc}
+              style={{ width: 20, height: 20, borderRadius: 10 }}
+            />
+          </div>
+          <VStack gap={8}>
+            <UIText kind="body/accent">How to join the waitlist?</UIText>
+            <UIText kind="body/regular">
+              One way to get access to our extension is to join our waitlist.
+              We’ll be onboarding users in the coming weeks, and you’ll get an
+              email when your spot is open.
+            </UIText>
+          </VStack>
         </VStack>
       </SidePanel>
       <SidePanel
         show={showInvitePanel}
         onDismiss={() => setShowInvitePanel(false)}
       >
-        <VStack gap={0}>
-          <UIText kind="body/accent">Here will be instruction</UIText>
+        <VStack gap={20}>
+          <div className={styles.faqIcon}>
+            <img
+              src={walletIconSrc}
+              style={{ width: 20, height: 20, borderRadius: 10 }}
+            />
+          </div>
+          <VStack gap={8}>
+            <UIText kind="body/accent">How to get your place?</UIText>
+            <UIText kind="body/regular">
+              We’re partnering with many leading communities in web3 to open up
+              places in our closed beta for the extension. We’re also dropping
+              access to limited numbers of people via our social channels.
+              (Especially Lens). Watch this space to grab your spot!
+            </UIText>
+          </VStack>
         </VStack>
       </SidePanel>
       <VStack

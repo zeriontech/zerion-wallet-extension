@@ -25,6 +25,9 @@ import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTML
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import { useQuery } from 'react-query';
+import { walletPort } from 'src/ui/shared/channels';
+import { useWalletParams } from 'src/ui/pages/Overview/ActionButtonsRow/ActionButtonsRow';
 import { Background } from '../Background';
 import { useBodyStyle } from '../Background/Background';
 import { NavigationTitle } from '../NavigationTitle';
@@ -155,6 +158,11 @@ export function DnaPage() {
   const { singleAddress, params, ready } = useAddressParams();
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
+  const { data: wallet } = useQuery('wallet/uiGetCurrentWallet', () => {
+    return walletPort.request('uiGetCurrentWallet');
+  });
+  const addWalletParams = useWalletParams(wallet);
+
   useBodyStyle(
     useMemo(
       () => ({
@@ -242,8 +250,10 @@ export function DnaPage() {
             <Button
               style={{ width: '100%' }}
               kind="regular"
-              as={UnstyledLink}
-              to="/not-implemented"
+              as={TextAnchor}
+              href={`https://app.zerion.io/deposit?${addWalletParams}`}
+              target="_blank"
+              rel="noopener noreferrer"
             >
               Buy ETH with cash
             </Button>

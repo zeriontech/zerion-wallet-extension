@@ -14,6 +14,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { ThemeStore, themeStore } from 'src/ui/features/appearance';
 import { useStore } from '@store-unit/react';
+import type { BareWallet } from 'src/shared/types/BareWallet';
 import * as s from './styles.module.css';
 
 function ActionButton<As extends ElementType = 'a'>({
@@ -47,16 +48,8 @@ function ActionButton<As extends ElementType = 'a'>({
 
 const ZERION_ORIGIN = 'https://app.zerion.io';
 
-export function ActionButtonsRow() {
-  const { data: wallet } = useQuery('wallet/uiGetCurrentWallet', () => {
-    return walletPort.request('uiGetCurrentWallet');
-  });
-  const { mutate: acceptOrigin } = useMutation(
-    async ({ address, origin }: { address: string; origin: string }) => {
-      return walletPort.request('acceptOrigin', { origin, address });
-    }
-  );
-  const addWalletParams = useMemo(() => {
+export function useWalletParams(wallet: BareWallet | null | undefined) {
+  return useMemo(() => {
     if (!wallet) {
       return null;
     }
@@ -69,6 +62,19 @@ export function ActionButtonsRow() {
     }
     return params;
   }, [wallet]);
+}
+
+export function ActionButtonsRow() {
+  const { data: wallet } = useQuery('wallet/uiGetCurrentWallet', () => {
+    return walletPort.request('uiGetCurrentWallet');
+  });
+  const { mutate: acceptOrigin } = useMutation(
+    async ({ address, origin }: { address: string; origin: string }) => {
+      return walletPort.request('acceptOrigin', { origin, address });
+    }
+  );
+  const addWalletParams = useWalletParams(wallet);
+
   const { data: activeTabs } = useQuery('browser/activeTab', () =>
     browser.tabs.query({ active: true, currentWindow: true })
   );

@@ -78,7 +78,7 @@ export function Password({ onSubmit }: { onSubmit(key: string): void }) {
                 }}
               >
                 {(focusedInput === 'password' && value !== repeatValue) ||
-                !value ? (
+                (value?.length || 0) < PASSWORD_MIN_LENGTH ? (
                   <StrengthIndicator value={value} />
                 ) : (
                   <AnimatedCheckmark
@@ -110,7 +110,7 @@ export function Password({ onSubmit }: { onSubmit(key: string): void }) {
                     minWidth: 24,
                   }}
                 >
-                  {value &&
+                  {(value?.length || 0) >= PASSWORD_MIN_LENGTH &&
                   (focusedInput === 'confirmPassword' ||
                     value === repeatValue) ? (
                     <AnimatedCheckmark
