@@ -33,6 +33,8 @@ import { getNameFromOrigin } from 'src/shared/dapps';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { useAddressPortfolioDecomposition } from 'defi-sdk';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
+import { invariant } from 'src/shared/invariant';
+import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { CurrentNetworkSettingsItem } from '../../Networks/CurrentNetworkSettingsItem';
 import { ConnectToDappButton } from './ConnectToDappButton';
 
@@ -91,9 +93,10 @@ function createConnectedSite({
 
 export function ConnectedSite() {
   const { originName } = useParams();
-  if (!originName) {
-    throw new Error('originName parameter is required for this view');
-  }
+  invariant(originName, 'originName parameter is required for this view');
+  // TODO:
+  // Refactor these calls to only have one "useQuery" call, but keep in mind
+  // that related queries on Overview must be refetched after mutations made here
   const { data: tabData } = useQuery('activeTab/origin', getActiveTabOrigin, {
     useErrorBoundary: true,
   });
@@ -115,6 +118,11 @@ export function ConnectedSite() {
       return createConnectedSite({ origin: originName });
     }
   }, [connectedSites, flaggedAsDapp, originName]);
+  const siteOrigin = connectedSite?.origin;
+  const connectedSiteOriginForHref = useMemo(
+    () => (siteOrigin ? prepareForHref(siteOrigin) : null),
+    [siteOrigin]
+  );
   const { data: siteChain, ...chainQuery } = useQuery(
     `wallet/requestChainForOrigin(${originName})`,
     () =>
@@ -195,16 +203,20 @@ export function ConnectedSite() {
               <UIText kind="small/regular" color="var(--neutral-500)">
                 Connect {getWalletDisplayName(currentWallet)} to {title}. This
                 will notify{' '}
-                <TextAnchor
-                  href={connectedSite.origin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: 'var(--primary)' }}
-                >
-                  {title}
-                </TextAnchor>{' '}
+                {connectedSiteOriginForHref ? (
+                  <TextAnchor
+                    href={connectedSiteOriginForHref.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: 'var(--primary)' }}
+                  >
+                    {title}
+                  </TextAnchor>
+                ) : (
+                  <u>{title}</u>
+                )}{' '}
                 that your current address is connected, but it{apostrophe}s up
-                to individual DApp implementation to handle this event
+                to individual DApp to react to this event
               </UIText>
             </VStack>
           ) : null}
@@ -252,14 +264,18 @@ export function ConnectedSite() {
             <>
               <VStack gap={12}>
                 <UIText kind="small/regular">
-                  <TextAnchor
-                    href={connectedSite.origin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: 'var(--primary)' }}
-                  >
-                    {capitalize(title)}
-                  </TextAnchor>{' '}
+                  {connectedSiteOriginForHref ? (
+                    <TextAnchor
+                      href={connectedSiteOriginForHref.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: 'var(--primary)' }}
+                    >
+                      {capitalize(title)}
+                    </TextAnchor>
+                  ) : (
+                    <u>{capitalize(title)}</u>
+                  )}{' '}
                   can read these addresses:
                 </UIText>
                 <SurfaceList
