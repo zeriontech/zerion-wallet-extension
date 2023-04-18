@@ -12,7 +12,7 @@ function getIV() {
   return new Uint8Array(12);
 }
 
-export async function stableEncryptObject<T>(
+async function stableEncryptObject<T>(
   key: CryptoKey,
   obj: T
 ): Promise<StableEncrypted> {
@@ -37,7 +37,7 @@ export async function stableEncrypt<T>(
   return JSON.stringify(encrypted);
 }
 
-export async function stableDecryptObject<T>(
+async function stableDecryptObject<T>(
   key: CryptoKey,
   encrypted: StableEncrypted
 ): Promise<T> {
