@@ -43,6 +43,7 @@ import {
   PausedBanner,
   PauseInjectionControl,
 } from 'src/ui/components/PauseInjection';
+import { InvitationBanner } from 'src/ui/components/Invitation';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
