@@ -1,7 +1,10 @@
 import { ethers } from 'ethers';
 import type { Chain } from 'src/modules/networks/Chain';
 import type { Networks } from 'src/modules/networks/Networks';
-import type { IncomingTransaction } from '../types/IncomingTransaction';
+import type {
+  IncomingTransaction,
+  IncomingTransactionWithChainId,
+} from '../types/IncomingTransaction';
 
 export function getTransactionChainId(
   transaction: IncomingTransaction
@@ -18,4 +21,14 @@ export function resolveChainForTx(
 ): Chain {
   const targetChainId = getTransactionChainId(transaction);
   return targetChainId ? networks.getChainById(targetChainId) : originChain;
+}
+
+export function setTransactionChainId(
+  transaction: IncomingTransaction,
+  currentChain: Chain,
+  networks: Networks
+): IncomingTransactionWithChainId {
+  const chain = resolveChainForTx(transaction, currentChain, networks);
+  const chainId = networks.getChainId(chain);
+  return { ...transaction, chainId };
 }

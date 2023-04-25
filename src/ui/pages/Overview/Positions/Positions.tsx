@@ -1,7 +1,6 @@
 import type { AddressParams, AddressPosition } from 'defi-sdk';
 import { useAddressPositions } from 'defi-sdk';
 import React, { useCallback, useMemo, useState } from 'react';
-import { getCommonQuantity } from 'src/shared/units/assetQuantity';
 import {
   formatCurrencyToParts,
   formatCurrencyValue,
@@ -57,6 +56,7 @@ import { EmptyViewForNetwork } from 'src/ui/components/EmptyViewForNetwork';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { networksStore } from 'src/modules/networks/networks-store.client';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
+import { getCommonQuantity } from 'src/modules/networks/asset';
 
 function LineToParent({
   hasPreviosNestedPosition,
@@ -128,6 +128,7 @@ function AddressPositionItem({
   const isNested = Boolean(position.parent_id);
   const { networks } = useNetworks();
   const network = networks?.getNetworkByName(createChain(position.chain));
+  const chain = createChain(position.chain);
 
   return (
     <div style={{ position: 'relative', paddingLeft: isNested ? 26 : 0 }}>
@@ -197,7 +198,7 @@ function AddressPositionItem({
                         getCommonQuantity({
                           asset: position.asset,
                           quantity: position.quantity,
-                          chain: position.chain,
+                          chain,
                         }),
                         position.asset.symbol
                       )}

@@ -1,1 +1,0 @@
-export { TransactionDescription } from './TransactionDescription';

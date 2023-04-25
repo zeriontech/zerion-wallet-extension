@@ -1,9 +1,6 @@
 import React, { useMemo } from 'react';
 import type { AddressAction } from 'defi-sdk';
-import { useAssetsPrices } from 'defi-sdk';
-import type { PendingAddressAction } from 'src/modules/ethereum/transactions/model';
 import { useNetworks } from 'src/modules/networks/useNetworks';
-import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Media } from 'src/ui/ui-kit/Media';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -18,34 +15,23 @@ import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import ZerionIcon from 'jsx:src/ui/assets/zerion-squircle.svg';
 import { DNA_MINT_CONTRACT_ADDRESS } from 'src/ui/components/DnaClaim/dnaAddress';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
+import type { AnyAddressAction, PendingAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import {
-  getFungibleAsset,
+  getActionAddress,
+  getActionAsset,
+  isPendingAddressAction,
+} from 'src/modules/ethereum/transactions/addressAction';
+import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
+import {
   HistoryItemValue,
   TransactionCurrencyValue,
 } from './TransactionItemValue';
 import {
-  AssetIcon,
+  HistoryAssetIcon,
   transactionIconStyle,
   TransactionItemIcon,
   TRANSACTION_ICON_SIZE,
 } from './TransactionTypeIcon';
-
-type AnyAddressAction = AddressAction | PendingAddressAction;
-
-function getActionAddress(
-  action: AddressAction | PendingAddressAction,
-  { truncate }: { truncate?: boolean }
-) {
-  const address =
-    action.label?.display_value.wallet_address ||
-    action.label?.display_value.contract_address;
-
-  return address
-    ? truncate
-      ? truncateAddress(address, 4)
-      : address
-    : action.label?.display_value.text;
-}
 
 function checkIsDnaMint(action: AnyAddressAction) {
   return (
@@ -110,13 +96,9 @@ function ActionDetail({
     () => (chain ? networks.getNetworkByName(chain) : null),
     [chain, networks]
   );
-  const isAddressAction = 'content' in action;
-  const incomingTransfers = isAddressAction
-    ? action.content?.transfers?.incoming
-    : null;
-  const outgoingTransfers = isAddressAction
-    ? action.content?.transfers?.outgoing
-    : null;
+  // const isAddressAction = 'content' in action;
+  const incomingTransfers = action.content?.transfers?.incoming;
+  const outgoingTransfers = action.content?.transfers?.outgoing;
 
   return (
     <HStack alignItems="center" gap={4}>
@@ -140,12 +122,10 @@ function ActionDetail({
             chain={chain}
             address={address}
           />
-        ) : isAddressAction ? (
+        ) : (
           <span title={getActionAddress(action, { truncate: false })}>
             {getActionAddress(action, { truncate: true })}
           </span>
-        ) : (
-          networks?.getChainName(createChain(action.transaction.chain))
         )}
       </UIText>
     </HStack>
@@ -283,13 +263,7 @@ function ActionItemLocal({
   action: PendingAddressAction;
   networks: Networks;
 }) {
-  const { value } = useAssetsPrices(
-    {
-      asset_codes: action.asset_code ? [action.asset_code.toLowerCase()] : [],
-      currency: 'usd',
-    },
-    { enabled: Boolean(action.asset_code) }
-  );
+  const asset = getActionAsset(action);
 
   const { params, ready } = useAddressParams();
 
@@ -298,7 +272,6 @@ function ActionItemLocal({
   }
 
   const address = 'address' in params ? params.address : undefined;
-  const asset = value?.[action.asset_code?.toLowerCase() || ''];
 
   const isMintingDna = checkIsDnaMint(action);
 
@@ -330,7 +303,7 @@ function ActionItemLocal({
                 height={TRANSACTION_ICON_SIZE}
               />
             ) : (
-              <AssetIcon
+              <HistoryAssetIcon
                 size={TRANSACTION_ICON_SIZE}
                 asset={asset ? { fungible: asset } : undefined}
                 type={action.type.value}
@@ -374,13 +347,9 @@ export function ActionItem({
   if (!networks || !addressAction) {
     return null;
   }
-  if ('content' in addressAction) {
-    return (
-      <ActionItemBackend
-        action={addressAction as AddressAction}
-        networks={networks}
-      />
-    );
-  }
-  return <ActionItemLocal action={addressAction} networks={networks} />;
+  return isPendingAddressAction(addressAction) ? (
+    <ActionItemLocal action={addressAction} networks={networks} />
+  ) : (
+    <ActionItemBackend action={addressAction} networks={networks} />
+  );
 }

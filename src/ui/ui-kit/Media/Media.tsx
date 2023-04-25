@@ -9,6 +9,7 @@ export function Media({
   gap = 8,
   vGap = 4,
   alignItems = 'center',
+  style,
 }: {
   image: React.ReactNode;
   text: React.ReactNode;
@@ -19,9 +20,10 @@ export function Media({
   vGap?: number;
   /** Default: 'center' */
   alignItems?: React.CSSProperties['alignItems'];
+  style?: React.CSSProperties;
 }) {
   return (
-    <HStack gap={gap} alignItems={alignItems}>
+    <HStack gap={gap} alignItems={alignItems} style={style}>
       {image}
       <VStack gap={vGap} style={{ textAlign: 'start' }}>
         {text}

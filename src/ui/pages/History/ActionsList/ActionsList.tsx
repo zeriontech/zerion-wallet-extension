@@ -1,13 +1,13 @@
 import React, { useMemo } from 'react';
 import groupBy from 'lodash/groupBy';
-import type { AddressAction } from 'defi-sdk';
+// import type { AddressAction } from 'defi-sdk';
 import { startOfDate } from 'src/shared/units/startOfDate';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
-import type { PendingAddressAction } from 'src/modules/ethereum/transactions/model';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { ActionItem } from '../ActionItem';
 
 export function ActionsList({
@@ -17,7 +17,7 @@ export function ActionsList({
   isLoading,
   onLoadMore,
 }: {
-  actions: (AddressAction | PendingAddressAction)[];
+  actions: AnyAddressAction[];
   hasMore: boolean;
   isLoading: boolean;
   firstHeaderItemEnd?: React.ReactNode;

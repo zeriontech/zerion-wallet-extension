@@ -2,16 +2,15 @@ import React, { useMemo } from 'react';
 import type { AddressAction } from 'defi-sdk';
 import { useAddressActions } from 'defi-sdk';
 import { useQuery } from 'react-query';
-import type { PendingAddressAction } from 'src/modules/ethereum/transactions/model';
-import { toAddressTransaction } from 'src/modules/ethereum/transactions/model';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
-import { networksStore } from 'src/modules/networks/networks-store.client';
 import { NetworkSelect } from 'src/ui/pages/Networks/NetworkSelect';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { EmptyViewForNetwork } from 'src/ui/components/EmptyViewForNetwork';
+import type { AnyAddressAction} from 'src/modules/ethereum/transactions/addressAction';
+import { pendingTransactionToAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { ActionsList } from './ActionsList';
 
 export function sortActions<T extends { datetime?: string }>(actions: T[]) {
@@ -23,7 +22,7 @@ export function sortActions<T extends { datetime?: string }>(actions: T[]) {
 }
 
 function mergeLocalAndBackendActions(
-  local: (AddressAction | PendingAddressAction)[],
+  local: AnyAddressAction[],
   backend: AddressAction[]
 ) {
   const backendHashes = new Set(backend.map((tx) => tx.transaction.hash));
@@ -44,10 +43,12 @@ function useMinedAndPendingAddressActions({ chain }: { chain: Chain | null }) {
   const { data: localAddressActions, ...localActionsQuery } = useQuery(
     ['pages/history', localActions, chain],
     async () => {
-      const networks = await networksStore.load();
+      if (!networks) {
+        return null;
+      }
       const items = await Promise.all(
         localActions.map((transactionObject) =>
-          toAddressTransaction(transactionObject, networks)
+          pendingTransactionToAddressAction(transactionObject, networks)
         )
       );
       if (chain) {
@@ -58,7 +59,10 @@ function useMinedAndPendingAddressActions({ chain }: { chain: Chain | null }) {
         return items;
       }
     },
-    { useErrorBoundary: true }
+    {
+      enabled: Boolean(networks),
+      useErrorBoundary: true,
+    }
   );
 
   const {

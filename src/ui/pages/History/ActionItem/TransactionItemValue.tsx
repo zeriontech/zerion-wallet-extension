@@ -1,20 +1,18 @@
 import React from 'react';
-import BigNumber from 'bignumber.js';
-import type {
-  NFTAsset,
-  Asset,
-  Direction,
-  ActionAsset,
-  ActionTransfer,
-} from 'defi-sdk';
-import { minus, muchGreater, veryMuchGreater } from 'src/ui/shared/typography';
+import type { NFTAsset, Asset, Direction, ActionTransfer } from 'defi-sdk';
+import { minus } from 'src/ui/shared/typography';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { middleTruncate } from 'src/ui/shared/middleTruncate';
 import type { Chain } from 'src/modules/networks/Chain';
-import { getDecimals } from 'src/modules/networks/asset';
-import { baseToCommon } from 'src/shared/units/convert';
+import { getCommonQuantity } from 'src/modules/networks/asset';
+import { getAssetQuantity } from 'src/modules/networks/asset';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
+import {
+  getFungibleAsset,
+  getNftAsset,
+} from 'src/modules/ethereum/transactions/actionAsset';
+import { AssetQuantityValue } from 'src/ui/components/AssetQuantityValue';
+import type BigNumber from 'bignumber.js';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 
 function getSign(decimaledValue?: number | BigNumber, direction?: Direction) {
@@ -24,74 +22,27 @@ function getSign(decimaledValue?: number | BigNumber, direction?: Direction) {
   return direction === 'in' ? '+' : minus;
 }
 
-export function getFungibleAsset(asset?: ActionAsset) {
-  if (
-    asset &&
-    'fungible' in asset &&
-    asset?.fungible &&
-    'asset_code' in asset.fungible
-  ) {
-    return asset.fungible as Asset;
-  }
-  return null;
-}
-
-export function getNftAsset(asset?: ActionAsset) {
-  if (asset && 'nft' in asset && asset?.nft && 'asset_code' in asset.nft) {
-    return asset.nft as NFTAsset;
-  }
-  return null;
-}
-
 function HistoryTokenValue({
   value,
   asset,
+  chain,
   direction,
   address,
 }: {
-  value?: BigNumber;
-  asset?: Asset | null;
-  direction?: Direction;
+  value: number;
+  asset: Asset;
+  chain: Chain;
+  direction: Direction;
   address?: string;
 }) {
-  if (!asset) {
-    return null;
-  }
-
-  const tokenTitle = asset.symbol?.toUpperCase() || asset.name;
+  const tokenTitle = asset.symbol.toUpperCase();
   const sign = getSign(value, direction);
-
-  const isLargeNumber = value && value.gt(new BigNumber(1e15));
-  const isVeryLargeNumber = value && value.gt(new BigNumber(1e21));
-
-  const formattedWithSignificantValue = value
-    ? formatTokenValue(value, '', {
-        notation: value.gt(new BigNumber(1e8)) ? 'compact' : undefined,
-      })
-    : '';
-
-  const truncated =
-    value &&
-    value.lt(new BigNumber(1)) &&
-    formattedWithSignificantValue.length > 8
-      ? `${middleTruncate({
-          value: value.toString(),
-          trailingLettersCount: 5,
-        })}\u00a0`
-      : '';
-
-  const displayedValue = isVeryLargeNumber ? (
-    <span>
-      <span style={{ position: 'relative', top: -1 }}>{veryMuchGreater}</span>
-      1T
-    </span>
-  ) : isLargeNumber ? (
-    `${muchGreater} 1T`
-  ) : (
-    `${sign}${(truncated || formattedWithSignificantValue).trim()}`
-  );
-
-  const formatted = value ? formatTokenValue(value) : null;
+  const quantity = getAssetQuantity({
+    asset,
+    chain,
+    quantity: value,
+  });
+  const formatted = formatTokenValue(value);
 
   return (
     <HStack
@@ -101,17 +52,9 @@ function HistoryTokenValue({
         gridTemplateColumns: 'minmax(8px, 1fr) auto',
         overflow: 'hidden',
       }}
-      title={formatted ? `${sign}${formatted} ${tokenTitle}` : undefined}
+      title={`${sign}${formatted} ${tokenTitle}`}
     >
-      <span
-        style={{
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-        }}
-      >
-        {displayedValue}
-      </span>
+      <AssetQuantityValue sign={sign} quantity={quantity} />
       <TextAnchor
         href={`https://app.zerion.io/explore/asset/${asset.symbol}-${asset.asset_code}?address=${address}`}
         target="_blank"
@@ -213,13 +156,8 @@ export function HistoryItemValue({
     <HistoryTokenValue
       address={address}
       asset={fungibleAsset}
-      value={baseToCommon(
-        transfers[0].quantity,
-        getDecimals({
-          asset: fungibleAsset,
-          chain,
-        })
-      )}
+      chain={chain}
+      value={transfers[0].quantity}
       direction={direction}
     />
   ) : null;
@@ -235,26 +173,21 @@ export function TransactionCurrencyValue({
   if (transfers?.length !== 1) {
     return null;
   }
-
-  const fungibleAsset = getFungibleAsset(transfers[0].asset);
-
-  if (!fungibleAsset) {
+  const transfer = transfers[0];
+  const asset = getFungibleAsset();
+  if (!asset) {
     return null;
   }
 
-  return (
-    <>
-      {formatCurrencyValue(
-        baseToCommon(
-          transfers[0].quantity,
-          getDecimals({
-            asset: fungibleAsset,
-            chain,
-          })
-        ).times(transfers[0].price || 0),
-        'en',
-        'usd'
-      )}
-    </>
+  const commonQuantity = getCommonQuantity({
+    asset,
+    chain,
+    quantity: transfer.quantity,
+  });
+  const value = formatCurrencyValue(
+    commonQuantity.times(transfer.price || 0),
+    'en',
+    'usd'
   );
+  return <>{value}</>;
 }
