@@ -10,6 +10,11 @@ export class ErrorWithEnumerableMessage extends Error {
   }
 }
 
+export function domExceptionToError(error: DOMException) {
+  const message = error.message || error.name;
+  return new ErrorWithEnumerableMessage(message);
+}
+
 export class InvalidParams extends ErrorWithEnumerableMessage {
   code = STANDARD_ERROR_MAP.INVALID_PARAMS.code;
 

@@ -55,7 +55,7 @@ export async function encrypt<T>(
   return JSON.stringify(encrypted);
 }
 
-async function decryptObject<T>(
+export async function decryptObject<T>(
   password: string,
   encrypted: Encrypted
 ): Promise<T> {

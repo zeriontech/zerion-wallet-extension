@@ -52,6 +52,8 @@ import { isSiweLike } from 'src/modules/ethereum/message-signing/SIWE';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
+import type { Credentials, SessionCredentials } from '../account/Credentials';
+import { isSessionCredentials } from '../account/Credentials';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import { SeedType } from './model/SeedType';
@@ -99,7 +101,7 @@ export class Wallet {
   // eslint-disable-next-line no-use-before-define
   public publicEthereumController: PublicController;
   private encryptionKey: string | null;
-  private seedPhraseEncryptionKey: CryptoKey | null;
+  private userCredentials: Credentials | null;
   private seedPhraseExpiryTimerId: NodeJS.Timeout | number = 0;
   private globalPreferences: GlobalPreferences;
   private pendingWallet: PendingWallet | null = null;
@@ -126,7 +128,7 @@ export class Wallet {
       this.verifyOverviewChain();
     });
     this.encryptionKey = encryptionKey;
-    this.seedPhraseEncryptionKey = null;
+    this.userCredentials = null;
     this.record = null;
 
     this.walletStore.ready().then(() => {
@@ -137,11 +139,11 @@ export class Wallet {
   }
 
   private async syncWithWalletStore() {
-    if (!this.encryptionKey) {
+    if (!this.userCredentials) {
       return;
     }
     await this.walletStore.ready();
-    this.record = await this.walletStore.read(this.id, this.encryptionKey);
+    this.record = await this.walletStore.read(this.id, this.userCredentials);
     if (this.record) {
       this.emitter.emit('recordUpdated');
     }
@@ -176,11 +178,14 @@ export class Wallet {
   }
 
   hasSeedPhraseEncryptionKey() {
-    return Boolean(this.seedPhraseEncryptionKey);
+    return Boolean(this.userCredentials?.seedPhraseEncryptionKey);
   }
 
   removeSeedPhraseEncryptionKey() {
-    this.seedPhraseEncryptionKey = null;
+    if (this.userCredentials) {
+      this.userCredentials.seedPhraseEncryptionKey = null;
+      this.userCredentials.seedPhraseEncryptionKey_deprecated = null;
+    }
   }
 
   private setExpirationForSeedPhraseEncryptionKey() {
@@ -193,15 +198,11 @@ export class Wallet {
   }
 
   async updateCredentials({
-    params: { id, encryptionKey, seedPhraseEncryptionKey },
-  }: PublicMethodParams<{
-    id: string;
-    encryptionKey: string;
-    seedPhraseEncryptionKey: CryptoKey | null;
-  }>) {
-    this.id = id;
-    this.encryptionKey = encryptionKey;
-    this.seedPhraseEncryptionKey = seedPhraseEncryptionKey;
+    params: credentials,
+  }: PublicMethodParams<Credentials>) {
+    this.id = credentials.id;
+    this.userCredentials = credentials;
+    this.encryptionKey = credentials.encryptionKey;
     this.setExpirationForSeedPhraseEncryptionKey();
     await this.walletStore.ready();
     await this.syncWithWalletStore();
@@ -220,14 +221,12 @@ export class Wallet {
   // from the UI (extension popup) thread. It's maybe better to refactor them
   // into a separate isolated class
   async uiGenerateMnemonic() {
-    if (!this.seedPhraseEncryptionKey) {
-      throw new SessionExpired();
-    }
+    this.ensureActiveSession(this.userCredentials);
     this.pendingWallet = {
       origin: WalletOrigin.extension,
       groupId: null,
       walletContainer: await MnemonicWalletContainer.create({
-        encryptionKey: this.seedPhraseEncryptionKey,
+        credentials: this.userCredentials,
       }),
     };
     return maskWallet(this.pendingWallet.walletContainer.getFirstWallet());
@@ -245,15 +244,13 @@ export class Wallet {
   async uiImportSeedPhrase({
     params: mnemonics,
   }: WalletMethodParams<NonNullable<BareWallet['mnemonic']>[]>) {
-    if (!this.seedPhraseEncryptionKey) {
-      throw new SessionExpired();
-    }
+    this.ensureActiveSession(this.userCredentials);
     this.pendingWallet = {
       origin: WalletOrigin.imported,
       groupId: null,
       walletContainer: await MnemonicWalletContainer.create({
         wallets: mnemonics.map((mnemonic) => ({ mnemonic })),
-        encryptionKey: this.seedPhraseEncryptionKey,
+        credentials: this.userCredentials,
       }),
     };
     return maskWallet(this.pendingWallet.walletContainer.getFirstWallet());
@@ -265,12 +262,10 @@ export class Wallet {
   }: WalletMethodParams<{ groupId: string }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
-    if (!this.seedPhraseEncryptionKey) {
-      throw new SessionExpired();
-    }
+    this.ensureActiveSession(this.userCredentials);
     return await Model.getRecoveryPhrase(this.record, {
       groupId,
-      encryptionKey: this.seedPhraseEncryptionKey,
+      credentials: this.userCredentials,
     });
   }
 
@@ -280,12 +275,10 @@ export class Wallet {
   }: WalletMethodParams<{ groupId: string; value: string }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
-    if (!this.seedPhraseEncryptionKey) {
-      throw new SessionExpired();
-    }
+    this.ensureActiveSession(this.userCredentials);
     const mnemonic = await Model.getRecoveryPhrase(this.record, {
       groupId,
-      encryptionKey: this.seedPhraseEncryptionKey,
+      credentials: this.userCredentials,
     });
     return mnemonic.phrase === value;
   }
@@ -296,9 +289,7 @@ export class Wallet {
   }: WalletMethodParams<{ address: string }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
-    if (!this.seedPhraseEncryptionKey) {
-      throw new SessionExpired();
-    }
+    this.ensureActiveSession(this.userCredentials); // require anyway
     return await Model.getPrivateKey(this.record, { address });
   }
 
@@ -308,9 +299,7 @@ export class Wallet {
   }: WalletMethodParams<{ address: string; value: string }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
-    if (!this.seedPhraseEncryptionKey) {
-      throw new SessionExpired();
-    }
+    this.ensureActiveSession(this.userCredentials); // require anyway
     const privateKey = await Model.getPrivateKey(this.record, { address });
     return privateKey === value;
   }
@@ -355,7 +344,10 @@ export class Wallet {
     emitter.emit('walletCreated', this.pendingWallet);
     this.record = Model.createOrUpdateRecord(this.record, this.pendingWallet);
     this.pendingWallet = null;
-    this.seedPhraseEncryptionKey = null;
+    if (this.userCredentials) {
+      this.userCredentials.seedPhraseEncryptionKey = null;
+      this.userCredentials.seedPhraseEncryptionKey_deprecated = null;
+    }
     this.updateWalletStore(this.record);
   }
 
@@ -465,6 +457,14 @@ export class Wallet {
   ): asserts record is WalletRecord {
     if (!record) {
       throw new RecordNotFound();
+    }
+  }
+
+  private ensureActiveSession(
+    credentials: Credentials | null
+  ): asserts credentials is SessionCredentials {
+    if (!credentials || !isSessionCredentials(credentials)) {
+      throw new SessionExpired();
     }
   }
 

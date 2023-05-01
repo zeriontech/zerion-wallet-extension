@@ -15,13 +15,7 @@ import { credentialsKey } from './storage-keys';
 
 const TEMPORARY_ID = 'temporary';
 
-async function createEncryptionKey({
-  password,
-  salt,
-}: {
-  password: string;
-  salt: string;
-}) {
+async function sha256({ password, salt }: { password: string; salt: string }) {
   return await getSHA256HexDigest(`${salt}:${password}`);
 }
 
@@ -138,10 +132,7 @@ export class Account extends EventEmitter<AccountEvents> {
   }
 
   async verifyPassword(user: User, password: string) {
-    const encryptionKey = await createEncryptionKey({
-      password,
-      salt: user.id,
-    });
+    const encryptionKey = await sha256({ password, salt: user.id });
     return this.verifyCredentials(user, { encryptionKey });
   }
 
@@ -160,14 +151,18 @@ export class Account extends EventEmitter<AccountEvents> {
   ) {
     this.user = user;
     this.isPendingNewUser = isNewUser;
-    let seedPhraseEncryptionKey: CryptoKey | null = null;
+    let seedPhraseEncryptionKey: string | null = null;
+    let seedPhraseEncryptionKey_deprecated: CryptoKey | null = null;
     if ('password' in credentials) {
       const { password } = credentials;
-      this.encryptionKey = await createEncryptionKey({
-        salt: user.id,
-        password,
-      });
-      seedPhraseEncryptionKey = await createCryptoKey(password, user.salt);
+      const [key1, key2, key3] = await Promise.all([
+        sha256({ salt: user.id, password }),
+        sha256({ salt: user.salt, password }),
+        createCryptoKey(password, user.salt),
+      ]);
+      this.encryptionKey = key1;
+      seedPhraseEncryptionKey = key2;
+      seedPhraseEncryptionKey_deprecated = key3;
     } else {
       this.encryptionKey = credentials.encryptionKey;
     }
@@ -176,6 +171,7 @@ export class Account extends EventEmitter<AccountEvents> {
         id: user.id,
         encryptionKey: this.encryptionKey,
         seedPhraseEncryptionKey,
+        seedPhraseEncryptionKey_deprecated,
       },
     });
     if (!this.isPendingNewUser) {

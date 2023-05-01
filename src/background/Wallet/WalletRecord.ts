@@ -4,12 +4,16 @@ import { nanoid } from 'nanoid';
 import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
-import { stableDecrypt } from 'src/modules/crypto';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getIndexFromPath } from 'src/shared/wallet/getNextAccountPath';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { WalletAbility } from 'src/shared/types/Daylight';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
+import {
+  isEncryptedMnemonic,
+  decryptMnemonic,
+} from 'src/shared/wallet/encryption';
+import type { Credentials, SessionCredentials } from '../account/Credentials';
 import { SeedType } from './model/SeedType';
 import type {
   BareWallet,
@@ -258,30 +262,44 @@ export class WalletRecordModel {
     return await decrypt(key, encryptedRecord);
   }
 
-  static async decryptAndRestoreRecord(key: string, encryptedRecord: string) {
+  static async decryptAndRestoreRecord(
+    encryptedRecord: string,
+    credentials: Credentials
+  ) {
+    const { encryptionKey } = credentials;
     const persistedEntry = (await decrypt(
-      key,
+      encryptionKey,
       encryptedRecord
     )) as WalletRecord;
     const entry = upgrade(persistedEntry);
-    entry.walletManager.groups = entry.walletManager.groups.map((group) => {
-      const { seedType, wallets } = group.walletContainer;
-      if (seedType === SeedType.mnemonic) {
-        group.walletContainer = new MnemonicWalletContainer(wallets);
-      } else if (seedType === SeedType.privateKey) {
-        group.walletContainer = new PrivateKeyWalletContainer(wallets);
-      } else {
-        throw new Error(`Unexpected SeedType: ${seedType}`);
-      }
 
-      return group;
-    });
+    entry.walletManager.groups = await Promise.all(
+      entry.walletManager.groups.map(async (group) => {
+        const { seedType, wallets } = group.walletContainer;
+        if (seedType === SeedType.mnemonic) {
+          group.walletContainer =
+            await MnemonicWalletContainer.restoreWalletContainer(
+              group.walletContainer,
+              credentials
+            );
+        } else if (seedType === SeedType.privateKey) {
+          group.walletContainer = new PrivateKeyWalletContainer(wallets);
+        } else {
+          throw new Error(`Unexpected SeedType: ${seedType}`);
+        }
+        return group;
+      })
+    );
+
     return WalletRecordModel.verifyStateIntegrity(entry as WalletRecord);
   }
 
   static async getRecoveryPhrase(
     record: WalletRecord,
-    { groupId, encryptionKey }: { groupId: string; encryptionKey: CryptoKey }
+    {
+      groupId,
+      credentials,
+    }: { groupId: string; credentials: SessionCredentials }
   ) {
     const group = record.walletManager.groups.find(
       (group) => group.id === groupId
@@ -293,16 +311,12 @@ export class WalletRecordModel {
     if (!encryptedMnemonic) {
       throw new Error(`Missing mnemonic from wallet object for ${groupId}`);
     }
-    // encrypted data has no spaces
-    const isNotEncrypted = encryptedMnemonic.phrase.split(' ').length > 3;
+    const isNotEncrypted = !isEncryptedMnemonic(encryptedMnemonic.phrase);
     if (isNotEncrypted) {
       return encryptedMnemonic;
     }
 
-    const phrase = await stableDecrypt<string>(
-      encryptionKey,
-      encryptedMnemonic.phrase
-    );
+    const phrase = await decryptMnemonic(encryptedMnemonic.phrase, credentials);
     return {
       ...encryptedMnemonic,
       phrase,

@@ -21,7 +21,7 @@ export function EraseDataListButton({
   const eraseAllData = useEraseDataMutation({ onSuccess: () => navigate('/') });
   if (eraseAllData.isLoading) {
     return (
-      <CenteredDialog open={true}>
+      <CenteredDialog open={true} style={{ position: 'fixed' }}>
         <EraseDataInProgress />
       </CenteredDialog>
     );
