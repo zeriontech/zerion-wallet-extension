@@ -215,7 +215,7 @@ function OverviewComponent() {
         </HStack>
       </PageFullBleedColumn>
       <Spacer height={24} />
-      <div style={{ height: isLoadingPortfolio ? 68 : undefined }}>
+      <div style={{ height: isLoadingPortfolio ? 72 : undefined }}>
         <HStack gap={16} alignItems="center">
           {!isLoadingPortfolio ? (
             <WalletAvatar address={singleAddress} size={64} borderRadius={6} />
