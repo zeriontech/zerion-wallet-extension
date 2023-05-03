@@ -5,12 +5,14 @@ import type {
 } from 'src/background/account/Credentials';
 import { isSessionCredentials } from 'src/background/account/Credentials';
 import { encrypt } from 'src/modules/crypto';
-import { getSHA256HexDigest } from 'src/modules/crypto/getSHA256HexDigest';
 import { invariant } from 'src/shared/invariant';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { restoreBareWallet, walletToObject } from 'src/shared/wallet/create';
-import { decryptMnemonic } from 'src/shared/wallet/encryption';
+import {
+  decryptMnemonic,
+  seedPhraseToHash,
+} from 'src/shared/wallet/encryption';
 import { SeedType } from './SeedType';
 import type { BareWallet } from './types';
 
@@ -25,7 +27,7 @@ export interface WalletContainer {
   wallets: BareWallet[];
   getMnemonic(): BareWallet['mnemonic'] | null;
   getFirstWallet(): BareWallet;
-  addWallet(wallet: BareWallet): void;
+  addWallet(wallet: BareWallet, seedHash: string): void;
   removeWallet(address: string): void;
   toPlainObject(): PlainWalletContainer;
   getWalletByAddress(address: string): BareWallet | null;
@@ -54,24 +56,7 @@ abstract class WalletContainerImpl implements WalletContainer {
       : this.getFirstWallet().mnemonic;
   }
 
-  addWallet(wallet: BareWallet) {
-    const currentMnemonic = this.getMnemonic();
-    if (currentMnemonic) {
-      if (
-        !wallet.mnemonic ||
-        wallet.mnemonic.phrase !== currentMnemonic.phrase
-      ) {
-        throw new Error(
-          'Added wallet must have the same mnemonic as other wallets in the WalletContainer'
-        );
-      }
-    }
-    if (this.wallets.some(({ address }) => address === wallet.address)) {
-      /** Seems it's better to keep existing wallet in order to save existing state, e.g. name */
-      return;
-    }
-    this.wallets.push(wallet);
-  }
+  abstract addWallet(wallet: BareWallet, seedHash: string): void;
 
   removeWallet(address: string) {
     const pos = this.wallets.findIndex(
@@ -118,7 +103,7 @@ export class MnemonicWalletContainer extends WalletContainerImpl {
     const initial = wallets?.length ? wallets : [restoreBareWallet({})];
     const phrase = initial[0].mnemonic?.phrase;
     invariant(phrase, MISSING_MNEMONIC);
-    const seedHash = await getSHA256HexDigest(phrase);
+    const seedHash = await seedPhraseToHash(phrase);
     const walletContainer = new MnemonicWalletContainer(initial, seedHash);
     const { mnemonic } = walletContainer.getFirstWallet();
     if (mnemonic) {
@@ -210,6 +195,18 @@ export class MnemonicWalletContainer extends WalletContainerImpl {
       });
     }
   }
+
+  addWallet(wallet: BareWallet, seedHash: string) {
+    invariant(
+      seedHash === this.seedHash,
+      'Added wallet must have the same mnemonic as other wallets in the WalletContainer'
+    );
+    if (this.wallets.some(({ address }) => address === wallet.address)) {
+      /** Seems it's better to keep existing wallet in order to save existing state, e.g. name */
+      return;
+    }
+    this.wallets.push(wallet);
+  }
 }
 
 export class PrivateKeyWalletContainer extends WalletContainerImpl {
@@ -234,7 +231,7 @@ export class PrivateKeyWalletContainer extends WalletContainerImpl {
     });
   }
 
-  addWallet(_wallet: BareWallet) {
+  addWallet() {
     throw new Error('PrivateKeyWalletContainer cannot have multiple wallets');
   }
 }
@@ -247,5 +244,9 @@ export class TestPrivateKeyWalletContainer extends WalletContainerImpl {
   constructor(wallets: BareWallet[]) {
     super();
     this.wallets = wallets;
+  }
+
+  addWallet() {
+    throw new Error('PrivateKeyWalletContainer cannot have multiple wallets');
   }
 }

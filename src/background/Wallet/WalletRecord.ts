@@ -13,6 +13,7 @@ import {
   isEncryptedMnemonic,
   decryptMnemonic,
 } from 'src/shared/wallet/encryption';
+import { invariant } from 'src/shared/invariant';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
 import { SeedType } from './model/SeedType';
 import type {
@@ -186,15 +187,12 @@ export class WalletRecordModel {
         transactions: [],
         permissions: {},
         publicPreferences: {},
-        feed: {
-          completedAbilities: [],
-          dismissedAbilities: [],
-        },
+        feed: { completedAbilities: [], dismissedAbilities: [] },
       };
     }
     return produce(record, (draft) => {
       const { walletContainer } = pendingWallet;
-      const { seedType } = walletContainer;
+      const { seedType, seedHash } = walletContainer;
       if (!draft.feed.completedAbilities) {
         draft.feed.completedAbilities = [];
       }
@@ -221,16 +219,15 @@ export class WalletRecordModel {
         }
       } else if (seedType === SeedType.mnemonic) {
         const mnemonic = walletContainer.getMnemonic();
-        if (!mnemonic) {
-          throw new Error('Mnemonic not found');
-        }
-        const existingGroup = draft.walletManager.groups.find(
-          (group) =>
-            group.walletContainer.getMnemonic()?.phrase === mnemonic.phrase
+        invariant(mnemonic?.phrase, 'Mnemonic not found');
+        const existingGroup = draft.walletManager.groups.find((group) =>
+          seedHash
+            ? seedHash === group.walletContainer.seedHash
+            : group.walletContainer.getMnemonic()?.phrase === mnemonic.phrase
         );
-        if (existingGroup) {
+        if (existingGroup && seedHash) {
           walletContainer.wallets.forEach((wallet) => {
-            existingGroup.walletContainer.addWallet(wallet);
+            existingGroup.walletContainer.addWallet(wallet, seedHash);
           });
           existingGroup.walletContainer.wallets.sort((a, b) => {
             const index1 = getIndexFromPath(a.mnemonic?.path || '');
