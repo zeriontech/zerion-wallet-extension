@@ -47,6 +47,7 @@ import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { isSiweLike } from 'src/modules/ethereum/message-signing/SIWE';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
+import { invariant } from 'src/shared/invariant';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import { toEthersWallet } from './helpers/toEthersWallet';
@@ -1020,10 +1021,16 @@ class PublicController {
       notificationWindow.open({
         route: '/requestAccounts',
         search: `?origin=${origin}`,
-        onResolve: async ({ address }: { address: string }) => {
-          if (!address) {
-            throw new Error('Confirmation resolved with invalid arguments');
-          }
+        onResolve: async ({
+          address,
+          origin: resolvedOrigin,
+        }: {
+          address: string;
+          origin: string;
+        }) => {
+          invariant(address, 'Invalid arguments: missing address');
+          invariant(resolvedOrigin, 'Invalid arguments: missing origin');
+          invariant(resolvedOrigin === origin, 'Resolved origin mismatch');
           const currentAddress = this.wallet.ensureCurrentAddress();
           if (normalizeAddress(address) !== normalizeAddress(currentAddress)) {
             await this.wallet.setCurrentAddress({
