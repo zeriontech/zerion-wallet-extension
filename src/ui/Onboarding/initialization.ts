@@ -21,7 +21,7 @@ export async function maybeOpenOboarding() {
     throw new OnboardingInterrupt();
   }
   const mode =
-    FEATURE_WAITLIST_ONBOARDING &&
+    FEATURE_WAITLIST_ONBOARDING === 'on' &&
     (hasOnboardingUrl || (!isPopup && !userHasWallets))
       ? 'onboarding'
       : 'wallet';
