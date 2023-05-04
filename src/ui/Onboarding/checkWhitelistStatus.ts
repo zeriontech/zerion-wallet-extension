@@ -47,6 +47,15 @@ export async function getWaitlistStatus(addressOrEmail: string) {
   };
 }
 
+async function getFirebaseStatus(address: string) {
+  return ky
+    .get(new URL(`check-extension-access?address=${address}`, PROXY_URL), {
+      timeout: 30000,
+      retry: 0,
+    })
+    .json<{ status: boolean }>();
+}
+
 interface FirebaseConfig {
   extension_access_nft_collections: string[];
 }
@@ -58,18 +67,23 @@ async function getNftStatus(address: string) {
     FIREBASE_PARAMS.map((key) => ['key', key])
   );
   const firebaseConfig = await ky
-    .get(`https://proxy.zerion.io/remote-config?${params.toString()}`, {
+    .get(new URL(`remote-config?${params.toString()}`, PROXY_URL), {
       timeout: 30000,
       retry: 0,
     })
     .json<FirebaseConfig>();
 
-  if (!firebaseConfig.extension_access_nft_collections?.length) {
+  const normalizedAddress = normalizeAddress(address);
+
+  if (
+    !normalizeAddress ||
+    !firebaseConfig.extension_access_nft_collections?.length
+  ) {
     return { status: false };
   }
 
   const { value } = await getAddressNfts({
-    address: address?.toLowerCase() || '',
+    address: normalizedAddress,
     currency: 'usd',
     collection_ids: firebaseConfig.extension_access_nft_collections,
     sorted_by: 'created_recently',
@@ -106,6 +120,7 @@ export async function checkWhitelistStatus(address: string) {
     return result;
   };
   return anyPromise([
+    getFirebaseStatus(address).then(handler),
     getNftStatus(address).then(handler),
     getWaitlistStatus(address).then((result) => {
       foundAddressInWaitlist = true;
