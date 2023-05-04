@@ -16,6 +16,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { AnimatedCheckmark } from 'src/ui/ui-kit/AnimatedCheckmark';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { Input } from 'src/ui/ui-kit/Input';
+import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import { StrengthIndicator } from './StrengthIndicator';
 
 export function CreateAccount() {
@@ -37,6 +38,7 @@ export function CreateAccount() {
     },
     {
       onSuccess() {
+        zeroizeAfterSubmission();
         navigate(params.get('next') || '/get-started');
       },
     }

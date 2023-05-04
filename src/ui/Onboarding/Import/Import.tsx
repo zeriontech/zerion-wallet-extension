@@ -12,6 +12,7 @@ import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { HandshakeFailure } from 'src/ui/components/HandshakeFailure';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
+import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import lockIconSrc from '../assets/lock.png';
 import { useSizeStore } from '../useSizeStore';
 import { Stack } from '../Stack';
@@ -80,6 +81,7 @@ export function Import() {
     },
     {
       onSuccess: () => {
+        zeroizeAfterSubmission();
         navigate('/onboarding/success');
       },
       onError: () => {

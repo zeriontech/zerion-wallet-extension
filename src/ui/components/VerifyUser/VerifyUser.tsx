@@ -2,6 +2,7 @@ import React, { useId } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import type { PublicUser } from 'src/shared/types/User';
 import { accountPublicRPCPort } from 'src/ui/shared/channels';
+import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Input } from 'src/ui/ui-kit/Input';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -24,9 +25,15 @@ export function VerifyUser({
     { useErrorBoundary: true }
   );
   const loginMutation = useMutation(
-    ({ user, password }: { user: PublicUser; password: string }) =>
-      accountPublicRPCPort.request('login', { user, password }),
-    { onSuccess }
+    ({ user, password }: { user: PublicUser; password: string }) => {
+      return accountPublicRPCPort.request('login', { user, password });
+    },
+    {
+      onSuccess() {
+        zeroizeAfterSubmission();
+        onSuccess();
+      },
+    }
   );
   const inputId = useId();
   if (isLoading) {

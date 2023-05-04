@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useMemo } from 'react';
+import React, { useId, useMemo } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import type { PublicUser } from 'src/shared/types/User';
@@ -15,6 +15,7 @@ import { Input } from 'src/ui/ui-kit/Input';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import ZerionLogo from 'jsx:src/ui/assets/zerion-squircle.svg';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
+import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 
 export function Login() {
   const [params] = useSearchParams();
@@ -29,31 +30,20 @@ export function Login() {
   });
   const formId = useId();
   const inputId = useId();
+
   const loginMutation = useMutation(
-    ({ user, password }: { user: PublicUser; password: string }) =>
-      accountPublicRPCPort.request('login', { user, password }),
+    async ({ user, password }: { user: PublicUser; password: string }) => {
+      return accountPublicRPCPort.request('login', { user, password });
+    },
     {
       onSuccess() {
+        zeroizeAfterSubmission();
         navigate(params.get('next') || '/overview');
       },
     }
   );
-  const { reset } = loginMutation;
-  useEffect(() => {
-    return () => reset();
-  }, [reset]);
 
-  useBodyStyle(
-    useMemo(
-      () => ({
-        backgroundColor: 'var(--white)',
-        // backgroundImage: `url(${backgroundArts2})`,
-        // backgroundRepeat: 'no-repeat',
-        // backgroundSize: 'cover',
-      }),
-      []
-    )
-  );
+  useBodyStyle(useMemo(() => ({ backgroundColor: 'var(--white)' }), []));
   if (isLoading) {
     return null;
   }

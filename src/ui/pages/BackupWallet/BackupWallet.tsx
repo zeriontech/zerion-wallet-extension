@@ -32,6 +32,7 @@ import { SecretInput } from 'src/ui/components/SecretInput';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { metaAppState } from 'src/ui/shared/meta-app-state';
+import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import { WithConfetti } from '../GetStarted/components/DecorativeMessage/DecorativeMessage';
 import { DecorativeMessage } from '../GetStarted/components/DecorativeMessage';
 import { clipboardWarning } from './clipboardWarning';
@@ -310,7 +311,7 @@ function VerifyBackup({
           value,
         });
         if (!isCorrect) {
-          throw new Error('Wrong phrase');
+          throw new Error('Wrong private key');
         }
         return true;
       }
@@ -321,6 +322,7 @@ function VerifyBackup({
           throw new Error('No groupId');
         }
         await walletPort.request('updateLastBackedUp', { groupId });
+        zeroizeAfterSubmission();
         onSuccess();
       },
     }
