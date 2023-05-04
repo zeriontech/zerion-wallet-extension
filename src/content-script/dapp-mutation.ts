@@ -74,8 +74,9 @@ function replaceButtonImage(node: HTMLElement, context: Context) {
   } else {
     element.style.background = `url("${zerionLogoSrc}") no-repeat center/contain`;
     for (const child of element.children) {
-      // @ts-ignore style property is expected
-      child.style?.display = 'none';
+      if (child instanceof HTMLElement || child instanceof SVGElement) {
+        child.style.display = 'none';
+      }
     }
   }
   node.dataset.replacementStep = 'icon';
