@@ -20,6 +20,7 @@ export function useProfileName(
       refetchOnMount: false,
       retryOnMount: false,
       retry: 0,
+      staleTime: 2000,
     }
   );
 
