@@ -323,6 +323,8 @@ function OverviewComponent() {
         paddingInline={false}
         style={{
           flexGrow: 1,
+          display: 'flex',
+          flexDirection: 'column',
           backgroundColor: 'var(--white)',
           ['--surface-background-color' as string]: 'var(--white)',
         }}
