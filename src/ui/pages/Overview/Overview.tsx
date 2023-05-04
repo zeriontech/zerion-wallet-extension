@@ -37,6 +37,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
+import { useProfileName } from 'src/ui/shared/useProfileName';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -100,11 +101,7 @@ function PercentChange({
 function CurrentAccount({ wallet }: { wallet: BareWallet }) {
   return (
     <span style={{ fontWeight: 'normal' }}>
-      <WalletDisplayName
-        wallet={wallet}
-        maxCharacters={16}
-        delayedRender={100}
-      />
+      <WalletDisplayName wallet={wallet} maxCharacters={16} />
     </span>
   );
 }
@@ -131,15 +128,11 @@ function CurrentAccountControls() {
           <PersonIcon />
           <span style={{ display: 'inline-flex', alignItems: 'center' }}>
             <CurrentAccount wallet={wallet} />
-            <DelayedRender delay={100}>
-              <ArrowDownIcon />
-            </DelayedRender>
+            <ArrowDownIcon />
           </span>
         </HStack>
       </Button>
-      <DelayedRender delay={100}>
-        <CopyButton address={addressToCopy} />
-      </DelayedRender>
+      <CopyButton address={addressToCopy} />
     </HStack>
   );
 }
@@ -184,6 +177,7 @@ function OverviewComponent() {
   );
   const { singleAddress, singleAddressNormalized, params, ready } =
     useAddressParams();
+  useProfileName({ address: singleAddressNormalized, name: null });
   const { preferences, setPreferences } = usePreferences();
   const setChain = (overviewChain: string) => setPreferences({ overviewChain });
   const { value, isLoading: isLoadingPortfolio } = useAddressPortfolio(
