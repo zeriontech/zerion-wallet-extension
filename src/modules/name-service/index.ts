@@ -1,5 +1,5 @@
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import { requestWithCache } from 'src/ui/shared/requests/requestCache/requestWithCache';
+import { requestWithCache } from 'src/ui/shared/requests/requestWithCache';
 import { ensLookup, ensResolve } from './ens';
 import { lensLookup, lensResolve } from './lens';
 import { udLookup, udResolve } from './ud';

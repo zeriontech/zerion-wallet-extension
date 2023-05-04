@@ -1,4 +1,4 @@
-export class CacheService {
+export class SessionCacheService {
   private cache: Record<string, { timestamp: number; value: unknown }> = {};
 
   async getCache({ params }: { params: { key: string } }) {

@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery } from 'react-query';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { SOCIAL_API_URL } from 'src/env/config';
-import { requestWithCache } from 'src/ui/shared/requests/requestCache/requestWithCache';
+import { requestWithCache } from 'src/ui/shared/requests/requestWithCache';
 import { AvatarIcon } from './AvatarIcon';
 import type {
   WalletProfilesResponse,

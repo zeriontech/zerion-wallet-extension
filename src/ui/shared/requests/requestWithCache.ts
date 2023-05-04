@@ -1,5 +1,5 @@
-import { anyPromise } from '../../anyPromise';
-import { cacheServicePort } from './../../channels';
+import { anyPromise } from '../anyPromise';
+import { sessionCacheService } from '../channels';
 
 export async function requestWithCache<T>(
   key: string,
@@ -10,15 +10,15 @@ export async function requestWithCache<T>(
 ) {
   return anyPromise([
     request.then((result) => {
-      cacheServicePort.request('setCache', { key, value: result });
+      sessionCacheService.request('setCache', { key, value: result });
       return result;
     }),
-    cacheServicePort.request('getCache', { key }).then((result) => {
+    sessionCacheService.request('getCache', { key }).then((result) => {
       if (
         options?.cacheTime &&
         Date.now() - result.timestamp > options.cacheTime
       ) {
-        return Promise.reject('Cache is obsolete');
+        throw new Error('Cache is obsolete');
       }
       return result.value as T;
     }),

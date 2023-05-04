@@ -3,6 +3,7 @@ import { ethers } from 'ethers';
 import { networksStore } from 'src/modules/networks/networks-store.background';
 import { configureBackgroundClient } from 'src/modules/defi-sdk/background';
 import { FEATURE_WAITLIST_ONBOARDING } from 'src/env/config';
+import { SessionCacheService } from 'src/background/resource/sessionCacheService';
 import { initialize } from './initialize';
 import { PortRegistry } from './messaging/PortRegistry';
 import { createWalletMessageHandler } from './messaging/port-message-handlers/createWalletMessageHandler';
@@ -103,7 +104,7 @@ userActivity.scheduleAlarms();
 // https://developer.chrome.com/docs/extensions/mv3/migrating_to_service_workers/#alarms
 browser.alarms.onAlarm.addListener(userActivity.handleAlarm);
 
-initialize().then(({ account, accountPublicRPC, dnaService, cacheService }) => {
+initialize().then(({ account, accountPublicRPC, dnaService }) => {
   notifyContentScriptsAndUIAboutInitialization();
   // const httpConnection = new HttpConnection(() => account.getCurrentWallet());
   const memoryCacheRPC = new MemoryCacheRPC();
@@ -136,8 +137,8 @@ initialize().then(({ account, accountPublicRPC, dnaService, cacheService }) => {
   );
   portRegistry.addMessageHandler(
     createPortMessageHandler({
-      check: (port) => port.name === 'cacheService',
-      controller: cacheService,
+      check: (port) => port.name === 'sessionCacheService',
+      controller: new SessionCacheService(),
     })
   );
   portRegistry.addMessageHandler(createNotificationWindowMessageHandler());

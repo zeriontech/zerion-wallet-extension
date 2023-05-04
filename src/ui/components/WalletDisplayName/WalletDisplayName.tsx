@@ -1,6 +1,7 @@
 import React from 'react';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { useProfileName } from 'src/ui/shared/useProfileName';
+import { DelayedRender } from '../DelayedRender';
 
 export function WalletDisplayName({
   wallet,
@@ -15,5 +16,9 @@ export function WalletDisplayName({
     padding,
     maxCharacters,
   });
-  return <span style={{ wordBreak: 'break-all' }}>{displayName}</span>;
+  return (
+    <DelayedRender delay={100}>
+      <span style={{ wordBreak: 'break-all' }}>{displayName}</span>
+    </DelayedRender>
+  );
 }
