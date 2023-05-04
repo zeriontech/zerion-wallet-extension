@@ -15,6 +15,7 @@ export function useProfileName(
     ['name-service/lookupAddressName', wallet.address],
     useCallback(() => lookupAddressName(wallet.address), [wallet.address]),
     {
+      enabled: !wallet.name, // don't make unnecessary request
       suspense: false,
       refetchOnWindowFocus: false,
       refetchOnMount: false,
