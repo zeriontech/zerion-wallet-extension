@@ -7,17 +7,19 @@ export function WalletDisplayName({
   wallet,
   padding,
   maxCharacters,
+  delayedRender = 0,
 }: {
   wallet: Pick<BareWallet, 'address' | 'name'>;
   padding?: number;
   maxCharacters?: number;
+  delayedRender?: number;
 }) {
   const displayName = useProfileName(wallet, {
     padding,
     maxCharacters,
   });
   return (
-    <DelayedRender delay={100}>
+    <DelayedRender delay={delayedRender}>
       <span style={{ wordBreak: 'break-all' }}>{displayName}</span>
     </DelayedRender>
   );

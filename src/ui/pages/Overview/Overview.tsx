@@ -100,7 +100,11 @@ function PercentChange({
 function CurrentAccount({ wallet }: { wallet: BareWallet }) {
   return (
     <span style={{ fontWeight: 'normal' }}>
-      <WalletDisplayName wallet={wallet} maxCharacters={16} />
+      <WalletDisplayName
+        wallet={wallet}
+        maxCharacters={16}
+        delayedRender={100}
+      />
     </span>
   );
 }
@@ -127,11 +131,15 @@ function CurrentAccountControls() {
           <PersonIcon />
           <span style={{ display: 'inline-flex', alignItems: 'center' }}>
             <CurrentAccount wallet={wallet} />
-            <ArrowDownIcon />
+            <DelayedRender delay={100}>
+              <ArrowDownIcon />
+            </DelayedRender>
           </span>
         </HStack>
       </Button>
-      <CopyButton address={addressToCopy} />
+      <DelayedRender delay={100}>
+        <CopyButton address={addressToCopy} />
+      </DelayedRender>
     </HStack>
   );
 }
