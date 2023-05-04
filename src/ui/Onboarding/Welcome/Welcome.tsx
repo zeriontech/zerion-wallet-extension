@@ -96,9 +96,9 @@ function MainForm({
       className={styles.container}
       onSubmit={(event) => {
         event.preventDefault();
-        const address = new FormData(event.currentTarget).get(
-          'addressOrDomain'
-        ) as string;
+        const address = (
+          new FormData(event.currentTarget).get('addressOrDomain') as string
+        ).trim();
         checkAddress(address);
       }}
     >
