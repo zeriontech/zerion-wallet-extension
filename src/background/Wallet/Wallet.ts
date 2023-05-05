@@ -100,7 +100,6 @@ export class Wallet {
   public id: string;
   // eslint-disable-next-line no-use-before-define
   public publicEthereumController: PublicController;
-  private encryptionKey: string | null;
   private userCredentials: Credentials | null;
   private seedPhraseExpiryTimerId: NodeJS.Timeout | number = 0;
   private globalPreferences: GlobalPreferences;
@@ -115,7 +114,7 @@ export class Wallet {
 
   constructor(
     id: string,
-    encryptionKey: string | null,
+    userCredentials: Credentials | null,
     globalPreferences: GlobalPreferences
   ) {
     this.store = new Store({ chainId: '0x1' });
@@ -127,8 +126,7 @@ export class Wallet {
     networksStore.on('change', () => {
       this.verifyOverviewChain();
     });
-    this.encryptionKey = encryptionKey;
-    this.userCredentials = null;
+    this.userCredentials = userCredentials;
     this.record = null;
 
     this.walletStore.ready().then(() => {
@@ -150,10 +148,10 @@ export class Wallet {
   }
 
   private async updateWalletStore(record: WalletRecord) {
-    if (!this.encryptionKey) {
+    if (!this.userCredentials) {
       throw new Error('Cannot save pending wallet: encryptionKey is null');
     }
-    this.walletStore.save(this.id, this.encryptionKey, record);
+    this.walletStore.save(this.id, this.userCredentials.encryptionKey, record);
   }
 
   async ready() {
@@ -202,7 +200,6 @@ export class Wallet {
   }: PublicMethodParams<Credentials>) {
     this.id = credentials.id;
     this.userCredentials = credentials;
-    this.encryptionKey = credentials.encryptionKey;
     this.setExpirationForSeedPhraseEncryptionKey();
     await this.walletStore.ready();
     await this.syncWithWalletStore();
@@ -338,16 +335,13 @@ export class Wallet {
     if (!this.pendingWallet) {
       throw new Error('Cannot save pending wallet: pendingWallet is null');
     }
-    if (!this.encryptionKey) {
-      throw new Error('Cannot save pending wallet: encryptionKey is null');
+    if (!this.userCredentials) {
+      throw new Error('Cannot save pending wallet: userCredentials are null');
     }
     emitter.emit('walletCreated', this.pendingWallet);
     this.record = Model.createOrUpdateRecord(this.record, this.pendingWallet);
     this.pendingWallet = null;
-    if (this.userCredentials) {
-      this.userCredentials.seedPhraseEncryptionKey = null;
-      this.userCredentials.seedPhraseEncryptionKey_deprecated = null;
-    }
+    this.removeSeedPhraseEncryptionKey();
     this.updateWalletStore(this.record);
   }
 

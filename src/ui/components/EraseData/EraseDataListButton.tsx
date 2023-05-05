@@ -21,7 +21,14 @@ export function EraseDataListButton({
   const eraseAllData = useEraseDataMutation({ onSuccess: () => navigate('/') });
   if (eraseAllData.isLoading) {
     return (
-      <CenteredDialog open={true} style={{ position: 'fixed' }}>
+      <CenteredDialog
+        open={true}
+        style={{
+          // When ManageWallets View is long, we see its bottom part peeking under
+          // this dialog. Fixed positioning fixes this.
+          position: 'fixed',
+        }}
+      >
         <EraseDataInProgress />
       </CenteredDialog>
     );
