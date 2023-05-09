@@ -861,7 +861,7 @@ export class Wallet {
 
     // ethers throws error if typedData.types has unused types
     // however we can remove them and signed message will stay the same
-    // so it is more reliable to remove them withour errors
+    // so we can safely remove them
     const filteredTypes = removeUnusedTypes(
       typedData.types,
       typedData.primaryType
