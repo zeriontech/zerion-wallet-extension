@@ -858,6 +858,7 @@ export class Wallet {
     const typedData = prepareTypedData(rawTypedData);
 
     // we remove unused types to avoid ethers error
+    // based on https://github.com/ethers-io/ethers.js/blob/main/src.ts/hash/typed-data.ts#L210
     const parents = new Map<string, string[]>();
     Object.keys(typedData.types).forEach((type) => {
       parents.set(type, []);
