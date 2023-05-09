@@ -8,7 +8,8 @@ import { walletPort } from 'src/ui/shared/channels';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Media } from 'src/ui/ui-kit/Media';
-import { Item, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
+import type { Item } from 'src/ui/ui-kit/SurfaceList';
+import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { NBSP } from 'src/ui/shared/typography';
@@ -24,6 +25,7 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import AddWalletIcon from 'jsx:src/ui/assets/add-wallet.svg';
 import { Button } from 'src/ui/ui-kit/Button';
+import { TextLink } from 'src/ui/ui-kit/TextLink';
 
 export function WalletSelect() {
   const navigate = useNavigate();
@@ -81,13 +83,17 @@ export function WalletSelect() {
     );
   }
   const items: Item[] = [];
+  let isVisuallyGrouped = false;
   for (const group of walletGroups) {
     if (hasMnemonicWallets && walletGroups.length > 1) {
+      isVisuallyGrouped = true;
       items.push({
         key: group.id,
         pad: false,
         component: (
           <UIText
+            as={TextLink}
+            to={`/wallets/groups/${group.id}`}
             kind="caption/accent"
             color="var(--neutral-700)"
             style={{
@@ -171,7 +177,11 @@ export function WalletSelect() {
     <PageColumn>
       {title}
       <PageTop />
-      <SurfaceList items={items} />
+      <SurfaceList
+        items={items}
+        // I wish we had inline css pseudo-classes instead :(
+        style={isVisuallyGrouped ? { paddingTop: 4 } : undefined}
+      />
       <PageBottom />
     </PageColumn>
   );
