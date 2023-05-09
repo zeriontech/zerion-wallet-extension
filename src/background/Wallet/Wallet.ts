@@ -47,6 +47,7 @@ import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { isSiweLike } from 'src/modules/ethereum/message-signing/SIWE';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
+import omit from 'lodash/omit';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import { toEthersWallet } from './helpers/toEthersWallet';
@@ -855,9 +856,29 @@ export class Wallet {
     const { chainId } = this.store.getState();
     const signer = await this.getSigner(chainId);
     const typedData = prepareTypedData(rawTypedData);
+
+    // we remove unused types to avoid ethers error
+    const parents = new Map<string, string[]>();
+    Object.keys(typedData.types).forEach((type) => {
+      parents.set(type, []);
+    });
+    for (const name in typedData.types) {
+      for (const field of typedData.types[name]) {
+        const baseType = field.type.match(/^([^\x5b]*)(\x5b|$)/)?.[1] || null;
+        if (baseType) {
+          parents.get(baseType)?.push(name);
+        }
+      }
+    }
+    const unusedTypes = Array.from(parents.keys()).filter(
+      (type) =>
+        parents.get(type)?.length === 0 && type !== typedData.primaryType
+    );
+    const filteredTypes = omit(typedData.types, unusedTypes);
+
     const signature = await signer._signTypedData(
       typedData.domain,
-      typedData.types,
+      filteredTypes,
       typedData.message
     );
     emitter.emit('typedDataSigned', {
