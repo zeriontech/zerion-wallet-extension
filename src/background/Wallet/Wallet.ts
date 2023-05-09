@@ -32,7 +32,10 @@ import { createChain } from 'src/modules/networks/Chain';
 import { hasGasPrice } from 'src/modules/ethereum/transactions/gasPrices/hasGasPrice';
 import { fetchAndAssignGasPrice } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
-import { prepareTypedData } from 'src/modules/ethereum/message-signing/prepareTypedData';
+import {
+  prepareTypedData,
+  removeUnusedTypes,
+} from 'src/modules/ethereum/message-signing/prepareTypedData';
 import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
 import { removeSignature } from 'src/modules/ethereum/transactions/removeSignature';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
@@ -47,7 +50,6 @@ import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { isSiweLike } from 'src/modules/ethereum/message-signing/SIWE';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
-import omit from 'lodash/omit';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import { toEthersWallet } from './helpers/toEthersWallet';
@@ -857,24 +859,13 @@ export class Wallet {
     const signer = await this.getSigner(chainId);
     const typedData = prepareTypedData(rawTypedData);
 
-    // we remove unused types to avoid ethers error
-    // based on https://github.com/ethers-io/ethers.js/blob/main/src.ts/hash/typed-data.ts#L210
-    const parents = new Map<string, string[]>(
-      Object.keys(typedData.types).map((key) => [key, []])
+    // ethers throws error if typedData.types has unused types
+    // however we can remove them and signed message will stay the same
+    // so it is more reliable to remove them withour errors
+    const filteredTypes = removeUnusedTypes(
+      typedData.types,
+      typedData.primaryType
     );
-    for (const name in typedData.types) {
-      for (const field of typedData.types[name]) {
-        const baseType = field.type.match(/^([^\x5b]*)(\x5b|$)/)?.[1] || null;
-        if (baseType) {
-          parents.get(baseType)?.push(name);
-        }
-      }
-    }
-    const unusedTypes = Array.from(parents.keys()).filter(
-      (type) =>
-        parents.get(type)?.length === 0 && type !== typedData.primaryType
-    );
-    const filteredTypes = omit(typedData.types, unusedTypes);
 
     const signature = await signer._signTypedData(
       typedData.domain,
