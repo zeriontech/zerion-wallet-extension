@@ -7,6 +7,7 @@ import { toggleUrlBar } from '../URLBar/URLBar';
 export function NavigationTitle({
   title,
   documentTitle,
+  ignoreDocumentTitle_DO_NOT_USE_EXCEPT_FOR_LOADING_VIEW,
   urlBar,
   backTo,
   elementEnd,
@@ -19,6 +20,7 @@ export function NavigationTitle({
 ) & {
   urlBar?: 'none';
   backTo?: string;
+  ignoreDocumentTitle_DO_NOT_USE_EXCEPT_FOR_LOADING_VIEW?: boolean;
   elementEnd?: React.ReactNode;
 }) {
   const navigate = useNavigate();
@@ -33,8 +35,16 @@ export function NavigationTitle({
 
   const stringTitle = documentTitle ?? String(title);
   useLayoutEffect(() => {
+    if (ignoreDocumentTitle_DO_NOT_USE_EXCEPT_FOR_LOADING_VIEW) {
+      return;
+    }
+    if (process.env.NODE_ENV !== 'production' && !stringTitle) {
+      throw new Error(
+        'NavigationTitle: either title or documentTitle is required'
+      );
+    }
     document.title = stringTitle;
-  }, [stringTitle]);
+  }, [ignoreDocumentTitle_DO_NOT_USE_EXCEPT_FOR_LOADING_VIEW, stringTitle]);
 
   if (urlBar === 'none') {
     return null;
