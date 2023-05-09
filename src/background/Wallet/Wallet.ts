@@ -859,10 +859,9 @@ export class Wallet {
 
     // we remove unused types to avoid ethers error
     // based on https://github.com/ethers-io/ethers.js/blob/main/src.ts/hash/typed-data.ts#L210
-    const parents = new Map<string, string[]>();
-    Object.keys(typedData.types).forEach((type) => {
-      parents.set(type, []);
-    });
+    const parents = new Map<string, string[]>(
+      Object.keys(typedData.types).map((key) => [key, []])
+    );
     for (const name in typedData.types) {
       for (const field of typedData.types[name]) {
         const baseType = field.type.match(/^([^\x5b]*)(\x5b|$)/)?.[1] || null;
