@@ -32,7 +32,10 @@ import { createChain } from 'src/modules/networks/Chain';
 import { hasGasPrice } from 'src/modules/ethereum/transactions/gasPrices/hasGasPrice';
 import { fetchAndAssignGasPrice } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
-import { prepareTypedData } from 'src/modules/ethereum/message-signing/prepareTypedData';
+import {
+  prepareTypedData,
+  removeUnusedTypes,
+} from 'src/modules/ethereum/message-signing/prepareTypedData';
 import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
 import { removeSignature } from 'src/modules/ethereum/transactions/removeSignature';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
@@ -855,9 +858,18 @@ export class Wallet {
     const { chainId } = this.store.getState();
     const signer = await this.getSigner(chainId);
     const typedData = prepareTypedData(rawTypedData);
+
+    // ethers throws error if typedData.types has unused types
+    // however we can remove them and signed message will stay the same
+    // so we can safely remove them
+    const filteredTypes = removeUnusedTypes(
+      typedData.types,
+      typedData.primaryType
+    );
+
     const signature = await signer._signTypedData(
       typedData.domain,
-      typedData.types,
+      filteredTypes,
       typedData.message
     );
     emitter.emit('typedDataSigned', {
