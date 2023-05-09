@@ -1,3 +1,4 @@
+import ky from 'ky';
 import {
   isJsonRpcRequest,
   formatJsonRpcError,
@@ -25,11 +26,11 @@ export async function fulfillRpcRequest<T>(
     return Promise.reject('not a request');
   }
   try {
-    const response = await fetch(url, {
+    const data = await ky(url, {
       method: 'post',
       body: JSON.stringify(request),
-    });
-    const data = await response.json();
+      headers: { 'Content-Type': 'application/json' },
+    }).json();
     if (
       isJsonRpcPayload(data) &&
       (isJsonRpcResult(data) || isJsonRpcError(data))
