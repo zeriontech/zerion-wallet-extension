@@ -1,7 +1,7 @@
 import browser from 'webextension-polyfill';
 import cx from 'classnames';
 import type { ComponentPropsWithoutRef, ElementType } from 'react';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useMutation, useQuery } from 'react-query';
 import SwapIcon from 'jsx:src/ui/assets/actions/swap.svg';
 import SendIcon from 'jsx:src/ui/assets/actions/send.svg';
@@ -14,6 +14,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { ThemeStore, themeStore } from 'src/ui/features/appearance';
 import { useStore } from '@store-unit/react';
+import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import * as s from './styles.module.css';
 
 function ActionButton<As extends ElementType = 'a'>({
@@ -56,19 +57,8 @@ export function ActionButtonsRow() {
       return walletPort.request('acceptOrigin', { origin, address });
     }
   );
-  const addWalletParams = useMemo(() => {
-    if (!wallet) {
-      return null;
-    }
-    const params = new URLSearchParams({
-      addWallet: wallet.address,
-      addWalletProvider: 'zerion-extension',
-    });
-    if (wallet.name) {
-      params.append('addWalletName', wallet.name);
-    }
-    return params;
-  }, [wallet]);
+  const addWalletParams = useWalletParams(wallet);
+
   const { data: activeTabs } = useQuery('browser/activeTab', () =>
     browser.tabs.query({ active: true, currentWindow: true })
   );
