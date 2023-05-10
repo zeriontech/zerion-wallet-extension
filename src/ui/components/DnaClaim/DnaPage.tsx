@@ -27,7 +27,7 @@ import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog'
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { useQuery } from 'react-query';
 import { walletPort } from 'src/ui/shared/channels';
-import { useWalletParams } from 'src/ui/pages/Overview/ActionButtonsRow/ActionButtonsRow';
+import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import { Background } from '../Background';
 import { useBodyStyle } from '../Background/Background';
 import { NavigationTitle } from '../NavigationTitle';

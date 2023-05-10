@@ -1,7 +1,7 @@
 import browser from 'webextension-polyfill';
 import cx from 'classnames';
 import type { ComponentPropsWithoutRef, ElementType } from 'react';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useMutation, useQuery } from 'react-query';
 import SwapIcon from 'jsx:src/ui/assets/actions/swap.svg';
 import SendIcon from 'jsx:src/ui/assets/actions/send.svg';
@@ -14,7 +14,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { ThemeStore, themeStore } from 'src/ui/features/appearance';
 import { useStore } from '@store-unit/react';
-import type { BareWallet } from 'src/shared/types/BareWallet';
+import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import * as s from './styles.module.css';
 
 function ActionButton<As extends ElementType = 'a'>({
@@ -47,22 +47,6 @@ function ActionButton<As extends ElementType = 'a'>({
 }
 
 const ZERION_ORIGIN = 'https://app.zerion.io';
-
-export function useWalletParams(wallet: BareWallet | null | undefined) {
-  return useMemo(() => {
-    if (!wallet) {
-      return null;
-    }
-    const params = new URLSearchParams({
-      addWallet: wallet.address,
-      addWalletProvider: 'zerion-extension',
-    });
-    if (wallet.name) {
-      params.append('addWalletName', wallet.name);
-    }
-    return params;
-  }, [wallet]);
-}
 
 export function ActionButtonsRow() {
   const { data: wallet } = useQuery('wallet/uiGetCurrentWallet', () => {
