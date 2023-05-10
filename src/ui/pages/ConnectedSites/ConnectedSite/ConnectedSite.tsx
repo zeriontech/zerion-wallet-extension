@@ -94,11 +94,10 @@ export function ConnectedSite() {
   if (!originName) {
     throw new Error('originName parameter is required for this view');
   }
-  const { data: activeTabOrigin } = useQuery(
-    'activeTab/origin',
-    getActiveTabOrigin,
-    { useErrorBoundary: true }
-  );
+  const { data: tabData } = useQuery('activeTab/origin', getActiveTabOrigin, {
+    useErrorBoundary: true,
+  });
+  const activeTabOrigin = tabData?.tabOrigin;
   const { data: connectedSites, refetch } = useQuery(
     'getPermissionsWithWallets',
     getPermissionsWithWallets,

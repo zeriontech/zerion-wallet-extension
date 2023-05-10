@@ -13,8 +13,11 @@ export function Media({
   image: React.ReactNode;
   text: React.ReactNode;
   detailText: React.ReactNode;
+  /** Default: 8 */
   gap?: number;
+  /** Default: 4 */
   vGap?: number;
+  /** Default: 'center' */
   alignItems?: React.CSSProperties['alignItems'];
 }) {
   return (

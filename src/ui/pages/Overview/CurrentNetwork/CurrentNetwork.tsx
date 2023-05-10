@@ -26,7 +26,8 @@ export function CurrentNetwork({ address }: { address: string }) {
     address,
     currency: 'usd',
   });
-  const { data: tabOrigin } = useQuery('activeTab/origin', getActiveTabOrigin);
+  const { data: tabData } = useQuery('activeTab/origin', getActiveTabOrigin);
+  const tabOrigin = tabData?.tabOrigin;
   const { data: isConnected } = useIsConnectedToActiveTab(address);
   const { data: flaggedAsDapp } = useQuery(
     `wallet/isFlaggedAsDapp(${tabOrigin})`,

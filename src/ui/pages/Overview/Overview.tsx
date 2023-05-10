@@ -39,6 +39,10 @@ import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { useProfileName } from 'src/ui/shared/useProfileName';
+import {
+  PausedBanner,
+  PauseInjectionControl,
+} from 'src/ui/components/PauseInjection';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -218,10 +222,12 @@ function OverviewComponent() {
             {preferences?.showNetworkSwitchShortcut === true ? (
               <CurrentNetwork address={singleAddressNormalized} />
             ) : null}
+            <PauseInjectionControl />
             <SettingsLinkIcon />
           </HStack>
         </HStack>
       </PageFullBleedColumn>
+      <PausedBanner style={{ marginTop: 16 }} />
       <Spacer height={24} />
       <div style={{ height: isLoadingPortfolio ? 72 : undefined }}>
         <HStack gap={16} alignItems="center">

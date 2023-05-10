@@ -64,7 +64,7 @@ import { WalletRecordModel as Model } from './WalletRecord';
 import { WalletStore } from './persistence';
 import type { WalletNameFlag } from './model/WalletNameFlag';
 import { WalletOrigin } from './model/WalletOrigin';
-import { GlobalPreferences } from './GlobalPreferences';
+import type { GlobalPreferences } from './GlobalPreferences';
 import type { State as GlobalPreferencesState } from './GlobalPreferences';
 
 const INTERNAL_SYMBOL_CONTEXT = { origin: INTERNAL_ORIGIN_SYMBOL };
@@ -111,13 +111,17 @@ export class Wallet {
 
   emitter: Emitter<WalletEvents>;
 
-  constructor(id: string, encryptionKey: string | null) {
+  constructor(
+    id: string,
+    encryptionKey: string | null,
+    globalPreferences: GlobalPreferences
+  ) {
     this.store = new Store({ chainId: '0x1' });
     this.emitter = createNanoEvents();
 
     this.id = id;
     this.walletStore = new WalletStore({}, 'wallet');
-    this.globalPreferences = new GlobalPreferences({}, 'globalPreferences');
+    this.globalPreferences = globalPreferences;
     networksStore.on('change', () => {
       this.verifyOverviewChain();
     });
