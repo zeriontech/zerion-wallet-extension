@@ -35,6 +35,9 @@ import { useAddressPortfolioDecomposition } from 'defi-sdk';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { invariant } from 'src/shared/invariant';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
+import { useWalletNameFlags } from 'src/ui/shared/requests/useWalletNameFlags';
+import { Toggle } from 'src/ui/ui-kit/Toggle';
+import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import { CurrentNetworkSettingsItem } from '../../Networks/CurrentNetworkSettingsItem';
 import { ConnectToDappButton } from './ConnectToDappButton';
 
@@ -173,6 +176,7 @@ export function ConnectedSite() {
       }
     },
   });
+  const { setWalletNameFlags, isMetaMask } = useWalletNameFlags();
   if (!connectedSite) {
     return <NotFoundPage />;
   }
@@ -255,6 +259,33 @@ export function ConnectedSite() {
                         <CurrentNetworkSettingsItem chain={siteChain} />
                       </SurfaceItemButton>
                     </>
+                  ),
+                },
+              ]}
+            />
+          </VStack>
+          <VStack gap={8}>
+            <UIText kind="small/regular">MetaMask Mode</UIText>
+            <SurfaceList
+              items={[
+                {
+                  key: 0,
+                  component: (
+                    <HStack gap={4} justifyContent="space-between">
+                      <UIText kind="caption/regular" color="var(--neutral-500)">
+                        Some DApps only work with MetaMask. Zerion Wallet can
+                        work with them by appearing as MetaMask
+                      </UIText>
+                      <Toggle
+                        checked={isMetaMask}
+                        onChange={(event) => {
+                          setWalletNameFlags.mutate({
+                            flag: WalletNameFlag.isMetaMask,
+                            checked: event.target.checked,
+                          });
+                        }}
+                      />
+                    </HStack>
                   ),
                 },
               ]}
