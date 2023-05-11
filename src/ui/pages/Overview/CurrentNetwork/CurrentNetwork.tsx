@@ -21,7 +21,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Toggle } from 'src/ui/ui-kit/Toggle';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { useWalletNameFlags } from 'src/ui/components/WalletNameFlags/useWalletNameFlags';
+import { useWalletNameFlags } from 'src/ui/shared/requests/useWalletNameFlags';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import * as s from './styles.module.css';
 
