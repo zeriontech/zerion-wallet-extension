@@ -1,7 +1,6 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useMutation } from 'react-query';
 import { Route, Routes, useNavigate } from 'react-router-dom';
-import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -160,13 +159,9 @@ function ToggleSettingLine({
 }
 
 function UserPreferences() {
-  const { preferences, setPreferences, setWalletNameFlag } = usePreferences();
   const { globalPreferences, setGlobalPreferences } = useGlobalPreferences();
+  const { preferences, setPreferences } = usePreferences();
 
-  const isMetaMask = useMemo(
-    () => preferences?.walletNameFlags?.includes(WalletNameFlag.isMetaMask),
-    [preferences?.walletNameFlags]
-  );
   return (
     <PageColumn>
       <PageTop />
@@ -176,22 +171,6 @@ function UserPreferences() {
           items={[
             {
               key: 0,
-              component: (
-                <ToggleSettingLine
-                  text="Imitate MetaMask"
-                  detailText="Some DApps only work with MetaMask. Zerion Wallet can work with them by appearing as MetaMask"
-                  checked={Boolean(isMetaMask)}
-                  onChange={(event) => {
-                    setWalletNameFlag({
-                      flag: WalletNameFlag.isMetaMask,
-                      checked: event.target.checked,
-                    });
-                  }}
-                />
-              ),
-            },
-            {
-              key: 1,
               component: (
                 <ToggleSettingLine
                   text="Customizable Transaction Nonce"
@@ -210,7 +189,7 @@ function UserPreferences() {
               ),
             },
             {
-              key: 2,
+              key: 1,
               component: (
                 <ToggleSettingLine
                   text="Recognizable Connect Buttons"

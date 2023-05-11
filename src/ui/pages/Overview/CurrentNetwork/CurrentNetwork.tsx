@@ -19,6 +19,10 @@ import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog'
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { Toggle } from 'src/ui/ui-kit/Toggle';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import { useWalletNameFlags } from 'src/ui/components/WalletNameFlags/useWalletNameFlags';
+import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import * as s from './styles.module.css';
 
 export function CurrentNetwork({ address }: { address: string }) {
@@ -64,6 +68,7 @@ export function CurrentNetwork({ address }: { address: string }) {
   }, [permissions, tabOrigin]);
 
   const { networks } = useNetworks();
+  const { setWalletNameFlags, isMetaMask } = useWalletNameFlags();
 
   if (!networks || !siteChain || !tabOrigin) {
     return null;
@@ -88,6 +93,42 @@ export function CurrentNetwork({ address }: { address: string }) {
               >
                 {isConnected ? 'Connected to' : 'Connect to'}
               </UIText>
+              <SurfaceList
+                items={[
+                  {
+                    key: 0,
+                    component: (
+                      <HStack gap={4} justifyContent="space-between">
+                        <Media
+                          image={null}
+                          text={
+                            <UIText kind="body/regular">MetaMask Mode</UIText>
+                          }
+                          vGap={4}
+                          detailText={
+                            <UIText
+                              kind="caption/regular"
+                              color="var(--neutral-500)"
+                            >
+                              Some DApps only work with MetaMask. Zerion Wallet
+                              can work with them by appearing as MetaMask
+                            </UIText>
+                          }
+                        />
+                        <Toggle
+                          checked={isMetaMask}
+                          onChange={(event) => {
+                            setWalletNameFlags.mutate({
+                              flag: WalletNameFlag.isMetaMask,
+                              checked: event.target.checked,
+                            });
+                          }}
+                        />
+                      </HStack>
+                    ),
+                  },
+                ]}
+              />
               <SurfaceList
                 items={[
                   {

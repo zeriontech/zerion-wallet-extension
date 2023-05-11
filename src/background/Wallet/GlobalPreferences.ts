@@ -1,4 +1,5 @@
 import { PersistentStore } from 'src/modules/persistent-store';
+import type { WalletNameFlag } from './model/WalletNameFlag';
 
 interface Expiration {
   /**
@@ -16,6 +17,7 @@ interface ProviderInjection {
 export interface State {
   recognizableConnectButtons?: boolean;
   providerInjection?: ProviderInjection;
+  walletNameFlags?: Record<string, WalletNameFlag[]>;
 }
 
 /**
@@ -26,7 +28,17 @@ export class GlobalPreferences extends PersistentStore<State> {
   private static defaults: Required<State> = {
     recognizableConnectButtons: true,
     providerInjection: {},
+    walletNameFlags: {},
   };
+
+  private async fetchDefaultWalletNameFlags() {
+    // todo
+  }
+
+  constructor(initialState: State, key: string) {
+    super(initialState, key);
+    this.fetchDefaultWalletNameFlags();
+  }
 
   getPreferences(): Required<State> {
     const state = this.getState();

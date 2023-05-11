@@ -29,7 +29,6 @@ import {
   MnemonicWalletContainer,
   PrivateKeyWalletContainer,
 } from './model/WalletContainer';
-import type { WalletNameFlag } from './model/WalletNameFlag';
 
 function generateGroupName(
   record: WalletRecord | null,
@@ -548,7 +547,6 @@ export class WalletRecordModel {
   static getPreferences(record: WalletRecord | null) {
     const defaults: Required<WalletRecord['publicPreferences']> = {
       showNetworkSwitchShortcut: true,
-      walletNameFlags: [],
       overviewChain: '',
       configurableNonce: false,
     };
@@ -583,29 +581,6 @@ export class WalletRecordModel {
     } else {
       return record;
     }
-  }
-
-  static setWalletNameFlag(
-    record: WalletRecord,
-    { flag }: { flag: WalletNameFlag }
-  ) {
-    return produce(record, (draft) => {
-      const { walletNameFlags } = draft.publicPreferences;
-      const set = new Set(walletNameFlags).add(flag);
-      draft.publicPreferences.walletNameFlags = Array.from(set);
-    });
-  }
-
-  static removeWalletNameFlag(
-    record: WalletRecord,
-    { flag }: { flag: WalletNameFlag }
-  ) {
-    return produce(record, (draft) => {
-      const { walletNameFlags } = draft.publicPreferences;
-      const set = new Set(walletNameFlags);
-      set.delete(flag);
-      draft.publicPreferences.walletNameFlags = Array.from(set);
-    });
   }
 
   static updateLastBackedUp(
