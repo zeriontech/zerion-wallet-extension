@@ -6,9 +6,13 @@ const REMOTE_CONFIG_API_URL = 'https://proxy.zerion.io';
 
 const defaultConfig: RemoteConfig = {
   user_can_create_initial_wallet: false,
+  extention_wallet_name_flags: {},
 };
 
-const knownKeys = ['user_can_create_initial_wallet'];
+const knownKeys = [
+  'user_can_create_initial_wallet',
+  'extention_wallet_name_flags',
+];
 
 async function fetchRemoteConfig(): Promise<RemoteConfig | undefined> {
   const url = new URL('/remote-config', REMOTE_CONFIG_API_URL);

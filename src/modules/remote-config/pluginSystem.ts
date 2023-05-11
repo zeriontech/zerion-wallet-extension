@@ -18,7 +18,7 @@ export function ready() {
   return Promise.all(Object.values(promises));
 }
 
-export function activatePlugins() {
+export async function activatePlugins() {
   if (!plugins.length) {
     isReady = true;
   }

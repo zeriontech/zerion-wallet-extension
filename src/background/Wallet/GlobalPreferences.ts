@@ -1,4 +1,7 @@
+import produce from 'immer';
 import { PersistentStore } from 'src/modules/persistent-store';
+import type { RemoteConfig } from 'src/modules/remote-config';
+import { getRemoteConfigValue } from 'src/modules/remote-config';
 import type { WalletNameFlag } from './model/WalletNameFlag';
 
 interface Expiration {
@@ -32,11 +35,25 @@ export class GlobalPreferences extends PersistentStore<State> {
   };
 
   private async fetchDefaultWalletNameFlags() {
-    // todo
+    const config = (await getRemoteConfigValue(
+      'extention_wallet_name_flags'
+    )) as RemoteConfig['extention_wallet_name_flags'];
+    this.setState(
+      produce(this.getState(), (draft) => {
+        if (!draft.walletNameFlags) {
+          draft.walletNameFlags = {};
+        }
+        Object.entries(config).forEach(([origin, flags]) => {
+          if (draft.walletNameFlags && !draft.walletNameFlags?.[origin]) {
+            draft.walletNameFlags[origin] = flags;
+          }
+        });
+      })
+    );
   }
 
-  constructor(initialState: State, key: string) {
-    super(initialState, key);
+  async initialize() {
+    await this.ready();
     this.fetchDefaultWalletNameFlags();
   }
 
