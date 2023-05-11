@@ -6,13 +6,12 @@ export async function requestWithCache<T>(
   request: Promise<T>,
   options?: {
     cacheTime?: number;
+    // no need to cache broken or empty values,
+    // so we can use validation function to exclude these cases
+    validationFn?: (result: T) => boolean;
   }
 ) {
   return anyPromise([
-    request.then((result) => {
-      sessionCacheService.request('setCache', { key, value: result });
-      return result;
-    }),
     sessionCacheService.request('getCache', { key }).then((result) => {
       if (
         options?.cacheTime &&
@@ -20,7 +19,16 @@ export async function requestWithCache<T>(
       ) {
         throw new Error('Cache is obsolete');
       }
+      if (!result.value) {
+        throw new Error('Empty cache for request');
+      }
       return result.value as T;
+    }),
+    request.then((result) => {
+      if (!options?.validationFn || options.validationFn(result)) {
+        sessionCacheService.request('setCache', { key, value: result });
+      }
+      return result;
     }),
   ]);
 }

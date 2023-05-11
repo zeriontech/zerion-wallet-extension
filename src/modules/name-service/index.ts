@@ -26,7 +26,8 @@ export async function lookupAddressName(
 ): Promise<string | null> {
   const names = await requestWithCache(
     `lookupAddressName ${address}`,
-    lookupAddressNames(address)
+    lookupAddressNames(address),
+    { validationFn: (result) => result.filter(Boolean).length > 0 }
   );
   return names.length > 0 ? names[0] : null;
 }

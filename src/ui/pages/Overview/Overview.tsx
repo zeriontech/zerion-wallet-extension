@@ -177,7 +177,7 @@ function OverviewComponent() {
   );
   const { singleAddress, singleAddressNormalized, params, ready } =
     useAddressParams();
-  useProfileName({ address: singleAddressNormalized, name: null });
+  useProfileName({ address: singleAddress, name: null });
   const { preferences, setPreferences } = usePreferences();
   const setChain = (overviewChain: string) => setPreferences({ overviewChain });
   const { value, isLoading: isLoadingPortfolio } = useAddressPortfolio(
@@ -206,7 +206,9 @@ function OverviewComponent() {
       >
         <Spacer height={8} />
         <HStack gap={12} justifyContent="space-between" alignItems="center">
-          <CurrentAccountControls />
+          <DelayedRender delay={50} fallback={<div />}>
+            <CurrentAccountControls />
+          </DelayedRender>
 
           <HStack gap={0} alignItems="center">
             {preferences?.showNetworkSwitchShortcut === true ? (
