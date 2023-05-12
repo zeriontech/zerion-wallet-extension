@@ -271,7 +271,11 @@ export function ConnectedSite() {
                 {
                   key: 0,
                   component: (
-                    <HStack gap={4} justifyContent="space-between">
+                    <HStack
+                      gap={4}
+                      justifyContent="space-between"
+                      alignItems="center"
+                    >
                       <UIText kind="small/regular">MetaMask Mode</UIText>
                       <Toggle
                         checked={isMetaMask}
