@@ -26,8 +26,12 @@ async function fetchWalletNFT(
 ): Promise<WalletProfileNFT | undefined> {
   const profile = await requestWithCache(
     `fetchWalletNFT ${address}`,
-    fetchWalletProfile(address),
-    { validationFn: (result) => Object.keys(result || {}).length > 0 }
+    fetchWalletProfile(address).then((result) => {
+      if (!Object.keys(result || {}).length) {
+        throw new Error('Address profile is empty');
+      }
+      return result;
+    })
   );
   return profile?.nft;
 }

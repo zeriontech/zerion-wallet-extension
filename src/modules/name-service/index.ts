@@ -26,8 +26,12 @@ export async function lookupAddressName(
 ): Promise<string | null> {
   const names = await requestWithCache(
     `lookupAddressName ${address}`,
-    lookupAddressNames(address),
-    { validationFn: (result) => result.filter(Boolean).length > 0 }
+    lookupAddressNames(address).then((result) => {
+      if (!result.filter(Boolean).length) {
+        throw new Error('Resolved value is empty');
+      }
+      return result;
+    })
   );
   return names.length > 0 ? names[0] : null;
 }

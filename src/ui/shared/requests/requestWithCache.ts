@@ -6,9 +6,6 @@ export async function requestWithCache<T>(
   request: Promise<T>,
   options?: {
     cacheTime?: number;
-    // no need to cache broken or empty values,
-    // so we can use validation function to exclude these cases
-    validationFn?: (result: T) => boolean;
   }
 ) {
   return anyPromise([
@@ -25,9 +22,7 @@ export async function requestWithCache<T>(
       return result.value as T;
     }),
     request.then((result) => {
-      if (!options?.validationFn || options.validationFn(result)) {
-        sessionCacheService.request('setCache', { key, value: result });
-      }
+      sessionCacheService.request('setCache', { key, value: result });
       return result;
     }),
   ]);
