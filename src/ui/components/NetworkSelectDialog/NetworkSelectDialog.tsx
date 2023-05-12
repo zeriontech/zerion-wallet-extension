@@ -110,6 +110,22 @@ function NetworkList({
   );
 }
 
+function compareChains(
+  a: NetworkConfig,
+  b: NetworkConfig,
+  chainDistribution: ChainDistribution | null
+) {
+  const aString = a.chain.toString();
+  const bString = b.chain.toString();
+  const aValue = chainDistribution?.positions_chains_distribution[aString];
+  const bValue = chainDistribution?.positions_chains_distribution[bString];
+
+  if (aValue && bValue) return bValue - aValue;
+  if (aValue && !bValue) return -1;
+  if (!aValue && bValue) return 1;
+  return aString < bString ? -1 : aString > bString ? 1 : 0;
+}
+
 function MainNetworkView({
   networks,
   value,
@@ -127,7 +143,9 @@ function MainNetworkView({
 }) {
   const chain = value === NetworkSelectValue.All ? null : createChain(value);
   const networksItems = useMemo(() => {
-    const allItems = networks.getMainnets();
+    const allItems = networks
+      .getMainnets()
+      .sort((a, b) => compareChains(a, b, chainDistribution));
     const selectedItemIndex = chain
       ? allItems.findIndex((item) => item.chain === value)
       : -1;
@@ -141,7 +159,7 @@ function MainNetworkView({
       // Include selected item as the last shown item
       return allItems.slice(0, AMOUNT_TO_SHOW - 1).concat(selectedItem);
     }
-  }, [networks, chain, value]);
+  }, [networks, chain, value, chainDistribution]);
 
   const options: ListItemType[] = [];
   if (type === 'overview') {
