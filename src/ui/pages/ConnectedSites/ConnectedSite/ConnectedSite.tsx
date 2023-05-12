@@ -265,17 +265,14 @@ export function ConnectedSite() {
             />
           </VStack>
           <VStack gap={8}>
-            <UIText kind="small/regular">MetaMask Mode</UIText>
+            <UIText kind="small/regular">Representation</UIText>
             <SurfaceList
               items={[
                 {
                   key: 0,
                   component: (
                     <HStack gap={4} justifyContent="space-between">
-                      <UIText kind="caption/regular" color="var(--neutral-500)">
-                        Some DApps only work with MetaMask. Zerion Wallet can
-                        work with them by appearing as MetaMask
-                      </UIText>
+                      <UIText kind="small/regular">MetaMask Mode</UIText>
                       <Toggle
                         checked={isMetaMask}
                         onChange={(event) => {
@@ -290,6 +287,10 @@ export function ConnectedSite() {
                 },
               ]}
             />
+            <UIText kind="caption/regular" color="var(--neutral-500)">
+              Some DApps only work with MetaMask. Zerion Wallet can work with
+              them by appearing as MetaMask
+            </UIText>
           </VStack>
           {connectedSite.wallets.length ? (
             <>
