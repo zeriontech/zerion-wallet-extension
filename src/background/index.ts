@@ -3,6 +3,7 @@ import { ethers } from 'ethers';
 import { networksStore } from 'src/modules/networks/networks-store.background';
 import { configureBackgroundClient } from 'src/modules/defi-sdk/background';
 import { FEATURE_WAITLIST_ONBOARDING } from 'src/env/config';
+import { SessionCacheService } from 'src/background/resource/sessionCacheService';
 import { initialize } from './initialize';
 import { PortRegistry } from './messaging/PortRegistry';
 import { createWalletMessageHandler } from './messaging/port-message-handlers/createWalletMessageHandler';
@@ -132,6 +133,12 @@ initialize().then(({ account, accountPublicRPC, dnaService }) => {
     createPortMessageHandler({
       check: (port) => port.name === 'dnaService',
       controller: dnaService,
+    })
+  );
+  portRegistry.addMessageHandler(
+    createPortMessageHandler({
+      check: (port) => port.name === 'sessionCacheService',
+      controller: new SessionCacheService(),
     })
   );
   portRegistry.addMessageHandler(createNotificationWindowMessageHandler());

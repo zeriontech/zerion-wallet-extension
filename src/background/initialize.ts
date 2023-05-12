@@ -39,5 +39,10 @@ export async function initialize() {
     dnaService,
     transactionService,
   });
-  return { account, accountPublicRPC, transactionService, dnaService };
+  return {
+    account,
+    accountPublicRPC,
+    transactionService,
+    dnaService,
+  };
 }

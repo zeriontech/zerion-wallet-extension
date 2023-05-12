@@ -1,4 +1,5 @@
 import { normalizeAddress } from 'src/shared/normalizeAddress';
+import { requestWithCache } from 'src/ui/shared/requests/requestWithCache';
 import { ensLookup, ensResolve } from './ens';
 import { lensLookup, lensResolve } from './lens';
 import { udLookup, udResolve } from './ud';
@@ -23,7 +24,15 @@ async function lookupAddressNames(address: string): Promise<string[]> {
 export async function lookupAddressName(
   address: string
 ): Promise<string | null> {
-  const names = await lookupAddressNames(address);
+  const names = await requestWithCache(
+    `lookupAddressName ${address}`,
+    lookupAddressNames(address).then((result) => {
+      if (!result.filter(Boolean).length) {
+        throw new Error('Resolved value is empty');
+      }
+      return result;
+    })
+  );
   return names.length > 0 ? names[0] : null;
 }
 
