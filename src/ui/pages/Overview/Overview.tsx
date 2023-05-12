@@ -35,6 +35,7 @@ import { CopyButton } from 'src/ui/components/CopyButton';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
+import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { useProfileName } from 'src/ui/shared/useProfileName';
@@ -111,12 +112,17 @@ function CurrentAccountControls() {
   const { data: wallet } = useQuery('wallet/uiGetCurrentWallet', () =>
     walletPort.request('uiGetCurrentWallet')
   );
+  const visible = useRenderDelay(16);
   if (!ready || !wallet) {
     return null;
   }
   const addressToCopy = wallet.address || singleAddress;
   return (
-    <HStack gap={0} alignItems="center">
+    <HStack
+      gap={0}
+      alignItems="center"
+      style={{ visibility: visible ? 'visible' : 'hidden' }}
+    >
       <Button
         kind="ghost"
         size={32}
@@ -206,9 +212,7 @@ function OverviewComponent() {
       >
         <Spacer height={8} />
         <HStack gap={12} justifyContent="space-between" alignItems="center">
-          <DelayedRender delay={50} fallback={<div />}>
-            <CurrentAccountControls />
-          </DelayedRender>
+          <CurrentAccountControls />
 
           <HStack gap={0} alignItems="center">
             {preferences?.showNetworkSwitchShortcut === true ? (
