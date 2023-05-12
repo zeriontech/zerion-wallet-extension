@@ -15,14 +15,13 @@ export function useRenderDelay(delay: number) {
 
 export function DelayedRender({
   children,
-  fallback,
   delay = 500,
-}: React.PropsWithChildren<{ delay?: number; fallback?: React.ReactNode }>) {
+}: React.PropsWithChildren<{ delay?: number }>) {
   const render = useRenderDelay(delay);
 
   if (render) {
     return children as JSX.Element;
   } else {
-    return (fallback as JSX.Element) || null;
+    return null;
   }
 }
