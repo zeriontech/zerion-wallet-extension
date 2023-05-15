@@ -2,7 +2,6 @@ import { ethers } from 'ethers';
 import { Content } from 'react-area';
 import { produce } from 'immer';
 import merge from 'lodash/merge';
-import lodashSet from 'lodash/set';
 import React, { useId, useState } from 'react';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -16,6 +15,7 @@ import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { Toggle } from 'src/ui/ui-kit/Toggle';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import { naiveFormDataToObject } from 'src/ui/shared/form-data';
 
 type InitialNetworkConfig = Omit<NetworkConfig, 'chain'> & {
   chain: string | null;
@@ -72,23 +72,6 @@ function Field({
       ) : null}
     </VStack>
   );
-}
-
-function naiveFormDataToObject(
-  formData: FormData,
-  modifier: (key: string, value: unknown) => unknown
-) {
-  const result: Record<string, unknown> = {};
-  for (const key of new Set(formData.keys())) {
-    if (key.endsWith('[]')) {
-      const value = modifier(key, formData.getAll(key));
-      lodashSet(result, key.slice(0, -2), value);
-    } else {
-      const value = modifier(key, formData.get(key));
-      lodashSet(result, key, value);
-    }
-  }
-  return result;
 }
 
 type Validators = Record<

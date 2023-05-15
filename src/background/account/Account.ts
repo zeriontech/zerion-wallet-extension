@@ -10,6 +10,7 @@ import { currentUserKey } from 'src/shared/getCurrentUser';
 import type { PublicUser, User } from 'src/shared/types/User';
 import { Wallet } from '../Wallet/Wallet';
 import { peakSavedWalletState } from '../Wallet/persistence';
+import type { GlobalPreferences } from '../Wallet/GlobalPreferences';
 import { credentialsKey } from './storage-keys';
 
 const TEMPORARY_ID = 'temporary';
@@ -45,6 +46,7 @@ export class Account extends EventEmitter<AccountEvents> {
   private user: User | null;
   private encryptionKey: string | null;
   private wallet: Wallet;
+  private globalPreferences: GlobalPreferences;
 
   isPendingNewUser: boolean;
 
@@ -91,12 +93,13 @@ export class Account extends EventEmitter<AccountEvents> {
     return record;
   }
 
-  constructor() {
+  constructor({ globalPreferences }: { globalPreferences: GlobalPreferences }) {
     super();
     this.user = null;
     this.isPendingNewUser = false;
     this.encryptionKey = null;
-    this.wallet = new Wallet(TEMPORARY_ID, null);
+    this.globalPreferences = globalPreferences;
+    this.wallet = new Wallet(TEMPORARY_ID, null, this.globalPreferences);
     this.on('authenticated', () => {
       if (this.encryptionKey) {
         Account.writeCredentials({ encryptionKey: this.encryptionKey });
@@ -119,7 +122,7 @@ export class Account extends EventEmitter<AccountEvents> {
   private reset() {
     this.user = null;
     this.encryptionKey = null;
-    this.wallet = new Wallet(TEMPORARY_ID, null);
+    this.wallet = new Wallet(TEMPORARY_ID, null, this.globalPreferences);
     this.emit('reset');
   }
 

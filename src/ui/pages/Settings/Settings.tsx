@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useMutation, useQuery } from 'react-query';
+import { useMutation } from 'react-query';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
@@ -7,7 +7,7 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { ViewSuspense } from 'src/ui/components/ViewSuspense';
-import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
+import { accountPublicRPCPort } from 'src/ui/shared/channels';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Media } from 'src/ui/ui-kit/Media';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
@@ -23,10 +23,9 @@ import NetworksIcon from 'jsx:src/ui/assets/network.svg';
 import { version } from 'src/shared/packageVersion';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { apostrophe } from 'src/ui/shared/typography';
-import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
 import { AppearancePage } from 'src/ui/features/appearance/AppearancePage';
 import { usePreferences } from 'src/ui/features/preferences';
-import { useOptimisticMutation } from 'src/ui/shared/requests/useOptimisticMutation';
+import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { BackupFlowSettingsSection } from '../BackupWallet/BackupSettingsItem';
 
 function SettingsMain() {
@@ -130,26 +129,9 @@ function SettingsMain() {
   );
 }
 
-async function setGlobalPreferences(preferences: GlobalPreferences) {
-  walletPort.request('setGlobalPreferences', { preferences });
-}
-
 function UserPreferences() {
-  const { data: globalPreferences } = useQuery(
-    'wallet/getGlobalPreferences',
-    () => walletPort.request('getGlobalPreferences'),
-    { useErrorBoundary: true, suspense: true }
-  );
   const { preferences, setPreferences, setWalletNameFlag } = usePreferences();
-
-  const globalPreferenesMutation = useOptimisticMutation(setGlobalPreferences, {
-    relatedQueryKey: 'wallet/getGlobalPreferences',
-    onMutate: ({ client, variables }) =>
-      client.setQueryData<GlobalPreferences>(
-        'wallet/getGlobalPreferences',
-        (globalPreferences) => ({ ...globalPreferences, ...variables })
-      ),
-  });
+  const { globalPreferences, setGlobalPreferences } = useGlobalPreferences();
 
   const isMetaMask = useMemo(
     () => preferences?.walletNameFlags?.includes(WalletNameFlag.isMetaMask),
@@ -251,7 +233,7 @@ function UserPreferences() {
                         globalPreferences?.recognizableConnectButtons || false
                       }
                       onChange={(event) => {
-                        globalPreferenesMutation.mutate({
+                        setGlobalPreferences({
                           recognizableConnectButtons: event.target.checked,
                         });
                       }}

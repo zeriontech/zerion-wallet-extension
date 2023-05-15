@@ -5,8 +5,7 @@ import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Radio } from 'src/ui/ui-kit/Radio';
-import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
-import { ItemLabel } from 'src/ui/ui-kit/SurfaceList/SurfaceList';
+import { SurfaceList, SurfaceItemLabel } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { ThemePreference, preferenceStore } from '../preference-store';
@@ -38,22 +37,26 @@ export function AppearancePage() {
             isInteractive: true,
             pad: false,
             component: (
-              <ItemLabel>
+              <SurfaceItemLabel>
                 <UIText
                   kind="body/regular"
                   color={mode === preference ? 'var(--primary)' : undefined}
                 >
-                  <HStack gap={8} alignItems="center">
+                  <HStack
+                    gap={8}
+                    alignItems="center"
+                    justifyContent="space-between"
+                  >
+                    <span>{preferenceStrings[preference]}</span>
                     <Radio
                       name="preference"
                       value={preference}
                       checked={mode === preference}
                       onChange={handleChange}
                     />
-                    <span>{preferenceStrings[preference]}</span>
                   </HStack>
                 </UIText>
-              </ItemLabel>
+              </SurfaceItemLabel>
             ),
           }))}
         />

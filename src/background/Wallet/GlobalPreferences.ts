@@ -1,7 +1,21 @@
 import { PersistentStore } from 'src/modules/persistent-store';
 
+interface Expiration {
+  /**
+   * timestamp after which the value is considered expired
+   * `null` means never expire
+   */
+  expires: null | number;
+}
+
+interface ProviderInjection {
+  '<all_urls>'?: Expiration;
+  [key: string]: Expiration | undefined;
+}
+
 export interface State {
   recognizableConnectButtons?: boolean;
+  providerInjection?: ProviderInjection;
 }
 
 /**
@@ -11,6 +25,7 @@ export interface State {
 export class GlobalPreferences extends PersistentStore<State> {
   private static defaults: Required<State> = {
     recognizableConnectButtons: true,
+    providerInjection: {},
   };
 
   getPreferences(): Required<State> {
@@ -20,13 +35,19 @@ export class GlobalPreferences extends PersistentStore<State> {
 
   setPreferences(preferences: Partial<State>) {
     // Omit values which are the same as the default ones
-    const valueWithoutDefaults: Partial<State> = {};
-    for (const untypedKey in preferences) {
-      const key = untypedKey as keyof typeof preferences;
-      if (GlobalPreferences.defaults[key] !== preferences[key]) {
-        valueWithoutDefaults[key] = preferences[key];
+    this.setState((state) => {
+      const valueWithoutDefaults = {
+        ...GlobalPreferences.defaults,
+        ...state,
+        ...preferences,
+      };
+      for (const untypedKey in valueWithoutDefaults) {
+        const key = untypedKey as keyof typeof valueWithoutDefaults;
+        if (valueWithoutDefaults[key] === GlobalPreferences.defaults[key]) {
+          delete valueWithoutDefaults[key];
+        }
       }
-    }
-    this.setState(valueWithoutDefaults);
+      return valueWithoutDefaults;
+    });
   }
 }

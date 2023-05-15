@@ -16,6 +16,7 @@ import { MemoryCacheRPC } from './resource/memoryCacheRPC';
 import type { RuntimePort } from './webapis/RuntimePort';
 import { emitter } from './events';
 import * as userActivity from './user-activity';
+import { ContentScriptManager } from './ContentScriptManager';
 
 Object.assign(globalThis, { ethers });
 
@@ -103,11 +104,15 @@ userActivity.scheduleAlarms();
 // It's not mentioned on the Alarms API page, but it's mentioned here:
 // https://developer.chrome.com/docs/extensions/mv3/migrating_to_service_workers/#alarms
 browser.alarms.onAlarm.addListener(userActivity.handleAlarm);
+browser.alarms.onAlarm.addListener(ContentScriptManager.handleAlarm);
 
-initialize().then(({ account, accountPublicRPC, dnaService }) => {
+initialize().then((values) => {
+  const { account, accountPublicRPC, dnaService, globalPreferences } = values;
   notifyContentScriptsAndUIAboutInitialization();
   // const httpConnection = new HttpConnection(() => account.getCurrentWallet());
   const memoryCacheRPC = new MemoryCacheRPC();
+
+  new ContentScriptManager(globalPreferences).removeExpiredRecords().activate();
 
   portRegistry.addMessageHandler(
     createWalletMessageHandler(() => account.getCurrentWallet())
@@ -170,24 +175,6 @@ initialize().then(({ account, accountPublicRPC, dnaService }) => {
 
   emitter.on('sessionExpired', () => account.logout());
 });
-
-const inPageScriptLocation =
-  browser.runtime.getManifest().web_accessible_resources?.[0];
-
-if (!inPageScriptLocation || typeof inPageScriptLocation === 'string') {
-  throw new Error('Missing manifest field: web_accessible_resources');
-}
-// Register script with "world: 'MAIN'" environment so that it can write to page window
-// See: https://developer.chrome.com/docs/extensions/mv3/content_scripts/#isolated_world
-chrome.scripting.registerContentScripts([
-  {
-    id: 'zerion-extension',
-    js: inPageScriptLocation.resources,
-    matches: ['<all_urls>'],
-    world: 'MAIN',
-    runAt: 'document_start',
-  },
-]);
 
 browser.runtime.onInstalled.addListener(({ reason }) => {
   if (reason === 'install') {
