@@ -61,7 +61,7 @@ export function SiweError({
             }}
             onClick={onReadMore}
           >
-            <UIText kind="small/accent">Read more</UIText>
+            <UIText kind="small/accent">View errors</UIText>
           </TextAnchor>
         }
         {...errorMessages.dataVerificationFailed}

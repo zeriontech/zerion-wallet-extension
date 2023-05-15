@@ -122,7 +122,10 @@ export function SignInWithEthereum() {
               <Spacer height={16} />
               {siweMessage?.statement && (
                 <>
-                  <SpeechBubble text={siweMessage.statement} />
+                  <SpeechBubble
+                    style={{ wordBreak: 'break-word' }}
+                    text={siweMessage.statement}
+                  />
                   <Spacer height={16} />
                 </>
               )}
@@ -173,7 +176,10 @@ export function SignInWithEthereum() {
                 padding={16}
                 style={{ border: '1px solid var(--neutral-300)' }}
               >
-                <UIText kind="small/regular" style={{ whiteSpace: 'pre-wrap' }}>
+                <UIText
+                  kind="small/regular"
+                  style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}
+                >
                   {messageUtf8}
                 </UIText>
               </Surface>
