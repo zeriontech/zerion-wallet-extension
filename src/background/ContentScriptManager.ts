@@ -100,7 +100,7 @@ export class ContentScriptManager {
         ids: ['zerion-extension-content-script'],
       });
     } catch (e) {
-      console.warn('could not unregister'); // eslint-disable-line no-console
+      console.warn('Could not unregister content script'); // eslint-disable-line no-console
     }
 
     const matches = this.getMatches();
@@ -120,6 +120,9 @@ export class ContentScriptManager {
         runAt: 'document_start',
       },
     ]);
+    // TODO: update active tab here? But only if it is related to the changes?
+    // If we are updating injected scripts because of an alarm going off, it maybe
+    // unrelated to the currently active tab. Would be bad UX to update it in this case.
   }
 
   getMatches() {

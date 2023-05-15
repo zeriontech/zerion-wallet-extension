@@ -1,5 +1,5 @@
 import browser from 'webextension-polyfill';
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { Button } from 'src/ui/ui-kit/Button';
 import ConnectionIconOn from 'jsx:src/ui/assets/connection-toggle-on.svg';
 import ConnectionIconOff from 'jsx:src/ui/assets/connection-toggle-off.svg';
@@ -29,7 +29,7 @@ import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
 import produce from 'immer';
 import { ViewLoading } from '../ViewLoading';
 
-const TESTING = true;
+const TESTING = process.env.NODE_ENV !== 'production';
 
 enum TurnOffDuration {
   oneHour,
@@ -146,14 +146,18 @@ function PauseInjectionDialog({
                 component: (
                   <SurfaceItemLabel>
                     <UIText kind="body/regular">
-                      <HStack gap={8} alignItems="center">
+                      <HStack
+                        gap={8}
+                        alignItems="center"
+                        justifyContent="space-between"
+                      >
+                        <span>{option.label}</span>
                         <Radio
                           name="origin"
                           value={option.value}
                           defaultChecked={option.defaultChecked}
                           required={true}
                         />
-                        <span>{option.label}</span>
                       </HStack>
                     </UIText>
                   </SurfaceItemLabel>
@@ -215,29 +219,23 @@ function calculateExpires(duration: TurnOffDuration) {
 function usePausedData() {
   const { data: tabData } = useQuery('activeTab/origin', getActiveTabOrigin);
   const { globalPreferences, mutation } = useGlobalPreferences();
-  const origin = tabData?.tabOrigin;
-  const httpTabOrigin = useMemo(() => {
-    if (!origin) {
-      return;
-    }
-    const url = new URL(origin);
-    if (url.protocol === 'https:' || url.protocol === 'http:') {
-      return origin;
-    }
-  }, [origin]);
+  const tabUrl = tabData?.url;
+  const protocol = tabUrl?.protocol;
+  const tabUrlHttp =
+    protocol === 'https:' || protocol === 'http:' ? tabUrl : undefined;
   const isPausedForAll = Boolean(
     globalPreferences?.providerInjection['<all_urls>']
   );
   const isPaused =
     isPausedForAll ||
-    (httpTabOrigin
-      ? Boolean(globalPreferences?.providerInjection[httpTabOrigin])
+    (tabUrlHttp
+      ? Boolean(globalPreferences?.providerInjection[tabUrlHttp.origin])
       : false);
   const tabId = tabData?.tab.id;
   return {
-    httpTabOrigin,
+    tabUrl: tabUrlHttp,
     isPaused,
-    pattern: isPausedForAll ? '<all_urls>' : httpTabOrigin ?? null,
+    pattern: isPausedForAll ? '<all_urls>' : tabUrlHttp?.origin ?? null,
     isPausedForAll,
     globalPreferences,
     setGlobalPreferences: mutation.mutateAsync,
@@ -282,7 +280,7 @@ export function PauseInjectionControl() {
   const {
     isPaused,
     isPausedForAll,
-    httpTabOrigin,
+    tabUrl,
     globalPreferences,
     setGlobalPreferences,
     reloadActiveTab,
@@ -294,12 +292,16 @@ export function PauseInjectionControl() {
   return (
     <>
       <BottomSheetDialog
+        // TODO: maybe create a "doNotRenderChildrenIfClosed" prop? (not final name :))
         ref={dialogRef}
         height={'90vh'}
-        style={{ backgroundColor: 'var(--background)' }}
+        style={{
+          backgroundColor: 'var(--background)',
+          ['--surface-background-color' as string]: 'var(--white)',
+        }}
       >
         <PauseInjectionDialog
-          activeTabOrigin={httpTabOrigin || null}
+          activeTabOrigin={tabUrl?.origin || null}
           onSubmit={(formData) => {
             setGlobalPreferences(
               createPreference(globalPreferences, formData)
@@ -340,7 +342,7 @@ export function PausedBanner({ style }: { style?: React.CSSProperties }) {
     isPaused,
     isPausedForAll,
     pattern,
-    httpTabOrigin,
+    tabUrl,
     globalPreferences,
     setGlobalPreferences,
     reloadActiveTab,
@@ -349,7 +351,14 @@ export function PausedBanner({ style }: { style?: React.CSSProperties }) {
     return null;
   }
   return (
-    <Surface style={{ paddingBlock: 8, paddingInline: 12, ...style }}>
+    <Surface
+      style={{
+        paddingBlock: 8,
+        paddingInline: 12,
+        ['--surface-background-color' as string]: 'var(--white)',
+        ...style,
+      }}
+    >
       <HStack gap={8} justifyContent="space-between">
         <UIText kind="small/regular">
           Paused for{' '}
@@ -359,7 +368,7 @@ export function PausedBanner({ style }: { style?: React.CSSProperties }) {
             </UIText>
           ) : (
             <UIText kind="small/accent" inline={true}>
-              {httpTabOrigin}
+              {tabUrl?.hostname || 'current tab'}
             </UIText>
           )}
         </UIText>

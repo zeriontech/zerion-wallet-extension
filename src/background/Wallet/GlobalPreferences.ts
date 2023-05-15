@@ -35,16 +35,19 @@ export class GlobalPreferences extends PersistentStore<State> {
 
   setPreferences(preferences: Partial<State>) {
     // Omit values which are the same as the default ones
-    const valueWithoutDefaults = {
-      ...GlobalPreferences.defaults,
-      ...preferences,
-    };
-    for (const untypedKey in valueWithoutDefaults) {
-      const key = untypedKey as keyof typeof valueWithoutDefaults;
-      if (valueWithoutDefaults[key] === GlobalPreferences.defaults[key]) {
-        delete valueWithoutDefaults[key];
+    this.setState((state) => {
+      const valueWithoutDefaults = {
+        ...GlobalPreferences.defaults,
+        ...state,
+        ...preferences,
+      };
+      for (const untypedKey in valueWithoutDefaults) {
+        const key = untypedKey as keyof typeof valueWithoutDefaults;
+        if (valueWithoutDefaults[key] === GlobalPreferences.defaults[key]) {
+          delete valueWithoutDefaults[key];
+        }
       }
-    }
-    this.setState(valueWithoutDefaults);
+      return valueWithoutDefaults;
+    });
   }
 }

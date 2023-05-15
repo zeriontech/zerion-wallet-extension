@@ -42,14 +42,18 @@ export function AppearancePage() {
                   kind="body/regular"
                   color={mode === preference ? 'var(--primary)' : undefined}
                 >
-                  <HStack gap={8} alignItems="center">
+                  <HStack
+                    gap={8}
+                    alignItems="center"
+                    justifyContent="space-between"
+                  >
+                    <span>{preferenceStrings[preference]}</span>
                     <Radio
                       name="preference"
                       value={preference}
                       checked={mode === preference}
                       onChange={handleChange}
                     />
-                    <span>{preferenceStrings[preference]}</span>
                   </HStack>
                 </UIText>
               </SurfaceItemLabel>
