@@ -236,7 +236,6 @@ export function WalletAccount() {
         <InputDecorator
           label="Name"
           htmlFor={nameInputId}
-          inputTextKind="body/accent"
           input={
             <EditableWalletName
               id={nameInputId}

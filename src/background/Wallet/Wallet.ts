@@ -814,9 +814,10 @@ export class Wallet {
     }
 
     const signer = await this.getSigner(chainId);
+
     const transactionResponse = await signer.sendTransaction({
       ...transaction,
-      type: transaction.type || undefined,
+      type: transaction.type || undefined, // to exclude null
     });
     const safeTx = removeSignature(transactionResponse);
     emitter.emit('transactionSent', {

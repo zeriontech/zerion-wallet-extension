@@ -1,26 +1,12 @@
 import { ethers } from 'ethers';
 import { createChain } from 'src/modules/networks/Chain';
-import { UnsupportedNetwork } from 'src/modules/networks/errors';
 import type { Networks } from 'src/modules/networks/Networks';
 import { sendRpcRequest } from 'src/shared/custom-rpc/rpc-request';
 import type { IncomingTransaction } from '../types/IncomingTransaction';
 import { assignGasPrice } from './gasPrices/assignGasPrice';
 import type { ChainGasPrice } from './gasPrices/requests';
 import { gasChainPricesSubscription } from './gasPrices/requests';
-
-function wrappedGetNetworkById(networks: Networks, chainId: string) {
-  try {
-    return networks.getNetworkById(chainId);
-  } catch (error) {
-    if (error instanceof UnsupportedNetwork) {
-      throw new Error(
-        `No network configuration found for ${chainId}.\nYou can add a custom network in the "Settings -> Networks" section.`
-      );
-    } else {
-      throw error;
-    }
-  }
-}
+import { wrappedGetNetworkById } from './wrappedGetNetworkById';
 
 async function fetchGasPrice(
   transaction: IncomingTransaction,
