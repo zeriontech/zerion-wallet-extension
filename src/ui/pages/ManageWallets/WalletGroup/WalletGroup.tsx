@@ -217,7 +217,6 @@ export function WalletGroup() {
           <InputDecorator
             label="Name"
             htmlFor={groupInputId}
-            inputTextKind="body/accent"
             input={
               <EditableWalletGroupName
                 id={groupInputId}

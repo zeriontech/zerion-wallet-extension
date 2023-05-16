@@ -129,6 +129,36 @@ function SettingsMain() {
   );
 }
 
+function ToggleSettingLine({
+  checked,
+  onChange,
+  text,
+  detailText,
+}: {
+  checked: boolean;
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  text: NonNullable<React.ReactNode>;
+  detailText: React.ReactNode | null;
+}) {
+  return (
+    <HStack gap={4} justifyContent="space-between">
+      <Media
+        image={null}
+        text={<UIText kind="body/accent">{text}</UIText>}
+        vGap={4}
+        detailText={
+          detailText ? (
+            <UIText kind="small/regular" color="var(--neutral-500)">
+              {detailText}
+            </UIText>
+          ) : null
+        }
+      />
+      <Toggle checked={checked} onChange={onChange} />
+    </HStack>
+  );
+}
+
 function UserPreferences() {
   const { preferences, setPreferences, setWalletNameFlag } = usePreferences();
   const { globalPreferences, setGlobalPreferences } = useGlobalPreferences();
@@ -140,110 +170,70 @@ function UserPreferences() {
   return (
     <PageColumn>
       <PageTop />
-      <VStack gap={24}>
-        <VStack gap={8}>
-          <UIText kind="body/regular">Advanced Settings</UIText>
-          <SurfaceList
-            items={[
-              {
-                key: 0,
-                component: (
-                  <HStack gap={4} justifyContent="space-between">
-                    <Media
-                      image={null}
-                      text={<UIText kind="body/regular">MetaMask Mode</UIText>}
-                      vGap={4}
-                      detailText={
-                        <UIText kind="body/regular" color="var(--neutral-500)">
-                          Some DApps only work with MetaMask. Zerion Wallet can
-                          work with them by appearing as MetaMask
-                        </UIText>
-                      }
-                    />
-                    <Toggle
-                      checked={isMetaMask}
-                      onChange={(event) => {
-                        setWalletNameFlag({
-                          flag: WalletNameFlag.isMetaMask,
-                          checked: event.target.checked,
-                        });
-                      }}
-                    />
-                  </HStack>
-                ),
-              },
-              {
-                key: 1,
-                component: (
-                  <HStack gap={4} justifyContent="space-between">
-                    <Media
-                      image={null}
-                      text={
-                        <UIText kind="body/regular">
-                          Show DApp Network Switch in Header
-                        </UIText>
-                      }
-                      vGap={4}
-                      detailText={
-                        <UIText kind="body/regular" color="var(--neutral-500)">
-                          For a cleaner UI, try turning this off
-                        </UIText>
-                      }
-                    />
-                    <Toggle
-                      checked={preferences?.showNetworkSwitchShortcut ?? false}
-                      onChange={(event) => {
-                        setPreferences({
-                          showNetworkSwitchShortcut: event.target.checked,
-                        });
-                      }}
-                    />
-                  </HStack>
-                ),
-              },
-            ]}
-          />
-        </VStack>
-        <VStack gap={8}>
-          <UIText kind="body/regular">More</UIText>
-          <SurfaceList
-            items={[
-              {
-                key: 0,
-                component: (
-                  <HStack gap={4} justifyContent="space-between">
-                    <Media
-                      image={null}
-                      text={
-                        <UIText kind="body/regular">
-                          Recognizable Connect Buttons
-                        </UIText>
-                      }
-                      vGap={4}
-                      detailText={
-                        <UIText kind="body/regular" color="var(--neutral-500)">
-                          When enabled, we add Zerion Wallet label to connect
-                          buttons in DApps so that they{apostrophe}re easier to
-                          spot
-                        </UIText>
-                      }
-                    />
-                    <Toggle
-                      checked={
-                        globalPreferences?.recognizableConnectButtons || false
-                      }
-                      onChange={(event) => {
-                        setGlobalPreferences({
-                          recognizableConnectButtons: event.target.checked,
-                        });
-                      }}
-                    />
-                  </HStack>
-                ),
-              },
-            ]}
-          />
-        </VStack>
+      <VStack gap={8}>
+        <UIText kind="body/regular">Advanced Settings</UIText>
+        <SurfaceList
+          items={[
+            {
+              key: 0,
+              component: (
+                <ToggleSettingLine
+                  text="Imitate MetaMask"
+                  detailText="Some DApps only work with MetaMask. Zerion Wallet can work with them by appearing as MetaMask"
+                  checked={Boolean(isMetaMask)}
+                  onChange={(event) => {
+                    setWalletNameFlag({
+                      flag: WalletNameFlag.isMetaMask,
+                      checked: event.target.checked,
+                    });
+                  }}
+                />
+              ),
+            },
+            {
+              key: 1,
+              component: (
+                <ToggleSettingLine
+                  text="Customizable Transaction Nonce"
+                  checked={preferences?.configurableNonce ?? false}
+                  onChange={(event) => {
+                    setPreferences({
+                      configurableNonce: event.target.checked,
+                    });
+                  }}
+                  detailText={
+                    <span>
+                      When enabled, we add Zerion Wallet label to connect
+                      buttons in DApps so that they{apostrophe}re easier to spot
+                    </span>
+                  }
+                />
+              ),
+            },
+            {
+              key: 2,
+              component: (
+                <ToggleSettingLine
+                  text="Recognizable Connect Buttons"
+                  checked={
+                    globalPreferences?.recognizableConnectButtons || false
+                  }
+                  onChange={(event) => {
+                    setGlobalPreferences({
+                      recognizableConnectButtons: event.target.checked,
+                    });
+                  }}
+                  detailText={
+                    <span>
+                      When enabled, we add Zerion Wallet label to connect
+                      buttons in DApps so that they{apostrophe}re easier to spot
+                    </span>
+                  }
+                />
+              ),
+            },
+          ]}
+        />
       </VStack>
       <PageBottom />
     </PageColumn>

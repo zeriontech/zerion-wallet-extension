@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { ethers } from 'ethers';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -42,8 +42,11 @@ import { focusNode } from 'src/ui/shared/focusNode';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
-import { NetworkFee } from './NetworkFee';
+import { getError } from 'src/shared/errors/getError';
 import { TransactionDescription } from './TransactionDescription';
+import { TransactionConfiguration } from './TransactionConfiguration';
+import type { CustomConfiguration } from './TransactionConfiguration/TransactionConfiguration';
+import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
 
 type SendTransactionError =
   | null
@@ -94,6 +97,21 @@ async function resolveChainAndGasPrice(
   }
 }
 
+function useErrorBoundary() {
+  const [_, setState] = useState();
+  return useCallback(
+    (error: unknown) =>
+      setState(() => {
+        throw getError(error);
+      }),
+    []
+  );
+}
+
+const DEFAULT_CONFIGURATION: CustomConfiguration = {
+  nonce: null,
+};
+
 function SendTransactionContent({
   transactionStringified,
   origin,
@@ -111,7 +129,9 @@ function SendTransactionContent({
     [transactionStringified]
   );
   const { networks } = useNetworks();
+  const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
   const navigate = useNavigate();
+  const showErrorBoundary = useErrorBoundary();
   const handleReject = () => {
     const windowId = params.get('windowId');
     invariant(windowId, 'windowId get-parameter is required');
@@ -297,10 +317,13 @@ function SendTransactionContent({
                 </UIText>
               )}
             >
-              <NetworkFee
+              <TransactionConfiguration
                 transaction={transaction}
+                from={wallet.address}
                 chain={chain}
                 onFeeValueCommonReady={handleFeeValueCommonReady}
+                configuration={configuration}
+                onConfigurationChange={setConfiguration}
               />
             </ErrorBoundary>
           ) : null}
@@ -338,10 +361,13 @@ function SendTransactionContent({
             <Button
               disabled={signMutation.isLoading}
               onClick={() => {
-                // send an untouched version of transaction;
-                // TODO: if we add UI for updating gas price in this view,
-                // we should send an updated tx object
-                signAndSendTransaction(incomingTransaction);
+                try {
+                  signAndSendTransaction(
+                    applyConfiguration(incomingTransaction, configuration)
+                  );
+                } catch (error) {
+                  showErrorBoundary(error);
+                }
               }}
             >
               {signMutation.isLoading

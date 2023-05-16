@@ -1,0 +1,1 @@
+export { InnerLabelInput } from './InnerLabelInput';

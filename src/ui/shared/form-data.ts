@@ -16,3 +16,15 @@ export function naiveFormDataToObject(
   }
   return result;
 }
+
+export type Parsers = Record<string, (untypedValue: unknown) => unknown>;
+
+export function collectData(form: HTMLFormElement, parsers: Parsers) {
+  return naiveFormDataToObject(new FormData(form), (key, untypedValue) => {
+    if (parsers[key]) {
+      return parsers[key](untypedValue);
+    } else {
+      return untypedValue as string;
+    }
+  });
+}
