@@ -8,7 +8,7 @@ export function intersperce<T>(
     if (el == null) {
       continue;
     }
-    if (index > 0 && index < arr.length - 1 && result.length) {
+    if (index > 0 && result.length) {
       result.push(getJoiner(index * -1, index));
     }
     result.push(el);

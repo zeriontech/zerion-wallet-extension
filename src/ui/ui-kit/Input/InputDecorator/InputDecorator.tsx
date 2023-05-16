@@ -28,7 +28,7 @@ function InputDecoratorComponent(
   {
     className,
     labelTextKind = 'caption/regular',
-    inputTextKind = 'body/regular',
+    inputTextKind = 'body/accent',
     label,
     input,
     htmlFor,

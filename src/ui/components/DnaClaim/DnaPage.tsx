@@ -16,7 +16,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { createChain } from 'src/modules/networks/Chain';
 import { NetworkId } from 'src/modules/networks/NetworkId';
-import { useTransactionFee } from 'src/ui/pages/SendTransaction/NetworkFee/NetworkFee';
+import { useTransactionFee } from 'src/ui/pages/SendTransaction/TransactionConfiguration/useTransactionFee';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { isTruthy } from 'is-truthy-ts';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';

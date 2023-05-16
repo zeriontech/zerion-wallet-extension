@@ -539,6 +539,7 @@ export class WalletRecordModel {
       showNetworkSwitchShortcut: true,
       walletNameFlags: [],
       overviewChain: '',
+      configurableNonce: false,
     };
     if (!record) {
       return defaults;
