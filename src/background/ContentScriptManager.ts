@@ -9,6 +9,34 @@ function difference<T>(a: T[], b: T[]) {
   return a.filter((value) => !set.has(value));
 }
 
+function setActiveIcon() {
+  if (process.env.NODE_ENV === 'development') {
+    browser.action.setIcon({
+      path: new URL(
+        `../images/logo-icon-dev-128.png`,
+        import.meta.url
+      ).toString(),
+    });
+  } else {
+    browser.action.setIcon({
+      path: {
+        16: new URL(`../images/logo-icon-16.png`, import.meta.url).toString(),
+      },
+    });
+  }
+}
+
+function setPausedIcon() {
+  browser.action.setIcon({
+    path: {
+      16: new URL(
+        `../images/logo-icon-16-disabled.png`,
+        import.meta.url
+      ).toString(),
+    },
+  });
+}
+
 export class ContentScriptManager {
   private globalPreferences: GlobalPreferences;
   private providerInjection: GlobalPreferences['state']['providerInjection'];
@@ -53,6 +81,12 @@ export class ContentScriptManager {
     this.handleChange();
     this.globalPreferences.on('change', this.handleChange.bind(this));
     this.globalPreferences.on('change', this.setAndDiscardAlarms.bind(this));
+
+    browser.tabs.onUpdated.addListener(this.updateActionIcon.bind(this));
+    browser.tabs.onActivated.addListener(async ({ tabId }) => {
+      const tab = await browser.tabs.get(tabId);
+      this.updateActionIcon(null, null, tab);
+    });
   }
 
   async setAndDiscardAlarms() {
@@ -105,9 +139,11 @@ export class ContentScriptManager {
 
     const matches = this.getMatches();
     const excludeMatches = this.getExcludeMatches();
+
     if (!matches) {
       return; // do not registerContentScripts at all
     }
+
     // Register script with "world: 'MAIN'" environment so that it can write to page window
     // See: https://developer.chrome.com/docs/extensions/mv3/content_scripts/#isolated_world
     await chrome.scripting.registerContentScripts([
@@ -123,6 +159,21 @@ export class ContentScriptManager {
     // TODO: update active tab here? But only if it is related to the changes?
     // If we are updating injected scripts because of an alarm going off, it maybe
     // unrelated to the currently active tab. Would be bad UX to update it in this case.
+  }
+
+  updateActionIcon(_: unknown, __: unknown, tab: browser.Tabs.Tab) {
+    const matches = this.getMatches();
+    const excludeMatches = this.getExcludeMatches();
+    const origin = tab.url ? new URL(tab.url).origin : null;
+
+    if (
+      !matches ||
+      (origin && excludeMatches?.some((item) => item.includes(origin)))
+    ) {
+      setPausedIcon();
+    } else {
+      setActiveIcon();
+    }
   }
 
   getMatches() {
