@@ -8,15 +8,11 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Media } from 'src/ui/ui-kit/Media';
 import IconLeft from 'jsx:src/ui/assets/arrow-left.svg';
-import IconClose from 'jsx:src/ui/assets/close.svg';
 import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
 import AddCircleIcon from 'jsx:src/ui/assets/add-circle-outlined.svg';
 import FiltersIcon from 'jsx:src/ui/assets/filters-24.svg';
 import AllNetworksIcon from 'jsx:src/ui/assets/all-networks.svg';
-import {
-  DialogButtonValue,
-  DialogTitle,
-} from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import {
   SegmentedControlGroup,
   SegmentedControlRadio,
@@ -33,6 +29,7 @@ import { TextLink } from 'src/ui/ui-kit/TextLink';
 import type { ChainDistribution } from 'src/ui/shared/requests/PortfolioValue/ChainValue';
 import { ChainValue } from 'src/ui/shared/requests/PortfolioValue/ChainValue';
 import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
+import { DialogCloseButton } from 'src/ui/ui-kit/ModalDialogs/DialogTitle/DialogCloseButton';
 import { DelayedRender } from '../DelayedRender';
 import { NetworkIcon } from '../NetworkIcon';
 import { PageBottom } from '../PageBottom';
@@ -40,6 +37,7 @@ import { PageColumn } from '../PageColumn';
 import { ViewLoading } from '../ViewLoading';
 import { EmptyView } from '../EmptyView';
 import { KeyboardShortcut } from '../KeyboardShortcut';
+import { PseudoRoute } from '../PseudoRoute';
 
 function NetworkList({
   networks,
@@ -256,27 +254,7 @@ function MainNetworkView({
             <DialogTitle alignTitle="start" title="Filter by Network" />
           </UIText>
         ) : (
-          <form
-            method="dialog"
-            style={{
-              position: 'absolute',
-              insetInlineEnd: 8,
-              insetBlockStart: 8,
-            }}
-          >
-            <Button
-              kind="ghost"
-              value={DialogButtonValue.cancel}
-              aria-label="Close"
-              style={{ padding: 8 }}
-              size={40}
-            >
-              <IconClose
-                role="presentation"
-                style={{ display: 'block', marginInline: 'auto' }}
-              />
-            </Button>
-          </form>
+          <DialogCloseButton />
         )}
       </div>
       {mainViewLeadingComponent}
@@ -297,19 +275,6 @@ function MainNetworkView({
       <PageBottom />
     </>
   );
-}
-
-function PseudoRoute({
-  when,
-  component,
-}: {
-  when: boolean;
-  component: JSX.Element;
-}) {
-  if (when) {
-    return component;
-  }
-  return null;
 }
 
 enum Tab {

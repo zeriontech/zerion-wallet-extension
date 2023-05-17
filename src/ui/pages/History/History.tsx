@@ -1,17 +1,22 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import type { AddressAction } from 'defi-sdk';
 import { useAddressActions } from 'defi-sdk';
 import { useQuery } from 'react-query';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import { NetworkSelect } from 'src/ui/pages/Networks/NetworkSelect';
+import { networksStore } from 'src/modules/networks/networks-store.client';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { EmptyViewForNetwork } from 'src/ui/components/EmptyViewForNetwork';
 import type { AnyAddressAction} from 'src/modules/ethereum/transactions/addressAction';
 import { pendingTransactionToAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { ActionsList } from './ActionsList';
+import { ActionSearch } from './ActionFilters/ActionSearch';
+import { ActionFilters } from './ActionFilters/ActionFilters';
 
 export function sortActions<T extends { datetime?: string }>(actions: T[]) {
   return actions.sort((a, b) => {
@@ -32,7 +37,13 @@ function mergeLocalAndBackendActions(
   return sortActions(merged);
 }
 
-function useMinedAndPendingAddressActions({ chain }: { chain: Chain | null }) {
+function useMinedAndPendingAddressActions({
+  chain,
+  searchQuery,
+}: {
+  chain: Chain | null;
+  searchQuery?: string;
+}) {
   const { params } = useAddressParams();
   const { networks } = useNetworks();
   const isSupportedByBackend = chain
@@ -76,6 +87,7 @@ function useMinedAndPendingAddressActions({ chain }: { chain: Chain | null }) {
       currency: 'usd',
       actions_chains:
         chain && isSupportedByBackend ? [chain.toString()] : undefined,
+      actions_search_query: searchQuery,
     },
     {
       limit: 30,
@@ -115,12 +127,13 @@ export function HistoryList({
   onChainChange: (value: string) => void;
 }) {
   const chain = chainValue ? createChain(chainValue) : null;
+  const [searchQuery, setSearchQuery] = useState<string | undefined>();
   const {
     value: transactions,
     isLoading,
     fetchMore,
     hasMore,
-  } = useMinedAndPendingAddressActions({ chain });
+  } = useMinedAndPendingAddressActions({ chain, searchQuery });
 
   if (isLoading && !transactions?.length) {
     return null;
@@ -130,40 +143,44 @@ export function HistoryList({
     return null;
   }
 
-  const networkSelect = (
-    <NetworkSelect
-      type="overview"
-      value={chainValue}
-      onChange={onChainChange}
-    />
+  const actionFilters = (
+    <HStack
+      gap={8}
+      alignItems="center"
+      style={{ paddingInline: 16, gridTemplateColumns: '1fr auto' }}
+    >
+      <ActionSearch
+        value={searchQuery}
+        onChange={setSearchQuery}
+        onFocus={(e) => {
+          const yOffset = -108;
+          const scrollDistance =
+            e.target.getBoundingClientRect().top + window.pageYOffset + yOffset;
+          window.scrollTo({ behavior: 'smooth', top: scrollDistance });
+        }}
+      />
+      <ActionFilters />
+    </HStack>
   );
-  if (!transactions.length) {
-    return (
-      <>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'end',
-            paddingInline: 'var(--column-padding-inline)',
-          }}
-        >
-          {networkSelect}
-        </div>
+
+  return (
+    <>
+      {actionFilters}
+      <Spacer height={16} />
+      {transactions.length ? (
+        <ActionsList
+          actions={transactions}
+          hasMore={hasMore}
+          isLoading={isLoading}
+          onLoadMore={fetchMore}
+        />
+      ) : (
         <EmptyViewForNetwork
           message="No transactions yet"
           chainValue={chainValue}
           onChainChange={onChainChange}
         />
-      </>
-    );
-  }
-  return (
-    <ActionsList
-      actions={transactions}
-      hasMore={hasMore}
-      isLoading={isLoading}
-      onLoadMore={fetchMore}
-      firstHeaderItemEnd={networkSelect}
-    />
+      )}
+    </>
   );
 }

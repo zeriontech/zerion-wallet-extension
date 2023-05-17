@@ -11,7 +11,6 @@ import { ActionItem } from '../ActionItem';
 
 export function ActionsList({
   actions,
-  firstHeaderItemEnd,
   hasMore,
   isLoading,
   onLoadMore,
@@ -19,7 +18,6 @@ export function ActionsList({
   actions: AnyAddressAction[];
   hasMore: boolean;
   isLoading: boolean;
-  firstHeaderItemEnd?: React.ReactNode;
   onLoadMore?(): void;
 }) {
   const groupedByDate = useMemo(
@@ -31,7 +29,7 @@ export function ActionsList({
   );
   return (
     <VStack gap={24}>
-      {Object.entries(groupedByDate).map(([timestamp, items], index) => (
+      {Object.entries(groupedByDate).map(([timestamp, items]) => (
         <VStack gap={12} key={timestamp}>
           <HStack
             gap={8}
@@ -43,7 +41,6 @@ export function ActionsList({
                 dateStyle: 'medium',
               }).format(Number(timestamp))}
             </UIText>
-            {index === 0 ? firstHeaderItemEnd : null}
           </HStack>
           <SurfaceList
             items={items.map((addressTransaction) => ({

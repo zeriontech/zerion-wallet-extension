@@ -353,6 +353,7 @@ function OverviewComponent() {
                 delay={16}
               >
                 <ViewSuspense>
+                  <Spacer height={24} />
                   <Positions
                     chain={preferences.overviewChain}
                     onChainChange={setChain}
@@ -361,11 +362,20 @@ function OverviewComponent() {
               </DelayedRender>
             }
           />
-          <Route path="/nfts" element={<NonFungibleTokens />} />
+          <Route
+            path="/nfts"
+            element={
+              <>
+                <Spacer height={24} />
+                <NonFungibleTokens />
+              </>
+            }
+          />
           <Route
             path="/history"
             element={
               <ViewSuspense>
+                <Spacer height={16} />
                 <HistoryList
                   chain={preferences.overviewChain}
                   onChainChange={setChain}
@@ -373,7 +383,15 @@ function OverviewComponent() {
               </ViewSuspense>
             }
           />
-          <Route path="/feed" element={<Feed />} />
+          <Route
+            path="/feed"
+            element={
+              <>
+                <Spacer height={24} />
+                <Feed />
+              </>
+            }
+          />
         </Routes>
         <PageBottom />
       </PageFullBleedColumn>

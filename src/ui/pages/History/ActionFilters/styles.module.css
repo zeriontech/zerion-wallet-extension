@@ -1,0 +1,76 @@
+.subpage {
+  padding: 24px 16px;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+@keyframes primaryAppear {
+  from {
+    transform: translateX(-100%);
+    visibility: visible;
+  }
+  to {
+    transform: translateX(0);
+    visibility: visible;
+  }
+}
+
+@keyframes primaryDisappear {
+  from {
+    transform: translateX(0);
+    visibility: visible;
+  }
+  to {
+    transform: translateX(-100%);
+    visibility: hidden;
+  }
+}
+
+@keyframes secondaryAppear {
+  from {
+    transform: translateX(100%);
+    visibility: visible;
+  }
+  to {
+    transform: translateX(0);
+    visibility: visible;
+  }
+}
+
+@keyframes secondaryDisappear {
+  from {
+    transform: translateX(0);
+    visibility: visible;
+  }
+  to {
+    transform: translateX(100%);
+    visibility: hidden;
+  }
+}
+
+.subpage.primary.close {
+  animation: primaryDisappear 200ms ease-in-out both;
+}
+
+.subpage.primary.open {
+  animation: primaryAppear 200ms ease-in-out both;
+}
+
+.subpage.primary.initialOpen {
+  animation: none;
+}
+
+.subpage.secondary.close {
+  animation: secondaryDisappear 200ms ease-in-out both;
+}
+
+.subpage.secondary.open {
+  animation: secondaryAppear 200ms ease-in-out both;
+}
+
+.subpage.secondary.initialOpen {
+  display: none;
+}
