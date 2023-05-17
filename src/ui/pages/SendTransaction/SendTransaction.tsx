@@ -46,7 +46,7 @@ import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { getError } from 'src/shared/errors/getError';
 import { TransactionDescription } from './TransactionDescription';
 import { TransactionConfiguration } from './TransactionConfiguration';
-import type { CustomConfiguration } from './TransactionConfiguration/TransactionConfiguration';
+import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
 
 type SendTransactionError =
