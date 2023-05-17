@@ -2,7 +2,7 @@
   "compilerOptions": {
     "baseUrl": "./",
     "module": "ESNext",
-    "target": "es2019",
+    "target": "es2021",
     "moduleResolution": "node",
     "strict": true,
     "noUnusedLocals": true,
