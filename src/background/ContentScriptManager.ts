@@ -21,9 +21,13 @@ function setActiveIcon() {
     browser.action.setIcon({
       path: {
         16: new URL(`../images/logo-icon-16.png`, import.meta.url).toString(),
+        32: new URL(`../images/logo-icon-32.png`, import.meta.url).toString(),
+        48: new URL(`../images/logo-icon-48.png`, import.meta.url).toString(),
+        128: new URL(`../images/logo-icon-128.png`, import.meta.url).toString(),
       },
     });
   }
+  browser.action.setBadgeText({ text: '' });
 }
 
 function setPausedIcon() {
@@ -33,8 +37,22 @@ function setPausedIcon() {
         `../images/logo-icon-16-disabled.png`,
         import.meta.url
       ).toString(),
+      32: new URL(
+        `../images/logo-icon-32-disabled.png`,
+        import.meta.url
+      ).toString(),
+      48: new URL(
+        `../images/logo-icon-48-disabled.png`,
+        import.meta.url
+      ).toString(),
+      128: new URL(
+        `../images/logo-icon-128-disabled.png`,
+        import.meta.url
+      ).toString(),
     },
   });
+  browser.action.setBadgeText({ text: '⨂' });
+  browser.action.setBadgeBackgroundColor({ color: '#9C9FA8' });
 }
 
 export class ContentScriptManager {
