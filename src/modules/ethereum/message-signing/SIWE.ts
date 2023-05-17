@@ -19,6 +19,7 @@ export function isSiweLike(rawMessage: string) {
  * Possible SIWE validation errors.
  */
 export enum SiweValidationError {
+  noError = 0,
   /** `domain` is not provided */
   missingDomain = 1 << 0,
   /** `domain` doesn't match the origin */
@@ -154,7 +155,7 @@ $\
   private error: SiweValidationError;
 
   private constructor(rawMessage: string, fields: Record<string, string>) {
-    this.error = 0;
+    this.error = SiweValidationError.noError;
     this.rawMessage = rawMessage;
 
     this.domain = fields.domain;
@@ -242,7 +243,7 @@ $\
   }
 
   isValid() {
-    return this.error == 0;
+    return this.error == SiweValidationError.noError;
   }
 
   hasError(error: SiweValidationError) {

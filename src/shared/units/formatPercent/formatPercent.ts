@@ -13,9 +13,11 @@ const getFormatterTwoDigits = memoize(
 );
 
 export function formatPercent(value: BigNumber.Value, locale: string) {
-  const formatter =
-    value < 1 ? getFormatterTwoDigits(locale) : getFormatterOneDigit(locale);
   const valueAsNumber = toNumber(value);
+  const formatter =
+    valueAsNumber < 1
+      ? getFormatterTwoDigits(locale)
+      : getFormatterOneDigit(locale);
   const sign = valueAsNumber < 0 ? minus : '';
   return `${sign}${formatter.format(Math.abs(valueAsNumber))}`;
 }
