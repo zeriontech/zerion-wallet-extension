@@ -1,4 +1,3 @@
-import { anyPromise, isAggregateError } from '../anyPromise';
 import { sessionCacheService } from '../channels';
 
 export class EmptyResult extends Error {}
@@ -10,7 +9,7 @@ export async function requestWithCache<T>(
     cacheTime?: number;
   }
 ) {
-  return anyPromise([
+  return Promise.any([
     sessionCacheService.request('getCache', { key }).then((result) => {
       if (
         options?.cacheTime &&
@@ -29,7 +28,7 @@ export async function requestWithCache<T>(
     }),
   ]).catch((error) => {
     if (
-      isAggregateError(error) &&
+      error instanceof AggregateError &&
       error.errors.some((err) => err instanceof EmptyResult)
     ) {
       return null;

@@ -4,7 +4,6 @@ import { isEmail } from 'src/shared/isEmail';
 import { PROXY_URL } from 'src/env/config';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getAddressNfts } from '../shared/requests/addressNfts/useAddressNfts';
-import { anyPromise } from '../shared/anyPromise';
 import { WaitlistCheckError, NotAllowedError } from './errors';
 
 const WAITLIST_ID = 'aOfkJhcpwDHpJVkzO6FB';
@@ -101,7 +100,7 @@ export async function checkWhitelistStatus(address: string) {
     }
     return result;
   };
-  return anyPromise([
+  return Promise.any([
     getFirebaseStatus(address).then(handler),
     getNftStatus(address).then(handler),
     getWaitlistStatus(address).then((result) => {
