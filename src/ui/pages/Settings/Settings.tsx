@@ -203,8 +203,7 @@ function UserPreferences() {
                   }}
                   detailText={
                     <span>
-                      When enabled, we add Zerion Wallet label to connect
-                      buttons in DApps so that they{apostrophe}re easier to spot
+                      Set your own unique nonce to control transaction order
                     </span>
                   }
                 />
