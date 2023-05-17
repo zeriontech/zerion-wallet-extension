@@ -1,4 +1,5 @@
 .subpage {
+  will-change: transform, visibility;
   padding: 24px 16px;
   position: absolute;
   top: 0;
@@ -52,11 +53,11 @@
 }
 
 .subpage.primary.close {
-  animation: primaryDisappear 200ms ease-in-out both;
+  animation: primaryDisappear 150ms ease-out both;
 }
 
 .subpage.primary.open {
-  animation: primaryAppear 200ms ease-in-out both;
+  animation: primaryAppear 150ms ease-out both;
 }
 
 .subpage.primary.initialOpen {
@@ -64,11 +65,11 @@
 }
 
 .subpage.secondary.close {
-  animation: secondaryDisappear 200ms ease-in-out both;
+  animation: secondaryDisappear 150ms ease-out both;
 }
 
 .subpage.secondary.open {
-  animation: secondaryAppear 200ms ease-in-out both;
+  animation: secondaryAppear 150ms ease-out both;
 }
 
 .subpage.secondary.initialOpen {
