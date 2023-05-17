@@ -51,8 +51,8 @@ function setPausedIcon() {
       ).toString(),
     },
   });
-  browser.action.setBadgeText({ text: '⨂' });
-  browser.action.setBadgeBackgroundColor({ color: '#9C9FA8' });
+  browser.action.setBadgeText({ text: '!' });
+  browser.action.setBadgeBackgroundColor({ color: '#FF9D1C' });
 }
 
 export class ContentScriptManager {
@@ -105,6 +105,15 @@ export class ContentScriptManager {
       const tab = await browser.tabs.get(tabId);
       this.updateActionIcon(null, null, tab);
     });
+    browser.windows.onFocusChanged.addListener(async (windowId) => {
+      const tabs = await browser.tabs.query({ active: true, windowId });
+      tabs?.forEach((tab) => {
+        if (tab.active) {
+          this.updateActionIcon(null, null, tab);
+        }
+      });
+    });
+    this.updateActionIcon(null, null, null);
   }
 
   async setAndDiscardAlarms() {
@@ -179,10 +188,10 @@ export class ContentScriptManager {
     // unrelated to the currently active tab. Would be bad UX to update it in this case.
   }
 
-  updateActionIcon(_: unknown, __: unknown, tab: browser.Tabs.Tab) {
+  updateActionIcon(_: unknown, __: unknown, tab: browser.Tabs.Tab | null) {
     const matches = this.getMatches();
     const excludeMatches = this.getExcludeMatches();
-    const origin = tab.url ? new URL(tab.url).origin : null;
+    const origin = tab?.url ? new URL(tab.url).origin : null;
 
     if (
       !matches ||
