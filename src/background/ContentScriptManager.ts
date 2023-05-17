@@ -94,26 +94,50 @@ export class ContentScriptManager {
     return this;
   }
 
-  activate() {
-    // TODO: may be call this.removeExpiredRecords() here instead of outside
-    this.handleChange();
-    this.globalPreferences.on('change', this.handleChange.bind(this));
-    this.globalPreferences.on('change', this.setAndDiscardAlarms.bind(this));
+  private setActionIcon(_: unknown, __: unknown, tab: browser.Tabs.Tab | null) {
+    const matches = this.getMatches();
+    const excludeMatches = this.getExcludeMatches();
+    const origin = tab?.url ? new URL(tab.url).origin : null;
 
-    browser.tabs.onUpdated.addListener(this.updateActionIcon.bind(this));
+    if (
+      !matches ||
+      (origin && excludeMatches?.some((item) => item.includes(origin)))
+    ) {
+      setPausedIcon();
+    } else {
+      setActiveIcon();
+    }
+  }
+
+  private async updateActionIcon() {
+    browser.tabs.onUpdated.addListener(this.setActionIcon.bind(this));
     browser.tabs.onActivated.addListener(async ({ tabId }) => {
       const tab = await browser.tabs.get(tabId);
-      this.updateActionIcon(null, null, tab);
+      this.setActionIcon(null, null, tab);
     });
     browser.windows.onFocusChanged.addListener(async (windowId) => {
       const tabs = await browser.tabs.query({ active: true, windowId });
       tabs?.forEach((tab) => {
         if (tab.active) {
-          this.updateActionIcon(null, null, tab);
+          this.setActionIcon(null, null, tab);
         }
       });
     });
-    this.updateActionIcon(null, null, null);
+
+    const tabs = await browser.tabs.query({ active: true });
+    tabs?.forEach((tab) => {
+      if (tab.active) {
+        this.setActionIcon(null, null, tab);
+      }
+    });
+  }
+
+  activate() {
+    // TODO: may be call this.removeExpiredRecords() here instead of outside
+    this.handleChange();
+    this.globalPreferences.on('change', this.handleChange.bind(this));
+    this.globalPreferences.on('change', this.setAndDiscardAlarms.bind(this));
+    this.updateActionIcon();
   }
 
   async setAndDiscardAlarms() {
@@ -186,21 +210,6 @@ export class ContentScriptManager {
     // TODO: update active tab here? But only if it is related to the changes?
     // If we are updating injected scripts because of an alarm going off, it maybe
     // unrelated to the currently active tab. Would be bad UX to update it in this case.
-  }
-
-  updateActionIcon(_: unknown, __: unknown, tab: browser.Tabs.Tab | null) {
-    const matches = this.getMatches();
-    const excludeMatches = this.getExcludeMatches();
-    const origin = tab?.url ? new URL(tab.url).origin : null;
-
-    if (
-      !matches ||
-      (origin && excludeMatches?.some((item) => item.includes(origin)))
-    ) {
-      setPausedIcon();
-    } else {
-      setActiveIcon();
-    }
   }
 
   getMatches() {
