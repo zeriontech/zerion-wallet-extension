@@ -12,6 +12,7 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getError } from 'src/shared/errors/getError';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
+import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import { useSizeStore } from '../useSizeStore';
 import { useWhitelistStatus } from '../checkWhitelistStatus';
 import { Input } from './Input';
@@ -54,6 +55,7 @@ export function ImportKey({
     {
       onSuccess: (wallet) => {
         if (wallet) {
+          zeroizeAfterSubmission();
           onWalletCreate(wallet);
         }
       },

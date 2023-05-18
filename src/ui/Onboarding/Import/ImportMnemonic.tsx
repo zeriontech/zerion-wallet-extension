@@ -16,6 +16,7 @@ import { getError } from 'src/shared/errors/getError';
 import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
+import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import { useSizeStore } from '../useSizeStore';
 import { useWhitelistStatus } from '../checkWhitelistStatus';
 import * as styles from './styles.module.css';
@@ -74,6 +75,8 @@ export function ImportMnemonic({
     {
       onSuccess: (wallet) => {
         if (wallet) {
+          setValue(ARRAY_OF_NUMBERS.map(() => ''));
+          zeroizeAfterSubmission();
           onWalletCreate(wallet);
         }
       },
