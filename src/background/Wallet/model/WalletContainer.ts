@@ -1,8 +1,18 @@
 import { immerable } from 'immer';
-import { stableEncrypt } from 'src/modules/crypto';
+import type {
+  Credentials,
+  SessionCredentials,
+} from 'src/background/account/Credentials';
+import { isSessionCredentials } from 'src/background/account/Credentials';
+import { encrypt } from 'src/modules/crypto';
+import { invariant } from 'src/shared/invariant';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { restoreBareWallet, walletToObject } from 'src/shared/wallet/create';
+import {
+  decryptMnemonic,
+  seedPhraseToHash,
+} from 'src/shared/wallet/encryption';
 import { SeedType } from './SeedType';
 import type { BareWallet } from './types';
 
@@ -13,10 +23,11 @@ interface PlainWalletContainer {
 
 export interface WalletContainer {
   seedType: SeedType;
+  seedHash?: string;
   wallets: BareWallet[];
   getMnemonic(): BareWallet['mnemonic'] | null;
   getFirstWallet(): BareWallet;
-  addWallet(wallet: BareWallet): void;
+  addWallet(wallet: BareWallet, seedHash: string): void;
   removeWallet(address: string): void;
   toPlainObject(): PlainWalletContainer;
   getWalletByAddress(address: string): BareWallet | null;
@@ -33,6 +44,7 @@ abstract class WalletContainerImpl implements WalletContainer {
 
   abstract wallets: BareWallet[];
   abstract seedType: SeedType;
+  abstract seedHash?: string;
 
   getFirstWallet() {
     return this.wallets[0];
@@ -44,24 +56,7 @@ abstract class WalletContainerImpl implements WalletContainer {
       : this.getFirstWallet().mnemonic;
   }
 
-  addWallet(wallet: BareWallet) {
-    const currentMnemonic = this.getMnemonic();
-    if (currentMnemonic) {
-      if (
-        !wallet.mnemonic ||
-        wallet.mnemonic.phrase !== currentMnemonic.phrase
-      ) {
-        throw new Error(
-          'Added wallet must have the same mnemonic as other wallets in the WalletContainer'
-        );
-      }
-    }
-    if (this.wallets.some(({ address }) => address === wallet.address)) {
-      /** Seems it's better to keep existing wallet in order to save existing state, e.g. name */
-      return;
-    }
-    this.wallets.push(wallet);
-  }
+  abstract addWallet(wallet: BareWallet, seedHash: string): void;
 
   removeWallet(address: string) {
     const pos = this.wallets.findIndex(
@@ -88,22 +83,32 @@ abstract class WalletContainerImpl implements WalletContainer {
   }
 }
 
+const MISSING_MNEMONIC =
+  'Mnemonic Container is expected to have a wallet with a mnemonic';
+
+type BareMnemonicWallet = PartiallyRequired<BareWallet, 'mnemonic'>;
+
 export class MnemonicWalletContainer extends WalletContainerImpl {
   wallets: BareWallet[];
   seedType = SeedType.mnemonic;
+  seedHash: string | undefined;
 
   static async create({
     wallets,
-    encryptionKey,
+    credentials,
   }: {
-    wallets?: Array<PartiallyRequired<BareWallet, 'mnemonic'>>;
-    encryptionKey: CryptoKey;
+    wallets?: BareMnemonicWallet[];
+    credentials: SessionCredentials;
   }): Promise<MnemonicWalletContainer> {
-    const walletContainer = new MnemonicWalletContainer(wallets);
+    const initial = wallets?.length ? wallets : [restoreBareWallet({})];
+    const phrase = initial[0].mnemonic?.phrase;
+    invariant(phrase, MISSING_MNEMONIC);
+    const seedHash = await seedPhraseToHash(phrase);
+    const walletContainer = new MnemonicWalletContainer(initial, seedHash);
     const { mnemonic } = walletContainer.getFirstWallet();
     if (mnemonic) {
-      const encryptedMnemonic = await stableEncrypt(
-        encryptionKey,
+      const encryptedMnemonic = await encrypt(
+        credentials.seedPhraseEncryptionKey,
         mnemonic.phrase
       );
       walletContainer.wallets.forEach((wallet) => {
@@ -115,26 +120,99 @@ export class MnemonicWalletContainer extends WalletContainerImpl {
     return walletContainer;
   }
 
-  constructor(wallets?: Array<PartiallyRequired<BareWallet, 'mnemonic'>>) {
+  private static async restoreFromDeprecated({
+    wallets,
+    credentials,
+  }: {
+    wallets: BareMnemonicWallet[];
+    credentials: SessionCredentials;
+  }) {
+    if (!wallets.length) {
+      return MnemonicWalletContainer.create({ wallets, credentials });
+    } else {
+      const phrase = wallets[0].mnemonic?.phrase;
+      invariant(phrase, MISSING_MNEMONIC);
+      const decryptedPhrase = await decryptMnemonic(phrase, credentials);
+      const decryptedWallets = wallets.map((wallet) => {
+        if (wallet.mnemonic) {
+          wallet.mnemonic.phrase = decryptedPhrase as string;
+        }
+        return wallet;
+      });
+      return MnemonicWalletContainer.create({
+        wallets: decryptedWallets,
+        credentials,
+      });
+    }
+  }
+
+  private static constructorDeprecated(wallets: BareMnemonicWallet[]) {
+    /** Use this method when both seedHash and seedPhraseEncryptionKey_deprecated are unknown */
+    const instance = new MnemonicWalletContainer(wallets, '<temp>');
+    instance.seedHash = undefined;
+    return instance;
+  }
+
+  static async restoreWalletContainer(
+    walletContainer: WalletContainer,
+    credentials: Credentials
+  ) {
+    const { seedType, seedHash, wallets } = walletContainer;
+    invariant(
+      seedType === SeedType.mnemonic,
+      'Must be a MnemonicWalletContainer'
+    );
+    if (seedHash) {
+      return new MnemonicWalletContainer(wallets, seedHash);
+    } else if (isSessionCredentials(credentials)) {
+      return await MnemonicWalletContainer.restoreFromDeprecated({
+        wallets,
+        credentials,
+      });
+    } else {
+      return MnemonicWalletContainer.constructorDeprecated(wallets);
+    }
+  }
+
+  static async decryptMnemonic(
+    phrase: string,
+    credentials: SessionCredentials
+  ) {
+    return decryptMnemonic(phrase, credentials);
+  }
+
+  constructor(wallets: BareMnemonicWallet[], seedHash: string) {
     super();
-    if (!wallets || !wallets.length) {
+    this.seedHash = seedHash;
+    if (!wallets.length) {
       this.wallets = [restoreBareWallet({})];
     } else {
       this.wallets = wallets.map((wallet) => {
         if (!wallet.mnemonic) {
-          throw new Error(
-            'Mnemonic container is expected to have a wallet with a mnemonic'
-          );
+          throw new Error(MISSING_MNEMONIC);
         }
         return restoreBareWallet(wallet);
       });
     }
+  }
+
+  addWallet(wallet: BareWallet, seedHash: string) {
+    invariant(
+      seedHash === this.seedHash,
+      'Added wallet must have the same mnemonic as other wallets in the WalletContainer'
+    );
+    if (this.wallets.some(({ address }) => address === wallet.address)) {
+      /** Seems it's better to keep existing wallet in order to save existing state, e.g. name */
+      return;
+    }
+    this.wallets.push(wallet);
   }
 }
 
 export class PrivateKeyWalletContainer extends WalletContainerImpl {
   wallets: BareWallet[];
   seedType = SeedType.privateKey;
+  seedHash = undefined;
 
   constructor(wallets: Array<PartiallyRequired<BareWallet, 'privateKey'>>) {
     super();
@@ -153,7 +231,7 @@ export class PrivateKeyWalletContainer extends WalletContainerImpl {
     });
   }
 
-  addWallet(_wallet: BareWallet) {
+  addWallet() {
     throw new Error('PrivateKeyWalletContainer cannot have multiple wallets');
   }
 }
@@ -161,9 +239,14 @@ export class PrivateKeyWalletContainer extends WalletContainerImpl {
 export class TestPrivateKeyWalletContainer extends WalletContainerImpl {
   wallets: BareWallet[];
   seedType = SeedType.privateKey;
+  seedHash = undefined;
 
   constructor(wallets: BareWallet[]) {
     super();
     this.wallets = wallets;
+  }
+
+  addWallet() {
+    throw new Error('PrivateKeyWalletContainer cannot have multiple wallets');
   }
 }

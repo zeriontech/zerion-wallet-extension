@@ -37,7 +37,7 @@ export async function stableEncrypt<T>(
   return JSON.stringify(encrypted);
 }
 
-async function stableDecryptObject<T>(
+export async function stableDecryptObject<T>(
   key: CryptoKey,
   encrypted: StableEncrypted
 ): Promise<T> {

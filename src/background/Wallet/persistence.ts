@@ -1,5 +1,6 @@
 import produce from 'immer';
 import { PersistentStore } from 'src/modules/persistent-store';
+import type { Credentials } from '../account/Credentials';
 import type { WalletRecord } from './model/types';
 import { WalletRecordModel as Model } from './WalletRecord';
 
@@ -25,14 +26,17 @@ export class WalletStore extends PersistentStore<WalletStoreState> {
     return Model.decryptRecord(encryptionKey, encryptedRecord);
   }
 
-  async read(id: string, encryptionKey: string): Promise<WalletRecord | null> {
+  async read(
+    id: string,
+    credentials: Credentials
+  ): Promise<WalletRecord | null> {
     const encryptedRecord = this.getState()[id];
     if (!encryptedRecord) {
       return null;
     }
     this.lastRecord = await Model.decryptAndRestoreRecord(
-      encryptionKey,
-      encryptedRecord
+      encryptedRecord,
+      credentials
     );
     return this.lastRecord;
   }

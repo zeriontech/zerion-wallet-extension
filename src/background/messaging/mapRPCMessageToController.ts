@@ -8,7 +8,7 @@ import { isJsonRpcPayload, isJsonRpcRequest } from '@json-rpc-tools/utils';
 import { formatJsonRpcResultForPort } from 'src/shared/formatJsonRpcResultForPort';
 import { formatJsonRpcWalletError } from 'src/shared/formatJsonRpcWalletError';
 import { isClassProperty } from 'src/shared/core/isClassProperty';
-import { InvalidParams } from 'src/shared/errors/errors';
+import { domExceptionToError, InvalidParams } from 'src/shared/errors/errors';
 import type { PortContext } from './PortContext';
 
 /**
@@ -50,10 +50,14 @@ export function mapRPCMessageToController<T>(
         (result: unknown) => {
           return formatJsonRpcResultForPort(id, result);
         },
-        (error: Error | ErrorResponse) => {
+        (error: Error | DOMException | ErrorResponse) => {
           return formatJsonRpcWalletError(
             id,
-            'code' in error ? error : error.message
+            error instanceof DOMException
+              ? domExceptionToError(error).message
+              : 'code' in error
+              ? error
+              : error.message
           );
         }
       )
