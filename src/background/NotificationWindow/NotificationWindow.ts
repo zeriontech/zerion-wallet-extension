@@ -73,9 +73,9 @@ class NotificationWindow extends EventEmitter {
     const handleWindowRemoved = (windowId: number) => {
       if (this.windowId === windowId) {
         this.windowId = null;
+        onDismiss(new UserRejected('Window Closed'));
+        onDone();
       }
-      onDismiss(new UserRejected('Window Closed'));
-      onDone();
     };
     windowManager.event.on('windowRemoved', handleWindowRemoved);
     disposables.push(() => {
