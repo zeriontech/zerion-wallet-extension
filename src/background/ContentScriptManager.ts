@@ -9,6 +9,52 @@ function difference<T>(a: T[], b: T[]) {
   return a.filter((value) => !set.has(value));
 }
 
+function setActiveIcon() {
+  if (process.env.NODE_ENV === 'development') {
+    browser.action.setIcon({
+      path: new URL(
+        `../images/logo-icon-dev-128.png`,
+        import.meta.url
+      ).toString(),
+    });
+  } else {
+    browser.action.setIcon({
+      path: {
+        16: new URL(`../images/logo-icon-16.png`, import.meta.url).toString(),
+        32: new URL(`../images/logo-icon-32.png`, import.meta.url).toString(),
+        48: new URL(`../images/logo-icon-48.png`, import.meta.url).toString(),
+        128: new URL(`../images/logo-icon-128.png`, import.meta.url).toString(),
+      },
+    });
+  }
+  browser.action.setBadgeText({ text: '' });
+}
+
+function setPausedIcon() {
+  browser.action.setIcon({
+    path: {
+      16: new URL(
+        `../images/logo-icon-16-disabled.png`,
+        import.meta.url
+      ).toString(),
+      32: new URL(
+        `../images/logo-icon-32-disabled.png`,
+        import.meta.url
+      ).toString(),
+      48: new URL(
+        `../images/logo-icon-48-disabled.png`,
+        import.meta.url
+      ).toString(),
+      128: new URL(
+        `../images/logo-icon-128-disabled.png`,
+        import.meta.url
+      ).toString(),
+    },
+  });
+  browser.action.setBadgeText({ text: '!' });
+  browser.action.setBadgeBackgroundColor({ color: '#FF9D1C' });
+}
+
 export class ContentScriptManager {
   private globalPreferences: GlobalPreferences;
   private providerInjection: GlobalPreferences['state']['providerInjection'];
@@ -48,11 +94,50 @@ export class ContentScriptManager {
     return this;
   }
 
+  private setActionIcon(_: unknown, __: unknown, tab: browser.Tabs.Tab | null) {
+    const matches = this.getMatches();
+    const excludeMatches = this.getExcludeMatches();
+    const origin = tab?.url ? new URL(tab.url).origin : null;
+
+    if (
+      !matches ||
+      (origin && excludeMatches?.some((item) => item.includes(origin)))
+    ) {
+      setPausedIcon();
+    } else {
+      setActiveIcon();
+    }
+  }
+
+  private async updateActionIcon() {
+    browser.tabs.onUpdated.addListener(this.setActionIcon.bind(this));
+    browser.tabs.onActivated.addListener(async ({ tabId }) => {
+      const tab = await browser.tabs.get(tabId);
+      this.setActionIcon(null, null, tab);
+    });
+    browser.windows.onFocusChanged.addListener(async (windowId) => {
+      const tabs = await browser.tabs.query({ active: true, windowId });
+      tabs?.forEach((tab) => {
+        if (tab.active) {
+          this.setActionIcon(null, null, tab);
+        }
+      });
+    });
+
+    const tabs = await browser.tabs.query({ active: true });
+    tabs?.forEach((tab) => {
+      if (tab.active) {
+        this.setActionIcon(null, null, tab);
+      }
+    });
+  }
+
   activate() {
     // TODO: may be call this.removeExpiredRecords() here instead of outside
     this.handleChange();
     this.globalPreferences.on('change', this.handleChange.bind(this));
     this.globalPreferences.on('change', this.setAndDiscardAlarms.bind(this));
+    this.updateActionIcon();
   }
 
   async setAndDiscardAlarms() {
