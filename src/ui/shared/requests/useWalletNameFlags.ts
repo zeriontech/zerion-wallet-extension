@@ -7,10 +7,8 @@ import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 import { useOptimisticMutation } from 'src/ui/shared/requests/useOptimisticMutation';
 
 export function useWalletNameFlags() {
-  const { data: tabOrigin, isLoading } = useQuery(
-    'activeTab/origin',
-    getActiveTabOrigin
-  );
+  const { data, isLoading } = useQuery('activeTab/origin', getActiveTabOrigin);
+  const tabOrigin = data?.tabOrigin;
   const { globalPreferences, mutation, query } = useGlobalPreferences();
 
   const setWalletNameFlags = useOptimisticMutation(
