@@ -1,6 +1,6 @@
 {
   "name": "zerion-wallet",
-  "version": "1.0.0-alpha.38",
+  "version": "1.0.0-alpha.39",
   "description": "A web3 wallet extension",
   "scripts": {
     "start": "npm-run-all --parallel start:app type-check:watch",
