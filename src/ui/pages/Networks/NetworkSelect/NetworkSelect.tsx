@@ -14,6 +14,7 @@ import { useAddressPortfolioDecomposition } from 'defi-sdk';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { noValueDash } from 'src/ui/shared/typography';
+import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 
 export function NetworkSelect({
   value,
@@ -49,7 +50,7 @@ export function NetworkSelect({
       </BottomSheetDialog>
       <Button
         size={32}
-        kind="ghost"
+        kind="text-primary"
         onClick={() => {
           invariant(dialogRef.current, 'Dialog element not found');
           showConfirmDialog(dialogRef.current).then((chain) =>
@@ -71,23 +72,26 @@ export function NetworkSelect({
               chainId={network.external_id}
             />
           )}
-          <span
-            style={
-              valueMaxWidth
-                ? {
-                    maxWidth: valueMaxWidth,
-                    overflow: 'hidden',
-                    whiteSpace: 'nowrap',
-                    textOverflow: 'ellipsis',
-                  }
-                : undefined
-            }
-          >
-            {value === NetworkSelectValue.All
-              ? 'All Networks'
-              : chain
-              ? networks?.getChainName(chain)
-              : noValueDash}
+          <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+            <span
+              style={
+                valueMaxWidth
+                  ? {
+                      maxWidth: valueMaxWidth,
+                      overflow: 'hidden',
+                      whiteSpace: 'nowrap',
+                      textOverflow: 'ellipsis',
+                    }
+                  : undefined
+              }
+            >
+              {value === NetworkSelectValue.All
+                ? 'All Networks'
+                : chain
+                ? networks?.getChainName(chain)
+                : noValueDash}
+            </span>
+            <ArrowDownIcon />
           </span>
         </HStack>
       </Button>

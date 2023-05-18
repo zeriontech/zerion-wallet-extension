@@ -65,3 +65,15 @@
   cursor: default;
   background-color: var(--negative-300);
 }
+
+.text-primary {
+  padding: 0;
+  background-color: transparent;
+  color: var(--black);
+}
+
+@media (hover: hover) {
+  .text-primary:not(:disabled):hover {
+    color: var(--primary);
+  }
+}
