@@ -343,7 +343,7 @@ function OverviewComponent() {
           ['--surface-background-color' as string]: 'var(--white)',
         }}
       >
-        <Spacer height={24} />
+        <Spacer height={16} />
         <Routes>
           <Route
             path="/"

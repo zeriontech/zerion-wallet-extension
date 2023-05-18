@@ -493,7 +493,7 @@ function PositionList({
           });
         }
         return (
-          <VStack gap={12} key={protocol}>
+          <VStack gap={8} key={protocol}>
             <HStack
               gap={4}
               justifyContent="space-between"
@@ -509,7 +509,7 @@ function PositionList({
               {index === 0 && firstHeaderItemEnd ? firstHeaderItemEnd : null}
             </HStack>
             <SurfaceList
-              style={{ position: 'relative', paddingTop: 6 }}
+              style={{ position: 'relative', paddingTop: 0 }}
               // estimateSize={(index) => (index === 0 ? 52 : 60 + 1)}
               // overscan={5} // the library detects window edge incorrectly, increasing overscan just visually hides the problem
               items={items}
