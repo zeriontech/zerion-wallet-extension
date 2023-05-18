@@ -190,11 +190,9 @@ export class ContentScriptManager {
 
     const matches = this.getMatches();
     const excludeMatches = this.getExcludeMatches();
-
     if (!matches) {
       return; // do not registerContentScripts at all
     }
-
     // Register script with "world: 'MAIN'" environment so that it can write to page window
     // See: https://developer.chrome.com/docs/extensions/mv3/content_scripts/#isolated_world
     await chrome.scripting.registerContentScripts([
