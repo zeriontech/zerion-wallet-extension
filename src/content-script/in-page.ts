@@ -84,4 +84,8 @@ provider.request({ method: 'wallet_getWalletNameFlags' }).then((result) => {
   }
 });
 
+// workaround for unexpected errors
+// when some dapps make window.ethereum.emit() calls
+(provider as unknown as { emit(): null }).emit = () => null;
+
 window.zerionWallet = provider;
