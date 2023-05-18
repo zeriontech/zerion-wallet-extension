@@ -38,8 +38,8 @@ export class GlobalPreferences extends PersistentStore<State> {
     const config = (await getRemoteConfigValue(
       'extention_wallet_name_flags'
     )) as RemoteConfig['extention_wallet_name_flags'];
-    this.setState(
-      produce(this.getState(), (draft) => {
+    this.setState((state) =>
+      produce(state, (draft) => {
         if (!draft.walletNameFlags) {
           draft.walletNameFlags = {};
         }
