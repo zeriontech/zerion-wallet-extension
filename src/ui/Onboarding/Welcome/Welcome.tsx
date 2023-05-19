@@ -24,6 +24,8 @@ import {
   WaitlistCheckError,
 } from '../errors';
 import walletIconSrc from '../assets/wallet2.png';
+import welcomeImageSrc from '../assets/welcome_img.png';
+import welcomeImage2xSrc from '../assets/welcome_img_2x.png';
 import * as styles from './styles.module.css';
 
 type FormErrorType =
@@ -111,9 +113,7 @@ function MainForm({
         }}
       >
         <UIText kind={isNarrowView ? 'headline/h2' : 'headline/h1'}>
-          Zerion Extension Mode:
-          <br />
-          Activated
+          Zerion Extension Status: Live
         </UIText>
         <Spacer height={24} />
         <UIText kind="body/accent" style={{ opacity: 0.8 }}>
@@ -145,11 +145,17 @@ function MainForm({
           kind="primary"
           size={44}
           disabled={isLoading}
-          style={{ width: isNarrowView ? '100%' : undefined }}
+          style={{ width: isNarrowView ? '100%' : 267 }}
         >
           {isLoading ? 'Checking' : 'Check Eligibility'}
         </Button>
       </div>
+      <img
+        className={styles.formImage}
+        src={welcomeImageSrc}
+        alt=""
+        srcSet={`${welcomeImageSrc}, ${welcomeImage2xSrc} 2x`}
+      />
     </form>
   );
 }
