@@ -6,7 +6,6 @@ import type { WalletContainer } from './Wallet/model/WalletContainer';
 import type { WalletOrigin } from './Wallet/model/WalletOrigin';
 
 type TransactionResponse = ethers.providers.TransactionResponse;
-type TransactionReceipt = ethers.providers.TransactionReceipt;
 
 export interface ScreenViewParams {
   pathname: string;
@@ -27,7 +26,6 @@ export const emitter = createNanoEvents<{
     initiator: string;
     feeValueCommon: string | null;
   }) => void;
-  transactionMined: (transaction: TransactionReceipt) => void;
   typedDataSigned: (data: {
     typedData: TypedData;
     initiator: string;
