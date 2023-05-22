@@ -6,6 +6,7 @@ export interface TransactionObject {
   transaction: ethers.providers.TransactionResponse;
   initiator: string;
   receipt?: ethers.providers.TransactionReceipt;
+  dropped?: boolean;
 }
 
 export type StoredTransactions = Array<TransactionObject>;

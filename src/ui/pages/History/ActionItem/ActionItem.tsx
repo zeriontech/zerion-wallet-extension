@@ -128,7 +128,11 @@ function ActionDetail({
       />
       <UIText kind="small/regular" color="var(--neutral-500)">
         {action.transaction.status === 'pending' ? (
-          'Pending'
+          <span style={{ color: 'var(--notice-500)' }}>Pending</span>
+        ) : action.transaction.status === 'failed' ? (
+          <span style={{ color: 'var(--negative-500)' }}>Failed</span>
+        ) : action.transaction.status === 'dropped' ? (
+          <span style={{ color: 'var(--negative-500)' }}>Dropped</span>
         ) : incomingTransfers?.length && outgoingTransfers?.length && chain ? (
           <HistoryItemValue
             transfers={outgoingTransfers}

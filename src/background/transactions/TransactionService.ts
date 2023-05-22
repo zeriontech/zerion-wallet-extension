@@ -1,77 +1,55 @@
 import { ethers } from 'ethers';
-import { Store } from 'store-unit';
-import { networksStore } from 'src/modules/networks/networks-store.background';
-import * as browserStorage from 'src/background/webapis/storage';
+import { PersistentStore } from 'src/modules/persistent-store';
 import produce from 'immer';
 import type {
   StoredTransactions,
   TransactionObject,
 } from 'src/modules/ethereum/transactions/types';
 import { upsert } from 'src/shared/upsert';
+import { RequestCache } from 'src/modules/request-cache/request-cache';
+import { getPendingTransactions } from 'src/modules/ethereum/transactions/model';
 import { emitter } from '../events';
+import { createMockTxResponse } from './mocks';
+import type { PollingTx } from './TransactionPoller';
+import { TransactionsPoller } from './TransactionPoller';
 
-class TransactionsStore extends Store<StoredTransactions> {
-  constructor(args: StoredTransactions) {
-    super(args);
-    this.on('change', (state) => {
-      browserStorage.set('transactions', state);
-    });
+class TransactionsStore extends PersistentStore<StoredTransactions> {
+  upsertTransaction(value: TransactionObject) {
+    this.setState((state) =>
+      produce(state, (draft) => {
+        upsert(draft, value, (x) => x.hash);
+      })
+    );
   }
 
-  getPending() {
-    return this.state.filter((t) => !t.receipt);
+  getByHash(hash: string) {
+    return this.getState().find((item) => item.hash === hash);
   }
 }
 
-const DEBUGGING_TX_HASH = '0x123123';
-
-async function waitForTransaction(
-  hash: string,
-  provider: ethers.providers.Provider
-): Promise<ethers.providers.TransactionReceipt> {
-  if (hash === DEBUGGING_TX_HASH) {
-    const receipt = {
-      blockHash:
-        '0xe485aa7e58d3338909fdc77fc7445da5f552e260dc23bdfe285a2adbe54b4f64',
-      blockNumber: 31658369,
-      byzantium: true,
-      confirmations: 1,
-      contractAddress: '',
-      cumulativeGasUsed: {},
-      effectiveGasPrice: {},
-      from: '0x42b9dF65B219B3dD36FF330A4dD8f327A6Ada990',
-      gasUsed: {},
-      logs: [],
-      logsBloom: '0x002000...',
-      status: 1,
-      to: '0xd7F1Dd5D49206349CaE8b585fcB0Ce3D96f1696F',
-      transactionHash: DEBUGGING_TX_HASH,
-      transactionIndex: 6,
-      type: 2,
-    } as unknown as ethers.providers.TransactionReceipt;
-    return new Promise((r) => setTimeout(() => r(receipt), 6000));
-  } else {
-    return provider.waitForTransaction(hash);
-  }
+function toPollingObj(value: TransactionObject): PollingTx {
+  return {
+    hash: value.hash,
+    chainId: ethers.utils.hexValue(value.transaction.chainId),
+    nonce: value.transaction.nonce,
+    from: value.transaction.from,
+  };
 }
 
 export class TransactionService {
   private transactionsStore: TransactionsStore;
+  private transactionsPoller: TransactionsPoller;
 
   constructor() {
-    this.transactionsStore = new TransactionsStore([]);
+    this.transactionsStore = new TransactionsStore([], 'transactions');
+    this.transactionsPoller = new TransactionsPoller();
   }
 
   async initialize() {
-    const transactions: StoredTransactions =
-      (await browserStorage.get('transactions')) ?? [];
-    this.transactionsStore = new TransactionsStore(transactions);
+    await this.transactionsStore.ready();
+    const pending = getPendingTransactions(this.transactionsStore.getState());
+    this.transactionsPoller.add(pending.map(toPollingObj));
     this.addListeners();
-    this.waitForPendingTransactions();
-  }
-
-  waitForPendingTransactions() {
-    this.transactionsStore.getPending().map((t) => this.waitForTransaction(t));
   }
 
   addListeners() {
@@ -82,54 +60,33 @@ export class TransactionService {
         initiator,
         timestamp: Date.now(),
       };
-      this.waitForTransaction(newItem);
+      this.transactionsPoller.add([toPollingObj(newItem)]);
+
       this.transactionsStore.setState((state) =>
         produce(state, (draft) => {
           draft.push(newItem);
         })
       );
     });
-  }
 
-  private async waitForTransaction(transactionObject: TransactionObject) {
-    const networks = await networksStore.load();
-    const { hash, transaction } = transactionObject;
-    const { chainId: chainIdAsNumber } = transaction;
-    const chainId = ethers.utils.hexValue(chainIdAsNumber);
-    const nodeUrl = networks.getRpcUrlInternal(networks.getChainById(chainId));
-    const provider = new ethers.providers.JsonRpcProvider(nodeUrl);
-    const txReceipt = await waitForTransaction(hash, provider);
-    emitter.emit('transactionMined', txReceipt);
-    this.upsertTransaction({ ...transactionObject, receipt: txReceipt });
-  }
-
-  private upsertTransaction(value: TransactionObject) {
-    this.transactionsStore.setState((state) =>
-      produce(state, (draft) => {
-        upsert(draft, value, (x) => x.hash);
-      })
-    );
+    this.transactionsPoller.emitter.on('mined', (receipt) => {
+      const item = this.transactionsStore.getByHash(receipt.transactionHash);
+      if (item) {
+        this.transactionsStore.upsertTransaction({ ...item, receipt });
+      }
+    });
+    this.transactionsPoller.emitter.on('dropped', (hash) => {
+      const item = this.transactionsStore.getByHash(hash);
+      if (item) {
+        this.transactionsStore.upsertTransaction({ ...item, dropped: true });
+      }
+    });
   }
 }
 
 function testAddTransaction() {
   emitter.emit('transactionSent', {
-    transaction: {
-      accessList: [],
-      chainId: 137,
-      confirmations: 0,
-      data: '0x095ea7b3000000000000000000000000d7f1dd5d49206349cae8b585fcb0ce3d96f1696fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
-      from: '0x42b9dF65B219B3dD36FF330A4dD8f327A6Ada990',
-      gasLimit: ethers.BigNumber.from(1337),
-      gasPrice: null,
-      hash: DEBUGGING_TX_HASH,
-      maxFeePerGas: {},
-      maxPriorityFeePerGas: {},
-      nonce: 239,
-      to: '0xd7F1Dd5D49206349CaE8b585fcB0Ce3D96f1696F',
-      type: 2,
-      value: {},
-    } as unknown as ethers.providers.TransactionResponse,
+    transaction: createMockTxResponse(),
     initiator: 'https://app.zerion.io',
     feeValueCommon: '0.123',
   });

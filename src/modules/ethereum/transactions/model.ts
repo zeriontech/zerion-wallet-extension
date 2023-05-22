@@ -11,9 +11,19 @@ export function dataToModel(transactions: StoredTransactions) {
   return sortBy(transactions, (item) => item.timestamp ?? Infinity).reverse();
 }
 
-export type PendingAddressAction = Omit<AddressAction, 'content'> & {
+type ClientTransactionStatus =
+  | AddressAction['transaction']['status']
+  | 'dropped';
+
+export type PendingAddressAction = Omit<
+  AddressAction,
+  'content' | 'transaction'
+> & {
   asset_code?: string;
   address: string;
+  transaction: Omit<AddressAction['transaction'], 'status'> & {
+    status: ClientTransactionStatus;
+  };
 };
 
 function decsriptionToType(description: TransactionDescription): ActionType {
@@ -44,7 +54,7 @@ export async function toAddressTransaction(
     transactionObject.transaction,
     networks
   );
-  const { transaction, hash, receipt, timestamp } = transactionObject;
+  const { transaction, hash, receipt, timestamp, dropped } = transactionObject;
   return {
     id: hash,
     transaction: {
@@ -54,7 +64,13 @@ export async function toAddressTransaction(
             .getChainById(ethers.utils.hexValue(transaction.chainId))
             ?.toString()
         : '',
-      status: receipt ? 'confirmed' : 'pending',
+      status: receipt
+        ? receipt.status === 1
+          ? 'confirmed'
+          : 'failed'
+        : dropped
+        ? 'dropped'
+        : 'pending',
       fee: null,
       nonce: transaction.nonce,
     },
@@ -73,4 +89,8 @@ export async function toAddressTransaction(
     address: transaction.from,
     asset_code: description.approveAssetCode || description.sendAssetCode,
   };
+}
+
+export function getPendingTransactions(transactions: StoredTransactions) {
+  return transactions.filter((t) => !t.receipt && !t.dropped);
 }
