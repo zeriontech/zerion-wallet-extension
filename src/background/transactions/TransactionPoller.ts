@@ -16,7 +16,7 @@ class Interval {
     if (this.intervalId) {
       return;
     }
-    this.intervalId = setInterval(this.cb, 10000);
+    this.intervalId = setInterval(this.cb, 3000);
   }
   stop() {
     if (!this.intervalId) {
