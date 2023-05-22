@@ -1,5 +1,5 @@
-import { createDomainHook } from 'defi-sdk';
-import type { AddressParams } from 'defi-sdk';
+import { client, createDomainHook } from 'defi-sdk';
+import type { AddressParams, Result } from 'defi-sdk';
 import type { AddressNFT } from 'src/ui/shared/requests/addressNfts/types';
 
 type Payload = AddressParams & {
@@ -21,3 +21,20 @@ export const useNFTPosition = createDomainHook<
   namespace,
   scope,
 });
+
+export async function getAddressNftPosition(payload: Payload) {
+  return new Promise<Result<AddressNFT, typeof scope>>((resolve) => {
+    client.cachedSubscribe<AddressNFT, typeof namespace, typeof scope>({
+      namespace,
+      body: {
+        scope: [scope],
+        payload,
+      },
+      onData: (data) => {
+        if (data.isDone) {
+          resolve(data);
+        }
+      },
+    });
+  });
+}
