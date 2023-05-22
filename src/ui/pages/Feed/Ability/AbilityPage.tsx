@@ -220,7 +220,7 @@ export function AbilityPage() {
       <PageColumn style={{ paddingTop: 18 }}>
         <NavigationTitle
           title={null}
-          documentTitle={data?.ability.title || 'Ability title'}
+          documentTitle={data?.ability.title || 'Ability Page'}
         />
         <div style={{ paddingBottom: 80 }}>
           {data?.ability ? (
