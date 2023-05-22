@@ -84,7 +84,7 @@ async function getNftStatus(address: string) {
     return { status: false };
   }
 
-  if (firebaseConfig?.extension_access_nft_collections?.length) {
+  const checkCollectionStatus = async () => {
     const { value } = await getAddressNfts({
       address: normalizedAddress,
       currency: 'usd',
@@ -96,25 +96,40 @@ async function getNftStatus(address: string) {
     if (hasAccess) {
       return { status: true };
     }
+
+    throw new NotAllowedError();
+  };
+
+  const checkEntityStatus = (entity: string) => async () => {
+    const [chain, contract_address, token_id] = entity.split(':');
+    const { value } = await getAddressNftPosition({
+      address: normalizedAddress,
+      currency: 'usd',
+      chain,
+      contract_address,
+      token_id,
+    });
+    if (value) {
+      return { status: true };
+    }
+    throw new NotAllowedError();
+  };
+
+  const promises = [];
+
+  if (firebaseConfig?.extension_access_nft_collections?.length) {
+    promises.push(checkCollectionStatus());
   }
 
   if (firebaseConfig?.extension_access_nft_items?.length) {
     for (const entity of firebaseConfig.extension_access_nft_items) {
-      const [chain, contract_address, token_id] = entity.split(':');
-      const { value } = await getAddressNftPosition({
-        address: normalizedAddress,
-        currency: 'usd',
-        chain,
-        contract_address,
-        token_id,
-      });
-      if (value) {
-        return { status: true };
-      }
+      promises.push(checkEntityStatus(entity)());
     }
   }
 
-  return { status: false };
+  return Promise.any(promises).catch(() => ({
+    status: false,
+  }));
 }
 
 export async function checkWhitelistStatus(address: string) {
