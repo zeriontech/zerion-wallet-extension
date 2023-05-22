@@ -22,7 +22,7 @@ export const useNFTPosition = createDomainHook<
   scope,
 });
 
-export async function getAddressNftPosition(payload: Payload) {
+export async function getNftPosition(payload: Payload) {
   return new Promise<Result<AddressNFT, typeof scope>>((resolve) => {
     client.cachedSubscribe<AddressNFT, typeof namespace, typeof scope>({
       namespace,

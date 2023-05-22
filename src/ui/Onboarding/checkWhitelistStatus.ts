@@ -4,7 +4,7 @@ import { isEmail } from 'src/shared/isEmail';
 import { PROXY_URL } from 'src/env/config';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getAddressNfts } from '../shared/requests/addressNfts/useAddressNfts';
-import { getAddressNftPosition } from '../pages/NonFungibleToken/useNftPosition';
+import { getNftPosition } from '../pages/NonFungibleToken/useNftPosition';
 import { WaitlistCheckError, NotAllowedError } from './errors';
 
 const WAITLIST_ID = 'aOfkJhcpwDHpJVkzO6FB';
@@ -102,7 +102,7 @@ async function getNftStatus(address: string) {
 
   const checkEntityStatus = (entity: string) => async () => {
     const [chain, contract_address, token_id] = entity.split(':');
-    const { value } = await getAddressNftPosition({
+    const { value } = await getNftPosition({
       address: normalizedAddress,
       currency: 'usd',
       chain,
