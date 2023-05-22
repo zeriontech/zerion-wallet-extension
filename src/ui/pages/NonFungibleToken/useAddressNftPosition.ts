@@ -12,7 +12,7 @@ type Payload = AddressParams & {
 const namespace = 'address';
 const scope = 'nft-position';
 
-export const useNFTPosition = createDomainHook<
+export const useAddressNftPosition = createDomainHook<
   Payload,
   AddressNFT,
   typeof namespace,
@@ -22,7 +22,7 @@ export const useNFTPosition = createDomainHook<
   scope,
 });
 
-export async function getNftPosition(payload: Payload) {
+export async function getAddressNftPosition(payload: Payload) {
   return new Promise<Result<AddressNFT, typeof scope>>((resolve) => {
     client.cachedSubscribe<AddressNFT, typeof namespace, typeof scope>({
       namespace,
