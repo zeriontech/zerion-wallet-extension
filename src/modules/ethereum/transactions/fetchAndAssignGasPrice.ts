@@ -1,36 +1,51 @@
 import { ethers } from 'ethers';
+import produce from 'immer';
+import omit from 'lodash/omit';
 import { createChain } from 'src/modules/networks/Chain';
-import { UnsupportedNetwork } from 'src/modules/networks/errors';
 import type { Networks } from 'src/modules/networks/Networks';
 import { sendRpcRequest } from 'src/shared/custom-rpc/rpc-request';
+import { invariant } from 'src/shared/invariant';
 import type { IncomingTransaction } from '../types/IncomingTransaction';
-import { assignGasPrice } from './gasPrices/assignGasPrice';
+import { assignChainGasPrice } from './gasPrices/assignGasPrice';
+import { hasNetworkFee } from './gasPrices/hasNetworkFee';
 import type { ChainGasPrice } from './gasPrices/requests';
 import { gasChainPricesSubscription } from './gasPrices/requests';
+import { getGas } from './getGas';
+import { wrappedGetNetworkById } from './wrappedGetNetworkById';
 
-function wrappedGetNetworkById(networks: Networks, chainId: string) {
-  try {
-    return networks.getNetworkById(chainId);
-  } catch (error) {
-    if (error instanceof UnsupportedNetwork) {
-      throw new Error(
-        `No network configuration found for ${chainId}.\nYou can add a custom network in the "Settings -> Networks" section.`
-      );
-    } else {
-      throw error;
-    }
-  }
+function resolveChainId(transaction: IncomingTransaction) {
+  const { chainId: incomingChainId } = transaction;
+  invariant(incomingChainId, 'Transaction object must have a chainId property');
+  return ethers.utils.hexValue(incomingChainId);
+}
+
+function add10Percent(value: number) {
+  return Math.round(value * 1.1); // result must be an integer
+}
+
+async function estimateGas(
+  transaction: IncomingTransaction,
+  networks: Networks
+) {
+  const chainId = resolveChainId(transaction);
+  const rpcUrl = networks.getRpcUrlInternal(networks.getChainById(chainId));
+  const { result } = await sendRpcRequest<string>(rpcUrl, {
+    method: 'eth_estimateGas',
+    params: [
+      omit(transaction, [
+        'gas', // error on Aurora if gas: 0x0, so we omit it
+        'nonce', // error on Polygon if nonce is int, but we don't need it at all
+      ]),
+    ],
+  });
+  return add10Percent(parseInt(result));
 }
 
 async function fetchGasPrice(
   transaction: IncomingTransaction,
   networks: Networks
 ): Promise<ChainGasPrice> {
-  const { chainId: incomingChainId } = transaction;
-  if (!incomingChainId) {
-    throw new Error('Transaction object must have a chainId property');
-  }
-  const chainId = ethers.utils.hexValue(incomingChainId);
+  const chainId = resolveChainId(transaction);
   const network = wrappedGetNetworkById(networks, chainId);
   const chain = createChain(network.chain);
   if (networks.isSupportedByBackend(chain)) {
@@ -68,15 +83,31 @@ async function fetchGasPrice(
   }
 }
 
-export async function fetchAndAssignGasPrice(
-  transaction: IncomingTransaction,
+function hasGasEstimation(transaction: IncomingTransaction) {
+  const gas = getGas(transaction);
+  return gas && !ethers.BigNumber.from(gas).isZero();
+}
+
+/**
+ * This method checks if gas and network-fee related fields are present,
+ * and if necessary, makes eth_estimateGas and eth_gasPrice calls and
+ * applies the results to the transaction
+ */
+export async function prepareGasAndNetworkFee<T extends IncomingTransaction>(
+  transaction: T,
   networks: Networks
 ) {
-  const gasPricesInfo = await fetchGasPrice(transaction, networks);
-  const { eip1559, classic } = gasPricesInfo.info;
-
-  assignGasPrice(transaction, {
-    eip1559: eip1559?.fast,
-    classic: classic?.fast,
+  const [gas, networkFeeInfo] = await Promise.all([
+    hasGasEstimation(transaction) ? null : estimateGas(transaction, networks),
+    hasNetworkFee(transaction) ? null : fetchGasPrice(transaction, networks),
+  ]);
+  return produce(transaction, (draft) => {
+    if (gas) {
+      delete draft.gas;
+      draft.gasLimit = gas;
+    }
+    if (networkFeeInfo) {
+      assignChainGasPrice(transaction, networkFeeInfo);
+    }
   });
 }

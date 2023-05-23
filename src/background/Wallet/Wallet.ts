@@ -29,8 +29,7 @@ import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTra
 import { prepareTransaction } from 'src/modules/ethereum/transactions/prepareTransaction';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
-import { hasGasPrice } from 'src/modules/ethereum/transactions/gasPrices/hasGasPrice';
-import { fetchAndAssignGasPrice } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
+import { prepareGasAndNetworkFee } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import {
   prepareTypedData,
@@ -808,15 +807,14 @@ export class Wallet {
       incomingTransaction.chainId = chainId;
     }
     const networks = await networksStore.load();
-    const transaction = prepareTransaction(incomingTransaction);
-    if (!hasGasPrice(transaction)) {
-      await fetchAndAssignGasPrice(transaction, networks);
-    }
+    const prepared = prepareTransaction(incomingTransaction);
+    const transaction = await prepareGasAndNetworkFee(prepared, networks);
 
     const signer = await this.getSigner(chainId);
+
     const transactionResponse = await signer.sendTransaction({
       ...transaction,
-      type: transaction.type || undefined,
+      type: transaction.type || undefined, // to exclude null
     });
     const safeTx = removeSignature(transactionResponse);
     emitter.emit('transactionSent', {

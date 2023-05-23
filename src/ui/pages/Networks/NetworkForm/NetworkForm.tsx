@@ -15,7 +15,8 @@ import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { Toggle } from 'src/ui/ui-kit/Toggle';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { naiveFormDataToObject } from 'src/ui/shared/form-data';
+import type { Parsers } from 'src/ui/shared/form-data';
+import { collectData } from 'src/ui/shared/form-data';
 
 type InitialNetworkConfig = Omit<NetworkConfig, 'chain'> & {
   chain: string | null;
@@ -102,8 +103,6 @@ function findInput(
   });
 }
 
-type Parsers = Record<string, (untypedValue: unknown) => unknown>;
-
 const parsers: Parsers = {
   external_id: (untypedValue) => {
     const value = untypedValue as string;
@@ -118,16 +117,6 @@ const parsers: Parsers = {
     return Boolean(value);
   },
 };
-
-function collectData(form: HTMLFormElement, parsers: Parsers) {
-  return naiveFormDataToObject(new FormData(form), (key, untypedValue) => {
-    if (parsers[key]) {
-      return parsers[key](untypedValue);
-    } else {
-      return untypedValue as string;
-    }
-  });
-}
 
 function NetworkHiddenFieldLine({
   name,

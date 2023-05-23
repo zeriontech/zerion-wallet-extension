@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 import type { GasPriceObject } from './GasPriceObject';
+import type { ChainGasPrice } from './requests';
 
 interface EIP1559Props {
   maxFeePerGas: string;
@@ -28,4 +29,15 @@ export function assignGasPrice<T extends object>(
   throw new Error(
     'gasPrice object must include either classic or eip1559 field'
   );
+}
+
+export function assignChainGasPrice<T extends object>(
+  transaction: T,
+  chainGasPrice: ChainGasPrice
+) {
+  const { eip1559, classic } = chainGasPrice.info;
+  return assignGasPrice(transaction, {
+    eip1559: eip1559?.fast,
+    classic: classic?.fast,
+  });
 }

@@ -42,6 +42,10 @@ interface PublicPreferences {
   showNetworkSwitchShortcut?: boolean;
   walletNameFlags?: WalletNameFlag[];
   overviewChain?: string;
+  /**
+   * Allow to configure nonce before signing transactions
+   */
+  configurableNonce?: boolean;
 }
 
 export interface Permission {
