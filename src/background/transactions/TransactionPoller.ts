@@ -32,16 +32,16 @@ const getProviderMemoized = memoize(
 );
 
 class ReceiptGetter {
-  private i = 0;
+  private count = 0;
 
   async get(provider: ethers.providers.BaseProvider, hash: string) {
     if (hash === DEBUGGING_TX_HASH) {
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      if (this.i === 2) {
-        this.i = 0;
+      if (this.count === 2) {
+        this.count = 0;
         return createMockReceipt();
       } else {
-        this.i++;
+        this.count++;
         return null;
       }
     } else {
@@ -71,15 +71,6 @@ export class TransactionsPoller {
 
   constructor() {
     this.interval = new Interval(this.makeRequest.bind(this));
-  }
-
-  add(items: PollingTx[]) {
-    for (const item of items) {
-      this.hashes.set(item.hash, item);
-    }
-    if (this.hashes.size) {
-      this.interval.start();
-    }
   }
 
   private async getTransactionCount(url: string, from: string) {
@@ -178,6 +169,15 @@ export class TransactionsPoller {
         this.emitter.emit('dropped', tx.hash);
         this.hashes.delete(tx.hash);
       }
+    }
+  }
+
+  add(items: PollingTx[]) {
+    for (const item of items) {
+      this.hashes.set(item.hash, item);
+    }
+    if (this.hashes.size) {
+      this.interval.start();
     }
   }
 }
