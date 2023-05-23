@@ -183,7 +183,7 @@ function RequestAccountsView({
   origin: string;
   wallet: BareWallet;
   wallets: BareWallet[];
-  onConfirm: ({ address }: { address: string }) => void;
+  onConfirm: (value: { address: string; origin: string }) => void;
   onReject: () => void;
 }) {
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -275,7 +275,9 @@ function RequestAccountsView({
           </Button>
           <Button
             ref={focusNode}
-            onClick={() => onConfirm({ address: selectedWallet.address })}
+            onClick={() =>
+              onConfirm({ address: selectedWallet.address, origin })
+            }
           >
             Connect
           </Button>
@@ -306,7 +308,7 @@ export function RequestAccounts() {
     return walletPort.request('uiGetCurrentWallet');
   });
   const handleConfirm = useCallback(
-    (result: { address: string }) => {
+    (result: { address: string; origin: string }) => {
       windowPort.confirm(windowId, result);
     },
     [windowId]
@@ -320,7 +322,7 @@ export function RequestAccounts() {
       if (!wallet) {
         throw new Error('Wallet must be defined');
       }
-      handleConfirm({ address: wallet.address });
+      handleConfirm({ address: wallet.address, origin });
     },
   });
 
