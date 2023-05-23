@@ -1,4 +1,5 @@
 import React from 'react';
+import { getError } from 'src/shared/errors/getError';
 
 export class ErrorBoundary extends React.Component<
   React.PropsWithChildren<{
@@ -10,8 +11,8 @@ export class ErrorBoundary extends React.Component<
 > {
   state = { hasError: false, error: null };
 
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true, error };
+  static getDerivedStateFromError(error: unknown) {
+    return { hasError: true, error: getError(error) };
   }
 
   render() {

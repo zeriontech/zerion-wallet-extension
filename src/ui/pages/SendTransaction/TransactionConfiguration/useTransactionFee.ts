@@ -19,11 +19,8 @@ function getGasPriceFromTransaction(
   transaction: IncomingTransaction
 ): GasPriceObject | null {
   const { gasPrice, maxFeePerGas, maxPriorityFeePerGas } = transaction;
-  const estimatedGas = getGas(transaction);
-  if (estimatedGas && gasPrice) {
-    return {
-      classic: Number(gasPrice),
-    };
+  if (gasPrice) {
+    return { classic: Number(gasPrice) };
   }
   if (maxPriorityFeePerGas && maxFeePerGas) {
     return {
@@ -46,7 +43,7 @@ export function useTransactionFee({
   onFeeValueCommonReady: (value: string) => void;
 }) {
   const gas = getGas(transaction);
-  if (!gas) {
+  if (!gas || ethers.BigNumber.from(gas).isZero()) {
     throw new Error('gas field is expected to be found on Transaction object');
   }
   const { value: nativeAsset, isLoading: isLoadingNativeAsset } =

@@ -13,6 +13,6 @@ function hasClassicGasPrice(tx: Partial<IncomingTransaction>) {
   return isNotEmpty(tx.gasPrice);
 }
 
-export function hasGasPrice(tx: Partial<IncomingTransaction>) {
+export function hasNetworkFee(tx: Partial<IncomingTransaction>) {
   return hasEIP1559GasPrice(tx) || hasClassicGasPrice(tx);
 }
