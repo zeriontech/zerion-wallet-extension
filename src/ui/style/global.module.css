@@ -54,6 +54,10 @@ body.isTab {
   margin-inline: auto;
 }
 
+:root:has(body.isOnboarding) {
+  background-color: var(--neutral-100);
+}
+
 body.isOnboarding {
   height: 100vh;
   width: 100%;

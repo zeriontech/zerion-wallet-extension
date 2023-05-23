@@ -110,7 +110,7 @@ function Icon({ iconUrl, zerionUrl, type }: IconConfig) {
       <img
         src={iconUrl}
         style={{
-          borderRadius: type === 'nft' ? 12 : '50%',
+          borderRadius: type === 'nft' ? 8 : '50%',
           opacity: 0.01,
         }}
         onLoad={(e) => e.currentTarget.style.setProperty('opacity', '1')}
@@ -153,7 +153,7 @@ export function Preview({
           href={`https://app.zerion.io/${address}`}
           target="_blank"
         >
-          <WalletAvatar size={72} address={address} borderRadius={12} />
+          <WalletAvatar size={72} address={address} borderRadius={8} />
         </UnstyledAnchor>
         <VStack gap={8}>
           <UIText kind="headline/h3">

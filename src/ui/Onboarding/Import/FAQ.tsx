@@ -218,15 +218,15 @@ function PhraseFAQ() {
               Where can I find my recovery phrase?
             </UIText>
             <UIText kind="body/regular">
-              1: Open up your existing wallet, either on your mobile app or
+              1. Open up your existing wallet, either on your mobile app or
               extension and open the Settings.
             </UIText>
 
             <UIText kind="body/regular">
-              2: Copy your Recovery Phrase. It's usually 12 or 24 words long.
+              2. Copy your Recovery Phrase. It's usually 12 or 24 words long.
             </UIText>
             <UIText kind="body/regular">
-              3: Enter in the Recovery Phrase that you copied down into the
+              3. Enter in the Recovery Phrase that you copied down into the
               Zerion extension. Click on Import wallet once complete.
             </UIText>
             <UIText kind="body/regular">4: That it 🎉</UIText>

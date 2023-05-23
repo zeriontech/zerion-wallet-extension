@@ -116,7 +116,7 @@ function MainForm({
           Zerion Extension Status: Live
         </UIText>
         <Spacer height={24} />
-        <UIText kind="body/accent" style={{ opacity: 0.8 }}>
+        <UIText kind="body/accent" style={{ opacity: 0.8, fontWeight: 400 }}>
           We are slowly opening up access. See if you’re on the list.
         </UIText>
         <Spacer height={24} />
@@ -145,6 +145,7 @@ function MainForm({
           kind="primary"
           size={44}
           disabled={isLoading}
+          className={styles.submit}
           style={{ width: isNarrowView ? '100%' : 267 }}
         >
           {isLoading ? 'Checking' : 'Check Eligibility'}

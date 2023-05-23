@@ -15,7 +15,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 20;
+  border-radius: var(--card-border-radius);
   text-align: center;
   padding: 82px 40px;
   position: relative;

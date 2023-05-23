@@ -9,6 +9,7 @@ import { Dashboard } from './Dashboard';
 import { Welcome } from './Welcome';
 import { Import } from './Import';
 import { Success } from './Success';
+import * as styles from './styles.module.css';
 
 const HEADER_HEIGHT = 72;
 const MAX_CONTENT_WIDTH = 870;
@@ -26,6 +27,8 @@ function PageLayout({
         paddingLeft: CONTENT_PADDING,
         paddingRight: CONTENT_PADDING,
         paddingBottom: CONTENT_PADDING,
+        backgroundColor: 'var(--neutral-100)',
+        ['--card-border-radius' as string]: '20px',
       }}
     >
       <div
@@ -46,27 +49,20 @@ function PageLayout({
 function Header() {
   return (
     <div
+      className={styles.header}
       style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
         height: `calc(${HEADER_HEIGHT} - 24px)`,
-        paddingTop: 24,
         paddingLeft: CONTENT_PADDING,
         paddingRight: CONTENT_PADDING,
-        zIndex: 'var(--navbar-index)',
-        backgroundColor: 'var(--neutral-100)',
       }}
     >
       <HStack
+        className={styles.headerContent}
         gap={24}
         justifyContent="space-between"
         alignItems="center"
         style={{
           maxWidth: MAX_CONTENT_WIDTH,
-          marginLeft: 'auto',
-          marginRight: 'auto',
         }}
       >
         <Logo />

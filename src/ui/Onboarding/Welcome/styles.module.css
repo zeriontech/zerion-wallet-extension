@@ -1,8 +1,8 @@
 .container {
   position: relative;
-  background: linear-gradient(112.46deg, #0a0a9b 0%, #06003c 75.74%), #06003c;
+  background: linear-gradient(111.37deg, #0a0a9b 0%, #06003c 100%);
   box-shadow: 0px 12px 40px rgba(0, 0, 0, 0.08);
-  border-radius: 20px;
+  border-radius: var(--card-border-radius);
   text-align: center;
   display: flex;
   justify-content: center;
@@ -20,12 +20,13 @@
   background: var(--always-white);
   color: var(--always-black);
   border-radius: 8px;
+  height: 44px;
 }
 
 .faqButton {
   background: linear-gradient(0deg, #07013d, #07013d),
     linear-gradient(272.02deg, #ff7583 0%, #3232dc 100%);
-  border-radius: 20px;
+  border-radius: var(--card-border-radius);
   padding: 24px;
 }
 
@@ -50,16 +51,14 @@
   background-color: var(--neutral-100);
 }
 
+.submit:disabled {
+  background-color: #0937aa !important;
+}
+
 .formImage {
   position: absolute;
   bottom: -95px;
   right: -175px;
-}
-
-@media (max-width: 1200px) {
-  .formImage {
-    display: none;
-  }
 }
 
 @media (max-width: 768px) {
@@ -70,5 +69,9 @@
 
   .input {
     width: 100%;
+  }
+
+  .formImage {
+    display: none;
   }
 }
