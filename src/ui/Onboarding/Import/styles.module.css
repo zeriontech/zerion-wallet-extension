@@ -3,7 +3,7 @@
   position: relative;
   overflow: hidden;
   padding: 88px;
-  border-radius: 20px;
+  border-radius: var(--card-border-radius);
   background-color: var(--white);
 }
 
@@ -166,7 +166,7 @@
 
 .faqContainer {
   padding: 16px;
-  border-radius: 20px;
+  border-radius: var(--card-border-radius);
   background-color: var(--white);
 }
 

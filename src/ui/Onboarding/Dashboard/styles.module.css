@@ -20,7 +20,7 @@
 }
 
 .importOption {
-  border-radius: 20px;
+  border-radius: var(--card-border-radius);
   padding: 24px;
   background-color: var(--white);
   transition: box-shadow 300ms;
@@ -62,7 +62,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 40px 0 40px 40px;
-  border-radius: 20px;
+  border-radius: var(--card-border-radius);
   background-color: var(--white);
   animation: previewAppear 400ms ease-in-out;
 }
@@ -111,13 +111,24 @@
   background-color: var(--neutral-300);
 }
 
+@keyframes gradientAnimation {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 300% 0;
+  }
+}
+
 .accessBadge {
   padding: 8px 12px;
   position: absolute;
   left: 40px;
   top: 40px;
-  background: linear-gradient(90deg, #ff7583 0%, #3232dc 98.61%);
+  background: linear-gradient(90deg, #3232dc 0%, #ff7583 50%, #3232dc 100%);
+  animation: gradientAnimation 10s linear infinite;
   border-radius: 40px;
+  background-size: 300% auto;
 }
 
 @media (min-width: 769px) {
