@@ -25,6 +25,7 @@ import {
   usePersonalSignMutation,
   useSignTypedData_v4Mutation,
 } from 'src/ui/shared/requests/message-signing';
+import { prepareForHref } from 'src/ui/shared/prepareForHref';
 
 function ItemSurface({
   style,
@@ -103,7 +104,7 @@ function SignMessageContent({
     : personalSignMutation.isError
     ? getError(personalSignMutation.error)
     : null;
-  const hostname = useMemo(() => new URL(origin).hostname, [origin]);
+  const originForHref = useMemo(() => prepareForHref(origin), [origin]);
 
   const handleReject = () => windowPort.reject(windowId);
 
@@ -121,9 +122,17 @@ function SignMessageContent({
             Signature Request
           </UIText>
           <UIText kind="small/regular" color="var(--neutral-500)">
-            <TextAnchor href={origin} target="_blank" rel="noopener noreferrer">
-              {hostname}
-            </TextAnchor>
+            {originForHref ? (
+              <TextAnchor
+                href={originForHref.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {originForHref.hostname}
+              </TextAnchor>
+            ) : (
+              'Unknown Initiator'
+            )}
           </UIText>
           <Spacer height={8} />
 

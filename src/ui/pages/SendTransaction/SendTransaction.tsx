@@ -42,6 +42,7 @@ import { focusNode } from 'src/ui/shared/focusNode';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
+import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { NetworkFee } from './NetworkFee';
 import { TransactionDescription } from './TransactionDescription';
 
@@ -177,7 +178,7 @@ function SendTransactionContent({
       },
     }
   );
-  const hostname = useMemo(() => new URL(origin).hostname, [origin]);
+  const originForHref = useMemo(() => prepareForHref(origin), [origin]);
   if (!transaction || descriptionQuery.isLoading || !networks) {
     return (
       <FillView>
@@ -234,9 +235,17 @@ function SendTransactionContent({
               strings.actions[TransactionAction.contractInteraction]}
           </UIText>
           <UIText kind="small/regular" color="var(--neutral-500)">
-            <TextAnchor href={origin} target="_blank" rel="noopener noreferrer">
-              {hostname}
-            </TextAnchor>
+            {originForHref ? (
+              <TextAnchor
+                href={originForHref.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {originForHref.hostname}
+              </TextAnchor>
+            ) : (
+              'Unknown Initiator'
+            )}
           </UIText>
           <Spacer height={8} />
 
