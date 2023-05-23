@@ -55,7 +55,7 @@ body.isTab {
 }
 
 :root:has(body.isOnboarding) {
-  background-color: var(--neutral-100);
+  background-color: var(--background);
 }
 
 body.isOnboarding {
