@@ -1,40 +1,23 @@
-// <<<<<<< HEAD
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-// =======
 import { capitalize } from 'capitalize-ts';
 import { ethers } from 'ethers';
-// import React, { useCallback, useMemo, useRef } from 'react';
-// >>>>>>> 1c556bb (Update transacting UI (WIP))
 import { useMutation, useQuery } from 'react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { incomingTransactionToIncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction';
-// import { fetchAndAssignGasPrice } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
-// import { hasGasPrice } from 'src/modules/ethereum/transactions/gasPrices/hasGasPrice';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
-// import type { Chain } from 'src/modules/networks/Chain';
-// import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
-// import { invariant } from 'src/shared/invariant';
-// import type { BareWallet } from 'src/shared/types/BareWallet';
-// import { Background } from 'src/ui/components/Background';
-// import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
-// import { FillView } from 'src/ui/components/FillView';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { PageColumn } from 'src/ui/components/PageColumn';
-// import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { PageTop } from 'src/ui/components/PageTop';
-// import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { walletPort, windowPort } from 'src/ui/shared/channels';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
-// <<<<<<< HEAD
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { Background } from 'src/ui/components/Background';
 import { FillView } from 'src/ui/components/FillView';
-// import { capitalize } from 'capitalize-ts';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import type { Chain } from 'src/modules/networks/Chain';
@@ -43,18 +26,13 @@ import { prepareGasAndNetworkFee } from 'src/modules/ethereum/transactions/fetch
 import { resolveChainForTx } from 'src/modules/ethereum/transactions/resolveChainForTx';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { invariant } from 'src/shared/invariant';
-// =======
-// >>>>>>> 1c556bb (Update transacting UI (WIP))
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
-// <<<<<<< HEAD
 import { getError } from 'src/shared/errors/getError';
-// import { TransactionDescription } from './TransactionDescription';
 import { Button } from 'src/ui/ui-kit/Button';
-// import type { Networks } from 'src/modules/networks/Networks';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { interpretTransaction } from 'src/modules/ethereum/transactions/interpretTransaction';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
@@ -64,13 +42,10 @@ import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired'
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
-// =======
 import { ApplicationLine } from './Lines/ApplicationLine';
 import { RecipientLine } from './Lines/RecipientLine';
 import { Transfers } from './Transfers';
 import { SingleAsset } from './SingleAsset';
-// import { NetworkFee } from './NetworkFee';
-// >>>>>>> 1c556bb (Update transacting UI (WIP))
 
 type SendTransactionError =
   | null
@@ -106,7 +81,6 @@ async function resolveChainAndGasPrice(
   transaction: IncomingTransaction,
   currentChain: Chain
 ) {
-  // <<<<<<< HEAD
   const networks = await networksStore.load();
   const chain = resolveChainForTx(transaction, currentChain, networks);
   const chainId = networks.getChainId(chain);
@@ -131,19 +105,6 @@ function useErrorBoundary() {
 const DEFAULT_CONFIGURATION: CustomConfiguration = {
   nonce: null,
 };
-// =======
-//   const pendingTransaction = setTransactionChainId(
-//     transaction,
-//     currentChain,
-//     networks
-//   );
-//   if (hasGasPrice(pendingTransaction)) {
-//     return pendingTransaction;
-//   } else {
-//     await fetchAndAssignGasPrice(pendingTransaction, networks);
-//     return pendingTransaction;
-//   }
-// }
 
 function TransactionViewLoading() {
   return (
@@ -159,7 +120,6 @@ function TransactionViewLoading() {
     </FillView>
   );
 }
-// >>>>>>> 1c556bb (Update transacting UI (WIP))
 
 function SendTransactionContent({
   transactionStringified,
@@ -199,13 +159,6 @@ function SendTransactionContent({
         incomingTransaction,
         createChain(currentChain)
       );
-      // return networks
-      //   ? setTransactionChainIdAndGasPrice(
-      //       incomingTransaction,
-      //       createChain(currentChain),
-      //       networks
-      //     )
-      //   : null;
     },
     {
       useErrorBoundary: true,
@@ -296,10 +249,6 @@ function SendTransactionContent({
   );
   const originForHref = useMemo(() => prepareForHref(origin), [origin]);
 
-  // const showAdvancedView = useCallback(() => {
-  //   console.log('Advanced View');
-  // }, []);
-  //
   if (!networks || !pendingTransaction || isLoadingLocalAddressAction) {
     return <TransactionViewLoading />;
   }

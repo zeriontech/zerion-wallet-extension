@@ -148,7 +148,6 @@ export async function pendingTransactionToAddressAction(
     transaction: {
       hash,
       chain: chain.toString(),
-      // status: 'pending',
       status: receipt
         ? receipt.status === 1
           ? 'confirmed'
@@ -159,7 +158,6 @@ export async function pendingTransactionToAddressAction(
       fee: null,
       nonce: transaction.nonce || 0,
     },
-    // datetime: new Date().toISOString(),
     datetime: new Date(timestamp ?? Date.now()).toISOString(),
     label,
     type: {
@@ -192,7 +190,6 @@ export async function incomingTransactionToIncomingAddressAction(
       fee: null,
       nonce: transaction.nonce,
     },
-    // datetime: new Date().toISOString(),
     datetime: new Date(timestamp ?? Date.now()).toISOString(),
     label,
     type: {
