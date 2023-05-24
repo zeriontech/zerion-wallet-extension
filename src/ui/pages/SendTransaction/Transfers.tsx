@@ -25,6 +25,8 @@ import { AssetQuantityValue } from 'src/ui/components/AssetQuantityValue';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { minus, noValueDash } from 'src/ui/shared/typography';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
+import { Surface } from 'src/ui/ui-kit/Surface';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 
 function TransferItemFungible({
   address,
@@ -215,36 +217,23 @@ export function Transfers({
         />
       ) : null}
       {transfers.incoming?.length ? (
-        <SurfaceList
-          items={[
-            {
-              key: 'receive',
-              pad: false,
-              component: (
-                <UIText
-                  kind="caption/accent"
-                  color="var(--neutral-500)"
-                  style={{ paddingBlockStart: 8 }}
-                >
-                  Receive
-                </UIText>
-              ),
-            },
-          ].concat(
-            transfers.incoming.map((transfer) => ({
-              key: `${transfer.quantity}${transfer.price}$`,
-              pad: true,
-              component: (
-                <TransferItem
-                  address={address}
-                  chain={chain}
-                  transfer={transfer}
-                  direction="in"
-                />
-              ),
-            }))
-          )}
-        />
+        <Surface style={{ paddingBlock: 8, paddingInline: 12 }}>
+          <UIText kind="caption/accent" color="var(--neutral-500)">
+            Receive
+          </UIText>
+          <Spacer height={4} />
+          <VStack gap={8}>
+            {transfers.incoming.map((transfer) => (
+              <TransferItem
+                key={`${transfer.quantity}${transfer.price}$`}
+                address={address}
+                chain={chain}
+                transfer={transfer}
+                direction="in"
+              />
+            ))}
+          </VStack>
+        </Surface>
       ) : null}
     </VStack>
   );
