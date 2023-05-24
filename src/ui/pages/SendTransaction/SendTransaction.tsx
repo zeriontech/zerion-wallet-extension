@@ -399,7 +399,7 @@ function SendTransactionContent({
         <VStack
           style={{
             textAlign: 'center',
-            paddingBottom: 8,
+            paddingBottom: 24,
           }}
           gap={8}
         >
