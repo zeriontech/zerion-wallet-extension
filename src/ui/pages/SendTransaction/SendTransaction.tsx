@@ -314,7 +314,7 @@ function SendTransactionContent({
         </div>
         <VStack gap={16}>
           <Spacer height={24} />
-          {recipientAddress ? (
+          {recipientAddress && addressAction?.type.value === 'send' ? (
             <RecipientLine
               recipientAddress={recipientAddress}
               chain={chain}

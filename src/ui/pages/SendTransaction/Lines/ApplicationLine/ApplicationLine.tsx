@@ -11,7 +11,6 @@ import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
-import { noValueDash } from 'src/ui/shared/typography';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 
@@ -24,12 +23,13 @@ function ApplicationLineContent({
   networks,
 }: {
   label: string;
-  name: string;
+  name?: string;
   contractAddress: string;
   image: React.ReactNode;
   chain: Chain;
   networks: Networks;
 }) {
+  const address = truncateAddress(contractAddress, 4);
   return (
     <Media
       style={{ gridAutoColumns: 'minmax(min-content, max-content) auto' }}
@@ -43,7 +43,7 @@ function ApplicationLineContent({
       detailText={
         <HStack gap={4} alignItems="center" justifyContent="space-between">
           <UIText kind="body/accent" color="var(--black)">
-            {name || noValueDash}
+            {name || address}
           </UIText>
           <UIText
             kind="small/regular"
@@ -59,7 +59,7 @@ function ApplicationLineContent({
               rel="noopener noreferrer"
             >
               <HStack gap={3} justifyContent="center" alignItems="center">
-                <span>{truncateAddress(contractAddress, 4)}</span>
+                <span>{address}</span>
                 <ArrowLeftTop />
               </HStack>
             </TextAnchor>
@@ -102,7 +102,7 @@ export function ApplicationLine({
           networks={networks}
           contractAddress={contractAddress}
           label="Application"
-          name={applicationName || noValueDash}
+          name={applicationName}
           image={
             <div
               style={{
