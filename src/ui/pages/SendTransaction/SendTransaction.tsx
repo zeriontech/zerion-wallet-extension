@@ -14,7 +14,6 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { Background } from 'src/ui/components/Background';
 import { FillView } from 'src/ui/components/FillView';
@@ -26,7 +25,6 @@ import { prepareGasAndNetworkFee } from 'src/modules/ethereum/transactions/fetch
 import { resolveChainForTx } from 'src/modules/ethereum/transactions/resolveChainForTx';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { invariant } from 'src/shared/invariant';
-import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
@@ -284,12 +282,6 @@ function SendTransactionContent({
       >
         <PageTop />
         <div style={{ display: 'grid', placeItems: 'center' }}>
-          {origin === 'https://app.zerion.io' ? (
-            <ZerionSquircle width={44} height={44} />
-          ) : (
-            <SiteFaviconImg size={44} url={origin} />
-          )}
-          <Spacer height={16} />
           <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
             {addressAction?.type.display_value ||
               localAddressAction.type.display_value}
@@ -336,9 +328,7 @@ function SendTransactionContent({
                 localAddressAction.label?.display_value.text
               }
               applicationIcon={
-                // @ts-ignore
                 addressAction?.label?.icon_url ||
-                // @ts-ignore
                 localAddressAction.label?.icon_url
               }
               contractAddress={contractAddress}

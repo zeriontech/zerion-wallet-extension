@@ -7,7 +7,6 @@ import type {
 } from 'defi-sdk';
 import React, { useMemo } from 'react';
 import { Media } from 'src/ui/ui-kit/Media';
-import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import type { Chain } from 'src/modules/networks/Chain';
@@ -185,36 +184,23 @@ export function Transfers({
   return (
     <VStack gap={4}>
       {transfers.outgoing?.length ? (
-        <SurfaceList
-          items={[
-            {
-              key: 'pay',
-              pad: false,
-              component: (
-                <UIText
-                  kind="caption/accent"
-                  color="var(--neutral-500)"
-                  style={{ paddingBlockStart: 8 }}
-                >
-                  Pay
-                </UIText>
-              ),
-            },
-          ].concat(
-            transfers.outgoing.map((transfer) => ({
-              key: `${transfer.quantity}${transfer.price}$`,
-              pad: true,
-              component: (
-                <TransferItem
-                  address={address}
-                  chain={chain}
-                  transfer={transfer}
-                  direction="out"
-                />
-              ),
-            }))
-          )}
-        />
+        <Surface style={{ paddingBlock: 8, paddingInline: 12 }}>
+          <UIText kind="caption/accent" color="var(--neutral-500)">
+            Pay
+          </UIText>
+          <Spacer height={4} />
+          <VStack gap={8}>
+            {transfers.outgoing.map((transfer) => (
+              <TransferItem
+                key={`${transfer.quantity}${transfer.price}$`}
+                address={address}
+                chain={chain}
+                transfer={transfer}
+                direction="out"
+              />
+            ))}
+          </VStack>
+        </Surface>
       ) : null}
       {transfers.incoming?.length ? (
         <Surface style={{ paddingBlock: 8, paddingInline: 12 }}>

@@ -1,7 +1,6 @@
 import BigNumber from 'bignumber.js';
 import type { Asset } from 'defi-sdk';
 import { baseToCommon } from 'src/shared/units/convert';
-import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import type { Chain } from './Chain';
 
 export function getAssetImplementationInChain({
@@ -42,25 +41,6 @@ export function getCommonQuantity({
 }) {
   const decimals = getDecimals({ asset, chain });
   return baseToCommon(quantity, decimals);
-}
-
-export function getAmount({
-  asset,
-  chain,
-  quantity,
-  price,
-  locale = 'en',
-  currency = 'usd',
-}: {
-  asset: Asset;
-  chain: Chain;
-  quantity: number | string;
-  price: number;
-  locale?: string;
-  currency?: string;
-}) {
-  const commonQuantity = getCommonQuantity({ asset, chain, quantity });
-  return formatCurrencyValue(commonQuantity.times(price), locale, currency);
 }
 
 export type AssetQuantity =
