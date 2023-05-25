@@ -1,9 +1,10 @@
 import { useQuery } from 'react-query';
 import { memoize } from 'lodash';
-import { AddressPosition, Asset, client } from 'defi-sdk';
-import { ResponseData as AssetsPricesReponseData } from 'defi-sdk/lib/domains/assetsPrices';
+import type { AddressPosition, Asset } from 'defi-sdk';
+import { client } from 'defi-sdk';
+import type { ResponseData as AssetsPricesReponseData } from 'defi-sdk/lib/domains/assetsPrices';
 import { backgroundCache } from 'src/modules/defi-sdk';
-import { Chain } from 'src/modules/networks/Chain';
+import type { Chain } from 'src/modules/networks/Chain';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 
 type NativeAssetQuery = {
