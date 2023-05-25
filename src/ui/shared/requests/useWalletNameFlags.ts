@@ -30,7 +30,7 @@ export function useWalletNameFlags() {
         }
       });
       if (updatedPreferences) {
-        mutation.mutateAsync(updatedPreferences);
+        mutation.mutate(updatedPreferences);
       }
     },
     { relatedQueryKey: 'wallet/getGlobalPreferences' }
