@@ -3,7 +3,7 @@ import { ethers } from 'ethers';
 import type { Chain } from 'src/modules/networks/Chain';
 import type { Networks } from 'src/modules/networks/Networks';
 import { toNumber } from 'src/shared/units/toNumber';
-import type { IncomingTransactionWithChainId } from '../types/IncomingTransaction';
+import type { IncomingTransaction } from '../types/IncomingTransaction';
 
 export type TransactionActionType =
   | 'deployment'
@@ -55,10 +55,7 @@ function sliceArguments(data: ethers.utils.BytesLike) {
   return ethers.utils.hexDataSlice(data, 4);
 }
 
-function matchSelectors(
-  transaction: IncomingTransactionWithChainId,
-  selectors: string[]
-) {
+function matchSelectors(transaction: IncomingTransaction, selectors: string[]) {
   if (!transaction.data || !transaction.to) {
     return null;
   }
@@ -96,7 +93,7 @@ const selectors = {
 const abiCoder = ethers.utils.defaultAbiCoder;
 
 function describeMulticall(
-  transaction: IncomingTransactionWithChainId
+  transaction: IncomingTransaction
 ): TransactionAction | null {
   const match = matchSelectors(transaction, [
     selectors.multicall1,
@@ -113,7 +110,7 @@ function describeMulticall(
 }
 
 function describeApprove(
-  transaction: IncomingTransactionWithChainId,
+  transaction: IncomingTransaction,
   context: DescriberContext
 ): TransactionAction | null {
   const match = matchSelectors(transaction, [selectors.approve]);
@@ -137,7 +134,7 @@ function describeApprove(
 }
 
 function describeSend(
-  transaction: IncomingTransactionWithChainId,
+  transaction: IncomingTransaction,
   context: DescriberContext
 ): TransactionAction | null {
   // native token send
@@ -197,7 +194,7 @@ function describeSend(
 const describers = [describeApprove, describeSend, describeMulticall];
 
 export function describeTransaction(
-  transaction: IncomingTransactionWithChainId,
+  transaction: IncomingTransaction,
   context: DescriberContext
 ): TransactionAction {
   for (const describer of describers) {
