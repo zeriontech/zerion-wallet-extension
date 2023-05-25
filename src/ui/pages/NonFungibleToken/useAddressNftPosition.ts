@@ -24,7 +24,11 @@ export const useAddressNftPosition = createDomainHook<
 
 export async function getAddressNftPosition(payload: Payload) {
   return new Promise<Result<AddressNFT, typeof scope>>((resolve) => {
-    client.cachedSubscribe<AddressNFT, typeof namespace, typeof scope>({
+    const { unsubscribe } = client.cachedSubscribe<
+      AddressNFT,
+      typeof namespace,
+      typeof scope
+    >({
       namespace,
       body: {
         scope: [scope],
@@ -33,6 +37,7 @@ export async function getAddressNftPosition(payload: Payload) {
       onData: (data) => {
         if (data.isDone) {
           resolve(data);
+          unsubscribe?.();
         }
       },
     });
