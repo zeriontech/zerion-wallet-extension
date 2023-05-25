@@ -1,6 +1,7 @@
 import { PersistentStore } from 'src/modules/persistent-store';
 import type { RemoteConfig } from 'src/modules/remote-config';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
+import { equal } from 'src/modules/fast-deep-equal';
 import type { WalletNameFlag } from './model/WalletNameFlag';
 
 interface Expiration {
@@ -35,8 +36,8 @@ export class GlobalPreferences extends PersistentStore<State> {
 
   private async fetchDefaultWalletNameFlags() {
     const config = (await getRemoteConfigValue(
-      'extention_wallet_name_flags'
-    )) as RemoteConfig['extention_wallet_name_flags'];
+      'extension_wallet_name_flags'
+    )) as RemoteConfig['extension_wallet_name_flags'];
     if (config) {
       this.defaults.walletNameFlags = config;
     }
@@ -49,7 +50,14 @@ export class GlobalPreferences extends PersistentStore<State> {
 
   getPreferences(): Required<State> {
     const state = this.getState();
-    return { ...this.defaults, ...state };
+    return {
+      ...this.defaults,
+      ...state,
+      walletNameFlags: {
+        ...this.defaults.walletNameFlags,
+        ...state.walletNameFlags,
+      },
+    };
   }
 
   setPreferences(preferences: Partial<State>) {
@@ -59,10 +67,15 @@ export class GlobalPreferences extends PersistentStore<State> {
         ...this.defaults,
         ...state,
         ...preferences,
+        walletNameFlags: {
+          ...this.defaults.walletNameFlags,
+          ...state.walletNameFlags,
+          ...preferences.walletNameFlags,
+        },
       };
       for (const untypedKey in valueWithoutDefaults) {
         const key = untypedKey as keyof typeof valueWithoutDefaults;
-        if (valueWithoutDefaults[key] === this.defaults[key]) {
+        if (equal(valueWithoutDefaults[key], this.defaults[key])) {
           delete valueWithoutDefaults[key];
         }
       }

@@ -17,7 +17,6 @@ export async function initialize() {
 
   await prepareStorage();
   await dappRegistryInitialize();
-  await initializeRemoteConfig();
 
   // This method is called only when background script runs for the first time
   // This means that either the user is opening the extension for the first time,
@@ -25,7 +24,6 @@ export async function initialize() {
   // Either way, we either create a user from scratch or find one in storage
   await Account.ensureUserAndWallet();
   const globalPreferences = new GlobalPreferences({}, 'globalPreferences');
-  globalPreferences.initialize();
   const account = new Account({ globalPreferences });
   await account.initialize();
   const accountPublicRPC = new AccountPublicRPC(account);
@@ -33,6 +31,9 @@ export async function initialize() {
   const dnaService = new DnaService(account);
   dnaService.initialize();
   await transactionService.initialize();
+  initializeRemoteConfig().then(() => {
+    globalPreferences.initialize();
+  });
   initializeAnalytics({ account });
 
   Object.assign(globalThis, {

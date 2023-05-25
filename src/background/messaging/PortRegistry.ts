@@ -1,17 +1,6 @@
+import { pushUnique } from 'src/ui/shared/pushUnique';
+import { removeFromArray } from 'src/ui/shared/removeFromArray';
 import type { RuntimePort } from '../webapis/RuntimePort';
-
-function pushUnique<T>(arr: T[], item: T) {
-  if (!arr.includes(item)) {
-    arr.push(item);
-  }
-}
-
-function remove<T>(arr: T[], item: T) {
-  const pos = arr.indexOf(item);
-  if (pos !== -1) {
-    arr.splice(pos, 1);
-  }
-}
 
 export type PortMessageHandler = (
   port: RuntimePort,
@@ -71,7 +60,7 @@ export class PortRegistry {
   }
 
   unregister(port: RuntimePort) {
-    remove(this.ports, port);
+    removeFromArray(this.ports, port);
   }
 
   getActivePorts() {

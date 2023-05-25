@@ -1,15 +1,14 @@
 import produce from 'immer';
 import { useMemo } from 'react';
-import { useQuery } from 'react-query';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
-import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 import { useOptimisticMutation } from 'src/ui/shared/requests/useOptimisticMutation';
+import { pushUnique } from '../pushUnique';
+import { removeFromArray } from '../removeFromArray';
 
-export function useWalletNameFlags() {
-  const { data, isLoading } = useQuery('activeTab/origin', getActiveTabOrigin);
-  const tabOrigin = data?.tabOrigin;
-  const { globalPreferences, mutation, query } = useGlobalPreferences();
+export function useWalletNameFlags(tabOrigin?: string) {
+  const { globalPreferences, query, setGlobalPreferences } =
+    useGlobalPreferences();
 
   const setWalletNameFlags = useOptimisticMutation(
     async ({ flag, checked }: { flag: WalletNameFlag; checked: boolean }) => {
@@ -18,19 +17,18 @@ export function useWalletNameFlags() {
           return;
         }
         if (draft.walletNameFlags[tabOrigin]) {
-          if (checked && !draft.walletNameFlags[tabOrigin].includes(flag)) {
-            draft.walletNameFlags[tabOrigin].push(flag);
-          } else if (!checked) {
-            draft.walletNameFlags[tabOrigin] = draft.walletNameFlags[
-              tabOrigin
-            ].filter((item) => item !== flag);
+          if (checked) {
+            pushUnique(draft.walletNameFlags[tabOrigin], flag);
+          } else {
+            // we don't want to delete key here to save information that flag was removed
+            removeFromArray(draft.walletNameFlags[tabOrigin], flag);
           }
         } else if (checked) {
           draft.walletNameFlags = { [tabOrigin]: [flag] };
         }
       });
       if (updatedPreferences) {
-        mutation.mutate(updatedPreferences);
+        setGlobalPreferences(updatedPreferences);
       }
     },
     { relatedQueryKey: 'wallet/getGlobalPreferences' }
@@ -49,7 +47,7 @@ export function useWalletNameFlags() {
     walletNameFlags: tabOrigin
       ? globalPreferences?.walletNameFlags[tabOrigin] || []
       : undefined,
-    isLoading: isLoading || query.isLoading,
+    isLoading: query.isLoading,
     setWalletNameFlags,
     isMetaMask,
   };

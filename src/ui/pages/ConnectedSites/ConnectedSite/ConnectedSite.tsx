@@ -176,7 +176,8 @@ export function ConnectedSite() {
       }
     },
   });
-  const { setWalletNameFlags, isMetaMask } = useWalletNameFlags();
+  const { setWalletNameFlags, isMetaMask } =
+    useWalletNameFlags(activeTabOrigin);
   if (!connectedSite) {
     return <NotFoundPage />;
   }
