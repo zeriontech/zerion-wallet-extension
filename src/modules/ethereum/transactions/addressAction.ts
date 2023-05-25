@@ -2,9 +2,9 @@ import { capitalize } from 'capitalize-ts';
 import type { AddressAction } from 'defi-sdk';
 import { ethers } from 'ethers';
 import type { Networks } from 'src/modules/networks/Networks';
-import type { CachedAssetQuery } from 'src/ui/shared/requests/useAssetFromCacheOrAPI';
-import { fetchAssetFromCacheOrAPI } from 'src/ui/shared/requests/useAssetFromCacheOrAPI';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
+import type { CachedAssetQuery } from 'src/modules/defi-sdk/queries';
+import { fetchAssetFromCacheOrAPI } from 'src/modules/defi-sdk/queries';
 import type { IncomingTransactionWithChainId } from '../types/IncomingTransaction';
 import { getFungibleAsset } from './actionAsset';
 import type {
