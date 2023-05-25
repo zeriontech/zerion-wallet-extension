@@ -35,7 +35,7 @@ function HistoryTokenValue({
   direction: Direction;
   address?: string;
 }) {
-  const tokenTitle = asset.symbol.toUpperCase();
+  const tokenTitle = asset.symbol?.toUpperCase() || asset.name;
   const sign = getSign(value, direction);
   const quantity = getAssetQuantity({
     asset,
