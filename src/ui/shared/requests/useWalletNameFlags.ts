@@ -1,10 +1,9 @@
 import produce from 'immer';
 import { useMemo } from 'react';
+import { pushUnique, removeFromArray } from 'src/shared/array-mutations';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { useOptimisticMutation } from 'src/ui/shared/requests/useOptimisticMutation';
-import { pushUnique } from '../pushUnique';
-import { removeFromArray } from '../removeFromArray';
 
 export function useWalletNameFlags(tabOrigin?: string) {
   const { globalPreferences, query, setGlobalPreferences } =

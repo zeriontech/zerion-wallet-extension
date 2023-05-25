@@ -1,5 +1,4 @@
-import { pushUnique } from 'src/ui/shared/pushUnique';
-import { removeFromArray } from 'src/ui/shared/removeFromArray';
+import { pushUnique, removeFromArray } from 'src/shared/array-mutations';
 import type { RuntimePort } from '../webapis/RuntimePort';
 
 export type PortMessageHandler = (
