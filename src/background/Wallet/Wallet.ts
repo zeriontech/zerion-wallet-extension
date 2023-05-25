@@ -47,7 +47,7 @@ import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEt
 import { chainConfigStore } from 'src/modules/ethereum/chains/ChainConfigStore';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import { isSiweLike } from 'src/modules/ethereum/message-signing/SIWE';
+import { SiweMessage } from 'src/modules/ethereum/message-signing/SIWE';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
 import { invariant } from 'src/shared/invariant';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
@@ -1195,7 +1195,9 @@ class PublicController {
       throw new OriginNotAllowed();
     }
 
-    const route = isSiweLike(message) ? '/siwe' : '/signMessage';
+    const messageUtf8 = toUtf8String(message);
+    const siweMessage = SiweMessage.parse(messageUtf8);
+    const route = siweMessage ? '/siwe' : '/signMessage';
 
     return new Promise((resolve, reject) => {
       notificationWindow.open({
@@ -1203,7 +1205,7 @@ class PublicController {
         search: `?${new URLSearchParams({
           method: 'personal_sign',
           origin: context.origin,
-          message,
+          message: messageUtf8,
         })}`,
         onResolve: (signature) => {
           resolve(signature);

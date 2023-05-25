@@ -1,19 +1,8 @@
 import dayjs from 'dayjs';
 import { toChecksumAddress } from '../toChecksumAddress';
-import { toUtf8String } from './toUtf8String';
 
 // https://eips.ethereum.org/EIPS/eip-4361
 // https://docs.login.xyz/general-information/siwe-overview/eip-4361
-
-/**
- * Checks if it looks like SIWE (Sign-in With Ethereum) message.
- */
-export function isSiweLike(rawMessage: string) {
-  // As suggested here: https://eips.ethereum.org/EIPS/eip-4361#verifying-message
-  return toUtf8String(rawMessage).includes(
-    'wants you to sign in with your Ethereum account'
-  );
-}
 
 /**
  * Possible SIWE validation errors.

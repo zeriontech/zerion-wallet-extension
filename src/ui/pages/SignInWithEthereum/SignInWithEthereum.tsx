@@ -20,7 +20,6 @@ import { Address } from 'src/ui/components/Address';
 import { Button } from 'src/ui/ui-kit/Button';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { SiweMessage } from 'src/modules/ethereum/message-signing/SIWE';
-import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
 import SignInIcon from 'jsx:src/ui/assets/sign-in.svg';
 import { FillView } from 'src/ui/components/FillView';
 import { VerifyUser } from 'src/ui/components/VerifyUser';
@@ -64,14 +63,13 @@ export function SignInWithEthereum() {
   const currentTime =
     utcTimeLoading || !utcTime ? new Date().getTime() : utcTime;
 
-  const messageUtf8 = useMemo(() => toUtf8String(message), [message]);
   const siweMessage = useMemo(() => {
-    const siwe = SiweMessage.parse(messageUtf8);
+    const siwe = SiweMessage.parse(message);
     if (siwe && wallet) {
       siwe.validate(new URL(origin), wallet.address, currentTime);
     }
     return siwe;
-  }, [messageUtf8, wallet, origin, currentTime]);
+  }, [message, wallet, origin, currentTime]);
 
   const handleSignSuccess = (signature: string) =>
     windowPort.confirm(windowId, signature);
@@ -174,7 +172,7 @@ export function SignInWithEthereum() {
                 style={{ border: '1px solid var(--neutral-300)' }}
               >
                 <UIText kind="small/regular" style={{ whiteSpace: 'pre-wrap' }}>
-                  {messageUtf8}
+                  {message}
                 </UIText>
               </Surface>
             </>
