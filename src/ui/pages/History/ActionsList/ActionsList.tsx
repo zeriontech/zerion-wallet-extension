@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import groupBy from 'lodash/groupBy';
-// import type { AddressAction } from 'defi-sdk';
 import { startOfDate } from 'src/shared/units/startOfDate';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';

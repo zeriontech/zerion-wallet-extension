@@ -15,7 +15,10 @@ import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import ZerionIcon from 'jsx:src/ui/assets/zerion-squircle.svg';
 import { DNA_MINT_CONTRACT_ADDRESS } from 'src/ui/components/DnaClaim/dnaAddress';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import type { AnyAddressAction, PendingAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import type {
+  AnyAddressAction,
+  PendingAddressAction,
+} from 'src/modules/ethereum/transactions/addressAction';
 import {
   getActionAddress,
   getActionAsset,
@@ -96,7 +99,6 @@ function ActionDetail({
     () => (chain ? networks.getNetworkByName(chain) : null),
     [chain, networks]
   );
-  // const isAddressAction = 'content' in action;
   const incomingTransfers = action.content?.transfers?.incoming;
   const outgoingTransfers = action.content?.transfers?.outgoing;
 
