@@ -24,7 +24,7 @@ export async function initialize() {
   // or that the browser decided to "restart" the background scripts
   // Either way, we either create a user from scratch or find one in storage
   await Account.ensureUserAndWallet();
-  const globalPreferences = new GlobalPreferences({}, 'globalPreferences');
+  const globalPreferences = new GlobalPreferences({}, 'globalPreferences-1');
   globalPreferences.initialize();
   const account = new Account({ globalPreferences });
   await account.initialize();

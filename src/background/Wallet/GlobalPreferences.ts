@@ -1,4 +1,3 @@
-import produce from 'immer';
 import { PersistentStore } from 'src/modules/persistent-store';
 import type { RemoteConfig } from 'src/modules/remote-config';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
@@ -28,7 +27,7 @@ export interface State {
  * need to be accessible even before the user logs in
  */
 export class GlobalPreferences extends PersistentStore<State> {
-  private static defaults: Required<State> = {
+  private defaults: Required<State> = {
     recognizableConnectButtons: true,
     providerInjection: {},
     walletNameFlags: {},
@@ -38,18 +37,9 @@ export class GlobalPreferences extends PersistentStore<State> {
     const config = (await getRemoteConfigValue(
       'extention_wallet_name_flags'
     )) as RemoteConfig['extention_wallet_name_flags'];
-    this.setState((state) =>
-      produce(state, (draft) => {
-        if (!draft.walletNameFlags) {
-          draft.walletNameFlags = {};
-        }
-        Object.entries(config).forEach(([origin, flags]) => {
-          if (draft.walletNameFlags && !draft.walletNameFlags?.[origin]) {
-            draft.walletNameFlags[origin] = flags;
-          }
-        });
-      })
-    );
+    if (config) {
+      this.defaults.walletNameFlags = config;
+    }
   }
 
   async initialize() {
@@ -59,20 +49,20 @@ export class GlobalPreferences extends PersistentStore<State> {
 
   getPreferences(): Required<State> {
     const state = this.getState();
-    return { ...GlobalPreferences.defaults, ...state };
+    return { ...this.defaults, ...state };
   }
 
   setPreferences(preferences: Partial<State>) {
     // Omit values which are the same as the default ones
     this.setState((state) => {
       const valueWithoutDefaults = {
-        ...GlobalPreferences.defaults,
+        ...this.defaults,
         ...state,
         ...preferences,
       };
       for (const untypedKey in valueWithoutDefaults) {
         const key = untypedKey as keyof typeof valueWithoutDefaults;
-        if (valueWithoutDefaults[key] === GlobalPreferences.defaults[key]) {
+        if (valueWithoutDefaults[key] === this.defaults[key]) {
           delete valueWithoutDefaults[key];
         }
       }
