@@ -3,6 +3,24 @@ name: Build pull request
 on:
   pull_request:
     types: [opened, synchronize]
+  workflow_dispatch:
+    inputs:
+      BACKEND_ENV:
+        default: ''
+        description: 'Backend env for special features'
+        required: false
+      DEFI_SDK_API_URL:
+        default: wss://api-v4.zerion.io/
+        description: 'Zerion API'
+        required: true
+      PROXY_URL:
+        default: https://proxy.zerion.io/
+        description: 'Proxy API'
+        required: true
+      SOCIAL_API_URL:
+        default: https://social.zerion.io/
+        description: 'Zerion Social API'
+        required: true
 
 jobs:
   build_pull_request:
