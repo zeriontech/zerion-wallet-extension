@@ -5,7 +5,10 @@ import type { Networks } from 'src/modules/networks/Networks';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import type { CachedAssetQuery } from 'src/modules/defi-sdk/queries';
 import { fetchAssetFromCacheOrAPI } from 'src/modules/defi-sdk/queries';
-import type { IncomingTransactionWithChainId } from '../types/IncomingTransaction';
+import type {
+  IncomingTransaction,
+  IncomingTransactionWithChainId,
+} from '../types/IncomingTransaction';
 import { getFungibleAsset } from './actionAsset';
 import type {
   TransactionAction,
@@ -49,7 +52,7 @@ const actionTypeToLabelType: Record<
 };
 
 function createActionLabel(
-  transaction: IncomingTransactionWithChainId,
+  transaction: IncomingTransaction,
   action: TransactionAction
 ): AddressAction['label'] {
   let wallet_address = undefined;
