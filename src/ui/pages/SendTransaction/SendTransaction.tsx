@@ -308,7 +308,7 @@ function SendTransactionContent({
               address={wallet.address}
               size={20}
               active={false}
-              borderRadius={4}
+              borderRadius={2}
             />
             <UIText kind="small/regular">
               <WalletDisplayName wallet={wallet} />

@@ -192,7 +192,7 @@ function RequestAccountsView({
     [wallets]
   );
   const iconSize = 32;
-  const iconBorderRadius = 6;
+  const iconBorderRadius = 4;
   return (
     <Background backgroundKind="white">
       <PageTop />

@@ -24,7 +24,7 @@ export function AddressBadge({
         ...style,
       }}
     >
-      <WalletAvatar address={wallet.address} size={14} borderRadius={4} />
+      <WalletAvatar address={wallet.address} size={14} borderRadius={1} />
       <UIText
         kind="small/regular"
         style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}

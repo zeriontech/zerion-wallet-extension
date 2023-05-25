@@ -108,7 +108,7 @@ function AddressImportMessagesView({ values }: { values: BareWallet[] }) {
             <DecorativeMessage
               isConsecutive={true}
               text={
-                <VStack gap={8}>
+                <VStack gap={12}>
                   <UIText kind="headline/h3">
                     <CheckmarkCheckedIcon
                       style={{

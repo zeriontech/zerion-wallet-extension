@@ -48,7 +48,7 @@ export function Receive() {
               active={false}
               address={address}
               size={32}
-              borderRadius={4}
+              borderRadius={2}
             />
           }
         />

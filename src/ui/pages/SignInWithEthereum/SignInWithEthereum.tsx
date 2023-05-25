@@ -142,7 +142,7 @@ export function SignInWithEthereum() {
                     <WalletAvatar
                       address={wallet.address}
                       size={32}
-                      borderRadius={6}
+                      borderRadius={4}
                     />
                     <UIText kind="headline/h2">
                       <WalletDisplayName wallet={wallet} />

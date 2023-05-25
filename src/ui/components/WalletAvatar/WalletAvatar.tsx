@@ -6,12 +6,17 @@ import {
   EmptyResult,
   requestWithCache,
 } from 'src/ui/shared/requests/requestWithCache';
+import {
+  isMembershipValid,
+  useAddressMembership,
+} from 'src/ui/shared/requests/useAddressMembership';
 import { AvatarIcon } from './AvatarIcon';
 import type {
   WalletProfilesResponse,
   WalletProfile,
   WalletProfileNFT,
 } from './types';
+import { GradienBorder } from './GradientBorder';
 
 async function fetchWalletProfile(
   address: string
@@ -44,11 +49,13 @@ export function WalletAvatar({
   address,
   size,
   borderRadius = 6,
+  showPremium,
 }: {
   active?: boolean;
   address: string;
   size: number;
   borderRadius?: number;
+  showPremium?: boolean;
 }) {
   const { data: nft, isLoading } = useQuery({
     queryKey: ['fetchWalletNFT', address],
@@ -56,17 +63,38 @@ export function WalletAvatar({
     suspense: false,
   });
 
+  const { value: membershipInfo } = useAddressMembership({ address });
+
+  const isPremium = isMembershipValid(membershipInfo);
+
+  const border =
+    isPremium && showPremium ? (
+      <GradienBorder
+        height={size}
+        width={size}
+        borderRadius={borderRadius}
+        strokeWidth={size > 20 ? 2 : 1}
+      />
+    ) : null;
+
   if (isLoading) {
-    return <div style={{ width: size, height: size }} />;
+    return (
+      <div style={{ width: size, height: size, position: 'relative' }}>
+        {border}
+      </div>
+    );
   }
 
   return (
-    <AvatarIcon
-      active={active}
-      address={address}
-      size={size}
-      nft={nft}
-      borderRadius={borderRadius}
-    />
+    <div style={{ position: 'relative' }}>
+      <AvatarIcon
+        active={active}
+        address={address}
+        size={size}
+        nft={nft}
+        borderRadius={borderRadius}
+      />
+      {border}
+    </div>
   );
 }

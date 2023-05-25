@@ -126,7 +126,8 @@ export function WalletSelect() {
                       address={wallet.address}
                       size={40}
                       active={Boolean(isConnected)}
-                      borderRadius={4}
+                      borderRadius={2}
+                      showPremium={true}
                     />
                   )}
                 />

@@ -233,7 +233,12 @@ function OverviewComponent() {
       <div style={{ height: isLoadingPortfolio ? 72 : undefined }}>
         <HStack gap={16} alignItems="center">
           {!isLoadingPortfolio ? (
-            <WalletAvatar address={singleAddress} size={64} borderRadius={6} />
+            <WalletAvatar
+              address={singleAddress}
+              size={64}
+              borderRadius={6}
+              showPremium={true}
+            />
           ) : null}
           <VStack gap={0}>
             <UIText kind="headline/hero">

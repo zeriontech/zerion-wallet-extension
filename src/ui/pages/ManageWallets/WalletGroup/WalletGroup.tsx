@@ -267,7 +267,7 @@ export function WalletGroup() {
                       <WalletAvatar
                         address={wallet.address}
                         size={24}
-                        borderRadius={4}
+                        borderRadius={2}
                       />
                     }
                     text={<WalletDisplayName wallet={wallet} />}

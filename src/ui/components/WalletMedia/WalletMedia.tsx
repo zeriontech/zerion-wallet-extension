@@ -34,6 +34,7 @@ function NameAndPortfolioComposition({
               address={wallet.address}
               size={iconSize}
               active={Boolean(activeIndicator && isConnected)}
+              borderRadius={2}
             />
           )}
         />

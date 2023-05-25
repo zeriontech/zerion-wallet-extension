@@ -153,7 +153,12 @@ export function Preview({
           href={`https://app.zerion.io/${address}`}
           target="_blank"
         >
-          <WalletAvatar size={72} address={address} borderRadius={8} />
+          <WalletAvatar
+            size={72}
+            address={address}
+            borderRadius={8}
+            showPremium={true}
+          />
         </UnstyledAnchor>
         <VStack gap={8}>
           <UIText kind="headline/h3">
