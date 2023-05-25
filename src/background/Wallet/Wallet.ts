@@ -1099,7 +1099,6 @@ class PublicController {
     return new Promise((resolve, reject) => {
       notificationWindow.open({
         route: '/sendTransaction',
-        height: 800,
         search: `?${new URLSearchParams({
           origin: context.origin,
           transaction: JSON.stringify(transaction),

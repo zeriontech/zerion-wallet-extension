@@ -1,5 +1,5 @@
 import { capitalize } from 'capitalize-ts';
-import type { ActionAsset, ActionTransfers, AddressAction } from 'defi-sdk';
+import type { AddressAction } from 'defi-sdk';
 import { ethers } from 'ethers';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { CachedAssetQuery } from 'src/ui/shared/requests/useAssetFromCacheOrAPI';
@@ -38,21 +38,6 @@ export type AnyAddressAction = AddressAction | PendingAddressAction;
 
 type AddressActionLabelType = 'to' | 'from' | 'application' | 'contract';
 
-interface AddressActionLabel {
-  type: AddressActionLabelType;
-  value: string;
-  display_value: {
-    wallet_address?: string;
-    contract_address?: string;
-    text?: string;
-  };
-}
-
-interface AddressActionContent {
-  transfers?: ActionTransfers;
-  single_asset?: { asset: ActionAsset };
-}
-
 const actionTypeToLabelType: Record<
   TransactionActionType,
   AddressActionLabelType
@@ -66,7 +51,7 @@ const actionTypeToLabelType: Record<
 function createActionLabel(
   transaction: IncomingTransactionWithChainId,
   action: TransactionAction
-): AddressActionLabel {
+): AddressAction['label'] {
   let wallet_address = undefined;
   if (action.type === 'send') {
     wallet_address = action.receiverAddress;
@@ -88,7 +73,7 @@ function createActionLabel(
 
 async function createActionContent(
   action: TransactionAction
-): Promise<AddressActionContent | null> {
+): Promise<AddressAction['content'] | null> {
   switch (action.type) {
     case 'deployment':
     case 'execute':

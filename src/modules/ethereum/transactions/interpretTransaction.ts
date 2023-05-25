@@ -62,6 +62,8 @@ export function interpretTransaction(
           },
         },
       },
+      // Here we're using onMessage instead of onData because of
+      // bug in defi-sdk (unsubscribe function is not always returned)
       onMessage: (event, data) => {
         if (event === 'done') {
           resolve(value as InterpretResponse);
@@ -70,14 +72,6 @@ export function interpretTransaction(
         }
         value = data.payload.transaction;
       },
-      // onData: (data) => {
-      //   const { value, isDone } = data;
-      //   if (isDone && value) {
-      //     resolve(value);
-      //     x.unsubscribe();
-      //   }
-      // },
-      // mergeStrategy: mergeSingleEntity,
     });
   });
 }
