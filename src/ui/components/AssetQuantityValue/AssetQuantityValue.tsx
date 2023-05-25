@@ -34,6 +34,6 @@ export function AssetQuantityValue({
     return <span style={style}>{`${muchGreater} 1T`}</span>;
   } else {
     const formatted = formatWithSignificantValue(quantity.value);
-    return <span style={style}>{`${sign || ''}${formatted.trim()}`}</span>;
+    return <span style={style}>{`${sign || ''}${formatted}`}</span>;
   }
 }
