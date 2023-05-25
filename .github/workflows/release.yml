@@ -25,7 +25,7 @@ jobs:
           DEFI_SDK_API_TOKEN: Zerion.0JOY6zZTTw6yl5Cvz9sdmXc7d5AhzVMG
           SOCIAL_API_URL: https://social.zerion.io/
           TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
-          FEATURE_WAITLIST_ONBOARDING: off
+          FEATURE_WAITLIST_ONBOARDING: on
         run: |
           npm install
           npm run build:production
