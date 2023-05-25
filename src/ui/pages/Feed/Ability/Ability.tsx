@@ -152,7 +152,13 @@ export function Ability({
         </UIText>
       ) : (
         <UIText kind="body/regular" style={{ whiteSpace: 'pre-line' }}>
-          {ability.description}
+          <VStack gap={0}>
+            {ability.description.split('\\n').map((item, index) => (
+              <p key={index} style={{ marginBlock: 0 }}>
+                {item}
+              </p>
+            ))}
+          </VStack>
         </UIText>
       )}
     </VStack>
