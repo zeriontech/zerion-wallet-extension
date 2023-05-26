@@ -10,8 +10,10 @@ import { toUtf8String } from './toUtf8String';
  */
 export function isSiweLike(rawMessage: string) {
   // As suggested here: https://eips.ethereum.org/EIPS/eip-4361#verifying-message
-  return toUtf8String(rawMessage).includes(
-    'wants you to sign in with your Ethereum account'
+  const message = toUtf8String(rawMessage);
+  return (
+    message.includes('wants you to sign in with your Ethereum account') &&
+    SiweMessage.parse(message) != null
   );
 }
 
