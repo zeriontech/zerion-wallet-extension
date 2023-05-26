@@ -1,4 +1,3 @@
-import produce from 'immer';
 import { PersistentStore } from 'src/modules/persistent-store';
 import type { RemoteConfig } from 'src/modules/remote-config';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
@@ -62,29 +61,15 @@ export class GlobalPreferences extends PersistentStore<State> {
   }
 
   setPreferences(preferences: Partial<State>) {
-    // Omit values which are the same as the default ones
     this.setState((state) => {
-      // we need to remove all empty walletNageFlags configs if they don't override default settings
-      const filteredState = produce(state, (draft) => {
-        if (draft.walletNameFlags) {
-          for (const untypedKey in draft.walletNameFlags) {
-            if (
-              !draft.walletNameFlags[untypedKey].length &&
-              !(untypedKey in this.defaults.walletNameFlags)
-            ) {
-              delete draft.walletNameFlags[untypedKey];
-            }
-          }
-        }
-      });
-
+      // Omit values which are the same as the default ones
       const valueWithoutDefaults = {
         ...this.defaults,
-        ...filteredState,
+        ...state,
         ...preferences,
         walletNameFlags: {
           ...this.defaults.walletNameFlags,
-          ...filteredState.walletNameFlags,
+          ...state.walletNameFlags,
           ...preferences.walletNameFlags,
         },
       };
@@ -92,6 +77,15 @@ export class GlobalPreferences extends PersistentStore<State> {
         const key = untypedKey as keyof typeof valueWithoutDefaults;
         if (equal(valueWithoutDefaults[key], this.defaults[key])) {
           delete valueWithoutDefaults[key];
+        }
+      }
+      // we need to remove all empty walletNageFlags configs if they don't override default settings
+      for (const origin in valueWithoutDefaults.walletNameFlags) {
+        if (
+          !valueWithoutDefaults.walletNameFlags[origin].length &&
+          !(origin in this.defaults.walletNameFlags)
+        ) {
+          delete valueWithoutDefaults.walletNameFlags[origin];
         }
       }
       return valueWithoutDefaults;
