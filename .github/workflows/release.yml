@@ -26,7 +26,6 @@ jobs:
           SOCIAL_API_URL: https://social.zerion.io/
           TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
           FEATURE_WAITLIST_ONBOARDING: on
-          BACKEND_ENV: interpret
         run: |
           npm install
           npm run build:production
