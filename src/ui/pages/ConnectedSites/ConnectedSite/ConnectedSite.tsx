@@ -387,7 +387,11 @@ export function ConnectedSite() {
                               flag: WalletNameFlag.isMetaMask,
                               checked: event.target.checked,
                             })
-                            .then(reloadActiveTab);
+                            .then(() => {
+                              if (activeTabOrigin === originName) {
+                                reloadActiveTab();
+                              }
+                            });
                         }}
                       />
                     </HStack>
