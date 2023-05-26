@@ -125,25 +125,32 @@ class GasChainPricesSubscription {
 
 export const gasChainPricesSubscription = new GasChainPricesSubscription();
 
+export async function getGasPrice(chain: Chain | null) {
+  if (!chain) {
+    return null;
+  }
+  try {
+    const gasPrices = await gasChainPricesSubscription.get();
+    const chainGasPrices = gasPrices[chain.toString()];
+    if (chainGasPrices) {
+      return chainGasPrices;
+    } else {
+      throw new Error('unable to get gas prices from api');
+    }
+  } catch {
+    /** Query the node directly */
+    const chainGasPricesFromNode = await fetchGasPriceFromNode(chain);
+    if (chainGasPricesFromNode) {
+      return chainGasPricesFromNode;
+    }
+    return null;
+  }
+}
+
 export function useGasPrices(chain: Chain | null) {
   return useQuery(
     ['defi-sdk/gasPrices', chain?.toString()],
-    async () => {
-      if (!chain) {
-        return null;
-      }
-      const gasPrices = await gasChainPricesSubscription.get();
-      const chainGasPrices = gasPrices[chain.toString()];
-      if (chainGasPrices) {
-        return chainGasPrices;
-      }
-      /** Query the node directly */
-      const chainGasPricesFromNode = await fetchGasPriceFromNode(chain);
-      if (chainGasPricesFromNode) {
-        return chainGasPricesFromNode;
-      }
-      return null;
-    },
+    () => getGasPrice(chain),
     { useErrorBoundary: true, enabled: Boolean(chain) }
   );
 }
