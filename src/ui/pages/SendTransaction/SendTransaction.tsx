@@ -21,7 +21,7 @@ import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
-import { prepareGas } from 'src/modules/ethereum/transactions/fetchAndAssignGas';
+import { prepareGas } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import { resolveChainForTx } from 'src/modules/ethereum/transactions/resolveChainForTx';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { invariant } from 'src/shared/invariant';
@@ -256,7 +256,12 @@ function SendTransactionContent({
 
   const { data: chainGasPrices } = useGasPrices(chain);
 
-  if (!networks || !pendingTransaction || isLoadingLocalAddressAction || !chain) {
+  if (
+    !networks ||
+    !pendingTransaction ||
+    isLoadingLocalAddressAction ||
+    !chain
+  ) {
     return <TransactionViewLoading />;
   }
 
