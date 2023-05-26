@@ -355,7 +355,13 @@ export const NetworkFeeDialog = React.forwardRef<
   const gasPriceType = chainGasPrices?.info.eip1559 ? 'eip1559' : 'classic';
 
   return (
-    <BottomSheetDialog ref={ref} height={dialogHeight}>
+    <BottomSheetDialog
+      ref={ref}
+      height={dialogHeight}
+      style={{
+        ['--surface-background-color' as string]: 'var(--white)',
+      }}
+    >
       {view === 'default' ? (
         <>
           <DialogTitle
