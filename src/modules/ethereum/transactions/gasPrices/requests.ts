@@ -1,5 +1,9 @@
+import { ethers } from 'ethers';
 import { client, mergeSingleEntity } from 'defi-sdk';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
+import type { Chain } from 'src/modules/networks/Chain';
+import { sendRpcRequest } from 'src/shared/custom-rpc/rpc-request';
+import type { Networks } from 'src/modules/networks/Networks';
 import type { EIP1559 } from './EIP1559';
 
 export interface OptimisticGasPriceInfo {
@@ -38,6 +42,35 @@ type Payload = Record<string, ChainGasPrice>;
 
 const namespace = 'gas';
 const scope = 'chain-prices';
+
+export async function fetchGasPriceFromNode(
+  chain: Chain,
+  networks: Networks
+): Promise<ChainGasPrice> {
+  const url = networks.getRpcUrlInternal(chain);
+  if (!url) {
+    throw new Error(`RPC URL is missing from network config for ${chain}`);
+  }
+
+  const requestDate = new Date();
+  const { result } = await sendRpcRequest<string>(url, {
+    method: 'eth_gasPrice',
+    params: null,
+  });
+  const gasPrice = ethers.BigNumber.from(result).toNumber();
+  return {
+    info: {
+      classic: {
+        fast: gasPrice,
+        standard: gasPrice,
+        slow: gasPrice,
+        rapid: null,
+      },
+    },
+    datetime: requestDate.toString(),
+    source: url,
+  };
+}
 
 class GasChainPricesSubscription {
   latestValue: Payload | null = null;
@@ -90,3 +123,21 @@ class GasChainPricesSubscription {
 }
 
 export const gasChainPricesSubscription = new GasChainPricesSubscription();
+
+export async function fetchGasPrice(chain: Chain, networks: Networks) {
+  try {
+    if (networks.isSupportedByBackend(chain)) {
+      const gasPrices = await gasChainPricesSubscription.get();
+      const chainGasPrices = gasPrices[chain.toString()];
+      if (chainGasPrices) {
+        return chainGasPrices;
+      } else {
+        throw new Error('unable to get gas prices from api');
+      }
+    } else {
+      throw new Error(`Gas Price info for ${chain} not supported`);
+    }
+  } catch {
+    return fetchGasPriceFromNode(chain, networks);
+  }
+}

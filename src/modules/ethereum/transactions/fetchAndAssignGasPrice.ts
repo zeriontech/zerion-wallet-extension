@@ -1,16 +1,16 @@
 import { ethers } from 'ethers';
 import produce from 'immer';
 import omit from 'lodash/omit';
-import { createChain } from 'src/modules/networks/Chain';
 import type { Networks } from 'src/modules/networks/Networks';
 import { sendRpcRequest } from 'src/shared/custom-rpc/rpc-request';
 import { invariant } from 'src/shared/invariant';
+import { createChain } from 'src/modules/networks/Chain';
 import type { IncomingTransaction } from '../types/IncomingTransaction';
 import { assignChainGasPrice } from './gasPrices/assignGasPrice';
 import { hasNetworkFee } from './gasPrices/hasNetworkFee';
-import type { ChainGasPrice } from './gasPrices/requests';
-import { gasChainPricesSubscription } from './gasPrices/requests';
 import { getGas } from './getGas';
+import type { ChainGasPrice } from './gasPrices/requests';
+import { fetchGasPrice } from './gasPrices/requests';
 import { wrappedGetNetworkById } from './wrappedGetNetworkById';
 
 function resolveChainId(transaction: IncomingTransaction) {
@@ -41,46 +41,14 @@ async function estimateGas(
   return add10Percent(parseInt(result));
 }
 
-async function fetchGasPrice(
+async function fetchGasPriceForTransaction(
   transaction: IncomingTransaction,
   networks: Networks
 ): Promise<ChainGasPrice> {
   const chainId = resolveChainId(transaction);
   const network = wrappedGetNetworkById(networks, chainId);
   const chain = createChain(network.chain);
-  if (networks.isSupportedByBackend(chain)) {
-    /** Use gas price info from our API */
-    const gasChainPrices = await gasChainPricesSubscription.get();
-    const gasPricesInfo = gasChainPrices[chain.toString()];
-    if (!gasPricesInfo) {
-      throw new Error(`Gas Price info for ${chain} not found`);
-    }
-    return gasPricesInfo;
-  } else {
-    /** Query the node directly */
-    const url = networks.getRpcUrlInternal(chain);
-    if (!url) {
-      throw new Error(`RPC URL is missing from network config for ${chain}`);
-    }
-    const requestDate = new Date();
-    const { result } = await sendRpcRequest<string>(url, {
-      method: 'eth_gasPrice',
-      params: null,
-    });
-    const gasPrice = ethers.BigNumber.from(result).toNumber();
-    return {
-      info: {
-        classic: {
-          fast: gasPrice,
-          standard: gasPrice,
-          slow: gasPrice,
-          rapid: null,
-        },
-      },
-      datetime: requestDate.toString(),
-      source: url,
-    };
-  }
+  return fetchGasPrice(chain, networks);
 }
 
 function hasGasEstimation(transaction: IncomingTransaction) {
@@ -99,7 +67,9 @@ export async function prepareGasAndNetworkFee<T extends IncomingTransaction>(
 ) {
   const [gas, networkFeeInfo] = await Promise.all([
     hasGasEstimation(transaction) ? null : estimateGas(transaction, networks),
-    hasNetworkFee(transaction) ? null : fetchGasPrice(transaction, networks),
+    hasNetworkFee(transaction)
+      ? null
+      : fetchGasPriceForTransaction(transaction, networks),
   ]);
   return produce(transaction, (draft) => {
     if (gas) {

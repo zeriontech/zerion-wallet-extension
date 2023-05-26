@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from 'src/ui/ui-kit/Button';
+import IconClose from 'jsx:src/ui/assets/close.svg';
 
 export enum DialogButtonValue {
   cancel = 'cancel',
@@ -8,13 +9,16 @@ export enum DialogButtonValue {
 export function DialogTitle({
   title,
   alignTitle = 'center',
+  closeKind = 'text',
 }: {
   title: React.ReactNode;
   alignTitle?: 'start' | 'center';
+  closeKind?: 'text' | 'icon';
 }) {
   return (
     <div
       style={{
+        position: 'relative',
         display: 'grid',
         gridTemplateColumns:
           alignTitle === 'center' ? '1fr 4fr 1fr' : 'max-content 1fr',
@@ -30,13 +34,24 @@ export function DialogTitle({
       </div>
       <form method="dialog" style={{ placeSelf: 'end' }}>
         <Button
-          value={DialogButtonValue.cancel}
           kind="ghost"
-          size={32}
+          value={DialogButtonValue.cancel}
           aria-label="Close"
-          style={{ color: 'var(--primary)', fontWeight: 400 }}
+          style={
+            closeKind === 'text'
+              ? { color: 'var(--primary)', fontWeight: 400 }
+              : { padding: 4, position: 'absolute', top: -8, right: -8 }
+          }
+          size={32}
         >
-          Close
+          {closeKind === 'text' ? (
+            'Close'
+          ) : (
+            <IconClose
+              role="presentation"
+              style={{ display: 'block', marginInline: 'auto' }}
+            />
+          )}
         </Button>
       </form>
     </div>
