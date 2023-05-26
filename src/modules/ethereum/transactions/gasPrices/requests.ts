@@ -1,4 +1,5 @@
 import { client, mergeSingleEntity } from 'defi-sdk';
+import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 import type { EIP1559 } from './EIP1559';
 
 export interface OptimisticGasPriceInfo {
@@ -43,13 +44,19 @@ class GasChainPricesSubscription {
   initialPromise: Promise<Payload> | null = null;
   unsubscribe: (() => void) | null = null;
 
-  get() {
+  async get() {
     if (this.latestValue) {
       return Promise.resolve(this.latestValue);
     } else if (this.initialPromise) {
       return this.initialPromise;
     } else {
-      return this.initiateRequest();
+      return Promise.race([
+        this.initiateRequest(),
+        rejectAfterDelay(10000),
+      ]).catch((error) => {
+        this.initialPromise = null; // reset promise so that subsequent get() call will retry
+        throw error;
+      });
     }
   }
 
