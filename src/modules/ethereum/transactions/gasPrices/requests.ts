@@ -125,17 +125,19 @@ class GasChainPricesSubscription {
 
 export const gasChainPricesSubscription = new GasChainPricesSubscription();
 
-export async function getGasPrice(chain: Chain | null) {
-  if (!chain) {
-    return null;
-  }
+export async function fetchGasPrice(chain: Chain) {
+  const networks = await networksStore.load();
   try {
-    const gasPrices = await gasChainPricesSubscription.get();
-    const chainGasPrices = gasPrices[chain.toString()];
-    if (chainGasPrices) {
-      return chainGasPrices;
+    if (networks.isSupportedByBackend(chain)) {
+      const gasPrices = await gasChainPricesSubscription.get();
+      const chainGasPrices = gasPrices[chain.toString()];
+      if (chainGasPrices) {
+        return chainGasPrices;
+      } else {
+        throw new Error('unable to get gas prices from api');
+      }
     } else {
-      throw new Error('unable to get gas prices from api');
+      throw new Error(`Gas Price info for ${chain} not supported`);
     }
   } catch {
     /** Query the node directly */
@@ -143,14 +145,19 @@ export async function getGasPrice(chain: Chain | null) {
     if (chainGasPricesFromNode) {
       return chainGasPricesFromNode;
     }
-    return null;
+    throw new Error(`unable to fetch gas price for ${chain} from node`);
   }
 }
 
 export function useGasPrices(chain: Chain | null) {
   return useQuery(
     ['defi-sdk/gasPrices', chain?.toString()],
-    () => getGasPrice(chain),
+    () => {
+      if (!chain) {
+        return null;
+      }
+      return fetchGasPrice(chain);
+    },
     { useErrorBoundary: true, enabled: Boolean(chain) }
   );
 }

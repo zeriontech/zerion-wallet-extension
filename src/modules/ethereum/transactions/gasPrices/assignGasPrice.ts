@@ -1,5 +1,4 @@
 import { ethers } from 'ethers';
-import omit from 'lodash/omit';
 import type { GasPriceObject } from './GasPriceObject';
 import type { ChainGasPrice } from './requests';
 
