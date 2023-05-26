@@ -1,3 +1,4 @@
+import produce from 'immer';
 import { PersistentStore } from 'src/modules/persistent-store';
 import type { RemoteConfig } from 'src/modules/remote-config';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
@@ -64,23 +65,26 @@ export class GlobalPreferences extends PersistentStore<State> {
     // Omit values which are the same as the default ones
     this.setState((state) => {
       // we need to remove all empty walletNageFlags configs if they don't override default settings
-      if (state.walletNameFlags) {
-        for (const untypedKey in state.walletNameFlags) {
-          if (
-            !state.walletNameFlags[untypedKey].length &&
-            !(untypedKey in this.defaults.walletNameFlags)
-          ) {
-            delete state.walletNameFlags[untypedKey];
+      const filteredState = produce(state, (draft) => {
+        if (draft.walletNameFlags) {
+          for (const untypedKey in draft.walletNameFlags) {
+            if (
+              !draft.walletNameFlags[untypedKey].length &&
+              !(untypedKey in this.defaults.walletNameFlags)
+            ) {
+              delete draft.walletNameFlags[untypedKey];
+            }
           }
         }
-      }
+      });
+
       const valueWithoutDefaults = {
         ...this.defaults,
-        ...state,
+        ...filteredState,
         ...preferences,
         walletNameFlags: {
           ...this.defaults.walletNameFlags,
-          ...state.walletNameFlags,
+          ...filteredState.walletNameFlags,
           ...preferences.walletNameFlags,
         },
       };
