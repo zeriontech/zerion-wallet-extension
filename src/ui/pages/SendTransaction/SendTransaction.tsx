@@ -37,6 +37,7 @@ import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { networksStore } from 'src/modules/networks/networks-store.client';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
+import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
@@ -192,7 +193,7 @@ function SendTransactionContent({
       }
     );
 
-  const { data: interpretation } = useQuery(
+  const { data: interpretation, ...interpretQuery } = useQuery(
     ['interpretTransaction', pendingTransaction],
     () => {
       return pendingTransaction
@@ -202,7 +203,7 @@ function SendTransactionContent({
     {
       enabled: Boolean(pendingTransaction),
       suspense: false,
-      retry: false,
+      retry: 1,
       refetchOnMount: false,
       refetchOnReconnect: false,
       refetchOnWindowFocus: false,
@@ -309,8 +310,8 @@ function SendTransactionContent({
             </UIText>
           </HStack>
         </div>
+        <Spacer height={24} />
         <VStack gap={16}>
-          <Spacer height={24} />
           {recipientAddress && addressAction?.type.value === 'send' ? (
             <RecipientLine
               recipientAddress={recipientAddress}
@@ -319,19 +320,21 @@ function SendTransactionContent({
             />
           ) : null}
           {contractAddress ? (
-            <ApplicationLine
-              applicationName={
-                addressAction?.label?.display_value.text ||
-                localAddressAction.label?.display_value.text
-              }
-              applicationIcon={
-                addressAction?.label?.icon_url ||
-                localAddressAction.label?.icon_url
-              }
-              contractAddress={contractAddress}
-              chain={chain}
-              networks={networks}
-            />
+            <div>
+              <ApplicationLine
+                applicationName={
+                  addressAction?.label?.display_value.text ||
+                  localAddressAction.label?.display_value.text
+                }
+                applicationIcon={
+                  addressAction?.label?.icon_url ||
+                  localAddressAction.label?.icon_url
+                }
+                contractAddress={contractAddress}
+                chain={chain}
+                networks={networks}
+              />
+            </div>
           ) : null}
           {actionTransfers?.outgoing?.length ||
           actionTransfers?.incoming?.length ? (
@@ -347,6 +350,23 @@ function SendTransactionContent({
               actionType={localAddressAction.type.value}
               asset={singleAsset}
             />
+          ) : null}
+          {interpretQuery.isLoading ? (
+            <>
+              <UIText kind="small/regular" color="var(--primary)">
+                Analyzing...
+                <br />
+                <span style={{ color: 'var(--black)' }}>
+                  <DelayedRender delay={6000}>
+                    (Request is taking longer than usual...)
+                  </DelayedRender>
+                </span>
+              </UIText>
+            </>
+          ) : interpretQuery.isError ? (
+            <UIText kind="small/regular" color="var(--notice-600)">
+              Unable to analyze the details of the transaction
+            </UIText>
           ) : null}
           {/*
           <Button
