@@ -9,7 +9,11 @@ import type { IncomingTransaction } from '../types/IncomingTransaction';
 import { assignChainGasPrice } from './gasPrices/assignGasPrice';
 import { hasNetworkFee } from './gasPrices/hasNetworkFee';
 import { getGas } from './getGas';
-import { fetchGasPriceFromNode } from './gasPrices/requests';
+import type { ChainGasPrice } from './gasPrices/requests';
+import {
+  fetchGasPriceFromNode,
+  gasChainPricesSubscription,
+} from './gasPrices/requests';
 import { wrappedGetNetworkById } from './wrappedGetNetworkById';
 
 function resolveChainId(transaction: IncomingTransaction) {
@@ -45,6 +49,25 @@ function hasGasEstimation(transaction: IncomingTransaction) {
   return gas && !ethers.BigNumber.from(gas).isZero();
 }
 
+async function fetchGasPrice(
+  transaction: IncomingTransaction,
+  networks: Networks
+): Promise<ChainGasPrice> {
+  const chainId = resolveChainId(transaction);
+  const network = wrappedGetNetworkById(networks, chainId);
+  const chain = createChain(network.chain);
+  if (networks.isSupportedByBackend(chain)) {
+    /** Use gas price info from our API */
+    const gasChainPrices = await gasChainPricesSubscription.get();
+    const gasPricesInfo = gasChainPrices[chain.toString()];
+    if (!gasPricesInfo) {
+      throw new Error(`Gas Price info for ${chain} not found`);
+    }
+    return gasPricesInfo;
+  }
+  return fetchGasPriceFromNode(chain);
+}
+
 /**
  * This method checks if gas and network-fee related fields are present,
  * and if necessary, makes eth_estimateGas and eth_gasPrice calls and
@@ -54,12 +77,9 @@ export async function prepareGasAndNetworkFee<T extends IncomingTransaction>(
   transaction: T,
   networks: Networks
 ) {
-  const chainId = resolveChainId(transaction);
-  const network = wrappedGetNetworkById(networks, chainId);
-  const chain = createChain(network.chain);
   const [gas, networkFeeInfo] = await Promise.all([
     hasGasEstimation(transaction) ? null : estimateGas(transaction, networks),
-    hasNetworkFee(transaction) ? null : fetchGasPriceFromNode(chain),
+    hasNetworkFee(transaction) ? null : fetchGasPrice(transaction, networks),
   ]);
   return produce(transaction, (draft) => {
     if (gas) {
