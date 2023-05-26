@@ -44,11 +44,6 @@ async function estimateGas(
   return add10Percent(parseInt(result));
 }
 
-function hasGasEstimation(transaction: IncomingTransaction) {
-  const gas = getGas(transaction);
-  return gas && !ethers.BigNumber.from(gas).isZero();
-}
-
 async function fetchGasPrice(
   transaction: IncomingTransaction,
   networks: Networks
@@ -66,6 +61,11 @@ async function fetchGasPrice(
     return gasPricesInfo;
   }
   return fetchGasPriceFromNode(chain);
+}
+
+function hasGasEstimation(transaction: IncomingTransaction) {
+  const gas = getGas(transaction);
+  return gas && !ethers.BigNumber.from(gas).isZero();
 }
 
 /**
