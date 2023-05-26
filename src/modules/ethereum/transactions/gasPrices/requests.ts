@@ -140,12 +140,7 @@ export async function fetchGasPrice(chain: Chain) {
       throw new Error(`Gas Price info for ${chain} not supported`);
     }
   } catch {
-    /** Query the node directly */
-    const chainGasPricesFromNode = await fetchGasPriceFromNode(chain);
-    if (chainGasPricesFromNode) {
-      return chainGasPricesFromNode;
-    }
-    throw new Error(`unable to fetch gas price for ${chain} from node`);
+    return fetchGasPriceFromNode(chain);
   }
 }
 
