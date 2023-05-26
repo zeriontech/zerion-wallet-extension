@@ -17,7 +17,7 @@ import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { useNFTPosition } from './useNftPosition';
+import { useAddressNftPosition } from './useAddressNftPosition';
 
 export function NonFungibleToken() {
   const { asset_code, chain } = useParams();
@@ -31,7 +31,7 @@ export function NonFungibleToken() {
   // for optimistic update the dna's status after promotion
   const [promotedPrimary, setPromotedAsPrimary] = useState(false);
 
-  const { value: nft } = useNFTPosition({
+  const { value: nft } = useAddressNftPosition({
     chain: chain || '',
     contract_address,
     token_id,

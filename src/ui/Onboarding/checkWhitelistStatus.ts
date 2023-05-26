@@ -4,6 +4,7 @@ import { isEmail } from 'src/shared/isEmail';
 import { PROXY_URL } from 'src/env/config';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getAddressNfts } from '../shared/requests/addressNfts/useAddressNfts';
+import { getAddressNftPosition } from '../pages/NonFungibleToken/useAddressNftPosition';
 import { WaitlistCheckError, NotAllowedError } from './errors';
 
 const WAITLIST_ID = 'aOfkJhcpwDHpJVkzO6FB';
@@ -58,9 +59,13 @@ async function getFirebaseStatus(address: string) {
 
 interface FirebaseConfig {
   extension_access_nft_collections: string[];
+  extension_access_nft_items: string[];
 }
 
-const FIREBASE_PARAMS = ['extension_access_nft_collections'];
+const FIREBASE_PARAMS = [
+  'extension_access_nft_collections',
+  'extension_access_nft_items',
+];
 
 async function getNftStatus(address: string) {
   const params = new URLSearchParams(
@@ -75,21 +80,56 @@ async function getNftStatus(address: string) {
 
   const normalizedAddress = normalizeAddress(address);
 
-  if (
-    !normalizeAddress ||
-    !firebaseConfig.extension_access_nft_collections?.length
-  ) {
+  if (!normalizeAddress) {
     return { status: false };
   }
 
-  const { value } = await getAddressNfts({
-    address: normalizedAddress,
-    currency: 'usd',
-    collection_ids: firebaseConfig.extension_access_nft_collections,
-    sorted_by: 'created_recently',
-  });
+  const checkCollectionStatus = async () => {
+    const { value } = await getAddressNfts({
+      address: normalizedAddress,
+      currency: 'usd',
+      collection_ids: firebaseConfig.extension_access_nft_collections,
+      sorted_by: 'created_recently',
+    });
+    const hasAccess = (value?.length || 0) > 0;
 
-  return { status: (value?.length || 0) > 0 };
+    if (hasAccess) {
+      return { status: true };
+    }
+
+    throw new NotAllowedError();
+  };
+
+  const checkEntityStatus = async (entity: string) => {
+    const [chain, contract_address, token_id] = entity.split(':');
+    const { value } = await getAddressNftPosition({
+      address: normalizedAddress,
+      currency: 'usd',
+      chain,
+      contract_address,
+      token_id,
+    });
+    if (value) {
+      return { status: true };
+    }
+    throw new NotAllowedError();
+  };
+
+  const promises = [];
+
+  if (firebaseConfig?.extension_access_nft_collections?.length) {
+    promises.push(checkCollectionStatus());
+  }
+
+  if (firebaseConfig?.extension_access_nft_items?.length) {
+    for (const entity of firebaseConfig.extension_access_nft_items) {
+      promises.push(checkEntityStatus(entity));
+    }
+  }
+
+  return Promise.any(promises).catch(() => ({
+    status: false,
+  }));
 }
 
 export async function checkWhitelistStatus(address: string) {
