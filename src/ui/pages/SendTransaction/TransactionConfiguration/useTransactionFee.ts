@@ -48,9 +48,9 @@ function getGasPriceFromConfiguration({
 }: {
   chainGasPrices?: ChainGasPrice | null;
   configuration?: NetworkFeeConfiguration;
-}) {
+}): GasPriceObject | null {
   if (!configuration || !chainGasPrices) {
-    return undefined;
+    return null;
   }
   if (configuration.speed === 'custom') {
     if (
