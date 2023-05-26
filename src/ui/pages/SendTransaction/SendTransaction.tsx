@@ -21,7 +21,7 @@ import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
-import { prepareGas } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
+import { prepareGasAndNetworkFee } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import { resolveChainForTx } from 'src/modules/ethereum/transactions/resolveChainForTx';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { invariant } from 'src/shared/invariant';
@@ -89,7 +89,7 @@ async function resolveChainAndGas(
     ...transaction,
     chainId,
   };
-  return await prepareGas(copyWithChainId, networks);
+  return await prepareGasAndNetworkFee(copyWithChainId, networks);
 }
 
 function useErrorBoundary() {

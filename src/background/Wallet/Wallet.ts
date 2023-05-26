@@ -29,7 +29,7 @@ import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTra
 import { prepareTransaction } from 'src/modules/ethereum/transactions/prepareTransaction';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
-import { prepareGas } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
+import { prepareGasAndNetworkFee } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import {
   prepareTypedData,
@@ -793,7 +793,7 @@ export class Wallet {
     }
     const networks = await networksStore.load();
     const prepared = prepareTransaction(incomingTransaction);
-    const transaction = await prepareGas(prepared, networks);
+    const transaction = await prepareGasAndNetworkFee(prepared, networks);
 
     const signer = await this.getSigner(chainId);
 

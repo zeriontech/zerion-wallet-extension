@@ -4,8 +4,13 @@ import omit from 'lodash/omit';
 import type { Networks } from 'src/modules/networks/Networks';
 import { sendRpcRequest } from 'src/shared/custom-rpc/rpc-request';
 import { invariant } from 'src/shared/invariant';
+import { createChain } from 'src/modules/networks/Chain';
 import type { IncomingTransaction } from '../types/IncomingTransaction';
+import { assignChainGasPrice } from './gasPrices/assignGasPrice';
+import { hasNetworkFee } from './gasPrices/hasNetworkFee';
 import { getGas } from './getGas';
+import { fetchGasPriceFromNode } from './gasPrices/requests';
+import { wrappedGetNetworkById } from './wrappedGetNetworkById';
 
 function resolveChainId(transaction: IncomingTransaction) {
   const { chainId: incomingChainId } = transaction;
@@ -45,17 +50,24 @@ function hasGasEstimation(transaction: IncomingTransaction) {
  * and if necessary, makes eth_estimateGas and eth_gasPrice calls and
  * applies the results to the transaction
  */
-export async function prepareGas<T extends IncomingTransaction>(
+export async function prepareGasAndNetworkFee<T extends IncomingTransaction>(
   transaction: T,
   networks: Networks
 ) {
-  const gas = await (hasGasEstimation(transaction)
-    ? null
-    : estimateGas(transaction, networks));
+  const chainId = resolveChainId(transaction);
+  const network = wrappedGetNetworkById(networks, chainId);
+  const chain = createChain(network.chain);
+  const [gas, networkFeeInfo] = await Promise.all([
+    hasGasEstimation(transaction) ? null : estimateGas(transaction, networks),
+    hasNetworkFee(transaction) ? null : fetchGasPriceFromNode(chain),
+  ]);
   return produce(transaction, (draft) => {
     if (gas) {
       delete draft.gas;
       draft.gasLimit = gas;
+    }
+    if (networkFeeInfo) {
+      assignChainGasPrice(transaction, networkFeeInfo);
     }
   });
 }
