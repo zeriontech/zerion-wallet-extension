@@ -38,7 +38,7 @@ import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { useWalletNameFlags } from 'src/ui/shared/requests/useWalletNameFlags';
 import { Toggle } from 'src/ui/ui-kit/Toggle';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
-import { useReloadActiveTab } from 'src/ui/shared/useReloadActiveTab';
+import { reloadActiveTab } from 'src/ui/shared/reloadActiveTab';
 import { CurrentNetworkSettingsItem } from '../../Networks/CurrentNetworkSettingsItem';
 import { ConnectToDappButton } from './ConnectToDappButton';
 
@@ -178,7 +178,6 @@ export function ConnectedSite() {
     },
   });
   const { setWalletNameFlags, isMetaMask } = useWalletNameFlags(originName);
-  const { reloadActiveTab } = useReloadActiveTab();
   if (!connectedSite) {
     return <NotFoundPage />;
   }

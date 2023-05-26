@@ -26,7 +26,7 @@ import * as s from 'src/ui/style/helpers.module.css';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
 import produce from 'immer';
-import { useReloadActiveTab } from 'src/ui/shared/useReloadActiveTab';
+import { reloadActiveTab } from 'src/ui/shared/reloadActiveTab';
 import { ViewLoading } from '../ViewLoading';
 
 const TESTING = process.env.NODE_ENV !== 'production';
@@ -278,7 +278,6 @@ export function PauseInjectionControl() {
     globalPreferences,
     setGlobalPreferences,
   } = usePausedData();
-  const { reloadActiveTab } = useReloadActiveTab();
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   if (!globalPreferences) {
     return <ViewLoading />;
@@ -340,7 +339,6 @@ export function PausedBanner({ style }: { style?: React.CSSProperties }) {
     globalPreferences,
     setGlobalPreferences,
   } = usePausedData();
-  const { reloadActiveTab } = useReloadActiveTab();
   if (!isPaused || !globalPreferences) {
     return null;
   }

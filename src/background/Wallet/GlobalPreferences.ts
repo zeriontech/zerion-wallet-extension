@@ -63,6 +63,17 @@ export class GlobalPreferences extends PersistentStore<State> {
   setPreferences(preferences: Partial<State>) {
     // Omit values which are the same as the default ones
     this.setState((state) => {
+      // we need to remove all empty walletNageFlags configs if they don't override default settings
+      if (state.walletNameFlags) {
+        for (const untypedKey in state.walletNameFlags) {
+          if (
+            !state.walletNameFlags[untypedKey].length &&
+            !(untypedKey in this.defaults.walletNameFlags)
+          ) {
+            delete state.walletNameFlags[untypedKey];
+          }
+        }
+      }
       const valueWithoutDefaults = {
         ...this.defaults,
         ...state,

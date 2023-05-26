@@ -18,7 +18,6 @@ export function useWalletNameFlags(tabOrigin?: string) {
           if (checked) {
             pushUnique(draft.walletNameFlags[tabOrigin], flag);
           } else {
-            // we don't want to delete key here to save information that flag was removed
             removeFromArray(draft.walletNameFlags[tabOrigin], flag);
           }
         } else if (checked) {
