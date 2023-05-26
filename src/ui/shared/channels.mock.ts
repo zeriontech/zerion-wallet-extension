@@ -121,6 +121,8 @@ class WalletPortMock {
         new Chain(args[0].chain as string)
       );
       return;
+    } else if (method === 'getEthereumChainSources') {
+      return networksStore.getState().networks?.ethereumChainSources;
     } else {
       throw new Error(`Mock method not implemented: ${method}`);
     }

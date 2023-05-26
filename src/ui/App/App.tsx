@@ -241,7 +241,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             }
           />
           <Route
-            path="/sendTransaction"
+            path="/sendTransaction/*"
             element={
               <RequireAuth>
                 <SendTransaction />

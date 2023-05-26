@@ -1,29 +1,22 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { useMutation, useQuery } from 'react-query';
+import { capitalize } from 'capitalize-ts';
 import { ethers } from 'ethers';
+import { useMutation, useQuery } from 'react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { incomingTransactionToIncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
+import { useNetworks } from 'src/modules/networks/useNetworks';
+import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { walletPort, windowPort } from 'src/ui/shared/channels';
+import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { Button } from 'src/ui/ui-kit/Button';
-import { NetworkIndicator } from 'src/ui/components/NetworkIndicator';
-import { useNetworks } from 'src/modules/networks/useNetworks';
-import { networksStore } from 'src/modules/networks/networks-store.client';
-import {
-  describeTransaction,
-  TransactionAction,
-} from 'src/modules/ethereum/transactions/describeTransaction';
-import { Twinkle } from 'src/ui/ui-kit/Twinkle';
-import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
-import { strings } from 'src/ui/transactions/strings';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { Background } from 'src/ui/components/Background';
 import { FillView } from 'src/ui/components/FillView';
-import { capitalize } from 'capitalize-ts';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import type { Chain } from 'src/modules/networks/Chain';
@@ -32,21 +25,25 @@ import { prepareGasAndNetworkFee } from 'src/modules/ethereum/transactions/fetch
 import { resolveChainForTx } from 'src/modules/ethereum/transactions/resolveChainForTx';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { invariant } from 'src/shared/invariant';
-import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
-import { PageFullBleedLine } from 'src/ui/components/PageFullBleedLine';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
-import { focusNode } from 'src/ui/shared/focusNode';
-import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
-import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { getError } from 'src/shared/errors/getError';
-import { TransactionDescription } from './TransactionDescription';
+import { Button } from 'src/ui/ui-kit/Button';
+import { focusNode } from 'src/ui/shared/focusNode';
+import { interpretTransaction } from 'src/modules/ethereum/transactions/interpretTransaction';
+import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
+import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
+import { networksStore } from 'src/modules/networks/networks-store.client';
+import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
+import { ApplicationLine } from './Lines/ApplicationLine';
+import { RecipientLine } from './Lines/RecipientLine';
+import { Transfers } from './Transfers';
+import { SingleAsset } from './SingleAsset';
 
 type SendTransactionError =
   | null
@@ -107,6 +104,21 @@ const DEFAULT_CONFIGURATION: CustomConfiguration = {
   nonce: null,
 };
 
+function TransactionViewLoading() {
+  return (
+    <FillView>
+      <VStack gap={4} style={{ placeItems: 'center' }}>
+        <CircleSpinner color="var(--primary)" size="66px" />
+        <Spacer height={18} />
+        <UIText kind="headline/h2">Loading</UIText>
+        <UIText kind="body/regular" color="var(--neutral-500)">
+          This may take a few seconds
+        </UIText>
+      </VStack>
+    </FillView>
+  );
+}
+
 function SendTransactionContent({
   transactionStringified,
   origin,
@@ -119,6 +131,7 @@ function SendTransactionContent({
   next: string | null;
 }) {
   const [params] = useSearchParams();
+  const { singleAddress } = useAddressParams();
   const incomingTransaction = useMemo(
     () => JSON.parse(transactionStringified) as IncomingTransaction,
     [transactionStringified]
@@ -133,8 +146,9 @@ function SendTransactionContent({
     windowPort.reject(windowId);
     navigate(-1);
   };
-  const { data: transaction } = useQuery(
-    ['resolveChainAndGasPrice', incomingTransaction, origin],
+
+  const { data: pendingTransaction } = useQuery(
+    ['setTransactionChainIdAndGasPrice', incomingTransaction, origin, networks],
     async () => {
       const currentChain = await walletPort.request('requestChainForOrigin', {
         origin,
@@ -144,22 +158,59 @@ function SendTransactionContent({
         createChain(currentChain)
       );
     },
-    { useErrorBoundary: true }
-  );
-
-  const descriptionQuery = useQuery(
-    ['description', transaction, networks],
-    () =>
-      transaction && networks
-        ? describeTransaction(transaction, networks)
-        : null,
     {
+      useErrorBoundary: true,
       retry: false,
       refetchOnMount: false,
       refetchOnReconnect: false,
       refetchOnWindowFocus: false,
     }
   );
+
+  const { data: localAddressAction, isLoading: isLoadingLocalAddressAction } =
+    useQuery(
+      ['pendingTransactionToAddressAction', pendingTransaction, networks],
+      () => {
+        return pendingTransaction && networks
+          ? incomingTransactionToIncomingAddressAction(
+              {
+                transaction: pendingTransaction,
+                hash: '',
+                timestamp: 0,
+              },
+              networks
+            )
+          : null;
+      },
+      {
+        enabled: Boolean(pendingTransaction) && Boolean(networks),
+        useErrorBoundary: true,
+        retry: false,
+        refetchOnMount: false,
+        refetchOnReconnect: false,
+        refetchOnWindowFocus: false,
+      }
+    );
+
+  const { data: interpretation } = useQuery(
+    ['interpretTransaction', pendingTransaction],
+    () => {
+      return pendingTransaction
+        ? interpretTransaction(singleAddress, pendingTransaction)
+        : null;
+    },
+    {
+      enabled: Boolean(pendingTransaction),
+      suspense: false,
+      retry: false,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  const addressAction = interpretation?.action;
+
   const feeValueCommonRef = useRef<string>(); /** for analytics only */
   const handleFeeValueCommonReady = useCallback((value: string) => {
     feeValueCommonRef.current = value;
@@ -171,7 +222,6 @@ function SendTransactionContent({
     ...signMutation
   } = useMutation(
     async (transaction: IncomingTransaction) => {
-      await new Promise((r) => setTimeout(r, 1000));
       const feeValueCommon = feeValueCommonRef.current || null;
       return await walletPort.request('signAndSendTransaction', [
         transaction,
@@ -193,60 +243,45 @@ function SendTransactionContent({
     }
   );
   const originForHref = useMemo(() => prepareForHref(origin), [origin]);
-  if (!transaction || descriptionQuery.isLoading || !networks) {
-    return (
-      <FillView>
-        <Twinkle>
-          <ZerionSquircle style={{ width: 64, height: 64 }} />
-        </Twinkle>
-      </FillView>
-    );
+
+  if (!networks || !pendingTransaction || isLoadingLocalAddressAction) {
+    return <TransactionViewLoading />;
   }
-  if (descriptionQuery.isError || !descriptionQuery.data) {
-    throw descriptionQuery.error || new Error('testing');
+
+  if (!localAddressAction) {
+    throw new Error('Unexpected missing localAddressAction');
   }
 
   const chain = networks.getChainById(
-    ethers.utils.hexValue(transaction.chainId)
+    ethers.utils.hexValue(pendingTransaction.chainId)
   );
 
+  const recipientAddress =
+    addressAction?.label?.display_value.wallet_address ||
+    localAddressAction.label?.display_value.wallet_address;
+  const contractAddress =
+    addressAction?.label?.display_value.contract_address ||
+    localAddressAction.label?.display_value.contract_address;
+  const actionTransfers =
+    addressAction?.content?.transfers || localAddressAction.content?.transfers;
+  const singleAsset =
+    addressAction?.content?.single_asset?.asset ||
+    localAddressAction.content?.single_asset?.asset;
+
   return (
-    <Background backgroundKind="neutral">
+    <Background backgroundKind="white">
       <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
       <PageColumn
-        // different surface color on backgroundKind="neutral"
-        style={{ ['--surface-background-color' as string]: 'var(--z-index-0)' }}
+        // different surface color on backgroundKind="white"
+        style={{
+          ['--surface-background-color' as string]: 'var(--neutral-100)',
+        }}
       >
-        <div
-          style={{
-            position: 'sticky',
-            top: 0,
-            backgroundColor: 'var(--background)',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              paddingTop: 8,
-              paddingBottom: 8,
-            }}
-          >
-            <NetworkIndicator chain={chain} networks={networks} />
-          </div>
-          <PageFullBleedLine lineColor="var(--neutral-300)" />
-        </div>
         <PageTop />
         <div style={{ display: 'grid', placeItems: 'center' }}>
-          {origin === 'https://app.zerion.io' ? (
-            <ZerionSquircle width={44} height={44} />
-          ) : (
-            <SiteFaviconImg size={44} url={origin} />
-          )}
-          <Spacer height={16} />
           <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
-            {strings.actions[descriptionQuery.data.action] ||
-              strings.actions[TransactionAction.contractInteraction]}
+            {addressAction?.type.display_value ||
+              localAddressAction.type.display_value}
           </UIText>
           <UIText kind="small/regular" color="var(--neutral-500)">
             {originForHref ? (
@@ -262,7 +297,6 @@ function SendTransactionContent({
             )}
           </UIText>
           <Spacer height={8} />
-
           <HStack gap={8} alignItems="center">
             <WalletAvatar
               address={wallet.address}
@@ -275,41 +309,59 @@ function SendTransactionContent({
             </UIText>
           </HStack>
         </div>
-        {/*
-        {incomingTransaction.chainId == null ? (
-          <>
-            <Spacer height={24} />
-            <Surface padding={12}>
-              <Media
-                alignItems="start"
-                image={<WarningIcon glow={true} />}
-                text={
-                  <UIText kind="body/regular" color="var(--notice-500)">
-                    {capitalize(hostname)} did not provide chainId
-                  </UIText>
-                }
-                detailText={
-                  <UIText kind="body/regular">
-                    The transaction will be sent to{' '}
-                    {networks?.getNetworkById(transaction.chainId)?.name}
-                  </UIText>
-                }
-              />
-            </Surface>
-          </>
-        ) : null}
-        */}
-        <Spacer height={24} />
         <VStack gap={16}>
-          <VStack gap={12}>
-            <TransactionDescription
-              transaction={transaction}
-              transactionDescription={descriptionQuery.data}
-              networks={networks}
+          <Spacer height={24} />
+          {recipientAddress && addressAction?.type.value === 'send' ? (
+            <RecipientLine
+              recipientAddress={recipientAddress}
               chain={chain}
+              networks={networks}
             />
-          </VStack>
-          {transaction && chain ? (
+          ) : null}
+          {contractAddress ? (
+            <ApplicationLine
+              applicationName={
+                addressAction?.label?.display_value.text ||
+                localAddressAction.label?.display_value.text
+              }
+              applicationIcon={
+                addressAction?.label?.icon_url ||
+                localAddressAction.label?.icon_url
+              }
+              contractAddress={contractAddress}
+              chain={chain}
+              networks={networks}
+            />
+          ) : null}
+          {actionTransfers?.outgoing?.length ||
+          actionTransfers?.incoming?.length ? (
+            <Transfers
+              address={singleAddress}
+              chain={chain}
+              transfers={actionTransfers}
+            />
+          ) : null}
+          {singleAsset ? (
+            <SingleAsset
+              address={singleAddress}
+              actionType={localAddressAction.type.value}
+              asset={singleAsset}
+            />
+          ) : null}
+          {/*
+          <Button
+            kind="neutral"
+            type="button"
+            onClick={showAdvancedView}
+            disabled={true}
+          >
+            Advanced View
+          </Button>
+          */}
+        </VStack>
+        <Spacer height={16} />
+        {pendingTransaction ? (
+          <div style={{ marginTop: 'auto' }}>
             <ErrorBoundary
               renderError={() => (
                 <UIText kind="body/regular">
@@ -321,7 +373,7 @@ function SendTransactionContent({
               )}
             >
               <TransactionConfiguration
-                transaction={transaction}
+                transaction={pendingTransaction}
                 from={wallet.address}
                 chain={chain}
                 onFeeValueCommonReady={handleFeeValueCommonReady}
@@ -329,15 +381,15 @@ function SendTransactionContent({
                 onConfigurationChange={setConfiguration}
               />
             </ErrorBoundary>
-          ) : null}
-        </VStack>
+          </div>
+        ) : null}
         <Spacer height={16} />
       </PageColumn>
       <PageStickyFooter>
         <VStack
           style={{
             textAlign: 'center',
-            paddingBottom: 32,
+            paddingBottom: 24,
           }}
           gap={8}
         >
@@ -373,11 +425,7 @@ function SendTransactionContent({
                 }
               }}
             >
-              {signMutation.isLoading
-                ? 'Sending...'
-                : descriptionQuery.data.action === TransactionAction.approve
-                ? 'Approve'
-                : 'Confirm'}
+              {signMutation.isLoading ? 'Sending...' : 'Confirm'}
             </Button>
           </div>
         </VStack>

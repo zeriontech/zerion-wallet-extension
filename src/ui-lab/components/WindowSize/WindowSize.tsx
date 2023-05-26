@@ -15,7 +15,7 @@ export function WindowSize({
       style={{
         position: 'relative',
         maxWidth: 400,
-        height: 600,
+        height: 640,
         overflowY: 'auto',
         border: '1px solid var(--neutral-200)',
         borderRadius: 8,

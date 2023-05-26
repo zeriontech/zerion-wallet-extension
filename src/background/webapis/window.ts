@@ -17,7 +17,7 @@ browser.windows.onRemoved.addListener((winId) => {
 const BROWSER_HEADER = 80;
 const WINDOW_SIZE = {
   width: 400 + (IS_WINDOWS ? 14 : 0), // windows cuts the width
-  height: 600,
+  height: 640,
 };
 
 type BrowserWindow = browser.Windows.Window | chrome.windows.Window;

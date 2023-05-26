@@ -1,4 +1,5 @@
 import type { BigNumberish } from 'ethers';
+import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import type { UnsignedTransaction } from './UnsignedTransaction';
 
 export type IncomingTransaction = Omit<
@@ -9,3 +10,8 @@ export type IncomingTransaction = Omit<
   gas?: BigNumberish;
   type?: string | number | null;
 };
+
+export type IncomingTransactionWithChainId = PartiallyRequired<
+  IncomingTransaction,
+  'chainId'
+>;

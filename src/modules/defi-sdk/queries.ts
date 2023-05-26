@@ -1,9 +1,27 @@
-import type { Asset, AddressPosition } from 'defi-sdk';
-import { useAssetsPrices } from 'defi-sdk';
-import { useMemo } from 'react';
+import { useQuery } from 'react-query';
+import { memoize } from 'lodash';
+import type { AddressPosition, Asset } from 'defi-sdk';
+import { client } from 'defi-sdk';
+import type { ResponseData as AssetsPricesReponseData } from 'defi-sdk/lib/domains/assetsPrices';
+import { backgroundCache } from 'src/modules/defi-sdk';
+import type { Chain } from 'src/modules/networks/Chain';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import type { Chain } from '../networks/Chain';
-import { backgroundCache } from './index';
+
+type NativeAssetQuery = {
+  isNative: true;
+  chain: Chain;
+  id: string | null;
+  address: string | null;
+};
+
+type NonNativeAssetQuery = {
+  isNative: false;
+  chain: Chain;
+  id?: undefined;
+  address: string | null;
+};
+
+export type CachedAssetQuery = NativeAssetQuery | NonNativeAssetQuery;
 
 function normalizeNullableAddress(address: string | null) {
   return address != null ? normalizeAddress(address) : null;
@@ -45,42 +63,50 @@ function queryCacheForNativeAsset(address: string | null, chain: Chain) {
   }
 }
 
-export function useAssetFromCacheOrAPI({
+async function fetchAssetsPrices(
+  payload: Parameters<typeof client.assetsPrices>[0]
+) {
+  return new Promise<AssetsPricesReponseData>((resolve) => {
+    client.assetsPrices(payload, { onData: (data) => resolve(data.prices) });
+  });
+}
+
+export async function fetchAssetFromCacheOrAPI({
   address,
   isNative,
   chain,
   id,
-}:
-  | {
-      address: string | null;
-      isNative: false;
-      chain?: undefined;
-      id?: undefined;
-    }
-  | {
-      address: string | null;
-      isNative: true;
-      chain: Chain;
-      id: string | null;
-    }) {
+}: CachedAssetQuery) {
   const requestAssetId = isNative ? id : normalizeNullableAddress(address);
-  const {
-    value: assets,
-    status,
-    isLoading,
-  } = useAssetsPrices(
-    { currency: 'usd', asset_codes: [requestAssetId || ''] },
-    { enabled: Boolean(requestAssetId) }
-  );
-  const assetFromCache = useMemo(() => {
-    if (isNative) {
-      return queryCacheForNativeAsset(address, chain);
-    } else if (address) {
-      return queryCacheForAsset(address);
+  const assets = await fetchAssetsPrices({
+    asset_codes: [requestAssetId || ''],
+    currency: 'usd',
+  });
+
+  const getAssetFromCache = memoize(
+    (address: string | null, chain: Chain, isNative: boolean) => {
+      if (isNative) {
+        return queryCacheForNativeAsset(address, chain);
+      } else if (address) {
+        return queryCacheForAsset(address);
+      }
+      return null;
     }
-    return null;
-  }, [address, chain, isNative]);
+  );
+
   const responseAsset = requestAssetId ? assets?.[requestAssetId] : null;
-  const asset = responseAsset || assetFromCache;
-  return { asset, status, isLoading };
+  return responseAsset || getAssetFromCache(address, chain, isNative);
+}
+
+export function useAssetFromCacheOrAPI(query: CachedAssetQuery) {
+  return useQuery(
+    ['asset', query.address, query.chain.toString(), query.isNative],
+    () => fetchAssetFromCacheOrAPI(query),
+    {
+      suspense: false,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      retryOnMount: false,
+    }
+  );
 }

@@ -5,7 +5,6 @@ import type {
   ActionType,
   AddressAction,
 } from 'defi-sdk';
-import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import ApproveIcon from 'jsx:src/ui/assets/actionTypes/approve.svg';
 import BorrowIcon from 'jsx:src/ui/assets/actionTypes/borrow.svg';
 import CancelIcon from 'jsx:src/ui/assets/actionTypes/cancel.svg';
@@ -21,7 +20,7 @@ import WithdrawIcon from 'jsx:src/ui/assets/actionTypes/withdraw.svg';
 import ChangeAssets2 from 'jsx:src/ui/assets/changed-assets-2.svg';
 import ChangeAssets3 from 'jsx:src/ui/assets/changed-assets-3.svg';
 import ChangeAssetsMore from 'jsx:src/ui/assets/changed-assets-more.svg';
-import { getFungibleAsset, getNftAsset } from './TransactionItemValue';
+import { AssetIcon } from 'src/ui/components/AssetIcon';
 
 export const TRANSACTION_ICON_SIZE = 24;
 export const TRANSACTION_SMALL_ICON_SIZE = 18;
@@ -103,7 +102,7 @@ function TransactionMultipleAssetsIcon({
   return <ChangeAssetsMore style={{ width: size, height: size }} />;
 }
 
-export function AssetIcon({
+export function HistoryAssetIcon({
   asset,
   type,
   size,
@@ -116,20 +115,12 @@ export function AssetIcon({
     return <TransactionTypeIcon type={type} />;
   }
 
-  const fungible = getFungibleAsset(asset);
-  const nft = getNftAsset(asset);
-
-  return fungible?.icon_url ? (
-    <TokenIcon size={size} src={fungible.icon_url} symbol={fungible.symbol} />
-  ) : nft?.icon_url || nft?.collection?.icon_url ? (
-    <TokenIcon
+  return (
+    <AssetIcon
+      asset={asset}
       size={size}
-      src={nft.icon_url || nft.collection?.icon_url}
-      style={{ borderRadius: 4 }}
-      symbol={nft.symbol}
+      fallback={<TransactionTypeIcon type={type} size={size} />}
     />
-  ) : (
-    <TransactionTypeIcon type={type} size={size} />
   );
 }
 
@@ -150,7 +141,9 @@ function TransferIcon({
       <TransactionMultipleAssetsIcon amount={transfers.length} size={size} />
     );
   }
-  return <AssetIcon asset={transfers[0].asset} type={type} size={size} />;
+  return (
+    <HistoryAssetIcon asset={transfers[0].asset} type={type} size={size} />
+  );
 }
 
 export function TransactionItemIcon({ action }: { action: AddressAction }) {
@@ -160,7 +153,7 @@ export function TransactionItemIcon({ action }: { action: AddressAction }) {
 
   if (action.type.value === 'approve') {
     return (
-      <AssetIcon
+      <HistoryAssetIcon
         asset={approveTransfers?.asset}
         type={action.type.value}
         size={TRANSACTION_ICON_SIZE}

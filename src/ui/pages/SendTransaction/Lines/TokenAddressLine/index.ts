@@ -1,1 +1,0 @@
-export { TokenAddressLine } from './TokenAddressLine';

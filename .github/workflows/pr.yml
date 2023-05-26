@@ -2,7 +2,25 @@ name: Build pull request
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [ opened, synchronize ]
+  workflow_dispatch:
+    inputs:
+      BACKEND_ENV:
+        default: ''
+        description: 'Backend env for special features'
+        required: false
+      DEFI_SDK_API_URL:
+        default: wss://api-v4.zerion.io/
+        description: 'Zerion API'
+        required: true
+      PROXY_URL:
+        default: https://proxy.zerion.io/
+        description: 'Proxy API'
+        required: true
+      SOCIAL_API_URL:
+        default: https://social.zerion.io/
+        description: 'Zerion Social API'
+        required: true
 
 jobs:
   build_pull_request:
@@ -19,10 +37,11 @@ jobs:
       - name: Install dependencies and build
         env:
           ALCHEMY_KEY: RKg5wIwcuh32powb0blKdPh0UwSsgmFI
-          DEFI_SDK_API_URL: wss://api-v4.zerion.io/
-          PROXY_URL: https://proxy.zerion.io/
+          DEFI_SDK_API_URL: ${{ github.event.inputs.DEFI_SDK_API_URL || 'wss://api-v4.zerion.io/' }}
+          BACKEND_ENV: ${{ github.event.inputs.BACKEND_ENV || '' }}
+          PROXY_URL: ${{ github.event.inputs.PROXY_URL || 'https://proxy.zerion.io/' }}
           DEFI_SDK_API_TOKEN: Zerion.0JOY6zZTTw6yl5Cvz9sdmXc7d5AhzVMG
-          SOCIAL_API_URL: https://social.zerion.io/
+          SOCIAL_API_URL: ${{ github.event.inputs.SOCIAL_API_URL || 'https://social.zerion.io/' }}
           TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
           FEATURE_WAITLIST_ONBOARDING: on
         run: |
