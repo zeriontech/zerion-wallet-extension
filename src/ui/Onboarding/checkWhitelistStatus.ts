@@ -100,7 +100,7 @@ async function getNftStatus(address: string) {
     throw new NotAllowedError();
   };
 
-  const checkEntityStatus = (entity: string) => async () => {
+  const checkEntityStatus = async (entity: string) => {
     const [chain, contract_address, token_id] = entity.split(':');
     const { value } = await getAddressNftPosition({
       address: normalizedAddress,
@@ -123,7 +123,7 @@ async function getNftStatus(address: string) {
 
   if (firebaseConfig?.extension_access_nft_items?.length) {
     for (const entity of firebaseConfig.extension_access_nft_items) {
-      promises.push(checkEntityStatus(entity)());
+      promises.push(checkEntityStatus(entity));
     }
   }
 
