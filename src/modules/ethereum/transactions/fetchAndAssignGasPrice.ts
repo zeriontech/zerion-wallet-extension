@@ -35,6 +35,7 @@ async function estimateGas(
       omit(transaction, [
         'gas', // error on Aurora if gas: 0x0, so we omit it
         'nonce', // error on Polygon if nonce is int, but we don't need it at all
+        'chainId', // ? verify ? some networks need int, some hex, safer to remove altogether
       ]),
     ],
   });
