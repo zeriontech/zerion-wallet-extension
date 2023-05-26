@@ -103,7 +103,11 @@ export function CurrentNetwork({ address }: { address: string }) {
                               style={{ display: 'block' }}
                             />
                           }
-                          text={getNameFromOrigin(tabOrigin)}
+                          text={
+                            <span style={{ color: 'var(--primary)' }}>
+                              {getNameFromOrigin(tabOrigin)}
+                            </span>
+                          }
                           detailText={null}
                         />
                       </AngleRightRow>

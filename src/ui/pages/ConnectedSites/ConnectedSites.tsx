@@ -105,6 +105,7 @@ function ConnectedSitesList({
                       {new URL(item.origin).hostname}
                     </UIText>
                   }
+                  vGap={0}
                   detailText={
                     <div
                       style={{
