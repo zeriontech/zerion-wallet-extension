@@ -38,6 +38,7 @@ import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { networksStore } from 'src/modules/networks/networks-store.client';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
+import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
@@ -320,21 +321,19 @@ function SendTransactionContent({
             />
           ) : null}
           {contractAddress ? (
-            <div>
-              <ApplicationLine
-                applicationName={
-                  addressAction?.label?.display_value.text ||
-                  localAddressAction.label?.display_value.text
-                }
-                applicationIcon={
-                  addressAction?.label?.icon_url ||
-                  localAddressAction.label?.icon_url
-                }
-                contractAddress={contractAddress}
-                chain={chain}
-                networks={networks}
-              />
-            </div>
+            <ApplicationLine
+              applicationName={
+                addressAction?.label?.display_value.text ||
+                localAddressAction.label?.display_value.text
+              }
+              applicationIcon={
+                addressAction?.label?.icon_url ||
+                localAddressAction.label?.icon_url
+              }
+              contractAddress={contractAddress}
+              chain={chain}
+              networks={networks}
+            />
           ) : null}
           {actionTransfers?.outgoing?.length ||
           actionTransfers?.incoming?.length ? (
@@ -356,11 +355,18 @@ function SendTransactionContent({
               <UIText kind="small/regular" color="var(--primary)">
                 Analyzing...
                 <br />
-                <span style={{ color: 'var(--black)' }}>
-                  <DelayedRender delay={6000}>
-                    (Request is taking longer than usual...)
+                <ZStack hideLowerElements={true}>
+                  <DelayedRender delay={11000}>
+                    <span style={{ color: 'var(--black)' }}>
+                      (Going to give up soon...)
+                    </span>
                   </DelayedRender>
-                </span>
+                  <DelayedRender delay={6000}>
+                    <span style={{ color: 'var(--black)' }}>
+                      (Request is taking longer than usual...)
+                    </span>
+                  </DelayedRender>
+                </ZStack>
               </UIText>
             </>
           ) : interpretQuery.isError ? (
