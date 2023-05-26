@@ -21,7 +21,7 @@ import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
-import { prepareGasAndNetworkFee } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
+import { prepareGas } from 'src/modules/ethereum/transactions/fetchAndAssignGas';
 import { resolveChainForTx } from 'src/modules/ethereum/transactions/resolveChainForTx';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { invariant } from 'src/shared/invariant';
@@ -30,6 +30,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { getError } from 'src/shared/errors/getError';
+import { useGasPrices } from 'src/modules/ethereum/transactions/gasPrices/requests';
 import { Button } from 'src/ui/ui-kit/Button';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { interpretTransaction } from 'src/modules/ethereum/transactions/interpretTransaction';
@@ -77,7 +78,7 @@ function errorToMessage(error?: SendTransactionError) {
   }
 }
 
-async function resolveChainAndGasPrice(
+async function resolveChainAndGas(
   transaction: IncomingTransaction,
   currentChain: Chain
 ) {
@@ -88,7 +89,7 @@ async function resolveChainAndGasPrice(
     ...transaction,
     chainId,
   };
-  return await prepareGasAndNetworkFee(copyWithChainId, networks);
+  return await prepareGas(copyWithChainId, networks);
 }
 
 function useErrorBoundary() {
@@ -104,6 +105,11 @@ function useErrorBoundary() {
 
 const DEFAULT_CONFIGURATION: CustomConfiguration = {
   nonce: null,
+  networkFee: {
+    speed: 'fast',
+    custom1559GasPrice: null,
+    customClassicGasPrice: null,
+  },
 };
 
 function TransactionViewLoading() {
@@ -155,10 +161,7 @@ function SendTransactionContent({
       const currentChain = await walletPort.request('requestChainForOrigin', {
         origin,
       });
-      return resolveChainAndGasPrice(
-        incomingTransaction,
-        createChain(currentChain)
-      );
+      return resolveChainAndGas(incomingTransaction, createChain(currentChain));
     },
     {
       useErrorBoundary: true,
@@ -246,17 +249,20 @@ function SendTransactionContent({
   );
   const originForHref = useMemo(() => prepareForHref(origin), [origin]);
 
-  if (!networks || !pendingTransaction || isLoadingLocalAddressAction) {
+  const chain =
+    pendingTransaction && networks
+      ? networks.getChainById(ethers.utils.hexValue(pendingTransaction.chainId))
+      : null;
+
+  const { data: chainGasPrices } = useGasPrices(chain);
+
+  if (!networks || !pendingTransaction || isLoadingLocalAddressAction || !chain) {
     return <TransactionViewLoading />;
   }
 
   if (!localAddressAction) {
     throw new Error('Unexpected missing localAddressAction');
   }
-
-  const chain = networks.getChainById(
-    ethers.utils.hexValue(pendingTransaction.chainId)
-  );
 
   const recipientAddress =
     addressAction?.label?.display_value.wallet_address ||
@@ -444,7 +450,11 @@ function SendTransactionContent({
               onClick={() => {
                 try {
                   signAndSendTransaction(
-                    applyConfiguration(incomingTransaction, configuration)
+                    applyConfiguration(
+                      incomingTransaction,
+                      configuration,
+                      chainGasPrices
+                    )
                   );
                 } catch (error) {
                   showErrorBoundary(error);

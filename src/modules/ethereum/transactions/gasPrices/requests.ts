@@ -1,5 +1,10 @@
+import { ethers } from 'ethers';
 import { client, mergeSingleEntity } from 'defi-sdk';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
+import { useQuery } from 'react-query';
+import type { Chain } from 'src/modules/networks/Chain';
+import { sendRpcRequest } from 'src/shared/custom-rpc/rpc-request';
+import { networksStore } from 'src/modules/networks/networks-store.background';
 import type { EIP1559 } from './EIP1559';
 
 export interface OptimisticGasPriceInfo {
@@ -38,6 +43,35 @@ type Payload = Record<string, ChainGasPrice>;
 
 const namespace = 'gas';
 const scope = 'chain-prices';
+
+export async function fetchGasPriceFromNode(
+  chain: Chain
+): Promise<ChainGasPrice> {
+  const networks = await networksStore.load();
+  const url = networks.getRpcUrlInternal(chain);
+  if (!url) {
+    throw new Error(`RPC URL is missing from network config for ${chain}`);
+  }
+
+  const requestDate = new Date();
+  const { result } = await sendRpcRequest<string>(url, {
+    method: 'eth_gasPrice',
+    params: null,
+  });
+  const gasPrice = ethers.BigNumber.from(result).toNumber();
+  return {
+    info: {
+      classic: {
+        fast: gasPrice,
+        standard: gasPrice,
+        slow: gasPrice,
+        rapid: null,
+      },
+    },
+    datetime: requestDate.toString(),
+    source: url,
+  };
+}
 
 class GasChainPricesSubscription {
   latestValue: Payload | null = null;
@@ -90,3 +124,26 @@ class GasChainPricesSubscription {
 }
 
 export const gasChainPricesSubscription = new GasChainPricesSubscription();
+
+export function useGasPrices(chain: Chain | null) {
+  return useQuery(
+    ['defi-sdk/gasPrices', chain?.toString()],
+    async () => {
+      if (!chain) {
+        return null;
+      }
+      const gasPrices = await gasChainPricesSubscription.get();
+      const chainGasPrices = gasPrices[chain.toString()];
+      if (chainGasPrices) {
+        return chainGasPrices;
+      }
+      /** Query the node directly */
+      const chainGasPricesFromNode = await fetchGasPriceFromNode(chain);
+      if (chainGasPricesFromNode) {
+        return chainGasPricesFromNode;
+      }
+      return null;
+    },
+    { useErrorBoundary: true, enabled: Boolean(chain) }
+  );
+}
