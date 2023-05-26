@@ -51,16 +51,21 @@ async function fetchGasPrice(
   const chainId = resolveChainId(transaction);
   const network = wrappedGetNetworkById(networks, chainId);
   const chain = createChain(network.chain);
-  if (networks.isSupportedByBackend(chain)) {
-    /** Use gas price info from our API */
-    const gasChainPrices = await gasChainPricesSubscription.get();
-    const gasPricesInfo = gasChainPrices[chain.toString()];
-    if (!gasPricesInfo) {
-      throw new Error(`Gas Price info for ${chain} not found`);
+  try {
+    if (networks.isSupportedByBackend(chain)) {
+      /** Use gas price info from our API */
+      const gasChainPrices = await gasChainPricesSubscription.get();
+      const gasPricesInfo = gasChainPrices[chain.toString()];
+      if (!gasPricesInfo) {
+        throw new Error(`Gas Price info for ${chain} not found`);
+      }
+      return gasPricesInfo;
+    } else {
+      throw new Error(`Gas Price info for ${chain} not supported`);
     }
-    return gasPricesInfo;
+  } catch {
+    return fetchGasPriceFromNode(chain);
   }
-  return fetchGasPriceFromNode(chain);
 }
 
 function hasGasEstimation(transaction: IncomingTransaction) {

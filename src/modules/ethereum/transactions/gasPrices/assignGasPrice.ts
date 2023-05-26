@@ -18,17 +18,21 @@ export function assignGasPrice<T extends object>(
 ): T & (ClassicGasPriceProps | EIP1559Props) {
   if (gasPrice.eip1559) {
     const { eip1559 } = gasPrice;
-    const transactionWithoutGasPrice = omit(transaction, ['gasPrice']) as T;
-    return Object.assign(transactionWithoutGasPrice, {
+    if ('gasPrice' in transaction) {
+      delete transaction.gasPrice;
+    }
+    return Object.assign(transaction, {
       maxFeePerGas: ethers.utils.hexValue(eip1559.max_fee),
       maxPriorityFeePerGas: ethers.utils.hexValue(eip1559.priority_fee),
     });
   } else if (gasPrice.classic != null) {
-    const transactionWithoutGasPrice = omit(transaction, [
-      'maxFeePerGas',
-      'maxPriorityFeePerGas',
-    ]) as T;
-    return Object.assign(transactionWithoutGasPrice, {
+    if ('maxFeePerGas' in transaction) {
+      delete transaction.maxFeePerGas;
+    }
+    if ('maxPriorityFeePerGas' in transaction) {
+      delete transaction.maxPriorityFeePerGas;
+    }
+    return Object.assign(transaction, {
       gasPrice: ethers.utils.hexValue(gasPrice.classic),
     });
   }
