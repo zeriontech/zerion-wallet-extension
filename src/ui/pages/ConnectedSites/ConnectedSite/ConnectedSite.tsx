@@ -38,6 +38,7 @@ import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { useWalletNameFlags } from 'src/ui/shared/requests/useWalletNameFlags';
 import { Toggle } from 'src/ui/ui-kit/Toggle';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
+import { useReloadActiveTab } from 'src/ui/shared/useReloadActiveTab';
 import { CurrentNetworkSettingsItem } from '../../Networks/CurrentNetworkSettingsItem';
 import { ConnectToDappButton } from './ConnectToDappButton';
 
@@ -177,6 +178,7 @@ export function ConnectedSite() {
     },
   });
   const { setWalletNameFlags, isMetaMask } = useWalletNameFlags(originName);
+  const { reloadActiveTab } = useReloadActiveTab();
   if (!connectedSite) {
     return <NotFoundPage />;
   }
@@ -381,10 +383,12 @@ export function ConnectedSite() {
                       <Toggle
                         checked={isMetaMask}
                         onChange={(event) => {
-                          setWalletNameFlags.mutate({
-                            flag: WalletNameFlag.isMetaMask,
-                            checked: event.target.checked,
-                          });
+                          setWalletNameFlags
+                            .mutateAsync({
+                              flag: WalletNameFlag.isMetaMask,
+                              checked: event.target.checked,
+                            })
+                            .then(reloadActiveTab);
                         }}
                       />
                     </HStack>

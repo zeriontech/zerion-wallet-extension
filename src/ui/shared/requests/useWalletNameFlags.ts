@@ -6,8 +6,7 @@ import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences
 import { useOptimisticMutation } from 'src/ui/shared/requests/useOptimisticMutation';
 
 export function useWalletNameFlags(tabOrigin?: string) {
-  const { globalPreferences, query, setGlobalPreferences } =
-    useGlobalPreferences();
+  const { globalPreferences, query, mutation } = useGlobalPreferences();
 
   const setWalletNameFlags = useOptimisticMutation(
     async ({ flag, checked }: { flag: WalletNameFlag; checked: boolean }) => {
@@ -27,7 +26,7 @@ export function useWalletNameFlags(tabOrigin?: string) {
         }
       });
       if (updatedPreferences) {
-        setGlobalPreferences(updatedPreferences);
+        return mutation.mutateAsync(updatedPreferences);
       }
     },
     { relatedQueryKey: 'wallet/getGlobalPreferences' }
