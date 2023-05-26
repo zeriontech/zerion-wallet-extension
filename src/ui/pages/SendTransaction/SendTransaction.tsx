@@ -167,33 +167,30 @@ function SendTransactionContent({
     }
   );
 
-  const {
-    data: localAddressAction,
-    isLoading: isLoadingLocalAddressAction,
-    isError: isErrorLocalAddressAction,
-    error: localAddressActionError,
-  } = useQuery(
-    ['pendingTransactionToAddressAction', pendingTransaction, networks],
-    () => {
-      return pendingTransaction && networks
-        ? incomingTransactionToIncomingAddressAction(
-            {
-              transaction: pendingTransaction,
-              hash: '',
-              timestamp: 0,
-            },
-            networks
-          )
-        : null;
-    },
-    {
-      enabled: Boolean(pendingTransaction) && Boolean(networks),
-      retry: false,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
-    }
-  );
+  const { data: localAddressAction, isLoading: isLoadingLocalAddressAction } =
+    useQuery(
+      ['pendingTransactionToAddressAction', pendingTransaction, networks],
+      () => {
+        return pendingTransaction && networks
+          ? incomingTransactionToIncomingAddressAction(
+              {
+                transaction: pendingTransaction,
+                hash: '',
+                timestamp: 0,
+              },
+              networks
+            )
+          : null;
+      },
+      {
+        enabled: Boolean(pendingTransaction) && Boolean(networks),
+        useErrorBoundary: true,
+        retry: false,
+        refetchOnMount: false,
+        refetchOnReconnect: false,
+        refetchOnWindowFocus: false,
+      }
+    );
 
   const { data: interpretation } = useQuery(
     ['interpretTransaction', pendingTransaction],
@@ -251,8 +248,8 @@ function SendTransactionContent({
     return <TransactionViewLoading />;
   }
 
-  if (isErrorLocalAddressAction || !localAddressAction) {
-    throw localAddressActionError;
+  if (!localAddressAction) {
+    throw new Error('Unexpected missing localAddressAction');
   }
 
   const chain = networks.getChainById(
@@ -361,7 +358,10 @@ function SendTransactionContent({
             Advanced View
           </Button>
           */}
-          {pendingTransaction ? (
+        </VStack>
+        <Spacer height={16} />
+        {pendingTransaction ? (
+          <div style={{ marginTop: 'auto' }}>
             <ErrorBoundary
               renderError={() => (
                 <UIText kind="body/regular">
@@ -381,8 +381,8 @@ function SendTransactionContent({
                 onConfigurationChange={setConfiguration}
               />
             </ErrorBoundary>
-          ) : null}
-        </VStack>
+          </div>
+        ) : null}
         <Spacer height={16} />
       </PageColumn>
       <PageStickyFooter>

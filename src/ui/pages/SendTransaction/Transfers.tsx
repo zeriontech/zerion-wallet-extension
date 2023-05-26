@@ -51,7 +51,7 @@ function TransferItemFungible({
     [chain, fungible, transfer.quantity]
   );
   const amountInUsd = useMemo(() => {
-    if (!transfer.price) {
+    if (transfer.price == null) {
       return noValueDash;
     }
     const commonQuantity = getCommonQuantity({
