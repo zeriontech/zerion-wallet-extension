@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useLayoutEffect, useState } from 'react';
+import { animated, useTransition } from 'react-spring';
 import type { Chain } from 'src/modules/networks/Chain';
 import type { Networks } from 'src/modules/networks/Networks';
 import { DNA_MINT_CONTRACT_ADDRESS } from 'src/ui/components/DnaClaim/dnaAddress';
@@ -13,6 +14,7 @@ import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
+import { ShuffleText } from 'src/ui/components/ShuffleText';
 
 function ApplicationLineContent({
   label,
@@ -43,7 +45,7 @@ function ApplicationLineContent({
       detailText={
         <HStack gap={4} alignItems="center" justifyContent="space-between">
           <UIText kind="body/accent" color="var(--black)">
-            {name || address}
+            <ShuffleText text={name || address} />
           </UIText>
           <UIText
             kind="small/regular"
@@ -69,6 +71,44 @@ function ApplicationLineContent({
     />
   );
 }
+
+const FadeOutAndIn = ({
+  src,
+  render,
+}: React.PropsWithChildren<{
+  src: string;
+  render: (src: string) => React.ReactNode;
+}>) => {
+  const [currentSrc, setCurrentSrc] = useState(src);
+
+  const transitions = useTransition(currentSrc, {
+    from: {
+      opacity: 0,
+      transform: 'scale(0.98)',
+    },
+    enter: {
+      opacity: 1,
+      transform: 'scale(1)',
+    },
+    leave: {
+      opacity: 0,
+      transform: 'scale(0.98)',
+    },
+    exitBeforeEnter: true,
+    config: {
+      duration: 100,
+    },
+    initial: { from: { opacity: 1, transform: 'scale(1)' } },
+  });
+
+  useLayoutEffect(() => {
+    setCurrentSrc(src);
+  }, [src]);
+
+  return transitions((styles, item) => {
+    return <animated.div style={styles}>{render(item)}</animated.div>;
+  });
+};
 
 export function ApplicationLine({
   applicationName,
@@ -104,37 +144,41 @@ export function ApplicationLine({
           label="Application"
           name={applicationName}
           image={
-            <div
-              style={{
-                position: 'relative',
-                width: 36,
-                height: 36,
-              }}
-            >
-              <div style={{ position: 'absolute', left: 0, top: 0 }}>
-                <Image
-                  // safari doesn't emit img onError for empty string src
-                  src={applicationIcon || 'no-image'}
-                  alt=""
-                  style={{ width: '100%', display: 'block' }}
-                  renderError={() => (
-                    <BlockieImg
-                      address={contractAddress}
-                      size={36}
-                      borderRadius={6}
+            <FadeOutAndIn
+              src={applicationIcon || ''}
+              render={(src) => (
+                <div
+                  style={{
+                    position: 'relative',
+                    width: 36,
+                    height: 36,
+                  }}
+                >
+                  <Image
+                    // safari doesn't emit img onError for empty string src
+                    src={src || 'no-image'}
+                    alt=""
+                    style={{ width: '100%', display: 'block' }}
+                    renderError={() => (
+                      <BlockieImg
+                        address={contractAddress}
+                        size={36}
+                        borderRadius={6}
+                      />
+                    )}
+                  />
+
+                  <div style={{ position: 'absolute', bottom: 0, right: 0 }}>
+                    <NetworkIcon
+                      size={16}
+                      name={network?.name || null}
+                      chainId={network?.external_id || null}
+                      src={network?.icon_url || ''}
                     />
-                  )}
-                />
-              </div>
-              <div style={{ position: 'absolute', bottom: 0, right: 0 }}>
-                <NetworkIcon
-                  size={16}
-                  name={network?.name || null}
-                  chainId={network?.external_id || null}
-                  src={network?.icon_url || ''}
-                />
-              </div>
-            </div>
+                  </div>
+                </div>
+              )}
+            ></FadeOutAndIn>
           }
         />
       )}

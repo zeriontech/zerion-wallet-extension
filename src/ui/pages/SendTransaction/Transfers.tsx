@@ -26,6 +26,7 @@ import { minus, noValueDash } from 'src/ui/shared/typography';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { animated, useSpring } from 'react-spring';
 
 function TransferItemFungible({
   address,
@@ -172,6 +173,18 @@ function TransferItem({
   return null;
 }
 
+function Appear({
+  children,
+  delay = 0,
+}: React.PropsWithChildren<{ delay?: number }>) {
+  const style = useSpring({
+    from: { opacity: 0 },
+    to: { opacity: 1 },
+    delay,
+  });
+  return <animated.div style={style}>{children}</animated.div>;
+}
+
 export function Transfers({
   address,
   chain,
@@ -184,42 +197,46 @@ export function Transfers({
   return (
     <VStack gap={4}>
       {transfers.outgoing?.length ? (
-        <Surface style={{ paddingBlock: 8, paddingInline: 12 }}>
-          <UIText kind="caption/accent" color="var(--neutral-500)">
-            Pay
-          </UIText>
-          <Spacer height={4} />
-          <VStack gap={8}>
-            {transfers.outgoing.map((transfer) => (
-              <TransferItem
-                key={`${transfer.quantity}${transfer.price}$`}
-                address={address}
-                chain={chain}
-                transfer={transfer}
-                direction="out"
-              />
-            ))}
-          </VStack>
-        </Surface>
+        <Appear>
+          <Surface style={{ paddingBlock: 8, paddingInline: 12 }}>
+            <UIText kind="caption/accent" color="var(--neutral-500)">
+              Pay
+            </UIText>
+            <Spacer height={4} />
+            <VStack gap={8}>
+              {transfers.outgoing.map((transfer) => (
+                <TransferItem
+                  key={`${transfer.quantity}${transfer.price}$`}
+                  address={address}
+                  chain={chain}
+                  transfer={transfer}
+                  direction="out"
+                />
+              ))}
+            </VStack>
+          </Surface>
+        </Appear>
       ) : null}
       {transfers.incoming?.length ? (
-        <Surface style={{ paddingBlock: 8, paddingInline: 12 }}>
-          <UIText kind="caption/accent" color="var(--neutral-500)">
-            Receive
-          </UIText>
-          <Spacer height={4} />
-          <VStack gap={8}>
-            {transfers.incoming.map((transfer) => (
-              <TransferItem
-                key={`${transfer.quantity}${transfer.price}$`}
-                address={address}
-                chain={chain}
-                transfer={transfer}
-                direction="in"
-              />
-            ))}
-          </VStack>
-        </Surface>
+        <Appear delay={150}>
+          <Surface style={{ paddingBlock: 8, paddingInline: 12 }}>
+            <UIText kind="caption/accent" color="var(--neutral-500)">
+              Receive
+            </UIText>
+            <Spacer height={4} />
+            <VStack gap={8}>
+              {transfers.incoming.map((transfer) => (
+                <TransferItem
+                  key={`${transfer.quantity}${transfer.price}$`}
+                  address={address}
+                  chain={chain}
+                  transfer={transfer}
+                  direction="in"
+                />
+              ))}
+            </VStack>
+          </Surface>
+        </Appear>
       ) : null}
     </VStack>
   );

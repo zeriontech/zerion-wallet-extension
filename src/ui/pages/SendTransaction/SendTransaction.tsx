@@ -37,6 +37,8 @@ import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { networksStore } from 'src/modules/networks/networks-store.client';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
+import { DelayedRender } from 'src/ui/components/DelayedRender';
+import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
@@ -192,7 +194,7 @@ function SendTransactionContent({
       }
     );
 
-  const { data: interpretation } = useQuery(
+  const { data: interpretation, ...interpretQuery } = useQuery(
     ['interpretTransaction', pendingTransaction],
     () => {
       return pendingTransaction
@@ -202,7 +204,7 @@ function SendTransactionContent({
     {
       enabled: Boolean(pendingTransaction),
       suspense: false,
-      retry: false,
+      retry: 1,
       refetchOnMount: false,
       refetchOnReconnect: false,
       refetchOnWindowFocus: false,
@@ -309,8 +311,8 @@ function SendTransactionContent({
             </UIText>
           </HStack>
         </div>
+        <Spacer height={24} />
         <VStack gap={16}>
-          <Spacer height={24} />
           {recipientAddress && addressAction?.type.value === 'send' ? (
             <RecipientLine
               recipientAddress={recipientAddress}
@@ -347,6 +349,30 @@ function SendTransactionContent({
               actionType={localAddressAction.type.value}
               asset={singleAsset}
             />
+          ) : null}
+          {interpretQuery.isLoading ? (
+            <>
+              <UIText kind="small/regular" color="var(--primary)">
+                Analyzing...
+                <br />
+                <ZStack hideLowerElements={true}>
+                  <DelayedRender delay={11000}>
+                    <span style={{ color: 'var(--black)' }}>
+                      (Going to give up soon...)
+                    </span>
+                  </DelayedRender>
+                  <DelayedRender delay={6000}>
+                    <span style={{ color: 'var(--black)' }}>
+                      (Request is taking longer than usual...)
+                    </span>
+                  </DelayedRender>
+                </ZStack>
+              </UIText>
+            </>
+          ) : interpretQuery.isError ? (
+            <UIText kind="small/regular" color="var(--notice-600)">
+              Unable to analyze the details of the transaction
+            </UIText>
           ) : null}
           {/*
           <Button
