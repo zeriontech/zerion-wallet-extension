@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import omit from 'lodash/omit';
 import type { GasPriceObject } from './GasPriceObject';
 import type { ChainGasPrice } from './requests';
 
@@ -17,12 +18,17 @@ export function assignGasPrice<T extends object>(
 ): T & (ClassicGasPriceProps | EIP1559Props) {
   if (gasPrice.eip1559) {
     const { eip1559 } = gasPrice;
-    return Object.assign(transaction, {
+    const transactionWithoutGasPrice = omit(transaction, ['gasPrice']) as T;
+    return Object.assign(transactionWithoutGasPrice, {
       maxFeePerGas: ethers.utils.hexValue(eip1559.max_fee),
       maxPriorityFeePerGas: ethers.utils.hexValue(eip1559.priority_fee),
     });
   } else if (gasPrice.classic != null) {
-    return Object.assign(transaction, {
+    const transactionWithoutGasPrice = omit(transaction, [
+      'maxFeePerGas',
+      'maxPriorityFeePerGas',
+    ]) as T;
+    return Object.assign(transactionWithoutGasPrice, {
       gasPrice: ethers.utils.hexValue(gasPrice.classic),
     });
   }
