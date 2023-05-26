@@ -22,7 +22,9 @@ async function fetchInitialState(connection: Connection) {
     connection.send<string>(formatJsonRpcRequest('eth_chainId', [])),
     connection.send<string[]>(formatJsonRpcRequest('eth_accounts', [])),
     connection.send<WalletNameFlag[]>(
-      formatJsonRpcRequest('wallet_getWalletNameFlags', [])
+      formatJsonRpcRequest('wallet_getWalletNameFlags', {
+        origin: window.location.origin,
+      })
     ),
   ]).then(([chainId, accounts, walletNameFlags]) => ({
     chainId,

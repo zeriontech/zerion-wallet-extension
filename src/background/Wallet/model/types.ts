@@ -1,7 +1,6 @@
 import type { ethers } from 'ethers';
 import type { WalletAbility } from 'src/shared/types/Daylight';
 import type { WalletContainer } from './WalletContainer';
-import type { WalletNameFlag } from './WalletNameFlag';
 import type { WalletOrigin } from './WalletOrigin';
 
 export interface BareWallet {
@@ -40,7 +39,6 @@ interface PublicPreferences {
    * Defaults to `true`
    */
   showNetworkSwitchShortcut?: boolean;
-  walletNameFlags?: WalletNameFlag[];
   overviewChain?: string;
   /**
    * Allow to configure nonce before signing transactions

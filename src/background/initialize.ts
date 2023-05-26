@@ -31,8 +31,10 @@ export async function initialize() {
   const dnaService = new DnaService(account);
   dnaService.initialize();
   await transactionService.initialize();
+  initializeRemoteConfig().then(() => {
+    globalPreferences.initialize();
+  });
   initializeAnalytics({ account });
-  initializeRemoteConfig();
 
   Object.assign(globalThis, {
     account,

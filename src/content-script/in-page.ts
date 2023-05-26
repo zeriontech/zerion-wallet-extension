@@ -78,10 +78,15 @@ provider
     }
   });
 
-provider.request({ method: 'wallet_getWalletNameFlags' }).then((result) => {
-  if (result.includes(WalletNameFlag.isMetaMask)) {
-    provider.isMetaMask = true;
-  }
-});
+provider
+  .request({
+    method: 'wallet_getWalletNameFlags',
+    params: { origin: window.location.origin },
+  })
+  .then((result) => {
+    if (result.includes(WalletNameFlag.isMetaMask)) {
+      provider.isMetaMask = true;
+    }
+  });
 
 window.zerionWallet = provider;

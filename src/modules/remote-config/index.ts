@@ -6,7 +6,7 @@ export { RemoteConfig } from './types';
 // Register plugins
 registerConfigPlugin(firebasePlugin);
 
-export function initialize() {
+export async function initialize() {
   return activatePlugins();
 }
 

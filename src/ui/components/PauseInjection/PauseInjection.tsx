@@ -1,5 +1,4 @@
-import browser from 'webextension-polyfill';
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Button } from 'src/ui/ui-kit/Button';
 import ConnectionIconOn from 'jsx:src/ui/assets/connection-toggle-on.svg';
 import ConnectionIconOff from 'jsx:src/ui/assets/connection-toggle-off.svg';
@@ -27,6 +26,7 @@ import * as s from 'src/ui/style/helpers.module.css';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
 import produce from 'immer';
+import { reloadActiveTab } from 'src/ui/shared/reloadActiveTab';
 import { ViewLoading } from '../ViewLoading';
 
 const TESTING = process.env.NODE_ENV !== 'production';
@@ -231,7 +231,6 @@ function usePausedData() {
     (tabUrlHttp
       ? Boolean(globalPreferences?.providerInjection[tabUrlHttp.origin])
       : false);
-  const tabId = tabData?.tab.id;
   return {
     tabUrl: tabUrlHttp,
     isPaused,
@@ -240,11 +239,6 @@ function usePausedData() {
     globalPreferences,
     setGlobalPreferences: mutation.mutateAsync,
     tabData,
-    reloadActiveTab: useCallback(() => {
-      if (tabId) {
-        browser.tabs.reload(tabId);
-      }
-    }, [tabId]),
   };
 }
 
@@ -283,7 +277,6 @@ export function PauseInjectionControl() {
     tabUrl,
     globalPreferences,
     setGlobalPreferences,
-    reloadActiveTab,
   } = usePausedData();
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   if (!globalPreferences) {
@@ -345,7 +338,6 @@ export function PausedBanner({ style }: { style?: React.CSSProperties }) {
     tabUrl,
     globalPreferences,
     setGlobalPreferences,
-    reloadActiveTab,
   } = usePausedData();
   if (!isPaused || !globalPreferences) {
     return null;

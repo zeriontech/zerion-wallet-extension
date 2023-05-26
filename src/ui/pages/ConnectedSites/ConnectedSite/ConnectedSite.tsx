@@ -35,6 +35,10 @@ import { useAddressPortfolioDecomposition } from 'defi-sdk';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { invariant } from 'src/shared/invariant';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
+import { useWalletNameFlags } from 'src/ui/shared/requests/useWalletNameFlags';
+import { Toggle } from 'src/ui/ui-kit/Toggle';
+import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
+import { reloadActiveTab } from 'src/ui/shared/reloadActiveTab';
 import { CurrentNetworkSettingsItem } from '../../Networks/CurrentNetworkSettingsItem';
 import { ConnectToDappButton } from './ConnectToDappButton';
 
@@ -173,6 +177,7 @@ export function ConnectedSite() {
       }
     },
   });
+  const { setWalletNameFlags, isMetaMask } = useWalletNameFlags(originName);
   if (!connectedSite) {
     return <NotFoundPage />;
   }
@@ -361,6 +366,44 @@ export function ConnectedSite() {
               />
             </>
           ) : null}
+          <VStack gap={8}>
+            <UIText kind="small/regular">Advanced</UIText>
+            <SurfaceList
+              items={[
+                {
+                  key: 0,
+                  component: (
+                    <HStack
+                      gap={4}
+                      justifyContent="space-between"
+                      alignItems="center"
+                    >
+                      <UIText kind="small/regular">MetaMask Mode</UIText>
+                      <Toggle
+                        checked={isMetaMask}
+                        onChange={(event) => {
+                          setWalletNameFlags
+                            .mutateAsync({
+                              flag: WalletNameFlag.isMetaMask,
+                              checked: event.target.checked,
+                            })
+                            .then(() => {
+                              if (activeTabOrigin === originName) {
+                                reloadActiveTab();
+                              }
+                            });
+                        }}
+                      />
+                    </HStack>
+                  ),
+                },
+              ]}
+            />
+            <UIText kind="caption/regular" color="var(--neutral-500)">
+              Some DApps only work with MetaMask. Zerion Wallet can work with
+              them by appearing as MetaMask
+            </UIText>
+          </VStack>
         </VStack>
         <PageBottom />
       </PageColumn>

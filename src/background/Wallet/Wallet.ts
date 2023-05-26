@@ -64,7 +64,6 @@ import {
 } from './model/WalletContainer';
 import { WalletRecordModel as Model } from './WalletRecord';
 import { WalletStore } from './persistence';
-import type { WalletNameFlag } from './model/WalletNameFlag';
 import { WalletOrigin } from './model/WalletOrigin';
 import type { GlobalPreferences } from './GlobalPreferences';
 import type { State as GlobalPreferencesState } from './GlobalPreferences';
@@ -663,20 +662,6 @@ export class Wallet {
     return getRemoteConfigValue('user_can_create_initial_wallet');
   }
 
-  async wallet_setWalletNameFlag({
-    context,
-    params: { flag, checked },
-  }: WalletMethodParams<{ flag: WalletNameFlag; checked: boolean }>) {
-    this.verifyInternalOrigin(context);
-    this.ensureRecord(this.record);
-    if (checked) {
-      this.record = Model.setWalletNameFlag(this.record, { flag });
-    } else {
-      this.record = Model.removeWalletNameFlag(this.record, { flag });
-    }
-    this.updateWalletStore(this.record);
-  }
-
   async isFlaggedAsDapp({
     context,
     params: { origin },
@@ -1259,8 +1244,11 @@ class PublicController {
     // });
   }
 
-  async wallet_getWalletNameFlags({ context: _context }: PublicMethodParams) {
-    const preferences = await this.wallet.getPreferences({
+  async wallet_getWalletNameFlags({
+    context: _context,
+    params: { origin },
+  }: PublicMethodParams<{ origin: string }>) {
+    const preferences = await this.wallet.getGlobalPreferences({
       /**
        * NOTE: we're not checking `context` param here and use
        * INTERNAL_SYMBOL_CONTEXT, because preferences.walletNameFlags are
@@ -1270,7 +1258,7 @@ class PublicController {
        */
       context: INTERNAL_SYMBOL_CONTEXT,
     });
-    return preferences.walletNameFlags || [];
+    return preferences.walletNameFlags[origin] || [];
   }
 
   async wallet_getGlobalPreferences({ context: _context }: PublicMethodParams) {
