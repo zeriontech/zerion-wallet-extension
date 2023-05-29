@@ -32,10 +32,9 @@ async function estimateGas(
   const { result } = await sendRpcRequest<string>(rpcUrl, {
     method: 'eth_estimateGas',
     params: [
-      omit(transaction, [
+      omit({ ...transaction, /* convert to hex */ chainId }, [
         'gas', // error on Aurora if gas: 0x0, so we omit it
         'nonce', // error on Polygon if nonce is int, but we don't need it at all
-        'chainId', // ? verify ? some networks need int, some hex, safer to remove altogether
       ]),
     ],
   });
