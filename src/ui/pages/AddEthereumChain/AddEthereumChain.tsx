@@ -74,7 +74,7 @@ function AddChain({
             <UIText kind="headline/h2">{hostname}</UIText>
           </HStack>
           <UIText kind="small/accent" color="var(--neutral-500)">
-            suggests you add blabla
+            Suggests you add this network
           </UIText>
         </VStack>
       </div>
