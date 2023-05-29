@@ -1,5 +1,7 @@
 import { STANDARD_ERROR_MAP } from '@json-rpc-tools/utils';
 
+export type ExtendedError = Error & { code?: number; data?: string };
+
 export class ErrorWithEnumerableMessage extends Error {
   constructor(message: string) {
     super(message);
