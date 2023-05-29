@@ -211,7 +211,7 @@ function SendTransactionContent({
     }
   );
 
-  const addressAction = interpretation?.action;
+  const interpretAddressAction = interpretation?.action;
 
   const feeValueCommonRef = useRef<string>(); /** for analytics only */
   const handleFeeValueCommonReady = useCallback((value: string) => {
@@ -258,17 +258,12 @@ function SendTransactionContent({
     ethers.utils.hexValue(pendingTransaction.chainId)
   );
 
-  const recipientAddress =
-    addressAction?.label?.display_value.wallet_address ||
-    localAddressAction.label?.display_value.wallet_address;
-  const contractAddress =
-    addressAction?.label?.display_value.contract_address ||
-    localAddressAction.label?.display_value.contract_address;
-  const actionTransfers =
-    addressAction?.content?.transfers || localAddressAction.content?.transfers;
-  const singleAsset =
-    addressAction?.content?.single_asset?.asset ||
-    localAddressAction.content?.single_asset?.asset;
+  const addressAction = interpretAddressAction || localAddressAction;
+
+  const recipientAddress = addressAction.label?.display_value.wallet_address;
+  const contractAddress = addressAction.label?.display_value.contract_address;
+  const actionTransfers = addressAction.content?.transfers;
+  const singleAsset = addressAction.content?.single_asset?.asset;
 
   return (
     <Background backgroundKind="white">
@@ -282,8 +277,7 @@ function SendTransactionContent({
         <PageTop />
         <div style={{ display: 'grid', placeItems: 'center' }}>
           <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
-            {addressAction?.type.display_value ||
-              localAddressAction.type.display_value}
+            {addressAction.type.display_value}
           </UIText>
           <UIText kind="small/regular" color="var(--neutral-500)">
             {originForHref ? (
@@ -313,7 +307,7 @@ function SendTransactionContent({
         </div>
         <Spacer height={24} />
         <VStack gap={16}>
-          {recipientAddress && addressAction?.type.value === 'send' ? (
+          {recipientAddress && addressAction.type.value === 'send' ? (
             <RecipientLine
               recipientAddress={recipientAddress}
               chain={chain}
@@ -322,14 +316,8 @@ function SendTransactionContent({
           ) : null}
           {contractAddress ? (
             <ApplicationLine
-              applicationName={
-                addressAction?.label?.display_value.text ||
-                localAddressAction.label?.display_value.text
-              }
-              applicationIcon={
-                addressAction?.label?.icon_url ||
-                localAddressAction.label?.icon_url
-              }
+              applicationName={addressAction.label?.display_value.text}
+              applicationIcon={addressAction.label?.icon_url}
               contractAddress={contractAddress}
               chain={chain}
               networks={networks}
@@ -346,7 +334,7 @@ function SendTransactionContent({
           {singleAsset ? (
             <SingleAsset
               address={singleAddress}
-              actionType={localAddressAction.type.value}
+              actionType={addressAction.type.value}
               asset={singleAsset}
             />
           ) : null}
