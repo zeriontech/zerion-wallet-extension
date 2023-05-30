@@ -15,10 +15,21 @@ export function applyConfiguration(
       draft.nonce = parseInt(nonce);
     }
     if (networkFee.speed === 'custom') {
-      assignGasPrice(draft, {
-        classic: networkFee.customClassicGasPrice,
-        eip1559: networkFee.custom1559GasPrice,
-      });
+      if (networkFee.custom1559GasPrice || networkFee.customClassicGasPrice) {
+        assignGasPrice(draft, {
+          eip1559: networkFee.custom1559GasPrice,
+          classic: networkFee.customClassicGasPrice,
+        });
+      } else if (chainGasPrices) {
+        assignGasPrice(draft, {
+          classic: chainGasPrices.info.classic?.fast,
+          eip1559: chainGasPrices.info.eip1559?.fast,
+        });
+      } else {
+        throw new Error(
+          'Either chain gas price or custom gas price config should be defined'
+        );
+      }
     } else if (chainGasPrices) {
       assignGasPrice(draft, {
         classic: chainGasPrices.info.classic?.[networkFee.speed],

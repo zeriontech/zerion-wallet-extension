@@ -164,6 +164,7 @@ function CustomNetworkFeeForm({
           <HStack gap={16} style={{ gridTemplateColumns: '1fr 1fr' }}>
             <InnerLabelInput
               inputMode="numeric"
+              autoFocus={true}
               label="Priority Fee (GWEI)"
               name="priorityFee"
               placeholder="0"
@@ -208,6 +209,7 @@ function CustomNetworkFeeForm({
         <VStack gap={16} style={{ alignContent: 'start' }}>
           <InnerLabelInput
             inputMode="numeric"
+            autoFocus={true}
             label="Base Fee (GWEI)"
             name="baseFee"
             placeholder="0"
