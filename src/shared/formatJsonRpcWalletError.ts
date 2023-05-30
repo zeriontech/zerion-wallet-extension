@@ -14,12 +14,12 @@ export function formatJsonRpcWalletError(
     return {
       id,
       jsonrpc: '2.0',
-      error: {
+      error: Object.assign(
         // Extract values so that they're enumerable
-        code: error.code,
-        data: error.data,
-        message: error.message,
-      },
+        { message: error.message },
+        error.code != null ? { code: error.code } : null,
+        error.data ? { data: error.data } : null
+      ),
     };
   }
 }
