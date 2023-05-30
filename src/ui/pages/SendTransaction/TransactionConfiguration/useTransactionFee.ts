@@ -12,7 +12,6 @@ import type {
   EIP1559GasPrices,
 } from 'src/modules/ethereum/transactions/gasPrices/requests';
 import { fetchGasPriceFromNode } from 'src/modules/ethereum/transactions/gasPrices/requests';
-import { useGasPrices } from 'src/modules/ethereum/transactions/gasPrices/requests';
 import { gasChainPricesSubscription } from 'src/modules/ethereum/transactions/gasPrices/requests';
 import type { GasPriceObject } from 'src/modules/ethereum/transactions/gasPrices/GasPriceObject';
 import type { EstimatedFeeValue } from 'src/modules/ethereum/transactions/gasPrices/feeEstimation';
@@ -22,6 +21,8 @@ import { formatSeconds } from 'src/shared/units/formatSeconds';
 import { getDecimals } from 'src/modules/networks/asset';
 import { baseToCommon } from 'src/shared/units/convert';
 import { useNetworks } from 'src/modules/networks/useNetworks';
+import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
+import { networksStore } from 'src/modules/networks/networks-store.client';
 import type { NetworkFeeConfiguration } from '../NetworkFee/types';
 
 function getGasPriceFromTransaction(
@@ -90,9 +91,10 @@ export function useFeeEstimation(
         gasPrices[chain.toString()];
 
       if (!chainGasPrices) {
+        const networks = await networksStore.load();
         chainGasPrices = await requestWithCache(
           `fetch gas price for node ${chain.toString()}`,
-          fetchGasPriceFromNode(chain),
+          fetchGasPriceFromNode(chain, networks),
           { cacheTime: 10000 }
         );
       }

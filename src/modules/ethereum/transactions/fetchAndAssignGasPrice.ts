@@ -48,7 +48,7 @@ async function fetchGasPriceForTransaction(
   const chainId = resolveChainId(transaction);
   const network = wrappedGetNetworkById(networks, chainId);
   const chain = createChain(network.chain);
-  return fetchGasPrice(chain);
+  return fetchGasPrice(chain, networks);
 }
 
 function hasGasEstimation(transaction: IncomingTransaction) {

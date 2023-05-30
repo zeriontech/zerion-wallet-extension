@@ -11,7 +11,6 @@ import type { Chain } from 'src/modules/networks/Chain';
 import { Media } from 'src/ui/ui-kit/Media';
 import { SurfaceItemButton, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/requests';
-import { useGasPrices } from 'src/modules/ethereum/transactions/gasPrices/requests';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { formatSeconds } from 'src/shared/units/formatSeconds';
@@ -31,6 +30,7 @@ import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
+import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import {
   useFeeEstimation,
   useTransactionPrices,

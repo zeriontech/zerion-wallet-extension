@@ -1,10 +1,9 @@
 import { ethers } from 'ethers';
 import { client, mergeSingleEntity } from 'defi-sdk';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
-import { useQuery } from 'react-query';
 import type { Chain } from 'src/modules/networks/Chain';
 import { sendRpcRequest } from 'src/shared/custom-rpc/rpc-request';
-import { networksStore } from 'src/modules/networks/networks-store.background';
+import type { Networks } from 'src/modules/networks/Networks';
 import type { EIP1559 } from './EIP1559';
 
 export interface OptimisticGasPriceInfo {
@@ -45,9 +44,9 @@ const namespace = 'gas';
 const scope = 'chain-prices';
 
 export async function fetchGasPriceFromNode(
-  chain: Chain
+  chain: Chain,
+  networks: Networks
 ): Promise<ChainGasPrice> {
-  const networks = await networksStore.load();
   const url = networks.getRpcUrlInternal(chain);
   if (!url) {
     throw new Error(`RPC URL is missing from network config for ${chain}`);
@@ -125,8 +124,7 @@ class GasChainPricesSubscription {
 
 export const gasChainPricesSubscription = new GasChainPricesSubscription();
 
-export async function fetchGasPrice(chain: Chain) {
-  const networks = await networksStore.load();
+export async function fetchGasPrice(chain: Chain, networks: Networks) {
   try {
     if (networks.isSupportedByBackend(chain)) {
       const gasPrices = await gasChainPricesSubscription.get();
@@ -140,19 +138,6 @@ export async function fetchGasPrice(chain: Chain) {
       throw new Error(`Gas Price info for ${chain} not supported`);
     }
   } catch {
-    return fetchGasPriceFromNode(chain);
+    return fetchGasPriceFromNode(chain, networks);
   }
-}
-
-export function useGasPrices(chain: Chain | null) {
-  return useQuery(
-    ['defi-sdk/gasPrices', chain?.toString()],
-    () => {
-      if (!chain) {
-        return null;
-      }
-      return fetchGasPrice(chain);
-    },
-    { useErrorBoundary: true, enabled: Boolean(chain) }
-  );
 }

@@ -1,7 +1,6 @@
 import { isTruthy } from 'is-truthy-ts';
 import React, { useRef } from 'react';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/requests';
-import { useGasPrices } from 'src/modules/ethereum/transactions/gasPrices/requests';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -14,6 +13,7 @@ import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTML
 import type { Chain } from 'src/modules/networks/Chain';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { useNetworks } from 'src/modules/networks/useNetworks';
+import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import type { TransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import { NetworkFeeDialog } from './NetworkFeeDialog';
 import type { NetworkFeeConfiguration } from './types';
