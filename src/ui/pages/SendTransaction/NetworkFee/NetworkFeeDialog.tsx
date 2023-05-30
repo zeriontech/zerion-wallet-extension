@@ -19,8 +19,8 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import {
   formatGasPrice,
-  getLongGasPrice,
-  getShortGasPrice,
+  gweiToWei,
+  weiToGwei,
 } from 'src/shared/units/formatGasPrice';
 import { InnerLabelInput } from 'src/ui/ui-kit/Input/InnerLabelInput';
 import { useNativeAsset } from 'src/ui/shared/requests/useNativeAsset';
@@ -65,29 +65,41 @@ function formDataToGasConfiguration(
     return {
       speed: 'custom',
       custom1559GasPrice: null,
-      customClassicGasPrice: getLongGasPrice(baseFee),
+      customClassicGasPrice: gweiToWei(baseFee),
     };
   } else {
     return {
       speed: 'custom',
       customClassicGasPrice: null,
       custom1559GasPrice: {
-        priority_fee: getLongGasPrice(priorityFee),
-        max_fee: getLongGasPrice(maxFee),
+        priority_fee: gweiToWei(priorityFee),
+        max_fee: gweiToWei(maxFee),
       },
     };
+  }
+}
+
+function setFormValue(form: HTMLFormElement, name: string, value: unknown) {
+  const input = form.elements.namedItem(name);
+  invariant(input, `Input ${name} not found`);
+  if (input instanceof HTMLInputElement) {
+    input.value = String(value);
+  } else {
+    throw new Error('Must be an input');
   }
 }
 
 function setPatternValidity(event: React.ChangeEvent<HTMLInputElement>) {
   if (event.currentTarget.validity.patternMismatch) {
     event.currentTarget.setCustomValidity(
-      'Gas Price value must be a positive whole number'
+      'Gas Price value must be a positive number'
     );
   } else {
     event.currentTarget.setCustomValidity('');
   }
 }
+
+const FLOAT_INPUT_PATTERN = '(\\d+\\.)?\\d+'; // positive floats and ints
 
 function CustomNetworkFeeForm({
   type,
@@ -122,9 +134,9 @@ function CustomNetworkFeeForm({
   const defaultMaxFee =
     value.custom1559GasPrice?.max_fee ?? eip1559?.fast?.max_fee ?? 0;
 
-  const defaultBaseFeeGWEI = getShortGasPrice(defaultBaseFee);
-  const defaultPriorityFeeGWEI = getShortGasPrice(defaultPriorityFee);
-  const defaultMaxFeeGWEI = getShortGasPrice(defaultMaxFee);
+  const defaultBaseFeeGWEI = weiToGwei(defaultBaseFee);
+  const defaultPriorityFeeGWEI = weiToGwei(defaultPriorityFee);
+  const defaultMaxFeeGWEI = weiToGwei(defaultMaxFee);
 
   const baseFee = configuration.customClassicGasPrice ?? defaultBaseFee;
   const priorityFee =
@@ -201,7 +213,7 @@ function CustomNetworkFeeForm({
               style={{ border: '1px solid var(--neutral-400)' }}
               defaultValue={defaultPriorityFeeGWEI}
               onChange={setPatternValidity}
-              pattern="\d+"
+              pattern={FLOAT_INPUT_PATTERN}
               required={true}
             />
             <InnerLabelInput
@@ -212,7 +224,7 @@ function CustomNetworkFeeForm({
               style={{ border: '1px solid var(--neutral-400)' }}
               defaultValue={defaultMaxFeeGWEI}
               onChange={setPatternValidity}
-              pattern="\d+"
+              pattern={FLOAT_INPUT_PATTERN}
               required={true}
             />
           </HStack>
@@ -250,7 +262,7 @@ function CustomNetworkFeeForm({
             style={{ border: '1px solid var(--neutral-400)' }}
             defaultValue={defaultBaseFeeGWEI}
             onChange={setPatternValidity}
-            pattern="\d+"
+            pattern={FLOAT_INPUT_PATTERN}
             required={true}
           />
           <HStack gap={24} justifyContent="space-between">
@@ -273,7 +285,16 @@ function CustomNetworkFeeForm({
           onClick={(event) => {
             const { form } = event.currentTarget;
             invariant(form, 'Reset button must belong to a form');
+
             form.reset();
+            if (type === 'classic') {
+              setFormValue(form, 'baseFee', weiToGwei(classic?.fast || 0));
+            } else {
+              const priorityFee = weiToGwei(eip1559?.fast?.priority_fee || 0);
+              setFormValue(form, 'priorityFee', priorityFee);
+              const maxFee = weiToGwei(eip1559?.fast?.max_fee || 0);
+              setFormValue(form, 'maxFee', maxFee);
+            }
             setConfiguration(formDataToGasConfiguration(new FormData(form)));
           }}
         >
