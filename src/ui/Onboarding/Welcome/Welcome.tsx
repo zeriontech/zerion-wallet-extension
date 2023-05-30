@@ -10,7 +10,9 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
+import LinkIcon from 'jsx:src/ui/assets/new-window.svg';
 import { isEmail } from 'src/shared/isEmail';
+import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import {
   checkWhitelistStatus,
   getWaitlistStatus,
@@ -213,6 +215,20 @@ function EligibleFAQ({ show }: { show: boolean }) {
               We’ll be onboarding users in the coming weeks, and you’ll get an
               email when your spot is open.
             </UIText>
+            <TextAnchor
+              href="https://zerion.io/extension-waitlist"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <HStack gap={4} alignItems="center">
+                <UIText kind="body/regular" color="var(--primary)">
+                  Join the waitlist
+                </UIText>
+                <LinkIcon
+                  style={{ color: 'var(--primary)', width: 16, height: 16 }}
+                />
+              </HStack>
+            </TextAnchor>
           </VStack>
         </VStack>
       </SidePanel>
