@@ -3,11 +3,11 @@ import { roundTokenValue } from './formatTokenValue';
 
 export const GWEI_DECIMALS = 9;
 
-export const getShortGasPrice = (value: string | number): string =>
-  roundTokenValue(Math.floor(baseToCommon(value, GWEI_DECIMALS).toNumber()));
+export const weiToGwei = (value: string | number): number =>
+  baseToCommon(value, GWEI_DECIMALS).toNumber();
 
-export const getLongGasPrice = (value: string | number): number =>
+export const gweiToWei = (value: string | number): number =>
   commonToBase(value, GWEI_DECIMALS).toNumber();
 
 export const formatGasPrice = (value: string | number) =>
-  `${getShortGasPrice(value)} GWEI`;
+  `${roundTokenValue(weiToGwei(value))} GWEI`;

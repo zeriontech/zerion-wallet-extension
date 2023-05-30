@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import type { BigNumber } from 'bignumber.js';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
@@ -19,8 +19,8 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import {
   formatGasPrice,
-  getLongGasPrice,
-  getShortGasPrice,
+  gweiToWei,
+  weiToGwei,
 } from 'src/shared/units/formatGasPrice';
 import { InnerLabelInput } from 'src/ui/ui-kit/Input/InnerLabelInput';
 import { useNativeAsset } from 'src/ui/shared/requests/useNativeAsset';
@@ -31,6 +31,7 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
+import { invariant } from 'src/shared/invariant';
 import {
   useFeeEstimation,
   useTransactionPrices,
@@ -52,6 +53,53 @@ function getCustomFeeDescription({
     fiat ? `${formatCurrencyValue(fiat, 'en', 'usd')} (` : ''
   }${formatGasPrice(gasPrice)}${fiat ? ')' : ''}`;
 }
+
+function formDataToGasConfiguration(
+  formData: FormData
+): NetworkFeeConfiguration {
+  const priorityFee = (formData.get('priorityFee') ?? '') as string;
+  const maxFee = (formData.get('maxFee') ?? '') as string;
+  const baseFee = (formData.get('baseFee') ?? '') as string;
+
+  if (formData.has('baseFee')) {
+    return {
+      speed: 'custom',
+      custom1559GasPrice: null,
+      customClassicGasPrice: gweiToWei(baseFee),
+    };
+  } else {
+    return {
+      speed: 'custom',
+      customClassicGasPrice: null,
+      custom1559GasPrice: {
+        priority_fee: gweiToWei(priorityFee),
+        max_fee: gweiToWei(maxFee),
+      },
+    };
+  }
+}
+
+function setFormValue(form: HTMLFormElement, name: string, value: unknown) {
+  const input = form.elements.namedItem(name);
+  invariant(input, `Input ${name} not found`);
+  if (input instanceof HTMLInputElement) {
+    input.value = String(value);
+  } else {
+    throw new Error('Must be an input');
+  }
+}
+
+function setPatternValidity(event: React.ChangeEvent<HTMLInputElement>) {
+  if (event.currentTarget.validity.patternMismatch) {
+    event.currentTarget.setCustomValidity(
+      'Gas Price value must be a positive number'
+    );
+  } else {
+    event.currentTarget.setCustomValidity('');
+  }
+}
+
+const FLOAT_INPUT_PATTERN = '(\\d+\\.)?\\d+'; // positive floats and ints
 
 function CustomNetworkFeeForm({
   type,
@@ -76,29 +124,24 @@ function CustomNetworkFeeForm({
     throw new Error('classic gas price is expected in chain configuration');
   }
 
+  const [configuration, setConfiguration] = useState(value);
+
   const { value: nativeAsset } = useNativeAsset(chain);
 
-  const [baseFee, setBaseFee] = useState(
-    value.customClassicGasPrice ?? classic?.fast ?? 0
-  );
-  const [priorityFee, setPriorityFee] = useState(
-    value.custom1559GasPrice?.priority_fee ?? eip1559?.fast?.priority_fee ?? 0
-  );
-  const [maxFee, setMaxFee] = useState(
-    value.custom1559GasPrice?.max_fee ?? eip1559?.fast?.max_fee ?? 0
-  );
+  const defaultBaseFee = value.customClassicGasPrice ?? classic?.fast ?? 0;
+  const defaultPriorityFee =
+    value.custom1559GasPrice?.priority_fee ?? eip1559?.fast?.priority_fee ?? 0;
+  const defaultMaxFee =
+    value.custom1559GasPrice?.max_fee ?? eip1559?.fast?.max_fee ?? 0;
 
-  const isChanged =
-    (type === 'classic' && baseFee !== classic?.fast) ||
-    (type === 'eip1559' &&
-      (priorityFee !== eip1559?.fast?.priority_fee ||
-        maxFee !== eip1559?.fast?.max_fee));
+  const defaultBaseFeeGWEI = weiToGwei(defaultBaseFee);
+  const defaultPriorityFeeGWEI = weiToGwei(defaultPriorityFee);
+  const defaultMaxFeeGWEI = weiToGwei(defaultMaxFee);
 
-  const handleReset = useCallback(() => {
-    setBaseFee(classic?.fast || 0);
-    setPriorityFee(eip1559?.fast?.priority_fee || 0);
-    setMaxFee(eip1559?.fast?.max_fee || 0);
-  }, [classic, eip1559]);
+  const baseFee = configuration.customClassicGasPrice ?? defaultBaseFee;
+  const priorityFee =
+    configuration.custom1559GasPrice?.priority_fee ?? defaultPriorityFee;
+  const maxFee = configuration.custom1559GasPrice?.max_fee ?? defaultMaxFee;
 
   const { priorityFeeFiat, maxFeeFiat, baseFeeFiat } = useMemo(() => {
     const gas = getGas(transaction);
@@ -129,19 +172,18 @@ function CustomNetworkFeeForm({
         display: 'grid',
         gridTemplateRows: '1fr auto',
       }}
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSubmit({
-          speed: 'custom',
-          customClassicGasPrice: baseFee ?? null,
-          custom1559GasPrice:
-            maxFee && priorityFee != null
-              ? {
-                  max_fee: maxFee,
-                  priority_fee: priorityFee,
-                }
-              : null,
-        });
+      onSubmit={(event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        if (form.checkValidity()) {
+          onSubmit(formDataToGasConfiguration(new FormData(form)));
+        }
+      }}
+      onChange={(event) => {
+        const form = event.currentTarget;
+        if (form.checkValidity()) {
+          setConfiguration(formDataToGasConfiguration(new FormData(form)));
+        }
       }}
     >
       {type === 'eip1559' && eip1559 ? (
@@ -169,8 +211,10 @@ function CustomNetworkFeeForm({
               name="priorityFee"
               placeholder="0"
               style={{ border: '1px solid var(--neutral-400)' }}
-              value={priorityFee ? getShortGasPrice(priorityFee) : ''}
-              onChange={(e) => setPriorityFee(getLongGasPrice(e.target.value))}
+              defaultValue={defaultPriorityFeeGWEI}
+              onChange={setPatternValidity}
+              pattern={FLOAT_INPUT_PATTERN}
+              required={true}
             />
             <InnerLabelInput
               inputMode="numeric"
@@ -178,8 +222,10 @@ function CustomNetworkFeeForm({
               name="maxFee"
               placeholder="0"
               style={{ border: '1px solid var(--neutral-400)' }}
-              value={maxFee ? getShortGasPrice(maxFee) : ''}
-              onChange={(e) => setMaxFee(getLongGasPrice(e.target.value))}
+              defaultValue={defaultMaxFeeGWEI}
+              onChange={setPatternValidity}
+              pattern={FLOAT_INPUT_PATTERN}
+              required={true}
             />
           </HStack>
           <VStack gap={8}>
@@ -214,8 +260,10 @@ function CustomNetworkFeeForm({
             name="baseFee"
             placeholder="0"
             style={{ border: '1px solid var(--neutral-400)' }}
-            value={baseFee ? getShortGasPrice(baseFee) : ''}
-            onChange={(e) => setBaseFee(getLongGasPrice(e.target.value))}
+            defaultValue={defaultBaseFeeGWEI}
+            onChange={setPatternValidity}
+            pattern={FLOAT_INPUT_PATTERN}
+            required={true}
           />
           <HStack gap={24} justifyContent="space-between">
             <UIText kind="small/regular">Expected Fee</UIText>
@@ -234,8 +282,21 @@ function CustomNetworkFeeForm({
         <Button
           type="button"
           kind="regular"
-          onClick={handleReset}
-          disabled={!isChanged}
+          onClick={(event) => {
+            const { form } = event.currentTarget;
+            invariant(form, 'Reset button must belong to a form');
+
+            form.reset();
+            if (type === 'classic') {
+              setFormValue(form, 'baseFee', weiToGwei(classic?.fast || 0));
+            } else {
+              const priorityFee = weiToGwei(eip1559?.fast?.priority_fee || 0);
+              setFormValue(form, 'priorityFee', priorityFee);
+              const maxFee = weiToGwei(eip1559?.fast?.max_fee || 0);
+              setFormValue(form, 'maxFee', maxFee);
+            }
+            setConfiguration(formDataToGasConfiguration(new FormData(form)));
+          }}
         >
           Reset
         </Button>
