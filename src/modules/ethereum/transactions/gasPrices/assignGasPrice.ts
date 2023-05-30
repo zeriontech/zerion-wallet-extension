@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import type { IncomingTransaction } from '../../types/IncomingTransaction';
 import type { GasPriceObject } from './GasPriceObject';
 import type { ChainGasPrice } from './requests';
 
@@ -11,26 +12,24 @@ interface ClassicGasPriceProps {
   gasPrice: string;
 }
 
-export function assignGasPrice<T extends object>(
+export function assignGasPrice<
+  T extends Partial<
+    Pick<IncomingTransaction, keyof ClassicGasPriceProps | keyof EIP1559Props>
+  >
+>(
   transaction: T,
   gasPrice: GasPriceObject
 ): T & (ClassicGasPriceProps | EIP1559Props) {
   if (gasPrice.eip1559) {
     const { eip1559 } = gasPrice;
-    if ('gasPrice' in transaction) {
-      delete transaction.gasPrice;
-    }
+    delete transaction.gasPrice;
     return Object.assign(transaction, {
       maxFeePerGas: ethers.utils.hexValue(eip1559.max_fee),
       maxPriorityFeePerGas: ethers.utils.hexValue(eip1559.priority_fee),
     });
   } else if (gasPrice.classic != null) {
-    if ('maxFeePerGas' in transaction) {
-      delete transaction.maxFeePerGas;
-    }
-    if ('maxPriorityFeePerGas' in transaction) {
-      delete transaction.maxPriorityFeePerGas;
-    }
+    delete transaction.maxFeePerGas;
+    delete transaction.maxPriorityFeePerGas;
     return Object.assign(transaction, {
       gasPrice: ethers.utils.hexValue(gasPrice.classic),
     });
