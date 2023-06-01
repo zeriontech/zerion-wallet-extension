@@ -107,6 +107,9 @@ export function NetworkFee({
                 .join(' · ')}
             >
               {[
+                networkFeeConfiguration.speed === 'custom' && time
+                  ? time
+                  : null,
                 networkFeeConfiguration.speed === 'custom'
                   ? NETWORK_SPEED_TO_TITLE.custom
                   : time ||

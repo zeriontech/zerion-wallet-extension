@@ -1,4 +1,3 @@
-import { requestWithCache } from 'src/ui/shared/requests/requestWithCache';
 import { useEffect, useMemo } from 'react';
 import { useQuery } from 'react-query';
 import { isTruthy } from 'is-truthy-ts';
@@ -11,8 +10,6 @@ import type {
   ChainGasPrice,
   EIP1559GasPrices,
 } from 'src/modules/ethereum/transactions/gasPrices/requests';
-import { fetchGasPriceFromNode } from 'src/modules/ethereum/transactions/gasPrices/requests';
-import { gasChainPricesSubscription } from 'src/modules/ethereum/transactions/gasPrices/requests';
 import type { GasPriceObject } from 'src/modules/ethereum/transactions/gasPrices/GasPriceObject';
 import type { EstimatedFeeValue } from 'src/modules/ethereum/transactions/gasPrices/feeEstimation';
 import { getNetworkFeeEstimation } from 'src/modules/ethereum/transactions/gasPrices/feeEstimation';
@@ -22,7 +19,6 @@ import { getDecimals } from 'src/modules/networks/asset';
 import { baseToCommon } from 'src/shared/units/convert';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
-import { networksStore } from 'src/modules/networks/networks-store.client';
 import type { NetworkFeeConfiguration } from '../NetworkFee/types';
 
 function getGasPriceFromTransaction(
@@ -83,22 +79,10 @@ export function useFeeEstimation(
   if (!gas || ethers.BigNumber.from(gas).isZero()) {
     throw new Error('gas field is expected to be found on Transaction object');
   }
+  const { data: chainGasPrices } = useGasPrices(chain);
   return useQuery(
     ['feeEstimation', chain, transaction, networkFeeConfiguration],
     async () => {
-      const gasPrices = await gasChainPricesSubscription.get();
-      let chainGasPrices: ChainGasPrice | null | undefined =
-        gasPrices[chain.toString()];
-
-      if (!chainGasPrices) {
-        const networks = await networksStore.load();
-        chainGasPrices = await requestWithCache(
-          `fetch gas price for node ${chain.toString()}`,
-          fetchGasPriceFromNode(chain, networks),
-          { cacheTime: 10000 }
-        );
-      }
-
       const gasPriceFromTransaction = getGasPriceFromTransaction(transaction);
       const gasPriceFromConfiguration = getGasPriceFromConfiguration({
         chainGasPrices,
