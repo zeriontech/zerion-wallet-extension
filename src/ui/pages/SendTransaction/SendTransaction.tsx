@@ -150,7 +150,7 @@ function SendTransactionContent({
   };
 
   const { data: pendingTransaction } = useQuery(
-    ['setTransactionChainIdAndGasPrice', incomingTransaction, origin, networks],
+    ['setTransactionChainIdAndGasPrice', incomingTransaction, origin],
     async () => {
       const currentChain = await walletPort.request('requestChainForOrigin', {
         origin,
