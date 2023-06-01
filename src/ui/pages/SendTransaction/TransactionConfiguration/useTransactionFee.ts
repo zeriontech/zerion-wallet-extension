@@ -134,15 +134,12 @@ export function useTransactionPrices(
       ? getDecimals({ asset: nativeAsset, chain })
       : networks?.getNetworkByName(chain)?.native_asset?.decimals;
 
-    const feeValueCommon = decimals
-      ? baseToCommon(feeEstimation.value, decimals)
-      : null;
-    const txValueCommon = decimals
-      ? baseToCommon(txValue.toString(), decimals)
-      : null;
-    const totalValueCommon = decimals
-      ? baseToCommon(totalValue.toString(), decimals)
-      : null;
+    const feeValueCommon =
+      decimals != null ? baseToCommon(feeEstimation.value, decimals) : null;
+    const txValueCommon =
+      decimals != null ? baseToCommon(txValue.toString(), decimals) : null;
+    const totalValueCommon =
+      decimals != null ? baseToCommon(totalValue.toString(), decimals) : null;
     const price = nativeAsset?.price;
     return {
       feeValueCommon,

@@ -5,7 +5,7 @@ import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog'
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
+// import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import ArrowLeftcon from 'jsx:src/ui/assets/arrow-left.svg';
 import type { Chain } from 'src/modules/networks/Chain';
 import { Media } from 'src/ui/ui-kit/Media';
@@ -422,7 +422,7 @@ export const NetworkFeeDialog = React.forwardRef<
       ref={ref}
       height={dialogHeight}
       style={{
-        ['--surface-background-color' as string]: 'var(--white)',
+        ['--surface-background-color' as string]: 'var(--z-index-1)',
       }}
     >
       {view === 'default' ? (
@@ -432,12 +432,12 @@ export const NetworkFeeDialog = React.forwardRef<
             title={
               <HStack gap={8} alignItems="center">
                 <UIText kind="headline/h3">Network Fee</UIText>
-                <div
+                {/* <div
                   style={{ display: 'flex' }}
                   title={`The fee required to successfully conduct a transaction on the ${chain.toString()} blockchain`}
                 >
                   <QuestionHintIcon style={{ color: 'var(--neutral-500)' }} />
-                </div>
+                </div> */}
               </HStack>
             }
             closeKind="icon"
