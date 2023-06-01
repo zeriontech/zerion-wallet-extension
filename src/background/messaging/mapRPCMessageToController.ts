@@ -9,6 +9,7 @@ import { formatJsonRpcResultForPort } from 'src/shared/formatJsonRpcResultForPor
 import { formatJsonRpcWalletError } from 'src/shared/formatJsonRpcWalletError';
 import { isClassProperty } from 'src/shared/core/isClassProperty';
 import { domExceptionToError, InvalidParams } from 'src/shared/errors/errors';
+import { getError } from 'src/shared/errors/getError';
 import type { PortContext } from './PortContext';
 
 /**
@@ -57,7 +58,7 @@ export function mapRPCMessageToController<T>(
               ? domExceptionToError(error).message
               : 'code' in error
               ? error
-              : error.message
+              : getError(error)
           );
         }
       )
