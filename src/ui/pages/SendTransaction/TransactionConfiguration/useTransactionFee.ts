@@ -46,27 +46,25 @@ function getGasPriceFromConfiguration({
   chainGasPrices?: ChainGasPrice | null;
   configuration?: NetworkFeeConfiguration;
 }): GasPriceObject | null {
-  if (!configuration || !chainGasPrices) {
+  if (!configuration) {
     return null;
   }
-  if (configuration.speed === 'custom') {
-    if (
-      !configuration.custom1559GasPrice &&
-      !configuration.customClassicGasPrice
-    ) {
-      return {
-        classic: chainGasPrices.info.classic?.fast,
-        eip1559: chainGasPrices.info.eip1559?.fast,
-      };
-    }
+  if (
+    configuration.speed === 'custom' &&
+    (configuration.custom1559GasPrice || configuration.customClassicGasPrice)
+  ) {
     return {
       classic: configuration.customClassicGasPrice,
       eip1559: configuration.custom1559GasPrice,
     };
   }
+  if (!chainGasPrices) {
+    return null;
+  }
+  const speed = configuration.speed === 'custom' ? 'fast' : configuration.speed;
   return {
-    classic: chainGasPrices.info.classic?.[configuration.speed],
-    eip1559: chainGasPrices.info.eip1559?.[configuration.speed],
+    classic: chainGasPrices.info.classic?.[speed],
+    eip1559: chainGasPrices.info.eip1559?.[speed],
   };
 }
 
@@ -115,13 +113,12 @@ export function useTransactionPrices(
   transaction: IncomingTransaction,
   feeEstimation?: EstimatedFeeValue | null
 ) {
-  const { value: nativeAsset, isLoading: isLoadingNativeAsset } =
-    useNativeAsset(chain);
+  const { value: nativeAsset, isLoading } = useNativeAsset(chain);
   const { networks } = useNetworks();
 
   return useMemo(() => {
     if (!feeEstimation) {
-      return { isLoadingNativeAsset };
+      return { isLoading };
     }
     const txValue = ethers.BigNumber.from(String(transaction.value ?? 0));
     const totalValue = txValue.add(
@@ -153,7 +150,7 @@ export function useTransactionPrices(
         price?.value != null && totalValueCommon
           ? totalValueCommon.times(price.value)
           : null,
-      isLoadingNativeAsset,
+      isLoading,
       nativeAsset,
     };
   }, [
@@ -161,7 +158,7 @@ export function useTransactionPrices(
     feeEstimation,
     nativeAsset,
     transaction.value,
-    isLoadingNativeAsset,
+    isLoading,
     networks,
   ]);
 }
@@ -220,7 +217,7 @@ export function useTransactionFee({
     totalValueCommon,
     totalValueFiat,
     nativeAsset,
-    isLoadingNativeAsset,
+    isLoading: isTransactionPricesLoading,
   } = useTransactionPrices(chain, transaction, feeEstimation);
 
   useEffect(() => {
@@ -238,7 +235,7 @@ export function useTransactionFee({
     totalValueCommon,
     nativeAsset,
     isLoading,
-    isLoadingNativeAsset,
+    isTransactionPricesLoading,
     noFeeData,
   };
 }

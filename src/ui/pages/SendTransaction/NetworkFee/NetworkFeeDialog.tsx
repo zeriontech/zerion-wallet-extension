@@ -336,15 +336,18 @@ function NetworkFeeButton({
   );
   const feeEstimation = data?.feeEstimation;
 
-  const { feeValueFiat, feeValueCommon, isLoadingNativeAsset } =
-    useTransactionPrices(chain, transaction, feeEstimation);
+  const {
+    feeValueFiat,
+    feeValueCommon,
+    isLoading: isTransactionPricesLoading,
+  } = useTransactionPrices(chain, transaction, feeEstimation);
 
   const seconds =
     option !== 'custom'
       ? chainGasPrices?.info.eip1559?.[option]?.estimation_seconds
       : undefined;
 
-  const isLoading = isLoadingNativeAsset || isLoadingFeeEstimation;
+  const isLoading = isTransactionPricesLoading || isLoadingFeeEstimation;
   const selected = option === networkFeeConfiguration.speed;
   const nativeAssetSymbol =
     networks?.getNetworkByName(chain)?.native_asset?.symbol;

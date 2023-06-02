@@ -9,16 +9,13 @@ import type { NetworkFeeSpeed } from './types';
 
 function getNetworkSpeedSrc(speed: NetworkFeeSpeed, scale?: '2x') {
   if (speed === 'custom') {
-    if (scale === '2x') return Custom2xSrc;
-    return CustomSrc;
+    return scale === '2x' ? Custom2xSrc : CustomSrc;
   }
   if (speed === 'standard') {
-    if (scale === '2x') return Standard2xSrc;
-    return StandardSrc;
+    return scale === '2x' ? Standard2xSrc : StandardSrc;
   }
   if (speed === 'fast') {
-    if (scale === '2x') return Fast2xSrc;
-    return FastSrc;
+    return scale === '2x' ? Fast2xSrc : FastSrc;
   }
   throw new Error('Unexpected network fee speed');
 }

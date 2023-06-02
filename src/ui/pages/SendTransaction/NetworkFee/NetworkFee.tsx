@@ -51,14 +51,13 @@ export function NetworkFee({
     feeValueCommon,
     feeValueFiat,
     feeEstimation,
-    isLoadingNativeAsset,
+    isTransactionPricesLoading,
     noFeeData,
   } = transactionFee;
 
   const { data: chainGasPrices } = useGasPrices(chain);
 
-  const isLoading =
-    isTransactionFeeLoading || (isLoadingNativeAsset && feeValueFiat == null);
+  const isLoading = isTransactionFeeLoading || isTransactionPricesLoading;
   const nativeAssetSymbol =
     networks?.getNetworkByName(chain)?.native_asset?.symbol;
 
@@ -89,7 +88,10 @@ export function NetworkFee({
         ) : feeValueFiat || feeValueCommon ? (
           <UnstyledButton
             className={disabled ? undefined : helperStyles.hoverUnderline}
-            style={{ color: disabled ? 'var(--black)' : 'var(--primary)' }}
+            style={{
+              color: disabled ? 'var(--black)' : 'var(--primary)',
+              cursor: isOptimistic ? 'auto' : undefined,
+            }}
             onClick={() => {
               dialogRef.current?.showModal();
             }}
