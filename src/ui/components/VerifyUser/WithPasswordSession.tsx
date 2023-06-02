@@ -13,7 +13,7 @@ export function WithPasswordSession({
   children,
 }: React.PropsWithChildren<{ text?: React.ReactNode }>) {
   const { data, isLoading } = useQuery(
-    'passwordSessionData',
+    ['passwordSessionData'],
     async () => {
       const [hasActivePasswordSession, isPendingNewUser] = await Promise.all([
         accountPublicRPCPort.request('hasActivePasswordSession'),

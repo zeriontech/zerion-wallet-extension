@@ -144,7 +144,7 @@ function ConnectedSitesList({
 
 function ConnectedSitesMain() {
   const { data: connectedSites, ...connectedSitesQuery } = useQuery(
-    'getPermissionsWithWallets',
+    ['getPermissionsWithWallets'],
     getPermissionsWithWallets,
     { useErrorBoundary: true, suspense: true }
   );

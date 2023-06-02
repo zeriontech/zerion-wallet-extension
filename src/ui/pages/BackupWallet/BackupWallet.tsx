@@ -462,7 +462,7 @@ export function BackupWallet() {
   invariant(groupId, 'groupId param is required for BackupWallet view');
   invariant(backupKind, 'backupKind param is required for BackupWallet view');
   const { data: walletGroup, isLoading } = useQuery(
-    `wallet/uiGetWalletGroup/${groupId}`,
+    [`wallet/uiGetWalletGroup/${groupId}`],
     () => walletPort.request('uiGetWalletGroup', { groupId }),
     { useErrorBoundary: true }
   );

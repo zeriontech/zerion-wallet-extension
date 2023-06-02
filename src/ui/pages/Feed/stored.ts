@@ -3,7 +3,7 @@ import { walletPort } from 'src/ui/shared/channels';
 import type { WalletAbility } from 'src/shared/types/Daylight';
 
 export function useFeedInfo() {
-  return useQuery('getFeedInfo', async () => {
+  return useQuery(['getFeedInfo'], async () => {
     const feed = await walletPort.request('getFeedInfo');
     const { completedAbilities, dismissedAbilities } = feed;
     return {

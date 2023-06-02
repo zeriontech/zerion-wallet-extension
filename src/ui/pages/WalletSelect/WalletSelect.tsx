@@ -30,7 +30,7 @@ import { TextLink } from 'src/ui/ui-kit/TextLink';
 export function WalletSelect() {
   const navigate = useNavigate();
   const { data: walletGroups, isLoading } = useQuery(
-    'wallet/uiGetWalletGroups',
+    ['wallet/uiGetWalletGroups'],
     () => walletPort.request('uiGetWalletGroups'),
     { useErrorBoundary: true }
   );

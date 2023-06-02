@@ -26,11 +26,11 @@ export function CurrentNetwork({ address }: { address: string }) {
     address,
     currency: 'usd',
   });
-  const { data: tabData } = useQuery('activeTab/origin', getActiveTabOrigin);
+  const { data: tabData } = useQuery(['activeTab/origin'], getActiveTabOrigin);
   const tabOrigin = tabData?.tabOrigin;
   const { data: isConnected } = useIsConnectedToActiveTab(address);
   const { data: flaggedAsDapp } = useQuery(
-    `wallet/isFlaggedAsDapp(${tabOrigin})`,
+    [`wallet/isFlaggedAsDapp(${tabOrigin})`],
     () => {
       invariant(tabOrigin, 'tabOrigin must be defined');
       return walletPort.request('isFlaggedAsDapp', { origin: tabOrigin });
@@ -38,7 +38,7 @@ export function CurrentNetwork({ address }: { address: string }) {
     { enabled: Boolean(tabOrigin) }
   );
   const { data: siteChain, ...chainQuery } = useQuery(
-    `wallet/requestChainForOrigin(${tabOrigin})`,
+    [`wallet/requestChainForOrigin(${tabOrigin})`],
     async () =>
       !tabOrigin
         ? null
@@ -53,7 +53,7 @@ export function CurrentNetwork({ address }: { address: string }) {
     { useErrorBoundary: true, onSuccess: () => chainQuery.refetch() }
   );
   const { data: permissions } = useQuery(
-    'wallet/getOriginPermissions',
+    ['wallet/getOriginPermissions'],
     () => walletPort.request('getOriginPermissions'),
     { useErrorBoundary: true }
   );

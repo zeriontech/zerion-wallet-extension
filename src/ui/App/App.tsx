@@ -60,7 +60,7 @@ import { SignInWithEthereum } from '../pages/SignInWithEthereum';
 
 const useAuthState = () => {
   const { data, isFetching } = useQuery(
-    'authState',
+    ['authState'],
     async () => {
       const [isAuthenticated, existingUser, wallet] = await Promise.all([
         accountPublicRPCPort.request('isAuthenticated'),

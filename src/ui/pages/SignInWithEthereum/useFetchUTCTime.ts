@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 
 export function useFetchUTCTime() {
   return useQuery(
-    'utcTime',
+    ['utcTime'],
     async () => {
       const text = await fetch('https://proxy.zerion.io/utc-time').then((res) =>
         res.text()

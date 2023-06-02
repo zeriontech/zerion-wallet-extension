@@ -64,7 +64,7 @@ export function useWalletAbilities({
   onSuccess?(data: InfiniteData<WalletAbilitiesResponse>): void;
 }) {
   const { data, ...result } = useInfiniteQuery(
-    `wallet/abilities/${address}/${JSON.stringify(params)}`,
+    [`wallet/abilities/${address}/${JSON.stringify(params)}`],
     ({ pageParam = { address, params, limit } }) =>
       getWalletAbilities(pageParam),
     {

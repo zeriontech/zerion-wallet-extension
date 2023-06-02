@@ -31,7 +31,7 @@ function useMnenomicPhraseForLocation({
     throw new Error('View data expired');
   }
   const getRecoveryPhraseQuery = useQuery(
-    `getRecoveryPhrase(${groupId})`,
+    [`getRecoveryPhrase(${groupId})`],
     async () => {
       const mnemonic = await walletPort.request('getRecoveryPhrase', {
         groupId: groupId as string, // can cast to string cause of "enabled" option
@@ -71,7 +71,7 @@ export function MnemonicImportView({
     locationStateStore,
   });
   const { data: wallets } = useQuery(
-    `getFirstNMnemonicWallets(${phrase}, ${count})`,
+    [`getFirstNMnemonicWallets(${phrase}, ${count})`],
     async () =>
       phrase ? getFirstNMnemonicWallets({ phrase, n: count }) : undefined,
     { enabled: Boolean(phrase), useErrorBoundary: true }

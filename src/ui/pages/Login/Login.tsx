@@ -25,7 +25,7 @@ export function Login() {
     isLoading,
     error,
     isError,
-  } = useQuery('user', () => {
+  } = useQuery(['user'], () => {
     return accountPublicRPCPort.request('getExistingUser');
   });
   const formId = useId();

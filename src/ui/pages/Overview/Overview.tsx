@@ -113,7 +113,7 @@ function CurrentAccount({ wallet }: { wallet: BareWallet }) {
 
 function CurrentAccountControls() {
   const { singleAddress, ready } = useAddressParams();
-  const { data: wallet } = useQuery('wallet/uiGetCurrentWallet', () =>
+  const { data: wallet } = useQuery(['wallet/uiGetCurrentWallet'], () =>
     walletPort.request('uiGetCurrentWallet')
   );
   const visible = useRenderDelay(16);

@@ -3,7 +3,7 @@ import { walletPort } from 'src/ui/shared/channels';
 
 function useNoBackupCount() {
   return useQuery(
-    'wallet/getNoBackupCount',
+    ['wallet/getNoBackupCount'],
     () => {
       return walletPort.request('getNoBackupCount');
     },

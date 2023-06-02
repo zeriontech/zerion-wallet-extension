@@ -85,7 +85,7 @@ function Options() {
   const hasWallets = walletGroups ? walletGroups?.length > 0 : false;
 
   const { data: userCanCreateInitialWallet } = useQuery(
-    'wallet/userCanCreateInitialWallet',
+    ['wallet/userCanCreateInitialWallet'],
     () => walletPort.request('userCanCreateInitialWallet'),
     { useErrorBoundary: true, suspense: true }
   );

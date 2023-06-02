@@ -101,17 +101,17 @@ export function ConnectedSite() {
   // TODO:
   // Refactor these calls to only have one "useQuery" call, but keep in mind
   // that related queries on Overview must be refetched after mutations made here
-  const { data: tabData } = useQuery('activeTab/origin', getActiveTabOrigin, {
+  const { data: tabData } = useQuery(['activeTab/origin'], getActiveTabOrigin, {
     useErrorBoundary: true,
   });
   const activeTabOrigin = tabData?.tabOrigin;
   const { data: connectedSites, refetch } = useQuery(
-    'getPermissionsWithWallets',
+    ['getPermissionsWithWallets'],
     getPermissionsWithWallets,
     { useErrorBoundary: true }
   );
   const { data: flaggedAsDapp } = useQuery(
-    `wallet/isFlaggedAsDapp(${originName})`,
+    [`wallet/isFlaggedAsDapp(${originName})`],
     () => walletPort.request('isFlaggedAsDapp', { origin: originName })
   );
   const connectedSite = useMemo(() => {
@@ -128,7 +128,7 @@ export function ConnectedSite() {
     [siteOrigin]
   );
   const { data: siteChain, ...chainQuery } = useQuery(
-    `wallet/requestChainForOrigin(${originName})`,
+    [`wallet/requestChainForOrigin(${originName})`],
     () =>
       walletPort
         .request('requestChainForOrigin', { origin: originName })
@@ -155,9 +155,12 @@ export function ConnectedSite() {
   const selectNetworkDialogRef = useRef<HTMLDialogElementInterface | null>(
     null
   );
-  const { data: currentWallet } = useQuery('wallet/uiGetCurrentWallet', () => {
-    return walletPort.request('uiGetCurrentWallet');
-  });
+  const { data: currentWallet } = useQuery(
+    ['wallet/uiGetCurrentWallet'],
+    () => {
+      return walletPort.request('uiGetCurrentWallet');
+    }
+  );
   const currentAddress = currentWallet?.address;
   const currentWalletIsConnected = useMemo(
     () =>

@@ -12,7 +12,7 @@ async function setPreferences(preferences: Preferences) {
 
 export function usePreferences() {
   const query = useQuery(
-    'wallet/getPreferences',
+    ['wallet/getPreferences'],
     () => walletPort.request('getPreferences'),
     { useErrorBoundary: true, suspense: true }
   );
@@ -39,7 +39,7 @@ async function setGlobalPreferences(preferences: GlobalPreferences) {
 
 export function useGlobalPreferences() {
   const query = useQuery(
-    'wallet/getGlobalPreferences',
+    ['wallet/getGlobalPreferences'],
     () => walletPort.request('getGlobalPreferences'),
     { useErrorBoundary: true, suspense: true }
   );

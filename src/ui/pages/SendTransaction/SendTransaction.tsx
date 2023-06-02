@@ -466,7 +466,7 @@ function SendTransactionContent({
 export function SendTransaction() {
   const [params] = useSearchParams();
   const { data: wallet, isLoading } = useQuery(
-    'wallet/uiGetCurrentWallet',
+    ['wallet/uiGetCurrentWallet'],
     () => walletPort.request('uiGetCurrentWallet'),
     { useErrorBoundary: true }
   );

@@ -149,7 +149,7 @@ export function AbilityPage() {
   invariant(ability_uid, 'ability_uid path segment is required');
 
   const { data } = useQuery(
-    `ability/${ability_uid}`,
+    [`ability/${ability_uid}`],
     () => getAbility(ability_uid),
     { suspense: false }
   );

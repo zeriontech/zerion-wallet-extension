@@ -21,7 +21,7 @@ export function SwitchEthereumChain() {
     data: wallet,
     isLoading,
     isError,
-  } = useQuery('wallet/uiGetCurrentWallet', () => {
+  } = useQuery(['wallet/uiGetCurrentWallet'], () => {
     return walletPort.request('uiGetCurrentWallet');
   });
   if (isError) {

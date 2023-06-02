@@ -13,7 +13,7 @@ import { FillView } from '../FillView';
 
 export function VersionUpgrade({ children }: React.PropsWithChildren) {
   const { data, isLoading, refetch } = useQuery(
-    'checkVersion',
+    ['checkVersion'],
     () => checkVersion(),
     {
       retry: false,

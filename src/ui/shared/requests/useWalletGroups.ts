@@ -4,7 +4,7 @@ import { checkForTestAddress } from '../meta-app-state';
 
 export function useWalletGroups(options: { enabled?: boolean } = {}) {
   return useQuery(
-    'wallet/uiGetWalletGroups',
+    ['wallet/uiGetWalletGroups'],
     () => walletPort.request('uiGetWalletGroups'),
     {
       useErrorBoundary: true,

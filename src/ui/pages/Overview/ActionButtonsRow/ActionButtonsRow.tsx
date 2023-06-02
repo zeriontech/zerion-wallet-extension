@@ -49,7 +49,7 @@ function ActionButton<As extends ElementType = 'a'>({
 const ZERION_ORIGIN = 'https://app.zerion.io';
 
 export function ActionButtonsRow() {
-  const { data: wallet } = useQuery('wallet/uiGetCurrentWallet', () => {
+  const { data: wallet } = useQuery(['wallet/uiGetCurrentWallet'], () => {
     return walletPort.request('uiGetCurrentWallet');
   });
   const { mutate: acceptOrigin } = useMutation(
@@ -59,7 +59,7 @@ export function ActionButtonsRow() {
   );
   const addWalletParams = useWalletParams(wallet);
 
-  const { data: activeTabs } = useQuery('browser/activeTab', () =>
+  const { data: activeTabs } = useQuery(['browser/activeTab'], () =>
     browser.tabs.query({ active: true, currentWindow: true })
   );
   const activeTab = activeTabs ? activeTabs[0] : null;

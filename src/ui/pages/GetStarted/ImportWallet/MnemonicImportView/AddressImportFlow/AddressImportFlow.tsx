@@ -17,7 +17,7 @@ import { WalletList } from './WalletList';
 
 function useAllExistingAddresses() {
   const { data: walletGroups } = useQuery(
-    'wallet/uiGetWalletGroups',
+    ['wallet/uiGetWalletGroups'],
     () => walletPort.request('uiGetWalletGroups'),
     { useErrorBoundary: true }
   );

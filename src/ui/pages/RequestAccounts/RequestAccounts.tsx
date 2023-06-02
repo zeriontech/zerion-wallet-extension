@@ -125,7 +125,7 @@ function useRedirectIfOriginAlreadyAllowed({
   onIsAllowed: () => void;
 }) {
   useQuery(
-    'getOriginPermissions',
+    ['getOriginPermissions'],
     () => walletPort.request('getOriginPermissions'),
     {
       enabled: Boolean(address),
@@ -296,7 +296,7 @@ export function RequestAccounts() {
   invariant(windowId, 'windowId get-parameter is required');
 
   const walletGroupsQuery = useQuery(
-    'wallet/uiGetWalletGroups',
+    ['wallet/uiGetWalletGroups'],
     () => walletPort.request('uiGetWalletGroups'),
     { useErrorBoundary: true }
   );
@@ -304,7 +304,7 @@ export function RequestAccounts() {
     data: wallet,
     isLoading,
     isError,
-  } = useQuery('wallet/uiGetCurrentWallet', () => {
+  } = useQuery(['wallet/uiGetCurrentWallet'], () => {
     return walletPort.request('uiGetCurrentWallet');
   });
   const handleConfirm = useCallback(

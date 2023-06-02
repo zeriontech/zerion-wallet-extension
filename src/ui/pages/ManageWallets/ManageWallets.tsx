@@ -98,7 +98,7 @@ function MnemonicList({ walletGroups }: { walletGroups: WalletGroup[] }) {
 
 function WalletGroups() {
   const { data: walletGroups, isLoading } = useQuery(
-    'wallet/uiGetWalletGroups',
+    ['wallet/uiGetWalletGroups'],
     () => walletPort.request('uiGetWalletGroups'),
     { useErrorBoundary: true }
   );

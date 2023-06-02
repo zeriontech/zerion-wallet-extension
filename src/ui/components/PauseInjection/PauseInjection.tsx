@@ -217,7 +217,10 @@ function calculateExpires(duration: TurnOffDuration) {
 }
 
 function usePausedData() {
-  const { data: tabData } = useQuery('activeTab/origin', getActiveTabOrigin);
+  const { data: tabData } = useQuery({
+    queryKey: ['activeTab/origin'],
+    queryFn: getActiveTabOrigin,
+  });
   const { globalPreferences, mutation } = useGlobalPreferences();
   const tabUrl = tabData?.url;
   const protocol = tabUrl?.protocol;

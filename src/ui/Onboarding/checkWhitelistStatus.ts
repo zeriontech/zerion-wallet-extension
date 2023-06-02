@@ -157,7 +157,7 @@ export async function checkWhitelistStatus(address: string) {
 
 export function useWhitelistStatus(address?: string) {
   return useQuery(
-    `check waitlist status for ${address}`,
+    [`check waitlist status for ${address}`],
     async () => {
       if (!address) {
         return { status: false };

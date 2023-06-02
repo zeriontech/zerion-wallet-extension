@@ -20,7 +20,7 @@ export function useAddressParams(): Result {
     isLoading,
     refetch,
   } = useQuery(
-    'wallet/getCurrentAddress',
+    ['wallet/getCurrentAddress'],
     () =>
       walletPort.request('getCurrentAddress').then((result) => result || null),
     { useErrorBoundary: true }

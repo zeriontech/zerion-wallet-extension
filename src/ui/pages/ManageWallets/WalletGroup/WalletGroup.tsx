@@ -40,7 +40,7 @@ function noNulls<T>(arr: (T | null)[]) {
 
 function useWalletGroup({ groupId }: { groupId: string }) {
   return useQuery(
-    `wallet/uiGetWalletGroup/${groupId}`,
+    [`wallet/uiGetWalletGroup/${groupId}`],
     () => walletPort.request('uiGetWalletGroup', { groupId }),
     { useErrorBoundary: true }
   );
