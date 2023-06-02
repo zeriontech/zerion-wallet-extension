@@ -12,7 +12,7 @@ import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { useSearchParams } from 'react-router-dom';
 import { invariant } from 'src/shared/invariant';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { lookupAddressName } from 'src/modules/name-service';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';

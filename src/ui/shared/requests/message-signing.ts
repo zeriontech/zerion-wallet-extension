@@ -1,4 +1,4 @@
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { walletPort } from '../channels';
 

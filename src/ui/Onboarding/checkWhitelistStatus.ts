@@ -1,5 +1,5 @@
 import ky from 'ky';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { isEmail } from 'src/shared/isEmail';
 import { PROXY_URL } from 'src/env/config';
 import { normalizeAddress } from 'src/shared/normalizeAddress';

@@ -1,7 +1,7 @@
 import { animated } from 'react-spring';
 import { isTruthy } from 'is-truthy-ts';
 import React, { useEffect, useRef, useState } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';

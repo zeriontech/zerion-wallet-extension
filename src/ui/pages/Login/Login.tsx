@@ -1,5 +1,5 @@
 import React, { useId, useMemo } from 'react';
-import { useMutation, useQuery } from 'react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import type { PublicUser } from 'src/shared/types/User';
 import { PageBottom } from 'src/ui/components/PageBottom';

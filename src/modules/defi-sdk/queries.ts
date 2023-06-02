@@ -1,4 +1,4 @@
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { memoize } from 'lodash';
 import type { AddressPosition, Asset } from 'defi-sdk';
 import { client } from 'defi-sdk';

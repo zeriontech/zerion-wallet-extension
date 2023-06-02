@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { capitalize } from 'capitalize-ts';
 import { ethers } from 'ethers';
-import { useMutation, useQuery } from 'react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { incomingTransactionToIncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';

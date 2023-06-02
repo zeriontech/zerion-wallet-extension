@@ -25,7 +25,7 @@ import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTML
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { walletPort } from 'src/ui/shared/channels';
 import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import { Background } from '../Background';

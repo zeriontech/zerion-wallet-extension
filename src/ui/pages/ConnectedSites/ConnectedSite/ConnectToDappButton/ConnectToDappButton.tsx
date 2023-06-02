@@ -1,5 +1,5 @@
 import React from 'react';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { walletPort } from 'src/ui/shared/channels';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';

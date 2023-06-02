@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { useMutation, useQuery } from 'react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { Content } from 'react-area';
 import { useSelect } from 'downshift';

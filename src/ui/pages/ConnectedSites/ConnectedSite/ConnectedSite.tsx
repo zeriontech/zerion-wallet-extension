@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useRef } from 'react';
 import { capitalize } from 'capitalize-ts';
-import { useMutation, useQuery } from 'react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { NotFoundPage } from 'src/ui/components/NotFoundPage';

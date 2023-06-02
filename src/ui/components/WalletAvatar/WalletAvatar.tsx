@@ -1,5 +1,5 @@
 import React from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { SOCIAL_API_URL } from 'src/env/config';
 import {

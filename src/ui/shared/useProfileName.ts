@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { lookupAddressName } from 'src/modules/name-service';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { getWalletDisplayName } from './getWalletDisplayName';

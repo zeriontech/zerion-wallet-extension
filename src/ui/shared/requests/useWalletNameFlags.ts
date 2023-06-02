@@ -1,6 +1,6 @@
 import produce from 'immer';
 import { useMemo } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { pushUnique, removeFromArray } from 'src/shared/array-mutations';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';

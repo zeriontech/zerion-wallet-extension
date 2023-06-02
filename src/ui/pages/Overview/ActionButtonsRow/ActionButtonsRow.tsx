@@ -2,7 +2,7 @@ import browser from 'webextension-polyfill';
 import cx from 'classnames';
 import type { ComponentPropsWithoutRef, ElementType } from 'react';
 import React from 'react';
-import { useMutation, useQuery } from 'react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import SwapIcon from 'jsx:src/ui/assets/actions/swap.svg';
 import SendIcon from 'jsx:src/ui/assets/actions/send.svg';
 import ReceiveIcon from 'jsx:src/ui/assets/actions/receive.svg';

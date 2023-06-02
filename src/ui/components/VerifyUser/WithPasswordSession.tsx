@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { SessionExpired } from 'src/shared/errors/errors';
 import { accountPublicRPCPort } from 'src/ui/shared/channels';
 import { Background } from '../Background';

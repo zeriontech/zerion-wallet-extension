@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { resolveDomain } from 'src/modules/name-service';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';

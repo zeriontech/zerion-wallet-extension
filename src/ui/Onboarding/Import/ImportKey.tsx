@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { validate } from 'src/ui/pages/GetStarted/ImportWallet/ImportWallet';
 import { prepareUserInputSeedOrPrivateKey } from 'src/ui/shared/prepareUserInputSeedOrPrivateKey';
 import type { ValidationResult } from 'src/shared/validation/ValidationResult';

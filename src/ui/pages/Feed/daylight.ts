@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import ky from 'ky';
-import type { InfiniteData } from 'react-query';
-import { useInfiniteQuery } from 'react-query';
+import type { InfiniteData } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import type {
   WalletAbility,
   WalletAbilityType,

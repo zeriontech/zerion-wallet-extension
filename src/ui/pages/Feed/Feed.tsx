@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { useSelect } from 'downshift';
 import cn from 'classnames';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { SurfaceItemButton, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { VStack } from 'src/ui/ui-kit/VStack';

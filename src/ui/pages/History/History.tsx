@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import type { AddressAction } from 'defi-sdk';
 import { useAddressActions } from 'defi-sdk';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import { NetworkSelect } from 'src/ui/pages/Networks/NetworkSelect';

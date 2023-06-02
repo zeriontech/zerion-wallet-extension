@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
 import { walletPort } from 'src/ui/shared/channels';
 

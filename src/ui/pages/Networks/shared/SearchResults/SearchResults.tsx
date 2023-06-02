@@ -2,7 +2,7 @@ import { isTruthy } from 'is-truthy-ts';
 import groupBy from 'lodash/groupBy';
 import React from 'react';
 import { useMemo } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
 import { getNetworksBySearch } from 'src/modules/ethereum/chains/requests';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';

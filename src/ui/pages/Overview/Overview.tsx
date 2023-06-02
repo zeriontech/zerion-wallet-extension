@@ -25,7 +25,7 @@ import {
   SegmentedControlLink,
 } from 'src/ui/ui-kit/SegmentedControl';
 import { PageBottom } from 'src/ui/components/PageBottom';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { walletPort } from 'src/ui/shared/channels';
 import { NBSP } from 'src/ui/shared/typography';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';

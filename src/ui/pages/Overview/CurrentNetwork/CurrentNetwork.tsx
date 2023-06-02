@@ -1,6 +1,6 @@
 import { useAddressPortfolioDecomposition } from 'defi-sdk';
 import React, { useMemo, useRef } from 'react';
-import { useMutation, useQuery } from 'react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { getNameFromOrigin } from 'src/shared/dapps';

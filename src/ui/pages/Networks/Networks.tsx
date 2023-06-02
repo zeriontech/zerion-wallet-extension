@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { RenderArea } from 'react-area';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import {
   Route,
   Routes,

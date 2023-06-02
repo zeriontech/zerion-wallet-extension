@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import React, { useId, useRef } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { getTransactionCount } from 'src/modules/ethereum/transactions/getTransactionCount';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { Chain } from 'src/modules/networks/Chain';

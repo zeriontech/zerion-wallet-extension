@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { animated, useSpring } from 'react-spring';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import produce from 'immer';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { validate } from 'src/ui/pages/GetStarted/ImportWallet/ImportWallet';

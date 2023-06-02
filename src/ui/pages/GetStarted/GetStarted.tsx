@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Link, Route, Routes, useSearchParams } from 'react-router-dom';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from 'src/ui/ui-kit/Button';
 import { PageTop } from 'src/ui/components/PageTop';
 import { PageColumn } from 'src/ui/components/PageColumn';

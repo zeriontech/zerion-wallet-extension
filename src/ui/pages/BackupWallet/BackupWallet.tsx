@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useReducer, useRef } from 'react';
-import { useMutation, useQuery } from 'react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { SeedType } from 'src/shared/SeedType';
 import { invariant } from 'src/shared/invariant';

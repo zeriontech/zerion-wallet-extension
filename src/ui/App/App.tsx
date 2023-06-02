@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { AreaProvider } from 'react-area';
-import { QueryClientProvider, useQuery } from 'react-query';
+import { QueryClientProvider, useQuery } from '@tanstack/react-query';
 import {
   HashRouter as Router,
   Routes,

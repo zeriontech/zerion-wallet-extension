@@ -1,5 +1,5 @@
 import React, { useId } from 'react';
-import { useMutation, useQuery } from 'react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import type { PublicUser } from 'src/shared/types/User';
 import { accountPublicRPCPort } from 'src/ui/shared/channels';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';

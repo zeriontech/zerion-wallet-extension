@@ -1,4 +1,4 @@
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import type { WalletRecord } from 'src/shared/types/WalletRecord';
 import { walletPort } from 'src/ui/shared/channels';
 import { useOptimisticMutation } from 'src/ui/shared/requests/useOptimisticMutation';

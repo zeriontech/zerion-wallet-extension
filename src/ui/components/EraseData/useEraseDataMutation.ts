@@ -1,4 +1,4 @@
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { accountPublicRPCPort } from 'src/ui/shared/channels';
 
 export function useEraseDataMutation<

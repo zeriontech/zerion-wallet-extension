@@ -1,6 +1,6 @@
 import { isTruthy } from 'is-truthy-ts';
 import React, { useCallback, useId, useRef, useState } from 'react';
-import { useMutation, useQuery } from 'react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { SeedType } from 'src/shared/SeedType';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
