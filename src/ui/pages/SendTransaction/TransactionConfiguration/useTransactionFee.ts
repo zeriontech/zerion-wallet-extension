@@ -79,7 +79,7 @@ export function useFeeEstimation(
   }
   const { data: chainGasPrices } = useGasPrices(chain);
   return useQuery(
-    ['feeEstimation', chain, transaction, networkFeeConfiguration],
+    ['feeEstimation', chain, transaction, networkFeeConfiguration, gas],
     async () => {
       const gasPriceFromTransaction = getGasPriceFromTransaction(transaction);
       const gasPriceFromConfiguration = getGasPriceFromConfiguration({
