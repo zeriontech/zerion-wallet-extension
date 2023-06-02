@@ -7,6 +7,7 @@ import { Media } from 'src/ui/ui-kit/Media';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 
 export function RecipientLine({
   recipientAddress,
@@ -36,6 +37,8 @@ export function RecipientLine({
             title={recipientAddress}
           >
             <TextAnchor
+              // Open URL in a new _window_ so that extension UI stays open and visible
+              onClick={openInNewWindow}
               href={networks.getExplorerAddressUrlByName(
                 chain,
                 recipientAddress
