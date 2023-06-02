@@ -14,6 +14,7 @@ export type TemplateType = keyof typeof templates;
 function isKnownTemplateType(x: string): x is TemplateType {
   return x in templates;
 }
+
 export function getPageTemplateType(): TemplateType | null {
   const url = new URL(window.location.href);
   if (url.searchParams.has('templateType')) {
@@ -35,3 +36,5 @@ export function getPageTemplateType(): TemplateType | null {
   }
   return null;
 }
+
+export const pageTemplateType = getPageTemplateType();
