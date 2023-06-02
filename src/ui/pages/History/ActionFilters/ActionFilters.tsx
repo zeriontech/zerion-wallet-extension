@@ -26,13 +26,13 @@ type FilterView = 'assetTypes' | 'actionTypes' | 'chains';
 
 const ASSET_TYPE_TO_TITLE: Record<TransactionAssetFilter, string> = {
   all: 'All Assets',
-  token: 'Tokens',
+  fungible: 'Tokens',
   nft: 'NFTs',
 };
 
 const ASSET_TYPE_FILTER_OPTIONS: TransactionAssetFilter[] = [
   'all',
-  'token',
+  'fungible',
   'nft',
 ];
 

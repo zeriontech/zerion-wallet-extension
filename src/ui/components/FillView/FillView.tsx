@@ -21,6 +21,7 @@ export function FillView({
         ...style,
         // @ts-ignore
         ['--navigation-bar-height']: `${NAVIGATION_BAR_HEIGHT}px`,
+        maxHeight: 'calc(100vh - 100px)',
         height: '100%',
         flexGrow: 1,
         display: 'grid',

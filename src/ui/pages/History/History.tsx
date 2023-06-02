@@ -4,13 +4,11 @@ import { useAddressActions } from 'defi-sdk';
 import { useQuery } from 'react-query';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
-import { NetworkSelect } from 'src/ui/pages/Networks/NetworkSelect';
-import { networksStore } from 'src/modules/networks/networks-store.client';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { EmptyViewForNetwork } from 'src/ui/components/EmptyViewForNetwork';
-import type { AnyAddressAction} from 'src/modules/ethereum/transactions/addressAction';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { pendingTransactionToAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
@@ -102,7 +100,7 @@ function useMinedAndPendingAddressActions({
     return {
       value: localAddressActions
         ? mergeLocalAndBackendActions(localAddressActions, backendItems)
-        : null,
+        : backendItems,
       ...localActionsQuery,
       isLoading: actionsIsLoading || localActionsQuery.isLoading,
       hasMore: Boolean(isSupportedByBackend && hasNext),

@@ -375,7 +375,6 @@ function OverviewComponent() {
             path="/history"
             element={
               <ViewSuspense>
-                <Spacer height={16} />
                 <HistoryList
                   chain={preferences.overviewChain}
                   onChainChange={setChain}
