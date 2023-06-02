@@ -1,19 +1,25 @@
+import { useEffect, useMemo } from 'react';
 import { useQuery } from 'react-query';
+import { isTruthy } from 'is-truthy-ts';
+import { ethers } from 'ethers';
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { useNativeAsset } from 'src/ui/shared/requests/useNativeAsset';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { Chain } from 'src/modules/networks/Chain';
-import type { EIP1559GasPrices } from 'src/modules/ethereum/transactions/gasPrices/requests';
-import { gasChainPricesSubscription } from 'src/modules/ethereum/transactions/gasPrices/requests';
+import type {
+  ChainGasPrice,
+  EIP1559GasPrices,
+} from 'src/modules/ethereum/transactions/gasPrices/requests';
 import type { GasPriceObject } from 'src/modules/ethereum/transactions/gasPrices/GasPriceObject';
+import type { EstimatedFeeValue } from 'src/modules/ethereum/transactions/gasPrices/feeEstimation';
 import { getNetworkFeeEstimation } from 'src/modules/ethereum/transactions/gasPrices/feeEstimation';
-import { useEffect, useMemo } from 'react';
 import type { EIP1559 } from 'src/modules/ethereum/transactions/gasPrices/EIP1559';
-import { isTruthy } from 'is-truthy-ts';
 import { formatSeconds } from 'src/shared/units/formatSeconds';
-import { ethers } from 'ethers';
 import { getDecimals } from 'src/modules/networks/asset';
 import { baseToCommon } from 'src/shared/units/convert';
+import { useNetworks } from 'src/modules/networks/useNetworks';
+import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
+import type { NetworkFeeConfiguration } from '../NetworkFee/types';
 
 function getGasPriceFromTransaction(
   transaction: IncomingTransaction
@@ -33,53 +39,149 @@ function getGasPriceFromTransaction(
   return null;
 }
 
-export function useTransactionFee({
-  transaction,
-  chain,
-  onFeeValueCommonReady,
+function getGasPriceFromConfiguration({
+  chainGasPrices,
+  configuration,
 }: {
-  transaction: IncomingTransaction;
-  chain: Chain;
-  onFeeValueCommonReady: (value: string) => void;
-}) {
+  chainGasPrices?: ChainGasPrice | null;
+  configuration?: NetworkFeeConfiguration;
+}): GasPriceObject | null {
+  if (!configuration) {
+    return null;
+  }
+  if (
+    configuration.speed === 'custom' &&
+    (configuration.custom1559GasPrice || configuration.customClassicGasPrice)
+  ) {
+    return {
+      classic: configuration.customClassicGasPrice,
+      eip1559: configuration.custom1559GasPrice,
+    };
+  }
+  if (!chainGasPrices) {
+    return null;
+  }
+  const speed = configuration.speed === 'custom' ? 'fast' : configuration.speed;
+  return {
+    classic: chainGasPrices.info.classic?.[speed],
+    eip1559: chainGasPrices.info.eip1559?.[speed],
+  };
+}
+
+export function useFeeEstimation(
+  chain: Chain,
+  transaction: IncomingTransaction,
+  networkFeeConfiguration?: NetworkFeeConfiguration
+) {
   const gas = getGas(transaction);
   if (!gas || ethers.BigNumber.from(gas).isZero()) {
     throw new Error('gas field is expected to be found on Transaction object');
   }
-  const { value: nativeAsset, isLoading: isLoadingNativeAsset } =
-    useNativeAsset(chain);
-
-  const { data: chainGasPrices } = useQuery(
-    ['defi-sdk/gasPrices', chain.toString()],
+  const { data: chainGasPrices } = useGasPrices(chain);
+  return useQuery(
+    ['feeEstimation', chain, transaction, networkFeeConfiguration, gas],
     async () => {
-      const gasPrices = await gasChainPricesSubscription.get();
-      const chainGasPrices = gasPrices[chain.toString()];
-      return chainGasPrices;
-    },
-    { useErrorBoundary: true }
-  );
-
-  const { data, isLoading, isSuccess } = useQuery(
-    ['feeEstimation', chain, transaction],
-    async () => {
-      const gasPrices = await gasChainPricesSubscription.get();
-      const chainGasPrices = gasPrices[chain.toString()];
-
       const gasPriceFromTransaction = getGasPriceFromTransaction(transaction);
-      const gasPrice = gasPriceFromTransaction || {
-        classic: chainGasPrices.info.classic?.fast,
-        eip1559: chainGasPrices.info.eip1559?.fast,
-      };
+      const gasPriceFromConfiguration = getGasPriceFromConfiguration({
+        chainGasPrices,
+        configuration: networkFeeConfiguration,
+      });
+      const gasPrice =
+        gasPriceFromConfiguration ||
+        gasPriceFromTransaction ||
+        (chainGasPrices
+          ? {
+              classic: chainGasPrices.info.classic?.fast,
+              eip1559: chainGasPrices.info.eip1559?.fast,
+            }
+          : null);
       const feeEstimation = await getNetworkFeeEstimation({
         transaction,
         address: transaction.from || null,
         gas: Number(gas),
-        gasPrices: chainGasPrices,
+        gasPrices: chainGasPrices || null,
         gasPrice,
       });
       return { feeEstimation, gasPrice };
-    }
+    },
+    { suspense: false, retry: 0 }
   );
+}
+
+export function useTransactionPrices(
+  chain: Chain,
+  transaction: IncomingTransaction,
+  feeEstimation?: EstimatedFeeValue | null
+) {
+  const { value: nativeAsset, isLoading } = useNativeAsset(chain);
+  const { networks } = useNetworks();
+
+  return useMemo(() => {
+    if (!feeEstimation) {
+      return { isLoading };
+    }
+    const txValue = ethers.BigNumber.from(String(transaction.value ?? 0));
+    const totalValue = txValue.add(
+      typeof feeEstimation.value === 'number'
+        ? String(feeEstimation.value)
+        : feeEstimation.value.toFixed()
+    );
+
+    const decimals = nativeAsset
+      ? getDecimals({ asset: nativeAsset, chain })
+      : networks?.getNetworkByName(chain)?.native_asset?.decimals;
+
+    if (!decimals) {
+      return { isLoading };
+    }
+
+    const feeValueCommon = baseToCommon(feeEstimation.value, decimals);
+    const txValueCommon = baseToCommon(txValue.toString(), decimals);
+    const totalValueCommon = baseToCommon(totalValue.toString(), decimals);
+    const price = nativeAsset?.price;
+    return {
+      feeValueCommon,
+      feeValueFiat:
+        price?.value != null && feeValueCommon
+          ? feeValueCommon.times(price.value)
+          : null,
+      txValueCommon,
+      totalValueCommon,
+      totalValueFiat:
+        price?.value != null && totalValueCommon
+          ? totalValueCommon.times(price.value)
+          : null,
+      isLoading,
+      nativeAsset,
+    };
+  }, [
+    chain,
+    feeEstimation,
+    nativeAsset,
+    transaction.value,
+    isLoading,
+    networks,
+  ]);
+}
+
+export function useTransactionFee({
+  transaction,
+  chain,
+  onFeeValueCommonReady,
+  networkFeeConfiguration,
+}: {
+  transaction: IncomingTransaction;
+  chain: Chain;
+  onFeeValueCommonReady: (value: string) => void;
+  networkFeeConfiguration?: NetworkFeeConfiguration;
+}) {
+  const { data: chainGasPrices } = useGasPrices(chain);
+  const { data, isLoading, isSuccess } = useFeeEstimation(
+    chain,
+    transaction,
+    networkFeeConfiguration
+  );
+
   const feeEstimation = data?.feeEstimation;
   const noFeeData = isSuccess && !feeEstimation;
   const transactionGasPrice = data?.gasPrice;
@@ -110,32 +212,14 @@ export function useTransactionFee({
     }
   }, [chainGasPrices?.info.eip1559, transactionGasPrice]);
 
-  const { feeValueFiat, feeValueCommon, totalValueCommon, totalValueFiat } =
-    useMemo(() => {
-      if (!nativeAsset || !feeEstimation) {
-        return {};
-      }
-      const txValue = ethers.BigNumber.from(String(transaction.value ?? 0));
-      const decimals = getDecimals({ asset: nativeAsset, chain });
-      const feeValueCommon = baseToCommon(feeEstimation.value, decimals);
-      const txValueCommon = baseToCommon(txValue.toString(), decimals);
-      const totalValue = txValue.add(
-        typeof feeEstimation.value === 'number'
-          ? String(feeEstimation.value)
-          : feeEstimation.value.toFixed()
-      );
-      const totalValueCommon = baseToCommon(totalValue.toString(), decimals);
-      const { price } = nativeAsset;
-      return {
-        feeValueCommon,
-        feeValueFiat:
-          price?.value != null ? feeValueCommon.times(price.value) : null,
-        txValueCommon,
-        totalValueCommon,
-        totalValueFiat:
-          price?.value != null ? totalValueCommon.times(price.value) : null,
-      };
-    }, [chain, feeEstimation, nativeAsset, transaction.value]);
+  const {
+    feeValueFiat,
+    feeValueCommon,
+    totalValueCommon,
+    totalValueFiat,
+    nativeAsset,
+    isLoading: isTransactionPricesLoading,
+  } = useTransactionPrices(chain, transaction, feeEstimation);
 
   useEffect(() => {
     if (feeValueCommon) {
@@ -152,7 +236,7 @@ export function useTransactionFee({
     totalValueCommon,
     nativeAsset,
     isLoading,
-    isLoadingNativeAsset,
+    isTransactionPricesLoading,
     noFeeData,
   };
 }

@@ -6,12 +6,14 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { NetworkFee } from '../NetworkFee';
 import { NonceLine } from '../NonceLine';
 import { TotalLine } from '../TotalLine';
+import type { NetworkFeeConfiguration } from '../NetworkFee/types';
 import { useTransactionFee } from './useTransactionFee';
 
 const DISPLAY_TOTAL = false;
 
 export interface CustomConfiguration {
   nonce: string | null;
+  networkFee: NetworkFeeConfiguration;
 }
 
 export function TransactionConfiguration({
@@ -38,10 +40,19 @@ export function TransactionConfiguration({
     transaction: transactionWithFrom,
     chain,
     onFeeValueCommonReady,
+    networkFeeConfiguration: configuration.networkFee,
   });
   return (
     <VStack gap={8}>
-      <NetworkFee transactionFee={transactionFee} />
+      <NetworkFee
+        transaction={transactionWithFrom}
+        transactionFee={transactionFee}
+        chain={chain}
+        networkFeeConfiguration={configuration.networkFee}
+        onChange={(networkFee) =>
+          onConfigurationChange({ ...configuration, networkFee })
+        }
+      />
       {preferences?.configurableNonce ? (
         <NonceLine
           userNonce={configuration.nonce}

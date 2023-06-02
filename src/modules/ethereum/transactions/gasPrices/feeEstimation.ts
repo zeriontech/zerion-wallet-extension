@@ -11,7 +11,7 @@ import { hexifyTxValues } from './hexifyTxValues';
 import { createOptimisticFee } from './optimistic/fee';
 import type { ChainGasPrice } from './requests';
 
-interface EstimatedFeeValue {
+export interface EstimatedFeeValue {
   value: number | BigNumber;
   type: keyof ChainGasPrice['info'];
 }
@@ -40,7 +40,7 @@ export async function getNetworkFeeEstimation({
   address: string | null;
   gas: string | number | null;
   gasPrices: ChainGasPrice | null;
-  gasPrice: GasPriceObject;
+  gasPrice: GasPriceObject | null;
   transaction: IncomingTransaction | null;
 }): Promise<EstimatedFeeValue | null> {
   if (!gasPrices || !gas || gas === '') {
@@ -72,6 +72,9 @@ export async function getNetworkFeeEstimation({
     }
     const estimatedFeeInBaseUnits = optimisticFeeValue.estimatedFee;
     return { value: estimatedFeeInBaseUnits, type: 'optimistic' };
+  }
+  if (!gasPrice) {
+    return null;
   }
   const { eip1559, classic } = gasPrice;
   if (eip1559 && gasPrices.info.eip1559) {

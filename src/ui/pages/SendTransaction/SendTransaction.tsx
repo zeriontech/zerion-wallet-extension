@@ -39,6 +39,7 @@ import { networksStore } from 'src/modules/networks/networks-store.client';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
+import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
@@ -77,7 +78,7 @@ function errorToMessage(error?: SendTransactionError) {
   }
 }
 
-async function resolveChainAndGasPrice(
+async function resolveChainAndGas(
   transaction: IncomingTransaction,
   currentChain: Chain
 ) {
@@ -104,6 +105,11 @@ function useErrorBoundary() {
 
 const DEFAULT_CONFIGURATION: CustomConfiguration = {
   nonce: null,
+  networkFee: {
+    speed: 'fast',
+    custom1559GasPrice: null,
+    customClassicGasPrice: null,
+  },
 };
 
 function TransactionViewLoading() {
@@ -155,10 +161,7 @@ function SendTransactionContent({
       const currentChain = await walletPort.request('requestChainForOrigin', {
         origin,
       });
-      return resolveChainAndGasPrice(
-        incomingTransaction,
-        createChain(currentChain)
-      );
+      return resolveChainAndGas(incomingTransaction, createChain(currentChain));
     },
     {
       useErrorBoundary: true,
@@ -246,17 +249,25 @@ function SendTransactionContent({
   );
   const originForHref = useMemo(() => prepareForHref(origin), [origin]);
 
-  if (!networks || !pendingTransaction || isLoadingLocalAddressAction) {
+  const chain =
+    pendingTransaction && networks
+      ? networks.getChainById(ethers.utils.hexValue(pendingTransaction.chainId))
+      : null;
+
+  const { data: chainGasPrices } = useGasPrices(chain);
+
+  if (
+    !networks ||
+    !pendingTransaction ||
+    isLoadingLocalAddressAction ||
+    !chain
+  ) {
     return <TransactionViewLoading />;
   }
 
   if (!localAddressAction) {
     throw new Error('Unexpected missing localAddressAction');
   }
-
-  const chain = networks.getChainById(
-    ethers.utils.hexValue(pendingTransaction.chainId)
-  );
 
   const addressAction = interpretAddressAction || localAddressAction;
 
@@ -432,7 +443,11 @@ function SendTransactionContent({
               onClick={() => {
                 try {
                   signAndSendTransaction(
-                    applyConfiguration(incomingTransaction, configuration)
+                    applyConfiguration(
+                      incomingTransaction,
+                      configuration,
+                      chainGasPrices
+                    )
                   );
                 } catch (error) {
                   showErrorBoundary(error);
