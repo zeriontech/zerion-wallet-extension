@@ -9,13 +9,13 @@ const templates = {
   dialog: (name?: string) => name && /dialog\.\w+\.html$/.test(name),
 };
 
-export type TemplateType = keyof typeof templates;
+type TemplateType = keyof typeof templates;
 
 function isKnownTemplateType(x: string): x is TemplateType {
   return x in templates;
 }
 
-export function getPageTemplateType(): TemplateType | null {
+function getPageTemplateType(): TemplateType | null {
   const url = new URL(window.location.href);
   if (url.searchParams.has('templateType')) {
     const templateType = url.searchParams.get('templateType');
