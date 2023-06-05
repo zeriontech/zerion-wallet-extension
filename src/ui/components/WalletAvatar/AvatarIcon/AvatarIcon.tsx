@@ -14,7 +14,7 @@ export function AvatarIcon({
   active: boolean;
   address: string;
   size: number;
-  nft?: WalletProfileNFT;
+  nft?: WalletProfileNFT | null;
   borderRadius: number;
 }) {
   const mediaContent = useMemo(

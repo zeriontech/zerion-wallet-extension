@@ -17,10 +17,10 @@ export function usePreferences() {
     { useErrorBoundary: true, suspense: true }
   );
   const mutation = useOptimisticMutation(setPreferences, {
-    relatedQueryKey: 'wallet/getPreferences',
+    relatedQueryKey: ['wallet/getPreferences'],
     onMutate: ({ client, variables }) => {
       client.setQueryData<Preferences>(
-        'wallet/getPreferences',
+        ['wallet/getPreferences'],
         (preferences) => ({ ...preferences, ...variables })
       );
     },
@@ -45,10 +45,10 @@ export function useGlobalPreferences() {
   );
 
   const mutation = useOptimisticMutation(setGlobalPreferences, {
-    relatedQueryKey: 'wallet/getGlobalPreferences',
+    relatedQueryKey: ['wallet/getGlobalPreferences'],
     onMutate: ({ client, variables }) =>
       client.setQueryData<GlobalPreferences>(
-        'wallet/getGlobalPreferences',
+        ['wallet/getGlobalPreferences'],
         (globalPreferences) => ({ ...globalPreferences, ...variables })
       ),
   });
