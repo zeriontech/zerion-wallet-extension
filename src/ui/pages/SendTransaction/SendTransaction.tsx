@@ -231,6 +231,9 @@ function SendTransactionContent({
         { initiator: origin, feeValueCommon },
       ]);
     },
+    // The value returned by onMutate can be accessed in
+    // a global onError handler (src/ui/shared/requests/queryClient.ts)
+    // TODO: refactor to just emit error directly from the mutationFn
     onMutate: () => 'sendTransaction',
     onSuccess: (tx) => {
       const windowId = params.get('windowId');
