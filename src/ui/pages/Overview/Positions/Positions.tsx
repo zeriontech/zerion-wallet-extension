@@ -278,7 +278,12 @@ function usePreparedPositions({
         ? groupPositionsByProtocol(items)
         : { [DEFAULT_PROTOCOL]: items };
     const byProtocolSorted = sortPositionGroupsByTotalValue(byProtocol);
-    const protocols = byProtocolSorted.map(([protocol]) => protocol);
+    const protocols = [
+      DEFAULT_PROTOCOL,
+      ...byProtocolSorted
+        .map(([protocol]) => protocol)
+        .filter((item) => item !== DEFAULT_PROTOCOL),
+    ];
     const protocolIndex: PreparedPositions['protocolIndex'] = {};
     for (const protocol of protocols) {
       const items = sortPositionsByValue(byProtocol[protocol]);
