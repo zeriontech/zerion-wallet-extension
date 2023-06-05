@@ -44,8 +44,8 @@ export function ImportMnemonic({
   const { data: isWhiteListedResponse, isLoading: isWhitelistStatusLoading } =
     useWhitelistStatus(address);
 
-  const { mutate, isLoading } = useMutation(
-    async (value: string) => {
+  const { mutate, isLoading } = useMutation({
+    mutationFn: async (value: string) => {
       setValidation(null);
       if (!isWhiteListedResponse?.status) {
         throw new Error("You're not whitelisted");
@@ -72,22 +72,20 @@ export function ImportMnemonic({
       }
       return wallet;
     },
-    {
-      onSuccess: (wallet) => {
-        if (wallet) {
-          setValue(ARRAY_OF_NUMBERS.map(() => ''));
-          zeroizeAfterSubmission();
-          onWalletCreate(wallet);
-        }
-      },
-      onError: (error) => {
-        setValidation({
-          valid: false,
-          message: getError(error).message,
-        });
-      },
-    }
-  );
+    onSuccess: (wallet) => {
+      if (wallet) {
+        setValue(ARRAY_OF_NUMBERS.map(() => ''));
+        zeroizeAfterSubmission();
+        onWalletCreate(wallet);
+      }
+    },
+    onError: (error) => {
+      setValidation({
+        valid: false,
+        message: getError(error).message,
+      });
+    },
+  });
 
   const gridStyle = useSpring({
     maxHeight: phraseMode === 24 ? 440 : 216,

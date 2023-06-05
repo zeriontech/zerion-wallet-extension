@@ -5,8 +5,8 @@ import { walletPort } from '../channels';
 type SignMutationProps = { onSuccess: (value: string) => void };
 
 export function useSignTypedData_v4Mutation({ onSuccess }: SignMutationProps) {
-  return useMutation(
-    async ({
+  return useMutation({
+    mutationFn: async ({
       typedData,
       initiator,
     }: {
@@ -18,25 +18,17 @@ export function useSignTypedData_v4Mutation({ onSuccess }: SignMutationProps) {
         initiator,
       });
     },
-    {
-      // onMutate creates a context that we can use in global onError handler
-      // to know more about a mutation (in react-query@v4 you should use "context" instead)
-      onMutate: () => '_signTypedData',
-      onSuccess,
-    }
-  );
+    onMutate: () => '_signTypedData',
+    onSuccess,
+  });
 }
 
 export function usePersonalSignMutation({ onSuccess }: SignMutationProps) {
-  return useMutation(
-    async (params: { params: [string]; initiator: string }) => {
+  return useMutation({
+    mutationFn: async (params: { params: [string]; initiator: string }) => {
       return await walletPort.request('personalSign', params);
     },
-    {
-      // onMutate creates a context that we can use in global onError handler
-      // to know more about a mutation (in react-query@v4 you should use "context" instead)
-      onMutate: () => 'signMessage',
-      onSuccess,
-    }
-  );
+    onMutate: () => 'signMessage',
+    onSuccess,
+  });
 }

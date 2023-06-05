@@ -61,8 +61,14 @@ export function Import() {
     setStep('password');
   }, []);
 
-  const { mutate, isLoading } = useMutation(
-    async ({ password, wallet }: { password: string; wallet: BareWallet }) => {
+  const { mutate, isLoading } = useMutation({
+    mutationFn: async ({
+      password,
+      wallet,
+    }: {
+      password: string;
+      wallet: BareWallet;
+    }) => {
       setShowError(false);
       return Promise.race([
         (async () => {
@@ -79,16 +85,14 @@ export function Import() {
         rejectAfterDelay(3000),
       ]);
     },
-    {
-      onSuccess: () => {
-        zeroizeAfterSubmission();
-        navigate('/onboarding/success');
-      },
-      onError: () => {
-        setShowError(true);
-      },
-    }
-  );
+    onSuccess: () => {
+      zeroizeAfterSubmission();
+      navigate('/onboarding/success');
+    },
+    onError: () => {
+      setShowError(true);
+    },
+  });
 
   const handlePasswordSubmit = useCallback(
     (password: string) => {

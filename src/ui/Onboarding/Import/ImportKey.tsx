@@ -30,8 +30,8 @@ export function ImportKey({
   const { data: isWhiteListedResponse, isLoading: isWhitelistStatusLoading } =
     useWhitelistStatus(address);
 
-  const { mutate, isLoading } = useMutation(
-    async (value: string) => {
+  const { mutate, isLoading } = useMutation({
+    mutationFn: async (value: string) => {
       setValidation(null);
       if (!isWhiteListedResponse?.status) {
         throw new Error("You're not whitelisted");
@@ -52,21 +52,19 @@ export function ImportKey({
 
       return wallet;
     },
-    {
-      onSuccess: (wallet) => {
-        if (wallet) {
-          zeroizeAfterSubmission();
-          onWalletCreate(wallet);
-        }
-      },
-      onError: (error) => {
-        setValidation({
-          valid: false,
-          message: getError(error).message,
-        });
-      },
-    }
-  );
+    onSuccess: (wallet) => {
+      if (wallet) {
+        zeroizeAfterSubmission();
+        onWalletCreate(wallet);
+      }
+    },
+    onError: (error) => {
+      setValidation({
+        valid: false,
+        message: getError(error).message,
+      });
+    },
+  });
 
   return (
     <VStack gap={isNarrowView ? 16 : 52}>

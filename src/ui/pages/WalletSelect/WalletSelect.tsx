@@ -29,21 +29,19 @@ import { TextLink } from 'src/ui/ui-kit/TextLink';
 
 export function WalletSelect() {
   const navigate = useNavigate();
-  const { data: walletGroups, isLoading } = useQuery(
-    ['wallet/uiGetWalletGroups'],
-    () => walletPort.request('uiGetWalletGroups'),
-    { useErrorBoundary: true }
-  );
+  const { data: walletGroups, isLoading } = useQuery({
+    queryKey: ['wallet/uiGetWalletGroups'],
+    queryFn: () => walletPort.request('uiGetWalletGroups'),
+    useErrorBoundary: true,
+  });
   const { singleAddress, refetch } = useAddressParams();
-  const setCurrentAddressMutation = useMutation(
-    (address: string) => setCurrentAddress({ address }),
-    {
-      onSuccess() {
-        refetch();
-        navigate(-1);
-      },
-    }
-  );
+  const setCurrentAddressMutation = useMutation({
+    mutationFn: (address: string) => setCurrentAddress({ address }),
+    onSuccess() {
+      refetch();
+      navigate(-1);
+    },
+  });
   const hasMnemonicWallets = useMemo(
     () =>
       walletGroups?.some(

@@ -43,12 +43,12 @@ import { CurrentNetworkSettingsItem } from '../../Networks/CurrentNetworkSetting
 import { ConnectToDappButton } from './ConnectToDappButton';
 
 function useRemovePermissionMutation({ onSuccess }: { onSuccess: () => void }) {
-  return useMutation(
-    ({ origin, address }: { origin: string; address?: string }) => {
+  return useMutation({
+    mutationFn: ({ origin, address }: { origin: string; address?: string }) => {
       return walletPort.request('removePermission', { origin, address });
     },
-    { onSuccess }
-  );
+    onSuccess,
+  });
 }
 
 function RevokeAllSurfaceItemButton({
@@ -101,19 +101,22 @@ export function ConnectedSite() {
   // TODO:
   // Refactor these calls to only have one "useQuery" call, but keep in mind
   // that related queries on Overview must be refetched after mutations made here
-  const { data: tabData } = useQuery(['activeTab/origin'], getActiveTabOrigin, {
+  const { data: tabData } = useQuery({
+    queryKey: ['activeTab/origin'],
+    queryFn: getActiveTabOrigin,
     useErrorBoundary: true,
   });
   const activeTabOrigin = tabData?.tabOrigin;
-  const { data: connectedSites, refetch } = useQuery(
-    ['getPermissionsWithWallets'],
-    getPermissionsWithWallets,
-    { useErrorBoundary: true }
-  );
-  const { data: flaggedAsDapp } = useQuery(
-    [`wallet/isFlaggedAsDapp(${originName})`],
-    () => walletPort.request('isFlaggedAsDapp', { origin: originName })
-  );
+  const { data: connectedSites, refetch } = useQuery({
+    queryKey: ['getPermissionsWithWallets'],
+    queryFn: getPermissionsWithWallets,
+    useErrorBoundary: true,
+  });
+  const { data: flaggedAsDapp } = useQuery({
+    queryKey: [`wallet/isFlaggedAsDapp(${originName})`],
+    queryFn: () =>
+      walletPort.request('isFlaggedAsDapp', { origin: originName }),
+  });
   const connectedSite = useMemo(() => {
     const found = connectedSites?.find((site) => site.origin === originName);
     if (found) {
@@ -127,19 +130,20 @@ export function ConnectedSite() {
     () => (siteOrigin ? prepareForHref(siteOrigin) : null),
     [siteOrigin]
   );
-  const { data: siteChain, ...chainQuery } = useQuery(
-    [`wallet/requestChainForOrigin(${originName})`],
-    () =>
+  const { data: siteChain, ...chainQuery } = useQuery({
+    queryKey: [`wallet/requestChainForOrigin(${originName})`],
+    queryFn: () =>
       walletPort
         .request('requestChainForOrigin', { origin: originName })
         .then((chain) => createChain(chain)),
-    { useErrorBoundary: true }
-  );
-  const switchChainMutation = useMutation(
-    (chain: string) =>
+    useErrorBoundary: true,
+  });
+  const switchChainMutation = useMutation({
+    mutationFn: (chain: string) =>
       walletPort.request('switchChainForOrigin', { chain, origin: originName }),
-    { useErrorBoundary: true, onSuccess: () => chainQuery.refetch() }
-  );
+    useErrorBoundary: true,
+    onSuccess: () => chainQuery.refetch(),
+  });
   const { params } = useAddressParams();
   const { value: portfolioDecomposition } = useAddressPortfolioDecomposition({
     ...params,
@@ -155,12 +159,12 @@ export function ConnectedSite() {
   const selectNetworkDialogRef = useRef<HTMLDialogElementInterface | null>(
     null
   );
-  const { data: currentWallet } = useQuery(
-    ['wallet/uiGetCurrentWallet'],
-    () => {
+  const { data: currentWallet } = useQuery({
+    queryKey: ['wallet/uiGetCurrentWallet'],
+    queryFn: () => {
       return walletPort.request('uiGetCurrentWallet');
-    }
-  );
+    },
+  });
   const currentAddress = currentWallet?.address;
   const currentWalletIsConnected = useMemo(
     () =>

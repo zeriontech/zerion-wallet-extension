@@ -27,17 +27,15 @@ export function SearchResults({
     data: itemsForQuery,
     isPreviousData,
     isLoading,
-  } = useQuery(
-    ['getNetworksBySearch', query],
-    () => getNetworksBySearch({ query: query.trim().toLowerCase() }),
-    {
-      suspense: false,
-      keepPreviousData: true,
-      onSuccess(results) {
-        emitter.emit('networksSearchResponse', query, results.length);
-      },
-    }
-  );
+  } = useQuery({
+    queryKey: ['getNetworksBySearch', query],
+    queryFn: () => getNetworksBySearch({ query: query.trim().toLowerCase() }),
+    suspense: false,
+    keepPreviousData: true,
+    onSuccess(results) {
+      emitter.emit('networksSearchResponse', query, results.length);
+    },
+  });
   const grouped = useMemo((): null | Array<{
     title: string;
     items: NetworkConfig[];

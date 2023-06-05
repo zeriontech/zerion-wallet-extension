@@ -84,11 +84,12 @@ function Options() {
   );
   const hasWallets = walletGroups ? walletGroups?.length > 0 : false;
 
-  const { data: userCanCreateInitialWallet } = useQuery(
-    ['wallet/userCanCreateInitialWallet'],
-    () => walletPort.request('userCanCreateInitialWallet'),
-    { useErrorBoundary: true, suspense: true }
-  );
+  const { data: userCanCreateInitialWallet } = useQuery({
+    queryKey: ['wallet/userCanCreateInitialWallet'],
+    queryFn: () => walletPort.request('userCanCreateInitialWallet'),
+    useErrorBoundary: true,
+    suspense: true,
+  });
 
   if (isLoading) {
     return null;

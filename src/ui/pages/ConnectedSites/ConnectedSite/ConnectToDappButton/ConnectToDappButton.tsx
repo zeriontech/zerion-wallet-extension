@@ -16,13 +16,19 @@ export function ConnectToDappButton({
   wallet: BareWallet;
   onSuccess: () => void;
 }) {
-  const acceptOriginAndConnectMutation = useMutation(
-    async ({ address, origin }: { address: string; origin: string }) => {
+  const acceptOriginAndConnectMutation = useMutation({
+    mutationFn: async ({
+      address,
+      origin,
+    }: {
+      address: string;
+      origin: string;
+    }) => {
       await walletPort.request('acceptOrigin', { origin, address });
       return walletPort.request('emitConnectionEvent', { origin });
     },
-    { onSuccess }
-  );
+    onSuccess,
+  });
   return (
     <VStack gap={4}>
       <SurfaceList

@@ -52,8 +52,8 @@ export function NonFungibleToken() {
     return urlObject.toString();
   }, [singleAddress, nft]);
 
-  const { mutate: promoteTokenMutation, isLoading } = useMutation(
-    async () => {
+  const { mutate: promoteTokenMutation, isLoading } = useMutation({
+    mutationFn: async () => {
       if (!nft?.collection.name) {
         return;
       }
@@ -64,11 +64,9 @@ export function NonFungibleToken() {
       });
       return;
     },
-    {
-      onMutate: () => setPromotedAsPrimary(true),
-      onError: () => setPromotedAsPrimary(false),
-    }
-  );
+    onMutate: () => setPromotedAsPrimary(true),
+    onError: () => setPromotedAsPrimary(false),
+  });
 
   useEffect(() => window.scrollTo(0, 0), []);
 

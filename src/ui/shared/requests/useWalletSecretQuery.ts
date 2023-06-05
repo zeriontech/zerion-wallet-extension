@@ -36,14 +36,12 @@ export function useSecretValue({
   address?: string | null;
   groupId?: string | null;
 }) {
-  return useQuery(
-    ['getSecretValue', address, groupId],
-    () => getSecretValue({ address, groupId, seedType }),
-    {
-      useErrorBoundary: true,
-      cacheTime: 0,
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
-    }
-  );
+  return useQuery({
+    queryKey: ['getSecretValue', address, groupId],
+    queryFn: () => getSecretValue({ address, groupId, seedType }),
+    useErrorBoundary: true,
+    cacheTime: 0,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
 }

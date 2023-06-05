@@ -32,17 +32,15 @@ export function CreateAccount() {
     type: string;
     message: string;
   }>(null);
-  const createUserMutation = useMutation(
-    ({ password }: { password: string }) => {
+  const createUserMutation = useMutation({
+    mutationFn: ({ password }: { password: string }) => {
       return accountPublicRPCPort.request('createUser', { password });
     },
-    {
-      onSuccess() {
-        zeroizeAfterSubmission();
-        navigate(params.get('next') || '/get-started');
-      },
-    }
-  );
+    onSuccess() {
+      zeroizeAfterSubmission();
+      navigate(params.get('next') || '/get-started');
+    },
+  });
   return (
     <Background backgroundKind="white">
       <PageColumn>

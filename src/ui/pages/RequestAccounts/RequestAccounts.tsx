@@ -124,27 +124,25 @@ function useRedirectIfOriginAlreadyAllowed({
   address: string | undefined;
   onIsAllowed: () => void;
 }) {
-  useQuery(
-    ['getOriginPermissions'],
-    () => walletPort.request('getOriginPermissions'),
-    {
-      enabled: Boolean(address),
-      useErrorBoundary: true,
-      suspense: true,
-      refetchOnWindowFocus: false,
-      retry: false,
-      onSuccess(result) {
-        if (!address) {
-          return;
-        }
-        const normalizedAddress = normalizeAddress(address);
-        const isAllowed = result[origin]?.addresses.includes(normalizedAddress);
-        if (isAllowed) {
-          onIsAllowed();
-        }
-      },
-    }
-  );
+  useQuery({
+    queryKey: ['getOriginPermissions'],
+    queryFn: () => walletPort.request('getOriginPermissions'),
+    enabled: Boolean(address),
+    useErrorBoundary: true,
+    suspense: true,
+    refetchOnWindowFocus: false,
+    retry: false,
+    onSuccess(result) {
+      if (!address) {
+        return;
+      }
+      const normalizedAddress = normalizeAddress(address);
+      const isAllowed = result[origin]?.addresses.includes(normalizedAddress);
+      if (isAllowed) {
+        onIsAllowed();
+      }
+    },
+  });
 }
 
 function RequestAccountsPermissions({ originName }: { originName: string }) {
@@ -295,17 +293,20 @@ export function RequestAccounts() {
   invariant(origin, 'origin get-parameter is required');
   invariant(windowId, 'windowId get-parameter is required');
 
-  const walletGroupsQuery = useQuery(
-    ['wallet/uiGetWalletGroups'],
-    () => walletPort.request('uiGetWalletGroups'),
-    { useErrorBoundary: true }
-  );
+  const walletGroupsQuery = useQuery({
+    queryKey: ['wallet/uiGetWalletGroups'],
+    queryFn: () => walletPort.request('uiGetWalletGroups'),
+    useErrorBoundary: true,
+  });
   const {
     data: wallet,
     isLoading,
     isError,
-  } = useQuery(['wallet/uiGetCurrentWallet'], () => {
-    return walletPort.request('uiGetCurrentWallet');
+  } = useQuery({
+    queryKey: ['wallet/uiGetCurrentWallet'],
+    queryFn: () => {
+      return walletPort.request('uiGetCurrentWallet');
+    },
   });
   const handleConfirm = useCallback(
     (result: { address: string; origin: string }) => {

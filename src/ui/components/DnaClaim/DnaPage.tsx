@@ -158,8 +158,11 @@ export function DnaPage() {
   const { singleAddress, params, ready } = useAddressParams();
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
-  const { data: wallet } = useQuery(['wallet/uiGetCurrentWallet'], () => {
-    return walletPort.request('uiGetCurrentWallet');
+  const { data: wallet } = useQuery({
+    queryKey: ['wallet/uiGetCurrentWallet'],
+    queryFn: () => {
+      return walletPort.request('uiGetCurrentWallet');
+    },
   });
   const addWalletParams = useWalletParams(wallet);
 

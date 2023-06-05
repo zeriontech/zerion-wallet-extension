@@ -148,11 +148,11 @@ export function AbilityPage() {
   const { ability_uid } = useParams();
   invariant(ability_uid, 'ability_uid path segment is required');
 
-  const { data } = useQuery(
-    [`ability/${ability_uid}`],
-    () => getAbility(ability_uid),
-    { suspense: false }
-  );
+  const { data } = useQuery({
+    queryKey: [`ability/${ability_uid}`],
+    queryFn: () => getAbility(ability_uid),
+    suspense: false,
+  });
 
   const linkTitle = useMemo(() => {
     return getAbilityLinkTitle(data?.ability);
@@ -160,29 +160,25 @@ export function AbilityPage() {
 
   const { data: feedData, refetch, isFetching } = useFeedInfo();
 
-  const { mutate: mark, isLoading: markLoading } = useMutation(
-    ({
+  const { mutate: mark, isLoading: markLoading } = useMutation({
+    mutationFn: ({
       ability,
       action,
     }: {
       ability: WalletAbility;
       action: 'complete' | 'dismiss';
     }) => markAbility({ ability, action }),
-    {
-      onSuccess: () => {
-        refetch();
-      },
-    }
-  );
+    onSuccess: () => {
+      refetch();
+    },
+  });
 
-  const { mutate: unmark, isLoading: unmarkLoading } = useMutation(
-    (abilityId: string) => unmarkAbility({ abilityId }),
-    {
-      onSuccess: () => {
-        refetch();
-      },
-    }
-  );
+  const { mutate: unmark, isLoading: unmarkLoading } = useMutation({
+    mutationFn: (abilityId: string) => unmarkAbility({ abilityId }),
+    onSuccess: () => {
+      refetch();
+    },
+  });
 
   const handleMarkButtonClick = useCallback(
     (action: 'dismiss' | 'complete') => {

@@ -11,9 +11,9 @@ export function InactivityDetector() {
    * * location change
    */
   const location = useLocation();
-  const { mutate: sendHeartbeat } = useMutation(() =>
-    walletPort.request('userHeartbeat')
-  );
+  const { mutate: sendHeartbeat } = useMutation({
+    mutationFn: () => walletPort.request('userHeartbeat'),
+  });
 
   useEffect(() => {
     function handler() {

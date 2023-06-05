@@ -155,27 +155,29 @@ function SendTransactionContent({
     navigate(-1);
   };
 
-  const { data: pendingTransaction } = useQuery(
-    ['setTransactionChainIdAndGasPrice', incomingTransaction, origin],
-    async () => {
+  const { data: pendingTransaction } = useQuery({
+    queryKey: ['setTransactionChainIdAndGasPrice', incomingTransaction, origin],
+    queryFn: async () => {
       const currentChain = await walletPort.request('requestChainForOrigin', {
         origin,
       });
       return resolveChainAndGas(incomingTransaction, createChain(currentChain));
     },
-    {
-      useErrorBoundary: true,
-      retry: false,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
-    }
-  );
+    useErrorBoundary: true,
+    retry: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+  });
 
   const { data: localAddressAction, isLoading: isLoadingLocalAddressAction } =
-    useQuery(
-      ['pendingTransactionToAddressAction', pendingTransaction, networks],
-      () => {
+    useQuery({
+      queryKey: [
+        'pendingTransactionToAddressAction',
+        pendingTransaction,
+        networks,
+      ],
+      queryFn: () => {
         return pendingTransaction && networks
           ? incomingTransactionToIncomingAddressAction(
               {
@@ -187,32 +189,28 @@ function SendTransactionContent({
             )
           : null;
       },
-      {
-        enabled: Boolean(pendingTransaction) && Boolean(networks),
-        useErrorBoundary: true,
-        retry: false,
-        refetchOnMount: false,
-        refetchOnReconnect: false,
-        refetchOnWindowFocus: false,
-      }
-    );
+      enabled: Boolean(pendingTransaction) && Boolean(networks),
+      useErrorBoundary: true,
+      retry: false,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      refetchOnWindowFocus: false,
+    });
 
-  const { data: interpretation, ...interpretQuery } = useQuery(
-    ['interpretTransaction', pendingTransaction],
-    () => {
+  const { data: interpretation, ...interpretQuery } = useQuery({
+    queryKey: ['interpretTransaction', pendingTransaction],
+    queryFn: () => {
       return pendingTransaction
         ? interpretTransaction(singleAddress, pendingTransaction)
         : null;
     },
-    {
-      enabled: Boolean(pendingTransaction),
-      suspense: false,
-      retry: 1,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
-    }
-  );
+    enabled: Boolean(pendingTransaction),
+    suspense: false,
+    retry: 1,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+  });
 
   const interpretAddressAction = interpretation?.action;
 
@@ -225,28 +223,24 @@ function SendTransactionContent({
     mutate: signAndSendTransaction,
     context,
     ...signMutation
-  } = useMutation(
-    async (transaction: IncomingTransaction) => {
+  } = useMutation({
+    mutationFn: async (transaction: IncomingTransaction) => {
       const feeValueCommon = feeValueCommonRef.current || null;
       return await walletPort.request('signAndSendTransaction', [
         transaction,
         { initiator: origin, feeValueCommon },
       ]);
     },
-    {
-      // onMutate creates a context that we can use in global onError handler
-      // to know more about a mutation (in react-query@v4 you should use "context" instead)
-      onMutate: () => 'sendTransaction',
-      onSuccess: (tx) => {
-        const windowId = params.get('windowId');
-        invariant(windowId, 'windowId get-parameter is required');
-        windowPort.confirm(windowId, tx.hash);
-        if (next) {
-          navigate(next);
-        }
-      },
-    }
-  );
+    onMutate: () => 'sendTransaction',
+    onSuccess: (tx) => {
+      const windowId = params.get('windowId');
+      invariant(windowId, 'windowId get-parameter is required');
+      windowPort.confirm(windowId, tx.hash);
+      if (next) {
+        navigate(next);
+      }
+    },
+  });
   const originForHref = useMemo(() => prepareForHref(origin), [origin]);
 
   const chain =
@@ -465,11 +459,11 @@ function SendTransactionContent({
 
 export function SendTransaction() {
   const [params] = useSearchParams();
-  const { data: wallet, isLoading } = useQuery(
-    ['wallet/uiGetCurrentWallet'],
-    () => walletPort.request('uiGetCurrentWallet'),
-    { useErrorBoundary: true }
-  );
+  const { data: wallet, isLoading } = useQuery({
+    queryKey: ['wallet/uiGetCurrentWallet'],
+    queryFn: () => walletPort.request('uiGetCurrentWallet'),
+    useErrorBoundary: true,
+  });
   if (isLoading || !wallet) {
     return null;
   }

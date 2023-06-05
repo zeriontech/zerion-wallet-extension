@@ -56,8 +56,11 @@ export function SignInWithEthereum() {
     data: wallet,
     isLoading,
     isError,
-  } = useQuery(['wallet/uiGetCurrentWallet'], () => {
-    return walletPort.request('uiGetCurrentWallet');
+  } = useQuery({
+    queryKey: ['wallet/uiGetCurrentWallet'],
+    queryFn: () => {
+      return walletPort.request('uiGetCurrentWallet');
+    },
   });
 
   const { data: utcTime, isLoading: utcTimeLoading } = useFetchUTCTime();

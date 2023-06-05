@@ -293,8 +293,8 @@ function VerifyBackup({
   seedType: SeedType;
   onSuccess: () => void;
 }) {
-  const verifyMutation = useMutation(
-    async (value: string) => {
+  const verifyMutation = useMutation({
+    mutationFn: async (value: string) => {
       if (seedType === SeedType.mnemonic) {
         const isCorrect = await walletPort.request('verifyRecoveryPhrase', {
           groupId,
@@ -316,17 +316,15 @@ function VerifyBackup({
         return true;
       }
     },
-    {
-      onSuccess: async () => {
-        if (!groupId) {
-          throw new Error('No groupId');
-        }
-        await walletPort.request('updateLastBackedUp', { groupId });
-        zeroizeAfterSubmission();
-        onSuccess();
-      },
-    }
-  );
+    onSuccess: async () => {
+      if (!groupId) {
+        throw new Error('No groupId');
+      }
+      await walletPort.request('updateLastBackedUp', { groupId });
+      zeroizeAfterSubmission();
+      onSuccess();
+    },
+  });
   const autoFocusRef = useRef<HTMLInputElement | null>(null);
   useEffect(() => {
     autoFocusRef.current?.focus();
@@ -461,11 +459,11 @@ export function BackupWallet() {
   const backupKind = params.get('backupKind') as BackupKind | null;
   invariant(groupId, 'groupId param is required for BackupWallet view');
   invariant(backupKind, 'backupKind param is required for BackupWallet view');
-  const { data: walletGroup, isLoading } = useQuery(
-    [`wallet/uiGetWalletGroup/${groupId}`],
-    () => walletPort.request('uiGetWalletGroup', { groupId }),
-    { useErrorBoundary: true }
-  );
+  const { data: walletGroup, isLoading } = useQuery({
+    queryKey: [`wallet/uiGetWalletGroup/${groupId}`],
+    queryFn: () => walletPort.request('uiGetWalletGroup', { groupId }),
+    useErrorBoundary: true,
+  });
   const { handleCopy: emptyClipboard } = useCopyToClipboard({
     // We replace user clipboard with a warning message.
     // This works as "emptying" the clipboard, but it's more helpful

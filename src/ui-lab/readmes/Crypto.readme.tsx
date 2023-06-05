@@ -54,7 +54,9 @@ const Crypto = () => {
     setPassed(text === decrypted.text);
   }
 
-  const { mutate: testMutate, isLoading } = useMutation(() => test());
+  const { mutate: testMutate, isLoading } = useMutation({
+    mutationFn: () => test(),
+  });
   useEffect(() => {
     testMutate();
   }, [testMutate]);

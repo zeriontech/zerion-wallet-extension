@@ -13,7 +13,8 @@ export function useOptimisticMutation<Args, Res, QueryType = unknown>(
 ) {
   type OptimisticContext = { previous?: QueryType };
   const client = useQueryClient();
-  return useMutation(mutationFn, {
+  return useMutation({
+    mutationFn,
     onMutate: async (variables): Promise<OptimisticContext> => {
       await client.cancelQueries({ queryKey });
       const previous = client.getQueryData<QueryType | undefined>(queryKey);

@@ -97,11 +97,11 @@ function MnemonicList({ walletGroups }: { walletGroups: WalletGroup[] }) {
 }
 
 function WalletGroups() {
-  const { data: walletGroups, isLoading } = useQuery(
-    ['wallet/uiGetWalletGroups'],
-    () => walletPort.request('uiGetWalletGroups'),
-    { useErrorBoundary: true }
-  );
+  const { data: walletGroups, isLoading } = useQuery({
+    queryKey: ['wallet/uiGetWalletGroups'],
+    queryFn: () => walletPort.request('uiGetWalletGroups'),
+    useErrorBoundary: true,
+  });
   const groupedBySeedType = useMemo(() => {
     if (!walletGroups) {
       return null;

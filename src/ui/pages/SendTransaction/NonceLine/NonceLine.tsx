@@ -136,12 +136,12 @@ export function NonceLine({
 }) {
   const { networks } = useNetworks();
   const { from } = transaction;
-  const { data } = useQuery(
-    ['getTransactionCount', transaction.from],
-    async () =>
+  const { data } = useQuery({
+    queryKey: ['getTransactionCount', transaction.from],
+    queryFn: async () =>
       networks ? getTransactionCount(from, chain, networks) : undefined,
-    { enabled: Boolean(networks) }
-  );
+    enabled: Boolean(networks),
+  });
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const nonce = data?.value;
   const value = userNonce ?? transaction.nonce ?? nonce;

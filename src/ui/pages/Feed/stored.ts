@@ -3,14 +3,17 @@ import { walletPort } from 'src/ui/shared/channels';
 import type { WalletAbility } from 'src/shared/types/Daylight';
 
 export function useFeedInfo() {
-  return useQuery(['getFeedInfo'], async () => {
-    const feed = await walletPort.request('getFeedInfo');
-    const { completedAbilities, dismissedAbilities } = feed;
-    return {
-      feed,
-      completedSet: new Set(completedAbilities.map((item) => item.uid)),
-      dismissedSet: new Set(dismissedAbilities.map((item) => item.uid)),
-    };
+  return useQuery({
+    queryKey: ['getFeedInfo'],
+    queryFn: async () => {
+      const feed = await walletPort.request('getFeedInfo');
+      const { completedAbilities, dismissedAbilities } = feed;
+      return {
+        feed,
+        completedSet: new Set(completedAbilities.map((item) => item.uid)),
+        dismissedSet: new Set(dismissedAbilities.map((item) => item.uid)),
+      };
+    },
   });
 }
 

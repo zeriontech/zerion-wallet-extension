@@ -29,7 +29,9 @@ import { BackupFlowSettingsSection } from '../BackupWallet/BackupSettingsItem';
 
 function SettingsMain() {
   const navigate = useNavigate();
-  const logout = useMutation(() => accountPublicRPCPort.request('logout'));
+  const logout = useMutation({
+    mutationFn: () => accountPublicRPCPort.request('logout'),
+  });
   return (
     <PageColumn>
       <PageTop />

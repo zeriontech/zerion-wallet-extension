@@ -40,15 +40,15 @@ function AddChain({
       ) as AddEthereumChainParameter,
     [addEthereumChainParameterStringified]
   );
-  const addEthereumChainMutation = useMutation(
-    (param: NetworkConfig) => {
+  const addEthereumChainMutation = useMutation({
+    mutationFn: (param: NetworkConfig) => {
       return walletPort.request('addEthereumChain', {
         values: [param],
         origin,
       });
     },
-    { onSuccess: (result) => onSuccess(result) }
-  );
+    onSuccess: (result) => onSuccess(result),
+  });
   const { networks } = useNetworks();
   const restrictedChainIds = useMemo(() => {
     return networks

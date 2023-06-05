@@ -48,14 +48,16 @@ function AddressImportMessagesView({ values }: { values: BareWallet[] }) {
     mutate: finalize,
     isSuccess,
     ...finalizeMutation
-  } = useMutation(async (mnemonics: NonNullable<BareWallet['mnemonic']>[]) => {
-    return idempotentRequest.request(JSON.stringify(mnemonics), async () => {
-      const data = await walletPort.request('uiImportSeedPhrase', mnemonics);
-      await accountPublicRPCPort.request('saveUserAndWallet');
-      if (data?.address) {
-        await setCurrentAddress({ address: data.address });
-      }
-    });
+  } = useMutation({
+    mutationFn: async (mnemonics: NonNullable<BareWallet['mnemonic']>[]) => {
+      return idempotentRequest.request(JSON.stringify(mnemonics), async () => {
+        const data = await walletPort.request('uiImportSeedPhrase', mnemonics);
+        await accountPublicRPCPort.request('saveUserAndWallet');
+        if (data?.address) {
+          await setCurrentAddress({ address: data.address });
+        }
+      });
+    },
   });
   useEffect(() => {
     const ids: NodeJS.Timeout[] = [];

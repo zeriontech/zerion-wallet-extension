@@ -16,11 +16,11 @@ import { AddressImportMessages } from './AddressImportMessages';
 import { WalletList } from './WalletList';
 
 function useAllExistingAddresses() {
-  const { data: walletGroups } = useQuery(
-    ['wallet/uiGetWalletGroups'],
-    () => walletPort.request('uiGetWalletGroups'),
-    { useErrorBoundary: true }
-  );
+  const { data: walletGroups } = useQuery({
+    queryKey: ['wallet/uiGetWalletGroups'],
+    queryFn: () => walletPort.request('uiGetWalletGroups'),
+    useErrorBoundary: true,
+  });
   return useMemo(
     () =>
       walletGroups

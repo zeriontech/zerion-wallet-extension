@@ -156,9 +156,9 @@ export async function checkWhitelistStatus(address: string) {
 }
 
 export function useWhitelistStatus(address?: string) {
-  return useQuery(
-    [`check waitlist status for ${address}`],
-    async () => {
+  return useQuery({
+    queryKey: [`check waitlist status for ${address}`],
+    queryFn: async () => {
       if (!address) {
         return { status: false };
       }
@@ -168,11 +168,9 @@ export function useWhitelistStatus(address?: string) {
         throw new WaitlistCheckError();
       }
     },
-    {
-      enabled: Boolean(address),
-      suspense: false,
-      retry: 0,
-      refetchOnWindowFocus: false,
-    }
-  );
+    enabled: Boolean(address),
+    suspense: false,
+    retry: 0,
+    refetchOnWindowFocus: false,
+  });
 }

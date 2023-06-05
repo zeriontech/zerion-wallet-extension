@@ -30,9 +30,9 @@ function useMnenomicPhraseForLocation({
   if (!phraseFromState && !groupId) {
     throw new Error('View data expired');
   }
-  const getRecoveryPhraseQuery = useQuery(
-    [`getRecoveryPhrase(${groupId})`],
-    async () => {
+  const getRecoveryPhraseQuery = useQuery({
+    queryKey: [`getRecoveryPhrase(${groupId})`],
+    queryFn: async () => {
       const mnemonic = await walletPort.request('getRecoveryPhrase', {
         groupId: groupId as string, // can cast to string cause of "enabled" option
       });
@@ -41,15 +41,13 @@ function useMnenomicPhraseForLocation({
       }
       return mnemonic.phrase;
     },
-    {
-      enabled: !phraseFromState,
-      retry: false,
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-      useErrorBoundary: true,
-    }
-  );
+    enabled: !phraseFromState,
+    retry: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    useErrorBoundary: true,
+  });
   if (phraseFromState) {
     return { phrase: phraseFromState, isLoading: false, isError: false };
   } else {
@@ -70,12 +68,13 @@ export function MnemonicImportView({
   const { phrase, isLoading: isLoadingPhrase } = useMnenomicPhraseForLocation({
     locationStateStore,
   });
-  const { data: wallets } = useQuery(
-    [`getFirstNMnemonicWallets(${phrase}, ${count})`],
-    async () =>
+  const { data: wallets } = useQuery({
+    queryKey: [`getFirstNMnemonicWallets(${phrase}, ${count})`],
+    queryFn: async () =>
       phrase ? getFirstNMnemonicWallets({ phrase, n: count }) : undefined,
-    { enabled: Boolean(phrase), useErrorBoundary: true }
-  );
+    enabled: Boolean(phrase),
+    useErrorBoundary: true,
+  });
   const { value } = useSubscription<
     Record<string, { address: string; active: boolean }>,
     'address',

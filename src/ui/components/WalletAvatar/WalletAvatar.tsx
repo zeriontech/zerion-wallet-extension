@@ -50,11 +50,11 @@ export function WalletAvatar({
   size: number;
   borderRadius?: number;
 }) {
-  const { data: nft, isLoading } = useQuery(
-    ['fetchWalletNFT', address],
-    () => fetchWalletNFT(address),
-    { suspense: false }
-  );
+  const { data: nft, isLoading } = useQuery({
+    queryKey: ['fetchWalletNFT', address],
+    queryFn: () => fetchWalletNFT(address),
+    suspense: false,
+  });
 
   if (isLoading) {
     return <div style={{ width: size, height: size }} />;

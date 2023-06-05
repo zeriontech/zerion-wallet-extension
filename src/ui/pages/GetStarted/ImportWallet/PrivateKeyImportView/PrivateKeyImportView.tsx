@@ -83,8 +83,8 @@ export function PrivateKeyImportView({
     );
   }
   const navigate = useNavigate();
-  const { data, mutate, isIdle, isError, ...importWallet } = useMutation(
-    async (input: string) => {
+  const { data, mutate, isIdle, isError, ...importWallet } = useMutation({
+    mutationFn: async (input: string) => {
       await new Promise((r) => setTimeout(r, 1000));
       if (isValidPrivateKey(input)) {
         return idempotentRequest.request(input, async () => {
@@ -96,8 +96,8 @@ export function PrivateKeyImportView({
       } else {
         throw new Error('Not a private key');
       }
-    }
-  );
+    },
+  });
   const importError = isError ? getError(importWallet.error) : null;
 
   useEffect(() => {

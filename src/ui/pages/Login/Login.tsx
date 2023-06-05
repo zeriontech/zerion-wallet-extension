@@ -25,23 +25,30 @@ export function Login() {
     isLoading,
     error,
     isError,
-  } = useQuery(['user'], () => {
-    return accountPublicRPCPort.request('getExistingUser');
+  } = useQuery({
+    queryKey: ['user'],
+    queryFn: () => {
+      return accountPublicRPCPort.request('getExistingUser');
+    },
   });
   const formId = useId();
   const inputId = useId();
 
-  const loginMutation = useMutation(
-    async ({ user, password }: { user: PublicUser; password: string }) => {
+  const loginMutation = useMutation({
+    mutationFn: async ({
+      user,
+      password,
+    }: {
+      user: PublicUser;
+      password: string;
+    }) => {
       return accountPublicRPCPort.request('login', { user, password });
     },
-    {
-      onSuccess() {
-        zeroizeAfterSubmission();
-        navigate(params.get('next') || '/overview');
-      },
-    }
-  );
+    onSuccess() {
+      zeroizeAfterSubmission();
+      navigate(params.get('next') || '/overview');
+    },
+  });
 
   useBodyStyle(useMemo(() => ({ backgroundColor: 'var(--white)' }), []));
   if (isLoading) {

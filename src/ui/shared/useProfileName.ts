@@ -11,19 +11,20 @@ export function useProfileName(
     maxCharacters,
   }: { padding?: number; maxCharacters?: number } = {}
 ) {
-  const { isLoading: isDomainLoading, data: domain } = useQuery(
-    ['name-service/lookupAddressName', wallet.address],
-    useCallback(() => lookupAddressName(wallet.address), [wallet.address]),
-    {
-      enabled: !wallet.name, // don't make unnecessary request
-      suspense: false,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      retryOnMount: false,
-      retry: 0,
-      staleTime: 2000,
-    }
-  );
+  const { isLoading: isDomainLoading, data: domain } = useQuery({
+    queryKey: ['name-service/lookupAddressName', wallet.address],
+    queryFn: useCallback(
+      () => lookupAddressName(wallet.address),
+      [wallet.address]
+    ),
+    enabled: !wallet.name,
+    suspense: false,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    retry: 0,
+    staleTime: 2000,
+  });
 
   const domainName = isDomainLoading ? null : domain;
 

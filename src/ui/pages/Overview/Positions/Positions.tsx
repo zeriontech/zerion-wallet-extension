@@ -627,16 +627,16 @@ function useEvmAddressPositions({
   address: string | null;
   chainId: string;
 }) {
-  return useQuery(
-    ['eth_getBalance', address, chainId],
-    async () => {
+  return useQuery({
+    queryKey: ['eth_getBalance', address, chainId],
+    queryFn: async () => {
       const networks = await networksStore.load();
       return !address
         ? null
         : getEvmAddressPositions({ address, chainId, networks });
     },
-    { enabled: Boolean(address) }
-  );
+    enabled: Boolean(address),
+  });
 }
 
 function RawChainPositions({

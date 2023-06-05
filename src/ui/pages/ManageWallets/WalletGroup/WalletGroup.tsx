@@ -39,11 +39,11 @@ function noNulls<T>(arr: (T | null)[]) {
 }
 
 function useWalletGroup({ groupId }: { groupId: string }) {
-  return useQuery(
-    [`wallet/uiGetWalletGroup/${groupId}`],
-    () => walletPort.request('uiGetWalletGroup', { groupId }),
-    { useErrorBoundary: true }
-  );
+  return useQuery({
+    queryKey: [`wallet/uiGetWalletGroup/${groupId}`],
+    queryFn: () => walletPort.request('uiGetWalletGroup', { groupId }),
+    useErrorBoundary: true,
+  });
 }
 
 function EditableWalletGroupName({
@@ -56,18 +56,16 @@ function EditableWalletGroupName({
   onRename?: () => void;
 }) {
   const [value, setValue] = useState(walletGroup.name);
-  const { mutate, ...renameMutation } = useMutation(
-    (value: string) =>
+  const { mutate, ...renameMutation } = useMutation({
+    mutationFn: (value: string) =>
       walletPort.request('renameWalletGroup', {
         groupId: walletGroup.id,
         name: value,
       }),
-    {
-      onSuccess() {
-        onRename?.();
-      },
-    }
-  );
+    onSuccess() {
+      onRename?.();
+    },
+  });
   const debouncedRenameRequest = useDebouncedCallback(
     useCallback((value: string) => mutate(value), [mutate]),
     500
@@ -177,16 +175,14 @@ export function WalletGroup() {
   });
   const groupInputId = useId();
   const { refetch } = useWalletGroups();
-  const removeWalletGroupMutation = useMutation(
-    () => walletPort.request('removeWalletGroup', { groupId }),
-    {
-      useErrorBoundary: true,
-      onSuccess() {
-        refetch();
-        navigate(-1);
-      },
-    }
-  );
+  const removeWalletGroupMutation = useMutation({
+    mutationFn: () => walletPort.request('removeWalletGroup', { groupId }),
+    useErrorBoundary: true,
+    onSuccess() {
+      refetch();
+      navigate(-1);
+    },
+  });
   if (!walletGroup) {
     return (
       <>

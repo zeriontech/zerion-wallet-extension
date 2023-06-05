@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import { memoize } from 'lodash';
 import type { AddressPosition, Asset } from 'defi-sdk';
 import { client } from 'defi-sdk';
@@ -96,17 +95,4 @@ export async function fetchAssetFromCacheOrAPI({
 
   const responseAsset = requestAssetId ? assets?.[requestAssetId] : null;
   return responseAsset || getAssetFromCache(address, chain, isNative);
-}
-
-export function useAssetFromCacheOrAPI(query: CachedAssetQuery) {
-  return useQuery(
-    ['asset', query.address, query.chain.toString(), query.isNative],
-    () => fetchAssetFromCacheOrAPI(query),
-    {
-      suspense: false,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      retryOnMount: false,
-    }
-  );
 }

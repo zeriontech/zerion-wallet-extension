@@ -32,11 +32,11 @@ export function Receive() {
     )
   );
 
-  const { data: domain } = useQuery(
-    ['name-service/lookupAddressName', address],
-    useCallback(() => lookupAddressName(address), [address]),
-    { suspense: false }
-  );
+  const { data: domain } = useQuery({
+    queryKey: ['name-service/lookupAddressName', address],
+    queryFn: useCallback(() => lookupAddressName(address), [address]),
+    suspense: false,
+  });
 
   return (
     <Background backgroundKind="transparent">
