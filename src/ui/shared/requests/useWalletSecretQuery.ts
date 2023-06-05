@@ -37,7 +37,7 @@ export function useSecretValue({
   groupId?: string | null;
 }) {
   return useQuery({
-    queryKey: ['getSecretValue', address, groupId],
+    queryKey: ['getSecretValue', address, groupId, seedType],
     queryFn: () => getSecretValue({ address, groupId, seedType }),
     useErrorBoundary: true,
     cacheTime: 0,

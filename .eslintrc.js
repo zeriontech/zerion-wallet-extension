@@ -15,7 +15,7 @@ module.exports = {
       .concat(['origin']),
     'import/order': 'error',
     '@typescript-eslint/consistent-type-imports': 'error',
-    // '@tanstack/query/exhaustive-deps': 'error',
+    '@tanstack/query/exhaustive-deps': 'error',
     '@tanstack/query/prefer-query-object-syntax': 'error',
   },
   overrides: [
