@@ -137,7 +137,7 @@ export function NonceLine({
   const { networks } = useNetworks();
   const { from } = transaction;
   const { data } = useQuery({
-    queryKey: ['getTransactionCount', transaction.from],
+    queryKey: ['getTransactionCount', networks, from, chain],
     queryFn: async () =>
       networks ? getTransactionCount(from, chain, networks) : undefined,
     enabled: Boolean(networks),

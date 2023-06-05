@@ -198,7 +198,7 @@ function SendTransactionContent({
     });
 
   const { data: interpretation, ...interpretQuery } = useQuery({
-    queryKey: ['interpretTransaction', pendingTransaction],
+    queryKey: ['interpretTransaction', pendingTransaction, singleAddress],
     queryFn: () => {
       return pendingTransaction
         ? interpretTransaction(singleAddress, pendingTransaction)

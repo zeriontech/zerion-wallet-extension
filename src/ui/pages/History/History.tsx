@@ -41,7 +41,7 @@ function useMinedAndPendingAddressActions({ chain }: { chain: Chain | null }) {
   const localActions = useLocalAddressTransactions(params);
 
   const { data: localAddressActions, ...localActionsQuery } = useQuery({
-    queryKey: ['pages/history', localActions, chain],
+    queryKey: ['pages/history', localActions, chain, networks],
     queryFn: async () => {
       if (!networks) {
         return null;
