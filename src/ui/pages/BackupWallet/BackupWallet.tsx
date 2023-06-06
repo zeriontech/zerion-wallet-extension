@@ -394,6 +394,7 @@ function VerifySuccess({ seedType }: { seedType: SeedType }) {
         decay={0.84}
         particleCount={50}
         startVelocity={20}
+        style={{ zIndex: 0 }}
       >
         <FillView>
           <VStack
