@@ -63,20 +63,18 @@ export function useWalletAbilities({
   limit?: number;
   onSuccess?(data: InfiniteData<WalletAbilitiesResponse>): void;
 }) {
-  const { data, ...result } = useInfiniteQuery(
-    [`wallet/abilities/${address}/${JSON.stringify(params)}`],
-    ({ pageParam = { address, params, limit } }) =>
+  const { data, ...result } = useInfiniteQuery({
+    queryKey: ['wallet/abilities/', address, JSON.stringify(params), limit],
+    queryFn: ({ pageParam = { address, params, limit } }) =>
       getWalletAbilities(pageParam),
-    {
-      getNextPageParam: (lastPage) =>
-        lastPage.links.next ? { link: lastPage.links.next } : undefined,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      suspense: false,
-      keepPreviousData: true,
-      onSuccess,
-    }
-  );
+    getNextPageParam: (lastPage) =>
+      lastPage.links.next ? { link: lastPage.links.next } : undefined,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    suspense: false,
+    keepPreviousData: true,
+    onSuccess,
+  });
 
   const value = useMemo(() => {
     return data

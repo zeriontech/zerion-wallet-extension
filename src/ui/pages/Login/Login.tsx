@@ -26,7 +26,7 @@ export function Login() {
     error,
     isError,
   } = useQuery({
-    queryKey: ['user'],
+    queryKey: ['account/getExistingUser'],
     queryFn: () => {
       return accountPublicRPCPort.request('getExistingUser');
     },

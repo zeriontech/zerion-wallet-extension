@@ -18,7 +18,7 @@ export function VerifyUser({
   onSuccess: () => void;
 }) {
   const { data: user, isLoading } = useQuery({
-    queryKey: ['user'],
+    queryKey: ['account/getExistingUser'],
     queryFn: () => {
       return accountPublicRPCPort.request('getExistingUser');
     },
