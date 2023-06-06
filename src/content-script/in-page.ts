@@ -6,6 +6,7 @@ import { pageObserver } from './dapp-mutation';
 import * as dappDetection from './dapp-detection';
 import * as competingProviders from './competing-providers';
 import { dappsWithoutCorrectEIP1193Support } from './dapp-configs';
+import { initializeEIP6963 } from './eip6963';
 
 declare global {
   interface Window {
@@ -65,6 +66,8 @@ Object.defineProperty(window, 'ethereum', {
 if (dappsWithoutCorrectEIP1193Support.has(window.location.origin)) {
   provider.isMetaMask = true;
 }
+
+initializeEIP6963(provider);
 
 provider
   .request({ method: 'wallet_getGlobalPreferences' })
