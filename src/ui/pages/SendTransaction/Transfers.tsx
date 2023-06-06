@@ -27,6 +27,7 @@ import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { animated, useSpring } from 'react-spring';
+import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 
 function TransferItemFungible({
   address,
@@ -87,6 +88,8 @@ function TransferItemFungible({
             quantity={quantity}
           />{' '}
           <TextAnchor
+            // Open URL in a new _window_ so that extension UI stays open and visible
+            onClick={openInNewWindow}
             href={`https://app.zerion.io/explore/asset/${fungible.symbol}-${fungible.asset_code}?address=${address}`}
             target="_blank"
             rel="noopener noreferrer"

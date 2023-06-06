@@ -15,6 +15,7 @@ import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { ShuffleText } from 'src/ui/components/ShuffleText';
+import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 
 function ApplicationLineContent({
   label,
@@ -53,6 +54,8 @@ function ApplicationLineContent({
             title={contractAddress}
           >
             <TextAnchor
+              // Open URL in a new _window_ so that extension UI stays open and visible
+              onClick={openInNewWindow}
               href={networks.getExplorerAddressUrlByName(
                 chain,
                 contractAddress

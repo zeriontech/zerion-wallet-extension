@@ -40,6 +40,7 @@ import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired'
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
+import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
@@ -293,6 +294,8 @@ function SendTransactionContent({
           <UIText kind="small/regular" color="var(--neutral-500)">
             {originForHref ? (
               <TextAnchor
+                // Open URL in a new _window_ so that extension UI stays open and visible
+                onClick={openInNewWindow}
                 href={originForHref.href}
                 target="_blank"
                 rel="noopener noreferrer"

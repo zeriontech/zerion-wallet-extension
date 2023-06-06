@@ -11,6 +11,7 @@ import { Surface } from 'src/ui/ui-kit/Surface';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
+import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 
 function FungibleAsset({
   address,
@@ -49,6 +50,8 @@ function FungibleAsset({
           <UIText kind="headline/h3">
             {/* TODO: Add allowed amount once we have it on the backend */}
             <TextAnchor
+              // Open URL in a new _window_ so that extension UI stays open and visible
+              onClick={openInNewWindow}
               href={`https://app.zerion.io/explore/asset/${fungible.symbol}-${fungible.asset_code}?address=${address}`}
               target="_blank"
               rel="noopener noreferrer"
