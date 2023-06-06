@@ -136,7 +136,7 @@ function TransferItemNFT({
       }
       detailText={
         <UIText kind="caption/regular" color="var(--neutral-500)">
-          Amount: 1
+          Amount: {transfer.quantity}
         </UIText>
       }
     />
