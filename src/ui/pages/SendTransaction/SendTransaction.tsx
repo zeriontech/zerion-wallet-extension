@@ -41,6 +41,9 @@ import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import { Surface } from 'src/ui/ui-kit/Surface';
+import { NavigationBar } from '../SignInWithEthereum/NavigationBar';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
@@ -254,6 +257,12 @@ function SendTransactionContent({
 
   const { data: chainGasPrices } = useGasPrices(chain);
 
+  const view = params.get('view') || 'default';
+  const transactionFormatted = useMemo(
+    () => JSON.stringify(JSON.parse(transactionStringified), null, 2),
+    [transactionStringified]
+  );
+
   if (
     !networks ||
     !pendingTransaction ||
@@ -282,129 +291,149 @@ function SendTransactionContent({
           ['--surface-background-color' as string]: 'var(--neutral-100)',
         }}
       >
-        <PageTop />
-        <div style={{ display: 'grid', placeItems: 'center' }}>
-          <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
-            {addressAction.type.display_value}
-          </UIText>
-          <UIText kind="small/regular" color="var(--neutral-500)">
-            {originForHref ? (
-              <TextAnchor
-                // Open URL in a new _window_ so that extension UI stays open and visible
-                onClick={openInNewWindow}
-                href={originForHref.href}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {originForHref.hostname}
-              </TextAnchor>
-            ) : (
-              'Unknown Initiator'
-            )}
-          </UIText>
-          <Spacer height={8} />
-          <HStack gap={8} alignItems="center">
-            <WalletAvatar
-              address={wallet.address}
-              size={20}
-              active={false}
-              borderRadius={4}
-            />
-            <UIText kind="small/regular">
-              <WalletDisplayName wallet={wallet} />
-            </UIText>
-          </HStack>
-        </div>
-        <Spacer height={24} />
-        <VStack gap={16}>
-          {recipientAddress && addressAction.type.value === 'send' ? (
-            <RecipientLine
-              recipientAddress={recipientAddress}
-              chain={chain}
-              networks={networks}
-            />
-          ) : null}
-          {addressAction.label && addressAction.label.type !== 'to' ? (
-            <ApplicationLine
-              action={addressAction}
-              chain={chain}
-              networks={networks}
-            />
-          ) : null}
-          {actionTransfers?.outgoing?.length ||
-          actionTransfers?.incoming?.length ? (
-            <Transfers
-              address={singleAddress}
-              chain={chain}
-              transfers={actionTransfers}
-            />
-          ) : null}
-          {singleAsset ? (
-            <SingleAsset
-              address={singleAddress}
-              actionType={addressAction.type.value}
-              asset={singleAsset}
-            />
-          ) : null}
-          {interpretQuery.isLoading ? (
+        <>
+          {view === 'default' ? (
             <>
-              <UIText kind="small/regular" color="var(--primary)">
-                Analyzing...
-                <br />
-                <ZStack hideLowerElements={true}>
-                  <DelayedRender delay={11000}>
-                    <span style={{ color: 'var(--black)' }}>
-                      (Going to give up soon...)
-                    </span>
-                  </DelayedRender>
-                  <DelayedRender delay={6000}>
-                    <span style={{ color: 'var(--black)' }}>
-                      (Request is taking longer than usual...)
-                    </span>
-                  </DelayedRender>
-                </ZStack>
-              </UIText>
-            </>
-          ) : interpretQuery.isError ? (
-            <UIText kind="small/regular" color="var(--notice-600)">
-              Unable to analyze the details of the transaction
-            </UIText>
-          ) : null}
-          {/*
-          <Button
-            kind="neutral"
-            type="button"
-            onClick={showAdvancedView}
-            disabled={true}
-          >
-            Advanced View
-          </Button>
-          */}
-        </VStack>
-        <Spacer height={16} />
-        {pendingTransaction ? (
-          <div style={{ marginTop: 'auto' }}>
-            <ErrorBoundary
-              renderError={() => (
-                <UIText kind="body/regular">
-                  <span style={{ display: 'inline-block' }}>
-                    <WarningIcon />
-                  </span>{' '}
-                  Failed to load network fee
+              <PageTop />
+              <div style={{ display: 'grid', placeItems: 'center' }}>
+                <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
+                  {addressAction.type.display_value}
                 </UIText>
-              )}
-            >
-              <TransactionConfiguration
-                transaction={pendingTransaction}
-                from={wallet.address}
-                chain={chain}
-                onFeeValueCommonReady={handleFeeValueCommonReady}
-                configuration={configuration}
-                onConfigurationChange={setConfiguration}
-              />
-            </ErrorBoundary>
-          </div>
-        ) : null}
+                <UIText kind="small/regular" color="var(--neutral-500)">
+                  {originForHref ? (
+                    <TextAnchor
+                      // Open URL in a new _window_ so that extension UI stays open and visible
+                      onClick={openInNewWindow}
+                      href={originForHref.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {originForHref.hostname}
+                    </TextAnchor>
+                  ) : (
+                    'Unknown Initiator'
+                  )}
+                </UIText>
+                <Spacer height={8} />
+                <HStack gap={8} alignItems="center">
+                  <WalletAvatar
+                    address={wallet.address}
+                    size={20}
+                    active={false}
+                    borderRadius={4}
+                  />
+                  <UIText kind="small/regular">
+                    <WalletDisplayName wallet={wallet} />
+                  </UIText>
+                </HStack>
+              </div>
+              <Spacer height={24} />
+              <VStack gap={16}>
+                {recipientAddress && addressAction.type.value === 'send' ? (
+                  <RecipientLine
+                    recipientAddress={recipientAddress}
+                    chain={chain}
+                    networks={networks}
+                  />
+                ) : null}
+                {addressAction.label && addressAction.label.type !== 'to' ? (
+                  <ApplicationLine
+                    action={addressAction}
+                    chain={chain}
+                    networks={networks}
+                  />
+                ) : null}
+                {actionTransfers?.outgoing?.length ||
+                actionTransfers?.incoming?.length ? (
+                  <Transfers
+                    address={singleAddress}
+                    chain={chain}
+                    transfers={actionTransfers}
+                  />
+                ) : null}
+                {singleAsset ? (
+                  <SingleAsset
+                    address={singleAddress}
+                    actionType={addressAction.type.value}
+                    asset={singleAsset}
+                  />
+                ) : null}
+                {interpretQuery.isLoading ? (
+                  <>
+                    <UIText kind="small/regular" color="var(--primary)">
+                      Analyzing...
+                      <br />
+                      <ZStack hideLowerElements={true}>
+                        <DelayedRender delay={11000}>
+                          <span style={{ color: 'var(--black)' }}>
+                            (Going to give up soon...)
+                          </span>
+                        </DelayedRender>
+                        <DelayedRender delay={6000}>
+                          <span style={{ color: 'var(--black)' }}>
+                            (Request is taking longer than usual...)
+                          </span>
+                        </DelayedRender>
+                      </ZStack>
+                    </UIText>
+                  </>
+                ) : interpretQuery.isError ? (
+                  <UIText kind="small/regular" color="var(--notice-600)">
+                    Unable to analyze the details of the transaction
+                  </UIText>
+                ) : null}
+                <Button
+                  kind="regular"
+                  as={UnstyledLink}
+                  to={`?view=advanced&origin=${origin}&transaction=${transactionStringified}`}
+                >
+                  Advanced View
+                </Button>
+              </VStack>
+              <Spacer height={16} />
+              {pendingTransaction ? (
+                <div style={{ marginTop: 'auto' }}>
+                  <ErrorBoundary
+                    renderError={() => (
+                      <UIText kind="body/regular">
+                        <span style={{ display: 'inline-block' }}>
+                          <WarningIcon />
+                        </span>{' '}
+                        Failed to load network fee
+                      </UIText>
+                    )}
+                  >
+                    <TransactionConfiguration
+                      transaction={pendingTransaction}
+                      from={wallet.address}
+                      chain={chain}
+                      onFeeValueCommonReady={handleFeeValueCommonReady}
+                      configuration={configuration}
+                      onConfigurationChange={setConfiguration}
+                    />
+                  </ErrorBoundary>
+                </div>
+              ) : null}
+            </>
+          ) : null}
+          {view === 'advanced' ? (
+            <>
+              <NavigationBar title="Data to Sign" />
+              <PageTop />
+              <Surface
+                padding={16}
+                style={{ border: '1px solid var(--neutral-300)' }}
+              >
+                <UIText
+                  kind="small/regular"
+                  style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}
+                >
+                  {transactionFormatted}
+                </UIText>
+              </Surface>
+            </>
+          ) : null}
+        </>
         <Spacer height={16} />
       </PageColumn>
       <PageStickyFooter>
