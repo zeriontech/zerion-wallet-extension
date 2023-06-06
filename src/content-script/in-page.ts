@@ -64,7 +64,6 @@ Object.defineProperty(window, 'ethereum', {
 
 if (dappsWithoutCorrectEIP1193Support.has(window.location.origin)) {
   provider.isMetaMask = true;
-  provider.isZerion = false;
 }
 
 provider
@@ -87,7 +86,6 @@ provider
   .then((result) => {
     if (result.includes(WalletNameFlag.isMetaMask)) {
       provider.isMetaMask = true;
-      provider.isZerion = false;
     }
   });
 
