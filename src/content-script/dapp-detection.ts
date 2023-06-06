@@ -25,7 +25,7 @@ function trackZerionFlagAccess(ourProvider: EthereumProvider) {
     get() {
       state.dappIsZerionAware = true;
       notify();
-      return true;
+      return ourProvider.isMetaMask ? false : true;
     },
   });
 }
