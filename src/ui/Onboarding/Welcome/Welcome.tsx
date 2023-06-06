@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { resolveDomain } from 'src/modules/name-service';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
@@ -56,8 +56,8 @@ function MainForm({
   const [error, setError] = useState<FormErrorType | null>(null);
   const { isNarrowView } = useSizeStore();
 
-  const { mutate: checkAddress, isLoading } = useMutation(
-    async (addressOrDomain: string) => {
+  const { mutate: checkAddress, isLoading } = useMutation({
+    mutationFn: async (addressOrDomain: string) => {
       setError(null);
 
       if (isEmail(addressOrDomain)) {
@@ -78,22 +78,20 @@ function MainForm({
       const { status } = await checkWhitelistStatus(address);
       return { address, status };
     },
-    {
-      onSuccess,
-      onError: (e: Error) => {
-        setError(
-          e instanceof NotAllowedError
-            ? 'no-access'
-            : e instanceof UnsupportedAddressError
-            ? 'unsupported-address'
-            : e instanceof WaitlistCheckError
-            ? 'waitlist-not-found'
-            : 'unknown'
-        );
-        onError?.(e);
-      },
-    }
-  );
+    onSuccess,
+    onError: (e: Error) => {
+      setError(
+        e instanceof NotAllowedError
+          ? 'no-access'
+          : e instanceof UnsupportedAddressError
+          ? 'unsupported-address'
+          : e instanceof WaitlistCheckError
+          ? 'waitlist-not-found'
+          : 'unknown'
+      );
+      onError?.(e);
+    },
+  });
 
   return (
     <form

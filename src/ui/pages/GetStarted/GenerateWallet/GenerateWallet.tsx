@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageHeading } from 'src/ui/components/PageHeading';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -37,19 +37,17 @@ function GenerateWalletView() {
     data,
     isLoading,
     status,
-  } = useMutation(
-    async () => {
+  } = useMutation({
+    mutationFn: async () => {
       addStep(Step.loading);
       await new Promise((r) => setTimeout(r, 1000));
       return walletPort.request('uiGenerateMnemonic');
     },
-    {
-      useErrorBoundary: true,
-      onSuccess() {
-        addStep(Step.done);
-      },
-    }
-  );
+    useErrorBoundary: true,
+    onSuccess() {
+      addStep(Step.done);
+    },
+  });
   useEffect(() => {
     if (status === 'idle') {
       // This is invoked twice in StrictMode, it's fine
@@ -57,14 +55,14 @@ function GenerateWalletView() {
     }
   }, [generateMnemonicWallet, status]);
 
-  const { mutate: finalize, ...finalizeMutation } = useMutation(
-    async (address: string) => {
+  const { mutate: finalize, ...finalizeMutation } = useMutation({
+    mutationFn: async (address: string) => {
       return idempotentRequest.request(address, async () => {
         await accountPublicRPCPort.request('saveUserAndWallet');
         return setCurrentAddress({ address });
       });
-    }
-  );
+    },
+  });
 
   const address = data?.address;
   useEffect(() => {

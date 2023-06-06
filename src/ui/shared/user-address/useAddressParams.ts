@@ -1,6 +1,6 @@
 import type { AddressParams } from 'defi-sdk';
 import { useMemo } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { walletPort } from '../channels';
 
@@ -19,12 +19,12 @@ export function useAddressParams(): Result {
     data: addressResult,
     isLoading,
     refetch,
-  } = useQuery(
-    'wallet/getCurrentAddress',
-    () =>
+  } = useQuery({
+    queryKey: ['wallet/getCurrentAddress'],
+    queryFn: () =>
       walletPort.request('getCurrentAddress').then((result) => result || null),
-    { useErrorBoundary: true }
-  );
+    useErrorBoundary: true,
+  });
   const address = addressResult || '';
   const addressNormalized = normalizeAddress(address);
   return {

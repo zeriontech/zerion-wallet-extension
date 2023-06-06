@@ -1,5 +1,5 @@
 import React from 'react';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
 import { PageBottom } from 'src/ui/components/PageBottom';
@@ -29,7 +29,9 @@ import { BackupFlowSettingsSection } from '../BackupWallet/BackupSettingsItem';
 
 function SettingsMain() {
   const navigate = useNavigate();
-  const logout = useMutation(() => accountPublicRPCPort.request('logout'));
+  const logout = useMutation({
+    mutationFn: () => accountPublicRPCPort.request('logout'),
+  });
   return (
     <PageColumn>
       <PageTop />

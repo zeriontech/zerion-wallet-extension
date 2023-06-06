@@ -49,7 +49,6 @@ function shuffleText(
   setTimeout(() => {
     clearInterval(initialShuffleTimerId);
 
-    console.log('setting interval');
     transitionTimerId = setInterval(() => {
       currentTime += 50;
       if (currentTime >= duration) {

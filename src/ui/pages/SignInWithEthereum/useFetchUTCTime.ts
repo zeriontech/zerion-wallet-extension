@@ -1,17 +1,15 @@
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 
 export function useFetchUTCTime() {
-  return useQuery(
-    'utcTime',
-    async () => {
+  return useQuery({
+    queryKey: ['utcTime'],
+    queryFn: async () => {
       const text = await fetch('https://proxy.zerion.io/utc-time').then((res) =>
         res.text()
       );
       return Number(text);
     },
-    {
-      suspense: false,
-      retry: false,
-    }
-  );
+    suspense: false,
+    retry: false,
+  });
 }

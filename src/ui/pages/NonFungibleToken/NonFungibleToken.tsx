@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { Background } from 'src/ui/components/Background';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -52,8 +52,8 @@ export function NonFungibleToken() {
     return urlObject.toString();
   }, [singleAddress, nft]);
 
-  const { mutate: promoteTokenMutation, isLoading } = useMutation(
-    async () => {
+  const { mutate: promoteTokenMutation, isLoading } = useMutation({
+    mutationFn: async () => {
       if (!nft?.collection.name) {
         return;
       }
@@ -64,11 +64,10 @@ export function NonFungibleToken() {
       });
       return;
     },
-    {
-      onMutate: () => setPromotedAsPrimary(true),
-      onError: () => setPromotedAsPrimary(false),
-    }
-  );
+    // TODO: change onMutate to onSuccess?
+    onMutate: () => setPromotedAsPrimary(true),
+    onError: () => setPromotedAsPrimary(false),
+  });
 
   useEffect(() => window.scrollTo(0, 0), []);
 

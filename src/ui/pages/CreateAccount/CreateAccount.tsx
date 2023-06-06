@@ -1,5 +1,5 @@
 import React, { useId, useState } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PASSWORD_MIN_LENGTH } from 'src/shared/validation/user-input';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -32,17 +32,15 @@ export function CreateAccount() {
     type: string;
     message: string;
   }>(null);
-  const createUserMutation = useMutation(
-    ({ password }: { password: string }) => {
+  const createUserMutation = useMutation({
+    mutationFn: ({ password }: { password: string }) => {
       return accountPublicRPCPort.request('createUser', { password });
     },
-    {
-      onSuccess() {
-        zeroizeAfterSubmission();
-        navigate(params.get('next') || '/get-started');
-      },
-    }
-  );
+    onSuccess() {
+      zeroizeAfterSubmission();
+      navigate(params.get('next') || '/get-started');
+    },
+  });
   return (
     <Background backgroundKind="white">
       <PageColumn>

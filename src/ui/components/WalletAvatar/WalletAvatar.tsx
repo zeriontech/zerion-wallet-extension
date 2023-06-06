@@ -1,5 +1,5 @@
 import React from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { SOCIAL_API_URL } from 'src/env/config';
 import {
@@ -26,7 +26,7 @@ async function fetchWalletProfile(
 
 async function fetchWalletNFT(
   address: string
-): Promise<WalletProfileNFT | undefined> {
+): Promise<WalletProfileNFT | null> {
   const profile = await requestWithCache(
     `fetchWalletNFT ${address}`,
     fetchWalletProfile(address).then((result) => {
@@ -36,7 +36,7 @@ async function fetchWalletNFT(
       return result;
     })
   );
-  return profile?.nft;
+  return profile?.nft || null;
 }
 
 export function WalletAvatar({
@@ -50,11 +50,11 @@ export function WalletAvatar({
   size: number;
   borderRadius?: number;
 }) {
-  const { data: nft, isLoading } = useQuery(
-    ['fetchWalletNFT', address],
-    () => fetchWalletNFT(address),
-    { suspense: false }
-  );
+  const { data: nft, isLoading } = useQuery({
+    queryKey: ['fetchWalletNFT', address],
+    queryFn: () => fetchWalletNFT(address),
+    suspense: false,
+  });
 
   if (isLoading) {
     return <div style={{ width: size, height: size }} />;

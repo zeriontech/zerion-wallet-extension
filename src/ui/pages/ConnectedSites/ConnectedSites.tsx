@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { useMutation, useQuery } from 'react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Route, Routes } from 'react-router-dom';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -28,10 +28,11 @@ function RevokeAllPermissionsComponent({
 }: {
   onRevokeAll: () => void;
 }) {
-  const removeAllOriginsMutation = useMutation(
-    () => walletPort.request('removeAllOriginPermissions'),
-    { useErrorBoundary: true, onSuccess: onRevokeAll }
-  );
+  const removeAllOriginsMutation = useMutation({
+    mutationFn: () => walletPort.request('removeAllOriginPermissions'),
+    useErrorBoundary: true,
+    onSuccess: onRevokeAll,
+  });
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   return (
     <>
@@ -143,11 +144,12 @@ function ConnectedSitesList({
 }
 
 function ConnectedSitesMain() {
-  const { data: connectedSites, ...connectedSitesQuery } = useQuery(
-    'getPermissionsWithWallets',
-    getPermissionsWithWallets,
-    { useErrorBoundary: true, suspense: true }
-  );
+  const { data: connectedSites, ...connectedSitesQuery } = useQuery({
+    queryKey: ['getPermissionsWithWallets'],
+    queryFn: getPermissionsWithWallets,
+    useErrorBoundary: true,
+    suspense: true,
+  });
 
   if (connectedSitesQuery.isLoading) {
     return <p>Loading qweasd...</p>;

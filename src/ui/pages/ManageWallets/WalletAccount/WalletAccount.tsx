@@ -1,6 +1,6 @@
 import React, { useCallback, useId, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { useMutation, useQuery } from 'react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { NotFoundPage } from 'src/ui/components/NotFoundPage';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -43,18 +43,16 @@ function EditableWalletName({
   onRename?: () => void;
 }) {
   const [value, setValue] = useState(wallet.name || '');
-  const { mutate, ...renameMutation } = useMutation(
-    (value: string) =>
+  const { mutate, ...renameMutation } = useMutation({
+    mutationFn: (value: string) =>
       walletPort.request('renameAddress', {
         address: wallet.address,
         name: value,
       }),
-    {
-      onSuccess() {
-        onRename?.();
-      },
-    }
-  );
+    onSuccess() {
+      onRename?.();
+    },
+  });
   const debouncedRenameRequest = useDebouncedCallback(
     useCallback((value: string) => mutate(value), [mutate]),
     500
@@ -155,22 +153,20 @@ export function WalletAccount() {
     data: wallet,
     isLoading,
     refetch: refetchWallet,
-  } = useQuery(
-    `wallet/uiGetWalletByAddress/${address}`,
-    () => walletPort.request('uiGetWalletByAddress', { address }),
-    { useErrorBoundary: true }
-  );
+  } = useQuery({
+    queryKey: [`wallet/uiGetWalletByAddress/${address}`],
+    queryFn: () => walletPort.request('uiGetWalletByAddress', { address }),
+    useErrorBoundary: true,
+  });
   const displayName = useProfileName({ address, name: wallet?.name || null });
-  const removeAddressMutation = useMutation(
-    () => walletPort.request('removeAddress', { address }),
-    {
-      useErrorBoundary: true,
-      onSuccess() {
-        refetchWallet();
-        navigate(-1);
-      },
-    }
-  );
+  const removeAddressMutation = useMutation({
+    mutationFn: () => walletPort.request('removeAddress', { address }),
+    useErrorBoundary: true,
+    onSuccess() {
+      refetchWallet();
+      navigate(-1);
+    },
+  });
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const nameInputId = useId();
   if (isLoading) {

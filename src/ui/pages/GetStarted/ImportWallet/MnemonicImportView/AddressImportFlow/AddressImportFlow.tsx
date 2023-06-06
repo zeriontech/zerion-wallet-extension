@@ -1,7 +1,7 @@
 import groupBy from 'lodash/groupBy';
 import React from 'react';
 import { useCallback, useMemo, useState } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { PageBottom } from 'src/ui/components/PageBottom';
@@ -16,11 +16,11 @@ import { AddressImportMessages } from './AddressImportMessages';
 import { WalletList } from './WalletList';
 
 function useAllExistingAddresses() {
-  const { data: walletGroups } = useQuery(
-    'wallet/uiGetWalletGroups',
-    () => walletPort.request('uiGetWalletGroups'),
-    { useErrorBoundary: true }
-  );
+  const { data: walletGroups } = useQuery({
+    queryKey: ['wallet/uiGetWalletGroups'],
+    queryFn: () => walletPort.request('uiGetWalletGroups'),
+    useErrorBoundary: true,
+  });
   return useMemo(
     () =>
       walletGroups

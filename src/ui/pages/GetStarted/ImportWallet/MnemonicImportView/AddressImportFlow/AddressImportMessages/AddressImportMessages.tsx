@@ -1,7 +1,7 @@
 import { animated } from 'react-spring';
 import { isTruthy } from 'is-truthy-ts';
 import React, { useEffect, useRef, useState } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
@@ -48,14 +48,16 @@ function AddressImportMessagesView({ values }: { values: BareWallet[] }) {
     mutate: finalize,
     isSuccess,
     ...finalizeMutation
-  } = useMutation(async (mnemonics: NonNullable<BareWallet['mnemonic']>[]) => {
-    return idempotentRequest.request(JSON.stringify(mnemonics), async () => {
-      const data = await walletPort.request('uiImportSeedPhrase', mnemonics);
-      await accountPublicRPCPort.request('saveUserAndWallet');
-      if (data?.address) {
-        await setCurrentAddress({ address: data.address });
-      }
-    });
+  } = useMutation({
+    mutationFn: async (mnemonics: NonNullable<BareWallet['mnemonic']>[]) => {
+      return idempotentRequest.request(JSON.stringify(mnemonics), async () => {
+        const data = await walletPort.request('uiImportSeedPhrase', mnemonics);
+        await accountPublicRPCPort.request('saveUserAndWallet');
+        if (data?.address) {
+          await setCurrentAddress({ address: data.address });
+        }
+      });
+    },
   });
   useEffect(() => {
     const ids: NodeJS.Timeout[] = [];

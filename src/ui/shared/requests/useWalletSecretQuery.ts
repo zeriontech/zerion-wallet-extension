@@ -1,4 +1,4 @@
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { SeedType } from 'src/shared/SeedType';
 import { walletPort } from '../channels';
 
@@ -36,14 +36,12 @@ export function useSecretValue({
   address?: string | null;
   groupId?: string | null;
 }) {
-  return useQuery(
-    ['getSecretValue', address, groupId],
-    () => getSecretValue({ address, groupId, seedType }),
-    {
-      useErrorBoundary: true,
-      cacheTime: 0,
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
-    }
-  );
+  return useQuery({
+    queryKey: ['getSecretValue', address, groupId, seedType],
+    queryFn: () => getSecretValue({ address, groupId, seedType }),
+    useErrorBoundary: true,
+    cacheTime: 0,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
 }

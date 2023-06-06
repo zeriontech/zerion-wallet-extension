@@ -25,7 +25,7 @@ import {
   SegmentedControlLink,
 } from 'src/ui/ui-kit/SegmentedControl';
 import { PageBottom } from 'src/ui/components/PageBottom';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { walletPort } from 'src/ui/shared/channels';
 import { NBSP } from 'src/ui/shared/typography';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
@@ -113,9 +113,10 @@ function CurrentAccount({ wallet }: { wallet: BareWallet }) {
 
 function CurrentAccountControls() {
   const { singleAddress, ready } = useAddressParams();
-  const { data: wallet } = useQuery('wallet/uiGetCurrentWallet', () =>
-    walletPort.request('uiGetCurrentWallet')
-  );
+  const { data: wallet } = useQuery({
+    queryKey: ['wallet/uiGetCurrentWallet'],
+    queryFn: () => walletPort.request('uiGetCurrentWallet'),
+  });
   const visible = useRenderDelay(16);
   if (!ready || !wallet) {
     return null;
@@ -373,7 +374,14 @@ function OverviewComponent() {
               </ViewSuspense>
             }
           />
-          <Route path="/feed" element={<Feed />} />
+          <Route
+            path="/feed"
+            element={
+              <ViewSuspense>
+                <Feed />
+              </ViewSuspense>
+            }
+          />
         </Routes>
         <PageBottom />
       </PageFullBleedColumn>

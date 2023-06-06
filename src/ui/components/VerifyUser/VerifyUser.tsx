@@ -1,5 +1,5 @@
 import React, { useId } from 'react';
-import { useMutation, useQuery } from 'react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import type { PublicUser } from 'src/shared/types/User';
 import { accountPublicRPCPort } from 'src/ui/shared/channels';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
@@ -17,24 +17,28 @@ export function VerifyUser({
   style?: React.CSSProperties;
   onSuccess: () => void;
 }) {
-  const { data: user, isLoading } = useQuery(
-    'user',
-    () => {
+  const { data: user, isLoading } = useQuery({
+    queryKey: ['account/getExistingUser'],
+    queryFn: () => {
       return accountPublicRPCPort.request('getExistingUser');
     },
-    { useErrorBoundary: true }
-  );
-  const loginMutation = useMutation(
-    ({ user, password }: { user: PublicUser; password: string }) => {
+    useErrorBoundary: true,
+  });
+  const loginMutation = useMutation({
+    mutationFn: ({
+      user,
+      password,
+    }: {
+      user: PublicUser;
+      password: string;
+    }) => {
       return accountPublicRPCPort.request('login', { user, password });
     },
-    {
-      onSuccess() {
-        zeroizeAfterSubmission();
-        onSuccess();
-      },
-    }
-  );
+    onSuccess() {
+      zeroizeAfterSubmission();
+      onSuccess();
+    },
+  });
   const inputId = useId();
   if (isLoading) {
     return null;

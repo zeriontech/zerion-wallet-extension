@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { lookupAddressName } from 'src/modules/name-service';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { getWalletDisplayName } from './getWalletDisplayName';
@@ -11,19 +11,20 @@ export function useProfileName(
     maxCharacters,
   }: { padding?: number; maxCharacters?: number } = {}
 ) {
-  const { isLoading: isDomainLoading, data: domain } = useQuery(
-    ['name-service/lookupAddressName', wallet.address],
-    useCallback(() => lookupAddressName(wallet.address), [wallet.address]),
-    {
-      enabled: !wallet.name, // don't make unnecessary request
-      suspense: false,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      retryOnMount: false,
-      retry: 0,
-      staleTime: 2000,
-    }
-  );
+  const { isLoading: isDomainLoading, data: domain } = useQuery({
+    queryKey: ['name-service/lookupAddressName', wallet.address],
+    queryFn: useCallback(
+      () => lookupAddressName(wallet.address),
+      [wallet.address]
+    ),
+    enabled: !wallet.name,
+    suspense: false,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    retry: 0,
+    staleTime: 2000,
+  });
 
   const domainName = isDomainLoading ? null : domain;
 

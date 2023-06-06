@@ -1,4 +1,4 @@
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 
 function extractFaviconUrl(
   dappUrl: string,
@@ -23,17 +23,15 @@ function extractFaviconUrl(
 }
 
 export function useFetchDappIcon(url: string) {
-  return useQuery(
-    ['dappIcon', url],
-    async () => {
+  return useQuery({
+    queryKey: ['dappIcon', url],
+    queryFn: async () => {
       const html = await fetch(url).then((res) => res.text());
       return extractFaviconUrl(url, html);
     },
-    {
-      suspense: false,
-      retry: false,
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
-    }
-  );
+    suspense: false,
+    retry: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
 }

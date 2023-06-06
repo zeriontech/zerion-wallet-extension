@@ -1,5 +1,5 @@
 import ky from 'ky';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { isEmail } from 'src/shared/isEmail';
 import { PROXY_URL } from 'src/env/config';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
@@ -156,9 +156,9 @@ export async function checkWhitelistStatus(address: string) {
 }
 
 export function useWhitelistStatus(address?: string) {
-  return useQuery(
-    `check waitlist status for ${address}`,
-    async () => {
+  return useQuery({
+    queryKey: [`check waitlist status for ${address}`],
+    queryFn: async () => {
       if (!address) {
         return { status: false };
       }
@@ -168,11 +168,9 @@ export function useWhitelistStatus(address?: string) {
         throw new WaitlistCheckError();
       }
     },
-    {
-      enabled: Boolean(address),
-      suspense: false,
-      retry: 0,
-      refetchOnWindowFocus: false,
-    }
-  );
+    enabled: Boolean(address),
+    suspense: false,
+    retry: 0,
+    refetchOnWindowFocus: false,
+  });
 }

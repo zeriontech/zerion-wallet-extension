@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useMutation, useQuery } from 'react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   checkVersion,
   eraseAndUpdateToLatestVersion,
@@ -12,31 +12,27 @@ import { PageColumn } from '../PageColumn';
 import { FillView } from '../FillView';
 
 export function VersionUpgrade({ children }: React.PropsWithChildren) {
-  const { data, isLoading, refetch } = useQuery(
-    'checkVersion',
-    () => checkVersion(),
-    {
-      retry: false,
-      refetchOnMount: false,
-      staleTime: Infinity,
-      refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
-      useErrorBoundary: true,
-    }
-  );
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['checkVersion'],
+    queryFn: () => checkVersion(),
+    retry: false,
+    refetchOnMount: false,
+    staleTime: Infinity,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    useErrorBoundary: true,
+  });
   const [ignoreWarning, setIgnoreWarning] = useState(false);
-  const eraseMutation = useMutation(
-    async () => {
+  const eraseMutation = useMutation({
+    mutationFn: async () => {
       await accountPublicRPCPort.request('logout');
       return eraseAndUpdateToLatestVersion();
     },
-    {
-      useErrorBoundary: true,
-      onSuccess() {
-        refetch();
-      },
-    }
-  );
+    useErrorBoundary: true,
+    onSuccess() {
+      refetch();
+    },
+  });
   if (isLoading) {
     return null;
   }

@@ -1,4 +1,4 @@
-import { QueryClient } from 'react-query';
+import { QueryClient } from '@tanstack/react-query';
 import { emitter } from '../events';
 
 export const queryClient = new QueryClient({
@@ -15,8 +15,12 @@ export const queryClient = new QueryClient({
 });
 
 emitter.on('uiAccountsChanged', () => {
-  queryClient.removeQueries({ queryKey: 'wallet/getCurrentAddress' });
-  queryClient.removeQueries({ queryKey: 'wallet/uiGetCurrentWallet' });
+  queryClient.removeQueries({
+    queryKey: ['wallet/getCurrentAddress'],
+  });
+  queryClient.removeQueries({
+    queryKey: ['wallet/uiGetCurrentWallet'],
+  });
 });
 
 emitter.on('sessionLogout', () => {

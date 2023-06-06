@@ -1,6 +1,6 @@
 import { useAddressPortfolioDecomposition } from 'defi-sdk';
 import React, { useMemo, useRef } from 'react';
-import { useMutation, useQuery } from 'react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { getNameFromOrigin } from 'src/shared/dapps';
@@ -26,37 +26,43 @@ export function CurrentNetwork({ address }: { address: string }) {
     address,
     currency: 'usd',
   });
-  const { data: tabData } = useQuery('activeTab/origin', getActiveTabOrigin);
+  const { data: tabData } = useQuery({
+    queryKey: ['activeTab/origin'],
+    queryFn: getActiveTabOrigin,
+  });
   const tabOrigin = tabData?.tabOrigin;
   const { data: isConnected } = useIsConnectedToActiveTab(address);
-  const { data: flaggedAsDapp } = useQuery(
-    `wallet/isFlaggedAsDapp(${tabOrigin})`,
-    () => {
+  const { data: flaggedAsDapp } = useQuery({
+    queryKey: [`wallet/isFlaggedAsDapp(${tabOrigin})`],
+    queryFn: () => {
       invariant(tabOrigin, 'tabOrigin must be defined');
       return walletPort.request('isFlaggedAsDapp', { origin: tabOrigin });
     },
-    { enabled: Boolean(tabOrigin) }
-  );
-  const { data: siteChain, ...chainQuery } = useQuery(
-    `wallet/requestChainForOrigin(${tabOrigin})`,
-    async () =>
+    enabled: Boolean(tabOrigin),
+  });
+  const { data: siteChain, ...chainQuery } = useQuery({
+    queryKey: [`wallet/requestChainForOrigin(${tabOrigin})`],
+    queryFn: async () =>
       !tabOrigin
         ? null
         : walletPort
             .request('requestChainForOrigin', { origin: tabOrigin })
             .then((chain) => createChain(chain)),
-    { enabled: Boolean(tabOrigin), useErrorBoundary: true, suspense: false }
-  );
-  const switchChainMutation = useMutation(
-    ({ chain, origin }: { chain: string; origin: string }) =>
+    enabled: Boolean(tabOrigin),
+    useErrorBoundary: true,
+    suspense: false,
+  });
+  const switchChainMutation = useMutation({
+    mutationFn: ({ chain, origin }: { chain: string; origin: string }) =>
       walletPort.request('switchChainForOrigin', { chain, origin }),
-    { useErrorBoundary: true, onSuccess: () => chainQuery.refetch() }
-  );
-  const { data: permissions } = useQuery(
-    'wallet/getOriginPermissions',
-    () => walletPort.request('getOriginPermissions'),
-    { useErrorBoundary: true }
-  );
+    useErrorBoundary: true,
+    onSuccess: () => chainQuery.refetch(),
+  });
+  const { data: permissions } = useQuery({
+    queryKey: ['wallet/getOriginPermissions'],
+    queryFn: () => walletPort.request('getOriginPermissions'),
+    useErrorBoundary: true,
+  });
 
   const ref = useRef<HTMLDialogElementInterface | null>(null);
   const hasSomePermissions = useMemo(() => {

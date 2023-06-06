@@ -2,7 +2,7 @@ import browser from 'webextension-polyfill';
 import cx from 'classnames';
 import type { ComponentPropsWithoutRef, ElementType } from 'react';
 import React from 'react';
-import { useMutation, useQuery } from 'react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import SwapIcon from 'jsx:src/ui/assets/actions/swap.svg';
 import SendIcon from 'jsx:src/ui/assets/actions/send.svg';
 import ReceiveIcon from 'jsx:src/ui/assets/actions/receive.svg';
@@ -49,24 +49,34 @@ function ActionButton<As extends ElementType = 'a'>({
 const ZERION_ORIGIN = 'https://app.zerion.io';
 
 export function ActionButtonsRow() {
-  const { data: wallet } = useQuery('wallet/uiGetCurrentWallet', () => {
-    return walletPort.request('uiGetCurrentWallet');
+  const { data: wallet } = useQuery({
+    queryKey: ['wallet/uiGetCurrentWallet'],
+    queryFn: () => {
+      return walletPort.request('uiGetCurrentWallet');
+    },
   });
-  const { mutate: acceptOrigin } = useMutation(
-    async ({ address, origin }: { address: string; origin: string }) => {
+  const { mutate: acceptOrigin } = useMutation({
+    mutationFn: async ({
+      address,
+      origin,
+    }: {
+      address: string;
+      origin: string;
+    }) => {
       return walletPort.request('acceptOrigin', { origin, address });
-    }
-  );
+    },
+  });
   const addWalletParams = useWalletParams(wallet);
 
-  const { data: activeTabs } = useQuery('browser/activeTab', () =>
-    browser.tabs.query({ active: true, currentWindow: true })
-  );
+  const { data: activeTabs } = useQuery({
+    queryKey: ['browser/activeTab'],
+    queryFn: () => browser.tabs.query({ active: true, currentWindow: true }),
+  });
   const activeTab = activeTabs ? activeTabs[0] : null;
-  const { mutate: updateTab } = useMutation(
-    async ({ tab, url }: { tab: browser.Tabs.Tab; url: string }) =>
-      browser.tabs.update(tab.id, { url })
-  );
+  const { mutate: updateTab } = useMutation({
+    mutationFn: async ({ tab, url }: { tab: browser.Tabs.Tab; url: string }) =>
+      browser.tabs.update(tab.id, { url }),
+  });
   if (!addWalletParams || !wallet) {
     return null;
   }

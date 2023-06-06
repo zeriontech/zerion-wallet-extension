@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
 import { walletPort } from 'src/ui/shared/channels';
 
@@ -11,9 +11,9 @@ export function InactivityDetector() {
    * * location change
    */
   const location = useLocation();
-  const { mutate: sendHeartbeat } = useMutation(() =>
-    walletPort.request('userHeartbeat')
-  );
+  const { mutate: sendHeartbeat } = useMutation({
+    mutationFn: () => walletPort.request('userHeartbeat'),
+  });
 
   useEffect(() => {
     function handler() {

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { AreaProvider } from 'react-area';
-import { QueryClientProvider, useQuery } from 'react-query';
+import { QueryClientProvider, useQuery } from '@tanstack/react-query';
 import {
   HashRouter as Router,
   Routes,
@@ -59,9 +59,9 @@ import { AddEthereumChain } from '../pages/AddEthereumChain';
 import { SignInWithEthereum } from '../pages/SignInWithEthereum';
 
 const useAuthState = () => {
-  const { data, isFetching } = useQuery(
-    'authState',
-    async () => {
+  const { data, isFetching } = useQuery({
+    queryKey: ['authState'],
+    queryFn: async () => {
       const [isAuthenticated, existingUser, wallet] = await Promise.all([
         accountPublicRPCPort.request('isAuthenticated'),
         accountPublicRPCPort.request('getExistingUser'),
@@ -73,8 +73,10 @@ const useAuthState = () => {
         wallet,
       };
     },
-    { useErrorBoundary: true, retry: false, refetchOnWindowFocus: false }
-  );
+    useErrorBoundary: true,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
   const { isAuthenticated, existingUser, wallet } = data || {};
   // const { data: isAuthenticated, ...isAuthenticatedQuery } = useQuery(
   //   'isAuthenticated',

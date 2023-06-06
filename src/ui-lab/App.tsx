@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { QueryClientProvider } from 'react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { Button } from 'src/ui/ui-kit/Button';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
 import { DesignTheme } from 'src/ui/components/DesignTheme';

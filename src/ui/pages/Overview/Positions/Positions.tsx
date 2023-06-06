@@ -41,7 +41,7 @@ import { createChain } from 'src/modules/networks/Chain';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { httpConnectionPort } from 'src/ui/shared/channels';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { capitalize } from 'capitalize-ts';
 import type { Networks } from 'src/modules/networks/Networks';
@@ -637,16 +637,16 @@ function useEvmAddressPositions({
   address: string | null;
   chainId: string;
 }) {
-  return useQuery(
-    ['eth_getBalance', address, chainId],
-    async () => {
+  return useQuery({
+    queryKey: ['eth_getBalance', address, chainId],
+    queryFn: async () => {
       const networks = await networksStore.load();
       return !address
         ? null
         : getEvmAddressPositions({ address, chainId, networks });
     },
-    { enabled: Boolean(address) }
-  );
+    enabled: Boolean(address),
+  });
 }
 
 function RawChainPositions({

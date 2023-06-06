@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import groupBy from 'lodash/groupBy';
 import { FillView } from 'src/ui/components/FillView';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -97,11 +97,11 @@ function MnemonicList({ walletGroups }: { walletGroups: WalletGroup[] }) {
 }
 
 function WalletGroups() {
-  const { data: walletGroups, isLoading } = useQuery(
-    'wallet/uiGetWalletGroups',
-    () => walletPort.request('uiGetWalletGroups'),
-    { useErrorBoundary: true }
-  );
+  const { data: walletGroups, isLoading } = useQuery({
+    queryKey: ['wallet/uiGetWalletGroups'],
+    queryFn: () => walletPort.request('uiGetWalletGroups'),
+    useErrorBoundary: true,
+  });
   const groupedBySeedType = useMemo(() => {
     if (!walletGroups) {
       return null;

@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
-import { useQuery } from 'react-query';
 import { isTruthy } from 'is-truthy-ts';
 import { ethers } from 'ethers';
+import { useQuery } from '@tanstack/react-query';
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { useNativeAsset } from 'src/ui/shared/requests/useNativeAsset';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
@@ -78,9 +78,16 @@ export function useFeeEstimation(
     throw new Error('gas field is expected to be found on Transaction object');
   }
   const { data: chainGasPrices } = useGasPrices(chain);
-  return useQuery(
-    ['feeEstimation', chain, transaction, networkFeeConfiguration, gas],
-    async () => {
+  return useQuery({
+    queryKey: [
+      'feeEstimation',
+      chain,
+      transaction,
+      networkFeeConfiguration,
+      gas,
+      chainGasPrices,
+    ],
+    queryFn: async () => {
       const gasPriceFromTransaction = getGasPriceFromTransaction(transaction);
       const gasPriceFromConfiguration = getGasPriceFromConfiguration({
         chainGasPrices,
@@ -104,8 +111,9 @@ export function useFeeEstimation(
       });
       return { feeEstimation, gasPrice };
     },
-    { suspense: false, retry: 0 }
-  );
+    suspense: false,
+    retry: 0,
+  });
 }
 
 export function useTransactionPrices(

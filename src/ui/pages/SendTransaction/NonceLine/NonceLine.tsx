@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import React, { useId, useRef } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { getTransactionCount } from 'src/modules/ethereum/transactions/getTransactionCount';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { Chain } from 'src/modules/networks/Chain';
@@ -136,12 +136,12 @@ export function NonceLine({
 }) {
   const { networks } = useNetworks();
   const { from } = transaction;
-  const { data } = useQuery(
-    ['getTransactionCount', transaction.from],
-    async () =>
+  const { data } = useQuery({
+    queryKey: ['getTransactionCount', networks, from, chain],
+    queryFn: async () =>
       networks ? getTransactionCount(from, chain, networks) : undefined,
-    { enabled: Boolean(networks) }
-  );
+    enabled: Boolean(networks),
+  });
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const nonce = data?.value;
   const value = userNonce ?? transaction.nonce ?? nonce;

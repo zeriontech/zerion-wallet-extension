@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { WindowSize } from 'src/ui-lab/components/WindowSize';
 import type { Readme } from 'src/ui-lab/types';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -54,7 +54,9 @@ const Crypto = () => {
     setPassed(text === decrypted.text);
   }
 
-  const { mutate: testMutate, isLoading } = useMutation(() => test());
+  const { mutate: testMutate, isLoading } = useMutation({
+    mutationFn: () => test(),
+  });
   useEffect(() => {
     testMutate();
   }, [testMutate]);

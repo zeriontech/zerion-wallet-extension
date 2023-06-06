@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { useSelect } from 'downshift';
 import cn from 'classnames';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { SurfaceItemButton, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -309,27 +309,24 @@ function AbilityCard({
     return getAbilityLinkTitle(ability);
   }, [ability]);
 
-  const { mutate: mark } = useMutation(
-    (action: 'complete' | 'dismiss') => markAbility({ ability, action }),
-    {
-      onSuccess: (_, action) => {
-        setMarking(false);
-        setStatus(action === 'complete' ? 'completed' : 'dismissed');
-        setTimeout(onMark, 500);
-      },
-    }
-  );
+  const { mutate: mark } = useMutation({
+    mutationFn: (action: 'complete' | 'dismiss') =>
+      markAbility({ ability, action }),
+    onSuccess: (_, action) => {
+      setMarking(false);
+      setStatus(action === 'complete' ? 'completed' : 'dismissed');
+      setTimeout(onMark, 500);
+    },
+  });
 
-  const { mutate: unmark } = useMutation(
-    () => unmarkAbility({ abilityId: ability.uid }),
-    {
-      onSuccess: () => {
-        setMarking(false);
-        setStatus('restored');
-        setTimeout(onMark, 500);
-      },
-    }
-  );
+  const { mutate: unmark } = useMutation({
+    mutationFn: () => unmarkAbility({ abilityId: ability.uid }),
+    onSuccess: () => {
+      setMarking(false);
+      setStatus('restored');
+      setTimeout(onMark, 500);
+    },
+  });
 
   const handleMarkButtonClick = useCallback(
     (action: 'dismiss' | 'complete') => {

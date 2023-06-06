@@ -1,4 +1,4 @@
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import type { WalletRecord } from 'src/shared/types/WalletRecord';
 import { walletPort } from 'src/ui/shared/channels';
 import { useOptimisticMutation } from 'src/ui/shared/requests/useOptimisticMutation';
@@ -11,16 +11,17 @@ async function setPreferences(preferences: Preferences) {
 }
 
 export function usePreferences() {
-  const query = useQuery(
-    'wallet/getPreferences',
-    () => walletPort.request('getPreferences'),
-    { useErrorBoundary: true, suspense: true }
-  );
+  const query = useQuery({
+    queryKey: ['wallet/getPreferences'],
+    queryFn: () => walletPort.request('getPreferences'),
+    useErrorBoundary: true,
+    suspense: true,
+  });
   const mutation = useOptimisticMutation(setPreferences, {
-    relatedQueryKey: 'wallet/getPreferences',
+    relatedQueryKey: ['wallet/getPreferences'],
     onMutate: ({ client, variables }) => {
       client.setQueryData<Preferences>(
-        'wallet/getPreferences',
+        ['wallet/getPreferences'],
         (preferences) => ({ ...preferences, ...variables })
       );
     },
@@ -38,17 +39,18 @@ async function setGlobalPreferences(preferences: GlobalPreferences) {
 }
 
 export function useGlobalPreferences() {
-  const query = useQuery(
-    'wallet/getGlobalPreferences',
-    () => walletPort.request('getGlobalPreferences'),
-    { useErrorBoundary: true, suspense: true }
-  );
+  const query = useQuery({
+    queryKey: ['wallet/getGlobalPreferences'],
+    queryFn: () => walletPort.request('getGlobalPreferences'),
+    useErrorBoundary: true,
+    suspense: true,
+  });
 
   const mutation = useOptimisticMutation(setGlobalPreferences, {
-    relatedQueryKey: 'wallet/getGlobalPreferences',
+    relatedQueryKey: ['wallet/getGlobalPreferences'],
     onMutate: ({ client, variables }) =>
       client.setQueryData<GlobalPreferences>(
-        'wallet/getGlobalPreferences',
+        ['wallet/getGlobalPreferences'],
         (globalPreferences) => ({ ...globalPreferences, ...variables })
       ),
   });

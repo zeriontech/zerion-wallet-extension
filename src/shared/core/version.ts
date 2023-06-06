@@ -48,6 +48,7 @@ export async function checkVersion() {
       },
     };
   }
+  return null;
 }
 
 export async function eraseAndUpdateToLatestVersion() {

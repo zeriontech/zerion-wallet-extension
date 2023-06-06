@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import type { AddressAction } from 'defi-sdk';
 import { useAddressActions } from 'defi-sdk';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import { NetworkSelect } from 'src/ui/pages/Networks/NetworkSelect';
@@ -9,7 +9,7 @@ import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { EmptyViewForNetwork } from 'src/ui/components/EmptyViewForNetwork';
-import type { AnyAddressAction} from 'src/modules/ethereum/transactions/addressAction';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { pendingTransactionToAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { ActionsList } from './ActionsList';
 
@@ -40,9 +40,9 @@ function useMinedAndPendingAddressActions({ chain }: { chain: Chain | null }) {
     : true;
   const localActions = useLocalAddressTransactions(params);
 
-  const { data: localAddressActions, ...localActionsQuery } = useQuery(
-    ['pages/history', localActions, chain],
-    async () => {
+  const { data: localAddressActions, ...localActionsQuery } = useQuery({
+    queryKey: ['pages/history', localActions, chain, networks],
+    queryFn: async () => {
       if (!networks) {
         return null;
       }
@@ -59,11 +59,9 @@ function useMinedAndPendingAddressActions({ chain }: { chain: Chain | null }) {
         return items;
       }
     },
-    {
-      enabled: Boolean(networks),
-      useErrorBoundary: true,
-    }
-  );
+    enabled: Boolean(networks),
+    useErrorBoundary: true,
+  });
 
   const {
     value,

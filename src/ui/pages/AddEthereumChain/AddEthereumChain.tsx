@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import type { EthereumChainConfig } from 'src/modules/ethereum/chains/ChainConfigStore';
@@ -40,15 +40,15 @@ function AddChain({
       ) as AddEthereumChainParameter,
     [addEthereumChainParameterStringified]
   );
-  const addEthereumChainMutation = useMutation(
-    (param: NetworkConfig) => {
+  const addEthereumChainMutation = useMutation({
+    mutationFn: (param: NetworkConfig) => {
       return walletPort.request('addEthereumChain', {
         values: [param],
         origin,
       });
     },
-    { onSuccess: (result) => onSuccess(result) }
-  );
+    onSuccess: (result) => onSuccess(result),
+  });
   const { networks } = useNetworks();
   const restrictedChainIds = useMemo(() => {
     return networks

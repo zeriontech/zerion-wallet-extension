@@ -1,5 +1,5 @@
 import React, { useId, useMemo } from 'react';
-import { useMutation, useQuery } from 'react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import type { PublicUser } from 'src/shared/types/User';
 import { PageBottom } from 'src/ui/components/PageBottom';
@@ -25,23 +25,30 @@ export function Login() {
     isLoading,
     error,
     isError,
-  } = useQuery('user', () => {
-    return accountPublicRPCPort.request('getExistingUser');
+  } = useQuery({
+    queryKey: ['account/getExistingUser'],
+    queryFn: () => {
+      return accountPublicRPCPort.request('getExistingUser');
+    },
   });
   const formId = useId();
   const inputId = useId();
 
-  const loginMutation = useMutation(
-    async ({ user, password }: { user: PublicUser; password: string }) => {
+  const loginMutation = useMutation({
+    mutationFn: async ({
+      user,
+      password,
+    }: {
+      user: PublicUser;
+      password: string;
+    }) => {
       return accountPublicRPCPort.request('login', { user, password });
     },
-    {
-      onSuccess() {
-        zeroizeAfterSubmission();
-        navigate(params.get('next') || '/overview');
-      },
-    }
-  );
+    onSuccess() {
+      zeroizeAfterSubmission();
+      navigate(params.get('next') || '/overview');
+    },
+  });
 
   useBodyStyle(useMemo(() => ({ backgroundColor: 'var(--white)' }), []));
   if (isLoading) {

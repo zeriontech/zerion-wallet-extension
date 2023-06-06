@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -222,8 +222,11 @@ export function SignMessage() {
     data: wallet,
     isLoading,
     isError,
-  } = useQuery('wallet/uiGetCurrentWallet', () => {
-    return walletPort.request('uiGetCurrentWallet');
+  } = useQuery({
+    queryKey: ['wallet/uiGetCurrentWallet'],
+    queryFn: () => {
+      return walletPort.request('uiGetCurrentWallet');
+    },
   });
   if (isError) {
     return <p>Some Error</p>;

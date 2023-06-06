@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { RenderArea } from 'react-area';
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import {
   Route,
   Routes,
@@ -179,7 +179,8 @@ function NetworkCreatePage({
   );
   const navigate = useNavigate();
   const goBack = useCallback(() => navigate(-1), [navigate]);
-  const mutation = useMutation(saveNetworkConfig, {
+  const mutation = useMutation({
+    mutationFn: saveNetworkConfig,
     onSuccess(_result) {
       networksStore.update();
     },
@@ -276,23 +277,22 @@ function NetworkPage({
     }
     return set;
   }, [network, networks]);
-  const mutation = useMutation(saveNetworkConfig, {
+  const mutation = useMutation({
+    mutationFn: saveNetworkConfig,
     onSuccess(result) {
       networksStore.update();
       onSuccess(result.value);
       navigate(-1);
     },
   });
-  const removeMutation = useMutation(
-    (network: NetworkConfig) =>
+  const removeMutation = useMutation({
+    mutationFn: (network: NetworkConfig) =>
       walletPort.request('removeEthereumChain', { chain: network.chain }),
-    {
-      onSuccess() {
-        networksStore.update();
-        navigate(-1);
-      },
-    }
-  );
+    onSuccess() {
+      networksStore.update();
+      navigate(-1);
+    },
+  });
   useBackgroundKind({ kind: 'white' });
   if (!networks && !network) {
     return <ViewLoading kind="network" />;

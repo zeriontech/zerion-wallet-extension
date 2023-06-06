@@ -7,7 +7,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { invariant } from 'src/shared/invariant';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import {
@@ -217,7 +217,10 @@ function calculateExpires(duration: TurnOffDuration) {
 }
 
 function usePausedData() {
-  const { data: tabData } = useQuery('activeTab/origin', getActiveTabOrigin);
+  const { data: tabData } = useQuery({
+    queryKey: ['activeTab/origin'],
+    queryFn: getActiveTabOrigin,
+  });
   const { globalPreferences, mutation } = useGlobalPreferences();
   const tabUrl = tabData?.url;
   const protocol = tabUrl?.protocol;

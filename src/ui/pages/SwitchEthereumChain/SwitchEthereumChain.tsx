@@ -8,7 +8,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { NetworkIndicator } from 'src/ui/components/NetworkIndicator';
 import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
 import { invariant } from 'src/shared/invariant';
@@ -21,8 +21,11 @@ export function SwitchEthereumChain() {
     data: wallet,
     isLoading,
     isError,
-  } = useQuery('wallet/uiGetCurrentWallet', () => {
-    return walletPort.request('uiGetCurrentWallet');
+  } = useQuery({
+    queryKey: ['wallet/uiGetCurrentWallet'],
+    queryFn: () => {
+      return walletPort.request('uiGetCurrentWallet');
+    },
   });
   if (isError) {
     return <p>Some Error</p>;
