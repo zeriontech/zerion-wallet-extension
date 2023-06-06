@@ -2,9 +2,10 @@ import { capitalize } from 'capitalize-ts';
 import type { AddressAction } from 'defi-sdk';
 import { ethers } from 'ethers';
 import type { Networks } from 'src/modules/networks/Networks';
-import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import type { CachedAssetQuery } from 'src/modules/defi-sdk/queries';
 import { fetchAssetFromCacheOrAPI } from 'src/modules/defi-sdk/queries';
+import type { Chain } from 'src/modules/networks/Chain';
+import { UnsupportedNetwork } from 'src/modules/networks/errors';
 import type {
   IncomingTransaction,
   IncomingTransactionWithChainId,
@@ -125,17 +126,30 @@ export async function pendingTransactionToAddressAction(
   networks: Networks
 ): Promise<PendingAddressAction> {
   const { transaction, hash, receipt, timestamp, dropped } = transactionObject;
-  const chain = networks.getChainById(
-    ethers.utils.hexValue(transaction.chainId)
-  );
-  const action = describeTransaction(transaction, { networks, chain });
-  const label = createActionLabel(transaction, action);
-  const content = await createActionContent(action);
+  let chain: Chain | null;
+  try {
+    chain = networks.getChainById(ethers.utils.hexValue(transaction.chainId));
+  } catch (error) {
+    if (error instanceof UnsupportedNetwork) {
+      chain = null;
+    } else {
+      throw error;
+    }
+  }
+  const action = chain
+    ? describeTransaction(transaction, { networks, chain })
+    : null;
+  const label = action ? createActionLabel(transaction, action) : null;
+  const content = action ? await createActionContent(action) : null;
   return {
     id: hash,
     transaction: {
       hash,
-      chain: chain.toString(),
+      chain: chain
+        ? chain.toString()
+        : // It's okay to fallback to a stringified chainId because this is
+          // only a representational object
+          ethers.utils.hexValue(transaction.chainId),
       status: receipt
         ? receipt.status === 1
           ? 'confirmed'
@@ -148,10 +162,12 @@ export async function pendingTransactionToAddressAction(
     },
     datetime: new Date(timestamp ?? Date.now()).toISOString(),
     label,
-    type: {
-      display_value: capitalize(action.type),
-      value: action.type,
-    },
+    type: action
+      ? {
+          display_value: capitalize(action.type),
+          value: action.type,
+        }
+      : { display_value: '[Missing network data]', value: 'execute' },
     content,
   };
 }
@@ -206,17 +222,9 @@ export function getActionAsset(action: AnyAddressAction) {
   return null;
 }
 
-export function getActionAddress(
-  action: AnyAddressAction,
-  { truncate }: { truncate?: boolean }
-) {
-  const address =
+export function getActionAddress(action: AnyAddressAction) {
+  return (
     action.label?.display_value.wallet_address ||
-    action.label?.display_value.contract_address;
-
-  return address
-    ? truncate
-      ? truncateAddress(address, 4)
-      : address
-    : action.label?.display_value.text;
+    action.label?.display_value.contract_address
+  );
 }
