@@ -278,9 +278,9 @@ function usePreparedPositions({
         ? groupPositionsByProtocol(items)
         : { [DEFAULT_PROTOCOL]: items };
     const byProtocolSorted = sortPositionGroupsByTotalValue(byProtocol);
+    const protocols = byProtocolSorted.map(([protocol]) => protocol);
 
     // Pin Wallet group to the top of positions list
-    const protocols = byProtocolSorted.map(([protocol]) => protocol);
     const defaultProtocolIndex = protocols.findIndex(
       (item) => item === DEFAULT_PROTOCOL
     );
