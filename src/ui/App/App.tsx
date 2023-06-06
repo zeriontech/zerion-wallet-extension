@@ -22,7 +22,7 @@ import { Login } from '../pages/Login';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { accountPublicRPCPort, walletPort } from '../shared/channels';
 import { CreateAccount } from '../pages/CreateAccount';
-import { getPageTemplateType } from '../shared/getPageTemplateName';
+import { pageTemplateType } from '../shared/getPageTemplateName';
 import { closeOtherWindows } from '../shared/closeOtherWindows';
 import { URLBar } from '../components/URLBar';
 import { SwitchEthereumChain } from '../pages/SwitchEthereumChain';
@@ -147,8 +147,6 @@ function RequireAuth({ children }: { children: JSX.Element }) {
 
   return children;
 }
-
-const templateType = getPageTemplateType();
 
 function Views({ initialRoute }: { initialRoute?: string }) {
   useScreenViewChange();
@@ -336,7 +334,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
 
 function CloseOtherWindows() {
   useEffect(() => {
-    if (templateType === 'popup') {
+    if (pageTemplateType === 'popup') {
       // window.location.hash = '#/get-started/import'
       closeOtherWindows();
     }
@@ -355,9 +353,9 @@ export interface AppProps {
 export function App({ initialView, mode }: AppProps) {
   const bodyClassList = useMemo(() => {
     const result = [];
-    if (templateType === 'dialog') {
+    if (pageTemplateType === 'dialog') {
       result.push(styles.isDialog);
-    } else if (templateType === 'tab') {
+    } else if (pageTemplateType === 'tab') {
       result.push(styles.isTab);
     }
     if (mode === 'onboarding') {

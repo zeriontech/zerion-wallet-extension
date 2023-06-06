@@ -1,13 +1,11 @@
 import browser from 'webextension-polyfill';
 import { FEATURE_WAITLIST_ONBOARDING } from 'src/env/config';
 import { getCurrentUser } from 'src/shared/getCurrentUser';
-import { getPageTemplateType } from '../shared/getPageTemplateName';
+import { pageTemplateType } from '../shared/getPageTemplateName';
 import { OnboardingInterrupt } from './errors';
 
-const templateType = getPageTemplateType();
-
 export async function maybeOpenOboarding() {
-  const isPopup = templateType === 'popup';
+  const isPopup = pageTemplateType === 'popup';
   const hasOnboardingUrl = document.location.hash.startsWith('#/onboarding');
 
   const currentUser = await getCurrentUser();

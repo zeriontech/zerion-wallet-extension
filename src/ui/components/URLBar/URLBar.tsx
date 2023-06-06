@@ -4,7 +4,7 @@ import { RenderArea } from 'react-area';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Store } from 'store-unit';
 import { useStore } from '@store-unit/react';
-import { getPageTemplateType } from 'src/ui/shared/getPageTemplateName';
+import { pageTemplateType } from 'src/ui/shared/getPageTemplateName';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { BackButton } from '../BackButton';
 
@@ -38,8 +38,7 @@ export function hideURLBarFor(path: string) {
 
 const urlBarStore = new Store(true);
 
-const templateType = getPageTemplateType();
-const isDialog = templateType === 'dialog';
+const isDialog = pageTemplateType === 'dialog';
 
 export function toggleUrlBar(on: boolean) {
   urlBarStore.setState(on);
