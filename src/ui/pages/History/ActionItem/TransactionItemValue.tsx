@@ -63,6 +63,7 @@ function HistoryTokenValue({
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
+          outlineOffset: -1, // make focus ring visible despite overflow: hidden
         }}
       >
         {tokenTitle}
@@ -106,6 +107,7 @@ export function HistoryNFTValue({
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
+            outlineOffset: -1, // make focus ring visible despite overflow: hidden
           }}
         >
           {name}

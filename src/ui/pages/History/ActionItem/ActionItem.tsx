@@ -220,6 +220,7 @@ function ActionItemBackend({
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
+                outlineOffset: -1, // make focus ring visible despite overflow: hidden
               }}
             >
               {maybeApprovedAsset.name || maybeApprovedAsset.symbol}
