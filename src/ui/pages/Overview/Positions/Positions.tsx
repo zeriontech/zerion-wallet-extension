@@ -279,6 +279,16 @@ function usePreparedPositions({
         : { [DEFAULT_PROTOCOL]: items };
     const byProtocolSorted = sortPositionGroupsByTotalValue(byProtocol);
     const protocols = byProtocolSorted.map(([protocol]) => protocol);
+
+    // Pin Wallet group to the top of positions list
+    const defaultProtocolIndex = protocols.findIndex(
+      (item) => item === DEFAULT_PROTOCOL
+    );
+    if (defaultProtocolIndex >= 0) {
+      protocols.splice(defaultProtocolIndex, 1);
+      protocols.unshift(DEFAULT_PROTOCOL);
+    }
+
     const protocolIndex: PreparedPositions['protocolIndex'] = {};
     for (const protocol of protocols) {
       const items = sortPositionsByValue(byProtocol[protocol]);
