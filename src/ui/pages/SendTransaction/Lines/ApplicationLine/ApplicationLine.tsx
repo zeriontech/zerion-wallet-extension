@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useState } from 'react';
 import { animated, useTransition } from 'react-spring';
+import { capitalize } from 'capitalize-ts';
 import type { Chain } from 'src/modules/networks/Chain';
 import type { Networks } from 'src/modules/networks/Networks';
 import { Media } from 'src/ui/ui-kit/Media';
@@ -15,7 +16,6 @@ import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { ShuffleText } from 'src/ui/components/ShuffleText';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import { capitalize } from 'capitalize-ts';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 
 const FadeOutAndIn = ({
