@@ -286,7 +286,7 @@ function usePreparedPositions({
     );
     if (defaultProtocolIndex >= 0) {
       protocols.splice(defaultProtocolIndex, 1);
-      protocols.splice(0, 0, DEFAULT_PROTOCOL);
+      protocols.unshift(DEFAULT_PROTOCOL);
     }
 
     const protocolIndex: PreparedPositions['protocolIndex'] = {};
