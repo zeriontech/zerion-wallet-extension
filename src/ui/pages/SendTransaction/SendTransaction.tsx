@@ -270,7 +270,6 @@ function SendTransactionContent({
   const addressAction = interpretAddressAction || localAddressAction;
 
   const recipientAddress = addressAction.label?.display_value.wallet_address;
-  const contractAddress = addressAction.label?.display_value.contract_address;
   const actionTransfers = addressAction.content?.transfers;
   const singleAsset = addressAction.content?.single_asset?.asset;
 
@@ -325,11 +324,9 @@ function SendTransactionContent({
               networks={networks}
             />
           ) : null}
-          {contractAddress ? (
+          {addressAction.label && addressAction.label.type !== 'to' ? (
             <ApplicationLine
-              applicationName={addressAction.label?.display_value.text}
-              applicationIcon={addressAction.label?.icon_url}
-              contractAddress={contractAddress}
+              action={addressAction}
               chain={chain}
               networks={networks}
             />

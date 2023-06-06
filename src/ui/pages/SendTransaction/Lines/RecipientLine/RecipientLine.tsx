@@ -46,7 +46,7 @@ export function RecipientLine({
               target="_blank"
               rel="noopener noreferrer"
             >
-              {truncateAddress(recipientAddress, 4)}
+              {truncateAddress(recipientAddress, 15)}
             </TextAnchor>
           </UIText>
         }

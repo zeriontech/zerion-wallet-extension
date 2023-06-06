@@ -65,7 +65,9 @@ function createActionLabel(
 
   return {
     type: actionTypeToLabelType[action.type],
-    value: transaction.to || '',
+    value:
+      transaction.to ||
+      (action.type === 'deployment' ? '' : action.contractAddress || ''),
     display_value: {
       text: '',
       wallet_address,
