@@ -25,6 +25,7 @@ import {
   isPendingAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction';
 import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
+import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import {
   HistoryItemValue,
   TransactionCurrencyValue,
@@ -84,6 +85,22 @@ function ActionTitle({
   );
 }
 
+function AddressTruncated({ value }: { value: string }) {
+  return <span title={value}>{truncateAddress(value, 4)}</span>;
+}
+
+function ActionLabel({ action }: { action: AnyAddressAction }) {
+  const address = getActionAddress(action);
+  const text = action.label?.display_value.text;
+  if (address) {
+    return <AddressTruncated value={address} />;
+  } else if (text) {
+    return text as React.ReactNode as JSX.Element;
+  } else {
+    return <AddressTruncated value={action.transaction.hash} />;
+  }
+}
+
 function ActionDetail({
   action,
   networks,
@@ -125,9 +142,7 @@ function ActionDetail({
             address={address}
           />
         ) : (
-          <span title={getActionAddress(action, { truncate: false })}>
-            {getActionAddress(action, { truncate: true })}
-          </span>
+          <ActionLabel action={action} />
         )}
       </UIText>
     </HStack>
