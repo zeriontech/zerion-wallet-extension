@@ -50,6 +50,7 @@ import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { isSiweLike } from 'src/modules/ethereum/message-signing/SIWE';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
 import { invariant } from 'src/shared/invariant';
+import { getEthersError } from 'src/shared/errors/getEthersError';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -797,17 +798,21 @@ export class Wallet {
 
     const signer = await this.getSigner(chainId);
 
-    const transactionResponse = await signer.sendTransaction({
-      ...transaction,
-      type: transaction.type || undefined, // to exclude null
-    });
-    const safeTx = removeSignature(transactionResponse);
-    emitter.emit('transactionSent', {
-      transaction: safeTx,
-      initiator,
-      feeValueCommon,
-    });
-    return safeTx;
+    try {
+      const transactionResponse = await signer.sendTransaction({
+        ...transaction,
+        type: transaction.type || undefined, // to exclude null
+      });
+      const safeTx = removeSignature(transactionResponse);
+      emitter.emit('transactionSent', {
+        transaction: safeTx,
+        initiator,
+        feeValueCommon,
+      });
+      return safeTx;
+    } catch (error) {
+      throw getEthersError(error);
+    }
   }
 
   async signAndSendTransaction({
