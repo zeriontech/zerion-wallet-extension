@@ -1127,10 +1127,10 @@ class PublicController {
       typeof data === 'string' ? data : JSON.stringify(data);
     return new Promise((resolve, reject) => {
       notificationWindow.open({
-        route: '/signMessage',
+        route: '/signTypedData',
         search: `?${new URLSearchParams({
           origin: context.origin,
-          typedData: stringifiedData,
+          typedDataRaw: stringifiedData,
           method: 'eth_signTypedData_v4',
         })}`,
         onResolve: (signature) => {

@@ -1,12 +1,17 @@
 import { client } from 'defi-sdk';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
-import type { IncomingTransactionWithChainId } from '../types/IncomingTransaction';
+import type { TypedData } from '../message-signing/TypedData';
 import type { InterpretResponse } from './types';
 
-export function interpretTransaction(
-  address: string,
-  transaction: IncomingTransactionWithChainId
-): Promise<InterpretResponse> {
+export function interpretSignature({
+  address,
+  chainId,
+  typedData,
+}: {
+  address: string;
+  chainId?: string | number;
+  typedData: TypedData;
+}): Promise<InterpretResponse> {
   return Promise.race([
     rejectAfterDelay(10000),
     new Promise<InterpretResponse>((resolve) => {
@@ -15,28 +20,17 @@ export function interpretTransaction(
       const unsubscribe = client.subscribe<
         InterpretResponse,
         'interpret',
-        'transaction'
+        'signature'
       >({
         namespace: 'interpret',
         method: 'stream',
         body: {
-          scope: ['transaction'],
+          scope: ['signature'],
           payload: {
             address,
-            chain_id: transaction.chainId,
+            chain_id: chainId,
             currency: 'usd',
-            transaction: {
-              from: transaction?.from,
-              to: transaction?.to,
-              nonce: transaction?.nonce,
-              chainId: transaction.chainId,
-              gas: transaction?.gas,
-              gasPrice: transaction?.gasPrice,
-              maxFee: transaction?.maxFeePerGas,
-              maxPriorityFee: transaction?.maxPriorityFeePerGas,
-              value: transaction?.value,
-              data: transaction?.data,
-            },
+            typed_data: typedData,
           },
         },
         // Here we're using onMessage instead of onData because of
@@ -47,7 +41,7 @@ export function interpretTransaction(
             unsubscribe();
             return;
           }
-          value = data.payload.transaction;
+          value = data.payload.signature;
         },
       });
     }),

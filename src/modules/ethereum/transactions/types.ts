@@ -1,3 +1,4 @@
+import type { AddressAction } from 'defi-sdk';
 import type { ethers } from 'ethers';
 
 export interface TransactionObject {
@@ -10,3 +11,29 @@ export interface TransactionObject {
 }
 
 export type StoredTransactions = Array<TransactionObject>;
+
+interface Warning {
+  severity: string;
+  message: string;
+}
+
+interface Field {
+  name: string;
+  type: string;
+}
+
+interface Schema {
+  primary_type: string;
+  types: Record<string, Field[]>;
+}
+
+interface Input {
+  data: string;
+  schema: Schema;
+}
+
+export interface InterpretResponse {
+  action: AddressAction;
+  input: Input[];
+  warnings: Warning[];
+}

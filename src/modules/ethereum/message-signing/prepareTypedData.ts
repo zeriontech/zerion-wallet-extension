@@ -5,7 +5,7 @@ function isTypedData(data: Partial<TypedData>): data is TypedData {
   return Boolean(data.domain && data.message && data.types);
 }
 
-function toTypedData(data: string | Partial<TypedData>): TypedData {
+export function toTypedData(data: string | Partial<TypedData>): TypedData {
   if (typeof data === 'string') {
     try {
       const typedData = JSON.parse(data);
