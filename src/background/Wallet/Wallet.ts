@@ -1083,9 +1083,7 @@ class PublicController {
       throw new OriginNotAllowed();
     }
     const transaction = params[0];
-    if (!transaction) {
-      throw new InvalidParams();
-    }
+    invariant(transaction, () => new InvalidParams());
     return new Promise((resolve, reject) => {
       notificationWindow.open({
         route: '/sendTransaction',
@@ -1218,6 +1216,7 @@ class PublicController {
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
       throw new OriginNotAllowed();
     }
+    invariant(params[0], () => new InvalidParams());
     const { origin } = context;
     const { chainId: chainIdParameter } = params[0];
     const chainId = ethers.utils.hexValue(chainIdParameter);
@@ -1322,9 +1321,8 @@ class PublicController {
     context,
     params,
   }: PublicMethodParams<[AddEthereumChainParameter]>) {
-    if (!context?.origin) {
-      throw new Error('This method requires origin');
-    }
+    invariant(context?.origin, 'This method requires origin');
+    invariant(params[0], () => new InvalidParams());
     const { origin } = context;
     return new Promise((resolve, reject) => {
       notificationWindow.open({
