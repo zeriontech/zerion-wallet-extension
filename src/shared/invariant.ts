@@ -3,9 +3,13 @@
  */
 export function invariant<T>(
   value: T | null | undefined,
-  message: string
+  message: string | (() => Error)
 ): asserts value is T {
   if (value === false || value == null) {
-    throw new Error(message);
+    if (typeof message === 'function') {
+      throw message();
+    } else {
+      throw new Error(message);
+    }
   }
 }
