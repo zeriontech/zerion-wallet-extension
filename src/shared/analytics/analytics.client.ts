@@ -2,6 +2,7 @@ import { getUserId } from 'src/background/account/account-helpers.client';
 import { emitter } from 'src/ui/shared/events';
 import { HandshakeFailed } from '../errors/errors';
 import { createParams, sendToMetabase } from './analytics';
+import { init as addWalletProviderToApiRequests } from './api-v4-zerion';
 
 function trackAppEvents() {
   emitter.on('signingError', async (signatureType, message) => {
@@ -41,5 +42,6 @@ function trackAppEvents() {
 }
 
 export function initializeClientAnalytics() {
+  addWalletProviderToApiRequests();
   return trackAppEvents();
 }

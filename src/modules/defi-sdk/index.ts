@@ -5,6 +5,7 @@ import {
   BACKEND_ENV,
 } from 'src/env/config';
 import { BackgroundMemoryCache } from './BackgroundMemoryCache';
+import { hooks } from './defi-sdk-config';
 
 export const backgroundCache = new BackgroundMemoryCache();
 
@@ -21,6 +22,7 @@ export async function configureUIClient() {
       cache: backgroundCache,
       url: DEFI_SDK_API_URL,
       apiToken: DEFI_SDK_API_TOKEN,
+      hooks,
       ioOptions: BACKEND_ENV
         ? { query: { backend_env: BACKEND_ENV } }
         : undefined,
