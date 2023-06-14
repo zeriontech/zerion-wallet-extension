@@ -1,6 +1,6 @@
 import React from 'react';
 
-export function GradienBorder({
+export function GradientBorder({
   width,
   height,
   borderRadius,

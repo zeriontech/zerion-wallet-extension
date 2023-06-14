@@ -16,7 +16,7 @@ import type {
   WalletProfile,
   WalletProfileNFT,
 } from './types';
-import { GradienBorder } from './GradientBorder';
+import { GradientBorder } from './GradientBorder';
 
 async function fetchWalletProfile(
   address: string
@@ -63,13 +63,16 @@ export function WalletAvatar({
     suspense: false,
   });
 
-  const { value: membershipInfo } = useAddressMembership({ address });
+  const { value: membershipInfo } = useAddressMembership(
+    { address },
+    { enabled: showPremium }
+  );
 
   const isPremium = isMembershipValid(membershipInfo);
 
   const border =
     isPremium && showPremium ? (
-      <GradienBorder
+      <GradientBorder
         height={size}
         width={size}
         borderRadius={borderRadius}
