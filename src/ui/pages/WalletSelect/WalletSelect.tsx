@@ -26,6 +26,7 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import AddWalletIcon from 'jsx:src/ui/assets/add-wallet.svg';
 import { Button } from 'src/ui/ui-kit/Button';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
+import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
 
 export function WalletSelect() {
   const navigate = useNavigate();
@@ -85,13 +86,18 @@ export function WalletSelect() {
   for (const group of walletGroups) {
     if (hasMnemonicWallets && walletGroups.length > 1) {
       isVisuallyGrouped = true;
+      const isPrivateKeyGroup =
+        group.walletContainer.seedType === SeedType.privateKey;
+      const to = isPrivateKeyGroup
+        ? `/wallets/accounts/${group.walletContainer.wallets[0].address}?groupId=${group.id}`
+        : `/wallets/groups/${group.id}`;
       items.push({
         key: group.id,
         pad: false,
         component: (
           <UIText
             as={TextLink}
-            to={`/wallets/groups/${group.id}`}
+            to={to}
             kind="caption/accent"
             color="var(--neutral-700)"
             style={{
@@ -102,9 +108,9 @@ export function WalletSelect() {
               textOverflow: 'ellipsis',
             }}
           >
-            {group.walletContainer.seedType === SeedType.privateKey
+            {isPrivateKeyGroup
               ? 'Private Key'
-              : group.name}
+              : getGroupDisplayName(group.name)}
           </UIText>
         ),
       });

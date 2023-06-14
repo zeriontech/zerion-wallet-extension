@@ -2,11 +2,10 @@ import type { BareWallet } from 'src/shared/types/BareWallet';
 import { truncateAddress } from './truncateAddress';
 
 export function emojify(value: string) {
-  const lowerCase = value.toLowerCase();
   if (
-    lowerCase.includes('hacked') ||
-    lowerCase.includes('leaked') ||
-    lowerCase.includes('lost')
+    /\bhacked\b/i.test(value) ||
+    /\bleaked\b/i.test(value) ||
+    /\blost\b/i.test(value)
   ) {
     return `${value} 😱`;
   } else {
