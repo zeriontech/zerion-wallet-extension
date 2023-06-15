@@ -1,13 +1,11 @@
-/** @type {import('ts-jest/dist/types').InitialOptionsTsJest} */
+/** @type {import('jest').Config} */
 module.exports = {
   // preset: 'ts-jest',
-  //  // testEnvironment: 'node',
+
+  modulePaths: ['<rootDir>/'],
   // moduleDirectories: ['node_modules', 'src'],
   testPathIgnorePatterns: ['/node_modules/', '<rootDir>/lib/'],
-  transform: {
-    '^.+\\.tsx?$': '<rootDir>/node_modules/ts-jest/preprocessor.js',
-  },
+  transform: { '^.+\\.tsx?$': 'ts-jest' },
   testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
 };
-

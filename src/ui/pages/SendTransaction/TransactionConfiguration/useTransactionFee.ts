@@ -11,7 +11,7 @@ import type {
   EIP1559GasPrices,
 } from 'src/modules/ethereum/transactions/gasPrices/requests';
 import type { GasPriceObject } from 'src/modules/ethereum/transactions/gasPrices/GasPriceObject';
-import type { EstimatedFeeValue } from 'src/modules/ethereum/transactions/gasPrices/feeEstimation';
+import type { EstimatedFeeValue } from 'src/modules/ethereum/transactions/gasPrices/estimateNetworkFee';
 import { getNetworkFeeEstimation } from 'src/modules/ethereum/transactions/gasPrices/feeEstimation';
 import type { EIP1559 } from 'src/modules/ethereum/transactions/gasPrices/EIP1559';
 import { formatSeconds } from 'src/shared/units/formatSeconds';
@@ -129,10 +129,11 @@ export function useTransactionPrices(
       return { isLoading };
     }
     const txValue = ethers.BigNumber.from(String(transaction.value ?? 0));
+    const { estimatedFee } = feeEstimation;
     const totalValue = txValue.add(
-      typeof feeEstimation.value === 'number'
-        ? String(feeEstimation.value)
-        : feeEstimation.value.toFixed()
+      typeof estimatedFee === 'number'
+        ? String(estimatedFee)
+        : estimatedFee.toFixed()
     );
 
     const decimals = nativeAsset
@@ -143,7 +144,7 @@ export function useTransactionPrices(
       return { isLoading };
     }
 
-    const feeValueCommon = baseToCommon(feeEstimation.value, decimals);
+    const feeValueCommon = baseToCommon(estimatedFee, decimals);
     const txValueCommon = baseToCommon(txValue.toString(), decimals);
     const totalValueCommon = baseToCommon(totalValue.toString(), decimals);
     const price = nativeAsset?.price;

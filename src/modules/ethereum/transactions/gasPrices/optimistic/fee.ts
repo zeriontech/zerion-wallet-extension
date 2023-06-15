@@ -35,14 +35,12 @@ interface OptimisticFee {
 
 export async function createOptimisticFee({
   optimisticGasPriceInfo,
-  from,
   transaction,
   getNonce,
 }: {
   optimisticGasPriceInfo: OptimisticGasPriceInfo;
   transaction: Transaction;
-  from: string;
-  getNonce: (address: string) => Promise<number>;
+  getNonce: () => Promise<number>;
 }): Promise<OptimisticFee | null> {
   const { l1, l2, fixed_overhead, dynamic_overhead } = optimisticGasPriceInfo;
   if (
@@ -58,7 +56,7 @@ export async function createOptimisticFee({
     return null;
   }
 
-  const nonce = await getNonce(from);
+  const nonce = await getNonce();
   const encoded_tx_data = rlpEncode([nonce, l2, gas, to, value, data]);
   const zero_tx_bytes_number = countZeroBytes(encoded_tx_data); // number of zero bytes (!), i.e. '00' substring in encoded tx.
   const non_zero_tx_bytes_number =
@@ -69,9 +67,9 @@ export async function createOptimisticFee({
   const l1GasEstimation =
     ((tx_data_gas + fixed_overhead) * dynamic_overhead) / 1000000;
 
-  const l1_fee_est = l1 * l1GasEstimation;
+  const l1_fee_est = Math.round(l1 * l1GasEstimation);
   return {
-    maxFee: l2 * Number(gas) + l1_fee_est * 1.25, // Optimism guarantees that there should not be one-time jumps of l1 component of gas estimation more than 25%
+    maxFee: l2 * Number(gas) + Math.round(l1_fee_est * 1.25), // Optimism guarantees that there should not be one-time jumps of l1 component of gas estimation more than 25%
     estimatedFee: l2 * Number(gas) + l1_fee_est,
   };
 }
