@@ -7,6 +7,13 @@ import { getWalletDisplayName } from './getWalletDisplayName';
 
 const testAddress = process.env.TEST_WALLET_ADDRESS as string;
 
+function randomCoice<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+const testWalletSuffixes = ['⧗', '🤘️️️️️️', '♥️'];
+const testWalletSuffix = randomCoice(testWalletSuffixes);
+
 export function useProfileName(
   wallet: Pick<BareWallet, 'address' | 'name'>,
   {
@@ -37,7 +44,7 @@ export function useProfileName(
   const value =
     domainName ?? getWalletDisplayName(wallet, { padding, maxCharacters });
   if (normalizeAddress(wallet.address) === testAddress) {
-    return `${value} 🤘️️️️️️`;
+    return `${value} ${testWalletSuffix}`;
   }
   return value;
 }
