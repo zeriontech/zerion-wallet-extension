@@ -8,7 +8,7 @@ import { isJsonRpcPayload, isJsonRpcRequest } from '@json-rpc-tools/utils';
 import { formatJsonRpcResultForPort } from 'src/shared/formatJsonRpcResultForPort';
 import { formatJsonRpcWalletError } from 'src/shared/formatJsonRpcWalletError';
 import { isClassProperty } from 'src/shared/core/isClassProperty';
-import { domExceptionToError, InvalidParams } from 'src/shared/errors/errors';
+import { domExceptionToError, MethodNotFound } from 'src/shared/errors/errors';
 import { getError } from 'src/shared/errors/getError';
 import type { PortContext } from './PortContext';
 
@@ -34,9 +34,7 @@ export function mapRPCMessageToController<T>(
       port.postMessage(
         formatJsonRpcWalletError(
           id,
-          new InvalidParams(
-            method ? `Unsupported method: ${method}` : undefined
-          )
+          new MethodNotFound(method ? `Method not found: ${method}` : undefined)
         )
       );
       return;

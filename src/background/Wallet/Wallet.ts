@@ -17,6 +17,7 @@ import {
   OriginNotAllowed,
   RecordNotFound,
   SessionExpired,
+  SwitchChainError,
   UserRejected,
   UserRejectedTxSignature,
 } from 'src/shared/errors/errors';
@@ -1227,11 +1228,14 @@ class PublicController {
       return null;
     }
     const networks = await networksStore.load();
-    // TODO: handle unsupported chain id?
-    const chain = networks.getChainById(chainId);
-    // Switch immediately and return success
-    this.wallet.setChainForOrigin(chain, origin);
-    return null;
+    try {
+      const chain = networks.getChainById(chainId);
+      // Switch immediately and return success
+      this.wallet.setChainForOrigin(chain, origin);
+      return null;
+    } catch (e) {
+      throw new SwitchChainError(`Chain not configured: ${chainIdParameter}`);
+    }
     // return new Promise((resolve, reject) => {
     //   notificationWindow.open({
     //     route: '/switchEthereumChain',
@@ -1338,6 +1342,12 @@ class PublicController {
         onDismiss: () => {
           reject(new UserRejected());
         },
+      });
+    }).then(() => {
+      // Automatically switch dapp to this network because this is what most dapp seem to expect
+      return this.wallet_switchEthereumChain({
+        context,
+        params: [{ chainId: params[0].chainId }],
       });
     });
   }
