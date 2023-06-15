@@ -1,5 +1,5 @@
 import type { Hooks } from 'defi-sdk';
-import { registerHooks } from 'src/modules/defi-sdk/defi-sdk-config';
+import { registerRequestHooks } from 'src/modules/defi-sdk/defi-sdk-config';
 
 const ANALYTICS_WALLET_PROVIDER_KEY = 'wallet_provider';
 
@@ -24,6 +24,6 @@ const addWalletProviderParam: Hooks['willSendRequest'] = (
   return request;
 };
 
-export function init() {
-  registerHooks({ willSendRequest: addWalletProviderParam });
+export function initialize() {
+  registerRequestHooks({ willSendRequest: addWalletProviderParam });
 }

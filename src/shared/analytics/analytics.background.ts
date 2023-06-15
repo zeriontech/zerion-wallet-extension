@@ -3,7 +3,7 @@ import type { Account } from 'src/background/account/Account';
 import { emitter } from 'src/background/events';
 import { networksStore } from 'src/modules/networks/networks-store.background';
 import { createParams as createBaseParams, sendToMetabase } from './analytics';
-import { init as addWalletProviderToApiRequests } from './api-v4-zerion';
+import { initialize as addWalletProviderToApiRequests } from './api-v4-zerion';
 
 function trackAppEvents({ account }: { account: Account }) {
   const getUserId = () => account.getUser()?.id;

@@ -2,7 +2,7 @@ import type { Hooks } from 'defi-sdk';
 
 const willSendRequestHooks: Set<Hooks['willSendRequest']> = new Set();
 
-export function registerHooks(hooks: Partial<Hooks>) {
+export function registerRequestHooks(hooks: Partial<Hooks>) {
   if (hooks.willSendRequest) {
     willSendRequestHooks.add(hooks.willSendRequest);
   }
