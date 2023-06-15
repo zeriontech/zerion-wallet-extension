@@ -146,9 +146,11 @@ function rewriteConnectButtons(
       replaceButtonImage(element, context);
     } else {
       /**
-       * - if we find metamask button, save it to list of candidates,
-       * - if we find injected button, mutate it immediately
+       * - if we find metamask button, save it to list of metamask candidates,
+       * - if we find injected button, save it to list of injected candidates,
+       * - if we find "zerion" text button, ignore candidates
        * This is to avoid mutating both Metamask and Injected buttons to Zerion
+       * and to avoid mutating Injected buttons when Zerion button exitst
        */
       visitTextNodes(element, (textNode) => {
         const matchesZerion = isReplacementMatch(textNode, zerionRe);
