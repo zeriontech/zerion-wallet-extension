@@ -1,5 +1,3 @@
-require('dotenv').config();
-
 import { estimateNetworkFee } from './estimateNetworkFee';
 import { samples } from './estimateNetworkFee.samples';
 

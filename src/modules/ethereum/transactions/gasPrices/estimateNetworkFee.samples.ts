@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 import { invariant } from 'src/shared/invariant';
 
 const testAddress = process.env.TEST_WALLET_ADDRESS;
