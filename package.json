@@ -11,7 +11,6 @@
     "type-check:watch": "tsc --noEmit --pretty --watch",
     "test": "jest",
     "ui-lab": "parcel serve src/ui-lab/index.html --config ./src/ui-lab/parcel.lab.config",
-    "posttest": "npm run format",
     "lint": "eslint . --cache --fix --ext .ts,.tsx,.js",
     "format": "prettier --loglevel warn --write \"**/*.{ts,tsx,css,md}\"",
     "prepare": "husky install",
