@@ -131,6 +131,15 @@ function TransactionViewLoading() {
   );
 }
 
+/** Creates new URLSearchParams instance, new keys overwrite existing ones */
+function setParams(params: URLSearchParams, values: Record<string, string>) {
+  const newParams = new URLSearchParams(params);
+  for (const key in values) {
+    newParams.set(key, values[key]);
+  }
+  return newParams;
+}
+
 function SendTransactionContent({
   transactionStringified,
   origin,
@@ -263,6 +272,11 @@ function SendTransactionContent({
     [transactionStringified]
   );
 
+  const advancedViewHref = useMemo(
+    () => `?${setParams(params, { view: 'advanced' }).toString()}`,
+    [params]
+  );
+
   if (
     !networks ||
     !pendingTransaction ||
@@ -382,11 +396,7 @@ function SendTransactionContent({
                     Unable to analyze the details of the transaction
                   </UIText>
                 ) : null}
-                <Button
-                  kind="regular"
-                  as={UnstyledLink}
-                  to={`?view=advanced&origin=${origin}&transaction=${transactionStringified}`}
-                >
+                <Button kind="regular" as={UnstyledLink} to={advancedViewHref}>
                   Advanced View
                 </Button>
               </VStack>
