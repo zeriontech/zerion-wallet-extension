@@ -174,7 +174,7 @@ export function HistoryList({
         value={searchQuery}
         onChange={setSearchQuery}
         onFocus={(e) => {
-          const yOffset = -108;
+          const yOffset = -110;
           const scrollDistance =
             e.target.getBoundingClientRect().top + window.pageYOffset + yOffset;
           window.scrollTo({ behavior: 'smooth', top: scrollDistance });
