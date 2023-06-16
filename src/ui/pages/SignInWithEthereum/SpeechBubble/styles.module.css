@@ -3,6 +3,8 @@
   padding: 16px;
   border-radius: 8px;
   background-color: var(--neutral-100);
+  overflow: auto;
+  word-break: break-word;
 }
 
 .angle {

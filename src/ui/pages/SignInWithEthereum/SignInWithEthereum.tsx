@@ -174,7 +174,11 @@ export function SignInWithEthereum() {
               <PageTop />
               <Surface
                 padding={16}
-                style={{ border: '1px solid var(--neutral-300)' }}
+                style={{
+                  border: '1px solid var(--neutral-300)',
+                  overflow: 'auto',
+                  wordBreak: 'break-word',
+                }}
               >
                 <UIText kind="small/regular" style={{ whiteSpace: 'pre-wrap' }}>
                   {messageUtf8}
