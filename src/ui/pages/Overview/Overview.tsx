@@ -337,6 +337,7 @@ function OverviewComponent() {
       <PageFullBleedColumn
         paddingInline={false}
         style={{
+          position: 'relative',
           flexGrow: 1,
           display: 'flex',
           flexDirection: 'column',
@@ -354,6 +355,7 @@ function OverviewComponent() {
                 delay={16}
               >
                 <ViewSuspense>
+                  <Spacer height={24} />
                   <Positions
                     chain={preferences.overviewChain}
                     onChainChange={setChain}
@@ -362,7 +364,15 @@ function OverviewComponent() {
               </DelayedRender>
             }
           />
-          <Route path="/nfts" element={<NonFungibleTokens />} />
+          <Route
+            path="/nfts"
+            element={
+              <>
+                <Spacer height={24} />
+                <NonFungibleTokens />
+              </>
+            }
+          />
           <Route
             path="/history"
             element={
