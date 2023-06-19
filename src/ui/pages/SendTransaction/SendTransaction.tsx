@@ -140,6 +140,11 @@ function setParams(params: URLSearchParams, values: Record<string, string>) {
   return newParams;
 }
 
+enum View {
+  default = 'default',
+  advanced = 'advanced',
+}
+
 function SendTransactionContent({
   transactionStringified,
   origin,
@@ -266,14 +271,14 @@ function SendTransactionContent({
 
   const { data: chainGasPrices } = useGasPrices(chain);
 
-  const view = params.get('view') || 'default';
+  const view = params.get('view') || View.default;
   const transactionFormatted = useMemo(
     () => JSON.stringify(JSON.parse(transactionStringified), null, 2),
     [transactionStringified]
   );
 
   const advancedViewHref = useMemo(
-    () => `?${setParams(params, { view: 'advanced' }).toString()}`,
+    () => `?${setParams(params, { view: View.advanced }).toString()}`,
     [params]
   );
 
@@ -306,7 +311,7 @@ function SendTransactionContent({
         }}
       >
         <>
-          {view === 'default' ? (
+          {view === View.default ? (
             <>
               <PageTop />
               <div style={{ display: 'grid', placeItems: 'center' }}>
@@ -426,7 +431,7 @@ function SendTransactionContent({
               ) : null}
             </>
           ) : null}
-          {view === 'advanced' ? (
+          {view === View.advanced ? (
             <>
               <NavigationBar title="Data to Sign" />
               <PageTop />
