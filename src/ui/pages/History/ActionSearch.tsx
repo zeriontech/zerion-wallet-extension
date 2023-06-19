@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useRef } from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
 import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
 
@@ -12,10 +12,7 @@ export function ActionSearch({
   onChange(value: string): void;
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const debouncedHandleChange = useDebouncedCallback(
-    useCallback((v: string) => onChange(v), [onChange]),
-    300
-  );
+  const debouncedHandleChange = useDebouncedCallback(onChange, 300);
 
   useLayoutEffect(() => {
     if (inputRef.current) {
