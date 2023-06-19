@@ -514,14 +514,16 @@ export function SendTransaction() {
   if (isLoading || !wallet) {
     return null;
   }
+
   const origin = params.get('origin');
-  if (!origin) {
-    throw new Error('origin get-parameter is required for this view');
-  }
+  invariant(origin, 'origin get-parameter is required for this view');
+
   const transactionStringified = params.get('transaction');
-  if (!transactionStringified) {
-    throw new Error('transaction get-parameter is required for this view');
-  }
+  invariant(
+    transactionStringified,
+    'transaction get-parameter is required for this view'
+  );
+
   const next = params.get('next');
 
   return (
