@@ -1,5 +1,10 @@
 import { STANDARD_ERROR_MAP } from '@json-rpc-tools/utils';
 
+/**
+ * Provider Errors: https://eips.ethereum.org/EIPS/eip-1193#provider-errors
+ * RPC Errors: https://eips.ethereum.org/EIPS/eip-1474#error-codes
+ */
+
 export type ExtendedError = Error & { code?: number; data?: string };
 
 export class ErrorWithEnumerableMessage extends Error {
@@ -17,6 +22,8 @@ export function domExceptionToError(error: DOMException) {
   return new ErrorWithEnumerableMessage(message);
 }
 
+/** RPC Errors */
+
 export class InvalidParams extends ErrorWithEnumerableMessage {
   code = STANDARD_ERROR_MAP.INVALID_PARAMS.code;
 
@@ -25,18 +32,32 @@ export class InvalidParams extends ErrorWithEnumerableMessage {
   }
 }
 
-export class OriginNotAllowed extends ErrorWithEnumerableMessage {
-  code = -32011;
+export class MethodNotFound extends ErrorWithEnumerableMessage {
+  code = STANDARD_ERROR_MAP.METHOD_NOT_FOUND.code;
 
-  constructor(
-    message = 'Origin Not Allowed: Try calling eth_requestAccounts first.'
-  ) {
+  constructor(message = STANDARD_ERROR_MAP.METHOD_NOT_FOUND.message) {
+    super(message);
+  }
+}
+export class MethodNotImplemented extends ErrorWithEnumerableMessage {
+  code = -32004;
+
+  constructor(message = 'Method not supported') {
     super(message);
   }
 }
 
+export class RecordNotFound extends ErrorWithEnumerableMessage {
+  code = STANDARD_ERROR_MAP.INTERNAL_ERROR.code;
+  constructor(message = 'Record not found') {
+    super(message);
+  }
+}
+
+/** Wallet Errors */
+
 export class UserRejected extends ErrorWithEnumerableMessage {
-  code = -32010;
+  code = 4001; // User Rejected Request; The user rejected the request
 
   constructor(message = 'Rejected by User') {
     super(message);
@@ -51,17 +72,20 @@ export class UserRejectedTxSignature extends ErrorWithEnumerableMessage {
   }
 }
 
-export class MethodNotImplemented extends ErrorWithEnumerableMessage {
-  code = -32601;
+export class OriginNotAllowed extends ErrorWithEnumerableMessage {
+  code = 4100; // Unauthorized; The requested method and/or account has not been authorized by the user
 
-  constructor(message = 'Method not implemented') {
+  constructor(
+    message = 'Origin Not Allowed: Try calling eth_requestAccounts first.'
+  ) {
     super(message);
   }
 }
 
-export class RecordNotFound extends ErrorWithEnumerableMessage {
-  code = -32602;
-  constructor(message = 'Record not found') {
+export class SwitchChainError extends ErrorWithEnumerableMessage {
+  code = 4902;
+
+  constructor(message = 'Chain not configured') {
     super(message);
   }
 }
