@@ -7,7 +7,8 @@ import { wait } from 'src/shared/wait';
 export async function getTransactionCount(
   address: string,
   chain: Chain,
-  networks: Networks
+  networks: Networks,
+  defaultBlock: 'latest' | 'earliest' | 'pending' | 'genesis' = 'latest'
 ) {
   const url = networks.getRpcUrlInternal(chain);
 
@@ -17,7 +18,7 @@ export async function getTransactionCount(
 
   const { result } = await sendRpcRequest<string>(url, {
     method: 'eth_getTransactionCount',
-    params: [address, 'latest'],
+    params: [address, defaultBlock],
   });
   return { value: result, source: new URL(url).origin };
 }

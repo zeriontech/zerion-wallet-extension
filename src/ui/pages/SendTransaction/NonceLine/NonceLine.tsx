@@ -143,7 +143,7 @@ export function NonceLine({
       if (!networks) {
         return;
       }
-      return getTransactionCount(from, chain, networks);
+      return getTransactionCount(from, chain, networks, 'pending');
     },
     useErrorBoundary: false,
     enabled: Boolean(networks),
