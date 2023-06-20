@@ -3,7 +3,6 @@ import produce from 'immer';
 import omit from 'lodash/omit';
 import type { Networks } from 'src/modules/networks/Networks';
 import { sendRpcRequest } from 'src/shared/custom-rpc/rpc-request';
-import { invariant } from 'src/shared/invariant';
 import { createChain } from 'src/modules/networks/Chain';
 import type { IncomingTransaction } from '../types/IncomingTransaction';
 import { assignChainGasPrice } from './gasPrices/assignGasPrice';
@@ -12,12 +11,7 @@ import { getGas } from './getGas';
 import type { ChainGasPrice } from './gasPrices/requests';
 import { fetchGasPrice } from './gasPrices/requests';
 import { wrappedGetNetworkById } from './wrappedGetNetworkById';
-
-function resolveChainId(transaction: IncomingTransaction) {
-  const { chainId: incomingChainId } = transaction;
-  invariant(incomingChainId, 'Transaction object must have a chainId property');
-  return ethers.utils.hexValue(incomingChainId);
-}
+import { resolveChainId } from './resolveChainId';
 
 function add10Percent(value: number) {
   return Math.round(value * 1.1); // result must be an integer
