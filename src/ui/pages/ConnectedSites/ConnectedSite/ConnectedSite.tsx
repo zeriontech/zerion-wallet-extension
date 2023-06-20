@@ -40,6 +40,7 @@ import { Toggle } from 'src/ui/ui-kit/Toggle';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import { reloadActiveTab } from 'src/ui/shared/reloadActiveTab';
 import { CurrentNetworkSettingsItem } from '../../Networks/CurrentNetworkSettingsItem';
+import { isConnectableDapp } from '../shared/isConnectableDapp';
 import { ConnectToDappButton } from './ConnectToDappButton';
 
 function useRemovePermissionMutation({ onSuccess }: { onSuccess: () => void }) {
@@ -112,19 +113,14 @@ export function ConnectedSite() {
     queryFn: getPermissionsWithWallets,
     useErrorBoundary: true,
   });
-  const { data: flaggedAsDapp } = useQuery({
-    queryKey: [`wallet/isFlaggedAsDapp(${originName})`],
-    queryFn: () =>
-      walletPort.request('isFlaggedAsDapp', { origin: originName }),
-  });
   const connectedSite = useMemo(() => {
     const found = connectedSites?.find((site) => site.origin === originName);
     if (found) {
       return found;
-    } else if (flaggedAsDapp) {
+    } else if (isConnectableDapp(new URL(originName))) {
       return createConnectedSite({ origin: originName });
     }
-  }, [connectedSites, flaggedAsDapp, originName]);
+  }, [connectedSites, originName]);
   const siteOrigin = connectedSite?.origin;
   const connectedSiteOriginForHref = useMemo(
     () => (siteOrigin ? prepareForHref(siteOrigin) : null),

@@ -1,10 +1,9 @@
 import { useAddressPortfolioDecomposition } from 'defi-sdk';
-import React, { useMemo, useRef } from 'react';
+import React, { useRef } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { getNameFromOrigin } from 'src/shared/dapps';
-import { invariant } from 'src/shared/invariant';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
 import { NetworkSelectDialog } from 'src/ui/components/NetworkSelectDialog';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
@@ -19,6 +18,7 @@ import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog'
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { isConnectableDapp } from '../../ConnectedSites/shared/isConnectableDapp';
 import * as s from './styles.module.css';
 
 export function CurrentNetwork({ address }: { address: string }) {
@@ -32,14 +32,6 @@ export function CurrentNetwork({ address }: { address: string }) {
   });
   const tabOrigin = tabData?.tabOrigin;
   const { data: isConnected } = useIsConnectedToActiveTab(address);
-  const { data: flaggedAsDapp } = useQuery({
-    queryKey: [`wallet/isFlaggedAsDapp(${tabOrigin})`],
-    queryFn: () => {
-      invariant(tabOrigin, 'tabOrigin must be defined');
-      return walletPort.request('isFlaggedAsDapp', { origin: tabOrigin });
-    },
-    enabled: Boolean(tabOrigin),
-  });
   const { data: siteChain, ...chainQuery } = useQuery({
     queryKey: [`wallet/requestChainForOrigin(${tabOrigin})`],
     queryFn: async () =>
@@ -58,23 +50,15 @@ export function CurrentNetwork({ address }: { address: string }) {
     useErrorBoundary: true,
     onSuccess: () => chainQuery.refetch(),
   });
-  const { data: permissions } = useQuery({
-    queryKey: ['wallet/getOriginPermissions'],
-    queryFn: () => walletPort.request('getOriginPermissions'),
-    useErrorBoundary: true,
-  });
 
   const ref = useRef<HTMLDialogElementInterface | null>(null);
-  const hasSomePermissions = useMemo(() => {
-    return tabOrigin && permissions?.[tabOrigin];
-  }, [permissions, tabOrigin]);
 
   const { networks } = useNetworks();
 
   if (!networks || !siteChain || !tabOrigin) {
     return null;
   }
-  if (!hasSomePermissions && !flaggedAsDapp) {
+  if (!isConnectableDapp(tabData.url)) {
     return null;
   }
 
