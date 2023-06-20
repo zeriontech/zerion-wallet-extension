@@ -1,5 +1,6 @@
 import type { ErrorResponse, JsonRpcRequest } from '@json-rpc-tools/utils';
 import { isJsonRpcPayload, isJsonRpcRequest } from '@json-rpc-tools/utils';
+import { isObj } from '../isObj';
 
 export interface RpcRequest<T = unknown> {
   id: string;
@@ -15,10 +16,6 @@ export interface RpcResult<T = unknown> {
 export interface RpcError {
   id: string;
   error: ErrorResponse;
-}
-
-export function isObj(x: unknown): x is Record<string, unknown> {
-  return typeof x === 'object' && x != null;
 }
 
 export function isRpcResult<T = unknown>(
