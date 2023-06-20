@@ -137,21 +137,15 @@ export function NonceLine({
 }) {
   const { networks } = useNetworks();
   const { from } = transaction;
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['getTransactionCount', networks, from, chain],
     queryFn: async () => {
       if (!networks) {
         return;
       }
-      try {
-        const result = await getTransactionCount(from, chain, networks);
-        return result;
-      } catch (e) {
-        // If node fails to respond to a nonce query, user can still set custom nonce,
-        // and can still submit TX without specifying nonce. So we don't need to crash the UI
-        return null;
-      }
+      return getTransactionCount(from, chain, networks);
     },
+    useErrorBoundary: false,
     enabled: Boolean(networks),
     suspense: true,
   });
@@ -193,7 +187,9 @@ export function NonceLine({
           }}
         >
           <UIText kind="small/accent">
-            {isLoading ? (
+            {isError ? (
+              'Unable to get nonce'
+            ) : isLoading ? (
               <DelayedRender>{displayValue}</DelayedRender>
             ) : (
               displayValue
