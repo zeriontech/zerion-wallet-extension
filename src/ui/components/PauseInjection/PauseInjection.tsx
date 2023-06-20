@@ -43,10 +43,10 @@ interface SubmitData {
 }
 
 function PauseInjectionDialog({
-  activeTabOrigin,
+  activeTabUrl,
   onSubmit,
 }: {
-  activeTabOrigin: string | null;
+  activeTabUrl: URL | null;
   onSubmit: (data: SubmitData) => void;
 }) {
   const options: Array<{
@@ -54,17 +54,17 @@ function PauseInjectionDialog({
     label: string;
     defaultChecked: boolean;
   }> = [];
-  if (activeTabOrigin) {
+  if (activeTabUrl) {
     options.push({
-      value: activeTabOrigin,
-      label: `For ${new URL(activeTabOrigin).hostname}`,
+      value: activeTabUrl.origin,
+      label: `For ${activeTabUrl.hostname}`,
       defaultChecked: true,
     });
   }
   options.push({
     value: '<all_urls>',
     label: 'For all DApps',
-    defaultChecked: !activeTabOrigin,
+    defaultChecked: !activeTabUrl,
   });
   const buttons = [
     {
@@ -109,9 +109,10 @@ function PauseInjectionDialog({
     <div
       style={{
         position: 'relative',
-        height: '100%',
+        minHeight: '100%',
         display: 'flex',
         flexDirection: 'column',
+        gap: 24,
       }}
     >
       <div>
@@ -126,8 +127,10 @@ function PauseInjectionDialog({
           }
           vGap={0}
           detailText={
-            activeTabOrigin ? (
-              <UIText kind="headline/h3">for {activeTabOrigin}</UIText>
+            activeTabUrl ? (
+              <UIText kind="headline/h3" style={{ wordBreak: 'break-all' }}>
+                for {`${activeTabUrl.hostname}`}
+              </UIText>
             ) : null
           }
         />
@@ -151,7 +154,9 @@ function PauseInjectionDialog({
                         alignItems="center"
                         justifyContent="space-between"
                       >
-                        <span>{option.label}</span>
+                        <span style={{ wordBreak: 'break-all' }}>
+                          {option.label}
+                        </span>
                         <Radio
                           name="origin"
                           value={option.value}
@@ -297,7 +302,7 @@ export function PauseInjectionControl() {
         }}
       >
         <PauseInjectionDialog
-          activeTabOrigin={tabUrl?.origin || null}
+          activeTabUrl={tabUrl || null}
           onSubmit={(formData) => {
             setGlobalPreferences(
               createPreference(globalPreferences, formData)
