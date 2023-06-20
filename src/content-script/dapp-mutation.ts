@@ -12,9 +12,18 @@ function visitTextNodes(node: Element, cb: (node: Node) => boolean) {
 // const labels = [/\bMeta[mM]ask\b/, /\bInjected Wallet\b/, ...],
 // which is more readable. But I measured in a couple of benchmarks and it seems
 // to perform slightly slower in Chrome and *much* slower in Safari
+
+const injectedRegexes: Record<string, RegExp> = {
+  default:
+    /\b(Injected Wallet|Injected|Detected Wallet|Browser Wallet|Web3 Wallet)\b/i,
+  'https://app.1inch.io':
+    /\b(Web3|Injected Wallet|Injected|Detected Wallet|Browser Wallet|Web3 Wallet)\b/i,
+};
+
 const labelsInjectedRe =
-  /\b(Injected Wallet|Injected|Detected Wallet|Browser Wallet|Web3 Wallet)\b/i;
+  injectedRegexes[window.location.origin] || injectedRegexes.default;
 const labelsMetamaskRe = /\bMeta[mM]ask\b/;
+const zerionRe = /zerion/i;
 
 function isReplacementMatch(textNode: Node, regex: RegExp) {
   const { textContent } = textNode;
@@ -108,8 +117,10 @@ function rewriteConnectButtons(
   );
 
   type Item = { element: HTMLElement; textNode: Node };
+  const injectedCandidates: Item[] = [];
   const metamaskCandidates: Item[] = [];
   let didMutateSomething = false;
+  let foundZerionText = false;
 
   function mutateButton(element: HTMLElement, textNode: Node, regex: RegExp) {
     replaceButtonLabel(textNode, regex);
@@ -135,11 +146,19 @@ function rewriteConnectButtons(
       replaceButtonImage(element, context);
     } else {
       /**
-       * - if we find metamask button, save it to list of candidates,
-       * - if we find injected button, mutate it immediately
+       * - if we find metamask button, save it to list of metamask candidates,
+       * - if we find injected button, save it to list of injected candidates,
+       * - if we find "zerion" text button, ignore candidates
        * This is to avoid mutating both Metamask and Injected buttons to Zerion
+       * and to avoid mutating Injected buttons when Zerion button exitst
        */
       visitTextNodes(element, (textNode) => {
+        const matchesZerion = isReplacementMatch(textNode, zerionRe);
+
+        if (matchesZerion) {
+          foundZerionText = true;
+          return true;
+        }
         const matchesInjected = isReplacementMatch(textNode, labelsInjectedRe);
         const matchesMetamask = isReplacementMatch(textNode, labelsMetamaskRe);
 
@@ -147,8 +166,7 @@ function rewriteConnectButtons(
           metamaskCandidates.push({ element, textNode });
         }
         if (matchesInjected) {
-          mutateButton(element, textNode, labelsInjectedRe);
-          return true;
+          injectedCandidates.push({ element, textNode });
         }
         return false;
       });
@@ -156,6 +174,12 @@ function rewriteConnectButtons(
   }
   for (const element of buttonLikeElements) {
     analyzeElement(element);
+  }
+  if (foundZerionText) {
+    return;
+  }
+  for (const item of injectedCandidates) {
+    mutateButton(item.element, item.textNode, labelsInjectedRe);
   }
   if (!didMutateSomething) {
     for (const item of metamaskCandidates) {
