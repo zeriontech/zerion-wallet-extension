@@ -10,7 +10,9 @@ export function TotalLine({
 }: {
   transactionFee: TransactionFee;
 }) {
-  const { totalValueFiat, totalValueCommon, nativeAsset } = transactionFee;
+  // TODO: refactor, nativeAsset might be null, but we may still know nativeAssetSymbol
+  const { costs, nativeAsset } = transactionFee;
+  const { totalValueFiat, totalValueCommon } = costs || {};
   let valueElement: JSX.Element | null = null;
   if (totalValueFiat) {
     valueElement = (

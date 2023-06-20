@@ -17,6 +17,7 @@ import { noValueDash } from 'src/ui/shared/typography';
 import { InnerLabelInput } from 'src/ui/ui-kit/Input/InnerLabelInput';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { collectData } from 'src/ui/shared/form-data';
+import { DelayedRender } from 'src/ui/components/DelayedRender';
 
 function parseNonce(untypedValue: unknown) {
   const value = untypedValue as string;
@@ -136,11 +137,23 @@ export function NonceLine({
 }) {
   const { networks } = useNetworks();
   const { from } = transaction;
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['getTransactionCount', networks, from, chain],
-    queryFn: async () =>
-      networks ? getTransactionCount(from, chain, networks) : undefined,
+    queryFn: async () => {
+      if (!networks) {
+        return;
+      }
+      try {
+        const result = await getTransactionCount(from, chain, networks);
+        return result;
+      } catch (e) {
+        // If node fails to respond to a nonce query, user can still set custom nonce,
+        // and can still submit TX without specifying nonce. So we don't need to crash the UI
+        return null;
+      }
+    },
     enabled: Boolean(networks),
+    suspense: true,
   });
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const nonce = data?.value;
@@ -179,7 +192,13 @@ export function NonceLine({
             dialogRef.current?.showModal();
           }}
         >
-          <UIText kind="small/accent">{displayValue}</UIText>
+          <UIText kind="small/accent">
+            {isLoading ? (
+              <DelayedRender>{displayValue}</DelayedRender>
+            ) : (
+              displayValue
+            )}
+          </UIText>
         </UnstyledButton>
       </HStack>
     </>

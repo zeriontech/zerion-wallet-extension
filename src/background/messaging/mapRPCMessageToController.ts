@@ -10,6 +10,8 @@ import { formatJsonRpcWalletError } from 'src/shared/formatJsonRpcWalletError';
 import { isClassProperty } from 'src/shared/core/isClassProperty';
 import { domExceptionToError, MethodNotFound } from 'src/shared/errors/errors';
 import { getError } from 'src/shared/errors/getError';
+import { SLOW_MODE } from 'src/env/config';
+import { wait } from 'src/shared/wait';
 import type { PortContext } from './PortContext';
 
 /**
@@ -45,6 +47,7 @@ export function mapRPCMessageToController<T>(
       .call(controller, { params, context })
       // "slow mode" or "slow network" simulation, useful for debugging UI
       // .then((result) => new Promise((r) => setTimeout(() => r(result), 1000)))
+      .then((result: unknown) => (SLOW_MODE ? wait(1000, result) : result))
       .then(
         (result: unknown) => {
           return formatJsonRpcResultForPort(id, result);

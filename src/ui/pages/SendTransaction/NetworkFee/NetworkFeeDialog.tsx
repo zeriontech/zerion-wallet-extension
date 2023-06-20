@@ -32,10 +32,7 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { invariant } from 'src/shared/invariant';
-import {
-  useFeeEstimation,
-  useTransactionPrices,
-} from '../TransactionConfiguration/useTransactionFee';
+import { useTransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import type { NetworkFeeConfiguration, NetworkFeeSpeed } from './types';
 import { NetworkFeeIcon } from './NetworkFeeIcon';
 import { NETWORK_SPEED_TO_TITLE } from './constants';
@@ -322,32 +319,25 @@ function NetworkFeeButton({
   transaction: IncomingTransaction;
 }) {
   const { networks } = useNetworks();
-  const configurationWithOption = useMemo(() => {
+  const speedConfiguration = useMemo(() => {
     return {
       ...networkFeeConfiguration,
       speed: option,
     };
   }, [networkFeeConfiguration, option]);
 
-  const { data, isLoading: isLoadingFeeEstimation } = useFeeEstimation(
+  const { costs, costsQuery } = useTransactionFee({
     chain,
     transaction,
-    configurationWithOption
-  );
-  const feeEstimation = data?.feeEstimation;
-
-  const {
-    feeValueFiat,
-    feeValueCommon,
-    isLoading: isTransactionPricesLoading,
-  } = useTransactionPrices(chain, transaction, feeEstimation);
+    networkFeeConfiguration: speedConfiguration,
+  });
+  const { feeValueFiat, feeValueCommon } = costs || {};
 
   const seconds =
     option !== 'custom'
       ? chainGasPrices?.info.eip1559?.[option]?.estimation_seconds
       : undefined;
 
-  const isLoading = isTransactionPricesLoading || isLoadingFeeEstimation;
   const selected = option === networkFeeConfiguration.speed;
   const nativeAssetSymbol =
     networks?.getNetworkByName(chain)?.native_asset?.symbol;
@@ -380,7 +370,7 @@ function NetworkFeeButton({
           vGap={0}
           detailText={null}
         />
-        {isLoading ? (
+        {costsQuery.isLoading ? (
           <CircleSpinner />
         ) : feeValueFiat ? (
           <UIText

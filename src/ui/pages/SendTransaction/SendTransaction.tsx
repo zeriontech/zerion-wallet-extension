@@ -4,7 +4,10 @@ import { ethers } from 'ethers';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { incomingTransactionToIncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction';
-import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
+import type {
+  IncomingTransaction,
+  IncomingTransactionWithChainId,
+} from 'src/modules/ethereum/types/IncomingTransaction';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -16,7 +19,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { Background } from 'src/ui/components/Background';
-import { FillView } from 'src/ui/components/FillView';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import type { Chain } from 'src/modules/networks/Chain';
@@ -82,18 +84,48 @@ function errorToMessage(error?: SendTransactionError) {
   }
 }
 
-async function resolveChainAndGas(
+async function resolveChain(
   transaction: IncomingTransaction,
   currentChain: Chain
-) {
+): Promise<PartiallyRequired<IncomingTransaction, 'chainId'>> {
   const networks = await networksStore.load();
   const chain = resolveChainForTx(transaction, currentChain, networks);
   const chainId = networks.getChainId(chain);
-  const copyWithChainId: PartiallyRequired<IncomingTransaction, 'chainId'> = {
-    ...transaction,
-    chainId,
+  return { ...transaction, chainId };
+}
+
+async function resolveGas(transaction: IncomingTransactionWithChainId) {
+  const networks = await networksStore.load();
+  return await prepareGasAndNetworkFee(transaction, networks);
+}
+
+function usePreparedTx(transaction: IncomingTransaction, origin: string) {
+  /**
+   * We _cannot_ proceed without resolving chain id,
+   * but we _can_ proceed without resolving network fee.
+   * This is why one query uses suspense: true and another suspense: false
+   */
+  const resolveChainQuery = useQuery({
+    queryKey: ['resolveChain', transaction, origin],
+    queryFn: async () => {
+      const currentChain = await walletPort.request('requestChainForOrigin', {
+        origin,
+      });
+      return resolveChain(transaction, createChain(currentChain));
+    },
+  });
+  const withChainId = resolveChainQuery.data;
+  const resolveGasQuery = useQuery({
+    queryKey: ['resolveGas', withChainId],
+    queryFn: async () => (withChainId ? resolveGas(withChainId) : null),
+    enabled: Boolean(withChainId),
+    useErrorBoundary: true,
+    suspense: false,
+  });
+  return {
+    incomingTransactionWithChainId: withChainId,
+    pendingTransaction: resolveGasQuery.data,
   };
-  return await prepareGasAndNetworkFee(copyWithChainId, networks);
 }
 
 function useErrorBoundary() {
@@ -115,21 +147,6 @@ const DEFAULT_CONFIGURATION: CustomConfiguration = {
     customClassicGasPrice: null,
   },
 };
-
-function TransactionViewLoading() {
-  return (
-    <FillView>
-      <VStack gap={4} style={{ placeItems: 'center' }}>
-        <CircleSpinner color="var(--primary)" size="66px" />
-        <Spacer height={18} />
-        <UIText kind="headline/h2">Loading</UIText>
-        <UIText kind="body/regular" color="var(--neutral-500)">
-          This may take a few seconds
-        </UIText>
-      </VStack>
-    </FillView>
-  );
-}
 
 /** Creates new URLSearchParams instance, new keys overwrite existing ones */
 function setParams(params: URLSearchParams, values: Record<string, string>) {
@@ -173,47 +190,34 @@ function SendTransactionContent({
     navigate(-1);
   };
 
-  const { data: pendingTransaction } = useQuery({
-    queryKey: ['setTransactionChainIdAndGasPrice', incomingTransaction, origin],
-    queryFn: async () => {
-      const currentChain = await walletPort.request('requestChainForOrigin', {
-        origin,
-      });
-      return resolveChainAndGas(incomingTransaction, createChain(currentChain));
+  const { pendingTransaction, incomingTransactionWithChainId } = usePreparedTx(
+    incomingTransaction,
+    origin
+  );
+
+  const transaction = pendingTransaction || incomingTransactionWithChainId;
+
+  const { data: localAddressAction, ...localAddressActionQuery } = useQuery({
+    queryKey: ['pendingTransactionToAddressAction', transaction, networks],
+    queryFn: () => {
+      return transaction && networks
+        ? incomingTransactionToIncomingAddressAction(
+            {
+              transaction,
+              hash: '',
+              timestamp: 0,
+            },
+            networks
+          )
+        : null;
     },
+    enabled: Boolean(transaction) && Boolean(networks),
     useErrorBoundary: true,
     retry: false,
     refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
   });
-
-  const { data: localAddressAction, isLoading: isLoadingLocalAddressAction } =
-    useQuery({
-      queryKey: [
-        'pendingTransactionToAddressAction',
-        pendingTransaction,
-        networks,
-      ],
-      queryFn: () => {
-        return pendingTransaction && networks
-          ? incomingTransactionToIncomingAddressAction(
-              {
-                transaction: pendingTransaction,
-                hash: '',
-                timestamp: 0,
-              },
-              networks
-            )
-          : null;
-      },
-      enabled: Boolean(pendingTransaction) && Boolean(networks),
-      useErrorBoundary: true,
-      retry: false,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
-    });
 
   const { data: interpretation, ...interpretQuery } = useQuery({
     queryKey: ['interpretTransaction', pendingTransaction, singleAddress],
@@ -265,8 +269,8 @@ function SendTransactionContent({
   const originForHref = useMemo(() => prepareForHref(origin), [origin]);
 
   const chain =
-    pendingTransaction && networks
-      ? networks.getChainById(ethers.utils.hexValue(pendingTransaction.chainId))
+    transaction && networks
+      ? networks.getChainById(ethers.utils.hexValue(transaction.chainId))
       : null;
 
   const { data: chainGasPrices } = useGasPrices(chain);
@@ -282,17 +286,12 @@ function SendTransactionContent({
     [params]
   );
 
-  if (
-    !networks ||
-    !pendingTransaction ||
-    isLoadingLocalAddressAction ||
-    !chain
-  ) {
-    return <TransactionViewLoading />;
+  if (localAddressActionQuery.isSuccess && !localAddressAction) {
+    throw new Error('Unexpected missing localAddressAction');
   }
 
-  if (!localAddressAction) {
-    throw new Error('Unexpected missing localAddressAction');
+  if (!networks || !chain || !localAddressAction) {
+    return null;
   }
 
   const addressAction = interpretAddressAction || localAddressAction;
@@ -418,14 +417,22 @@ function SendTransactionContent({
                       </UIText>
                     )}
                   >
-                    <TransactionConfiguration
-                      transaction={pendingTransaction}
-                      from={wallet.address}
-                      chain={chain}
-                      onFeeValueCommonReady={handleFeeValueCommonReady}
-                      configuration={configuration}
-                      onConfigurationChange={setConfiguration}
-                    />
+                    <React.Suspense
+                      fallback={
+                        <div style={{ display: 'flex', justifyContent: 'end' }}>
+                          <CircleSpinner />
+                        </div>
+                      }
+                    >
+                      <TransactionConfiguration
+                        transaction={pendingTransaction}
+                        from={wallet.address}
+                        chain={chain}
+                        onFeeValueCommonReady={handleFeeValueCommonReady}
+                        configuration={configuration}
+                        onConfigurationChange={setConfiguration}
+                      />
+                    </React.Suspense>
                   </ErrorBoundary>
                 </div>
               ) : null}
