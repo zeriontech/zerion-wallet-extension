@@ -24,7 +24,7 @@ export async function estimateNetworkFee({
 }: {
   address: string | null;
   gas: string | number | null;
-  gasPrices: ChainGasPrice | null /** it is possible to estimate classic fee is gasPrices is null */;
+  gasPrices: ChainGasPrice | null /** it is possible to estimate classic fee if gasPrices is null */;
   gasPrice: GasPriceObject | null;
   transaction: IncomingTransaction | null;
   getNonce: (address: string, chainId: string) => Promise<number>;
