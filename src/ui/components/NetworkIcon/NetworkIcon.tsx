@@ -30,6 +30,7 @@ function TextFallback({
     <UIText
       aria-hidden={true}
       kind="body/regular"
+      title={name || undefined}
       style={{
         userSelect: 'none',
         backgroundColor: 'var(--neutral-300)',
@@ -50,7 +51,7 @@ function TextFallback({
 }
 export function NetworkIcon({ src, chainId, name, size = 32, style }: Props) {
   return src ? (
-    <div style={{ width: size, height: size }}>
+    <div style={{ width: size, height: size }} title={name || undefined}>
       <Image
         src={src}
         alt=""

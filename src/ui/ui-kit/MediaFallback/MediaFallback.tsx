@@ -34,6 +34,11 @@ function MediaFallback<T extends ImageProps | AudioProps | VideoProps>({
     <>
       {React.createElement(type, {
         ...props,
+        style: {
+          ...props.style,
+          // to avoid failed state blink
+          opacity: loading ? 0.01 : props.style?.opacity || 1,
+        },
         onError: () => setIsError(true),
         onLoad: () => setIsLoading(false),
         onLoadedData: () => setIsLoading(false),

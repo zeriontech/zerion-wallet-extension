@@ -38,8 +38,7 @@ export function TokenIcon({ src, symbol, size = 32, style, title }: Props) {
       style={{
         width: size,
         height: size,
-        borderRadius: '50%',
-        overflow: 'hidden',
+        display: 'block',
         ...style,
       }}
       renderError={() => fallback}
