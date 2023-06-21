@@ -120,8 +120,8 @@ export class TransactionsPoller {
       const { chainId, hash } = value;
       const rpcUrl = networks.getRpcUrlInternal(networks.getChainById(chainId));
       return Promise.all([
-        this.getTransactionCount(rpcUrl, value.from).then((nonce) =>
-          this.handleNonce(nonce, value)
+        this.getTransactionCount(rpcUrl, value.from).then((count) =>
+          this.handleTransactionCount(count, value)
         ),
         this.getTransactionReceipt(rpcUrl, hash).then((receipt) =>
           this.handleReceipt(receipt)
@@ -159,12 +159,13 @@ export class TransactionsPoller {
     this.emitter.emit('mined', receipt);
   }
 
-  private handleNonce(nonce: number, value: PollingTx) {
+  private handleTransactionCount(count: number, value: PollingTx) {
+    const latestNonce = count - 1;
     for (const tx of this.hashes.values()) {
       if (
         tx.from === value.from &&
         tx.chainId === value.chainId &&
-        tx.nonce < nonce
+        tx.nonce < latestNonce
       ) {
         this.emitter.emit('dropped', tx.hash);
         this.hashes.delete(tx.hash);
