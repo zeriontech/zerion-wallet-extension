@@ -9,9 +9,6 @@ import { createChain } from 'src/modules/networks/Chain';
 export const getProtocolIconURL = (protocol: string) =>
   `https://protocol-icons.s3.amazonaws.com/${protocol.replace(/\s/g, '+')}.png`;
 
-export const getChainIconURL = (chain: string) =>
-  `https://chain-icons.s3.amazonaws.com/${chain.toLowerCase()}.png`;
-
 export type ProtocolFrameColumns = 'price' | 'apy' | 'balance' | 'value' | '';
 
 export const positionTypeToStringMap: Record<PositionType, string> = {

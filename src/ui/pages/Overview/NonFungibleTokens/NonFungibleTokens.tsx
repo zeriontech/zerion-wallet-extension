@@ -20,13 +20,12 @@ import {
   useAddressNfts,
 } from 'src/ui/shared/requests/addressNfts/useAddressNfts';
 import type { AddressNFT } from 'src/ui/shared/requests/addressNfts/types';
-import { getChainIconURL } from 'src/ui/components/Positions/helpers';
 import { useNetworks } from 'src/modules/networks/useNetworks';
-import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { createChain } from 'src/modules/networks/Chain';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
 import * as s from './styles.module.css';
 
@@ -45,6 +44,8 @@ function NFTItem({
 
   const price = item.prices.converted?.total_floor_price;
   const { networks } = useNetworks();
+
+  const network = networks?.getNetworkByName(createChain(item.chain));
 
   return (
     <UnstyledLink
@@ -73,20 +74,25 @@ function NFTItem({
                   objectFit: 'cover',
                 }}
               />
-              <TokenIcon
-                symbol={item.chain}
-                size={12}
-                title={networks?.getChainName(createChain(item.chain))}
-                src={getChainIconURL(item.chain)}
-                style={{
-                  borderRadius: 4,
-                  overflow: 'hidden',
-                  position: 'absolute',
-                  bottom: 8,
-                  left: 8,
-                  border: '1px solid var(--white)',
-                }}
-              />
+              {network ? (
+                <div
+                  style={{
+                    borderRadius: 5,
+                    overflow: 'hidden',
+                    position: 'absolute',
+                    bottom: 8,
+                    left: 8,
+                    border: '1px solid var(--white)',
+                  }}
+                >
+                  <NetworkIcon
+                    chainId={network.external_id}
+                    size={12}
+                    name={network.name}
+                    src={network.icon_url}
+                  />
+                </div>
+              ) : null}
             </>
           )}
         />
