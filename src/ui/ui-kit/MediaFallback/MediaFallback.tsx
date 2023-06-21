@@ -37,9 +37,12 @@ function MediaFallback<T extends ImageProps | AudioProps | VideoProps>({
         style: {
           ...props.style,
           // to avoid failed state blink
-          opacity: loading ? 0 : props.style?.opacity || 1,
+          opacity: loading ? 0 : props.style?.opacity ?? undefined,
         },
-        onError: () => setIsError(true),
+        onError: () => {
+          setIsError(true);
+          setIsLoading(false);
+        },
         onLoad: () => setIsLoading(false),
         onLoadedData: () => setIsLoading(false),
       })}
