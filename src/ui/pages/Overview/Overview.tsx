@@ -355,7 +355,6 @@ function OverviewComponent() {
                 delay={16}
               >
                 <ViewSuspense>
-                  <Spacer height={24} />
                   <Positions
                     chain={preferences.overviewChain}
                     onChainChange={setChain}
@@ -364,15 +363,7 @@ function OverviewComponent() {
               </DelayedRender>
             }
           />
-          <Route
-            path="/nfts"
-            element={
-              <>
-                <Spacer height={24} />
-                <NonFungibleTokens />
-              </>
-            }
-          />
+          <Route path="/nfts" element={<NonFungibleTokens />} />
           <Route
             path="/history"
             element={

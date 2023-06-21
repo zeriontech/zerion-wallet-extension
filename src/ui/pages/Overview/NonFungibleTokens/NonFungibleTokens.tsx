@@ -20,7 +20,6 @@ import {
   useAddressNfts,
 } from 'src/ui/shared/requests/addressNfts/useAddressNfts';
 import type { AddressNFT } from 'src/ui/shared/requests/addressNfts/types';
-import { Image } from 'src/ui/ui-kit/MediaFallback';
 import { getChainIconURL } from 'src/ui/components/Positions/helpers';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
@@ -74,10 +73,12 @@ function NFTItem({
                   objectFit: 'cover',
                 }}
               />
-              <Image
+              <TokenIcon
+                symbol={item.chain}
+                size={12}
+                title={networks?.getChainName(createChain(item.chain))}
+                src={getChainIconURL(item.chain)}
                 style={{
-                  width: 12,
-                  height: 12,
                   borderRadius: 4,
                   overflow: 'hidden',
                   position: 'absolute',
@@ -85,9 +86,6 @@ function NFTItem({
                   left: 8,
                   border: '1px solid var(--white)',
                 }}
-                title={networks?.getChainName(createChain(item.chain))}
-                src={getChainIconURL(item.chain)}
-                renderError={() => <TokenIcon symbol={item.chain} size={12} />}
               />
             </>
           )}

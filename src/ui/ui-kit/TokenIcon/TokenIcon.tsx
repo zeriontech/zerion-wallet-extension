@@ -1,4 +1,5 @@
 import React from 'react';
+import { Image } from 'src/ui/ui-kit/MediaFallback';
 import { UIText } from '../UIText';
 
 interface BaseProps {
@@ -6,19 +7,12 @@ interface BaseProps {
   symbol?: string;
   size?: number;
   style?: React.CSSProperties;
+  title?: string;
 }
 type Props = BaseProps & ({ src: string } | { symbol: string });
 
-export function TokenIcon({ src, symbol, size = 32, style }: Props) {
-  return src ? (
-    <div style={{ width: size, height: size }}>
-      <img
-        src={src}
-        alt=""
-        style={{ width: '100%', display: 'block', ...style }}
-      />
-    </div>
-  ) : (
+export function TokenIcon({ src, symbol, size = 32, style, title }: Props) {
+  const fallback = (
     <UIText
       kind="body/regular"
       style={{
@@ -35,5 +29,22 @@ export function TokenIcon({ src, symbol, size = 32, style }: Props) {
     >
       {symbol?.slice(0, 3).toLowerCase() || '?'}
     </UIText>
+  );
+  return src ? (
+    <Image
+      src={src}
+      alt=""
+      title={title}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        overflow: 'hidden',
+        ...style,
+      }}
+      renderError={() => fallback}
+    />
+  ) : (
+    fallback
   );
 }
