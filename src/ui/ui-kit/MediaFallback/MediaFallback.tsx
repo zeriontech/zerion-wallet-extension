@@ -15,10 +15,7 @@ function MediaFallback<T extends ImageProps | AudioProps | VideoProps>({
   renderLoading,
   ...props
 }: T & { type: 'img' | 'audio' | 'video' } & FallbackProps) {
-  const shouldConsiderLoadingState = Boolean(renderLoading);
-  const [loading, setIsLoading] = useState(
-    shouldConsiderLoadingState ? true : false
-  );
+  const [loading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const { src } = props;
 
