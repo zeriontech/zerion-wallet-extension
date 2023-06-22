@@ -199,9 +199,11 @@ $\
       ) {
         this.error |= SiweValidationError.addressMismatch;
       }
-      if (this.address && this.address !== toChecksumAddress(this.address)) {
-        this.error |= SiweValidationError.invalidAddress;
-      }
+      // Some dapps provide address in lowercase
+      // This does not correspond the specs but not so critical
+      // if (this.address && this.address !== toChecksumAddress(this.address)) {
+      //   this.error |= SiweValidationError.invalidAddress;
+      // }
     }
     if (!this.nonce) {
       this.error |= SiweValidationError.missingNonce;
