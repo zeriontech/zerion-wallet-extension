@@ -188,11 +188,12 @@ export function DnaPage() {
     [singleAddress]
   );
 
-  const { isLoading, time, feeValueFiat } = useTransactionFee({
+  const { time, costs, costsQuery } = useTransactionFee({
     transaction: mintTransaction,
     chain: createChain(NetworkId.Ethereum),
-    onFeeValueCommonReady: () => null,
+    networkFeeConfiguration: null,
   });
+  const feeValueFiat = costs?.totalValueFiat;
 
   const { value, isLoading: positionsAreLoading } = useAddressPositions(
     {
@@ -384,9 +385,9 @@ export function DnaPage() {
           <VStack gap={16}>
             <HStack gap={16} justifyContent="space-between" alignItems="center">
               <UIText kind="small/regular">Network fee</UIText>
-              {isLoading || feeValueFiat === undefined ? (
+              {costsQuery.isLoading ? (
                 <CircleSpinner size="12px" />
-              ) : feeValueFiat === null ? null : (
+              ) : feeValueFiat == null ? null : (
                 <UIText kind="small/accent">
                   {[time, formatCurrencyValue(feeValueFiat, 'en', 'usd')]
                     .filter(isTruthy)

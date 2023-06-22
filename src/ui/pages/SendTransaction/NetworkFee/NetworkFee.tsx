@@ -45,19 +45,14 @@ export function NetworkFee({
 }) {
   const { networks } = useNetworks();
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
-  const {
-    isLoading: isTransactionFeeLoading,
-    time,
-    feeValueCommon,
-    feeValueFiat,
-    feeEstimation,
-    isTransactionPricesLoading,
-    noFeeData,
-  } = transactionFee;
+  const { time, feeEstimation, feeEstimationQuery, costs, costsQuery } =
+    transactionFee;
+  const { feeValueFiat, feeValueCommon } = costs || {};
 
   const { data: chainGasPrices } = useGasPrices(chain);
 
-  const isLoading = isTransactionFeeLoading || isTransactionPricesLoading;
+  const isLoading = feeEstimationQuery.isLoading || costsQuery.isLoading;
+
   const nativeAssetSymbol =
     networks?.getNetworkByName(chain)?.native_asset?.symbol;
 
@@ -81,10 +76,7 @@ export function NetworkFee({
           Network Fee
         </UIText>
         {isLoading ? (
-          <CircleSpinner
-            // size of "small/accent"
-            size="20px"
-          />
+          <CircleSpinner />
         ) : feeValueFiat || feeValueCommon ? (
           <UnstyledButton
             className={disabled ? undefined : helperStyles.hoverUnderline}
@@ -129,7 +121,7 @@ export function NetworkFee({
                 .join(' · ')}
             </UIText>
           </UnstyledButton>
-        ) : noFeeData ? (
+        ) : feeEstimationQuery.isSuccess ? (
           <UIText kind="small/regular" title="No fee data">
             {noValueDash}
           </UIText>

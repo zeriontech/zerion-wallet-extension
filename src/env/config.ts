@@ -6,6 +6,7 @@ export const SOCIAL_API_URL = process.env.SOCIAL_API_URL;
 export const BACKEND_ENV = process.env.BACKEND_ENV;
 export const FEATURE_WAITLIST_ONBOARDING =
   process.env.FEATURE_WAITLIST_ONBOARDING;
+export const SLOW_MODE = false;
 
 if (!PROXY_URL) {
   throw new Error('PROXY_URL must be defined in ENV');

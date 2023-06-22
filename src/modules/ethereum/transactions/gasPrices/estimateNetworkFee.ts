@@ -24,15 +24,15 @@ export async function estimateNetworkFee({
 }: {
   address: string | null;
   gas: string | number | null;
-  gasPrices: ChainGasPrice | null;
+  gasPrices: ChainGasPrice | null /** it is possible to estimate classic fee if gasPrices is null */;
   gasPrice: GasPriceObject | null;
   transaction: IncomingTransaction | null;
   getNonce: (address: string, chainId: string) => Promise<number>;
 }): Promise<EstimatedFeeValue | null> {
-  if (!gasPrices || !gas || gas === '') {
+  if (!gas || gas === '') {
     return null;
   }
-  const { optimistic } = gasPrices.info;
+  const optimistic = gasPrices?.info.optimistic;
   const chainId = transaction ? resolveChainId(transaction) : null;
   const shouldTryOptimistic = Boolean(optimistic);
   const optimisticFee =
@@ -61,7 +61,7 @@ export async function estimateNetworkFee({
     return null;
   }
   const { eip1559, classic } = gasPrice;
-  if (eip1559 && gasPrices.info.eip1559) {
+  if (eip1559 && gasPrices?.info.eip1559) {
     const estimatedFee = estimateFee({
       gas,
       eip1559Base: getEip1559Base(eip1559, gasPrices.info.eip1559),
