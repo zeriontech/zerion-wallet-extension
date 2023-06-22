@@ -8,7 +8,7 @@ const fetchNonce = memoize(async (address: string, chainId: string) => {
   const networks = await networksStore.load();
   const chain = chainId ? networks.getChainById(chainId) : null;
   invariant(chain, `Chain not found for ${chainId}`);
-  const { value } = await getTransactionCount(address, chain, networks);
+  const { value } = await getTransactionCount({ address, chain, networks });
   return parseInt(value);
 });
 

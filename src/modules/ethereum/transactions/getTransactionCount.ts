@@ -4,11 +4,17 @@ import type { Networks } from 'src/modules/networks/Networks';
 import { sendRpcRequest } from 'src/shared/custom-rpc/rpc-request';
 import { wait } from 'src/shared/wait';
 
-export async function getTransactionCount(
-  address: string,
-  chain: Chain,
-  networks: Networks
-) {
+export async function getTransactionCount({
+  address,
+  chain,
+  networks,
+  defaultBlock = 'latest',
+}: {
+  address: string;
+  chain: Chain;
+  networks: Networks;
+  defaultBlock?: 'latest' | 'earliest' | 'pending' | 'genesis';
+}) {
   const url = networks.getRpcUrlInternal(chain);
 
   if (SLOW_MODE) {
@@ -17,7 +23,7 @@ export async function getTransactionCount(
 
   const { result } = await sendRpcRequest<string>(url, {
     method: 'eth_getTransactionCount',
-    params: [address, 'latest'],
+    params: [address, defaultBlock],
   });
   return { value: result, source: new URL(url).origin };
 }
