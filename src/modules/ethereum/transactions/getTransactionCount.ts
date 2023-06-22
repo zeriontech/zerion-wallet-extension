@@ -4,12 +4,17 @@ import type { Networks } from 'src/modules/networks/Networks';
 import { sendRpcRequest } from 'src/shared/custom-rpc/rpc-request';
 import { wait } from 'src/shared/wait';
 
-export async function getTransactionCount(
-  address: string,
-  chain: Chain,
-  networks: Networks,
-  defaultBlock: 'latest' | 'earliest' | 'pending' | 'genesis' = 'latest'
-) {
+export async function getTransactionCount({
+  address,
+  chain,
+  networks,
+  defaultBlock = 'latest',
+}: {
+  address: string;
+  chain: Chain;
+  networks: Networks;
+  defaultBlock?: 'latest' | 'earliest' | 'pending' | 'genesis';
+}) {
   const url = networks.getRpcUrlInternal(chain);
 
   if (SLOW_MODE) {
