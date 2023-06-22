@@ -1,20 +1,31 @@
+import { isObj } from 'src/shared/isObj';
 import type { ExtendedError } from './errors';
 import { getError } from './getError';
 
-export function getEthersError(error: unknown): ExtendedError {
-  if (
-    error instanceof Error &&
-    'body' in error &&
-    typeof error.body === 'string'
-  ) {
+function tryErrorBody(value: unknown) {
+  if (isObj(value) && 'body' in value && typeof value.body === 'string') {
     try {
       // error.body may be a JsonRpcError
-      const parsed = JSON.parse(error.body);
+      const parsed = JSON.parse(value.body);
       return getError(parsed);
     } catch (_err) {
-      return getError(error);
+      return getError(value);
     }
-  } else {
-    return getError(error);
   }
+}
+
+export function getEthersError(value: unknown): ExtendedError {
+  if (value instanceof Error) {
+    if ('error' in value && isObj(value.error)) {
+      if (value.error.error instanceof Error) {
+        /** Yes, this is what ethers may return :( */
+        return value.error.error;
+      }
+    }
+    const parsedBodyError = tryErrorBody(value);
+    if (parsedBodyError) {
+      return parsedBodyError;
+    }
+  }
+  return getError(value);
 }
