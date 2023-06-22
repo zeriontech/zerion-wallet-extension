@@ -11,7 +11,6 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { Media } from 'src/ui/ui-kit/Media';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { Image } from 'src/ui/ui-kit/MediaFallback';
 import WalletIcon from 'jsx:src/ui/assets/wallet.svg';
 // import { VirtualizedSurfaceList } from 'src/ui/ui-kit/SurfaceList/VirtualizedSurfaceList';
 import type { Item } from 'src/ui/ui-kit/SurfaceList';
@@ -354,22 +353,11 @@ function ProtocolHeading({
           />
         </div>
       ) : (
-        <Image
+        <TokenIcon
           src={getProtocolIconURL(protocol)}
-          alt=""
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: 4,
-            overflow: 'hidden',
-          }}
-          renderError={() => (
-            <TokenIcon
-              symbol={protocol}
-              size={32}
-              style={{ borderRadius: 8 }}
-            />
-          )}
+          symbol={protocol}
+          size={32}
+          style={{ borderRadius: 8 }}
         />
       )}
       <UIText kind="body/accent">

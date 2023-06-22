@@ -15,10 +15,7 @@ function MediaFallback<T extends ImageProps | AudioProps | VideoProps>({
   renderLoading,
   ...props
 }: T & { type: 'img' | 'audio' | 'video' } & FallbackProps) {
-  const shouldConsiderLoadingState = Boolean(renderLoading);
-  const [loading, setIsLoading] = useState(
-    shouldConsiderLoadingState ? true : false
-  );
+  const [loading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const { src } = props;
 
@@ -34,7 +31,15 @@ function MediaFallback<T extends ImageProps | AudioProps | VideoProps>({
     <>
       {React.createElement(type, {
         ...props,
-        onError: () => setIsError(true),
+        style: {
+          ...props.style,
+          // to avoid failed state blink
+          opacity: loading ? 0 : props.style?.opacity ?? undefined,
+        },
+        onError: () => {
+          setIsError(true);
+          setIsLoading(false);
+        },
         onLoad: () => setIsLoading(false),
         onLoadedData: () => setIsLoading(false),
       })}
