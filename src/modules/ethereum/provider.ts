@@ -37,13 +37,13 @@ function updateChainId(self: EthereumProvider, chainId: string) {
   self.chainId = chainId;
   self.networkVersion = String(parseInt(chainId, 16));
 }
-
 export class EthereumProvider extends JsonRpcProvider {
   accounts: string[];
   chainId: string;
   networkVersion: string;
   isZerion = true;
   isMetaMask?: boolean;
+  _metamask?: boolean;
   connection: Connection;
   _openPromise: Promise<void> | null = null;
 
@@ -91,13 +91,18 @@ export class EthereumProvider extends JsonRpcProvider {
     return this;
   }
 
+  markAsMetamask() {
+    this.isMetaMask = true;
+    this._metamask = true;
+  }
+
   private async _prepareState() {
     return fetchInitialState(this.connection).then(
       ({ chainId, accounts, walletNameFlags }) => {
         updateChainId(this, chainId);
         this.accounts = accounts;
         if (walletNameFlags.includes(WalletNameFlag.isMetaMask)) {
-          this.isMetaMask = true;
+          this.markAsMetamask();
         }
       }
     );
