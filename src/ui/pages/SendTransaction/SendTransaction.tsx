@@ -3,7 +3,7 @@ import { capitalize } from 'capitalize-ts';
 import { ethers } from 'ethers';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { incomingTransactionToIncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import { incomingTxToIncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type {
   IncomingTransaction,
   IncomingTransactionWithChainId,
@@ -123,8 +123,8 @@ function usePreparedTx(transaction: IncomingTransaction, origin: string) {
     suspense: false,
   });
   return {
-    incomingTransactionWithChainId: withChainId,
-    pendingTransaction: resolveGasQuery.data,
+    incomingTxWithChainId: withChainId,
+    incomingTxWithGasAndFee: resolveGasQuery.data,
   };
 }
 
@@ -190,27 +190,24 @@ function SendTransactionContent({
     navigate(-1);
   };
 
-  const { pendingTransaction, incomingTransactionWithChainId } = usePreparedTx(
+  const { incomingTxWithChainId, incomingTxWithGasAndFee } = usePreparedTx(
     incomingTransaction,
     origin
   );
 
-  const transaction = pendingTransaction || incomingTransactionWithChainId;
+  const transaction = incomingTxWithGasAndFee || incomingTxWithChainId;
 
   const { data: localAddressAction, ...localAddressActionQuery } = useQuery({
-    queryKey: ['pendingTransactionToAddressAction', transaction, networks],
+    queryKey: ['incomingTxToIncomingAddressAction', transaction, networks],
     queryFn: () => {
       return transaction && networks
-        ? incomingTransactionToIncomingAddressAction(
-            {
-              transaction,
-              hash: '',
-              timestamp: 0,
-            },
+        ? incomingTxToIncomingAddressAction(
+            { transaction, hash: '', timestamp: 0 },
             networks
           )
         : null;
     },
+    keepPreviousData: true,
     enabled: Boolean(transaction) && Boolean(networks),
     useErrorBoundary: true,
     retry: false,
@@ -220,13 +217,13 @@ function SendTransactionContent({
   });
 
   const { data: interpretation, ...interpretQuery } = useQuery({
-    queryKey: ['interpretTransaction', pendingTransaction, singleAddress],
+    queryKey: ['interpretTransaction', incomingTxWithGasAndFee, singleAddress],
     queryFn: () => {
-      return pendingTransaction
-        ? interpretTransaction(singleAddress, pendingTransaction)
+      return incomingTxWithGasAndFee
+        ? interpretTransaction(singleAddress, incomingTxWithGasAndFee)
         : null;
     },
-    enabled: Boolean(pendingTransaction),
+    enabled: Boolean(incomingTxWithGasAndFee),
     suspense: false,
     retry: 1,
     refetchOnMount: false,
@@ -405,7 +402,7 @@ function SendTransactionContent({
                 </Button>
               </VStack>
               <Spacer height={16} />
-              {pendingTransaction ? (
+              {incomingTxWithGasAndFee ? (
                 <div style={{ marginTop: 'auto' }}>
                   <ErrorBoundary
                     renderError={() => (
@@ -425,7 +422,7 @@ function SendTransactionContent({
                       }
                     >
                       <TransactionConfiguration
-                        transaction={pendingTransaction}
+                        transaction={incomingTxWithGasAndFee}
                         from={wallet.address}
                         chain={chain}
                         onFeeValueCommonReady={handleFeeValueCommonReady}
