@@ -24,36 +24,36 @@ export enum SiweValidationError {
   noError = 0,
   /** `domain` is not provided */
   missingDomain = 1 << 0,
-  /** `domain` doesn't match the origin */
-  domainMismatch = 1 << 1,
   /** `address` is not provided */
-  missingAddress = 1 << 2,
+  missingAddress = 1 << 1,
   /** The address in the signing data doesn’t match the address associated with your wallet */
-  addressMismatch = 1 << 3,
+  addressMismatch = 1 << 2,
   /** `URI` is not provided */
-  missingURI = 1 << 4,
+  missingURI = 1 << 3,
   /** 'Version' is not provided */
-  missingVersion = 1 << 5,
+  missingVersion = 1 << 4,
   /** `Version` is not 1 */
-  invalidVersion = 1 << 6,
+  invalidVersion = 1 << 5,
   /** `Nonce` is not provided */
-  missingNonce = 1 << 7,
+  missingNonce = 1 << 6,
   /** 'Chain ID' is not provided */
-  missingChainId = 1 << 8,
+  missingChainId = 1 << 7,
   /** 'Issued At' is not provided */
-  missingIssuedAt = 1 << 9,
+  missingIssuedAt = 1 << 8,
   /** `Expiration Time` is present and in the past */
-  expiredMessage = 1 << 10,
+  expiredMessage = 1 << 9,
   /** `Not Before` is present and in the future */
-  invalidNotBefore = 1 << 11,
+  invalidNotBefore = 1 << 10,
   /** `Expiration Time`, `Not Before` or `Issued At` not compliant to ISO-8601 */
-  invalidTimeFormat = 1 << 12,
+  invalidTimeFormat = 1 << 11,
 }
 
 export enum SiweValidationWarning {
   noError = 0,
   /** `address` does not conform to EIP-55 (not a checksum address) */
   invalidAddress = 1 << 0,
+  /** `domain` doesn't match the origin */
+  domainMismatch = 1 << 1,
 }
 
 /**
@@ -193,7 +193,7 @@ $\
       const domainAuthority = `${domain.hostname}:${domain.port}`;
 
       if (domainAuthority !== originAuthority) {
-        this.error |= SiweValidationError.domainMismatch;
+        this.warning |= SiweValidationWarning.domainMismatch;
       }
     }
 

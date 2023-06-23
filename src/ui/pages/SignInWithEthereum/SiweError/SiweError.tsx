@@ -20,13 +20,8 @@ const errorMessages: Record<string, SiweValidationErrorMessage> = {
     title: 'Invalid Signing Data',
     text: 'The signing data looks like a SIWE (EIP-4361) but has invalid structure',
   },
-  domainMismatch: {
-    kind: 'warning',
-    title: 'Domain Mismatch',
-    text: 'The application asks to sign data from a different domain than the DApp. Double-check the request before signing.',
-  },
   addressMismatch: {
-    kind: 'warning',
+    kind: 'danger',
     title: 'Address Mismatch',
     text: 'The address in the signing data doesn’t match the address associated with your wallet',
   },
@@ -37,11 +32,16 @@ const errorMessages: Record<string, SiweValidationErrorMessage> = {
   },
 };
 
-const warningMessage: Record<string, SiweValidationErrorMessage> = {
+const warningMessages: Record<string, SiweValidationErrorMessage> = {
   invalidAddress: {
     kind: 'warning',
     title: 'Invalid Address Format',
     text: 'Address does not conform to EIP-55',
+  },
+  domainMismatch: {
+    kind: 'warning',
+    title: 'Domain Mismatch',
+    text: 'The application asks to sign data from a different domain than the DApp. Double-check the request before signing.',
   },
   dataVerificationWarning: {
     kind: 'warning',
@@ -59,9 +59,6 @@ export function SiweError({
 }) {
   if (siwe === null) {
     return <ValidationMessage {...errorMessages.notParsed} />;
-  }
-  if (siwe.hasError(SiweValidationError.domainMismatch)) {
-    return <ValidationMessage {...errorMessages.domainMismatch} />;
   }
   if (siwe.hasError(SiweValidationError.addressMismatch)) {
     return <ValidationMessage {...errorMessages.addressMismatch} />;
@@ -84,8 +81,11 @@ export function SiweError({
       />
     );
   }
+  if (siwe.hasWarning(SiweValidationWarning.domainMismatch)) {
+    return <ValidationMessage {...warningMessages.domainMismatch} />;
+  }
   if (siwe.hasWarning(SiweValidationWarning.invalidAddress)) {
-    return <ValidationMessage {...warningMessage.invalidAddress} />;
+    return <ValidationMessage {...warningMessages.invalidAddress} />;
   }
   if (siwe.isWarning()) {
     return (
@@ -101,7 +101,7 @@ export function SiweError({
             <UIText kind="small/accent">Read more</UIText>
           </TextAnchor>
         }
-        {...warningMessage.dataVerificationWarning}
+        {...warningMessages.dataVerificationWarning}
       />
     );
   }
