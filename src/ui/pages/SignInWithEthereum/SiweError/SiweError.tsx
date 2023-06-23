@@ -85,22 +85,7 @@ export function SiweError({
     );
   }
   if (siwe.hasWarning(SiweValidationWarning.invalidAddress)) {
-    return (
-      <ValidationMessage
-        actions={
-          <TextAnchor
-            style={{
-              color: 'var(--primary)',
-              cursor: 'pointer',
-            }}
-            onClick={onReadMore}
-          >
-            <UIText kind="small/accent">Read more</UIText>
-          </TextAnchor>
-        }
-        {...warningMessage.invalidAddress}
-      />
-    );
+    return <ValidationMessage {...warningMessage.invalidAddress} />;
   }
   if (siwe.isWarning()) {
     return (
