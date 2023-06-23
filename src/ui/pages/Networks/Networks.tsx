@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { RenderArea } from 'react-area';
 import { useMutation } from '@tanstack/react-query';
 import {
@@ -39,6 +45,11 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { ViewSuspense } from 'src/ui/components/ViewSuspense';
 import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
+import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
+import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import { UIText } from 'src/ui/ui-kit/UIText';
+import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { NetworkForm } from './NetworkForm';
 import { NetworkList } from './shared/NetworkList';
 import { SearchResults } from './shared/SearchResults';
@@ -237,6 +248,36 @@ const FORBIDDEN_FIELS = new Set([
   'hidden',
 ]);
 
+function RemoveNetworkConfirmationDialog({
+  network,
+}: {
+  network: NetworkConfig;
+}) {
+  return (
+    <form
+      method="dialog"
+      style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+    >
+      <VStack gap={8}>
+        <UIText kind="headline/h3">Remove network?</UIText>
+        <UIText kind="body/regular">{network.name}</UIText>
+      </VStack>
+      <HStack
+        gap={12}
+        justifyContent="center"
+        style={{ marginTop: 'auto', gridTemplateColumns: '1fr 1fr' }}
+      >
+        <Button value="cancel" kind="regular">
+          Cancel
+        </Button>
+        <Button kind="danger" value="confirm">
+          Remove Network
+        </Button>
+      </HStack>
+    </form>
+  );
+}
+
 function NetworkPage({
   onSuccess,
 }: {
@@ -249,6 +290,7 @@ function NetworkPage({
   const goBack = useCallback(() => navigate(-1), [navigate]);
   const { networks } = useNetworks();
   const network = networks?.getNetworkByName(chain);
+  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   const { isCustomNetwork, isPredefinedNetwork, isEditedPredefinedNetwork } =
     useMemo(() => {
@@ -311,13 +353,23 @@ function NetworkPage({
                 kind="ghost"
                 title="Remove Network"
                 size={40}
-                onClick={() => removeMutation.mutate(network)}
+                onClick={() => {
+                  if (!dialogRef.current) {
+                    return;
+                  }
+                  showConfirmDialog(dialogRef.current).then(() =>
+                    removeMutation.mutate(network)
+                  );
+                }}
               >
                 <TrashIcon style={{ display: 'block', marginInline: 'auto' }} />
               </Button>
             ) : undefined
           }
         />
+        <BottomSheetDialog ref={dialogRef} height="200px">
+          <RemoveNetworkConfirmationDialog network={network} />
+        </BottomSheetDialog>
         <PageTop />
         <NetworkForm
           network={network}

@@ -151,7 +151,11 @@ function RemoveGroupConfirmationDialog({
           ))}
         </VStack>
       </VStack>
-      <HStack gap={12} justifyContent="center" style={{ marginTop: 'auto' }}>
+      <HStack
+        gap={12}
+        justifyContent="center"
+        style={{ marginTop: 'auto', gridTemplateColumns: '1fr 1fr' }}
+      >
         <Button value="cancel" kind="regular">
           Cancel
         </Button>
