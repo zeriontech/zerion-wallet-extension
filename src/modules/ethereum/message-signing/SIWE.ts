@@ -29,31 +29,31 @@ export enum SiweValidationError {
   /** `address` is not provided */
   missingAddress = 1 << 2,
   /** The address in the signing data doesn’t match the address associated with your wallet */
-  addressMismatch = 1 << 4,
+  addressMismatch = 1 << 3,
   /** `URI` is not provided */
-  missingURI = 1 << 5,
+  missingURI = 1 << 4,
   /** 'Version' is not provided */
-  missingVersion = 1 << 6,
+  missingVersion = 1 << 5,
   /** `Version` is not 1 */
-  invalidVersion = 1 << 7,
+  invalidVersion = 1 << 6,
   /** `Nonce` is not provided */
-  missingNonce = 1 << 8,
+  missingNonce = 1 << 7,
   /** 'Chain ID' is not provided */
-  missingChainId = 1 << 9,
+  missingChainId = 1 << 8,
   /** 'Issued At' is not provided */
-  missingIssuedAt = 1 << 10,
+  missingIssuedAt = 1 << 9,
   /** `Expiration Time` is present and in the past */
-  expiredMessage = 1 << 11,
+  expiredMessage = 1 << 10,
   /** `Not Before` is present and in the future */
-  invalidNotBefore = 1 << 12,
+  invalidNotBefore = 1 << 11,
   /** `Expiration Time`, `Not Before` or `Issued At` not compliant to ISO-8601 */
-  invalidTimeFormat = 1 << 13,
+  invalidTimeFormat = 1 << 12,
 }
 
 export enum SiweValidationWarning {
   noError = 0,
   /** `address` does not conform to EIP-55 (not a checksum address) */
-  invalidAddress = 1 << 3,
+  invalidAddress = 1 << 0,
 }
 
 /**
