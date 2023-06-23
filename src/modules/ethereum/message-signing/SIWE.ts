@@ -28,8 +28,6 @@ export enum SiweValidationError {
   domainMismatch = 1 << 1,
   /** `address` is not provided */
   missingAddress = 1 << 2,
-  /** `address` does not conform to EIP-55 (not a checksum address) */
-  invalidAddress = 1 << 3,
   /** The address in the signing data doesn’t match the address associated with your wallet */
   addressMismatch = 1 << 4,
   /** `URI` is not provided */
@@ -50,6 +48,12 @@ export enum SiweValidationError {
   invalidNotBefore = 1 << 12,
   /** `Expiration Time`, `Not Before` or `Issued At` not compliant to ISO-8601 */
   invalidTimeFormat = 1 << 13,
+}
+
+export enum SiweValidationWarning {
+  noError = 0,
+  /** `address` does not conform to EIP-55 (not a checksum address) */
+  invalidAddress = 1 << 3,
 }
 
 /**
@@ -155,9 +159,11 @@ $\
   readonly resources?: Array<string>;
 
   private error: SiweValidationError;
+  private warning: SiweValidationWarning;
 
   private constructor(rawMessage: string, fields: Record<string, string>) {
     this.error = SiweValidationError.noError;
+    this.warning = SiweValidationWarning.noError;
     this.rawMessage = rawMessage;
 
     this.domain = fields.domain;
@@ -199,11 +205,9 @@ $\
       ) {
         this.error |= SiweValidationError.addressMismatch;
       }
-      // Some dapps provide address in lowercase
-      // This does not correspond the specs but not so critical
-      // if (this.address && this.address !== toChecksumAddress(this.address)) {
-      //   this.error |= SiweValidationError.invalidAddress;
-      // }
+      if (this.address && this.address !== toChecksumAddress(this.address)) {
+        this.warning |= SiweValidationWarning.invalidAddress;
+      }
     }
     if (!this.nonce) {
       this.error |= SiweValidationError.missingNonce;
@@ -250,8 +254,16 @@ $\
     return this.error == SiweValidationError.noError;
   }
 
+  isWarning() {
+    return this.warning != SiweValidationWarning.noError;
+  }
+
   hasError(error: SiweValidationError) {
     return this.error & error;
+  }
+
+  hasWarning(warning: SiweValidationWarning) {
+    return this.warning & warning;
   }
 
   /**

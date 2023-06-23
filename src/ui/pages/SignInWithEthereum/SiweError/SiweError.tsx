@@ -1,6 +1,9 @@
 import React from 'react';
 import type { SiweMessage } from 'src/modules/ethereum/message-signing/SIWE';
-import { SiweValidationError } from 'src/modules/ethereum/message-signing/SIWE';
+import {
+  SiweValidationError,
+  SiweValidationWarning,
+} from 'src/modules/ethereum/message-signing/SIWE';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { ValidationMessage } from '../ValidationMessage';
@@ -31,6 +34,19 @@ const errorMessages: Record<string, SiweValidationErrorMessage> = {
     kind: 'danger',
     title: 'Data Verification Failed',
     text: 'The data received from the dapp contains errors and didn’t pass verification',
+  },
+};
+
+const warningMessage: Record<string, SiweValidationErrorMessage> = {
+  invalidAddress: {
+    kind: 'warning',
+    title: 'Invalid Address Format',
+    text: 'Address does not conform to EIP-55',
+  },
+  dataVerificationWarning: {
+    kind: 'warning',
+    title: 'Data Verification Warning',
+    text: 'The data received from the dapp didn’t pass verification',
   },
 };
 
@@ -65,6 +81,42 @@ export function SiweError({
           </TextAnchor>
         }
         {...errorMessages.dataVerificationFailed}
+      />
+    );
+  }
+  if (siwe.hasWarning(SiweValidationWarning.invalidAddress)) {
+    return (
+      <ValidationMessage
+        actions={
+          <TextAnchor
+            style={{
+              color: 'var(--primary)',
+              cursor: 'pointer',
+            }}
+            onClick={onReadMore}
+          >
+            <UIText kind="small/accent">Read more</UIText>
+          </TextAnchor>
+        }
+        {...warningMessage.invalidAddress}
+      />
+    );
+  }
+  if (siwe.isWarning()) {
+    return (
+      <ValidationMessage
+        actions={
+          <TextAnchor
+            style={{
+              color: 'var(--primary)',
+              cursor: 'pointer',
+            }}
+            onClick={onReadMore}
+          >
+            <UIText kind="small/accent">Read more</UIText>
+          </TextAnchor>
+        }
+        {...warningMessage.dataVerificationWarning}
       />
     );
   }
