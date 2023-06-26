@@ -174,7 +174,7 @@ export async function pendingTransactionToAddressAction(
   };
 }
 
-export async function incomingTransactionToIncomingAddressAction(
+export async function incomingTxToIncomingAddressAction(
   transactionObject: {
     transaction: IncomingTransactionWithChainId & { nonce?: number };
   } & Pick<TransactionObject, 'hash' | 'receipt' | 'timestamp' | 'dropped'>,
