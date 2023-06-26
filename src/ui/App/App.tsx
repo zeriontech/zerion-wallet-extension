@@ -58,6 +58,8 @@ import { Onboarding } from '../Onboarding';
 import { AddEthereumChain } from '../pages/AddEthereumChain';
 import { SignInWithEthereum } from '../pages/SignInWithEthereum';
 
+const isProd = process.env.NODE_ENV === 'production';
+
 const useAuthState = () => {
   const { data, isFetching } = useQuery({
     queryKey: ['authState'],
@@ -350,9 +352,10 @@ dayjs.extend(relativeTime);
 export interface AppProps {
   mode: 'onboarding' | 'wallet';
   initialView?: 'handshakeFailure';
+  inspect?: { message: string };
 }
 
-export function App({ initialView, mode }: AppProps) {
+export function App({ initialView, mode, inspect }: AppProps) {
   const bodyClassList = useMemo(() => {
     const result = [];
     if (pageTemplateType === 'dialog') {
@@ -388,6 +391,17 @@ export function App({ initialView, mode }: AppProps) {
               <InactivityDetector />
               <SessionResetHandler />
               <DesignTheme bodyClassList={bodyClassList} />
+              {inspect && !isProd ? (
+                <UIText
+                  kind="small/regular"
+                  style={{
+                    borderBottom: '1px solid var(--neutral-300)',
+                    paddingInline: 12,
+                  }}
+                >
+                  {inspect.message}
+                </UIText>
+              ) : null}
               <KeyboardShortcut
                 combination="ctrl+alt+0"
                 onKeyDown={() => {
