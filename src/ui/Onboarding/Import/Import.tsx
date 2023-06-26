@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
@@ -13,6 +13,7 @@ import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { HandshakeFailure } from 'src/ui/components/HandshakeFailure';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
+import { useErrorBoundary } from 'src/ui/shared/useErrorBoundary';
 import lockIconSrc from '../assets/lock.png';
 import { useSizeStore } from '../useSizeStore';
 import { Stack } from '../Stack';
@@ -21,6 +22,12 @@ import { FAQ } from './FAQ';
 import { ImportKey } from './ImportKey';
 import { Password } from './Password';
 import { ImportMnemonic } from './ImportMnemonic';
+import {
+  PasswordStep,
+  ViewParam,
+  assertPasswordStep,
+  assertViewParam,
+} from './ImportSearchParams';
 
 function Step({ active }: { active: boolean }) {
   return (
@@ -36,32 +43,36 @@ function Step({ active }: { active: boolean }) {
 export function Import() {
   const { isNarrowView } = useSizeStore();
   const navigate = useNavigate();
-  const [step, setStep] = useState<'secret' | 'password'>('secret');
   const [showError, setShowError] = useState(false);
   const { walletAddress, type } = useParams<{
     walletAddress: string;
     type: 'private-key' | 'mnemonic';
   }>();
+  const [params, setSearchParams] = useSearchParams();
+  const view = params.get('view') || 'secret';
+  const step = params.get('step') || 'create';
+  assertViewParam(view);
+  assertPasswordStep(step);
+  const isConfirmStep = step === PasswordStep.confirm;
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   const handleBackClick = useCallback(() => {
-    if (step === 'secret' || showError) {
-      navigate(`/onboarding/welcome/${walletAddress}`);
-    } else if (step === 'password') {
-      setStep('secret');
-    }
-  }, [navigate, step, walletAddress, showError]);
+    navigate(-1);
+  }, [navigate]);
 
   const [wallet, setWallet] = useState<BareWallet | null>(null);
-  const handleWallet = useCallback((wallet: BareWallet) => {
-    setWallet(wallet);
-    setStep('password');
-  }, []);
+  const handleWallet = useCallback(
+    (wallet: BareWallet) => {
+      setWallet(wallet);
+      setSearchParams(`view=${ViewParam.password}`);
+    },
+    [setSearchParams]
+  );
 
-  const { mutate, isLoading } = useMutation({
+  const { mutate: createUserAndWallet, isLoading } = useMutation({
     mutationFn: async ({
       password,
       wallet,
@@ -94,14 +105,17 @@ export function Import() {
     },
   });
 
+  const showErrorBoundary = useErrorBoundary();
+
   const handlePasswordSubmit = useCallback(
     (password: string) => {
       if (!wallet) {
+        showErrorBoundary(new Error('No wallet created'));
         return;
       }
-      mutate({ password, wallet });
+      createUserAndWallet({ password, wallet });
     },
-    [wallet, mutate]
+    [wallet, createUserAndWallet, showErrorBoundary]
   );
 
   return (
@@ -122,8 +136,9 @@ export function Import() {
           <ArrowLeftIcon style={{ width: 20, height: 20 }} />
         </UnstyledButton>
         <HStack gap={4} className={styles.steps} justifyContent="center">
-          <Step active={step === 'secret'} />
-          <Step active={step === 'password'} />
+          <Step active={view === ViewParam.secret} />
+          <Step active={view === ViewParam.password && !isConfirmStep} />
+          <Step active={view === ViewParam.password && isConfirmStep} />
         </HStack>
         {walletAddress && type ? (
           <Stack
@@ -137,28 +152,34 @@ export function Import() {
           >
             {showError ? (
               <HandshakeFailure />
-            ) : step === 'password' ? (
-              <Password onSubmit={handlePasswordSubmit} />
-            ) : type === 'private-key' ? (
-              <ImportKey
-                address={walletAddress}
-                onWalletCreate={handleWallet}
+            ) : view === 'password' ? (
+              <Password
+                view={view}
+                step={step}
+                onSubmit={handlePasswordSubmit}
               />
-            ) : type === 'mnemonic' ? (
-              <ImportMnemonic
-                address={walletAddress}
-                onWalletCreate={handleWallet}
-              />
+            ) : view === 'secret' ? (
+              type === 'private-key' ? (
+                <ImportKey
+                  address={walletAddress}
+                  onWalletCreate={handleWallet}
+                />
+              ) : type === 'mnemonic' ? (
+                <ImportMnemonic
+                  address={walletAddress}
+                  onWalletCreate={handleWallet}
+                />
+              ) : null
             ) : null}
             {isNarrowView || showError ? null : (
-              <FAQ type={step === 'password' ? 'password' : type} />
+              <FAQ type={view === ViewParam.password ? 'password' : type} />
             )}
           </Stack>
         ) : null}
       </div>
       {isNarrowView && type ? (
         <div className={styles.faqContainer}>
-          <FAQ type={step === 'password' ? 'password' : type} />
+          <FAQ type={view === ViewParam.password ? 'password' : type} />
         </div>
       ) : null}
       <HStack gap={16} justifyContent="center" alignItems="center">

@@ -13,9 +13,9 @@ import { getError } from 'src/shared/errors/getError';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
+import { Input } from 'src/ui/ui-kit/Input';
 import { useSizeStore } from '../useSizeStore';
 import { useWhitelistStatus } from '../checkWhitelistStatus';
-import { Input } from './Input';
 
 export function ImportKey({
   address,

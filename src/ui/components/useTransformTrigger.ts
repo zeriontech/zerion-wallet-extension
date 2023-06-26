@@ -6,6 +6,7 @@ export function useTransformTrigger({
   y = 0,
   rotation = 0,
   scale = 1,
+  scaleX = 1,
   timing = 150,
   springConfig = {
     tension: 300,
@@ -20,10 +21,12 @@ export function useTransformTrigger({
     transform: on
       ? `translate(${x}px, ${y}px)
          rotate(${rotation}deg)
-         scale(${scale})`
+         scale(${scale})
+         scaleX(${scaleX})`
       : `translate(0px, 0px)
          rotate(0deg)
-         scale(1)`,
+         scale(1)
+         scaleX(1)`,
     config: springConfig,
     delay,
   } as const);

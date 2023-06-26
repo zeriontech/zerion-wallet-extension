@@ -17,10 +17,10 @@ import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
+import { Input } from 'src/ui/ui-kit/Input';
 import { useSizeStore } from '../useSizeStore';
 import { useWhitelistStatus } from '../checkWhitelistStatus';
 import * as styles from './styles.module.css';
-import { Input } from './Input';
 
 const INPUT_NUMBER = 24;
 const ARRAY_OF_NUMBERS = Array.from({ length: INPUT_NUMBER }, (_, i) => i);
