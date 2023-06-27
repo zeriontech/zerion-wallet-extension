@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
@@ -52,12 +52,26 @@ function ResetWarningForm() {
 
 export const EraseDataConfirmationDialog = React.forwardRef(
   (_props, ref: React.Ref<HTMLDialogElementInterface>) => {
+    const [key, setKey] = useState(1);
+    useEffect(() => {
+      const dialog = ref && 'current' in ref ? ref.current : null;
+      if (dialog) {
+        // reset form state when dialog closes
+        const handler = () => setKey((n) => n + 1);
+        dialog.addEventListener('close', handler);
+        dialog.addEventListener('cancel', handler);
+        return () => {
+          dialog.removeEventListener('close', handler);
+          dialog.removeEventListener('cancel', handler);
+        };
+      }
+    }, [ref]);
     return (
       <BottomSheetDialog
         style={{ height: 'max-content', minHeight: '48vh' }}
         ref={ref}
       >
-        <ResetWarningForm />
+        <ResetWarningForm key={key} />
       </BottomSheetDialog>
     );
   }
