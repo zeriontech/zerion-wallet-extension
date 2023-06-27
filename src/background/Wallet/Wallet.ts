@@ -885,7 +885,14 @@ export class Wallet {
     const { chainId } = this.store.getState();
     const signer = await this.getSigner(chainId);
     const messageAsUtf8String = toUtf8String(message);
-    const signature = await signer.signMessage(messageAsUtf8String);
+
+    // Some dapps provide a hex message that doesn't parse as a utf string,
+    // but wallets sign it anyway
+    const messageToSign = ethers.utils.isHexString(messageAsUtf8String)
+      ? ethers.utils.arrayify(messageAsUtf8String)
+      : messageAsUtf8String;
+
+    const signature = await signer.signMessage(messageToSign);
     emitter.emit('messageSigned', {
       message: messageAsUtf8String,
       initiator,
