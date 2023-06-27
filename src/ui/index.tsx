@@ -38,7 +38,7 @@ async function registerServiceWorker() {
 
 let reactRoot: Root | null = null;
 
-function renderApp({ initialView, mode }: AppProps) {
+function renderApp({ initialView, mode, inspect }: AppProps) {
   const root = document.getElementById('root');
   if (!root) {
     throw new Error('#root element not found');
@@ -50,14 +50,15 @@ function renderApp({ initialView, mode }: AppProps) {
   reactRoot = createRoot(root);
   reactRoot.render(
     <React.StrictMode>
-      <App initialView={initialView} mode={mode} />
+      <App initialView={initialView} mode={mode} inspect={inspect} />
     </React.StrictMode>
   );
 }
 
 async function initializeUI({
   initialView,
-}: Pick<AppProps, 'initialView'> = {}) {
+  inspect,
+}: Pick<AppProps, 'initialView' | 'inspect'> = {}) {
   try {
     await registerServiceWorker();
     initializeChannels();
@@ -65,7 +66,7 @@ async function initializeUI({
     queryClient.clear();
     await configureUIClient();
     initializeClientAnalytics();
-    renderApp({ initialView, mode });
+    renderApp({ initialView, mode, inspect });
   } catch (error) {
     if (error instanceof OnboardingInterrupt) {
       // do nothing
@@ -91,7 +92,8 @@ async function handleFailedHandshake() {
 
 initializeUI().then(() => {
   new BackgroundScriptUpdateHandler({
-    onActivate: () => initializeUI(),
+    onActivate: () =>
+      initializeUI({ inspect: { message: 'background-initialized' } }),
     onReactivate: () => initializeChannels(),
     onFailedHandshake: () => handleFailedHandshake(),
   }).keepAlive();
