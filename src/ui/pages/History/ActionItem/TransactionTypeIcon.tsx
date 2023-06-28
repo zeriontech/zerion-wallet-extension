@@ -22,8 +22,8 @@ import ChangeAssets3 from 'jsx:src/ui/assets/changed-assets-3.svg';
 import ChangeAssetsMore from 'jsx:src/ui/assets/changed-assets-more.svg';
 import { AssetIcon } from 'src/ui/components/AssetIcon';
 
-export const TRANSACTION_ICON_SIZE = 24;
-export const TRANSACTION_SMALL_ICON_SIZE = 18;
+export const TRANSACTION_ICON_SIZE = 36;
+export const TRANSACTION_SMALL_ICON_SIZE = 27;
 export const transactionIconStyle = {
   width: TRANSACTION_ICON_SIZE,
   height: TRANSACTION_ICON_SIZE,

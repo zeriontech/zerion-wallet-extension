@@ -14,6 +14,7 @@ import {
 import { AssetQuantityValue } from 'src/ui/components/AssetQuantityValue';
 import type BigNumber from 'bignumber.js';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
+import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 
 function getSign(decimaledValue?: number | BigNumber, direction?: Direction) {
   if (!decimaledValue || !direction || direction === 'self') {
@@ -59,6 +60,10 @@ function HistoryTokenValue({
         href={`https://app.zerion.io/explore/asset/${asset.symbol}-${asset.asset_code}?address=${address}`}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={(e) => {
+          e.stopPropagation();
+          openInNewWindow(e);
+        }}
         style={{
           overflow: 'hidden',
           textOverflow: 'ellipsis',
@@ -103,6 +108,10 @@ export function HistoryNFTValue({
           target="_blank"
           title={name}
           rel="noopener noreferrer"
+          onClick={(e) => {
+            e.stopPropagation();
+            openInNewWindow(e);
+          }}
           style={{
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -176,7 +185,7 @@ export function TransactionCurrencyValue({
     return null;
   }
   const transfer = transfers[0];
-  const asset = getFungibleAsset();
+  const asset = getFungibleAsset(transfer.asset);
   if (!asset) {
     return null;
   }

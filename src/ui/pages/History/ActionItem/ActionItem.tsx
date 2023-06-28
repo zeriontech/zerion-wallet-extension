@@ -1,10 +1,13 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import type { AddressAction } from 'defi-sdk';
+import { animated, useSpring } from 'react-spring';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Media } from 'src/ui/ui-kit/Media';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import FailedIcon from 'jsx:src/ui/assets/failed.svg';
+import LinkIcon from 'jsx:src/ui/assets/new-window.svg';
+import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
 import type { Networks } from 'src/modules/networks/Networks';
 import { createChain } from 'src/modules/networks/Chain';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -26,6 +29,13 @@ import {
 } from 'src/modules/ethereum/transactions/addressAction';
 import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
+import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
+import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
+import { Button } from 'src/ui/ui-kit/Button';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
+import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
+import { ActionDetailedView } from '../ActionDetailedView/ActionDetailedView';
 import {
   HistoryItemValue,
   TransactionCurrencyValue,
@@ -36,6 +46,7 @@ import {
   TransactionItemIcon,
   TRANSACTION_ICON_SIZE,
 } from './TransactionTypeIcon';
+import * as styles from './styles.module.css';
 
 function checkIsDnaMint(action: AnyAddressAction) {
   return (
@@ -50,6 +61,13 @@ function ActionTitle({
   action: AnyAddressAction;
   networks: Networks;
 }) {
+  const [showLinkIcon, setShowLinkIcon] = useState(false);
+  const linkIconStyle = useSpring({
+    display: 'flex',
+    x: showLinkIcon ? 0 : -10,
+    opacity: showLinkIcon ? 1 : 0,
+    config: { tension: 300, friction: 15 },
+  });
   const { chain: chainStr } = action.transaction;
   const chain = chainStr ? createChain(chainStr) : null;
 
@@ -63,20 +81,31 @@ function ActionTitle({
     ? 'Mint DNA'
     : `${titlePrefix}${action.type.display_value}`;
   return (
-    <UIText kind="small/accent">
+    <UIText kind="body/accent">
       {explorerHref ? (
         <TextAnchor
           href={explorerHref}
           target="_blank"
           title={explorerHref}
           rel="noopener noreferrer"
+          onMouseEnter={() => setShowLinkIcon(true)}
+          onMouseLeave={() => setShowLinkIcon(false)}
+          onClick={(e) => {
+            e.stopPropagation();
+            openInNewWindow(e);
+          }}
           style={{
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
           }}
         >
-          {actionTitle}
+          <HStack gap={2} alignItems="center">
+            {actionTitle}
+            <animated.div style={linkIconStyle}>
+              <LinkIcon style={{ width: 16, height: 16 }} />
+            </animated.div>
+          </HStack>
         </TextAnchor>
       ) : (
         actionTitle
@@ -86,7 +115,11 @@ function ActionTitle({
 }
 
 function AddressTruncated({ value }: { value: string }) {
-  return <span title={value}>{truncateAddress(value, 4)}</span>;
+  return (
+    <span title={value} style={{ whiteSpace: 'nowrap' }}>
+      {truncateAddress(value, 4)}
+    </span>
+  );
 }
 
 function ActionLabel({ action }: { action: AnyAddressAction }) {
@@ -95,7 +128,11 @@ function ActionLabel({ action }: { action: AnyAddressAction }) {
   if (address) {
     return <AddressTruncated value={address} />;
   } else if (text) {
-    return text as React.ReactNode as JSX.Element;
+    return (
+      <span title={text} style={{ whiteSpace: 'nowrap' }}>
+        {text}
+      </span>
+    );
   } else {
     return <AddressTruncated value={action.transaction.hash} />;
   }
@@ -104,11 +141,9 @@ function ActionLabel({ action }: { action: AnyAddressAction }) {
 function ActionDetail({
   action,
   networks,
-  address,
 }: {
   action: AnyAddressAction;
   networks: Networks;
-  address?: string;
 }) {
   const { chain: chainStr } = action.transaction;
   const chain = chainStr ? createChain(chainStr) : null;
@@ -116,13 +151,11 @@ function ActionDetail({
     () => (chain ? networks.getNetworkByName(chain) : null),
     [chain, networks]
   );
-  const incomingTransfers = action.content?.transfers?.incoming;
-  const outgoingTransfers = action.content?.transfers?.outgoing;
 
   return (
     <HStack alignItems="center" gap={4}>
       <NetworkIcon
-        size={12}
+        size={16}
         src={network?.icon_url}
         chainId={network?.external_id || ''}
         name={network?.name || null}
@@ -134,13 +167,6 @@ function ActionDetail({
           <span style={{ color: 'var(--negative-500)' }}>Failed</span>
         ) : action.transaction.status === 'dropped' ? (
           <span style={{ color: 'var(--negative-500)' }}>Dropped</span>
-        ) : incomingTransfers?.length && outgoingTransfers?.length && chain ? (
-          <HistoryItemValue
-            transfers={outgoingTransfers}
-            direction="out"
-            chain={chain}
-            address={address}
-          />
         ) : (
           <ActionLabel action={action} />
         )}
@@ -157,6 +183,15 @@ function ActionItemBackend({
   networks: Networks;
 }) {
   const { params, ready } = useAddressParams();
+  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+
+  const handleDialogOpen = useCallback<React.MouseEventHandler>((e) => {
+    e.stopPropagation();
+    if (!dialogRef.current) {
+      return;
+    }
+    showConfirmDialog(dialogRef.current);
+  }, []);
 
   if (!ready) {
     return null;
@@ -176,101 +211,137 @@ function ActionItemBackend({
     : null;
 
   return (
-    <HStack
-      gap={24}
-      justifyContent="space-between"
-      style={{
-        height: 42,
-        gridTemplateColumns:
-          'minmax(min-content, max-content) minmax(100px, max-content)',
-      }}
-      alignItems="center"
-    >
-      <Media
-        image={
-          action.transaction.status === 'failed' ? (
-            <FailedIcon style={transactionIconStyle} />
-          ) : action.transaction.status === 'pending' ? (
-            <CircleSpinner
-              size="38px"
-              trackWidth="7%"
-              color="var(--primary)"
-              style={{
-                position: 'absolute',
-                top: -1,
-                left: -1,
-              }}
-            />
-          ) : (
-            <TransactionItemIcon action={action} />
-          )
-        }
-        text={<ActionTitle action={action} networks={networks} />}
-        detailText={
-          <ActionDetail networks={networks} action={action} address={address} />
-        }
-      />
-      <VStack
-        gap={4}
-        style={{ justifyItems: 'end', overflow: 'hidden', textAlign: 'left' }}
+    <>
+      <HStack
+        className={styles.actionItem}
+        gap={24}
+        justifyContent="space-between"
+        style={{
+          position: 'relative',
+          height: 42,
+          gridTemplateColumns:
+            'minmax(min-content, max-content) minmax(100px, max-content)',
+        }}
+        alignItems="center"
+        onClick={handleDialogOpen}
       >
-        <UIText
-          kind="small/regular"
-          color={
-            shouldUsePositiveColor ? 'var(--positive-500)' : 'var(--black)'
+        <UnstyledButton
+          className={styles.actionItemBackdropButton}
+          onClick={handleDialogOpen}
+        />
+        <Media
+          vGap={0}
+          style={{ zIndex: 1 }}
+          image={
+            action.transaction.status === 'failed' ? (
+              <FailedIcon style={transactionIconStyle} />
+            ) : action.transaction.status === 'pending' ? (
+              <CircleSpinner
+                size="38px"
+                trackWidth="7%"
+                color="var(--primary)"
+                style={{
+                  position: 'absolute',
+                  top: -1,
+                  left: -1,
+                }}
+              />
+            ) : (
+              <TransactionItemIcon action={action} />
+            )
           }
+          text={<ActionTitle action={action} networks={networks} />}
+          detailText={<ActionDetail networks={networks} action={action} />}
+        />
+        <VStack
+          gap={0}
           style={{
+            justifyItems: 'end',
             overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            maxWidth: '100%',
+            textAlign: 'left',
+            zIndex: 1,
           }}
         >
-          {action.type.value === 'approve' && maybeApprovedAsset ? (
-            <TextAnchor
-              href={`https://app.zerion.io/explore/asset/${maybeApprovedAsset.symbol}-${maybeApprovedAsset.asset_code}?address=${address}`}
-              target="_blank"
-              title={maybeApprovedAsset.name || maybeApprovedAsset.symbol}
-              rel="noopener noreferrer"
-              style={{
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                outlineOffset: -1, // make focus ring visible despite overflow: hidden
-              }}
-            >
-              {maybeApprovedAsset.name || maybeApprovedAsset.symbol}
-            </TextAnchor>
-          ) : incomingTransfers?.length && chain ? (
-            <HistoryItemValue
-              transfers={incomingTransfers}
-              direction="in"
-              chain={chain}
-              address={address}
-            />
-          ) : outgoingTransfers?.length && chain ? (
-            <HistoryItemValue
-              transfers={outgoingTransfers}
-              direction="out"
-              chain={chain}
-              address={address}
-            />
+          <UIText
+            kind="body/regular"
+            color={
+              shouldUsePositiveColor ? 'var(--positive-500)' : 'var(--black)'
+            }
+            style={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxWidth: '100%',
+            }}
+          >
+            {action.type.value === 'approve' && maybeApprovedAsset ? (
+              <TextAnchor
+                href={`https://app.zerion.io/explore/asset/${maybeApprovedAsset.symbol}-${maybeApprovedAsset.asset_code}?address=${address}`}
+                target="_blank"
+                title={maybeApprovedAsset.name || maybeApprovedAsset.symbol}
+                rel="noopener noreferrer"
+                style={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  outlineOffset: -1, // make focus ring visible despite overflow: hidden
+                }}
+              >
+                {maybeApprovedAsset.name || maybeApprovedAsset.symbol}
+              </TextAnchor>
+            ) : incomingTransfers?.length && chain ? (
+              <HistoryItemValue
+                transfers={incomingTransfers}
+                direction="in"
+                chain={chain}
+                address={address}
+              />
+            ) : outgoingTransfers?.length && chain ? (
+              <HistoryItemValue
+                transfers={outgoingTransfers}
+                direction="out"
+                chain={chain}
+                address={address}
+              />
+            ) : null}
+          </UIText>
+          {chain ? (
+            <UIText kind="small/regular" color="var(--neutral-500)">
+              {incomingTransfers?.length && !outgoingTransfers?.length ? (
+                <TransactionCurrencyValue
+                  transfers={incomingTransfers}
+                  chain={chain}
+                />
+              ) : outgoingTransfers?.length && !incomingTransfers?.length ? (
+                <TransactionCurrencyValue
+                  transfers={outgoingTransfers}
+                  chain={chain}
+                />
+              ) : outgoingTransfers?.length ? (
+                <HistoryItemValue
+                  transfers={outgoingTransfers}
+                  direction="out"
+                  chain={chain}
+                  address={address}
+                />
+              ) : null}
+            </UIText>
           ) : null}
-        </UIText>
-        <UIText kind="small/regular" color="var(--neutral-500)">
-          {incomingTransfers?.length && chain ? (
-            <TransactionCurrencyValue
-              transfers={incomingTransfers}
-              chain={chain}
-            />
-          ) : outgoingTransfers?.length && chain ? (
-            <TransactionCurrencyValue
-              transfers={outgoingTransfers}
-              chain={chain}
-            />
-          ) : null}
-        </UIText>
-      </VStack>
-    </HStack>
+        </VStack>
+      </HStack>
+      <BottomSheetDialog ref={dialogRef} style={{ height: '100vh' }}>
+        <form method="dialog" style={{ position: 'absolute', top: 8, left: 8 }}>
+          <Button
+            kind="ghost"
+            value="cancel"
+            size={40}
+            style={{ width: 40, padding: 8 }}
+          >
+            <ArrowLeftIcon />
+          </Button>
+        </form>
+        <ActionDetailedView />
+      </BottomSheetDialog>
+    </>
   );
 }
 
@@ -301,6 +372,7 @@ function ActionItemLocal({
       alignItems="center"
     >
       <Media
+        vGap={0}
         image={
           <div style={{ position: 'relative', ...transactionIconStyle }}>
             {action.transaction.status === 'pending' ? (
@@ -330,9 +402,7 @@ function ActionItemLocal({
           </div>
         }
         text={<ActionTitle action={action} networks={networks} />}
-        detailText={
-          <ActionDetail networks={networks} action={action} address={address} />
-        }
+        detailText={<ActionDetail networks={networks} action={action} />}
       />
       <UIText kind="small/regular">
         {asset ? (
