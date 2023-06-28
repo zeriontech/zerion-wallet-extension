@@ -15,6 +15,7 @@ import { AssetQuantityValue } from 'src/ui/components/AssetQuantityValue';
 import type BigNumber from 'bignumber.js';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
+import { NetworkId } from 'src/modules/networks/NetworkId';
 
 function getSign(decimaledValue?: number | BigNumber, direction?: Direction) {
   if (!decimaledValue || !direction || direction === 'self') {
@@ -80,12 +81,14 @@ function HistoryTokenValue({
 export function HistoryNFTValue({
   quantity = 0,
   nftAsset,
+  chain,
   name,
   direction,
   address,
 }: {
   quantity?: number;
   nftAsset?: NFTAsset | null;
+  chain?: Chain;
   name?: string;
   direction?: Direction;
   address?: string;
@@ -104,7 +107,9 @@ export function HistoryNFTValue({
       ) : null}
       {(!quantity || quantity === 1) && nftAsset?.asset_code ? (
         <TextAnchor
-          href={`https://app.zerion.io/nfts/${nftAsset.asset_code}?address=${address}`}
+          href={`https://app.zerion.io/nfts/${
+            chain?.toString() || NetworkId.Ethereum
+          }/${nftAsset.asset_code}?address=${address}`}
           target="_blank"
           title={name}
           rel="noopener noreferrer"
@@ -162,6 +167,7 @@ export function HistoryItemValue({
       direction={direction}
       quantity={1}
       name={nftAsset.name || nftAsset.collection?.name}
+      chain={chain}
     />
   ) : fungibleAsset ? (
     <HistoryTokenValue

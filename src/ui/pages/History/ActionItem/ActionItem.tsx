@@ -231,6 +231,7 @@ function ActionItemBackend({
         />
         <Media
           vGap={0}
+          gap={12}
           style={{ zIndex: 1 }}
           image={
             action.transaction.status === 'failed' ? (
@@ -328,8 +329,19 @@ function ActionItemBackend({
           ) : null}
         </VStack>
       </HStack>
-      <BottomSheetDialog ref={dialogRef} style={{ height: '100vh' }}>
-        <form method="dialog" style={{ position: 'absolute', top: 8, left: 8 }}>
+      <BottomSheetDialog
+        ref={dialogRef}
+        style={{
+          height: '100vh',
+          borderRadius: 0,
+          padding: 16,
+          backgroundColor: 'var(--neutral-100)',
+        }}
+      >
+        <form
+          method="dialog"
+          style={{ position: 'absolute', top: 16, left: 8 }}
+        >
           <Button
             kind="ghost"
             value="cancel"
@@ -339,7 +351,7 @@ function ActionItemBackend({
             <ArrowLeftIcon />
           </Button>
         </form>
-        <ActionDetailedView />
+        <ActionDetailedView action={action} networks={networks} />
       </BottomSheetDialog>
     </>
   );
