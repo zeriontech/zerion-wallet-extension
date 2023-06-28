@@ -414,7 +414,7 @@ export const NetworkFeeDialog = React.forwardRef<
     <BottomSheetDialog
       ref={ref}
       height={dialogHeight}
-      style={{
+      containerStyle={{
         ['--surface-background-color' as string]: 'var(--z-index-1)',
       }}
     >

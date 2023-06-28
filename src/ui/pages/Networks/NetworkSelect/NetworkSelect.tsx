@@ -41,7 +41,7 @@ export function NetworkSelect({
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   return (
     <>
-      <BottomSheetDialog ref={dialogRef} style={{ padding: 0 }}>
+      <BottomSheetDialog ref={dialogRef} containerStyle={{ padding: 0 }}>
         <NetworkSelectDialog
           value={value}
           type={type}
