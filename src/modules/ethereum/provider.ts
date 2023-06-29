@@ -33,7 +33,7 @@ async function fetchInitialState(connection: Connection) {
   }));
 }
 
-class MetamaskProxy {
+class MetamaskExperimentalNamespace {
   isUnlocked() {
     throw new MethodNotImplemented('_metamask.isUnlocked: Not implemented');
   }
@@ -55,7 +55,7 @@ export class EthereumProvider extends JsonRpcProvider {
   isMetaMask?: boolean;
   // Metamask provides this proxy with few experimantal functions
   // Some dapps rely on it's methods (e.g. app.hop.exchange)
-  _metamask?: MetamaskProxy;
+  _metamask?: MetamaskExperimentalNamespace;
   connection: Connection;
   _openPromise: Promise<void> | null = null;
 
@@ -105,7 +105,7 @@ export class EthereumProvider extends JsonRpcProvider {
 
   markAsMetamask() {
     this.isMetaMask = true;
-    this._metamask = new MetamaskProxy();
+    this._metamask = new MetamaskExperimentalNamespace();
   }
 
   private async _prepareState() {
