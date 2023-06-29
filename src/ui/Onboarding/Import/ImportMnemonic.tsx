@@ -36,8 +36,14 @@ export function ImportMnemonic({
   const [validation, setValidation] = useState<ValidationResult | null>(null);
   const [phraseMode, setPhraseMode] = useState<12 | 24>(12);
   const [value, setValue] = useState(() => ARRAY_OF_NUMBERS.map(() => ''));
+  const [revealEnabled, setRevealEnabled] = useState(true);
   const [hoveredInput, setHoveredInput] = useState<number | null>(null);
   const [focusedInput, setFocusedInput] = useState<number | null>(null);
+
+  const handleFocusedInput = useCallback((n: number | null) => {
+    setRevealEnabled(true);
+    setFocusedInput(n);
+  }, []);
 
   const setHoveredInputDebounced = useDebouncedCallback(setHoveredInput, 150);
 
@@ -94,6 +100,7 @@ export function ImportMnemonic({
 
   const handlePaste = useCallback((index: number, value: string) => {
     const splitValue = value.trim().split(/\s+/);
+    setRevealEnabled(false); // prevent first input from automatically revealing
     setValue((current) => {
       return produce(current, (draft) => {
         splitValue.forEach((item, i) => {
@@ -184,7 +191,8 @@ export function ImportMnemonic({
                   name={`word-${index}`}
                   style={{ width: '100%', paddingLeft: 40 }}
                   type={
-                    hoveredInput === index || focusedInput === index
+                    revealEnabled &&
+                    (hoveredInput === index || focusedInput === index)
                       ? 'text'
                       : 'password'
                   }
@@ -199,8 +207,8 @@ export function ImportMnemonic({
                       });
                     })
                   }
-                  onFocus={() => setFocusedInput(index)}
-                  onBlur={() => setFocusedInput(null)}
+                  onFocus={() => handleFocusedInput(index)}
+                  onBlur={() => handleFocusedInput(null)}
                   onMouseEnter={() => setHoveredInputDebounced(index)}
                   onMouseLeave={() => setHoveredInputDebounced(null)}
                   onPaste={(e) => {
