@@ -33,8 +33,6 @@ async function fetchInitialState(connection: Connection) {
   }));
 }
 
-// Metamask provides this proxy with few experimantal functions
-// Some dapps rely on it's methods
 class MetamaskProxy {
   isUnlocked() {
     throw new MethodNotImplemented('_metamask.isUnlocked: Not implemented');
@@ -55,6 +53,8 @@ export class EthereumProvider extends JsonRpcProvider {
   networkVersion: string;
   isZerion = true;
   isMetaMask?: boolean;
+  // Metamask provides this proxy with few experimantal functions
+  // Some dapps rely on it's methods
   _metamask?: MetamaskProxy;
   connection: Connection;
   _openPromise: Promise<void> | null = null;
