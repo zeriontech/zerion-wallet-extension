@@ -118,6 +118,11 @@ export function Import() {
     [wallet, createUserAndWallet, showErrorBoundary]
   );
 
+  if (view === ViewParam.password && !wallet) {
+    setSearchParams(`view=${ViewParam.secret}`, { replace: true });
+    return null;
+  }
+
   return (
     <VStack gap={isNarrowView ? 16 : 56}>
       <div className={styles.container}>
@@ -153,11 +158,7 @@ export function Import() {
             {showError ? (
               <HandshakeFailure />
             ) : view === 'password' ? (
-              <Password
-                view={view}
-                step={step}
-                onSubmit={handlePasswordSubmit}
-              />
+              <Password step={step} onSubmit={handlePasswordSubmit} />
             ) : view === 'secret' ? (
               type === 'private-key' ? (
                 <ImportKey

@@ -200,11 +200,9 @@ function ConfirmPasswordForm({
 }
 
 export function Password({
-  view,
   step,
   onSubmit,
 }: {
-  view: ViewParam;
   step: PasswordStep | null;
   onSubmit(value: string): void;
 }) {
