@@ -5,7 +5,7 @@ import type {
   RequestArguments,
 } from '@json-rpc-tools/utils';
 import { formatJsonRpcRequest, isJsonRpcError } from '@json-rpc-tools/utils';
-import { InvalidParams } from 'src/shared/errors/errors';
+import { InvalidParams, MethodNotImplemented } from 'src/shared/errors/errors';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import type { Connection } from './connection';
 
@@ -33,17 +33,29 @@ async function fetchInitialState(connection: Connection) {
   }));
 }
 
+class MetamaskExperimentalNamespace {
+  isUnlocked() {
+    throw new MethodNotImplemented('_metamask.isUnlocked: Not implemented');
+  }
+
+  requestBatch() {
+    throw new MethodNotImplemented('_metamask.requestBatch: Not implemented');
+  }
+}
+
 function updateChainId(self: EthereumProvider, chainId: string) {
   self.chainId = chainId;
   self.networkVersion = String(parseInt(chainId, 16));
 }
-
 export class EthereumProvider extends JsonRpcProvider {
   accounts: string[];
   chainId: string;
   networkVersion: string;
   isZerion = true;
   isMetaMask?: boolean;
+  // Metamask provides this proxy with few experimantal functions
+  // Some dapps rely on it's methods (e.g. app.hop.exchange)
+  _metamask?: MetamaskExperimentalNamespace;
   connection: Connection;
   _openPromise: Promise<void> | null = null;
 
@@ -91,13 +103,18 @@ export class EthereumProvider extends JsonRpcProvider {
     return this;
   }
 
+  markAsMetamask() {
+    this.isMetaMask = true;
+    this._metamask = new MetamaskExperimentalNamespace();
+  }
+
   private async _prepareState() {
     return fetchInitialState(this.connection).then(
       ({ chainId, accounts, walletNameFlags }) => {
         updateChainId(this, chainId);
         this.accounts = accounts;
         if (walletNameFlags.includes(WalletNameFlag.isMetaMask)) {
-          this.isMetaMask = true;
+          this.markAsMetamask();
         }
       }
     );
