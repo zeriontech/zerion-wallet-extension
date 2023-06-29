@@ -18,10 +18,12 @@ import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { useHoverAnimation } from 'src/ui/shared/useHoverAnimation';
 import {
+  ApprovalInfo,
   CollectionLine,
   FeeLine,
   RateLine,
   SenderReceiverLine,
+  TransferInfo,
 } from './components';
 
 const ICON_SIZE = 20;
@@ -127,6 +129,9 @@ export function ActionDetailedView({
     [networks, action]
   );
 
+  const outgoingTransfers = action.content?.transfers?.outgoing;
+  const incomingTransfers = action.content?.transfers?.incoming;
+
   return (
     <VStack
       gap={16}
@@ -143,6 +148,32 @@ export function ActionDetailedView({
             minute: '2-digit',
           }).format(new Date(action.datetime))}
         </UIText>
+      </VStack>
+      <VStack gap={4}>
+        {outgoingTransfers?.length ? (
+          <TransferInfo
+            transfers={outgoingTransfers}
+            address={address}
+            title={incomingTransfers?.length ? 'Send' : undefined}
+            direction="outgoing"
+            chain={createChain(action.transaction.chain)}
+          />
+        ) : null}
+        {incomingTransfers?.length ? (
+          <TransferInfo
+            transfers={incomingTransfers}
+            address={address}
+            title={outgoingTransfers?.length ? 'Receive' : undefined}
+            direction="incoming"
+            chain={createChain(action.transaction.chain)}
+          />
+        ) : null}
+        {action.content?.single_asset ? (
+          <ApprovalInfo
+            asset={action.content.single_asset.asset}
+            address={address}
+          />
+        ) : null}
       </VStack>
       <Surface padding={16}>
         <VStack gap={24}>

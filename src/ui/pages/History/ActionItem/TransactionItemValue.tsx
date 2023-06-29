@@ -6,7 +6,6 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import type { Chain } from 'src/modules/networks/Chain';
 import { getCommonQuantity } from 'src/modules/networks/asset';
 import { getAssetQuantity } from 'src/modules/networks/asset';
-import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import {
   getFungibleAsset,
   getNftAsset,
@@ -14,9 +13,7 @@ import {
 import { AssetQuantityValue } from 'src/ui/components/AssetQuantityValue';
 import type BigNumber from 'bignumber.js';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
-import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
-import { NetworkId } from 'src/modules/networks/NetworkId';
-import { AssetLink } from '../ActionDetailedView/components/AssetLink';
+import { AssetLink, NFTLink } from '../ActionDetailedView/components/AssetLink';
 
 function getSign(decimaledValue?: number | BigNumber, direction?: Direction) {
   if (!decimaledValue || !direction || direction === 'self') {
@@ -91,26 +88,7 @@ export function HistoryNFTValue({
         </span>
       ) : null}
       {(!quantity || quantity === 1) && nftAsset?.asset_code ? (
-        <TextAnchor
-          href={`https://app.zerion.io/nfts/${
-            chain?.toString() || NetworkId.Ethereum
-          }/${nftAsset.asset_code}?address=${address}`}
-          target="_blank"
-          title={name}
-          rel="noopener noreferrer"
-          onClick={(e) => {
-            e.stopPropagation();
-            openInNewWindow(e);
-          }}
-          style={{
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            outlineOffset: -1, // make focus ring visible despite overflow: hidden
-          }}
-        >
-          {name}
-        </TextAnchor>
+        <NFTLink nft={nftAsset} chain={chain} address={address} title={name} />
       ) : (
         name
       )}
