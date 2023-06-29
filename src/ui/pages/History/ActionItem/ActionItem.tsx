@@ -36,6 +36,7 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { ActionDetailedView } from '../ActionDetailedView/ActionDetailedView';
+import { AssetLink } from '../ActionDetailedView/components/AssetLink';
 import {
   HistoryItemValue,
   TransactionCurrencyValue,
@@ -275,20 +276,14 @@ function ActionItemBackend({
             }}
           >
             {action.type.value === 'approve' && maybeApprovedAsset ? (
-              <TextAnchor
-                href={`https://app.zerion.io/explore/asset/${maybeApprovedAsset.symbol}-${maybeApprovedAsset.asset_code}?address=${address}`}
-                target="_blank"
-                title={maybeApprovedAsset.name || maybeApprovedAsset.symbol}
-                rel="noopener noreferrer"
-                style={{
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  outlineOffset: -1, // make focus ring visible despite overflow: hidden
-                }}
-              >
-                {maybeApprovedAsset.name || maybeApprovedAsset.symbol}
-              </TextAnchor>
+              <AssetLink
+                asset={maybeApprovedAsset}
+                title={
+                  maybeApprovedAsset.name ||
+                  maybeApprovedAsset.symbol?.toUpperCase()
+                }
+                address={address}
+              />
             ) : incomingTransfers?.length && chain ? (
               <HistoryItemValue
                 transfers={incomingTransfers}
@@ -351,7 +346,11 @@ function ActionItemBackend({
             <ArrowLeftIcon />
           </Button>
         </form>
-        <ActionDetailedView action={action} networks={networks} />
+        <ActionDetailedView
+          action={action}
+          networks={networks}
+          address={address}
+        />
       </BottomSheetDialog>
     </>
   );
@@ -418,20 +417,15 @@ function ActionItemLocal({
       />
       <UIText kind="small/regular">
         {asset ? (
-          <TextAnchor
-            href={`https://app.zerion.io/explore/asset/${asset.symbol}-${asset.asset_code}?address=${address}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {action.type.value === 'approve'
-              ? asset.name || asset.symbol
-              : asset.symbol}
-          </TextAnchor>
+          <AssetLink
+            asset={asset}
+            title={
+              action.type.value === 'approve'
+                ? asset.name || asset.symbol?.toUpperCase()
+                : undefined
+            }
+            address={address}
+          />
         ) : null}
       </UIText>
     </HStack>

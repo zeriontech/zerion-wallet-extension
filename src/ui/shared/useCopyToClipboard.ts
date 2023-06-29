@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import copyToClipboard from 'copy-to-clipboard';
 import debounce from 'lodash/debounce';
+import { copy } from 'src/modules/copy-to-clipboard';
 
 interface Params {
   text?: string;
@@ -19,7 +19,7 @@ export const useCopyToClipboard = ({ text }: Params) => {
     () =>
       debounce(() => {
         setIsSuccess(false);
-      }, 1000),
+      }, 3000),
     []
   );
 
@@ -28,7 +28,7 @@ export const useCopyToClipboard = ({ text }: Params) => {
       return;
     }
 
-    copyToClipboard(textRef.current);
+    copy(textRef.current);
     setIsSuccess(true);
     cancelSuccessState();
   }, [cancelSuccessState]);

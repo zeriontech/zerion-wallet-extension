@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { animated, useSpring } from 'react-spring';
 import type { AddressAction } from 'defi-sdk';
 import type { Networks } from 'src/modules/networks/Networks';
@@ -16,29 +16,15 @@ import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
+import { useHoverAnimation } from 'src/ui/shared/useHoverAnimation';
+import {
+  CollectionLine,
+  FeeLine,
+  RateLine,
+  SenderReceiverLine,
+} from './components';
 
 const ICON_SIZE = 20;
-
-function useHoverAnimationState(timing: number) {
-  const [isBooped, setIsBooped] = useState(false);
-
-  useEffect(() => {
-    if (!isBooped) {
-      return;
-    }
-    const timeoutId = window.setTimeout(() => {
-      setIsBooped(false);
-    }, timing);
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [isBooped, timing]);
-
-  return {
-    isBooped,
-    handleMouseEnter: useCallback(() => setIsBooped(true), []),
-  };
-}
 
 function ExplorerLink({
   action,
@@ -47,7 +33,7 @@ function ExplorerLink({
   action: AddressAction;
   networks: Networks;
 }) {
-  const { isBooped, handleMouseEnter } = useHoverAnimationState(150);
+  const { isBooped, handleMouseEnter } = useHoverAnimation(150);
 
   const iconStyle = useSpring({
     display: 'flex',
@@ -65,6 +51,7 @@ function ExplorerLink({
       onClick={openInNewWindow}
       onMouseEnter={handleMouseEnter}
       className={helperStyles.hoverUnderline}
+      style={{ justifySelf: 'end' }}
     >
       <HStack gap={4} alignItems="center" style={{ color: 'var(--primary' }}>
         <UIText kind="small/accent">Explorer</UIText>
@@ -77,9 +64,9 @@ function ExplorerLink({
 }
 
 function CopyButton({ hash }: { hash: string }) {
-  const { isBooped, handleMouseEnter } = useHoverAnimationState(150);
+  const { isBooped, handleMouseEnter } = useHoverAnimation(150);
   const { isBooped: isSuccessBooped, handleMouseEnter: handleCopyClick } =
-    useHoverAnimationState(150);
+    useHoverAnimation(150);
   const { handleCopy, isSuccess } = useCopyToClipboard({ text: hash });
 
   const successIconStyle = useSpring({
@@ -94,14 +81,17 @@ function CopyButton({ hash }: { hash: string }) {
     config: { tension: 300, friction: 15 },
   });
 
+  const handleClick = useCallback(() => {
+    handleCopy();
+    handleCopyClick();
+  }, [handleCopy, handleCopyClick]);
+
   return (
     <UnstyledButton
-      onClick={() => {
-        handleCopy();
-        handleCopyClick();
-      }}
+      onClick={handleClick}
       onMouseEnter={handleMouseEnter}
       className={helperStyles.hoverUnderline}
+      style={{ justifySelf: 'end' }}
     >
       <HStack
         gap={4}
@@ -125,9 +115,11 @@ function CopyButton({ hash }: { hash: string }) {
 
 export function ActionDetailedView({
   action,
+  address,
   networks,
 }: {
   action: AddressAction;
+  address?: string;
   networks: Networks;
 }) {
   const network = useMemo(
@@ -155,9 +147,11 @@ export function ActionDetailedView({
       <Surface padding={16}>
         <VStack gap={24}>
           <HStack
-            gap={24}
+            gap={16}
             alignItems="center"
-            style={{ gridTemplateColumns: network ? '2fr 1fr 1fr' : '1fr 1fr' }}
+            style={{
+              gridTemplateColumns: network ? '2fr auto auto' : undefined,
+            }}
           >
             {network ? (
               <HStack gap={8} alignItems="center">
@@ -173,7 +167,12 @@ export function ActionDetailedView({
             <ExplorerLink action={action} networks={networks} />
             <CopyButton hash={action.transaction.hash} />
           </HStack>
-          <VStack gap={20}></VStack>
+          <VStack gap={20}>
+            <CollectionLine action={action} />
+            <RateLine action={action} address={address} />
+            <SenderReceiverLine action={action} />
+            <FeeLine action={action} networks={networks} address={address} />
+          </VStack>
         </VStack>
       </Surface>
     </VStack>

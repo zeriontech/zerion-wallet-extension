@@ -16,6 +16,7 @@ import type BigNumber from 'bignumber.js';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { NetworkId } from 'src/modules/networks/NetworkId';
+import { AssetLink } from '../ActionDetailedView/components/AssetLink';
 
 function getSign(decimaledValue?: number | BigNumber, direction?: Direction) {
   if (!decimaledValue || !direction || direction === 'self') {
@@ -57,23 +58,7 @@ function HistoryTokenValue({
       title={`${sign}${formatted} ${tokenTitle}`}
     >
       <AssetQuantityValue sign={sign} quantity={quantity} />
-      <TextAnchor
-        href={`https://app.zerion.io/explore/asset/${asset.symbol}-${asset.asset_code}?address=${address}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={(e) => {
-          e.stopPropagation();
-          openInNewWindow(e);
-        }}
-        style={{
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-          outlineOffset: -1, // make focus ring visible despite overflow: hidden
-        }}
-      >
-        {tokenTitle}
-      </TextAnchor>
+      <AssetLink asset={asset} address={address} />
     </HStack>
   );
 }
