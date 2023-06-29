@@ -38,7 +38,7 @@ export const readme: Readme = {
             `/signTypedData?${new URLSearchParams({
               origin: sampleOrigins[index % sampleOrigins.length],
               windowId: String(index),
-              ...sample,
+              typedDataRaw: sample.typedDataRaw,
             })}`,
           ]}
         >

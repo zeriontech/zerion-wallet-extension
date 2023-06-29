@@ -46,9 +46,7 @@ import { useErrorBoundary } from 'src/ui/shared/useErrorBoundary';
 import { ApplicationLine } from 'src/ui/components/lines/ApplicationLine';
 import { setURLSearchParams } from 'src/ui/shared/setURLSearchParams';
 import { InterpretLoadingState } from 'src/ui/components/InterpretLoadingState';
-import { Transfers } from 'src/ui/components/lines/Transfers';
-import { RecipientLine } from 'src/ui/components/lines/RecipientLine';
-import { SingleAsset } from 'src/ui/components/lines/SingleAsset';
+import { AddressActionDetails } from 'src/ui/components/address-action/AddressActionDetails';
 import { NavigationBar } from '../SignInWithEthereum/NavigationBar';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
@@ -324,35 +322,15 @@ function SendTransactionContent({
               </div>
               <Spacer height={24} />
               <VStack gap={16}>
-                {recipientAddress && addressAction.type.value === 'send' ? (
-                  <RecipientLine
-                    recipientAddress={recipientAddress}
-                    chain={chain}
-                    networks={networks}
-                  />
-                ) : null}
-                {addressAction.label && addressAction.label.type !== 'to' ? (
-                  <ApplicationLine
-                    action={addressAction}
-                    chain={chain}
-                    networks={networks}
-                  />
-                ) : null}
-                {actionTransfers?.outgoing?.length ||
-                actionTransfers?.incoming?.length ? (
-                  <Transfers
-                    address={singleAddress}
-                    chain={chain}
-                    transfers={actionTransfers}
-                  />
-                ) : null}
-                {singleAsset ? (
-                  <SingleAsset
-                    address={singleAddress}
-                    actionType={addressAction.type.value}
-                    asset={singleAsset}
-                  />
-                ) : null}
+                <AddressActionDetails
+                  recipientAddress={recipientAddress}
+                  addressAction={addressAction}
+                  chain={chain}
+                  networks={networks}
+                  actionTransfers={actionTransfers}
+                  wallet={wallet}
+                  singleAsset={singleAsset}
+                />
                 {interpretQuery.isLoading ? (
                   <InterpretLoadingState />
                 ) : interpretQuery.isError ? (

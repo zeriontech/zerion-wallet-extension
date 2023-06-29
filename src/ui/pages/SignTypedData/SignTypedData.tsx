@@ -25,17 +25,12 @@ import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { toTypedData } from 'src/modules/ethereum/message-signing/prepareTypedData';
 import { interpretSignature } from 'src/modules/ethereum/transactions/interpretSignature';
-import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
-import { FillView } from 'src/ui/components/FillView';
-import { ApplicationLine } from 'src/ui/components/lines/ApplicationLine';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { setURLSearchParams } from 'src/ui/shared/setURLSearchParams';
 import { InterpretLoadingState } from 'src/ui/components/InterpretLoadingState';
-import { Transfers } from 'src/ui/components/lines/Transfers';
-import { SingleAsset } from 'src/ui/components/lines/SingleAsset';
-import { RecipientLine } from 'src/ui/components/lines/RecipientLine';
+import { AddressActionDetails } from 'src/ui/components/address-action/AddressActionDetails';
 import { NavigationBar } from '../SignInWithEthereum/NavigationBar';
 
 function TypedDataRow({ data }: { data: string }) {
@@ -53,21 +48,6 @@ function TypedDataRow({ data }: { data: string }) {
 
 function isPermit({ message }: TypedData) {
   return Boolean(message.owner && message.spender && message.value);
-}
-
-function SignatureViewLoading() {
-  return (
-    <FillView>
-      <VStack gap={4} style={{ placeItems: 'center' }}>
-        <CircleSpinner color="var(--primary)" size="66px" />
-        <Spacer height={18} />
-        <UIText kind="headline/h2">Loading</UIText>
-        <UIText kind="body/regular" color="var(--neutral-500)">
-          This may take a few seconds
-        </UIText>
-      </VStack>
-    </FillView>
-  );
 }
 
 enum View {
@@ -118,7 +98,7 @@ function SignTypedDataContent({
         .request('requestChainForOrigin', { origin })
         .then((chain) => createChain(chain)),
     useErrorBoundary: true,
-    suspense: false,
+    suspense: true,
   });
 
   const { data: interpretation, ...interpretQuery } = useQuery({
@@ -137,7 +117,7 @@ function SignTypedDataContent({
             typedData,
           })
         : null,
-    enabled: !chainQuery.isLoading,
+    enabled: !chainQuery.isLoading && Boolean(networks),
     suspense: false,
     retry: 1,
     refetchOnMount: false,
@@ -159,8 +139,8 @@ function SignTypedDataContent({
     [params]
   );
 
-  if (chainQuery.isLoading || !networks || !chain) {
-    return <SignatureViewLoading />;
+  if (!networks || !chain) {
+    return null;
   }
 
   return (
@@ -169,7 +149,9 @@ function SignTypedDataContent({
         // different surface color on backgroundKind="neutral"
         style={{ ['--surface-background-color' as string]: 'var(--z-index-0)' }}
       >
-        {view === View.advanced ? <NavigationBar title="Data to Sign" /> : null}
+        {view === View.advanced ? (
+          <NavigationBar title="Advanced View" />
+        ) : null}
         <PageTop />
         {view === View.default ? (
           <>
@@ -207,35 +189,15 @@ function SignTypedDataContent({
             </div>
             <Spacer height={24} />
             <VStack gap={16}>
-              {recipientAddress && addressAction?.type.value === 'send' ? (
-                <RecipientLine
-                  recipientAddress={recipientAddress}
-                  chain={chain}
-                  networks={networks}
-                />
-              ) : null}
-              {addressAction?.label && addressAction?.label.type !== 'to' ? (
-                <ApplicationLine
-                  action={addressAction}
-                  chain={chain}
-                  networks={networks}
-                />
-              ) : null}
-              {actionTransfers?.outgoing?.length ||
-              actionTransfers?.incoming?.length ? (
-                <Transfers
-                  address={wallet.address}
-                  chain={chain}
-                  transfers={actionTransfers}
-                />
-              ) : null}
-              {singleAsset ? (
-                <SingleAsset
-                  address={wallet.address}
-                  actionType={addressAction.type.value}
-                  asset={singleAsset}
-                />
-              ) : null}
+              <AddressActionDetails
+                recipientAddress={recipientAddress}
+                addressAction={addressAction}
+                chain={chain}
+                networks={networks}
+                actionTransfers={actionTransfers}
+                wallet={wallet}
+                singleAsset={singleAsset}
+              />
               {interpretQuery.isLoading ? (
                 <InterpretLoadingState />
               ) : interpretQuery.isError ? (
