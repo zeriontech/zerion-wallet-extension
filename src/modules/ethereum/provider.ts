@@ -54,7 +54,7 @@ export class EthereumProvider extends JsonRpcProvider {
   isZerion = true;
   isMetaMask?: boolean;
   // Metamask provides this proxy with few experimantal functions
-  // Some dapps rely on it's methods
+  // Some dapps rely on it's methods (e.g. app.hop.exchange)
   _metamask?: MetamaskProxy;
   connection: Connection;
   _openPromise: Promise<void> | null = null;
