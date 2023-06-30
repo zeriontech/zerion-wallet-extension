@@ -183,16 +183,17 @@ function ActionItemBackend({
   action: AddressAction;
   networks: Networks;
 }) {
+  const [showDetailedView, setShowDetailedView] = useState(false);
   const { params, ready } = useAddressParams();
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   const handleDialogOpen = useCallback<React.MouseEventHandler>((e) => {
     e.stopPropagation();
-    console.log(action);
     if (!dialogRef.current) {
       return;
     }
-    showConfirmDialog(dialogRef.current);
+    setShowDetailedView(true);
+    showConfirmDialog(dialogRef.current).then(() => setShowDetailedView(false));
   }, []);
 
   if (!ready) {
@@ -347,11 +348,13 @@ function ActionItemBackend({
             <ArrowLeftIcon />
           </Button>
         </form>
-        <ActionDetailedView
-          action={action}
-          networks={networks}
-          address={address}
-        />
+        {showDetailedView ? (
+          <ActionDetailedView
+            action={action}
+            networks={networks}
+            address={address}
+          />
+        ) : null}
       </BottomSheetDialog>
     </>
   );

@@ -48,6 +48,7 @@ function SenderReceiver({
     queryKey: [`wallet/uiGetWalletByAddress/${address}`],
     queryFn: () => walletPort.request('uiGetWalletByAddress', { address }),
     enabled: Boolean(address),
+    suspense: false,
   });
 
   const walletName = useProfileName(wallet || { address, name: null });

@@ -24,6 +24,7 @@ export const BottomSheetDialog = React.forwardRef(
         style={{
           border: 'none',
           bottom: 0,
+          position: 'fixed',
           marginBottom: 0,
           padding: 0,
           height,

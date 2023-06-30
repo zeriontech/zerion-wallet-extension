@@ -15,7 +15,6 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { pendingTransactionToAddressAction } from 'src/modules/ethereum/transactions/addressAction';
@@ -85,7 +84,7 @@ function useMinedAndPendingAddressActions({
 
   const {
     value,
-    isLoading: actionsIsLoading,
+    isFetching: actionsIsLoading,
     hasNext,
     fetchMore,
   } = useAddressActions(
@@ -98,7 +97,7 @@ function useMinedAndPendingAddressActions({
     },
     {
       limit: 30,
-      listenForUpdates: false,
+      listenForUpdates: true,
       paginatedCacheMode: 'first-page',
       enabled: isSupportedByBackend,
       keepStaleData: true,
@@ -164,6 +163,8 @@ export function HistoryList({
     hasMore,
   } = useMinedAndPendingAddressActions({ chain, searchQuery });
 
+  // console.log(transactions);
+
   const actionFilters = (
     <HStack
       gap={16}
@@ -202,18 +203,14 @@ export function HistoryList({
       ) : (
         <StretchyFillView maxHeight={STRETCHY_VIEW_HEIGHT}>
           {!isLoading ? (
-            <DelayedRender delay={300}>
-              <EmptyView
-                onReset={() => {
-                  setSearchQuery(undefined);
-                  onChainChange(NetworkSelectValue.All);
-                }}
-              />
-            </DelayedRender>
+            <EmptyView
+              onReset={() => {
+                setSearchQuery(undefined);
+                onChainChange(NetworkSelectValue.All);
+              }}
+            />
           ) : (
-            <DelayedRender delay={300}>
-              <ViewLoading kind="network" />
-            </DelayedRender>
+            <ViewLoading kind="network" />
           )}
         </StretchyFillView>
       )}
