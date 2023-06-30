@@ -1,4 +1,8 @@
-import { SiweMessage, SiweValidationError } from './SIWE';
+import {
+  SiweMessage,
+  SiweValidationError,
+  SiweValidationWarning,
+} from './SIWE';
 
 export interface SiweMessageFields {
   domain: string;
@@ -394,7 +398,9 @@ describe('SIWE (EIP-4361)', () => {
         '0x3083A9c26582C01Ec075373A8327016A15c1269B',
         new Date().getTime()
       );
-      expect(siwe.hasError(SiweValidationError.invalidAddress)).toBeTruthy();
+      expect(
+        siwe.hasWarning(SiweValidationWarning.invalidAddress)
+      ).toBeTruthy();
     });
 
     // it('fails if address in the signing data doesn’t match the address associated with signer', () => {});
@@ -483,7 +489,9 @@ describe('SIWE (EIP-4361)', () => {
         '0x3083A9c26582C01Ec075373A8327016A15c1269B',
         new Date().getTime()
       );
-      expect(siwe.hasError(SiweValidationError.domainMismatch)).toBeTruthy();
+      expect(
+        siwe.hasWarning(SiweValidationWarning.domainMismatch)
+      ).toBeTruthy();
     });
 
     it('fails if "Expiration Time" is in the past', () => {

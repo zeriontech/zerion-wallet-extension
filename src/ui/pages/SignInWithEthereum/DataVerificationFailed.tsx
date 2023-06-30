@@ -1,6 +1,9 @@
 import React from 'react';
 import type { SiweMessage } from 'src/modules/ethereum/message-signing/SIWE';
-import { SiweValidationError } from 'src/modules/ethereum/message-signing/SIWE';
+import {
+  SiweValidationError,
+  SiweValidationWarning,
+} from 'src/modules/ethereum/message-signing/SIWE';
 import { PageTop } from 'src/ui/components/PageTop';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -10,43 +13,55 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { NavigationBar } from './NavigationBar';
 
 function getErrors(siwe: SiweMessage) {
-  const errors = [];
+  const errors = [] as { message: string; kind: 'error' | 'warning' }[];
 
   if (siwe.hasError(SiweValidationError.missingDomain)) {
-    errors.push('Missing domain');
+    errors.push({ message: 'Missing domain', kind: 'error' });
   }
   if (siwe.hasError(SiweValidationError.missingAddress)) {
-    errors.push('Missing address');
-  }
-  if (siwe.hasError(SiweValidationError.invalidAddress)) {
-    errors.push('Address does not conform to EIP-55');
+    errors.push({ message: 'Missing address', kind: 'error' });
   }
   if (siwe.hasError(SiweValidationError.missingURI)) {
-    errors.push('Missing "URI"');
+    errors.push({ message: 'Missing "URI"', kind: 'error' });
   }
   if (siwe.hasError(SiweValidationError.missingVersion)) {
-    errors.push('Missing "Version"');
+    errors.push({ message: 'Missing "Version"', kind: 'error' });
   }
   if (siwe.hasError(SiweValidationError.invalidVersion)) {
-    errors.push('"Version" should be equal "1"');
+    errors.push({ message: '"Version" should be equal "1"', kind: 'error' });
   }
   if (siwe.hasError(SiweValidationError.missingNonce)) {
-    errors.push('Missing "Nonce"');
+    errors.push({ message: 'Missing "Nonce"', kind: 'error' });
   }
   if (siwe.hasError(SiweValidationError.missingChainId)) {
-    errors.push('Missing "Chain ID"');
+    errors.push({ message: 'Missing "Chain ID"', kind: 'error' });
   }
   if (siwe.hasError(SiweValidationError.missingIssuedAt)) {
-    errors.push('Missing "Issued At"');
+    errors.push({ message: 'Missing "Issued At"', kind: 'error' });
   }
   if (siwe.hasError(SiweValidationError.expiredMessage)) {
-    errors.push('"Expiration Time" is in the past');
+    errors.push({ message: '"Expiration Time" is in the past', kind: 'error' });
   }
   if (siwe.hasError(SiweValidationError.invalidNotBefore)) {
-    errors.push('"Not before" is in the future');
+    errors.push({ message: '"Not before" is in the future', kind: 'error' });
   }
   if (siwe.hasError(SiweValidationError.invalidTimeFormat)) {
-    errors.push('Datetime fields are not ISO-8601 compliant');
+    errors.push({
+      message: 'Datetime fields are not ISO-8601 compliant',
+      kind: 'error',
+    });
+  }
+  if (siwe.hasWarning(SiweValidationWarning.invalidAddress)) {
+    errors.push({
+      message: 'Address does not conform to EIP-55',
+      kind: 'warning',
+    });
+  }
+  if (siwe.hasWarning(SiweValidationWarning.domainMismatch)) {
+    errors.push({
+      message: 'Provided domain does not match the application domain',
+      kind: 'warning',
+    });
   }
 
   return errors;
@@ -76,8 +91,11 @@ export function DataVerificationFailed({ siwe }: { siwe: SiweMessage }) {
           {errors.map((error, index) => (
             <HStack key={index} gap={8} alignItems="center">
               <UIText kind="body/regular">•</UIText>
-              <UIText kind="body/regular">{error}</UIText>
-              <WarningIcon kind="negative" size={20} />
+              <UIText kind="body/regular">{error.message}</UIText>
+              <WarningIcon
+                kind={error.kind === 'error' ? 'negative' : 'notice'}
+                size={20}
+              />
             </HStack>
           ))}
         </VStack>

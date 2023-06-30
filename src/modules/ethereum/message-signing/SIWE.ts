@@ -24,32 +24,36 @@ export enum SiweValidationError {
   noError = 0,
   /** `domain` is not provided */
   missingDomain = 1 << 0,
+  /** `address` is not provided */
+  missingAddress = 1 << 1,
+  /** The address in the signing data doesn’t match the address associated with your wallet */
+  addressMismatch = 1 << 2,
+  /** `URI` is not provided */
+  missingURI = 1 << 3,
+  /** 'Version' is not provided */
+  missingVersion = 1 << 4,
+  /** `Version` is not 1 */
+  invalidVersion = 1 << 5,
+  /** `Nonce` is not provided */
+  missingNonce = 1 << 6,
+  /** 'Chain ID' is not provided */
+  missingChainId = 1 << 7,
+  /** 'Issued At' is not provided */
+  missingIssuedAt = 1 << 8,
+  /** `Expiration Time` is present and in the past */
+  expiredMessage = 1 << 9,
+  /** `Not Before` is present and in the future */
+  invalidNotBefore = 1 << 10,
+  /** `Expiration Time`, `Not Before` or `Issued At` not compliant to ISO-8601 */
+  invalidTimeFormat = 1 << 11,
+}
+
+export enum SiweValidationWarning {
+  noWarning = 0,
+  /** `address` does not conform to EIP-55 (not a checksum address) */
+  invalidAddress = 1 << 0,
   /** `domain` doesn't match the origin */
   domainMismatch = 1 << 1,
-  /** `address` is not provided */
-  missingAddress = 1 << 2,
-  /** `address` does not conform to EIP-55 (not a checksum address) */
-  invalidAddress = 1 << 3,
-  /** The address in the signing data doesn’t match the address associated with your wallet */
-  addressMismatch = 1 << 4,
-  /** `URI` is not provided */
-  missingURI = 1 << 5,
-  /** 'Version' is not provided */
-  missingVersion = 1 << 6,
-  /** `Version` is not 1 */
-  invalidVersion = 1 << 7,
-  /** `Nonce` is not provided */
-  missingNonce = 1 << 8,
-  /** 'Chain ID' is not provided */
-  missingChainId = 1 << 9,
-  /** 'Issued At' is not provided */
-  missingIssuedAt = 1 << 10,
-  /** `Expiration Time` is present and in the past */
-  expiredMessage = 1 << 11,
-  /** `Not Before` is present and in the future */
-  invalidNotBefore = 1 << 12,
-  /** `Expiration Time`, `Not Before` or `Issued At` not compliant to ISO-8601 */
-  invalidTimeFormat = 1 << 13,
 }
 
 /**
@@ -155,9 +159,11 @@ $\
   readonly resources?: Array<string>;
 
   private error: SiweValidationError;
+  private warning: SiweValidationWarning;
 
   private constructor(rawMessage: string, fields: Record<string, string>) {
     this.error = SiweValidationError.noError;
+    this.warning = SiweValidationWarning.noWarning;
     this.rawMessage = rawMessage;
 
     this.domain = fields.domain;
@@ -187,7 +193,7 @@ $\
       const domainAuthority = `${domain.hostname}:${domain.port}`;
 
       if (domainAuthority !== originAuthority) {
-        this.error |= SiweValidationError.domainMismatch;
+        this.warning |= SiweValidationWarning.domainMismatch;
       }
     }
 
@@ -200,7 +206,7 @@ $\
         this.error |= SiweValidationError.addressMismatch;
       }
       if (this.address && this.address !== toChecksumAddress(this.address)) {
-        this.error |= SiweValidationError.invalidAddress;
+        this.warning |= SiweValidationWarning.invalidAddress;
       }
     }
     if (!this.nonce) {
@@ -248,8 +254,16 @@ $\
     return this.error == SiweValidationError.noError;
   }
 
+  isWarning() {
+    return this.warning != SiweValidationWarning.noWarning;
+  }
+
   hasError(error: SiweValidationError) {
     return this.error & error;
+  }
+
+  hasWarning(warning: SiweValidationWarning) {
+    return this.warning & warning;
   }
 
   /**
