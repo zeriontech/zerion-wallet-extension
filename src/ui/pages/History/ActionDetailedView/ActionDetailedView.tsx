@@ -53,9 +53,9 @@ function ExplorerLink({
       onClick={openInNewWindow}
       onMouseEnter={handleMouseEnter}
       className={helperStyles.hoverUnderline}
-      style={{ justifySelf: 'end' }}
+      style={{ justifySelf: 'end', color: 'var(--primary)' }}
     >
-      <HStack gap={4} alignItems="center" style={{ color: 'var(--primary' }}>
+      <HStack gap={4} alignItems="center">
         <UIText kind="small/accent">Explorer</UIText>
         <animated.div style={iconStyle}>
           <LinkIcon style={{ width: ICON_SIZE, height: ICON_SIZE }} />
@@ -93,14 +93,13 @@ function CopyButton({ hash }: { hash: string }) {
       onClick={handleClick}
       onMouseEnter={handleMouseEnter}
       className={helperStyles.hoverUnderline}
-      style={{ justifySelf: 'end' }}
+      style={{
+        justifySelf: 'end',
+        color: isSuccess ? 'var(--positive-500)' : 'var(--primary)',
+      }}
     >
-      <HStack
-        gap={4}
-        alignItems="center"
-        style={{ color: isSuccess ? 'var(--positive-500)' : 'var(--primary' }}
-      >
-        <UIText kind="small/accent">Copy</UIText>
+      <HStack gap={4} alignItems="center">
+        <UIText kind="small/accent">Hash</UIText>
         {isSuccess ? (
           <animated.div style={successIconStyle}>
             <SuccessIcon style={{ width: ICON_SIZE, height: ICON_SIZE }} />
@@ -132,9 +131,14 @@ export function ActionDetailedView({
   const outgoingTransfers = action.content?.transfers?.outgoing;
   const incomingTransfers = action.content?.transfers?.incoming;
 
+  const hasTransferInfo =
+    outgoingTransfers?.length ||
+    incomingTransfers?.length ||
+    action.content?.single_asset;
+
   return (
     <VStack
-      gap={16}
+      gap={14}
       style={{ ['--surface-background-color' as string]: 'var(--white)' }}
     >
       <VStack gap={0} style={{ justifyItems: 'center' }}>
@@ -149,32 +153,34 @@ export function ActionDetailedView({
           }).format(new Date(action.datetime))}
         </UIText>
       </VStack>
-      <VStack gap={4}>
-        {outgoingTransfers?.length ? (
-          <TransferInfo
-            transfers={outgoingTransfers}
-            address={address}
-            title={incomingTransfers?.length ? 'Send' : undefined}
-            direction="outgoing"
-            chain={createChain(action.transaction.chain)}
-          />
-        ) : null}
-        {incomingTransfers?.length ? (
-          <TransferInfo
-            transfers={incomingTransfers}
-            address={address}
-            title={outgoingTransfers?.length ? 'Receive' : undefined}
-            direction="incoming"
-            chain={createChain(action.transaction.chain)}
-          />
-        ) : null}
-        {action.content?.single_asset ? (
-          <ApprovalInfo
-            asset={action.content.single_asset.asset}
-            address={address}
-          />
-        ) : null}
-      </VStack>
+      {hasTransferInfo ? (
+        <VStack gap={4}>
+          {outgoingTransfers?.length ? (
+            <TransferInfo
+              transfers={outgoingTransfers}
+              address={address}
+              title={incomingTransfers?.length ? 'Send' : undefined}
+              direction="outgoing"
+              chain={createChain(action.transaction.chain)}
+            />
+          ) : null}
+          {incomingTransfers?.length ? (
+            <TransferInfo
+              transfers={incomingTransfers}
+              address={address}
+              title={outgoingTransfers?.length ? 'Receive' : undefined}
+              direction="incoming"
+              chain={createChain(action.transaction.chain)}
+            />
+          ) : null}
+          {action.content?.single_asset ? (
+            <ApprovalInfo
+              asset={action.content.single_asset.asset}
+              address={address}
+            />
+          ) : null}
+        </VStack>
+      ) : null}
       <Surface padding={16}>
         <VStack gap={24}>
           <HStack

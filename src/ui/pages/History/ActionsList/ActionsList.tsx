@@ -34,19 +34,20 @@ export function ActionsList({
       style={{ minHeight: STRETCHY_VIEW_HEIGHT, alignContent: 'start' }}
     >
       {Object.entries(groupedByDate).map(([timestamp, items]) => (
-        <VStack gap={12} key={timestamp}>
+        <VStack gap={8} key={timestamp}>
           <HStack
             gap={8}
             justifyContent="space-between"
             style={{ paddingInline: 'var(--column-padding-inline)' }}
           >
-            <UIText kind="body/accent">
+            <UIText kind="small/accent">
               {new Intl.DateTimeFormat('en', {
                 dateStyle: 'medium',
               }).format(Number(timestamp))}
             </UIText>
           </HStack>
           <SurfaceList
+            gap={4}
             items={items.map((addressTransaction) => ({
               key: addressTransaction.transaction.hash,
               component: <ActionItem addressAction={addressTransaction} />,

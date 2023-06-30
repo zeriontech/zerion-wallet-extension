@@ -188,6 +188,7 @@ function ActionItemBackend({
 
   const handleDialogOpen = useCallback<React.MouseEventHandler>((e) => {
     e.stopPropagation();
+    console.log(action);
     if (!dialogRef.current) {
       return;
     }

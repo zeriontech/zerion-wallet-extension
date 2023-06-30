@@ -15,7 +15,10 @@ import type BigNumber from 'bignumber.js';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { AssetLink, NFTLink } from '../ActionDetailedView/components/AssetLink';
 
-function getSign(decimaledValue?: number | BigNumber, direction?: Direction) {
+function getSign(
+  decimaledValue?: number | BigNumber | string,
+  direction?: Direction
+) {
   if (!decimaledValue || !direction || direction === 'self') {
     return '';
   }
@@ -29,7 +32,7 @@ function HistoryTokenValue({
   direction,
   address,
 }: {
-  value: number;
+  value: number | string;
   asset: Asset;
   chain: Chain;
   direction: Direction;
@@ -49,8 +52,10 @@ function HistoryTokenValue({
       gap={4}
       alignItems="center"
       style={{
-        gridTemplateColumns: 'minmax(8px, 1fr) auto',
+        gridTemplateColumns:
+          'minmax(min-content, max-content) minmax(28px, max-content)',
         overflow: 'hidden',
+        whiteSpace: 'nowrap',
       }}
       title={`${sign}${formatted} ${tokenTitle}`}
     >

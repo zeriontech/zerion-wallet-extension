@@ -19,7 +19,11 @@ import { almostEqual, minus } from 'src/ui/shared/typography';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
-import { AssetLink, NFTLink } from './AssetLink';
+import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
+import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
+import { NetworkId } from 'src/modules/networks/NetworkId';
+import * as helperStyles from 'src/ui/style/helpers.module.css';
+import { AssetLink } from './AssetLink';
 
 type Direction = 'incoming' | 'outgoing';
 const ICON_SIZE = 36;
@@ -151,46 +155,60 @@ function NFTTransfer({
   const nft = getNftAsset(transfer.asset);
   invariant(nft, 'Transfer with non-fungible asset should contain one');
   const title = nft.name || nft.collection_info?.name;
-  return (
+  const nftContent = (
     <HStack
       gap={12}
       alignItems="center"
-      justifyContent="space-between"
-      style={{ gridTemplateColumns: '1fr auto' }}
+      style={{ gridTemplateColumns: 'auto 1fr' }}
+    >
+      <TokenIcon
+        size={ICON_SIZE}
+        src={nft.icon_url || nft.collection?.icon_url}
+        style={{ borderRadius: 4 }}
+        symbol={nft.symbol}
+      />
+      <UIText
+        kind="headline/h3"
+        style={{
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {title}
+      </UIText>
+    </HStack>
+  );
+
+  return direction === 'incoming' ? (
+    <UnstyledAnchor
+      href={`https://app.zerion.io/nfts/${
+        chain?.toString() || NetworkId.Ethereum
+      }/${nft.asset_code}?address=${address}`}
+      target="_blank"
+      title={nft.name}
+      rel="noopener noreferrer"
+      onClick={(e) => {
+        e.stopPropagation();
+        openInNewWindow(e);
+      }}
+      className={helperStyles.hoverUnderline}
+      style={{ color: 'var(--positive-500)' }}
     >
       <HStack
         gap={12}
         alignItems="center"
-        style={{ gridTemplateColumns: 'auto 1fr' }}
+        justifyContent="space-between"
+        style={{ gridTemplateColumns: '1fr auto' }}
       >
-        <TokenIcon
-          size={ICON_SIZE}
-          src={nft.icon_url || nft.collection?.icon_url}
-          style={{ borderRadius: 4 }}
-          symbol={nft.symbol}
-        />
-        <UIText
-          kind="headline/h3"
-          color={direction === 'incoming' ? 'var(--positive-500)' : undefined}
-          style={{
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {direction === 'incoming' ? (
-            <NFTLink nft={nft} address={address} chain={chain} title={title} />
-          ) : (
-            title
-          )}
-        </UIText>
-      </HStack>
-      {direction === 'incoming' ? (
+        {nftContent}
         <ChevronRightIcon
           style={{ color: 'var(--neutral-500)', width: 40, height: 40 }}
         />
-      ) : null}
-    </HStack>
+      </HStack>
+    </UnstyledAnchor>
+  ) : (
+    nftContent
   );
 }
 

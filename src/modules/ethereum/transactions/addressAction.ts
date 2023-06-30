@@ -46,7 +46,7 @@ const actionTypeToLabelType: Record<
   TransactionActionType,
   AddressActionLabelType
 > = {
-  deployment: 'from',
+  deploy: 'from',
   send: 'to',
   execute: 'contract',
   approve: 'application',
@@ -67,12 +67,12 @@ function createActionLabel(
     type: actionTypeToLabelType[action.type],
     value:
       transaction.to ||
-      (action.type === 'deployment' ? '' : action.contractAddress || ''),
+      (action.type === 'deploy' ? '' : action.contractAddress || ''),
     display_value: {
       text: '',
       wallet_address,
       contract_address:
-        action.type === 'deployment' ? undefined : action.contractAddress,
+        action.type === 'deploy' ? undefined : action.contractAddress,
     },
   };
 }
@@ -81,7 +81,7 @@ async function createActionContent(
   action: TransactionAction
 ): Promise<AddressAction['content'] | null> {
   switch (action.type) {
-    case 'deployment':
+    case 'deploy':
     case 'execute':
       return null;
     case 'send': {
@@ -104,7 +104,7 @@ async function createActionContent(
               outgoing: [
                 {
                   asset: { fungible: asset },
-                  quantity: action.amount,
+                  quantity: action.amount.toString(),
                   price: null,
                 },
               ],
@@ -118,7 +118,9 @@ async function createActionContent(
         chain: action.chain,
         address: action.assetAddress,
       });
-      return asset ? { single_asset: { asset: { fungible: asset } } } : null;
+      return asset
+        ? { single_asset: { asset: { fungible: asset }, quantity: '' } }
+        : null;
     }
   }
 }

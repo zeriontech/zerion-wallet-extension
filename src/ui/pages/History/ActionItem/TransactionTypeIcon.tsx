@@ -7,15 +7,20 @@ import type {
 } from 'defi-sdk';
 import ApproveIcon from 'jsx:src/ui/assets/actionTypes/approve.svg';
 import BorrowIcon from 'jsx:src/ui/assets/actionTypes/borrow.svg';
+import BurnIcon from 'jsx:src/ui/assets/actionTypes/burn.svg';
 import CancelIcon from 'jsx:src/ui/assets/actionTypes/cancel.svg';
+import ClaimIcon from 'jsx:src/ui/assets/actionTypes/claim.svg';
 import ContractIcon from 'jsx:src/ui/assets/actionTypes/contract.svg';
+import DeploymentIcon from 'jsx:src/ui/assets/actionTypes/deployment.svg';
 import DepositIcon from 'jsx:src/ui/assets/actionTypes/deposit.svg';
 import MintIcon from 'jsx:src/ui/assets/actionTypes/mint.svg';
 import ReceiveIcon from 'jsx:src/ui/assets/actionTypes/receive.svg';
 import RepayIcon from 'jsx:src/ui/assets/actionTypes/repay.svg';
 import SendIcon from 'jsx:src/ui/assets/actionTypes/send.svg';
+import StakeIcon from 'jsx:src/ui/assets/actionTypes/stake.svg';
 import SwapIcon from 'jsx:src/ui/assets/actionTypes/swap.svg';
 import UnknownIcon from 'jsx:src/ui/assets/actionTypes/unknown.svg';
+import UnstakeIcon from 'jsx:src/ui/assets/actionTypes/unstake.svg';
 import WithdrawIcon from 'jsx:src/ui/assets/actionTypes/withdraw.svg';
 import ChangeAssets2 from 'jsx:src/ui/assets/changed-assets-2.svg';
 import ChangeAssets3 from 'jsx:src/ui/assets/changed-assets-3.svg';
@@ -39,6 +44,8 @@ export function TransactionTypeIcon({
   const style = useMemo(
     () => ({
       display: 'flex',
+      backgroundColor: 'var(--white)',
+      borderRadius: '50%',
       ...(size
         ? {
             width: size,
@@ -55,11 +62,20 @@ export function TransactionTypeIcon({
   if (type === 'borrow') {
     return <BorrowIcon style={style} />;
   }
+  if (type === 'burn') {
+    return <BurnIcon style={style} />;
+  }
   if (type === 'cancel') {
     return <CancelIcon style={style} />;
   }
-  if (type === 'claim' || type === 'execute' || type === 'deployment') {
+  if (type === 'claim') {
+    return <ClaimIcon style={style} />;
+  }
+  if (type === 'execute') {
     return <ContractIcon style={style} />;
+  }
+  if (type === 'deploy') {
+    return <DeploymentIcon style={style} />;
   }
   if (type === 'deposit') {
     return <DepositIcon style={style} />;
@@ -67,17 +83,23 @@ export function TransactionTypeIcon({
   if (type === 'mint') {
     return <MintIcon style={style} />;
   }
-  if (type === 'receive' || type === 'unstake') {
+  if (type === 'receive') {
     return <ReceiveIcon style={style} />;
   }
   if (type === 'repay') {
     return <RepayIcon style={style} />;
   }
-  if (type === 'send' || type === 'stake') {
+  if (type === 'send') {
     return <SendIcon style={style} />;
+  }
+  if (type === 'stake') {
+    return <StakeIcon style={style} />;
   }
   if (type === 'trade') {
     return <SwapIcon style={style} />;
+  }
+  if (type === 'unstake') {
+    return <UnstakeIcon style={style} />;
   }
   if (type === 'withdraw') {
     return <WithdrawIcon style={style} />;

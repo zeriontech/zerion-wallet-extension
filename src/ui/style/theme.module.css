@@ -145,3 +145,14 @@
   background-color: var(--z-index-1);
   color: var(--black);
 }
+
+input[type='search']::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  height: 24px;
+  width: 24px;
+  content: url('./assets/close-primary.svg');
+}
+
+.theme-dark input[type='search']::-webkit-search-cancel-button {
+  content: url('./assets/close-primary-dark.svg');
+}

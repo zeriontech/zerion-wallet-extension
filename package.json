@@ -94,7 +94,7 @@
     "classnames": "^2.3.2",
     "copy-to-clipboard": "^3.3.3",
     "dayjs": "^1.11.9",
-    "defi-sdk": "^0.1.0-alpha.59",
+    "defi-sdk": "^0.1.0-alpha.62",
     "downshift": "^7.6.0",
     "ethers": "^5.7.2",
     "events": "^3.3.0",

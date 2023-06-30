@@ -44,7 +44,11 @@ export function CollectionLine({ action }: { action: AddressAction }) {
         />
         <UIText
           kind="small/accent"
-          style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
+          style={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
         >
           {nftCollection.name}
         </UIText>
