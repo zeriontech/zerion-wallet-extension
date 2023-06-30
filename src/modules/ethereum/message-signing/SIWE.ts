@@ -49,7 +49,7 @@ export enum SiweValidationError {
 }
 
 export enum SiweValidationWarning {
-  noError = 0,
+  noWarning = 0,
   /** `address` does not conform to EIP-55 (not a checksum address) */
   invalidAddress = 1 << 0,
   /** `domain` doesn't match the origin */
@@ -163,7 +163,7 @@ $\
 
   private constructor(rawMessage: string, fields: Record<string, string>) {
     this.error = SiweValidationError.noError;
-    this.warning = SiweValidationWarning.noError;
+    this.warning = SiweValidationWarning.noWarning;
     this.rawMessage = rawMessage;
 
     this.domain = fields.domain;
@@ -255,7 +255,7 @@ $\
   }
 
   isWarning() {
-    return this.warning != SiweValidationWarning.noError;
+    return this.warning != SiweValidationWarning.noWarning;
   }
 
   hasError(error: SiweValidationError) {

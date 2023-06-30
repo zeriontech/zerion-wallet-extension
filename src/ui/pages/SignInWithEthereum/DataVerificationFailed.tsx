@@ -57,6 +57,12 @@ function getErrors(siwe: SiweMessage) {
       kind: 'warning',
     });
   }
+  if (siwe.hasWarning(SiweValidationWarning.domainMismatch)) {
+    errors.push({
+      message: 'Provided domain does not match the application domain',
+      kind: 'warning',
+    });
+  }
 
   return errors;
 }
