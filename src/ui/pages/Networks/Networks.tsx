@@ -259,8 +259,10 @@ function RemoveNetworkConfirmationDialog({
       style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
     >
       <VStack gap={8}>
-        <UIText kind="headline/h3">Remove network?</UIText>
-        <UIText kind="body/regular">{network.name}</UIText>
+        <UIText kind="headline/h3">Are you sure?</UIText>
+        <UIText kind="body/regular">
+          {network.name} configuration will be removed
+        </UIText>
       </VStack>
       <HStack
         gap={12}
