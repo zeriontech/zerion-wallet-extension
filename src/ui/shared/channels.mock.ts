@@ -1,5 +1,6 @@
 import { TestPrivateKeyWalletContainer } from 'src/background/Wallet/model/WalletContainer';
 import { WalletOrigin } from 'src/background/Wallet/model/WalletOrigin';
+import type { SessionCacheService } from 'src/background/resource/sessionCacheService';
 import { Chain } from 'src/modules/networks/Chain';
 import { networksStore } from 'src/modules/networks/networks-store.client';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
@@ -139,6 +140,12 @@ export const accountPublicRPCPort = {
         console.log('accountPublicRPCPort mock: logout!');
       });
     }
+  },
+};
+
+export const sessionCacheService = {
+  async request() {
+    return null;
   },
 };
 
