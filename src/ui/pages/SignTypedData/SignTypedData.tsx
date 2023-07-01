@@ -205,9 +205,19 @@ function SignTypedDataContent({
                   Unable to analyze the details of the transaction
                 </UIText>
               ) : null}
-              <Button kind="regular" as={UnstyledLink} to={advancedViewHref}>
-                Advanced View
-              </Button>
+              {interpretQuery.isFetched ? (
+                addressAction?.content == null ? (
+                  <TypedDataRow data={typedDataFormatted} />
+                ) : (
+                  <Button
+                    kind="regular"
+                    as={UnstyledLink}
+                    to={advancedViewHref}
+                  >
+                    Advanced View
+                  </Button>
+                )
+              ) : null}
             </VStack>
           </>
         ) : null}
