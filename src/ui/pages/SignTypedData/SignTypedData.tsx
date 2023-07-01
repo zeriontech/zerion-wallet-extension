@@ -284,6 +284,7 @@ export function SignTypedData() {
   invariant(origin, 'origin get-parameter is required for this view');
 
   const typedDataRaw = params.get('typedDataRaw');
+  console.log('typedDataRaw', typedDataRaw);
   invariant(
     typedDataRaw,
     'typedDataRaw get-parameter is required for this view'
