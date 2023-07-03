@@ -33,7 +33,7 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
-import { ActionDetailedView } from '../ActionDetailedView/ActionDetailedView';
+import { ActionDetailedView } from '../ActionDetailedView';
 import { AssetLink } from '../ActionDetailedView/components/AssetLink';
 import {
   HistoryItemValue,
