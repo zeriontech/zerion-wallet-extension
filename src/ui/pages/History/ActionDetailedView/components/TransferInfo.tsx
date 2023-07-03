@@ -1,6 +1,5 @@
 import type { ActionAsset, ActionTransfer } from 'defi-sdk';
 import React, { useMemo } from 'react';
-import BigNumber from 'bignumber.js';
 import {
   getFungibleAsset,
   getNftAsset,
@@ -12,8 +11,7 @@ import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Media } from 'src/ui/ui-kit/Media';
-import { getDecimals } from 'src/modules/networks/asset';
-import { commonToBase } from 'src/shared/units/convert';
+import { getCommonQuantity } from 'src/modules/networks/asset';
 import type { Chain } from 'src/modules/networks/Chain';
 import { almostEqual, minus } from 'src/ui/shared/typography';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
@@ -23,44 +21,79 @@ import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
+import { isUnlimitedApproval } from '../../isUnlimitedApproval';
 import { AssetLink } from './AssetLink';
 
 type Direction = 'incoming' | 'outgoing';
 const ICON_SIZE = 36;
 
 export function ApprovalInfo({
-  asset,
+  approvalInfo,
   address,
+  chain,
 }: {
-  asset: ActionAsset;
+  approvalInfo: {
+    asset: ActionAsset;
+    quantity: string;
+  };
   address?: string;
+  chain: Chain;
 }) {
-  const fungible = getFungibleAsset(asset);
+  const fungible = getFungibleAsset(approvalInfo.asset);
+
+  const tokenQuantity = useMemo(
+    () =>
+      fungible
+        ? getCommonQuantity({
+            asset: fungible,
+            chain,
+            quantity: approvalInfo.quantity,
+          })
+        : null,
+    [approvalInfo, fungible, chain]
+  );
 
   if (!fungible) {
     return null;
   }
 
+  const isUnlimited = isUnlimitedApproval(approvalInfo.quantity);
+
   return (
     <Surface padding={12}>
-      <HStack
+      <Media
         gap={12}
-        alignItems="center"
-        style={{ gridTemplateColumns: 'auto 1fr' }}
-      >
-        <TokenIcon
-          src={fungible.icon_url}
-          size={ICON_SIZE}
-          title={fungible.name}
-          symbol={fungible.symbol}
-        />
-        <UIText
-          kind="headline/h3"
-          style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
-        >
-          <AssetLink asset={fungible} address={address} title={fungible.name} />
-        </UIText>
-      </HStack>
+        vGap={0}
+        image={
+          <TokenIcon
+            src={fungible.icon_url}
+            size={ICON_SIZE}
+            title={fungible.name}
+            symbol={fungible.symbol}
+          />
+        }
+        text={
+          <UIText
+            kind="headline/h3"
+            style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
+          >
+            <AssetLink
+              asset={fungible}
+              address={address}
+              title={fungible.name}
+            />
+          </UIText>
+        }
+        detailText={
+          tokenQuantity ? (
+            <UIText kind="small/regular" color="var(--neutral-500)">
+              {isUnlimited
+                ? 'Unlimited'
+                : formatTokenValue(tokenQuantity, fungible.symbol)}
+            </UIText>
+          ) : null
+        }
+      />
     </Surface>
   );
 }
@@ -80,12 +113,11 @@ function FungibleTransfer({
   invariant(fungible, 'Transfer with fungible asset should contain one');
   const balance = useMemo(
     () =>
-      fungible
-        ? commonToBase(
-            transfer.quantity,
-            0 - getDecimals({ asset: fungible, chain })
-          )
-        : new BigNumber(0),
+      getCommonQuantity({
+        asset: fungible,
+        chain,
+        quantity: transfer.quantity,
+      }),
     [transfer, fungible, chain]
   );
 
@@ -128,11 +160,7 @@ function FungibleTransfer({
         </UIText>
       }
       detailText={
-        <UIText
-          kind="small/regular"
-          color="var(--neutral-500)"
-          style={{ textDecoration: 'none' }}
-        >
+        <UIText kind="small/regular" color="var(--neutral-500)">
           {almostEqual}
           {formatCurrencyValue(balance.times(transfer.price || 0), 'en', 'usd')}
         </UIText>

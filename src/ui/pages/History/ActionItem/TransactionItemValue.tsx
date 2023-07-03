@@ -55,7 +55,7 @@ function HistoryTokenValue({
       alignItems="center"
       style={{
         gridTemplateColumns:
-          'minmax(min-content, max-content) minmax(28px, max-content)',
+          'minmax(min-content, max-content) minmax(20px, max-content)',
         overflow: 'hidden',
         whiteSpace: 'nowrap',
       }}
@@ -116,8 +116,8 @@ export function HistoryItemValue({
   address,
   withLink,
 }: {
-  transfers?: ActionTransfer[];
-  direction: 'in' | 'out';
+  transfers?: Pick<ActionTransfer, 'asset' | 'quantity'>[];
+  direction: Direction;
   chain: Chain;
   address?: string;
   withLink?: boolean;

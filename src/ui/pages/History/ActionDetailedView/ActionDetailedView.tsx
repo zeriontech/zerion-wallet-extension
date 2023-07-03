@@ -27,9 +27,10 @@ export function ActionDetailedView({
   address?: string;
   networks: Networks;
 }) {
+  const chain = useMemo(() => createChain(action.transaction.chain), [action]);
   const network = useMemo(
-    () => networks.getNetworkByName(createChain(action.transaction.chain)),
-    [networks, action]
+    () => networks.getNetworkByName(chain),
+    [networks, chain]
   );
 
   const outgoingTransfers = action.content?.transfers?.outgoing;
@@ -65,7 +66,7 @@ export function ActionDetailedView({
               address={address}
               title={incomingTransfers?.length ? 'Send' : undefined}
               direction="outgoing"
-              chain={createChain(action.transaction.chain)}
+              chain={chain}
             />
           ) : null}
           {incomingTransfers?.length ? (
@@ -74,13 +75,14 @@ export function ActionDetailedView({
               address={address}
               title={outgoingTransfers?.length ? 'Receive' : undefined}
               direction="incoming"
-              chain={createChain(action.transaction.chain)}
+              chain={chain}
             />
           ) : null}
           {action.content?.single_asset ? (
             <ApprovalInfo
-              asset={action.content.single_asset.asset}
+              approvalInfo={action.content.single_asset}
               address={address}
+              chain={chain}
             />
           ) : null}
         </VStack>

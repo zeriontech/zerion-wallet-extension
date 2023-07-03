@@ -3,7 +3,7 @@ import React from 'react';
 import { createChain } from 'src/modules/networks/Chain';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { Networks } from 'src/modules/networks/Networks';
-import { commonToBase } from 'src/shared/units/convert';
+import { baseToCommon } from 'src/shared/units/convert';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -21,11 +21,9 @@ export function FeeLine({
 }) {
   const { fee, chain } = action.transaction;
 
-  const feeEth = commonToBase(
+  const feeEth = baseToCommon(
     fee?.quantity || 0,
-    0 -
-      (networks.getNetworkByName(createChain(chain))?.native_asset?.decimals ||
-        18)
+    networks.getNetworkByName(createChain(chain))?.native_asset?.decimals || 18
   );
   const feeCurrency = feeEth.times(Number(fee?.price));
   const nativeAsset = networks.getNetworkByName(

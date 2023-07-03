@@ -35,6 +35,7 @@ import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog'
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { ActionDetailedView } from '../ActionDetailedView';
 import { AssetLink } from '../ActionDetailedView/components/AssetLink';
+import { isUnlimitedApproval } from '../isUnlimitedApproval';
 import {
   HistoryItemValue,
   TransactionCurrencyValue,
@@ -298,6 +299,17 @@ function ActionItemBackend({
                 <HistoryItemValue
                   transfers={outgoingTransfers}
                   direction="out"
+                  chain={chain}
+                  address={address}
+                />
+              ) : isUnlimitedApproval(
+                  action.content?.single_asset?.quantity
+                ) ? (
+                'Unlimited'
+              ) : action.content?.single_asset?.asset ? (
+                <HistoryItemValue
+                  transfers={[action.content.single_asset]}
+                  direction="self"
                   chain={chain}
                   address={address}
                 />
