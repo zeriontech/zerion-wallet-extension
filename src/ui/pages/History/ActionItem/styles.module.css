@@ -7,10 +7,6 @@
   z-index: 0;
 }
 
-.actionItem {
-  cursor: pointer;
-}
-
 .actionItem::before {
   content: '';
   position: absolute;

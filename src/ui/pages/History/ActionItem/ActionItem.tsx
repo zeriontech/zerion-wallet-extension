@@ -197,6 +197,7 @@ function ActionItemBackend({
         gap={24}
         justifyContent="space-between"
         style={{
+          cursor: 'pointer',
           position: 'relative',
           height: 42,
           gridTemplateColumns:
