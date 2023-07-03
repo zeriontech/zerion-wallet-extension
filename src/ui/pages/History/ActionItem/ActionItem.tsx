@@ -1,12 +1,10 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import type { AddressAction } from 'defi-sdk';
-import { animated, useSpring } from 'react-spring';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Media } from 'src/ui/ui-kit/Media';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import FailedIcon from 'jsx:src/ui/assets/failed.svg';
-import LinkIcon from 'jsx:src/ui/assets/new-window.svg';
 import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
 import type { Networks } from 'src/modules/networks/Networks';
 import { createChain } from 'src/modules/networks/Chain';
@@ -62,13 +60,6 @@ function ActionTitle({
   action: AnyAddressAction;
   explorerUrl?: string | null;
 }) {
-  const [showLinkIcon, setShowLinkIcon] = useState(false);
-  const linkIconStyle = useSpring({
-    display: 'flex',
-    x: showLinkIcon ? 0 : -10,
-    opacity: showLinkIcon ? 1 : 0,
-    config: { tension: 300, friction: 15 },
-  });
   const isMintingDna = checkIsDnaMint(action);
   const titlePrefix = action.transaction.status === 'failed' ? 'Failed ' : '';
   const actionTitle = isMintingDna
@@ -82,8 +73,6 @@ function ActionTitle({
           target="_blank"
           title={explorerUrl}
           rel="noopener noreferrer"
-          onMouseEnter={() => setShowLinkIcon(true)}
-          onMouseLeave={() => setShowLinkIcon(false)}
           onClick={(e) => {
             e.stopPropagation();
             openInNewWindow(e);
@@ -94,12 +83,7 @@ function ActionTitle({
             whiteSpace: 'nowrap',
           }}
         >
-          <HStack gap={2} alignItems="center">
-            {actionTitle}
-            <animated.div style={linkIconStyle}>
-              <LinkIcon style={{ width: 16, height: 16 }} />
-            </animated.div>
-          </HStack>
+          {actionTitle}
         </TextAnchor>
       ) : (
         actionTitle
