@@ -1,3 +1,4 @@
+// https://www.npmjs.com/package/copy-to-clipboard doesn't work in <dialog/>
 export async function copy(text: string) {
   try {
     return navigator.clipboard.writeText(text);
