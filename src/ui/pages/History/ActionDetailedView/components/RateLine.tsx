@@ -61,9 +61,10 @@ export function RateLine({
       <UIText kind="small/regular">Rate</UIText>
       <UIText kind="small/accent" style={{ justifySelf: 'end' }}>
         <HStack gap={4}>
-          1
-          <AssetLink asset={rate.asset1} address={address} />={' '}
-          {formatTokenValue(ratio, '')}
+          <span>1</span>
+          <AssetLink asset={rate.asset1} address={address} />
+          <span>=</span>
+          <span>{formatTokenValue(ratio, '')}</span>
           <AssetLink asset={rate.asset2} address={address} />
         </HStack>
       </UIText>
