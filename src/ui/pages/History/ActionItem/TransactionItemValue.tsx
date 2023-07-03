@@ -31,12 +31,14 @@ function HistoryTokenValue({
   chain,
   direction,
   address,
+  withLink,
 }: {
   value: number | string;
   asset: Asset;
   chain: Chain;
   direction: Direction;
   address?: string;
+  withLink?: boolean;
 }) {
   const tokenTitle = asset.symbol?.toUpperCase() || asset.name;
   const sign = getSign(value, direction);
@@ -60,7 +62,11 @@ function HistoryTokenValue({
       title={`${sign}${formatted} ${tokenTitle}`}
     >
       <AssetQuantityValue sign={sign} quantity={quantity} />
-      <AssetLink asset={asset} address={address} />
+      {withLink ? (
+        <AssetLink asset={asset} address={address} />
+      ) : (
+        asset.symbol?.toUpperCase() || asset.name
+      )}
     </HStack>
   );
 }
@@ -72,6 +78,7 @@ export function HistoryNFTValue({
   name,
   direction,
   address,
+  withLink,
 }: {
   quantity?: number;
   nftAsset?: NFTAsset | null;
@@ -79,6 +86,7 @@ export function HistoryNFTValue({
   name?: string;
   direction?: Direction;
   address?: string;
+  withLink?: boolean;
 }) {
   return (
     <HStack
@@ -92,7 +100,7 @@ export function HistoryNFTValue({
           {quantity}
         </span>
       ) : null}
-      {(!quantity || quantity === 1) && nftAsset?.asset_code ? (
+      {(!quantity || quantity === 1) && nftAsset?.asset_code && withLink ? (
         <NFTLink nft={nftAsset} chain={chain} address={address} title={name} />
       ) : (
         name
@@ -106,11 +114,13 @@ export function HistoryItemValue({
   direction,
   chain,
   address,
+  withLink,
 }: {
   transfers?: ActionTransfer[];
   direction: 'in' | 'out';
   chain: Chain;
   address?: string;
+  withLink?: boolean;
 }) {
   if (!transfers?.length) {
     return null;
@@ -136,6 +146,7 @@ export function HistoryItemValue({
       quantity={1}
       name={nftAsset.name || nftAsset.collection?.name}
       chain={chain}
+      withLink={withLink}
     />
   ) : fungibleAsset ? (
     <HistoryTokenValue
@@ -144,6 +155,7 @@ export function HistoryItemValue({
       chain={chain}
       value={transfers[0].quantity}
       direction={direction}
+      withLink={withLink}
     />
   ) : null;
 }

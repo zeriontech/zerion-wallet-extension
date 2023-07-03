@@ -57,10 +57,10 @@ function checkIsDnaMint(action: AnyAddressAction) {
 
 function ActionTitle({
   action,
-  networks,
+  explorerUrl,
 }: {
   action: AnyAddressAction;
-  networks: Networks;
+  explorerUrl?: string | null;
 }) {
   const [showLinkIcon, setShowLinkIcon] = useState(false);
   const linkIconStyle = useSpring({
@@ -69,13 +69,6 @@ function ActionTitle({
     opacity: showLinkIcon ? 1 : 0,
     config: { tension: 300, friction: 15 },
   });
-  const { chain: chainStr } = action.transaction;
-  const chain = chainStr ? createChain(chainStr) : null;
-
-  const explorerHref = chain
-    ? networks.getExplorerTxUrlByName(chain, action.transaction.hash)
-    : null;
-
   const isMintingDna = checkIsDnaMint(action);
   const titlePrefix = action.transaction.status === 'failed' ? 'Failed ' : '';
   const actionTitle = isMintingDna
@@ -83,11 +76,11 @@ function ActionTitle({
     : `${titlePrefix}${action.type.display_value}`;
   return (
     <UIText kind="body/accent">
-      {explorerHref ? (
+      {explorerUrl ? (
         <TextAnchor
-          href={explorerHref}
+          href={explorerUrl}
           target="_blank"
-          title={explorerHref}
+          title={explorerUrl}
           rel="noopener noreferrer"
           onMouseEnter={() => setShowLinkIcon(true)}
           onMouseLeave={() => setShowLinkIcon(false)}
@@ -254,7 +247,7 @@ function ActionItemBackend({
               <TransactionItemIcon action={action} />
             )
           }
-          text={<ActionTitle action={action} networks={networks} />}
+          text={<ActionTitle action={action} />}
           detailText={<ActionDetail networks={networks} action={action} />}
         />
         <VStack
@@ -292,6 +285,7 @@ function ActionItemBackend({
                 direction="in"
                 chain={chain}
                 address={address}
+                withLink={true}
               />
             ) : outgoingTransfers?.length && chain ? (
               <HistoryItemValue
@@ -299,6 +293,7 @@ function ActionItemBackend({
                 direction="out"
                 chain={chain}
                 address={address}
+                withLink={true}
               />
             ) : null}
           </UIText>
@@ -379,6 +374,13 @@ function ActionItemLocal({
 
   const isMintingDna = checkIsDnaMint(action);
 
+  const { chain: chainStr } = action.transaction;
+  const chain = chainStr ? createChain(chainStr) : null;
+
+  const explorerUrl = chain
+    ? networks.getExplorerTxUrlByName(chain, action.transaction.hash)
+    : null;
+
   return (
     <HStack
       gap={24}
@@ -416,7 +418,7 @@ function ActionItemLocal({
             )}
           </div>
         }
-        text={<ActionTitle action={action} networks={networks} />}
+        text={<ActionTitle action={action} explorerUrl={explorerUrl} />}
         detailText={<ActionDetail networks={networks} action={action} />}
       />
       <UIText kind="small/regular">
