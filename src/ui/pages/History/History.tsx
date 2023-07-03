@@ -163,8 +163,6 @@ export function HistoryList({
     hasMore,
   } = useMinedAndPendingAddressActions({ chain, searchQuery });
 
-  // console.log(transactions);
-
   const actionFilters = (
     <HStack
       gap={16}
