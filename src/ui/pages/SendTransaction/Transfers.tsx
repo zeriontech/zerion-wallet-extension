@@ -26,7 +26,7 @@ import { minus, noValueDash } from 'src/ui/shared/typography';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
-import { animated, useSpring } from 'react-spring';
+import { animated, useSpring } from '@react-spring/web';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 
 function TransferItemFungible({

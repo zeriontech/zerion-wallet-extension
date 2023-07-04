@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { animated, useSpring } from 'react-spring';
+import { animated, useSpring } from '@react-spring/web';
 import { useMutation } from '@tanstack/react-query';
 import produce from 'immer';
 import type { BareWallet } from 'src/shared/types/BareWallet';

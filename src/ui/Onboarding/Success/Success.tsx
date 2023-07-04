@@ -8,7 +8,7 @@ import PinIcon from 'jsx:../assets/pin.svg';
 import JigsawIcon from 'jsx:../assets/jigsaw.svg';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { useSpring, animated } from 'react-spring';
+import { useSpring, animated } from '@react-spring/web';
 import coinImgSrc from '../assets/zer_coin.png';
 import sparkImgSrc from '../assets/zer_spark.png';
 import starImgSrc from '../assets/zer_star.png';

@@ -6,7 +6,7 @@ import {
   config,
   useSpringRef,
   useChain,
-} from 'react-spring';
+} from '@react-spring/web';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import CloseIcon from 'jsx:src/ui/assets/close.svg';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
