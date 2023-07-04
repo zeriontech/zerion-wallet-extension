@@ -25,6 +25,7 @@ import { apostrophe } from 'src/ui/shared/typography';
 import { AppearancePage } from 'src/ui/features/appearance/AppearancePage';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
+import { InvitationMenuButton } from 'src/ui/components/InvitationFlow/InvitationMenuButton';
 import { BackupFlowSettingsSection } from '../BackupWallet/BackupSettingsItem';
 
 function SettingsMain() {
@@ -37,6 +38,7 @@ function SettingsMain() {
       <PageTop />
       <VStack gap={24}>
         <BackupFlowSettingsSection />
+        <InvitationMenuButton />
         <SurfaceList
           items={[
             {

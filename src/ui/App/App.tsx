@@ -57,6 +57,7 @@ import { NonFungibleToken } from '../pages/NonFungibleToken';
 import { Onboarding } from '../Onboarding';
 import { AddEthereumChain } from '../pages/AddEthereumChain';
 import { SignInWithEthereum } from '../pages/SignInWithEthereum';
+import { InvitationPage } from '../components/InvitationFlow/InvitationPage';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -199,6 +200,14 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             element={
               <RequireAuth>
                 <Overview />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/invitations"
+            element={
+              <RequireAuth>
+                <InvitationPage />
               </RequireAuth>
             }
           />

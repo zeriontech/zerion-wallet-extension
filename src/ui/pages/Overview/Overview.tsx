@@ -43,7 +43,7 @@ import {
   PausedBanner,
   PauseInjectionControl,
 } from 'src/ui/components/PauseInjection';
-import { InvitationBanner } from 'src/ui/components/Invitation';
+import { InvitationBanner } from 'src/ui/components/InvitationFlow';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -286,6 +286,7 @@ function OverviewComponent() {
         <RenderTimeMeasure />
       </DevelopmentOnly>
       <Spacer height={20} />
+      <InvitationBanner address={singleAddressNormalized} />
       <PageFullBleedColumn
         paddingInline={false}
         style={{

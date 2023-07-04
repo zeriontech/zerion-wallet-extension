@@ -1,1 +1,0 @@
-export { InvitationBanner } from './Invitation';
