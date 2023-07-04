@@ -69,7 +69,7 @@ function InvitationCode({ claimCode }: { claimCode: ClaimCode }) {
           kind="body/accent"
           color={disabled ? 'var(--neutral-400)' : undefined}
         >
-          {name || 'Invite'}
+          {data?.data.recipient ? name : 'Invite'}
         </UIText>
       </HStack>
       <Button

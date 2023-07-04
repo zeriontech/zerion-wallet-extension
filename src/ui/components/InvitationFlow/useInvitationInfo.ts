@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import ky from 'ky';
+import { PROXY_URL } from 'src/env/config';
 import { useFirebaseConfig } from 'src/modules/remote-config/plugins/firebase';
 import { invariant } from 'src/shared/invariant';
 
@@ -28,12 +29,7 @@ async function getInvitationInfo(address: string, campaignId: string) {
   const referrer = '0xdafe50ffa1c56e36ebd4a1baf1f6785dbd0267a7' || address;
   return ky
     .post(
-      `https://dashboard-api.linkdrop.io/api/v2/referrals/${campaignId}/${referrer}`,
-      {
-        headers: {
-          'x-ref-campaign-key': '5J9GF2XzsTAB',
-        },
-      }
+      new URL(`linkdrop/api/v2/referrals/${campaignId}/${referrer}`, PROXY_URL)
     )
     .json<InvitationInfo>();
 }
