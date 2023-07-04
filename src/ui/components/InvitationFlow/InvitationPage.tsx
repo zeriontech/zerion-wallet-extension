@@ -9,15 +9,34 @@ import InviteIcon from 'jsx:src/ui/assets/invite.svg';
 import { Button } from 'src/ui/ui-kit/Button';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { usePreferences } from 'src/ui/features/preferences';
+import { useQuery } from '@tanstack/react-query';
+import { useProfileName } from 'src/ui/shared/useProfileName';
 import { Background } from '../Background';
 import { PageColumn } from '../PageColumn';
 import { NavigationTitle } from '../NavigationTitle';
-import { useInvitationInfo, type ClaimCode } from './useInvitationInfo';
+import {
+  useInvitationInfo,
+  type ClaimCode,
+  getInvitationLinkInfo,
+} from './useInvitationInfo';
 
 function InvitationCode({ claimCode }: { claimCode: ClaimCode }) {
-  const { status } = claimCode;
+  const { status, claim_code, link_id } = claimCode;
   const { handleCopy, isSuccess } = useCopyToClipboard({
-    text: `https://claim.linkdrop.io/#/redeem/${claimCode.claim_code}`,
+    text: `https://claim.linkdrop.io/#/redeem/${claim_code}`,
+  });
+  const { data } = useQuery({
+    queryKey: [`get invitation link info for ${link_id}`],
+    queryFn: async () => {
+      return getInvitationLinkInfo(link_id);
+    },
+    suspense: false,
+    enabled: status === 'CLAIMED',
+  });
+
+  const name = useProfileName({
+    address: data?.data.recipient || '',
+    name: null,
   });
 
   const disabled = status !== 'CREATED';
@@ -50,7 +69,7 @@ function InvitationCode({ claimCode }: { claimCode: ClaimCode }) {
           kind="body/accent"
           color={disabled ? 'var(--neutral-400)' : undefined}
         >
-          Invite
+          {name || 'Invite'}
         </UIText>
       </HStack>
       <Button

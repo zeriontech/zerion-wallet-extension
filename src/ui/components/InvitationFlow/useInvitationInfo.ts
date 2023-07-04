@@ -1,17 +1,20 @@
 import { useQuery } from '@tanstack/react-query';
 import ky from 'ky';
+import { useFirebaseConfig } from 'src/modules/remote-config/plugins/firebase';
 import { invariant } from 'src/shared/invariant';
+
+type InvitationLinkStatus =
+  | 'CREATED'
+  | 'PENDING'
+  | 'FAILED'
+  | 'CLAIMED'
+  | 'EXPIRED'
+  | 'DEACTIVATED';
 
 export interface ClaimCode {
   claim_code: string;
   link_id: string;
-  status:
-    | 'CREATED'
-    | 'PENDING'
-    | 'FAILED'
-    | 'CLAIMED'
-    | 'EXPIRED'
-    | 'DEACTIVATED';
+  status: InvitationLinkStatus;
 }
 
 export interface InvitationInfo {
@@ -21,13 +24,11 @@ export interface InvitationInfo {
   claim_codes: ClaimCode[];
 }
 
-const CAMPAIGN_ID = '647ecbe30ffb03816f5e5a0b';
-
-async function getInvitationInfo(address: string) {
+async function getInvitationInfo(address: string, campaignId: string) {
   const referrer = '0xdafe50ffa1c56e36ebd4a1baf1f6785dbd0267a7' || address;
   return ky
     .post(
-      `https://dashboard-api.linkdrop.io/api/v2/referrals/${CAMPAIGN_ID}/${referrer}`,
+      `https://dashboard-api.linkdrop.io/api/v2/referrals/${campaignId}/${referrer}`,
       {
         headers: {
           'x-ref-campaign-key': '5J9GF2XzsTAB',
@@ -38,13 +39,36 @@ async function getInvitationInfo(address: string) {
 }
 
 export function useInvitationInfo(address?: string) {
+  const { data } = useFirebaseConfig(['extension_invitation_campaign_id']);
+  const campaignId = data?.extension_invitation_campaign_id;
   return useQuery({
-    queryKey: [`get invitation info for ${address}`],
-    queryFn: () => {
+    queryKey: [`get invitation info for ${address} for campaign ${campaignId}`],
+    queryFn: async () => {
       invariant(address, 'address should exists to fetch invitation data');
-      return getInvitationInfo(address);
+      invariant(
+        campaignId,
+        'campaign id should exists to fetch invitation data'
+      );
+      return getInvitationInfo(address, campaignId);
     },
     suspense: false,
-    enabled: Boolean(address),
+    enabled: Boolean(address) && Boolean(campaignId),
   });
+}
+
+interface InvitationLinkInfo {
+  success: boolean;
+  data: {
+    link_id: string;
+    status: InvitationLinkStatus;
+    recipient?: string;
+  };
+}
+
+export async function getInvitationLinkInfo(linkId: string) {
+  return ky
+    .get(
+      `https://dashboard-api.linkdrop.io/api/v2/claim-links/${linkId}/status`
+    )
+    .json<InvitationLinkInfo>();
 }
