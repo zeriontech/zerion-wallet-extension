@@ -1,4 +1,4 @@
-import produce from 'immer';
+import { produce } from 'immer';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/requests';
 import { assignGasPrice } from 'src/modules/ethereum/transactions/gasPrices/assignGasPrice';

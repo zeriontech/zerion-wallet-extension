@@ -25,7 +25,7 @@ import { Surface } from 'src/ui/ui-kit/Surface';
 import * as s from 'src/ui/style/helpers.module.css';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
-import produce from 'immer';
+import { produce } from 'immer';
 import { reloadActiveTab } from 'src/ui/shared/reloadActiveTab';
 import { ViewLoading } from '../ViewLoading';
 

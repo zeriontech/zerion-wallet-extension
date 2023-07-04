@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { animated, useSpring } from '@react-spring/web';
 import { useMutation } from '@tanstack/react-query';
-import produce from 'immer';
+import { produce } from 'immer';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { validate } from 'src/ui/pages/GetStarted/ImportWallet/ImportWallet';
 import type { ValidationResult } from 'src/shared/validation/ValidationResult';
