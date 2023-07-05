@@ -14,7 +14,11 @@ export function InvitationBanner({ address }: { address: string }) {
   const { data } = useInvitationInfo(address);
   const { preferences, setPreferences } = usePreferences();
 
-  if (preferences?.hiddenInvitationFlow || !data?.claim_codes?.length) {
+  if (
+    preferences?.hiddenInvitationFlow ||
+    !data?.claim_codes?.length ||
+    !data.claim_codes.some((code) => code.status === 'CREATED')
+  ) {
     return null;
   }
 

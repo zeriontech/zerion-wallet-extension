@@ -1,4 +1,5 @@
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -8,9 +9,11 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import InviteIcon from 'jsx:src/ui/assets/invite.svg';
 import { Button } from 'src/ui/ui-kit/Button';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
-import { usePreferences } from 'src/ui/features/preferences';
-import { useQuery } from '@tanstack/react-query';
 import { useProfileName } from 'src/ui/shared/useProfileName';
+import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
+import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
+import LinkIcon from 'jsx:src/ui/assets/new-window.svg';
+import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { Background } from '../Background';
 import { PageColumn } from '../PageColumn';
 import { NavigationTitle } from '../NavigationTitle';
@@ -19,6 +22,7 @@ import {
   type ClaimCode,
   getInvitationLinkInfo,
 } from './useInvitationInfo';
+import { DebugButtons } from './Debug';
 
 function InvitationCode({ claimCode }: { claimCode: ClaimCode }) {
   const { status, claim_code, link_id } = claimCode;
@@ -40,6 +44,7 @@ function InvitationCode({ claimCode }: { claimCode: ClaimCode }) {
   });
 
   const disabled = status !== 'CREATED';
+  const showLink = data?.data.recipient && Boolean(name);
   const buttonTitle = isSuccess
     ? 'Copied!'
     : status === 'CREATED'
@@ -56,7 +61,7 @@ function InvitationCode({ claimCode }: { claimCode: ClaimCode }) {
 
   return (
     <HStack
-      gap={24}
+      gap={16}
       justifyContent="space-between"
       alignItems="center"
       style={{ width: '100%', paddingInline: 8 }}
@@ -65,39 +70,61 @@ function InvitationCode({ claimCode }: { claimCode: ClaimCode }) {
         <InviteIcon
           style={{ color: disabled ? 'var(--neutral-400)' : 'var(--primary)' }}
         />
-        <UIText
-          kind="body/accent"
-          color={disabled ? 'var(--neutral-400)' : undefined}
-        >
-          {data?.data.recipient ? name : 'Invite'}
-        </UIText>
+        {showLink ? (
+          <UnstyledAnchor
+            className={helperStyles.hoverUnderline}
+            href={`https://app.zerion.io/${data.data.recipient}`}
+            onClick={openInNewWindow}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'var(--primary)' }}
+          >
+            <HStack
+              gap={4}
+              alignItems="center"
+              style={{ gridTemplateColumns: '1fr auto' }}
+            >
+              <UIText
+                kind="body/accent"
+                style={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {name}
+              </UIText>
+              <LinkIcon style={{ width: 16, height: 16 }} />
+            </HStack>
+          </UnstyledAnchor>
+        ) : (
+          <UIText
+            kind="body/accent"
+            color={disabled ? 'var(--neutral-400)' : undefined}
+          >
+            Invite
+          </UIText>
+        )}
       </HStack>
       <Button
         size={32}
-        style={{ width: 120, paddingInline: 4 }}
+        style={{
+          width: 120,
+          paddingInline: 4,
+          cursor: disabled ? 'auto' : undefined,
+        }}
         onClick={handleCopy}
         disabled={disabled}
-        kind={disabled ? 'neutral' : 'primary'}
+        kind={disabled ? 'regular' : 'primary'}
       >
-        {buttonTitle}
+        <UIText
+          kind="caption/accent"
+          color={disabled ? 'var(--neutral-400)' : undefined}
+        >
+          {buttonTitle}
+        </UIText>
       </Button>
     </HStack>
-  );
-}
-
-// For development and testing use only
-function ReturnBannerButton() {
-  const isProd = process.env.NODE_ENV === 'production';
-  const { preferences, setPreferences } = usePreferences();
-
-  if (isProd || !preferences?.hiddenInvitationFlow) {
-    return null;
-  }
-
-  return (
-    <Button onClick={() => setPreferences({ hiddenInvitationFlow: false })}>
-      Return banner
-    </Button>
   );
 }
 
@@ -146,7 +173,7 @@ export function InvitationPage() {
             )}
           </VStack>
         </Surface>
-        <ReturnBannerButton />
+        <DebugButtons />
       </PageColumn>
     </Background>
   );

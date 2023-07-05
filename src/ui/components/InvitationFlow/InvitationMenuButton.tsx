@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -10,6 +10,11 @@ import { useInvitationInfo } from './useInvitationInfo';
 export function InvitationMenuButton() {
   const { singleAddressNormalized } = useAddressParams();
   const { data } = useInvitationInfo(singleAddressNormalized);
+
+  const avaliableCodes = useMemo(
+    () => data?.claim_codes?.filter((code) => code.status === 'CREATED'),
+    [data]
+  );
 
   if (!data?.claim_codes?.length) {
     return null;
@@ -27,15 +32,16 @@ export function InvitationMenuButton() {
                 gap={24}
                 justifyContent="space-between"
                 alignItems="center"
-                style={{ width: '100%' }}
               >
                 <HStack gap={8} alignItems="center">
                   <InviteIcon style={{ color: 'var(--primary)' }} />
                   <UIText kind="body/regular">My Invites</UIText>
                 </HStack>
-                <UIText kind="small/regular" color="var(--neutral-500)">
-                  {data.claim_codes.length}
-                </UIText>
+                {avaliableCodes?.length ? (
+                  <UIText kind="small/regular" color="var(--neutral-500)">
+                    {avaliableCodes.length}
+                  </UIText>
+                ) : null}
               </HStack>
             </AngleRightRow>
           ),

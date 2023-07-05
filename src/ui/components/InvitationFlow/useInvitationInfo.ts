@@ -3,6 +3,7 @@ import ky from 'ky';
 import { PROXY_URL } from 'src/env/config';
 import { useFirebaseConfig } from 'src/modules/remote-config/plugins/firebase';
 import { invariant } from 'src/shared/invariant';
+import { REFERRER_WITH_FREE_LINK } from './Debug';
 
 type InvitationLinkStatus =
   | 'CREATED'
@@ -26,7 +27,8 @@ export interface InvitationInfo {
 }
 
 async function getInvitationInfo(address: string, campaignId: string) {
-  const referrer = '0xdafe50ffa1c56e36ebd4a1baf1f6785dbd0267a7' || address;
+  const referrer =
+    localStorage.getItem('referrer_test') || REFERRER_WITH_FREE_LINK || address;
   return ky
     .post(
       new URL(`linkdrop/api/v2/referrals/${campaignId}/${referrer}`, PROXY_URL)
