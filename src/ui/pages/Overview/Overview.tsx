@@ -43,6 +43,8 @@ import {
   PausedBanner,
   PauseInjectionControl,
 } from 'src/ui/components/PauseInjection';
+import { SetNFTAsAvatarWrapper } from 'src/ui/components/WalletAvatar/SetNFTAsAvatarWrapper';
+import { useProfileNft } from 'src/shared/profileService';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -201,6 +203,10 @@ function OverviewComponent() {
     { enabled: ready }
   );
 
+  const { data: profileNft, isLoading } = useProfileNft(
+    singleAddressNormalized
+  );
+
   if (!preferences) {
     return <ViewLoading />;
   }
@@ -233,7 +239,13 @@ function OverviewComponent() {
       <div style={{ height: isLoadingPortfolio ? 72 : undefined }}>
         <HStack gap={16} alignItems="center">
           {!isLoadingPortfolio ? (
-            <WalletAvatar address={singleAddress} size={64} borderRadius={6} />
+            <SetNFTAsAvatarWrapper value={profileNft} disabled={isLoading}>
+              <WalletAvatar
+                address={singleAddress}
+                size={64}
+                borderRadius={6}
+              />
+            </SetNFTAsAvatarWrapper>
           ) : null}
           <VStack gap={0}>
             <UIText kind="headline/hero">

@@ -1,10 +1,7 @@
 import type { AddressParams, Result } from 'defi-sdk';
 import { client, createPaginatedDomainHook } from 'defi-sdk';
 import type { AddressNFT } from './types';
-
-export function getNftId(nft: AddressNFT) {
-  return `${nft.chain}:${nft.contract_address}:${nft.token_id}`;
-}
+import { getNftId } from './getNftId';
 
 export type NFTSortedByParamType =
   | 'floor_price_low'

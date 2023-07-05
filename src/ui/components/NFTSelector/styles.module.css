@@ -1,0 +1,27 @@
+.nft {
+  display: flex;
+  border-radius: 8px;
+  position: relative;
+}
+
+.check {
+  display: none;
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 24px;
+  height: 24px;
+  color: var(--primary);
+}
+
+.nft:hover :global(.nft-content) {
+  outline: 2px solid var(--primary-300);
+}
+
+.radio:checked + .nft :global(.nft-content) {
+  outline: 2px solid var(--primary);
+}
+
+.radio:checked + .nft .check {
+  display: block;
+}

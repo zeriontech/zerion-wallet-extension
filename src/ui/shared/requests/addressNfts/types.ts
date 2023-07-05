@@ -1,4 +1,4 @@
-import type { MediaContentValue } from 'src/ui/ui-kit/MediaContent/MediaContent';
+import type { MediaContentValue } from 'src/shared/types/MediaContentValue';
 
 interface NFTAttribute {
   key: string;
