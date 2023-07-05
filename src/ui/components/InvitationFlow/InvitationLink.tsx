@@ -7,7 +7,7 @@ import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { AngleRightRow } from '../AngleRightRow';
 import { useInvitationInfo } from './useInvitationInfo';
 
-export function InvitationMenuButton() {
+export function InvitationLink() {
   const { singleAddressNormalized } = useAddressParams();
   const { data } = useInvitationInfo(singleAddressNormalized);
 
