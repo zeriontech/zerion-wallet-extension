@@ -106,8 +106,13 @@ userActivity.scheduleAlarms();
 browser.alarms.onAlarm.addListener(userActivity.handleAlarm);
 browser.alarms.onAlarm.addListener(ContentScriptManager.handleAlarm);
 
+let firstInitialization = false;
+
 initialize().then((values) => {
   const { account, accountPublicRPC, dnaService, globalPreferences } = values;
+  if (firstInitialization) {
+    account.logout();
+  }
   notifyContentScriptsAndUIAboutInitialization();
   // const httpConnection = new HttpConnection(() => account.getCurrentWallet());
   const memoryCacheRPC = new MemoryCacheRPC();
@@ -191,4 +196,8 @@ browser.runtime.onInstalled.addListener(({ reason }) => {
       url: url.toString(),
     });
   }
+});
+
+browser.runtime.onStartup.addListener(() => {
+  firstInitialization = true;
 });
