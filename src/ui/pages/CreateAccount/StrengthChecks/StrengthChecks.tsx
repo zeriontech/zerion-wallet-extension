@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { animated } from 'react-spring';
+import { animated } from '@react-spring/web';
 import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
 import TickIcon from 'jsx:src/ui/assets/check.svg';
 import type { StrengthStats } from 'src/shared/validation/password-strength';
