@@ -53,6 +53,8 @@ import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
 import { TransactionAdvancedView } from './TransactionAdvancedView';
+import { InsufficientFundsWarning } from './TransactionWarning';
+import { useInsufficientFundsWarning } from './TransactionWarning/InsufficientFundsWarning';
 
 type SendTransactionError =
   | null
@@ -270,6 +272,13 @@ function SendTransactionContent({
     throw new Error('Unexpected missing localAddressAction');
   }
 
+  const isInsufficientFundsWarning = useInsufficientFundsWarning({
+    address: singleAddress,
+    transaction: incomingTransaction,
+    chain,
+    networkFeeConfiguration: configuration.networkFee,
+  });
+
   if (!networks || !chain || !localAddressAction) {
     return null;
   }
@@ -348,6 +357,12 @@ function SendTransactionContent({
                 </Button>
               </VStack>
               <Spacer height={16} />
+              {isInsufficientFundsWarning ? (
+                <>
+                  <InsufficientFundsWarning chain={chain} />
+                  <Spacer height={16} />
+                </>
+              ) : null}
               {incomingTxWithGasAndFee ? (
                 <div style={{ marginTop: 'auto' }}>
                   <ErrorBoundary
