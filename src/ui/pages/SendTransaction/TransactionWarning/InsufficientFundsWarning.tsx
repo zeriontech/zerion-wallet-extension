@@ -8,7 +8,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import BigNumber from 'bignumber.js';
-import { useEvmAddressPositions } from 'src/ui/shared/requests/useEVMAddressPositions';
+import { useEvmAddressPositions } from 'src/ui/shared/requests/useEvmAddressPositions';
 import type { NetworkFeeConfiguration } from '../NetworkFee/types';
 import { useTransactionFee } from '../TransactionConfiguration/useTransactionFee';
 

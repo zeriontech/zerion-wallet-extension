@@ -57,7 +57,7 @@ import { getCommonQuantity } from 'src/modules/networks/asset';
 import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import { minus } from 'src/ui/shared/typography';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
-import { useEvmAddressPositions } from 'src/ui/shared/requests/useEVMAddressPositions';
+import { useEvmAddressPositions } from 'src/ui/shared/requests/useEvmAddressPositions';
 
 function LineToParent({
   hasPreviosNestedPosition,
