@@ -53,8 +53,7 @@ import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
 import { TransactionAdvancedView } from './TransactionAdvancedView';
-import { InsufficientFundsWarning } from './TransactionWarning';
-import { useInsufficientFundsWarning } from './TransactionWarning/InsufficientFundsWarning';
+import { TransactionWarning } from './TransactionWarning';
 
 type SendTransactionError =
   | null
@@ -272,13 +271,6 @@ function SendTransactionContent({
     throw new Error('Unexpected missing localAddressAction');
   }
 
-  const isInsufficientFundsWarning = useInsufficientFundsWarning({
-    address: singleAddress,
-    transaction: incomingTransaction,
-    chain,
-    networkFeeConfiguration: configuration.networkFee,
-  });
-
   if (!networks || !chain || !localAddressAction) {
     return null;
   }
@@ -357,42 +349,48 @@ function SendTransactionContent({
                 </Button>
               </VStack>
               <Spacer height={16} />
-              {isInsufficientFundsWarning ? (
-                <>
-                  <InsufficientFundsWarning chain={chain} />
-                  <Spacer height={16} />
-                </>
-              ) : null}
               {incomingTxWithGasAndFee ? (
-                <div style={{ marginTop: 'auto' }}>
-                  <ErrorBoundary
-                    renderError={() => (
-                      <UIText kind="body/regular">
-                        <span style={{ display: 'inline-block' }}>
-                          <WarningIcon />
-                        </span>{' '}
-                        Failed to load network fee
-                      </UIText>
-                    )}
-                  >
-                    <React.Suspense
-                      fallback={
-                        <div style={{ display: 'flex', justifyContent: 'end' }}>
-                          <CircleSpinner />
-                        </div>
-                      }
+                <>
+                  <React.Suspense>
+                    <TransactionWarning
+                      address={singleAddress}
+                      transaction={incomingTxWithGasAndFee}
+                      chain={chain}
+                      networkFeeConfiguration={configuration.networkFee}
+                    />
+                  </React.Suspense>
+                  <div style={{ marginTop: 'auto' }}>
+                    <ErrorBoundary
+                      renderError={() => (
+                        <UIText kind="body/regular">
+                          <span style={{ display: 'inline-block' }}>
+                            <WarningIcon />
+                          </span>{' '}
+                          Failed to load network fee
+                        </UIText>
+                      )}
                     >
-                      <TransactionConfiguration
-                        transaction={incomingTxWithGasAndFee}
-                        from={wallet.address}
-                        chain={chain}
-                        onFeeValueCommonReady={handleFeeValueCommonReady}
-                        configuration={configuration}
-                        onConfigurationChange={setConfiguration}
-                      />
-                    </React.Suspense>
-                  </ErrorBoundary>
-                </div>
+                      <React.Suspense
+                        fallback={
+                          <div
+                            style={{ display: 'flex', justifyContent: 'end' }}
+                          >
+                            <CircleSpinner />
+                          </div>
+                        }
+                      >
+                        <TransactionConfiguration
+                          transaction={incomingTxWithGasAndFee}
+                          from={wallet.address}
+                          chain={chain}
+                          onFeeValueCommonReady={handleFeeValueCommonReady}
+                          configuration={configuration}
+                          onConfigurationChange={setConfiguration}
+                        />
+                      </React.Suspense>
+                    </ErrorBoundary>
+                  </div>
+                </>
               ) : null}
             </>
           ) : null}

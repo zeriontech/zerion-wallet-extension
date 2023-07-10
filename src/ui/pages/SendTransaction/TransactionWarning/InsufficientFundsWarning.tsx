@@ -1,12 +1,11 @@
 import React, { useMemo } from 'react';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
-import { createChain, type Chain } from 'src/modules/networks/Chain';
+import type { Chain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { NetworkId } from 'src/modules/networks/NetworkId';
 import BigNumber from 'bignumber.js';
 import { useEvmAddressPositions } from 'src/ui/shared/requests/useEvmAddressPositions';
 import type { NetworkFeeConfiguration } from '../NetworkFee/types';
@@ -20,18 +19,18 @@ export function useInsufficientFundsWarning({
 }: {
   address: string;
   transaction: IncomingTransaction;
-  chain: Chain | null;
+  chain: Chain;
   networkFeeConfiguration: NetworkFeeConfiguration;
 }) {
   const transactionFee = useTransactionFee({
     transaction,
-    chain: chain || createChain(NetworkId.Ethereum),
+    chain,
     networkFeeConfiguration,
   });
 
   const { data: addressPositions } = useEvmAddressPositions({
     address,
-    chain: chain || createChain(NetworkId.Ethereum),
+    chain,
   });
 
   const nativeTokenBalance = useMemo(

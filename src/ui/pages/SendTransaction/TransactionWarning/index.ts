@@ -1,1 +1,1 @@
-export { InsufficientFundsWarning } from './InsufficientFundsWarning';
+export { TransactionWarning } from './TransactionWarning';
