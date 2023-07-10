@@ -32,6 +32,7 @@ export function AvatarIcon({
             errorStyle={{ width: size, height: size }}
             content={nft.metadata.content}
             alt={`${nft.metadata.name} image`}
+            forcePreview={size <= 40}
           />
         ) : (
           <BlockieImg
