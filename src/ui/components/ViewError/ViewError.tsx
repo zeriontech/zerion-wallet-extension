@@ -21,7 +21,7 @@ const ICON_SIZE = 20;
 
 export function ViewError({
   title = 'Unable to perform the desired action now',
-  subtitle = "Please try again. If the issue keeps happening, tell us about the bug you've found.",
+  subtitle = "Please try again. If the issue keeps happening,\ntell us about the bug you've found.",
   error,
 }: {
   title?: string;
@@ -52,7 +52,11 @@ export function ViewError({
         />
         <VStack gap={8}>
           <UIText kind="headline/h1">{title}</UIText>
-          {subtitle ? <UIText kind="body/regular">{subtitle}</UIText> : null}
+          {subtitle ? (
+            <UIText kind="body/regular" style={{ whiteSpace: 'pre-line' }}>
+              {subtitle}
+            </UIText>
+          ) : null}
         </VStack>
         <VStack
           gap={8}
