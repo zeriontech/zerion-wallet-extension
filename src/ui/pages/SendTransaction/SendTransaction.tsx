@@ -43,7 +43,6 @@ import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { useErrorBoundary } from 'src/ui/shared/useErrorBoundary';
-import { ApplicationLine } from 'src/ui/components/lines/ApplicationLine';
 import { setURLSearchParams } from 'src/ui/shared/setURLSearchParams';
 import { InterpretLoadingState } from 'src/ui/components/InterpretLoadingState';
 import { AddressActionDetails } from 'src/ui/components/address-action/AddressActionDetails';
