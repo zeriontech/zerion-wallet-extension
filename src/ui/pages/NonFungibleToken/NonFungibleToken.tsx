@@ -17,11 +17,17 @@ import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import {
+  fetchWalletNFT,
+  profileManager,
+  useProfileNft,
+} from 'src/shared/profileService';
+import { getNftId } from 'src/ui/shared/requests/addressNfts/getNftId';
 import { useAddressNftPosition } from './useAddressNftPosition';
 
 export function NonFungibleToken() {
   const { asset_code, chain } = useParams();
-  const { singleAddress } = useAddressParams();
+  const { singleAddress, singleAddressNormalized } = useAddressParams();
 
   const [contract_address, token_id] = useMemo(
     () => asset_code?.split(':') || [],
@@ -38,6 +44,24 @@ export function NonFungibleToken() {
     currency: 'usd',
     address: singleAddress,
   });
+
+  const {
+    data: profileNft,
+    isLoading: isProfileLoading,
+    refetch,
+  } = useProfileNft(singleAddressNormalized);
+
+  const { mutate: updateAvatar, isLoading: updateAvatarIsLoading } =
+    useMutation({
+      mutationFn: async () => {
+        if (!nft) {
+          return;
+        }
+        await profileManager.updateProfileAvatar(singleAddress, nft);
+        return fetchWalletNFT(singleAddressNormalized, { updateCache: true });
+      },
+      onSuccess: () => refetch(),
+    });
 
   const url = useMemo(() => {
     if (!nft?.chain || !nft.contract_address || !nft.token_id) {
@@ -153,6 +177,17 @@ export function NonFungibleToken() {
                 </HStack>
               </Button>
             ) : null}
+            <Button
+              onClick={() => updateAvatar()}
+              style={{ paddingLeft: 24, paddingRight: 24 }}
+              disabled={
+                updateAvatarIsLoading ||
+                isProfileLoading ||
+                Boolean(profileNft && getNftId(profileNft) === getNftId(nft))
+              }
+            >
+              Set as Avatar
+            </Button>
           </VStack>
         ) : null}
         <Spacer height={24} />

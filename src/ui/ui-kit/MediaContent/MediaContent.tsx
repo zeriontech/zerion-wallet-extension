@@ -1,12 +1,7 @@
 import React from 'react';
-import { isChromeBrowser } from 'src/ui/shared/isChromeBrowser';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Image, Audio, Video } from 'src/ui/ui-kit/MediaFallback';
-
-interface MediaDescription {
-  url: string | null;
-  meta: null | Record<string, string>;
-}
+import type { MediaContentValue } from 'src/shared/types/MediaContentValue';
 
 export const MediaError = ({
   image = '🖼',
@@ -36,89 +31,6 @@ export const MediaError = ({
     <span style={{ lineHeight: 1 }}>{image}</span>
   </div>
 );
-
-interface MimeType {
-  type: string;
-  subtype: string;
-  mimeType: string;
-}
-
-const isChrome = isChromeBrowser();
-
-function normalizeMimeType(type: string) {
-  if (isChrome) {
-    // Looks like a bug in Google Chrome:
-    // https://secure.phabricator.com/T13135
-    return type === 'video/quicktime' ? 'video/mp4' : type;
-  }
-  return type;
-}
-
-function inferMediaType(content: MediaDescription): MimeType | null {
-  const { url, meta } = content;
-  if (meta && meta.type) {
-    const normalizedType = normalizeMimeType(meta.type);
-    const parts = normalizedType.split('/');
-    if (parts.length > 1) {
-      const [type, subtype] = parts;
-      return { type, subtype, mimeType: normalizedType };
-    }
-  }
-  if (!url) {
-    return null;
-  }
-  const match = url.match(/\.([^.]+)$/);
-  if (!match) {
-    return null;
-  }
-  const extension = match[1];
-  const supportedExtentions = {
-    mp4: 'video',
-    mov: 'video',
-    mp3: 'audio',
-    jpg: 'image',
-    gif: 'image',
-  };
-  const type =
-    supportedExtentions[extension as keyof typeof supportedExtentions] || null;
-  return type
-    ? { type, subtype: extension, mimeType: `${type}/${extension}` }
-    : null;
-}
-
-export interface MediaContentValue {
-  image_preview_url?: string;
-  image_url?: string | null;
-  audio_url?: string | null;
-  video_url?: string | null;
-  type: 'video' | 'image' | 'audio';
-}
-
-export function getMediaContent(
-  content: MediaDescription
-): MediaContentValue | undefined {
-  const { url } = content;
-  const mimeTypeObject = inferMediaType(content);
-  if (mimeTypeObject == null || mimeTypeObject.type === 'image') {
-    return {
-      type: 'image',
-      image_url: url,
-    };
-  }
-  if (mimeTypeObject.type === 'video') {
-    return {
-      type: 'video',
-      video_url: url,
-    };
-  }
-  if (mimeTypeObject.type === 'audio') {
-    return {
-      type: 'audio',
-      audio_url: url,
-    };
-  }
-  return undefined;
-}
 
 export function MediaContent({
   content,
@@ -155,6 +67,7 @@ export function MediaContent({
   if (content?.type === 'video' && content?.video_url) {
     return (
       <Video
+        key={content.video_url}
         controls={false}
         muted={true}
         autoPlay={true}

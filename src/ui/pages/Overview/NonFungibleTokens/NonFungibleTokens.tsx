@@ -1,158 +1,23 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { EmptyView } from 'src/ui/components/EmptyView';
 import { DnaNFTBanner } from 'src/ui/components/DnaClaim';
-import TickIcon from 'jsx:src/ui/assets/check.svg';
 import { ViewLoading } from 'src/ui/components/ViewLoading/ViewLoading';
-import { NBSP } from 'src/ui/shared/typography';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
-import { MediaContent } from 'src/ui/ui-kit/MediaContent';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
-import { Spacer } from 'src/ui/ui-kit/Spacer';
-import { SquareElement } from 'src/ui/ui-kit/SquareElement';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { useNftsTotalValue } from 'src/ui/shared/requests/addressNfts/useNftsTotalValue';
-import {
-  getNftId,
-  useAddressNfts,
-} from 'src/ui/shared/requests/addressNfts/useAddressNfts';
-import type { AddressNFT } from 'src/ui/shared/requests/addressNfts/types';
-import { useNetworks } from 'src/modules/networks/useNetworks';
-import { createChain } from 'src/modules/networks/Chain';
+import { useAddressNfts } from 'src/ui/shared/requests/addressNfts/useAddressNfts';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { NetworkIcon } from 'src/ui/components/NetworkIcon';
+import { getNftId } from 'src/ui/shared/requests/addressNfts/getNftId';
 import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
 import * as s from './styles.module.css';
-
-function NFTItem({
-  item,
-  showCollection = false,
-  someHavePrice = false,
-}: {
-  item: AddressNFT;
-  showCollection?: boolean;
-  someHavePrice?: boolean;
-}) {
-  const isPrimary = useMemo(() => {
-    return item.metadata.tags?.includes('#primary');
-  }, [item]);
-
-  const price = item.prices.converted?.total_floor_price;
-  const { networks } = useNetworks();
-
-  const network = networks?.getNetworkByName(createChain(item.chain));
-
-  return (
-    <UnstyledLink
-      to={getNftEntityUrl(item)}
-      style={{ display: 'flex' }}
-      className={s.link}
-    >
-      <div style={{ width: '100%', position: 'relative' }}>
-        <SquareElement
-          style={{ position: 'relative' }}
-          className={s.mediaWrapper}
-          render={(style) => (
-            <>
-              <MediaContent
-                forcePreview={true}
-                content={item.metadata.content}
-                alt={`${item.metadata.name} image`}
-                errorStyle={
-                  CSS.supports('aspect-ratio: 1 / 1')
-                    ? undefined
-                    : { position: 'absolute', height: '100%' }
-                }
-                style={{
-                  ...style,
-                  borderRadius: 8,
-                  objectFit: 'cover',
-                }}
-              />
-              {network ? (
-                <div
-                  style={{
-                    borderRadius: 5,
-                    overflow: 'hidden',
-                    position: 'absolute',
-                    bottom: 8,
-                    left: 8,
-                    border: '1px solid var(--white)',
-                  }}
-                >
-                  <NetworkIcon
-                    chainId={network.external_id}
-                    size={12}
-                    name={network.name}
-                    src={network.icon_url}
-                  />
-                </div>
-              ) : null}
-            </>
-          )}
-        />
-        <Spacer height={16} />
-        <VStack gap={4} style={{ marginTop: 'auto' }}>
-          {showCollection ? (
-            <UIText
-              kind="small/accent"
-              color="var(--neutral-500)"
-              style={{
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}
-            >
-              {item.collection?.name || 'Untitled collection'}
-            </UIText>
-          ) : null}
-          <UIText
-            kind="body/accent"
-            style={{
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-            }}
-          >
-            {item.metadata.name || 'Untitled Asset'}
-          </UIText>
-          {price ? (
-            <UIText kind="body/accent">
-              <NeutralDecimals
-                parts={formatCurrencyToParts(price, 'en', 'usd')}
-              />
-            </UIText>
-          ) : someHavePrice ? (
-            <UIText kind="body/accent">{NBSP}</UIText>
-          ) : null}
-        </VStack>
-        {isPrimary ? (
-          <div
-            style={{
-              position: 'absolute',
-              color: 'var(--always-white)',
-              backgroundColor: 'var(--positive-500)',
-              borderRadius: 10,
-              height: 20,
-              width: 20,
-              padding: 2,
-              top: 0,
-              left: 0,
-              boxShadow: 'var(--elevation-100)',
-            }}
-          >
-            <TickIcon width={16} height={16} />
-          </div>
-        ) : null}
-      </div>
-    </UnstyledLink>
-  );
-}
+import { NFTItem } from './NFTItem';
 
 export function NonFungibleTokens() {
   const { ready, params, maybeSingleAddress } = useAddressParams();
@@ -218,11 +83,14 @@ export function NonFungibleTokens() {
         }}
       >
         {items.map((addressNft) => (
-          <NFTItem
+          <UnstyledLink
             key={getNftId(addressNft)}
-            item={addressNft}
-            showCollection={true}
-          />
+            to={getNftEntityUrl(addressNft)}
+            style={{ display: 'flex' }}
+            className={s.link}
+          >
+            <NFTItem item={addressNft} showCollection={true} />
+          </UnstyledLink>
         ))}
       </div>
 

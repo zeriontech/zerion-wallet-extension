@@ -10,10 +10,12 @@ export function DialogTitle({
   title,
   alignTitle = 'center',
   closeKind = 'text',
+  style,
 }: {
   title: React.ReactNode;
   alignTitle?: 'start' | 'center';
   closeKind?: 'text' | 'icon';
+  style?: React.CSSProperties;
 }) {
   return (
     <div
@@ -22,6 +24,7 @@ export function DialogTitle({
         display: 'grid',
         gridTemplateColumns:
           alignTitle === 'center' ? '1fr 4fr 1fr' : 'max-content 1fr',
+        ...style,
       }}
     >
       <div
