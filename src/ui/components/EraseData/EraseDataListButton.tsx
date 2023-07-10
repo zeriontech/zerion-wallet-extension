@@ -7,6 +7,8 @@ import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog'
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import type { UITextProps } from 'src/ui/ui-kit/UIText';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import { FEATURE_WAITLIST_ONBOARDING } from 'src/env/config';
+import { maybeOpenOboarding } from 'src/ui/Onboarding/initialization';
 import { EraseDataConfirmationDialog } from './EraseDataConfirmationDialog';
 import { EraseDataInProgress } from './EraseDataInProgress';
 import { useEraseDataMutation } from './useEraseDataMutation';
@@ -18,7 +20,15 @@ export function EraseDataListButton({
 }) {
   const navigate = useNavigate();
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
-  const eraseAllData = useEraseDataMutation({ onSuccess: () => navigate('/') });
+  const eraseAllData = useEraseDataMutation({
+    onSuccess: () => {
+      if (FEATURE_WAITLIST_ONBOARDING === 'on') {
+        maybeOpenOboarding();
+      } else {
+        navigate('/');
+      }
+    },
+  });
   if (eraseAllData.isLoading) {
     return (
       <CenteredDialog

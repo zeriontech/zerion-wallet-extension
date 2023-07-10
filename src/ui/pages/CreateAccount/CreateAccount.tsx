@@ -1,4 +1,4 @@
-import React, { useId, useState } from 'react';
+import React, { useId, useMemo, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PASSWORD_MIN_LENGTH } from 'src/shared/validation/user-input';
@@ -17,6 +17,7 @@ import { AnimatedCheckmark } from 'src/ui/ui-kit/AnimatedCheckmark';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { Input } from 'src/ui/ui-kit/Input';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
+import { estimatePasswordStrengh } from 'src/shared/validation/password-strength';
 import { StrengthIndicator } from './StrengthIndicator';
 
 export function CreateAccount() {
@@ -32,6 +33,9 @@ export function CreateAccount() {
     type: string;
     message: string;
   }>(null);
+
+  const stats = useMemo(() => estimatePasswordStrengh(value), [value]);
+
   const createUserMutation = useMutation({
     mutationFn: ({ password }: { password: string }) => {
       return accountPublicRPCPort.request('createUser', { password });
@@ -80,7 +84,7 @@ export function CreateAccount() {
               <UIText kind="small/accent" color="var(--black)">
                 Password
               </UIText>
-              <ZStack>
+              <VStack gap={8}>
                 <Input
                   id={inputId}
                   value={value}
@@ -93,28 +97,8 @@ export function CreateAccount() {
                   placeholder="at least 6 characters"
                   required={true}
                 />
-                <div
-                  style={{
-                    alignSelf: 'center',
-                    justifySelf: 'end',
-                    marginRight: 12,
-                    display: 'flex',
-                    justifyContent: 'center',
-                    minWidth: 24,
-                  }}
-                >
-                  {(focusedInput === 'password' && value !== repeatValue) ||
-                  (value?.length || 0) < PASSWORD_MIN_LENGTH ? (
-                    <StrengthIndicator value={value} />
-                  ) : (
-                    <AnimatedCheckmark
-                      checked={value === repeatValue}
-                      checkedColor="var(--positive-500)"
-                      animate={false}
-                    />
-                  )}
-                </div>
-              </ZStack>
+                <StrengthIndicator stats={stats} />
+              </VStack>
               {createUserMutation.error ? (
                 <UIText kind="caption/regular" color="var(--negative-500)">
                   {(createUserMutation.error as Error).message ||

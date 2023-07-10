@@ -31,7 +31,6 @@ import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
-import { getError } from 'src/shared/errors/getError';
 import { Button } from 'src/ui/ui-kit/Button';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { interpretTransaction } from 'src/modules/ethereum/transactions/interpretTransaction';
@@ -45,6 +44,7 @@ import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { Surface } from 'src/ui/ui-kit/Surface';
+import { useErrorBoundary } from 'src/ui/shared/useErrorBoundary';
 import { NavigationBar } from '../SignInWithEthereum/NavigationBar';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
@@ -126,17 +126,6 @@ function usePreparedTx(transaction: IncomingTransaction, origin: string) {
     incomingTxWithChainId: withChainId,
     incomingTxWithGasAndFee: resolveGasQuery.data,
   };
-}
-
-function useErrorBoundary() {
-  const [_, setState] = useState();
-  return useCallback(
-    (error: unknown) =>
-      setState(() => {
-        throw getError(error);
-      }),
-    []
-  );
 }
 
 const DEFAULT_CONFIGURATION: CustomConfiguration = {

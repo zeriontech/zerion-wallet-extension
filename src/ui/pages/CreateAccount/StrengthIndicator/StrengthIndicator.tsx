@@ -1,93 +1,91 @@
 import React, { useEffect } from 'react';
 import { animated } from '@react-spring/web';
-import {
-  estimatePasswordStrengh,
-  Strength,
-} from 'src/shared/validation/password-strength';
+import type { StrengthStats } from 'src/shared/validation/password-strength';
+import { Strength } from 'src/shared/validation/password-strength';
+import { PASSWORD_MIN_LENGTH } from 'src/shared/validation/user-input';
 import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
 
 function Rect({
+  animatedStyle,
   style,
-  fill,
+  trackStyle,
+  color,
 }: {
-  style: ReturnType<typeof useTransformTrigger>['style'];
-  fill: string;
+  animatedStyle?: ReturnType<typeof useTransformTrigger>['style'];
+  style?: React.CSSProperties;
+  trackStyle?: React.CSSProperties;
+  color: string;
 }) {
   return (
-    <animated.svg style={{ ...style, width: 8, height: 4 }} viewBox="0 0 8 4">
-      <rect width="8" height="4" rx="1" fill={fill} />
-    </animated.svg>
+    <animated.div
+      style={{
+        ...animatedStyle,
+        ...style,
+        backgroundColor: 'var(--neutral-100)',
+        height: 4,
+        borderRadius: 4,
+        overflow: 'hidden',
+      }}
+    >
+      <animated.div
+        style={{
+          ...trackStyle,
+          backgroundColor: color,
+          transition: 'background-color 150ms',
+          width: '100%',
+          height: '100%',
+        }}
+      />
+    </animated.div>
   );
 }
 
 function Indicator({ value, weakest }: { value: Strength; weakest: boolean }) {
-  const config = {
-    scale: 1.2,
-    timing: 80,
-  };
-  const delay = 70;
-  const { style: style1, trigger: trigger1 } = useTransformTrigger({
-    ...config,
-    delay: 0 * delay,
-  });
-  const { style: style2, trigger: trigger2 } = useTransformTrigger({
-    ...config,
-    delay: 1 * delay,
-  });
-  const { style: style3, trigger: trigger3 } = useTransformTrigger({
-    ...config,
-    delay: 2 * delay,
-  });
-  const { style: style4, trigger: trigger4 } = useTransformTrigger({
-    ...config,
-    delay: 3 * delay,
-  });
   const colors = {
-    [Strength.weak]: 'var(--neutral-500)',
+    weakest: 'var(--negative-400)',
+    empty: 'var(--neutral-100)',
     [Strength.medium]: 'var(--notice-500)',
     [Strength.strong]: 'var(--positive-500)',
   };
+  const { style: scaleXStyle, trigger: triggerScaleX } = useTransformTrigger({
+    timing: 80,
+    scaleX: 1.1,
+    springConfig: {
+      tension: 250,
+      friction: 8,
+    },
+  });
   useEffect(() => {
     if (value === Strength.strong) {
-      trigger1();
-      trigger2();
-      trigger3();
-      trigger4();
-    } else if (value === Strength.medium) {
-      trigger1();
-      trigger2();
+      triggerScaleX();
     }
-  }, [value, trigger1, trigger2, trigger3, trigger4]);
+  }, [value, triggerScaleX]);
+  const atLeastMedium = value === Strength.medium || value === Strength.strong;
 
   return (
     <div
-      style={{ display: 'grid', gap: 2, gridTemplateRows: '4px 4px 4px 4px' }}
+      style={{ display: 'grid', gap: 4, gridTemplateColumns: '1fr 1fr 1fr' }}
     >
       <Rect
-        style={style4}
-        // top two bars: color only when Strength.strong
-        fill={value === Strength.strong ? colors[value] : colors[Strength.weak]}
-      />
-      <Rect
-        style={style3}
-        // top two bars: color only when Strength.strong
-        fill={value === Strength.strong ? colors[value] : colors[Strength.weak]}
-      />
-      <Rect style={style2} fill={colors[value]} />
-      <Rect
-        style={style1}
-        // lowest bar: color as medium for any non-empty input
-        fill={
-          value === Strength.weak && weakest
-            ? colors[Strength.medium]
-            : colors[value]
+        color={
+          value === Strength.medium || value === Strength.strong
+            ? colors[value]
+            : weakest
+            ? colors.weakest
+            : colors.empty
         }
+      />
+      <Rect color={atLeastMedium ? colors[value] : colors.empty} />
+      <Rect
+        animatedStyle={{ ...scaleXStyle }}
+        style={{ transformOrigin: 'left' }}
+        color={value === Strength.strong ? colors[value] : colors.empty}
       />
     </div>
   );
 }
 
-export function StrengthIndicator({ value }: { value: string }) {
-  const strength = estimatePasswordStrengh(value);
-  return <Indicator value={strength} weakest={value.length > 0} />;
+export function StrengthIndicator({ stats }: { stats: StrengthStats }) {
+  const { strength, length } = stats;
+  return <Indicator value={strength} weakest={length >= PASSWORD_MIN_LENGTH} />;
 }

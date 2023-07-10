@@ -94,21 +94,6 @@
   background-color: var(--neutral-300);
 }
 
-.input {
-  padding: 10px 12px;
-  background: var(--neutral-100);
-  border-radius: 8px;
-  border: none;
-
-  font-weight: 400;
-  font-size: 16px;
-  line-height: 24px;
-}
-
-.input::placeholder {
-  color: var(--neutral-600);
-}
-
 @keyframes appear {
   from {
     opacity: 0;

@@ -13,6 +13,7 @@ export const VStack = ({
         display: 'grid',
         gridGap: gap,
         gridTemplateColumns: 'minmax(0, auto)',
+        alignItems: 'start',
         ...style,
       }}
       {...props}

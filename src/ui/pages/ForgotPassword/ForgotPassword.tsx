@@ -16,12 +16,22 @@ import { focusNode } from 'src/ui/shared/focusNode';
 import { useEraseDataMutation } from 'src/ui/components/EraseData';
 import { EraseDataConfirmationDialog } from 'src/ui/components/EraseData';
 import { EraseDataInProgress } from 'src/ui/components/EraseData';
+import { FEATURE_WAITLIST_ONBOARDING } from 'src/env/config';
+import { maybeOpenOboarding } from 'src/ui/Onboarding/initialization';
 import * as s from './styles.module.css';
 
 export function ForgotPassword() {
   const navigate = useNavigate();
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
-  const eraseAllData = useEraseDataMutation({ onSuccess: () => navigate('/') });
+  const eraseAllData = useEraseDataMutation({
+    onSuccess: () => {
+      if (FEATURE_WAITLIST_ONBOARDING === 'on') {
+        maybeOpenOboarding();
+      } else {
+        navigate('/');
+      }
+    },
+  });
   if (eraseAllData.isSuccess) {
     return null; // avoid flickering while waiting for navigation
   }
