@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { animated } from 'react-spring';
+import { animated } from '@react-spring/web';
 import {
   estimatePasswordStrengh,
   Strength,

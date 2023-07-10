@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import produce from 'immer';
+import { produce } from 'immer';
 import omit from 'lodash/omit';
 import type { Networks } from 'src/modules/networks/Networks';
 import { sendRpcRequest } from 'src/shared/custom-rpc/rpc-request';

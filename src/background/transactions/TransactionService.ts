@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import { PersistentStore } from 'src/modules/persistent-store';
-import produce from 'immer';
+import { produce } from 'immer';
 import type {
   StoredTransactions,
   TransactionObject,

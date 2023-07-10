@@ -1,4 +1,4 @@
-import produce from 'immer';
+import { produce } from 'immer';
 import { useMemo } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { pushUnique, removeFromArray } from 'src/shared/array-mutations';

@@ -84,6 +84,9 @@ export function Receive() {
               eyeRadius={2}
               size={200}
               logoImage="https://protocol-icons.s3.amazonaws.com/zerion+defi+sdk.png"
+              logoWidth={36}
+              logoHeight={36}
+              logoPadding={8}
             />
           </div>
           <VStack gap={8} style={{ justifyItems: 'center' }}>

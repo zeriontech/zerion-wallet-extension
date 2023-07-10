@@ -1,4 +1,4 @@
-import produce from 'immer';
+import { produce } from 'immer';
 import type { BareWallet, WalletGroup } from '../model/types';
 
 function maskMnemonic(

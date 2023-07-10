@@ -1,4 +1,4 @@
-import { animated } from 'react-spring';
+import { animated } from '@react-spring/web';
 import { isTruthy } from 'is-truthy-ts';
 import React, { useEffect, useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';

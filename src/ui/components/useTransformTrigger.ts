@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useSpring } from 'react-spring';
+import { useSpring } from '@react-spring/web';
 
 export function useTransformTrigger({
   x = 0,

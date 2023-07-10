@@ -1,5 +1,5 @@
 import { decrypt, encrypt } from 'src/modules/crypto';
-import produce from 'immer';
+import { produce } from 'immer';
 import { nanoid } from 'nanoid';
 import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
 import type { Chain } from 'src/modules/networks/Chain';

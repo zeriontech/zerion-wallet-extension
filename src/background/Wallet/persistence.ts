@@ -1,4 +1,4 @@
-import produce from 'immer';
+import { produce } from 'immer';
 import { PersistentStore } from 'src/modules/persistent-store';
 import type { Credentials } from '../account/Credentials';
 import type { WalletRecord } from './model/types';
