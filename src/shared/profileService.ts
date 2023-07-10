@@ -18,13 +18,13 @@ interface AuthData {
 class AuthError extends Error {}
 
 const endpoints = {
-  checkAuthStatus: `${SOCIAL_API_URL}/auth/`,
-  authorize: `${SOCIAL_API_URL}/auth/authorize/`,
+  checkAuthStatus: `${SOCIAL_API_URL}api/v2/auth/`,
+  authorize: `${SOCIAL_API_URL}api/v2/auth/authorize/`,
   generateMessage: (address: string) =>
-    `${SOCIAL_API_URL}/auth/${address}/generate_message/`,
-  getProfiles: `${SOCIAL_API_URL}/profiles/`,
-  updateAvatar: `${SOCIAL_API_URL}/profiles/update_avatar/`,
-  removeAvatar: `${SOCIAL_API_URL}/profiles/remove_avatar/`,
+    `${SOCIAL_API_URL}api/v2/auth/${address}/generate_message/`,
+  getProfiles: `${SOCIAL_API_URL}api/v2/profiles/`,
+  updateAvatar: `${SOCIAL_API_URL}api/v2/profiles/update_avatar/`,
+  removeAvatar: `${SOCIAL_API_URL}api/v2/profiles/remove_avatar/`,
 };
 
 export interface WalletProfile {
