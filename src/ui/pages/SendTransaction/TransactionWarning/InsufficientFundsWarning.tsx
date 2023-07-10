@@ -8,6 +8,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import BigNumber from 'bignumber.js';
 import { useEvmAddressPositions } from 'src/ui/shared/requests/useEvmAddressPositions';
+import { baseToCommon } from 'src/shared/units/convert';
 import type { NetworkFeeConfiguration } from '../NetworkFee/types';
 import { useTransactionFee } from '../TransactionConfiguration/useTransactionFee';
 
@@ -34,7 +35,11 @@ export function useInsufficientFundsWarning({
   });
 
   const nativeTokenBalance = useMemo(
-    () => new BigNumber(addressPositions?.[0].quantity || 0),
+    () =>
+      baseToCommon(
+        new BigNumber(addressPositions?.[0].quantity || 0),
+        addressPositions?.[0].asset.decimals || 18
+      ),
     [addressPositions]
   );
 
