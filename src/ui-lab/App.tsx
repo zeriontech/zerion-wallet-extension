@@ -6,7 +6,6 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
 import { DesignTheme } from 'src/ui/components/DesignTheme';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
-import { FillView } from 'src/ui/components/FillView';
 import { ViewError } from 'src/ui/components/ViewError';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -47,13 +46,7 @@ function Details({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ErrorBoundary
-        renderError={(error) => (
-          <FillView>
-            <ViewError error={error} />
-          </FillView>
-        )}
-      >
+      <ErrorBoundary renderError={(error) => <ViewError error={error} />}>
         <DesignTheme />
         <div style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 16 }}>
           <UIText kind="headline/h1">Hello, UI Lab</UIText>

@@ -154,6 +154,11 @@ export function HistoryList({
   onChainChange: (value: string) => void;
 }) {
   const chain = chainValue ? createChain(chainValue) : null;
+
+  // @ts-ignore
+  // eslint-disable-next-line no-console
+  console.log(chain.one.two);
+
   const [searchQuery, setSearchQuery] = useState<string | undefined>();
   const {
     value: transactions,

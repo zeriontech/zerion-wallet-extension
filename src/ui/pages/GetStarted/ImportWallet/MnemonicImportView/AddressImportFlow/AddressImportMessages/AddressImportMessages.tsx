@@ -18,7 +18,6 @@ import { DecorativeMessage } from 'src/ui/pages/GetStarted/components/Decorative
 import { WithConfetti } from 'src/ui/pages/GetStarted/components/DecorativeMessage/DecorativeMessage';
 import { getError } from 'src/shared/errors/getError';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
-import { FillView } from 'src/ui/components/FillView';
 import { ViewError } from 'src/ui/components/ViewError';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { IdempotentRequest } from 'src/ui/shared/IdempotentRequest';
@@ -213,12 +212,10 @@ export function AddressImportMessages({ values }: { values: BareWallet[] }) {
       renderError={(error) => {
         if (error?.code === 2312103) {
           return (
-            <FillView>
-              <ViewError
-                title="Session Expired"
-                error={new Error('You will need to enter your password again')}
-              />
-            </FillView>
+            <ViewError
+              title="Session Expired"
+              error={new Error('You will need to enter your password again')}
+            />
           );
         } else {
           throw error;

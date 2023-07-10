@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
-import { FillView } from 'src/ui/components/FillView';
 import { UIContext } from 'src/ui/components/UIContext';
 import { ViewError } from 'src/ui/components/ViewError';
 
@@ -26,13 +25,7 @@ export function WindowSize({
     >
       {refEl == null ? null : (
         <UIContext.Provider value={{ uiScrollRootElement: refEl }}>
-          <ErrorBoundary
-            renderError={(error) => (
-              <FillView>
-                <ViewError error={error} />
-              </FillView>
-            )}
-          >
+          <ErrorBoundary renderError={(error) => <ViewError error={error} />}>
             {children}
           </ErrorBoundary>
         </UIContext.Provider>
