@@ -29,7 +29,7 @@ function InvitationCode({ claimCode }: { claimCode: ClaimCode }) {
     text: `https://claim.linkdrop.io/#/redeem/${claim_code}`,
   });
   const { data } = useQuery({
-    queryKey: [`get invitation link info for ${link_id}`],
+    queryKey: ['getClaimLinkStatus', link_id],
     queryFn: async () => {
       return getClaimLinkStatus(link_id);
     },
