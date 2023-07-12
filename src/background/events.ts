@@ -15,7 +15,7 @@ export interface ScreenViewParams {
 
 export interface DaylightEventParams {
   event_name: string;
-  [key: string]: string;
+  [key: string]: string | string[];
 }
 
 export const emitter = createNanoEvents<{

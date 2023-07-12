@@ -13,12 +13,16 @@ export function Ability({
   ability,
   mode,
   status,
+  showStatus,
   loading,
+  menu,
 }: {
   ability: WalletAbility;
   mode: 'full' | 'compact';
   status: 'dismissed' | 'completed' | null;
+  showStatus: boolean;
   loading?: boolean;
+  menu?: React.ReactNode;
 }) {
   const { singleAddress } = useAddressParams();
 
@@ -55,21 +59,24 @@ export function Ability({
   return (
     <VStack gap={8}>
       <VStack gap={12}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          <Tag>{ability.type.toUpperCase()}</Tag>
-          {ability.supplier ? (
-            <Tag>{ability.supplier.name.toUpperCase()}</Tag>
-          ) : null}
-          {status || loading ? (
-            <Tag kind={status === 'completed' ? 'positive' : 'negative'}>
-              {status === 'completed'
-                ? 'COMPLETED'
-                : status === 'dismissed'
-                ? 'DISMISSED'
-                : null}
-            </Tag>
-          ) : null}
-        </div>
+        <HStack alignItems="center" justifyContent="space-between" gap={8}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <Tag>{ability.type.toUpperCase()}</Tag>
+            {ability.supplier ? (
+              <Tag>{ability.supplier.name.toUpperCase()}</Tag>
+            ) : null}
+            {showStatus && (status || loading) ? (
+              <Tag kind={status === 'completed' ? 'positive' : 'negative'}>
+                {status === 'completed'
+                  ? 'COMPLETED'
+                  : status === 'dismissed'
+                  ? 'DISMISSED'
+                  : null}
+              </Tag>
+            ) : null}
+          </div>
+          {menu}
+        </HStack>
         <UIText
           kind="headline/h2"
           style={
