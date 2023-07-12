@@ -11,7 +11,7 @@ export function InvitationLink() {
   const { singleAddressNormalized } = useAddressParams();
   const { data } = useInvitationInfo(singleAddressNormalized);
 
-  const avaliableCodes = useMemo(
+  const availableCodes = useMemo(
     () => data?.claim_codes?.filter((code) => code.status === 'CREATED'),
     [data]
   );
@@ -37,9 +37,9 @@ export function InvitationLink() {
                   <InviteIcon style={{ color: 'var(--primary)' }} />
                   <UIText kind="body/regular">My Invites</UIText>
                 </HStack>
-                {avaliableCodes?.length ? (
+                {availableCodes?.length ? (
                   <UIText kind="small/regular" color="var(--neutral-500)">
-                    {avaliableCodes.length}
+                    {availableCodes.length}
                   </UIText>
                 ) : null}
               </HStack>
