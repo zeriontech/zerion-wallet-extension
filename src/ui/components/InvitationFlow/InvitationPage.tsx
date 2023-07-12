@@ -20,9 +20,8 @@ import { NavigationTitle } from '../NavigationTitle';
 import {
   useInvitationInfo,
   type ClaimCode,
-  getInvitationLinkInfo,
+  getClaimLinkStatus,
 } from './useInvitationInfo';
-import { DebugButtons } from './Debug';
 
 function InvitationCode({ claimCode }: { claimCode: ClaimCode }) {
   const { status, claim_code, link_id } = claimCode;
@@ -32,7 +31,7 @@ function InvitationCode({ claimCode }: { claimCode: ClaimCode }) {
   const { data } = useQuery({
     queryKey: [`get invitation link info for ${link_id}`],
     queryFn: async () => {
-      return getInvitationLinkInfo(link_id);
+      return getClaimLinkStatus(link_id);
     },
     suspense: false,
     enabled: status === 'CLAIMED',
@@ -173,7 +172,6 @@ export function InvitationPage() {
             )}
           </VStack>
         </Surface>
-        <DebugButtons />
       </PageColumn>
     </Background>
   );

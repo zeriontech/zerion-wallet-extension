@@ -15,9 +15,8 @@ export function InvitationBanner({ address }: { address: string }) {
   const { preferences, setPreferences } = usePreferences();
 
   if (
-    preferences?.hiddenInvitationFlow ||
-    !data?.claim_codes?.length ||
-    !data.claim_codes.some((code) => code.status === 'CREATED')
+    preferences?.invitationBannerDismissed ||
+    !data?.claim_codes?.some((code) => code.status === 'CREATED')
   ) {
     return null;
   }
@@ -44,7 +43,7 @@ export function InvitationBanner({ address }: { address: string }) {
             padding: 4,
           }}
           onClick={() => {
-            setPreferences({ hiddenInvitationFlow: true });
+            setPreferences({ invitationBannerDismissed: true });
           }}
         >
           <CloseIcon style={{ width: 16, height: 16 }} />
