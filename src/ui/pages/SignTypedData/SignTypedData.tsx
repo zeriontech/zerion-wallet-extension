@@ -145,7 +145,7 @@ function SignTypedDataContent({
   return (
     <Background backgroundKind="white">
       <PageColumn
-        // different surface color on backgroundKind="neutral"
+        // different surface color on backgroundKind="white"
         style={{
           ['--surface-background-color' as string]: 'var(--neutral-100)',
         }}
@@ -157,7 +157,6 @@ function SignTypedDataContent({
         {view === View.default ? (
           <>
             <div style={{ display: 'grid', placeItems: 'center' }}>
-              <Spacer height={16} />
               <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
                 {title}
               </UIText>
