@@ -15,7 +15,6 @@ import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
 import { getError } from 'src/shared/errors/getError';
 import { invariant } from 'src/shared/invariant';
-import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
@@ -68,14 +67,15 @@ function SignMessageContent({
   const handleReject = () => windowPort.reject(windowId);
 
   return (
-    <Background backgroundKind="neutral">
+    <Background backgroundKind="white">
       <PageColumn
         // different surface color on backgroundKind="neutral"
-        style={{ ['--surface-background-color' as string]: 'var(--z-index-0)' }}
+        style={{
+          ['--surface-background-color' as string]: 'var(--neutral-100)',
+        }}
       >
         <PageTop />
         <div style={{ display: 'grid', placeItems: 'center' }}>
-          <SiteFaviconImg size={44} url={origin} />
           <Spacer height={16} />
           <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
             Signature Request
