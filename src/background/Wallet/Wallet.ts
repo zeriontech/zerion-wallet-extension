@@ -1174,7 +1174,7 @@ class PublicController {
       message = shouldBeAddress;
     } else {
       throw new Error(
-        `Address is required for "personal_sign" method. Expected: ${currentAddress}, received [${message}, ${address}]`
+        `Address is required for "personal_sign" method. Expected: ${currentAddress}, received [${params[0]}, ${params[1]}]`
       );
     }
 
