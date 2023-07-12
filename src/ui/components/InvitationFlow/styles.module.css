@@ -1,0 +1,7 @@
+.closeButton {
+  color: var(--always-white);
+}
+
+.closeButton:hover {
+  color: var(--always-primary);
+}

@@ -8,7 +8,12 @@ export function AngleRightRow({
   children,
 }: React.PropsWithChildren<{ iconColor?: string; hideIcon?: boolean }>) {
   return (
-    <HStack gap={4} justifyContent="space-between" alignItems="center">
+    <HStack
+      gap={4}
+      justifyContent="space-between"
+      alignItems="center"
+      style={{ gridTemplateColumns: '1fr auto' }}
+    >
       {children}
 
       {hideIcon ? null : (

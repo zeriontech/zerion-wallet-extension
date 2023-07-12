@@ -44,6 +44,7 @@ interface PublicPreferences {
    * Allow to configure nonce before signing transactions
    */
   configurableNonce?: boolean;
+  invitationBannerDismissed?: boolean;
 }
 
 export interface Permission {
