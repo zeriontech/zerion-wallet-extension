@@ -54,9 +54,9 @@ function InvitationCode({ claimCode }: { claimCode: ClaimCode }) {
     ? 'Pending'
     : status === 'DEACTIVATED'
     ? 'Deactivated'
-    : status === 'FAILED'
-    ? 'Failed'
-    : 'Expired';
+    : status === 'EXPIRED'
+    ? 'Expired'
+    : 'Failed';
 
   return (
     <HStack
