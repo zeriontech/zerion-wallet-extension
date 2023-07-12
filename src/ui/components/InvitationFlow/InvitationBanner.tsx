@@ -56,7 +56,7 @@ export function InvitationBanner({ address }: { address: string }) {
             kind="neutral"
             size={32}
             as={UnstyledLink}
-            to={`/invitations`}
+            to="/invitations"
             style={{ backgroundColor: 'var(--always-white)', width: 120 }}
           >
             <UIText kind="caption/accent" color="var(--always-primary)">
