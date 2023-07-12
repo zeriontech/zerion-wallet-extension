@@ -18,6 +18,7 @@ import { RouteResolver } from 'src/ui/pages/RouteResolver';
 import { RequestAccounts } from 'src/ui/pages/RequestAccounts';
 import { SendTransaction } from 'src/ui/pages/SendTransaction';
 import { SignMessage } from 'src/ui/pages/SignMessage';
+import { SignTypedData } from 'src/ui/pages/SignTypedData';
 import { Login } from '../pages/Login';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { accountPublicRPCPort, walletPort } from '../shared/channels';
@@ -272,6 +273,14 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             element={
               <RequireAuth>
                 <SignMessage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/signTypedData"
+            element={
+              <RequireAuth>
+                <SignTypedData />
               </RequireAuth>
             }
           />

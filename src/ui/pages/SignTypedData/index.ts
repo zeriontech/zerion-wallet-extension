@@ -1,0 +1,1 @@
+export { SignTypedData } from './SignTypedData';

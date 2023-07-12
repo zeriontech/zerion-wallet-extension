@@ -38,21 +38,18 @@ import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { networksStore } from 'src/modules/networks/networks-store.client';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
-import { DelayedRender } from 'src/ui/components/DelayedRender';
-import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { useErrorBoundary } from 'src/ui/shared/useErrorBoundary';
+import { setURLSearchParams } from 'src/ui/shared/setURLSearchParams';
+import { InterpretLoadingState } from 'src/ui/components/InterpretLoadingState';
+import { AddressActionDetails } from 'src/ui/components/address-action/AddressActionDetails';
 import { NavigationBar } from '../SignInWithEthereum/NavigationBar';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
-import { ApplicationLine } from './Lines/ApplicationLine';
-import { RecipientLine } from './Lines/RecipientLine';
-import { Transfers } from './Transfers';
-import { SingleAsset } from './SingleAsset';
 
 type SendTransactionError =
   | null
@@ -136,15 +133,6 @@ const DEFAULT_CONFIGURATION: CustomConfiguration = {
     customClassicGasPrice: null,
   },
 };
-
-/** Creates new URLSearchParams instance, new keys overwrite existing ones */
-function setParams(params: URLSearchParams, values: Record<string, string>) {
-  const newParams = new URLSearchParams(params);
-  for (const key in values) {
-    newParams.set(key, values[key]);
-  }
-  return newParams;
-}
 
 enum View {
   default = 'default',
@@ -268,7 +256,7 @@ function SendTransactionContent({
   );
 
   const advancedViewHref = useMemo(
-    () => `?${setParams(params, { view: View.advanced }).toString()}`,
+    () => `?${setURLSearchParams(params, { view: View.advanced }).toString()}`,
     [params]
   );
 
@@ -333,54 +321,17 @@ function SendTransactionContent({
               </div>
               <Spacer height={24} />
               <VStack gap={16}>
-                {recipientAddress && addressAction.type.value === 'send' ? (
-                  <RecipientLine
-                    recipientAddress={recipientAddress}
-                    chain={chain}
-                    networks={networks}
-                  />
-                ) : null}
-                {addressAction.label && addressAction.label.type !== 'to' ? (
-                  <ApplicationLine
-                    action={addressAction}
-                    chain={chain}
-                    networks={networks}
-                  />
-                ) : null}
-                {actionTransfers?.outgoing?.length ||
-                actionTransfers?.incoming?.length ? (
-                  <Transfers
-                    address={singleAddress}
-                    chain={chain}
-                    transfers={actionTransfers}
-                  />
-                ) : null}
-                {singleAsset ? (
-                  <SingleAsset
-                    address={singleAddress}
-                    actionType={addressAction.type.value}
-                    asset={singleAsset}
-                  />
-                ) : null}
+                <AddressActionDetails
+                  recipientAddress={recipientAddress}
+                  addressAction={addressAction}
+                  chain={chain}
+                  networks={networks}
+                  actionTransfers={actionTransfers}
+                  wallet={wallet}
+                  singleAsset={singleAsset}
+                />
                 {interpretQuery.isLoading ? (
-                  <>
-                    <UIText kind="small/regular" color="var(--primary)">
-                      Analyzing...
-                      <br />
-                      <ZStack hideLowerElements={true}>
-                        <DelayedRender delay={11000}>
-                          <span style={{ color: 'var(--black)' }}>
-                            (Going to give up soon...)
-                          </span>
-                        </DelayedRender>
-                        <DelayedRender delay={6000}>
-                          <span style={{ color: 'var(--black)' }}>
-                            (Request is taking longer than usual...)
-                          </span>
-                        </DelayedRender>
-                      </ZStack>
-                    </UIText>
-                  </>
+                  <InterpretLoadingState />
                 ) : interpretQuery.isError ? (
                   <UIText kind="small/regular" color="var(--notice-600)">
                     Unable to analyze the details of the transaction
