@@ -296,7 +296,7 @@ export function PauseInjectionControl() {
         // TODO: maybe create a "doNotRenderChildrenIfClosed" prop? (not final name :))
         ref={dialogRef}
         height={'90vh'}
-        style={{
+        containerStyle={{
           backgroundColor: 'var(--background)',
           ['--surface-background-color' as string]: 'var(--white)',
         }}

@@ -64,7 +64,11 @@ export function CurrentNetwork({ address }: { address: string }) {
 
   return (
     <>
-      <BottomSheetDialog ref={ref} style={{ height: '82vh', padding: 0 }}>
+      <BottomSheetDialog
+        ref={ref}
+        style={{ height: '82vh' }}
+        containerStyle={{ padding: 0 }}
+      >
         <NetworkSelectDialog
           value={siteChain.toString()}
           type="connection"
