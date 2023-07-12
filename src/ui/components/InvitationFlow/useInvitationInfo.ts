@@ -33,7 +33,12 @@ async function getInvitationInfo(address: string, campaignId: string) {
     .json<InvitationInfo>();
 }
 
-export function useInvitationInfo(address?: string) {
+export function useInvitationInfo(
+  address?: string,
+  { useErrorBoundary }: { useErrorBoundary?: boolean } = {
+    useErrorBoundary: true,
+  }
+) {
   const { data } = useFirebaseConfig(['extension_invitation_campaign_id']);
   const campaignId = data?.extension_invitation_campaign_id;
   return useQuery({
@@ -45,6 +50,7 @@ export function useInvitationInfo(address?: string) {
     },
     suspense: false,
     enabled: Boolean(address) && Boolean(campaignId),
+    useErrorBoundary,
   });
 }
 

@@ -11,7 +11,7 @@ import { useInvitationInfo } from './useInvitationInfo';
 import * as styles from './styles.module.css';
 
 export function InvitationBanner({ address }: { address: string }) {
-  const { data } = useInvitationInfo(address);
+  const { data } = useInvitationInfo(address, { useErrorBoundary: false });
   const { preferences, setPreferences } = usePreferences();
 
   if (

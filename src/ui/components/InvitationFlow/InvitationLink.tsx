@@ -9,7 +9,9 @@ import { useInvitationInfo } from './useInvitationInfo';
 
 export function InvitationLink() {
   const { singleAddressNormalized } = useAddressParams();
-  const { data } = useInvitationInfo(singleAddressNormalized);
+  const { data } = useInvitationInfo(singleAddressNormalized, {
+    useErrorBoundary: false,
+  });
 
   const availableCodes = useMemo(
     () => data?.claim_codes?.filter((code) => code.status === 'CREATED'),
