@@ -26,7 +26,7 @@ import {
 function InvitationCode({ claimCode }: { claimCode: ClaimCode }) {
   const { status, claim_code, link_id } = claimCode;
   const { handleCopy, isSuccess } = useCopyToClipboard({
-    text: `https://claim.linkdrop.io/#/redeem/${claim_code}`,
+    text: `https://claim.zerion.io/#/redeem/${claim_code}`,
   });
   const { data } = useQuery({
     queryKey: ['getClaimLinkStatus', link_id],
