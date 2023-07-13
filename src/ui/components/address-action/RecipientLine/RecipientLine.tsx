@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { Chain } from 'src/modules/networks/Chain';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
@@ -8,6 +8,7 @@ import { Surface } from 'src/ui/ui-kit/Surface';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
+import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
 
 export function RecipientLine({
   recipientAddress,
@@ -18,11 +19,15 @@ export function RecipientLine({
   chain: Chain;
   networks: Networks;
 }) {
+  const checksumAddress = useMemo(
+    () => toChecksumAddress(recipientAddress),
+    [recipientAddress]
+  );
   return (
     <Surface style={{ borderRadius: 8, padding: '10px 12px' }}>
       <Media
         image={
-          <BlockieImg address={recipientAddress} size={36} borderRadius={6} />
+          <BlockieImg address={checksumAddress} size={36} borderRadius={6} />
         }
         vGap={0}
         text={
@@ -34,19 +39,19 @@ export function RecipientLine({
           <UIText
             kind="small/regular"
             color="var(--neutral-500)"
-            title={recipientAddress}
+            title={checksumAddress}
           >
             <TextAnchor
               // Open URL in a new _window_ so that extension UI stays open and visible
               onClick={openInNewWindow}
               href={networks.getExplorerAddressUrlByName(
                 chain,
-                recipientAddress
+                checksumAddress
               )}
               target="_blank"
               rel="noopener noreferrer"
             >
-              {truncateAddress(recipientAddress, 15)}
+              {truncateAddress(checksumAddress, 15)}
             </TextAnchor>
           </UIText>
         }
