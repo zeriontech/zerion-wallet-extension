@@ -14,7 +14,7 @@ export async function resolveCaptcha() {
   element.setAttribute('id', 'friendly-captcha');
   document.body.appendChild(element);
 
-  return new Promise<string>((resolve) => {
+  return new Promise<string>((resolve, reject) => {
     if (isDevelopment) {
       console.log('will solve friendly captcha'); // eslint-disable-line no-console
     }
@@ -27,6 +27,11 @@ export async function resolveCaptcha() {
         // we need to postpone destroying widget to avoid captcha internal problem
         setTimeout(() => widget?.destroy());
       },
+      errorCallback: () => {
+        reject();
+        setTimeout(() => widget?.destroy());
+      },
+      skipStyleInjection: true,
       sitekey: ZERION_CAPTCHA_SITEKEY,
       startMode: 'auto',
     });

@@ -13,11 +13,18 @@ async function tryRegisterDnaAction() {
   }
 }
 
+let actionRegisterInProgress = false;
+
 export function initDnaApi() {
   tryRegisterDnaAction();
-  browser.runtime.onMessage.addListener((request) => {
-    if (request.event === TRY_REGISTER_ACTION_EVENT) {
-      tryRegisterDnaAction();
+  browser.runtime.onMessage.addListener(async (request) => {
+    if (
+      request.event === TRY_REGISTER_ACTION_EVENT &&
+      !actionRegisterInProgress
+    ) {
+      actionRegisterInProgress = true;
+      await tryRegisterDnaAction();
+      actionRegisterInProgress = false;
     }
   });
 }
