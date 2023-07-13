@@ -21,8 +21,6 @@ type DnaActionWithTimestamp = DnaAction & { timestamp: number };
 
 const ONE_DAY = 1000 * 60 * 60 * 24;
 
-const DISABLE_REGISTER_WALLET_ACTION = true; // Temporarily disable the event until the captcha issue is resolved
-
 export class DnaService {
   private account: Account;
   private sendingInProgress: boolean;
@@ -207,9 +205,6 @@ export class DnaService {
 
   initialize() {
     emitter.on('walletCreated', async ({ walletContainer, origin }) => {
-      if (DISABLE_REGISTER_WALLET_ACTION) {
-        return;
-      }
       for (const wallet of walletContainer.wallets) {
         await this.registerWallet({ address: wallet.address, origin });
       }
