@@ -3,14 +3,12 @@ import { dnaServicePort } from '../../shared/channels';
 import { TRY_REGISTER_ACTION_EVENT } from './constants';
 import { resolveCaptcha } from './friendlyCaptcha';
 
-const DISABLE_REGISTER_WALLET_ACTION = true; // Temporarily disable the event until the captcha issue is resolved
+const DISABLE_CAPTCHA_SOLVING = true; // Temporarily disable the event until the captcha issue is resolved
 
 async function tryRegisterDnaAction() {
   // I kept this check to avoid running a lot of captchas at the same time
   if (await dnaServicePort.request('shouldRegisterAction')) {
-    const captcha = DISABLE_REGISTER_WALLET_ACTION
-      ? ''
-      : await resolveCaptcha();
+    const captcha = DISABLE_CAPTCHA_SOLVING ? '' : await resolveCaptcha();
     await dnaServicePort.request('tryRegisterAction', {
       captcha,
     });
