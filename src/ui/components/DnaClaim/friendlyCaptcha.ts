@@ -25,15 +25,11 @@ export async function resolveCaptcha() {
           console.timeEnd('friendly captcha solution'); // eslint-disable-line no-console
         }
         // we need to postpone destroying widget to avoid captcha internal problem
-        setTimeout(() => {
-          widget?.destroy();
-        });
+        setTimeout(() => widget?.destroy());
       },
       errorCallback: () => {
         reject();
-        setTimeout(() => {
-          widget?.destroy();
-        });
+        setTimeout(() => widget?.destroy());
       },
       skipStyleInjection: true,
       sitekey: ZERION_CAPTCHA_SITEKEY,
