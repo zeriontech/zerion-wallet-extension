@@ -35,9 +35,7 @@ async function getInvitationInfo(address: string, campaignId: string) {
 
 export function useInvitationInfo(
   address?: string,
-  { useErrorBoundary }: { useErrorBoundary?: boolean } = {
-    useErrorBoundary: true,
-  }
+  { useErrorBoundary = true }: { useErrorBoundary?: boolean } = {}
 ) {
   const { data } = useFirebaseConfig(['extension_invitation_campaign_id']);
   const campaignId = data?.extension_invitation_campaign_id;

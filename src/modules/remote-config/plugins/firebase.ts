@@ -50,11 +50,18 @@ export const firebase: ConfigPlugin = {
   },
 };
 
-export function useFirebaseConfig<T extends keyof RemoteConfig>(keys: T[]) {
+export function useFirebaseConfig<T extends keyof RemoteConfig>(
+  keys: T[],
+  { suspense = false }: { suspense?: boolean } = {}
+) {
   return useQuery({
-    queryKey: [`fetch firebase config for ${keys}`],
+    // it's okay to put the `keys` array inside queryKey array without memoizing:
+    // it will be stringified anyway
+    // https://github.com/TanStack/query/blob/b18426da86e2b8990e8f4e7398baaf041f77ad19/packages/query-core/src/utils.ts#L269-L280
+    queryKey: ['fetchRemoteConfig', keys],
     queryFn: () => fetchRemoteConfig(keys),
     retry: 0,
     refetchOnWindowFocus: false,
+    suspense,
   });
 }
