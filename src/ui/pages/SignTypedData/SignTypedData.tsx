@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -16,6 +16,7 @@ import { getError } from 'src/shared/errors/getError';
 import { invariant } from 'src/shared/invariant';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import ArrowDownIcon from 'jsx:src/ui/assets/arrow-down.svg';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
@@ -23,7 +24,6 @@ import { useSignTypedData_v4Mutation } from 'src/ui/shared/requests/message-sign
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { toTypedData } from 'src/modules/ethereum/message-signing/prepareTypedData';
-import { interpretSignature } from 'src/modules/ethereum/transactions/interpretSignature';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
@@ -31,20 +31,29 @@ import { setURLSearchParams } from 'src/ui/shared/setURLSearchParams';
 import { InterpretLoadingState } from 'src/ui/components/InterpretLoadingState';
 import { AddressActionDetails } from 'src/ui/components/address-action/AddressActionDetails';
 import { focusNode } from 'src/ui/shared/focusNode';
+import {
+  getInterpretationData,
+  interpretSignature,
+} from 'src/modules/ethereum/transactions/interpret';
+import { BUG_REPORT_BUTTON_HEIGHT } from 'src/ui/components/BugReportButton';
 import { NavigationBar } from '../SignInWithEthereum/NavigationBar';
+import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
-function TypedDataRow({ data }: { data: string }) {
-  return (
-    <Surface padding={16} style={{ border: '1px solid var(--neutral-300)' }}>
-      <UIText
-        kind="small/regular"
-        style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}
-      >
-        {data}
-      </UIText>
-    </Surface>
-  );
-}
+export const TypedDataRow = React.forwardRef(
+  ({ data }: { data: string }, ref: React.Ref<HTMLDivElement>) => {
+    return (
+      <Surface padding={16} style={{ border: '1px solid var(--neutral-300)' }}>
+        <UIText
+          kind="small/regular"
+          style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}
+        >
+          {data}
+        </UIText>
+        <div ref={ref} style={{ display: 'hidden' }} />
+      </Surface>
+    );
+  }
+);
 
 function isPermit({ message }: TypedData) {
   return Boolean(message.owner && message.spender && message.value);
@@ -91,6 +100,37 @@ function SignTypedDataContent({
     [typedDataRaw]
   );
 
+  const footerContentRef = useRef<HTMLDivElement | null>(null);
+  const [seenSigningData, setSeenSigningData] = useState(false);
+  const typedDataRowRef = useRef<HTMLDivElement | null>(null);
+  const onTypedDataRowRefSet = useCallback((node: HTMLDivElement | null) => {
+    if (!node || !footerContentRef?.current) {
+      return;
+    }
+    const footerHeight = footerContentRef.current.getBoundingClientRect().top;
+    const rootMargin =
+      window.innerHeight + BUG_REPORT_BUTTON_HEIGHT - footerHeight;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setSeenSigningData(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: `-${rootMargin}px` }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  const setTypedDataRow = (node: HTMLDivElement | null) => {
+    typedDataRowRef.current = node;
+    onTypedDataRowRefSet(node);
+  };
+
+  const scrollSigningData = () =>
+    typedDataRowRef?.current?.scrollIntoView({ behavior: 'smooth' });
+
   const { data: chain, ...chainQuery } = useQuery({
     queryKey: ['wallet/requestChainForOrigin', origin],
     queryFn: () =>
@@ -123,12 +163,29 @@ function SignTypedDataContent({
     refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
+    onSuccess: (response) => {
+      if (response?.action) {
+        setSeenSigningData(true);
+      }
+    },
   });
 
   const addressAction = interpretation?.action;
   const recipientAddress = addressAction?.label?.display_value.wallet_address;
   const actionTransfers = addressAction?.content?.transfers;
   const singleAsset = addressAction?.content?.single_asset?.asset;
+
+  const interpretationDataJSON = useMemo(() => {
+    if (!interpretation) return null;
+    const data = getInterpretationData(interpretation);
+    return JSON.parse(data) as Record<string, string>;
+  }, [interpretation]);
+
+  const interpretationDataFormatted = useMemo(() => {
+    return interpretationDataJSON
+      ? JSON.stringify(interpretationDataJSON, null, 2)
+      : null;
+  }, [interpretationDataJSON]);
 
   const title =
     addressAction?.type.display_value ||
@@ -189,15 +246,6 @@ function SignTypedDataContent({
             </div>
             <Spacer height={24} />
             <VStack gap={16}>
-              <AddressActionDetails
-                recipientAddress={recipientAddress}
-                addressAction={addressAction}
-                chain={chain}
-                networks={networks}
-                actionTransfers={actionTransfers}
-                wallet={wallet}
-                singleAsset={singleAsset}
-              />
               {interpretQuery.isLoading ? (
                 <InterpretLoadingState />
               ) : interpretQuery.isError ? (
@@ -206,69 +254,98 @@ function SignTypedDataContent({
                 </UIText>
               ) : null}
               {interpretQuery.isFetched ? (
-                addressAction?.content == null ? (
-                  <TypedDataRow data={typedDataFormatted} />
+                addressAction ? (
+                  <>
+                    <AddressActionDetails
+                      recipientAddress={recipientAddress}
+                      addressAction={addressAction}
+                      chain={chain}
+                      networks={networks}
+                      actionTransfers={actionTransfers}
+                      wallet={wallet}
+                      singleAsset={singleAsset}
+                    />
+                    {interpretationDataJSON ? (
+                      <Button
+                        kind="regular"
+                        as={UnstyledLink}
+                        to={advancedViewHref}
+                      >
+                        Advanced View
+                      </Button>
+                    ) : null}
+                  </>
                 ) : (
-                  <Button
-                    kind="regular"
-                    as={UnstyledLink}
-                    to={advancedViewHref}
-                  >
-                    Advanced View
-                  </Button>
+                  <TypedDataRow
+                    ref={setTypedDataRow}
+                    data={interpretationDataFormatted || typedDataFormatted}
+                  />
                 )
-              ) : null}
+              ) : (
+                <TypedDataRow ref={setTypedDataRow} data={typedDataFormatted} />
+              )}
             </VStack>
           </>
         ) : null}
-        {view === View.advanced ? (
-          <TypedDataRow data={typedDataFormatted} />
+        {view === View.advanced && interpretationDataJSON ? (
+          <TypedDataAdvancedView data={interpretationDataJSON} />
         ) : null}
         <Spacer height={16} />
       </PageColumn>
       <PageStickyFooter>
-        <VStack
-          style={{
-            textAlign: 'center',
-            marginTop: 'auto',
-            paddingBottom: 24,
-            paddingTop: 8,
-          }}
-          gap={8}
-        >
-          {someMutationError ? (
-            <UIText kind="caption/regular" color="var(--negative-500)">
-              {someMutationError?.message}
-            </UIText>
-          ) : null}
-          <div
+        <div ref={footerContentRef}>
+          <VStack
             style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: 8,
+              textAlign: 'center',
+              marginTop: 'auto',
+              paddingBottom: 24,
+              paddingTop: 8,
             }}
+            gap={8}
           >
-            <Button
-              kind="regular"
-              type="button"
-              onClick={handleReject}
-              ref={focusNode}
-            >
-              Cancel
-            </Button>
-            <Button
-              disabled={signTypedData_v4Mutation.isLoading}
-              onClick={() => {
-                signTypedData_v4Mutation.mutate({
-                  typedData: typedDataRaw,
-                  initiator: origin,
-                });
+            {someMutationError ? (
+              <UIText kind="caption/regular" color="var(--negative-500)">
+                {someMutationError?.message}
+              </UIText>
+            ) : null}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: 8,
               }}
             >
-              {signTypedData_v4Mutation.isLoading ? 'Signing...' : 'Sign'}
-            </Button>
-          </div>
-        </VStack>
+              <Button
+                kind="regular"
+                type="button"
+                onClick={handleReject}
+                ref={focusNode}
+              >
+                Cancel
+              </Button>
+              {seenSigningData ? (
+                <Button
+                  disabled={signTypedData_v4Mutation.isLoading}
+                  onClick={() => {
+                    signTypedData_v4Mutation.mutate({
+                      typedData: typedDataRaw,
+                      initiator: origin,
+                    });
+                  }}
+                >
+                  {signTypedData_v4Mutation.isLoading ? 'Signing...' : 'Sign'}
+                </Button>
+              ) : (
+                <Button onClick={scrollSigningData}>
+                  <HStack gap={8} alignItems="center" justifyContent="center">
+                    <span>Scroll</span>
+                    <ArrowDownIcon style={{ width: 24, height: 24 }} />
+                  </HStack>
+                </Button>
+              )}
+            </div>
+          </VStack>
+        </div>
       </PageStickyFooter>
       <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
     </Background>

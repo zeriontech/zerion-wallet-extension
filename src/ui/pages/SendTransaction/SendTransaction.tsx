@@ -33,23 +33,26 @@ import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { Button } from 'src/ui/ui-kit/Button';
 import { focusNode } from 'src/ui/shared/focusNode';
-import { interpretTransaction } from 'src/modules/ethereum/transactions/interpretTransaction';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { networksStore } from 'src/modules/networks/networks-store.client';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
+import CopyIcon from 'jsx:src/ui/assets/copy.svg';
+import CheckIcon from 'jsx:src/ui/assets/check.svg';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
-import { Surface } from 'src/ui/ui-kit/Surface';
 import { useErrorBoundary } from 'src/ui/shared/useErrorBoundary';
 import { setURLSearchParams } from 'src/ui/shared/setURLSearchParams';
 import { InterpretLoadingState } from 'src/ui/components/InterpretLoadingState';
 import { AddressActionDetails } from 'src/ui/components/address-action/AddressActionDetails';
-import { NavigationBar } from '../SignInWithEthereum/NavigationBar';
+import { PageBottom } from 'src/ui/components/PageBottom';
+import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
+import { interpretTransaction } from 'src/modules/ethereum/transactions/interpret';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
+import { TransactionAdvancedView } from './TransactionAdvancedView';
 
 type SendTransactionError =
   | null
@@ -260,6 +263,9 @@ function SendTransactionContent({
     [params]
   );
 
+  const { handleCopy: handleCopyRawData, isSuccess: didCopyRawData } =
+    useCopyToClipboard({ text: transactionFormatted });
+
   if (localAddressActionQuery.isSuccess && !localAddressAction) {
     throw new Error('Unexpected missing localAddressAction');
   }
@@ -376,73 +382,95 @@ function SendTransactionContent({
             </>
           ) : null}
           {view === View.advanced ? (
-            <>
-              <NavigationBar title="Data to Sign" />
-              <PageTop />
-              <Surface
-                padding={16}
-                style={{ border: '1px solid var(--neutral-300)' }}
-              >
-                <UIText
-                  kind="small/regular"
-                  style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}
-                >
-                  {transactionFormatted}
-                </UIText>
-              </Surface>
-            </>
+            <TransactionAdvancedView
+              networks={networks}
+              chain={chain}
+              interpretation={interpretation}
+              transaction={incomingTransaction}
+            />
           ) : null}
         </>
         <Spacer height={16} />
       </PageColumn>
       <PageStickyFooter>
-        <VStack
-          style={{
-            textAlign: 'center',
-            paddingBottom: 24,
-          }}
-          gap={8}
-        >
-          <UIText kind="body/regular" color="var(--negative-500)">
-            {signMutation.isError
-              ? errorToMessage(signMutation.error as SendTransactionError)
-              : null}
-          </UIText>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: 8,
-            }}
-          >
-            <Button
-              ref={focusNode}
-              kind="regular"
-              type="button"
-              onClick={handleReject}
-            >
-              Cancel
-            </Button>
-            <Button
-              disabled={signMutation.isLoading}
-              onClick={() => {
-                try {
-                  signAndSendTransaction(
-                    applyConfiguration(
-                      incomingTransaction,
-                      configuration,
-                      chainGasPrices
-                    )
-                  );
-                } catch (error) {
-                  showErrorBoundary(error);
-                }
+        {view === View.default ? (
+          <>
+            <VStack
+              style={{
+                textAlign: 'center',
               }}
+              gap={8}
             >
-              {signMutation.isLoading ? 'Sending...' : 'Confirm'}
+              <UIText kind="body/regular" color="var(--negative-500)">
+                {signMutation.isError
+                  ? errorToMessage(signMutation.error as SendTransactionError)
+                  : null}
+              </UIText>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: 8,
+                }}
+              >
+                <Button
+                  ref={focusNode}
+                  kind="regular"
+                  type="button"
+                  onClick={handleReject}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  disabled={signMutation.isLoading}
+                  onClick={() => {
+                    try {
+                      signAndSendTransaction(
+                        applyConfiguration(
+                          incomingTransaction,
+                          configuration,
+                          chainGasPrices
+                        )
+                      );
+                    } catch (error) {
+                      showErrorBoundary(error);
+                    }
+                  }}
+                >
+                  {signMutation.isLoading ? 'Sending...' : 'Confirm'}
+                </Button>
+              </div>
+            </VStack>
+          </>
+        ) : null}
+        {view === View.advanced ? (
+          <>
+            <Spacer height={8} />
+            <Button
+              kind="primary"
+              size={44}
+              style={{ padding: '10px 20px' }}
+              onClick={handleCopyRawData}
+            >
+              {didCopyRawData ? (
+                <HStack gap={12} alignItems="center" justifyContent="center">
+                  <UIText kind="body/accent">Copied</UIText>
+                  <CheckIcon
+                    style={{ display: 'block', width: 24, height: 24 }}
+                  />
+                </HStack>
+              ) : (
+                <HStack gap={12} alignItems="center" justifyContent="center">
+                  <UIText kind="body/accent">Copy Raw Data</UIText>
+                  <CopyIcon
+                    style={{ display: 'block', width: 24, height: 24 }}
+                  />
+                </HStack>
+              )}
             </Button>
-          </div>
-        </VStack>
+          </>
+        ) : null}
+        <PageBottom />
       </PageStickyFooter>
     </Background>
   );

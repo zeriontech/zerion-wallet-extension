@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import type { IncomingTransaction } from '../../types/IncomingTransaction';
 
 const fields = ['data', 'value', 'gas'] as const;
-type Keys = typeof fields[number];
+type Keys = (typeof fields)[number];
 type HexifiedTx<Keys extends keyof IncomingTransaction> =
   IncomingTransaction & { [key in Keys]?: string };
 
