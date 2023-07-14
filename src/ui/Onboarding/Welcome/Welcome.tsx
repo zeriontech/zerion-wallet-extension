@@ -13,6 +13,7 @@ import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
 import LinkIcon from 'jsx:src/ui/assets/new-window.svg';
 import { isEmail } from 'src/shared/isEmail';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
+import { normalizeAddress } from 'src/shared/normalizeAddress';
 import {
   checkWhitelistStatus,
   getWaitlistStatus,
@@ -75,8 +76,9 @@ function MainForm({
       if (!address) {
         throw new UnsupportedAddressError();
       }
-      const { status } = await checkWhitelistStatus(address);
-      return { address, status };
+      const normalizedAddress = normalizeAddress(address);
+      const { status } = await checkWhitelistStatus(normalizedAddress);
+      return { address: normalizedAddress, status };
     },
     onSuccess,
     onError: (e: Error) => {
