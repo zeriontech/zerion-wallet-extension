@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { animated, useSpring } from 'react-spring';
+import { animated, useSpring } from '@react-spring/web';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { useHoverAnimation } from 'src/ui/shared/useHoverAnimation';
 import { HStack } from 'src/ui/ui-kit/HStack';

@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import type { AddressAction } from 'defi-sdk';
 import { capitalize } from 'capitalize-ts';
 import { useQuery } from '@tanstack/react-query';
-import { animated, useSpring } from 'react-spring';
+import { animated, useSpring } from '@react-spring/web';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';

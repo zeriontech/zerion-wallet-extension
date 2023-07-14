@@ -1,6 +1,6 @@
 import type { AddressAction } from 'defi-sdk';
 import React from 'react';
-import { animated, useSpring } from 'react-spring';
+import { animated, useSpring } from '@react-spring/web';
 import { createChain } from 'src/modules/networks/Chain';
 import type { Networks } from 'src/modules/networks/Networks';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';

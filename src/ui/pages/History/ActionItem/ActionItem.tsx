@@ -320,8 +320,8 @@ function ActionItemBackend({
       </HStack>
       <BottomSheetDialog
         ref={dialogRef}
-        style={{
-          height: '100vh',
+        height="100vh"
+        containerStyle={{
           borderRadius: 0,
           padding: 16,
           backgroundColor: 'var(--neutral-100)',
@@ -329,7 +329,11 @@ function ActionItemBackend({
       >
         <form
           method="dialog"
-          style={{ position: 'absolute', top: 16, left: 8 }}
+          style={{
+            position: 'absolute',
+            top: 16,
+            left: 8,
+          }}
         >
           <Button
             kind="ghost"
