@@ -53,10 +53,8 @@ import { CurrentNetwork } from './CurrentNetwork';
 import { NonFungibleTokens } from './NonFungibleTokens';
 import { Positions } from './Positions';
 import { ActionButtonsRow } from './ActionButtonsRow';
-import {
-  SCROLL_TO_THE_TABS_ON_TOP_OFFSET,
-  STRETCHY_VIEW_HEIGHT,
-} from './constants';
+import { STRETCHY_VIEW_HEIGHT } from './constants';
+import { TABS_OFFSET_METER_ID, getTabsOffset } from './getTabsOffset';
 
 interface ChangeInfo {
   isPositive: boolean;
@@ -207,10 +205,10 @@ function OverviewComponent() {
   );
 
   const handleTabChange = useCallback(() => {
-    window.scrollTo(
-      0,
-      Math.min(SCROLL_TO_THE_TABS_ON_TOP_OFFSET, window.scrollY)
-    );
+    window.scrollTo({
+      behavior: 'instant',
+      top: Math.min(window.scrollY, getTabsOffset()),
+    });
   }, []);
 
   if (!preferences) {
@@ -307,6 +305,7 @@ function OverviewComponent() {
       </DevelopmentOnly>
       <Spacer height={20} />
       <InvitationBanner address={singleAddressNormalized} />
+      <div id={TABS_OFFSET_METER_ID} />
       <PageFullBleedColumn
         paddingInline={false}
         style={{

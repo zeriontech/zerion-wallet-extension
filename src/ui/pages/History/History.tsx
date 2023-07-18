@@ -19,10 +19,8 @@ import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { pendingTransactionToAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
-import {
-  HISTORY_STRETCHY_VIEW_HEIGHT,
-  SCROLL_TO_THE_TABS_ON_TOP_OFFSET,
-} from '../Overview/constants';
+import { HISTORY_STRETCHY_VIEW_HEIGHT } from '../Overview/constants';
+import { getTabsOffset } from '../Overview/getTabsOffset';
 import { ActionsList } from './ActionsList';
 import { ActionSearch } from './ActionSearch';
 import { isMatchForAllWords } from './matchSearcQuery';
@@ -177,7 +175,7 @@ export function HistoryList({
         onFocus={() => {
           window.scrollTo({
             behavior: 'smooth',
-            top: SCROLL_TO_THE_TABS_ON_TOP_OFFSET,
+            top: getTabsOffset(),
           });
         }}
       />
