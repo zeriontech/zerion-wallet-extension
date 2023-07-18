@@ -106,7 +106,7 @@ export function ActionButtonsRow() {
         <ActionButton
           title="Swap"
           icon={<SwapIcon style={iconStyle} />}
-          href={`https://app.zerion.io/swap?${addWalletParams}`}
+          href={`${ZERION_ORIGIN}/swap?${addWalletParams}`}
           onClick={performAction}
           target="_blank"
           rel="noopener noreferrer"
@@ -116,7 +116,7 @@ export function ActionButtonsRow() {
         <ActionButton
           title="Send"
           icon={<SendIcon style={iconStyle} />}
-          href={`https://app.zerion.io/send?${addWalletParams}`}
+          href={`${ZERION_ORIGIN}/send?${addWalletParams}`}
           onClick={performAction}
           target="_blank"
           rel="noopener noreferrer"
@@ -134,7 +134,7 @@ export function ActionButtonsRow() {
         <ActionButton
           title="Bridge"
           icon={<BridgeIcon style={iconStyle} />}
-          href={`https://app.zerion.io/bridge?${addWalletParams}`}
+          href={`${ZERION_ORIGIN}/bridge?${addWalletParams}`}
           onClick={performAction}
           target="_blank"
           rel="noopener noreferrer"
@@ -144,7 +144,7 @@ export function ActionButtonsRow() {
         <ActionButton
           title="Buy"
           icon={<BuyIcon style={iconStyle} />}
-          href={`https://app.zerion.io/deposit?${addWalletParams}`}
+          href={`${ZERION_ORIGIN}/deposit?${addWalletParams}`}
           onClick={performAction}
           target="_blank"
           rel="noopener noreferrer"
