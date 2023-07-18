@@ -26,7 +26,9 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
+import { StretchyFillView } from 'src/ui/components/FillView/FillView';
 import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
+import { STRETCHY_VIEW_HEIGHT } from '../constants';
 import * as s from './styles.module.css';
 
 function NFTItem({
@@ -176,23 +178,29 @@ export function NonFungibleTokens() {
   const nftTotalValueIsReady = nftTotalValue != null || totalValueIsLoading;
 
   if (totalValueIsLoading) {
-    return <ViewLoading kind="network" />;
+    return (
+      <StretchyFillView maxHeight={STRETCHY_VIEW_HEIGHT}>
+        <ViewLoading kind="network" />
+      </StretchyFillView>
+    );
   }
 
   if (!ready || !items || !nftTotalValueIsReady) {
-    return null;
+    return <StretchyFillView maxHeight={STRETCHY_VIEW_HEIGHT} />;
   }
   if (items.length === 0) {
     return (
-      <VStack gap={32}>
-        {maybeSingleAddress ? (
-          <div style={{ paddingInline: 'var(--column-padding-inline)' }}>
-            <DnaNFTBanner address={normalizeAddress(maybeSingleAddress)} />
-          </div>
-        ) : null}
+      <StretchyFillView maxHeight={STRETCHY_VIEW_HEIGHT}>
+        <VStack gap={32}>
+          {maybeSingleAddress ? (
+            <div style={{ paddingInline: 'var(--column-padding-inline)' }}>
+              <DnaNFTBanner address={normalizeAddress(maybeSingleAddress)} />
+            </div>
+          ) : null}
 
-        <EmptyView text="No NFTs yet" />
-      </VStack>
+          <EmptyView text="No NFTs yet" />
+        </VStack>
+      </StretchyFillView>
     );
   }
   return (

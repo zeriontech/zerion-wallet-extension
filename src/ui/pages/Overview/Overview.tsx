@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { useAddressPortfolio } from 'defi-sdk';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -9,9 +9,6 @@ import {
   formatCurrencyValue,
 } from 'src/shared/units/formatCurrencyValue';
 import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
-// import { Twinkle } from 'src/ui/ui-kit/Twinkle';
-// import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
-// import { FillView } from 'src/ui/components/FillView';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import PersonIcon from 'jsx:src/ui/assets/person.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -34,8 +31,10 @@ import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { CopyButton } from 'src/ui/components/CopyButton';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { DelayedRender } from 'src/ui/components/DelayedRender';
-import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
+import {
+  DelayedRender,
+  useRenderDelay,
+} from 'src/ui/components/DelayedRender/DelayedRender';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { useProfileName } from 'src/ui/shared/useProfileName';
@@ -44,6 +43,7 @@ import {
   PauseInjectionControl,
 } from 'src/ui/components/PauseInjection';
 import { InvitationBanner } from 'src/ui/components/InvitationFlow';
+import { StretchyFillView } from 'src/ui/components/FillView/FillView';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -53,6 +53,10 @@ import { CurrentNetwork } from './CurrentNetwork';
 import { NonFungibleTokens } from './NonFungibleTokens';
 import { Positions } from './Positions';
 import { ActionButtonsRow } from './ActionButtonsRow';
+import {
+  SCROLL_TO_THE_TABS_ON_TOP_OFFSET,
+  STRETCHY_VIEW_HEIGHT,
+} from './constants';
 
 interface ChangeInfo {
   isPositive: boolean;
@@ -202,9 +206,25 @@ function OverviewComponent() {
     { enabled: ready }
   );
 
+  const handleTabChange = useCallback(() => {
+    window.scrollTo(
+      0,
+      Math.min(SCROLL_TO_THE_TABS_ON_TOP_OFFSET, window.scrollY)
+    );
+  }, []);
+
   if (!preferences) {
     return <ViewLoading />;
   }
+
+  const fallbackChildren = (
+    <StretchyFillView maxHeight={STRETCHY_VIEW_HEIGHT}>
+      <DelayedRender delay={2000}>
+        <ViewLoading kind="network" />
+      </DelayedRender>
+    </StretchyFillView>
+  );
+
   return (
     <PageColumn>
       <PageFullBleedColumn
@@ -313,18 +333,26 @@ function OverviewComponent() {
             }}
             childrenLayout="start"
           >
-            <SegmentedControlLink to="/overview" end={true}>
+            <SegmentedControlLink
+              to="/overview"
+              end={true}
+              onClick={handleTabChange}
+            >
               Tokens
             </SegmentedControlLink>
-            <SegmentedControlLink to="/overview/nfts">
+            <SegmentedControlLink to="/overview/nfts" onClick={handleTabChange}>
               NFTs
             </SegmentedControlLink>
-            <SegmentedControlLink to="/overview/history">
+            <SegmentedControlLink
+              to="/overview/history"
+              onClick={handleTabChange}
+            >
               History <PendingTransactionsIndicator />
             </SegmentedControlLink>
             <SegmentedControlLink
               to="/overview/feed"
               onClick={() => {
+                handleTabChange();
                 walletPort.request('daylightAction', {
                   event_name: 'Perks: Card Opened',
                   address: singleAddress,
@@ -352,24 +380,26 @@ function OverviewComponent() {
           <Route
             path="/"
             element={
-              <DelayedRender
-                /** Cheap perceived performance hack: render expensive Positions component later so that initial UI render is faster */
-                delay={16}
-              >
-                <ViewSuspense>
-                  <Positions
-                    chain={preferences.overviewChain}
-                    onChainChange={setChain}
-                  />
-                </ViewSuspense>
-              </DelayedRender>
+              <ViewSuspense fallbackChilden={fallbackChildren}>
+                <Positions
+                  chain={preferences.overviewChain}
+                  onChainChange={setChain}
+                />
+              </ViewSuspense>
             }
           />
-          <Route path="/nfts" element={<NonFungibleTokens />} />
+          <Route
+            path="/nfts"
+            element={
+              <ViewSuspense fallbackChilden={fallbackChildren}>
+                <NonFungibleTokens />
+              </ViewSuspense>
+            }
+          />
           <Route
             path="/history"
             element={
-              <ViewSuspense>
+              <ViewSuspense fallbackChilden={fallbackChildren}>
                 <HistoryList
                   chain={preferences.overviewChain}
                   onChainChange={setChain}
@@ -380,7 +410,7 @@ function OverviewComponent() {
           <Route
             path="/feed"
             element={
-              <ViewSuspense>
+              <ViewSuspense fallbackChilden={fallbackChildren}>
                 <Feed />
               </ViewSuspense>
             }
