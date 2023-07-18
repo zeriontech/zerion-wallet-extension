@@ -9,7 +9,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { ActionItem } from '../ActionItem';
-import { STRETCHY_VIEW_HEIGHT } from '../constants';
+import { HISTORY_STRETCHY_VIEW_HEIGHT } from '../../Overview/constants';
 
 export function ActionsList({
   actions,
@@ -32,7 +32,7 @@ export function ActionsList({
   return (
     <VStack
       gap={24}
-      style={{ minHeight: STRETCHY_VIEW_HEIGHT, alignContent: 'start' }}
+      style={{ minHeight: HISTORY_STRETCHY_VIEW_HEIGHT, alignContent: 'start' }}
     >
       {Object.entries(groupedByDate).map(([timestamp, items]) => (
         <VStack gap={8} key={timestamp}>

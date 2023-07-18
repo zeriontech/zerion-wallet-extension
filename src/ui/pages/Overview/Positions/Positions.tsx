@@ -59,6 +59,9 @@ import { networksStore } from 'src/modules/networks/networks-store.client';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { getCommonQuantity } from 'src/modules/networks/asset';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
+import { StretchyFillView } from 'src/ui/components/FillView/FillView';
+import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
+import { STRETCHY_VIEW_HEIGHT } from '../constants';
 
 function LineToParent({
   hasPreviosNestedPosition,
@@ -740,12 +743,16 @@ export function Positions({
   onChainChange: (value: string) => void;
 }) {
   const { ready, params, singleAddressNormalized } = useAddressParams();
+  // Cheap perceived performance hack: render expensive Positions component later so that initial UI render is faster
+  const readyToRender = useRenderDelay(16);
   const { networks } = useNetworks();
-  if (!networks || !ready) {
+  if (!networks || !ready || !readyToRender) {
     return (
-      <DelayedRender delay={2000}>
-        <ViewLoading kind="network" />
-      </DelayedRender>
+      <StretchyFillView maxHeight={STRETCHY_VIEW_HEIGHT}>
+        <DelayedRender delay={2000}>
+          <ViewLoading kind="network" />
+        </DelayedRender>
+      </StretchyFillView>
     );
   }
   const chain = createChain(chainValue);
@@ -772,11 +779,13 @@ export function Positions({
       >
         {networkSelect}
       </div>
-      <EmptyViewForNetwork
-        message="No assets yet"
-        chainValue={chainValue}
-        onChainChange={onChainChange}
-      />
+      <StretchyFillView maxHeight={STRETCHY_VIEW_HEIGHT}>
+        <EmptyViewForNetwork
+          message="No assets yet"
+          chainValue={chainValue}
+          onChainChange={onChainChange}
+        />
+      </StretchyFillView>
     </>
   );
   if (isSupportedByBackend) {

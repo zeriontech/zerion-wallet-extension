@@ -60,7 +60,7 @@ export function Ability({
           {ability.supplier ? (
             <Tag>{ability.supplier.name.toUpperCase()}</Tag>
           ) : null}
-          {status || loading ? (
+          {mode === 'full' && (status || loading) ? (
             <Tag kind={status === 'completed' ? 'positive' : 'negative'}>
               {status === 'completed'
                 ? 'COMPLETED'

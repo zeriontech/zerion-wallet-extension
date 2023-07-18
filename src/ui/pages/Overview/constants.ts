@@ -1,0 +1,6 @@
+const HISTORY_FILTERS_HEIGHT = 56;
+export const HISTORY_STRETCHY_VIEW_HEIGHT = `calc(100vh - ${
+  160 + HISTORY_FILTERS_HEIGHT
+}px)`;
+export const STRETCHY_VIEW_HEIGHT = 'calc(100vh - 160px)';
+export const SCROLL_TO_THE_TABS_ON_TOP_OFFSET = 324;
