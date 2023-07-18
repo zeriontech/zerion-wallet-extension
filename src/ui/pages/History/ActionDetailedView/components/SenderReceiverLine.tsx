@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import type { AddressAction } from 'defi-sdk';
 import { capitalize } from 'capitalize-ts';
 import { useQuery } from '@tanstack/react-query';
-import { animated, useSpring } from '@react-spring/web';
+import { animated } from '@react-spring/web';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
@@ -11,10 +11,10 @@ import { useProfileName } from 'src/ui/shared/useProfileName';
 import { walletPort } from 'src/ui/shared/channels';
 import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import SuccessIcon from 'jsx:src/ui/assets/checkmark-allowed.svg';
-import { useHoverAnimation } from 'src/ui/shared/useHoverAnimation';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
+import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
 
 const ICON_SIZE = 20;
 
@@ -28,24 +28,15 @@ function SenderReceiver({
     display_value.wallet_address || display_value.contract_address || '';
   const { handleCopy, isSuccess } = useCopyToClipboard({ text: address });
 
-  const { isBooped, handleMouseEnter } = useHoverAnimation(150);
-  const { isBooped: isSuccessBooped, handleMouseEnter: handleCopyClick } =
-    useHoverAnimation(150);
-
-  const successIconStyle = useSpring({
+  const { style: iconStyle, trigger: hoverTrigger } = useTransformTrigger({
+    x: 5,
     display: 'flex',
-    transform: isSuccessBooped ? 'scale(1.2)' : 'scale(1)',
-    config: { tension: 300, friction: 15 },
   });
-
-  const iconStyle = useSpring({
-    display: 'flex',
-    x: isBooped ? 5 : 0,
-    config: { tension: 300, friction: 15 },
-  });
+  const { style: successIconStyle, trigger: successCopyTrigger } =
+    useTransformTrigger({ x: 5, display: 'flex' });
 
   const { data: wallet } = useQuery({
-    queryKey: [`wallet/uiGetWalletByAddress/${address}`],
+    queryKey: ['wallet/uiGetWalletByAddress', address],
     queryFn: () => walletPort.request('uiGetWalletByAddress', { address }),
     enabled: Boolean(address),
     suspense: false,
@@ -55,14 +46,14 @@ function SenderReceiver({
 
   const handleClick = useCallback(() => {
     handleCopy();
-    handleCopyClick();
-  }, [handleCopy, handleCopyClick]);
+    successCopyTrigger();
+  }, [handleCopy, successCopyTrigger]);
 
   return (
     <UnstyledButton
       onClick={handleClick}
       disabled={!address}
-      onMouseEnter={handleMouseEnter}
+      onMouseEnter={hoverTrigger}
       className={address ? helperStyles.hoverUnderline : undefined}
       style={{ justifySelf: 'end', cursor: address ? 'pointer' : 'auto' }}
     >

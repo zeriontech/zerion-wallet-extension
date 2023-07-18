@@ -33,6 +33,16 @@ export function ActionDetailedView({
     [networks, chain]
   );
 
+  const actionDate = useMemo(() => {
+    return new Intl.DateTimeFormat('en', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(new Date(action.datetime));
+  }, [action.datetime]);
+
   const outgoingTransfers = action.content?.transfers?.outgoing;
   const incomingTransfers = action.content?.transfers?.incoming;
 
@@ -49,13 +59,7 @@ export function ActionDetailedView({
       <VStack gap={0} style={{ justifyItems: 'center' }}>
         <UIText kind="body/accent">{action.type.display_value}</UIText>
         <UIText kind="small/regular" color="var(--neutral-500)">
-          {new Intl.DateTimeFormat('en', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-          }).format(new Date(action.datetime))}
+          {actionDate}
         </UIText>
       </VStack>
       {hasTransferInfo ? (
@@ -93,7 +97,7 @@ export function ActionDetailedView({
             gap={16}
             alignItems="center"
             style={{
-              gridTemplateColumns: network ? '2fr auto auto' : undefined,
+              gridTemplateColumns: network ? '1fr auto auto' : undefined,
             }}
           >
             {network ? (

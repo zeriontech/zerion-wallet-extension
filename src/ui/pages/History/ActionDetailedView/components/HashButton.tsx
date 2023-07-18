@@ -1,43 +1,34 @@
 import React, { useCallback } from 'react';
-import { animated, useSpring } from '@react-spring/web';
+import { animated } from '@react-spring/web';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
-import { useHoverAnimation } from 'src/ui/shared/useHoverAnimation';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import SuccessIcon from 'jsx:src/ui/assets/checkmark-allowed.svg';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
+import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
 
 const ICON_SIZE = 20;
 
 export function HashButton({ hash }: { hash: string }) {
-  const { isBooped, handleMouseEnter } = useHoverAnimation(150);
-  const { isBooped: isSuccessBooped, handleMouseEnter: handleCopyClick } =
-    useHoverAnimation(150);
+  const { style: iconStyle, trigger: hoverTrigger } = useTransformTrigger({
+    x: 5,
+    display: 'flex',
+  });
+  const { style: successIconStyle, trigger: successCopyTrigger } =
+    useTransformTrigger({ x: 5, display: 'flex' });
   const { handleCopy, isSuccess } = useCopyToClipboard({ text: hash });
-
-  const successIconStyle = useSpring({
-    display: 'flex',
-    transform: isSuccessBooped ? 'scale(1.2)' : 'scale(1)',
-    config: { tension: 300, friction: 15 },
-  });
-
-  const iconStyle = useSpring({
-    display: 'flex',
-    x: isBooped ? 5 : 0,
-    config: { tension: 300, friction: 15 },
-  });
 
   const handleClick = useCallback(() => {
     handleCopy();
-    handleCopyClick();
-  }, [handleCopy, handleCopyClick]);
+    successCopyTrigger();
+  }, [handleCopy, successCopyTrigger]);
 
   return (
     <UnstyledButton
       onClick={handleClick}
-      onMouseEnter={handleMouseEnter}
+      onMouseEnter={hoverTrigger}
       className={helperStyles.hoverUnderline}
       style={{
         justifySelf: 'end',

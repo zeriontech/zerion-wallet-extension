@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { useState, useCallback, useEffect } from 'react';
 import { useSpring } from '@react-spring/web';
 
@@ -13,10 +14,25 @@ export function useTransformTrigger({
     friction: 10,
   },
   delay = 0,
+  display,
+}: {
+  x?: number;
+  y?: number;
+  rotation?: number;
+  scale?: number;
+  scaleX?: number;
+  timing?: number;
+  springConfig?: {
+    tension: number;
+    friction: number;
+  };
+  delay?: number;
+  display?: CSSProperties['display'];
 }) {
   const [on, set] = useState(false);
 
   const style = useSpring({
+    display,
     backfaceVisibility: 'hidden',
     transform: on
       ? `translate(${x}px, ${y}px)
