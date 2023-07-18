@@ -54,7 +54,11 @@ import { NonFungibleTokens } from './NonFungibleTokens';
 import { Positions } from './Positions';
 import { ActionButtonsRow } from './ActionButtonsRow';
 import { STRETCHY_VIEW_HEIGHT } from './constants';
-import { TABS_OFFSET_METER_ID, getTabsOffset } from './getTabsOffset';
+import {
+  TABS_OFFSET,
+  TABS_OFFSET_METER_ID,
+  getTabsOffset,
+} from './getTabsOffset';
 
 interface ChangeInfo {
   isPositive: boolean;
@@ -310,7 +314,7 @@ function OverviewComponent() {
         paddingInline={false}
         style={{
           position: 'sticky',
-          top: 48,
+          top: TABS_OFFSET,
           zIndex: 'var(--max-layout-index)',
           backgroundColor: 'var(--background)',
         }}
