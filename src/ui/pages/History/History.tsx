@@ -127,20 +127,28 @@ function useMinedAndPendingAddressActions({
   ]);
 }
 
-function EmptyView({ onReset }: { onReset(): void }) {
+function EmptyView({
+  onReset,
+  showReset,
+}: {
+  onReset(): void;
+  showReset: boolean;
+}) {
   return (
     <VStack gap={6} style={{ textAlign: 'center' }}>
       <UIText kind="headline/hero">🥺</UIText>
       <UIText kind="small/accent" color="var(--neutral-500)">
         <VStack gap={4}>
           <div>No transactions</div>
-          <UnstyledButton
-            onClick={onReset}
-            style={{ color: 'var(--primary)' }}
-            className={helperStyles.hoverUnderline}
-          >
-            Reset all filters
-          </UnstyledButton>
+          {showReset ? (
+            <UnstyledButton
+              onClick={onReset}
+              style={{ color: 'var(--primary)' }}
+              className={helperStyles.hoverUnderline}
+            >
+              Reset all filters
+            </UnstyledButton>
+          ) : null}
         </VStack>
       </UIText>
       <Spacer height={10} />
@@ -204,6 +212,7 @@ export function HistoryList({
           {!isLoading ? (
             <DelayedRender delay={300}>
               <EmptyView
+                showReset={Boolean(searchQuery || chainValue)}
                 onReset={() => {
                   setSearchQuery(undefined);
                   onChainChange(NetworkSelectValue.All);

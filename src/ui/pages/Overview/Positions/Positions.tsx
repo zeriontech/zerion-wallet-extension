@@ -1,5 +1,8 @@
 import type { AddressParams, AddressPosition } from 'defi-sdk';
-import { useAddressPositions } from 'defi-sdk';
+import {
+  useAddressPortfolioDecomposition,
+  useAddressPositions,
+} from 'defi-sdk';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   formatCurrencyToParts,
@@ -682,6 +685,13 @@ export function Positions({
 }) {
   const { ready, params, singleAddressNormalized } = useAddressParams();
   const { networks } = useNetworks();
+  const { value } = useAddressPortfolioDecomposition(
+    {
+      ...params,
+      currency: 'usd',
+    },
+    { enabled: ready }
+  );
   if (!networks || !ready) {
     return (
       <DelayedRender delay={2000}>
@@ -704,15 +714,17 @@ export function Positions({
   );
   const renderEmptyViewForNetwork = () => (
     <>
-      <div
-        style={{
-          paddingInline: 'var(--column-padding-inline)',
-          display: 'flex',
-          justifyContent: 'end',
-        }}
-      >
-        {networkSelect}
-      </div>
+      {value?.total_value ? (
+        <div
+          style={{
+            paddingInline: 'var(--column-padding-inline)',
+            display: 'flex',
+            justifyContent: 'end',
+          }}
+        >
+          {networkSelect}
+        </div>
+      ) : null}
       <EmptyViewForNetwork
         message="No assets yet"
         chainValue={chainValue}
