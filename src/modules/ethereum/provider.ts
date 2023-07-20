@@ -1,4 +1,3 @@
-import { ethers } from 'ethers';
 import { JsonRpcProvider } from '@json-rpc-tools/provider';
 import type {
   JsonRpcPayload,
@@ -140,8 +139,9 @@ export class EthereumProvider extends JsonRpcProvider {
       formatJsonRpcRequest(request.method, request.params || []),
       context
     );
-    if (request.method === 'wallet_switchEthereumChain' && result === null) {
-      updateChainId(this, ethers.utils.hexValue(request.params[0].chainId));
+    if (request.method === 'wallet_switchEthereumChain') {
+      updateChainId(this, result);
+      return null;
     }
     return result;
   };

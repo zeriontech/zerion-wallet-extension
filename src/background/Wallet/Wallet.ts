@@ -1215,7 +1215,7 @@ class PublicController {
     params,
     context,
   }: PublicMethodParams<[{ chainId: string | number }]>): Promise<
-    null | object
+    string | object
   > {
     const currentAddress = this.wallet.readCurrentAddress();
     if (!currentAddress) {
@@ -1232,14 +1232,14 @@ class PublicController {
       origin,
     });
     if (chainId === currentChainIdForThisOrigin) {
-      return null;
+      return chainId;
     }
     const networks = await networksStore.load();
     try {
       const chain = networks.getChainById(chainId);
       // Switch immediately and return success
       this.wallet.setChainForOrigin(chain, origin);
-      return null;
+      return chainId;
     } catch (e) {
       throw new SwitchChainError(`Chain not configured: ${chainIdParameter}`);
     }
