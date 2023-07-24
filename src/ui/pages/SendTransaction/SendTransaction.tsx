@@ -79,6 +79,11 @@ function errorToMessage(error?: SendTransactionError) {
         ? capitalize(JSON.parse(error.error.body).error.message) ||
           fallbackString
         : fallbackString;
+
+    if (result.toLowerCase() === 'insufficient funds for gas * price + value') {
+      return 'Error: Insufficient funds';
+    }
+
     return `Error: ${result}`;
   } catch (e) {
     return `Error: ${fallbackString}`;
