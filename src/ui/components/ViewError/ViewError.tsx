@@ -20,8 +20,8 @@ import { useBugReportURL } from '../BugReportButton/useBugReportURL';
 const ICON_SIZE = 20;
 
 export function ViewError({
-  title = 'Unable to perform the desired action now',
-  subtitle = "Please try again. If the issue keeps happening,\ntell us about the bug you've found.",
+  title = 'Unable to perform this action right now',
+  subtitle = 'Please try again and report the issue if it persists.',
   error,
 }: {
   title?: string;
