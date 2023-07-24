@@ -14,7 +14,10 @@ interface ClassicGasPriceProps {
 
 export function assignGasPrice<
   T extends Partial<
-    Pick<IncomingTransaction, keyof ClassicGasPriceProps | keyof EIP1559Props>
+    Pick<
+      IncomingTransaction,
+      keyof ClassicGasPriceProps | keyof EIP1559Props | 'type'
+    >
   >
 >(
   transaction: T,
@@ -30,6 +33,7 @@ export function assignGasPrice<
   } else if (gasPrice.classic != null) {
     delete transaction.maxFeePerGas;
     delete transaction.maxPriorityFeePerGas;
+    delete transaction.type;
     return Object.assign(transaction, {
       gasPrice: ethers.utils.hexValue(gasPrice.classic),
     });
