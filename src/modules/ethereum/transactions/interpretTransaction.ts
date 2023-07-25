@@ -2,6 +2,7 @@ import { client } from 'defi-sdk';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 import type { IncomingTransactionWithChainId } from '../types/IncomingTransaction';
 import type { InterpretResponse } from './types';
+import { getGas } from './getGas';
 
 export function interpretTransaction(
   address: string,
@@ -30,7 +31,7 @@ export function interpretTransaction(
               to: transaction?.to,
               nonce: transaction?.nonce,
               chainId: transaction.chainId,
-              gas: transaction?.gas,
+              gas: getGas(transaction),
               gasPrice: transaction?.gasPrice,
               maxFee: transaction?.maxFeePerGas,
               maxPriorityFee: transaction?.maxPriorityFeePerGas,
