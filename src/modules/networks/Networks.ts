@@ -6,8 +6,6 @@ import type { ChainConfig } from 'src/modules/ethereum/chains/ChainConfigStore';
 import type { Chain } from './Chain';
 import { createChain } from './Chain';
 import type { NetworkConfig } from './NetworkConfig';
-import { applyKeyToEndpoint, keys as defaultKeys } from './keys';
-import type { Keys } from './keys';
 import type { TransactionPurpose } from './TransactionPurpose';
 import { getAddress } from './asset';
 import { UnsupportedNetwork } from './errors';
@@ -79,7 +77,6 @@ export class Networks {
   private networks: NetworkConfig[];
   ethereumChainSources?: EthereumChainSources;
   private sourcesNormalized?: EthereumChainSourcesNormalized;
-  private keys: Keys;
   private collection: { [key: string]: NetworkConfig | undefined };
   private collectionByEvmId: { [key: string]: NetworkConfig | undefined };
   private originalCollection: { [key: string]: NetworkConfig | undefined };
@@ -92,18 +89,15 @@ export class Networks {
 
   constructor({
     networks,
-    keys = defaultKeys,
     ethereumChainSources,
   }: {
     networks: NetworkConfig[];
     ethereumChainSources?: EthereumChainSources;
-    keys?: Keys;
   }) {
     this.networks = networks.sort((a, b) =>
       localeCompareWithPriority(a.name, b.name, 'Ethereum')
     );
     this.ethereumChainSources = ethereumChainSources;
-    this.keys = keys;
     const {
       collection,
       originalCollection,
@@ -423,7 +417,7 @@ export class Networks {
     if (!url) {
       throw new Error(`Network url missing: ${chain}`);
     }
-    return applyKeyToEndpoint(url, this.keys);
+    return url;
   }
 
   getRpcUrlPublic(chain: Chain) {
@@ -438,6 +432,6 @@ export class Networks {
     if (!url) {
       throw new Error(`Network url missing: ${chain}`);
     }
-    return applyKeyToEndpoint(url, this.keys);
+    return url;
   }
 }
