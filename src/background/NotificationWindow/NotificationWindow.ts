@@ -1,9 +1,35 @@
 import EventEmitter from 'events';
 import type { ErrorResponse } from '@json-rpc-tools/utils';
 import { nanoid } from 'nanoid';
+import type { Windows } from 'webextension-polyfill';
+import browser from 'webextension-polyfill';
 import type { RpcError, RpcResult } from 'src/shared/custom-rpc';
 import { UserRejected } from 'src/shared/errors/errors';
-import { windowManager } from '../webapis/window';
+
+const IS_WINDOWS = /windows/i.test(navigator.userAgent);
+const BROWSER_HEADER = 80;
+const DEFAULT_WINDOW_SIZE = {
+  width: 400 + (IS_WINDOWS ? 14 : 0), // windows cuts the width
+  height: 700,
+};
+
+function getPopupRoute(route: string) {
+  /**
+   * Normally, we'd get the path to popup.html like this:
+   * new URL(`../../ui/popup.html`, import.meta.url)
+   * But parcel is being too smart, and because we're in
+   * the service worker context here, it bundles the entry for sw context as well,
+   * which makes the popup UI crash
+   */
+  const popupUrl = browser.runtime.getManifest().action?.default_popup;
+  if (!popupUrl) {
+    throw new Error('popupUrl not found');
+  }
+  const url = new URL(browser.runtime.getURL(popupUrl));
+  url.searchParams.append('templateType', 'dialog');
+  url.hash = route;
+  return url.toString();
+}
 
 class NotificationWindow extends EventEmitter {
   windowId: number | null | undefined = null;
@@ -27,18 +53,23 @@ class NotificationWindow extends EventEmitter {
   async open<T>({
     route: initialRoute,
     search,
-    height,
     onDismiss,
     onResolve,
+    width = DEFAULT_WINDOW_SIZE.width,
+    height = DEFAULT_WINDOW_SIZE.height,
+    ...rest
   }: {
     route: string;
     search?: string;
+    top?: number;
+    left?: number;
+    width?: number;
     height?: number;
     onDismiss: (error?: ErrorResponse) => void;
     onResolve: (data: T) => void;
   }) {
     if (this.windowId != null) {
-      windowManager.remove(this.windowId);
+      browser.windows.remove(this.windowId);
     }
 
     const disposables: Array<() => void> = [];
@@ -47,12 +78,33 @@ class NotificationWindow extends EventEmitter {
       disposables.forEach((dispose) => dispose());
     };
 
-    let route = initialRoute;
     const id = this.getNewId();
     const params = new URLSearchParams(search);
     params.append('windowId', String(id));
-    route = route + `?${params.toString()}`;
-    const windowId = await windowManager.openNotification({ route, height });
+
+    const {
+      top: currentWindowTop = 0,
+      left: currentWindowLeft = 0,
+      width: currentWindowWidth = 0,
+    } = await browser.windows.getCurrent({
+      windowTypes: ['normal'],
+    } as Windows.GetInfo);
+
+    const defaultPosition = {
+      top: currentWindowTop + BROWSER_HEADER,
+      left: currentWindowLeft + currentWindowWidth - width,
+    };
+
+    const { id: windowId } = await browser.windows.create({
+      focused: true,
+      url: getPopupRoute(`${initialRoute}?${params.toString()}`),
+      type: 'popup',
+      width,
+      height,
+      ...defaultPosition,
+      ...rest,
+    });
+
     if (windowId) {
       this.idsMap.set(id, windowId);
       disposables.push(() => this.idsMap.delete(id));
@@ -60,7 +112,7 @@ class NotificationWindow extends EventEmitter {
     this.windowId = windowId;
     disposables.push(() => {
       if (this.windowId != null) {
-        windowManager.remove(this.windowId);
+        browser.windows.remove(this.windowId);
         this.windowId = null;
       }
     });
@@ -71,15 +123,12 @@ class NotificationWindow extends EventEmitter {
       }
     };
     const handleWindowRemoved = (windowId: number) => {
-      if (this.windowId === windowId) {
-        this.windowId = null;
-        onDismiss(new UserRejected('Window Closed'));
-        onDone();
-      }
+      handleDismiss(windowId, new UserRejected('Window Closed'));
     };
-    windowManager.event.on('windowRemoved', handleWindowRemoved);
+
+    browser.windows.onRemoved.addListener(handleWindowRemoved);
     disposables.push(() => {
-      windowManager.event.off('windowRemoved', handleWindowRemoved);
+      browser.windows.onRemoved.removeListener(handleWindowRemoved);
     });
 
     const handleResolve = ({ id, result }: RpcResult<T>) => {
@@ -104,7 +153,7 @@ class NotificationWindow extends EventEmitter {
 
   closeCurrentWindow() {
     if (this.windowId != null) {
-      windowManager.remove(this.windowId);
+      browser.windows.remove(this.windowId);
     }
   }
 }
