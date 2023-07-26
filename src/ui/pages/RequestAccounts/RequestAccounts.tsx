@@ -268,11 +268,15 @@ function RequestAccountsView({
             paddingBottom: 32,
           }}
         >
-          <Button type="button" kind="regular" onClick={onReject}>
+          <Button
+            type="button"
+            kind="regular"
+            onClick={onReject}
+            ref={focusNode}
+          >
             Cancel
           </Button>
           <Button
-            ref={focusNode}
             onClick={() =>
               onConfirm({ address: selectedWallet.address, origin })
             }
