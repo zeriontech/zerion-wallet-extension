@@ -206,6 +206,10 @@ export class Wallet {
     await this.syncWithWalletStore();
   }
 
+  async resetCredentials() {
+    this.userCredentials = null;
+  }
+
   async testMethod({ params: value }: WalletMethodParams<number>) {
     return new Promise<string>((r) =>
       setTimeout(

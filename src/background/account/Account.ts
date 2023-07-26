@@ -116,6 +116,7 @@ export class Account extends EventEmitter<AccountEvents> {
   private reset() {
     this.user = null;
     this.encryptionKey = null;
+    this.wallet.resetCredentials();
     this.wallet = new Wallet(TEMPORARY_ID, null, this.globalPreferences);
     this.emit('reset');
   }
