@@ -1,13 +1,16 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { produce } from 'immer';
+import dayjs from 'dayjs';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from 'src/ui/ui-kit/Button';
 import ConnectionIconOn from 'jsx:src/ui/assets/connection-toggle-on.svg';
 import ConnectionIconOff from 'jsx:src/ui/assets/connection-toggle-off.svg';
+import CloseIcon from 'jsx:src/ui/assets/close.svg';
 import { Media } from 'src/ui/ui-kit/Media';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { invariant } from 'src/shared/invariant';
-import { useQuery } from '@tanstack/react-query';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import {
@@ -19,13 +22,11 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { Radio } from 'src/ui/ui-kit/Radio';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { naiveFormDataToObject } from 'src/ui/shared/form-data';
-import dayjs from 'dayjs';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import * as s from 'src/ui/style/helpers.module.css';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
-import { produce } from 'immer';
 import { reloadActiveTab } from 'src/ui/shared/reloadActiveTab';
 import { ViewLoading } from '../ViewLoading';
 
@@ -123,13 +124,15 @@ function PauseInjectionDialog({
             />
           }
           text={
-            <UIText kind="body/regular">Zerion is your default wallet</UIText>
+            <UIText kind="body/regular">
+              Zerion is your default wallet for
+            </UIText>
           }
           vGap={0}
           detailText={
             activeTabUrl ? (
               <UIText kind="headline/h3" style={{ wordBreak: 'break-all' }}>
-                for {`${activeTabUrl.hostname}`}
+                {activeTabUrl.hostname}
               </UIText>
             ) : null
           }
@@ -142,17 +145,20 @@ function PauseInjectionDialog({
             </UIText>
 
             <SurfaceList
+              vGap={4}
+              style={{ paddingBlock: 4 }}
               items={options.map((option) => ({
                 key: option.value,
                 isInteractive: true,
                 pad: false,
                 component: (
                   <SurfaceItemLabel>
-                    <UIText kind="body/regular">
+                    <UIText kind="body/accent">
                       <HStack
                         gap={8}
                         alignItems="center"
                         justifyContent="space-between"
+                        style={{ paddingBlock: 4 }}
                       >
                         <span style={{ wordBreak: 'break-all' }}>
                           {option.label}
@@ -162,6 +168,10 @@ function PauseInjectionDialog({
                           value={option.value}
                           defaultChecked={option.defaultChecked}
                           required={true}
+                          style={{
+                            ['--radio-size' as string]: '20px',
+                            ['--radio-core-size' as string]: '12px',
+                          }}
                         />
                       </HStack>
                     </UIText>
@@ -171,13 +181,19 @@ function PauseInjectionDialog({
             />
 
             <SurfaceList
+              vGap={4}
+              style={{ paddingBlock: 4 }}
               items={buttons.map((button) => ({
                 key: button.value,
                 pad: false,
                 isInteractive: true,
                 component: (
                   <SurfaceItemButton name="duration" value={button.value}>
-                    <UIText kind="body/accent" color="var(--primary)">
+                    <UIText
+                      kind="body/accent"
+                      color="var(--primary)"
+                      style={{ paddingBlock: 4 }}
+                    >
                       {button.label}
                     </UIText>
                   </SurfaceItemButton>
@@ -185,20 +201,12 @@ function PauseInjectionDialog({
               }))}
             />
             <UIText kind="caption/regular" color="var(--neutral-500)">
-              Pause Zerion for the current DApp, or disable it entirely, so that
-              you can use other wallet extensions
+              Pause Zerion for the current DApp, or disable it entirely,
+              allowing you to use other wallet extensions
             </UIText>
           </VStack>
         </form>
       </div>
-      <form
-        method="dialog"
-        style={{ position: 'sticky', bottom: 0, marginTop: 'auto' }}
-      >
-        <Button kind="primary" value="cancel" style={{ width: '100%' }}>
-          Back
-        </Button>
-      </form>
     </div>
   );
 }
@@ -286,30 +294,54 @@ export function PauseInjectionControl() {
     globalPreferences,
     setGlobalPreferences,
   } = usePausedData();
+  const [showPauseDialog, setShowPauseDialog] = useState(false);
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+
+  const handleDialogDismiss = useCallback(() => {
+    dialogRef.current?.close();
+    setShowPauseDialog(false);
+  }, []);
+
   if (!globalPreferences) {
     return <ViewLoading />;
   }
   return (
     <>
       <BottomSheetDialog
-        // TODO: maybe create a "doNotRenderChildrenIfClosed" prop? (not final name :))
         ref={dialogRef}
-        height={'90vh'}
+        height={472}
         containerStyle={{
           backgroundColor: 'var(--background)',
           ['--surface-background-color' as string]: 'var(--white)',
         }}
       >
-        <PauseInjectionDialog
-          activeTabUrl={tabUrl || null}
-          onSubmit={(formData) => {
-            setGlobalPreferences(
-              createPreference(globalPreferences, formData)
-            ).then(reloadActiveTab);
-            dialogRef.current?.close();
-          }}
-        />
+        {showPauseDialog ? (
+          <>
+            <PauseInjectionDialog
+              activeTabUrl={tabUrl || null}
+              onSubmit={(formData) => {
+                setGlobalPreferences(
+                  createPreference(globalPreferences, formData)
+                ).then(reloadActiveTab);
+                handleDialogDismiss();
+              }}
+            />
+            <Button
+              onClick={handleDialogDismiss}
+              kind="ghost"
+              size={40}
+              style={{
+                position: 'absolute',
+                width: 40,
+                top: 8,
+                right: 8,
+                padding: 8,
+              }}
+            >
+              <CloseIcon />
+            </Button>
+          </>
+        ) : null}
       </BottomSheetDialog>
 
       <Button
@@ -322,6 +354,7 @@ export function PauseInjectionControl() {
         onClick={() => {
           invariant(dialogRef.current, 'Dialog element must be mounted');
           dialogRef.current.showModal();
+          setShowPauseDialog(true);
         }}
       >
         {React.createElement(isPaused ? ConnectionIconOff : ConnectionIconOn, {
