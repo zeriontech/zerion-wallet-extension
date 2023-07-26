@@ -1,4 +1,4 @@
-import type { AddressParams, AddressPosition } from 'defi-sdk';
+import type { AddressParams, AddressPosition, Asset } from 'defi-sdk';
 import { useAddressPositions } from 'defi-sdk';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
@@ -61,6 +61,8 @@ import { getCommonQuantity } from 'src/modules/networks/asset';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 import { StretchyFillView } from 'src/ui/components/FillView/FillView';
 import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
+import { minus } from 'src/ui/shared/typography';
+import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 import { STRETCHY_VIEW_HEIGHT } from '../constants';
 
 function LineToParent({
@@ -134,6 +136,13 @@ function AddressPositionItem({
   const { networks } = useNetworks();
   const network = networks?.getNetworkByName(createChain(position.chain));
   const chain = createChain(position.chain);
+
+  const reletiveChange = (position.asset.price?.relative_change_24h || 0) / 100;
+  const absoluteChange = Math.abs(
+    position.asset.price
+      ? (reletiveChange * Number(position.value)) / (1 + reletiveChange)
+      : 0
+  ).toFixed(2);
 
   return (
     <div style={{ position: 'relative', paddingLeft: isNested ? 26 : 0 }}>
@@ -243,11 +252,16 @@ function AddressPositionItem({
                     : 'var(--positive-500)'
                 }
               >
-                {position.asset.price.relative_change_24h > 0 ? '+' : null}
-                {`${formatPercent(
+                {`${
+                  position.asset.price.relative_change_24h > 0 ? '+' : minus
+                }${formatCurrencyValue(
+                  absoluteChange,
+                  'en',
+                  'usd'
+                )} (${formatPercent(
                   position.asset.price.relative_change_24h,
                   'en'
-                )}%`}
+                )}%)`}
               </UIText>
             ) : null}
           </VStack>
