@@ -1,6 +1,27 @@
 // https://www.npmjs.com/package/copy-to-clipboard doesn't work in <dialog/>
 // we are using modern Clipboard API instead of the old approach with creating temporary html element
-export async function copy(text: string) {
+
+function findOpenedModalDialog() {
+  /**
+   * "Modal" dialog is an html <dialog> with "open" property set to `true`
+   * and an unset "open" attribute:
+   * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/dialog#open
+   */
+  let element = document.activeElement;
+  while (element) {
+    if (
+      element.tagName === 'DIALOG' &&
+      (element as HTMLDialogElement).open &&
+      !element.getAttribute('open')
+    ) {
+      return element;
+    }
+    element = element.parentElement;
+  }
+  return null;
+}
+
+export function copy(text: string) {
   try {
     return navigator.clipboard.writeText(text);
   } catch {
@@ -19,10 +40,13 @@ export async function copy(text: string) {
     element.style.whiteSpace = 'pre';
     element.style.userSelect = 'text';
 
+    let root: Element | null = null;
     try {
       element.textContent = text;
-      document.body.appendChild(element);
+      root = findOpenedModalDialog() || document.body;
+      root.appendChild(element);
       range.selectNodeContents(element);
+      selection?.removeAllRanges();
       selection?.addRange(range);
 
       const successful = document.execCommand('copy');
@@ -41,8 +65,8 @@ export async function copy(text: string) {
         }
       }
 
-      if (element) {
-        document.body.removeChild(element);
+      if (root) {
+        root.removeChild(element);
       }
     }
   }
