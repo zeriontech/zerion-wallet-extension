@@ -101,11 +101,11 @@ function NFTItem({
             </>
           )}
         />
-        <Spacer height={16} />
-        <VStack gap={4} style={{ marginTop: 'auto' }}>
+        <Spacer height={8} />
+        <VStack gap={0} style={{ marginTop: 'auto' }}>
           {showCollection ? (
             <UIText
-              kind="small/accent"
+              kind="caption/regular"
               color="var(--neutral-500)"
               style={{
                 whiteSpace: 'nowrap',
@@ -117,7 +117,7 @@ function NFTItem({
             </UIText>
           ) : null}
           <UIText
-            kind="body/accent"
+            kind="small/accent"
             style={{
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
@@ -127,13 +127,13 @@ function NFTItem({
             {item.metadata.name || 'Untitled Asset'}
           </UIText>
           {price ? (
-            <UIText kind="body/accent">
+            <UIText kind="small/accent">
               <NeutralDecimals
                 parts={formatCurrencyToParts(price, 'en', 'usd')}
               />
             </UIText>
           ) : someHavePrice ? (
-            <UIText kind="body/accent">{NBSP}</UIText>
+            <UIText kind="small/accent">{NBSP}</UIText>
           ) : null}
         </VStack>
         {isPrimary ? (
@@ -262,7 +262,7 @@ export function NonFungibleTokens({
   }
 
   return (
-    <VStack gap={24} style={{ paddingInline: 'var(--column-padding-inline)' }}>
+    <VStack gap={16} style={{ paddingInline: 8 }}>
       <HStack
         gap={4}
         justifyContent="space-between"
@@ -283,15 +283,19 @@ export function NonFungibleTokens({
       </HStack>
 
       {maybeSingleAddress ? (
-        <DnaNFTBanner address={normalizeAddress(maybeSingleAddress)} />
+        <DnaNFTBanner
+          address={normalizeAddress(maybeSingleAddress)}
+          style={{ paddingInline: 8 }}
+        />
       ) : null}
 
       <div
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(112px, 1fr))',
-          gridGap: 12,
+          gridGap: 16,
           rowGap: 24,
+          paddingInline: 8,
         }}
       >
         {items.map((addressNft) => (
@@ -305,13 +309,15 @@ export function NonFungibleTokens({
 
       {hasNext ? (
         <Button
-          kind="regular"
+          kind="ghost"
           onClick={fetchMore}
           disabled={isLoading}
-          style={{ paddingInline: 16 }}
+          style={{ paddingInline: 8 }}
         >
           <HStack gap={8} alignItems="center">
-            <span>More NFTs</span>
+            <UIText kind="body/accent" color="var(--primary)">
+              More NFTs
+            </UIText>
             {isLoading ? <CircleSpinner /> : null}
           </HStack>
         </Button>

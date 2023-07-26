@@ -63,7 +63,10 @@ import { StretchyFillView } from 'src/ui/components/FillView/FillView';
 import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import { minus } from 'src/ui/shared/typography';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
-import { STRETCHY_VIEW_HEIGHT } from '../constants';
+import {
+  STRETCHY_VIEW_HEIGHT,
+  STRETCHY_VIEW_HEIGHT_UNDER_CHAIN_SELECTOR,
+} from '../constants';
 
 function LineToParent({
   hasPreviosNestedPosition,
@@ -794,7 +797,7 @@ export function Positions({
       >
         {networkSelect}
       </div>
-      <StretchyFillView maxHeight={STRETCHY_VIEW_HEIGHT}>
+      <StretchyFillView maxHeight={STRETCHY_VIEW_HEIGHT_UNDER_CHAIN_SELECTOR}>
         <EmptyViewForNetwork
           message="No assets yet"
           chainValue={chainValue}
