@@ -24,13 +24,20 @@
   cursor: pointer;
   padding-bottom: 7px;
   text-decoration: none;
+  color: var(--neutral-600);
+}
+
+.wrap.primary .radio.radioChecked,
+.wrap.primary .link.activeLink {
+  color: var(--primary);
 }
 
 .radio:focus-within:has(:focus-visible) {
   outline: 1px solid var(--primary);
 }
 
-.wrap.secondary .radio {
+.wrap.secondary .radio,
+.wrap.secondary .link {
   padding-bottom: 0;
   height: 32px;
   white-space: nowrap; /* since we restrict height, we should restrict wrapping, too */
@@ -40,6 +47,7 @@
   z-index: 2;
   padding-left: 12px;
   padding-right: 12px;
+  color: var(--black);
 }
 
 .activeDecorator {
@@ -69,10 +77,10 @@
   width: calc(100% - 4px);
 }
 
-.radio:hover .activeDecorator,
-.radio:focus-within .activeDecorator,
-.link:hover .activeDecorator {
-  color: var(--neutral-500);
+.radio:hover,
+.radio:focus-within,
+.link:hover {
+  color: var(--black);
 }
 
 .wrap.secondary .radio:hover .activeDecorator,

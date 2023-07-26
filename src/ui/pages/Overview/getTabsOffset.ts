@@ -1,5 +1,5 @@
 export const TABS_OFFSET_METER_ID = 'overview-tabs-offset-meter';
-export const TABS_OFFSET = 48;
+export const TABS_OFFSET = 56;
 
 export function getTabsOffset() {
   return (

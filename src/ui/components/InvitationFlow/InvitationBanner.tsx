@@ -26,6 +26,7 @@ export function InvitationBanner({ address }: { address: string }) {
       <VStack
         gap={12}
         style={{
+          marginInline: 8,
           padding: '16px 16px 24px 16px',
           backgroundImage: `url(${require('./banner.png')})`,
           backgroundSize: '100% 100%',

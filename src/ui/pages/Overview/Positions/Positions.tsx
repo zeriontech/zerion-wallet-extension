@@ -422,8 +422,8 @@ function ProtocolHeading({
         <TokenIcon
           src={getProtocolIconURL(protocol)}
           symbol={protocol}
-          size={32}
-          style={{ borderRadius: 8 }}
+          size={24}
+          style={{ borderRadius: 6 }}
         />
       )}
       <UIText kind="body/accent">
@@ -534,7 +534,6 @@ function PositionList({
           }
         }
         if (protocolItems.length > stopAt) {
-          const howMuchMore = protocolItems.length - stopAt;
           items.push({
             key: 'show-more-less',
             onClick: () => {
@@ -545,21 +544,22 @@ function PositionList({
               }
             },
             component: (
-              <UIText kind="body/regular" color="var(--primary)">
-                {expanded.has(protocol)
-                  ? 'Show Less'
-                  : `Show More (${howMuchMore})`}
+              <UIText kind="body/accent" color="var(--primary)">
+                {expanded.has(protocol) ? 'Show Less' : 'Show All Assets'}
               </UIText>
             ),
           });
         }
         return (
-          <VStack gap={8} key={protocol}>
+          <VStack gap={4} key={protocol}>
             <HStack
               gap={4}
               justifyContent="space-between"
               alignItems="center"
-              style={{ paddingInline: 'var(--column-padding-inline)' }}
+              style={{
+                paddingInline: 'var(--column-padding-inline)',
+                paddingBottom: 8,
+              }}
             >
               <ProtocolHeading
                 protocol={protocol}
@@ -570,7 +570,8 @@ function PositionList({
               {index === 0 && firstHeaderItemEnd ? firstHeaderItemEnd : null}
             </HStack>
             <SurfaceList
-              style={{ position: 'relative', paddingTop: 0 }}
+              vGap={4}
+              style={{ position: 'relative', paddingBlock: 0 }}
               // estimateSize={(index) => (index === 0 ? 52 : 60 + 1)}
               // overscan={5} // the library detects window edge incorrectly, increasing overscan just visually hides the problem
               items={items}

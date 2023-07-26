@@ -23,9 +23,8 @@
 }
 
 .decoration {
-  border-radius: 6px;
-  padding-inline: 10px;
-  padding-block: 8px;
+  border-radius: 8px;
+  padding: 8px;
 }
 
 .option.highlighted .decoration {

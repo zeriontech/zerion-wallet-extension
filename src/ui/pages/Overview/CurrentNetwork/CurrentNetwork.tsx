@@ -116,6 +116,7 @@ export function CurrentNetwork({ address }: { address: string }) {
       <Button
         kind="ghost"
         size={40}
+        style={{ width: 48, paddingInline: 8 }}
         title={getNameFromOrigin(tabOrigin)}
         onClick={() => {
           if (ref.current) {
@@ -142,7 +143,7 @@ export function CurrentNetwork({ address }: { address: string }) {
             <SiteFaviconImg
               url={tabOrigin}
               size={24}
-              style={{ display: 'block', borderRadius: '50%' }}
+              style={{ display: 'flex', borderRadius: '50%' }}
             />
           </div>
           {isConnected ? <div className={s.activeIndicator} /> : null}

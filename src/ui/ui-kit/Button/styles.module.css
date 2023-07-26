@@ -56,6 +56,10 @@
   }
 }
 
+.ghost:not(:disabled):active {
+  background-color: var(--neutral-400);
+}
+
 .danger.danger {
   background-color: var(--negative-500);
   color: var(--always-white);

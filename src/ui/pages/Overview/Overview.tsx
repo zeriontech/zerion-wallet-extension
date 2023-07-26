@@ -137,17 +137,21 @@ function CurrentAccountControls() {
     >
       <Button
         kind="ghost"
-        size={32}
+        size={40}
         as={UnstyledLink}
         to="/wallet-select"
         title="Select Account"
+        style={{ paddingInline: 8 }}
       >
         <HStack gap={4} alignItems="center">
           <PersonIcon />
-          <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+          <UIText
+            kind="body/accent"
+            style={{ display: 'inline-flex', alignItems: 'center' }}
+          >
             <CurrentAccount wallet={wallet} />
             <ArrowDownIcon />
-          </span>
+          </UIText>
         </HStack>
       </Button>
       <CopyButton address={addressToCopy} />
@@ -228,7 +232,7 @@ function OverviewComponent() {
   );
 
   return (
-    <PageColumn>
+    <PageColumn style={{ paddingInline: 8 }}>
       <PageFullBleedColumn
         paddingInline={true}
         style={{
@@ -238,7 +242,7 @@ function OverviewComponent() {
           backgroundColor: 'var(--background)',
         }}
       >
-        <Spacer height={8} />
+        <Spacer height={16} />
         <HStack gap={12} justifyContent="space-between" alignItems="center">
           <CurrentAccountControls />
 
@@ -251,9 +255,14 @@ function OverviewComponent() {
           </HStack>
         </HStack>
       </PageFullBleedColumn>
-      <PausedBanner style={{ marginTop: 16 }} />
-      <Spacer height={24} />
-      <div style={{ height: isLoadingPortfolio ? 72 : undefined }}>
+      <PausedBanner style={{ marginTop: 16, marginInline: 8 }} />
+      <Spacer height={16} />
+      <div
+        style={{
+          height: isLoadingPortfolio ? 68 : undefined,
+          paddingInline: 8,
+        }}
+      >
         <HStack gap={16} alignItems="center">
           {!isLoadingPortfolio ? (
             <WalletAvatar address={singleAddress} size={64} borderRadius={6} />
@@ -276,7 +285,7 @@ function OverviewComponent() {
                   const sign = change.isPositive ? '+' : '';
                   return (
                     <UIText
-                      kind="body/regular"
+                      kind="small/regular"
                       color={
                         change.isNonNegative
                           ? 'var(--positive-500)'
@@ -303,7 +312,9 @@ function OverviewComponent() {
         </HStack>
       </div>
       <Spacer height={20} />
-      <ActionButtonsRow />
+      <div style={{ paddingInline: 8 }}>
+        <ActionButtonsRow />
+      </div>
       <DevelopmentOnly>
         <RenderTimeMeasure />
       </DevelopmentOnly>
@@ -317,6 +328,7 @@ function OverviewComponent() {
           top: TABS_OFFSET,
           zIndex: 'var(--max-layout-index)',
           backgroundColor: 'var(--background)',
+          paddingInline: 8,
         }}
       >
         <div
@@ -324,12 +336,11 @@ function OverviewComponent() {
             borderTopLeftRadius: 24,
             borderTopRightRadius: 24,
             backgroundColor: 'var(--white)',
-            paddingTop: 12,
+            paddingTop: 16,
           }}
         >
           <SegmentedControlGroup
             style={{
-              paddingTop: 4,
               paddingInline: 16,
               gap: 24,
               borderBottom: 'none',
@@ -376,6 +387,7 @@ function OverviewComponent() {
           flexDirection: 'column',
           backgroundColor: 'var(--white)',
           ['--surface-background-color' as string]: 'var(--white)',
+          paddingInline: 8,
         }}
       >
         <Spacer height={16} />

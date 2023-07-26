@@ -317,6 +317,7 @@ export function PauseInjectionControl() {
         size={40}
         type="button"
         title="Disable Wallet Provider"
+        style={{ width: 40, paddingInline: 8 }}
         disabled={isPaused}
         onClick={() => {
           invariant(dialogRef.current, 'Dialog element must be mounted');
@@ -355,6 +356,7 @@ export function PausedBanner({ style }: { style?: React.CSSProperties }) {
       style={{
         paddingBlock: 8,
         paddingInline: 12,
+        ['--surface-border-radius' as string]: '8px',
         ['--surface-background-color' as string]: 'var(--white)',
         ...style,
       }}
@@ -381,7 +383,7 @@ export function PausedBanner({ style }: { style?: React.CSSProperties }) {
             ).then(reloadActiveTab)
           }
         >
-          Resume
+          <UIText kind="small/accent">Resume</UIText>
         </UnstyledButton>
       </HStack>
     </Surface>

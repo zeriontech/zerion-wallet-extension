@@ -14,6 +14,7 @@ export function SettingsLinkIcon() {
       size={40}
       to="/settings"
       title="Settings"
+      style={{ width: 40, paddingInline: 8 }}
     >
       <div style={{ position: 'relative' }}>
         <SettingsIcon style={{ display: 'block' }} />

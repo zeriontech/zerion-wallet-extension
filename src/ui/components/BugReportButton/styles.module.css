@@ -1,9 +1,14 @@
 .link {
+  border-top: 1px solid var(--neutral-400);
+  background-color: var(--neutral-200);
   color: var(--neutral-600);
+  padding-block: 4;
 }
 
 @media (hover: hover) {
   .link:hover {
-    color: var(--black);
+    color: var(--primary);
+    background-color: var(--primary-200);
+    border-top: 1px solid var(--primary-300);
   }
 }
