@@ -154,7 +154,7 @@ export function WalletAccount() {
     isLoading,
     refetch: refetchWallet,
   } = useQuery({
-    queryKey: [`wallet/uiGetWalletByAddress/${address}`],
+    queryKey: ['wallet/uiGetWalletByAddress', address],
     queryFn: () => walletPort.request('uiGetWalletByAddress', { address }),
     useErrorBoundary: true,
   });

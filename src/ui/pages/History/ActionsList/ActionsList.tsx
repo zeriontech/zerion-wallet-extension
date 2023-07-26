@@ -7,6 +7,7 @@ import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { ActionItem } from '../ActionItem';
 import { STRETCHY_VIEW_HEIGHT } from '../constants';
 
@@ -56,7 +57,12 @@ export function ActionsList({
         </VStack>
       ))}
       {actions.length && isLoading ? (
-        <ViewLoading />
+        // TODO: fix this  workaround in https://zerion-tech.atlassian.net/browse/WLT-1828
+        <div style={{ height: 44 }}>
+          <DelayedRender delay={400}>
+            <ViewLoading />
+          </DelayedRender>
+        </div>
       ) : hasMore ? (
         <SurfaceList
           items={[

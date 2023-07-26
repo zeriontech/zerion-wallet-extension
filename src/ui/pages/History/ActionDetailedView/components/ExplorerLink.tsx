@@ -20,7 +20,7 @@ export function ExplorerLink({
   action: AddressAction;
   networks: Networks;
 }) {
-  const { style, trigger } = useTransformTrigger({ x: 5, display: 'flex' });
+  const { style, trigger } = useTransformTrigger({ x: 2 });
 
   return (
     <UnstyledAnchor
@@ -36,7 +36,7 @@ export function ExplorerLink({
     >
       <HStack gap={4} alignItems="center">
         <UIText kind="small/accent">Explorer</UIText>
-        <animated.div style={style}>
+        <animated.div style={{ ...style, display: 'flex' }}>
           <LinkIcon style={{ width: ICON_SIZE, height: ICON_SIZE }} />
         </animated.div>
       </HStack>

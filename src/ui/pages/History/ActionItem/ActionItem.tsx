@@ -27,12 +27,12 @@ import {
 } from 'src/modules/ethereum/transactions/addressAction';
 import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
-import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
+import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
+import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { ActionDetailedView } from '../ActionDetailedView';
 import { AssetLink } from '../ActionDetailedView/components/AssetLink';
 import { isUnlimitedApproval } from '../isUnlimitedApproval';
@@ -171,7 +171,14 @@ function ActionItemBackend({
       return;
     }
     setShowDetailedView(true);
-    showConfirmDialog(dialogRef.current).then(() => setShowDetailedView(false));
+    dialogRef.current.showModal();
+  }, []);
+
+  const handleDialogDismiss = useCallback(() => {
+    if (dialogRef.current) {
+      dialogRef.current.close();
+    }
+    setShowDetailedView(false);
   }, []);
 
   if (!ready) {
@@ -193,6 +200,10 @@ function ActionItemBackend({
 
   return (
     <>
+      <KeyboardShortcut
+        combination="backspace"
+        onKeyDown={handleDialogDismiss}
+      />
       <HStack
         className={styles.actionItem}
         gap={24}
@@ -318,32 +329,22 @@ function ActionItemBackend({
           ) : null}
         </VStack>
       </HStack>
-      <BottomSheetDialog
-        ref={dialogRef}
-        height="100vh"
-        containerStyle={{
-          borderRadius: 0,
-          padding: 16,
-          backgroundColor: 'var(--neutral-100)',
-        }}
-      >
-        <form
-          method="dialog"
+      <CenteredDialog ref={dialogRef}>
+        <Button
+          kind="ghost"
+          value="cancel"
+          size={40}
           style={{
+            width: 40,
+            padding: 8,
             position: 'absolute',
             top: 16,
             left: 8,
           }}
+          onClick={handleDialogDismiss}
         >
-          <Button
-            kind="ghost"
-            value="cancel"
-            size={40}
-            style={{ width: 40, padding: 8 }}
-          >
-            <ArrowLeftIcon />
-          </Button>
-        </form>
+          <ArrowLeftIcon />
+        </Button>
         {showDetailedView ? (
           <ActionDetailedView
             action={action}
@@ -351,7 +352,7 @@ function ActionItemBackend({
             address={address}
           />
         ) : null}
-      </BottomSheetDialog>
+      </CenteredDialog>
     </>
   );
 }

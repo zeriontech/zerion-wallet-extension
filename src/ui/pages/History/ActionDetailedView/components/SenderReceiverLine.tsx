@@ -29,11 +29,10 @@ function SenderReceiver({
   const { handleCopy, isSuccess } = useCopyToClipboard({ text: address });
 
   const { style: iconStyle, trigger: hoverTrigger } = useTransformTrigger({
-    x: 5,
-    display: 'flex',
+    x: 2,
   });
   const { style: successIconStyle, trigger: successCopyTrigger } =
-    useTransformTrigger({ x: 5, display: 'flex' });
+    useTransformTrigger({ x: 2 });
 
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetWalletByAddress', address],
@@ -85,7 +84,7 @@ function SenderReceiver({
           </UIText>
           {address ? (
             isSuccess ? (
-              <animated.div style={successIconStyle}>
+              <animated.div style={{ ...successIconStyle, display: 'flex' }}>
                 <SuccessIcon
                   style={{
                     width: ICON_SIZE,
@@ -95,7 +94,7 @@ function SenderReceiver({
                 />
               </animated.div>
             ) : (
-              <animated.div style={iconStyle}>
+              <animated.div style={{ ...iconStyle, display: 'flex' }}>
                 <CopyIcon
                   style={{
                     width: ICON_SIZE,

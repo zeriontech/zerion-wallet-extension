@@ -24,23 +24,26 @@ export function RateLine({
       content?.transfers?.outgoing?.[0]?.asset
     );
 
+    const incomingPrice = content?.transfers?.incoming?.[0]?.price || 0;
+    const outgoingPrice = content?.transfers?.outgoing?.[0]?.price || 0;
+
     return type === 'trade' &&
       content?.transfers?.incoming?.length === 1 &&
       incomingFungible &&
       content?.transfers?.outgoing?.length === 1 &&
       outgoingFungible
-      ? incomingFungible.type === 'stablecoin'
+      ? incomingFungible.type === 'stablecoin' || outgoingPrice > incomingPrice
         ? {
             asset1: outgoingFungible,
-            price1: content.transfers.outgoing[0].price,
+            price1: outgoingPrice,
             asset2: incomingFungible,
-            price2: content.transfers.incoming[0].price,
+            price2: incomingPrice,
           }
         : {
             asset1: incomingFungible,
-            price1: content.transfers.incoming[0].price,
+            price1: incomingPrice,
             asset2: outgoingFungible,
-            price2: content.transfers.outgoing[0].price,
+            price2: outgoingPrice,
           }
       : null;
   }, [action]);

@@ -27,9 +27,7 @@ export async function copy(text: string) {
 
       const successful = document.execCommand('copy');
       if (!successful) {
-        throw new Error(
-          "Unable to copy to clipboard. Please, enable copy to clipboard permission in browser's settings"
-        );
+        throw new Error('Unable to copy to clipboard.');
       }
       return;
     } finally {

@@ -13,11 +13,10 @@ const ICON_SIZE = 20;
 
 export function HashButton({ hash }: { hash: string }) {
   const { style: iconStyle, trigger: hoverTrigger } = useTransformTrigger({
-    x: 5,
-    display: 'flex',
+    x: 2,
   });
   const { style: successIconStyle, trigger: successCopyTrigger } =
-    useTransformTrigger({ x: 5, display: 'flex' });
+    useTransformTrigger({ x: 2 });
   const { handleCopy, isSuccess } = useCopyToClipboard({ text: hash });
 
   const handleClick = useCallback(() => {
@@ -38,11 +37,11 @@ export function HashButton({ hash }: { hash: string }) {
       <HStack gap={4} alignItems="center">
         <UIText kind="small/accent">Hash</UIText>
         {isSuccess ? (
-          <animated.div style={successIconStyle}>
+          <animated.div style={{ ...successIconStyle, display: 'flex' }}>
             <SuccessIcon style={{ width: ICON_SIZE, height: ICON_SIZE }} />
           </animated.div>
         ) : (
-          <animated.div style={iconStyle}>
+          <animated.div style={{ ...iconStyle, display: 'flex' }}>
             <CopyIcon style={{ width: ICON_SIZE, height: ICON_SIZE }} />
           </animated.div>
         )}
