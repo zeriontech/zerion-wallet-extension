@@ -165,13 +165,12 @@ function ActionItemBackend({
   const { params, ready } = useAddressParams();
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
-  const handleDialogOpen = useCallback<React.MouseEventHandler>((e) => {
-    e.stopPropagation();
+  const handleDialogOpen = useCallback(() => {
     if (!dialogRef.current) {
       return;
     }
-    setShowDetailedView(true);
     dialogRef.current.showModal();
+    setShowDetailedView(true);
   }, []);
 
   const handleDialogDismiss = useCallback(() => {
@@ -220,7 +219,10 @@ function ActionItemBackend({
       >
         <UnstyledButton
           className={styles.actionItemBackdropButton}
-          onClick={handleDialogOpen}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDialogOpen();
+          }}
         />
         <Media
           vGap={0}

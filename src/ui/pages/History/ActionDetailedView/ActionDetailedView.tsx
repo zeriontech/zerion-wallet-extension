@@ -7,16 +7,21 @@ import { Surface } from 'src/ui/ui-kit/Surface';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { createChain } from 'src/modules/networks/Chain';
-import {
-  ApprovalInfo,
-  CollectionLine,
-  ExplorerLink,
-  FeeLine,
-  HashButton,
-  RateLine,
-  SenderReceiverLine,
-  TransferInfo,
-} from './components';
+import { ApprovalInfo, TransferInfo } from './components/TransferInfo';
+import { ExplorerLink } from './components/ExplorerLink';
+import { HashButton } from './components/HashButton';
+import { CollectionLine } from './components/CollectionLine';
+import { RateLine } from './components/RateLine';
+import { SenderReceiverLine } from './components/SenderReceiverLine';
+import { FeeLine } from './components/FeeLine';
+
+const dateFormatter = new Intl.DateTimeFormat('en', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+});
 
 export function ActionDetailedView({
   action,
@@ -34,13 +39,7 @@ export function ActionDetailedView({
   );
 
   const actionDate = useMemo(() => {
-    return new Intl.DateTimeFormat('en', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(new Date(action.datetime));
+    return dateFormatter.format(new Date(action.datetime));
   }, [action.datetime]);
 
   const outgoingTransfers = action.content?.transfers?.outgoing;

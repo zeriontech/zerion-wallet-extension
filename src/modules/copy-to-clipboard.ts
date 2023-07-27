@@ -53,7 +53,6 @@ export function copy(text: string) {
       if (!successful) {
         throw new Error('Unable to copy to clipboard.');
       }
-      return;
     } finally {
       if (selection) {
         if (typeof selection.removeRange == 'function') {
