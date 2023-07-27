@@ -229,11 +229,15 @@ export function SignInWithEthereum() {
               </>
             ) : (
               <>
-                <Button type="button" kind="regular" onClick={handleReject}>
+                <Button
+                  type="button"
+                  kind="regular"
+                  onClick={handleReject}
+                  ref={focusNode}
+                >
                   Cancel
                 </Button>
                 <Button
-                  ref={focusNode}
                   disabled={personalSignMutation.isLoading}
                   onClick={handleSignIn}
                 >

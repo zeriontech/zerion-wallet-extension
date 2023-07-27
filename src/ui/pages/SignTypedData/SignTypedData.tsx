@@ -30,6 +30,7 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { setURLSearchParams } from 'src/ui/shared/setURLSearchParams';
 import { InterpretLoadingState } from 'src/ui/components/InterpretLoadingState';
 import { AddressActionDetails } from 'src/ui/components/address-action/AddressActionDetails';
+import { focusNode } from 'src/ui/shared/focusNode';
 import { NavigationBar } from '../SignInWithEthereum/NavigationBar';
 
 function TypedDataRow({ data }: { data: string }) {
@@ -247,7 +248,12 @@ function SignTypedDataContent({
               gap: 8,
             }}
           >
-            <Button kind="regular" type="button" onClick={handleReject}>
+            <Button
+              kind="regular"
+              type="button"
+              onClick={handleReject}
+              ref={focusNode}
+            >
               Cancel
             </Button>
             <Button

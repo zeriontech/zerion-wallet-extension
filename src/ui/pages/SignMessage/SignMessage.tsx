@@ -22,6 +22,7 @@ import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { usePersonalSignMutation } from 'src/ui/shared/requests/message-signing';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
+import { focusNode } from 'src/ui/shared/focusNode';
 
 function MessageRow({ message }: { message: string }) {
   return (
@@ -132,7 +133,12 @@ function SignMessageContent({
               gap: 8,
             }}
           >
-            <Button kind="regular" type="button" onClick={handleReject}>
+            <Button
+              kind="regular"
+              type="button"
+              onClick={handleReject}
+              ref={focusNode}
+            >
               Cancel
             </Button>
             <Button
