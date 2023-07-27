@@ -66,7 +66,7 @@ import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 import {
   STRETCHY_VIEW_HEIGHT,
   STRETCHY_VIEW_HEIGHT_UNDER_CHAIN_SELECTOR,
-} from '../constants';
+} from '../getTabsOffset';
 
 function LineToParent({
   hasPreviosNestedPosition,

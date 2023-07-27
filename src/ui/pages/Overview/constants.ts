@@ -1,6 +1,0 @@
-const HISTORY_FILTERS_HEIGHT = 56;
-export const HISTORY_STRETCHY_VIEW_HEIGHT = `calc(100vh - ${
-  160 + HISTORY_FILTERS_HEIGHT
-}px)`;
-export const STRETCHY_VIEW_HEIGHT = 'calc(100vh - 160px)';
-export const STRETCHY_VIEW_HEIGHT_UNDER_CHAIN_SELECTOR = 'calc(100vh - 184px)';

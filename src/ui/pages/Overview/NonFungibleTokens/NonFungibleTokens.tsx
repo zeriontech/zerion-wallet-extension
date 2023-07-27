@@ -26,12 +26,14 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
-import { EmptyViewForNetwork } from 'src/ui/components/EmptyViewForNetwork';
+import { EmptyViewForNetwork } from 'src/ui/components/EmptyViewForNetwork'
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { StretchyFillView } from 'src/ui/components/FillView/FillView';
-import { NetworkSelect } from '../../Networks/NetworkSelect';
 import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
-import { STRETCHY_VIEW_HEIGHT } from '../constants';
+import { NetworkSelect } from '../../Networks/NetworkSelect';
+import {
+  STRETCHY_VIEW_HEIGHT,
+} from '../getTabsOffset';
 import * as s from './styles.module.css';
 
 function NFTItem({
