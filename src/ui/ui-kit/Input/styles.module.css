@@ -32,8 +32,6 @@
   content: url('./assets/close-primary.svg');
 }
 
-@media (prefers-color-scheme: dark) {
-  .input[type='search']::-webkit-search-cancel-button {
-    content: url('./assets/close-primary-dark.svg');
-  }
+.input[type='search'].darkTheme::-webkit-search-cancel-button {
+  content: url('./assets/close-primary-dark.svg');
 }
