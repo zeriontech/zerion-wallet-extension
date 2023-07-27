@@ -326,7 +326,7 @@ export class Wallet {
       throw new RecordNotFound();
     }
     if (!address) {
-      throw new Error('Ilegal argument: address is required for this method');
+      throw new Error('Illegal argument: address is required for this method');
     }
     const wallet = Model.getWalletByAddress(this.record, address);
     return wallet ? maskWallet(wallet) : null;
@@ -1174,7 +1174,7 @@ class PublicController {
       message = shouldBeAddress;
     } else {
       throw new Error(
-        `Address is required for "personal_sign" method. Expected: ${currentAddress}, received [${params[0]}, ${params[1]}]`
+        `Address is required for "personal_sign" method. Received [${params[0]}, ${params[1]}]`
       );
     }
 
@@ -1184,7 +1184,7 @@ class PublicController {
     ) {
       throw new Error(
         // TODO?...
-        `Address parameter is different from currently selected address. Expected: ${currentAddress}, received: ${address}`
+        `Address parameter is different from currently selected address. Received: ${address}`
       );
     }
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
