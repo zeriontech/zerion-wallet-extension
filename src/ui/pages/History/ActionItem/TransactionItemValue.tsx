@@ -38,7 +38,7 @@ function HistoryTokenValue({
   chain: Chain;
   direction: Direction;
   address?: string;
-  withLink?: boolean;
+  withLink: boolean;
 }) {
   const tokenTitle = asset.symbol?.toUpperCase() || asset.name;
   const sign = getSign(value, direction);
@@ -120,7 +120,7 @@ export function HistoryItemValue({
   direction: Direction;
   chain: Chain;
   address?: string;
-  withLink?: boolean;
+  withLink: boolean;
 }) {
   if (!transfers?.length) {
     return null;

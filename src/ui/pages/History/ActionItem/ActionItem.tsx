@@ -313,6 +313,7 @@ function ActionItemBackend({
                   direction="out"
                   chain={chain}
                   address={address}
+                  withLink={false}
                 />
               ) : isUnlimitedApproval(
                   action.content?.single_asset?.quantity
@@ -324,6 +325,7 @@ function ActionItemBackend({
                   direction="self"
                   chain={chain}
                   address={address}
+                  withLink={false}
                 />
               ) : null}
             </UIText>
