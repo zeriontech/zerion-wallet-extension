@@ -18,16 +18,16 @@ import type {
 import { describeTransaction } from './describeTransaction';
 import type { TransactionObject } from './types';
 
-type ClientTransactionStatus =
+export type ClientTransactionStatus =
   | AddressAction['transaction']['status']
   | 'dropped';
 
-export type PendingAddressAction = Omit<AddressAction, 'transaction' | 'id'> & {
-  id: string;
+export type LocalAddressAction = Omit<AddressAction, 'transaction'> & {
   transaction: Omit<AddressAction['transaction'], 'status'> & {
     hash: string;
     status: ClientTransactionStatus;
   };
+  local: true;
 };
 
 type IncomingAddressAction = Omit<AddressAction, 'transaction' | 'id'> & {
@@ -38,7 +38,7 @@ type IncomingAddressAction = Omit<AddressAction, 'transaction' | 'id'> & {
   };
 };
 
-export type AnyAddressAction = AddressAction | PendingAddressAction;
+export type AnyAddressAction = AddressAction | LocalAddressAction;
 
 type AddressActionLabelType = 'to' | 'from' | 'application' | 'contract';
 
@@ -128,7 +128,7 @@ async function createActionContent(
 export async function pendingTransactionToAddressAction(
   transactionObject: TransactionObject,
   networks: Networks
-): Promise<PendingAddressAction> {
+): Promise<LocalAddressAction> {
   const { transaction, hash, receipt, timestamp, dropped } = transactionObject;
   let chain: Chain | null;
   try {
@@ -173,6 +173,7 @@ export async function pendingTransactionToAddressAction(
         }
       : { display_value: '[Missing network data]', value: 'execute' },
     content,
+    local: true,
   };
 }
 
@@ -206,12 +207,6 @@ export async function incomingTxToIncomingAddressAction(
     },
     content,
   };
-}
-
-export function isPendingAddressAction(
-  addressAction: AddressAction | PendingAddressAction
-): addressAction is PendingAddressAction {
-  return addressAction.transaction.status === 'pending';
 }
 
 export function getActionAsset(action: AnyAddressAction) {

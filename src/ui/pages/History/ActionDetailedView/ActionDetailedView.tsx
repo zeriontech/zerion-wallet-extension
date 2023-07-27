@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import type { AddressAction } from 'defi-sdk';
+import { capitalize } from 'capitalize-ts';
 import type { Networks } from 'src/modules/networks/Networks';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -7,6 +8,7 @@ import { Surface } from 'src/ui/ui-kit/Surface';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { createChain } from 'src/modules/networks/Chain';
+import type { ClientTransactionStatus } from 'src/modules/ethereum/transactions/addressAction';
 import { ApprovalInfo, TransferInfo } from './components/TransferInfo';
 import { ExplorerLink } from './components/ExplorerLink';
 import { HashButton } from './components/HashButton';
@@ -45,6 +47,10 @@ export function ActionDetailedView({
   const outgoingTransfers = action.content?.transfers?.outgoing;
   const incomingTransfers = action.content?.transfers?.incoming;
 
+  const isFailed =
+    action.transaction.status === 'failed' ||
+    (action.transaction.status as ClientTransactionStatus) === 'dropped';
+
   const hasTransferInfo =
     outgoingTransfers?.length ||
     incomingTransfers?.length ||
@@ -56,7 +62,14 @@ export function ActionDetailedView({
       style={{ ['--surface-background-color' as string]: 'var(--white)' }}
     >
       <VStack gap={0} style={{ justifyItems: 'center' }}>
-        <UIText kind="body/accent">{action.type.display_value}</UIText>
+        <UIText
+          kind="body/accent"
+          color={isFailed ? 'var(--negative-500)' : undefined}
+        >
+          {`${action.type.display_value}${
+            isFailed ? ` (${capitalize(action.transaction.status)})` : ''
+          }`}
+        </UIText>
         <UIText kind="small/regular" color="var(--neutral-500)">
           {actionDate}
         </UIText>

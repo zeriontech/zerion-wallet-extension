@@ -19,7 +19,7 @@ export const useCopyToClipboard = ({ text }: Params) => {
     () =>
       debounce(() => {
         setIsSuccess(false);
-      }, 2000),
+      }, 1000),
     []
   );
 

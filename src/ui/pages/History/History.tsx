@@ -100,7 +100,6 @@ function useMinedAndPendingAddressActions({
       listenForUpdates: true,
       paginatedCacheMode: 'first-page',
       enabled: isSupportedByBackend,
-      keepStaleData: true,
     }
   );
 

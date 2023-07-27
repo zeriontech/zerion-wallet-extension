@@ -18,12 +18,11 @@ import { DNA_MINT_CONTRACT_ADDRESS } from 'src/ui/components/DnaClaim/dnaAddress
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type {
   AnyAddressAction,
-  PendingAddressAction,
+  LocalAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction';
 import {
   getActionAddress,
   getActionAsset,
-  isPendingAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction';
 import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
@@ -331,7 +330,10 @@ function ActionItemBackend({
           ) : null}
         </VStack>
       </HStack>
-      <CenteredDialog ref={dialogRef}>
+      <CenteredDialog
+        ref={dialogRef}
+        containerStyle={{ backgroundColor: 'var(--neutral-100)' }}
+      >
         <Button
           kind="ghost"
           value="cancel"
@@ -363,7 +365,7 @@ function ActionItemLocal({
   action,
   networks,
 }: {
-  action: PendingAddressAction;
+  action: LocalAddressAction;
   networks: Networks;
 }) {
   const asset = getActionAsset(action);
@@ -448,12 +450,16 @@ export function ActionItem({
   addressAction: AnyAddressAction;
 }) {
   const { networks } = useNetworks();
+
   if (!networks || !addressAction) {
     return null;
   }
-  return isPendingAddressAction(addressAction) ? (
+  return 'local' in addressAction && addressAction.local ? (
     <ActionItemLocal action={addressAction} networks={networks} />
   ) : (
-    <ActionItemBackend action={addressAction} networks={networks} />
+    <ActionItemBackend
+      action={addressAction as AddressAction}
+      networks={networks}
+    />
   );
 }
