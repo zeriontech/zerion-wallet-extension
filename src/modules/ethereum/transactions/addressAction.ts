@@ -18,16 +18,16 @@ import type {
 import { describeTransaction } from './describeTransaction';
 import type { TransactionObject } from './types';
 
-type ClientTransactionStatus =
+export type ClientTransactionStatus =
   | AddressAction['transaction']['status']
   | 'dropped';
 
-export type PendingAddressAction = Omit<AddressAction, 'transaction' | 'id'> & {
-  id: string;
+export type LocalAddressAction = Omit<AddressAction, 'transaction'> & {
   transaction: Omit<AddressAction['transaction'], 'status'> & {
     hash: string;
     status: ClientTransactionStatus;
   };
+  local: true;
 };
 
 type IncomingAddressAction = Omit<AddressAction, 'transaction' | 'id'> & {
@@ -38,7 +38,7 @@ type IncomingAddressAction = Omit<AddressAction, 'transaction' | 'id'> & {
   };
 };
 
-export type AnyAddressAction = AddressAction | PendingAddressAction;
+export type AnyAddressAction = AddressAction | LocalAddressAction;
 
 type AddressActionLabelType = 'to' | 'from' | 'application' | 'contract';
 
@@ -46,7 +46,7 @@ const actionTypeToLabelType: Record<
   TransactionActionType,
   AddressActionLabelType
 > = {
-  deployment: 'from',
+  deploy: 'from',
   send: 'to',
   execute: 'contract',
   approve: 'application',
@@ -67,12 +67,12 @@ function createActionLabel(
     type: actionTypeToLabelType[action.type],
     value:
       transaction.to ||
-      (action.type === 'deployment' ? '' : action.contractAddress || ''),
+      (action.type === 'deploy' ? '' : action.contractAddress || ''),
     display_value: {
       text: '',
       wallet_address,
       contract_address:
-        action.type === 'deployment' ? undefined : action.contractAddress,
+        action.type === 'deploy' ? undefined : action.contractAddress,
     },
   };
 }
@@ -81,7 +81,7 @@ async function createActionContent(
   action: TransactionAction
 ): Promise<AddressAction['content'] | null> {
   switch (action.type) {
-    case 'deployment':
+    case 'deploy':
     case 'execute':
       return null;
     case 'send': {
@@ -104,7 +104,7 @@ async function createActionContent(
               outgoing: [
                 {
                   asset: { fungible: asset },
-                  quantity: action.amount,
+                  quantity: action.amount.toString(),
                   price: null,
                 },
               ],
@@ -118,7 +118,9 @@ async function createActionContent(
         chain: action.chain,
         address: action.assetAddress,
       });
-      return asset ? { single_asset: { asset: { fungible: asset } } } : null;
+      return asset
+        ? { single_asset: { asset: { fungible: asset }, quantity: '' } }
+        : null;
     }
   }
 }
@@ -126,7 +128,7 @@ async function createActionContent(
 export async function pendingTransactionToAddressAction(
   transactionObject: TransactionObject,
   networks: Networks
-): Promise<PendingAddressAction> {
+): Promise<LocalAddressAction> {
   const { transaction, hash, receipt, timestamp, dropped } = transactionObject;
   let chain: Chain | null;
   try {
@@ -171,6 +173,7 @@ export async function pendingTransactionToAddressAction(
         }
       : { display_value: '[Missing network data]', value: 'execute' },
     content,
+    local: true,
   };
 }
 
@@ -204,12 +207,6 @@ export async function incomingTxToIncomingAddressAction(
     },
     content,
   };
-}
-
-export function isPendingAddressAction(
-  addressAction: AddressAction | PendingAddressAction
-): addressAction is PendingAddressAction {
-  return addressAction.transaction.status === 'pending';
 }
 
 export function getActionAsset(action: AnyAddressAction) {

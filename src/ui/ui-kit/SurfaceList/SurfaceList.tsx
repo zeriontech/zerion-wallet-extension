@@ -128,9 +128,11 @@ function isInteractive(item: Item): boolean {
 
 export function SurfaceList({
   items,
+  gap = 0,
   style,
 }: {
   items: Item[];
+  gap?: number;
   style?: React.CSSProperties;
 }) {
   const vGap = 8;
@@ -147,7 +149,7 @@ export function SurfaceList({
         ...style,
       }}
     >
-      <VStack gap={0}>
+      <VStack gap={gap}>
         {items.map((item, index) => {
           const {
             style,

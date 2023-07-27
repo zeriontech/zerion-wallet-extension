@@ -6,7 +6,6 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import type { Chain } from 'src/modules/networks/Chain';
 import { getCommonQuantity } from 'src/modules/networks/asset';
 import { getAssetQuantity } from 'src/modules/networks/asset';
-import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import {
   getFungibleAsset,
   getNftAsset,
@@ -14,8 +13,12 @@ import {
 import { AssetQuantityValue } from 'src/ui/components/AssetQuantityValue';
 import type BigNumber from 'bignumber.js';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
+import { AssetLink, NFTLink } from '../ActionDetailedView/components/AssetLink';
 
-function getSign(decimaledValue?: number | BigNumber, direction?: Direction) {
+function getSign(
+  decimaledValue?: number | BigNumber | string,
+  direction?: Direction
+) {
   if (!decimaledValue || !direction || direction === 'self') {
     return '';
   }
@@ -28,12 +31,14 @@ function HistoryTokenValue({
   chain,
   direction,
   address,
+  withLink,
 }: {
-  value: number;
+  value: number | string;
   asset: Asset;
   chain: Chain;
   direction: Direction;
   address?: string;
+  withLink: boolean;
 }) {
   const tokenTitle = asset.symbol?.toUpperCase() || asset.name;
   const sign = getSign(value, direction);
@@ -49,25 +54,19 @@ function HistoryTokenValue({
       gap={4}
       alignItems="center"
       style={{
-        gridTemplateColumns: 'minmax(8px, 1fr) auto',
+        gridTemplateColumns:
+          'minmax(min-content, max-content) minmax(20px, max-content)',
         overflow: 'hidden',
+        whiteSpace: 'nowrap',
       }}
       title={`${sign}${formatted} ${tokenTitle}`}
     >
       <AssetQuantityValue sign={sign} quantity={quantity} />
-      <TextAnchor
-        href={`https://app.zerion.io/explore/asset/${asset.symbol}-${asset.asset_code}?address=${address}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-          outlineOffset: -1, // make focus ring visible despite overflow: hidden
-        }}
-      >
-        {tokenTitle}
-      </TextAnchor>
+      {withLink ? (
+        <AssetLink asset={asset} address={address} />
+      ) : (
+        asset.symbol?.toUpperCase() || asset.name
+      )}
     </HStack>
   );
 }
@@ -75,15 +74,19 @@ function HistoryTokenValue({
 export function HistoryNFTValue({
   quantity = 0,
   nftAsset,
+  chain,
   name,
   direction,
   address,
+  withLink,
 }: {
   quantity?: number;
   nftAsset?: NFTAsset | null;
+  chain?: Chain;
   name?: string;
   direction?: Direction;
   address?: string;
+  withLink?: boolean;
 }) {
   return (
     <HStack
@@ -97,21 +100,8 @@ export function HistoryNFTValue({
           {quantity}
         </span>
       ) : null}
-      {(!quantity || quantity === 1) && nftAsset?.asset_code ? (
-        <TextAnchor
-          href={`https://app.zerion.io/nfts/${nftAsset.asset_code}?address=${address}`}
-          target="_blank"
-          title={name}
-          rel="noopener noreferrer"
-          style={{
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            outlineOffset: -1, // make focus ring visible despite overflow: hidden
-          }}
-        >
-          {name}
-        </TextAnchor>
+      {(!quantity || quantity === 1) && nftAsset?.asset_code && withLink ? (
+        <NFTLink nft={nftAsset} chain={chain} address={address} title={name} />
       ) : (
         name
       )}
@@ -124,11 +114,13 @@ export function HistoryItemValue({
   direction,
   chain,
   address,
+  withLink,
 }: {
-  transfers?: ActionTransfer[];
-  direction: 'in' | 'out';
+  transfers?: Pick<ActionTransfer, 'asset' | 'quantity'>[];
+  direction: Direction;
   chain: Chain;
   address?: string;
+  withLink: boolean;
 }) {
   if (!transfers?.length) {
     return null;
@@ -153,6 +145,8 @@ export function HistoryItemValue({
       direction={direction}
       quantity={1}
       name={nftAsset.name || nftAsset.collection?.name}
+      chain={chain}
+      withLink={withLink}
     />
   ) : fungibleAsset ? (
     <HistoryTokenValue
@@ -161,6 +155,7 @@ export function HistoryItemValue({
       chain={chain}
       value={transfers[0].quantity}
       direction={direction}
+      withLink={withLink}
     />
   ) : null;
 }
@@ -176,7 +171,7 @@ export function TransactionCurrencyValue({
     return null;
   }
   const transfer = transfers[0];
-  const asset = getFungibleAsset();
+  const asset = getFungibleAsset(transfer.asset);
   if (!asset) {
     return null;
   }

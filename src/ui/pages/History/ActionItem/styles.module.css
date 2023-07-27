@@ -1,0 +1,13 @@
+.actionItemBackdropButton {
+  position: absolute;
+  top: -8px;
+  right: -12px;
+  bottom: -8px;
+  left: -8px;
+  z-index: 0;
+  border-radius: 12px;
+}
+
+.actionItem:hover .actionItemBackdropButton {
+  background-color: var(--neutral-200);
+}

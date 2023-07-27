@@ -6,3 +6,4 @@ export const ellipsis = '…';
 export const NBSP = '\u00a0';
 export const muchGreater = '≫';
 export const veryMuchGreater = '⋙';
+export const almostEqual = '\u2248';

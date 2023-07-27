@@ -1,0 +1,1 @@
+export { ActionDetailedView } from './ActionDetailedView';

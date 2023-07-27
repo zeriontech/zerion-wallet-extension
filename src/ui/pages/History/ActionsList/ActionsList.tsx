@@ -7,6 +7,7 @@ import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { ActionItem } from '../ActionItem';
 import { STRETCHY_VIEW_HEIGHT } from '../constants';
 
@@ -34,19 +35,20 @@ export function ActionsList({
       style={{ minHeight: STRETCHY_VIEW_HEIGHT, alignContent: 'start' }}
     >
       {Object.entries(groupedByDate).map(([timestamp, items]) => (
-        <VStack gap={12} key={timestamp}>
+        <VStack gap={8} key={timestamp}>
           <HStack
             gap={8}
             justifyContent="space-between"
             style={{ paddingInline: 'var(--column-padding-inline)' }}
           >
-            <UIText kind="body/accent">
+            <UIText kind="small/accent">
               {new Intl.DateTimeFormat('en', {
                 dateStyle: 'medium',
               }).format(Number(timestamp))}
             </UIText>
           </HStack>
           <SurfaceList
+            gap={4}
             items={items.map((addressTransaction) => ({
               key: addressTransaction.transaction.hash,
               component: <ActionItem addressAction={addressTransaction} />,
@@ -55,7 +57,12 @@ export function ActionsList({
         </VStack>
       ))}
       {actions.length && isLoading ? (
-        <ViewLoading />
+        // TODO: fix this  workaround in https://zerion-tech.atlassian.net/browse/WLT-1828
+        <div style={{ height: 44 }}>
+          <DelayedRender delay={400}>
+            <ViewLoading />
+          </DelayedRender>
+        </div>
       ) : hasMore ? (
         <SurfaceList
           items={[

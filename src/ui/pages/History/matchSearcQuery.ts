@@ -3,7 +3,7 @@ import {
   getFungibleAsset,
   getNftAsset,
 } from 'src/modules/ethereum/transactions/actionAsset';
-import type { PendingAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { LocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 
 interface Asset {
   asset_code: string;
@@ -24,7 +24,7 @@ function assetMatches(
     .some((s) => s.includes(query));
 }
 
-function isMatchForQuery(query: string, action: PendingAddressAction) {
+function isMatchForQuery(query: string, action: LocalAddressAction) {
   if (
     action.type.display_value.toLowerCase().includes(query) ||
     action.type.value.toLowerCase().includes(query)
@@ -71,10 +71,7 @@ function isMatchForQuery(query: string, action: PendingAddressAction) {
   return false;
 }
 
-export function isMatchForAllWords(
-  query: string,
-  action: PendingAddressAction
-) {
+export function isMatchForAllWords(query: string, action: LocalAddressAction) {
   const words = query.trim().split(/\s+/);
   return words.every((word) => isMatchForQuery(word, action));
 }

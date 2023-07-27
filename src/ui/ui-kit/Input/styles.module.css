@@ -24,3 +24,14 @@
 .input.error:focus-visible {
   outline-color: var(--negative-300);
 }
+
+.input[type='search']::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  height: 24px;
+  width: 24px;
+  content: url('./assets/close-primary.svg');
+}
+
+.input[type='search'].darkTheme::-webkit-search-cancel-button {
+  content: url('./assets/close-primary-dark.svg');
+}

@@ -5,15 +5,11 @@ import type { Networks } from 'src/modules/networks/Networks';
 import { toNumber } from 'src/shared/units/toNumber';
 import type { IncomingTransaction } from '../types/IncomingTransaction';
 
-export type TransactionActionType =
-  | 'deployment'
-  | 'send'
-  | 'execute'
-  | 'approve';
+export type TransactionActionType = 'deploy' | 'send' | 'execute' | 'approve';
 
 export type TransactionAction =
   | {
-      type: 'deployment';
+      type: 'deploy';
     }
   | {
       type: 'send';
