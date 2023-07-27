@@ -254,9 +254,9 @@ function OverviewComponent() {
             <SettingsLinkIcon />
           </HStack>
         </HStack>
+        <Spacer height={16} />
       </PageFullBleedColumn>
-      <PausedBanner style={{ marginTop: 16, marginInline: 8 }} />
-      <Spacer height={16} />
+      <PausedBanner style={{ marginBottom: 16, marginInline: 8 }} />
       <div
         style={{
           height: isLoadingPortfolio ? 68 : undefined,
