@@ -2,18 +2,13 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { useSelect } from 'downshift';
 import cn from 'classnames';
 import { useMutation } from '@tanstack/react-query';
+import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { SurfaceItemButton, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
-import FiltersIcon from 'jsx:src/ui/assets/filters.svg';
-import DoubleCheckIcon from 'jsx:src/ui/assets/check_double.svg';
-import CloseIcon from 'jsx:src/ui/assets/close.svg';
-import LinkIcon from 'jsx:src/ui/assets/new-window.svg';
-import SyncIcon from 'jsx:src/ui/assets/sync.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { EmptyView } from 'src/ui/components/EmptyView';
@@ -23,13 +18,13 @@ import type {
   WalletAbilityType,
 } from 'src/shared/types/Daylight';
 import { walletPort } from 'src/ui/shared/channels';
-import { prepareForHref } from 'src/ui/shared/prepareForHref';
-import { getAbilityLinkTitle, useWalletAbilities } from './daylight';
+import { useWalletAbilities } from './daylight';
 import type { StatusFilterParams } from './daylight';
 import { Ability } from './Ability/Ability';
 import { markAbility, unmarkAbility, useFeedInfo } from './stored';
 import * as styles from './styles.module.css';
 import { FeedSkeleton } from './Loader';
+import { AbilityMenu } from './Ability/AbilityMenu';
 
 type FeedStatus = 'open' | 'completed' | 'expired' | 'dismissed';
 
@@ -81,15 +76,15 @@ function StatusFilter({
     <div style={{ position: 'relative' }}>
       <Button
         kind="regular"
-        size={28}
-        style={{ padding: '0 16px' }}
+        size={32}
+        style={{ paddingLeft: 12, paddingRight: 8 }}
         {...getToggleButtonProps()}
       >
         <HStack gap={4} alignItems="center">
-          <FiltersIcon />
           <UIText kind="caption/accent">
             {STATUS_TO_TITLE[value]} Abilities
           </UIText>
+          <ArrowDownIcon />
         </HStack>
       </Button>
       <div
@@ -239,15 +234,15 @@ function TypeFilter({
     <div style={{ position: 'relative' }}>
       <Button
         kind="regular"
-        size={28}
-        style={{ padding: '0 16px' }}
+        size={32}
+        style={{ paddingLeft: 12, paddingRight: 8 }}
         {...getToggleButtonProps()}
       >
         <HStack gap={4} alignItems="center">
-          <FiltersIcon />
           <UIText kind="caption/accent">
             {value === 'all' ? 'All Types' : `Type: ${TYPE_TO_TITLE[value]}`}
           </UIText>
+          <ArrowDownIcon />
         </HStack>
       </Button>
       <div
@@ -306,10 +301,6 @@ function AbilityCard({
     'completed' | 'dismissed' | 'restored' | null
   >(null);
 
-  const linkTitle = useMemo(() => {
-    return getAbilityLinkTitle(ability);
-  }, [ability]);
-
   const { mutate: mark } = useMutation({
     mutationFn: (action: 'complete' | 'dismiss') =>
       markAbility({ ability, action }),
@@ -350,10 +341,6 @@ function AbilityCard({
   const showRestoreButton =
     initialStatus && (filter === 'completed' || filter === 'dismissed');
 
-  const abilityActionUrl = useMemo(
-    () => prepareForHref(ability.action.linkUrl)?.toString(),
-    [ability.action.linkUrl]
-  );
   return (
     <VStack
       gap={16}
@@ -368,83 +355,33 @@ function AbilityCard({
           (filter === 'completed' || filter === 'dismissed'),
       })}
     >
-      <UnstyledLink
-        to={`/ability/${ability.uid}`}
-        onClick={() => {
-          walletPort.request('daylightAction', {
-            event_name: 'Perks: Card Opened',
-            ability_id: ability.uid,
-            perk_type: ability.type,
-          });
-        }}
-      >
-        <Ability ability={ability} mode="compact" status={initialStatus} />
-      </UnstyledLink>
-      <HStack
-        gap={8}
-        style={{
-          gridTemplateColumns: showRestoreButton ? '1fr 40px' : '1fr 40px 40px',
-        }}
-      >
-        <Button
-          style={{
-            width: '100%',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-          size={40}
-          as={UnstyledAnchor}
-          href={abilityActionUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+      <div style={{ position: 'relative', paddingTop: 4 }}>
+        <div style={{ position: 'absolute', top: 0, right: 0 }}>
+          <AbilityMenu
+            onMark={showRestoreButton ? undefined : handleMarkButtonClick}
+            onUnmark={showRestoreButton ? handleUnmarkButtonClick : undefined}
+          />
+        </div>
+        <UnstyledLink
+          to={`/ability/${ability.uid}`}
           onClick={() => {
             walletPort.request('daylightAction', {
-              event_name: 'Perks: External Link Clicked',
+              event_name: 'Perks: Card Opened',
               ability_id: ability.uid,
               perk_type: ability.type,
-              source: 'feed',
             });
           }}
         >
-          <HStack gap={8} justifyContent="center">
-            {linkTitle}
-            <LinkIcon />
-          </HStack>
-        </Button>
-        {showRestoreButton ? null : (
-          <Button
-            style={{ padding: 8 }}
-            kind="regular"
-            size={40}
-            disabled={marking}
-            onClick={() => handleMarkButtonClick('complete')}
-          >
-            <DoubleCheckIcon />
-          </Button>
-        )}
-        {showRestoreButton ? null : (
-          <Button
-            style={{ padding: 7 }}
-            kind="regular"
-            size={40}
-            disabled={marking}
-            onClick={() => handleMarkButtonClick('dismiss')}
-          >
-            <CloseIcon />
-          </Button>
-        )}
-        {showRestoreButton ? (
-          <Button
-            style={{ padding: 7 }}
-            kind="regular"
-            size={40}
-            disabled={marking}
-            onClick={() => handleUnmarkButtonClick()}
-          >
-            <SyncIcon />
-          </Button>
-        ) : null}
-      </HStack>
+          <Ability ability={ability} mode="compact" status={initialStatus} />
+        </UnstyledLink>
+      </div>
+      <div
+        style={{
+          height: 1,
+          width: '100%',
+          backgroundColor: 'var(--neutral-200)',
+        }}
+      />
     </VStack>
   );
 }

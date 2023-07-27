@@ -54,98 +54,102 @@ export function Ability({
 
   return (
     <VStack gap={8}>
-      <VStack gap={12}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          <Tag>{ability.type.toUpperCase()}</Tag>
-          {ability.supplier ? (
-            <Tag>{ability.supplier.name.toUpperCase()}</Tag>
-          ) : null}
-          {mode === 'full' && (status || loading) ? (
-            <Tag kind={status === 'completed' ? 'positive' : 'negative'}>
-              {status === 'completed'
-                ? 'COMPLETED'
-                : status === 'dismissed'
-                ? 'DISMISSED'
-                : null}
-            </Tag>
-          ) : null}
-        </div>
-        <UIText
-          kind="headline/h2"
-          style={
-            mode === 'compact'
-              ? {
-                  display: '-webkit-box',
-                  WebkitLineClamp: 3,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                }
-              : undefined
-          }
-        >
-          {ability.title}
-        </UIText>
-      </VStack>
-      <HStack gap={16} justifyContent="space-between" alignItems="center">
-        <VStack gap={8}>
-          {ability.requirements.map((requirement, index) => (
-            <HStack gap={8} alignItems="center" key={index}>
-              {requirement.type === 'onAllowlist' ? (
-                <DoubleCheckIcon style={{ color: 'var(--neutral-600)' }} />
-              ) : requirement.community.imageUrl ? (
-                <img
-                  src={requirement.community.imageUrl}
-                  width={20}
-                  height={20}
-                  style={{ borderRadius: 4 }}
-                />
-              ) : null}
-              {requirement.type === 'onAllowlist' ? (
-                <UIText kind="small/accent" color="var(--neutral-600)">
-                  On the allowlist
-                </UIText>
-              ) : requirement.community.currencyCode ? (
-                <UIText kind="small/accent" color="var(--neutral-600)">
-                  Hold{' '}
-                  {mode === 'full' ? (
-                    <TextAnchor
-                      href={`https://app.zerion.io/tokens/${requirement.community.contractAddress}?address=${singleAddress}}`}
-                      target="_blank"
-                    >
-                      ${requirement.community.currencyCode.toUpperCase()}
-                    </TextAnchor>
-                  ) : (
-                    `$${requirement.community.currencyCode.toUpperCase()}`
-                  )}
-                </UIText>
-              ) : (
-                <UIText
-                  kind="small/accent"
-                  color="var(--neutral-600)"
-                >{`Hold ${requirement.community.title}`}</UIText>
-              )}
-            </HStack>
-          ))}
-        </VStack>
-        {dateString ? (
+      <VStack gap={mode === 'compact' ? 8 : 16}>
+        <VStack gap={12}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <Tag>{ability.type.toUpperCase()}</Tag>
+            {ability.supplier ? (
+              <Tag>{ability.supplier.name.toUpperCase()}</Tag>
+            ) : null}
+            {mode === 'full' && (status || loading) ? (
+              <Tag kind={status === 'completed' ? 'positive' : 'negative'}>
+                {status === 'completed'
+                  ? 'COMPLETED'
+                  : status === 'dismissed'
+                  ? 'DISMISSED'
+                  : null}
+              </Tag>
+            ) : null}
+          </div>
           <UIText
-            kind="small/accent"
-            color={
-              ability.isClosed ? 'var(--negative-500)' : 'var(--neutral-600)'
+            kind="headline/h2"
+            style={
+              mode === 'compact'
+                ? {
+                    display: '-webkit-box',
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  }
+                : undefined
             }
-            title={dateTitle}
           >
-            {dateString}
+            {ability.title}
           </UIText>
-        ) : null}
-      </HStack>
+        </VStack>
+        <HStack gap={16} justifyContent="space-between" alignItems="center">
+          <VStack gap={8}>
+            {ability.requirements.map((requirement, index) => (
+              <HStack gap={8} alignItems="center" key={index}>
+                {requirement.type === 'onAllowlist' ? (
+                  <DoubleCheckIcon style={{ color: 'var(--neutral-600)' }} />
+                ) : requirement.community.imageUrl ? (
+                  <img
+                    src={requirement.community.imageUrl}
+                    width={20}
+                    height={20}
+                    style={{ borderRadius: 4 }}
+                  />
+                ) : null}
+                {requirement.type === 'onAllowlist' ? (
+                  <UIText kind="small/accent" color="var(--neutral-600)">
+                    On the allowlist
+                  </UIText>
+                ) : requirement.community.currencyCode ? (
+                  <UIText kind="small/accent" color="var(--neutral-600)">
+                    Hold{' '}
+                    {mode === 'full' ? (
+                      <TextAnchor
+                        href={`https://app.zerion.io/tokens/${requirement.community.contractAddress}?address=${singleAddress}}`}
+                        target="_blank"
+                      >
+                        ${requirement.community.currencyCode.toUpperCase()}
+                      </TextAnchor>
+                    ) : (
+                      `$${requirement.community.currencyCode.toUpperCase()}`
+                    )}
+                  </UIText>
+                ) : (
+                  <UIText
+                    kind="small/accent"
+                    color="var(--neutral-600)"
+                  >{`Hold ${requirement.community.title}`}</UIText>
+                )}
+              </HStack>
+            ))}
+          </VStack>
+          {dateString ? (
+            <UIText
+              kind="small/accent"
+              color={
+                ability.isClosed ? 'var(--negative-500)' : 'var(--neutral-600)'
+              }
+              title={dateTitle}
+            >
+              {dateString}
+            </UIText>
+          ) : null}
+        </HStack>
+      </VStack>
       {mode === 'compact' ? (
         <UIText
           kind="body/regular"
           style={{
+            display: '-webkit-box',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
           }}
         >
           {ability.description}

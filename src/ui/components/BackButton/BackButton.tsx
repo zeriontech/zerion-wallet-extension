@@ -1,13 +1,20 @@
 import React from 'react';
-import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import IconLeft from 'jsx:src/ui/assets/arrow-left.svg';
+import { Button } from 'src/ui/ui-kit/Button';
 
-export function BackButton(
-  props: React.ButtonHTMLAttributes<HTMLButtonElement>
-) {
+export function BackButton({
+  style,
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <UnstyledButton aria-label="Go back" {...props}>
+    <Button
+      kind="ghost"
+      aria-label="Go back"
+      size={40}
+      style={{ padding: 8, ...style }}
+      {...props}
+    >
       <IconLeft role="presentation" style={{ display: 'block' }} />
-    </UnstyledButton>
+    </Button>
   );
 }
