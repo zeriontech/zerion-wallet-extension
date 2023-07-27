@@ -23,6 +23,7 @@ import type {
   WalletAbilityType,
 } from 'src/shared/types/Daylight';
 import { walletPort } from 'src/ui/shared/channels';
+import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { getAbilityLinkTitle, useWalletAbilities } from './daylight';
 import type { StatusFilterParams } from './daylight';
 import { Ability } from './Ability/Ability';
@@ -349,6 +350,10 @@ function AbilityCard({
   const showRestoreButton =
     initialStatus && (filter === 'completed' || filter === 'dismissed');
 
+  const abilityActionUrl = useMemo(
+    () => prepareForHref(ability.action.linkUrl)?.toString(),
+    [ability.action.linkUrl]
+  );
   return (
     <VStack
       gap={16}
@@ -389,7 +394,7 @@ function AbilityCard({
           }}
           size={40}
           as={UnstyledAnchor}
-          href={ability.action.linkUrl}
+          href={abilityActionUrl}
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => {

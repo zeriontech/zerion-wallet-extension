@@ -21,6 +21,7 @@ import { walletPort } from 'src/ui/shared/channels';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { getAbility, getAbilityLinkTitle } from '../daylight';
 import { markAbility, unmarkAbility, useFeedInfo } from '../stored';
 import { Ability } from './Ability';
@@ -205,6 +206,12 @@ export function AbilityPage() {
 
   const loading = markLoading || unmarkLoading;
 
+  const linkUrl = data?.ability.action.linkUrl;
+  const abilityActionUrl = useMemo(
+    () => (linkUrl ? prepareForHref(linkUrl)?.toString() : undefined),
+    [linkUrl]
+  );
+
   return (
     <>
       <Content name="navigation-bar-end">
@@ -237,7 +244,7 @@ export function AbilityPage() {
           <Button
             size={40}
             as={UnstyledAnchor}
-            href={data.ability.action.linkUrl}
+            href={abilityActionUrl}
             target="_blank"
             rel="noopener noreferrer"
             style={{ position: 'sticky', bottom: 48 }}
