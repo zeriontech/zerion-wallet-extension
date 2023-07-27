@@ -145,7 +145,7 @@ function PauseInjectionDialog({
             </UIText>
 
             <SurfaceList
-              vGap={4}
+              gap={4}
               style={{ paddingBlock: 4 }}
               items={options.map((option) => ({
                 key: option.value,
@@ -181,7 +181,7 @@ function PauseInjectionDialog({
             />
 
             <SurfaceList
-              vGap={4}
+              gap={4}
               style={{ paddingBlock: 4 }}
               items={buttons.map((button) => ({
                 key: button.value,
