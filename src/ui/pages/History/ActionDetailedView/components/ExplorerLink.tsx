@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { animated } from '@react-spring/web';
 import type { AddressAction } from 'defi-sdk';
 import { createChain } from 'src/modules/networks/Chain';
@@ -10,6 +10,7 @@ import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import LinkIcon from 'jsx:src/ui/assets/new-window.svg';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
+import { prepareForHref } from 'src/ui/shared/prepareForHref';
 
 const ICON_SIZE = 20;
 
@@ -22,12 +23,17 @@ export function ExplorerLink({
 }) {
   const { style, trigger } = useTransformTrigger({ x: 2 });
 
+  const url = networks.getExplorerTxUrlByName(
+    createChain(action.transaction.chain),
+    action.transaction.hash
+  );
+  const urlPrepared = useMemo(
+    () => (url ? prepareForHref(url)?.toString() : undefined),
+    [url]
+  );
   return (
     <UnstyledAnchor
-      href={networks.getExplorerTxUrlByName(
-        createChain(action.transaction.chain),
-        action.transaction.hash
-      )}
+      href={urlPrepared}
       rel="noopener noreferrer"
       onClick={openInNewWindow}
       onMouseEnter={trigger}
