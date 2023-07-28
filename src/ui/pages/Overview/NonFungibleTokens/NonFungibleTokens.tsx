@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
-import { EmptyView } from 'src/ui/components/EmptyView';
 import { DnaNFTBanner } from 'src/ui/components/DnaClaim';
 import TickIcon from 'jsx:src/ui/assets/check.svg';
 import { ViewLoading } from 'src/ui/components/ViewLoading/ViewLoading';
@@ -26,6 +25,12 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
+import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
+import { StretchyFillView } from 'src/ui/components/FillView/FillView';
+import { EmptyViewForNetwork } from 'src/ui/components/EmptyViewForNetwork';
+import { DelayedRender } from 'src/ui/components/DelayedRender';
+import { NetworkSelect } from '../../Networks/NetworkSelect';
+import { STRETCHY_VIEW_HEIGHT } from '../../History/constants';
 import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
 import * as s from './styles.module.css';
 
@@ -154,10 +159,22 @@ function NFTItem({
   );
 }
 
-export function NonFungibleTokens() {
+export function NonFungibleTokens({
+  chain: chainValue,
+  onChainChange,
+}: {
+  chain: string;
+  onChainChange: (value: string) => void;
+}) {
   const { ready, params, maybeSingleAddress } = useAddressParams();
   const { value: nftTotalValue, isLoading: totalValueIsLoading } =
     useNftsTotalValue(params);
+  const { networks } = useNetworks();
+
+  const isSupportedByBackend =
+    chainValue === NetworkSelectValue.All
+      ? true
+      : networks?.isSupportedByBackend(createChain(chainValue));
 
   const {
     value: items,
@@ -167,43 +184,103 @@ export function NonFungibleTokens() {
   } = useAddressNfts(
     {
       ...params,
+      chains:
+        isSupportedByBackend && chainValue !== NetworkSelectValue.All
+          ? [chainValue]
+          : undefined,
       currency: 'usd',
       sorted_by: 'floor_price_high',
     },
-    { limit: 30, paginatedCacheMode: 'first-page' }
+    {
+      limit: 30,
+      paginatedCacheMode: 'first-page',
+      enabled: isSupportedByBackend,
+    }
   );
 
   const nftTotalValueIsReady = nftTotalValue != null || totalValueIsLoading;
 
-  if (totalValueIsLoading) {
-    return <ViewLoading kind="network" />;
+  const networkSelect = (
+    <NetworkSelect
+      value={chainValue}
+      onChange={onChainChange}
+      type="overview"
+      valueMaxWidth={180}
+    />
+  );
+
+  if (totalValueIsLoading && isSupportedByBackend) {
+    return (
+      <StretchyFillView maxHeight={STRETCHY_VIEW_HEIGHT}>
+        <ViewLoading kind="network" />
+      </StretchyFillView>
+    );
   }
 
   if (!ready || !items || !nftTotalValueIsReady) {
-    return null;
+    return <StretchyFillView maxHeight={STRETCHY_VIEW_HEIGHT} />;
   }
-  if (items.length === 0) {
-    return (
-      <VStack gap={32}>
-        {maybeSingleAddress ? (
-          <div style={{ paddingInline: 'var(--column-padding-inline)' }}>
-            <DnaNFTBanner address={normalizeAddress(maybeSingleAddress)} />
-          </div>
-        ) : null}
 
-        <EmptyView text="No NFTs yet" />
-      </VStack>
+  if (!isSupportedByBackend || items.length === 0) {
+    return (
+      <>
+        <div
+          style={{
+            paddingInline: 'var(--column-padding-inline)',
+            display: 'flex',
+            justifyContent: 'end',
+          }}
+        >
+          {networkSelect}
+        </div>
+        <StretchyFillView maxHeight={STRETCHY_VIEW_HEIGHT}>
+          <DelayedRender delay={100}>
+            {isLoading && isSupportedByBackend ? (
+              <ViewLoading kind="network" />
+            ) : (
+              <VStack gap={32} style={{ width: '100%' }}>
+                {maybeSingleAddress ? (
+                  <DnaNFTBanner
+                    address={normalizeAddress(maybeSingleAddress || '')}
+                    style={{
+                      width: '100%',
+                      paddingInline: 'var(--column-padding-inline)',
+                    }}
+                  />
+                ) : null}
+                <EmptyViewForNetwork
+                  message="No NFTs yet"
+                  chainValue={chainValue}
+                  onChainChange={onChainChange}
+                />
+              </VStack>
+            )}
+          </DelayedRender>
+        </StretchyFillView>
+      </>
     );
   }
+
   return (
     <VStack gap={24} style={{ paddingInline: 'var(--column-padding-inline)' }}>
-      <UIText kind="body/accent">
-        Total Value
-        {' · '}
-        <NeutralDecimals
-          parts={formatCurrencyToParts(nftTotalValue || 0, 'en', 'usd')}
-        />
-      </UIText>
+      <HStack
+        gap={4}
+        justifyContent="space-between"
+        alignItems="center"
+        style={{
+          paddingBottom: 8,
+          paddingInline: 8,
+        }}
+      >
+        <UIText kind="body/accent">
+          Total Value
+          {' · '}
+          <NeutralDecimals
+            parts={formatCurrencyToParts(nftTotalValue || 0, 'en', 'usd')}
+          />
+        </UIText>
+        {networkSelect}
+      </HStack>
 
       {maybeSingleAddress ? (
         <DnaNFTBanner address={normalizeAddress(maybeSingleAddress)} />

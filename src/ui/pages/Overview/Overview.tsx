@@ -365,7 +365,15 @@ function OverviewComponent() {
               </DelayedRender>
             }
           />
-          <Route path="/nfts" element={<NonFungibleTokens />} />
+          <Route
+            path="/nfts"
+            element={
+              <NonFungibleTokens
+                chain={preferences.overviewChain}
+                onChainChange={setChain}
+              />
+            }
+          />
           <Route
             path="/history"
             element={
