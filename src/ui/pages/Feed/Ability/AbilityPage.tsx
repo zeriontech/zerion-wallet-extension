@@ -99,6 +99,9 @@ export function AbilityPage() {
         <AbilityMenu
           onMark={status ? undefined : handleMarkButtonClick}
           onUnmark={status ? handleUnmarkButtonClick : undefined}
+          style={{
+            ['--surface-background-color' as string]: 'var(--z-index-0)',
+          }}
         />
       </Content>
       <PageColumn style={{ paddingTop: 18 }}>

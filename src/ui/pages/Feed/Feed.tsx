@@ -360,6 +360,9 @@ function AbilityCard({
           <AbilityMenu
             onMark={showRestoreButton ? undefined : handleMarkButtonClick}
             onUnmark={showRestoreButton ? handleUnmarkButtonClick : undefined}
+            style={{
+              ['--surface-background-color' as string]: 'var(--z-index-1)',
+            }}
           />
         </div>
         <UnstyledLink

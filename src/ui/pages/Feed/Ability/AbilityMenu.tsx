@@ -11,9 +11,11 @@ import { SurfaceItemButton, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 export function AbilityMenu({
   onMark,
   onUnmark,
+  style,
 }: {
   onMark?(action: 'dismiss' | 'complete'): void;
   onUnmark?(): void;
+  style?: React.CSSProperties;
 }) {
   const {
     isOpen,
@@ -26,7 +28,7 @@ export function AbilityMenu({
     selectedItem: null,
   });
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', ...style }}>
       <Button
         kind="ghost"
         size={40}
@@ -42,7 +44,6 @@ export function AbilityMenu({
           position: 'absolute',
           top: 'calc(100% + 8px)',
           right: 0,
-          background: 'var(--white)',
           boxShadow: '0px 8px 16px rgba(22, 22, 26, 0.16)',
           borderRadius: 8,
           width: 180,
