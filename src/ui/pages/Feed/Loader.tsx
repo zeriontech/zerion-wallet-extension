@@ -25,7 +25,7 @@ export function Skeleton({
         width,
         height,
         borderRadius,
-        backgroundColor: 'var(--neutral-400)',
+        backgroundColor: 'var(--neutral-300)',
       }}
     />
   );

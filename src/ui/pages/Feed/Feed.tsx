@@ -476,7 +476,7 @@ export function Feed() {
   return (
     <VStack gap={16}>
       <HStack
-        gap={12}
+        gap={8}
         alignItems="center"
         style={{ paddingInline: 'var(--column-padding-inline)' }}
       >

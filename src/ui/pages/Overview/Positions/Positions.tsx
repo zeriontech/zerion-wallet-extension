@@ -1,4 +1,4 @@
-import type { AddressParams, AddressPosition, Asset } from 'defi-sdk';
+import type { AddressParams, AddressPosition } from 'defi-sdk';
 import { useAddressPositions } from 'defi-sdk';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
@@ -58,7 +58,6 @@ import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { networksStore } from 'src/modules/networks/networks-store.client';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { getCommonQuantity } from 'src/modules/networks/asset';
-import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 import { StretchyFillView } from 'src/ui/components/FillView/FillView';
 import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import { minus } from 'src/ui/shared/typography';
@@ -148,11 +147,17 @@ function AddressPositionItem({
   ).toFixed(2);
 
   return (
-    <div style={{ position: 'relative', paddingLeft: isNested ? 26 : 0 }}>
+    <div
+      style={{
+        position: 'relative',
+        paddingLeft: isNested ? 26 : 0,
+        paddingRight: 4,
+      }}
+    >
       {isNested ? (
         <LineToParent hasPreviosNestedPosition={hasPreviosNestedPosition} />
       ) : null}
-      <HStack gap={4} justifyContent="space-between" style={{ flexGrow: 1 }}>
+      <HStack gap={2} justifyContent="space-between" style={{ flexGrow: 1 }}>
         <Media
           vGap={0}
           gap={12}
@@ -764,7 +769,7 @@ export function Positions({
   // Cheap perceived performance hack: render expensive Positions component later so that initial UI render is faster
   const readyToRender = useRenderDelay(16);
   const { networks } = useNetworks();
-  if (!networks || !ready || !readyToRender) {
+  if (!networks || !ready) {
     return (
       <StretchyFillView maxHeight={STRETCHY_VIEW_HEIGHT}>
         <DelayedRender delay={2000}>
@@ -773,11 +778,6 @@ export function Positions({
       </StretchyFillView>
     );
   }
-  const chain = createChain(chainValue);
-  const isSupportedByBackend =
-    chainValue === NetworkSelectValue.All
-      ? true
-      : networks.isSupportedByBackend(createChain(chainValue));
   const networkSelect = (
     <NetworkSelect
       value={chainValue}
@@ -786,6 +786,12 @@ export function Positions({
       valueMaxWidth={180}
     />
   );
+  const chain = createChain(chainValue);
+  const isSupportedByBackend =
+    chainValue === NetworkSelectValue.All
+      ? true
+      : networks.isSupportedByBackend(createChain(chainValue));
+
   const renderEmptyViewForNetwork = () => (
     <>
       <div
@@ -798,14 +804,19 @@ export function Positions({
         {networkSelect}
       </div>
       <StretchyFillView maxHeight={STRETCHY_VIEW_HEIGHT_UNDER_CHAIN_SELECTOR}>
-        <EmptyViewForNetwork
-          message="No assets yet"
-          chainValue={chainValue}
-          onChainChange={onChainChange}
-        />
+        <DelayedRender delay={50}>
+          <EmptyViewForNetwork
+            message="No assets yet"
+            chainValue={chainValue}
+            onChainChange={onChainChange}
+          />
+        </DelayedRender>
       </StretchyFillView>
     </>
   );
+  if (!readyToRender) {
+    return renderEmptyViewForNetwork();
+  }
   if (isSupportedByBackend) {
     return (
       <MultiChainPositions
