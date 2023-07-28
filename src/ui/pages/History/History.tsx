@@ -19,8 +19,10 @@ import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { pendingTransactionToAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
-import { HISTORY_STRETCHY_VIEW_HEIGHT } from '../Overview/constants';
-import { getTabsOffset } from '../Overview/getTabsOffset';
+import {
+  HISTORY_STRETCHY_VIEW_HEIGHT,
+  getTabsOffset,
+} from '../Overview/getTabsOffset';
 import { ActionsList } from './ActionsList';
 import { ActionSearch } from './ActionSearch';
 import { isMatchForAllWords } from './matchSearcQuery';

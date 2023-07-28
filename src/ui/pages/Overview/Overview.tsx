@@ -53,8 +53,8 @@ import { CurrentNetwork } from './CurrentNetwork';
 import { NonFungibleTokens } from './NonFungibleTokens';
 import { Positions } from './Positions';
 import { ActionButtonsRow } from './ActionButtonsRow';
-import { STRETCHY_VIEW_HEIGHT } from './constants';
 import {
+  STRETCHY_VIEW_HEIGHT,
   TABS_OFFSET,
   TABS_OFFSET_METER_ID,
   getTabsOffset,

@@ -28,7 +28,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { StretchyFillView } from 'src/ui/components/FillView/FillView';
 import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
-import { STRETCHY_VIEW_HEIGHT } from '../constants';
+import { STRETCHY_VIEW_HEIGHT } from '../getTabsOffset';
 import * as s from './styles.module.css';
 
 function NFTItem({

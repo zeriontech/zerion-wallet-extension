@@ -9,7 +9,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { ActionItem } from '../ActionItem';
-import { HISTORY_STRETCHY_VIEW_HEIGHT } from '../../Overview/constants';
+import { HISTORY_STRETCHY_VIEW_HEIGHT } from '../../Overview/getTabsOffset';
 
 export function ActionsList({
   actions,

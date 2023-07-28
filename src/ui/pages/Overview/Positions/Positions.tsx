@@ -58,7 +58,7 @@ import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { getCommonQuantity } from 'src/modules/networks/asset';
 import { StretchyFillView } from 'src/ui/components/FillView/FillView';
 import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
-import { STRETCHY_VIEW_HEIGHT } from '../constants';
+import { STRETCHY_VIEW_HEIGHT } from '../getTabsOffset';
 
 function LineToParent({
   hasPreviosNestedPosition,
