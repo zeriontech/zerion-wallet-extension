@@ -1,4 +1,4 @@
-import type { AddressParams, AddressPosition } from 'defi-sdk';
+import type { AddressParams, AddressPosition, Asset } from 'defi-sdk';
 import { useAddressPositions } from 'defi-sdk';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
@@ -12,10 +12,12 @@ import { Media } from 'src/ui/ui-kit/Media';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import WalletIcon from 'jsx:src/ui/assets/wallet.svg';
+import GasIcon from 'jsx:src/ui/assets/gas.svg';
 // import { VirtualizedSurfaceList } from 'src/ui/ui-kit/SurfaceList/VirtualizedSurfaceList';
 import type { Item } from 'src/ui/ui-kit/SurfaceList';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import {
+  DEFAULT_NAME,
   DEFAULT_PROTOCOL,
   PositionsGroupType,
 } from 'src/ui/components/Positions/types';
@@ -39,7 +41,7 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
-import { httpConnectionPort } from 'src/ui/shared/channels';
+import { httpConnectionPort, walletPort } from 'src/ui/shared/channels';
 import { useQuery } from '@tanstack/react-query';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { capitalize } from 'capitalize-ts';
@@ -56,6 +58,7 @@ import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { networksStore } from 'src/modules/networks/networks-store.client';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { getCommonQuantity } from 'src/modules/networks/asset';
+import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 
 function LineToParent({
   hasPreviosNestedPosition,
@@ -116,13 +119,13 @@ const textOverflowStyle: React.CSSProperties = {
 function AddressPositionItem({
   position,
   hasPreviosNestedPosition,
-  getChainName,
   groupType,
+  showGasIcon,
 }: {
   position: AddressPosition;
-  hasPreviosNestedPosition: boolean;
-  getChainName: (chain: string) => string;
   groupType: PositionsGroupType;
+  hasPreviosNestedPosition?: boolean;
+  showGasIcon?: boolean;
 }) {
   const isNested = Boolean(position.parent_id);
   const { networks } = useNetworks();
@@ -146,9 +149,24 @@ function AddressPositionItem({
             />
           }
           text={
-            <UIText kind="body/accent" style={textOverflowStyle}>
-              {position.asset.name}
-            </UIText>
+            <HStack
+              gap={4}
+              alignItems="center"
+              style={{ gridTemplateColumns: showGasIcon ? '1fr auto' : '1fr' }}
+              title={position.asset.name}
+            >
+              <UIText kind="body/accent" style={textOverflowStyle}>
+                {position.asset.name}
+              </UIText>
+              {showGasIcon ? (
+                <div
+                  style={{ display: 'flex' }}
+                  title="Token is used to cover gas fees"
+                >
+                  <GasIcon style={{ width: 20, height: 20 }} />
+                </div>
+              ) : null}
+            </HStack>
           }
           detailText={
             <UIText
@@ -160,21 +178,16 @@ function AddressPositionItem({
                 alignItems: 'center',
               }}
             >
+              {position.chain !== NetworkId.Ethereum ? (
+                <NetworkIcon
+                  size={16}
+                  name={network?.name || null}
+                  chainId={network?.external_id || null}
+                  src={network?.icon_url || ''}
+                />
+              ) : null}
               {intersperce(
                 [
-                  position.chain !== NetworkId.Ethereum ? (
-                    <React.Fragment key={0}>
-                      <NetworkIcon
-                        size={16}
-                        name={network?.name || null}
-                        chainId={network?.external_id || null}
-                        src={network?.icon_url || ''}
-                      />{' '}
-                      <span style={textOverflowStyle}>
-                        {getChainName(position.chain)}
-                      </span>
-                    </React.Fragment>
-                  ) : undefined,
                   groupType === PositionsGroupType.position ? (
                     <span key={1}>
                       protocol: {position.protocol || DEFAULT_PROTOCOL}
@@ -240,6 +253,7 @@ function AddressPositionItem({
 }
 
 interface PreparedPositions {
+  gasPositionId: string | null;
   items: AddressPosition[];
   totalValue: number;
   protocols: string[];
@@ -262,6 +276,32 @@ function usePreparedPositions({
   items: AddressPosition[];
   groupType: PositionsGroupType;
 }): PreparedPositions {
+  const { data: tabData } = useQuery({
+    queryKey: ['activeTab/origin'],
+    queryFn: getActiveTabOrigin,
+    suspense: false,
+  });
+  const tabOrigin = tabData?.tabOrigin;
+  const { data: siteChain } = useQuery({
+    queryKey: ['wallet/requestChainForOrigin', tabOrigin],
+    queryFn: async () =>
+      !tabOrigin
+        ? null
+        : walletPort
+            .request('requestChainForOrigin', { origin: tabOrigin })
+            .then((chain) => createChain(chain)),
+    enabled: Boolean(tabOrigin),
+    suspense: false,
+  });
+  const { networks } = useNetworks();
+  const nativeAssetId = useMemo(() => {
+    if (!siteChain) {
+      return null;
+    }
+    const network = networks?.getNetworkByName(siteChain);
+    return network?.native_asset?.id || null;
+  }, [networks, siteChain]);
+
   const items = useMemo(
     () =>
       unfilteredItems.filter((item) =>
@@ -269,6 +309,18 @@ function usePreparedPositions({
       ),
     [unfilteredItems]
   );
+
+  const gasPositionId = useMemo(() => {
+    return (
+      items.find(
+        (item) =>
+          (!item.protocol || item.protocol === DEFAULT_PROTOCOL) &&
+          item.name.toUpperCase() === DEFAULT_NAME &&
+          item.chain === siteChain?.toString() &&
+          item.asset.id === nativeAssetId
+      )?.id || null
+    );
+  }, [siteChain, nativeAssetId, items]);
 
   const totalValue = useMemo(() => getFullPositionsValue(items), [items]);
   return useMemo(() => {
@@ -314,12 +366,13 @@ function usePreparedPositions({
       };
     }
     return {
+      gasPositionId,
       items,
       totalValue,
       protocols,
       protocolIndex,
     };
-  }, [groupType, items, totalValue]);
+  }, [groupType, items, totalValue, gasPositionId]);
 }
 
 function ProtocolHeading({
@@ -405,12 +458,16 @@ function PositionList({
       }),
     []
   );
+
   const groupType = PositionsGroupType.platform;
   const preparedPositions = usePreparedPositions({ items, groupType });
-  const { networks } = useNetworks();
-  const getChainName = useCallback(
-    (chain: string) => networks?.getChainName(createChain(chain)) ?? '',
-    [networks]
+
+  const getAssetUrl = useCallback(
+    (asset: Asset) =>
+      `https://app.zerion.io/tokens/${asset.symbol}-${asset.asset_code}${
+        address ? `?address=${address}` : ''
+      }`,
+    [address]
   );
 
   return (
@@ -424,49 +481,67 @@ function PositionList({
           nameIndex,
           items: protocolItems,
         } = preparedPositions.protocolIndex[protocol];
-        let count = 0;
+        let protocolPositionCounter = 0;
         // do not hide if only one item is left
         const stopAt =
           protocolItems.length - COLLAPSED_COUNT > 1
             ? COLLAPSED_COUNT
             : protocolItems.length;
         outerBlock: for (const name of names) {
-          items.push({
-            key: name,
-            separatorTop: false,
-            pad: false,
-            component: (
-              <UIText
-                kind="caption/accent"
-                color="var(--neutral-700)"
-                style={{ paddingBottom: 4, paddingTop: 12 }}
-              >
-                {name.toUpperCase()}
-              </UIText>
-            ),
-          });
-          for (const position of nameIndex[name]) {
+          if (name.toUpperCase() !== DEFAULT_NAME) {
             items.push({
-              key: position.id,
-              href: `https://app.zerion.io/tokens/${position.asset.symbol}-${
-                position.asset.asset_code
-              }${address ? `?address=${address}` : ''}`,
-              target: '_blank',
-              separatorLeadingInset: position.parent_id ? 26 : 0,
+              key: name,
+              separatorTop: false,
+              pad: false,
               component: (
-                <AddressPositionItem
-                  position={position}
-                  groupType={groupType}
-                  hasPreviosNestedPosition={
-                    position.asset.asset_code ===
-                    '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f'
-                  }
-                  getChainName={getChainName}
-                />
+                <UIText kind="caption/accent" color="var(--neutral-700)">
+                  {name.toUpperCase()}
+                </UIText>
               ),
             });
-            count++;
-            if (count >= stopAt && !expanded.has(protocol)) {
+          }
+          let namePositionCounter = 0;
+          for (const position of nameIndex[name]) {
+            if (position.id === preparedPositions.gasPositionId) {
+              items.push({
+                key: position.id,
+                href: getAssetUrl(position.asset),
+                target: '_blank',
+                component: (
+                  <AddressPositionItem
+                    position={position}
+                    groupType={groupType}
+                    showGasIcon={true}
+                  />
+                ),
+              });
+            }
+          }
+          for (const position of nameIndex[name]) {
+            if (position.id !== preparedPositions.gasPositionId) {
+              items.push({
+                key: position.id,
+                href: getAssetUrl(position.asset),
+                target: '_blank',
+                separatorLeadingInset: position.parent_id ? 26 : 0,
+                component: (
+                  <AddressPositionItem
+                    position={position}
+                    groupType={groupType}
+                    hasPreviosNestedPosition={
+                      namePositionCounter > 0 &&
+                      Boolean(
+                        // it's ok
+                        nameIndex[name][namePositionCounter - 1].parent_id
+                      )
+                    }
+                  />
+                ),
+              });
+            }
+            namePositionCounter++;
+            protocolPositionCounter++;
+            if (protocolPositionCounter >= stopAt && !expanded.has(protocol)) {
               break outerBlock;
             }
           }
