@@ -242,6 +242,25 @@ function OverviewComponent() {
         <Spacer height={16} />
       </PageFullBleedColumn>
       <PausedBanner style={{ marginBottom: 16, marginInline: 8 }} />
+      <div>{'---------'}</div>
+      <iframe
+        id="the-ledger-test"
+        // This is crucial: by lifting only "allow-scripts" restriction
+        // we restrict everything else, inluding "allow-same-origin" token.
+        // By doing this, the iframe code will be treated by the background script
+        // as a third-party origin.
+        sandbox="allow-scripts"
+        allow="usb"
+        src="ui/hardware-wallet/ledger.html"
+        width="100%"
+        height="150px"
+        onLoad={() => {
+          console.log('iframe loaded');
+        }}
+        onError={() => {
+          console.log('iframe onerror');
+        }}
+      />
       <div
         style={{
           height: isLoadingPortfolio ? 68 : undefined,

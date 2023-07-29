@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="initial-scale=1, user-scalable=no" />
+
+    <!-- Prevent showing translate prompt when popup.html is used as a dialog -->
+    <meta name="google" value="notranslate" />
+
+    <!-- Preloading fonts helps avoid FOIT and some jumps -->
+    <link
+      rel="preload"
+      href="../style/fonts/AeonikPro-Regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="../style/fonts/AeonikPro-Medium.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    <title>Connect Hardware Wallet</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./ledger.tsx"></script>
+  </body>
+</html>

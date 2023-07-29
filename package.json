@@ -5,7 +5,7 @@
   "scripts": {
     "prestart": "node scripts/verifyDotEnv.cjs",
     "start": "npm-run-all --parallel start:app type-check:watch",
-    "start:app": "parcel watch src/manifest.json --no-hmr --no-content-hash --no-autoinstall",
+    "start:app": "parcel watch src/manifest.json src/ui/hardware-wallet/ledger.html --no-hmr --no-content-hash --no-autoinstall",
     "build": "echo \"Please run 'npm run build:production' instead\" && exit 1",
     "build:production": "node scripts/build.js",
     "type-check": "tsc --noEmit",
@@ -19,9 +19,9 @@
   },
   "alias": {
     "src": "./src",
-    "buffer": false,
     "ui-lab:src/ui/shared/channels": "./src/ui/shared/channels.mock.ts",
     "ui-lab:src/modules/networks/networks-store.client": "./src/modules/networks/networks-store.client.mock.ts",
+    "buffer-todo-set-to-false": false,
     "ui-lab:webextension-polyfill": "/src/ui-lab/webextension-polyfill.mock.ts"
   },
   "@parcel/bundler-default": {
@@ -91,6 +91,7 @@
     "@tanstack/react-query": "^4.29.19",
     "@tanstack/react-virtual": "^3.0.0-beta.54",
     "bignumber.js": "^9.1.1",
+    "buffer": "^6.0.3",
     "canvas-confetti": "^1.6.0",
     "capitalize-ts": "^1.0.0",
     "classnames": "^2.3.2",
@@ -101,6 +102,7 @@
     "events": "^3.3.0",
     "immer": "^10.0.2",
     "is-truthy-ts": "^1.0.1",
+    "hardware-wallet-connection": "^1.0.0",
     "ky": "^0.33.3",
     "lodash": "^4.17.21",
     "memoize-one": "^6.0.0",
