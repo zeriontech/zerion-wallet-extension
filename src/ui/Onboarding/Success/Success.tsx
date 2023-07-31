@@ -129,9 +129,9 @@ export function Success() {
               Self-Custodial Human!
             </div>
             <UIText kind="headline/h3" color="var(--always-white)">
-              Zerion’s browser extension is designed
+              Zerion makes exploring web3 feel better than ever.
               {isNarrowView ? ' ' : <br />}
-              to make exploring web3 feel better than ever.
+              You can close this tab to get started.
             </UIText>
           </VStack>
           {isNarrowView ? null : (
