@@ -32,6 +32,7 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
+import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { ActionDetailedView } from '../ActionDetailedView';
 import { AssetLink } from '../ActionDetailedView/components/AssetLink';
 import { isUnlimitedApproval } from '../isUnlimitedApproval';
@@ -65,13 +66,19 @@ function ActionTitle({
   const actionTitle = isMintingDna
     ? 'Mint DNA'
     : `${titlePrefix}${action.type.display_value}`;
+
+  const explorerUrlPrepared = useMemo(
+    () => (explorerUrl ? prepareForHref(explorerUrl)?.toString() : undefined),
+    [explorerUrl]
+  );
+
   return (
     <UIText kind="body/accent">
       {explorerUrl ? (
         <TextAnchor
-          href={explorerUrl}
+          href={explorerUrlPrepared}
           target="_blank"
-          title={explorerUrl}
+          title={explorerUrlPrepared}
           rel="noopener noreferrer"
           onClick={(e) => {
             e.stopPropagation();
