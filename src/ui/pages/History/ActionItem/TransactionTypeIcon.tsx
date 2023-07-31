@@ -1,10 +1,5 @@
 import React, { useMemo } from 'react';
-import type {
-  ActionAsset,
-  ActionTransfer,
-  ActionType,
-  AddressAction,
-} from 'defi-sdk';
+import type { ActionAsset, ActionTransfer, ActionType } from 'defi-sdk';
 import ApproveIcon from 'jsx:src/ui/assets/actionTypes/approve.svg';
 import BorrowIcon from 'jsx:src/ui/assets/actionTypes/borrow.svg';
 import BurnIcon from 'jsx:src/ui/assets/actionTypes/burn.svg';
@@ -24,8 +19,11 @@ import UnstakeIcon from 'jsx:src/ui/assets/actionTypes/unstake.svg';
 import WithdrawIcon from 'jsx:src/ui/assets/actionTypes/withdraw.svg';
 import ChangeAssets2 from 'jsx:src/ui/assets/changed-assets-2.svg';
 import ChangeAssets3 from 'jsx:src/ui/assets/changed-assets-3.svg';
+import ZerionIcon from 'jsx:src/ui/assets/zerion-squircle.svg';
 import ChangeAssetsMore from 'jsx:src/ui/assets/changed-assets-more.svg';
 import { AssetIcon } from 'src/ui/components/AssetIcon';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import { isDnaMintAction } from './helpers';
 
 export const TRANSACTION_ICON_SIZE = 36;
 export const TRANSACTION_SMALL_ICON_SIZE = 27;
@@ -168,10 +166,11 @@ function TransferIcon({
   );
 }
 
-export function TransactionItemIcon({ action }: { action: AddressAction }) {
+export function TransactionItemIcon({ action }: { action: AnyAddressAction }) {
   const approveTransfers = action.content?.single_asset;
   const incomingTransfers = action.content?.transfers?.incoming;
   const outgoingTransfers = action.content?.transfers?.outgoing;
+  const isMintingDna = isDnaMintAction(action);
 
   if (action.type.value === 'approve') {
     return (
@@ -183,13 +182,16 @@ export function TransactionItemIcon({ action }: { action: AddressAction }) {
     );
   }
 
+  if (isMintingDna) {
+    return <ZerionIcon style={transactionIconStyle} />;
+  }
+
   if (incomingTransfers?.length && outgoingTransfers?.length) {
     return (
       <div
         style={{
           position: 'relative',
-          width: TRANSACTION_ICON_SIZE,
-          height: TRANSACTION_ICON_SIZE,
+          ...transactionIconStyle,
         }}
       >
         <div style={{ position: 'absolute', left: 0, top: 0 }}>

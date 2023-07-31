@@ -61,7 +61,7 @@ function HistoryTokenValue({
       }}
       title={`${sign}${formatted} ${tokenTitle}`}
     >
-      <AssetQuantityValue sign={sign} quantity={quantity} />
+      {value ? <AssetQuantityValue sign={sign} quantity={quantity} /> : null}
       {withLink ? (
         <AssetLink asset={asset} address={address} />
       ) : (
@@ -80,7 +80,7 @@ export function HistoryNFTValue({
   address,
   withLink,
 }: {
-  quantity?: number;
+  quantity?: number | string;
   nftAsset?: NFTAsset | null;
   chain?: Chain;
   name?: string;
@@ -94,7 +94,7 @@ export function HistoryNFTValue({
       alignItems="center"
       style={{ gridTemplateColumns: 'minmax(40px, 1fr) auto' }}
     >
-      {quantity > 1 ? (
+      {Number(quantity) > 1 ? (
         <span>
           {getSign(quantity, direction)}
           {quantity}
@@ -143,7 +143,7 @@ export function HistoryItemValue({
       address={address}
       nftAsset={nftAsset}
       direction={direction}
-      quantity={1}
+      quantity={transfers[0].quantity || 1}
       name={nftAsset.name || nftAsset.collection?.name}
       chain={chain}
       withLink={withLink}

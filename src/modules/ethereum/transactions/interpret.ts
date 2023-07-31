@@ -1,9 +1,30 @@
-import { client } from 'defi-sdk';
+import { client, createDomainHook } from 'defi-sdk';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 import type { TypedData } from '../message-signing/TypedData';
 import type { IncomingTransactionWithChainId } from '../types/IncomingTransaction';
 import type { InterpretResponse } from './types';
 import { getGas } from './getGas';
+
+const namespace = 'interpret';
+const scope = 'transaction';
+
+interface Payload {
+  address: string;
+  currency: string;
+  chain_id?: string;
+  transaction?: {
+    from?: string;
+    to?: string;
+    nonce?: string;
+    chainId?: string;
+    gas?: string;
+    gasPrice?: string;
+    maxFee?: string;
+    maxPriorityFee?: string;
+    value?: string;
+    data?: string;
+  };
+}
 
 export function interpretTransaction(
   address: string,
@@ -16,13 +37,13 @@ export function interpretTransaction(
 
       const unsubscribe = client.subscribe<
         InterpretResponse,
-        'interpret',
-        'transaction'
+        typeof namespace,
+        typeof scope
       >({
-        namespace: 'interpret',
+        namespace,
         method: 'stream',
         body: {
-          scope: ['transaction'],
+          scope: [scope],
           payload: {
             address,
             chain_id: transaction.chainId,
@@ -110,3 +131,13 @@ export function getInterpretationFunctionSignature(
 ) {
   return interpretation?.inputs?.[0]?.schema?.primary_type;
 }
+
+export const useInterpretTransaction = createDomainHook<
+  Payload,
+  InterpretResponse,
+  typeof namespace,
+  typeof scope
+>({
+  namespace,
+  scope,
+});

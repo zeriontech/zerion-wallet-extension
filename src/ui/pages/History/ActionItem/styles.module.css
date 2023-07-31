@@ -8,6 +8,11 @@
   border-radius: 12px;
 }
 
+.actionItem {
+  cursor: pointer;
+  position: relative;
+}
+
 .actionItem:hover .actionItemBackdropButton {
   background-color: var(--neutral-200);
 }

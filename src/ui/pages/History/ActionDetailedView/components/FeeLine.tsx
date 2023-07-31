@@ -1,4 +1,3 @@
-import type { AddressAction } from 'defi-sdk';
 import React from 'react';
 import { createChain } from 'src/modules/networks/Chain';
 import { NetworkId } from 'src/modules/networks/NetworkId';
@@ -8,6 +7,7 @@ import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { AssetLink } from './AssetLink';
 
 export function FeeLine({
@@ -15,7 +15,7 @@ export function FeeLine({
   address,
   networks,
 }: {
-  action: AddressAction;
+  action: AnyAddressAction;
   address?: string;
   networks: Networks;
 }) {
