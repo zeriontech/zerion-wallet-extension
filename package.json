@@ -3,6 +3,7 @@
   "version": "1.0.1-beta.4",
   "description": "A web3 wallet extension",
   "scripts": {
+    "prestart": "node scripts/verifyDotEnv.cjs",
     "start": "npm-run-all --parallel start:app type-check:watch",
     "start:app": "parcel watch src/manifest.json --no-hmr --no-content-hash --no-autoinstall",
     "build": "echo \"Please run 'npm run build:production' instead\" && exit 1",

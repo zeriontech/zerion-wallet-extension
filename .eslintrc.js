@@ -42,6 +42,7 @@ module.exports = {
         'jest.config.js',
         '*.node.js',
         'webpack.config.js',
+        '*.cjs',
       ],
       env: { node: true },
       rules: {
