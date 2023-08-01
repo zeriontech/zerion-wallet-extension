@@ -1243,7 +1243,9 @@ class PublicController {
       const chain = networks.getChainById(chainId);
       // Switch immediately and return success
       this.wallet.setChainForOrigin(chain, origin);
-      return null;
+      return new Promise((resolve) => {
+        setTimeout(() => resolve(null));
+      });
     } catch (e) {
       throw new SwitchChainError(`Chain not configured: ${chainIdParameter}`);
     }
