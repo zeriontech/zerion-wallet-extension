@@ -337,32 +337,46 @@ function ActionItemLocalWrapper({
     address: singleAddressNormalized,
   });
   const localTransaction = useMemo(() => {
-    return localTransactions.find(
+    const localTransactionRaw = localTransactions.find(
       (transaction) => transaction.hash === action.transaction.hash
     );
+
+    if (!localTransactionRaw) {
+      return null;
+    }
+
+    return {
+      ...localTransactionRaw,
+      transaction: {
+        ...omit(localTransactionRaw.transaction, 'nonce'),
+        chainId: ethers.utils.hexValue(
+          localTransactionRaw.transaction.chainId || ''
+        ),
+        gasPrice: localTransactionRaw.transaction.gasPrice?._hex,
+        maxFee: localTransactionRaw.transaction.maxFeePerGas?._hex,
+        maxPriorityFee:
+          localTransactionRaw.transaction.maxPriorityFeePerGas?._hex,
+        gas: localTransactionRaw.transaction.gasLimit._hex,
+        value: localTransactionRaw.transaction.value._hex,
+      },
+    };
   }, [localTransactions, action]);
-  
+
+  const isSupportedByBackend = networks.isSupportedByBackend(
+    networks.getChainById(localTransaction?.transaction.chainId || '')
+  );
+
   const { value } = useInterpretTransaction(
     {
       address: singleAddressNormalized,
-      chain_id: ethers.utils.hexValue(
-        localTransaction?.transaction.chainId || ''
-      ),
-      transaction: {
-        ...omit(localTransaction?.transaction, 'nonce'),
-        chainId: ethers.utils.hexValue(
-          localTransaction?.transaction.chainId || ''
-        ),
-        gasPrice: localTransaction?.transaction.gasPrice?._hex,
-        maxFee: localTransaction?.transaction.maxFeePerGas?._hex,
-        maxPriorityFee:
-          localTransaction?.transaction.maxPriorityFeePerGas?._hex,
-        gas: localTransaction?.transaction.gasLimit._hex,
-        value: localTransaction?.transaction.value._hex,
-      },
+      chain_id: localTransaction?.transaction.chainId || '',
+      transaction: localTransaction?.transaction,
       currency: 'usd',
     },
-    { method: 'stream', enabled: Boolean(localTransaction) }
+    {
+      method: 'stream',
+      enabled: Boolean(localTransaction) && isSupportedByBackend,
+    }
   );
 
   const mergedAction = useMemo<LocalAddressAction>(() => {
@@ -376,6 +390,8 @@ function ActionItemLocalWrapper({
       type: value.action.type,
     };
   }, [action, value]);
+
+  // console.log(mergedAction);
 
   return <ActionItemView action={mergedAction} networks={networks} />;
 }

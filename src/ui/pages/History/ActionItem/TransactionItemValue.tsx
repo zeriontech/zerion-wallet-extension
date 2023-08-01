@@ -59,9 +59,9 @@ function HistoryTokenValue({
         overflow: 'hidden',
         whiteSpace: 'nowrap',
       }}
-      title={`${sign}${formatted} ${tokenTitle}`}
+      title={value ? `${sign}${formatted} ${tokenTitle}` : tokenTitle}
     >
-      {value ? <AssetQuantityValue sign={sign} quantity={quantity} /> : null}
+      {value ? <AssetQuantityValue sign={sign} quantity={quantity} /> : <div />}
       {withLink ? (
         <AssetLink asset={asset} address={address} />
       ) : (
@@ -172,7 +172,7 @@ export function TransactionCurrencyValue({
   }
   const transfer = transfers[0];
   const asset = getFungibleAsset(transfer.asset);
-  if (!asset) {
+  if (!asset || !transfer.quantity || !transfer.price) {
     return null;
   }
 
@@ -182,7 +182,7 @@ export function TransactionCurrencyValue({
     quantity: transfer.quantity,
   });
   const value = formatCurrencyValue(
-    commonQuantity.times(transfer.price || 0),
+    commonQuantity.times(transfer.price),
     'en',
     'usd'
   );
