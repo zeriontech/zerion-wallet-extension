@@ -99,7 +99,7 @@ export class EthereumProvider extends JsonRpcProvider {
   }
 
   on(event: string, listener: (params: unknown) => unknown) {
-    this.events.on(event, listener);
+    super.on(event, listener);
     return this;
   }
 
@@ -135,11 +135,10 @@ export class EthereumProvider extends JsonRpcProvider {
     if (request.method === 'eth_accounts' && this.accounts.length) {
       return Promise.resolve(this.accounts);
     }
-    const result = await this._getRequestPromise(
+    return this._getRequestPromise(
       formatJsonRpcRequest(request.method, request.params || []),
       context
     );
-    return result;
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
