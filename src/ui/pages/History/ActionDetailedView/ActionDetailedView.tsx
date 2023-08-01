@@ -125,14 +125,28 @@ export function ActionDetailedView({
             }}
           >
             {network ? (
-              <HStack gap={8} alignItems="center">
+              <HStack
+                gap={8}
+                alignItems="center"
+                style={{ gridTemplateColumns: 'auto 1fr' }}
+              >
                 <NetworkIcon
                   src={network?.icon_url}
                   chainId={network?.external_id || ''}
                   size={24}
                   name={network?.name || null}
                 />
-                <UIText kind="small/accent">{network?.name}</UIText>
+                <UIText
+                  kind="small/accent"
+                  title={network?.name}
+                  style={{
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {network?.name}
+                </UIText>
               </HStack>
             ) : null}
             <ExplorerLink action={action} networks={networks} />

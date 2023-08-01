@@ -114,7 +114,9 @@ function useMinedAndPendingAddressActions({
         ? mergeLocalAndBackendActions(localAddressActions, backendItems)
         : null,
       ...localActionsQuery,
-      isLoading: actionsIsLoading || localActionsQuery.isLoading,
+      isLoading:
+        (actionsIsLoading && isSupportedByBackend) ||
+        localActionsQuery.isLoading,
       hasMore: Boolean(isSupportedByBackend && hasNext),
       fetchMore,
     };
