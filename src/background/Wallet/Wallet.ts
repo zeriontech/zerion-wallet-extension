@@ -1243,6 +1243,7 @@ class PublicController {
       const chain = networks.getChainById(chainId);
       // Switch immediately and return success
       this.wallet.setChainForOrigin(chain, origin);
+      // return null in next tick to give provider enough time to change chainId property
       return new Promise((resolve) => {
         setTimeout(() => resolve(null));
       });
