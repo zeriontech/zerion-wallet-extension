@@ -27,6 +27,7 @@ import AddWalletIcon from 'jsx:src/ui/assets/add-wallet.svg';
 import { Button } from 'src/ui/ui-kit/Button';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
 import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
+import { assertSignerContainer } from 'src/shared/types/validators';
 
 export function WalletSelect() {
   const navigate = useNavigate();
@@ -45,9 +46,10 @@ export function WalletSelect() {
   });
   const hasMnemonicWallets = useMemo(
     () =>
-      walletGroups?.some(
-        (group) => group.walletContainer.seedType === SeedType.mnemonic
-      ),
+      walletGroups?.some((group) => {
+        assertSignerContainer(group.walletContainer);
+        return group.walletContainer.seedType === SeedType.mnemonic;
+      }),
     [walletGroups]
   );
   if (isLoading) {
@@ -84,6 +86,7 @@ export function WalletSelect() {
   const items: Item[] = [];
   let isVisuallyGrouped = false;
   for (const group of walletGroups) {
+    assertSignerContainer(group.walletContainer);
     if (hasMnemonicWallets && walletGroups.length > 1) {
       isVisuallyGrouped = true;
       const isPrivateKeyGroup =

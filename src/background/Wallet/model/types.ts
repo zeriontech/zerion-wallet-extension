@@ -1,14 +1,10 @@
 import type { ethers } from 'ethers';
 import type { WalletAbility } from 'src/shared/types/Daylight';
-import type { WalletContainer } from './WalletContainer';
+import type { SignerContainer } from './WalletContainer';
 import type { WalletOrigin } from './WalletOrigin';
+import type { AccountContainer } from './accounts/types';
 
-export interface BareWallet {
-  mnemonic: { phrase: string; path: string } | null;
-  privateKey: ethers.Wallet['privateKey'];
-  address: ethers.Wallet['address'];
-  name: string | null;
-}
+export type WalletContainer = SignerContainer | AccountContainer;
 
 export interface WalletGroup {
   id: string;
@@ -23,6 +19,7 @@ interface WalletManager {
   groups: WalletGroup[];
   currentAddress: string | null;
   internalMnemonicGroupCounter: number;
+  internalHardwareGroupCounter?: number;
 }
 
 type Origin = string;
@@ -96,5 +93,5 @@ export interface WalletRecord extends Omit<WalletRecordVersion4, 'version'> {
 export interface PendingWallet {
   walletContainer: WalletContainer;
   groupId: string | null;
-  origin: WalletOrigin;
+  origin: WalletOrigin | null;
 }

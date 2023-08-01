@@ -12,6 +12,10 @@ import { walletPort } from 'src/ui/shared/channels';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
+import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
+import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
+import { NBSP } from 'src/ui/shared/typography';
 import { AddressImportMessages } from './AddressImportMessages';
 import { WalletList } from './WalletList';
 
@@ -27,6 +31,25 @@ function useAllExistingAddresses() {
         ?.flatMap((group) => group.walletContainer.wallets)
         .map(({ address }) => normalizeAddress(address)),
     [walletGroups]
+  );
+}
+
+function PortfolioValueDetail({ address }: { address: string }) {
+  return (
+    <UIText kind="headline/h3">
+      <PortfolioValue
+        address={address}
+        render={({ value }) =>
+          value ? (
+            <NeutralDecimals
+              parts={formatCurrencyToParts(value.total_value, 'en', 'usd')}
+            />
+          ) : (
+            <span>{NBSP}</span>
+          )
+        }
+      />
+    </UIText>
   );
 }
 
@@ -76,7 +99,10 @@ function AddressImportList({
               <WalletList
                 listTitle="Active wallets"
                 wallets={active}
-                showPortfolio={true}
+                // showPortfolio={true}
+                renderDetail={(index) => (
+                  <PortfolioValueDetail address={active[index].address} />
+                )}
                 existingAddressesSet={existingAddressesSet}
                 values={values}
                 onSelect={toggleAddress}
@@ -86,7 +112,8 @@ function AddressImportList({
               <WalletList
                 listTitle="Inactive wallets"
                 wallets={rest}
-                showPortfolio={false}
+                // showPortfolio={false}
+                renderDetail={null}
                 existingAddressesSet={existingAddressesSet}
                 values={values}
                 onSelect={toggleAddress}

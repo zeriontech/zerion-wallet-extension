@@ -14,14 +14,17 @@ import {
   seedPhraseToHash,
 } from 'src/shared/wallet/encryption';
 import { SeedType } from './SeedType';
-import type { BareWallet } from './types';
+import type { BareWallet } from './BareWallet';
 
 interface PlainWalletContainer {
   seedType: SeedType;
   wallets: BareWallet[];
 }
 
-export interface WalletContainer {
+export interface SignerContainer {
+  /**
+   * Contains data necessary for signing, e.g. private key or a seed phrase
+   */
   seedType: SeedType;
   seedHash?: string;
   wallets: BareWallet[];
@@ -33,7 +36,7 @@ export interface WalletContainer {
   getWalletByAddress(address: string): BareWallet | null;
 }
 
-abstract class WalletContainerImpl implements WalletContainer {
+abstract class WalletContainerImpl implements SignerContainer {
   /**
    * Important to add [immerable] = true property if we want
    * to use immer to copy WalletContainers:
@@ -154,7 +157,7 @@ export class MnemonicWalletContainer extends WalletContainerImpl {
   }
 
   static async restoreWalletContainer(
-    walletContainer: WalletContainer,
+    walletContainer: SignerContainer,
     credentials: Credentials
   ) {
     const { seedType, seedHash, wallets } = walletContainer;
@@ -199,7 +202,7 @@ export class MnemonicWalletContainer extends WalletContainerImpl {
   addWallet(wallet: BareWallet, seedHash: string) {
     invariant(
       seedHash === this.seedHash,
-      'Added wallet must have the same mnemonic as other wallets in the WalletContainer'
+      'Added wallet must have the same mnemonic as other wallets in the SignerContainer'
     );
     if (this.wallets.some(({ address }) => address === wallet.address)) {
       /** Seems it's better to keep existing wallet in order to save existing state, e.g. name */
@@ -236,13 +239,13 @@ export class PrivateKeyWalletContainer extends WalletContainerImpl {
   }
 }
 
-export class TestPrivateKeyWalletContainer extends WalletContainerImpl {
+export class TestPrivateKeyWalletContainer extends PrivateKeyWalletContainer {
   wallets: BareWallet[];
   seedType = SeedType.privateKey;
   seedHash = undefined;
 
   constructor(wallets: BareWallet[]) {
-    super();
+    super(wallets);
     this.wallets = wallets;
   }
 

@@ -19,7 +19,6 @@ import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { NBSP } from 'src/ui/shared/typography';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
-import type { BareWallet } from 'src/shared/types/BareWallet';
 import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
@@ -32,6 +31,12 @@ import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog'
 import { invariant } from 'src/shared/invariant';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { InputDecorator } from 'src/ui/ui-kit/Input/InputDecorator';
+import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
+import {
+  isBareWallet,
+  isDeviceAccount,
+  isSignerContainer,
+} from 'src/shared/types/validators';
 
 function EditableWalletName({
   id,
@@ -39,7 +44,7 @@ function EditableWalletName({
   onRename,
 }: {
   id: string;
-  wallet: BareWallet;
+  wallet: ExternallyOwnedAccount;
   onRename?: () => void;
 }) {
   const [value, setValue] = useState(wallet.name || '');
@@ -93,7 +98,11 @@ function EditableWalletName({
   );
 }
 
-function RemoveAddressConfirmationDialog({ wallet }: { wallet: BareWallet }) {
+function RemoveAddressConfirmationDialog({
+  wallet,
+}: {
+  wallet: ExternallyOwnedAccount;
+}) {
   return (
     <form
       method="dialog"
@@ -223,8 +232,11 @@ export function WalletAccount() {
             />
             <UIText kind="caption/regular" color="var(--neutral-500)">
               <div>{wallet.address}</div>
-              {wallet.mnemonic ? (
+              {isBareWallet(wallet) && wallet.mnemonic ? (
                 <div>Derivation path: {wallet.mnemonic?.path}</div>
+              ) : null}
+              {isDeviceAccount(wallet) ? (
+                <div>HW Derivation path: {wallet.derivationPath}</div>
               ) : null}
             </UIText>
           </VStack>
@@ -240,35 +252,37 @@ export function WalletAccount() {
             />
           }
         />
-        <VStack gap={8}>
-          <UIText kind="small/regular" color="var(--neutral-500)">
-            Export Wallet
-          </UIText>
-          <SurfaceList
-            items={[
-              {
-                key: 0,
-                to: `/backup-wallet?${new URLSearchParams({
-                  groupId,
-                  address: wallet.address,
-                  backupKind: 'reveal',
-                })}`,
-                component: (
-                  <HStack
-                    gap={4}
-                    justifyContent="space-between"
-                    alignItems="center"
-                  >
-                    <UIText kind="body/regular">Private key</UIText>
-                    <span>
-                      <ChevronRightIcon />
-                    </span>
-                  </HStack>
-                ),
-              },
-            ]}
-          />
-        </VStack>
+        {isBareWallet(wallet) ? (
+          <VStack gap={8}>
+            <UIText kind="small/regular" color="var(--neutral-500)">
+              Export Wallet
+            </UIText>
+            <SurfaceList
+              items={[
+                {
+                  key: 0,
+                  to: `/backup-wallet?${new URLSearchParams({
+                    groupId,
+                    address: wallet.address,
+                    backupKind: 'reveal',
+                  })}`,
+                  component: (
+                    <HStack
+                      gap={4}
+                      justifyContent="space-between"
+                      alignItems="center"
+                    >
+                      <UIText kind="body/regular">Private key</UIText>
+                      <span>
+                        <ChevronRightIcon />
+                      </span>
+                    </HStack>
+                  ),
+                },
+              ]}
+            />
+          </VStack>
+        ) : null}
 
         <VStack gap={4}>
           <SurfaceList

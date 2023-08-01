@@ -18,7 +18,6 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import type { BareWallet } from 'src/shared/types/BareWallet';
 import { Background } from 'src/ui/components/Background';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
@@ -56,6 +55,7 @@ import type { TransactionAction } from 'src/modules/ethereum/transactions/descri
 import { describeTransaction } from 'src/modules/ethereum/transactions/describeTransaction';
 import { CustomAllowanceView } from 'src/ui/components/CustomAllowanceView';
 import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
+import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
@@ -173,7 +173,7 @@ function TransactionDefaultView({
   networks: Networks;
   chain: Chain;
   origin: string;
-  wallet: BareWallet;
+  wallet: ExternallyOwnedAccount;
   addressAction: AddressAction | IncomingAddressAction;
   transactionAction: TransactionAction;
   singleAsset: NonNullable<AddressAction['content']>['single_asset'];
@@ -408,7 +408,7 @@ function SendTransactionContent({
 }: {
   transactionStringified: string;
   origin: string;
-  wallet: BareWallet;
+  wallet: ExternallyOwnedAccount;
 }) {
   const [params] = useSearchParams();
   const navigate = useNavigate();

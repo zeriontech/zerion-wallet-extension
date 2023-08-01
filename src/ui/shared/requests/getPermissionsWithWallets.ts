@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import type { BareWallet } from 'src/shared/types/BareWallet';
+import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import type { Permission } from 'src/shared/types/Permission';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { walletPort } from 'src/ui/shared/channels';
@@ -10,16 +10,14 @@ type PermissionRecord = Record<string, Permission>;
 
 export type ConnectedSiteItem = Permission & {
   origin: string;
-  wallets: BareWallet[];
+  wallets: ExternallyOwnedAccount[];
 };
 
-function createBareWallet(address: string): BareWallet {
+function createBareWallet(address: string): ExternallyOwnedAccount {
   return {
     address: isEthereumAddress(address)
       ? ethers.utils.getAddress(address)
       : address,
-    mnemonic: null,
-    privateKey: '<privateKey>',
     name: null,
   };
 }

@@ -8,11 +8,10 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Media } from 'src/ui/ui-kit/Media';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
-import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
-import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
-import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
-import { NBSP } from 'src/ui/shared/typography';
-import { getIndexFromPath } from 'src/shared/wallet/getNextAccountPath';
+import {
+  DerivationPathType,
+  getIndexFromPath,
+} from 'src/shared/wallet/getNextAccountPath';
 import { AnimatedCheckmark } from 'src/ui/ui-kit/AnimatedCheckmark';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 
@@ -20,18 +19,20 @@ export function WalletList({
   wallets,
   existingAddressesSet,
   listTitle,
-  showPortfolio,
+  renderDetail,
   values,
   onSelect,
   initialCount,
+  derivationPathType = 'bip44',
 }: {
   wallets: BareWallet[];
   existingAddressesSet: Set<string>;
   listTitle: React.ReactNode;
-  showPortfolio: boolean;
+  renderDetail: null | ((index: number) => React.ReactNode);
   values: Set<string>;
   onSelect: (value: string) => void;
   initialCount?: number;
+  derivationPathType?: DerivationPathType;
 }) {
   const [count, setCount] = useState(initialCount ?? wallets.length);
   return (
@@ -40,7 +41,7 @@ export function WalletList({
       <SurfaceList
         items={wallets
           .slice(0, count)
-          .map<Item>((wallet) => ({
+          .map<Item>((wallet, index) => ({
             key: wallet.address,
 
             onClick: existingAddressesSet.has(normalizeAddress(wallet.address))
@@ -62,7 +63,7 @@ export function WalletList({
                   style={{ cursor: 'help' }}
                 >
                   {wallet.mnemonic
-                    ? getIndexFromPath(wallet.mnemonic.path)
+                    ? getIndexFromPath(wallet.mnemonic.path, derivationPathType)
                     : null}
                 </UIText>
                 <Media
@@ -76,28 +77,7 @@ export function WalletList({
                   }
                   text={<WalletDisplayName wallet={wallet} />}
                   vGap={0}
-                  detailText={
-                    showPortfolio ? (
-                      <UIText kind="headline/h3">
-                        <PortfolioValue
-                          address={wallet.address}
-                          render={({ value }) =>
-                            value ? (
-                              <NeutralDecimals
-                                parts={formatCurrencyToParts(
-                                  value.total_value,
-                                  'en',
-                                  'usd'
-                                )}
-                              />
-                            ) : (
-                              <span>{NBSP}</span>
-                            )
-                          }
-                        />
-                      </UIText>
-                    ) : null
-                  }
+                  detailText={renderDetail?.(index)}
                 />
                 {existingAddressesSet.has(normalizeAddress(wallet.address)) ? (
                   <UIText kind="caption/regular" color="var(--neutral-500)">

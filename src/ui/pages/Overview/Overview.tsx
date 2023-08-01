@@ -26,7 +26,6 @@ import { useQuery } from '@tanstack/react-query';
 import { walletPort } from 'src/ui/shared/channels';
 import { NBSP } from 'src/ui/shared/typography';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
-import type { BareWallet } from 'src/shared/types/BareWallet';
 import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { CopyButton } from 'src/ui/components/CopyButton';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
@@ -40,6 +39,7 @@ import {
   PauseInjectionControl,
 } from 'src/ui/components/PauseInjection';
 import { InvitationBanner } from 'src/ui/components/InvitationFlow';
+import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -106,7 +106,7 @@ function PercentChange({
   return render(formatPercentChange(value, locale));
 }
 
-function CurrentAccount({ wallet }: { wallet: BareWallet }) {
+function CurrentAccount({ wallet }: { wallet: ExternallyOwnedAccount }) {
   return (
     <span style={{ fontWeight: 'normal' }}>
       <WalletDisplayName wallet={wallet} maxCharacters={16} />
@@ -242,25 +242,6 @@ function OverviewComponent() {
         <Spacer height={16} />
       </PageFullBleedColumn>
       <PausedBanner style={{ marginBottom: 16, marginInline: 8 }} />
-      <div>{'---------'}</div>
-      <iframe
-        id="the-ledger-test"
-        // This is crucial: by lifting only "allow-scripts" restriction
-        // we restrict everything else, inluding "allow-same-origin" token.
-        // By doing this, the iframe code will be treated by the background script
-        // as a third-party origin.
-        sandbox="allow-scripts"
-        allow="usb"
-        src="ui/hardware-wallet/ledger.html"
-        width="100%"
-        height="150px"
-        onLoad={() => {
-          console.log('iframe loaded');
-        }}
-        onError={() => {
-          console.log('iframe onerror');
-        }}
-      />
       <div
         style={{
           height: isLoadingPortfolio ? 68 : undefined,

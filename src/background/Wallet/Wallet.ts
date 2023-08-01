@@ -56,14 +56,15 @@ import { invariant } from 'src/shared/invariant';
 import { getEthersError } from 'src/shared/errors/getEthersError';
 import type { DappSecurityStatus } from 'src/modules/phishing-defence/phishing-defence-service';
 import { phishingDefenceService } from 'src/modules/phishing-defence/phishing-defence-service';
+import { isMnemonicContainer } from 'src/shared/types/validators';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
 import { isSessionCredentials } from '../account/Credentials';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
-import { SeedType } from './model/SeedType';
-import type { BareWallet, PendingWallet, WalletRecord } from './model/types';
+import type { PendingWallet, WalletRecord } from './model/types';
+import type { BareWallet } from './model/BareWallet';
 import {
   MnemonicWalletContainer,
   PrivateKeyWalletContainer,
@@ -73,6 +74,8 @@ import { WalletStore } from './persistence';
 import { WalletOrigin } from './model/WalletOrigin';
 import type { GlobalPreferences } from './GlobalPreferences';
 import type { State as GlobalPreferencesState } from './GlobalPreferences';
+import type { Device, DeviceAccount } from './model/accounts/types';
+import { DeviceAccountContainer } from './model/accounts/types';
 
 const INTERNAL_SYMBOL_CONTEXT = { origin: INTERNAL_ORIGIN_SYMBOL };
 
@@ -235,38 +238,61 @@ export class Wallet {
   // into a separate isolated class
   async uiGenerateMnemonic() {
     this.ensureActiveSession(this.userCredentials);
+    const walletContainer = await MnemonicWalletContainer.create({
+      credentials: this.userCredentials,
+    });
     this.pendingWallet = {
       origin: WalletOrigin.extension,
       groupId: null,
-      walletContainer: await MnemonicWalletContainer.create({
-        credentials: this.userCredentials,
-      }),
+      walletContainer,
     };
-    return maskWallet(this.pendingWallet.walletContainer.getFirstWallet());
+    return maskWallet(walletContainer.getFirstWallet());
   }
 
   async uiImportPrivateKey({ params: privateKey }: WalletMethodParams<string>) {
+    const walletContainer = new PrivateKeyWalletContainer([{ privateKey }]);
     this.pendingWallet = {
       origin: WalletOrigin.imported,
       groupId: null,
-      walletContainer: new PrivateKeyWalletContainer([{ privateKey }]),
+      walletContainer,
     };
-    return maskWallet(this.pendingWallet.walletContainer.getFirstWallet());
+    return maskWallet(walletContainer.getFirstWallet());
   }
 
   async uiImportSeedPhrase({
     params: mnemonics,
   }: WalletMethodParams<NonNullable<BareWallet['mnemonic']>[]>) {
     this.ensureActiveSession(this.userCredentials);
+    const walletContainer = await MnemonicWalletContainer.create({
+      wallets: mnemonics.map((mnemonic) => ({ mnemonic })),
+      credentials: this.userCredentials,
+    });
     this.pendingWallet = {
       origin: WalletOrigin.imported,
       groupId: null,
-      walletContainer: await MnemonicWalletContainer.create({
-        wallets: mnemonics.map((mnemonic) => ({ mnemonic })),
-        credentials: this.userCredentials,
+      walletContainer,
+    };
+    return maskWallet(walletContainer.getFirstWallet());
+  }
+
+  async uiImportHardwareWallet({
+    params: { accounts, device, provider },
+  }: WalletMethodParams<{
+    accounts: DeviceAccount[];
+    device: Device;
+    provider: 'ledger';
+  }>) {
+    invariant(accounts.length > 0, 'Must import at least 1 account');
+    this.pendingWallet = {
+      origin: WalletOrigin.imported,
+      groupId: null,
+      walletContainer: new DeviceAccountContainer({
+        device,
+        wallets: accounts,
+        provider,
       }),
     };
-    return maskWallet(this.pendingWallet.walletContainer.getFirstWallet());
+    return accounts[0];
   }
 
   async getRecoveryPhrase({
@@ -590,7 +616,7 @@ export class Wallet {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
     return this.record.walletManager.groups
-      .filter((group) => group.walletContainer.seedType === SeedType.mnemonic)
+      .filter((group) => isMnemonicContainer(group.walletContainer))
       .filter((group) => group.origin === WalletOrigin.extension)
       .filter((group) => group.lastBackedUp == null).length;
   }
@@ -768,10 +794,10 @@ export class Wallet {
       throw new RecordNotFound();
     }
     const currentWallet = currentAddress
-      ? Model.getWalletByAddress(this.record, currentAddress)
+      ? Model.getSignerWalletByAddress(this.record, currentAddress)
       : null;
     if (!currentWallet) {
-      throw new Error('Wallet is not initialized');
+      throw new Error('Signer wallet for this address is not found');
     }
 
     const jsonRpcProvider = await this.getProvider(chainId);

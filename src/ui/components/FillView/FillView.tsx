@@ -4,33 +4,39 @@ import { NAVIGATION_BAR_HEIGHT } from '../URLBar';
 import { BUG_REPORT_BUTTON_HEIGHT } from '../BugReportButton';
 import * as s from './styles.module.css';
 
-export function FillView({
-  className,
-  style,
-  adjustForNavigationBar = false,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement> & {
-  adjustForNavigationBar?: boolean;
-}) {
-  return (
-    <div
-      className={cx(
-        className,
-        adjustForNavigationBar ? s.adjustForNavigationBar : null
-      )}
-      style={{
-        ['--navigation-bar-height' as string]: `${NAVIGATION_BAR_HEIGHT}px`,
-        height: '100%',
-        flexGrow: 1,
-        display: 'grid',
-        alignContent: 'center',
-        justifyItems: 'center',
-        ...style,
-      }}
-      {...props}
-    />
-  );
-}
+export const FillView = React.forwardRef(
+  (
+    {
+      className,
+      style,
+      adjustForNavigationBar = false,
+      ...props
+    }: React.HTMLAttributes<HTMLDivElement> & {
+      adjustForNavigationBar?: boolean;
+    },
+    ref: React.Ref<HTMLDivElement>
+  ) => {
+    return (
+      <div
+        ref={ref}
+        className={cx(
+          className,
+          adjustForNavigationBar ? s.adjustForNavigationBar : null
+        )}
+        style={{
+          ...style,
+          ['--navigation-bar-height' as string]: `${NAVIGATION_BAR_HEIGHT}px`,
+          height: '100%',
+          flexGrow: 1,
+          display: 'grid',
+          alignContent: 'center',
+          justifyItems: 'center',
+        }}
+        {...props}
+      />
+    );
+  }
+);
 
 export function StretchyFillView({
   className,

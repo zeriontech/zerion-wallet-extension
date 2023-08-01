@@ -62,6 +62,8 @@ import { SignInWithEthereum } from '../pages/SignInWithEthereum';
 import { InvitationPage } from '../components/InvitationFlow';
 import { useBodyStyle } from '../components/Background/Background';
 import { PhishingWarningPage } from '../components/PhishingDefence/PhishingWarningPage';
+import { HardwareWalletConnection } from '../pages/HardwareWalletConnection';
+import { ThemeDecoration } from '../components/DesignTheme/ThemeDecoration';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -321,6 +323,14 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             }
           />
           <Route
+            path="/connect-hardware-wallet/*"
+            element={
+              <RequireAuth>
+                <HardwareWalletConnection />
+              </RequireAuth>
+            }
+          />
+          <Route
             path="/connected-sites/*"
             element={
               <RequireAuth>
@@ -396,6 +406,8 @@ export function App({ initialView, mode, inspect }: AppProps) {
             <ErrorBoundary renderError={(error) => <ViewError error={error} />}>
               <InactivityDetector />
               <SessionResetHandler />
+              <DesignTheme bodyClassList={bodyClassList} />
+              <ThemeDecoration />
               {inspect && !isProd ? (
                 <UIText
                   kind="small/regular"

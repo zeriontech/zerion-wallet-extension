@@ -1,11 +1,11 @@
 import React from 'react';
-import type { BareWallet } from 'src/shared/types/BareWallet';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
 import { IsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
 import { NBSP } from 'src/ui/shared/typography';
 import { Media } from 'src/ui/ui-kit/Media';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { WalletDisplayName } from '../WalletDisplayName';
 import { WalletAvatar } from '../WalletAvatar';
 
@@ -14,7 +14,7 @@ export enum Composition {
 }
 
 interface CommonProps {
-  wallet: BareWallet;
+  wallet: ExternallyOwnedAccount;
   activeIndicator: boolean;
   iconSize: number;
 }

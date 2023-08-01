@@ -1,5 +1,7 @@
 import { produce } from 'immer';
-import type { BareWallet, WalletGroup } from '../model/types';
+import type { WalletGroup } from '../model/types';
+import type { BareWallet } from '../model/BareWallet';
+import type { ExternallyOwnedAccount } from '../model/accounts/types';
 
 function maskMnemonic(
   mnemonic: BareWallet['mnemonic']
@@ -7,10 +9,12 @@ function maskMnemonic(
   return mnemonic ? { phrase: '<phrase>', path: mnemonic.path } : null;
 }
 
-export function maskWallet(wallet: BareWallet): BareWallet {
+export function maskWallet(wallet: ExternallyOwnedAccount | BareWallet) {
   return produce(wallet, (draft) => {
-    draft.privateKey = '<privateKey>';
-    draft.mnemonic = maskMnemonic(draft.mnemonic);
+    if ('privateKey' in draft) {
+      draft.privateKey = '<privateKey>';
+      draft.mnemonic = maskMnemonic(draft.mnemonic);
+    }
   });
 }
 

@@ -9,7 +9,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Surface } from 'src/ui/ui-kit/Surface';
-import type { BareWallet } from 'src/shared/types/BareWallet';
 import { Background } from 'src/ui/components/Background';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
@@ -24,6 +23,7 @@ import { usePersonalSignMutation } from 'src/ui/shared/requests/message-signing'
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/PhishingDefenceStatus';
+import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 
 function MessageRow({ message }: { message: string }) {
   return (
@@ -50,7 +50,7 @@ function SignMessageContent({
 }: {
   message: string;
   origin: string;
-  wallet: BareWallet;
+  wallet: ExternallyOwnedAccount;
 }) {
   const [params] = useSearchParams();
   const windowId = params.get('windowId');

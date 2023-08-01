@@ -11,7 +11,6 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { Background } from 'src/ui/components/Background';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { SurfaceList, SurfaceItemButton } from 'src/ui/ui-kit/SurfaceList';
-import type { BareWallet } from 'src/shared/types/BareWallet';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { FillView } from 'src/ui/components/FillView';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
@@ -33,12 +32,13 @@ import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { Address } from 'src/ui/components/Address';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/PhishingDefenceStatus';
+import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 
 function WalletSelectList({
   wallets,
   value,
 }: {
-  wallets: BareWallet[];
+  wallets: ExternallyOwnedAccount[];
   value: string;
 }) {
   return (
@@ -79,7 +79,7 @@ function WalletSelectDialog({
   dialogRef,
 }: {
   value: string;
-  wallets: BareWallet[];
+  wallets: ExternallyOwnedAccount[];
   dialogRef: React.Ref<HTMLDialogElement>;
 }) {
   return (
@@ -180,8 +180,8 @@ function RequestAccountsView({
   onReject,
 }: {
   origin: string;
-  wallet: BareWallet;
-  wallets: BareWallet[];
+  wallet: ExternallyOwnedAccount;
+  wallets: ExternallyOwnedAccount[];
   onConfirm: (value: { address: string; origin: string }) => void;
   onReject: () => void;
 }) {

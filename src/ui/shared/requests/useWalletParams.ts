@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
-import type { BareWallet } from 'src/shared/types/BareWallet';
+import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 
-export function useWalletParams(wallet: BareWallet | null | undefined) {
+export function useWalletParams(
+  wallet: ExternallyOwnedAccount | null | undefined
+) {
   return useMemo(() => {
     if (!wallet) {
       return null;

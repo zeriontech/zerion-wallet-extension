@@ -8,7 +8,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Surface } from 'src/ui/ui-kit/Surface';
-import type { BareWallet } from 'src/shared/types/BareWallet';
 import { Background } from 'src/ui/components/Background';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { getError } from 'src/shared/errors/getError';
@@ -47,6 +46,7 @@ import type BigNumber from 'bignumber.js';
 import { CustomAllowanceView } from 'src/ui/components/CustomAllowanceView';
 import { produce } from 'immer';
 import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
+import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
 function TypedDataRow({ data }: { data: string }) {
@@ -94,7 +94,7 @@ function TypedDataDefaultView({
   onReject,
 }: {
   origin: string;
-  wallet: BareWallet;
+  wallet: ExternallyOwnedAccount;
   chain: Chain;
   networks: Networks;
   typedDataRaw: string;
@@ -269,7 +269,7 @@ function SignTypedDataContent({
 }: {
   origin: string;
   typedDataRaw: string;
-  wallet: BareWallet;
+  wallet: ExternallyOwnedAccount;
 }) {
   const [params] = useSearchParams();
 
