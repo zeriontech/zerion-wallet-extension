@@ -26,8 +26,6 @@ import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import { useInterpretTransaction } from 'src/modules/ethereum/transactions/interpretTransaction';
-import omit from 'lodash/omit';
-import { ethers } from 'ethers';
 import { ActionDetailedView } from '../ActionDetailedView';
 import { AssetLink } from '../ActionDetailedView/components/AssetLink';
 import { isUnlimitedApproval } from '../isUnlimitedApproval';
@@ -41,7 +39,10 @@ import {
   TRANSACTION_ICON_SIZE,
 } from './TransactionTypeIcon';
 import * as styles from './styles.module.css';
-import { isDnaMintAction } from './helpers';
+import {
+  isDnaMintAction,
+  transactionObjectToInterpretPayload,
+} from './helpers';
 
 function ActionTitle({ action }: { action: AnyAddressAction }) {
   const isMintingDna = isDnaMintAction(action);
@@ -340,26 +341,9 @@ function ActionItemLocalWrapper({
     const localTransactionRaw = localTransactions.find(
       (transaction) => transaction.hash === action.transaction.hash
     );
-
-    if (!localTransactionRaw) {
-      return null;
-    }
-
-    return {
-      ...localTransactionRaw,
-      transaction: {
-        ...omit(localTransactionRaw.transaction, 'nonce'),
-        chainId: ethers.utils.hexValue(
-          localTransactionRaw.transaction.chainId || ''
-        ),
-        gasPrice: localTransactionRaw.transaction.gasPrice?._hex,
-        maxFee: localTransactionRaw.transaction.maxFeePerGas?._hex,
-        maxPriorityFee:
-          localTransactionRaw.transaction.maxPriorityFeePerGas?._hex,
-        gas: localTransactionRaw.transaction.gasLimit._hex,
-        value: localTransactionRaw.transaction.value._hex,
-      },
-    };
+    return localTransactionRaw
+      ? transactionObjectToInterpretPayload(localTransactionRaw)
+      : null;
   }, [localTransactions, action]);
 
   const isSupportedByBackend = networks.isSupportedByBackend(

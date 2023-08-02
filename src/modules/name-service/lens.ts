@@ -28,7 +28,6 @@ async function getLensProfilesByAddress(
       variables: { request: { ownedBy: address } },
     }),
   });
-
   const response: LensLookupResponse = await rawResponse.json();
   return response.data?.profiles?.items || null;
 }

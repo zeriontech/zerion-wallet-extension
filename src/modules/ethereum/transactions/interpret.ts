@@ -8,7 +8,7 @@ import { getGas } from './getGas';
 const namespace = 'interpret';
 const scope = 'transaction';
 
-interface Payload {
+export interface InterpretTransactionPayload {
   address: string;
   currency: string;
   chain_id?: string;
@@ -133,7 +133,7 @@ export function getInterpretationFunctionSignature(
 }
 
 export const useInterpretTransaction = createDomainHook<
-  Payload,
+  InterpretTransactionPayload,
   InterpretResponse,
   typeof namespace,
   typeof scope
