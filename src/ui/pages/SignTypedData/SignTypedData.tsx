@@ -23,7 +23,6 @@ import { useSignTypedData_v4Mutation } from 'src/ui/shared/requests/message-sign
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { toTypedData } from 'src/modules/ethereum/message-signing/prepareTypedData';
-import { interpretSignature } from 'src/modules/ethereum/transactions/interpretSignature';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
@@ -31,7 +30,12 @@ import { setURLSearchParams } from 'src/ui/shared/setURLSearchParams';
 import { InterpretLoadingState } from 'src/ui/components/InterpretLoadingState';
 import { AddressActionDetails } from 'src/ui/components/address-action/AddressActionDetails';
 import { focusNode } from 'src/ui/shared/focusNode';
+import {
+  getData,
+  interpretSignature,
+} from 'src/modules/ethereum/transactions/interpret';
 import { NavigationBar } from '../SignInWithEthereum/NavigationBar';
+import { AdvancedView } from './AdvancedView';
 
 function TypedDataRow({ data }: { data: string }) {
   return (
@@ -130,6 +134,18 @@ function SignTypedDataContent({
   const actionTransfers = addressAction?.content?.transfers;
   const singleAsset = addressAction?.content?.single_asset?.asset;
 
+  const interpretationDataJSON = useMemo(() => {
+    if (!interpretation) return null;
+    const data = getData(interpretation);
+    return JSON.parse(data) as Record<string, string>;
+  }, [interpretation]);
+
+  const interpretationDataFormatted = useMemo(() => {
+    return interpretationDataJSON
+      ? JSON.stringify(interpretationDataJSON, null, 2)
+      : null;
+  }, [interpretationDataJSON]);
+
   const title =
     addressAction?.type.display_value ||
     (isPermit(typedData) ? 'Permit' : 'Signature Request');
@@ -189,15 +205,6 @@ function SignTypedDataContent({
             </div>
             <Spacer height={24} />
             <VStack gap={16}>
-              <AddressActionDetails
-                recipientAddress={recipientAddress}
-                addressAction={addressAction}
-                chain={chain}
-                networks={networks}
-                actionTransfers={actionTransfers}
-                wallet={wallet}
-                singleAsset={singleAsset}
-              />
               {interpretQuery.isLoading ? (
                 <InterpretLoadingState />
               ) : interpretQuery.isError ? (
@@ -207,22 +214,39 @@ function SignTypedDataContent({
               ) : null}
               {interpretQuery.isFetched ? (
                 addressAction?.content == null ? (
-                  <TypedDataRow data={typedDataFormatted} />
+                  <TypedDataRow
+                    data={interpretationDataFormatted || typedDataFormatted}
+                  />
                 ) : (
-                  <Button
-                    kind="regular"
-                    as={UnstyledLink}
-                    to={advancedViewHref}
-                  >
-                    Advanced View
-                  </Button>
+                  <>
+                    <AddressActionDetails
+                      recipientAddress={recipientAddress}
+                      addressAction={addressAction}
+                      chain={chain}
+                      networks={networks}
+                      actionTransfers={actionTransfers}
+                      wallet={wallet}
+                      singleAsset={singleAsset}
+                    />
+                    {interpretationDataJSON ? (
+                      <Button
+                        kind="regular"
+                        as={UnstyledLink}
+                        to={advancedViewHref}
+                      >
+                        Advanced View
+                      </Button>
+                    ) : null}
+                  </>
                 )
-              ) : null}
+              ) : (
+                <TypedDataRow data={typedDataFormatted} />
+              )}
             </VStack>
           </>
         ) : null}
-        {view === View.advanced ? (
-          <TypedDataRow data={typedDataFormatted} />
+        {view === View.advanced && interpretationDataJSON ? (
+          <AdvancedView data={interpretationDataJSON} />
         ) : null}
         <Spacer height={16} />
       </PageColumn>

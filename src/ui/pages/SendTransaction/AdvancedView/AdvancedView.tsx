@@ -1,11 +1,9 @@
 import React, { useMemo } from 'react';
 import { ethers } from 'ethers';
-import { PageTop } from 'src/ui/components/PageTop';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import ArrowLeftTop from 'jsx:src/ui/assets/arrow-left-top.svg';
 import type { IncomingTransactionWithChainId } from 'src/modules/ethereum/types/IncomingTransaction';
-import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { noValueDash } from 'src/ui/shared/typography';
 import type { Networks } from 'src/modules/networks/Networks';
@@ -17,33 +15,18 @@ import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
 import type { BigNumberish } from 'ethers';
+import { accessListify } from 'ethers/lib/utils';
+import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
+import { getFunctionSignature } from 'src/modules/ethereum/transactions/interpret';
+import { PageTop } from 'src/ui/components/PageTop';
+import { TextLine } from 'src/ui/components/address-action/TextLine';
 import { NavigationBar } from '../../SignInWithEthereum/NavigationBar';
 
 function maybeHexValue(value?: BigNumberish): string | null {
   return value ? ethers.utils.hexValue(value) : null;
 }
 
-export function TextLine({
-  label,
-  value,
-}: {
-  label: React.ReactNode;
-  value: React.ReactNode;
-}) {
-  return (
-    <VStack gap={0}>
-      <UIText kind="small/regular" color="var(--neutral-500)">
-        {label}
-      </UIText>
-      <Spacer height={4} />
-      <UIText kind="body/regular" color="var(--black)">
-        {value}
-      </UIText>
-    </VStack>
-  );
-}
-
-export function AddressLine({
+function AddressLine({
   networks,
   chain,
   label,
@@ -84,104 +67,29 @@ export function TransactionDetails({
   networks,
   chain,
   transaction,
-}: {
-  networks: Networks;
-  chain: Chain;
-  transaction: IncomingTransactionWithChainId;
-}) {
-  return (
-    <Surface padding={16}>
-      <VStack gap={16}>
-        {transaction.from ? (
-          <AddressLine
-            networks={networks}
-            chain={chain}
-            label="from"
-            address={transaction.from}
-          />
-        ) : (
-          <TextLine label="from" value={noValueDash} />
-        )}
-        {transaction.to ? (
-          <AddressLine
-            networks={networks}
-            chain={chain}
-            label="to"
-            address={transaction.to}
-          />
-        ) : (
-          <TextLine label="to" value={noValueDash} />
-        )}
-        <TextLine label="nonce" value={transaction.nonce || noValueDash} />
-        <TextLine
-          label="value"
-          value={maybeHexValue(transaction.value) || noValueDash}
-        />
-        <TextLine label="chainId" value={transaction.chainId || noValueDash} />
-        <TextLine
-          label="gas"
-          value={maybeHexValue(transaction.gas) || noValueDash}
-        />
-        <TextLine
-          label="gasLimit"
-          value={maybeHexValue(transaction.gasLimit || noValueDash)}
-        />
-        <TextLine
-          label="gasPrice"
-          value={maybeHexValue(transaction.gasPrice || noValueDash)}
-        />
-        <TextLine label="type" value={transaction.type || noValueDash} />
-
-        {/* accessList */}
-
-        <TextLine
-          label="maxPriorityFeePerGas"
-          value={maybeHexValue(transaction.maxPriorityFeePerGas) || noValueDash}
-        />
-        <TextLine
-          label="maxFeePerGas"
-          value={maybeHexValue(transaction.maxFeePerGas) || noValueDash}
-        />
-
-        <VStack gap={0}>
-          <UIText kind="small/regular" color="var(--neutral-500)">
-            data
-          </UIText>
-          <Spacer height={4} />
-          <UIText
-            kind="body/regular"
-            color="var(--black)"
-            style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}
-          >
-            {transaction.data ? toUtf8String(transaction.data) : noValueDash}
-          </UIText>
-        </VStack>
-      </VStack>
-    </Surface>
-  );
-}
-
-export function AdvancedView({
-  networks,
-  chain,
-  transaction,
   interpretation,
 }: {
   networks: Networks;
   chain: Chain;
-  transaction?: IncomingTransactionWithChainId | null;
+  transaction: IncomingTransactionWithChainId;
   interpretation?: InterpretResponse | null;
 }) {
-  const signature = interpretation?.inputs?.[0]?.schema?.primary_type;
   const functionName = useMemo(() => {
-    const match = signature ? signature.match(/(\w+)\(/) : null;
+    const functionSignature = interpretation
+      ? getFunctionSignature(interpretation)
+      : null;
+    const match = functionSignature ? functionSignature.match(/(\w+)\(/) : null;
     return match ? match[1] : match;
-  }, [signature]);
+  }, [interpretation]);
+
+  const accessList = useMemo(
+    () =>
+      transaction.accessList ? accessListify(transaction.accessList) : null,
+    [transaction.accessList]
+  );
 
   return (
     <>
-      <NavigationBar title="Advanced View" />
-      <PageTop />
       {functionName ? (
         <>
           <Surface padding={16}>
@@ -196,11 +104,106 @@ export function AdvancedView({
           <Spacer height={24} />
         </>
       ) : null}
+      <Surface padding={16}>
+        <VStack gap={16}>
+          {transaction.from ? (
+            <AddressLine
+              networks={networks}
+              chain={chain}
+              label="from"
+              address={transaction.from}
+            />
+          ) : (
+            <TextLine label="from" value={noValueDash} />
+          )}
+          {transaction.to ? (
+            <AddressLine
+              networks={networks}
+              chain={chain}
+              label="to"
+              address={transaction.to}
+            />
+          ) : (
+            <TextLine label="to" value={noValueDash} />
+          )}
+          <TextLine label="nonce" value={transaction.nonce} />
+          <TextLine label="value" value={maybeHexValue(transaction.value)} />
+          <TextLine label="chainId" value={transaction.chainId} />
+          <TextLine label="gas" value={maybeHexValue(transaction.gas)} />
+          <TextLine
+            label="gasLimit"
+            value={maybeHexValue(transaction.gasLimit)}
+          />
+          <TextLine
+            label="gasPrice"
+            value={maybeHexValue(transaction.gasPrice)}
+          />
+          <TextLine label="type" value={transaction.type} />
+          <TextLine
+            label="maxPriorityFeePerGas"
+            value={maybeHexValue(transaction.maxPriorityFeePerGas)}
+          />
+          <TextLine
+            label="maxFeePerGas"
+            value={maybeHexValue(transaction.maxFeePerGas)}
+          />
+          <TextLine
+            label="data"
+            wrap={true}
+            value={
+              transaction.data ? toUtf8String(transaction.data) : noValueDash
+            }
+          />
+        </VStack>
+      </Surface>
+      {accessList && (
+        <Surface padding={16}>
+          <VStack gap={16}>
+            {accessList.map(({ address, storageKeys }) => (
+              <VStack key={address} gap={0}>
+                <UIText kind="small/regular" color="var(--neutral-500)">
+                  {address}
+                </UIText>
+                <Spacer height={4} />
+                {storageKeys.map((storageKey) => (
+                  <UIText
+                    key={storageKey}
+                    kind="body/regular"
+                    color="var(--black)"
+                  >
+                    {storageKey}
+                  </UIText>
+                ))}
+              </VStack>
+            ))}
+          </VStack>
+        </Surface>
+      )}
+    </>
+  );
+}
+
+export function AdvancedView({
+  networks,
+  chain,
+  transaction,
+  interpretation,
+}: {
+  networks: Networks;
+  chain: Chain;
+  transaction?: IncomingTransactionWithChainId | null;
+  interpretation?: InterpretResponse | null;
+}) {
+  return (
+    <>
+      <NavigationBar title="Advanced View" />
+      <PageTop />
       {transaction ? (
         <TransactionDetails
           networks={networks}
           chain={chain}
           transaction={transaction}
+          interpretation={interpretation}
         />
       ) : null}
     </>

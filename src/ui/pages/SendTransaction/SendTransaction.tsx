@@ -33,7 +33,6 @@ import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { Button } from 'src/ui/ui-kit/Button';
 import { focusNode } from 'src/ui/shared/focusNode';
-import { interpretTransaction } from 'src/modules/ethereum/transactions/interpretTransaction';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { networksStore } from 'src/modules/networks/networks-store.client';
@@ -49,6 +48,7 @@ import { InterpretLoadingState } from 'src/ui/components/InterpretLoadingState';
 import { AddressActionDetails } from 'src/ui/components/address-action/AddressActionDetails';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
+import { interpretTransaction } from 'src/modules/ethereum/transactions/interpret';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
@@ -453,7 +453,6 @@ function SendTransactionContent({
               style={{ padding: '10px 20px' }}
               onClick={handleCopyRawData}
             >
-              {signMutation.isLoading ? 'Sending...' : 'Confirm'}
               {didCopyRawData ? (
                 <HStack gap={12} alignItems="center" justifyContent="center">
                   <UIText kind="body/accent">Copied</UIText>
