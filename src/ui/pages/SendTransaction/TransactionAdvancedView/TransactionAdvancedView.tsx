@@ -3,7 +3,7 @@ import { ethers } from 'ethers';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import ArrowLeftTop from 'jsx:src/ui/assets/arrow-left-top.svg';
-import type { IncomingTransactionWithChainId } from 'src/modules/ethereum/types/IncomingTransaction';
+import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { noValueDash } from 'src/ui/shared/typography';
 import type { Networks } from 'src/modules/networks/Networks';
@@ -17,7 +17,7 @@ import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String'
 import type { BigNumberish } from 'ethers';
 import { accessListify } from 'ethers/lib/utils';
 import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
-import { getFunctionSignature } from 'src/modules/ethereum/transactions/interpret';
+import { getInterpretationFunctionSignature } from 'src/modules/ethereum/transactions/interpret';
 import { PageTop } from 'src/ui/components/PageTop';
 import { TextLine } from 'src/ui/components/address-action/TextLine';
 import { NavigationBar } from '../../SignInWithEthereum/NavigationBar';
@@ -71,15 +71,15 @@ export function TransactionDetails({
 }: {
   networks: Networks;
   chain: Chain;
-  transaction: IncomingTransactionWithChainId;
+  transaction: IncomingTransaction;
   interpretation?: InterpretResponse | null;
 }) {
   const functionName = useMemo(() => {
     const functionSignature = interpretation
-      ? getFunctionSignature(interpretation)
+      ? getInterpretationFunctionSignature(interpretation)
       : null;
     const match = functionSignature ? functionSignature.match(/(\w+)\(/) : null;
-    return match ? match[1] : match;
+    return match?.[1] ?? null;
   }, [interpretation]);
 
   const accessList = useMemo(
@@ -157,33 +157,36 @@ export function TransactionDetails({
         </VStack>
       </Surface>
       {accessList && (
-        <Surface padding={16}>
-          <VStack gap={16}>
-            {accessList.map(({ address, storageKeys }) => (
-              <VStack key={address} gap={0}>
-                <UIText kind="small/regular" color="var(--neutral-500)">
-                  {address}
-                </UIText>
-                <Spacer height={4} />
-                {storageKeys.map((storageKey) => (
-                  <UIText
-                    key={storageKey}
-                    kind="body/regular"
-                    color="var(--black)"
-                  >
-                    {storageKey}
+        <>
+          <Spacer height={24} />
+          <Surface padding={16}>
+            <VStack gap={16}>
+              {accessList.map(({ address, storageKeys }) => (
+                <VStack key={address} gap={0}>
+                  <UIText kind="small/regular" color="var(--neutral-500)">
+                    {address}
                   </UIText>
-                ))}
-              </VStack>
-            ))}
-          </VStack>
-        </Surface>
+                  <Spacer height={4} />
+                  {storageKeys.map((storageKey) => (
+                    <UIText
+                      key={storageKey}
+                      kind="body/regular"
+                      color="var(--black)"
+                    >
+                      {storageKey}
+                    </UIText>
+                  ))}
+                </VStack>
+              ))}
+            </VStack>
+          </Surface>
+        </>
       )}
     </>
   );
 }
 
-export function AdvancedView({
+export function TransactionAdvancedView({
   networks,
   chain,
   transaction,
@@ -191,7 +194,7 @@ export function AdvancedView({
 }: {
   networks: Networks;
   chain: Chain;
-  transaction?: IncomingTransactionWithChainId | null;
+  transaction: IncomingTransaction;
   interpretation?: InterpretResponse | null;
 }) {
   return (

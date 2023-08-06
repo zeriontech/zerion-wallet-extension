@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -31,11 +31,11 @@ import { InterpretLoadingState } from 'src/ui/components/InterpretLoadingState';
 import { AddressActionDetails } from 'src/ui/components/address-action/AddressActionDetails';
 import { focusNode } from 'src/ui/shared/focusNode';
 import {
-  getData,
+  getInterpretationData,
   interpretSignature,
 } from 'src/modules/ethereum/transactions/interpret';
 import { NavigationBar } from '../SignInWithEthereum/NavigationBar';
-import { AdvancedView } from './AdvancedView';
+import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
 function TypedDataRow({ data }: { data: string }) {
   return (
@@ -75,6 +75,12 @@ function SignTypedDataContent({
   invariant(windowId, 'windowId get-parameter is required');
 
   const { networks } = useNetworks();
+
+  useEffect(() => {
+    // const observer = new IntersectionObserver(handler);
+    // observer.observe(bottom);
+    // return () => observer.disconnect();
+  }, []);
 
   const handleSignSuccess = (signature: string) =>
     windowPort.confirm(windowId, signature);
@@ -136,7 +142,7 @@ function SignTypedDataContent({
 
   const interpretationDataJSON = useMemo(() => {
     if (!interpretation) return null;
-    const data = getData(interpretation);
+    const data = getInterpretationData(interpretation);
     return JSON.parse(data) as Record<string, string>;
   }, [interpretation]);
 
@@ -246,7 +252,7 @@ function SignTypedDataContent({
           </>
         ) : null}
         {view === View.advanced && interpretationDataJSON ? (
-          <AdvancedView data={interpretationDataJSON} />
+          <TypedDataAdvancedView data={interpretationDataJSON} />
         ) : null}
         <Spacer height={16} />
       </PageColumn>

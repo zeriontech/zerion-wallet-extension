@@ -1,1 +1,0 @@
-export { AdvancedView } from './AdvancedView';

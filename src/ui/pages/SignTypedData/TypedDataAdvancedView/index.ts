@@ -1,0 +1,1 @@
+export { TypedDataAdvancedView } from './TypedDataAdvancedView';

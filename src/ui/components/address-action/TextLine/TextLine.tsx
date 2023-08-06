@@ -22,7 +22,11 @@ export function TextLine({
       <UIText
         kind="body/regular"
         color="var(--black)"
-        style={wrap ? { whiteSpace: 'pre-wrap', wordBreak: 'break-all' } : {}}
+        style={
+          wrap
+            ? { whiteSpace: 'pre-wrap', wordBreak: 'break-all' }
+            : { whiteSpace: 'nowrap' }
+        }
       >
         {value || noValueDash}
       </UIText>

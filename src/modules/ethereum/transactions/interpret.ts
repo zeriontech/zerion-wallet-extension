@@ -101,10 +101,12 @@ export function interpretSignature({
   ]);
 }
 
-export function getData(interpretation: InterpretResponse) {
+export function getInterpretationData(interpretation: InterpretResponse) {
   return interpretation?.inputs?.[0]?.data;
 }
 
-export function getFunctionSignature(interpretation: InterpretResponse) {
+export function getInterpretationFunctionSignature(
+  interpretation: InterpretResponse
+) {
   return interpretation?.inputs?.[0]?.schema?.primary_type;
 }

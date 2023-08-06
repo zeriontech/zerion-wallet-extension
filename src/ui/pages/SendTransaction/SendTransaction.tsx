@@ -52,7 +52,7 @@ import { interpretTransaction } from 'src/modules/ethereum/transactions/interpre
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
-import { AdvancedView } from './AdvancedView';
+import { TransactionAdvancedView } from './TransactionAdvancedView';
 
 type SendTransactionError =
   | null
@@ -382,11 +382,11 @@ function SendTransactionContent({
             </>
           ) : null}
           {view === View.advanced ? (
-            <AdvancedView
+            <TransactionAdvancedView
               networks={networks}
               chain={chain}
               interpretation={interpretation}
-              transaction={incomingTxWithChainId}
+              transaction={incomingTransaction}
             />
           ) : null}
         </>
@@ -398,7 +398,6 @@ function SendTransactionContent({
             <VStack
               style={{
                 textAlign: 'center',
-                paddingBottom: 24,
               }}
               gap={8}
             >
@@ -472,6 +471,7 @@ function SendTransactionContent({
             <PageBottom />
           </>
         ) : null}
+        <PageBottom />
       </PageStickyFooter>
     </Background>
   );
