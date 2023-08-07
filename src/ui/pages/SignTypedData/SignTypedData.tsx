@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -16,6 +16,7 @@ import { getError } from 'src/shared/errors/getError';
 import { invariant } from 'src/shared/invariant';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import ArrowDownIcon from 'jsx:src/ui/assets/arrow-down.svg';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
@@ -37,18 +38,21 @@ import {
 import { NavigationBar } from '../SignInWithEthereum/NavigationBar';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
-function TypedDataRow({ data }: { data: string }) {
-  return (
-    <Surface padding={16} style={{ border: '1px solid var(--neutral-300)' }}>
-      <UIText
-        kind="small/regular"
-        style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}
-      >
-        {data}
-      </UIText>
-    </Surface>
-  );
-}
+export const TypedDataRow = React.forwardRef(
+  ({ data }: { data: string }, ref: React.Ref<HTMLInputElement>) => {
+    return (
+      <Surface padding={16} style={{ border: '1px solid var(--neutral-300)' }}>
+        <UIText
+          kind="small/regular"
+          style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}
+        >
+          {data}
+        </UIText>
+        <div ref={ref} style={{ display: 'hidden' }} />
+      </Surface>
+    );
+  }
+);
 
 function isPermit({ message }: TypedData) {
   return Boolean(message.owner && message.spender && message.value);
@@ -155,6 +159,28 @@ function SignTypedDataContent({
     [params]
   );
 
+  const [seenSigningData, setSeenSigningData] = useState(false);
+  const [typedDataRowElement, setTypedDataRowElement] =
+    useState<HTMLInputElement | null>(null);
+  const typedDataRowRef = useCallback((node: HTMLInputElement) => {
+    if (node) {
+      setTypedDataRowElement(node);
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setSeenSigningData(true);
+            observer.disconnect();
+          }
+        },
+        { rootMargin: '-122px' }
+      );
+      observer.observe(node);
+    }
+  }, []);
+
+  const scrollSigningData = () =>
+    typedDataRowElement?.scrollIntoView({ behavior: 'smooth' });
+
   if (!networks || !chain) {
     return null;
   }
@@ -236,11 +262,12 @@ function SignTypedDataContent({
                   </>
                 ) : (
                   <TypedDataRow
+                    ref={typedDataRowRef}
                     data={interpretationDataFormatted || typedDataFormatted}
                   />
                 )
               ) : (
-                <TypedDataRow data={typedDataFormatted} />
+                <TypedDataRow ref={typedDataRowRef} data={typedDataFormatted} />
               )}
             </VStack>
           </>
@@ -280,17 +307,26 @@ function SignTypedDataContent({
             >
               Cancel
             </Button>
-            <Button
-              disabled={signTypedData_v4Mutation.isLoading}
-              onClick={() => {
-                signTypedData_v4Mutation.mutate({
-                  typedData: typedDataRaw,
-                  initiator: origin,
-                });
-              }}
-            >
-              {signTypedData_v4Mutation.isLoading ? 'Signing...' : 'Sign'}
-            </Button>
+            {seenSigningData ? (
+              <Button
+                disabled={signTypedData_v4Mutation.isLoading}
+                onClick={() => {
+                  signTypedData_v4Mutation.mutate({
+                    typedData: typedDataRaw,
+                    initiator: origin,
+                  });
+                }}
+              >
+                {signTypedData_v4Mutation.isLoading ? 'Signing...' : 'Sign'}
+              </Button>
+            ) : (
+              <Button onClick={scrollSigningData}>
+                <HStack gap={8} alignItems="center" justifyContent="center">
+                  <span>Scroll</span>
+                  <ArrowDownIcon style={{ width: 24, height: 24 }} />
+                </HStack>
+              </Button>
+            )}
           </div>
         </VStack>
       </PageStickyFooter>
