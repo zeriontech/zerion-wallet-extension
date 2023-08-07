@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -75,12 +75,6 @@ function SignTypedDataContent({
   invariant(windowId, 'windowId get-parameter is required');
 
   const { networks } = useNetworks();
-
-  useEffect(() => {
-    // const observer = new IntersectionObserver(handler);
-    // observer.observe(bottom);
-    // return () => observer.disconnect();
-  }, []);
 
   const handleSignSuccess = (signature: string) =>
     windowPort.confirm(windowId, signature);
@@ -219,11 +213,7 @@ function SignTypedDataContent({
                 </UIText>
               ) : null}
               {interpretQuery.isFetched ? (
-                addressAction?.content == null ? (
-                  <TypedDataRow
-                    data={interpretationDataFormatted || typedDataFormatted}
-                  />
-                ) : (
+                addressAction ? (
                   <>
                     <AddressActionDetails
                       recipientAddress={recipientAddress}
@@ -244,6 +234,10 @@ function SignTypedDataContent({
                       </Button>
                     ) : null}
                   </>
+                ) : (
+                  <TypedDataRow
+                    data={interpretationDataFormatted || typedDataFormatted}
+                  />
                 )
               ) : (
                 <TypedDataRow data={typedDataFormatted} />
