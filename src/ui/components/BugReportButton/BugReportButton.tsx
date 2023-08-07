@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useLayoutEffect } from 'react';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
@@ -9,7 +9,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { PageColumn } from '../PageColumn';
 import * as s from './styles.module.css';
-import { useBugReportURL } from './useBugReportURL';
+import { getBugButtonUrl } from './getBugReportURL';
 
 export const BUTTON_HEIGHT = 29;
 
@@ -54,8 +54,11 @@ function BottomFixed({ children }: React.PropsWithChildren) {
 }
 
 export function BugReportButton() {
-  const { pathname } = useLocation();
-  const bugReportURL = useBugReportURL();
+  const { pathname, search } = useLocation();
+  const bugReportURL = useMemo(
+    () => getBugButtonUrl(pathname, search),
+    [pathname, search]
+  );
   if (urlBlacklist.has(pathname)) {
     return null;
   }
