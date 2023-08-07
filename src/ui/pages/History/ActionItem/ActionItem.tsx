@@ -375,8 +375,6 @@ function ActionItemLocalWrapper({
     };
   }, [action, value]);
 
-  // console.log(mergedAction);
-
   return <ActionItemView action={mergedAction} networks={networks} />;
 }
 
