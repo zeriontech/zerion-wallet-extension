@@ -181,7 +181,6 @@ function SendTransactionContent({
   // just for the error demo
   useEffect(() => {
     const rand = Math.random();
-    console.log(rand);
     if (rand > 0.75) {
       // @ts-ignore
       // eslint-disable-next-line no-console
