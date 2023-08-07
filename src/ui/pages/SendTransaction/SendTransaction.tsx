@@ -468,7 +468,6 @@ function SendTransactionContent({
                 </HStack>
               )}
             </Button>
-            <PageBottom />
           </>
         ) : null}
         <PageBottom />
