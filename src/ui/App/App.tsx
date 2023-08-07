@@ -391,6 +391,7 @@ export function App({ initialView, mode, inspect }: AppProps) {
     <AreaProvider>
       <UIContext.Provider value={defaultUIContextValue}>
         <QueryClientProvider client={queryClient}>
+          <DesignTheme bodyClassList={bodyClassList} />
           <Router>
             <ErrorBoundary
               renderError={(error) =>
@@ -403,7 +404,6 @@ export function App({ initialView, mode, inspect }: AppProps) {
             >
               <InactivityDetector />
               <SessionResetHandler />
-              <DesignTheme bodyClassList={bodyClassList} />
               {inspect && !isProd ? (
                 <UIText
                   kind="small/regular"

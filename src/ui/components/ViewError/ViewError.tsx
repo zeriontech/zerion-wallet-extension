@@ -12,6 +12,7 @@ import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
+import { pageTemplateType } from 'src/ui/shared/getPageTemplateName';
 import { WarningIcon } from '../WarningIcon';
 import { FillView } from '../FillView';
 import { getBugButtonUrl } from '../BugReportButton/getBugReportURL';
@@ -114,12 +115,15 @@ export function ViewError({
           <Button
             kind="regular"
             onClick={() => {
-              navigate('/overview');
-              window.location.reload();
+              if (pageTemplateType === 'dialog') {
+                window.location.reload();
+              } else {
+                navigate('/');
+              }
             }}
             style={{ paddingInline: 8 }}
           >
-            Back to Home
+            {pageTemplateType === 'dialog' ? 'Try Again' : 'Back to Home'}
           </Button>
           <Button
             as={UnstyledAnchor}
