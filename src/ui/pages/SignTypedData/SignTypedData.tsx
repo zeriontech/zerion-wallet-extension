@@ -100,6 +100,37 @@ function SignTypedDataContent({
     [typedDataRaw]
   );
 
+  const footerContentRef = useRef<HTMLDivElement | null>(null);
+  const [seenSigningData, setSeenSigningData] = useState(false);
+  const typedDataRowRef = useRef<HTMLDivElement | null>(null);
+  const onTypedDataRowRefSet = useCallback((node: HTMLDivElement | null) => {
+    if (!node || !footerContentRef?.current) {
+      return;
+    }
+    const footerHeight = footerContentRef.current.getBoundingClientRect().top;
+    const rootMargin =
+      window.innerHeight + BUG_REPORT_BUTTON_HEIGHT - footerHeight;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setSeenSigningData(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: `-${rootMargin}px` }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  const setTypedDataRow = (node: HTMLDivElement | null) => {
+    typedDataRowRef.current = node;
+    onTypedDataRowRefSet(node);
+  };
+
+  const scrollSigningData = () =>
+    typedDataRowRef?.current?.scrollIntoView({ behavior: 'smooth' });
+
   const { data: chain, ...chainQuery } = useQuery({
     queryKey: ['wallet/requestChainForOrigin', origin],
     queryFn: () =>
@@ -132,6 +163,11 @@ function SignTypedDataContent({
     refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
+    onSuccess: (response) => {
+      if (response?.action) {
+        setSeenSigningData(true);
+      }
+    },
   });
 
   const addressAction = interpretation?.action;
@@ -159,36 +195,6 @@ function SignTypedDataContent({
     () => `?${setURLSearchParams(params, { view: View.advanced }).toString()}`,
     [params]
   );
-
-  const footerContentRef = useRef<HTMLDivElement | null>(null);
-  const [seenSigningData, setSeenSigningData] = useState(false);
-  const typedDataRowRef = useRef<HTMLDivElement | null>(null);
-  const onTypedDataRowRefSet = useCallback((node: HTMLDivElement | null) => {
-    if (!node || !footerContentRef?.current) {
-      return;
-    }
-    const footerHeight = footerContentRef.current.getBoundingClientRect().top;
-    const rootMargin =
-      window.innerHeight + BUG_REPORT_BUTTON_HEIGHT - footerHeight;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setSeenSigningData(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: `-${rootMargin}px` }
-    );
-    observer.observe(node);
-  }, []);
-
-  const setTypedDataRow = (node: HTMLDivElement | null) => {
-    typedDataRowRef.current = node;
-    onTypedDataRowRefSet(node);
-  };
-
-  const scrollSigningData = () =>
-    typedDataRowRef?.current?.scrollIntoView({ behavior: 'smooth' });
 
   if (!networks || !chain) {
     return null;
