@@ -1,10 +1,19 @@
 import EventEmitter from 'events';
-import type { ErrorResponse } from '@json-rpc-tools/utils';
 import { nanoid } from 'nanoid';
+import { createNanoEvents } from 'nanoevents';
+import type { ErrorResponse } from '@json-rpc-tools/utils';
 import type { Windows } from 'webextension-polyfill';
 import browser from 'webextension-polyfill';
 import type { RpcError, RpcResult } from 'src/shared/custom-rpc';
 import { UserRejected } from 'src/shared/errors/errors';
+
+const emitter = createNanoEvents<{
+  windowRemoved: (windowId: number) => void;
+}>();
+
+browser.windows.onRemoved.addListener((windowId) => {
+  emitter.emit('windowRemoved', windowId);
+});
 
 const IS_WINDOWS = /windows/i.test(navigator.userAgent);
 const BROWSER_HEADER = 80;
@@ -57,7 +66,8 @@ class NotificationWindow extends EventEmitter {
     onResolve,
     width = DEFAULT_WINDOW_SIZE.width,
     height = DEFAULT_WINDOW_SIZE.height,
-    ...rest
+    left,
+    top,
   }: {
     route: string;
     search?: string;
@@ -90,9 +100,9 @@ class NotificationWindow extends EventEmitter {
       windowTypes: ['normal'],
     } as Windows.GetInfo);
 
-    const defaultPosition = {
-      top: currentWindowTop + BROWSER_HEADER,
-      left: currentWindowLeft + currentWindowWidth - width,
+    const position = {
+      top: top ?? currentWindowTop + BROWSER_HEADER,
+      left: left ?? currentWindowLeft + currentWindowWidth - width,
     };
 
     const { id: windowId } = await browser.windows.create({
@@ -101,8 +111,7 @@ class NotificationWindow extends EventEmitter {
       type: 'popup',
       width,
       height,
-      ...defaultPosition,
-      ...rest,
+      ...position,
     });
 
     if (windowId) {
@@ -125,11 +134,8 @@ class NotificationWindow extends EventEmitter {
     const handleWindowRemoved = (windowId: number) => {
       handleDismiss(windowId, new UserRejected('Window Closed'));
     };
-
-    browser.windows.onRemoved.addListener(handleWindowRemoved);
-    disposables.push(() => {
-      browser.windows.onRemoved.removeListener(handleWindowRemoved);
-    });
+    const unlisten = emitter.on('windowRemoved', handleWindowRemoved);
+    disposables.push(unlisten);
 
     const handleResolve = ({ id, result }: RpcResult<T>) => {
       if (this.getWindowId(id) === windowId) {
