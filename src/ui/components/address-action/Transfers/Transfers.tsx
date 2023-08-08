@@ -203,7 +203,7 @@ export function Transfers({
         <Appear>
           <Surface style={{ paddingBlock: 8, paddingInline: 12 }}>
             <UIText kind="caption/accent" color="var(--neutral-500)">
-              Pay
+              Send
             </UIText>
             <Spacer height={4} />
             <VStack gap={8}>
