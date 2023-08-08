@@ -1,4 +1,10 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -163,29 +169,20 @@ function SignTypedDataContent({
   const footerContentRef = useRef<HTMLDivElement | null>(null);
   const [seenSigningData, setSeenSigningData] = useState(false);
   const typedDataRowRef = useRef<HTMLDivElement | null>(null);
-  const onTypedDataRowRefSet = useCallback((node: HTMLDivElement | null) => {
-    if (!node || !footerContentRef?.current) {
-      return;
+
+  const handleScroll = useCallback(() => {
+    if (
+      document.body.scrollHeight <=
+      window.scrollY + window.innerHeight + BUG_REPORT_BUTTON_HEIGHT
+    ) {
+      setSeenSigningData(true);
     }
-    const footerHeight = footerContentRef.current.getBoundingClientRect().top;
-    const rootMargin =
-      window.innerHeight + BUG_REPORT_BUTTON_HEIGHT - footerHeight;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setSeenSigningData(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: `-${rootMargin}px` }
-    );
-    observer.observe(node);
   }, []);
 
-  const setTypedDataRow = (node: HTMLDivElement | null) => {
-    typedDataRowRef.current = node;
-    onTypedDataRowRefSet(node);
-  };
+  useEffect(() => {
+    const unsubscribe = document.addEventListener('scroll', handleScroll);
+    return unsubscribe;
+  }, [handleScroll]);
 
   const scrollSigningData = () =>
     typedDataRowRef?.current?.scrollIntoView({ behavior: 'smooth' });
@@ -271,12 +268,12 @@ function SignTypedDataContent({
                   </>
                 ) : (
                   <TypedDataRow
-                    ref={setTypedDataRow}
+                    ref={typedDataRowRef}
                     data={interpretationDataFormatted || typedDataFormatted}
                   />
                 )
               ) : (
-                <TypedDataRow ref={setTypedDataRow} data={typedDataFormatted} />
+                <TypedDataRow ref={typedDataRowRef} data={typedDataFormatted} />
               )}
             </VStack>
           </>
