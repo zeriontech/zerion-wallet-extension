@@ -152,18 +152,20 @@ function AddressPositionItem({
             <HStack
               gap={4}
               alignItems="center"
-              style={{ gridTemplateColumns: showGasIcon ? '1fr auto' : '1fr' }}
+              style={{
+                gridTemplateColumns: showGasIcon ? '1fr auto' : '1fr',
+                justifySelf: 'start',
+              }}
               title={position.asset.name}
             >
               <UIText kind="body/accent" style={textOverflowStyle}>
                 {position.asset.name}
               </UIText>
               {showGasIcon ? (
-                <div
-                  style={{ display: 'flex' }}
-                  title="Token is used to cover gas fees"
-                >
-                  <GasIcon style={{ width: 20, height: 20 }} />
+                <div title="Token is used to cover gas fees">
+                  <GasIcon
+                    style={{ display: 'block', width: 20, height: 20 }}
+                  />
                 </div>
               ) : null}
             </HStack>
@@ -315,7 +317,7 @@ function usePreparedPositions({
       items.find(
         (item) =>
           (!item.protocol || item.protocol === DEFAULT_PROTOCOL) &&
-          item.name.toUpperCase() === DEFAULT_NAME &&
+          item.type === 'asset' &&
           item.chain === siteChain?.toString() &&
           item.asset.id === nativeAssetId
       )?.id || null
@@ -342,9 +344,9 @@ function usePreparedPositions({
 
     const protocolIndex: PreparedPositions['protocolIndex'] = {};
     for (const protocol of protocols) {
-      const items = sortPositionsByValue(byProtocol[protocol]);
-      const currentTotalValue = getFullPositionsValue(items);
-      const byName = groupPositionsByName(items);
+      const protocolItems = sortPositionsByValue(byProtocol[protocol]);
+      const currentTotalValue = getFullPositionsValue(protocolItems);
+      const byName = groupPositionsByName(protocolItems);
       const byNameSorted = sortPositionGroupsByTotalValue(byName);
       const names = byNameSorted.map(([name]) => name);
       const nameIndex: PreparedPositions['protocolIndex'][string]['nameIndex'] =
@@ -353,6 +355,14 @@ function usePreparedPositions({
         nameIndex[name] = sortPositionsByParentId(
           clearMissingParentIds(byName[name])
         );
+        const gasPositionIndex = nameIndex[name].findIndex(
+          (item) => item.id === gasPositionId
+        );
+        if (gasPositionIndex >= 0) {
+          const gasPosition = nameIndex[name][gasPositionIndex];
+          nameIndex[name].splice(gasPositionIndex, 1);
+          nameIndex[name].unshift(gasPosition);
+        }
       }
       protocolIndex[protocol] = {
         totalValue: currentTotalValue,
@@ -360,7 +370,7 @@ function usePreparedPositions({
           currentTotalValue === 0 && totalValue === 0
             ? 0
             : (currentTotalValue / totalValue) * 100,
-        items,
+        items: protocolItems,
         names,
         nameIndex,
       };
@@ -502,48 +512,28 @@ function PositionList({
           }
           let namePositionCounter = 0;
           for (const position of nameIndex[name]) {
-            if (position.id === preparedPositions.gasPositionId) {
-              items.push({
-                key: position.id,
-                href: getAssetUrl(position.asset),
-                target: '_blank',
-                component: (
-                  <AddressPositionItem
-                    position={position}
-                    groupType={groupType}
-                    showGasIcon={true}
-                  />
-                ),
-              });
-            }
+            items.push({
+              key: position.id,
+              href: getAssetUrl(position.asset),
+              target: '_blank',
+              separatorLeadingInset: position.parent_id ? 26 : 0,
+              component: (
+                <AddressPositionItem
+                  position={position}
+                  groupType={groupType}
+                  hasPreviosNestedPosition={
+                    namePositionCounter > 0 &&
+                    Boolean(nameIndex[name][namePositionCounter - 1].parent_id)
+                  }
+                  showGasIcon={preparedPositions.gasPositionId === position.id}
+                />
+              ),
+            });
           }
-          for (const position of nameIndex[name]) {
-            if (position.id !== preparedPositions.gasPositionId) {
-              items.push({
-                key: position.id,
-                href: getAssetUrl(position.asset),
-                target: '_blank',
-                separatorLeadingInset: position.parent_id ? 26 : 0,
-                component: (
-                  <AddressPositionItem
-                    position={position}
-                    groupType={groupType}
-                    hasPreviosNestedPosition={
-                      namePositionCounter > 0 &&
-                      Boolean(
-                        // it's ok
-                        nameIndex[name][namePositionCounter - 1].parent_id
-                      )
-                    }
-                  />
-                ),
-              });
-            }
-            namePositionCounter++;
-            protocolPositionCounter++;
-            if (protocolPositionCounter >= stopAt && !expanded.has(protocol)) {
-              break outerBlock;
-            }
+          namePositionCounter++;
+          protocolPositionCounter++;
+          if (protocolPositionCounter >= stopAt && !expanded.has(protocol)) {
+            break outerBlock;
           }
         }
         if (protocolItems.length > stopAt) {
