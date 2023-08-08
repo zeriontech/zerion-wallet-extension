@@ -76,7 +76,7 @@ export function InsufficientFundsWarning({ chain }: { chain: Chain }) {
         color="var(--notice-600)"
       >{`You don't have enough ${
         networks?.getNetworkByName(chain)?.native_asset?.symbol.toUpperCase() ||
-        'native asset'
+        'native token'
       } to cover network fees`}</UIText>
     </VStack>
   );

@@ -356,14 +356,16 @@ function SendTransactionContent({
               <Spacer height={16} />
               {incomingTxWithGasAndFee ? (
                 <>
-                  <React.Suspense>
-                    <TransactionWarning
-                      address={singleAddress}
-                      transaction={incomingTxWithGasAndFee}
-                      chain={chain}
-                      networkFeeConfiguration={configuration.networkFee}
-                    />
-                  </React.Suspense>
+                  <ErrorBoundary renderError={() => null}>
+                    <React.Suspense fallback={null}>
+                      <TransactionWarning
+                        address={singleAddress}
+                        transaction={incomingTxWithGasAndFee}
+                        chain={chain}
+                        networkFeeConfiguration={configuration.networkFee}
+                      />
+                    </React.Suspense>
+                  </ErrorBoundary>
                   <div style={{ marginTop: 'auto' }}>
                     <ErrorBoundary
                       renderError={() => (
