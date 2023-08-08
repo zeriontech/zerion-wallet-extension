@@ -35,6 +35,7 @@ import {
   getInterpretationData,
   interpretSignature,
 } from 'src/modules/ethereum/transactions/interpret';
+import { BUG_REPORT_BUTTON_HEIGHT } from 'src/ui/components/BugReportButton';
 import { NavigationBar } from '../SignInWithEthereum/NavigationBar';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
@@ -159,12 +160,16 @@ function SignTypedDataContent({
     [params]
   );
 
+  const footerContentRef = useRef<HTMLDivElement | null>(null);
   const [seenSigningData, setSeenSigningData] = useState(false);
   const typedDataRowRef = useRef<HTMLDivElement | null>(null);
   const onTypedDataRowRefSet = useCallback((node: HTMLDivElement | null) => {
-    if (!node) {
+    if (!node || !footerContentRef?.current) {
       return;
     }
+    const footerHeight = footerContentRef.current.getBoundingClientRect().top;
+    const rootMargin =
+      window.innerHeight - BUG_REPORT_BUTTON_HEIGHT - footerHeight;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -172,7 +177,7 @@ function SignTypedDataContent({
           observer.disconnect();
         }
       },
-      { rootMargin: '-122px' }
+      { rootMargin: `-${rootMargin}px` }
     );
     observer.observe(node);
   }, []);
@@ -282,57 +287,59 @@ function SignTypedDataContent({
         <Spacer height={16} />
       </PageColumn>
       <PageStickyFooter>
-        <VStack
-          style={{
-            textAlign: 'center',
-            marginTop: 'auto',
-            paddingBottom: 24,
-            paddingTop: 8,
-          }}
-          gap={8}
-        >
-          {someMutationError ? (
-            <UIText kind="caption/regular" color="var(--negative-500)">
-              {someMutationError?.message}
-            </UIText>
-          ) : null}
-          <div
+        <div ref={footerContentRef}>
+          <VStack
             style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: 8,
+              textAlign: 'center',
+              marginTop: 'auto',
+              paddingBottom: 24,
+              paddingTop: 8,
             }}
+            gap={8}
           >
-            <Button
-              kind="regular"
-              type="button"
-              onClick={handleReject}
-              ref={focusNode}
+            {someMutationError ? (
+              <UIText kind="caption/regular" color="var(--negative-500)">
+                {someMutationError?.message}
+              </UIText>
+            ) : null}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: 8,
+              }}
             >
-              Cancel
-            </Button>
-            {seenSigningData ? (
               <Button
-                disabled={signTypedData_v4Mutation.isLoading}
-                onClick={() => {
-                  signTypedData_v4Mutation.mutate({
-                    typedData: typedDataRaw,
-                    initiator: origin,
-                  });
-                }}
+                kind="regular"
+                type="button"
+                onClick={handleReject}
+                ref={focusNode}
               >
-                {signTypedData_v4Mutation.isLoading ? 'Signing...' : 'Sign'}
+                Cancel
               </Button>
-            ) : (
-              <Button onClick={scrollSigningData}>
-                <HStack gap={8} alignItems="center" justifyContent="center">
-                  <span>Scroll</span>
-                  <ArrowDownIcon style={{ width: 24, height: 24 }} />
-                </HStack>
-              </Button>
-            )}
-          </div>
-        </VStack>
+              {seenSigningData ? (
+                <Button
+                  disabled={signTypedData_v4Mutation.isLoading}
+                  onClick={() => {
+                    signTypedData_v4Mutation.mutate({
+                      typedData: typedDataRaw,
+                      initiator: origin,
+                    });
+                  }}
+                >
+                  {signTypedData_v4Mutation.isLoading ? 'Signing...' : 'Sign'}
+                </Button>
+              ) : (
+                <Button onClick={scrollSigningData}>
+                  <HStack gap={8} alignItems="center" justifyContent="center">
+                    <span>Scroll</span>
+                    <ArrowDownIcon style={{ width: 24, height: 24 }} />
+                  </HStack>
+                </Button>
+              )}
+            </div>
+          </VStack>
+        </div>
       </PageStickyFooter>
       <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
     </Background>
