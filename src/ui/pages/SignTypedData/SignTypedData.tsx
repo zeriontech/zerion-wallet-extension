@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -39,7 +39,7 @@ import { NavigationBar } from '../SignInWithEthereum/NavigationBar';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
 export const TypedDataRow = React.forwardRef(
-  ({ data }: { data: string }, ref: React.Ref<HTMLInputElement>) => {
+  ({ data }: { data: string }, ref: React.Ref<HTMLDivElement>) => {
     return (
       <Surface padding={16} style={{ border: '1px solid var(--neutral-300)' }}>
         <UIText
@@ -160,26 +160,30 @@ function SignTypedDataContent({
   );
 
   const [seenSigningData, setSeenSigningData] = useState(false);
-  const [typedDataRowElement, setTypedDataRowElement] =
-    useState<HTMLInputElement | null>(null);
-  const typedDataRowRef = useCallback((node: HTMLInputElement) => {
-    if (node) {
-      setTypedDataRowElement(node);
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            setSeenSigningData(true);
-            observer.disconnect();
-          }
-        },
-        { rootMargin: '-122px' }
-      );
-      observer.observe(node);
+  const typedDataRowRef = useRef<HTMLDivElement | null>(null);
+  const onTypedDataRowRefSet = useCallback((node: HTMLDivElement | null) => {
+    if (!node) {
+      return;
     }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setSeenSigningData(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '-122px' }
+    );
+    observer.observe(node);
   }, []);
 
+  const setTypedDataRow = (node: HTMLDivElement | null) => {
+    typedDataRowRef.current = node;
+    onTypedDataRowRefSet(node);
+  };
+
   const scrollSigningData = () =>
-    typedDataRowElement?.scrollIntoView({ behavior: 'smooth' });
+    typedDataRowRef?.current?.scrollIntoView({ behavior: 'smooth' });
 
   if (!networks || !chain) {
     return null;
@@ -262,12 +266,12 @@ function SignTypedDataContent({
                   </>
                 ) : (
                   <TypedDataRow
-                    ref={typedDataRowRef}
+                    ref={setTypedDataRow}
                     data={interpretationDataFormatted || typedDataFormatted}
                   />
                 )
               ) : (
-                <TypedDataRow ref={typedDataRowRef} data={typedDataFormatted} />
+                <TypedDataRow ref={setTypedDataRow} data={typedDataFormatted} />
               )}
             </VStack>
           </>
