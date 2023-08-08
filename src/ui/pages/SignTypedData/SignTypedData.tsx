@@ -169,7 +169,7 @@ function SignTypedDataContent({
     }
     const footerHeight = footerContentRef.current.getBoundingClientRect().top;
     const rootMargin =
-      window.innerHeight - BUG_REPORT_BUTTON_HEIGHT - footerHeight;
+      window.innerHeight + BUG_REPORT_BUTTON_HEIGHT - footerHeight;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
