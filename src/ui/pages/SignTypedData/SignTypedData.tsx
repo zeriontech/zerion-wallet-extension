@@ -106,6 +106,8 @@ function SignTypedDataContent({
     [typedDataRaw]
   );
 
+  const [seenSigningData, setSeenSigningData] = useState(false);
+
   const { data: chain, ...chainQuery } = useQuery({
     queryKey: ['wallet/requestChainForOrigin', origin],
     queryFn: () =>
@@ -138,6 +140,11 @@ function SignTypedDataContent({
     refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
+    onSuccess: (response) => {
+      if (response?.action) {
+        setSeenSigningData(true);
+      }
+    },
   });
 
   const addressAction = interpretation?.action;
@@ -167,7 +174,6 @@ function SignTypedDataContent({
   );
 
   const footerContentRef = useRef<HTMLDivElement | null>(null);
-  const [seenSigningData, setSeenSigningData] = useState(false);
   const typedDataRowRef = useRef<HTMLDivElement | null>(null);
 
   const handleScroll = useCallback(() => {
