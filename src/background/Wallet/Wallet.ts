@@ -1349,7 +1349,6 @@ class PublicController {
           origin,
           addEthereumChainParameter: JSON.stringify(params[0]),
         })}`,
-        height: 700,
         onResolve: () => {
           resolve(null); // null indicates success as per spec
         },
