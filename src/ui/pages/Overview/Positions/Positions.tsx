@@ -529,11 +529,11 @@ function PositionList({
                 />
               ),
             });
-          }
-          namePositionCounter++;
-          protocolPositionCounter++;
-          if (protocolPositionCounter >= stopAt && !expanded.has(protocol)) {
-            break outerBlock;
+            namePositionCounter++;
+            protocolPositionCounter++;
+            if (protocolPositionCounter >= stopAt && !expanded.has(protocol)) {
+              break outerBlock;
+            }
           }
         }
         if (protocolItems.length > stopAt) {
