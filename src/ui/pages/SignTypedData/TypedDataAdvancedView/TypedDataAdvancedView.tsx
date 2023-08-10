@@ -10,9 +10,11 @@ type TypedData = Record<string, Value>;
 function flattenObject(obj: TypedData, prefix = '') {
   return Object.keys(obj).reduce((acc, key) => {
     const leadingPrefix = prefix.length ? prefix + '.' : '';
-    if (typeof obj[key] === 'object')
+    if (typeof obj[key] === 'object') {
       Object.assign(acc, flattenObject(obj[key], `${leadingPrefix}${key}`));
-    else acc[`${leadingPrefix}${key}`] = obj[key];
+    } else {
+      acc[`${leadingPrefix}${key}`] = obj[key];
+    }
     return acc;
   }, {} as TypedData);
 }
