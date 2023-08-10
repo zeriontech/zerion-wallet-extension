@@ -25,6 +25,11 @@ function fromRpcError(value: Omit<JsonRpcError, 'error'> & { error: unknown }) {
   return new Error('Unknown Error');
 }
 
+function fromResponse(response: Response) {
+  const message = `${response.status} ${response.statusText}`;
+  return new Error(message);
+}
+
 export function getError(value: Error | unknown): ExtendedError {
   return value instanceof Error
     ? value
@@ -32,5 +37,7 @@ export function getError(value: Error | unknown): ExtendedError {
     ? fromMessageObject(value)
     : isJsonRpcPayload(value) && isJsonRpcError(value)
     ? fromRpcError(value)
+    : value instanceof Response
+    ? fromResponse(value)
     : new Error('Unknown Error');
 }
