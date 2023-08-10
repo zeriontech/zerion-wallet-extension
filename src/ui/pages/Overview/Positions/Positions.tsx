@@ -136,10 +136,10 @@ function AddressPositionItem({
   const network = networks?.getNetworkByName(createChain(position.chain));
   const chain = createChain(position.chain);
 
-  const reletiveChange = (position.asset.price?.relative_change_24h || 0) / 100;
+  const relativeChange = (position.asset.price?.relative_change_24h || 0) / 100;
   const absoluteChange = Math.abs(
     position.asset.price
-      ? (reletiveChange * Number(position.value)) / (1 + reletiveChange)
+      ? (relativeChange * Number(position.value)) / (1 + relativeChange)
       : 0
   ).toFixed(2);
 
