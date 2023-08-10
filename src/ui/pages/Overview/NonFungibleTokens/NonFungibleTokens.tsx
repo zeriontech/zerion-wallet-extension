@@ -226,7 +226,7 @@ export function NonFungibleTokens({
       <>
         <div
           style={{
-            paddingInline: 'var(--column-padding-inline)',
+            paddingInline: 16,
             display: 'flex',
             justifyContent: 'end',
           }}
@@ -244,7 +244,7 @@ export function NonFungibleTokens({
                     address={normalizeAddress(maybeSingleAddress || '')}
                     style={{
                       width: '100%',
-                      paddingInline: 'var(--column-padding-inline)',
+                      paddingInline: 16,
                     }}
                   />
                 ) : null}

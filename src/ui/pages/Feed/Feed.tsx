@@ -475,11 +475,7 @@ export function Feed() {
 
   return (
     <VStack gap={16}>
-      <HStack
-        gap={8}
-        alignItems="center"
-        style={{ paddingInline: 'var(--column-padding-inline)' }}
-      >
+      <HStack gap={8} alignItems="center" style={{ paddingInline: 16 }}>
         <StatusFilter
           value={statusFilter}
           onChange={(value) => setStatusFilter(value || 'open')}

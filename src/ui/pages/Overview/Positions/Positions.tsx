@@ -576,7 +576,7 @@ function PositionList({
               justifyContent="space-between"
               alignItems="center"
               style={{
-                paddingInline: 'var(--column-padding-inline)',
+                paddingInline: 16,
                 paddingBottom: 8,
               }}
             >
@@ -792,7 +792,7 @@ export function Positions({
     <>
       <div
         style={{
-          paddingInline: 'var(--column-padding-inline)',
+          paddingInline: 16,
           display: 'flex',
           justifyContent: 'end',
         }}

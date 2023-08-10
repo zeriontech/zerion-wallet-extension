@@ -36,7 +36,7 @@ export function ActionsList({
             <HStack
               gap={8}
               justifyContent="space-between"
-              style={{ paddingInline: 'var(--column-padding-inline)' }}
+              style={{ paddingInline: 16 }}
             >
               <UIText kind="small/accent">
                 {new Intl.DateTimeFormat('en', {

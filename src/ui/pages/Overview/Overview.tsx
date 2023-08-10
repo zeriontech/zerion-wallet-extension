@@ -364,7 +364,6 @@ function OverviewComponent() {
           flexDirection: 'column',
           backgroundColor: 'var(--white)',
           ['--surface-background-color' as string]: 'var(--white)',
-          paddingInline: 8,
         }}
       >
         <Spacer height={16} />
