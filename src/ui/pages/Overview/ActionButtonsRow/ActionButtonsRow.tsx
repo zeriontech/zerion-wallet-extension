@@ -37,7 +37,7 @@ function ActionButton<As extends ElementType = 'a'>({
         ThemeStore.isDark(themeState) ? s.dark : undefined
       )}
     >
-      <VStack gap={4} style={{ placeItems: 'center' }}>
+      <VStack gap={6} style={{ placeItems: 'center' }}>
         <div className={s.icon} title={title}>
           {icon}
         </div>
