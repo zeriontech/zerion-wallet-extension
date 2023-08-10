@@ -393,15 +393,7 @@ export function App({ initialView, mode, inspect }: AppProps) {
         <QueryClientProvider client={queryClient}>
           <DesignTheme bodyClassList={bodyClassList} />
           <Router>
-            <ErrorBoundary
-              renderError={(error) =>
-                error instanceof Response ? (
-                  <ViewError title="404" error={new Error(error.statusText)} />
-                ) : (
-                  <ViewError error={error} />
-                )
-              }
-            >
+            <ErrorBoundary renderError={(error) => <ViewError error={error} />}>
               <InactivityDetector />
               <SessionResetHandler />
               {inspect && !isProd ? (

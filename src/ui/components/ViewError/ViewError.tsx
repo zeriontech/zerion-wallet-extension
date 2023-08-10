@@ -13,9 +13,14 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { pageTemplateType } from 'src/ui/shared/getPageTemplateName';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { WarningIcon } from '../WarningIcon';
-import { FillView } from '../FillView';
 import { getBugButtonUrl } from '../BugReportButton/getBugReportURL';
+import { PageStickyFooter } from '../PageStickyFooter';
+import { PageColumn } from '../PageColumn';
+import { PageTop } from '../PageTop';
+import { ViewArea } from '../ViewArea';
+import { PageBottom } from '../PageBottom';
 
 const ICON_SIZE = 20;
 
@@ -39,8 +44,9 @@ export function ViewError({
   });
 
   return (
-    <FillView style={{ alignContent: 'stretch', overflow: 'auto' }}>
-      <VStack gap={0} style={{ padding: '24px 16px 0' }}>
+    <ViewArea>
+      <PageColumn>
+        <PageTop />
         <VStack gap={24} style={{ alignContent: 'start' }}>
           <WarningIcon
             kind="notice"
@@ -100,26 +106,22 @@ export function ViewError({
             </UIText>
           </VStack>
         </VStack>
+      </PageColumn>
+      <PageStickyFooter>
+        <Spacer height={16} />
         <HStack
           gap={8}
           style={{
             gridTemplateColumns: '1fr 1fr',
-            backgroundColor: 'var(--background)',
-            position: 'sticky',
-            bottom: 0,
-            marginTop: 'auto',
-            paddingTop: 16,
-            paddingBottom: 24,
           }}
         >
           <Button
             kind="regular"
             onClick={() => {
-              if (pageTemplateType === 'dialog') {
-                window.location.reload();
-              } else {
+              if (pageTemplateType !== 'dialog') {
                 navigate('/');
               }
+              window.location.reload();
             }}
             style={{ paddingInline: 8 }}
           >
@@ -139,7 +141,8 @@ export function ViewError({
             </HStack>
           </Button>
         </HStack>
-      </VStack>
-    </FillView>
+        <PageBottom />
+      </PageStickyFooter>
+    </ViewArea>
   );
 }

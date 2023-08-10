@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { capitalize } from 'capitalize-ts';
 import { ethers } from 'ethers';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -177,16 +171,6 @@ function SendTransactionContent({
     incomingTransaction,
     origin
   );
-
-  // just for the error demo
-  useEffect(() => {
-    const rand = Math.random();
-    if (rand > 0.75) {
-      // @ts-ignore
-      // eslint-disable-next-line no-console
-      console.log(incomingTxWithChainId.test[100].id);
-    }
-  }, [incomingTxWithChainId]);
 
   const transaction = incomingTxWithGasAndFee || incomingTxWithChainId;
 
