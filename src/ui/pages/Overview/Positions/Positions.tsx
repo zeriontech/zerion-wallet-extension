@@ -1,4 +1,4 @@
-import type { AddressParams, AddressPosition, Asset } from 'defi-sdk';
+import type { AddressParams, AddressPosition } from 'defi-sdk';
 import { useAddressPositions } from 'defi-sdk';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
@@ -472,14 +472,6 @@ function PositionList({
   const groupType = PositionsGroupType.platform;
   const preparedPositions = usePreparedPositions({ items, groupType });
 
-  const getAssetUrl = useCallback(
-    (asset: Asset) =>
-      `https://app.zerion.io/tokens/${asset.symbol}-${asset.asset_code}${
-        address ? `?address=${address}` : ''
-      }`,
-    [address]
-  );
-
   return (
     <VStack gap={24}>
       {preparedPositions.protocols.map((protocol, index) => {
@@ -514,7 +506,9 @@ function PositionList({
           for (const position of nameIndex[name]) {
             items.push({
               key: position.id,
-              href: getAssetUrl(position.asset),
+              href: `https://app.zerion.io/tokens/${position.asset.symbol}-${
+                position.asset.asset_code
+              }${address ? `?address=${address}` : ''}`,
               target: '_blank',
               separatorLeadingInset: position.parent_id ? 26 : 0,
               component: (
