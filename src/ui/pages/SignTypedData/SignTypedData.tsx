@@ -137,7 +137,7 @@ function SignTypedDataContent({
   const interpretationDataJSON = useMemo(() => {
     if (!interpretation) return null;
     const data = getInterpretationData(interpretation);
-    return JSON.parse(data) as Record<string, string>;
+    return JSON.parse(data) as Record<string, unknown>;
   }, [interpretation]);
 
   const interpretationDataFormatted = useMemo(() => {
