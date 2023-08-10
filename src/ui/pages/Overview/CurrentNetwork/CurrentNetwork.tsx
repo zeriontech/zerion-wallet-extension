@@ -33,7 +33,7 @@ export function CurrentNetwork({ address }: { address: string }) {
   const tabOrigin = tabData?.tabOrigin;
   const { data: isConnected } = useIsConnectedToActiveTab(address);
   const { data: siteChain, ...chainQuery } = useQuery({
-    queryKey: [`wallet/requestChainForOrigin(${tabOrigin})`],
+    queryKey: ['wallet/requestChainForOrigin', tabOrigin],
     queryFn: async () =>
       !tabOrigin
         ? null

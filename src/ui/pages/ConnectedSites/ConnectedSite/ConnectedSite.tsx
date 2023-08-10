@@ -127,7 +127,7 @@ export function ConnectedSite() {
     [siteOrigin]
   );
   const { data: siteChain, ...chainQuery } = useQuery({
-    queryKey: [`wallet/requestChainForOrigin(${originName})`],
+    queryKey: ['wallet/requestChainForOrigin', originName],
     queryFn: () =>
       walletPort
         .request('requestChainForOrigin', { origin: originName })
