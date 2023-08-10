@@ -5,12 +5,14 @@ interface EIP6963ProviderInfo {
   uuid: string;
   name: string;
   icon: string;
+  rdns: string;
 }
 
 const info = {
   uuid: crypto.randomUUID(),
   name: 'Zerion',
   icon: zerionLogoDataUrl,
+  rdns: 'io.zerion.wallet',
 } satisfies EIP6963ProviderInfo;
 
 export function initializeEIP6963(provider: EthereumProvider) {
