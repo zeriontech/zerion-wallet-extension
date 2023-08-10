@@ -37,8 +37,18 @@ function mergeLocalAndBackendActions(
   backend: AddressAction[]
 ) {
   const backendHashes = new Set(backend.map((tx) => tx.transaction.hash));
+
+  const lastBackendActionDatetime = backend.at(-1)?.datetime;
+  const lastBackendTimestamp = lastBackendActionDatetime
+    ? new Date(lastBackendActionDatetime).getTime()
+    : 0;
+
   const merged = local
-    .filter((tx) => backendHashes.has(tx.transaction.hash) === false)
+    .filter(
+      (tx) =>
+        backendHashes.has(tx.transaction.hash) === false &&
+        new Date(tx.datetime).getTime() >= lastBackendTimestamp
+    )
     .concat(backend);
   return sortActions(merged);
 }
