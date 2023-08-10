@@ -20,6 +20,7 @@ import type { AnyAddressAction } from 'src/modules/ethereum/transactions/address
 import { pendingTransactionToAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import {
+  HISTORY_FILTERS_HEIGHT,
   HISTORY_STRETCHY_VIEW_HEIGHT,
   getTabsOffset,
 } from '../Overview/getTabsOffset';
@@ -170,7 +171,11 @@ export function HistoryList({
     <HStack
       gap={16}
       alignItems="center"
-      style={{ paddingInline: 16, gridTemplateColumns: '1fr auto' }}
+      style={{
+        paddingInline: 16,
+        gridTemplateColumns: '1fr auto',
+        height: HISTORY_FILTERS_HEIGHT,
+      }}
     >
       <ActionSearch
         value={searchQuery}

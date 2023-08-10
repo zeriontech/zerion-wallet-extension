@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { useAddressPortfolio } from 'defi-sdk';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -55,9 +55,10 @@ import { Positions } from './Positions';
 import { ActionButtonsRow } from './ActionButtonsRow';
 import {
   STRETCHY_VIEW_HEIGHT,
+  TABS_HEIGHT,
   TABS_OFFSET,
   TABS_OFFSET_METER_ID,
-  getTabsOffset,
+  TABS_PADDING,
 } from './getTabsOffset';
 
 interface ChangeInfo {
@@ -212,13 +213,6 @@ function OverviewComponent() {
     { enabled: ready }
   );
 
-  const handleTabChange = useCallback(() => {
-    window.scrollTo({
-      behavior: 'instant',
-      top: Math.min(window.scrollY, getTabsOffset()),
-    });
-  }, []);
-
   if (!preferences) {
     return <ViewLoading />;
   }
@@ -336,7 +330,8 @@ function OverviewComponent() {
             borderTopLeftRadius: 24,
             borderTopRightRadius: 24,
             backgroundColor: 'var(--white)',
-            paddingTop: 16,
+            paddingTop: TABS_PADDING,
+            height: TABS_HEIGHT,
           }}
         >
           <SegmentedControlGroup
@@ -347,26 +342,18 @@ function OverviewComponent() {
             }}
             childrenLayout="start"
           >
-            <SegmentedControlLink
-              to="/overview"
-              end={true}
-              onClick={handleTabChange}
-            >
+            <SegmentedControlLink to="/overview" end={true}>
               Tokens
             </SegmentedControlLink>
-            <SegmentedControlLink to="/overview/nfts" onClick={handleTabChange}>
+            <SegmentedControlLink to="/overview/nfts">
               NFTs
             </SegmentedControlLink>
-            <SegmentedControlLink
-              to="/overview/history"
-              onClick={handleTabChange}
-            >
+            <SegmentedControlLink to="/overview/history">
               History <PendingTransactionsIndicator />
             </SegmentedControlLink>
             <SegmentedControlLink
               to="/overview/feed"
               onClick={() => {
-                handleTabChange();
                 walletPort.request('daylightAction', {
                   event_name: 'Perks: Card Opened',
                   address: singleAddress,

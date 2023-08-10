@@ -62,10 +62,7 @@ import { StretchyFillView } from 'src/ui/components/FillView/FillView';
 import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import { minus } from 'src/ui/shared/typography';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
-import {
-  STRETCHY_VIEW_HEIGHT,
-  STRETCHY_VIEW_HEIGHT_UNDER_CHAIN_SELECTOR,
-} from '../getTabsOffset';
+import { STRETCHY_VIEW_HEIGHT } from '../getTabsOffset';
 
 function LineToParent({
   hasPreviosNestedPosition,
@@ -592,7 +589,6 @@ function PositionList({
               {index === 0 && firstHeaderItemEnd ? firstHeaderItemEnd : null}
             </HStack>
             <SurfaceList
-              gap={4}
               style={{ position: 'relative', paddingBlock: 0 }}
               // estimateSize={(index) => (index === 0 ? 52 : 60 + 1)}
               // overscan={5} // the library detects window edge incorrectly, increasing overscan just visually hides the problem
@@ -803,15 +799,13 @@ export function Positions({
       >
         {networkSelect}
       </div>
-      <StretchyFillView maxHeight={STRETCHY_VIEW_HEIGHT_UNDER_CHAIN_SELECTOR}>
-        <DelayedRender delay={50}>
-          <EmptyViewForNetwork
-            message="No assets yet"
-            chainValue={chainValue}
-            onChainChange={onChainChange}
-          />
-        </DelayedRender>
-      </StretchyFillView>
+      <DelayedRender delay={50}>
+        <EmptyViewForNetwork
+          message="No assets yet"
+          chainValue={chainValue}
+          onChainChange={onChainChange}
+        />
+      </DelayedRender>
     </>
   );
   if (!readyToRender) {
