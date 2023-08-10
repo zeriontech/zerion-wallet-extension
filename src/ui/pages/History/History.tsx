@@ -154,6 +154,7 @@ export function HistoryList({
   onChainChange: (value: string) => void;
 }) {
   const chain = chainValue ? createChain(chainValue) : null;
+
   const [searchQuery, setSearchQuery] = useState<string | undefined>();
   const {
     value: transactions,

@@ -391,24 +391,11 @@ export function App({ initialView, mode, inspect }: AppProps) {
     <AreaProvider>
       <UIContext.Provider value={defaultUIContextValue}>
         <QueryClientProvider client={queryClient}>
+          <DesignTheme bodyClassList={bodyClassList} />
           <Router>
-            <ErrorBoundary
-              renderError={(error) => (
-                <FillView>
-                  {error instanceof Response ? (
-                    <ViewError
-                      title="404"
-                      error={new Error(error.statusText)}
-                    />
-                  ) : (
-                    <ViewError error={error} />
-                  )}
-                </FillView>
-              )}
-            >
+            <ErrorBoundary renderError={(error) => <ViewError error={error} />}>
               <InactivityDetector />
               <SessionResetHandler />
-              <DesignTheme bodyClassList={bodyClassList} />
               {inspect && !isProd ? (
                 <UIText
                   kind="small/regular"

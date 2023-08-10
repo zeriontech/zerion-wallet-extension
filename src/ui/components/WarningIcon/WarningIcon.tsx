@@ -2,8 +2,16 @@ import React from 'react';
 import WarningIconTrimmed from 'jsx:src/ui/assets/warning-icon-trimmed.svg';
 
 const colors = {
-  notice: { color: 'var(--notice-500)', glowColor: 'var(--notice-400)' },
-  negative: { color: 'var(--negative-500)', glowColor: 'var(--negative-300)' },
+  notice: {
+    color: 'var(--notice-500)',
+    glowColor: 'var(--notice-300)',
+    innerGlowColor: 'var(--notice-200)',
+  },
+  negative: {
+    color: 'var(--negative-500)',
+    glowColor: 'var(--negative-300)',
+    innerGlowColor: 'var(--negative-200)',
+  },
 } as const;
 
 export function WarningIcon({
@@ -20,7 +28,7 @@ export function WarningIcon({
   size?: number;
   style?: React.CSSProperties;
 }) {
-  const { color, glowColor } = colors[kind];
+  const { color, glowColor, innerGlowColor } = colors[kind];
   const iconSize = size - outlineStrokeWidth * 2;
   return (
     <div
@@ -34,6 +42,7 @@ export function WarningIcon({
         alignItems: 'center',
         justifyContent: 'center',
         margin: glow ? outlineStrokeWidth : undefined,
+        backgroundColor: glow ? innerGlowColor : undefined,
         boxShadow: glow
           ? `0 0 0px ${outlineStrokeWidth}px ${glowColor}`
           : undefined,

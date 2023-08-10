@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useLayoutEffect } from 'react';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
@@ -6,18 +6,14 @@ import { useLocation } from 'react-router-dom';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import BugIcon from 'jsx:src/ui/assets/bug.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { version } from 'src/shared/packageVersion';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { PageColumn } from '../PageColumn';
 import * as s from './styles.module.css';
-import { detectBrowser } from './detectBrowser';
+import { getBugButtonUrl } from './getBugReportURL';
 
 export const BUTTON_HEIGHT = 29;
 
 const urlBlacklist = new Set(['/', '/intro', '/get-started']);
-const { browser: browserName, version: browserVersion } = detectBrowser(
-  navigator.userAgent
-);
 
 function BottomFixed({ children }: React.PropsWithChildren) {
   useLayoutEffect(() => {
@@ -59,6 +55,10 @@ function BottomFixed({ children }: React.PropsWithChildren) {
 
 export function BugReportButton() {
   const { pathname, search } = useLocation();
+  const bugReportURL = useMemo(
+    () => getBugButtonUrl(pathname, search),
+    [pathname, search]
+  );
   if (urlBlacklist.has(pathname)) {
     return null;
   }
@@ -79,15 +79,7 @@ export function BugReportButton() {
             // Open report URL in a new _window_ so that extension UI stays open.
             // This should help the user describe the issue better
             onClick={openInNewWindow}
-            href={`https://zerion-io.typeform.com/bug-report#${new URLSearchParams(
-              {
-                version,
-                pathname,
-                browser: `${browserName}/${browserVersion}`,
-                platform: navigator.platform,
-                search,
-              }
-            )}`}
+            href={bugReportURL}
             target="_blank"
             rel="noopener noreferrer"
           >

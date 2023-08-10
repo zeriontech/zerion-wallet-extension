@@ -18,7 +18,6 @@ export function PageColumn({
         flexGrow: 1,
         display: 'flex',
         flexDirection: 'column',
-        // overflowY: 'auto',
         ...style,
       }}
       {...props}
