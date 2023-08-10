@@ -3,12 +3,7 @@ import { DelayedRender } from '../DelayedRender';
 import { NavigationTitle } from '../NavigationTitle';
 import { ViewLoading } from '../ViewLoading';
 
-export function ViewSuspense({
-  children,
-  fallbackChilden,
-}: React.PropsWithChildren<{
-  fallbackChilden?: React.ReactNode;
-}>) {
+export function ViewSuspense({ children }: React.PropsWithChildren) {
   return (
     <React.Suspense
       fallback={
@@ -19,11 +14,9 @@ export function ViewSuspense({
             documentTitle=""
             ignoreDocumentTitle_DO_NOT_USE_EXCEPT_FOR_LOADING_VIEW={true}
           />
-          {fallbackChilden ?? (
-            <DelayedRender>
-              <ViewLoading />
-            </DelayedRender>
-          )}
+          <DelayedRender>
+            <ViewLoading />
+          </DelayedRender>
         </>
       }
     >

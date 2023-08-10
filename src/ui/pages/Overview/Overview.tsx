@@ -31,10 +31,7 @@ import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { CopyButton } from 'src/ui/components/CopyButton';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import {
-  DelayedRender,
-  useRenderDelay,
-} from 'src/ui/components/DelayedRender/DelayedRender';
+import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { useProfileName } from 'src/ui/shared/useProfileName';
@@ -43,7 +40,6 @@ import {
   PauseInjectionControl,
 } from 'src/ui/components/PauseInjection';
 import { InvitationBanner } from 'src/ui/components/InvitationFlow';
-import { StretchyFillView } from 'src/ui/components/FillView/FillView';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -54,7 +50,6 @@ import { NonFungibleTokens } from './NonFungibleTokens';
 import { Positions } from './Positions';
 import { ActionButtonsRow } from './ActionButtonsRow';
 import {
-  OVERVIEW_STRETCHY_VIEW_HEIGHT,
   TABS_HEIGHT,
   TABS_OFFSET,
   TABS_OFFSET_METER_ID,
@@ -217,14 +212,6 @@ function OverviewComponent() {
     return <ViewLoading />;
   }
 
-  const fallbackChildren = (
-    <StretchyFillView maxHeight={OVERVIEW_STRETCHY_VIEW_HEIGHT}>
-      <DelayedRender delay={2000}>
-        <ViewLoading kind="network" />
-      </DelayedRender>
-    </StretchyFillView>
-  );
-
   return (
     <PageColumn style={{ paddingInline: 8 }}>
       <PageFullBleedColumn
@@ -382,7 +369,7 @@ function OverviewComponent() {
           <Route
             path="/"
             element={
-              <ViewSuspense fallbackChilden={fallbackChildren}>
+              <ViewSuspense>
                 <Positions
                   chain={preferences.overviewChain}
                   onChainChange={setChain}
@@ -393,7 +380,7 @@ function OverviewComponent() {
           <Route
             path="/nfts"
             element={
-              <ViewSuspense fallbackChilden={fallbackChildren}>
+              <ViewSuspense>
                 <NonFungibleTokens
                   chain={preferences.overviewChain}
                   onChainChange={setChain}
@@ -404,7 +391,7 @@ function OverviewComponent() {
           <Route
             path="/history"
             element={
-              <ViewSuspense fallbackChilden={fallbackChildren}>
+              <ViewSuspense>
                 <HistoryList
                   chain={preferences.overviewChain}
                   onChainChange={setChain}
@@ -415,7 +402,7 @@ function OverviewComponent() {
           <Route
             path="/feed"
             element={
-              <ViewSuspense fallbackChilden={fallbackChildren}>
+              <ViewSuspense>
                 <Feed />
               </ViewSuspense>
             }
