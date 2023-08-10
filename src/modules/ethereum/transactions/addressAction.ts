@@ -78,12 +78,42 @@ function createActionLabel(
 }
 
 async function createActionContent(
-  action: TransactionAction
+  action: TransactionAction,
+  networks: Networks
 ): Promise<AddressAction['content'] | null> {
   switch (action.type) {
-    case 'deploy':
-    case 'execute':
+    case 'deploy': {
       return null;
+    }
+    case 'execute': {
+      // TODO: refactor
+      // Cases for 'execute' and 'send' are partially duplicated
+      // The refactoring probably should take place in the describeTransaction.ts
+      if (!action.value) {
+        return null;
+      }
+      const network = networks.getNetworkByName(action.chain);
+      const query: CachedAssetQuery = {
+        isNative: true,
+        chain: action.chain,
+        id: network?.native_asset?.id || null,
+        address: network?.native_asset?.address || null,
+      };
+      const asset = await fetchAssetFromCacheOrAPI(query);
+      return asset
+        ? {
+            transfers: {
+              outgoing: [
+                {
+                  asset: { fungible: asset },
+                  quantity: action.value.toString(),
+                  price: null,
+                },
+              ],
+            },
+          }
+        : null;
+    }
     case 'send': {
       const query: CachedAssetQuery = action.isNativeAsset
         ? {
@@ -144,7 +174,7 @@ export async function pendingTransactionToAddressAction(
     ? describeTransaction(transaction, { networks, chain })
     : null;
   const label = action ? createActionLabel(transaction, action) : null;
-  const content = action ? await createActionContent(action) : null;
+  const content = action ? await createActionContent(action, networks) : null;
   return {
     id: hash,
     transaction: {
@@ -189,7 +219,7 @@ export async function incomingTxToIncomingAddressAction(
   );
   const action = describeTransaction(transaction, { networks, chain });
   const label = createActionLabel(transaction, action);
-  const content = await createActionContent(action);
+  const content = await createActionContent(action, networks);
   return {
     id: null,
     transaction: {

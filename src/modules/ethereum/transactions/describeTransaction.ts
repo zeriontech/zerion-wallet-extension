@@ -10,6 +10,8 @@ export type TransactionActionType = 'deploy' | 'send' | 'execute' | 'approve';
 export type TransactionAction =
   | {
       type: 'deploy';
+      chain: Chain;
+      value?: number;
     }
   | {
       type: 'send';
@@ -19,11 +21,18 @@ export type TransactionAction =
       assetId: string | null;
       assetAddress: string | null;
       receiverAddress: string;
+      /**
+       * "amount" is similar to "value", but "value" implies native asset only,
+       * while "amount" implies both native and non-native assets
+       * Maybe this is an unnecessary discrimination and we can use "value" here, too.
+       */
       amount: number;
     }
   | {
       type: 'execute';
       contractAddress: string;
+      chain: Chain;
+      value?: number;
     }
   | {
       type: 'approve';
@@ -41,6 +50,12 @@ interface DescriberContext {
 
 function amountToNumber(value: BigNumber.Value = 0) {
   return toNumber(value);
+}
+
+function getMaybeAmount(transaction: IncomingTransaction) {
+  return transaction.value
+    ? amountToNumber(transaction.value.toString())
+    : undefined;
 }
 
 function sliceSelector(data: ethers.utils.BytesLike) {
@@ -89,7 +104,8 @@ const selectors = {
 const abiCoder = ethers.utils.defaultAbiCoder;
 
 function describeMulticall(
-  transaction: IncomingTransaction
+  transaction: IncomingTransaction,
+  context: DescriberContext
 ): TransactionAction | null {
   const match = matchSelectors(transaction, [
     selectors.multicall1,
@@ -102,6 +118,8 @@ function describeMulticall(
   return {
     type: 'execute',
     contractAddress: transaction.to || '0x',
+    value: getMaybeAmount(transaction),
+    chain: context.chain,
   };
 }
 
@@ -199,5 +217,10 @@ export function describeTransaction(
       return description;
     }
   }
-  return { type: 'execute', contractAddress: transaction.to || '0x' };
+  return {
+    type: 'execute',
+    contractAddress: transaction.to || '0x',
+    value: getMaybeAmount(transaction),
+    chain: context.chain,
+  };
 }
