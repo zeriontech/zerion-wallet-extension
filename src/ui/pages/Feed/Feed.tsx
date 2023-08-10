@@ -18,6 +18,8 @@ import type {
   WalletAbilityType,
 } from 'src/shared/types/Daylight';
 import { walletPort } from 'src/ui/shared/channels';
+import { DelayedRender } from 'src/ui/components/DelayedRender';
+import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { useWalletAbilities } from './daylight';
 import type { StatusFilterParams } from './daylight';
 import { Ability } from './Ability/Ability';
@@ -543,14 +545,15 @@ export function Feed() {
             {
               key: 0,
               onClick: fetching ? undefined : () => fetchNextPage(),
-              component: (
-                <span
-                  style={{
-                    color: fetching ? 'var(--neutral-500)' : 'var(--primary)',
-                  }}
-                >
-                  More Abilities
-                </span>
+              style: { height: 40 },
+              component: fetching ? (
+                <DelayedRender delay={400}>
+                  <ViewLoading />
+                </DelayedRender>
+              ) : (
+                <UIText kind="body/accent" color="var(--primary)">
+                  Show More
+                </UIText>
               ),
             },
           ]}

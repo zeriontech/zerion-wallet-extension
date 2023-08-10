@@ -297,7 +297,7 @@ function OverviewComponent() {
         </HStack>
       </div>
       <Spacer height={20} />
-      <div style={{ paddingInline: 8 }}>
+      <div style={{ paddingInline: 'var(--column-padding-inline)' }}>
         <ActionButtonsRow />
       </div>
       <DevelopmentOnly>

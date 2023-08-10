@@ -14,9 +14,6 @@ export const HISTORY_STRETCHY_VIEW_HEIGHT = `calc(100vh - ${
   BUG_REPORT_BUTTON_HEIGHT +
   PAGE_BOTTOM_HEIGHT
 }px)`;
-export const OVERVIEW_STRETCHY_VIEW_HEIGHT = `calc(100vh - ${
-  TABS_OFFSET + TABS_HEIGHT + BUG_REPORT_BUTTON_HEIGHT + PAGE_BOTTOM_HEIGHT
-}px)`;
 
 export function getTabsOffset() {
   return (

@@ -338,7 +338,7 @@ export function PauseInjectionControl() {
                 padding: 8,
               }}
             >
-              <CloseIcon />
+              <CloseIcon style={{ display: 'block' }} />
             </Button>
           </>
         ) : null}
@@ -349,7 +349,7 @@ export function PauseInjectionControl() {
         size={40}
         type="button"
         title="Disable Wallet Provider"
-        style={{ width: 40, paddingInline: 8 }}
+        style={{ padding: 8 }}
         disabled={isPaused}
         onClick={() => {
           invariant(dialogRef.current, 'Dialog element must be mounted');

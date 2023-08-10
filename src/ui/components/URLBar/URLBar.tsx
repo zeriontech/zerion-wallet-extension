@@ -94,7 +94,6 @@ export function URLBar() {
           ) : (
             <>
               <BackButton
-                style={{ padding: 8 }}
                 onClick={() => navigate(-1)}
                 title={`Press "backspace" to navigate back`}
               />

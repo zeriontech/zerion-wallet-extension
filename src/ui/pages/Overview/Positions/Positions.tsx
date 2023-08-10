@@ -58,11 +58,9 @@ import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { networksStore } from 'src/modules/networks/networks-store.client';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { getCommonQuantity } from 'src/modules/networks/asset';
-import { StretchyFillView } from 'src/ui/components/FillView/FillView';
 import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import { minus } from 'src/ui/shared/typography';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
-import { OVERVIEW_STRETCHY_VIEW_HEIGHT } from '../getTabsOffset';
 
 function LineToParent({
   hasPreviosNestedPosition,
@@ -564,7 +562,9 @@ function PositionList({
             },
             component: (
               <UIText kind="body/accent" color="var(--primary)">
-                {expanded.has(protocol) ? 'Show Less' : 'Show All Assets'}
+                {expanded.has(protocol)
+                  ? 'Show Less Assets'
+                  : 'Show All Assets'}
               </UIText>
             ),
           });
@@ -767,11 +767,9 @@ export function Positions({
   const { networks } = useNetworks();
   if (!networks || !ready) {
     return (
-      <StretchyFillView maxHeight={OVERVIEW_STRETCHY_VIEW_HEIGHT}>
-        <DelayedRender delay={2000}>
-          <ViewLoading kind="network" />
-        </DelayedRender>
-      </StretchyFillView>
+      <DelayedRender delay={2000}>
+        <ViewLoading kind="network" />
+      </DelayedRender>
     );
   }
   const networkSelect = (

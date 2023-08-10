@@ -19,7 +19,7 @@ export function NavigationBar({ title }: { title: string }) {
         gridTemplateColumns: '40px 1fr 40px',
       }}
     >
-      <BackButton style={{ padding: '8px 0' }} onClick={() => navigate(-1)} />
+      <BackButton onClick={() => navigate(-1)} />
       <UIText
         kind="body/accent"
         style={{
