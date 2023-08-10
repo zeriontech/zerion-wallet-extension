@@ -60,6 +60,7 @@ export function ActionsList({
             {
               key: 0,
               onClick: isLoading ? undefined : onLoadMore,
+              style: { height: 40 },
               component: isLoading ? (
                 <DelayedRender delay={400}>
                   <ViewLoading />
