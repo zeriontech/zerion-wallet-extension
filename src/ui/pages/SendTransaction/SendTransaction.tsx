@@ -447,6 +447,7 @@ function SendTransactionContent({
           <>
             <Spacer height={8} />
             <Button
+              type="button"
               kind="primary"
               size={44}
               style={{ padding: '10px 20px' }}

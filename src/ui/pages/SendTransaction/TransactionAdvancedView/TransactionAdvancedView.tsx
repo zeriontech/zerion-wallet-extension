@@ -15,7 +15,6 @@ import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
 import type { BigNumberish } from 'ethers';
-import { accessListify } from 'ethers/lib/utils';
 import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
 import { getInterpretationFunctionSignature } from 'src/modules/ethereum/transactions/interpret';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -31,13 +30,11 @@ function AddressLine({
   chain,
   label,
   address,
-  padding = 16,
 }: {
   networks: Networks;
   chain: Chain;
   label: React.ReactNode;
   address: string;
-  padding?: number;
 }) {
   return (
     <HStack gap={8} justifyContent="space-between" alignItems="center">
@@ -54,7 +51,7 @@ function AddressLine({
             target="_blank"
             rel="noopener noreferrer"
           >
-            {truncateAddress(address, padding)}
+            {truncateAddress(address, 16)}
           </TextAnchor>
         </UIText>
       </VStack>
@@ -84,12 +81,14 @@ export function TransactionDetails({
 
   const accessList = useMemo(
     () =>
-      transaction.accessList ? accessListify(transaction.accessList) : null,
+      transaction.accessList
+        ? ethers.utils.accessListify(transaction.accessList)
+        : null,
     [transaction.accessList]
   );
 
   return (
-    <>
+    <VStack gap={24}>
       {functionName ? (
         <>
           <Surface padding={16}>
@@ -101,7 +100,6 @@ export function TransactionDetails({
               {functionName}
             </UIText>
           </Surface>
-          <Spacer height={24} />
         </>
       ) : null}
       <Surface padding={16}>
@@ -158,7 +156,6 @@ export function TransactionDetails({
       </Surface>
       {accessList && (
         <>
-          <Spacer height={24} />
           <Surface padding={16}>
             <VStack gap={16}>
               {accessList.map(({ address, storageKeys }) => (
@@ -182,7 +179,7 @@ export function TransactionDetails({
           </Surface>
         </>
       )}
-    </>
+    </VStack>
   );
 }
 

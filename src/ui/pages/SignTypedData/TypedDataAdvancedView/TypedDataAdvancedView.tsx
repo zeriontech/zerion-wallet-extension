@@ -8,15 +8,15 @@ type Value = any;
 type TypedData = Record<string, Value>;
 
 function flattenObject(obj: TypedData, prefix = '') {
-  return Object.keys(obj).reduce((acc, key) => {
+  return Object.keys(obj).reduce<TypedData>((acc, key) => {
     const leadingPrefix = prefix.length ? prefix + '.' : '';
-    if (typeof obj[key] === 'object') {
+    if (typeof obj[key] === 'object' && obj[key] !== null) {
       Object.assign(acc, flattenObject(obj[key], `${leadingPrefix}${key}`));
     } else {
-      acc[`${leadingPrefix}${key}`] = obj[key];
+      acc[`${leadingPrefix}${key}`] = String(obj[key]);
     }
     return acc;
-  }, {} as TypedData);
+  }, {});
 }
 
 export function TypedDataAdvancedView({ data }: { data: TypedData }) {
