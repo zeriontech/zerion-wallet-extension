@@ -7,7 +7,7 @@ type Value = unknown;
 type TypedData = Record<string, Value>;
 
 function flattenObject(obj: TypedData, prefix = '') {
-  return Object.keys(obj).reduce<TypedData>((acc, key) => {
+  return Object.keys(obj).reduce<Record<string, string>>((acc, key) => {
     const leadingPrefix = prefix.length ? prefix + '.' : '';
     if (typeof obj[key] === 'object' && obj[key] !== null) {
       Object.assign(
@@ -27,12 +27,7 @@ export function TypedDataAdvancedView({ data }: { data: TypedData }) {
     <Surface padding={16}>
       <VStack gap={16}>
         {Object.entries(flattenedData).map(([label, value]) => (
-          <TextLine
-            wrap={true}
-            key={label}
-            label={label}
-            value={value as string}
-          />
+          <TextLine wrap={true} key={label} label={label} value={value} />
         ))}
       </VStack>
     </Surface>
