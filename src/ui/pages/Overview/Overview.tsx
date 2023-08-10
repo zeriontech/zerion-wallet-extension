@@ -213,7 +213,11 @@ function OverviewComponent() {
   }
 
   return (
-    <PageColumn style={{ paddingInline: 8 }}>
+    <PageColumn
+      style={{
+        ['--column-padding-inline' as string]: '8px',
+      }}
+    >
       <PageFullBleedColumn
         paddingInline={true}
         style={{
@@ -309,7 +313,6 @@ function OverviewComponent() {
           top: TABS_OFFSET,
           zIndex: 'var(--max-layout-index)',
           backgroundColor: 'var(--background)',
-          paddingInline: 8,
         }}
       >
         <div
