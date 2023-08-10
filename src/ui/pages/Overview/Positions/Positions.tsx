@@ -62,7 +62,7 @@ import { StretchyFillView } from 'src/ui/components/FillView/FillView';
 import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import { minus } from 'src/ui/shared/typography';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
-import { STRETCHY_VIEW_HEIGHT } from '../getTabsOffset';
+import { OVERVIEW_STRETCHY_VIEW_HEIGHT } from '../getTabsOffset';
 
 function LineToParent({
   hasPreviosNestedPosition,
@@ -767,7 +767,7 @@ export function Positions({
   const { networks } = useNetworks();
   if (!networks || !ready) {
     return (
-      <StretchyFillView maxHeight={STRETCHY_VIEW_HEIGHT}>
+      <StretchyFillView maxHeight={OVERVIEW_STRETCHY_VIEW_HEIGHT}>
         <DelayedRender delay={2000}>
           <ViewLoading kind="network" />
         </DelayedRender>

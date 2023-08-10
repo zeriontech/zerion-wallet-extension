@@ -26,14 +26,12 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
-import { EmptyViewForNetwork } from 'src/ui/components/EmptyViewForNetwork'
+import { EmptyViewForNetwork } from 'src/ui/components/EmptyViewForNetwork';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { StretchyFillView } from 'src/ui/components/FillView/FillView';
 import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
 import { NetworkSelect } from '../../Networks/NetworkSelect';
-import {
-  STRETCHY_VIEW_HEIGHT,
-} from '../getTabsOffset';
+import { OVERVIEW_STRETCHY_VIEW_HEIGHT } from '../getTabsOffset';
 import * as s from './styles.module.css';
 
 function NFTItem({
@@ -213,14 +211,14 @@ export function NonFungibleTokens({
 
   if (totalValueIsLoading && isSupportedByBackend) {
     return (
-      <StretchyFillView maxHeight={STRETCHY_VIEW_HEIGHT}>
+      <StretchyFillView maxHeight={OVERVIEW_STRETCHY_VIEW_HEIGHT}>
         <ViewLoading kind="network" />
       </StretchyFillView>
     );
   }
 
   if (!ready || !items || !nftTotalValueIsReady) {
-    return <StretchyFillView maxHeight={STRETCHY_VIEW_HEIGHT} />;
+    return <StretchyFillView maxHeight={OVERVIEW_STRETCHY_VIEW_HEIGHT} />;
   }
 
   if (!isSupportedByBackend || items.length === 0) {
@@ -235,7 +233,7 @@ export function NonFungibleTokens({
         >
           {networkSelect}
         </div>
-        <StretchyFillView maxHeight={STRETCHY_VIEW_HEIGHT}>
+        <StretchyFillView maxHeight={OVERVIEW_STRETCHY_VIEW_HEIGHT}>
           <DelayedRender delay={100}>
             {isLoading && isSupportedByBackend ? (
               <ViewLoading kind="network" />

@@ -54,7 +54,7 @@ import { NonFungibleTokens } from './NonFungibleTokens';
 import { Positions } from './Positions';
 import { ActionButtonsRow } from './ActionButtonsRow';
 import {
-  STRETCHY_VIEW_HEIGHT,
+  OVERVIEW_STRETCHY_VIEW_HEIGHT,
   TABS_HEIGHT,
   TABS_OFFSET,
   TABS_OFFSET_METER_ID,
@@ -218,7 +218,7 @@ function OverviewComponent() {
   }
 
   const fallbackChildren = (
-    <StretchyFillView maxHeight={STRETCHY_VIEW_HEIGHT}>
+    <StretchyFillView maxHeight={OVERVIEW_STRETCHY_VIEW_HEIGHT}>
       <DelayedRender delay={2000}>
         <ViewLoading kind="network" />
       </DelayedRender>
