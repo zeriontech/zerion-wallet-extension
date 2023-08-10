@@ -452,21 +452,16 @@ function SendTransactionContent({
               style={{ padding: '10px 20px' }}
               onClick={handleCopyRawData}
             >
-              {didCopyRawData ? (
-                <HStack gap={12} alignItems="center" justifyContent="center">
-                  <UIText kind="body/accent">Copied</UIText>
-                  <CheckIcon
-                    style={{ display: 'block', width: 24, height: 24 }}
-                  />
-                </HStack>
-              ) : (
-                <HStack gap={12} alignItems="center" justifyContent="center">
-                  <UIText kind="body/accent">Copy Raw Data</UIText>
-                  <CopyIcon
-                    style={{ display: 'block', width: 24, height: 24 }}
-                  />
-                </HStack>
-              )}
+              <HStack gap={12} alignItems="center" justifyContent="center">
+                <UIText kind="body/accent">
+                  {didCopyRawData ? 'Copied' : 'Copy Raw Data'}
+                </UIText>
+                {React.createElement(didCopyRawData ? CheckIcon : CopyIcon, {
+                  display: 'block',
+                  width: 24,
+                  height: 24,
+                })}
+              </HStack>
             </Button>
           </>
         ) : null}
