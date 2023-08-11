@@ -21,20 +21,16 @@ export type TransactionAction =
       assetId: string | null;
       assetAddress: string | null;
       receiverAddress: string;
-      /**
-       * "amount" is similar to "value", but "value" implies native asset only,
-       * while "amount" implies both native and non-native assets
-       * Maybe this is an unnecessary discrimination and we can use "value" here, too.
-       */
       amount: number;
     }
   | {
       type: 'execute';
-      contractAddress: string;
+      isNativeAsset: true;
       chain: Chain;
+      contractAddress: string;
       assetId: string | null;
       assetAddress: string | null;
-      value?: number;
+      amount?: number;
     }
   | {
       type: 'approve';
@@ -112,8 +108,9 @@ function createExecuteAction(
   const network = context.networks.getNetworkByName(context.chain);
   return {
     type: 'execute',
+    isNativeAsset: true,
     contractAddress: transaction.to || '0x',
-    value: getMaybeAmount(transaction),
+    amount: getMaybeAmount(transaction),
     assetId: network?.native_asset?.id || null,
     assetAddress: network?.native_asset?.address || null,
     chain: context.chain,

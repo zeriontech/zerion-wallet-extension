@@ -84,32 +84,11 @@ async function createActionContent(
     case 'deploy': {
       return null;
     }
-    case 'execute': {
-      if (!action.value) {
+    case 'execute':
+    case 'send': {
+      if (action.type === 'execute' && !action.amount) {
         return null;
       }
-      const query: CachedAssetQuery = {
-        isNative: true,
-        chain: action.chain,
-        id: action.assetId,
-        address: action.assetAddress,
-      };
-      const asset = await fetchAssetFromCacheOrAPI(query);
-      return asset
-        ? {
-            transfers: {
-              outgoing: [
-                {
-                  asset: { fungible: asset },
-                  quantity: action.value.toString(),
-                  price: null,
-                },
-              ],
-            },
-          }
-        : null;
-    }
-    case 'send': {
       const query: CachedAssetQuery = action.isNativeAsset
         ? {
             isNative: true,
@@ -123,7 +102,7 @@ async function createActionContent(
             address: action.assetAddress,
           };
       const asset = await fetchAssetFromCacheOrAPI(query);
-      return asset
+      return asset && action.amount
         ? {
             transfers: {
               outgoing: [
