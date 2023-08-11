@@ -20,8 +20,9 @@
   "alias": {
     "src": "./src",
     "buffer": false,
-    "ui-lab:./src/ui/shared/channels.ts": "./src/ui/shared/channels.mock.ts",
-    "ui-lab:webextension-polyfill": "/src/ui-lab/webextension-polyfill.mock.ts"
+    "src/ui/shared/channels": "./src/ui/shared/channels.mock.ts",
+    "src/modules/networks/networks-store.client": "./src/modules/networks/networks-store.mock.ts",
+    "webextension-polyfill": "/src/ui-lab/webextension-polyfill.mock.ts"
   },
   "@parcel/bundler-default": {
     "minBundles": 10000000,

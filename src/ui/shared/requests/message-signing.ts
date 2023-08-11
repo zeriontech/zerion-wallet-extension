@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
-import { walletPort } from '../channels';
+import { walletPort } from 'src/ui/shared/channels';
 
 type SignMutationProps = { onSuccess: (value: string) => void };
 

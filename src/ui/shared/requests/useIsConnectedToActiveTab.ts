@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { walletPort } from '../channels';
+import { walletPort } from 'src/ui/shared/channels';
 import { getActiveTabOrigin } from './getActiveTabOrigin';
 
 export function useIsConnectedToActiveTab(address: string) {
