@@ -516,7 +516,11 @@ function PositionList({
               separatorTop: false,
               pad: false,
               component: (
-                <UIText kind="caption/accent" color="var(--neutral-700)">
+                <UIText
+                  kind="caption/accent"
+                  color="var(--neutral-700)"
+                  style={{ paddingBlock: 4 }}
+                >
                   {name.toUpperCase()}
                 </UIText>
               ),
