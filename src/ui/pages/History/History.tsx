@@ -34,14 +34,16 @@ function sortActions<T extends { datetime?: string }>(actions: T[]) {
 
 function mergeLocalAndBackendActions(
   local: AnyAddressAction[],
-  backend: AddressAction[]
+  backend: AddressAction[],
+  hasMoreBackendActions: boolean
 ) {
   const backendHashes = new Set(backend.map((tx) => tx.transaction.hash));
 
   const lastBackendActionDatetime = backend.at(-1)?.datetime;
-  const lastBackendTimestamp = lastBackendActionDatetime
-    ? new Date(lastBackendActionDatetime).getTime()
-    : 0;
+  const lastBackendTimestamp =
+    lastBackendActionDatetime && hasMoreBackendActions
+      ? new Date(lastBackendActionDatetime).getTime()
+      : 0;
 
   const merged = local
     .filter(
@@ -115,13 +117,18 @@ function useMinedAndPendingAddressActions({
 
   return useMemo(() => {
     const backendItems = isSupportedByBackend && value ? value : [];
+    const hasMore = Boolean(isSupportedByBackend && hasNext);
     return {
       value: localAddressActions
-        ? mergeLocalAndBackendActions(localAddressActions, backendItems)
+        ? mergeLocalAndBackendActions(
+            localAddressActions,
+            backendItems,
+            hasMore
+          )
         : null,
       ...localActionsQuery,
       isLoading: actionsIsLoading || localActionsQuery.isLoading,
-      hasMore: Boolean(isSupportedByBackend && hasNext),
+      hasMore,
       fetchMore,
     };
   }, [
