@@ -86,7 +86,7 @@ async function createActionContent(
     }
     case 'execute':
     case 'send': {
-      if (action.type === 'execute' && !action.amount) {
+      if (!action.amount) {
         return null;
       }
       const query: CachedAssetQuery = action.isNativeAsset
