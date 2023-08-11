@@ -78,26 +78,21 @@ function createActionLabel(
 }
 
 async function createActionContent(
-  action: TransactionAction,
-  networks: Networks
+  action: TransactionAction
 ): Promise<AddressAction['content'] | null> {
   switch (action.type) {
     case 'deploy': {
       return null;
     }
     case 'execute': {
-      // TODO: refactor
-      // Cases for 'execute' and 'send' are partially duplicated
-      // The refactoring probably should take place in the describeTransaction.ts
       if (!action.value) {
         return null;
       }
-      const network = networks.getNetworkByName(action.chain);
       const query: CachedAssetQuery = {
         isNative: true,
         chain: action.chain,
-        id: network?.native_asset?.id || null,
-        address: network?.native_asset?.address || null,
+        id: action.assetId,
+        address: action.assetAddress,
       };
       const asset = await fetchAssetFromCacheOrAPI(query);
       return asset
@@ -174,7 +169,7 @@ export async function pendingTransactionToAddressAction(
     ? describeTransaction(transaction, { networks, chain })
     : null;
   const label = action ? createActionLabel(transaction, action) : null;
-  const content = action ? await createActionContent(action, networks) : null;
+  const content = action ? await createActionContent(action) : null;
   return {
     id: hash,
     transaction: {
@@ -219,7 +214,7 @@ export async function incomingTxToIncomingAddressAction(
   );
   const action = describeTransaction(transaction, { networks, chain });
   const label = createActionLabel(transaction, action);
-  const content = await createActionContent(action, networks);
+  const content = await createActionContent(action);
   return {
     id: null,
     transaction: {

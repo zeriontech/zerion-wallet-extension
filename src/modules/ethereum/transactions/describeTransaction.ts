@@ -32,6 +32,8 @@ export type TransactionAction =
       type: 'execute';
       contractAddress: string;
       chain: Chain;
+      assetId: string | null;
+      assetAddress: string | null;
       value?: number;
     }
   | {
@@ -103,6 +105,21 @@ const selectors = {
 
 const abiCoder = ethers.utils.defaultAbiCoder;
 
+function createExecuteAction(
+  transaction: IncomingTransaction,
+  context: DescriberContext
+): TransactionAction {
+  const network = context.networks.getNetworkByName(context.chain);
+  return {
+    type: 'execute',
+    contractAddress: transaction.to || '0x',
+    value: getMaybeAmount(transaction),
+    assetId: network?.native_asset?.id || null,
+    assetAddress: network?.native_asset?.address || null,
+    chain: context.chain,
+  };
+}
+
 function describeMulticall(
   transaction: IncomingTransaction,
   context: DescriberContext
@@ -115,12 +132,8 @@ function describeMulticall(
   if (!match) {
     return null;
   }
-  return {
-    type: 'execute',
-    contractAddress: transaction.to || '0x',
-    value: getMaybeAmount(transaction),
-    chain: context.chain,
-  };
+
+  return createExecuteAction(transaction, context);
 }
 
 function describeApprove(
@@ -217,10 +230,6 @@ export function describeTransaction(
       return description;
     }
   }
-  return {
-    type: 'execute',
-    contractAddress: transaction.to || '0x',
-    value: getMaybeAmount(transaction),
-    chain: context.chain,
-  };
+
+  return createExecuteAction(transaction, context);
 }
