@@ -330,6 +330,7 @@ export function PauseInjectionControl() {
               onClick={handleDialogDismiss}
               kind="ghost"
               size={40}
+              aria-label="Close"
               style={{
                 position: 'absolute',
                 width: 40,
