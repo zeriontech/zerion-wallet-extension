@@ -7,39 +7,33 @@ import type { IncomingTransaction } from '../types/IncomingTransaction';
 
 export type TransactionActionType = 'deploy' | 'send' | 'execute' | 'approve';
 
-export type TransactionAction =
-  | {
-      type: 'deploy';
-      chain: Chain;
-      value?: number;
-    }
-  | {
-      type: 'send';
-      isNativeAsset: boolean;
-      chain: Chain;
-      contractAddress?: string;
-      assetId: string | null;
-      assetAddress: string | null;
-      receiverAddress: string;
-      amount: number;
-    }
-  | {
-      type: 'execute';
-      isNativeAsset: true;
-      chain: Chain;
-      contractAddress: string;
-      assetId: string | null;
-      assetAddress: string | null;
-      amount?: number;
-    }
-  | {
-      type: 'approve';
-      chain: Chain;
-      contractAddress: string;
-      assetAddress: string;
-      spenderAddress: string;
-      amount: number;
-    };
+interface OutgoingValue {
+  isNativeAsset: boolean;
+  chain: Chain;
+  assetId: string | null;
+  assetAddress: string | null;
+  amount?: number;
+}
+
+export type TransactionAction = OutgoingValue &
+  (
+    | {
+        type: 'send';
+        receiverAddress: string;
+        contractAddress?: string;
+        amount: number;
+      }
+    | {
+        type: 'execute';
+        contractAddress: string;
+      }
+    | {
+        type: 'approve';
+        spenderAddress: string;
+        contractAddress: string;
+        amount: number;
+      }
+  );
 
 interface DescriberContext {
   chain: Chain;
@@ -147,13 +141,16 @@ function describeApprove(
     args
   );
   const contractAddress = transaction.to || '0x';
+  const network = context.networks.getNetworkByName(context.chain);
   return {
     type: 'approve',
-    chain: context.chain,
     contractAddress,
-    assetAddress: contractAddress,
     spenderAddress,
     amount: amount,
+    isNativeAsset: true,
+    chain: context.chain,
+    assetAddress: contractAddress,
+    assetId: network?.native_asset?.id || null,
   };
 }
 

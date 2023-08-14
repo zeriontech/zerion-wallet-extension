@@ -65,14 +65,11 @@ function createActionLabel(
 
   return {
     type: actionTypeToLabelType[action.type],
-    value:
-      transaction.to ||
-      (action.type === 'deploy' ? '' : action.contractAddress || ''),
+    value: transaction.to || action.contractAddress || '',
     display_value: {
       text: '',
       wallet_address,
-      contract_address:
-        action.type === 'deploy' ? undefined : action.contractAddress,
+      contract_address: action.contractAddress,
     },
   };
 }
@@ -81,9 +78,6 @@ async function createActionContent(
   action: TransactionAction
 ): Promise<AddressAction['content'] | null> {
   switch (action.type) {
-    case 'deploy': {
-      return null;
-    }
     case 'execute':
     case 'send': {
       if (!action.amount) {
