@@ -135,7 +135,7 @@ export function SurfaceList({
   gap?: number;
   style?: React.CSSProperties;
 }) {
-  const vGap = 8;
+  const emptyItemPaddingBlock = 8;
   const firstItemIsInteractive = items.length && isInteractive(items[0]);
   const lastItemIsInteractive =
     items.length && isInteractive(items[items.length - 1]);
@@ -188,7 +188,9 @@ export function SurfaceList({
           ) : pad === false ? (
             item.component
           ) : (
-            <div style={{ paddingBlock: vGap }}>{item.component}</div>
+            <div style={{ paddingBlock: emptyItemPaddingBlock }}>
+              {item.component}
+            </div>
           );
           if (item.key == null) {
             throw new Error('No key');

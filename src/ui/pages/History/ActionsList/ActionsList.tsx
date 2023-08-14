@@ -9,7 +9,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { ActionItem } from '../ActionItem';
-import { STRETCHY_VIEW_HEIGHT } from '../constants';
+import { HISTORY_STRETCHY_VIEW_HEIGHT } from '../../Overview/getTabsOffset';
 
 export function ActionsList({
   actions,
@@ -31,52 +31,48 @@ export function ActionsList({
   );
   return (
     <VStack
-      gap={24}
-      style={{ minHeight: STRETCHY_VIEW_HEIGHT, alignContent: 'start' }}
+      gap={4}
+      style={{ minHeight: HISTORY_STRETCHY_VIEW_HEIGHT, alignContent: 'start' }}
     >
-      {Object.entries(groupedByDate).map(([timestamp, items]) => (
-        <VStack gap={8} key={timestamp}>
-          <HStack
-            gap={8}
-            justifyContent="space-between"
-            style={{ paddingInline: 'var(--column-padding-inline)' }}
-          >
-            <UIText kind="small/accent">
-              {new Intl.DateTimeFormat('en', {
-                dateStyle: 'medium',
-              }).format(Number(timestamp))}
-            </UIText>
-          </HStack>
-          <SurfaceList
-            gap={4}
-            items={items.map((addressTransaction) => ({
-              key: addressTransaction.transaction.hash,
-              component: <ActionItem addressAction={addressTransaction} />,
-            }))}
-          />
-        </VStack>
-      ))}
-      {actions.length && isLoading ? (
-        // TODO: fix this  workaround in https://zerion-tech.atlassian.net/browse/WLT-1828
-        <div style={{ height: 44 }}>
-          <DelayedRender delay={400}>
-            <ViewLoading />
-          </DelayedRender>
-        </div>
-      ) : hasMore ? (
+      <VStack gap={24}>
+        {Object.entries(groupedByDate).map(([timestamp, items]) => (
+          <VStack gap={8} key={timestamp}>
+            <HStack
+              gap={8}
+              justifyContent="space-between"
+              style={{ paddingInline: 16 }}
+            >
+              <UIText kind="small/accent">
+                {new Intl.DateTimeFormat('en', {
+                  dateStyle: 'medium',
+                }).format(Number(timestamp))}
+              </UIText>
+            </HStack>
+            <SurfaceList
+              gap={4}
+              items={items.map((addressTransaction) => ({
+                key: addressTransaction.transaction.hash,
+                component: <ActionItem addressAction={addressTransaction} />,
+              }))}
+            />
+          </VStack>
+        ))}
+      </VStack>
+      {actions.length && (isLoading || hasMore) ? (
         <SurfaceList
           items={[
             {
               key: 0,
               onClick: isLoading ? undefined : onLoadMore,
-              component: (
-                <span
-                  style={{
-                    color: isLoading ? 'var(--neutral-500)' : 'var(--primary)',
-                  }}
-                >
-                  More transactions
-                </span>
+              style: { height: 40 },
+              component: isLoading ? (
+                <DelayedRender delay={400}>
+                  <ViewLoading />
+                </DelayedRender>
+              ) : (
+                <UIText kind="body/accent" color="var(--primary)">
+                  Show More
+                </UIText>
               ),
             },
           ]}

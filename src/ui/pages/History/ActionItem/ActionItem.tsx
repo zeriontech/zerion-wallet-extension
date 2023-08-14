@@ -405,6 +405,7 @@ function ActionItemLocal({
     >
       <Media
         vGap={0}
+        gap={12}
         image={
           <div style={{ position: 'relative', ...transactionIconStyle }}>
             {action.transaction.status === 'pending' ? (
@@ -436,7 +437,7 @@ function ActionItemLocal({
         text={<ActionTitle action={action} explorerUrl={explorerUrl} />}
         detailText={<ActionDetail networks={networks} action={action} />}
       />
-      <UIText kind="small/regular">
+      <UIText kind="body/regular">
         {asset ? (
           <AssetLink
             asset={asset}

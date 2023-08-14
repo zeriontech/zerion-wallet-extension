@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { useLayoutEffect } from 'react';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
-import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { useLocation } from 'react-router-dom';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import BugIcon from 'jsx:src/ui/assets/bug.svg';
@@ -65,24 +64,17 @@ export function BugReportButton() {
 
   return (
     <BottomFixed>
-      <PageColumn
-        style={{
-          borderTop: '1px solid var(--neutral-400)',
-          backgroundColor: 'var(--neutral-200)',
-          paddingTop: 4,
-          paddingBottom: 4,
-        }}
-      >
-        <UIText kind="small/accent" className={helperStyles.hoverUnderline}>
-          <UnstyledAnchor
-            className={s.link}
-            // Open report URL in a new _window_ so that extension UI stays open.
-            // This should help the user describe the issue better
-            onClick={openInNewWindow}
-            href={bugReportURL}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+      <PageColumn style={{ padding: 0 }}>
+        <UnstyledAnchor
+          className={s.link}
+          // Open report URL in a new _window_ so that extension UI stays open.
+          // This should help the user describe the issue better
+          onClick={openInNewWindow}
+          href={bugReportURL}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <UIText kind="small/accent">
             <HStack
               gap={8}
               justifyContent="center"
@@ -95,8 +87,8 @@ export function BugReportButton() {
               <BugIcon />
               <span>Bug Report</span>
             </HStack>
-          </UnstyledAnchor>
-        </UIText>
+          </UIText>
+        </UnstyledAnchor>
       </PageColumn>
     </BottomFixed>
   );

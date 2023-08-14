@@ -19,7 +19,7 @@ export const SearchInput = React.forwardRef<HTMLInputElement, InputProps>(
             color: 'var(--neutral-500)',
           }}
         />
-        <Input {...props} style={{ paddingLeft: 44 }} ref={ref} />
+        <Input {...props} style={{ paddingLeft: 40 }} ref={ref} />
       </div>
     );
   }

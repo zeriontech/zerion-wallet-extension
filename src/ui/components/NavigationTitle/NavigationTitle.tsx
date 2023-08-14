@@ -54,7 +54,7 @@ export function NavigationTitle({
     <>
       {backTo ? (
         <Content name="navigation-bar-back-button">
-          <BackButton style={{ padding: 8 }} onClick={() => navigate(backTo)} />
+          <BackButton onClick={() => navigate(backTo)} />
         </Content>
       ) : null}
       <Content name="navigation-bar">{title}</Content>

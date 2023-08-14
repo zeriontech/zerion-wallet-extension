@@ -79,9 +79,8 @@ export function URLBar() {
         zIndex: 1,
         backgroundColor: 'var(--background)',
         opacity: pathname !== pathnameRef.current ? 0 : 1,
-        paddingTop: 8,
-        paddingLeft: 8,
-        paddingRight: 8,
+        paddingTop: 16,
+        paddingInline: 8,
         display: 'grid',
         alignItems: 'center',
         gridTemplateColumns: '40px 1fr 40px',
@@ -95,7 +94,6 @@ export function URLBar() {
           ) : (
             <>
               <BackButton
-                style={{ padding: 8 }}
                 onClick={() => navigate(-1)}
                 title={`Press "backspace" to navigate back`}
               />

@@ -15,6 +15,7 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { ThemeStore, themeStore } from 'src/ui/features/appearance';
 import { useStore } from '@store-unit/react';
 import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
+import { UIText } from 'src/ui/ui-kit/UIText';
 import * as s from './styles.module.css';
 
 function ActionButton<As extends ElementType = 'a'>({
@@ -36,11 +37,11 @@ function ActionButton<As extends ElementType = 'a'>({
         ThemeStore.isDark(themeState) ? s.dark : undefined
       )}
     >
-      <VStack gap={4} style={{ placeItems: 'center' }}>
+      <VStack gap={6} style={{ placeItems: 'center' }}>
         <div className={s.icon} title={title}>
           {icon}
         </div>
-        {title}
+        <UIText kind="caption/accent">{title}</UIText>
       </VStack>
     </Element>
   );

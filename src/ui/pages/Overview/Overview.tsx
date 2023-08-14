@@ -9,9 +9,6 @@ import {
   formatCurrencyValue,
 } from 'src/shared/units/formatCurrencyValue';
 import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
-// import { Twinkle } from 'src/ui/ui-kit/Twinkle';
-// import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
-// import { FillView } from 'src/ui/components/FillView';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import PersonIcon from 'jsx:src/ui/assets/person.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -34,7 +31,6 @@ import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { CopyButton } from 'src/ui/components/CopyButton';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
@@ -53,6 +49,12 @@ import { CurrentNetwork } from './CurrentNetwork';
 import { NonFungibleTokens } from './NonFungibleTokens';
 import { Positions } from './Positions';
 import { ActionButtonsRow } from './ActionButtonsRow';
+import {
+  TABS_HEIGHT,
+  TABS_OFFSET,
+  TABS_OFFSET_METER_ID,
+  TABS_PADDING,
+} from './getTabsOffset';
 
 interface ChangeInfo {
   isPositive: boolean;
@@ -131,17 +133,21 @@ function CurrentAccountControls() {
     >
       <Button
         kind="ghost"
-        size={32}
+        size={40}
         as={UnstyledLink}
         to="/wallet-select"
         title="Select Account"
+        style={{ paddingInline: 8 }}
       >
         <HStack gap={4} alignItems="center">
           <PersonIcon />
-          <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+          <UIText
+            kind="body/accent"
+            style={{ display: 'inline-flex', alignItems: 'center' }}
+          >
             <CurrentAccount wallet={wallet} />
             <ArrowDownIcon />
-          </span>
+          </UIText>
         </HStack>
       </Button>
       <CopyButton address={addressToCopy} />
@@ -205,8 +211,13 @@ function OverviewComponent() {
   if (!preferences) {
     return <ViewLoading />;
   }
+
   return (
-    <PageColumn>
+    <PageColumn
+      style={{
+        ['--column-padding-inline' as string]: '8px',
+      }}
+    >
       <PageFullBleedColumn
         paddingInline={true}
         style={{
@@ -216,7 +227,7 @@ function OverviewComponent() {
           backgroundColor: 'var(--background)',
         }}
       >
-        <Spacer height={8} />
+        <Spacer height={16} />
         <HStack gap={12} justifyContent="space-between" alignItems="center">
           <CurrentAccountControls />
 
@@ -228,10 +239,15 @@ function OverviewComponent() {
             <SettingsLinkIcon />
           </HStack>
         </HStack>
+        <Spacer height={16} />
       </PageFullBleedColumn>
-      <PausedBanner style={{ marginTop: 16 }} />
-      <Spacer height={24} />
-      <div style={{ height: isLoadingPortfolio ? 72 : undefined }}>
+      <PausedBanner style={{ marginBottom: 16, marginInline: 8 }} />
+      <div
+        style={{
+          height: isLoadingPortfolio ? 68 : undefined,
+          paddingInline: 8,
+        }}
+      >
         <HStack gap={16} alignItems="center">
           {!isLoadingPortfolio ? (
             <WalletAvatar address={singleAddress} size={64} borderRadius={6} />
@@ -254,7 +270,7 @@ function OverviewComponent() {
                   const sign = change.isPositive ? '+' : '';
                   return (
                     <UIText
-                      kind="body/regular"
+                      kind="small/regular"
                       color={
                         change.isNonNegative
                           ? 'var(--positive-500)'
@@ -281,17 +297,23 @@ function OverviewComponent() {
         </HStack>
       </div>
       <Spacer height={20} />
-      <ActionButtonsRow />
+      <div style={{ paddingInline: 'var(--column-padding-inline)' }}>
+        <ActionButtonsRow />
+      </div>
       <DevelopmentOnly>
         <RenderTimeMeasure />
       </DevelopmentOnly>
       <Spacer height={20} />
-      <InvitationBanner address={singleAddressNormalized} />
+      <InvitationBanner
+        address={singleAddressNormalized}
+        style={{ marginInline: 8 }}
+      />
+      <div id={TABS_OFFSET_METER_ID} />
       <PageFullBleedColumn
         paddingInline={false}
         style={{
           position: 'sticky',
-          top: 48,
+          top: TABS_OFFSET,
           zIndex: 'var(--max-layout-index)',
           backgroundColor: 'var(--background)',
         }}
@@ -301,12 +323,12 @@ function OverviewComponent() {
             borderTopLeftRadius: 24,
             borderTopRightRadius: 24,
             backgroundColor: 'var(--white)',
-            paddingTop: 12,
+            paddingTop: TABS_PADDING,
+            height: TABS_HEIGHT,
           }}
         >
           <SegmentedControlGroup
             style={{
-              paddingTop: 4,
               paddingInline: 16,
               gap: 24,
               borderBottom: 'none',
@@ -352,26 +374,23 @@ function OverviewComponent() {
           <Route
             path="/"
             element={
-              <DelayedRender
-                /** Cheap perceived performance hack: render expensive Positions component later so that initial UI render is faster */
-                delay={16}
-              >
-                <ViewSuspense>
-                  <Positions
-                    chain={preferences.overviewChain}
-                    onChainChange={setChain}
-                  />
-                </ViewSuspense>
-              </DelayedRender>
+              <ViewSuspense>
+                <Positions
+                  chain={preferences.overviewChain}
+                  onChainChange={setChain}
+                />
+              </ViewSuspense>
             }
           />
           <Route
             path="/nfts"
             element={
-              <NonFungibleTokens
-                chain={preferences.overviewChain}
-                onChainChange={setChain}
-              />
+              <ViewSuspense>
+                <NonFungibleTokens
+                  chain={preferences.overviewChain}
+                  onChainChange={setChain}
+                />
+              </ViewSuspense>
             }
           />
           <Route

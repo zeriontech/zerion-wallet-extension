@@ -10,7 +10,13 @@ import CloseIcon from 'jsx:src/ui/assets/close.svg';
 import { useInvitationInfo } from './useInvitationInfo';
 import * as styles from './styles.module.css';
 
-export function InvitationBanner({ address }: { address: string }) {
+export function InvitationBanner({
+  address,
+  style,
+}: {
+  address: string;
+  style?: React.CSSProperties;
+}) {
   const { data } = useInvitationInfo(address, { useErrorBoundary: false });
   const { preferences, setPreferences } = usePreferences();
 
@@ -30,6 +36,7 @@ export function InvitationBanner({ address }: { address: string }) {
           backgroundImage: `url(${require('./banner.png')})`,
           backgroundSize: '100% 100%',
           position: 'relative',
+          ...style,
         }}
       >
         <UnstyledButton

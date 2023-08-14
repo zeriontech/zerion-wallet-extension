@@ -58,6 +58,8 @@ import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { networksStore } from 'src/modules/networks/networks-store.client';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { getCommonQuantity } from 'src/modules/networks/asset';
+import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
+import { minus } from 'src/ui/shared/typography';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 
 function LineToParent({
@@ -132,12 +134,25 @@ function AddressPositionItem({
   const network = networks?.getNetworkByName(createChain(position.chain));
   const chain = createChain(position.chain);
 
+  const relativeChange = (position.asset.price?.relative_change_24h || 0) / 100;
+  const absoluteChange = Math.abs(
+    position.asset.price
+      ? (relativeChange * Number(position.value)) / (1 + relativeChange)
+      : 0
+  ).toFixed(2);
+
   return (
-    <div style={{ position: 'relative', paddingLeft: isNested ? 26 : 0 }}>
+    <div
+      style={{
+        position: 'relative',
+        paddingLeft: isNested ? 26 : 0,
+        paddingRight: 4,
+      }}
+    >
       {isNested ? (
         <LineToParent hasPreviosNestedPosition={hasPreviosNestedPosition} />
       ) : null}
-      <HStack gap={4} justifyContent="space-between" style={{ flexGrow: 1 }}>
+      <HStack gap={2} justifyContent="space-between" style={{ flexGrow: 1 }}>
         <Media
           vGap={0}
           gap={12}
@@ -240,11 +255,16 @@ function AddressPositionItem({
                     : 'var(--positive-500)'
                 }
               >
-                {position.asset.price.relative_change_24h > 0 ? '+' : null}
-                {`${formatPercent(
+                {`${
+                  position.asset.price.relative_change_24h > 0 ? '+' : minus
+                }${formatCurrencyValue(
+                  absoluteChange,
+                  'en',
+                  'usd'
+                )} (${formatPercent(
                   position.asset.price.relative_change_24h,
                   'en'
-                )}%`}
+                )}%)`}
               </UIText>
             ) : null}
           </VStack>
@@ -419,8 +439,8 @@ function ProtocolHeading({
         <TokenIcon
           src={getProtocolIconURL(protocol)}
           symbol={protocol}
-          size={32}
-          style={{ borderRadius: 8 }}
+          size={24}
+          style={{ borderRadius: 6 }}
         />
       )}
       <UIText kind="body/accent">
@@ -496,7 +516,11 @@ function PositionList({
               separatorTop: false,
               pad: false,
               component: (
-                <UIText kind="caption/accent" color="var(--neutral-700)">
+                <UIText
+                  kind="caption/accent"
+                  color="var(--neutral-700)"
+                  style={{ paddingBlock: 4 }}
+                >
                   {name.toUpperCase()}
                 </UIText>
               ),
@@ -531,7 +555,6 @@ function PositionList({
           }
         }
         if (protocolItems.length > stopAt) {
-          const howMuchMore = protocolItems.length - stopAt;
           items.push({
             key: 'show-more-less',
             onClick: () => {
@@ -542,21 +565,24 @@ function PositionList({
               }
             },
             component: (
-              <UIText kind="body/regular" color="var(--primary)">
+              <UIText kind="body/accent" color="var(--primary)">
                 {expanded.has(protocol)
-                  ? 'Show Less'
-                  : `Show More (${howMuchMore})`}
+                  ? 'Show Less Assets'
+                  : 'Show All Assets'}
               </UIText>
             ),
           });
         }
         return (
-          <VStack gap={8} key={protocol}>
+          <VStack gap={4} key={protocol}>
             <HStack
               gap={4}
               justifyContent="space-between"
               alignItems="center"
-              style={{ paddingInline: 'var(--column-padding-inline)' }}
+              style={{
+                paddingInline: 16,
+                paddingBottom: 8,
+              }}
             >
               <ProtocolHeading
                 protocol={protocol}
@@ -567,7 +593,7 @@ function PositionList({
               {index === 0 && firstHeaderItemEnd ? firstHeaderItemEnd : null}
             </HStack>
             <SurfaceList
-              style={{ position: 'relative', paddingTop: 0 }}
+              style={{ position: 'relative', paddingBlock: 0 }}
               // estimateSize={(index) => (index === 0 ? 52 : 60 + 1)}
               // overscan={5} // the library detects window edge incorrectly, increasing overscan just visually hides the problem
               items={items}
@@ -740,6 +766,8 @@ export function Positions({
   onChainChange: (value: string) => void;
 }) {
   const { ready, params, singleAddressNormalized } = useAddressParams();
+  // Cheap perceived performance hack: render expensive Positions component later so that initial UI render is faster
+  const readyToRender = useRenderDelay(16);
   const { networks } = useNetworks();
   if (!networks || !ready) {
     return (
@@ -748,11 +776,6 @@ export function Positions({
       </DelayedRender>
     );
   }
-  const chain = createChain(chainValue);
-  const isSupportedByBackend =
-    chainValue === NetworkSelectValue.All
-      ? true
-      : networks.isSupportedByBackend(createChain(chainValue));
   const networkSelect = (
     <NetworkSelect
       value={chainValue}
@@ -761,24 +784,35 @@ export function Positions({
       valueMaxWidth={180}
     />
   );
+  const chain = createChain(chainValue);
+  const isSupportedByBackend =
+    chainValue === NetworkSelectValue.All
+      ? true
+      : networks.isSupportedByBackend(createChain(chainValue));
+
   const renderEmptyViewForNetwork = () => (
     <>
       <div
         style={{
-          paddingInline: 'var(--column-padding-inline)',
+          paddingInline: 16,
           display: 'flex',
           justifyContent: 'end',
         }}
       >
         {networkSelect}
       </div>
-      <EmptyViewForNetwork
-        message="No assets yet"
-        chainValue={chainValue}
-        onChainChange={onChainChange}
-      />
+      <DelayedRender delay={50}>
+        <EmptyViewForNetwork
+          message="No assets yet"
+          chainValue={chainValue}
+          onChainChange={onChainChange}
+        />
+      </DelayedRender>
     </>
   );
+  if (!readyToRender) {
+    return renderEmptyViewForNetwork();
+  }
   if (isSupportedByBackend) {
     return (
       <MultiChainPositions

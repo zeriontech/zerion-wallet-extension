@@ -116,6 +116,7 @@ export function CurrentNetwork({ address }: { address: string }) {
       <Button
         kind="ghost"
         size={40}
+        style={{ paddingInline: 8 }}
         title={getNameFromOrigin(tabOrigin)}
         onClick={() => {
           if (ref.current) {

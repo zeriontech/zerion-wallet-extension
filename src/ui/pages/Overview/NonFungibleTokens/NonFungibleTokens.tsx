@@ -21,17 +21,14 @@ import {
 import type { AddressNFT } from 'src/ui/shared/requests/addressNfts/types';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
-import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
-import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
-import { StretchyFillView } from 'src/ui/components/FillView/FillView';
 import { EmptyViewForNetwork } from 'src/ui/components/EmptyViewForNetwork';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
-import { NetworkSelect } from '../../Networks/NetworkSelect';
-import { STRETCHY_VIEW_HEIGHT } from '../../History/constants';
+import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
+import { NetworkSelect } from '../../Networks/NetworkSelect';
 import * as s from './styles.module.css';
 
 function NFTItem({
@@ -101,11 +98,11 @@ function NFTItem({
             </>
           )}
         />
-        <Spacer height={16} />
-        <VStack gap={4} style={{ marginTop: 'auto' }}>
+        <Spacer height={8} />
+        <VStack gap={0} style={{ marginTop: 'auto' }}>
           {showCollection ? (
             <UIText
-              kind="small/accent"
+              kind="caption/regular"
               color="var(--neutral-500)"
               style={{
                 whiteSpace: 'nowrap',
@@ -117,7 +114,7 @@ function NFTItem({
             </UIText>
           ) : null}
           <UIText
-            kind="body/accent"
+            kind="small/accent"
             style={{
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
@@ -127,13 +124,13 @@ function NFTItem({
             {item.metadata.name || 'Untitled Asset'}
           </UIText>
           {price ? (
-            <UIText kind="body/accent">
+            <UIText kind="small/accent">
               <NeutralDecimals
                 parts={formatCurrencyToParts(price, 'en', 'usd')}
               />
             </UIText>
           ) : someHavePrice ? (
-            <UIText kind="body/accent">{NBSP}</UIText>
+            <UIText kind="small/accent">{NBSP}</UIText>
           ) : null}
         </VStack>
         {isPrimary ? (
@@ -210,15 +207,11 @@ export function NonFungibleTokens({
   );
 
   if (totalValueIsLoading && isSupportedByBackend) {
-    return (
-      <StretchyFillView maxHeight={STRETCHY_VIEW_HEIGHT}>
-        <ViewLoading kind="network" />
-      </StretchyFillView>
-    );
+    return <ViewLoading kind="network" />;
   }
 
   if (!ready || !items || !nftTotalValueIsReady) {
-    return <StretchyFillView maxHeight={STRETCHY_VIEW_HEIGHT} />;
+    return null;
   }
 
   if (!isSupportedByBackend || items.length === 0) {
@@ -226,50 +219,48 @@ export function NonFungibleTokens({
       <>
         <div
           style={{
-            paddingInline: 'var(--column-padding-inline)',
+            paddingInline: 16,
             display: 'flex',
             justifyContent: 'end',
           }}
         >
           {networkSelect}
         </div>
-        <StretchyFillView maxHeight={STRETCHY_VIEW_HEIGHT}>
-          <DelayedRender delay={100}>
-            {isLoading && isSupportedByBackend ? (
-              <ViewLoading kind="network" />
-            ) : (
-              <VStack gap={32} style={{ width: '100%' }}>
-                {maybeSingleAddress ? (
-                  <DnaNFTBanner
-                    address={normalizeAddress(maybeSingleAddress || '')}
-                    style={{
-                      width: '100%',
-                      paddingInline: 'var(--column-padding-inline)',
-                    }}
-                  />
-                ) : null}
-                <EmptyViewForNetwork
-                  message="No NFTs yet"
-                  chainValue={chainValue}
-                  onChainChange={onChainChange}
+        <DelayedRender delay={100}>
+          {isLoading && isSupportedByBackend ? (
+            <ViewLoading kind="network" />
+          ) : (
+            <VStack gap={32} style={{ width: '100%' }}>
+              {maybeSingleAddress ? (
+                <DnaNFTBanner
+                  address={normalizeAddress(maybeSingleAddress || '')}
+                  style={{
+                    width: '100%',
+                    paddingInline: 16,
+                  }}
                 />
-              </VStack>
-            )}
-          </DelayedRender>
-        </StretchyFillView>
+              ) : null}
+              <EmptyViewForNetwork
+                message="No NFTs yet"
+                chainValue={chainValue}
+                onChainChange={onChainChange}
+              />
+            </VStack>
+          )}
+        </DelayedRender>
       </>
     );
   }
 
   return (
-    <VStack gap={24} style={{ paddingInline: 'var(--column-padding-inline)' }}>
+    <VStack gap={16}>
       <HStack
         gap={4}
         justifyContent="space-between"
         alignItems="center"
         style={{
           paddingBottom: 8,
-          paddingInline: 8,
+          paddingInline: 16,
         }}
       >
         <UIText kind="body/accent">
@@ -283,15 +274,19 @@ export function NonFungibleTokens({
       </HStack>
 
       {maybeSingleAddress ? (
-        <DnaNFTBanner address={normalizeAddress(maybeSingleAddress)} />
+        <DnaNFTBanner
+          address={normalizeAddress(maybeSingleAddress)}
+          style={{ paddingInline: 16 }}
+        />
       ) : null}
 
       <div
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(112px, 1fr))',
-          gridGap: 12,
+          gridGap: 16,
           rowGap: 24,
+          paddingInline: 16,
         }}
       >
         {items.map((addressNft) => (
@@ -304,17 +299,24 @@ export function NonFungibleTokens({
       </div>
 
       {hasNext ? (
-        <Button
-          kind="regular"
-          onClick={fetchMore}
-          disabled={isLoading}
-          style={{ paddingInline: 16 }}
-        >
-          <HStack gap={8} alignItems="center">
-            <span>More NFTs</span>
-            {isLoading ? <CircleSpinner /> : null}
-          </HStack>
-        </Button>
+        <SurfaceList
+          items={[
+            {
+              key: 0,
+              onClick: isLoading ? undefined : fetchMore,
+              style: { height: 40 },
+              component: isLoading ? (
+                <DelayedRender delay={400}>
+                  <ViewLoading />
+                </DelayedRender>
+              ) : (
+                <UIText kind="body/accent" color="var(--primary)">
+                  Show More
+                </UIText>
+              ),
+            },
+          ]}
+        />
       ) : null}
     </VStack>
   );

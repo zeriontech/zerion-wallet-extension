@@ -91,7 +91,7 @@ export function NetworkSelect({
                 ? networks?.getChainName(chain)
                 : noValueDash}
             </span>
-            <ArrowDownIcon />
+            <ArrowDownIcon style={{ width: 20, height: 20 }} />
           </span>
         </HStack>
       </Button>

@@ -19,7 +19,11 @@ import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { pendingTransactionToAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
-import { STRETCHY_VIEW_HEIGHT } from './constants';
+import {
+  HISTORY_FILTERS_HEIGHT,
+  HISTORY_STRETCHY_VIEW_HEIGHT,
+  getTabsOffset,
+} from '../Overview/getTabsOffset';
 import { ActionsList } from './ActionsList';
 import { ActionSearch } from './ActionSearch';
 import { isMatchForAllWords } from './matchSearcQuery';
@@ -167,16 +171,20 @@ export function HistoryList({
     <HStack
       gap={16}
       alignItems="center"
-      style={{ paddingInline: 16, gridTemplateColumns: '1fr auto' }}
+      style={{
+        paddingInline: 16,
+        gridTemplateColumns: '1fr auto',
+        height: HISTORY_FILTERS_HEIGHT,
+      }}
     >
       <ActionSearch
         value={searchQuery}
         onChange={setSearchQuery}
-        onFocus={(e) => {
-          const yOffset = -110;
-          const scrollDistance =
-            e.target.getBoundingClientRect().top + window.pageYOffset + yOffset;
-          window.scrollTo({ behavior: 'smooth', top: scrollDistance });
+        onFocus={() => {
+          window.scrollTo({
+            behavior: 'smooth',
+            top: getTabsOffset(),
+          });
         }}
       />
       <NetworkSelect
@@ -199,7 +207,7 @@ export function HistoryList({
           onLoadMore={fetchMore}
         />
       ) : (
-        <StretchyFillView maxHeight={STRETCHY_VIEW_HEIGHT}>
+        <StretchyFillView maxHeight={HISTORY_STRETCHY_VIEW_HEIGHT}>
           {!isLoading ? (
             <EmptyView
               onReset={() => {

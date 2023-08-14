@@ -9,20 +9,13 @@ import * as s from './SegmentedControl.module.css';
 
 export const kinds = ['primary', 'secondary'] as const;
 
-type Kind = typeof kinds[number];
+type Kind = (typeof kinds)[number];
 
-const labelParams: Record<
-  Kind,
-  { checked: string; blurred: string; kind: UITextKind }
-> = {
+const labelParams: Record<Kind, { kind: UITextKind }> = {
   primary: {
-    checked: 'var(--primary)',
-    blurred: 'var(--neutral-600)',
     kind: 'body/accent',
   },
   secondary: {
-    checked: 'var(--black)',
-    blurred: 'var(--black)',
     kind: 'caption/accent',
   },
 };
@@ -40,13 +33,8 @@ export function SegmentedControlRadio({
 }: HTMLProps<HTMLInputElement>) {
   const { kind } = useContext(SegmentedControlGroupContext);
   return (
-    <label className={s.radio}>
-      <UIText
-        kind={labelParams[kind].kind}
-        color={checked ? labelParams[kind].checked : labelParams[kind].blurred}
-      >
-        {children}
-      </UIText>
+    <label className={cx(s.radio, { [s.radioChecked]: checked })}>
+      <UIText kind={labelParams[kind].kind}>{children}</UIText>
       <input
         type="radio"
         className={s.input}
@@ -71,12 +59,7 @@ export function SegmentedControlLink({
     <NavLink
       {...props}
       className={({ isActive }) => cx(s.link, { [s.activeLink]: isActive })}
-      style={({ isActive }) => ({
-        color: isActive
-          ? labelParams[groupKind].checked
-          : labelParams[groupKind].blurred,
-        ...style,
-      })}
+      style={style}
     >
       <UIText kind={textKind || labelParams[groupKind].kind}>{children}</UIText>
       <div className={s.activeDecorator} />
