@@ -9,6 +9,8 @@ interface Props {
   title?: string;
 }
 
+const ICON_SIZE = 24;
+
 export function CopyButton({ address, title = 'Copy Address' }: Props) {
   const { handleCopy, isSuccess } = useCopyToClipboard({ text: address });
   return (
@@ -24,11 +26,15 @@ export function CopyButton({ address, title = 'Copy Address' }: Props) {
           <CheckIcon
             style={{
               display: 'block',
+              width: ICON_SIZE,
+              height: ICON_SIZE,
               color: 'var(--positive-500)',
             }}
           />
         ) : (
-          <CopyIcon style={{ display: 'block' }} />
+          <CopyIcon
+            style={{ display: 'block', width: ICON_SIZE, height: ICON_SIZE }}
+          />
         )}
       </Button>
       {isSuccess ? (

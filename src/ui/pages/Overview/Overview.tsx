@@ -304,7 +304,10 @@ function OverviewComponent() {
         <RenderTimeMeasure />
       </DevelopmentOnly>
       <Spacer height={20} />
-      <InvitationBanner address={singleAddressNormalized} />
+      <InvitationBanner
+        address={singleAddressNormalized}
+        style={{ marginInline: 8 }}
+      />
       <div id={TABS_OFFSET_METER_ID} />
       <PageFullBleedColumn
         paddingInline={false}

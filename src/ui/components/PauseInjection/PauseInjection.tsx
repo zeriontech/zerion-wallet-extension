@@ -360,6 +360,8 @@ export function PauseInjectionControl() {
         {React.createElement(isPaused ? ConnectionIconOff : ConnectionIconOn, {
           style: {
             display: 'block',
+            width: 24,
+            height: 24,
             color: isPausedForAll
               ? 'var(--notice-600)'
               : isPaused

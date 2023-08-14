@@ -17,7 +17,7 @@ export function SettingsLinkIcon() {
       style={{ paddingInline: 8 }}
     >
       <div style={{ position: 'relative' }}>
-        <SettingsIcon style={{ display: 'block' }} />
+        <SettingsIcon style={{ display: 'block', width: 24, height: 24 }} />
         {count > 0 ? (
           <UIText
             kind="body/regular"
