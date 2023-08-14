@@ -7,41 +7,33 @@ import type { IncomingTransaction } from '../types/IncomingTransaction';
 
 export type TransactionActionType = 'deploy' | 'send' | 'execute' | 'approve';
 
-export type TransactionAction =
-  | {
-      type: 'deploy';
-      chain: Chain;
-      value?: number;
-    }
-  | {
-      type: 'send';
-      isNativeAsset: boolean;
-      chain: Chain;
-      contractAddress?: string;
-      assetId: string | null;
-      assetAddress: string | null;
-      receiverAddress: string;
-      /**
-       * "amount" is similar to "value", but "value" implies native asset only,
-       * while "amount" implies both native and non-native assets
-       * Maybe this is an unnecessary discrimination and we can use "value" here, too.
-       */
-      amount: number;
-    }
-  | {
-      type: 'execute';
-      contractAddress: string;
-      chain: Chain;
-      value?: number;
-    }
-  | {
-      type: 'approve';
-      chain: Chain;
-      contractAddress: string;
-      assetAddress: string;
-      spenderAddress: string;
-      amount: number;
-    };
+interface OutgoingValue {
+  isNativeAsset: boolean;
+  chain: Chain;
+  assetId: string | null;
+  assetAddress: string | null;
+  amount?: number;
+}
+
+export type TransactionAction = OutgoingValue &
+  (
+    | {
+        type: 'send';
+        receiverAddress: string;
+        contractAddress?: string;
+        amount: number;
+      }
+    | {
+        type: 'execute';
+        contractAddress: string;
+      }
+    | {
+        type: 'approve';
+        spenderAddress: string;
+        contractAddress: string;
+        amount: number;
+      }
+  );
 
 interface DescriberContext {
   chain: Chain;
@@ -103,6 +95,22 @@ const selectors = {
 
 const abiCoder = ethers.utils.defaultAbiCoder;
 
+function createExecuteAction(
+  transaction: IncomingTransaction,
+  context: DescriberContext
+): TransactionAction {
+  const network = context.networks.getNetworkByName(context.chain);
+  return {
+    type: 'execute',
+    isNativeAsset: true,
+    contractAddress: transaction.to || '0x',
+    amount: getMaybeAmount(transaction),
+    assetId: network?.native_asset?.id || null,
+    assetAddress: network?.native_asset?.address || null,
+    chain: context.chain,
+  };
+}
+
 function describeMulticall(
   transaction: IncomingTransaction,
   context: DescriberContext
@@ -115,12 +123,8 @@ function describeMulticall(
   if (!match) {
     return null;
   }
-  return {
-    type: 'execute',
-    contractAddress: transaction.to || '0x',
-    value: getMaybeAmount(transaction),
-    chain: context.chain,
-  };
+
+  return createExecuteAction(transaction, context);
 }
 
 function describeApprove(
@@ -137,13 +141,16 @@ function describeApprove(
     args
   );
   const contractAddress = transaction.to || '0x';
+  const network = context.networks.getNetworkByName(context.chain);
   return {
     type: 'approve',
-    chain: context.chain,
     contractAddress,
-    assetAddress: contractAddress,
     spenderAddress,
     amount: amount,
+    isNativeAsset: true,
+    chain: context.chain,
+    assetAddress: contractAddress,
+    assetId: network?.native_asset?.id || null,
   };
 }
 
@@ -217,10 +224,6 @@ export function describeTransaction(
       return description;
     }
   }
-  return {
-    type: 'execute',
-    contractAddress: transaction.to || '0x',
-    value: getMaybeAmount(transaction),
-    chain: context.chain,
-  };
+
+  return createExecuteAction(transaction, context);
 }

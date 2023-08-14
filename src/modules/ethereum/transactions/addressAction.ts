@@ -65,56 +65,24 @@ function createActionLabel(
 
   return {
     type: actionTypeToLabelType[action.type],
-    value:
-      transaction.to ||
-      (action.type === 'deploy' ? '' : action.contractAddress || ''),
+    value: transaction.to || action.contractAddress || '',
     display_value: {
       text: '',
       wallet_address,
-      contract_address:
-        action.type === 'deploy' ? undefined : action.contractAddress,
+      contract_address: action.contractAddress,
     },
   };
 }
 
 async function createActionContent(
-  action: TransactionAction,
-  networks: Networks
+  action: TransactionAction
 ): Promise<AddressAction['content'] | null> {
   switch (action.type) {
-    case 'deploy': {
-      return null;
-    }
-    case 'execute': {
-      // TODO: refactor
-      // Cases for 'execute' and 'send' are partially duplicated
-      // The refactoring probably should take place in the describeTransaction.ts
-      if (!action.value) {
+    case 'execute':
+    case 'send': {
+      if (!action.amount) {
         return null;
       }
-      const network = networks.getNetworkByName(action.chain);
-      const query: CachedAssetQuery = {
-        isNative: true,
-        chain: action.chain,
-        id: network?.native_asset?.id || null,
-        address: network?.native_asset?.address || null,
-      };
-      const asset = await fetchAssetFromCacheOrAPI(query);
-      return asset
-        ? {
-            transfers: {
-              outgoing: [
-                {
-                  asset: { fungible: asset },
-                  quantity: action.value.toString(),
-                  price: null,
-                },
-              ],
-            },
-          }
-        : null;
-    }
-    case 'send': {
       const query: CachedAssetQuery = action.isNativeAsset
         ? {
             isNative: true,
@@ -128,7 +96,7 @@ async function createActionContent(
             address: action.assetAddress,
           };
       const asset = await fetchAssetFromCacheOrAPI(query);
-      return asset
+      return asset && action.amount
         ? {
             transfers: {
               outgoing: [
@@ -174,7 +142,7 @@ export async function pendingTransactionToAddressAction(
     ? describeTransaction(transaction, { networks, chain })
     : null;
   const label = action ? createActionLabel(transaction, action) : null;
-  const content = action ? await createActionContent(action, networks) : null;
+  const content = action ? await createActionContent(action) : null;
   return {
     id: hash,
     transaction: {
@@ -219,7 +187,7 @@ export async function incomingTxToIncomingAddressAction(
   );
   const action = describeTransaction(transaction, { networks, chain });
   const label = createActionLabel(transaction, action);
-  const content = await createActionContent(action, networks);
+  const content = await createActionContent(action);
   return {
     id: null,
     transaction: {
