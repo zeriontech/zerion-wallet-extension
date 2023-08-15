@@ -9,7 +9,7 @@ async function build() {
     // pass --no-content-hash flag to avoid code-splitting issues:
     // https://github.com/parcel-bundler/parcel/issues/8071#issuecomment-1214438848
     // https://github.com/parcel-bundler/parcel/issues/8071#issuecomment-1133549719
-    './node_modules/.bin/parcel build src/manifest.json --no-content-hash'
+    './node_modules/.bin/parcel build src/manifest.json --no-content-hash --no-source-maps'
   );
 
   console.log('Done'); // eslint-disable-line no-console
