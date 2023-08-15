@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Chain } from 'src/modules/networks/Chain';
-import type { ActionAsset, ActionTransfers } from 'defi-sdk';
+import type { ActionTransfers, AddressAction } from 'defi-sdk';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
@@ -24,7 +24,7 @@ export function AddressActionDetails({
   networks: Networks;
   actionTransfers?: ActionTransfers;
   wallet: BareWallet;
-  singleAsset?: ActionAsset;
+  singleAsset?: NonNullable<AddressAction['content']>['single_asset'];
 }) {
   return (
     <>
@@ -53,8 +53,9 @@ export function AddressActionDetails({
       {singleAsset && addressAction ? (
         <SingleAsset
           address={wallet.address}
+          chain={chain}
           actionType={addressAction.type.value}
-          asset={singleAsset}
+          singleAsset={singleAsset}
         />
       ) : null}
     </>

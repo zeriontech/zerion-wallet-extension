@@ -117,7 +117,12 @@ async function createActionContent(
         address: action.assetAddress,
       });
       return asset
-        ? { single_asset: { asset: { fungible: asset }, quantity: '' } }
+        ? {
+            single_asset: {
+              asset: { fungible: asset },
+              quantity: String(action.amount),
+            },
+          }
         : null;
     }
   }

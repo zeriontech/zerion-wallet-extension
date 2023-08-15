@@ -1,6 +1,6 @@
-import type { ActionAsset, ActionType, Asset } from 'defi-sdk';
+import type { ActionType, AddressAction, Asset } from 'defi-sdk';
 import { NFTAsset } from 'defi-sdk';
-import React from 'react';
+import React, { useMemo } from 'react';
 import UnknownIcon from 'jsx:src/ui/assets/actionTypes/unknown.svg';
 import {
   getFungibleAsset,
@@ -12,17 +12,34 @@ import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
+import { getAssetQuantity } from 'src/modules/networks/asset';
+import type { Chain } from 'src/modules/networks/Chain';
+import { AssetQuantityValue } from '../../AssetQuantityValue';
 
 function FungibleAsset({
   address,
+  chain,
   actionType,
   fungible,
+  quantity,
 }: {
   address: string;
+  chain: Chain;
   actionType: ActionType;
   fungible: Asset;
+  quantity: string;
 }) {
   const title = fungible.symbol.toUpperCase();
+
+  const assetQuantity = useMemo(
+    () =>
+      getAssetQuantity({
+        asset: fungible,
+        chain,
+        quantity,
+      }),
+    [chain, fungible, quantity]
+  );
 
   return (
     <Surface style={{ borderRadius: 8, padding: '10px 12px' }}>
@@ -48,7 +65,7 @@ function FungibleAsset({
         }
         detailText={
           <UIText kind="headline/h3">
-            {/* TODO: Add allowed amount once we have it on the backend */}
+            <AssetQuantityValue quantity={assetQuantity} />{' '}
             <TextAnchor
               // Open URL in a new _window_ so that extension UI stays open and visible
               onClick={openInNewWindow}
@@ -66,7 +83,7 @@ function FungibleAsset({
 }
 
 function NFTAsset({ nft }: { nft: NFTAsset }) {
-  const iconUrl = nft?.icon_url || nft?.collection?.icon_url;
+  const iconUrl = nft.icon_url || nft.collection?.icon_url;
   return (
     <Surface style={{ borderRadius: 8, padding: '10px 12px' }}>
       <Media
@@ -96,22 +113,28 @@ function NFTAsset({ nft }: { nft: NFTAsset }) {
 
 export function SingleAsset({
   address,
+  chain,
   actionType,
-  asset,
+  singleAsset,
 }: {
   address: string;
+  chain: Chain;
   actionType: ActionType;
-  asset: ActionAsset;
+  singleAsset: NonNullable<
+    NonNullable<AddressAction['content']>['single_asset']
+  >;
 }) {
-  const fungibleAsset = getFungibleAsset(asset);
-  const nftAsset = getNftAsset(asset);
+  const fungibleAsset = getFungibleAsset(singleAsset.asset);
+  const nftAsset = getNftAsset(singleAsset.asset);
 
   if (fungibleAsset) {
     return (
       <FungibleAsset
         address={address}
+        chain={chain}
         actionType={actionType}
         fungible={fungibleAsset}
+        quantity={singleAsset.quantity}
       />
     );
   }
