@@ -284,7 +284,7 @@ function SendTransactionContent({
 
   const recipientAddress = addressAction.label?.display_value.wallet_address;
   const actionTransfers = addressAction.content?.transfers;
-  const singleAsset = addressAction.content?.single_asset?.asset;
+  const singleAsset = addressAction.content?.single_asset;
 
   return (
     <Background backgroundKind="white">

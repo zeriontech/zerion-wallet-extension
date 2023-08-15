@@ -132,7 +132,7 @@ function SignTypedDataContent({
   const addressAction = interpretation?.action;
   const recipientAddress = addressAction?.label?.display_value.wallet_address;
   const actionTransfers = addressAction?.content?.transfers;
-  const singleAsset = addressAction?.content?.single_asset?.asset;
+  const singleAsset = addressAction?.content?.single_asset;
 
   const interpretationDataJSON = useMemo(() => {
     if (!interpretation) return null;
