@@ -65,14 +65,11 @@ function createActionLabel(
 
   return {
     type: actionTypeToLabelType[action.type],
-    value:
-      transaction.to ||
-      (action.type === 'deploy' ? '' : action.contractAddress || ''),
+    value: transaction.to || action.contractAddress || '',
     display_value: {
       text: '',
       wallet_address,
-      contract_address:
-        action.type === 'deploy' ? undefined : action.contractAddress,
+      contract_address: action.contractAddress,
     },
   };
 }
@@ -81,10 +78,11 @@ async function createActionContent(
   action: TransactionAction
 ): Promise<AddressAction['content'] | null> {
   switch (action.type) {
-    case 'deploy':
     case 'execute':
-      return null;
     case 'send': {
+      if (!action.amount) {
+        return null;
+      }
       const query: CachedAssetQuery = action.isNativeAsset
         ? {
             isNative: true,
@@ -98,7 +96,7 @@ async function createActionContent(
             address: action.assetAddress,
           };
       const asset = await fetchAssetFromCacheOrAPI(query);
-      return asset
+      return asset && action.amount
         ? {
             transfers: {
               outgoing: [
