@@ -149,14 +149,20 @@ function ImportWalletView({
           <PageTop />
           <UIText kind="headline/h2">
             Enter Recovery Phrase{' '}
-            <QuestionHintIcon
-              style={{ color: 'var(--neutral-500)', verticalAlign: 'middle' }}
-            />{' '}
+            <span
+              style={{ verticalAlign: 'middle' }}
+              title="This is a 12 or 24-word phrase you got when you created your previous wallet"
+            >
+              <QuestionHintIcon style={{ color: 'var(--neutral-500)' }} />
+            </span>
             <br />
             or a Private Key{' '}
-            <QuestionHintIcon
-              style={{ color: 'var(--neutral-500)', verticalAlign: 'middle' }}
-            />
+            <span
+              style={{ verticalAlign: 'middle' }}
+              title="A private key is an access key to one address (account)"
+            >
+              <QuestionHintIcon style={{ color: 'var(--neutral-500)' }} />
+            </span>
           </UIText>
           <Spacer height={24}></Spacer>
           <ImportForm
