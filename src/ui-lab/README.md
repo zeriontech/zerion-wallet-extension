@@ -8,9 +8,11 @@ In `package.json`, there is an "alias" field which is used by [parcel](https://g
 
 ```diff
 "alias": {
--  "ui-lab:./src/ui/shared/channels.ts": "./src/ui/shared/channels.mock.ts",
+-  "ui-lab:src/ui/shared/channels": "./src/ui/shared/channels.mock.ts",
+-  "ui-lab:src/modules/networks/networks-store.client": "./src/modules/networks/networks-store.mock.ts",
 -  "ui-lab:webextension-polyfill": "/src/ui-lab/webextension-polyfill.mock.ts"
-+  "./src/ui/shared/channels.ts": "./src/ui/shared/channels.mock.ts",
++  "src/ui/shared/channels": "./src/ui/shared/channels.mock.ts",
++  "src/modules/networks/networks-store.client": "./src/modules/networks/networks-store.mock.ts",
 +  "webextension-polyfill": "/src/ui-lab/webextension-polyfill.mock.ts"
 },
 ```

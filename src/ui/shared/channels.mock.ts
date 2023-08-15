@@ -1,10 +1,11 @@
 import { TestPrivateKeyWalletContainer } from 'src/background/Wallet/model/WalletContainer';
 import { WalletOrigin } from 'src/background/Wallet/model/WalletOrigin';
-import { Chain } from 'src/modules/networks/Chain';
-import { networksStore } from 'src/modules/networks/networks-store.client';
+import { networksStore } from 'src/modules/networks/networks-store.client.mock';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { BareWallet } from 'src/shared/types/BareWallet';
+import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
 import type { Wallet } from 'src/shared/types/Wallet';
+import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import type { WalletRecord } from 'src/shared/types/WalletRecord';
 
 const testAddress = process.env.TEST_WALLET_ADDRESS as string;
@@ -26,11 +27,28 @@ const mockedPermissions: WalletRecord['permissions'] = {
     addresses: [normalizeAddress(testAddress)],
     chain: 'ethereum',
   },
+  'http://localhost:1234': {
+    addresses: [normalizeAddress(testAddress)],
+    chain: 'ethereum',
+  },
+};
+
+const mockedGlobalPreferences: GlobalPreferences = {
+  recognizableConnectButtons: true,
+  providerInjection: {},
+  walletNameFlags: {
+    'https://opensea.io': [WalletNameFlag.isMetaMask],
+  },
 };
 
 const mockRecord: WalletRecord = {
   version: 5,
-  publicPreferences: {},
+  publicPreferences: {
+    showNetworkSwitchShortcut: true,
+    overviewChain: '',
+    configurableNonce: true,
+    invitationBannerDismissed: false,
+  },
   permissions: mockedPermissions,
   transactions: [],
   walletManager: {
@@ -72,10 +90,6 @@ class WalletPortMock {
     preferences: Partial<WalletRecord['publicPreferences']>;
   }) {
     Object.assign(mockRecord, preferences);
-  }
-
-  async getPreferences() {
-    return mockRecord.publicPreferences;
   }
 
   async request(method: keyof Wallet, ...args: unknown[]) {
@@ -123,6 +137,14 @@ class WalletPortMock {
       return;
     } else if (method === 'getEthereumChainSources') {
       return networksStore.getState().networks?.ethereumChainSources;
+    } else if (method === 'getGlobalPreferences') {
+      return mockedGlobalPreferences;
+    } else if (method === 'getPreferences') {
+      return mockRecord.publicPreferences;
+    } else if (method === 'setPreferences') {
+      this.setPreference({
+        preferences: args[0] as Partial<WalletRecord['publicPreferences']>,
+      });
     } else {
       throw new Error(`Mock method not implemented: ${method}`);
     }
@@ -143,6 +165,24 @@ export const accountPublicRPCPort = {
 };
 
 export const sessionCacheService = {
+  async request() {
+    return null;
+  },
+};
+
+export const dnaServicePort = {
+  async request() {
+    return null;
+  },
+};
+
+export const httpConnectionPort = {
+  async request() {
+    return null;
+  },
+};
+
+export const memoryCacheRPCPort = {
   async request() {
     return null;
   },

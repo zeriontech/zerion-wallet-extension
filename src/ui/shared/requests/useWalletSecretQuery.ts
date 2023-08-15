@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { SeedType } from 'src/shared/SeedType';
-import { walletPort } from '../channels';
+import { walletPort } from 'src/ui/shared/channels';
 
 async function getSecretValue({
   address,

@@ -4,7 +4,7 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { Permission } from 'src/shared/types/Permission';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
-import { walletPort } from '../channels';
+import { walletPort } from 'src/ui/shared/channels';
 
 type PermissionRecord = Record<string, Permission>;
 

@@ -1,4 +1,4 @@
-import { walletPort } from '../channels';
+import { walletPort } from 'src/ui/shared/channels';
 import { emitter } from '../events';
 
 export async function setCurrentAddress({ address }: { address: string }) {

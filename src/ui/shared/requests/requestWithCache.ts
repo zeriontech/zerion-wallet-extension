@@ -1,4 +1,4 @@
-import { sessionCacheService } from '../channels';
+import { sessionCacheService } from 'src/ui/shared/channels';
 
 export class EmptyResult extends Error {}
 
