@@ -53,6 +53,7 @@ import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
 import { TransactionAdvancedView } from './TransactionAdvancedView';
+import { TransactionWarning } from './TransactionWarning';
 
 type SendTransactionError =
   | null
@@ -78,6 +79,11 @@ function errorToMessage(error?: SendTransactionError) {
         ? capitalize(JSON.parse(error.error.body).error.message) ||
           fallbackString
         : fallbackString;
+
+    if (result.toLowerCase() === 'insufficient funds for gas * price + value') {
+      return 'Error: Insufficient funds';
+    }
+
     return `Error: ${result}`;
   } catch (e) {
     return `Error: ${fallbackString}`;
@@ -349,35 +355,49 @@ function SendTransactionContent({
               </VStack>
               <Spacer height={16} />
               {incomingTxWithGasAndFee ? (
-                <div style={{ marginTop: 'auto' }}>
-                  <ErrorBoundary
-                    renderError={() => (
-                      <UIText kind="body/regular">
-                        <span style={{ display: 'inline-block' }}>
-                          <WarningIcon />
-                        </span>{' '}
-                        Failed to load network fee
-                      </UIText>
-                    )}
-                  >
-                    <React.Suspense
-                      fallback={
-                        <div style={{ display: 'flex', justifyContent: 'end' }}>
-                          <CircleSpinner />
-                        </div>
-                      }
-                    >
-                      <TransactionConfiguration
+                <>
+                  <ErrorBoundary renderError={() => null}>
+                    <React.Suspense fallback={null}>
+                      <TransactionWarning
+                        address={singleAddress}
                         transaction={incomingTxWithGasAndFee}
-                        from={wallet.address}
                         chain={chain}
-                        onFeeValueCommonReady={handleFeeValueCommonReady}
-                        configuration={configuration}
-                        onConfigurationChange={setConfiguration}
+                        networkFeeConfiguration={configuration.networkFee}
                       />
                     </React.Suspense>
                   </ErrorBoundary>
-                </div>
+                  <div style={{ marginTop: 'auto' }}>
+                    <ErrorBoundary
+                      renderError={() => (
+                        <UIText kind="body/regular">
+                          <span style={{ display: 'inline-block' }}>
+                            <WarningIcon />
+                          </span>{' '}
+                          Failed to load network fee
+                        </UIText>
+                      )}
+                    >
+                      <React.Suspense
+                        fallback={
+                          <div
+                            style={{ display: 'flex', justifyContent: 'end' }}
+                          >
+                            <CircleSpinner />
+                          </div>
+                        }
+                      >
+                        <TransactionConfiguration
+                          transaction={incomingTxWithGasAndFee}
+                          from={wallet.address}
+                          chain={chain}
+                          onFeeValueCommonReady={handleFeeValueCommonReady}
+                          configuration={configuration}
+                          onConfigurationChange={setConfiguration}
+                        />
+                      </React.Suspense>
+                    </ErrorBoundary>
+                  </div>
+                </>
               ) : null}
             </>
           ) : null}

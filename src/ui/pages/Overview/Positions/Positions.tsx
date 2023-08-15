@@ -38,15 +38,12 @@ import {
 import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { useNetworks } from 'src/modules/networks/useNetworks';
+import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
-import { httpConnectionPort, walletPort } from 'src/ui/shared/channels';
+import { walletPort } from 'src/ui/shared/channels';
 import { useQuery } from '@tanstack/react-query';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import { capitalize } from 'capitalize-ts';
-import type { Networks } from 'src/modules/networks/Networks';
-import { ethers } from 'ethers';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { FillView } from 'src/ui/components/FillView';
 import { NetworkSelect } from 'src/ui/pages/Networks/NetworkSelect';
@@ -55,12 +52,12 @@ import { NetworkResetButton } from 'src/ui/components/NetworkResetButton';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { EmptyViewForNetwork } from 'src/ui/components/EmptyViewForNetwork';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
-import { networksStore } from 'src/modules/networks/networks-store.client';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { getCommonQuantity } from 'src/modules/networks/asset';
 import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import { minus } from 'src/ui/shared/typography';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
+import { useEvmAddressPositions } from 'src/ui/shared/requests/useEvmAddressPositions';
 
 function LineToParent({
   hasPreviosNestedPosition,
@@ -639,105 +636,22 @@ function MultiChainPositions({
   return <PositionList items={items} {...positionListProps} />;
 }
 
-function createAddressPosition({
-  balance,
-  network,
-}: {
-  balance: string;
-  network: NetworkConfig;
-}): AddressPosition {
-  return {
-    chain: network.chain,
-    value: null,
-    apy: null,
-    id: `${network.native_asset?.symbol}-${network.chain}-asset`,
-    included_in_chart: false,
-    name: 'Asset',
-    quantity: balance,
-    protocol: null,
-    type: 'asset',
-    is_displayable: true,
-    asset: {
-      is_displayable: true,
-      type: null,
-      name: network.native_asset?.name || `${capitalize(network.name)} Token`,
-      symbol: network.native_asset?.symbol || '<unknown-symbol>',
-      id:
-        network.native_asset?.id ||
-        network.native_asset?.symbol.toLowerCase() ||
-        '<unknown-id>',
-      asset_code:
-        network.native_asset?.address ||
-        network.native_asset?.symbol.toLowerCase() ||
-        '<unknown-id>',
-      decimals: network.native_asset?.decimals || NaN,
-      icon_url: network.icon_url,
-      is_verified: false,
-      price: null,
-      implementations: {
-        [network.chain]: {
-          address: network.native_asset?.address ?? null,
-          decimals: network.native_asset?.decimals || NaN,
-        },
-      },
-    },
-    parent_id: null,
-  };
-}
-
-async function getEvmAddressPositions({
-  address,
-  chainId,
-  networks,
-}: {
-  address: string;
-  chainId: string;
-  networks: Networks;
-}) {
-  const balanceInHex = await httpConnectionPort.request('eth_getBalance', {
-    params: [address, 'latest'],
-    context: { chainId },
-  });
-  const network = networks.getNetworkById(chainId);
-  const balance = ethers.BigNumber.from(balanceInHex).toString();
-  return [createAddressPosition({ balance, network })];
-}
-
-function useEvmAddressPositions({
-  address,
-  chainId,
-}: {
-  address: string | null;
-  chainId: string;
-}) {
-  return useQuery({
-    queryKey: ['eth_getBalance', address, chainId],
-    queryFn: async () => {
-      const networks = await networksStore.load();
-      return !address
-        ? null
-        : getEvmAddressPositions({ address, chainId, networks });
-    },
-    enabled: Boolean(address),
-  });
-}
-
 function RawChainPositions({
   addressParams,
-  chainId,
+  chain,
   address,
   renderEmptyView,
   ...positionListProps
 }: {
   addressParams: AddressParams;
-  chainId: string;
+  chain: Chain;
   renderEmptyView: () => React.ReactNode;
 } & Omit<React.ComponentProps<typeof PositionList>, 'items'>) {
   const addressParam =
     'address' in addressParams ? addressParams.address : address;
   const { data: addressPositions, isLoading } = useEvmAddressPositions({
     address: addressParam,
-    chainId,
+    chain,
   });
   if (!addressParam) {
     return <div>Can't display this view for multiple addresss mode.</div>;
@@ -850,7 +764,7 @@ export function Positions({
         <RawChainPositions
           addressParams={params}
           address={singleAddressNormalized}
-          chainId={network.external_id}
+          chain={chain}
           renderEmptyView={renderEmptyViewForNetwork}
           firstHeaderItemEnd={networkSelect}
         />
