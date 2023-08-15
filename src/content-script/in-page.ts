@@ -51,7 +51,7 @@ dappDetection.onChange(({ dappIsZerionAware }) => {
 Object.defineProperty(window, 'ethereum', {
   configurable: false, // explicitly set to false to disallow redefining the property by other wallets
   get() {
-    dappDetection.onAccessThroughWindow(provider);
+    dappDetection.onAccessThroughWindow();
     return provider;
   },
   set(value: EthereumProvider) {

@@ -1,6 +1,5 @@
 import { prepareStorage } from 'src/shared/core/version';
 import { DnaService } from 'src/ui/components/DnaClaim/dna.background';
-import { initialize as dappRegistryInitialize } from 'src/shared/dapps';
 import { initialize as initializeAnalytics } from 'src/shared/analytics/analytics.background';
 import { initialize as initializeRemoteConfig } from 'src/modules/remote-config';
 import { Account, AccountPublicRPC } from './account/Account';
@@ -17,7 +16,6 @@ export async function initialize() {
   didInitialize = true;
 
   await prepareStorage();
-  await dappRegistryInitialize();
 
   // This method is called only when background script runs for the first time
   // This means that either the user is opening the extension for the first time,

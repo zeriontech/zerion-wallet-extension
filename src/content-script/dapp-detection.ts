@@ -32,10 +32,7 @@ function trackZerionFlagAccess(ourProvider: EthereumProvider) {
 
 export async function initialize(ourProvider: EthereumProvider) {
   trackZerionFlagAccess(ourProvider);
-  const isDapp = await ourProvider.request({
-    method: 'wallet_isKnownDapp',
-    params: { origin: window.location.origin },
-  });
+  const isDapp = await ourProvider.request({ method: 'wallet_isKnownDapp' });
   if (isDapp) {
     state.dappDetected = true;
     notify();
@@ -56,16 +53,12 @@ export function onBeforeAssignToWindow(provider: ForeignProvider | undefined) {
   }
 }
 
-export function onAccessThroughWindow(ourProvider: EthereumProvider) {
+export function onAccessThroughWindow() {
   if (!didHandleWindowAccess) {
     didHandleWindowAccess = true;
     if (dappDetectionIsPossible) {
       state.dappDetected = true;
       notify();
-      ourProvider.request({
-        method: 'wallet_flagAsDapp',
-        params: { origin: window.location.origin },
-      });
     }
   }
 }

@@ -44,7 +44,6 @@ import { removeSignature } from 'src/modules/ethereum/transactions/removeSignatu
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getTransactionChainId } from 'src/modules/ethereum/transactions/resolveChainForTx';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
-import { flagAsDapp, isFlaggedAsDapp } from 'src/shared/dapps';
 import { isKnownDapp } from 'src/shared/dapps/known-dapps';
 import type { WalletAbility } from 'src/shared/types/Daylight';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
@@ -678,14 +677,6 @@ export class Wallet {
   async userCanCreateInitialWallet({ context }: WalletMethodParams) {
     this.verifyInternalOrigin(context);
     return getRemoteConfigValue('user_can_create_initial_wallet');
-  }
-
-  async isFlaggedAsDapp({
-    context,
-    params: { origin },
-  }: WalletMethodParams<{ origin: string }>) {
-    this.verifyInternalOrigin(context);
-    return isFlaggedAsDapp({ origin });
   }
 
   async switchChainForOrigin({
@@ -1363,13 +1354,6 @@ class PublicController {
     });
   }
 
-  async wallet_flagAsDapp({
-    context: _context,
-    params: { origin },
-  }: PublicMethodParams<{ origin: string }>) {
-    await flagAsDapp({ origin });
-  }
-
   private generatePermissionResponse(
     params: [{ [name: string]: unknown }]
   ): Web3WalletPermission[] {
@@ -1443,10 +1427,9 @@ class PublicController {
   }
 
   async wallet_isKnownDapp({
-    params: { origin },
+    context,
   }: PublicMethodParams<{ origin: string }>) {
-    // unlike wallet.isFlaggedAsDapp(), this method doesn't expose the list of
-    // dapps the user might have visited and uses only an agnostic dapp list
-    return isKnownDapp({ origin });
+    invariant(context?.origin, 'This method requires origin');
+    return isKnownDapp({ origin: context.origin });
   }
 }
