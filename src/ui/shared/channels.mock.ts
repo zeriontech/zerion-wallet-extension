@@ -1,6 +1,6 @@
 import { TestPrivateKeyWalletContainer } from 'src/background/Wallet/model/WalletContainer';
 import { WalletOrigin } from 'src/background/Wallet/model/WalletOrigin';
-import { networksStore } from 'src/modules/networks/networks-store.mock';
+import { networksStore } from 'src/modules/networks/networks-store.client.mock';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';

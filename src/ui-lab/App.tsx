@@ -44,12 +44,6 @@ function Details({
 }
 
 function App() {
-  // useLayoutEffect(() => {
-  //   console.log('request 1');
-  //   walletPort
-  //     .request('getCurrentAddress')
-  //     .then((result) => console.log('request 2', result));
-  // }, []);
   return (
     <QueryClientProvider client={queryClient}>
       <ErrorBoundary renderError={(error) => <ViewError error={error} />}>
