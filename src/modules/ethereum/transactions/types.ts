@@ -34,6 +34,6 @@ interface Input {
 
 export interface InterpretResponse {
   action: AddressAction;
-  input: Input[];
+  inputs: Input[];
   warnings: Warning[];
 }
