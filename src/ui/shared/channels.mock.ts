@@ -176,6 +176,12 @@ export const dnaServicePort = {
   },
 };
 
+export const fishingDefencePort = {
+  async request() {
+    return null;
+  },
+};
+
 export const httpConnectionPort = {
   async request() {
     return null;

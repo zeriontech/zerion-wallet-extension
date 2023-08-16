@@ -41,10 +41,6 @@ import {
   PauseInjectionControl,
 } from 'src/ui/components/PauseInjection';
 import { InvitationBanner } from 'src/ui/components/InvitationFlow';
-import {
-  openFishingWarning,
-  showFishingBanner,
-} from 'src/modules/fishing-defence/fishing-defence-api';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -247,8 +243,6 @@ function OverviewComponent() {
         <Spacer height={16} />
       </PageFullBleedColumn>
       <PausedBanner style={{ marginBottom: 16, marginInline: 8 }} />
-      <Button onClick={showFishingBanner}>Show banner warning</Button>
-      <Button onClick={openFishingWarning}>Open warning</Button>
       <div
         style={{
           height: isLoadingPortfolio ? 68 : undefined,

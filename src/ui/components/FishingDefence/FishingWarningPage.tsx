@@ -9,6 +9,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import ZerionIcon from 'jsx:src/ui/assets/zerion-logo.svg';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import browser from 'webextension-polyfill';
+import { fishingDefencePort } from 'src/ui/shared/channels';
 import { FillView } from '../FillView';
 import { useBodyStyle } from '../Background/Background';
 import { WarningIcon } from '../WarningIcon';
@@ -111,6 +112,13 @@ export function FishingWarningPage() {
                   style={{ cursor: 'pointer', textDecoration: 'underline' }}
                   href={safeUrl?.toString()}
                   rel="noopenner norefferer"
+                  onClick={() => {
+                    if (safeUrl?.origin) {
+                      fishingDefencePort.request('allowWebsite', {
+                        url: safeUrl.origin,
+                      });
+                    }
+                  }}
                 >
                   continue to the site
                 </UnstyledAnchor>

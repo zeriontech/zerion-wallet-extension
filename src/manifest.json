@@ -38,10 +38,6 @@
     {
       "resources": ["content-script/in-page.ts"],
       "matches": ["<all_urls>"]
-    },
-    {
-      "resources": ["modules/fishing-defence/fishing-defence-banner.tsx"],
-      "matches": ["<all_urls>"]
     }
   ],
   "permissions": [

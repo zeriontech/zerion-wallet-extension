@@ -5,6 +5,7 @@ import type { AccountPublicRPC } from 'src/shared/types/AccountPublicRPC';
 import type { MemoryCacheRPC } from 'src/shared/types/MemoryCacheRPC';
 import { UserRejected } from 'src/shared/errors/errors';
 import type { RpcRequestWithContext } from 'src/shared/custom-rpc';
+import type { FishingDefence } from 'src/modules/fishing-defence/fishing-defence-service';
 import type { DnaService } from '../components/DnaClaim/dna.background';
 import { initDnaApi } from '../components/DnaClaim/dna.client';
 import type { SessionCacheService } from '../../background/resource/sessionCacheService';
@@ -62,6 +63,10 @@ export const dnaServicePort = new PortMessageChannel({
   name: 'dnaService',
 }) as RPCPort<DnaService>;
 
+export const fishingDefencePort = new PortMessageChannel({
+  name: 'fishingDefence',
+}) as RPCPort<FishingDefence>;
+
 export const sessionCacheService = new PortMessageChannel({
   name: 'sessionCacheService',
 }) as RPCPort<SessionCacheService>;
@@ -91,6 +96,7 @@ export function initialize() {
   memoryCacheRPCPort.initialize();
   windowPort.initialize();
   dnaServicePort.initialize();
+  fishingDefencePort.initialize();
   sessionCacheService.initialize();
   initDnaApi();
 }

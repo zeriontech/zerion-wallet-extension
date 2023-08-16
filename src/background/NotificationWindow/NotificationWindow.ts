@@ -11,6 +11,7 @@ import {
 } from 'src/modules/fishing-defence/fishing-defence-api';
 import type { WindowProps } from './createBrowserWindow';
 import { createBrowserWindow } from './createBrowserWindow';
+import { fishingDefenceService } from 'src/modules/fishing-defence/fishing-defence-service';
 
 const emitter = createNanoEvents<{
   windowRemoved: (windowId: number) => void;
@@ -266,7 +267,6 @@ export class NotificationWindow extends PersistentStore<PendingState> {
             error: new UserRejected('Malicious DApp'),
           });
           setTimeout(() => openFishingWarning(), 100);
-        }
       });
     }
   }
