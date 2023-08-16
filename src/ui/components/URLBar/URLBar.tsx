@@ -30,6 +30,7 @@ const URLBarBlacklist = new Set([
   '/overview/feed',
   '/login',
   '/sendTransaction',
+  '/fishing-warning',
 ]);
 
 export function hideURLBarFor(path: string) {

@@ -5,6 +5,10 @@ import type { RpcError, RpcResult } from 'src/shared/custom-rpc';
 import { UserRejected } from 'src/shared/errors/errors';
 import { PersistentStore } from 'src/modules/persistent-store';
 import { produce } from 'immer';
+import {
+  checkTabForFishing,
+  openFishingWarning,
+} from 'src/modules/fishing-defence/fishing-defence-api';
 import type { WindowProps } from './createBrowserWindow';
 import { createBrowserWindow } from './createBrowserWindow';
 
@@ -206,11 +210,13 @@ export class NotificationWindow extends PersistentStore<PendingState> {
     search,
     onDismiss,
     onResolve,
+    origin,
     width,
     height,
     left,
     top,
   }: WindowProps & {
+    origin?: string;
     requestId: string;
     onDismiss: (error?: ErrorResponse) => void;
     onResolve: (data: T) => void;
@@ -252,6 +258,17 @@ export class NotificationWindow extends PersistentStore<PendingState> {
     this.events.emit('open', { requestId, windowId, id });
     this.requestIds.set(id, requestId);
     this.idsMap.set(id, windowId);
+    if (origin) {
+      checkTabForFishing(origin).then((result) => {
+        if (result && windowId) {
+          this.events.emit('reject', {
+            id,
+            error: new UserRejected('Malicious DApp'),
+          });
+          setTimeout(() => openFishingWarning(), 100);
+        }
+      });
+    }
   }
 
   /** @deprecated */
