@@ -78,6 +78,17 @@ export class FishingDefence extends Store<State> {
           }));
           resolve(false);
         }, 200);
+      } else if (origin === 'https://metamask.github.io') {
+        setTimeout(() => {
+          this.setState((current) => ({
+            ...current,
+            websiteStatus: {
+              ...current.websiteStatus,
+              [origin]: 'fishing',
+            },
+          }));
+          resolve(false);
+        }, 20000);
       } else {
         this.setState((current) => ({
           ...current,

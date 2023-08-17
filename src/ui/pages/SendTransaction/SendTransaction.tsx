@@ -363,6 +363,7 @@ function SendTransactionContent({
                         transaction={incomingTxWithGasAndFee}
                         chain={chain}
                         networkFeeConfiguration={configuration.networkFee}
+                        origin={origin}
                       />
                     </React.Suspense>
                   </ErrorBoundary>

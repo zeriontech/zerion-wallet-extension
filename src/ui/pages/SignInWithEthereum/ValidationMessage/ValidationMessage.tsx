@@ -9,7 +9,7 @@ type Kind = 'warning' | 'danger';
 
 const kinds: { [kind in Kind]: React.CSSProperties } = {
   warning: {
-    borderColor: 'var(--notice-600)',
+    borderColor: 'var(--notice-500)',
     color: 'var(--notice-600)',
   },
   danger: {

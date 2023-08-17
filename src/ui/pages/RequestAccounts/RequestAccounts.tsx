@@ -32,6 +32,8 @@ import { PageTop } from 'src/ui/components/PageTop';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { Address } from 'src/ui/components/Address';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
+import { RequestAccountsWarning } from './RequestAccountsWarning';
 
 function WalletSelectList({
   wallets,
@@ -259,6 +261,12 @@ function RequestAccountsView({
         </VStack>
         <Spacer height={16} />
         <RequestAccountsPermissions originName={originName} />
+        <Spacer height={16} />
+        <ErrorBoundary renderError={() => null}>
+          <React.Suspense fallback={null}>
+            <RequestAccountsWarning origin={origin} />
+          </React.Suspense>
+        </ErrorBoundary>
         <div
           style={{
             display: 'grid',

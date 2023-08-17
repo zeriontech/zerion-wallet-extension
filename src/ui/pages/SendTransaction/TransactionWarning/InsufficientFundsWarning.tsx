@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { Chain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
-import { WarningIcon } from 'src/ui/components/WarningIcon';
+import ValidationErrorIcon from 'jsx:src/ui/assets/validation-error.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -66,7 +66,7 @@ export function InsufficientFundsWarning({ chain }: { chain: Chain }) {
       }}
     >
       <HStack gap={8} alignItems="center">
-        <WarningIcon size={24} glow={true} outlineStrokeWidth={4} />
+        <ValidationErrorIcon style={{ color: 'var(--notice-600)' }} />
         <UIText kind="body/accent" color="var(--notice-600)">
           Insufficient balance
         </UIText>
