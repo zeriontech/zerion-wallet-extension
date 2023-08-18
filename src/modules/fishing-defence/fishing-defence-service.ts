@@ -1,6 +1,7 @@
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { Store } from 'store-unit';
 import browser from 'webextension-polyfill';
+import { ZerionAPI } from '../zerion-api/zerion-api';
 
 type WebsiteStatus = 'loading' | 'fishing' | 'ok' | 'unknown';
 
@@ -54,10 +55,10 @@ export class FishingDefence extends Store<State> {
     }
   }
 
-  async checkWebsite(url: string) {
+  async checkWebsite(url: string): Promise<{ status: WebsiteStatus }> {
     const origin = this.getSafeOrigin(url);
     if (!origin || this.getState().whitelistedWebsites.includes(origin)) {
-      return Promise.resolve(true);
+      return Promise.resolve({ status: 'ok' });
     }
     this.setState((current) => ({
       ...current,
@@ -67,38 +68,60 @@ export class FishingDefence extends Store<State> {
       },
     }));
     return new Promise((resolve) => {
-      if (origin === 'https://app.zerion.io') {
-        setTimeout(() => {
+      ZerionAPI.securityCheckUrl({ url })
+        .then((result) => {
+          const status = result.data?.flags.isMalicious ? 'fishing' : 'ok';
           this.setState((current) => ({
             ...current,
             websiteStatus: {
               ...current.websiteStatus,
-              [origin]: 'fishing',
+              [origin]: status,
             },
           }));
-          resolve(false);
-        }, 200);
-      } else if (origin === 'https://metamask.github.io') {
-        setTimeout(() => {
+          resolve({ status });
+        })
+        .catch(() => {
           this.setState((current) => ({
             ...current,
             websiteStatus: {
               ...current.websiteStatus,
-              [origin]: 'fishing',
+              [origin]: 'unknown',
             },
           }));
-          resolve(false);
-        }, 20000);
-      } else {
-        this.setState((current) => ({
-          ...current,
-          websiteStatus: {
-            ...current.websiteStatus,
-            [origin]: 'ok',
-          },
-        }));
-        return resolve(true);
-      }
+          resolve({ status: 'unknown' });
+        });
+      // if (origin === 'https://app.zerion.io') {
+      //   setTimeout(() => {
+      //     this.setState((current) => ({
+      //       ...current,
+      //       websiteStatus: {
+      //         ...current.websiteStatus,
+      //         [origin]: 'fishing',
+      //       },
+      //     }));
+      //     resolve(false);
+      //   }, 200);
+      // } else if (origin === 'https://metamask.github.io') {
+      //   setTimeout(() => {
+      //     this.setState((current) => ({
+      //       ...current,
+      //       websiteStatus: {
+      //         ...current.websiteStatus,
+      //         [origin]: 'fishing',
+      //       },
+      //     }));
+      //     resolve(false);
+      //   }, 20000);
+      // } else {
+      //   this.setState((current) => ({
+      //     ...current,
+      //     websiteStatus: {
+      //       ...current.websiteStatus,
+      //       [origin]: 'ok',
+      //     },
+      //   }));
+      //   return resolve(true);
+      // }
     });
   }
 

@@ -27,6 +27,7 @@ async function fetchWalletProfile(
 async function fetchWalletNFT(
   address: string
 ): Promise<WalletProfileNFT | null> {
+  fetchWalletProfile(address);
   const profile = await requestWithCache(
     `fetchWalletNFT ${address}`,
     fetchWalletProfile(address).then((result) => {
