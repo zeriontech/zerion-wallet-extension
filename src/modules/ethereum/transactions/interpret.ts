@@ -15,7 +15,7 @@ export interface InterpretTransactionPayload {
   transaction?: {
     from?: string;
     to?: string;
-    nonce?: string;
+    nonce?: number;
     chainId?: string;
     gas?: string;
     gasPrice?: string;
@@ -77,6 +77,16 @@ export function interpretTransaction(
   ]);
 }
 
+export const useInterpretTransaction = createDomainHook<
+  InterpretTransactionPayload,
+  InterpretResponse,
+  typeof namespace,
+  typeof scope
+>({
+  namespace,
+  scope,
+});
+
 export function interpretSignature({
   address,
   chainId,
@@ -131,13 +141,3 @@ export function getInterpretationFunctionSignature(
 ) {
   return interpretation?.inputs?.[0]?.schema?.primary_type;
 }
-
-export const useInterpretTransaction = createDomainHook<
-  InterpretTransactionPayload,
-  InterpretResponse,
-  typeof namespace,
-  typeof scope
->({
-  namespace,
-  scope,
-});

@@ -25,7 +25,7 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
-import { useInterpretTransaction } from 'src/modules/ethereum/transactions/interpretTransaction';
+import { useInterpretTransaction } from 'src/modules/ethereum/transactions/interpret';
 import { ActionDetailedView } from '../ActionDetailedView';
 import { AssetLink } from '../ActionDetailedView/components/AssetLink';
 import { isUnlimitedApproval } from '../isUnlimitedApproval';
@@ -360,6 +360,9 @@ function ActionItemLocalWrapper({
     {
       method: 'stream',
       enabled: Boolean(localTransaction) && isSupportedByBackend,
+      // we don't want to send these expensive requests more then needed
+      // we've already sent this requerst from SendTransaction screen before
+      cachePolicy: 'cache-only',
     }
   );
 
