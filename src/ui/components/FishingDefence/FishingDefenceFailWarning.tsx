@@ -16,6 +16,7 @@ export function useFishingDefenceServiceFail(origin: string) {
       fishingDefencePort.request('getWebsiteStatus', { url: origin }),
     cacheTime: 0,
     enabled: delayFlag,
+    refetchInterval: 1000,
   });
 
   return data === 'loading' || data === 'unknown';

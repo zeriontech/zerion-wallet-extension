@@ -10,7 +10,7 @@ import type {
 function getZpiHeaders() {
   return {
     'X-Request-Id': uuidv4(),
-    'Zerion-Client-Type': 'web-extensions',
+    'Zerion-Client-Type': 'web-extension',
     'Zerion-Client-Version': version,
   };
 }
@@ -21,8 +21,6 @@ export class ZerionAPI {
       .get(new URL('security/check-url/v1', ZERION_API_URL), {
         searchParams: { url: payload.url },
         headers: getZpiHeaders(),
-        mode: 'no-cors',
-        credentials: 'same-origin',
       })
       .json<SecurityCheckUrlRespose>();
   }
