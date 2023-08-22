@@ -11,3 +11,6 @@ export const SLOW_MODE = false;
 if (!PROXY_URL) {
   throw new Error('PROXY_URL must be defined in ENV');
 }
+if (!ZERION_API_URL) {
+  throw new Error('ZERION_API_URL must be defined in ENV');
+}
