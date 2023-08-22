@@ -17,7 +17,6 @@ function getZpiHeaders() {
 
 export class ZerionAPI {
   static securityCheckUrl(payload: SecurityCheckUrlPayload) {
-    console.log(ZERION_API_URL, payload, getZpiHeaders());
     return ky
       .get(new URL('security/check-url/v1', ZERION_API_URL), {
         searchParams: { url: payload.url },
