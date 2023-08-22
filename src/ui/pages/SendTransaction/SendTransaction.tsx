@@ -161,7 +161,7 @@ function SendTransactionContent({
   next: string | null;
 }) {
   const [params] = useSearchParams();
-  const { singleAddress } = useAddressParams();
+  const { singleAddressNormalized } = useAddressParams();
   const incomingTransaction = useMemo(
     () => JSON.parse(transactionStringified) as IncomingTransaction,
     [transactionStringified]
@@ -204,10 +204,14 @@ function SendTransactionContent({
   });
 
   const { data: interpretation, ...interpretQuery } = useQuery({
-    queryKey: ['interpretTransaction', incomingTxWithGasAndFee, singleAddress],
+    queryKey: [
+      'interpretTransaction',
+      incomingTxWithGasAndFee,
+      singleAddressNormalized,
+    ],
     queryFn: () => {
       return incomingTxWithGasAndFee
-        ? interpretTransaction(singleAddress, incomingTxWithGasAndFee)
+        ? interpretTransaction(singleAddressNormalized, incomingTxWithGasAndFee)
         : null;
     },
     enabled: Boolean(incomingTxWithGasAndFee),
@@ -360,7 +364,7 @@ function SendTransactionContent({
                   <ErrorBoundary renderError={() => null}>
                     <React.Suspense fallback={null}>
                       <TransactionWarning
-                        address={singleAddress}
+                        address={singleAddressNormalized}
                         transaction={incomingTxWithGasAndFee}
                         chain={chain}
                         networkFeeConfiguration={configuration.networkFee}
