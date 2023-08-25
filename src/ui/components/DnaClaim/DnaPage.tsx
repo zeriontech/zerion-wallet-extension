@@ -181,7 +181,7 @@ export function DnaPage() {
   const {
     data: chainForZerionOrigin,
     isLoading: isChainDataLoading,
-    refetch,
+    refetch: refetchChainForZerionOrigin,
   } = useQuery({
     queryKey: ['wallet/requestChainForOrigin', ZERION_ORIGIN],
     queryFn: async () =>
@@ -198,7 +198,7 @@ export function DnaPage() {
         chain: NetworkId.Ethereum,
         origin: ZERION_ORIGIN,
       }),
-    onSuccess: () => refetch(),
+    onSuccess: () => refetchChainForZerionOrigin(),
   });
 
   const mintTransaction = useMemo(
@@ -208,7 +208,7 @@ export function DnaPage() {
       gas: '0x186a0',
       to: DNA_MINT_CONTRACT_ADDRESS,
       from: singleAddress,
-      value: '0x00',
+      value: '0x0',
     }),
     [singleAddress]
   );
