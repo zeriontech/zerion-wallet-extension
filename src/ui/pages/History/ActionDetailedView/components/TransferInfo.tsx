@@ -21,8 +21,8 @@ import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
+import { AssetLink } from 'src/ui/components/AssetLink';
 import { isUnlimitedApproval } from '../../isUnlimitedApproval';
-import { AssetLink } from './AssetLink';
 
 type Direction = 'incoming' | 'outgoing';
 const ICON_SIZE = 36;
