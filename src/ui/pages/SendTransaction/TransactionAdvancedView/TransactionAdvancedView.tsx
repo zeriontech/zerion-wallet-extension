@@ -7,6 +7,8 @@ import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTra
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { noValueDash } from 'src/ui/shared/typography';
 import type { Networks } from 'src/modules/networks/Networks';
+import CopyIcon from 'jsx:src/ui/assets/copy.svg';
+import CheckIcon from 'jsx:src/ui/assets/check.svg';
 import type { Chain } from 'src/modules/networks/Chain';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -19,6 +21,9 @@ import type { InterpretResponse } from 'src/modules/ethereum/transactions/types'
 import { getInterpretationFunctionSignature } from 'src/modules/ethereum/transactions/interpret';
 import { PageTop } from 'src/ui/components/PageTop';
 import { TextLine } from 'src/ui/components/address-action/TextLine';
+import { Content } from 'react-area';
+import { Button } from 'src/ui/ui-kit/Button';
+import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { NavigationBar } from '../../SignInWithEthereum/NavigationBar';
 
 function maybeHexValue(value?: BigNumberish): string | null {
@@ -187,13 +192,23 @@ export function TransactionAdvancedView({
   networks,
   chain,
   transaction,
+  transactionStringified,
   interpretation,
 }: {
   networks: Networks;
   chain: Chain;
   transaction: IncomingTransaction;
+  transactionStringified: string;
   interpretation?: InterpretResponse | null;
 }) {
+  const transactionFormatted = useMemo(
+    () => JSON.stringify(JSON.parse(transactionStringified), null, 2),
+    [transactionStringified]
+  );
+
+  const { handleCopy: handleCopyRawData, isSuccess: didCopyRawData } =
+    useCopyToClipboard({ text: transactionFormatted });
+
   return (
     <>
       <NavigationBar title="Advanced View" />
@@ -206,6 +221,27 @@ export function TransactionAdvancedView({
           interpretation={interpretation}
         />
       ) : null}
+      <Content name="send-transaction-footer">
+        <Spacer height={8} />
+        <Button
+          type="button"
+          kind="primary"
+          size={44}
+          style={{ padding: '10px 20px' }}
+          onClick={handleCopyRawData}
+        >
+          <HStack gap={12} alignItems="center" justifyContent="center">
+            <UIText kind="body/accent">
+              {didCopyRawData ? 'Copied' : 'Copy Raw Data'}
+            </UIText>
+            {React.createElement(didCopyRawData ? CheckIcon : CopyIcon, {
+              display: 'block',
+              width: 24,
+              height: 24,
+            })}
+          </HStack>
+        </Button>
+      </Content>
     </>
   );
 }
