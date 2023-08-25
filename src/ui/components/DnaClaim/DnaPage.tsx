@@ -25,7 +25,7 @@ import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTML
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { walletPort } from 'src/ui/shared/channels';
 import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import { Background } from '../Background';
@@ -74,6 +74,8 @@ function Step({
     </UnstyledButton>
   );
 }
+
+const ZERION_ORIGIN = 'https://app.zerion.io';
 
 function useSteps({
   initial = 0,
@@ -176,14 +178,37 @@ export function DnaPage() {
     )
   );
 
+  const {
+    data: chainForZerionOrigin,
+    isLoading: isChainDataLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ['wallet/requestChainForOrigin', ZERION_ORIGIN],
+    queryFn: async () =>
+      walletPort.request('requestChainForOrigin', { origin: ZERION_ORIGIN }),
+    suspense: false,
+  });
+
+  const {
+    mutate: changeChainForZerionOrigin,
+    isLoading: chainMutationInProgress,
+  } = useMutation({
+    mutationFn: async () =>
+      walletPort.request('switchChainForOrigin', {
+        chain: NetworkId.Ethereum,
+        origin: ZERION_ORIGIN,
+      }),
+    onSuccess: () => refetch(),
+  });
+
   const mintTransaction = useMemo(
     () => ({
       chainId: '0x1',
       data: '0x1249c58b',
-      gas: 100_000,
+      gas: '0x186a0',
       to: DNA_MINT_CONTRACT_ADDRESS,
       from: singleAddress,
-      value: '0',
+      value: '0x00',
     }),
     [singleAddress]
   );
@@ -245,7 +270,7 @@ export function DnaPage() {
             <Button
               style={{ width: '100%' }}
               as={TextAnchor}
-              href={`https://app.zerion.io/send/token?address=${singleAddress}`}
+              href={`${ZERION_ORIGIN}/send/token?address=${singleAddress}`}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -255,7 +280,7 @@ export function DnaPage() {
               style={{ width: '100%' }}
               kind="regular"
               as={TextAnchor}
-              href={`https://app.zerion.io/deposit?${addWalletParams}`}
+              href={`${ZERION_ORIGIN}/deposit?${addWalletParams}`}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -395,9 +420,18 @@ export function DnaPage() {
                 </UIText>
               )}
             </HStack>
-            {positionsAreLoading ? (
+            {positionsAreLoading ||
+            isChainDataLoading ||
+            chainMutationInProgress ? (
               <Button style={{ width: '100%' }} disabled={true}>
                 Claim DNA
+              </Button>
+            ) : chainForZerionOrigin !== NetworkId.Ethereum ? (
+              <Button
+                style={{ width: '100%' }}
+                onClick={() => changeChainForZerionOrigin()}
+              >
+                Switch to Ethereum
               </Button>
             ) : isEnoughEth ? (
               <Button
@@ -406,7 +440,7 @@ export function DnaPage() {
                 to={{
                   pathname: '/sendTransaction',
                   search: `?${new URLSearchParams({
-                    origin: 'https://app.zerion.io',
+                    origin: ZERION_ORIGIN,
                     windowId: '1',
                     transaction: JSON.stringify(mintTransaction),
                     next: '/overview/nfts',
