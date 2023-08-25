@@ -30,7 +30,10 @@ export type LocalAddressAction = Omit<AddressAction, 'transaction'> & {
   local: true;
 };
 
-type IncomingAddressAction = Omit<AddressAction, 'transaction' | 'id'> & {
+export type IncomingAddressAction = Omit<
+  AddressAction,
+  'transaction' | 'id'
+> & {
   id: null;
   transaction: Omit<AddressAction['transaction'], 'hash' | 'nonce'> & {
     hash: null;

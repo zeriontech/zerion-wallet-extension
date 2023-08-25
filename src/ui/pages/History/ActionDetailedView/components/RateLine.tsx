@@ -5,7 +5,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
-import { AssetLink } from './AssetLink';
+import { AssetLink } from 'src/ui/components/AssetLink';
 
 export function RateLine({
   action,

@@ -12,15 +12,12 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import type { Chain } from 'src/modules/networks/Chain';
 import { AssetIcon } from 'src/ui/components/AssetIcon';
 import UnknownIcon from 'jsx:src/ui/assets/actionTypes/unknown.svg';
-import {
-  getAssetQuantity,
-  getCommonQuantity,
-} from 'src/modules/networks/asset';
+import { getCommonQuantity } from 'src/modules/networks/asset';
 import {
   getFungibleAsset,
   getNftAsset,
 } from 'src/modules/ethereum/transactions/actionAsset';
-import { AssetQuantityValue } from 'src/ui/components/AssetQuantityValue';
+import { AssetQuantity } from 'src/ui/components/AssetQuantity';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { minus, noValueDash } from 'src/ui/shared/typography';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
@@ -43,9 +40,10 @@ function TransferItemFungible({
   direction: Direction;
 }) {
   const title = fungible.symbol.toUpperCase();
-  const quantity = useMemo(
+
+  const commonQuantity = useMemo(
     () =>
-      getAssetQuantity({
+      getCommonQuantity({
         asset: fungible,
         chain,
         quantity: transfer.quantity,
@@ -83,9 +81,9 @@ function TransferItemFungible({
           kind="headline/h3"
           color={direction === 'in' ? 'var(--positive-500)' : 'var(--black)'}
         >
-          <AssetQuantityValue
+          <AssetQuantity
             sign={direction === 'in' ? '+' : minus}
-            quantity={quantity}
+            commonQuantity={commonQuantity}
           />{' '}
           <TextAnchor
             // Open URL in a new _window_ so that extension UI stays open and visible

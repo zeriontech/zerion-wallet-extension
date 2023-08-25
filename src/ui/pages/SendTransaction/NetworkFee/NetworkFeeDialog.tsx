@@ -76,6 +76,8 @@ function formDataToGasConfiguration(
   }
 }
 
+const FLOAT_INPUT_PATTERN = '(\\d+\\.)?\\d+'; // positive floats and ints
+
 function setFormValue(form: HTMLFormElement, name: string, value: unknown) {
   const input = form.elements.namedItem(name);
   invariant(input, `Input ${name} not found`);
@@ -95,8 +97,6 @@ function setPatternValidity(event: React.ChangeEvent<HTMLInputElement>) {
     event.currentTarget.setCustomValidity('');
   }
 }
-
-const FLOAT_INPUT_PATTERN = '(\\d+\\.)?\\d+'; // positive floats and ints
 
 function CustomNetworkFeeForm({
   type,

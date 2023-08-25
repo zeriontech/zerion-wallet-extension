@@ -1,0 +1,1 @@
+export { TransactionCustomAllowanceView } from './TransactionCustomAllowanceView';
