@@ -39,6 +39,24 @@ function trackAppEvents() {
     });
     sendToMetabase('network_search', params);
   });
+
+  emitter.on('errorScreenView', (error) => {
+    const params = createParams({
+      request_name: 'error_screen_view',
+      error: error.message,
+    });
+    sendToMetabase('error_screen_view', params);
+  });
+
+  emitter.on('loaderScreenView', (data) => {
+    const params = createParams({
+      request_name: 'loader_screen_view',
+      sessionId: data.sessionId,
+      screen_name: data.location,
+      duration: data.duration,
+    });
+    sendToMetabase('loader_screen_view', params);
+  });
 }
 
 export function initializeClientAnalytics() {
