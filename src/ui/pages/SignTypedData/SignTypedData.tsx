@@ -34,10 +34,9 @@ import {
   getInterpretationData,
   interpretSignature,
 } from 'src/modules/ethereum/transactions/interpret';
-import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
+import { FishingDefenceStatus } from 'src/ui/components/FishingDefence/FishingDefenceStatus';
 import { NavigationBar } from '../SignInWithEthereum/NavigationBar';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
-import { SignTypedDataWarning } from './SignTypedDataWarning';
 
 function TypedDataRow({ data }: { data: string }) {
   return (
@@ -251,11 +250,7 @@ function SignTypedDataContent({
           <TypedDataAdvancedView data={interpretationDataJSON} />
         ) : null}
         <Spacer height={16} />
-        <ErrorBoundary renderError={() => null}>
-          <React.Suspense fallback={null}>
-            <SignTypedDataWarning origin={origin} />
-          </React.Suspense>
-        </ErrorBoundary>
+        <FishingDefenceStatus origin={origin} />
       </PageColumn>
       <PageStickyFooter>
         <VStack

@@ -9,10 +9,11 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import BigNumber from 'bignumber.js';
 import { useEvmAddressPositions } from 'src/ui/shared/requests/useEvmAddressPositions';
 import { baseToCommon } from 'src/shared/units/convert';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 import type { NetworkFeeConfiguration } from '../NetworkFee/types';
 import { useTransactionFee } from '../TransactionConfiguration/useTransactionFee';
 
-export function useInsufficientFundsWarning({
+function useInsufficientFundsWarning({
   address,
   transaction,
   chain,
@@ -49,35 +50,56 @@ export function useInsufficientFundsWarning({
   return nativeTokenBalance.lt(transactionFee.costs?.totalValueCommon || 0);
 }
 
-export function InsufficientFundsWarning({ chain }: { chain: Chain }) {
+export function InsufficientFundsWarning({
+  address,
+  transaction,
+  chain,
+  networkFeeConfiguration,
+}: {
+  address: string;
+  transaction: IncomingTransaction;
+  chain: Chain;
+  networkFeeConfiguration: NetworkFeeConfiguration;
+}) {
   const { networks } = useNetworks();
 
-  if (!networks) {
+  const isInsufficientFundsWarning = useInsufficientFundsWarning({
+    address,
+    transaction,
+    chain,
+    networkFeeConfiguration,
+  });
+
+  if (!networks || !isInsufficientFundsWarning) {
     return null;
   }
 
   return (
-    <VStack
-      gap={8}
-      style={{
-        padding: 16,
-        borderRadius: 8,
-        border: '1px solid var(--notice-500)',
-      }}
-    >
-      <HStack gap={8} alignItems="center">
-        <ValidationErrorIcon style={{ color: 'var(--notice-600)' }} />
-        <UIText kind="body/accent" color="var(--notice-600)">
-          Insufficient balance
-        </UIText>
-      </HStack>
-      <UIText
-        kind="small/regular"
-        color="var(--notice-600)"
-      >{`You don't have enough ${
-        networks?.getNetworkByName(chain)?.native_asset?.symbol.toUpperCase() ||
-        'native token'
-      } to cover network fees`}</UIText>
-    </VStack>
+    <>
+      <VStack
+        gap={8}
+        style={{
+          padding: 16,
+          borderRadius: 8,
+          border: '1px solid var(--notice-500)',
+        }}
+      >
+        <HStack gap={8} alignItems="center">
+          <ValidationErrorIcon style={{ color: 'var(--notice-600)' }} />
+          <UIText kind="body/accent" color="var(--notice-600)">
+            Insufficient balance
+          </UIText>
+        </HStack>
+        <UIText
+          kind="small/regular"
+          color="var(--notice-600)"
+        >{`You don't have enough ${
+          networks
+            ?.getNetworkByName(chain)
+            ?.native_asset?.symbol.toUpperCase() || 'native token'
+        } to cover network fees`}</UIText>
+      </VStack>
+      <Spacer height={16} />
+    </>
   );
 }

@@ -3,7 +3,7 @@ import { Store } from 'store-unit';
 import browser from 'webextension-polyfill';
 import { ZerionAPI } from '../zerion-api/zerion-api';
 
-type WebsiteStatus = 'loading' | 'fishing' | 'ok' | 'unknown';
+export type WebsiteStatus = 'loading' | 'fishing' | 'ok' | 'unknown' | 'error';
 
 interface State {
   whitelistedWebsites: string[];
@@ -55,10 +55,25 @@ export class FishingDefence extends Store<State> {
     }
   }
 
-  async checkWebsite(url: string): Promise<{ status: WebsiteStatus }> {
+  async checkWebsite(
+    url: string
+  ): Promise<{ status: WebsiteStatus; isWhitelisted: boolean }> {
     const origin = this.getSafeOrigin(url);
-    if (!origin || this.getState().whitelistedWebsites.includes(origin)) {
-      return Promise.resolve({ status: 'ok' });
+    if (!origin) {
+      return Promise.resolve({
+        status: 'unknown',
+        isWhitelisted: false,
+      });
+    }
+
+    const isWhitelisted = this.getState().whitelistedWebsites.includes(origin);
+    const existingStatus = this.getState().websiteStatus[origin] || 'unknown';
+
+    if (isWhitelisted) {
+      return Promise.resolve({
+        status: existingStatus,
+        isWhitelisted,
+      });
     }
     this.setState((current) => ({
       ...current,
@@ -68,6 +83,17 @@ export class FishingDefence extends Store<State> {
       },
     }));
     return new Promise((resolve) => {
+      // for debug purpose
+      if (origin === 'https://app.zerion.io') {
+        this.setState((current) => ({
+          ...current,
+          websiteStatus: {
+            ...current.websiteStatus,
+            [origin]: 'fishing',
+          },
+        }));
+        return resolve({ status: 'fishing', isWhitelisted });
+      }
       ZerionAPI.securityCheckUrl({ url })
         .then((result) => {
           const status = result.data?.flags.isMalicious ? 'fishing' : 'ok';
@@ -78,50 +104,18 @@ export class FishingDefence extends Store<State> {
               [origin]: status,
             },
           }));
-          resolve({ status });
+          resolve({ status, isWhitelisted });
         })
         .catch(() => {
           this.setState((current) => ({
             ...current,
             websiteStatus: {
               ...current.websiteStatus,
-              [origin]: 'unknown',
+              [origin]: 'error',
             },
           }));
-          resolve({ status: 'unknown' });
+          resolve({ status: 'error', isWhitelisted });
         });
-      // if (origin === 'https://app.zerion.io') {
-      //   setTimeout(() => {
-      //     this.setState((current) => ({
-      //       ...current,
-      //       websiteStatus: {
-      //         ...current.websiteStatus,
-      //         [origin]: 'fishing',
-      //       },
-      //     }));
-      //     resolve(false);
-      //   }, 200);
-      // } else if (origin === 'https://metamask.github.io') {
-      //   setTimeout(() => {
-      //     this.setState((current) => ({
-      //       ...current,
-      //       websiteStatus: {
-      //         ...current.websiteStatus,
-      //         [origin]: 'fishing',
-      //       },
-      //     }));
-      //     resolve(false);
-      //   }, 20000);
-      // } else {
-      //   this.setState((current) => ({
-      //     ...current,
-      //     websiteStatus: {
-      //       ...current.websiteStatus,
-      //       [origin]: 'ok',
-      //     },
-      //   }));
-      //   return resolve(true);
-      // }
     });
   }
 

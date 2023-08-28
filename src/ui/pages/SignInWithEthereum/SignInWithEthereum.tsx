@@ -26,13 +26,12 @@ import { FillView } from 'src/ui/components/FillView';
 import { VerifyUser } from 'src/ui/components/VerifyUser';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { usePersonalSignMutation } from 'src/ui/shared/requests/message-signing';
-import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
+import { FishingDefenceStatus } from 'src/ui/components/FishingDefence/FishingDefenceStatus';
 import { SpeechBubble } from './SpeechBubble/SpeechBubble';
 import { useFetchUTCTime } from './useFetchUTCTime';
 import { SiweError } from './SiweError';
 import { DataVerificationFailed } from './DataVerificationFailed';
 import { NavigationBar } from './NavigationBar';
-import { SignInWithEthereumWarning } from './SignInWithEthereumWarning';
 
 export function SignInWithEthereum() {
   const [params, setSearchParams] = useSearchParams();
@@ -205,11 +204,7 @@ export function SignInWithEthereum() {
           ) : null}
         </>
         <Spacer height={16} />
-        <ErrorBoundary renderError={() => null}>
-          <React.Suspense fallback={null}>
-            <SignInWithEthereumWarning origin={origin} />
-          </React.Suspense>
-        </ErrorBoundary>
+        <FishingDefenceStatus origin={origin} />
         {params.has('step') === false || params.get('step') === 'data' ? (
           <div
             style={{

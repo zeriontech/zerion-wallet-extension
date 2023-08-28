@@ -32,8 +32,7 @@ import { PageTop } from 'src/ui/components/PageTop';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { Address } from 'src/ui/components/Address';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
-import { RequestAccountsWarning } from './RequestAccountsWarning';
+import { FishingDefenceStatus } from 'src/ui/components/FishingDefence/FishingDefenceStatus';
 
 function WalletSelectList({
   wallets,
@@ -262,11 +261,7 @@ function RequestAccountsView({
         <Spacer height={16} />
         <RequestAccountsPermissions originName={originName} />
         <Spacer height={16} />
-        <ErrorBoundary renderError={() => null}>
-          <React.Suspense fallback={null}>
-            <RequestAccountsWarning origin={origin} />
-          </React.Suspense>
-        </ErrorBoundary>
+        <FishingDefenceStatus origin={origin} />
         <div
           style={{
             display: 'grid',
