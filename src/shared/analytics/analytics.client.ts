@@ -40,10 +40,11 @@ function trackAppEvents() {
     sendToMetabase('network_search', params);
   });
 
-  emitter.on('errorScreenView', (error) => {
+  emitter.on('errorScreenView', (data) => {
     const params = createParams({
       request_name: 'error_screen_view',
-      error: error.message,
+      screen_name: data.location,
+      error: data.message,
     });
     sendToMetabase('error_screen_view', params);
   });

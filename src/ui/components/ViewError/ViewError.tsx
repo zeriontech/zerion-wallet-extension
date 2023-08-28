@@ -45,8 +45,11 @@ export function ViewError({
   });
 
   useEffect(() => {
-    emitter.emit('errorScreenView', error || new Error('Unknown error'));
-  }, [error]);
+    emitter.emit('errorScreenView', {
+      message: error?.message || 'Unknown error',
+      location: pathname,
+    });
+  }, [error, pathname]);
 
   return (
     <ViewArea>
