@@ -57,10 +57,9 @@ function trackAppEvents() {
     const params = createParams({
       request_name: 'client_error',
       type: 'global error',
-      message: 'long loader view',
+      message: `long loader view for ${data.duration}ms`,
       user_id: userId,
       screen_name: data.location,
-      duration: data.duration,
     });
     sendToMetabase('client_error', params);
   });
