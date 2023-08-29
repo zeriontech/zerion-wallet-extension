@@ -3,11 +3,11 @@ import { Store } from 'store-unit';
 import browser from 'webextension-polyfill';
 import { ZerionAPI } from '../zerion-api/zerion-api';
 
-export type WebsiteStatus = 'loading' | 'phishing' | 'ok' | 'unknown' | 'error';
+type DappSecurityStatus = 'loading' | 'phishing' | 'ok' | 'unknown' | 'error';
 
 interface State {
   whitelistedWebsites: string[];
-  websiteStatus: Record<string, WebsiteStatus>;
+  websiteStatus: Record<string, DappSecurityStatus>;
 }
 
 const initialState: State = {
@@ -25,23 +25,23 @@ export class PhishingDefence extends Store<State> {
     super(initialState);
   }
 
-  async openPhishingWarning() {
+  async blockOriginWithWarning(origin: string) {
     const tabs = await browser.tabs.query({
-      active: true,
       currentWindow: true,
     });
-    const tab = tabs?.[0];
-    if (tab) {
-      const rawPopupUrl = browser.runtime.getManifest().action?.default_popup;
-      if (!rawPopupUrl) {
-        return;
+    for (const tab of tabs) {
+      if (tab?.url && this.getSafeOrigin(tab.url) === origin) {
+        const rawPopupUrl = browser.runtime.getManifest().action?.default_popup;
+        if (!rawPopupUrl) {
+          return;
+        }
+        const popupUrl = new URL(browser.runtime.getURL(rawPopupUrl));
+        popupUrl.hash = `/phishing-warning?url=${origin}`;
+        popupUrl.searchParams.append('templateType', 'tab');
+        browser.tabs.update(tab.id, {
+          url: popupUrl.toString(),
+        });
       }
-      const popupUrl = new URL(browser.runtime.getURL(rawPopupUrl));
-      popupUrl.hash = `/phishing-warning?url=${tab.url}`;
-      popupUrl.searchParams.append('templateType', 'tab');
-      browser.tabs.update(tab.id, {
-        url: popupUrl.toString(),
-      });
     }
   }
 
@@ -55,9 +55,9 @@ export class PhishingDefence extends Store<State> {
     }
   }
 
-  async checkWebsite(
+  async checkDapp(
     url: string
-  ): Promise<{ status: WebsiteStatus; isWhitelisted: boolean }> {
+  ): Promise<{ status: DappSecurityStatus; isWhitelisted: boolean }> {
     const origin = this.getSafeOrigin(url);
     if (!origin) {
       return Promise.resolve({
@@ -94,6 +94,7 @@ export class PhishingDefence extends Store<State> {
         }));
         return resolve({ status: 'phishing', isWhitelisted });
       }
+      // end of debug area
       ZerionAPI.securityCheckUrl({ url })
         .then((result) => {
           const status = result.data?.flags.isMalicious ? 'phishing' : 'ok';
@@ -119,11 +120,11 @@ export class PhishingDefence extends Store<State> {
     });
   }
 
-  async getWebsiteStatus({
+  async getDappSecurityStatus({
     params,
   }: {
     params: { url: string };
-  }): Promise<WebsiteStatus> {
+  }): Promise<DappSecurityStatus> {
     const origin = this.getSafeOrigin(params.url);
     const status = origin
       ? Promise.resolve(this.getState().websiteStatus[origin])

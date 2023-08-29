@@ -12,9 +12,9 @@ import { useRenderDelay } from '../DelayedRender/DelayedRender';
 
 function usePhishingDefenceStatus(origin: string) {
   return useQuery({
-    queryKey: ['phishingDefence', 'getWebsiteStatus', origin],
+    queryKey: ['phishingDefence', 'getDappSecurityStatus', origin],
     queryFn: () =>
-      phishingDefencePort.request('getWebsiteStatus', { url: origin }),
+      phishingDefencePort.request('getDappSecurityStatus', { url: origin }),
     cacheTime: 0,
     suspense: false,
     refetchInterval: (data) =>

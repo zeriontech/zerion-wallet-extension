@@ -9,6 +9,5 @@ export interface Response {
       isMalicious: boolean;
     };
   } | null;
-  error?: null;
   errors?: { title: string; detail: string }[];
 }
