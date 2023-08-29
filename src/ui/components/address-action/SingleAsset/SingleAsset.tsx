@@ -2,7 +2,6 @@ import type { ActionType, AddressAction, Asset } from 'defi-sdk';
 import { NFTAsset } from 'defi-sdk';
 import React, { useMemo } from 'react';
 import BigNumber from 'bignumber.js';
-import { ethers } from 'ethers';
 import UnknownIcon from 'jsx:src/ui/assets/actionTypes/unknown.svg';
 import {
   getFungibleAsset,
@@ -10,19 +9,17 @@ import {
 } from 'src/modules/ethereum/transactions/actionAsset';
 import { Media } from 'src/ui/ui-kit/Media';
 import { Surface } from 'src/ui/ui-kit/Surface';
-import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
-import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { getCommonQuantity } from 'src/modules/networks/asset';
 import type { Chain } from 'src/modules/networks/Chain';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { Button } from 'src/ui/ui-kit/Button';
+import { isUnlimitedApproval } from 'src/ui/pages/History/isUnlimitedApproval';
 import { AssetQuantity } from '../../AssetQuantity';
-
-const UNLIMITED = new BigNumber(ethers.constants.MaxUint256.toString());
+import { AssetLink } from '../../AssetLink';
 
 function AssetAllowance({
   baseQuantity,
@@ -31,7 +28,7 @@ function AssetAllowance({
   baseQuantity: BigNumber;
   commonQuantity: BigNumber;
 }) {
-  if (baseQuantity >= UNLIMITED) {
+  if (isUnlimitedApproval(baseQuantity)) {
     return <span>Unlimited</span>;
   } else {
     return <AssetQuantity commonQuantity={commonQuantity} />;
@@ -44,22 +41,21 @@ function FungibleAsset({
   actionType,
   fungible,
   quantity,
-  customAllowanceViewHref,
+  allowanceViewHref,
 }: {
   address: string;
   chain: Chain;
   actionType: ActionType;
   fungible: Asset;
   quantity: string;
-  customAllowanceViewHref?: string;
+  allowanceViewHref?: string;
 }) {
-  const title = fungible.symbol.toUpperCase();
   const commonQuantity = useMemo(
     () =>
       getCommonQuantity({
         asset: fungible,
         chain,
-        quantity,
+        baseQuantity: quantity,
       }),
     [chain, fungible, quantity]
   );
@@ -100,22 +96,14 @@ function FungibleAsset({
                 ) : (
                   <AssetQuantity commonQuantity={commonQuantity} />
                 )}{' '}
-                <TextAnchor
-                  // Open URL in a new _window_ so that extension UI stays open and visible
-                  onClick={openInNewWindow}
-                  href={`https://app.zerion.io/explore/asset/${fungible.symbol}-${fungible.asset_code}?address=${address}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {title}
-                </TextAnchor>
+                <AssetLink asset={fungible} address={address} />
               </UIText>
-              {actionType === 'approve' && customAllowanceViewHref ? (
+              {actionType === 'approve' && allowanceViewHref ? (
                 <Button
                   as={UnstyledLink}
                   kind="neutral"
                   style={{ color: 'var(--primary)' }}
-                  to={customAllowanceViewHref}
+                  to={allowanceViewHref}
                 >
                   Edit
                 </Button>
@@ -165,7 +153,8 @@ export function SingleAsset({
   chain,
   actionType,
   singleAsset,
-  customAllowanceViewHref,
+  allowance,
+  allowanceViewHref,
 }: {
   address: string;
   chain: Chain;
@@ -173,7 +162,8 @@ export function SingleAsset({
   singleAsset: NonNullable<
     NonNullable<AddressAction['content']>['single_asset']
   >;
-  customAllowanceViewHref?: string;
+  allowance?: string;
+  allowanceViewHref?: string;
 }) {
   const fungibleAsset = getFungibleAsset(singleAsset.asset);
   const nftAsset = getNftAsset(singleAsset.asset);
@@ -185,8 +175,8 @@ export function SingleAsset({
         chain={chain}
         actionType={actionType}
         fungible={fungibleAsset}
-        quantity={singleAsset.quantity}
-        customAllowanceViewHref={customAllowanceViewHref}
+        quantity={allowance || singleAsset.quantity}
+        allowanceViewHref={allowanceViewHref}
       />
     );
   }

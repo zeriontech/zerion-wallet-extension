@@ -1,10 +1,11 @@
-import type BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber.js';
+import { ethers } from 'ethers';
 
-const MAX_APPROVE_NUMBER =
-  '115792089237316195423570985008687907853269984665640564039457584007913129639935'; // 2 ** 256 - 1
+// 2 ** 256 - 1
+export const UNLIMITED_APPROVAL_AMOUNT = new BigNumber(
+  ethers.constants.MaxUint256.toString()
+);
 
-export function isUnlimitedApproval(
-  value?: string | number | BigNumber | null
-) {
-  return value?.toString() === MAX_APPROVE_NUMBER;
+export function isUnlimitedApproval(value?: BigNumber.Value | null) {
+  return new BigNumber(value?.toString() || 0).gte(UNLIMITED_APPROVAL_AMOUNT);
 }

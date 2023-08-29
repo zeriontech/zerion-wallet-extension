@@ -14,19 +14,21 @@ export function AddressActionDetails({
   addressAction,
   chain,
   networks,
-  actionTransfers,
   wallet,
+  actionTransfers,
   singleAsset,
-  customAllowanceViewHref,
+  allowance,
+  allowanceViewHref,
 }: {
   recipientAddress?: string;
   addressAction?: Pick<AnyAddressAction, 'label' | 'type'>;
   chain: Chain;
   networks: Networks;
-  actionTransfers?: ActionTransfers;
   wallet: BareWallet;
+  actionTransfers?: ActionTransfers;
   singleAsset?: NonNullable<AddressAction['content']>['single_asset'];
-  customAllowanceViewHref?: string;
+  allowance?: string;
+  allowanceViewHref?: string;
 }) {
   return (
     <>
@@ -58,7 +60,8 @@ export function AddressActionDetails({
           chain={chain}
           actionType={addressAction.type.value}
           singleAsset={singleAsset}
-          customAllowanceViewHref={customAllowanceViewHref}
+          allowance={allowance}
+          allowanceViewHref={allowanceViewHref}
         />
       ) : null}
     </>
