@@ -47,7 +47,7 @@ function HistoryTokenValue({
       getCommonQuantity({
         asset,
         chain,
-        quantity: value,
+        baseQuantity: value,
       }),
     [chain, asset, value]
   );
@@ -183,7 +183,7 @@ export function TransactionCurrencyValue({
   const commonQuantity = getCommonQuantity({
     asset,
     chain,
-    quantity: transfer.quantity,
+    baseQuantity: transfer.quantity,
   });
   const value = formatCurrencyValue(
     commonQuantity.times(transfer.price || 0),

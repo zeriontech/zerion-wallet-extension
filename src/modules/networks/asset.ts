@@ -1,5 +1,6 @@
 import type { Asset } from 'defi-sdk';
-import { baseToCommon } from 'src/shared/units/convert';
+import { baseToCommon, commonToBase } from 'src/shared/units/convert';
+import type BigNumber from 'bignumber.js';
 import type { Chain } from './Chain';
 
 export function getAssetImplementationInChain({
@@ -32,12 +33,25 @@ export function getAddress({
 export function getCommonQuantity({
   asset,
   chain,
-  quantity,
+  baseQuantity,
 }: {
   asset: Asset;
   chain: Chain;
-  quantity: number | string;
+  baseQuantity: BigNumber.Value;
 }) {
   const decimals = getDecimals({ asset, chain });
-  return baseToCommon(quantity, decimals);
+  return baseToCommon(baseQuantity, decimals);
+}
+
+export function getBaseQuantity({
+  asset,
+  chain,
+  commonQuantity,
+}: {
+  asset: Asset;
+  chain: Chain;
+  commonQuantity: BigNumber.Value;
+}) {
+  const decimals = getDecimals({ asset, chain });
+  return commonToBase(commonQuantity, decimals);
 }

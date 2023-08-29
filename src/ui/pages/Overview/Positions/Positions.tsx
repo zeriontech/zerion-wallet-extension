@@ -223,8 +223,8 @@ function AddressPositionItem({
                       {formatTokenValue(
                         getCommonQuantity({
                           asset: position.asset,
-                          quantity: position.quantity,
                           chain,
+                          baseQuantity: position.quantity,
                         }),
                         position.asset.symbol
                       )}
