@@ -12,6 +12,7 @@ import {
 import type { WindowProps } from './createBrowserWindow';
 import { createBrowserWindow } from './createBrowserWindow';
 import { fishingDefenceService } from 'src/modules/fishing-defence/fishing-defence-service';
+import { phishingDefenceService } from 'src/modules/phishing-defence/phishing-defence-service';
 
 const emitter = createNanoEvents<{
   windowRemoved: (windowId: number) => void;

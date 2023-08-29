@@ -49,7 +49,7 @@ import { AddressActionDetails } from 'src/ui/components/address-action/AddressAc
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { interpretTransaction } from 'src/modules/ethereum/transactions/interpret';
-import { FishingDefenceStatus } from 'src/ui/components/FishingDefence/FishingDefenceStatus';
+import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/PhishingDefenceStatus';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
@@ -355,7 +355,7 @@ function SendTransactionContent({
                 </Button>
               </VStack>
               <Spacer height={16} />
-              <FishingDefenceStatus origin={origin} />
+              <PhishingDefenceStatus origin={origin} />
               {incomingTxWithGasAndFee ? (
                 <>
                   <ErrorBoundary renderError={() => null}>

@@ -4,7 +4,7 @@ import { networksStore } from 'src/modules/networks/networks-store.background';
 import { configureBackgroundClient } from 'src/modules/defi-sdk/background';
 import { FEATURE_WAITLIST_ONBOARDING } from 'src/env/config';
 import { SessionCacheService } from 'src/background/resource/sessionCacheService';
-import { fishingDefenceService } from 'src/modules/fishing-defence/fishing-defence-service';
+import { phishingDefenceService } from 'src/modules/phishing-defence/phishing-defence-service';
 import { initialize } from './initialize';
 import { PortRegistry } from './messaging/PortRegistry';
 import { createWalletMessageHandler } from './messaging/port-message-handlers/createWalletMessageHandler';
@@ -151,8 +151,8 @@ initialize().then((values) => {
   );
   portRegistry.addMessageHandler(
     createPortMessageHandler({
-      check: (port) => port.name === 'fishingDefence',
-      controller: fishingDefenceService,
+      check: (port) => port.name === 'phishingDefence',
+      controller: phishingDefenceService,
     })
   );
   portRegistry.addMessageHandler(

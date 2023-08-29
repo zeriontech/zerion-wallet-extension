@@ -4,17 +4,17 @@ import ValidationErrorIcon from 'jsx:src/ui/assets/validation-error.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { fishingDefencePort } from 'src/ui/shared/channels';
+import { phishingDefencePort } from 'src/ui/shared/channels';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import { useRenderDelay } from '../DelayedRender/DelayedRender';
 
-function useFishingDefenceStatus(origin: string) {
+function usePhishingDefenceStatus(origin: string) {
   return useQuery({
-    queryKey: ['fishingDefence', 'getWebsiteStatus', origin],
+    queryKey: ['phishingDefence', 'getWebsiteStatus', origin],
     queryFn: () =>
-      fishingDefencePort.request('getWebsiteStatus', { url: origin }),
+      phishingDefencePort.request('getWebsiteStatus', { url: origin }),
     cacheTime: 0,
     suspense: false,
     refetchInterval: (data) =>
@@ -22,15 +22,15 @@ function useFishingDefenceStatus(origin: string) {
   });
 }
 
-export function FishingDefenceStatus({ origin }: { origin: string }) {
-  const delayedDisplayStatus = useRenderDelay(500);
-  const { data: fishingDefenceStatus } = useFishingDefenceStatus(origin);
+export function PhishingDefenceStatus({ origin }: { origin: string }) {
+  const render = useRenderDelay(500);
+  const { data: phishingDefenceStatus } = usePhishingDefenceStatus(origin);
 
-  if (fishingDefenceStatus === 'ok' || !delayedDisplayStatus) {
+  if (!render || !phishingDefenceStatus || phishingDefenceStatus === 'ok') {
     return null;
   }
 
-  if (fishingDefenceStatus === 'loading') {
+  if (phishingDefenceStatus === 'loading') {
     return (
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <HStack
@@ -57,7 +57,10 @@ export function FishingDefenceStatus({ origin }: { origin: string }) {
     );
   }
 
-  if (fishingDefenceStatus === 'error' || fishingDefenceStatus === 'unknown') {
+  if (
+    phishingDefenceStatus === 'error' ||
+    phishingDefenceStatus === 'unknown'
+  ) {
     return (
       <>
         <VStack
@@ -84,7 +87,7 @@ export function FishingDefenceStatus({ origin }: { origin: string }) {
     );
   }
 
-  if (fishingDefenceStatus === 'fishing') {
+  if (phishingDefenceStatus === 'phishing') {
     return (
       <>
         <VStack
@@ -114,6 +117,4 @@ export function FishingDefenceStatus({ origin }: { origin: string }) {
       </>
     );
   }
-
-  return null;
 }

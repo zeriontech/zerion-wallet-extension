@@ -3,7 +3,7 @@ import { Store } from 'store-unit';
 import browser from 'webextension-polyfill';
 import { ZerionAPI } from '../zerion-api/zerion-api';
 
-export type WebsiteStatus = 'loading' | 'fishing' | 'ok' | 'unknown' | 'error';
+export type WebsiteStatus = 'loading' | 'phishing' | 'ok' | 'unknown' | 'error';
 
 interface State {
   whitelistedWebsites: string[];
@@ -15,7 +15,7 @@ const initialState: State = {
   websiteStatus: {},
 };
 
-export class FishingDefence extends Store<State> {
+export class PhishingDefence extends Store<State> {
   private getSafeOrigin(url: string) {
     const safeUrl = url ? prepareForHref(url) : null;
     return safeUrl ? safeUrl.origin : null;
@@ -25,7 +25,7 @@ export class FishingDefence extends Store<State> {
     super(initialState);
   }
 
-  async openFishingWarning() {
+  async openPhishingWarning() {
     const tabs = await browser.tabs.query({
       active: true,
       currentWindow: true,
@@ -37,7 +37,7 @@ export class FishingDefence extends Store<State> {
         return;
       }
       const popupUrl = new URL(browser.runtime.getURL(rawPopupUrl));
-      popupUrl.hash = `/fishing-warning?url=${tab.url}`;
+      popupUrl.hash = `/phishing-warning?url=${tab.url}`;
       popupUrl.searchParams.append('templateType', 'tab');
       browser.tabs.update(tab.id, {
         url: popupUrl.toString(),
@@ -89,14 +89,14 @@ export class FishingDefence extends Store<State> {
           ...current,
           websiteStatus: {
             ...current.websiteStatus,
-            [origin]: 'fishing',
+            [origin]: 'phishing',
           },
         }));
-        return resolve({ status: 'fishing', isWhitelisted });
+        return resolve({ status: 'phishing', isWhitelisted });
       }
       ZerionAPI.securityCheckUrl({ url })
         .then((result) => {
-          const status = result.data?.flags.isMalicious ? 'fishing' : 'ok';
+          const status = result.data?.flags.isMalicious ? 'phishing' : 'ok';
           this.setState((current) => ({
             ...current,
             websiteStatus: {
@@ -132,4 +132,4 @@ export class FishingDefence extends Store<State> {
   }
 }
 
-export const fishingDefenceService = new FishingDefence();
+export const phishingDefenceService = new PhishingDefence();

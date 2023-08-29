@@ -26,7 +26,7 @@ import { FillView } from 'src/ui/components/FillView';
 import { VerifyUser } from 'src/ui/components/VerifyUser';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { usePersonalSignMutation } from 'src/ui/shared/requests/message-signing';
-import { FishingDefenceStatus } from 'src/ui/components/FishingDefence/FishingDefenceStatus';
+import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/PhishingDefenceStatus';
 import { SpeechBubble } from './SpeechBubble/SpeechBubble';
 import { useFetchUTCTime } from './useFetchUTCTime';
 import { SiweError } from './SiweError';
@@ -204,7 +204,7 @@ export function SignInWithEthereum() {
           ) : null}
         </>
         <Spacer height={16} />
-        <FishingDefenceStatus origin={origin} />
+        <PhishingDefenceStatus origin={origin} />
         {params.has('step') === false || params.get('step') === 'data' ? (
           <div
             style={{

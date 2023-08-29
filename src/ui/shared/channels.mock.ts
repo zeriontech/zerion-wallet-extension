@@ -176,7 +176,7 @@ export const dnaServicePort = {
   },
 };
 
-export const fishingDefencePort = {
+export const phishingDefencePort = {
   async request() {
     return null;
   },
