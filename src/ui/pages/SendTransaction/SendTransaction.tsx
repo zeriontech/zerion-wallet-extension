@@ -159,8 +159,8 @@ function TransactionDefaultView({
   wallet,
   addressAction,
   singleAsset,
-  isInterpretQueryLoading,
-  isInterpretQueryError,
+  allowance,
+  interpretQuery,
   incomingTransaction,
   incomingTxWithGasAndFee,
 }: {
@@ -170,8 +170,11 @@ function TransactionDefaultView({
   wallet: BareWallet;
   addressAction: AddressAction | IncomingAddressAction;
   singleAsset: NonNullable<AddressAction['content']>['single_asset'];
-  isInterpretQueryLoading: boolean;
-  isInterpretQueryError: boolean;
+  allowance?: string;
+  interpretQuery: {
+    isLoading: boolean;
+    isError: boolean;
+  };
   incomingTransaction: IncomingTransaction;
   incomingTxWithGasAndFee?: IncomingTransactionWithChainId | null;
 }) {
@@ -184,7 +187,7 @@ function TransactionDefaultView({
   const originForHref = useMemo(() => prepareForHref(origin), [origin]);
 
   const { data: chainGasPrices } = useGasPrices(chain);
-  const [advancedViewHref, customAllowanceViewHref] = useMemo(
+  const [advancedViewHref, allowanceViewHref] = useMemo(
     () =>
       [View.advanced, View.customAllowance].map(
         (view) => `?${setURLSearchParams(params, { view }).toString()}`
@@ -276,14 +279,15 @@ function TransactionDefaultView({
           addressAction={addressAction}
           chain={chain}
           networks={networks}
-          actionTransfers={actionTransfers}
           wallet={wallet}
+          actionTransfers={actionTransfers}
           singleAsset={singleAsset}
-          customAllowanceViewHref={customAllowanceViewHref}
+          allowance={allowance}
+          allowanceViewHref={allowanceViewHref}
         />
-        {isInterpretQueryLoading ? (
+        {interpretQuery.isLoading ? (
           <InterpretLoadingState />
-        ) : isInterpretQueryError ? (
+        ) : interpretQuery.isError ? (
           <UIText kind="small/regular" color="var(--notice-600)">
             Unable to analyze the details of the transaction
           </UIText>
@@ -398,6 +402,7 @@ function SendTransactionContent({
   wallet: BareWallet;
 }) {
   const [params] = useSearchParams();
+  const navigate = useNavigate();
   const { singleAddress } = useAddressParams();
   const incomingTransaction = useMemo(
     () => JSON.parse(transactionStringified) as IncomingTransaction,
@@ -454,8 +459,9 @@ function SendTransactionContent({
 
   const view = params.get('view') || View.default;
 
-  // TODO: Use ethers.contract to created an updated transaction
-  const handleSaveAllowance = (_amount: BigNumber) => ({});
+  const [allowance, setAllowance] = useState(
+    localAddressAction?.content?.single_asset?.quantity
+  );
 
   if (localAddressActionQuery.isSuccess && !localAddressAction) {
     throw new Error('Unexpected missing localAddressAction');
@@ -466,8 +472,13 @@ function SendTransactionContent({
   }
 
   const addressAction = interpretAddressAction || localAddressAction;
+  const singleAsset = addressAction?.content?.single_asset;
 
-  const singleAsset = addressAction.content?.single_asset;
+  const handleChangeAllowance = (newAllowance: BigNumber) => {
+    setAllowance(newAllowance.toString());
+    // TODO: Re-create transaction with the new custom allowance
+    navigate(-1);
+  };
 
   return (
     <Background backgroundKind="white">
@@ -485,8 +496,8 @@ function SendTransactionContent({
             wallet={wallet}
             addressAction={addressAction}
             singleAsset={singleAsset}
-            isInterpretQueryLoading={interpretQuery.isLoading}
-            isInterpretQueryError={interpretQuery.isError}
+            allowance={allowance}
+            interpretQuery={interpretQuery}
             incomingTransaction={incomingTransaction}
             incomingTxWithGasAndFee={incomingTxWithGasAndFee}
           />
@@ -504,9 +515,9 @@ function SendTransactionContent({
           <TransactionCustomAllowanceView
             address={wallet.address}
             singleAsset={singleAsset}
+            allowance={allowance}
             chain={chain}
-            requestedAllowance={singleAsset?.quantity}
-            onChange={handleSaveAllowance}
+            onChange={handleChangeAllowance}
           />
         ) : null}
         <Spacer height={16} />

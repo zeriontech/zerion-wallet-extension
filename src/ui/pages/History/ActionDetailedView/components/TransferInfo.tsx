@@ -47,7 +47,7 @@ export function ApprovalInfo({
         ? getCommonQuantity({
             asset: fungible,
             chain,
-            quantity: approvalInfo.quantity,
+            baseQuantity: approvalInfo.quantity,
           })
         : null,
     [approvalInfo, fungible, chain]
@@ -116,7 +116,7 @@ function FungibleTransfer({
       getCommonQuantity({
         asset: fungible,
         chain,
-        quantity: transfer.quantity,
+        baseQuantity: transfer.quantity,
       }),
     [transfer, fungible, chain]
   );

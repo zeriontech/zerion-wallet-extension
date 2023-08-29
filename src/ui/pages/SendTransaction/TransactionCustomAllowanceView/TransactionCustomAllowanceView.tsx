@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useId, useMemo, useRef, useState } from 'react';
 import InfinityIcon from 'jsx:src/ui/assets/infinity.svg';
 import { PageTop } from 'src/ui/components/PageTop';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -17,18 +17,21 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { almostEqual, noValueDash } from 'src/ui/shared/typography';
 import { invariant } from 'src/shared/invariant';
-import { getCommonQuantity } from 'src/modules/networks/asset';
+import { getBaseQuantity, getCommonQuantity } from 'src/modules/networks/asset';
 import type { Chain } from 'src/modules/networks/Chain';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
-import { ethers } from 'ethers';
-import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { Content } from 'react-area';
 import { Button } from 'src/ui/ui-kit/Button';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
+import { AssetLink } from 'src/ui/components/AssetLink';
+import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
+import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { NavigationBar } from '../../SignInWithEthereum/NavigationBar';
-
-const UNLIMITED = new BigNumber(ethers.constants.MaxUint256.toString());
+import {
+  UNLIMITED_APPROVAL_AMOUNT,
+  isUnlimitedApproval,
+} from '../../History/isUnlimitedApproval';
 
 function parseAmount(untypedValue: unknown): BigNumber | null {
   const value = untypedValue as string;
@@ -41,33 +44,80 @@ function parseAmount(untypedValue: unknown): BigNumber | null {
 
 function TransactionCustomAllowanceForm({
   asset,
+  chain,
+  address,
   balance,
   initialAllowance,
+  currentAllowance,
   onSubmit,
 }: {
   asset: Asset;
+  chain: Chain;
+  address: string;
   balance: BigNumber | null;
   initialAllowance: BigNumber;
-  onSubmit(value: BigNumber): void;
+  currentAllowance: BigNumber;
+  onSubmit(newAllowance: BigNumber): void;
 }) {
-  const title = asset.symbol.toUpperCase();
-
-  const isInitialAllowanceUnlimited = initialAllowance >= UNLIMITED;
-  const [amount, setAmount] = useState(initialAllowance);
-  // const [amountUsd, setAmountUsd] = useState(
-  //   amount.times(asset.price?.value || 0)
-  // );
-  const [unlimitedAmount, setUnlimitedAmount] = useState(
-    isInitialAllowanceUnlimited
+  const isInitialAllowanceUnlimited = isUnlimitedApproval(initialAllowance);
+  const isCurrentAllowanceUnlimited = isUnlimitedApproval(currentAllowance);
+  const [isAllowanceUnlimited, setIsAllowanceUnlimited] = useState(
+    isCurrentAllowanceUnlimited
+  );
+  const currentAllowanceCommon = useMemo(
+    () =>
+      isCurrentAllowanceUnlimited
+        ? null
+        : getCommonQuantity({
+            asset,
+            chain,
+            baseQuantity: currentAllowance.toString(),
+          }),
+    [asset, chain, currentAllowance, isCurrentAllowanceUnlimited]
   );
 
-  // const handleSetAmount = useDebouncedCallback(
-  //   useCallback((value: string) => {}, [setAmount]),
-  //   300
-  // );
-  //
+  const assetPrice = asset.price?.value;
+  const currentAllowanceInUsd =
+    assetPrice && currentAllowanceCommon
+      ? currentAllowanceCommon.times(assetPrice)
+      : null;
+
+  const [allowanceInUsd, setAllowanceInUsd] = useState(currentAllowanceInUsd);
+  const allowanceAmountRef = useRef<HTMLInputElement | null>(null);
+
+  const updateAllowanceInUsd = useCallback(
+    (value: string | null) => {
+      if (value && assetPrice) {
+        setAllowanceInUsd(new BigNumber(value).times(assetPrice));
+      } else {
+        setAllowanceInUsd(null);
+      }
+    },
+    [setAllowanceInUsd, assetPrice]
+  );
+
+  const setAllowanceAmount = useCallback(
+    (value: string | null) => {
+      if (allowanceAmountRef?.current) {
+        allowanceAmountRef.current.value = value || '';
+      }
+      updateAllowanceInUsd(value);
+    },
+    [updateAllowanceInUsd]
+  );
+
+  const handleReset = () => {
+    setIsAllowanceUnlimited(isInitialAllowanceUnlimited);
+    setAllowanceAmount(
+      isInitialAllowanceUnlimited ? null : initialAllowance.toString()
+    );
+  };
+
+  const id = useId();
+
   return (
     <form
+      id={id}
       style={{
         height: '100%',
         position: 'relative',
@@ -76,13 +126,27 @@ function TransactionCustomAllowanceForm({
       }}
       onSubmit={(event) => {
         event.preventDefault();
-        const form = event.currentTarget;
-        if (!form.checkValidity()) {
-          return;
+
+        if (!isAllowanceUnlimited) {
+          const form = event.currentTarget;
+          if (!form.checkValidity()) {
+            return;
+          }
+          const formData = collectData(form, { amount: parseAmount });
+          const commonQuantity = formData.amount as BigNumber;
+          const newAllowance = getBaseQuantity({
+            asset,
+            chain,
+            commonQuantity,
+          });
+          onSubmit(newAllowance);
+        } else {
+          onSubmit(
+            isInitialAllowanceUnlimited
+              ? initialAllowance
+              : UNLIMITED_APPROVAL_AMOUNT
+          );
         }
-        const formData = collectData(form, { amount: parseAmount });
-        const amount = formData.amount as BigNumber;
-        onSubmit(amount);
       }}
     >
       <VStack gap={16}>
@@ -108,15 +172,14 @@ function TransactionCustomAllowanceForm({
               <HStack
                 gap={16}
                 style={{
-                  gridAutoColumns: unlimitedAmount
-                    ? 'minmax(min-content, max-content)'
-                    : 'min-content 1fr',
                   alignItems: 'center',
                   justifyContent: 'space-between',
                 }}
               >
-                <UIText kind="headline/h3">{title}</UIText>
-                {unlimitedAmount ? (
+                <UIText kind="headline/h3">
+                  <AssetLink asset={asset} address={address} />
+                </UIText>
+                {isAllowanceUnlimited ? (
                   <InfinityIcon
                     style={{
                       width: 24,
@@ -124,30 +187,45 @@ function TransactionCustomAllowanceForm({
                       color: 'var(--neutral-500)',
                     }}
                   />
-                ) : (
-                  <UIText kind="headline/h3">
-                    <UnstyledInput
-                      type="text"
-                      inputMode="numeric"
-                      defaultValue={formatTokenValue(initialAllowance)}
-                      placeholder="0"
-                      title="Amount must be a positive number"
-                      autoFocus={true}
-                      pattern="(\\d+\\.)?\\d+"
-                      style={{ width: '100%', textAlign: 'end' }}
-                      onChange={(event) => {
-                        if (event.currentTarget.validity.patternMismatch) {
-                          event.currentTarget.setCustomValidity(
-                            'Amount must be a positive number'
-                          );
-                        } else {
-                          event.currentTarget.setCustomValidity('');
-                          const newAmount = event.currentTarget.value;
-                        }
-                      }}
-                    />
-                  </UIText>
-                )}
+                ) : null}
+                <UIText
+                  kind="headline/h3"
+                  style={{
+                    display: isAllowanceUnlimited ? 'none' : 'initial',
+                  }}
+                >
+                  <UnstyledInput
+                    ref={allowanceAmountRef}
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="0"
+                    name="amount"
+                    style={{ textAlign: 'end' }}
+                    autoFocus={!isAllowanceUnlimited}
+                    required={!isAllowanceUnlimited}
+                    pattern="^(\d+\.)?\d+"
+                    defaultValue={currentAllowanceCommon?.toString()}
+                    onInvalid={(event) => {
+                      if (event.currentTarget.validity.patternMismatch) {
+                        event.currentTarget.setCustomValidity(
+                          'Amount must be a positive number'
+                        );
+                      } else if (event.currentTarget.validity.valueMissing) {
+                        event.currentTarget.setCustomValidity(
+                          'Amount is required'
+                        );
+                      }
+                    }}
+                    onInput={(event) => {
+                      event.currentTarget.setCustomValidity('');
+                      if (event.currentTarget.validity.valid) {
+                        updateAllowanceInUsd(event.currentTarget.value);
+                      } else {
+                        setAllowanceInUsd(null);
+                      }
+                    }}
+                  />
+                </UIText>
               </HStack>
             }
             detailText={null}
@@ -171,15 +249,33 @@ function TransactionCustomAllowanceForm({
                 kind="small/regular"
                 style={{ color: 'var(--primary-500)' }}
               >
-                {balance ? formatTokenValue(balance) : noValueDash}
+                {balance ? (
+                  isAllowanceUnlimited ? (
+                    formatTokenValue(balance)
+                  ) : (
+                    <TextAnchor
+                      rel="noopener noreferrer"
+                      style={{ cursor: 'pointer' }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setAllowanceAmount(balance.toString());
+                      }}
+                    >
+                      {formatTokenValue(balance)}
+                    </TextAnchor>
+                  )
+                ) : (
+                  noValueDash
+                )}
               </UIText>
             </HStack>
-            {unlimitedAmount ? null : (
+            {isAllowanceUnlimited || allowanceInUsd == null ? null : (
               <UIText
                 kind="small/regular"
                 style={{ color: 'var(--neutral-500)', textAlign: 'end' }}
               >
-                {almostEqual}$130
+                {almostEqual}
+                {formatCurrencyValue(allowanceInUsd, 'en', 'usd')}
               </UIText>
             )}
           </HStack>
@@ -196,9 +292,12 @@ function TransactionCustomAllowanceForm({
             detailText={null}
           />
           <Toggle
-            checked={unlimitedAmount}
+            checked={isAllowanceUnlimited}
             onChange={(event) => {
-              setUnlimitedAmount(event.currentTarget.checked);
+              setIsAllowanceUnlimited(event.currentTarget.checked);
+              if (event.currentTarget.checked) {
+                allowanceAmountRef?.current?.setCustomValidity('');
+              }
             }}
           />
         </HStack>
@@ -211,15 +310,12 @@ function TransactionCustomAllowanceForm({
             gap: 8,
           }}
         >
-          <Button
-            ref={focusNode}
-            kind="regular"
-            type="button"
-            onClick={() => ({})}
-          >
+          <Button ref={focusNode} kind="regular" onClick={handleReset}>
             Reset
           </Button>
-          <Button>Save</Button>
+          <Button kind="primary" form={id}>
+            Save
+          </Button>
         </div>
       </Content>
     </form>
@@ -228,24 +324,20 @@ function TransactionCustomAllowanceForm({
 
 export function TransactionCustomAllowanceView({
   address,
-  singleAsset,
   chain,
-  requestedAllowance,
+  singleAsset,
+  allowance,
   onChange,
 }: {
   address: string;
-  singleAsset: NonNullable<AddressAction['content']>['single_asset'];
-  asset?: Asset | null;
   chain: Chain;
-  requestedAllowance?: string;
+  singleAsset: NonNullable<AddressAction['content']>['single_asset'];
+  allowance?: string;
   onChange: (amount: BigNumber) => void;
 }) {
-  invariant(
-    requestedAllowance,
-    'requestedAllowance is required to set custom allowance'
-  );
-
-  const asset = getFungibleAsset(singleAsset?.asset);
+  invariant(singleAsset, 'singleAsset is required to set custom allowance');
+  const asset = getFungibleAsset(singleAsset.asset);
+  invariant(allowance, 'allowance is required to set custom allowance');
   invariant(asset, 'asset is required to set custom allowance');
 
   const { value: positionsResponse, isLoading: positionsAreLoading } =
@@ -255,26 +347,17 @@ export function TransactionCustomAllowanceView({
       currency: 'usd',
     });
 
-  const quantity = positionsResponse?.positions?.[0]?.quantity;
-  const initialAllowance = useMemo(
-    () =>
-      getCommonQuantity({
-        asset,
-        chain,
-        quantity: requestedAllowance,
-      }),
-    [asset, chain, requestedAllowance]
-  );
+  const positionQuantity = positionsResponse?.positions?.[0]?.quantity;
   const balance = useMemo(
     () =>
-      quantity
+      positionQuantity
         ? getCommonQuantity({
             asset,
             chain,
-            quantity,
+            baseQuantity: positionQuantity,
           })
         : null,
-    [asset, chain, quantity]
+    [asset, chain, positionQuantity]
   );
 
   if (positionsAreLoading) {
@@ -287,8 +370,11 @@ export function TransactionCustomAllowanceView({
       <PageTop />
       <TransactionCustomAllowanceForm
         asset={asset}
+        chain={chain}
+        address={address}
         balance={balance}
-        initialAllowance={initialAllowance}
+        initialAllowance={new BigNumber(singleAsset.quantity)}
+        currentAllowance={new BigNumber(allowance)}
         onSubmit={onChange}
       />
     </>
