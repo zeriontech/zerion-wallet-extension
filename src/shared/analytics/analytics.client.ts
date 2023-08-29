@@ -40,23 +40,29 @@ function trackAppEvents() {
     sendToMetabase('network_search', params);
   });
 
-  emitter.on('errorScreenView', (data) => {
+  emitter.on('errorScreenView', async (data) => {
+    const userId = await getUserId();
     const params = createParams({
-      request_name: 'error_screen_view',
+      request_name: 'client_error',
+      type: 'global error',
+      message: data.message,
+      user_id: userId,
       screen_name: data.location,
-      error: data.message,
     });
-    sendToMetabase('error_screen_view', params);
+    sendToMetabase('client_error', params);
   });
 
-  emitter.on('loaderScreenView', (data) => {
+  emitter.on('loaderScreenView', async (data) => {
+    const userId = await getUserId();
     const params = createParams({
-      request_name: 'loader_screen_view',
-      sessionId: data.sessionId,
+      request_name: 'client_error',
+      type: 'global error',
+      message: 'long loader view',
+      user_id: userId,
       screen_name: data.location,
       duration: data.duration,
     });
-    sendToMetabase('loader_screen_view', params);
+    sendToMetabase('client_error', params);
   });
 }
 
