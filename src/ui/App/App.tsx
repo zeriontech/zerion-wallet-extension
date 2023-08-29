@@ -418,7 +418,7 @@ export function App({ initialView, mode, inspect }: AppProps) {
               />
               <VersionUpgrade>
                 <CloseOtherWindows />
-                <ViewSuspense>
+                <ViewSuspense logDelays={true}>
                   {mode === 'onboarding' &&
                   initialView !== 'handshakeFailure' ? (
                     <Onboarding />

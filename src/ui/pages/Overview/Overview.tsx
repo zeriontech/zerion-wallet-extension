@@ -374,7 +374,7 @@ function OverviewComponent() {
           <Route
             path="/"
             element={
-              <ViewSuspense>
+              <ViewSuspense logDelays={true}>
                 <Positions
                   chain={preferences.overviewChain}
                   onChainChange={setChain}
@@ -385,7 +385,7 @@ function OverviewComponent() {
           <Route
             path="/nfts"
             element={
-              <ViewSuspense>
+              <ViewSuspense logDelays={true}>
                 <NonFungibleTokens
                   chain={preferences.overviewChain}
                   onChainChange={setChain}
@@ -396,7 +396,7 @@ function OverviewComponent() {
           <Route
             path="/history"
             element={
-              <ViewSuspense>
+              <ViewSuspense logDelays={true}>
                 <HistoryList
                   chain={preferences.overviewChain}
                   onChainChange={setChain}
@@ -407,7 +407,7 @@ function OverviewComponent() {
           <Route
             path="/feed"
             element={
-              <ViewSuspense>
+              <ViewSuspense logDelays={true}>
                 <Feed />
               </ViewSuspense>
             }

@@ -10,7 +10,9 @@ type MetabaseEvent =
   | 'client_error'
   | 'daylight_action'
   | 'add_custom_evm'
-  | 'network_search';
+  | 'network_search'
+  | 'error_screen_view'
+  | 'loader_screen_view';
 
 type BaseParams<E = MetabaseEvent> = { request_name: E };
 

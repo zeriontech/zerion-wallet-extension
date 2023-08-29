@@ -11,6 +11,8 @@ export const emitter = createNanoEvents<{
   signingError: (type: EthersSignMethod, message: string) => void;
   mutationError: (error: unknown, variables: unknown, context: unknown) => void;
   networksSearchResponse: (query: string, resultsCount: number) => void;
+  errorScreenView: (data: { message: string; location: string }) => void;
+  loaderScreenView: (data: { location: string; duration: number }) => void;
 }>();
 
 emitter.on('mutationError', (error, _variables, context) => {

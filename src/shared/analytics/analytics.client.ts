@@ -39,6 +39,30 @@ function trackAppEvents() {
     });
     sendToMetabase('network_search', params);
   });
+
+  emitter.on('errorScreenView', async (data) => {
+    const userId = await getUserId();
+    const params = createParams({
+      request_name: 'client_error',
+      type: 'global error',
+      message: data.message,
+      user_id: userId,
+      screen_name: data.location,
+    });
+    sendToMetabase('client_error', params);
+  });
+
+  emitter.on('loaderScreenView', async (data) => {
+    const userId = await getUserId();
+    const params = createParams({
+      request_name: 'client_error',
+      type: 'global error',
+      message: `long loader view for ${data.duration}ms`,
+      user_id: userId,
+      screen_name: data.location,
+    });
+    sendToMetabase('client_error', params);
+  });
 }
 
 export function initializeClientAnalytics() {

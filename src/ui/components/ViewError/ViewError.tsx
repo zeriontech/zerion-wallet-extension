@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -14,6 +14,7 @@ import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { pageTemplateType } from 'src/ui/shared/getPageTemplateName';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { emitter } from 'src/ui/shared/events';
 import { WarningIcon } from '../WarningIcon';
 import { getBugButtonUrl } from '../BugReportButton/getBugReportURL';
 import { PageStickyFooter } from '../PageStickyFooter';
@@ -42,6 +43,13 @@ export function ViewError({
   const { handleCopy, isSuccess } = useCopyToClipboard({
     text: error?.message,
   });
+
+  useEffect(() => {
+    emitter.emit('errorScreenView', {
+      message: error?.message || 'Unknown error',
+      location: pathname,
+    });
+  }, [error, pathname]);
 
   return (
     <ViewArea>
