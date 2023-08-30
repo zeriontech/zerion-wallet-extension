@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo } from 'react';
-
 import { Route, Routes } from 'react-router-dom';
 import { useAddressPortfolio } from 'defi-sdk';
 import { UIText } from 'src/ui/ui-kit/UIText';
