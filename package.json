@@ -99,7 +99,6 @@
     "downshift": "^7.6.0",
     "ethers": "^5.7.2",
     "events": "^3.3.0",
-    "friendly-challenge": "^0.9.12",
     "immer": "^10.0.2",
     "is-truthy-ts": "^1.0.1",
     "ky": "^0.33.3",

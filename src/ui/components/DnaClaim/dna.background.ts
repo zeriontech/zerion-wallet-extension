@@ -73,14 +73,14 @@ export class DnaService {
     return omit(currentQueue[0], 'timestamp');
   }
 
-  async registerAction({
-    request,
-  }: {
-    request: { headers: Record<string, string>; body: string };
-  }) {
+  async registerAction({ request }: { request: { body: string } }) {
     this.sendingInProgress = true;
     return new Promise<{ success: boolean }>((resolve) => {
-      ky.post(`${DNA_API_ENDPOINT}/actions`, request)
+      ky.post(`${DNA_API_ENDPOINT}/actions`, {
+        // random stuff for backend scheme validation
+        headers: { 'Z-Proof': uuidv4() },
+        ...request,
+      })
         .json()
         .then(() => {
           this.popAction();
@@ -94,7 +94,7 @@ export class DnaService {
     });
   }
 
-  async tryRegisterAction({ params }: { params: { captcha: string } }) {
+  async tryRegisterAction() {
     if (this.sendingInProgress) {
       return { success: false };
     }
@@ -104,7 +104,6 @@ export class DnaService {
     }
     return this.registerAction({
       request: {
-        headers: { 'Z-Proof': params.captcha },
         body: JSON.stringify(actionBody),
       },
     });
