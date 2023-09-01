@@ -26,9 +26,7 @@ export class PhishingDefence extends Store<State> {
   }
 
   async blockOriginWithWarning(origin: string) {
-    const tabs = await browser.tabs.query({
-      currentWindow: true,
-    });
+    const tabs = await browser.tabs.query({});
     for (const tab of tabs) {
       if (tab?.url && this.getSafeOrigin(tab.url) === origin) {
         const rawPopupUrl = browser.runtime.getManifest().action?.default_popup;
