@@ -3,6 +3,7 @@ import ky from 'ky';
 import { PROXY_URL } from 'src/env/config';
 import { useFirebaseConfig } from 'src/modules/remote-config/plugins/firebase';
 import { invariant } from 'src/shared/invariant';
+import { signMessage } from 'src/ui/shared/wallet/signMessage';
 
 type InvitationLinkStatus =
   | 'CREATED'
@@ -26,9 +27,13 @@ export interface InvitationInfo {
 }
 
 async function getInvitationInfo(address: string, campaignId: string) {
+  const signature = await signMessage(
+    `Please, send me invitation codes for ${address}`
+  );
   return ky
     .post(
-      new URL(`linkdrop/api/v2/referrals/${campaignId}/${address}`, PROXY_URL)
+      new URL(`linkdrop/api/v2/referrals/${campaignId}/${address}`, PROXY_URL),
+      { headers: { signature } }
     )
     .json<InvitationInfo>();
 }
