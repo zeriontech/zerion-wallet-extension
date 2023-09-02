@@ -51,6 +51,8 @@ import type BigNumber from 'bignumber.js';
 import { Content, RenderArea } from 'react-area';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { AddressAction } from 'defi-sdk';
+import type { TransactionAction } from 'src/modules/ethereum/transactions/describeTransaction';
+import { describeTransaction } from 'src/modules/ethereum/transactions/describeTransaction';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
@@ -158,6 +160,7 @@ function TransactionDefaultView({
   origin,
   wallet,
   addressAction,
+  transactionAction,
   singleAsset,
   allowance,
   interpretQuery,
@@ -169,6 +172,7 @@ function TransactionDefaultView({
   origin: string;
   wallet: BareWallet;
   addressAction: AddressAction | IncomingAddressAction;
+  transactionAction: TransactionAction;
   singleAsset: NonNullable<AddressAction['content']>['single_asset'];
   allowance?: string;
   interpretQuery: {
@@ -207,9 +211,19 @@ function TransactionDefaultView({
   } = useMutation({
     mutationFn: async (transaction: IncomingTransaction) => {
       const feeValueCommon = feeValueCommonRef.current || null;
+
+      const allowanceParams =
+        transactionAction.type === 'approve' && allowance
+          ? {
+              contractAddress: transactionAction.contractAddress,
+              allowanceValueBase: allowance,
+              spender: transactionAction.spenderAddress,
+            }
+          : null;
+
       return await walletPort.request('signAndSendTransaction', [
         transaction,
-        { initiator: origin, feeValueCommon },
+        { initiator: origin, feeValueCommon, allowanceParams },
       ]);
     },
     // The value returned by onMutate can be accessed in
@@ -416,18 +430,38 @@ function SendTransactionContent({
 
   const transaction = incomingTxWithGasAndFee || incomingTxWithChainId;
 
+  const chain =
+    transaction && networks
+      ? networks.getChainById(ethers.utils.hexValue(transaction.chainId))
+      : null;
+
+  const transactionAction =
+    transaction && networks && chain
+      ? describeTransaction(transaction, {
+          networks,
+          chain,
+        })
+      : null;
+
   const { data: localAddressAction, ...localAddressActionQuery } = useQuery({
-    queryKey: ['incomingTxToIncomingAddressAction', transaction, networks],
+    queryKey: [
+      'incomingTxToIncomingAddressAction',
+      transaction,
+      transactionAction,
+      networks,
+    ],
     queryFn: () => {
-      return transaction && networks
+      return transaction && networks && transactionAction
         ? incomingTxToIncomingAddressAction(
             { transaction, hash: '', timestamp: 0 },
+            transactionAction,
             networks
           )
         : null;
     },
     keepPreviousData: true,
-    enabled: Boolean(transaction) && Boolean(networks),
+    enabled:
+      Boolean(transaction) && Boolean(networks) && Boolean(transactionAction),
     useErrorBoundary: true,
     retry: false,
     refetchOnMount: false,
@@ -452,11 +486,6 @@ function SendTransactionContent({
 
   const interpretAddressAction = interpretation?.action;
 
-  const chain =
-    transaction && networks
-      ? networks.getChainById(ethers.utils.hexValue(transaction.chainId))
-      : null;
-
   const view = params.get('view') || View.default;
 
   const [allowance, setAllowance] = useState(
@@ -467,7 +496,7 @@ function SendTransactionContent({
     throw new Error('Unexpected missing localAddressAction');
   }
 
-  if (!networks || !chain || !localAddressAction) {
+  if (!networks || !chain || !transactionAction || !localAddressAction) {
     return null;
   }
 
@@ -476,7 +505,6 @@ function SendTransactionContent({
 
   const handleChangeAllowance = (newAllowance: BigNumber) => {
     setAllowance(newAllowance.toString());
-    // TODO: Re-create transaction with the new custom allowance
     navigate(-1);
   };
 
@@ -494,6 +522,7 @@ function SendTransactionContent({
             chain={chain}
             origin={origin}
             wallet={wallet}
+            transactionAction={transactionAction}
             addressAction={addressAction}
             singleAsset={singleAsset}
             allowance={allowance}
