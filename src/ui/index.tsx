@@ -90,11 +90,17 @@ async function handleFailedHandshake() {
   initializeUI({ initialView: 'handshakeFailure' });
 }
 
-initializeUI().then(() => {
-  new BackgroundScriptUpdateHandler({
-    onActivate: () =>
-      initializeUI({ inspect: { message: 'background-initialized' } }),
-    onReactivate: () => initializeChannels(),
-    onFailedHandshake: () => handleFailedHandshake(),
-  }).keepAlive();
-});
+new BackgroundScriptUpdateHandler({
+  onActivate: () => {
+    // console.log('initializeUI onActivate');
+    // initializeUI({ inspect: { message: 'background-initialized' } });
+    initializeChannels();
+  },
+  onReactivate: () => {
+    // console.log('initializeChannels onReactivate');
+    // initializeChannels();
+  },
+  onFailedHandshake: () => handleFailedHandshake(),
+}).keepAlive();
+
+initializeUI();
