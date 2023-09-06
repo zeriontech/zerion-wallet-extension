@@ -13,12 +13,12 @@ type Port = browser.Runtime.Port;
 export class PortMessageChannel {
   port: Port | undefined;
   name: string;
+  private pendingRequests: Map<string | number, JsonRpcRequest> = new Map();
   emitter = createNanoEvents<{
     message: (msg: unknown) => void;
     postMessage: (msg: JsonRpcRequest) => void;
     connect: () => void;
   }>();
-  private pendingRequests: Map<string | number, JsonRpcRequest> = new Map();
 
   constructor({ name }: { name: string }) {
     this.name = name;

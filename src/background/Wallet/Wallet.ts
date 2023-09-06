@@ -74,9 +74,11 @@ const INTERNAL_SYMBOL_CONTEXT = { origin: INTERNAL_ORIGIN_SYMBOL };
 
 type PublicMethodParams<T = undefined> = T extends undefined
   ? {
+      id: string | number;
       context?: Partial<ChannelContext>;
     }
   : {
+      id: string | number;
       params: T;
       context?: Partial<ChannelContext>;
     };
@@ -1015,7 +1017,7 @@ class PublicController {
     }
   }
 
-  async eth_requestAccounts({ context }: PublicMethodParams) {
+  async eth_requestAccounts({ context, id }: PublicMethodParams) {
     const currentAddress = this.wallet.readCurrentAddress();
     if (currentAddress && this.wallet.allowedOrigin(context, currentAddress)) {
       const { origin } = context;
@@ -1031,6 +1033,7 @@ class PublicController {
       notificationWindow.open({
         route: '/requestAccounts',
         search: `?origin=${origin}`,
+        requestId: `${origin}:${id}`,
         onResolve: async ({
           address,
           origin: resolvedOrigin,
@@ -1052,7 +1055,7 @@ class PublicController {
             params: { origin, address },
             context: INTERNAL_SYMBOL_CONTEXT,
           });
-          const accounts = await this.eth_accounts({ context });
+          const accounts = await this.eth_accounts({ context, id });
           emitter.emit('dappConnection', { origin, address });
           resolve(accounts.map((item) => item.toLowerCase()));
         },
@@ -1080,14 +1083,15 @@ class PublicController {
     return this.wallet.getChainIdForOrigin({ origin: context.origin });
   }
 
-  async net_version({ context }: PublicMethodParams) {
-    const chainId = await this.eth_chainId({ context });
+  async net_version({ context, id }: PublicMethodParams) {
+    const chainId = await this.eth_chainId({ context, id });
     return String(parseInt(chainId));
   }
 
   async eth_sendTransaction({
     params,
     context,
+    id,
   }: PublicMethodParams<UnsignedTransaction[]>) {
     const currentAddress = this.wallet.ensureCurrentAddress();
     // TODO: should we check transaction.from instead of currentAddress?
@@ -1098,6 +1102,7 @@ class PublicController {
     invariant(transaction, () => new InvalidParams());
     return new Promise((resolve, reject) => {
       notificationWindow.open({
+        requestId: `${context.origin}:${id}`,
         route: '/sendTransaction',
         search: `?${new URLSearchParams({
           origin: context.origin,
@@ -1116,6 +1121,7 @@ class PublicController {
   async eth_signTypedData_v4({
     context,
     params: [address, data],
+    id,
   }: PublicMethodParams<[string, TypedData | string]>) {
     const currentAddress = this.wallet.ensureCurrentAddress();
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
@@ -1131,6 +1137,7 @@ class PublicController {
       typeof data === 'string' ? data : JSON.stringify(data);
     return new Promise((resolve, reject) => {
       notificationWindow.open({
+        requestId: `${context.origin}:${id}`,
         route: '/signTypedData',
         search: `?${new URLSearchParams({
           origin: context.origin,
@@ -1156,6 +1163,7 @@ class PublicController {
   }
 
   async personal_sign({
+    id,
     params,
     context,
   }: PublicMethodParams<[string, string, string]>) {
@@ -1199,6 +1207,7 @@ class PublicController {
 
     return new Promise((resolve, reject) => {
       notificationWindow.open({
+        requestId: `${context.origin}:${id}`,
         route,
         search: `?${new URLSearchParams({
           method: 'personal_sign',
@@ -1307,7 +1316,7 @@ class PublicController {
     }
   }
 
-  private getIsAllowedOrigin({ context }: PublicMethodParams) {
+  private getIsAllowedOrigin({ context }: Pick<PublicMethodParams, 'context'>) {
     const currentAddress = this.wallet.readCurrentAddress();
     if (!currentAddress) {
       return false;
@@ -1316,12 +1325,13 @@ class PublicController {
   }
 
   async wallet_requestPermissions({
+    id,
     context,
     params,
   }: PublicMethodParams<[{ [name: string]: unknown }]>): Promise<
     Web3WalletPermission[]
   > {
-    await this.eth_requestAccounts({ context });
+    await this.eth_requestAccounts({ context, id });
     return this.generatePermissionResponse(params);
   }
 
@@ -1336,6 +1346,7 @@ class PublicController {
   }
 
   async wallet_addEthereumChain({
+    id,
     context,
     params,
   }: PublicMethodParams<[AddEthereumChainParameter]>) {
@@ -1344,6 +1355,7 @@ class PublicController {
     const { origin } = context;
     return new Promise((resolve, reject) => {
       notificationWindow.open({
+        requestId: `${origin}:${id}`,
         route: '/addEthereumChain',
         search: `?${new URLSearchParams({
           origin,
@@ -1359,6 +1371,7 @@ class PublicController {
     }).then(() => {
       // Automatically switch dapp to this network because this is what most dapp seem to expect
       return this.wallet_switchEthereumChain({
+        id,
         context,
         params: [{ chainId: params[0].chainId }],
       });

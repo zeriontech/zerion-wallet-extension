@@ -8,6 +8,7 @@ import { validate } from 'src/shared/validation/user-input';
 import { eraseAndUpdateToLatestVersion } from 'src/shared/core/version';
 import { currentUserKey } from 'src/shared/getCurrentUser';
 import type { PublicUser, User } from 'src/shared/types/User';
+import { payloadId } from '@json-rpc-tools/utils';
 import { Wallet } from '../Wallet/Wallet';
 import { peakSavedWalletState } from '../Wallet/persistence';
 import type { GlobalPreferences } from '../Wallet/GlobalPreferences';
@@ -125,6 +126,7 @@ export class Account extends EventEmitter<AccountEvents> {
     try {
       await this.wallet.verifyCredentials({
         params: { id: user.id, encryptionKey },
+        id: payloadId(),
       });
       return true;
     } catch (error) {
@@ -168,6 +170,7 @@ export class Account extends EventEmitter<AccountEvents> {
       this.encryptionKey = credentials.encryptionKey;
     }
     await this.wallet.updateCredentials({
+      id: payloadId(),
       params: {
         id: user.id,
         encryptionKey: this.encryptionKey,
