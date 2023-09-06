@@ -35,7 +35,8 @@ export function AddressActionDetails({
           networks={networks}
         />
       ) : null}
-      {addressAction?.label && addressAction?.label.type !== 'to' ? (
+      {addressAction?.label &&
+      Boolean(addressAction?.label.display_value.contract_address) ? (
         <ApplicationLine
           action={addressAction}
           chain={chain}
