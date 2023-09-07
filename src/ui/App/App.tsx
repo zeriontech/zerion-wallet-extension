@@ -19,6 +19,8 @@ import { RequestAccounts } from 'src/ui/pages/RequestAccounts';
 import { SendTransaction } from 'src/ui/pages/SendTransaction';
 import { SignMessage } from 'src/ui/pages/SignMessage';
 import { SignTypedData } from 'src/ui/pages/SignTypedData';
+import { useStore } from '@store-unit/react';
+import { runtimeStore } from 'src/shared/core/runtime-store';
 import { Login } from '../pages/Login';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { accountPublicRPCPort, walletPort } from '../shared/channels';
@@ -386,6 +388,19 @@ export function App({ initialView, mode, inspect }: AppProps) {
     }
     return result;
   }, [mode]);
+
+  const { connected } = useStore(runtimeStore);
+  useEffect(() => {
+    const prevValue = document.body.style.opacity;
+    if (!connected) {
+      document.body.style.opacity = '0.3';
+    } else {
+      document.body.style.opacity = '';
+    }
+    return () => {
+      document.body.style.opacity = prevValue;
+    };
+  }, [connected]);
 
   return (
     <AreaProvider>

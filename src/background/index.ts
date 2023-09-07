@@ -19,6 +19,7 @@ import * as userActivity from './user-activity';
 import { ContentScriptManager } from './ContentScriptManager';
 
 Object.assign(globalThis, { ethers });
+// 21
 
 globalThis.addEventListener('install', (_event) => {
   /** Seems to be recommended when clients always expect a service worker */
@@ -107,7 +108,13 @@ browser.alarms.onAlarm.addListener(userActivity.handleAlarm);
 browser.alarms.onAlarm.addListener(ContentScriptManager.handleAlarm);
 
 initialize().then((values) => {
-  const { account, accountPublicRPC, dnaService, globalPreferences } = values;
+  const {
+    account,
+    accountPublicRPC,
+    dnaService,
+    globalPreferences,
+    notificationWindow,
+  } = values;
   notifyContentScriptsAndUIAboutInitialization();
   // const httpConnection = new HttpConnection(() => account.getCurrentWallet());
   const memoryCacheRPC = new MemoryCacheRPC();
@@ -146,7 +153,9 @@ initialize().then((values) => {
       controller: new SessionCacheService(),
     })
   );
-  portRegistry.addMessageHandler(createNotificationWindowMessageHandler());
+  portRegistry.addMessageHandler(
+    createNotificationWindowMessageHandler(notificationWindow)
+  );
   portRegistry.addMessageHandler(
     // createHttpConnectionMessageHandler(httpConnection)
     createHttpConnectionMessageHandler(() => account.getCurrentWallet())

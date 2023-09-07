@@ -1,8 +1,10 @@
-import { notificationWindow } from 'src/background/NotificationWindow/NotificationWindow';
+import type { NotificationWindow } from 'src/background/NotificationWindow/NotificationWindow';
 import { isRpcError, isRpcRequest, isRpcResult } from 'src/shared/custom-rpc';
 import type { PortMessageHandler } from '../PortRegistry';
 
-export function createNotificationWindowMessageHandler(): PortMessageHandler {
+export function createNotificationWindowMessageHandler(
+  notificationWindow: NotificationWindow
+): PortMessageHandler {
   return function notificationWindowMessageHandler(port, msg) {
     if (port.name !== 'window') {
       return;

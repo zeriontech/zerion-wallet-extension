@@ -5,7 +5,7 @@ import { createNanoEvents } from 'nanoevents';
 import { Store } from 'store-unit';
 import { isTruthy } from 'is-truthy-ts';
 import { encrypt, decrypt } from 'src/modules/crypto';
-import { notificationWindow } from 'src/background/NotificationWindow/NotificationWindow';
+import type { NotificationWindow } from 'src/background/NotificationWindow/NotificationWindow';
 import type {
   ChannelContext,
   PrivateChannelContext,
@@ -112,13 +112,15 @@ export class Wallet {
   private store: Store<{ chainId: string }>;
 
   walletStore: WalletStore;
+  notificationWindow: NotificationWindow;
 
   emitter: Emitter<WalletEvents>;
 
   constructor(
     id: string,
     userCredentials: Credentials | null,
-    globalPreferences: GlobalPreferences
+    globalPreferences: GlobalPreferences,
+    notificationWindow: NotificationWindow
   ) {
     this.store = new Store({ chainId: '0x1' });
     this.emitter = createNanoEvents();
@@ -126,6 +128,7 @@ export class Wallet {
     this.id = id;
     this.walletStore = new WalletStore({}, 'wallet');
     this.globalPreferences = globalPreferences;
+    this.notificationWindow = notificationWindow;
     networksStore.on('change', () => {
       this.verifyOverviewChain();
     });
@@ -136,7 +139,9 @@ export class Wallet {
       this.syncWithWalletStore();
     });
     Object.assign(globalThis, { encrypt, decrypt });
-    this.publicEthereumController = new PublicController(this);
+    this.publicEthereumController = new PublicController(this, {
+      notificationWindow,
+    });
   }
 
   private async syncWithWalletStore() {
@@ -313,6 +318,9 @@ export class Wallet {
     if (!this.id) {
       return null;
     }
+    // console.log('uiGetCurrentWallet delay');
+    // await new Promise((r) => setTimeout(r, 4000));
+    // console.log('uiGetCurrentWallet delay finished');
     const currentAddress = this.readCurrentAddress();
     if (this.record && currentAddress) {
       const wallet =
@@ -998,11 +1006,18 @@ interface Web3WalletPermission {
   date?: number;
 }
 
+const debugValue = null;
+
 class PublicController {
   wallet: Wallet;
+  notificationWindow: NotificationWindow;
 
-  constructor(wallet: Wallet) {
+  constructor(
+    wallet: Wallet,
+    { notificationWindow }: { notificationWindow: NotificationWindow }
+  ) {
     this.wallet = wallet;
+    this.notificationWindow = notificationWindow;
   }
 
   async eth_accounts({ context }: PublicMethodParams) {
@@ -1018,19 +1033,30 @@ class PublicController {
   }
 
   async eth_requestAccounts({ context, id }: PublicMethodParams) {
+    if (debugValue) {
+      // eslint-disable-next-line no-console
+      console.log('PublicController: eth_requestAccounts', debugValue);
+    }
+    // console.log('eth_requestAccounts delay');
+    // await new Promise((r) => setTimeout(r, 4000));
+    // console.log('eth_requestAccounts delay finished');
     const currentAddress = this.wallet.readCurrentAddress();
     if (currentAddress && this.wallet.allowedOrigin(context, currentAddress)) {
       const { origin } = context;
       emitter.emit('dappConnection', { origin, address: currentAddress });
       // Some dapps expect lowercase to be returned, otherwise they crash the moment after connection
-      return [currentAddress.toLowerCase()];
+      const result = [currentAddress.toLowerCase()];
+      if (debugValue && process.env.NODE_ENV === 'development') {
+        result.push(debugValue);
+      }
+      return result;
     }
     if (!context?.origin) {
       throw new Error('This method requires origin');
     }
     const { origin } = context;
     return new Promise((resolve, reject) => {
-      notificationWindow.open({
+      this.notificationWindow.open({
         route: '/requestAccounts',
         search: `?origin=${origin}`,
         requestId: `${origin}:${id}`,
@@ -1101,7 +1127,7 @@ class PublicController {
     const transaction = params[0];
     invariant(transaction, () => new InvalidParams());
     return new Promise((resolve, reject) => {
-      notificationWindow.open({
+      this.notificationWindow.open({
         requestId: `${context.origin}:${id}`,
         route: '/sendTransaction',
         search: `?${new URLSearchParams({
@@ -1136,7 +1162,7 @@ class PublicController {
     const stringifiedData =
       typeof data === 'string' ? data : JSON.stringify(data);
     return new Promise((resolve, reject) => {
-      notificationWindow.open({
+      this.notificationWindow.open({
         requestId: `${context.origin}:${id}`,
         route: '/signTypedData',
         search: `?${new URLSearchParams({
@@ -1206,7 +1232,7 @@ class PublicController {
     const route = isSiweLike(message) ? '/siwe' : '/signMessage';
 
     return new Promise((resolve, reject) => {
-      notificationWindow.open({
+      this.notificationWindow.open({
         requestId: `${context.origin}:${id}`,
         route,
         search: `?${new URLSearchParams({
@@ -1354,7 +1380,7 @@ class PublicController {
     invariant(params[0], () => new InvalidParams());
     const { origin } = context;
     return new Promise((resolve, reject) => {
-      notificationWindow.open({
+      this.notificationWindow.open({
         requestId: `${origin}:${id}`,
         route: '/addEthereumChain',
         search: `?${new URLSearchParams({

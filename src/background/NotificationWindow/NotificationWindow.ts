@@ -1,10 +1,12 @@
-import { nanoid } from 'nanoid';
 import { createNanoEvents } from 'nanoevents';
 import type { ErrorResponse } from '@json-rpc-tools/utils';
-import type { Windows } from 'webextension-polyfill';
 import browser from 'webextension-polyfill';
 import type { RpcError, RpcResult } from 'src/shared/custom-rpc';
 import { UserRejected } from 'src/shared/errors/errors';
+import { PersistentStore } from 'src/modules/persistent-store';
+import { produce } from 'immer';
+import type { WindowProps } from './createBrowserWindow';
+import { createBrowserWindow } from './createBrowserWindow';
 
 const emitter = createNanoEvents<{
   windowRemoved: (windowId: number) => void;
@@ -14,44 +16,15 @@ browser.windows.onRemoved.addListener((windowId) => {
   emitter.emit('windowRemoved', windowId);
 });
 
-const IS_WINDOWS = /windows/i.test(navigator.userAgent);
-const BROWSER_HEADER = 80;
-const DEFAULT_WINDOW_SIZE = {
-  width: 400 + (IS_WINDOWS ? 14 : 0), // windows cuts the width
-  height: 700,
-};
-
-function getPopupRoute(route: string) {
-  /**
-   * Normally, we'd get the path to popup.html like this:
-   * new URL(`../../ui/popup.html`, import.meta.url)
-   * But parcel is being too smart, and because we're in
-   * the service worker context here, it bundles the entry for sw context as well,
-   * which makes the popup UI crash
-   */
-  const popupUrl = browser.runtime.getManifest().action?.default_popup;
-  if (!popupUrl) {
-    throw new Error('popupUrl not found');
-  }
-  const url = new URL(browser.runtime.getURL(popupUrl));
-  url.searchParams.append('templateType', 'dialog');
-  url.hash = route;
-  return url.toString();
-}
-
-interface WindowProps {
-  route: string;
-  search?: string;
-  top?: number;
-  left?: number;
-  width?: number;
-  height?: number;
-}
-
 interface Events {
   resolve: (value: RpcResult) => void;
   reject: (value: RpcError) => void;
   open: (value: { requestId: string; windowId: number; id: string }) => void;
+  /**
+   * "settle" is a helper event that can be listened to
+   * when you need to respond any of the "close" events, such as
+   * "resolve", "reject" and "windowRemoved"
+   */
   settle: (value: {
     status: 'fulfilled' | 'rejected';
     result?: unknown;
@@ -61,18 +34,66 @@ interface Events {
   }) => void;
 }
 
-class NotificationWindow {
+type PendingState = Record<string, { windowId: number; id: string }>;
+
+export class NotificationWindow extends PersistentStore<PendingState> {
+  static initialState: PendingState = {};
+  static key = 'notificationWindow';
+
   windowId: number | null | undefined = null;
-  private emitter = createNanoEvents<Events>();
+  private events = createNanoEvents<Events>();
   private idsMap: Map<string, number>;
   private requestIds: Map<string, string> = new Map();
-  private pendingWindows: Map<string, { windowId: number; id: string }> =
-    new Map();
 
-  constructor() {
+  constructor(
+    initialState = NotificationWindow.initialState,
+    key = NotificationWindow.key
+  ) {
+    super(initialState, key);
     this.idsMap = new Map();
     this.trackOpenedWindows();
     this.trackWindowEvents();
+  }
+
+  private async removeStaleEntries() {
+    // Verify that window entries recovered from storage are still opened.
+    // If not, purge from state
+    const pendingWindows = this.getState();
+    const pendingWindowIds = Object.values(pendingWindows).map(
+      (entry) => entry.windowId
+    );
+    const windowQueries = await Promise.allSettled(
+      pendingWindowIds.map((id) => browser.windows.get(id))
+    );
+    const existingWindows = windowQueries
+      .filter(
+        <T>(
+          result: PromiseSettledResult<T>
+        ): result is PromiseFulfilledResult<T> => result.status === 'fulfilled'
+      )
+      .map((result) => result.value.id);
+    const existingWindowsSet = new Set(existingWindows);
+    console.log({ existingWindows });
+    this.setState((state) =>
+      produce(state, (draft) => {
+        for (const key in draft) {
+          if (!existingWindowsSet.has(draft[key].windowId)) {
+            delete draft[key];
+          }
+        }
+      })
+    );
+  }
+
+  async ready() {
+    await super.ready(); // PersistentStore;
+    await this.removeStaleEntries();
+    const pendingWindows = this.getState();
+    for (const key in pendingWindows) {
+      const entry = pendingWindows[key];
+      this.idsMap.set(entry.id, entry.windowId);
+      this.requestIds.set(entry.id, key);
+    }
   }
 
   private closeWindowById(id: string) {
@@ -97,12 +118,12 @@ class NotificationWindow {
   }
 
   private trackWindowEvents() {
-    this.emitter.on('resolve', ({ id, result }) => {
-      this.emitter.emit('settle', { status: 'fulfilled', id, result });
+    this.events.on('resolve', ({ id, result }) => {
+      this.events.emit('settle', { status: 'fulfilled', id, result });
       this.closeWindowById(id);
     });
-    this.emitter.on('reject', ({ id, error }) => {
-      this.emitter.emit('settle', { status: 'rejected', id, error });
+    this.events.on('reject', ({ id, error }) => {
+      this.events.emit('settle', { status: 'rejected', id, error });
       this.closeWindowById(id);
     });
     emitter.on('windowRemoved', (windowId) => {
@@ -111,7 +132,7 @@ class NotificationWindow {
       if (
         Array.from(this.idsMap.values()).some((value) => value === windowId)
       ) {
-        this.emitter.emit('settle', {
+        this.events.emit('settle', {
           status: 'rejected',
           windowId,
           error: new UserRejected('Window Closed'),
@@ -122,10 +143,14 @@ class NotificationWindow {
   }
 
   private trackOpenedWindows() {
-    this.emitter.on('open', ({ requestId, windowId, id }) => {
-      this.pendingWindows.set(requestId, { windowId, id });
+    this.events.on('open', ({ requestId, windowId, id }) => {
+      this.setState((state) =>
+        produce(state, (draft) => {
+          draft[requestId] = { windowId, id };
+        })
+      );
     });
-    this.emitter.on('settle', ({ id, windowId }) => {
+    this.events.on('settle', ({ id, windowId }) => {
       let windowRequestId: string | undefined = undefined;
       if (id) {
         windowRequestId = this.getRequestId(id);
@@ -133,19 +158,15 @@ class NotificationWindow {
         windowRequestId = this.getRequestIdByWindowId(windowId);
       }
       if (windowRequestId) {
-        this.pendingWindows.delete(windowRequestId);
+        this.setState((state) =>
+          produce(state, (draft) => {
+            if (windowRequestId) {
+              delete draft[windowRequestId];
+            }
+          })
+        );
       }
     });
-  }
-
-  // async ready() {
-  //   await super.ready(); // PersistentStore;
-  //   // now verify that windows from setState are still opened
-  //   // if not, purge from state
-  // }
-
-  private getNewId() {
-    return nanoid();
   }
 
   private getRequestId(id: string): string | undefined {
@@ -161,49 +182,8 @@ class NotificationWindow {
     }
   }
 
-  private async createBrowserWindow({
-    top,
-    left,
-    width = DEFAULT_WINDOW_SIZE.width,
-    height = DEFAULT_WINDOW_SIZE.height,
-    route: initialRoute,
-    search,
-  }: WindowProps) {
-    const id = this.getNewId();
-    const params = new URLSearchParams(search);
-    params.append('windowId', String(id));
-
-    const {
-      top: currentWindowTop = 0,
-      left: currentWindowLeft = 0,
-      width: currentWindowWidth = 0,
-    } = await browser.windows.getCurrent({
-      windowTypes: ['normal'],
-    } as Windows.GetInfo);
-
-    const position = {
-      top: top ?? currentWindowTop + BROWSER_HEADER,
-      left: left ?? currentWindowLeft + currentWindowWidth - width,
-    };
-
-    const { id: windowId } = await browser.windows.create({
-      focused: true,
-      url: getPopupRoute(`${initialRoute}?${params.toString()}`),
-      type: 'popup',
-      width,
-      height,
-      ...position,
-    });
-
-    if (!windowId) {
-      throw new Error('Window ID not recevied from the window API.');
-    }
-
-    return { id, windowId };
-  }
-
   emit<K extends keyof Events>(event: K, ...args: Parameters<Events[K]>): void {
-    this.emitter.emit(event, ...args);
+    this.events.emit(event, ...args);
   }
 
   async open<T>({
@@ -221,7 +201,7 @@ class NotificationWindow {
     onDismiss: (error?: ErrorResponse) => void;
     onResolve: (data: T) => void;
   }) {
-    const unlisten = this.emitter.on(
+    const unlisten = this.events.on(
       'settle',
       ({ status, id, windowId, result, error }) => {
         let windowRequestId: string | undefined = undefined;
@@ -240,13 +220,14 @@ class NotificationWindow {
         }
       }
     );
-    if (this.pendingWindows.has(requestId)) {
+    const pendingWindows = this.getState();
+    if (pendingWindows[requestId]) {
       // Window is already opened for this request and all necessary listeners
       // have been set up, so we're done.
       return;
     }
 
-    const { id, windowId } = await this.createBrowserWindow({
+    const { id, windowId } = await createBrowserWindow({
       top,
       left,
       width,
@@ -254,17 +235,15 @@ class NotificationWindow {
       route,
       search,
     });
-    this.emitter.emit('open', { requestId, windowId, id });
+    this.events.emit('open', { requestId, windowId, id });
     this.requestIds.set(id, requestId);
     this.idsMap.set(id, windowId);
   }
 
+  /** @deprecated */
   closeCurrentWindow() {
     if (this.windowId != null) {
       browser.windows.remove(this.windowId);
     }
   }
 }
-
-// Make it a singleton so that windows do not conflict
-export const notificationWindow = new NotificationWindow();

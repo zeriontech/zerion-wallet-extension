@@ -6,6 +6,7 @@ import { configureUIClient } from 'src/modules/defi-sdk';
 import { BackgroundScriptUpdateHandler } from 'src/shared/core/BackgroundScriptUpdateHandler';
 import { initializeClientAnalytics } from 'src/shared/analytics/analytics.client';
 import { HandshakeFailed } from 'src/shared/errors/errors';
+import { runtimeStore } from 'src/shared/core/runtime-store';
 import { applyDrawFix } from './shared/applyDrawFix';
 import { App } from './App';
 import type { AppProps } from './App/App';
@@ -95,11 +96,14 @@ new BackgroundScriptUpdateHandler({
     // console.log('initializeUI onActivate');
     // initializeUI({ inspect: { message: 'background-initialized' } });
     initializeChannels();
+    runtimeStore.setState({ connected: true });
   },
-  onReactivate: () => {
-    // console.log('initializeChannels onReactivate');
-    // initializeChannels();
+  onDisconnect: () => {
+    runtimeStore.setState({ connected: false });
   },
+  // onReactivate: () => {
+  //   // initializeChannels();
+  // },
   onFailedHandshake: () => handleFailedHandshake(),
 }).keepAlive();
 

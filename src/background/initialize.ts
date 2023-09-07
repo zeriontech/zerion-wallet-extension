@@ -6,6 +6,7 @@ import { initialize as initializeRemoteConfig } from 'src/modules/remote-config'
 import { Account, AccountPublicRPC } from './account/Account';
 import { TransactionService } from './transactions/TransactionService';
 import { GlobalPreferences } from './Wallet/GlobalPreferences';
+import { NotificationWindow } from './NotificationWindow/NotificationWindow';
 
 let didInitialize = false;
 
@@ -18,13 +19,19 @@ export async function initialize() {
   await prepareStorage();
   await dappRegistryInitialize();
 
+  // console.log('bg initialize delay');
+  // await new Promise((r) => setTimeout(r, 7000));
+  // console.log('bg initialize delay finished');
+
   // This method is called only when background script runs for the first time
   // This means that either the user is opening the extension for the first time,
   // or that the browser decided to "restart" the background scripts
   // Either way, we either create a user from scratch or find one in storage
   await Account.ensureUserAndWallet();
   const globalPreferences = new GlobalPreferences({}, 'globalPreferences');
-  const account = new Account({ globalPreferences });
+  const notificationWindow = new NotificationWindow();
+  await notificationWindow.ready();
+  const account = new Account({ globalPreferences, notificationWindow });
   await account.initialize();
   const accountPublicRPC = new AccountPublicRPC(account);
   const transactionService = new TransactionService();
@@ -43,6 +50,7 @@ export async function initialize() {
     dnaService,
     transactionService,
     globalPreferences,
+    notificationWindow,
   });
   return {
     account,
@@ -50,5 +58,6 @@ export async function initialize() {
     transactionService,
     dnaService,
     globalPreferences,
+    notificationWindow,
   };
 }
