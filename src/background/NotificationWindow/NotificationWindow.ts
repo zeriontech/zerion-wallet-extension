@@ -83,7 +83,7 @@ export class NotificationWindow extends PersistentStore<PendingState> {
     );
   }
 
-  async ready() {
+  async initialize() {
     await super.ready(); // PersistentStore;
     await this.removeStaleEntries();
     const pendingWindows = this.getState();

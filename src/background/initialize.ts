@@ -26,7 +26,7 @@ export async function initialize() {
   await Account.ensureUserAndWallet();
   const globalPreferences = new GlobalPreferences({}, 'globalPreferences');
   const notificationWindow = new NotificationWindow();
-  await notificationWindow.ready();
+  await notificationWindow.initialize();
   const account = new Account({ globalPreferences, notificationWindow });
   await account.initialize();
   const accountPublicRPC = new AccountPublicRPC(account);
