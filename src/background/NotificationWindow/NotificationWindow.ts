@@ -40,7 +40,6 @@ export class NotificationWindow extends PersistentStore<PendingState> {
   static initialState: PendingState = {};
   static key = 'notificationWindow';
 
-  windowId: number | null | undefined = null;
   private events = createNanoEvents<Events>();
   private idsMap: Map<string, number>;
   private requestIds: Map<string, string> = new Map();
@@ -73,7 +72,6 @@ export class NotificationWindow extends PersistentStore<PendingState> {
       )
       .map((result) => result.value.id);
     const existingWindowsSet = new Set(existingWindows);
-    console.log({ existingWindows });
     this.setState((state) =>
       produce(state, (draft) => {
         for (const key in draft) {
@@ -107,7 +105,8 @@ export class NotificationWindow extends PersistentStore<PendingState> {
 
   private closeWindow(windowId: number) {
     browser.windows.remove(windowId);
-    // clean up idsMap:
+    // NOTE: idsMap can be refactored into a bidirectional map
+    // so that these searches are more elegant
     const id = Array.from(this.idsMap.keys()).find(
       (id) => this.idsMap.get(id) === windowId
     );
@@ -127,8 +126,8 @@ export class NotificationWindow extends PersistentStore<PendingState> {
       this.closeWindowById(id);
     });
     emitter.on('windowRemoved', (windowId) => {
-      // This event can be triggered as a consequence of our own closeWindowById
-      // method. We should check that this `windowId` hasn't been removed
+      // This event can be triggered as a consequence of our own closeWindow
+      // methods. We should check that this `windowId` hasn't been removed
       if (
         Array.from(this.idsMap.values()).some((value) => value === windowId)
       ) {
@@ -160,6 +159,7 @@ export class NotificationWindow extends PersistentStore<PendingState> {
       if (windowRequestId) {
         this.setState((state) =>
           produce(state, (draft) => {
+            // this condition is for typescript :(
             if (windowRequestId) {
               delete draft[windowRequestId];
             }
@@ -242,8 +242,6 @@ export class NotificationWindow extends PersistentStore<PendingState> {
 
   /** @deprecated */
   closeCurrentWindow() {
-    if (this.windowId != null) {
-      browser.windows.remove(this.windowId);
-    }
+    console.warn('deprecated'); // eslint-disable-line no-console
   }
 }

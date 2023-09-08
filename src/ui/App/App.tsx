@@ -26,7 +26,6 @@ import { ErrorBoundary } from '../components/ErrorBoundary';
 import { accountPublicRPCPort, walletPort } from '../shared/channels';
 import { CreateAccount } from '../pages/CreateAccount';
 import { pageTemplateType } from '../shared/getPageTemplateName';
-import { closeOtherWindows } from '../shared/closeOtherWindows';
 import { URLBar } from '../components/URLBar';
 import { SwitchEthereumChain } from '../pages/SwitchEthereumChain';
 import { DesignTheme } from '../components/DesignTheme';
@@ -356,16 +355,6 @@ function Views({ initialRoute }: { initialRoute?: string }) {
   );
 }
 
-function CloseOtherWindows() {
-  useEffect(() => {
-    if (pageTemplateType === 'popup') {
-      // window.location.hash = '#/get-started/import'
-      closeOtherWindows();
-    }
-  }, []);
-  return null;
-}
-
 initializeApperance();
 dayjs.extend(relativeTime);
 
@@ -432,7 +421,6 @@ export function App({ initialView, mode, inspect }: AppProps) {
                 }}
               />
               <VersionUpgrade>
-                <CloseOtherWindows />
                 <ViewSuspense logDelays={true}>
                   {mode === 'onboarding' &&
                   initialView !== 'handshakeFailure' ? (
