@@ -19,7 +19,6 @@ import * as userActivity from './user-activity';
 import { ContentScriptManager } from './ContentScriptManager';
 
 Object.assign(globalThis, { ethers });
-// 21
 
 globalThis.addEventListener('install', (_event) => {
   /** Seems to be recommended when clients always expect a service worker */

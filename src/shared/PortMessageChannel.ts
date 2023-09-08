@@ -57,6 +57,8 @@ export class PortMessageChannel {
     params: Params,
     id?: number
   ) {
+    // NOTE: Should we assert this.port _after_ emitting the custom 'postMessage'?
+    // Or not assert at all?
     invariant(this.port, `Port not initialized: (${this.name})`);
     const payload = formatJsonRpcRequest(method, params, id);
     this.emitter.emit('postMessage', payload);

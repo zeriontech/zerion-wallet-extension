@@ -43,9 +43,6 @@ export class BackgroundMemoryCache implements RequestCache<EntryStore> {
   }
 
   async load(): Promise<void> {
-    // console.log('BackgroundMemoryCache delay');
-    // await new Promise((r) => setTimeout(r, 5000));
-    // console.log('BackgroundMemoryCache delay finished');
     memoryCacheRPCPort.request('getAll').then((cacheObject) => {
       for (const key in cacheObject) {
         const value = cacheObject[key];

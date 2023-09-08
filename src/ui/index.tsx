@@ -93,17 +93,12 @@ async function handleFailedHandshake() {
 
 new BackgroundScriptUpdateHandler({
   onActivate: () => {
-    // console.log('initializeUI onActivate');
-    // initializeUI({ inspect: { message: 'background-initialized' } });
     initializeChannels();
     runtimeStore.setState({ connected: true });
   },
   onDisconnect: () => {
     runtimeStore.setState({ connected: false });
   },
-  // onReactivate: () => {
-  //   // initializeChannels();
-  // },
   onFailedHandshake: () => handleFailedHandshake(),
 }).keepAlive();
 
