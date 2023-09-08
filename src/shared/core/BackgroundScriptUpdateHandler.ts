@@ -33,27 +33,27 @@ export class BackgroundScriptUpdateHandler {
 
   private onActivate: () => void;
   private onFailedHandshake?: () => void;
-  private onReactivate?: () => void;
+  private onDisconnect?: () => void;
   private portName: string;
   private performHandshake: boolean;
   private handshakeRetries = 2;
 
   constructor({
     onActivate,
-    onReactivate,
+    onDisconnect,
     onFailedHandshake,
     portName = 'handshake',
     performHandshake = true,
   }: {
     onActivate: () => void;
-    onReactivate?: () => void;
+    onDisconnect?: () => void;
     onFailedHandshake?: () => void;
     portName?: string;
     performHandshake?: boolean;
   }) {
     this.onActivate = onActivate;
     this.onFailedHandshake = onFailedHandshake;
-    this.onReactivate = onReactivate;
+    this.onDisconnect = onDisconnect;
     this.portName = portName;
     this.performHandshake = performHandshake;
     browser.runtime.onMessage.addListener((request) => {
@@ -92,13 +92,10 @@ export class BackgroundScriptUpdateHandler {
       });
   }
 
-  keepAlive(reactivate?: boolean) {
+  keepAlive() {
     const port = browser.runtime.connect({ name: this.portName });
     if (port.error) {
       return;
-    }
-    if (reactivate) {
-      this.onReactivate?.();
     }
     if (PERFORM_HANSHAKE_CHECK && this.performHandshake) {
       this.handshake(port).catch(() => {
@@ -106,9 +103,10 @@ export class BackgroundScriptUpdateHandler {
       });
     }
     port.onDisconnect.addListener(() => {
+      this.onDisconnect?.();
       // This means that the background-script (service-worker) went to sleep
       // We "wake" it up by creating a new runtime connection
-      this.keepAlive(true);
+      this.keepAlive();
     });
   }
 }

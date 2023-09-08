@@ -125,7 +125,7 @@ export class EthereumProvider extends JsonRpcProvider {
    * To handle this, make request bound to instance
    */
   public request = async (
-    request: RequestArguments,
+    request: RequestArguments & { id?: number },
     context?: unknown
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any> => {
@@ -136,7 +136,7 @@ export class EthereumProvider extends JsonRpcProvider {
       return Promise.resolve(this.accounts);
     }
     return this._getRequestPromise(
-      formatJsonRpcRequest(request.method, request.params || []),
+      formatJsonRpcRequest(request.method, request.params || [], request.id),
       context
     );
   };

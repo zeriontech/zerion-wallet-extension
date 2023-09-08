@@ -70,21 +70,15 @@ class WindowPort extends PortMessageChannel {
   confirm<T>(
     windowId: string,
     // result MUST NOT be undefined, otherwise the payload will not be interpreter
-    // as JsonRpcResult or RpcResult, because `undefined` propertires get removed
+    // as JsonRpcResult or RpcResult, because `undefined` properties get removed
     // when sent via ports
     result: T
   ) {
-    return this.port?.postMessage({
-      id: windowId,
-      result,
-    });
+    return this.request('resolve', [{ windowId, result }]);
   }
 
   reject(windowId: string) {
-    this.port?.postMessage({
-      id: windowId,
-      error: new UserRejected(),
-    });
+    return this.request('reject', [{ windowId, error: new UserRejected() }]);
   }
 }
 

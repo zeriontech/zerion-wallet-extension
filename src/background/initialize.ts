@@ -6,6 +6,7 @@ import { initialize as initializeRemoteConfig } from 'src/modules/remote-config'
 import { Account, AccountPublicRPC } from './account/Account';
 import { TransactionService } from './transactions/TransactionService';
 import { GlobalPreferences } from './Wallet/GlobalPreferences';
+import { NotificationWindow } from './NotificationWindow/NotificationWindow';
 
 let didInitialize = false;
 
@@ -24,7 +25,9 @@ export async function initialize() {
   // Either way, we either create a user from scratch or find one in storage
   await Account.ensureUserAndWallet();
   const globalPreferences = new GlobalPreferences({}, 'globalPreferences');
-  const account = new Account({ globalPreferences });
+  const notificationWindow = new NotificationWindow();
+  await notificationWindow.initialize();
+  const account = new Account({ globalPreferences, notificationWindow });
   await account.initialize();
   const accountPublicRPC = new AccountPublicRPC(account);
   const transactionService = new TransactionService();
@@ -43,6 +46,7 @@ export async function initialize() {
     dnaService,
     transactionService,
     globalPreferences,
+    notificationWindow,
   });
   return {
     account,
@@ -50,5 +54,6 @@ export async function initialize() {
     transactionService,
     dnaService,
     globalPreferences,
+    notificationWindow,
   };
 }

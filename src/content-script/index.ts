@@ -6,40 +6,32 @@ import {
   isJsonRpcResponse,
 } from '@json-rpc-tools/utils';
 import { BackgroundScriptUpdateHandler } from 'src/shared/core/BackgroundScriptUpdateHandler';
+import { PortMessageChannel } from 'src/shared/PortMessageChannel';
 
 const id = nanoid();
 
 const broadcastChannel = new BroadcastChannel(id);
 
-function createPort() {
-  const port = browser.runtime.connect({
-    name: `${browser.runtime.id}/ethereum`,
-  });
+const port = new PortMessageChannel({
+  name: `${browser.runtime.id}/ethereum`,
+});
+port.initialize();
 
-  function messageHandler(msg: unknown) {
-    if (isJsonRpcPayload(msg) && isJsonRpcResponse(msg)) {
-      broadcastChannel.postMessage(msg);
-    } else if (
-      msg != null &&
-      typeof msg === 'object' &&
-      (msg as { type?: string }).type === 'ethereumEvent'
-    ) {
-      broadcastChannel.postMessage(msg);
-    } else {
-      console.log('ignored message'); // eslint-disable-line no-console
-    }
+function messageHandler(msg: unknown) {
+  if (isJsonRpcPayload(msg) && isJsonRpcResponse(msg)) {
+    broadcastChannel.postMessage(msg);
+  } else if (
+    msg != null &&
+    typeof msg === 'object' &&
+    (msg as { type?: string }).type === 'ethereumEvent'
+  ) {
+    broadcastChannel.postMessage(msg);
+  } else {
+    console.log('ignored message'); // eslint-disable-line no-console
   }
-  port.onMessage.addListener(messageHandler);
-
-  function disconnectHandler(port: browser.Runtime.Port) {
-    port.onMessage.removeListener(messageHandler);
-    port.onDisconnect.removeListener(disconnectHandler);
-  }
-  port.onDisconnect.addListener(disconnectHandler);
-  return port;
 }
 
-let port = createPort();
+port.emitter.on('message', messageHandler);
 
 new BackgroundScriptUpdateHandler({
   portName: 'content-script/keepAlive',
@@ -47,15 +39,15 @@ new BackgroundScriptUpdateHandler({
   onActivate: () => {
     // content-scripts may hear this event when the background service worker
     // is re-activated, meaning we need to establish new port connections
-    port = createPort();
+    port.initialize();
   },
 }).keepAlive();
 
-broadcastChannel.addEventListener('message', (event) => {
+broadcastChannel.addEventListener('message', async (event) => {
   const { data } = event;
   if (isJsonRpcRequest(data)) {
     try {
-      port.postMessage(data);
+      await port.request(data.method, data.params, data.id);
     } catch (error) {
       if (
         error instanceof Error &&

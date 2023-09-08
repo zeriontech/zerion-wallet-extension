@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { AreaProvider } from 'react-area';
 import { QueryClientProvider, useQuery } from '@tanstack/react-query';
 import {
@@ -19,12 +19,13 @@ import { RequestAccounts } from 'src/ui/pages/RequestAccounts';
 import { SendTransaction } from 'src/ui/pages/SendTransaction';
 import { SignMessage } from 'src/ui/pages/SignMessage';
 import { SignTypedData } from 'src/ui/pages/SignTypedData';
+import { useStore } from '@store-unit/react';
+import { runtimeStore } from 'src/shared/core/runtime-store';
 import { Login } from '../pages/Login';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { accountPublicRPCPort, walletPort } from '../shared/channels';
 import { CreateAccount } from '../pages/CreateAccount';
 import { pageTemplateType } from '../shared/getPageTemplateName';
-import { closeOtherWindows } from '../shared/closeOtherWindows';
 import { URLBar } from '../components/URLBar';
 import { SwitchEthereumChain } from '../pages/SwitchEthereumChain';
 import { DesignTheme } from '../components/DesignTheme';
@@ -59,6 +60,7 @@ import { Onboarding } from '../Onboarding';
 import { AddEthereumChain } from '../pages/AddEthereumChain';
 import { SignInWithEthereum } from '../pages/SignInWithEthereum';
 import { InvitationPage } from '../components/InvitationFlow';
+import { useBodyStyle } from '../components/Background/Background';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -354,16 +356,6 @@ function Views({ initialRoute }: { initialRoute?: string }) {
   );
 }
 
-function CloseOtherWindows() {
-  useEffect(() => {
-    if (pageTemplateType === 'popup') {
-      // window.location.hash = '#/get-started/import'
-      closeOtherWindows();
-    }
-  }, []);
-  return null;
-}
-
 initializeApperance();
 dayjs.extend(relativeTime);
 
@@ -386,6 +378,12 @@ export function App({ initialView, mode, inspect }: AppProps) {
     }
     return result;
   }, [mode]);
+
+  const { connected } = useStore(runtimeStore);
+
+  useBodyStyle(
+    useMemo(() => ({ opacity: connected ? '' : '0.6' }), [connected])
+  );
 
   return (
     <AreaProvider>
@@ -417,7 +415,6 @@ export function App({ initialView, mode, inspect }: AppProps) {
                 }}
               />
               <VersionUpgrade>
-                <CloseOtherWindows />
                 <ViewSuspense logDelays={true}>
                   {mode === 'onboarding' &&
                   initialView !== 'handshakeFailure' ? (
