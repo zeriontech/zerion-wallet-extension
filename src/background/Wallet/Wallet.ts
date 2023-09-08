@@ -1041,8 +1041,7 @@ class PublicController {
       // Some dapps expect lowercase to be returned, otherwise they crash the moment after connection
       const result = [currentAddress.toLowerCase()];
       if (debugValue && process.env.NODE_ENV === 'development') {
-        // @ts-ignore
-        result.push(debugValue);
+        result.push(String(debugValue));
       }
       return result;
     }
