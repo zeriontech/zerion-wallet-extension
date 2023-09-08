@@ -318,9 +318,6 @@ export class Wallet {
     if (!this.id) {
       return null;
     }
-    // console.log('uiGetCurrentWallet delay');
-    // await new Promise((r) => setTimeout(r, 4000));
-    // console.log('uiGetCurrentWallet delay finished');
     const currentAddress = this.readCurrentAddress();
     if (this.record && currentAddress) {
       const wallet =
@@ -1033,13 +1030,10 @@ class PublicController {
   }
 
   async eth_requestAccounts({ context, id }: PublicMethodParams) {
-    if (debugValue) {
+    if (debugValue && process.env.NODE_ENV === 'development') {
       // eslint-disable-next-line no-console
       console.log('PublicController: eth_requestAccounts', debugValue);
     }
-    // console.log('eth_requestAccounts delay');
-    // await new Promise((r) => setTimeout(r, 4000));
-    // console.log('eth_requestAccounts delay finished');
     const currentAddress = this.wallet.readCurrentAddress();
     if (currentAddress && this.wallet.allowedOrigin(context, currentAddress)) {
       const { origin } = context;
@@ -1047,6 +1041,7 @@ class PublicController {
       // Some dapps expect lowercase to be returned, otherwise they crash the moment after connection
       const result = [currentAddress.toLowerCase()];
       if (debugValue && process.env.NODE_ENV === 'development') {
+        // @ts-ignore
         result.push(debugValue);
       }
       return result;

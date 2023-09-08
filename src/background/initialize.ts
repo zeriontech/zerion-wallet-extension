@@ -19,10 +19,6 @@ export async function initialize() {
   await prepareStorage();
   await dappRegistryInitialize();
 
-  // console.log('bg initialize delay');
-  // await new Promise((r) => setTimeout(r, 7000));
-  // console.log('bg initialize delay finished');
-
   // This method is called only when background script runs for the first time
   // This means that either the user is opening the extension for the first time,
   // or that the browser decided to "restart" the background scripts

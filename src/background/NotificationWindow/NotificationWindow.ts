@@ -117,13 +117,27 @@ export class NotificationWindow extends PersistentStore<PendingState> {
   }
 
   private trackWindowEvents() {
+    /**
+     * When background script reloads, both the content-script and the ui-script
+     * will re-send their port requests. If the "reject" or "resolve" re-request from the
+     * UI comes earlier than the re-request from the content-script (dapp),
+     * then we will close the window before the `open` method is invoked, therefore
+     * the window will be closed and then re-opened, requiring the user to press the button again.
+     * To avoid this, we add a timeout so that the re-request from the dapp is handled first.
+     * Since this logic is very specific to our dialog window flow, I think this
+     * timeout belongs here and not in the other files.
+     */
     this.events.on('resolve', ({ id, result }) => {
-      this.events.emit('settle', { status: 'fulfilled', id, result });
-      this.closeWindowById(id);
+      setTimeout(() => {
+        this.events.emit('settle', { status: 'fulfilled', id, result });
+        this.closeWindowById(id);
+      }, 16);
     });
     this.events.on('reject', ({ id, error }) => {
-      this.events.emit('settle', { status: 'rejected', id, error });
-      this.closeWindowById(id);
+      setTimeout(() => {
+        this.events.emit('settle', { status: 'rejected', id, error });
+        this.closeWindowById(id);
+      }, 16);
     });
     emitter.on('windowRemoved', (windowId) => {
       // This event can be triggered as a consequence of our own closeWindow

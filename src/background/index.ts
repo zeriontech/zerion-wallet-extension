@@ -107,6 +107,7 @@ userActivity.scheduleAlarms();
 browser.alarms.onAlarm.addListener(userActivity.handleAlarm);
 browser.alarms.onAlarm.addListener(ContentScriptManager.handleAlarm);
 
+console.time('bg initialize'); // eslint-disable-line no-console
 initialize().then((values) => {
   const {
     account,
@@ -115,6 +116,7 @@ initialize().then((values) => {
     globalPreferences,
     notificationWindow,
   } = values;
+  console.timeEnd('bg initialize'); // eslint-disable-line no-console
   notifyContentScriptsAndUIAboutInitialization();
   // const httpConnection = new HttpConnection(() => account.getCurrentWallet());
   const memoryCacheRPC = new MemoryCacheRPC();

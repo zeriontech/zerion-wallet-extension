@@ -532,14 +532,20 @@ export class WalletRecordModel {
       }
       const permission = draft.permissions[origin];
       const { addresses: existingPermissions } = permission;
-      if (address && existingPermissions.length > 1) {
+      if (address) {
         const normalizedAddress = normalizeAddress(address);
         spliceItem(existingPermissions, normalizedAddress);
-      } else if (!permission.chain || permission.chain === NetworkId.Ethereum) {
-        // remove whole record for `origin` completely
-        delete draft.permissions[origin];
       } else {
-        draft.permissions[origin].addresses = [];
+        // remove all items
+        existingPermissions.length = 0;
+      }
+      if (existingPermissions.length === 0) {
+        if (!permission.chain || permission.chain === NetworkId.Ethereum) {
+          // remove whole record for `origin` completely
+          delete draft.permissions[origin];
+        } else {
+          draft.permissions[origin].addresses = [];
+        }
       }
     });
   }

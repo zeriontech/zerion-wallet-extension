@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { AreaProvider } from 'react-area';
 import { QueryClientProvider, useQuery } from '@tanstack/react-query';
 import {
@@ -60,6 +60,7 @@ import { Onboarding } from '../Onboarding';
 import { AddEthereumChain } from '../pages/AddEthereumChain';
 import { SignInWithEthereum } from '../pages/SignInWithEthereum';
 import { InvitationPage } from '../components/InvitationFlow';
+import { useBodyStyle } from '../components/Background/Background';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -379,17 +380,10 @@ export function App({ initialView, mode, inspect }: AppProps) {
   }, [mode]);
 
   const { connected } = useStore(runtimeStore);
-  useEffect(() => {
-    const prevValue = document.body.style.opacity;
-    if (!connected) {
-      document.body.style.opacity = '0.3';
-    } else {
-      document.body.style.opacity = '';
-    }
-    return () => {
-      document.body.style.opacity = prevValue;
-    };
-  }, [connected]);
+
+  useBodyStyle(
+    useMemo(() => ({ opacity: connected ? '' : '0.6' }), [connected])
+  );
 
   return (
     <AreaProvider>
