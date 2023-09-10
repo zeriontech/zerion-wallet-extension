@@ -471,6 +471,10 @@ function SendTransactionContent({
     refetchOnWindowFocus: false,
   });
 
+  const [allowance, setAllowance] = useState(
+    localAddressAction?.content?.single_asset?.quantity
+  );
+
   const { data: interpretation, ...interpretQuery } = useQuery({
     queryKey: ['interpretTransaction', incomingTxWithGasAndFee, singleAddress],
     queryFn: () => {
@@ -488,10 +492,6 @@ function SendTransactionContent({
   const interpretAddressAction = interpretation?.action;
 
   const view = params.get('view') || View.default;
-
-  const [allowance, setAllowance] = useState(
-    localAddressAction?.content?.single_asset?.quantity
-  );
 
   if (localAddressActionQuery.isSuccess && !localAddressAction) {
     throw new Error('Unexpected missing localAddressAction');
