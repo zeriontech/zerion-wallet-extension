@@ -250,20 +250,17 @@ function TransactionCustomAllowanceForm({
                 style={{ color: 'var(--primary-500)' }}
               >
                 {balance ? (
-                  isAllowanceUnlimited ? (
-                    formatTokenValue(balance)
-                  ) : (
-                    <TextAnchor
-                      rel="noopener noreferrer"
-                      style={{ cursor: 'pointer' }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setAllowanceAmount(balance.toString());
-                      }}
-                    >
-                      {formatTokenValue(balance)}
-                    </TextAnchor>
-                  )
+                  <TextAnchor
+                    rel="noopener noreferrer"
+                    style={{ cursor: 'pointer' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsAllowanceUnlimited(false);
+                      setAllowanceAmount(balance.toString());
+                    }}
+                  >
+                    {formatTokenValue(balance)}
+                  </TextAnchor>
                 ) : (
                   noValueDash
                 )}
@@ -346,8 +343,12 @@ export function TransactionCustomAllowanceView({
       assets: [asset.asset_code],
       currency: 'usd',
     });
-
-  const positionQuantity = positionsResponse?.positions?.[0]?.quantity;
+  const positions = positionsResponse?.positions;
+  const positionsFiltered = useMemo(
+    () => positions?.filter((position) => position.chain === chain.toString()),
+    [chain, positions]
+  );
+  const positionQuantity = positionsFiltered?.[0]?.quantity;
   const balance = useMemo(
     () =>
       positionQuantity
