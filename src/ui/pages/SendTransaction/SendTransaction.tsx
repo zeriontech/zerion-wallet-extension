@@ -469,6 +469,10 @@ function SendTransactionContent({
     refetchOnWindowFocus: false,
   });
 
+  const [allowance, setAllowance] = useState(
+    localAddressAction?.content?.single_asset?.quantity
+  );
+
   const { data: interpretation, ...interpretQuery } = useQuery({
     queryKey: ['interpretTransaction', incomingTxWithGasAndFee, singleAddress],
     queryFn: () => {
@@ -482,15 +486,21 @@ function SendTransactionContent({
     refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
+    onSuccess(response) {
+      // There are cases when we are unable to detect the "approve" action locally.
+      // However, the interpreted address action might have the allowance value.
+      // In such cases, if we do not update the "allowance" value, it will remain undefined.
+      // Nevertheless, the user still needs to be able to change the allowance, so we must update it.
+      const quantity = response?.action?.content?.single_asset?.quantity;
+      if (quantity) {
+        setAllowance(quantity);
+      }
+    },
   });
 
   const interpretAddressAction = interpretation?.action;
 
   const view = params.get('view') || View.default;
-
-  const [allowance, setAllowance] = useState(
-    localAddressAction?.content?.single_asset?.quantity
-  );
 
   if (localAddressActionQuery.isSuccess && !localAddressAction) {
     throw new Error('Unexpected missing localAddressAction');

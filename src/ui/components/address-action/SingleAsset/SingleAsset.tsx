@@ -98,7 +98,9 @@ function FungibleAsset({
                 )}{' '}
                 <AssetLink asset={fungible} address={address} />
               </UIText>
-              {actionType === 'approve' && allowanceViewHref ? (
+              {actionType === 'approve' &&
+              Boolean(quantity) &&
+              allowanceViewHref ? (
                 <Button
                   as={UnstyledLink}
                   kind="neutral"
@@ -168,6 +170,11 @@ export function SingleAsset({
   const fungibleAsset = getFungibleAsset(singleAsset.asset);
   const nftAsset = getNftAsset(singleAsset.asset);
 
+  // The actual quantity that we want to display here could be either:
+  // 1) The value that user set as approved spending allowance
+  // 2) Original value that we got from local or interpreted address action
+  const quantity = allowance || singleAsset.quantity;
+
   if (fungibleAsset) {
     return (
       <FungibleAsset
@@ -175,7 +182,7 @@ export function SingleAsset({
         chain={chain}
         actionType={actionType}
         fungible={fungibleAsset}
-        quantity={allowance || singleAsset.quantity}
+        quantity={quantity}
         allowanceViewHref={allowanceViewHref}
       />
     );
