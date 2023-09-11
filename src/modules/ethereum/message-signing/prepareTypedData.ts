@@ -5,6 +5,10 @@ function isTypedData(data: Partial<TypedData>): data is TypedData {
   return Boolean(data.domain && data.message && data.types);
 }
 
+export function isPermit({ message }: TypedData) {
+  return Boolean(message.owner && message.spender && message.value);
+}
+
 export function toTypedData(data: string | Partial<TypedData>): TypedData {
   if (typeof data === 'string') {
     try {

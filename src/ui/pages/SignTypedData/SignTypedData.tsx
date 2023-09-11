@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { walletPort, windowPort } from 'src/ui/shared/channels';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
@@ -21,7 +21,10 @@ import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { useSignTypedData_v4Mutation } from 'src/ui/shared/requests/message-signing';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
-import { toTypedData } from 'src/modules/ethereum/message-signing/prepareTypedData';
+import {
+  isPermit,
+  toTypedData,
+} from 'src/modules/ethereum/message-signing/prepareTypedData';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
@@ -39,7 +42,10 @@ import { Content, RenderArea } from 'react-area';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
 import type { Networks } from 'src/modules/networks/Networks';
-import { NavigationBar } from '../SignInWithEthereum/NavigationBar';
+import { PageTop } from 'src/ui/components/PageTop';
+// import type BigNumber from 'bignumber.js';
+import type BigNumber from 'bignumber.js';
+import { CustomAllowanceView } from 'src/ui/components/CustomAllowanceView';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
 function TypedDataRow({ data }: { data: string }) {
@@ -55,17 +61,20 @@ function TypedDataRow({ data }: { data: string }) {
   );
 }
 
-function isPermit({ message }: TypedData) {
-  return Boolean(message.owner && message.spender && message.value);
-}
-
 enum View {
   default = 'default',
   advanced = 'advanced',
   customAllowance = 'customAllowance',
 }
 
-function SignTypedDataDefaultView({
+function applyAllowance(
+  _typedDataRaw: string,
+  _allowance: string
+): string | TypedData {
+  throw new Error('Function not implemented.');
+}
+
+function TypedDataDefaultView({
   origin,
   wallet,
   chain,
@@ -75,6 +84,7 @@ function SignTypedDataDefaultView({
   interpretQuery,
   interpretation,
   interpretationDataJSON,
+  allowance,
   onSignSuccess,
   onReject,
 }: {
@@ -91,6 +101,7 @@ function SignTypedDataDefaultView({
   };
   interpretation?: InterpretResponse | null;
   interpretationDataJSON: Record<string, unknown> | null;
+  allowance: string;
   onSignSuccess: (signature: string) => void;
   onReject: () => void;
 }) {
@@ -98,8 +109,6 @@ function SignTypedDataDefaultView({
 
   const addressAction = interpretation?.action;
   const recipientAddress = addressAction?.label?.display_value.wallet_address;
-  const actionTransfers = addressAction?.content?.transfers;
-  const singleAsset = addressAction?.content?.single_asset;
 
   const title =
     addressAction?.type.display_value ||
@@ -125,13 +134,18 @@ function SignTypedDataDefaultView({
     : null;
 
   const originForHref = useMemo(() => prepareForHref(origin), [origin]);
-  const advancedViewHref = useMemo(
-    () => `?${setURLSearchParams(params, { view: View.advanced }).toString()}`,
+
+  const [advancedViewHref, allowanceViewHref] = useMemo(
+    () =>
+      [View.advanced, View.customAllowance].map(
+        (view) => `?${setURLSearchParams(params, { view }).toString()}`
+      ),
     [params]
   );
 
   return (
     <>
+      <PageTop />
       <div style={{ display: 'grid', placeItems: 'center' }}>
         <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
           {title}
@@ -178,9 +192,11 @@ function SignTypedDataDefaultView({
               addressAction={addressAction}
               chain={chain}
               networks={networks}
-              actionTransfers={actionTransfers}
+              actionTransfers={addressAction?.content?.transfers}
               wallet={wallet}
-              singleAsset={singleAsset}
+              singleAsset={addressAction?.content?.single_asset}
+              allowance={allowance}
+              allowanceViewHref={allowanceViewHref}
             />
             {interpretationDataJSON ? (
               <Button kind="regular" as={UnstyledLink} to={advancedViewHref}>
@@ -195,12 +211,11 @@ function SignTypedDataDefaultView({
         ) : null}
       </VStack>
       <Spacer height={16} />
-      <Content name="sign-typed-data-footer">
+      <Content name="sign-transaction-footer">
         <VStack
           style={{
             textAlign: 'center',
             marginTop: 'auto',
-            paddingBottom: 24,
             paddingTop: 8,
           }}
           gap={8}
@@ -229,7 +244,7 @@ function SignTypedDataDefaultView({
               disabled={signTypedData_v4Mutation.isLoading}
               onClick={() => {
                 signTypedData_v4Mutation.mutate({
-                  typedData: typedDataRaw,
+                  typedData: applyAllowance(typedDataRaw, allowance),
                   initiator: origin,
                 });
               }}
@@ -253,11 +268,13 @@ function SignTypedDataContent({
   wallet: BareWallet;
 }) {
   const [params] = useSearchParams();
+
   const view = params.get('view') || View.default;
 
   const windowId = params.get('windowId');
   invariant(windowId, 'windowId get-parameter is required');
 
+  const navigate = useNavigate();
   const { networks } = useNetworks();
 
   const typedData = useMemo(() => toTypedData(typedDataRaw), [typedDataRaw]);
@@ -302,6 +319,14 @@ function SignTypedDataContent({
     return JSON.parse(data) as Record<string, unknown>;
   }, [interpretation]);
 
+  const [allowance, setAllowance] = useState(
+    isPermit(typedData) ? typedData.message.value : null
+  );
+
+  const handleChangeAllowance = (newAllowance: BigNumber) => {
+    setAllowance(newAllowance.toString());
+    navigate(-1);
+  };
   const handleSignSuccess = (signature: string) =>
     windowPort.confirm(windowId, signature);
   const handleReject = () => windowPort.reject(windowId);
@@ -320,7 +345,7 @@ function SignTypedDataContent({
         }}
       >
         {view === View.default ? (
-          <SignTypedDataDefaultView
+          <TypedDataDefaultView
             origin={origin}
             wallet={wallet}
             chain={chain}
@@ -330,18 +355,22 @@ function SignTypedDataContent({
             interpretQuery={interpretQuery}
             interpretation={interpretation}
             interpretationDataJSON={interpretationDataJSON}
+            allowance={allowance}
             onSignSuccess={handleSignSuccess}
             onReject={handleReject}
           />
         ) : null}
-        {view === View.advanced ? (
-          <>
-            <NavigationBar title="Advanced View" />
-            {interpretationDataJSON ? (
-              <TypedDataAdvancedView data={interpretationDataJSON} />
-            ) : null}
-            <Spacer height={16} />
-          </>
+        {view === View.advanced && interpretationDataJSON ? (
+          <TypedDataAdvancedView data={interpretationDataJSON} />
+        ) : null}
+        {view === View.customAllowance ? (
+          <CustomAllowanceView
+            address={wallet.address}
+            singleAsset={interpretation?.action?.content?.single_asset}
+            allowance={allowance}
+            chain={chain}
+            onChange={handleChangeAllowance}
+          />
         ) : null}
         {view === View.advanced && interpretationDataJSON ? (
           <TypedDataAdvancedView data={interpretationDataJSON} />
@@ -350,7 +379,7 @@ function SignTypedDataContent({
         <PhishingDefenceStatus origin={origin} />
       </PageColumn>
       <PageStickyFooter>
-        <RenderArea name="sign-typed-data-footer" />
+        <RenderArea name="sign-transaction-footer" />
         <PageBottom />
       </PageStickyFooter>
     </Background>
