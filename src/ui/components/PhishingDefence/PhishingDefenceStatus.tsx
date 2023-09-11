@@ -36,7 +36,7 @@ export function PhishingDefenceStatus({ origin }: { origin: string }) {
             color="var(--neutral-600)"
             style={{ userSelect: 'none' }}
           >
-            Checking DApp..
+            Checking DApp...
           </UIText>
           <QuestionHintIcon style={{ color: 'var(--neutral-500)' }} />
         </HStack>
