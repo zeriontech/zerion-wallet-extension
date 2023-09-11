@@ -213,36 +213,32 @@ function SignTypedDataContent({
                   Unable to analyze the details of the transaction
                 </UIText>
               ) : null}
-              {interpretQuery.isFetched ? (
-                addressAction ? (
-                  <>
-                    <AddressActionDetails
-                      recipientAddress={recipientAddress}
-                      addressAction={addressAction}
-                      chain={chain}
-                      networks={networks}
-                      actionTransfers={actionTransfers}
-                      wallet={wallet}
-                      singleAsset={singleAsset}
-                    />
-                    {interpretationDataJSON ? (
-                      <Button
-                        kind="regular"
-                        as={UnstyledLink}
-                        to={advancedViewHref}
-                      >
-                        Advanced View
-                      </Button>
-                    ) : null}
-                  </>
-                ) : (
-                  <TypedDataRow
-                    data={interpretationDataFormatted || typedDataFormatted}
+              {addressAction ? (
+                <>
+                  <AddressActionDetails
+                    recipientAddress={recipientAddress}
+                    addressAction={addressAction}
+                    chain={chain}
+                    networks={networks}
+                    actionTransfers={actionTransfers}
+                    wallet={wallet}
+                    singleAsset={singleAsset}
                   />
-                )
-              ) : (
-                <TypedDataRow data={typedDataFormatted} />
-              )}
+                  {interpretationDataJSON ? (
+                    <Button
+                      kind="regular"
+                      as={UnstyledLink}
+                      to={advancedViewHref}
+                    >
+                      Advanced View
+                    </Button>
+                  ) : null}
+                </>
+              ) : interpretQuery.isFetched ? (
+                <TypedDataRow
+                  data={interpretationDataFormatted || typedDataFormatted}
+                />
+              ) : null}
             </VStack>
           </>
         ) : null}
