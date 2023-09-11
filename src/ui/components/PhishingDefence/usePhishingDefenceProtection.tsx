@@ -9,11 +9,11 @@ export function usePhishingDefenceProtection() {
   const [params] = useSearchParams();
   const origin = params.get('origin');
   const windowId = params.get('windowId');
+  invariant(windowId, 'windowId get-parameter is required');
 
   const { data } = usePhishingDefenceStatus(origin);
 
   if (origin && data?.status === 'phishing' && !data.isWhitelisted) {
-    invariant(windowId, 'windowId get-parameter is required');
     walletPort.request('blockOriginWithWarning', { origin });
     windowPort.reject(windowId);
     navigate(-1);
