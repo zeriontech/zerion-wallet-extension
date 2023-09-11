@@ -35,7 +35,6 @@ import {
   interpretSignature,
 } from 'src/modules/ethereum/transactions/interpret';
 import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/PhishingDefenceStatus';
-import { usePhishingDefenceProtection } from 'src/ui/components/PhishingDefence/usePhishingDefenceProtection';
 import { NavigationBar } from '../SignInWithEthereum/NavigationBar';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
@@ -303,7 +302,6 @@ function SignTypedDataContent({
 }
 
 export function SignTypedData() {
-  usePhishingDefenceProtection();
   const [params] = useSearchParams();
   const { data: wallet, isLoading } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],

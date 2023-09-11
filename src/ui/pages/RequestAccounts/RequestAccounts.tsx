@@ -33,7 +33,6 @@ import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { Address } from 'src/ui/components/Address';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/PhishingDefenceStatus';
-import { usePhishingDefenceProtection } from 'src/ui/components/PhishingDefence/usePhishingDefenceProtection';
 
 function WalletSelectList({
   wallets,
@@ -294,7 +293,6 @@ function RequestAccountsView({
 }
 
 export function RequestAccounts() {
-  usePhishingDefenceProtection();
   const [params] = useSearchParams();
   const origin = params.get('origin');
   const windowId = params.get('windowId');

@@ -50,7 +50,6 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { interpretTransaction } from 'src/modules/ethereum/transactions/interpret';
 import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/PhishingDefenceStatus';
-import { usePhishingDefenceProtection } from 'src/ui/components/PhishingDefence/usePhishingDefenceProtection';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
@@ -496,7 +495,6 @@ function SendTransactionContent({
 }
 
 export function SendTransaction() {
-  usePhishingDefenceProtection();
   const [params] = useSearchParams();
   const { data: wallet, isLoading } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
