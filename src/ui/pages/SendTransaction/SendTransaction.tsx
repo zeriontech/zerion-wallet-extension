@@ -500,7 +500,7 @@ function SendTransactionContent({
   const addressAction = interpretAddressAction || localAddressAction;
   const singleAsset = addressAction?.content?.single_asset;
 
-  const handleChangeAllowanceQuantity = (quantity: BigNumber) => {
+  const handleChangeAllowance = (quantity: BigNumber) => {
     setAllowanceQuantityBase(quantity.toString());
     navigate(-1);
   };
@@ -552,7 +552,7 @@ function SendTransactionContent({
             singleAsset={singleAsset}
             allowanceQuantityBase={allowanceQuantityBase}
             chain={chain}
-            onChange={handleChangeAllowanceQuantity}
+            onChange={handleChangeAllowance}
           />
         ) : null}
         <Spacer height={16} />
