@@ -213,20 +213,22 @@ function TransactionDefaultView({
     ...signMutation
   } = useMutation({
     mutationFn: async (transaction: IncomingTransaction) => {
+      let tx = transaction;
+
+      if (transactionAction.type === 'approve' && allowance) {
+        tx = await walletPort.request('createApprovalTransaction', {
+          initiator: origin,
+          contractAddress: transactionAction.contractAddress,
+          allowanceQuantityBase: allowance,
+          spender: transactionAction.spenderAddress,
+        });
+      }
+
       const feeValueCommon = feeValueCommonRef.current || null;
 
-      const allowanceParams =
-        transactionAction.type === 'approve' && allowance
-          ? {
-              contractAddress: transactionAction.contractAddress,
-              allowanceValueBase: allowance,
-              spender: transactionAction.spenderAddress,
-            }
-          : null;
-
       return await walletPort.request('signAndSendTransaction', [
-        transaction,
-        { initiator: origin, feeValueCommon, allowanceParams },
+        tx,
+        { initiator: origin, feeValueCommon },
       ]);
     },
     // The value returned by onMutate can be accessed in

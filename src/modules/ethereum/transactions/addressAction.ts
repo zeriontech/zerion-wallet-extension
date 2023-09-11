@@ -123,7 +123,7 @@ async function createActionContent(
         ? {
             single_asset: {
               asset: { fungible: asset },
-              quantity: String(action.amount),
+              quantity: action.amount.toString(),
             },
           }
         : null;

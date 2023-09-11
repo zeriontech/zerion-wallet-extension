@@ -56,7 +56,6 @@ import { invariant } from 'src/shared/invariant';
 import { getEthersError } from 'src/shared/errors/getEthersError';
 import type { DappSecurityStatus } from 'src/modules/phishing-defence/phishing-defence-service';
 import { phishingDefenceService } from 'src/modules/phishing-defence/phishing-defence-service';
-import { createApprovalTransaction } from 'src/modules/ethereum/transactions/createApprovalTransaction';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -680,6 +679,31 @@ export class Wallet {
     return getRemoteConfigValue('user_can_create_initial_wallet');
   }
 
+  async createApprovalTransaction({
+    context,
+    params: { initiator, contractAddress, allowanceQuantityBase, spender },
+  }: WalletMethodParams<{
+    initiator: string;
+    contractAddress: string;
+    allowanceQuantityBase: string;
+    spender: string;
+  }>) {
+    this.verifyInternalOrigin(context);
+
+    const chainId = await this.getChainIdForOrigin({
+      origin: new URL(initiator).origin,
+    });
+    const signer = await this.getSigner(chainId);
+    const abi = [
+      'function approve(address, uint256) public returns (bool success)',
+    ];
+    const contract = new ethers.Contract(contractAddress, abi, signer);
+    return await contract.populateTransaction.approve(
+      spender,
+      allowanceQuantityBase
+    );
+  }
+
   async switchChainForOrigin({
     params: { chain, origin },
     context,
@@ -761,16 +785,10 @@ export class Wallet {
       context,
       initiator,
       feeValueCommon,
-      allowanceParams,
     }: {
       context: Partial<ChannelContext> | undefined;
       initiator: string;
       feeValueCommon: string | null;
-      allowanceParams: {
-        contractAddress: string;
-        allowanceValueBase: string;
-        spender: string;
-      } | null;
     }
   ): Promise<ethers.providers.TransactionResponse> {
     this.verifyInternalOrigin(context);
@@ -793,21 +811,7 @@ export class Wallet {
       origin: new URL(initiator).origin,
     });
 
-    const networks = await networksStore.load();
-    const signer = await this.getSigner(chainId);
-
-    let transaction = incomingTransaction;
-    if (allowanceParams) {
-      const { contractAddress, allowanceValueBase, spender } = allowanceParams;
-      transaction = await createApprovalTransaction(
-        signer,
-        contractAddress,
-        allowanceValueBase,
-        spender
-      );
-    }
-
-    const targetChainId = getTransactionChainId(transaction);
+    const targetChainId = getTransactionChainId(incomingTransaction);
     if (targetChainId && chainId !== targetChainId) {
       throw new Error(
         'chainId in transaction object is different from current chainId'
@@ -816,14 +820,16 @@ export class Wallet {
       //   params: [{ chainId: targetChainId }],
       //   context,
       // });
-      // return this.sendTransaction(transaction, context);
+      // return this.sendTransaction(incomingTransaction, context);
     } else if (targetChainId == null) {
       // eslint-disable-next-line no-console
       console.warn('chainId field is missing from transaction object');
-      transaction.chainId = chainId;
+      incomingTransaction.chainId = chainId;
     }
 
-    const preparedTx = prepareTransaction(transaction);
+    const networks = await networksStore.load();
+    const signer = await this.getSigner(chainId);
+    const preparedTx = prepareTransaction(incomingTransaction);
     const preparedTxWithGasAndFee = await prepareGasAndNetworkFee(
       preparedTx,
       networks
@@ -855,18 +861,12 @@ export class Wallet {
       {
         initiator: string;
         feeValueCommon: string | null;
-        allowanceParams: {
-          contractAddress: string;
-          allowanceValueBase: string;
-          spender: string;
-        } | null;
       }
     ]
   >) {
     this.verifyInternalOrigin(context);
     this.ensureStringOrigin(context);
-    const [transaction, { initiator, feeValueCommon, allowanceParams }] =
-      params;
+    const [transaction, { initiator, feeValueCommon }] = params;
     if (!transaction) {
       throw new InvalidParams();
     }
@@ -874,7 +874,6 @@ export class Wallet {
       context,
       initiator,
       feeValueCommon,
-      allowanceParams,
     });
   }
 
