@@ -57,7 +57,6 @@ function isPermit({ message }: TypedData) {
 enum View {
   default = 'default',
   advanced = 'advanced',
-  customAllowance = 'customAllowance',
 }
 
 function SignTypedDataContent({
@@ -83,7 +82,7 @@ function SignTypedDataContent({
     onSuccess: handleSignSuccess,
   });
 
-  const signMutationError = signTypedData_v4Mutation.isError
+  const someMutationError = signTypedData_v4Mutation.isError
     ? getError(signTypedData_v4Mutation.error)
     : null;
   const originForHref = useMemo(() => prepareForHref(origin), [origin]);
@@ -261,9 +260,9 @@ function SignTypedDataContent({
           }}
           gap={8}
         >
-          {signMutationError ? (
+          {someMutationError ? (
             <UIText kind="caption/regular" color="var(--negative-500)">
-              {signMutationError?.message}
+              {someMutationError?.message}
             </UIText>
           ) : null}
           <div
