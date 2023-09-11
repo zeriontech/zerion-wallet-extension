@@ -81,18 +81,6 @@ export class PhishingDefence extends Store<State> {
       },
     }));
     return new Promise((resolve) => {
-      // for debug purpose
-      if (origin === 'https://app.zerion.io') {
-        this.setState((current) => ({
-          ...current,
-          websiteStatus: {
-            ...current.websiteStatus,
-            [origin]: 'phishing',
-          },
-        }));
-        return resolve({ status: 'phishing', isWhitelisted });
-      }
-      // end of debug area
       ZerionAPI.securityCheckUrl({ url })
         .then((result) => {
           const status = result.data?.flags.isMalicious ? 'phishing' : 'ok';

@@ -52,6 +52,7 @@ import { isSiweLike } from 'src/modules/ethereum/message-signing/SIWE';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
 import { invariant } from 'src/shared/invariant';
 import { getEthersError } from 'src/shared/errors/getEthersError';
+import { phishingDefenceService } from 'src/modules/phishing-defence/phishing-defence-service';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -1050,6 +1051,7 @@ class PublicController {
     }
     const { origin } = context;
     return new Promise((resolve, reject) => {
+      phishingDefenceService.checkDapp(origin);
       this.notificationWindow.open({
         route: '/requestAccounts',
         search: `?origin=${origin}`,
@@ -1121,6 +1123,7 @@ class PublicController {
     const transaction = params[0];
     invariant(transaction, () => new InvalidParams());
     return new Promise((resolve, reject) => {
+      phishingDefenceService.checkDapp(context.origin);
       this.notificationWindow.open({
         requestId: `${context.origin}:${id}`,
         route: '/sendTransaction',
@@ -1156,6 +1159,7 @@ class PublicController {
     const stringifiedData =
       typeof data === 'string' ? data : JSON.stringify(data);
     return new Promise((resolve, reject) => {
+      phishingDefenceService.checkDapp(context.origin);
       this.notificationWindow.open({
         requestId: `${context.origin}:${id}`,
         route: '/signTypedData',
@@ -1226,6 +1230,7 @@ class PublicController {
     const route = isSiweLike(message) ? '/siwe' : '/signMessage';
 
     return new Promise((resolve, reject) => {
+      phishingDefenceService.checkDapp(context.origin);
       this.notificationWindow.open({
         requestId: `${context.origin}:${id}`,
         route,

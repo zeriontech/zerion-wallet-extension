@@ -2,7 +2,6 @@ import browser from 'webextension-polyfill';
 import { isJsonRpcPayload, isJsonRpcRequest } from '@json-rpc-tools/utils';
 import type { Wallet } from 'src/shared/types/Wallet';
 import { isClassProperty } from 'src/shared/core/isClassProperty';
-import { phishingDefenceService } from 'src/modules/phishing-defence/phishing-defence-service';
 import { mapRPCMessageToController } from '../mapRPCMessageToController';
 import { getPortContext } from '../getPortContext';
 import type { PortMessageHandler } from '../PortRegistry';
@@ -32,7 +31,6 @@ export function createWalletMessageHandler(
     }
 
     if (port.name === `${browser.runtime.id}/ethereum`) {
-      phishingDefenceService.checkDapp(context.origin);
       const controller = getWallet().publicEthereumController;
       return mapToControllerIfPossible(controller);
     } else if (port.name === `${browser.runtime.id}/wallet`) {

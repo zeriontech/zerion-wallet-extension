@@ -1,5 +1,4 @@
 import ky from 'ky';
-import { v4 as uuidv4 } from 'uuid';
 import { version } from 'src/shared/packageVersion';
 import { ZERION_API_URL } from 'src/env/config';
 import type {
@@ -9,7 +8,7 @@ import type {
 
 function getZpiHeaders() {
   return {
-    'X-Request-Id': uuidv4(),
+    'X-Request-Id': crypto.randomUUID(),
     'Zerion-Client-Type': 'web-extension',
     'Zerion-Client-Version': version,
   };
