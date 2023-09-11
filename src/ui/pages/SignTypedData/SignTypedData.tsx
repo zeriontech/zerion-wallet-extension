@@ -66,9 +66,9 @@ enum View {
   customAllowance = 'customAllowance',
 }
 
-function applyAllowance(typedData: TypedData, allowance: string) {
+function applyAllowance(typedData: TypedData, allowanceQuantityBase: string) {
   return produce(typedData, (draft) => {
-    draft.message.value = allowance;
+    draft.message.value = allowanceQuantityBase;
   });
 }
 
@@ -82,7 +82,7 @@ function TypedDataDefaultView({
   interpretQuery,
   interpretation,
   interpretationDataJSON,
-  allowance,
+  allowanceQuantityBase,
   onSignSuccess,
   onReject,
 }: {
@@ -99,7 +99,7 @@ function TypedDataDefaultView({
   };
   interpretation?: InterpretResponse | null;
   interpretationDataJSON: Record<string, unknown> | null;
-  allowance: string | null;
+  allowanceQuantityBase: string | null;
   onSignSuccess: (signature: string) => void;
   onReject: () => void;
 }) {
@@ -193,7 +193,7 @@ function TypedDataDefaultView({
               actionTransfers={addressAction?.content?.transfers}
               wallet={wallet}
               singleAsset={addressAction?.content?.single_asset}
-              allowance={allowance || undefined}
+              allowanceQuantityBase={allowanceQuantityBase || undefined}
               allowanceViewHref={allowanceViewHref}
             />
             {interpretationDataJSON ? (
@@ -241,8 +241,8 @@ function TypedDataDefaultView({
             <Button
               disabled={signTypedData_v4Mutation.isLoading}
               onClick={() => {
-                const finalTypedData = allowance
-                  ? applyAllowance(typedData, allowance)
+                const finalTypedData = allowanceQuantityBase
+                  ? applyAllowance(typedData, allowanceQuantityBase)
                   : typedData;
                 signTypedData_v4Mutation.mutate({
                   typedData: JSON.stringify(finalTypedData),
@@ -280,11 +280,11 @@ function SignTypedDataContent({
 
   const typedData = useMemo(() => toTypedData(typedDataRaw), [typedDataRaw]);
 
-  const [allowance, setAllowance] = useState<string | null>(
-    isPermit(typedData) ? typedData.message.value : null
-  );
+  const [allowanceQuantityBase, setAllowanceQuantityBase] = useState<
+    string | null
+  >(isPermit(typedData) ? typedData.message.value : null);
   const handleChangeAllowance = (newAllowance: BigNumber) => {
-    setAllowance(newAllowance.toString());
+    setAllowanceQuantityBase(newAllowance.toString());
     navigate(-1);
   };
 
@@ -326,11 +326,11 @@ function SignTypedDataContent({
     if (!interpretation) return null;
     const data = getInterpretationData(interpretation);
     const result = JSON.parse(data) as Record<string, unknown>;
-    if (allowance) {
-      result.value = allowance;
+    if (allowanceQuantityBase) {
+      result.value = allowanceQuantityBase;
     }
     return result;
-  }, [interpretation, allowance]);
+  }, [interpretation, allowanceQuantityBase]);
 
   const handleSignSuccess = (signature: string) =>
     windowPort.confirm(windowId, signature);
@@ -360,7 +360,7 @@ function SignTypedDataContent({
             interpretQuery={interpretQuery}
             interpretation={interpretation}
             interpretationDataJSON={interpretationDataJSON}
-            allowance={allowance}
+            allowanceQuantityBase={allowanceQuantityBase}
             onSignSuccess={handleSignSuccess}
             onReject={handleReject}
           />
@@ -372,7 +372,7 @@ function SignTypedDataContent({
           <CustomAllowanceView
             address={wallet.address}
             singleAsset={interpretation?.action?.content?.single_asset}
-            allowance={allowance || undefined}
+            allowanceQuantityBase={allowanceQuantityBase || undefined}
             chain={chain}
             onChange={handleChangeAllowance}
           />
