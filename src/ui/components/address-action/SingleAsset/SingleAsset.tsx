@@ -15,9 +15,8 @@ import { getCommonQuantity } from 'src/modules/networks/asset';
 import type { Chain } from 'src/modules/networks/Chain';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
-import { Button } from 'src/ui/ui-kit/Button';
 import { isUnlimitedApproval } from 'src/ui/pages/History/isUnlimitedApproval';
+import { TextLink } from 'src/ui/ui-kit/TextLink';
 import { AssetQuantity } from '../../AssetQuantity';
 import { AssetLink } from '../../AssetLink';
 
@@ -101,14 +100,14 @@ function FungibleAsset({
               {actionType === 'approve' &&
               Boolean(quantity) &&
               allowanceViewHref ? (
-                <Button
-                  as={UnstyledLink}
-                  kind="neutral"
+                <UIText
+                  as={TextLink}
+                  kind="small/accent"
                   style={{ color: 'var(--primary)' }}
                   to={allowanceViewHref}
                 >
                   Edit
-                </Button>
+                </UIText>
               ) : null}
             </HStack>
           }
@@ -155,7 +154,7 @@ export function SingleAsset({
   chain,
   actionType,
   singleAsset,
-  allowance,
+  allowanceQuantityBase,
   allowanceViewHref,
 }: {
   address: string;
@@ -164,7 +163,7 @@ export function SingleAsset({
   singleAsset: NonNullable<
     NonNullable<AddressAction['content']>['single_asset']
   >;
-  allowance?: string;
+  allowanceQuantityBase?: string;
   allowanceViewHref?: string;
 }) {
   const fungibleAsset = getFungibleAsset(singleAsset.asset);
@@ -173,7 +172,7 @@ export function SingleAsset({
   // The actual quantity that we want to display here could be either:
   // 1) The value that user set as approved spending allowance
   // 2) Original value that we got from local or interpreted address action
-  const quantity = allowance || singleAsset.quantity;
+  const quantity = allowanceQuantityBase || singleAsset.quantity;
 
   if (fungibleAsset) {
     return (

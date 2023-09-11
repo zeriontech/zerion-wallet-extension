@@ -47,69 +47,86 @@ function TransactionCustomAllowanceForm({
   chain,
   address,
   balance,
-  initialAllowance,
-  currentAllowance,
+  initialAllowanceQuantityBase,
+  currentAllowanceQuantityBase,
   onSubmit,
 }: {
   asset: Asset;
   chain: Chain;
   address: string;
   balance: BigNumber | null;
-  initialAllowance: BigNumber;
-  currentAllowance: BigNumber;
-  onSubmit(newAllowance: BigNumber): void;
+  initialAllowanceQuantityBase: BigNumber;
+  currentAllowanceQuantityBase: BigNumber;
+  onSubmit(newAllowanceQuantityBase: BigNumber): void;
 }) {
-  const isInitialAllowanceUnlimited = isUnlimitedApproval(initialAllowance);
-  const isCurrentAllowanceUnlimited = isUnlimitedApproval(currentAllowance);
+  const isInitialAllowanceUnlimited = isUnlimitedApproval(
+    initialAllowanceQuantityBase
+  );
+  const isCurrentAllowanceUnlimited = isUnlimitedApproval(
+    currentAllowanceQuantityBase
+  );
   const [isAllowanceUnlimited, setIsAllowanceUnlimited] = useState(
     isCurrentAllowanceUnlimited
   );
-  const currentAllowanceCommon = useMemo(
+  const initialAllowanceQuantityCommon = useMemo(
+    () =>
+      getCommonQuantity({
+        asset,
+        chain,
+        baseQuantity: initialAllowanceQuantityBase,
+      }),
+    [asset, chain, initialAllowanceQuantityBase]
+  );
+  const currentAllowanceQuantityCommon = useMemo(
     () =>
       isCurrentAllowanceUnlimited
         ? null
         : getCommonQuantity({
             asset,
             chain,
-            baseQuantity: currentAllowance.toString(),
+            baseQuantity: currentAllowanceQuantityBase.toString(),
           }),
-    [asset, chain, currentAllowance, isCurrentAllowanceUnlimited]
+    [asset, chain, currentAllowanceQuantityBase, isCurrentAllowanceUnlimited]
   );
 
   const assetPrice = asset.price?.value;
-  const currentAllowanceInUsd =
-    assetPrice && currentAllowanceCommon
-      ? currentAllowanceCommon.times(assetPrice)
+  const currentAllowanceQuantityUsd =
+    assetPrice && currentAllowanceQuantityCommon
+      ? currentAllowanceQuantityCommon.times(assetPrice)
       : null;
 
-  const [allowanceInUsd, setAllowanceInUsd] = useState(currentAllowanceInUsd);
-  const allowanceAmountRef = useRef<HTMLInputElement | null>(null);
+  const [allowanceQuantityUsd, setAllowanceQuantityUsd] = useState(
+    currentAllowanceQuantityUsd
+  );
+  const allowanceQuantityCommonRef = useRef<HTMLInputElement | null>(null);
 
-  const updateAllowanceInUsd = useCallback(
+  const updateAllowanceQuantityUsd = useCallback(
     (value: string | null) => {
       if (value && assetPrice) {
-        setAllowanceInUsd(new BigNumber(value).times(assetPrice));
+        setAllowanceQuantityUsd(new BigNumber(value).times(assetPrice));
       } else {
-        setAllowanceInUsd(null);
+        setAllowanceQuantityUsd(null);
       }
     },
-    [setAllowanceInUsd, assetPrice]
+    [setAllowanceQuantityUsd, assetPrice]
   );
 
-  const setAllowanceAmount = useCallback(
+  const setAllowanceQuantityCommon = useCallback(
     (value: string | null) => {
-      if (allowanceAmountRef?.current) {
-        allowanceAmountRef.current.value = value || '';
+      if (allowanceQuantityCommonRef?.current) {
+        allowanceQuantityCommonRef.current.value = value || '';
       }
-      updateAllowanceInUsd(value);
+      updateAllowanceQuantityUsd(value);
     },
-    [updateAllowanceInUsd]
+    [updateAllowanceQuantityUsd]
   );
 
   const handleReset = () => {
     setIsAllowanceUnlimited(isInitialAllowanceUnlimited);
-    setAllowanceAmount(
-      isInitialAllowanceUnlimited ? null : initialAllowance.toString()
+    setAllowanceQuantityCommon(
+      isInitialAllowanceUnlimited
+        ? null
+        : initialAllowanceQuantityCommon.toString()
     );
   };
 
@@ -133,17 +150,17 @@ function TransactionCustomAllowanceForm({
             return;
           }
           const formData = collectData(form, { amount: parseAmount });
-          const commonQuantity = formData.amount as BigNumber;
-          const newAllowance = getBaseQuantity({
+          const newAllowanceQuantityCommon = formData.amount as BigNumber;
+          const newAllowanceQuantityBase = getBaseQuantity({
             asset,
             chain,
-            commonQuantity,
+            commonQuantity: newAllowanceQuantityCommon,
           });
-          onSubmit(newAllowance);
+          onSubmit(newAllowanceQuantityBase);
         } else {
           onSubmit(
             isInitialAllowanceUnlimited
-              ? initialAllowance
+              ? initialAllowanceQuantityBase
               : UNLIMITED_APPROVAL_AMOUNT
           );
         }
@@ -195,7 +212,7 @@ function TransactionCustomAllowanceForm({
                   }}
                 >
                   <UnstyledInput
-                    ref={allowanceAmountRef}
+                    ref={allowanceQuantityCommonRef}
                     type="text"
                     inputMode="numeric"
                     placeholder="0"
@@ -204,7 +221,7 @@ function TransactionCustomAllowanceForm({
                     autoFocus={!isAllowanceUnlimited}
                     required={!isAllowanceUnlimited}
                     pattern="^(\d+\.)?\d+"
-                    defaultValue={currentAllowanceCommon?.toString()}
+                    defaultValue={currentAllowanceQuantityCommon?.toString()}
                     onInvalid={(event) => {
                       if (event.currentTarget.validity.patternMismatch) {
                         event.currentTarget.setCustomValidity(
@@ -219,9 +236,9 @@ function TransactionCustomAllowanceForm({
                     onInput={(event) => {
                       event.currentTarget.setCustomValidity('');
                       if (event.currentTarget.validity.valid) {
-                        updateAllowanceInUsd(event.currentTarget.value);
+                        updateAllowanceQuantityUsd(event.currentTarget.value);
                       } else {
-                        setAllowanceInUsd(null);
+                        setAllowanceQuantityUsd(null);
                       }
                     }}
                   />
@@ -256,7 +273,7 @@ function TransactionCustomAllowanceForm({
                     onClick={(e) => {
                       e.stopPropagation();
                       setIsAllowanceUnlimited(false);
-                      setAllowanceAmount(balance.toString());
+                      setAllowanceQuantityCommon(balance.toString());
                     }}
                   >
                     {formatTokenValue(balance)}
@@ -266,13 +283,13 @@ function TransactionCustomAllowanceForm({
                 )}
               </UIText>
             </HStack>
-            {isAllowanceUnlimited || allowanceInUsd == null ? null : (
+            {isAllowanceUnlimited || allowanceQuantityUsd == null ? null : (
               <UIText
                 kind="small/regular"
                 style={{ color: 'var(--neutral-500)', textAlign: 'end' }}
               >
                 {almostEqual}
-                {formatCurrencyValue(allowanceInUsd, 'en', 'usd')}
+                {formatCurrencyValue(allowanceQuantityUsd, 'en', 'usd')}
               </UIText>
             )}
           </HStack>
@@ -293,7 +310,7 @@ function TransactionCustomAllowanceForm({
             onChange={(event) => {
               setIsAllowanceUnlimited(event.currentTarget.checked);
               if (event.currentTarget.checked) {
-                allowanceAmountRef?.current?.setCustomValidity('');
+                allowanceQuantityCommonRef?.current?.setCustomValidity('');
               }
             }}
           />
@@ -323,18 +340,21 @@ export function TransactionCustomAllowanceView({
   address,
   chain,
   singleAsset,
-  allowance,
+  allowanceQuantityBase,
   onChange,
 }: {
   address: string;
   chain: Chain;
   singleAsset: NonNullable<AddressAction['content']>['single_asset'];
-  allowance?: string;
+  allowanceQuantityBase?: string;
   onChange: (amount: BigNumber) => void;
 }) {
   invariant(singleAsset, 'singleAsset is required to set custom allowance');
   const asset = getFungibleAsset(singleAsset.asset);
-  invariant(allowance, 'allowance is required to set custom allowance');
+  invariant(
+    allowanceQuantityBase,
+    'allowanceQuantityBase is required to set custom allowance'
+  );
   invariant(asset, 'asset is required to set custom allowance');
 
   const { value: positionsResponse, isLoading: positionsAreLoading } =
@@ -374,8 +394,8 @@ export function TransactionCustomAllowanceView({
         chain={chain}
         address={address}
         balance={balance}
-        initialAllowance={new BigNumber(singleAsset.quantity)}
-        currentAllowance={new BigNumber(allowance)}
+        initialAllowanceQuantityBase={new BigNumber(singleAsset.quantity)}
+        currentAllowanceQuantityBase={new BigNumber(allowanceQuantityBase)}
         onSubmit={onChange}
       />
     </>
