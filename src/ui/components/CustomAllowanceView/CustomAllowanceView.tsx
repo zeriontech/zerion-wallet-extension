@@ -27,11 +27,11 @@ import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset'
 import { AssetLink } from 'src/ui/components/AssetLink';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
-import { NavigationBar } from '../../SignInWithEthereum/NavigationBar';
 import {
   UNLIMITED_APPROVAL_AMOUNT,
   isUnlimitedApproval,
-} from '../../History/isUnlimitedApproval';
+} from 'src/ui/pages/History/isUnlimitedApproval';
+import { NavigationBar } from 'src/ui/pages/SignInWithEthereum/NavigationBar';
 
 function parseAmount(untypedValue: unknown): BigNumber | null {
   const value = untypedValue as string;
@@ -42,7 +42,7 @@ function parseAmount(untypedValue: unknown): BigNumber | null {
   }
 }
 
-function TransactionCustomAllowanceForm({
+function CustomAllowanceForm({
   asset,
   chain,
   address,
@@ -316,7 +316,7 @@ function TransactionCustomAllowanceForm({
           />
         </HStack>
       </VStack>
-      <Content name="send-transaction-footer">
+      <Content name="sign-transaction-footer">
         <div
           style={{
             display: 'grid',
@@ -336,7 +336,7 @@ function TransactionCustomAllowanceForm({
   );
 }
 
-export function TransactionCustomAllowanceView({
+export function CustomAllowanceView({
   address,
   chain,
   singleAsset,
@@ -389,7 +389,7 @@ export function TransactionCustomAllowanceView({
     <>
       <NavigationBar title="Custom Allowance" />
       <PageTop />
-      <TransactionCustomAllowanceForm
+      <CustomAllowanceForm
         asset={asset}
         chain={chain}
         address={address}

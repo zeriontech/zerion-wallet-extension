@@ -1,0 +1,1 @@
+export { CustomAllowanceView } from './CustomAllowanceView';
