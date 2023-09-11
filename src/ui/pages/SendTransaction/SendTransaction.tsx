@@ -162,7 +162,7 @@ function TransactionDefaultView({
   addressAction,
   transactionAction,
   singleAsset,
-  allowance,
+  allowanceQuantityBase,
   interpretQuery,
   incomingTransaction,
   incomingTxWithGasAndFee,
@@ -175,7 +175,7 @@ function TransactionDefaultView({
   addressAction: AddressAction | IncomingAddressAction;
   transactionAction: TransactionAction;
   singleAsset: NonNullable<AddressAction['content']>['single_asset'];
-  allowance?: string;
+  allowanceQuantityBase?: string;
   interpretQuery: {
     isLoading: boolean;
     isError: boolean;
@@ -214,11 +214,11 @@ function TransactionDefaultView({
     mutationFn: async (transaction: IncomingTransaction) => {
       let tx = transaction;
 
-      if (transactionAction.type === 'approve' && allowance) {
+      if (transactionAction.type === 'approve' && allowanceQuantityBase) {
         tx = await walletPort.request('createApprovalTransaction', {
           initiator: origin,
           contractAddress: transactionAction.contractAddress,
-          allowanceQuantityBase: allowance,
+          allowanceQuantityBase,
           spender: transactionAction.spenderAddress,
         });
       }
@@ -292,7 +292,7 @@ function TransactionDefaultView({
           wallet={wallet}
           actionTransfers={actionTransfers}
           singleAsset={singleAsset}
-          allowance={allowance}
+          allowanceQuantityBase={allowanceQuantityBase}
           allowanceViewHref={allowanceViewHref}
         />
         {interpretQuery.isLoading ? (
@@ -465,7 +465,7 @@ function SendTransactionContent({
     refetchOnWindowFocus: false,
   });
 
-  const [allowance, setAllowance] = useState(
+  const [allowanceQuantityBase, setAllowanceQuantityBase] = useState(
     localAddressAction?.content?.single_asset?.quantity
   );
 
@@ -489,7 +489,7 @@ function SendTransactionContent({
       // Nevertheless, the user still needs to be able to change the allowance, so we must update it.
       const quantity = response?.action?.content?.single_asset?.quantity;
       if (quantity) {
-        setAllowance(quantity);
+        setAllowanceQuantityBase(quantity);
       }
     },
   });
@@ -509,8 +509,8 @@ function SendTransactionContent({
   const addressAction = interpretAddressAction || localAddressAction;
   const singleAsset = addressAction?.content?.single_asset;
 
-  const handleChangeAllowance = (newAllowance: BigNumber) => {
-    setAllowance(newAllowance.toString());
+  const handleChangeAllowanceQuantity = (quantity: BigNumber) => {
+    setAllowanceQuantityBase(quantity.toString());
     navigate(-1);
   };
 
@@ -539,7 +539,7 @@ function SendTransactionContent({
             transactionAction={transactionAction}
             addressAction={addressAction}
             singleAsset={singleAsset}
-            allowance={allowance}
+            allowanceQuantityBase={allowanceQuantityBase}
             interpretQuery={interpretQuery}
             incomingTransaction={incomingTransaction}
             incomingTxWithGasAndFee={incomingTxWithGasAndFee}
@@ -559,9 +559,9 @@ function SendTransactionContent({
           <TransactionCustomAllowanceView
             address={wallet.address}
             singleAsset={singleAsset}
-            allowance={allowance}
+            allowanceQuantityBase={allowanceQuantityBase}
             chain={chain}
-            onChange={handleChangeAllowance}
+            onChange={handleChangeAllowanceQuantity}
           />
         ) : null}
         <Spacer height={16} />
