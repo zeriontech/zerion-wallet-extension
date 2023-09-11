@@ -221,7 +221,7 @@ export function TransactionAdvancedView({
           interpretation={interpretation}
         />
       ) : null}
-      <Content name="send-transaction-footer">
+      <Content name="sign-transaction-footer">
         <Spacer height={8} />
         <Button
           type="button"

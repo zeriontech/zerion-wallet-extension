@@ -2,17 +2,18 @@ import React from 'react';
 import { TextLine } from 'src/ui/components/address-action/TextLine';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { NavigationBar } from '../../SignInWithEthereum/NavigationBar';
 
 type Value = unknown;
-type TypedData = Record<string, Value>;
+type TypedDataJSON = Record<string, Value>;
 
-function flattenObject(obj: TypedData, prefix = '') {
+function flattenObject(obj: TypedDataJSON, prefix = '') {
   return Object.keys(obj).reduce<Record<string, string>>((acc, key) => {
     const leadingPrefix = prefix.length ? prefix + '.' : '';
     if (typeof obj[key] === 'object' && obj[key] !== null) {
       Object.assign(
         acc,
-        flattenObject(obj[key] as TypedData, `${leadingPrefix}${key}`)
+        flattenObject(obj[key] as TypedDataJSON, `${leadingPrefix}${key}`)
       );
     } else {
       acc[`${leadingPrefix}${key}`] = String(obj[key]);
@@ -21,15 +22,22 @@ function flattenObject(obj: TypedData, prefix = '') {
   }, {});
 }
 
-export function TypedDataAdvancedView({ data }: { data: TypedData }) {
-  const flattenedData = flattenObject(data);
+export function TypedDataAdvancedView({
+  dataJSON,
+}: {
+  dataJSON: TypedDataJSON;
+}) {
+  const flattenedData = flattenObject(dataJSON);
   return (
-    <Surface padding={16}>
-      <VStack gap={16}>
-        {Object.entries(flattenedData).map(([label, value]) => (
-          <TextLine wrap={true} key={label} label={label} value={value} />
-        ))}
-      </VStack>
-    </Surface>
+    <>
+      <NavigationBar title="Advanced View" />
+      <Surface padding={16}>
+        <VStack gap={16}>
+          {Object.entries(flattenedData).map(([label, value]) => (
+            <TextLine wrap={true} key={label} label={label} value={value} />
+          ))}
+        </VStack>
+      </Surface>
+    </>
   );
 }
