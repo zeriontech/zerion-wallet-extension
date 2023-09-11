@@ -1044,8 +1044,8 @@ class PublicController {
   }
 
   private async safeOpenDialogWindow<T>(
-    props: NotificationWindowProps<T>,
-    origin: string
+    origin: string,
+    props: NotificationWindowProps<T>
   ) {
     const id = await this.notificationWindow.open(props);
     phishingDefenceService
@@ -1094,44 +1094,39 @@ class PublicController {
     }
     const { origin } = context;
     return new Promise((resolve, reject) => {
-      this.safeOpenDialogWindow(
-        {
-          route: '/requestAccounts',
-          search: `?origin=${origin}`,
-          requestId: `${origin}:${id}`,
-          onResolve: async ({
-            address,
-            origin: resolvedOrigin,
-          }: {
-            address: string;
-            origin: string;
-          }) => {
-            invariant(address, 'Invalid arguments: missing address');
-            invariant(resolvedOrigin, 'Invalid arguments: missing origin');
-            invariant(resolvedOrigin === origin, 'Resolved origin mismatch');
-            const currentAddress = this.wallet.ensureCurrentAddress();
-            if (
-              normalizeAddress(address) !== normalizeAddress(currentAddress)
-            ) {
-              await this.wallet.setCurrentAddress({
-                params: { address },
-                context: INTERNAL_SYMBOL_CONTEXT,
-              });
-            }
-            this.wallet.acceptOrigin({
-              params: { origin, address },
+      this.safeOpenDialogWindow(origin, {
+        route: '/requestAccounts',
+        search: `?origin=${origin}`,
+        requestId: `${origin}:${id}`,
+        onResolve: async ({
+          address,
+          origin: resolvedOrigin,
+        }: {
+          address: string;
+          origin: string;
+        }) => {
+          invariant(address, 'Invalid arguments: missing address');
+          invariant(resolvedOrigin, 'Invalid arguments: missing origin');
+          invariant(resolvedOrigin === origin, 'Resolved origin mismatch');
+          const currentAddress = this.wallet.ensureCurrentAddress();
+          if (normalizeAddress(address) !== normalizeAddress(currentAddress)) {
+            await this.wallet.setCurrentAddress({
+              params: { address },
               context: INTERNAL_SYMBOL_CONTEXT,
             });
-            const accounts = await this.eth_accounts({ context, id });
-            emitter.emit('dappConnection', { origin, address });
-            resolve(accounts.map((item) => item.toLowerCase()));
-          },
-          onDismiss: () => {
-            reject(new UserRejected('User Rejected the Request'));
-          },
+          }
+          this.wallet.acceptOrigin({
+            params: { origin, address },
+            context: INTERNAL_SYMBOL_CONTEXT,
+          });
+          const accounts = await this.eth_accounts({ context, id });
+          emitter.emit('dappConnection', { origin, address });
+          resolve(accounts.map((item) => item.toLowerCase()));
         },
-        origin
-      );
+        onDismiss: () => {
+          reject(new UserRejected('User Rejected the Request'));
+        },
+      });
     });
   }
 
@@ -1170,23 +1165,20 @@ class PublicController {
     const transaction = params[0];
     invariant(transaction, () => new InvalidParams());
     return new Promise((resolve, reject) => {
-      this.safeOpenDialogWindow(
-        {
-          requestId: `${context.origin}:${id}`,
-          route: '/sendTransaction',
-          search: `?${new URLSearchParams({
-            origin: context.origin,
-            transaction: JSON.stringify(transaction),
-          })}`,
-          onResolve: (hash) => {
-            resolve(hash);
-          },
-          onDismiss: () => {
-            reject(new UserRejectedTxSignature());
-          },
+      this.safeOpenDialogWindow(context.origin, {
+        requestId: `${context.origin}:${id}`,
+        route: '/sendTransaction',
+        search: `?${new URLSearchParams({
+          origin: context.origin,
+          transaction: JSON.stringify(transaction),
+        })}`,
+        onResolve: (hash) => {
+          resolve(hash);
         },
-        context.origin
-      );
+        onDismiss: () => {
+          reject(new UserRejectedTxSignature());
+        },
+      });
     });
   }
 
@@ -1208,24 +1200,21 @@ class PublicController {
     const stringifiedData =
       typeof data === 'string' ? data : JSON.stringify(data);
     return new Promise((resolve, reject) => {
-      this.safeOpenDialogWindow(
-        {
-          requestId: `${context.origin}:${id}`,
-          route: '/signTypedData',
-          search: `?${new URLSearchParams({
-            origin: context.origin,
-            typedDataRaw: stringifiedData,
-            method: 'eth_signTypedData_v4',
-          })}`,
-          onResolve: (signature) => {
-            resolve(signature);
-          },
-          onDismiss: () => {
-            reject(new UserRejectedTxSignature());
-          },
+      this.safeOpenDialogWindow(context.origin, {
+        requestId: `${context.origin}:${id}`,
+        route: '/signTypedData',
+        search: `?${new URLSearchParams({
+          origin: context.origin,
+          typedDataRaw: stringifiedData,
+          method: 'eth_signTypedData_v4',
+        })}`,
+        onResolve: (signature) => {
+          resolve(signature);
         },
-        context.origin
-      );
+        onDismiss: () => {
+          reject(new UserRejectedTxSignature());
+        },
+      });
     });
   }
 
@@ -1281,24 +1270,21 @@ class PublicController {
     const route = isSiweLike(message) ? '/siwe' : '/signMessage';
 
     return new Promise((resolve, reject) => {
-      this.safeOpenDialogWindow(
-        {
-          requestId: `${context.origin}:${id}`,
-          route,
-          search: `?${new URLSearchParams({
-            method: 'personal_sign',
-            origin: context.origin,
-            message,
-          })}`,
-          onResolve: (signature) => {
-            resolve(signature);
-          },
-          onDismiss: () => {
-            reject(new UserRejectedTxSignature());
-          },
+      this.safeOpenDialogWindow(context.origin, {
+        requestId: `${context.origin}:${id}`,
+        route,
+        search: `?${new URLSearchParams({
+          method: 'personal_sign',
+          origin: context.origin,
+          message,
+        })}`,
+        onResolve: (signature) => {
+          resolve(signature);
         },
-        context.origin
-      );
+        onDismiss: () => {
+          reject(new UserRejectedTxSignature());
+        },
+      });
     });
   }
 
