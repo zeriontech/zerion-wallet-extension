@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
-import { PageTop } from 'src/ui/components/PageTop';
 import { walletPort, windowPort } from 'src/ui/shared/channels';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -23,6 +22,7 @@ import { useSignTypedData_v4Mutation } from 'src/ui/shared/requests/message-sign
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { toTypedData } from 'src/modules/ethereum/message-signing/prepareTypedData';
+import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
@@ -34,6 +34,10 @@ import {
   getInterpretationData,
   interpretSignature,
 } from 'src/modules/ethereum/transactions/interpret';
+import { Content, RenderArea } from 'react-area';
+import { PageBottom } from 'src/ui/components/PageBottom';
+import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
+import type { Networks } from 'src/modules/networks/Networks';
 import { NavigationBar } from '../SignInWithEthereum/NavigationBar';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
@@ -57,6 +61,185 @@ function isPermit({ message }: TypedData) {
 enum View {
   default = 'default',
   advanced = 'advanced',
+  customAllowance = 'customAllowance',
+}
+
+function SignTypedDataDefaultView({
+  origin,
+  wallet,
+  chain,
+  networks,
+  typedDataRaw,
+  typedData,
+  interpretQuery,
+  interpretation,
+  interpretationDataJSON,
+  onSignSuccess,
+  onReject,
+}: {
+  origin: string;
+  wallet: BareWallet;
+  chain: Chain;
+  networks: Networks;
+  typedDataRaw: string;
+  typedData: TypedData;
+  interpretQuery: {
+    isLoading: boolean;
+    isError: boolean;
+    isFetched: boolean;
+  };
+  interpretation?: InterpretResponse | null;
+  interpretationDataJSON: Record<string, unknown> | null;
+  onSignSuccess: (signature: string) => void;
+  onReject: () => void;
+}) {
+  const [params] = useSearchParams();
+
+  const addressAction = interpretation?.action;
+  const recipientAddress = addressAction?.label?.display_value.wallet_address;
+  const actionTransfers = addressAction?.content?.transfers;
+  const singleAsset = addressAction?.content?.single_asset;
+
+  const title =
+    addressAction?.type.display_value ||
+    (isPermit(typedData) ? 'Permit' : 'Signature Request');
+
+  const typedDataFormatted = useMemo(
+    () => JSON.stringify(JSON.parse(typedDataRaw), null, 2),
+    [typedDataRaw]
+  );
+
+  const interpretationDataFormatted = useMemo(() => {
+    return interpretationDataJSON
+      ? JSON.stringify(interpretationDataJSON, null, 2)
+      : null;
+  }, [interpretationDataJSON]);
+
+  const signTypedData_v4Mutation = useSignTypedData_v4Mutation({
+    onSuccess: onSignSuccess,
+  });
+
+  const someMutationError = signTypedData_v4Mutation.isError
+    ? getError(signTypedData_v4Mutation.error)
+    : null;
+
+  const originForHref = useMemo(() => prepareForHref(origin), [origin]);
+  const advancedViewHref = useMemo(
+    () => `?${setURLSearchParams(params, { view: View.advanced }).toString()}`,
+    [params]
+  );
+
+  return (
+    <>
+      <div style={{ display: 'grid', placeItems: 'center' }}>
+        <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
+          {title}
+        </UIText>
+        <UIText kind="small/regular" color="var(--neutral-500)">
+          {originForHref ? (
+            <TextAnchor
+              href={originForHref.href}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {originForHref.hostname}
+            </TextAnchor>
+          ) : (
+            'Unknown Initiator'
+          )}
+        </UIText>
+        <Spacer height={8} />
+        <HStack gap={8} alignItems="center">
+          <WalletAvatar
+            address={wallet.address}
+            size={20}
+            active={false}
+            borderRadius={4}
+          />
+          <UIText kind="small/regular">
+            <WalletDisplayName wallet={wallet} />
+          </UIText>
+        </HStack>
+      </div>
+      <Spacer height={24} />
+      <VStack gap={16}>
+        {interpretQuery.isLoading ? (
+          <InterpretLoadingState />
+        ) : interpretQuery.isError ? (
+          <UIText kind="small/regular" color="var(--notice-600)">
+            Unable to analyze the details of the transaction
+          </UIText>
+        ) : null}
+        {addressAction ? (
+          <>
+            <AddressActionDetails
+              recipientAddress={recipientAddress}
+              addressAction={addressAction}
+              chain={chain}
+              networks={networks}
+              actionTransfers={actionTransfers}
+              wallet={wallet}
+              singleAsset={singleAsset}
+            />
+            {interpretationDataJSON ? (
+              <Button kind="regular" as={UnstyledLink} to={advancedViewHref}>
+                Advanced View
+              </Button>
+            ) : null}
+          </>
+        ) : interpretQuery.isFetched ? (
+          <TypedDataRow
+            data={interpretationDataFormatted || typedDataFormatted}
+          />
+        ) : null}
+      </VStack>
+      <Spacer height={16} />
+      <Content name="sign-typed-data-footer">
+        <VStack
+          style={{
+            textAlign: 'center',
+            marginTop: 'auto',
+            paddingBottom: 24,
+            paddingTop: 8,
+          }}
+          gap={8}
+        >
+          {someMutationError ? (
+            <UIText kind="caption/regular" color="var(--negative-500)">
+              {someMutationError?.message}
+            </UIText>
+          ) : null}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: 8,
+            }}
+          >
+            <Button
+              kind="regular"
+              type="button"
+              onClick={onReject}
+              ref={focusNode}
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={signTypedData_v4Mutation.isLoading}
+              onClick={() => {
+                signTypedData_v4Mutation.mutate({
+                  typedData: typedDataRaw,
+                  initiator: origin,
+                });
+              }}
+            >
+              {signTypedData_v4Mutation.isLoading ? 'Signing...' : 'Sign'}
+            </Button>
+          </div>
+        </VStack>
+      </Content>
+    </>
+  );
 }
 
 function SignTypedDataContent({
@@ -76,24 +259,7 @@ function SignTypedDataContent({
 
   const { networks } = useNetworks();
 
-  const handleSignSuccess = (signature: string) =>
-    windowPort.confirm(windowId, signature);
-  const signTypedData_v4Mutation = useSignTypedData_v4Mutation({
-    onSuccess: handleSignSuccess,
-  });
-
-  const someMutationError = signTypedData_v4Mutation.isError
-    ? getError(signTypedData_v4Mutation.error)
-    : null;
-  const originForHref = useMemo(() => prepareForHref(origin), [origin]);
-
-  const handleReject = () => windowPort.reject(windowId);
-
   const typedData = useMemo(() => toTypedData(typedDataRaw), [typedDataRaw]);
-  const typedDataFormatted = useMemo(
-    () => JSON.stringify(JSON.parse(typedDataRaw), null, 2),
-    [typedDataRaw]
-  );
 
   const { data: chain, ...chainQuery } = useQuery({
     queryKey: ['wallet/requestChainForOrigin', origin],
@@ -129,31 +295,15 @@ function SignTypedDataContent({
     refetchOnWindowFocus: false,
   });
 
-  const addressAction = interpretation?.action;
-  const recipientAddress = addressAction?.label?.display_value.wallet_address;
-  const actionTransfers = addressAction?.content?.transfers;
-  const singleAsset = addressAction?.content?.single_asset;
-
   const interpretationDataJSON = useMemo(() => {
     if (!interpretation) return null;
     const data = getInterpretationData(interpretation);
     return JSON.parse(data) as Record<string, unknown>;
   }, [interpretation]);
 
-  const interpretationDataFormatted = useMemo(() => {
-    return interpretationDataJSON
-      ? JSON.stringify(interpretationDataJSON, null, 2)
-      : null;
-  }, [interpretationDataJSON]);
-
-  const title =
-    addressAction?.type.display_value ||
-    (isPermit(typedData) ? 'Permit' : 'Signature Request');
-
-  const advancedViewHref = useMemo(
-    () => `?${setURLSearchParams(params, { view: View.advanced }).toString()}`,
-    [params]
-  );
+  const handleSignSuccess = (signature: string) =>
+    windowPort.confirm(windowId, signature);
+  const handleReject = () => windowPort.reject(windowId);
 
   if (!networks || !chain) {
     return null;
@@ -161,136 +311,42 @@ function SignTypedDataContent({
 
   return (
     <Background backgroundKind="white">
+      <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
       <PageColumn
         // different surface color on backgroundKind="white"
         style={{
           ['--surface-background-color' as string]: 'var(--neutral-100)',
         }}
       >
-        {view === View.advanced ? (
-          <NavigationBar title="Advanced View" />
-        ) : null}
-        <PageTop />
         {view === View.default ? (
+          <SignTypedDataDefaultView
+            origin={origin}
+            wallet={wallet}
+            chain={chain}
+            networks={networks}
+            typedDataRaw={typedDataRaw}
+            typedData={typedData}
+            interpretQuery={interpretQuery}
+            interpretation={interpretation}
+            interpretationDataJSON={interpretationDataJSON}
+            onSignSuccess={handleSignSuccess}
+            onReject={handleReject}
+          />
+        ) : null}
+        {view === View.advanced ? (
           <>
-            <div style={{ display: 'grid', placeItems: 'center' }}>
-              <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
-                {title}
-              </UIText>
-              <UIText kind="small/regular" color="var(--neutral-500)">
-                {originForHref ? (
-                  <TextAnchor
-                    href={originForHref.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {originForHref.hostname}
-                  </TextAnchor>
-                ) : (
-                  'Unknown Initiator'
-                )}
-              </UIText>
-              <Spacer height={8} />
-              <HStack gap={8} alignItems="center">
-                <WalletAvatar
-                  address={wallet.address}
-                  size={20}
-                  active={false}
-                  borderRadius={4}
-                />
-                <UIText kind="small/regular">
-                  <WalletDisplayName wallet={wallet} />
-                </UIText>
-              </HStack>
-            </div>
-            <Spacer height={24} />
-            <VStack gap={16}>
-              {interpretQuery.isLoading ? (
-                <InterpretLoadingState />
-              ) : interpretQuery.isError ? (
-                <UIText kind="small/regular" color="var(--notice-600)">
-                  Unable to analyze the details of the transaction
-                </UIText>
-              ) : null}
-              {addressAction ? (
-                <>
-                  <AddressActionDetails
-                    recipientAddress={recipientAddress}
-                    addressAction={addressAction}
-                    chain={chain}
-                    networks={networks}
-                    actionTransfers={actionTransfers}
-                    wallet={wallet}
-                    singleAsset={singleAsset}
-                  />
-                  {interpretationDataJSON ? (
-                    <Button
-                      kind="regular"
-                      as={UnstyledLink}
-                      to={advancedViewHref}
-                    >
-                      Advanced View
-                    </Button>
-                  ) : null}
-                </>
-              ) : interpretQuery.isFetched ? (
-                <TypedDataRow
-                  data={interpretationDataFormatted || typedDataFormatted}
-                />
-              ) : null}
-            </VStack>
+            <NavigationBar title="Advanced View" />
+            {interpretationDataJSON ? (
+              <TypedDataAdvancedView data={interpretationDataJSON} />
+            ) : null}
+            <Spacer height={16} />
           </>
         ) : null}
-        {view === View.advanced && interpretationDataJSON ? (
-          <TypedDataAdvancedView data={interpretationDataJSON} />
-        ) : null}
-        <Spacer height={16} />
       </PageColumn>
       <PageStickyFooter>
-        <VStack
-          style={{
-            textAlign: 'center',
-            marginTop: 'auto',
-            paddingBottom: 24,
-            paddingTop: 8,
-          }}
-          gap={8}
-        >
-          {someMutationError ? (
-            <UIText kind="caption/regular" color="var(--negative-500)">
-              {someMutationError?.message}
-            </UIText>
-          ) : null}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: 8,
-            }}
-          >
-            <Button
-              kind="regular"
-              type="button"
-              onClick={handleReject}
-              ref={focusNode}
-            >
-              Cancel
-            </Button>
-            <Button
-              disabled={signTypedData_v4Mutation.isLoading}
-              onClick={() => {
-                signTypedData_v4Mutation.mutate({
-                  typedData: typedDataRaw,
-                  initiator: origin,
-                });
-              }}
-            >
-              {signTypedData_v4Mutation.isLoading ? 'Signing...' : 'Sign'}
-            </Button>
-          </div>
-        </VStack>
+        <RenderArea name="sign-typed-data-footer" />
+        <PageBottom />
       </PageStickyFooter>
-      <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
     </Background>
   );
 }
