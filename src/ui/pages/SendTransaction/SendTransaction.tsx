@@ -166,6 +166,7 @@ function TransactionDefaultView({
   interpretQuery,
   incomingTransaction,
   incomingTxWithGasAndFee,
+  onReject,
 }: {
   networks: Networks;
   chain: Chain;
@@ -181,6 +182,7 @@ function TransactionDefaultView({
   };
   incomingTransaction: IncomingTransaction;
   incomingTxWithGasAndFee?: IncomingTransactionWithChainId | null;
+  onReject: () => void;
 }) {
   const navigate = useNavigate();
   const { singleAddress } = useAddressParams();
@@ -240,19 +242,11 @@ function TransactionDefaultView({
     },
   });
 
-  const handleReject = () => {
-    const windowId = params.get('windowId');
-    invariant(windowId, 'windowId get-parameter is required');
-    windowPort.reject(windowId);
-    navigate(-1);
-  };
-
   const recipientAddress = addressAction.label?.display_value.wallet_address;
   const actionTransfers = addressAction.content?.transfers;
 
   return (
     <>
-      <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
       <PageTop />
       <div style={{ display: 'grid', placeItems: 'center' }}>
         <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
@@ -377,7 +371,7 @@ function TransactionDefaultView({
               ref={focusNode}
               kind="regular"
               type="button"
-              onClick={handleReject}
+              onClick={onReject}
             >
               Cancel
             </Button>
@@ -518,8 +512,16 @@ function SendTransactionContent({
     navigate(-1);
   };
 
+  const handleReject = () => {
+    const windowId = params.get('windowId');
+    invariant(windowId, 'windowId get-parameter is required');
+    windowPort.reject(windowId);
+    navigate(-1);
+  };
+
   return (
     <Background backgroundKind="white">
+      <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
       <PageColumn
         // different surface color on backgroundKind="white"
         style={{
@@ -539,6 +541,7 @@ function SendTransactionContent({
             interpretQuery={interpretQuery}
             incomingTransaction={incomingTransaction}
             incomingTxWithGasAndFee={incomingTxWithGasAndFee}
+            onReject={handleReject}
           />
         ) : null}
         {view === View.advanced ? (
