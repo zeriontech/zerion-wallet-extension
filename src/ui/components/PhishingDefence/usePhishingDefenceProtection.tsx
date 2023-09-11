@@ -10,7 +10,7 @@ export function usePhishingDefenceProtection() {
   const origin = params.get('origin');
   const windowId = params.get('windowId');
 
-  const { data } = usePhishingDefenceStatus(origin || '');
+  const { data } = usePhishingDefenceStatus(origin);
 
   if (origin && data?.status === 'phishing' && !data.isWhitelisted) {
     invariant(windowId, 'windowId get-parameter is required');

@@ -109,7 +109,7 @@ export class PhishingDefence extends Store<State> {
   async getDappSecurityStatus({
     params,
   }: {
-    params: { url?: string };
+    params: { url?: string | null };
   }): Promise<{ status: DappSecurityStatus; isWhitelisted: boolean }> {
     const origin = params.url ? this.getSafeOrigin(params.url) : null;
     const result = {
