@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import { phishingDefencePort } from 'src/ui/shared/channels';
+import { walletPort } from 'src/ui/shared/channels';
 
 export function usePhishingDefenceStatus(origin?: string | null) {
   return useQuery({
-    queryKey: ['phishingDefence', 'getDappSecurityStatus', origin],
+    queryKey: ['wallet/getDappSecurityStatus', origin],
     queryFn: () =>
-      phishingDefencePort.request('getDappSecurityStatus', {
+      walletPort.request('getDappSecurityStatus', {
         url: origin,
       }),
     cacheTime: 0,

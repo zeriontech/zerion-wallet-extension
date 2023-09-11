@@ -5,7 +5,10 @@ import { createNanoEvents } from 'nanoevents';
 import { Store } from 'store-unit';
 import { isTruthy } from 'is-truthy-ts';
 import { encrypt, decrypt } from 'src/modules/crypto';
-import type { NotificationWindow } from 'src/background/NotificationWindow/NotificationWindow';
+import type {
+  NotificationWindow,
+  NotificationWindowProps,
+} from 'src/background/NotificationWindow/NotificationWindow';
 import type {
   ChannelContext,
   PrivateChannelContext,
@@ -52,6 +55,7 @@ import { isSiweLike } from 'src/modules/ethereum/message-signing/SIWE';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
 import { invariant } from 'src/shared/invariant';
 import { getEthersError } from 'src/shared/errors/getEthersError';
+import type { DappSecurityStatus } from 'src/modules/phishing-defence/phishing-defence-service';
 import { phishingDefenceService } from 'src/modules/phishing-defence/phishing-defence-service';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
@@ -989,6 +993,27 @@ export class Wallet {
     this.verifyInternalOrigin(context);
     emitter.emit('daylightAction', params);
   }
+
+  async blockOriginWithWarning({
+    params: { origin },
+  }: WalletMethodParams<{ origin: string }>) {
+    return phishingDefenceService.blockOriginWithWarning(origin);
+  }
+
+  async getDappSecurityStatus({
+    params: { url },
+  }: WalletMethodParams<{ url?: string | null }>): Promise<{
+    status: DappSecurityStatus;
+    isWhitelisted: boolean;
+  }> {
+    return phishingDefenceService.getDappSecurityStatus(url);
+  }
+
+  async ignoreDappSecurityWarning({
+    params: { url },
+  }: WalletMethodParams<{ url: string }>) {
+    return phishingDefenceService.ignoreDappSecurityWarning(url);
+  }
 }
 
 interface Web3WalletPermission {
@@ -1016,6 +1041,24 @@ class PublicController {
   ) {
     this.wallet = wallet;
     this.notificationWindow = notificationWindow;
+  }
+
+  private async safeOpenDialogWindow<T>(
+    props: NotificationWindowProps<T>,
+    origin: string
+  ) {
+    const id = await this.notificationWindow.open(props);
+    phishingDefenceService
+      .checkDapp(origin)
+      .then(({ status, isWhitelisted }) => {
+        if (status === 'phishing' && !isWhitelisted) {
+          phishingDefenceService.blockOriginWithWarning(origin);
+          this.notificationWindow.emit('reject', {
+            id,
+            error: new UserRejected('Malicious DApp'),
+          });
+        }
+      });
   }
 
   async eth_accounts({ context }: PublicMethodParams) {
@@ -1051,40 +1094,44 @@ class PublicController {
     }
     const { origin } = context;
     return new Promise((resolve, reject) => {
-      phishingDefenceService.checkDapp(origin);
-      this.notificationWindow.open({
-        route: '/requestAccounts',
-        search: `?origin=${origin}`,
-        requestId: `${origin}:${id}`,
-        onResolve: async ({
-          address,
-          origin: resolvedOrigin,
-        }: {
-          address: string;
-          origin: string;
-        }) => {
-          invariant(address, 'Invalid arguments: missing address');
-          invariant(resolvedOrigin, 'Invalid arguments: missing origin');
-          invariant(resolvedOrigin === origin, 'Resolved origin mismatch');
-          const currentAddress = this.wallet.ensureCurrentAddress();
-          if (normalizeAddress(address) !== normalizeAddress(currentAddress)) {
-            await this.wallet.setCurrentAddress({
-              params: { address },
+      this.safeOpenDialogWindow(
+        {
+          route: '/requestAccounts',
+          search: `?origin=${origin}`,
+          requestId: `${origin}:${id}`,
+          onResolve: async ({
+            address,
+            origin: resolvedOrigin,
+          }: {
+            address: string;
+            origin: string;
+          }) => {
+            invariant(address, 'Invalid arguments: missing address');
+            invariant(resolvedOrigin, 'Invalid arguments: missing origin');
+            invariant(resolvedOrigin === origin, 'Resolved origin mismatch');
+            const currentAddress = this.wallet.ensureCurrentAddress();
+            if (
+              normalizeAddress(address) !== normalizeAddress(currentAddress)
+            ) {
+              await this.wallet.setCurrentAddress({
+                params: { address },
+                context: INTERNAL_SYMBOL_CONTEXT,
+              });
+            }
+            this.wallet.acceptOrigin({
+              params: { origin, address },
               context: INTERNAL_SYMBOL_CONTEXT,
             });
-          }
-          this.wallet.acceptOrigin({
-            params: { origin, address },
-            context: INTERNAL_SYMBOL_CONTEXT,
-          });
-          const accounts = await this.eth_accounts({ context, id });
-          emitter.emit('dappConnection', { origin, address });
-          resolve(accounts.map((item) => item.toLowerCase()));
+            const accounts = await this.eth_accounts({ context, id });
+            emitter.emit('dappConnection', { origin, address });
+            resolve(accounts.map((item) => item.toLowerCase()));
+          },
+          onDismiss: () => {
+            reject(new UserRejected('User Rejected the Request'));
+          },
         },
-        onDismiss: () => {
-          reject(new UserRejected('User Rejected the Request'));
-        },
-      });
+        origin
+      );
     });
   }
 
@@ -1123,21 +1170,23 @@ class PublicController {
     const transaction = params[0];
     invariant(transaction, () => new InvalidParams());
     return new Promise((resolve, reject) => {
-      phishingDefenceService.checkDapp(context.origin);
-      this.notificationWindow.open({
-        requestId: `${context.origin}:${id}`,
-        route: '/sendTransaction',
-        search: `?${new URLSearchParams({
-          origin: context.origin,
-          transaction: JSON.stringify(transaction),
-        })}`,
-        onResolve: (hash) => {
-          resolve(hash);
+      this.safeOpenDialogWindow(
+        {
+          requestId: `${context.origin}:${id}`,
+          route: '/sendTransaction',
+          search: `?${new URLSearchParams({
+            origin: context.origin,
+            transaction: JSON.stringify(transaction),
+          })}`,
+          onResolve: (hash) => {
+            resolve(hash);
+          },
+          onDismiss: () => {
+            reject(new UserRejectedTxSignature());
+          },
         },
-        onDismiss: () => {
-          reject(new UserRejectedTxSignature());
-        },
-      });
+        context.origin
+      );
     });
   }
 
@@ -1159,22 +1208,24 @@ class PublicController {
     const stringifiedData =
       typeof data === 'string' ? data : JSON.stringify(data);
     return new Promise((resolve, reject) => {
-      phishingDefenceService.checkDapp(context.origin);
-      this.notificationWindow.open({
-        requestId: `${context.origin}:${id}`,
-        route: '/signTypedData',
-        search: `?${new URLSearchParams({
-          origin: context.origin,
-          typedDataRaw: stringifiedData,
-          method: 'eth_signTypedData_v4',
-        })}`,
-        onResolve: (signature) => {
-          resolve(signature);
+      this.safeOpenDialogWindow(
+        {
+          requestId: `${context.origin}:${id}`,
+          route: '/signTypedData',
+          search: `?${new URLSearchParams({
+            origin: context.origin,
+            typedDataRaw: stringifiedData,
+            method: 'eth_signTypedData_v4',
+          })}`,
+          onResolve: (signature) => {
+            resolve(signature);
+          },
+          onDismiss: () => {
+            reject(new UserRejectedTxSignature());
+          },
         },
-        onDismiss: () => {
-          reject(new UserRejectedTxSignature());
-        },
-      });
+        context.origin
+      );
     });
   }
 
@@ -1230,22 +1281,24 @@ class PublicController {
     const route = isSiweLike(message) ? '/siwe' : '/signMessage';
 
     return new Promise((resolve, reject) => {
-      phishingDefenceService.checkDapp(context.origin);
-      this.notificationWindow.open({
-        requestId: `${context.origin}:${id}`,
-        route,
-        search: `?${new URLSearchParams({
-          method: 'personal_sign',
-          origin: context.origin,
-          message,
-        })}`,
-        onResolve: (signature) => {
-          resolve(signature);
+      this.safeOpenDialogWindow(
+        {
+          requestId: `${context.origin}:${id}`,
+          route,
+          search: `?${new URLSearchParams({
+            method: 'personal_sign',
+            origin: context.origin,
+            message,
+          })}`,
+          onResolve: (signature) => {
+            resolve(signature);
+          },
+          onDismiss: () => {
+            reject(new UserRejectedTxSignature());
+          },
         },
-        onDismiss: () => {
-          reject(new UserRejectedTxSignature());
-        },
-      });
+        context.origin
+      );
     });
   }
 

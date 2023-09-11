@@ -9,7 +9,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import ZerionIcon from 'jsx:src/ui/assets/zerion-logo.svg';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import browser from 'webextension-polyfill';
-import { phishingDefencePort } from 'src/ui/shared/channels';
+import { walletPort } from 'src/ui/shared/channels';
 import { FillView } from '../FillView';
 import { useBodyStyle } from '../Background/Background';
 import { WarningIcon } from '../WarningIcon';
@@ -114,7 +114,7 @@ export function PhishingWarningPage() {
                   rel="noopenner norefferer"
                   onClick={() => {
                     if (safeUrl?.origin) {
-                      phishingDefencePort.request('allowWebsite', {
+                      walletPort.request('ignoreDappSecurityWarning', {
                         url: safeUrl.origin,
                       });
                     }

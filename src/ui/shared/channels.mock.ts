@@ -176,12 +176,6 @@ export const dnaServicePort = {
   },
 };
 
-export const phishingDefencePort = {
-  async request() {
-    return null;
-  },
-};
-
 export const httpConnectionPort = {
   async request() {
     return null;
