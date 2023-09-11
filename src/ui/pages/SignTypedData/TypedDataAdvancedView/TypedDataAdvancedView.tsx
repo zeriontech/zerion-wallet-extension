@@ -5,15 +5,15 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { NavigationBar } from '../../SignInWithEthereum/NavigationBar';
 
 type Value = unknown;
-type TypedData = Record<string, Value>;
+type TypedDataJSON = Record<string, Value>;
 
-function flattenObject(obj: TypedData, prefix = '') {
+function flattenObject(obj: TypedDataJSON, prefix = '') {
   return Object.keys(obj).reduce<Record<string, string>>((acc, key) => {
     const leadingPrefix = prefix.length ? prefix + '.' : '';
     if (typeof obj[key] === 'object' && obj[key] !== null) {
       Object.assign(
         acc,
-        flattenObject(obj[key] as TypedData, `${leadingPrefix}${key}`)
+        flattenObject(obj[key] as TypedDataJSON, `${leadingPrefix}${key}`)
       );
     } else {
       acc[`${leadingPrefix}${key}`] = String(obj[key]);
@@ -22,8 +22,12 @@ function flattenObject(obj: TypedData, prefix = '') {
   }, {});
 }
 
-export function TypedDataAdvancedView({ data }: { data: TypedData }) {
-  const flattenedData = flattenObject(data);
+export function TypedDataAdvancedView({
+  dataJSON,
+}: {
+  dataJSON: TypedDataJSON;
+}) {
+  const flattenedData = flattenObject(dataJSON);
   return (
     <>
       <NavigationBar title="Advanced View" />

@@ -43,9 +43,9 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
 import type { Networks } from 'src/modules/networks/Networks';
 import { PageTop } from 'src/ui/components/PageTop';
-// import type BigNumber from 'bignumber.js';
 import type BigNumber from 'bignumber.js';
 import { CustomAllowanceView } from 'src/ui/components/CustomAllowanceView';
+import { produce } from 'immer';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
 function TypedDataRow({ data }: { data: string }) {
@@ -67,11 +67,10 @@ enum View {
   customAllowance = 'customAllowance',
 }
 
-function applyAllowance(
-  _typedDataRaw: string,
-  _allowance: string
-): string | TypedData {
-  throw new Error('Function not implemented.');
+function applyAllowance(typedData: TypedData, allowance: string) {
+  return produce(typedData, (draft) => {
+    draft.message.value = allowance;
+  });
 }
 
 function TypedDataDefaultView({
@@ -101,7 +100,7 @@ function TypedDataDefaultView({
   };
   interpretation?: InterpretResponse | null;
   interpretationDataJSON: Record<string, unknown> | null;
-  allowance: string;
+  allowance: string | null;
   onSignSuccess: (signature: string) => void;
   onReject: () => void;
 }) {
@@ -195,7 +194,7 @@ function TypedDataDefaultView({
               actionTransfers={addressAction?.content?.transfers}
               wallet={wallet}
               singleAsset={addressAction?.content?.single_asset}
-              allowance={allowance}
+              allowance={allowance || undefined}
               allowanceViewHref={allowanceViewHref}
             />
             {interpretationDataJSON ? (
@@ -243,8 +242,11 @@ function TypedDataDefaultView({
             <Button
               disabled={signTypedData_v4Mutation.isLoading}
               onClick={() => {
+                const finalTypedData = allowance
+                  ? applyAllowance(typedData, allowance)
+                  : typedData;
                 signTypedData_v4Mutation.mutate({
-                  typedData: applyAllowance(typedDataRaw, allowance),
+                  typedData: JSON.stringify(finalTypedData),
                   initiator: origin,
                 });
               }}
@@ -278,6 +280,14 @@ function SignTypedDataContent({
   const { networks } = useNetworks();
 
   const typedData = useMemo(() => toTypedData(typedDataRaw), [typedDataRaw]);
+
+  const [allowance, setAllowance] = useState<string | null>(
+    isPermit(typedData) ? typedData.message.value : null
+  );
+  const handleChangeAllowance = (newAllowance: BigNumber) => {
+    setAllowance(newAllowance.toString());
+    navigate(-1);
+  };
 
   const { data: chain, ...chainQuery } = useQuery({
     queryKey: ['wallet/requestChainForOrigin', origin],
@@ -316,17 +326,13 @@ function SignTypedDataContent({
   const interpretationDataJSON = useMemo(() => {
     if (!interpretation) return null;
     const data = getInterpretationData(interpretation);
-    return JSON.parse(data) as Record<string, unknown>;
-  }, [interpretation]);
+    const result = JSON.parse(data) as Record<string, unknown>;
+    if (allowance) {
+      result.value = allowance;
+    }
+    return result;
+  }, [interpretation, allowance]);
 
-  const [allowance, setAllowance] = useState(
-    isPermit(typedData) ? typedData.message.value : null
-  );
-
-  const handleChangeAllowance = (newAllowance: BigNumber) => {
-    setAllowance(newAllowance.toString());
-    navigate(-1);
-  };
   const handleSignSuccess = (signature: string) =>
     windowPort.confirm(windowId, signature);
   const handleReject = () => windowPort.reject(windowId);
@@ -361,13 +367,13 @@ function SignTypedDataContent({
           />
         ) : null}
         {view === View.advanced && interpretationDataJSON ? (
-          <TypedDataAdvancedView data={interpretationDataJSON} />
+          <TypedDataAdvancedView dataJSON={interpretationDataJSON} />
         ) : null}
         {view === View.customAllowance ? (
           <CustomAllowanceView
             address={wallet.address}
             singleAsset={interpretation?.action?.content?.single_asset}
-            allowance={allowance}
+            allowance={allowance || undefined}
             chain={chain}
             onChange={handleChangeAllowance}
           />
