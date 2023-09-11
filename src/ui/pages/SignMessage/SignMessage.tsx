@@ -24,6 +24,7 @@ import { usePersonalSignMutation } from 'src/ui/shared/requests/message-signing'
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/PhishingDefenceStatus';
+import { usePhishingDefenceProtection } from 'src/ui/components/PhishingDefence/usePhishingDefenceProtection';
 
 function MessageRow({ message }: { message: string }) {
   return (
@@ -163,6 +164,7 @@ function SignMessageContent({
 }
 
 export function SignMessage() {
+  usePhishingDefenceProtection();
   const [params] = useSearchParams();
   const { data: wallet, isLoading } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],

@@ -25,16 +25,16 @@ export class PhishingDefence extends Store<State> {
     super(initialState);
   }
 
-  async blockOriginWithWarning(origin: string) {
+  async blockOriginWithWarning({ params }: { params: { origin: string } }) {
     const tabs = await browser.tabs.query({});
     for (const tab of tabs) {
-      if (tab?.url && this.getSafeOrigin(tab.url) === origin) {
+      if (tab?.url && this.getSafeOrigin(tab.url) === params.origin) {
         const rawPopupUrl = browser.runtime.getManifest().action?.default_popup;
         if (!rawPopupUrl) {
           return;
         }
         const popupUrl = new URL(browser.runtime.getURL(rawPopupUrl));
-        popupUrl.hash = `/phishing-warning?url=${origin}`;
+        popupUrl.hash = `/phishing-warning?url=${params.origin}`;
         popupUrl.searchParams.append('templateType', 'tab');
         browser.tabs.update(tab.id, {
           url: popupUrl.toString(),
@@ -54,10 +54,10 @@ export class PhishingDefence extends Store<State> {
   }
 
   async checkDapp(
-    url: string
+    url?: string
   ): Promise<{ status: DappSecurityStatus; isWhitelisted: boolean }> {
-    const origin = this.getSafeOrigin(url);
-    if (!origin) {
+    const origin = url ? this.getSafeOrigin(url) : null;
+    if (!origin || !url) {
       return Promise.resolve({
         status: 'unknown',
         isWhitelisted: false,
@@ -121,13 +121,16 @@ export class PhishingDefence extends Store<State> {
   async getDappSecurityStatus({
     params,
   }: {
-    params: { url: string };
-  }): Promise<DappSecurityStatus> {
-    const origin = this.getSafeOrigin(params.url);
-    const status = origin
-      ? Promise.resolve(this.getState().websiteStatus[origin])
-      : null;
-    return status || 'unknown';
+    params: { url?: string };
+  }): Promise<{ status: DappSecurityStatus; isWhitelisted: boolean }> {
+    const origin = params.url ? this.getSafeOrigin(params.url) : null;
+    const result = {
+      status: (origin && this.getState().websiteStatus[origin]) || 'unknown',
+      isWhitelisted: origin
+        ? this.getState().whitelistedWebsites.includes(origin)
+        : false,
+    };
+    return Promise.resolve(result);
   }
 }
 

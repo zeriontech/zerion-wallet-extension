@@ -1,36 +1,23 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
 import ValidationErrorIcon from 'jsx:src/ui/assets/validation-error.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { phishingDefencePort } from 'src/ui/shared/channels';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import { useRenderDelay } from '../DelayedRender/DelayedRender';
-
-function usePhishingDefenceStatus(origin: string) {
-  return useQuery({
-    queryKey: ['phishingDefence', 'getDappSecurityStatus', origin],
-    queryFn: () =>
-      phishingDefencePort.request('getDappSecurityStatus', { url: origin }),
-    cacheTime: 0,
-    suspense: false,
-    refetchInterval: (data) =>
-      data === 'loading' || data === 'unknown' ? 100 : false,
-  });
-}
+import { usePhishingDefenceStatus } from './usePhishingDefenceStatus';
 
 export function PhishingDefenceStatus({ origin }: { origin: string }) {
   const render = useRenderDelay(500);
-  const { data: phishingDefenceStatus } = usePhishingDefenceStatus(origin);
+  const { data } = usePhishingDefenceStatus(origin);
 
-  if (!render || !phishingDefenceStatus || phishingDefenceStatus === 'ok') {
+  if (!render || !data || data.status === 'ok') {
     return null;
   }
 
-  if (phishingDefenceStatus === 'loading') {
+  if (data.status === 'loading') {
     return (
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <HStack
@@ -57,10 +44,7 @@ export function PhishingDefenceStatus({ origin }: { origin: string }) {
     );
   }
 
-  if (
-    phishingDefenceStatus === 'error' ||
-    phishingDefenceStatus === 'unknown'
-  ) {
+  if (data.status === 'error' || data.status === 'unknown') {
     return (
       <>
         <VStack
@@ -87,7 +71,7 @@ export function PhishingDefenceStatus({ origin }: { origin: string }) {
     );
   }
 
-  if (phishingDefenceStatus === 'phishing') {
+  if (data.status === 'phishing') {
     return (
       <>
         <VStack

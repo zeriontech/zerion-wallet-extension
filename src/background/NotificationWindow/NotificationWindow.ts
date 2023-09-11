@@ -5,7 +5,6 @@ import type { RpcError, RpcResult } from 'src/shared/custom-rpc';
 import { UserRejected } from 'src/shared/errors/errors';
 import { PersistentStore } from 'src/modules/persistent-store';
 import { produce } from 'immer';
-import { phishingDefenceService } from 'src/modules/phishing-defence/phishing-defence-service';
 import type { WindowProps } from './createBrowserWindow';
 import { createBrowserWindow } from './createBrowserWindow';
 
@@ -207,13 +206,11 @@ export class NotificationWindow extends PersistentStore<PendingState> {
     search,
     onDismiss,
     onResolve,
-    origin,
     width,
     height,
     left,
     top,
   }: WindowProps & {
-    origin?: string;
     requestId: string;
     onDismiss: (error?: ErrorResponse) => void;
     onResolve: (data: T) => void;
@@ -255,19 +252,6 @@ export class NotificationWindow extends PersistentStore<PendingState> {
     this.events.emit('open', { requestId, windowId, id });
     this.requestIds.set(id, requestId);
     this.idsMap.set(id, windowId);
-    if (origin) {
-      phishingDefenceService
-        .checkDapp(origin)
-        .then(({ status, isWhitelisted }) => {
-          if (status === 'phishing' && !isWhitelisted) {
-            phishingDefenceService.blockOriginWithWarning(origin);
-            this.emit('reject', {
-              id,
-              error: new UserRejected('Malicious DApp'),
-            });
-          }
-        });
-    }
   }
 
   /** @deprecated */

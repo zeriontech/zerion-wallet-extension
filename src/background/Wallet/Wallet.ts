@@ -1054,7 +1054,6 @@ class PublicController {
         route: '/requestAccounts',
         search: `?origin=${origin}`,
         requestId: `${origin}:${id}`,
-        origin,
         onResolve: async ({
           address,
           origin: resolvedOrigin,
@@ -1129,7 +1128,6 @@ class PublicController {
           origin: context.origin,
           transaction: JSON.stringify(transaction),
         })}`,
-        origin: context.origin,
         onResolve: (hash) => {
           resolve(hash);
         },
@@ -1166,7 +1164,6 @@ class PublicController {
           typedDataRaw: stringifiedData,
           method: 'eth_signTypedData_v4',
         })}`,
-        origin: context.origin,
         onResolve: (signature) => {
           resolve(signature);
         },
@@ -1237,7 +1234,6 @@ class PublicController {
           origin: context.origin,
           message,
         })}`,
-        origin: context.origin,
         onResolve: (signature) => {
           resolve(signature);
         },
@@ -1385,7 +1381,6 @@ class PublicController {
           origin,
           addEthereumChainParameter: JSON.stringify(params[0]),
         })}`,
-        origin,
         onResolve: () => {
           resolve(null); // null indicates success as per spec
         },

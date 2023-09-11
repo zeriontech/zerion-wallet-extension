@@ -27,6 +27,7 @@ import { VerifyUser } from 'src/ui/components/VerifyUser';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { usePersonalSignMutation } from 'src/ui/shared/requests/message-signing';
 import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/PhishingDefenceStatus';
+import { usePhishingDefenceProtection } from 'src/ui/components/PhishingDefence/usePhishingDefenceProtection';
 import { SpeechBubble } from './SpeechBubble/SpeechBubble';
 import { useFetchUTCTime } from './useFetchUTCTime';
 import { SiweError } from './SiweError';
@@ -34,6 +35,7 @@ import { DataVerificationFailed } from './DataVerificationFailed';
 import { NavigationBar } from './NavigationBar';
 
 export function SignInWithEthereum() {
+  usePhishingDefenceProtection();
   const [params, setSearchParams] = useSearchParams();
   const updateSearchParam = (
     key: string,
