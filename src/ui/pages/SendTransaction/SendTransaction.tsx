@@ -53,12 +53,12 @@ import type { Networks } from 'src/modules/networks/Networks';
 import type { AddressAction } from 'defi-sdk';
 import type { TransactionAction } from 'src/modules/ethereum/transactions/describeTransaction';
 import { describeTransaction } from 'src/modules/ethereum/transactions/describeTransaction';
+import { CustomAllowanceView } from 'src/ui/components/CustomAllowanceView';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
 import { TransactionAdvancedView } from './TransactionAdvancedView';
 import { TransactionWarning } from './TransactionWarning';
-import { TransactionCustomAllowanceView } from './TransactionCustomAllowanceView';
 
 type SendTransactionError =
   | null
@@ -348,7 +348,7 @@ function TransactionDefaultView({
           </div>
         </>
       ) : null}
-      <Content name="send-transaction-footer">
+      <Content name="sign-transaction-footer">
         <VStack
           style={{
             textAlign: 'center',
@@ -554,7 +554,7 @@ function SendTransactionContent({
           />
         ) : null}
         {view === View.customAllowance ? (
-          <TransactionCustomAllowanceView
+          <CustomAllowanceView
             address={wallet.address}
             singleAsset={singleAsset}
             allowance={allowance}
@@ -565,7 +565,7 @@ function SendTransactionContent({
         <Spacer height={16} />
       </PageColumn>
       <PageStickyFooter>
-        <RenderArea name="send-transaction-footer" />
+        <RenderArea name="sign-transaction-footer" />
         <PageBottom />
       </PageStickyFooter>
     </Background>
