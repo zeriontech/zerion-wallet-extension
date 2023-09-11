@@ -48,34 +48,31 @@ export class PhishingDefence {
   ): Promise<{ status: DappSecurityStatus; isWhitelisted: boolean }> {
     const origin = url ? this.getSafeOrigin(url) : null;
     if (!origin || !url) {
-      return Promise.resolve({
+      return {
         status: 'unknown',
         isWhitelisted: false,
-      });
+      };
     }
 
     const isWhitelisted = this.whitelistedWebsites.has(origin);
     const existingStatus = this.websiteStatus[origin] || 'unknown';
 
     if (isWhitelisted) {
-      return Promise.resolve({
+      return {
         status: existingStatus,
         isWhitelisted,
-      });
+      };
     }
     this.websiteStatus[origin] = 'loading';
-    return new Promise((resolve) => {
-      ZerionAPI.securityCheckUrl({ url })
-        .then((result) => {
-          const status = result.data?.flags.isMalicious ? 'phishing' : 'ok';
-          this.websiteStatus[origin] = status;
-          resolve({ status, isWhitelisted });
-        })
-        .catch(() => {
-          this.websiteStatus[origin] = 'error';
-          resolve({ status: 'error', isWhitelisted });
-        });
-    });
+    try {
+      const result = await ZerionAPI.securityCheckUrl({ url });
+      const status = result.data?.flags.isMalicious ? 'phishing' : 'ok';
+      this.websiteStatus[origin] = status;
+      return { status, isWhitelisted };
+    } catch {
+      this.websiteStatus[origin] = 'error';
+      return { status: 'error', isWhitelisted };
+    }
   }
 
   async getDappSecurityStatus(
@@ -86,7 +83,7 @@ export class PhishingDefence {
       status: (origin && this.websiteStatus[origin]) || 'unknown',
       isWhitelisted: origin ? this.whitelistedWebsites.has(origin) : false,
     };
-    return Promise.resolve(result);
+    return result;
   }
 }
 
