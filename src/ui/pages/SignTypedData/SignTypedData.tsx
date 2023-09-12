@@ -389,7 +389,7 @@ function SignTypedDataContent({
           />
         ) : null}
         {view === View.advanced && interpretationDataJSON ? (
-          <TypedDataAdvancedView data={interpretationDataJSON} />
+          <TypedDataAdvancedView dataJSON={interpretationDataJSON} />
         ) : null}
         <Spacer height={16} />
         <PhishingDefenceStatus origin={origin} />
