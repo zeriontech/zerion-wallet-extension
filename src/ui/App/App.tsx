@@ -61,6 +61,7 @@ import { AddEthereumChain } from '../pages/AddEthereumChain';
 import { SignInWithEthereum } from '../pages/SignInWithEthereum';
 import { InvitationPage } from '../components/InvitationFlow';
 import { useBodyStyle } from '../components/Background/Background';
+import { PhishingWarningPage } from '../components/PhishingDefence/PhishingWarningPage';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -182,6 +183,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/get-started/*" element={<GetStarted />} />
           <Route path="/receive" element={<Receive />} />
+          <Route path="/phishing-warning" element={<PhishingWarningPage />} />
           <Route
             path="/nft/:chain/:asset_code"
             element={

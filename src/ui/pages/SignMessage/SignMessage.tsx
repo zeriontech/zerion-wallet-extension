@@ -23,6 +23,7 @@ import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { usePersonalSignMutation } from 'src/ui/shared/requests/message-signing';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { focusNode } from 'src/ui/shared/focusNode';
+import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/PhishingDefenceStatus';
 
 function MessageRow({ message }: { message: string }) {
   return (
@@ -110,6 +111,7 @@ function SignMessageContent({
         <Spacer height={24} />
         <MessageRow message={message} />
         <Spacer height={16} />
+        <PhishingDefenceStatus origin={origin} />
       </PageColumn>
       <PageStickyFooter>
         <VStack

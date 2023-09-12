@@ -13,6 +13,10 @@ on:
         default: wss://api-v4.zerion.io/
         description: 'Zerion API'
         required: true
+      ZERION_API_URL:
+        default: https://zpi.zerion.io/
+        description: 'Zerion REST API'
+        required: true
       PROXY_URL:
         default: https://proxy.zerion.io/
         description: 'Proxy API'
@@ -38,6 +42,7 @@ jobs:
         env:
           ALCHEMY_KEY: RKg5wIwcuh32powb0blKdPh0UwSsgmFI
           DEFI_SDK_API_URL: ${{ github.event.inputs.DEFI_SDK_API_URL || 'wss://api-v4.zerion.io/' }}
+          ZERION_API_URL: ${{ github.event.inputs.ZERION_API_URL || 'https://zpi.zerion.io/' }}
           BACKEND_ENV: ${{ github.event.inputs.BACKEND_ENV || '' }}
           PROXY_URL: ${{ github.event.inputs.PROXY_URL || 'https://proxy.zerion.io/' }}
           DEFI_SDK_API_TOKEN: Zerion.0JOY6zZTTw6yl5Cvz9sdmXc7d5AhzVMG

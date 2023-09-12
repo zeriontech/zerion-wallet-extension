@@ -1,12 +1,8 @@
 import React from 'react';
-import { Spacer } from 'src/ui/ui-kit/Spacer';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { Chain } from 'src/modules/networks/Chain';
 import type { NetworkFeeConfiguration } from '../NetworkFee/types';
-import {
-  InsufficientFundsWarning,
-  useInsufficientFundsWarning,
-} from './InsufficientFundsWarning';
+import { InsufficientFundsWarning } from './InsufficientFundsWarning';
 
 export function TransactionWarning({
   address,
@@ -19,17 +15,12 @@ export function TransactionWarning({
   chain: Chain;
   networkFeeConfiguration: NetworkFeeConfiguration;
 }) {
-  const isInsufficientFundsWarning = useInsufficientFundsWarning({
-    address,
-    transaction,
-    chain,
-    networkFeeConfiguration,
-  });
-
-  return isInsufficientFundsWarning ? (
-    <>
-      <InsufficientFundsWarning chain={chain} />
-      <Spacer height={16} />
-    </>
-  ) : null;
+  return (
+    <InsufficientFundsWarning
+      address={address}
+      transaction={transaction}
+      chain={chain}
+      networkFeeConfiguration={networkFeeConfiguration}
+    />
+  );
 }

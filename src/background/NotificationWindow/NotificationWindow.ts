@@ -36,6 +36,12 @@ interface Events {
 
 type PendingState = Record<string, { windowId: number; id: string }>;
 
+export type NotificationWindowProps<T> = WindowProps & {
+  requestId: string;
+  onDismiss: (error?: ErrorResponse) => void;
+  onResolve: (data: T) => void;
+};
+
 export class NotificationWindow extends PersistentStore<PendingState> {
   static initialState: PendingState = {};
   static key = 'notificationWindow';
@@ -210,11 +216,7 @@ export class NotificationWindow extends PersistentStore<PendingState> {
     height,
     left,
     top,
-  }: WindowProps & {
-    requestId: string;
-    onDismiss: (error?: ErrorResponse) => void;
-    onResolve: (data: T) => void;
-  }) {
+  }: NotificationWindowProps<T>) {
     const unlisten = this.events.on(
       'settle',
       ({ status, id, windowId, result, error }) => {
@@ -238,7 +240,7 @@ export class NotificationWindow extends PersistentStore<PendingState> {
     if (pendingWindows[requestId]) {
       // Window is already opened for this request and all necessary listeners
       // have been set up, so we're done.
-      return;
+      return pendingWindows[requestId].id;
     }
 
     const { id, windowId } = await createBrowserWindow({
@@ -252,6 +254,7 @@ export class NotificationWindow extends PersistentStore<PendingState> {
     this.events.emit('open', { requestId, windowId, id });
     this.requestIds.set(id, requestId);
     this.idsMap.set(id, windowId);
+    return id;
   }
 
   /** @deprecated */

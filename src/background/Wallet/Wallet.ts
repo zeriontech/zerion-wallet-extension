@@ -5,7 +5,10 @@ import { createNanoEvents } from 'nanoevents';
 import { Store } from 'store-unit';
 import { isTruthy } from 'is-truthy-ts';
 import { encrypt, decrypt } from 'src/modules/crypto';
-import type { NotificationWindow } from 'src/background/NotificationWindow/NotificationWindow';
+import type {
+  NotificationWindow,
+  NotificationWindowProps,
+} from 'src/background/NotificationWindow/NotificationWindow';
 import type {
   ChannelContext,
   PrivateChannelContext,
@@ -52,6 +55,8 @@ import { isSiweLike } from 'src/modules/ethereum/message-signing/SIWE';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
 import { invariant } from 'src/shared/invariant';
 import { getEthersError } from 'src/shared/errors/getEthersError';
+import type { DappSecurityStatus } from 'src/modules/phishing-defence/phishing-defence-service';
+import { phishingDefenceService } from 'src/modules/phishing-defence/phishing-defence-service';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -988,6 +993,27 @@ export class Wallet {
     this.verifyInternalOrigin(context);
     emitter.emit('daylightAction', params);
   }
+
+  async blockOriginWithWarning({
+    params: { origin },
+  }: WalletMethodParams<{ origin: string }>) {
+    return phishingDefenceService.blockOriginWithWarning(origin);
+  }
+
+  async getDappSecurityStatus({
+    params: { url },
+  }: WalletMethodParams<{ url?: string | null }>): Promise<{
+    status: DappSecurityStatus;
+    isWhitelisted: boolean;
+  }> {
+    return phishingDefenceService.getDappSecurityStatus(url);
+  }
+
+  async ignoreDappSecurityWarning({
+    params: { url },
+  }: WalletMethodParams<{ url: string }>) {
+    return phishingDefenceService.ignoreDappSecurityWarning(url);
+  }
 }
 
 interface Web3WalletPermission {
@@ -1015,6 +1041,24 @@ class PublicController {
   ) {
     this.wallet = wallet;
     this.notificationWindow = notificationWindow;
+  }
+
+  private async safeOpenDialogWindow<T>(
+    origin: string,
+    props: NotificationWindowProps<T>
+  ) {
+    const id = await this.notificationWindow.open(props);
+    phishingDefenceService
+      .checkDapp(origin)
+      .then(({ status, isWhitelisted }) => {
+        if (status === 'phishing' && !isWhitelisted) {
+          phishingDefenceService.blockOriginWithWarning(origin);
+          this.notificationWindow.emit('reject', {
+            id,
+            error: new UserRejected('Malicious DApp'),
+          });
+        }
+      });
   }
 
   async eth_accounts({ context }: PublicMethodParams) {
@@ -1050,7 +1094,7 @@ class PublicController {
     }
     const { origin } = context;
     return new Promise((resolve, reject) => {
-      this.notificationWindow.open({
+      this.safeOpenDialogWindow(origin, {
         route: '/requestAccounts',
         search: `?origin=${origin}`,
         requestId: `${origin}:${id}`,
@@ -1121,7 +1165,7 @@ class PublicController {
     const transaction = params[0];
     invariant(transaction, () => new InvalidParams());
     return new Promise((resolve, reject) => {
-      this.notificationWindow.open({
+      this.safeOpenDialogWindow(context.origin, {
         requestId: `${context.origin}:${id}`,
         route: '/sendTransaction',
         search: `?${new URLSearchParams({
@@ -1156,7 +1200,7 @@ class PublicController {
     const stringifiedData =
       typeof data === 'string' ? data : JSON.stringify(data);
     return new Promise((resolve, reject) => {
-      this.notificationWindow.open({
+      this.safeOpenDialogWindow(context.origin, {
         requestId: `${context.origin}:${id}`,
         route: '/signTypedData',
         search: `?${new URLSearchParams({
@@ -1226,7 +1270,7 @@ class PublicController {
     const route = isSiweLike(message) ? '/siwe' : '/signMessage';
 
     return new Promise((resolve, reject) => {
-      this.notificationWindow.open({
+      this.safeOpenDialogWindow(context.origin, {
         requestId: `${context.origin}:${id}`,
         route,
         search: `?${new URLSearchParams({

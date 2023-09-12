@@ -34,6 +34,7 @@ import {
   getInterpretationData,
   interpretSignature,
 } from 'src/modules/ethereum/transactions/interpret';
+import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/PhishingDefenceStatus';
 import { NavigationBar } from '../SignInWithEthereum/NavigationBar';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
@@ -249,6 +250,7 @@ function SignTypedDataContent({
           <TypedDataAdvancedView data={interpretationDataJSON} />
         ) : null}
         <Spacer height={16} />
+        <PhishingDefenceStatus origin={origin} />
       </PageColumn>
       <PageStickyFooter>
         <VStack
