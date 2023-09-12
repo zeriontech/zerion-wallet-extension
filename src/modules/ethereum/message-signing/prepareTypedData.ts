@@ -6,7 +6,7 @@ function isTypedData(data: Partial<TypedData>): data is TypedData {
 }
 
 export function isPermit({ message }: TypedData) {
-  return Boolean(message.owner && message.spender && message.value);
+  return Boolean(message.spender);
 }
 
 export function toTypedData(data: string | Partial<TypedData>): TypedData {

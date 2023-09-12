@@ -17,6 +17,7 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { almostEqual, noValueDash } from 'src/ui/shared/typography';
 import { invariant } from 'src/shared/invariant';
+import * as s from 'src/ui/style/helpers.module.css';
 import { getBaseQuantity, getCommonQuantity } from 'src/modules/networks/asset';
 import type { Chain } from 'src/modules/networks/Chain';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
@@ -24,13 +25,13 @@ import { Content } from 'react-area';
 import { Button } from 'src/ui/ui-kit/Button';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { AssetLink } from 'src/ui/components/AssetLink';
-import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import {
   UNLIMITED_APPROVAL_AMOUNT,
   isUnlimitedApproval,
 } from 'src/ui/pages/History/isUnlimitedApproval';
 import { NavigationBar } from 'src/ui/pages/SignInWithEthereum/NavigationBar';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 
 function parseAmount(untypedValue: unknown): BigNumber | null {
   const value = untypedValue as string;
@@ -47,7 +48,7 @@ function CustomAllowanceForm({
   address,
   balance,
   requestedAllowanceQuantityBase,
-  allowanceQuantityBase,
+  value,
   onSubmit,
 }: {
   asset: Asset;
@@ -55,15 +56,13 @@ function CustomAllowanceForm({
   address: string;
   balance: BigNumber | null;
   requestedAllowanceQuantityBase: BigNumber;
-  allowanceQuantityBase: BigNumber;
-  onSubmit(newAllowanceQuantityBase: BigNumber): void;
+  value: BigNumber;
+  onSubmit(newValue: BigNumber): void;
 }) {
   const isRequestedAllowanceUnlimited = isUnlimitedApproval(
     requestedAllowanceQuantityBase
   );
-  const isCurrentAllowanceUnlimited = isUnlimitedApproval(
-    allowanceQuantityBase
-  );
+  const isCurrentAllowanceUnlimited = isUnlimitedApproval(value);
   const [isAllowanceUnlimited, setIsAllowanceUnlimited] = useState(
     isCurrentAllowanceUnlimited
   );
@@ -83,9 +82,9 @@ function CustomAllowanceForm({
         : getCommonQuantity({
             asset,
             chain,
-            baseQuantity: allowanceQuantityBase.toString(),
+            baseQuantity: value.toString(),
           }),
-    [asset, chain, allowanceQuantityBase, isCurrentAllowanceUnlimited]
+    [asset, chain, value, isCurrentAllowanceUnlimited]
   );
 
   const assetPrice = asset.price?.value;
@@ -102,7 +101,8 @@ function CustomAllowanceForm({
   const updateAllowanceQuantityUsd = useCallback(
     (value: string | null) => {
       if (value && assetPrice) {
-        setAllowanceQuantityUsd(new BigNumber(value).times(assetPrice));
+        const newAllowanceQuantityUsd = new BigNumber(value).times(assetPrice);
+        setAllowanceQuantityUsd(newAllowanceQuantityUsd);
       } else {
         setAllowanceQuantityUsd(null);
       }
@@ -125,7 +125,7 @@ function CustomAllowanceForm({
     setAllowanceQuantityCommon(
       isRequestedAllowanceUnlimited
         ? null
-        : initialAllowanceQuantityCommon.toString()
+        : initialAllowanceQuantityCommon.toFixed()
     );
   };
 
@@ -150,12 +150,12 @@ function CustomAllowanceForm({
           }
           const formData = collectData(form, { amount: parseAmount });
           const newAllowanceQuantityCommon = formData.amount as BigNumber;
-          const newAllowanceQuantityBase = getBaseQuantity({
+          const newValue = getBaseQuantity({
             asset,
             chain,
             commonQuantity: newAllowanceQuantityCommon,
           });
-          onSubmit(newAllowanceQuantityBase);
+          onSubmit(newValue);
         } else {
           onSubmit(
             isRequestedAllowanceUnlimited
@@ -213,14 +213,14 @@ function CustomAllowanceForm({
                   <UnstyledInput
                     ref={allowanceQuantityCommonRef}
                     type="text"
-                    inputMode="numeric"
+                    inputMode="decimal"
                     placeholder="0"
                     name="amount"
                     style={{ textAlign: 'end' }}
                     autoFocus={!isAllowanceUnlimited}
                     required={!isAllowanceUnlimited}
                     pattern="^(\d+\.)?\d+"
-                    defaultValue={currentAllowanceQuantityCommon?.toString()}
+                    defaultValue={currentAllowanceQuantityCommon?.toFixed()}
                     onInvalid={(event) => {
                       if (event.currentTarget.validity.patternMismatch) {
                         event.currentTarget.setCustomValidity(
@@ -247,10 +247,11 @@ function CustomAllowanceForm({
             detailText={null}
           />
           <HStack
-            gap={4}
+            gap={12}
             style={{
               alignItems: 'center',
               justifyContent: 'space-between',
+              gridAutoColumns: 'max-content auto',
             }}
           >
             <HStack gap={4}>
@@ -266,17 +267,21 @@ function CustomAllowanceForm({
                 style={{ color: 'var(--primary-500)' }}
               >
                 {balance ? (
-                  <TextAnchor
-                    rel="noopener noreferrer"
-                    style={{ cursor: 'pointer' }}
-                    onClick={(e) => {
-                      e.stopPropagation();
+                  <UnstyledButton
+                    type="button"
+                    onClick={() => {
                       setIsAllowanceUnlimited(false);
                       setAllowanceQuantityCommon(balance.toString());
                     }}
                   >
-                    {formatTokenValue(balance)}
-                  </TextAnchor>
+                    <UIText
+                      className={s.hoverUnderline}
+                      kind="small/regular"
+                      color="var(--primary-500)"
+                    >
+                      {formatTokenValue(balance)}
+                    </UIText>
+                  </UnstyledButton>
                 ) : (
                   noValueDash
                 )}
@@ -285,7 +290,13 @@ function CustomAllowanceForm({
             {isAllowanceUnlimited || allowanceQuantityUsd == null ? null : (
               <UIText
                 kind="small/regular"
-                style={{ color: 'var(--neutral-500)', textAlign: 'end' }}
+                style={{
+                  color: 'var(--neutral-500)',
+                  textAlign: 'end',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  maxWidth: '100%',
+                }}
               >
                 {almostEqual}
                 {formatCurrencyValue(allowanceQuantityUsd, 'en', 'usd')}
@@ -339,20 +350,20 @@ export function CustomAllowanceView({
   address,
   chain,
   asset,
-  allowanceQuantityBase,
+  value,
   requestedAllowanceQuantityBase,
   onChange,
 }: {
   address: string;
   chain: Chain;
   asset?: Asset | null;
-  allowanceQuantityBase: string;
+  value: string;
   requestedAllowanceQuantityBase?: string;
-  onChange: (amount: BigNumber) => void;
+  onChange: (value: BigNumber) => void;
 }) {
   invariant(
     requestedAllowanceQuantityBase,
-    'asset is required to set custom allowance'
+    'requestedAllowanceQuantityBase is required to set custom allowance'
   );
   invariant(asset, 'asset is required to set custom allowance');
 
@@ -396,9 +407,7 @@ export function CustomAllowanceView({
         requestedAllowanceQuantityBase={
           new BigNumber(requestedAllowanceQuantityBase)
         }
-        allowanceQuantityBase={
-          new BigNumber(allowanceQuantityBase || requestedAllowanceQuantityBase)
-        }
+        value={new BigNumber(value || requestedAllowanceQuantityBase)}
         onSubmit={onChange}
       />
     </>
