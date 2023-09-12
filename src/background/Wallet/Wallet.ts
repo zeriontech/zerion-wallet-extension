@@ -810,7 +810,6 @@ export class Wallet {
     const chainId = await this.getChainIdForOrigin({
       origin: new URL(initiator).origin,
     });
-
     const targetChainId = getTransactionChainId(incomingTransaction);
     if (targetChainId && chainId !== targetChainId) {
       throw new Error(
@@ -829,16 +828,13 @@ export class Wallet {
 
     const networks = await networksStore.load();
     const signer = await this.getSigner(chainId);
-    const preparedTx = prepareTransaction(incomingTransaction);
-    const preparedTxWithGasAndFee = await prepareGasAndNetworkFee(
-      preparedTx,
-      networks
-    );
+    const prepared = prepareTransaction(incomingTransaction);
+    const transaction = await prepareGasAndNetworkFee(prepared, networks);
 
     try {
       const transactionResponse = await signer.sendTransaction({
-        ...preparedTxWithGasAndFee,
-        type: preparedTxWithGasAndFee.type || undefined, // to exclude null
+        ...transaction,
+        type: transaction.type || undefined, // to exclude null
       });
       const safeTx = removeSignature(transactionResponse);
       emitter.emit('transactionSent', {
