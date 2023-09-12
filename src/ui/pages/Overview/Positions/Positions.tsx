@@ -1,4 +1,8 @@
-import type { AddressParams, AddressPosition } from 'defi-sdk';
+import type {
+  AddressParams,
+  AddressPosition,
+  AddressPositionDappInfo,
+} from 'defi-sdk';
 import { useAddressPositions } from 'defi-sdk';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
@@ -18,13 +22,14 @@ import type { Item } from 'src/ui/ui-kit/SurfaceList';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import {
   DEFAULT_NAME,
-  DEFAULT_PROTOCOL,
+  DEFAULT_PROTOCOL_ID,
+  DEFAULT_PROTOCOL_NAME,
   PositionsGroupType,
 } from 'src/ui/components/Positions/types';
 import {
   clearMissingParentIds,
   groupPositionsByName,
-  groupPositionsByProtocol,
+  groupPositionsByDapp,
   sortPositionGroupsByTotalValue,
   sortPositionsByParentId,
   sortPositionsByValue,
@@ -32,7 +37,6 @@ import {
 import { VStack } from 'src/ui/ui-kit/VStack';
 import {
   getFullPositionsValue,
-  getProtocolIconURL,
   positionTypeToStringMap,
 } from 'src/ui/components/Positions/helpers';
 import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
@@ -58,6 +62,7 @@ import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import { minus } from 'src/ui/shared/typography';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 import { useEvmAddressPositions } from 'src/ui/shared/requests/useEvmAddressPositions';
+import { DappLink } from './DappLink';
 
 function LineToParent({
   hasPreviosNestedPosition,
@@ -204,7 +209,7 @@ function AddressPositionItem({
                 [
                   groupType === PositionsGroupType.position ? (
                     <span key={1}>
-                      protocol: {position.protocol || DEFAULT_PROTOCOL}
+                      protocol: {position.dapp?.name || DEFAULT_PROTOCOL_NAME}
                     </span>
                   ) : undefined,
                   position.type !== 'asset' ? (
@@ -275,8 +280,8 @@ interface PreparedPositions {
   gasPositionId: string | null;
   items: AddressPosition[];
   totalValue: number;
-  protocols: string[];
-  protocolIndex: Record<
+  dappIds: string[];
+  dappIndex: Record<
     string,
     {
       totalValue: number;
@@ -333,7 +338,7 @@ function usePreparedPositions({
     return (
       items.find(
         (item) =>
-          (!item.protocol || item.protocol === DEFAULT_PROTOCOL) &&
+          !item.dapp &&
           item.type === 'asset' &&
           item.chain === siteChain?.toString() &&
           item.asset.id === nativeAssetId
@@ -343,31 +348,30 @@ function usePreparedPositions({
 
   const totalValue = useMemo(() => getFullPositionsValue(items), [items]);
   return useMemo(() => {
-    const byProtocol =
+    const byDapp =
       groupType === PositionsGroupType.platform
-        ? groupPositionsByProtocol(items)
-        : { [DEFAULT_PROTOCOL]: items };
-    const byProtocolSorted = sortPositionGroupsByTotalValue(byProtocol);
-    const protocols = byProtocolSorted.map(([protocol]) => protocol);
+        ? groupPositionsByDapp(items)
+        : { [DEFAULT_PROTOCOL_ID]: items };
+    const byDappSorted = sortPositionGroupsByTotalValue(byDapp);
+    const dappIds = byDappSorted.map(([dappId]) => dappId);
 
     // Pin Wallet group to the top of positions list
-    const defaultProtocolIndex = protocols.findIndex(
-      (item) => item === DEFAULT_PROTOCOL
+    const defaultDappIndex = dappIds.findIndex(
+      (item) => item === DEFAULT_PROTOCOL_ID
     );
-    if (defaultProtocolIndex >= 0) {
-      protocols.splice(defaultProtocolIndex, 1);
-      protocols.unshift(DEFAULT_PROTOCOL);
+    if (defaultDappIndex >= 0) {
+      dappIds.splice(defaultDappIndex, 1);
+      dappIds.unshift(DEFAULT_PROTOCOL_ID);
     }
 
-    const protocolIndex: PreparedPositions['protocolIndex'] = {};
-    for (const protocol of protocols) {
-      const protocolItems = sortPositionsByValue(byProtocol[protocol]);
-      const currentTotalValue = getFullPositionsValue(protocolItems);
-      const byName = groupPositionsByName(protocolItems);
+    const dappIndex: PreparedPositions['dappIndex'] = {};
+    for (const dappId of dappIds) {
+      const dappItems = sortPositionsByValue(byDapp[dappId]);
+      const currentTotalValue = getFullPositionsValue(dappItems);
+      const byName = groupPositionsByName(dappItems);
       const byNameSorted = sortPositionGroupsByTotalValue(byName);
       const names = byNameSorted.map(([name]) => name);
-      const nameIndex: PreparedPositions['protocolIndex'][string]['nameIndex'] =
-        {};
+      const nameIndex: PreparedPositions['dappIndex'][string]['nameIndex'] = {};
       for (const name of names) {
         nameIndex[name] = sortPositionsByParentId(
           clearMissingParentIds(byName[name])
@@ -381,13 +385,13 @@ function usePreparedPositions({
           nameIndex[name].unshift(gasPosition);
         }
       }
-      protocolIndex[protocol] = {
+      dappIndex[dappId] = {
         totalValue: currentTotalValue,
         relativeValue:
           currentTotalValue === 0 && totalValue === 0
             ? 0
             : (currentTotalValue / totalValue) * 100,
-        items: protocolItems,
+        items: dappItems,
         names,
         nameIndex,
       };
@@ -396,26 +400,26 @@ function usePreparedPositions({
       gasPositionId,
       items,
       totalValue,
-      protocols,
-      protocolIndex,
+      dappIds,
+      dappIndex,
     };
   }, [groupType, items, totalValue, gasPositionId]);
 }
 
 function ProtocolHeading({
-  protocol,
+  dappInfo,
   value,
   relativeValue,
   displayImage = true,
 }: {
-  protocol: string;
+  dappInfo: AddressPositionDappInfo;
   value: number;
   relativeValue: number;
   displayImage?: boolean;
 }) {
   return (
     <HStack gap={8} alignItems="center">
-      {!displayImage ? null : protocol === DEFAULT_PROTOCOL ? (
+      {!displayImage ? null : dappInfo.id === DEFAULT_PROTOCOL_ID ? (
         <div
           style={{
             backgroundColor: 'var(--actions-default)',
@@ -434,14 +438,14 @@ function ProtocolHeading({
         </div>
       ) : (
         <TokenIcon
-          src={getProtocolIconURL(protocol)}
-          symbol={protocol}
+          src={dappInfo.icon_url}
+          symbol={dappInfo.name || dappInfo.id}
           size={24}
           style={{ borderRadius: 6 }}
         />
       )}
       <UIText kind="body/accent">
-        {protocol}
+        {dappInfo.name || dappInfo.id}
         {' · '}
         <NeutralDecimals parts={formatCurrencyToParts(value, 'en', 'usd')} />
       </UIText>
@@ -491,7 +495,7 @@ function PositionList({
 
   return (
     <VStack gap={24}>
-      {preparedPositions.protocols.map((protocol, index) => {
+      {preparedPositions.dappIds.map((dappId, index) => {
         const items: Item[] = [];
         const {
           totalValue,
@@ -499,8 +503,8 @@ function PositionList({
           names,
           nameIndex,
           items: protocolItems,
-        } = preparedPositions.protocolIndex[protocol];
-        let protocolPositionCounter = 0;
+        } = preparedPositions.dappIndex[dappId];
+        let dappPositionCounter = 0;
         // do not hide if only one item is left
         const stopAt =
           protocolItems.length - COLLAPSED_COUNT > 1
@@ -545,8 +549,8 @@ function PositionList({
               ),
             });
             namePositionCounter++;
-            protocolPositionCounter++;
-            if (protocolPositionCounter >= stopAt && !expanded.has(protocol)) {
+            dappPositionCounter++;
+            if (dappPositionCounter >= stopAt && !expanded.has(dappId)) {
               break outerBlock;
             }
           }
@@ -555,23 +559,29 @@ function PositionList({
           items.push({
             key: 'show-more-less',
             onClick: () => {
-              if (expanded.has(protocol)) {
-                showLess(protocol);
+              if (expanded.has(dappId)) {
+                showLess(dappId);
               } else {
-                showMore(protocol);
+                showMore(dappId);
               }
             },
             component: (
               <UIText kind="body/accent" color="var(--primary)">
-                {expanded.has(protocol)
-                  ? 'Show Less Assets'
-                  : 'Show All Assets'}
+                {expanded.has(dappId) ? 'Show Less Assets' : 'Show All Assets'}
               </UIText>
             ),
           });
         }
+
+        const dappInfo: AddressPositionDappInfo = protocolItems[0].dapp || {
+          id: DEFAULT_PROTOCOL_ID,
+          name: DEFAULT_PROTOCOL_NAME,
+          icon_url: null,
+          url: null,
+        };
+
         return (
-          <VStack gap={4} key={protocol}>
+          <VStack gap={4} key={dappId}>
             <HStack
               gap={4}
               justifyContent="space-between"
@@ -582,13 +592,18 @@ function PositionList({
               }}
             >
               <ProtocolHeading
-                protocol={protocol}
+                dappInfo={dappInfo}
                 value={totalValue}
                 relativeValue={relativeValue}
-                displayImage={protocol !== DEFAULT_PROTOCOL}
+                displayImage={dappId !== DEFAULT_PROTOCOL_ID}
               />
               {index === 0 && firstHeaderItemEnd ? firstHeaderItemEnd : null}
             </HStack>
+            {dappInfo.url ? (
+              <div style={{ paddingInline: 16 }}>
+                <DappLink dappInfo={dappInfo} />
+              </div>
+            ) : null}
             <SurfaceList
               style={{ position: 'relative', paddingBlock: 0 }}
               // estimateSize={(index) => (index === 0 ? 52 : 60 + 1)}

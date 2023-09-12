@@ -1,0 +1,14 @@
+.link {
+  display: block;
+  border: 1px solid var(--neutral-300);
+  color: var(--neutral-700);
+}
+
+.icon {
+  color: var(--neutral-500);
+}
+
+.link:hover,
+.link:hover .icon {
+  color: var(--primary);
+}
