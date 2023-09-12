@@ -23,7 +23,7 @@ export function DappLink({ dappInfo }: { dappInfo: AddressPositionDappInfo }) {
       padding={'8px 12px'}
       className={styles.link}
       as={UnstyledAnchor}
-      href={url.toString()}
+      href={url.href}
       rel="noopener noreferrer"
       onClick={(e) => {
         e.preventDefault();
