@@ -45,6 +45,7 @@ import { PageTop } from 'src/ui/components/PageTop';
 import type BigNumber from 'bignumber.js';
 import { CustomAllowanceView } from 'src/ui/components/CustomAllowanceView';
 import { produce } from 'immer';
+import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
 function TypedDataRow({ data }: { data: string }) {
@@ -99,7 +100,7 @@ function TypedDataDefaultView({
   };
   interpretation?: InterpretResponse | null;
   interpretationDataJSON: Record<string, unknown> | null;
-  allowanceQuantityBase: string | null;
+  allowanceQuantityBase?: string;
   onSignSuccess: (signature: string) => void;
   onReject: () => void;
 }) {
@@ -280,9 +281,11 @@ function SignTypedDataContent({
 
   const typedData = useMemo(() => toTypedData(typedDataRaw), [typedDataRaw]);
 
-  const [allowanceQuantityBase, setAllowanceQuantityBase] = useState<
-    string | null
-  >(isPermit(typedData) ? typedData.message.value : null);
+  const requestedAllowanceQuantityBase = isPermit(typedData)
+    ? (typedData.message.value as string)
+    : undefined;
+  const [allowanceQuantityBase, setAllowanceQuantityBase] = useState('');
+
   const handleChangeAllowance = (newAllowance: BigNumber) => {
     setAllowanceQuantityBase(newAllowance.toString());
     navigate(-1);
@@ -360,7 +363,9 @@ function SignTypedDataContent({
             interpretQuery={interpretQuery}
             interpretation={interpretation}
             interpretationDataJSON={interpretationDataJSON}
-            allowanceQuantityBase={allowanceQuantityBase}
+            allowanceQuantityBase={
+              allowanceQuantityBase || requestedAllowanceQuantityBase
+            }
             onSignSuccess={handleSignSuccess}
             onReject={handleReject}
           />
@@ -371,8 +376,11 @@ function SignTypedDataContent({
         {view === View.customAllowance ? (
           <CustomAllowanceView
             address={wallet.address}
-            singleAsset={interpretation?.action?.content?.single_asset}
-            allowanceQuantityBase={allowanceQuantityBase || undefined}
+            asset={getFungibleAsset(
+              interpretation?.action?.content?.single_asset?.asset
+            )}
+            allowanceQuantityBase={allowanceQuantityBase}
+            requestedAllowanceQuantityBase={requestedAllowanceQuantityBase}
             chain={chain}
             onChange={handleChangeAllowance}
           />
