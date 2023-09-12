@@ -504,8 +504,8 @@ function SendTransactionContent({
   const addressAction = interpretAddressAction || localAddressAction;
   const singleAsset = addressAction?.content?.single_asset;
 
-  const handleChangeAllowance = (quantity: BigNumber) => {
-    setAllowanceQuantityBase(quantity.toString());
+  const handleChangeAllowance = (value: BigNumber) => {
+    setAllowanceQuantityBase(value.toString());
     navigate(-1);
   };
 
@@ -557,7 +557,7 @@ function SendTransactionContent({
             address={wallet.address}
             asset={getFungibleAsset(singleAsset?.asset)}
             requestedAllowanceQuantityBase={requestedAllowanceQuantityBase}
-            allowanceQuantityBase={allowanceQuantityBase}
+            value={allowanceQuantityBase}
             chain={chain}
             onChange={handleChangeAllowance}
           />

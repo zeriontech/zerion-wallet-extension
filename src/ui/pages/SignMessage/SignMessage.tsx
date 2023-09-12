@@ -61,9 +61,7 @@ function SignMessageContent({
   const personalSignMutation = usePersonalSignMutation({
     onSuccess: handleSignSuccess,
   });
-  const someMutationError = personalSignMutation.isError
-    ? getError(personalSignMutation.error)
-    : null;
+
   const originForHref = useMemo(() => prepareForHref(origin), [origin]);
 
   const handleReject = () => windowPort.reject(windowId);
@@ -123,9 +121,9 @@ function SignMessageContent({
           }}
           gap={8}
         >
-          {someMutationError ? (
+          {personalSignMutation.isError ? (
             <UIText kind="caption/regular" color="var(--negative-500)">
-              {someMutationError?.message}
+              {getError(personalSignMutation.error).message}
             </UIText>
           ) : null}
           <div

@@ -74,6 +74,11 @@ function applyAllowance(typedData: TypedData, allowanceQuantityBase: string) {
   });
 }
 
+function getPermitAllowanceQuantity({ message }: TypedData) {
+  // Different ways to get an allowance quantity for Permit & Permit2
+  return message.value || message.details?.amount;
+}
+
 function TypedDataDefaultView({
   origin,
   wallet,
@@ -128,10 +133,6 @@ function TypedDataDefaultView({
   const signTypedData_v4Mutation = useSignTypedData_v4Mutation({
     onSuccess: onSignSuccess,
   });
-
-  const someMutationError = signTypedData_v4Mutation.isError
-    ? getError(signTypedData_v4Mutation.error)
-    : null;
 
   const originForHref = useMemo(() => prepareForHref(origin), [origin]);
 
@@ -220,9 +221,9 @@ function TypedDataDefaultView({
           }}
           gap={8}
         >
-          {someMutationError ? (
+          {signTypedData_v4Mutation.isError ? (
             <UIText kind="caption/regular" color="var(--negative-500)">
-              {someMutationError?.message}
+              {getError(signTypedData_v4Mutation?.error).message}
             </UIText>
           ) : null}
           <div
@@ -283,12 +284,13 @@ function SignTypedDataContent({
   const typedData = useMemo(() => toTypedData(typedDataRaw), [typedDataRaw]);
 
   const requestedAllowanceQuantityBase = isPermit(typedData)
-    ? (typedData.message.value as string)
+    ? getPermitAllowanceQuantity(typedData)
     : undefined;
+
   const [allowanceQuantityBase, setAllowanceQuantityBase] = useState('');
 
-  const handleChangeAllowance = (newAllowance: BigNumber) => {
-    setAllowanceQuantityBase(newAllowance.toString());
+  const handleChangeAllowance = (value: BigNumber) => {
+    setAllowanceQuantityBase(value.toString());
     navigate(-1);
   };
 
@@ -340,6 +342,8 @@ function SignTypedDataContent({
     windowPort.confirm(windowId, signature);
   const handleReject = () => windowPort.reject(windowId);
 
+  const singleAsset = interpretation?.action?.content?.single_asset;
+
   if (!networks || !chain) {
     return null;
   }
@@ -377,10 +381,10 @@ function SignTypedDataContent({
         {view === View.customAllowance ? (
           <CustomAllowanceView
             address={wallet.address}
-            asset={getFungibleAsset(
-              interpretation?.action?.content?.single_asset?.asset
-            )}
-            allowanceQuantityBase={allowanceQuantityBase}
+            // Вот тут не факт что этот asset есть, в отличии от SendTransaction
+            // Похоже, что тут нужно дожидаться interpretQuery.isFetched
+            asset={getFungibleAsset(singleAsset?.asset)}
+            value={allowanceQuantityBase}
             requestedAllowanceQuantityBase={requestedAllowanceQuantityBase}
             chain={chain}
             onChange={handleChangeAllowance}
