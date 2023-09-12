@@ -217,7 +217,6 @@ function CustomAllowanceForm({
                     placeholder="0"
                     name="amount"
                     style={{ textAlign: 'end' }}
-                    autoFocus={!isAllowanceUnlimited}
                     required={!isAllowanceUnlimited}
                     pattern="^(\d+\.)?\d+"
                     defaultValue={currentAllowanceQuantityCommon?.toFixed()}
