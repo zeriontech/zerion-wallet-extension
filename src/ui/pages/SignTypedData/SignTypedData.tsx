@@ -381,8 +381,6 @@ function SignTypedDataContent({
         {view === View.customAllowance ? (
           <CustomAllowanceView
             address={wallet.address}
-            // Вот тут не факт что этот asset есть, в отличии от SendTransaction
-            // Похоже, что тут нужно дожидаться interpretQuery.isFetched
             asset={getFungibleAsset(singleAsset?.asset)}
             value={allowanceQuantityBase}
             requestedAllowanceQuantityBase={requestedAllowanceQuantityBase}

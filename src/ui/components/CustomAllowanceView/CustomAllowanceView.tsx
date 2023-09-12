@@ -365,14 +365,17 @@ export function CustomAllowanceView({
     requestedAllowanceQuantityBase,
     'requestedAllowanceQuantityBase is required to set custom allowance'
   );
-  invariant(asset, 'asset is required to set custom allowance');
 
-  const { value: positionsResponse, isLoading: positionsAreLoading } =
-    useAddressPositions({
-      address,
-      assets: [asset.asset_code],
-      currency: 'usd',
-    });
+  const { value: positionsResponse, isLoading: arePositionsLoading } =
+    useAddressPositions(
+      {
+        address,
+        assets: asset ? [asset?.asset_code] : [],
+        currency: 'usd',
+      },
+      { enabled: Boolean(asset) }
+    );
+
   const positions = positionsResponse?.positions;
   const positionsFiltered = useMemo(
     () => positions?.filter((position) => position.chain === chain.toString()),
@@ -381,7 +384,7 @@ export function CustomAllowanceView({
   const positionQuantity = positionsFiltered?.[0]?.quantity;
   const balance = useMemo(
     () =>
-      positionQuantity
+      positionQuantity && asset
         ? getCommonQuantity({
             asset,
             chain,
@@ -391,7 +394,7 @@ export function CustomAllowanceView({
     [asset, chain, positionQuantity]
   );
 
-  if (positionsAreLoading) {
+  if (arePositionsLoading || !asset) {
     return <ViewLoading kind="network" />;
   }
 
