@@ -9,8 +9,8 @@ import { Toggle } from 'src/ui/ui-kit/Toggle';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import UnknownIcon from 'jsx:src/ui/assets/actionTypes/unknown.svg';
 import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
-import type { AddressAction } from 'defi-sdk';
-import { useAddressPositions, type Asset } from 'defi-sdk';
+import type { Asset } from 'defi-sdk';
+import { useAddressPositions } from 'defi-sdk';
 import BigNumber from 'bignumber.js';
 import { collectData } from 'src/ui/shared/form-data';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
@@ -23,7 +23,6 @@ import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { Content } from 'react-area';
 import { Button } from 'src/ui/ui-kit/Button';
 import { focusNode } from 'src/ui/shared/focusNode';
-import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
 import { AssetLink } from 'src/ui/components/AssetLink';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
@@ -47,23 +46,23 @@ function CustomAllowanceForm({
   chain,
   address,
   balance,
-  initialAllowanceQuantityBase,
-  currentAllowanceQuantityBase,
+  requestedAllowanceQuantityBase,
+  allowanceQuantityBase,
   onSubmit,
 }: {
   asset: Asset;
   chain: Chain;
   address: string;
   balance: BigNumber | null;
-  initialAllowanceQuantityBase: BigNumber;
-  currentAllowanceQuantityBase: BigNumber;
+  requestedAllowanceQuantityBase: BigNumber;
+  allowanceQuantityBase: BigNumber;
   onSubmit(newAllowanceQuantityBase: BigNumber): void;
 }) {
-  const isInitialAllowanceUnlimited = isUnlimitedApproval(
-    initialAllowanceQuantityBase
+  const isRequestedAllowanceUnlimited = isUnlimitedApproval(
+    requestedAllowanceQuantityBase
   );
   const isCurrentAllowanceUnlimited = isUnlimitedApproval(
-    currentAllowanceQuantityBase
+    allowanceQuantityBase
   );
   const [isAllowanceUnlimited, setIsAllowanceUnlimited] = useState(
     isCurrentAllowanceUnlimited
@@ -73,9 +72,9 @@ function CustomAllowanceForm({
       getCommonQuantity({
         asset,
         chain,
-        baseQuantity: initialAllowanceQuantityBase,
+        baseQuantity: requestedAllowanceQuantityBase,
       }),
-    [asset, chain, initialAllowanceQuantityBase]
+    [asset, chain, requestedAllowanceQuantityBase]
   );
   const currentAllowanceQuantityCommon = useMemo(
     () =>
@@ -84,9 +83,9 @@ function CustomAllowanceForm({
         : getCommonQuantity({
             asset,
             chain,
-            baseQuantity: currentAllowanceQuantityBase.toString(),
+            baseQuantity: allowanceQuantityBase.toString(),
           }),
-    [asset, chain, currentAllowanceQuantityBase, isCurrentAllowanceUnlimited]
+    [asset, chain, allowanceQuantityBase, isCurrentAllowanceUnlimited]
   );
 
   const assetPrice = asset.price?.value;
@@ -122,9 +121,9 @@ function CustomAllowanceForm({
   );
 
   const handleReset = () => {
-    setIsAllowanceUnlimited(isInitialAllowanceUnlimited);
+    setIsAllowanceUnlimited(isRequestedAllowanceUnlimited);
     setAllowanceQuantityCommon(
-      isInitialAllowanceUnlimited
+      isRequestedAllowanceUnlimited
         ? null
         : initialAllowanceQuantityCommon.toString()
     );
@@ -159,8 +158,8 @@ function CustomAllowanceForm({
           onSubmit(newAllowanceQuantityBase);
         } else {
           onSubmit(
-            isInitialAllowanceUnlimited
-              ? initialAllowanceQuantityBase
+            isRequestedAllowanceUnlimited
+              ? requestedAllowanceQuantityBase
               : UNLIMITED_APPROVAL_AMOUNT
           );
         }
@@ -339,21 +338,21 @@ function CustomAllowanceForm({
 export function CustomAllowanceView({
   address,
   chain,
-  singleAsset,
+  asset,
   allowanceQuantityBase,
+  requestedAllowanceQuantityBase,
   onChange,
 }: {
   address: string;
   chain: Chain;
-  singleAsset: NonNullable<AddressAction['content']>['single_asset'];
-  allowanceQuantityBase?: string;
+  asset?: Asset | null;
+  allowanceQuantityBase: string;
+  requestedAllowanceQuantityBase?: string;
   onChange: (amount: BigNumber) => void;
 }) {
-  invariant(singleAsset, 'singleAsset is required to set custom allowance');
-  const asset = getFungibleAsset(singleAsset.asset);
   invariant(
-    allowanceQuantityBase,
-    'allowanceQuantityBase is required to set custom allowance'
+    requestedAllowanceQuantityBase,
+    'asset is required to set custom allowance'
   );
   invariant(asset, 'asset is required to set custom allowance');
 
@@ -394,8 +393,12 @@ export function CustomAllowanceView({
         chain={chain}
         address={address}
         balance={balance}
-        initialAllowanceQuantityBase={new BigNumber(singleAsset.quantity)}
-        currentAllowanceQuantityBase={new BigNumber(allowanceQuantityBase)}
+        requestedAllowanceQuantityBase={
+          new BigNumber(requestedAllowanceQuantityBase)
+        }
+        allowanceQuantityBase={
+          new BigNumber(allowanceQuantityBase || requestedAllowanceQuantityBase)
+        }
         onSubmit={onChange}
       />
     </>

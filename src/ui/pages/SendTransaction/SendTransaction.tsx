@@ -55,6 +55,7 @@ import type { AddressAction } from 'defi-sdk';
 import type { TransactionAction } from 'src/modules/ethereum/transactions/describeTransaction';
 import { describeTransaction } from 'src/modules/ethereum/transactions/describeTransaction';
 import { CustomAllowanceView } from 'src/ui/components/CustomAllowanceView';
+import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
@@ -467,10 +468,6 @@ function SendTransactionContent({
     refetchOnWindowFocus: false,
   });
 
-  const [allowanceQuantityBase, setAllowanceQuantityBase] = useState(
-    localAddressAction?.content?.single_asset?.quantity
-  );
-
   const { data: interpretation, ...interpretQuery } = useQuery({
     queryKey: ['interpretTransaction', incomingTxWithGasAndFee, singleAddress],
     queryFn: () => {
@@ -484,17 +481,13 @@ function SendTransactionContent({
     refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
-    onSuccess(response) {
-      // There are cases when we are unable to detect the "approve" action locally.
-      // However, the interpreted address action might have the allowance value.
-      // In such cases, if we do not update the "allowance" value, it will remain undefined.
-      // Nevertheless, the user still needs to be able to change the allowance, so we must update it.
-      const quantity = response?.action?.content?.single_asset?.quantity;
-      if (quantity) {
-        setAllowanceQuantityBase(quantity);
-      }
-    },
   });
+
+  const requestedAllowanceQuantityBase =
+    interpretation?.action?.content?.single_asset?.quantity ||
+    localAddressAction?.content?.single_asset?.quantity;
+
+  const [allowanceQuantityBase, setAllowanceQuantityBase] = useState('');
 
   const interpretAddressAction = interpretation?.action;
 
@@ -541,7 +534,9 @@ function SendTransactionContent({
             transactionAction={transactionAction}
             addressAction={addressAction}
             singleAsset={singleAsset}
-            allowanceQuantityBase={allowanceQuantityBase}
+            allowanceQuantityBase={
+              allowanceQuantityBase || requestedAllowanceQuantityBase
+            }
             interpretQuery={interpretQuery}
             incomingTransaction={incomingTransaction}
             incomingTxWithGasAndFee={incomingTxWithGasAndFee}
@@ -560,7 +555,8 @@ function SendTransactionContent({
         {view === View.customAllowance ? (
           <CustomAllowanceView
             address={wallet.address}
-            singleAsset={singleAsset}
+            asset={getFungibleAsset(singleAsset?.asset)}
+            requestedAllowanceQuantityBase={requestedAllowanceQuantityBase}
             allowanceQuantityBase={allowanceQuantityBase}
             chain={chain}
             onChange={handleChangeAllowance}
