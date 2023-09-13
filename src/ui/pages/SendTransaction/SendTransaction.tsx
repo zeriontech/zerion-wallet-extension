@@ -225,10 +225,12 @@ function TransactionDefaultView({
         });
       }
 
+      const txToSign = applyConfiguration(tx, configuration, chainGasPrices);
+
       const feeValueCommon = feeValueCommonRef.current || null;
 
       return await walletPort.request('signAndSendTransaction', [
-        tx,
+        txToSign,
         { initiator: origin, feeValueCommon },
       ]);
     },
@@ -384,13 +386,7 @@ function TransactionDefaultView({
               disabled={signMutation.isLoading}
               onClick={() => {
                 try {
-                  signAndSendTransaction(
-                    applyConfiguration(
-                      incomingTransaction,
-                      configuration,
-                      chainGasPrices
-                    )
-                  );
+                  signAndSendTransaction(incomingTransaction);
                 } catch (error) {
                   showErrorBoundary(error);
                 }
