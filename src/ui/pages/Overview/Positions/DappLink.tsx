@@ -5,30 +5,34 @@ import { Surface } from 'src/ui/ui-kit/Surface';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
-import { invariant } from 'src/shared/invariant';
 import ArrowLeftTop from 'jsx:src/ui/assets/arrow-left-top.svg';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import * as styles from './styles.module.css';
 
-export function DappLink({ dappInfo }: { dappInfo: AddressPositionDappInfo }) {
+export function DappLink({
+  dappInfo,
+  style,
+}: {
+  dappInfo: AddressPositionDappInfo;
+  style?: React.CSSProperties;
+}) {
   const { url: rawUrl } = dappInfo;
-  invariant(rawUrl, 'Dapp url must exists for dapp link to display');
+  const url = useMemo(() => (rawUrl ? prepareForHref(rawUrl) : null), [rawUrl]);
 
-  const url = useMemo(() => prepareForHref(rawUrl), [rawUrl]);
-  invariant(url, `Dapp url for ${dappInfo.id} must be correct`);
+  if (!url) {
+    return null;
+  }
 
   return (
     <Surface
-      padding={'8px 12px'}
+      padding="8px 12px"
       className={styles.link}
       as={UnstyledAnchor}
       href={url.href}
       rel="noopener noreferrer"
-      onClick={(e) => {
-        e.preventDefault();
-        openInNewWindow(e);
-      }}
+      onClick={openInNewWindow}
+      style={style}
     >
       <HStack gap={24} justifyContent="space-between" alignItems="center">
         <VStack gap={0}>

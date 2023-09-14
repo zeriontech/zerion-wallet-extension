@@ -600,9 +600,7 @@ function PositionList({
               {index === 0 && firstHeaderItemEnd ? firstHeaderItemEnd : null}
             </HStack>
             {dappInfo.url ? (
-              <div style={{ paddingInline: 16 }}>
-                <DappLink dappInfo={dappInfo} />
-              </div>
+              <DappLink dappInfo={dappInfo} style={{ marginInline: 16 }} />
             ) : null}
             <SurfaceList
               style={{ position: 'relative', paddingBlock: 0 }}
