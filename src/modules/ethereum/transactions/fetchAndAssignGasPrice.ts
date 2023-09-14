@@ -71,7 +71,7 @@ export async function prepareGasAndNetworkFee<T extends IncomingTransaction>(
       draft.gasLimit = gas;
     }
     if (networkFeeInfo) {
-      assignChainGasPrice(transaction, networkFeeInfo);
+      assignChainGasPrice(draft, networkFeeInfo);
     }
   });
 }
