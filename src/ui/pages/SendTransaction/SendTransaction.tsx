@@ -211,11 +211,10 @@ function SendTransactionContent({
         : null;
     },
     enabled: Boolean(incomingTxWithGasAndFee),
+    keepPreviousData: true,
+    staleTime: 20000,
     suspense: false,
     retry: 1,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-    refetchOnWindowFocus: false,
   });
 
   const interpretAddressAction = interpretation?.action;
