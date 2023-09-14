@@ -6,9 +6,6 @@ import { baseToCommon } from 'src/shared/units/convert';
 import { getDecimals } from 'src/modules/networks/asset';
 import { createChain } from 'src/modules/networks/Chain';
 
-export const getProtocolIconURL = (protocol: string) =>
-  `https://protocol-icons.s3.amazonaws.com/${protocol.replace(/\s/g, '+')}.png`;
-
 export type ProtocolFrameColumns = 'price' | 'apy' | 'balance' | 'value' | '';
 
 export const positionTypeToStringMap: Record<PositionType, string> = {

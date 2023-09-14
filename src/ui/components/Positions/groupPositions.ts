@@ -5,7 +5,7 @@ import type { AddressPosition } from 'defi-sdk';
 import groupBy from 'lodash/groupBy';
 import type { Chain } from 'src/modules/networks/Chain';
 import { getPositionValue, getFullPositionsValue } from './helpers';
-import { DEFAULT_NAME, DEFAULT_PROTOCOL } from './types';
+import { DEFAULT_NAME, DEFAULT_PROTOCOL_ID } from './types';
 
 const DEFAULT_PARENT_ID = 'root';
 
@@ -16,10 +16,10 @@ export function groupPositionsByName(positions?: AddressPosition[]) {
   );
 }
 
-export function groupPositionsByProtocol(positions?: AddressPosition[]) {
+export function groupPositionsByDapp(positions?: AddressPosition[]) {
   return groupBy<AddressPosition>(
     positions || [],
-    (position) => position.protocol || DEFAULT_PROTOCOL
+    (position) => position.dapp?.id || DEFAULT_PROTOCOL_ID
   );
 }
 

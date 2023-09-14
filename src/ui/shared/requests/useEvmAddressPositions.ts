@@ -24,6 +24,7 @@ function createAddressPosition({
     name: 'Asset',
     quantity: balance,
     protocol: null,
+    dapp: null,
     type: 'asset',
     is_displayable: true,
     asset: {
