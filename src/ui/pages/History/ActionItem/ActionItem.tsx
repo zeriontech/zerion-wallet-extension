@@ -25,8 +25,6 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
-import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
-import { useInterpretTransaction } from 'src/modules/ethereum/transactions/interpret';
 import { walletPort } from 'src/ui/shared/channels';
 import { ActionDetailedView } from '../ActionDetailedView';
 import { AssetLink } from '../ActionDetailedView/components/AssetLink';
@@ -41,10 +39,7 @@ import {
   TRANSACTION_ICON_SIZE,
 } from './TransactionTypeIcon';
 import * as styles from './styles.module.css';
-import {
-  isDnaMintAction,
-  transactionObjectToInterpretPayload,
-} from './helpers';
+import { isDnaMintAction } from './helpers';
 
 function ActionTitle({ action }: { action: AnyAddressAction }) {
   const isMintingDna = isDnaMintAction(action);
@@ -335,54 +330,26 @@ function ActionItemLocalWrapper({
   action: LocalAddressAction;
   networks: Networks;
 }) {
-  const { singleAddressNormalized } = useAddressParams();
-  const localTransactions = useLocalAddressTransactions({
-    address: singleAddressNormalized,
-  });
   const { hash } = action.transaction;
 
-  const { data: localInterpretation, isLoading } = useQuery({
+  const { data: localInterpretation } = useQuery({
     queryKey: ['getLocalActionInterpretation', hash],
-    queryFn: async () =>
-      hash
-        ? walletPort.request('getLocalActionInterpretation', {
-            hash,
-          })
-        : null,
+    queryFn: async () => {
+      if (!hash) {
+        return null;
+      }
+      const interpretation = await walletPort.request(
+        'getLocalActionInterpretation',
+        { hash }
+      );
+      if (interpretation) {
+        interpretation.action.transaction.status = 'pending';
+      }
+      return interpretation;
+    },
   });
 
-  const localTransaction = useMemo(() => {
-    const localTransactionRaw = localTransactions.find(
-      (transaction) => transaction.hash === action.transaction.hash
-    );
-    return localTransactionRaw
-      ? transactionObjectToInterpretPayload(localTransactionRaw)
-      : null;
-  }, [localTransactions, action]);
-
-  const isSupportedByBackend = networks.isSupportedByBackend(
-    networks.getChainById(localTransaction?.transaction.chainId || '')
-  );
-
-  const { value } = useInterpretTransaction(
-    {
-      address: singleAddressNormalized,
-      chain_id: localTransaction?.transaction.chainId || '',
-      transaction: localTransaction?.transaction,
-      currency: 'usd',
-    },
-    {
-      method: 'stream',
-      enabled:
-        Boolean(localTransaction) &&
-        isSupportedByBackend &&
-        !isLoading &&
-        !localInterpretation,
-    }
-  );
-
-  const displayedAction =
-    localInterpretation?.action || value?.action || action;
+  const displayedAction = localInterpretation?.action || action;
 
   return <ActionItemView action={displayedAction} networks={networks} />;
 }

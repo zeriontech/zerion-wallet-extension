@@ -1,4 +1,4 @@
-import { client, createDomainHook } from 'defi-sdk';
+import { client } from 'defi-sdk';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 import type { TypedData } from '../message-signing/TypedData';
 import type { IncomingTransactionWithChainId } from '../types/IncomingTransaction';
@@ -76,16 +76,6 @@ export function interpretTransaction(
     }),
   ]);
 }
-
-export const useInterpretTransaction = createDomainHook<
-  InterpretTransactionPayload,
-  InterpretResponse,
-  typeof namespace,
-  typeof scope
->({
-  namespace,
-  scope,
-});
 
 export function interpretSignature({
   address,
