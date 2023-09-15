@@ -57,10 +57,12 @@ import { invariant } from 'src/shared/invariant';
 import { getEthersError } from 'src/shared/errors/getEthersError';
 import type { DappSecurityStatus } from 'src/modules/phishing-defence/phishing-defence-service';
 import { phishingDefenceService } from 'src/modules/phishing-defence/phishing-defence-service';
+import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
 import { isSessionCredentials } from '../account/Credentials';
+import { interpretationStore } from '../transactions/TransactionService';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import { SeedType } from './model/SeedType';
@@ -697,6 +699,12 @@ export class Wallet {
     this.setChainForOrigin(createChain(chain), origin);
   }
 
+  async getLocalActionInterpretation({
+    params: { hash },
+  }: WalletMethodParams<{ hash: string }>) {
+    return interpretationStore.getInterpretationByHash(hash);
+  }
+
   /** @deprecated */
   getChainId() {
     throw new Error(
@@ -769,10 +777,12 @@ export class Wallet {
       context,
       initiator,
       feeValueCommon,
+      interpretation,
     }: {
       context: Partial<ChannelContext> | undefined;
       initiator: string;
       feeValueCommon: string | null;
+      interpretation?: InterpretResponse | null;
     }
   ): Promise<ethers.providers.TransactionResponse> {
     this.verifyInternalOrigin(context);
@@ -826,6 +836,9 @@ export class Wallet {
         initiator,
         feeValueCommon,
       });
+      if (interpretation) {
+        interpretationStore.registerInterpretation(safeTx.hash, interpretation);
+      }
       return safeTx;
     } catch (error) {
       throw getEthersError(error);
@@ -836,11 +849,18 @@ export class Wallet {
     params,
     context,
   }: WalletMethodParams<
-    [IncomingTransaction, { initiator: string; feeValueCommon: string | null }]
+    [
+      IncomingTransaction,
+      {
+        initiator: string;
+        feeValueCommon: string | null;
+        interpretation?: InterpretResponse | null;
+      }
+    ]
   >) {
     this.verifyInternalOrigin(context);
     this.ensureStringOrigin(context);
-    const [transaction, { initiator, feeValueCommon }] = params;
+    const [transaction, { initiator, feeValueCommon, interpretation }] = params;
     if (!transaction) {
       throw new InvalidParams();
     }
@@ -848,6 +868,7 @@ export class Wallet {
       context,
       initiator,
       feeValueCommon,
+      interpretation,
     });
   }
 

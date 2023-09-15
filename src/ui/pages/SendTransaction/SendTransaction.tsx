@@ -237,7 +237,11 @@ function SendTransactionContent({
       const feeValueCommon = feeValueCommonRef.current || null;
       return await walletPort.request('signAndSendTransaction', [
         transaction,
-        { initiator: origin, feeValueCommon },
+        {
+          initiator: origin,
+          feeValueCommon,
+          interpretation,
+        },
       ]);
     },
     // The value returned by onMutate can be accessed in

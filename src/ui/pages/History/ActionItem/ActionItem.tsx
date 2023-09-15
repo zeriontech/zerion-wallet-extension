@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import type { AddressAction } from 'defi-sdk';
+import { useQuery } from '@tanstack/react-query';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Media } from 'src/ui/ui-kit/Media';
@@ -26,6 +27,7 @@ import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import { useInterpretTransaction } from 'src/modules/ethereum/transactions/interpret';
+import { walletPort } from 'src/ui/shared/channels';
 import { ActionDetailedView } from '../ActionDetailedView';
 import { AssetLink } from '../ActionDetailedView/components/AssetLink';
 import { isUnlimitedApproval } from '../isUnlimitedApproval';
@@ -337,6 +339,18 @@ function ActionItemLocalWrapper({
   const localTransactions = useLocalAddressTransactions({
     address: singleAddressNormalized,
   });
+  const { hash } = action.transaction;
+
+  const { data: localInterpretation, isLoading } = useQuery({
+    queryKey: ['getLocalActionInterpretation', hash],
+    queryFn: async () =>
+      hash
+        ? walletPort.request('getLocalActionInterpretation', {
+            hash,
+          })
+        : null,
+  });
+
   const localTransaction = useMemo(() => {
     const localTransactionRaw = localTransactions.find(
       (transaction) => transaction.hash === action.transaction.hash
@@ -359,26 +373,18 @@ function ActionItemLocalWrapper({
     },
     {
       method: 'stream',
-      enabled: Boolean(localTransaction) && isSupportedByBackend,
-      // we don't want to send these expensive requests more then needed
-      // we've already sent this requerst from SendTransaction screen before
-      cachePolicy: 'cache-only',
+      enabled:
+        Boolean(localTransaction) &&
+        isSupportedByBackend &&
+        !isLoading &&
+        !localInterpretation,
     }
   );
 
-  const mergedAction = useMemo<LocalAddressAction>(() => {
-    if (!value?.action) {
-      return action;
-    }
-    return {
-      ...action,
-      content: value.action.content,
-      label: value.action.label,
-      type: value.action.type,
-    };
-  }, [action, value]);
+  const displayedAction =
+    localInterpretation?.action || value?.action || action;
 
-  return <ActionItemView action={mergedAction} networks={networks} />;
+  return <ActionItemView action={displayedAction} networks={networks} />;
 }
 
 export function ActionItem({

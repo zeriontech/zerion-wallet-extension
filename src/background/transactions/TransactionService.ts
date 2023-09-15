@@ -2,6 +2,7 @@ import { ethers } from 'ethers';
 import { PersistentStore } from 'src/modules/persistent-store';
 import { produce } from 'immer';
 import type {
+  InterpretResponse,
   StoredTransactions,
   TransactionObject,
 } from 'src/modules/ethereum/transactions/types';
@@ -82,6 +83,20 @@ export class TransactionService {
     });
   }
 }
+// to be replaced with backend api for pending actions
+class InterpretationStore {
+  private interpretationStore: Record<string, InterpretResponse> = {};
+
+  registerInterpretation(hash: string, interpretation: InterpretResponse) {
+    this.interpretationStore[hash] = interpretation;
+  }
+
+  getInterpretationByHash(hash: string): InterpretResponse | undefined {
+    return this.interpretationStore[hash];
+  }
+}
+
+export const interpretationStore = new InterpretationStore();
 
 function testAddTransaction() {
   emitter.emit('transactionSent', {
