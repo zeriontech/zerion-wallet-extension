@@ -40,7 +40,7 @@ interface DescriberContext {
   networks: Networks;
 }
 
-function amountToNumber(value: BigNumber.Value | ethers.BigNumberish = 0) {
+function amountToNumber(value: BigNumber.Value = 0) {
   return toNumber(value);
 }
 
@@ -172,7 +172,7 @@ function describeSend(
       assetId: network?.native_asset?.id || null,
       assetAddress: network?.native_asset?.address || null,
       receiverAddress: transaction.to,
-      amount: amountToNumber(transaction.value),
+      amount: amountToNumber(transaction.value?.toString()),
     };
   }
 
