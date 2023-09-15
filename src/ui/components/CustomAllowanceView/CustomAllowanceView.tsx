@@ -12,6 +12,7 @@ import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 import type { Asset } from 'defi-sdk';
 import { useAddressPositions } from 'defi-sdk';
 import BigNumber from 'bignumber.js';
+import type { Parsers } from 'src/ui/shared/form-data';
 import { collectData } from 'src/ui/shared/form-data';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
@@ -33,14 +34,16 @@ import {
 import { NavigationBar } from 'src/ui/pages/SignInWithEthereum/NavigationBar';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 
-function parseAmount(untypedValue: unknown): BigNumber | null {
-  const value = untypedValue as string;
-  if (!value) {
-    return null;
-  } else {
-    return new BigNumber(value);
-  }
-}
+const parsers: Parsers = {
+  amount: (untypedValue: unknown): BigNumber | null => {
+    const value = untypedValue as string;
+    if (value === '') {
+      return null;
+    } else {
+      return new BigNumber(value);
+    }
+  },
+};
 
 function CustomAllowanceForm({
   asset,
@@ -148,7 +151,7 @@ function CustomAllowanceForm({
           if (!form.checkValidity()) {
             return;
           }
-          const formData = collectData(form, { amount: parseAmount });
+          const formData = collectData(form, parsers);
           const newAllowanceQuantityCommon = formData.amount as BigNumber;
           const newValue = getBaseQuantity({
             asset,
@@ -375,12 +378,14 @@ export function CustomAllowanceView({
       { enabled: Boolean(asset) }
     );
 
-  const positions = positionsResponse?.positions;
-  const positionsFiltered = useMemo(
-    () => positions?.filter((position) => position.chain === chain.toString()),
-    [chain, positions]
+  const positionQuantity = useMemo(
+    () =>
+      positionsResponse?.positions.find(
+        (position) => position.chain === chain.toString()
+      )?.quantity,
+    [chain, positionsResponse?.positions]
   );
-  const positionQuantity = positionsFiltered?.[0]?.quantity;
+
   const balance = useMemo(
     () =>
       positionQuantity && asset
