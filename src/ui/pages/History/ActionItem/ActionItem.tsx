@@ -33,8 +33,8 @@ import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
+import { AssetLink } from 'src/ui/components/AssetLink';
 import { ActionDetailedView } from '../ActionDetailedView';
-import { AssetLink } from '../ActionDetailedView/components/AssetLink';
 import { isUnlimitedApproval } from '../isUnlimitedApproval';
 import {
   HistoryItemValue,

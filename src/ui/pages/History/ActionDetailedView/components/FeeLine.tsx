@@ -6,9 +6,9 @@ import type { Networks } from 'src/modules/networks/Networks';
 import { baseToCommon } from 'src/shared/units/convert';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
+import { AssetLink } from 'src/ui/components/AssetLink';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { AssetLink } from './AssetLink';
 
 export function FeeLine({
   action,

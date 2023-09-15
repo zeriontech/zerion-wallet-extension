@@ -30,7 +30,10 @@ export type LocalAddressAction = Omit<AddressAction, 'transaction'> & {
   local: true;
 };
 
-type IncomingAddressAction = Omit<AddressAction, 'transaction' | 'id'> & {
+export type IncomingAddressAction = Omit<
+  AddressAction,
+  'transaction' | 'id'
+> & {
   id: null;
   transaction: Omit<AddressAction['transaction'], 'hash' | 'nonce'> & {
     hash: null;
@@ -117,7 +120,12 @@ async function createActionContent(
         address: action.assetAddress,
       });
       return asset
-        ? { single_asset: { asset: { fungible: asset }, quantity: '' } }
+        ? {
+            single_asset: {
+              asset: { fungible: asset },
+              quantity: action.amount.toString(),
+            },
+          }
         : null;
     }
   }
@@ -179,15 +187,15 @@ export async function incomingTxToIncomingAddressAction(
   transactionObject: {
     transaction: IncomingTransactionWithChainId & { nonce?: number };
   } & Pick<TransactionObject, 'hash' | 'receipt' | 'timestamp' | 'dropped'>,
+  transactionAction: TransactionAction,
   networks: Networks
 ): Promise<IncomingAddressAction> {
   const { transaction, timestamp } = transactionObject;
   const chain = networks.getChainById(
     ethers.utils.hexValue(transaction.chainId)
   );
-  const action = describeTransaction(transaction, { networks, chain });
-  const label = createActionLabel(transaction, action);
-  const content = await createActionContent(action);
+  const label = createActionLabel(transaction, transactionAction);
+  const content = await createActionContent(transactionAction);
   return {
     id: null,
     transaction: {
@@ -200,8 +208,8 @@ export async function incomingTxToIncomingAddressAction(
     datetime: new Date(timestamp ?? Date.now()).toISOString(),
     label,
     type: {
-      display_value: capitalize(action.type),
-      value: action.type,
+      display_value: capitalize(transactionAction.type),
+      value: transactionAction.type,
     },
     content,
   };

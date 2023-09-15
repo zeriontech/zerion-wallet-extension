@@ -1,19 +1,19 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { NFTAsset, Asset, Direction, ActionTransfer } from 'defi-sdk';
 import { minus } from 'src/ui/shared/typography';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import type { Chain } from 'src/modules/networks/Chain';
 import { getCommonQuantity } from 'src/modules/networks/asset';
-import { getAssetQuantity } from 'src/modules/networks/asset';
 import {
   getFungibleAsset,
   getNftAsset,
 } from 'src/modules/ethereum/transactions/actionAsset';
-import { AssetQuantityValue } from 'src/ui/components/AssetQuantityValue';
 import type BigNumber from 'bignumber.js';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
-import { AssetLink, NFTLink } from '../ActionDetailedView/components/AssetLink';
+import { AssetQuantity } from 'src/ui/components/AssetQuantity';
+import { AssetLink } from 'src/ui/components/AssetLink';
+import { NFTLink } from 'src/ui/components/NFTLink';
 
 function getSign(
   decimaledValue?: number | BigNumber | string,
@@ -42,11 +42,15 @@ function HistoryTokenValue({
 }) {
   const tokenTitle = asset.symbol?.toUpperCase() || asset.name;
   const sign = getSign(value, direction);
-  const quantity = getAssetQuantity({
-    asset,
-    chain,
-    quantity: value,
-  });
+  const commonQuantity = useMemo(
+    () =>
+      getCommonQuantity({
+        asset,
+        chain,
+        baseQuantity: value,
+      }),
+    [chain, asset, value]
+  );
   const formatted = formatTokenValue(value);
 
   return (
@@ -61,7 +65,7 @@ function HistoryTokenValue({
       }}
       title={`${sign}${formatted} ${tokenTitle}`}
     >
-      <AssetQuantityValue sign={sign} quantity={quantity} />
+      <AssetQuantity sign={sign} commonQuantity={commonQuantity} />
       {withLink ? (
         <AssetLink asset={asset} address={address} />
       ) : (
@@ -179,7 +183,7 @@ export function TransactionCurrencyValue({
   const commonQuantity = getCommonQuantity({
     asset,
     chain,
-    quantity: transfer.quantity,
+    baseQuantity: transfer.quantity,
   });
   const value = formatCurrencyValue(
     commonQuantity.times(transfer.price || 0),

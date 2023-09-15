@@ -679,6 +679,31 @@ export class Wallet {
     return getRemoteConfigValue('user_can_create_initial_wallet');
   }
 
+  async createApprovalTransaction({
+    context,
+    params: { initiator, contractAddress, allowanceQuantityBase, spender },
+  }: WalletMethodParams<{
+    initiator: string;
+    contractAddress: string;
+    allowanceQuantityBase: string;
+    spender: string;
+  }>) {
+    this.verifyInternalOrigin(context);
+
+    const chainId = await this.getChainIdForOrigin({
+      origin: new URL(initiator).origin,
+    });
+    const signer = await this.getSigner(chainId);
+    const abi = [
+      'function approve(address, uint256) public returns (bool success)',
+    ];
+    const contract = new ethers.Contract(contractAddress, abi, signer);
+    return await contract.populateTransaction.approve(
+      spender,
+      allowanceQuantityBase
+    );
+  }
+
   async switchChainForOrigin({
     params: { chain, origin },
     context,
@@ -800,11 +825,11 @@ export class Wallet {
       console.warn('chainId field is missing from transaction object');
       incomingTransaction.chainId = chainId;
     }
+
     const networks = await networksStore.load();
+    const signer = await this.getSigner(chainId);
     const prepared = prepareTransaction(incomingTransaction);
     const transaction = await prepareGasAndNetworkFee(prepared, networks);
-
-    const signer = await this.getSigner(chainId);
 
     try {
       const transactionResponse = await signer.sendTransaction({
@@ -827,7 +852,13 @@ export class Wallet {
     params,
     context,
   }: WalletMethodParams<
-    [IncomingTransaction, { initiator: string; feeValueCommon: string | null }]
+    [
+      IncomingTransaction,
+      {
+        initiator: string;
+        feeValueCommon: string | null;
+      }
+    ]
   >) {
     this.verifyInternalOrigin(context);
     this.ensureStringOrigin(context);

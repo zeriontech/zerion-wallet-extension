@@ -3,6 +3,7 @@ import { capitalize } from 'capitalize-ts';
 import { ethers } from 'ethers';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import type { IncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { incomingTxToIncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type {
   IncomingTransaction,
@@ -39,17 +40,22 @@ import { networksStore } from 'src/modules/networks/networks-store.client';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
-import CopyIcon from 'jsx:src/ui/assets/copy.svg';
-import CheckIcon from 'jsx:src/ui/assets/check.svg';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { useErrorBoundary } from 'src/ui/shared/useErrorBoundary';
 import { setURLSearchParams } from 'src/ui/shared/setURLSearchParams';
 import { InterpretLoadingState } from 'src/ui/components/InterpretLoadingState';
 import { AddressActionDetails } from 'src/ui/components/address-action/AddressActionDetails';
 import { PageBottom } from 'src/ui/components/PageBottom';
-import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { interpretTransaction } from 'src/modules/ethereum/transactions/interpret';
 import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/PhishingDefenceStatus';
+import type BigNumber from 'bignumber.js';
+import { Content, RenderArea } from 'react-area';
+import type { Networks } from 'src/modules/networks/Networks';
+import type { AddressAction } from 'defi-sdk';
+import type { TransactionAction } from 'src/modules/ethereum/transactions/describeTransaction';
+import { describeTransaction } from 'src/modules/ethereum/transactions/describeTransaction';
+import { CustomAllowanceView } from 'src/ui/components/CustomAllowanceView';
+import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
@@ -147,36 +153,271 @@ const DEFAULT_CONFIGURATION: CustomConfiguration = {
 enum View {
   default = 'default',
   advanced = 'advanced',
+  customAllowance = 'customAllowance',
+}
+
+function TransactionDefaultView({
+  networks,
+  chain,
+  origin,
+  wallet,
+  addressAction,
+  transactionAction,
+  singleAsset,
+  allowanceQuantityBase,
+  interpretQuery,
+  incomingTransaction,
+  incomingTxWithGasAndFee,
+  onReject,
+}: {
+  networks: Networks;
+  chain: Chain;
+  origin: string;
+  wallet: BareWallet;
+  addressAction: AddressAction | IncomingAddressAction;
+  transactionAction: TransactionAction;
+  singleAsset: NonNullable<AddressAction['content']>['single_asset'];
+  allowanceQuantityBase?: string;
+  interpretQuery: {
+    isLoading: boolean;
+    isError: boolean;
+  };
+  incomingTransaction: IncomingTransaction;
+  incomingTxWithGasAndFee?: IncomingTransactionWithChainId | null;
+  onReject: () => void;
+}) {
+  const navigate = useNavigate();
+  const { singleAddress } = useAddressParams();
+  const [params] = useSearchParams();
+  const next = params.get('next');
+  const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
+  const showErrorBoundary = useErrorBoundary();
+  const originForHref = useMemo(() => prepareForHref(origin), [origin]);
+
+  const { data: chainGasPrices } = useGasPrices(chain);
+  const [advancedViewHref, allowanceViewHref] = useMemo(
+    () =>
+      [View.advanced, View.customAllowance].map(
+        (view) => `?${setURLSearchParams(params, { view }).toString()}`
+      ),
+    [params]
+  );
+
+  const feeValueCommonRef = useRef<string>(); /** for analytics only */
+  const handleFeeValueCommonReady = useCallback((value: string) => {
+    feeValueCommonRef.current = value;
+  }, []);
+
+  const {
+    mutate: signAndSendTransaction,
+    context,
+    ...signMutation
+  } = useMutation({
+    mutationFn: async (transaction: IncomingTransaction) => {
+      let tx = transaction;
+
+      if (transactionAction.type === 'approve' && allowanceQuantityBase) {
+        tx = await walletPort.request('createApprovalTransaction', {
+          initiator: origin,
+          contractAddress: transactionAction.contractAddress,
+          allowanceQuantityBase,
+          spender: transactionAction.spenderAddress,
+        });
+      }
+
+      const txToSign = applyConfiguration(tx, configuration, chainGasPrices);
+
+      const feeValueCommon = feeValueCommonRef.current || null;
+
+      return await walletPort.request('signAndSendTransaction', [
+        txToSign,
+        { initiator: origin, feeValueCommon },
+      ]);
+    },
+    // The value returned by onMutate can be accessed in
+    // a global onError handler (src/ui/shared/requests/queryClient.ts)
+    // TODO: refactor to just emit error directly from the mutationFn
+    onMutate: () => 'sendTransaction',
+    onSuccess: (tx) => {
+      const windowId = params.get('windowId');
+      invariant(windowId, 'windowId get-parameter is required');
+      windowPort.confirm(windowId, tx.hash);
+      if (next) {
+        navigate(next);
+      }
+    },
+  });
+
+  const recipientAddress = addressAction.label?.display_value.wallet_address;
+  const actionTransfers = addressAction.content?.transfers;
+
+  return (
+    <>
+      <PageTop />
+      <div style={{ display: 'grid', placeItems: 'center' }}>
+        <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
+          {addressAction.type.display_value}
+        </UIText>
+        <UIText kind="small/regular" color="var(--neutral-500)">
+          {originForHref ? (
+            <TextAnchor
+              // Open URL in a new _window_ so that extension UI stays open and visible
+              onClick={openInNewWindow}
+              href={originForHref.href}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {originForHref.hostname}
+            </TextAnchor>
+          ) : (
+            'Unknown Initiator'
+          )}
+        </UIText>
+        <Spacer height={8} />
+        <HStack gap={8} alignItems="center">
+          <WalletAvatar
+            address={wallet.address}
+            size={20}
+            active={false}
+            borderRadius={4}
+          />
+          <UIText kind="small/regular">
+            <WalletDisplayName wallet={wallet} />
+          </UIText>
+        </HStack>
+      </div>
+      <Spacer height={24} />
+      <VStack gap={16}>
+        <AddressActionDetails
+          recipientAddress={recipientAddress}
+          addressAction={addressAction}
+          chain={chain}
+          networks={networks}
+          wallet={wallet}
+          actionTransfers={actionTransfers}
+          singleAsset={singleAsset}
+          allowanceQuantityBase={allowanceQuantityBase}
+          allowanceViewHref={allowanceViewHref}
+        />
+        {interpretQuery.isLoading ? (
+          <InterpretLoadingState />
+        ) : interpretQuery.isError ? (
+          <UIText kind="small/regular" color="var(--notice-600)">
+            Unable to analyze the details of the transaction
+          </UIText>
+        ) : null}
+        <Button kind="regular" as={UnstyledLink} to={advancedViewHref}>
+          Advanced View
+        </Button>
+      </VStack>
+      <Spacer height={16} />
+      <PhishingDefenceStatus origin={origin} />
+      {incomingTxWithGasAndFee ? (
+        <>
+          <ErrorBoundary renderError={() => null}>
+            <React.Suspense fallback={null}>
+              <TransactionWarning
+                address={singleAddress}
+                transaction={incomingTxWithGasAndFee}
+                chain={chain}
+                networkFeeConfiguration={configuration.networkFee}
+              />
+            </React.Suspense>
+          </ErrorBoundary>
+          <div style={{ marginTop: 'auto' }}>
+            <ErrorBoundary
+              renderError={() => (
+                <UIText kind="body/regular">
+                  <span style={{ display: 'inline-block' }}>
+                    <WarningIcon />
+                  </span>{' '}
+                  Failed to load network fee
+                </UIText>
+              )}
+            >
+              <React.Suspense
+                fallback={
+                  <div style={{ display: 'flex', justifyContent: 'end' }}>
+                    <CircleSpinner />
+                  </div>
+                }
+              >
+                <TransactionConfiguration
+                  transaction={incomingTxWithGasAndFee}
+                  from={wallet.address}
+                  chain={chain}
+                  onFeeValueCommonReady={handleFeeValueCommonReady}
+                  configuration={configuration}
+                  onConfigurationChange={setConfiguration}
+                />
+              </React.Suspense>
+            </ErrorBoundary>
+          </div>
+        </>
+      ) : null}
+      <Content name="sign-transaction-footer">
+        <VStack
+          style={{
+            textAlign: 'center',
+          }}
+          gap={8}
+        >
+          <UIText kind="body/regular" color="var(--negative-500)">
+            {signMutation.isError
+              ? errorToMessage(signMutation.error as SendTransactionError)
+              : null}
+          </UIText>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: 8,
+            }}
+          >
+            <Button
+              ref={focusNode}
+              kind="regular"
+              type="button"
+              onClick={onReject}
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={signMutation.isLoading}
+              onClick={() => {
+                try {
+                  signAndSendTransaction(incomingTransaction);
+                } catch (error) {
+                  showErrorBoundary(error);
+                }
+              }}
+            >
+              {signMutation.isLoading ? 'Sending...' : 'Confirm'}
+            </Button>
+          </div>
+        </VStack>
+      </Content>
+    </>
+  );
 }
 
 function SendTransactionContent({
   transactionStringified,
   origin,
   wallet,
-  next,
 }: {
   transactionStringified: string;
   origin: string;
   wallet: BareWallet;
-  next: string | null;
 }) {
   const [params] = useSearchParams();
+  const navigate = useNavigate();
   const { singleAddress } = useAddressParams();
   const incomingTransaction = useMemo(
     () => JSON.parse(transactionStringified) as IncomingTransaction,
     [transactionStringified]
   );
   const { networks } = useNetworks();
-  const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
-  const navigate = useNavigate();
-  const showErrorBoundary = useErrorBoundary();
-  const handleReject = () => {
-    const windowId = params.get('windowId');
-    invariant(windowId, 'windowId get-parameter is required');
-    windowPort.reject(windowId);
-    navigate(-1);
-  };
-
   const { incomingTxWithChainId, incomingTxWithGasAndFee } = usePreparedTx(
     incomingTransaction,
     origin
@@ -184,18 +425,38 @@ function SendTransactionContent({
 
   const transaction = incomingTxWithGasAndFee || incomingTxWithChainId;
 
+  const chain =
+    transaction && networks
+      ? networks.getChainById(ethers.utils.hexValue(transaction.chainId))
+      : null;
+
+  const transactionAction =
+    transaction && networks && chain
+      ? describeTransaction(transaction, {
+          networks,
+          chain,
+        })
+      : null;
+
   const { data: localAddressAction, ...localAddressActionQuery } = useQuery({
-    queryKey: ['incomingTxToIncomingAddressAction', transaction, networks],
+    queryKey: [
+      'incomingTxToIncomingAddressAction',
+      transaction,
+      transactionAction,
+      networks,
+    ],
     queryFn: () => {
-      return transaction && networks
+      return transaction && networks && transactionAction
         ? incomingTxToIncomingAddressAction(
             { transaction, hash: '', timestamp: 0 },
+            transactionAction,
             networks
           )
         : null;
     },
     keepPreviousData: true,
-    enabled: Boolean(transaction) && Boolean(networks),
+    enabled:
+      Boolean(transaction) && Boolean(networks) && Boolean(transactionAction),
     useErrorBoundary: true,
     retry: false,
     refetchOnMount: false,
@@ -217,74 +478,38 @@ function SendTransactionContent({
     retry: 1,
   });
 
+  const requestedAllowanceQuantityBase =
+    interpretation?.action?.content?.single_asset?.quantity ||
+    localAddressAction?.content?.single_asset?.quantity;
+
+  const [allowanceQuantityBase, setAllowanceQuantityBase] = useState('');
+
   const interpretAddressAction = interpretation?.action;
 
-  const feeValueCommonRef = useRef<string>(); /** for analytics only */
-  const handleFeeValueCommonReady = useCallback((value: string) => {
-    feeValueCommonRef.current = value;
-  }, []);
-
-  const {
-    mutate: signAndSendTransaction,
-    context,
-    ...signMutation
-  } = useMutation({
-    mutationFn: async (transaction: IncomingTransaction) => {
-      const feeValueCommon = feeValueCommonRef.current || null;
-      return await walletPort.request('signAndSendTransaction', [
-        transaction,
-        { initiator: origin, feeValueCommon },
-      ]);
-    },
-    // The value returned by onMutate can be accessed in
-    // a global onError handler (src/ui/shared/requests/queryClient.ts)
-    // TODO: refactor to just emit error directly from the mutationFn
-    onMutate: () => 'sendTransaction',
-    onSuccess: (tx) => {
-      const windowId = params.get('windowId');
-      invariant(windowId, 'windowId get-parameter is required');
-      windowPort.confirm(windowId, tx.hash);
-      if (next) {
-        navigate(next);
-      }
-    },
-  });
-  const originForHref = useMemo(() => prepareForHref(origin), [origin]);
-
-  const chain =
-    transaction && networks
-      ? networks.getChainById(ethers.utils.hexValue(transaction.chainId))
-      : null;
-
-  const { data: chainGasPrices } = useGasPrices(chain);
-
   const view = params.get('view') || View.default;
-  const transactionFormatted = useMemo(
-    () => JSON.stringify(JSON.parse(transactionStringified), null, 2),
-    [transactionStringified]
-  );
-
-  const advancedViewHref = useMemo(
-    () => `?${setURLSearchParams(params, { view: View.advanced }).toString()}`,
-    [params]
-  );
-
-  const { handleCopy: handleCopyRawData, isSuccess: didCopyRawData } =
-    useCopyToClipboard({ text: transactionFormatted });
 
   if (localAddressActionQuery.isSuccess && !localAddressAction) {
     throw new Error('Unexpected missing localAddressAction');
   }
 
-  if (!networks || !chain || !localAddressAction) {
+  if (!networks || !chain || !transactionAction || !localAddressAction) {
     return null;
   }
 
   const addressAction = interpretAddressAction || localAddressAction;
+  const singleAsset = addressAction?.content?.single_asset;
 
-  const recipientAddress = addressAction.label?.display_value.wallet_address;
-  const actionTransfers = addressAction.content?.transfers;
-  const singleAsset = addressAction.content?.single_asset?.asset;
+  const handleChangeAllowance = (value: BigNumber) => {
+    setAllowanceQuantityBase(value.toString());
+    navigate(-1);
+  };
+
+  const handleReject = () => {
+    const windowId = params.get('windowId');
+    invariant(windowId, 'windowId get-parameter is required');
+    windowPort.reject(windowId);
+    navigate(-1);
+  };
 
   return (
     <Background backgroundKind="white">
@@ -295,198 +520,47 @@ function SendTransactionContent({
           ['--surface-background-color' as string]: 'var(--neutral-100)',
         }}
       >
-        <>
-          {view === View.default ? (
-            <>
-              <PageTop />
-              <div style={{ display: 'grid', placeItems: 'center' }}>
-                <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
-                  {addressAction.type.display_value}
-                </UIText>
-                <UIText kind="small/regular" color="var(--neutral-500)">
-                  {originForHref ? (
-                    <TextAnchor
-                      // Open URL in a new _window_ so that extension UI stays open and visible
-                      onClick={openInNewWindow}
-                      href={originForHref.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {originForHref.hostname}
-                    </TextAnchor>
-                  ) : (
-                    'Unknown Initiator'
-                  )}
-                </UIText>
-                <Spacer height={8} />
-                <HStack gap={8} alignItems="center">
-                  <WalletAvatar
-                    address={wallet.address}
-                    size={20}
-                    active={false}
-                    borderRadius={4}
-                  />
-                  <UIText kind="small/regular">
-                    <WalletDisplayName wallet={wallet} />
-                  </UIText>
-                </HStack>
-              </div>
-              <Spacer height={24} />
-              <VStack gap={16}>
-                <AddressActionDetails
-                  recipientAddress={recipientAddress}
-                  addressAction={addressAction}
-                  chain={chain}
-                  networks={networks}
-                  actionTransfers={actionTransfers}
-                  wallet={wallet}
-                  singleAsset={singleAsset}
-                />
-                {interpretQuery.isLoading ? (
-                  <InterpretLoadingState />
-                ) : interpretQuery.isError ? (
-                  <UIText kind="small/regular" color="var(--notice-600)">
-                    Unable to analyze the details of the transaction
-                  </UIText>
-                ) : null}
-                <Button kind="regular" as={UnstyledLink} to={advancedViewHref}>
-                  Advanced View
-                </Button>
-              </VStack>
-              <Spacer height={16} />
-              <PhishingDefenceStatus origin={origin} />
-              {incomingTxWithGasAndFee ? (
-                <>
-                  <ErrorBoundary renderError={() => null}>
-                    <React.Suspense fallback={null}>
-                      <TransactionWarning
-                        address={singleAddress}
-                        transaction={incomingTxWithGasAndFee}
-                        chain={chain}
-                        networkFeeConfiguration={configuration.networkFee}
-                      />
-                    </React.Suspense>
-                  </ErrorBoundary>
-                  <div style={{ marginTop: 'auto' }}>
-                    <ErrorBoundary
-                      renderError={() => (
-                        <UIText kind="body/regular">
-                          <span style={{ display: 'inline-block' }}>
-                            <WarningIcon />
-                          </span>{' '}
-                          Failed to load network fee
-                        </UIText>
-                      )}
-                    >
-                      <React.Suspense
-                        fallback={
-                          <div
-                            style={{ display: 'flex', justifyContent: 'end' }}
-                          >
-                            <CircleSpinner />
-                          </div>
-                        }
-                      >
-                        <TransactionConfiguration
-                          transaction={incomingTxWithGasAndFee}
-                          from={wallet.address}
-                          chain={chain}
-                          onFeeValueCommonReady={handleFeeValueCommonReady}
-                          configuration={configuration}
-                          onConfigurationChange={setConfiguration}
-                        />
-                      </React.Suspense>
-                    </ErrorBoundary>
-                  </div>
-                </>
-              ) : null}
-            </>
-          ) : null}
-          {view === View.advanced ? (
-            <TransactionAdvancedView
-              networks={networks}
-              chain={chain}
-              interpretation={interpretation}
-              transaction={incomingTransaction}
-            />
-          ) : null}
-        </>
+        {view === View.default ? (
+          <TransactionDefaultView
+            networks={networks}
+            chain={chain}
+            origin={origin}
+            wallet={wallet}
+            transactionAction={transactionAction}
+            addressAction={addressAction}
+            singleAsset={singleAsset}
+            allowanceQuantityBase={
+              allowanceQuantityBase || requestedAllowanceQuantityBase
+            }
+            interpretQuery={interpretQuery}
+            incomingTransaction={incomingTransaction}
+            incomingTxWithGasAndFee={incomingTxWithGasAndFee}
+            onReject={handleReject}
+          />
+        ) : null}
+        {view === View.advanced ? (
+          <TransactionAdvancedView
+            networks={networks}
+            chain={chain}
+            interpretation={interpretation}
+            transaction={incomingTransaction}
+            transactionStringified={transactionStringified}
+          />
+        ) : null}
+        {view === View.customAllowance ? (
+          <CustomAllowanceView
+            address={wallet.address}
+            asset={getFungibleAsset(singleAsset?.asset)}
+            requestedAllowanceQuantityBase={requestedAllowanceQuantityBase}
+            value={allowanceQuantityBase}
+            chain={chain}
+            onChange={handleChangeAllowance}
+          />
+        ) : null}
         <Spacer height={16} />
       </PageColumn>
       <PageStickyFooter>
-        {view === View.default ? (
-          <>
-            <VStack
-              style={{
-                textAlign: 'center',
-              }}
-              gap={8}
-            >
-              <UIText kind="body/regular" color="var(--negative-500)">
-                {signMutation.isError
-                  ? errorToMessage(signMutation.error as SendTransactionError)
-                  : null}
-              </UIText>
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: 8,
-                }}
-              >
-                <Button
-                  ref={focusNode}
-                  kind="regular"
-                  type="button"
-                  onClick={handleReject}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  disabled={signMutation.isLoading}
-                  onClick={() => {
-                    try {
-                      signAndSendTransaction(
-                        applyConfiguration(
-                          incomingTransaction,
-                          configuration,
-                          chainGasPrices
-                        )
-                      );
-                    } catch (error) {
-                      showErrorBoundary(error);
-                    }
-                  }}
-                >
-                  {signMutation.isLoading ? 'Sending...' : 'Confirm'}
-                </Button>
-              </div>
-            </VStack>
-          </>
-        ) : null}
-        {view === View.advanced ? (
-          <>
-            <Spacer height={8} />
-            <Button
-              type="button"
-              kind="primary"
-              size={44}
-              style={{ padding: '10px 20px' }}
-              onClick={handleCopyRawData}
-            >
-              <HStack gap={12} alignItems="center" justifyContent="center">
-                <UIText kind="body/accent">
-                  {didCopyRawData ? 'Copied' : 'Copy Raw Data'}
-                </UIText>
-                {React.createElement(didCopyRawData ? CheckIcon : CopyIcon, {
-                  display: 'block',
-                  width: 24,
-                  height: 24,
-                })}
-              </HStack>
-            </Button>
-          </>
-        ) : null}
+        <RenderArea name="sign-transaction-footer" />
         <PageBottom />
       </PageStickyFooter>
     </Background>
@@ -513,14 +587,11 @@ export function SendTransaction() {
     'transaction get-parameter is required for this view'
   );
 
-  const next = params.get('next');
-
   return (
     <SendTransactionContent
       transactionStringified={transactionStringified}
       origin={origin}
       wallet={wallet}
-      next={next}
     />
   );
 }

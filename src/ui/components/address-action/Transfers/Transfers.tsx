@@ -12,22 +12,19 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import type { Chain } from 'src/modules/networks/Chain';
 import { AssetIcon } from 'src/ui/components/AssetIcon';
 import UnknownIcon from 'jsx:src/ui/assets/actionTypes/unknown.svg';
-import {
-  getAssetQuantity,
-  getCommonQuantity,
-} from 'src/modules/networks/asset';
+import { getCommonQuantity } from 'src/modules/networks/asset';
 import {
   getFungibleAsset,
   getNftAsset,
 } from 'src/modules/ethereum/transactions/actionAsset';
-import { AssetQuantityValue } from 'src/ui/components/AssetQuantityValue';
-import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
+import { AssetQuantity } from 'src/ui/components/AssetQuantity';
 import { minus, noValueDash } from 'src/ui/shared/typography';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { animated, useSpring } from '@react-spring/web';
-import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
+import { AssetLink } from '../../AssetLink';
+import { NFTLink } from '../../NFTLink';
 
 function TransferItemFungible({
   address,
@@ -42,13 +39,12 @@ function TransferItemFungible({
   chain: Chain;
   direction: Direction;
 }) {
-  const title = fungible.symbol.toUpperCase();
-  const quantity = useMemo(
+  const commonQuantity = useMemo(
     () =>
-      getAssetQuantity({
+      getCommonQuantity({
         asset: fungible,
         chain,
-        quantity: transfer.quantity,
+        baseQuantity: transfer.quantity,
       }),
     [chain, fungible, transfer.quantity]
   );
@@ -59,7 +55,7 @@ function TransferItemFungible({
     const commonQuantity = getCommonQuantity({
       asset: fungible,
       chain,
-      quantity: transfer.quantity,
+      baseQuantity: transfer.quantity,
     });
     return formatCurrencyValue(
       commonQuantity.times(transfer.price),
@@ -83,19 +79,11 @@ function TransferItemFungible({
           kind="headline/h3"
           color={direction === 'in' ? 'var(--positive-500)' : 'var(--black)'}
         >
-          <AssetQuantityValue
+          <AssetQuantity
             sign={direction === 'in' ? '+' : minus}
-            quantity={quantity}
+            commonQuantity={commonQuantity}
           />{' '}
-          <TextAnchor
-            // Open URL in a new _window_ so that extension UI stays open and visible
-            onClick={openInNewWindow}
-            href={`https://app.zerion.io/explore/asset/${fungible.symbol}-${fungible.asset_code}?address=${address}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {title}
-          </TextAnchor>
+          <AssetLink asset={fungible} address={address} />
         </UIText>
       }
       detailText={
@@ -131,7 +119,7 @@ function TransferItemNFT({
           kind="headline/h3"
           color={direction === 'in' ? 'var(--positive-500)' : 'var(--black)'}
         >
-          {nft.name}
+          <NFTLink nft={nft} />
         </UIText>
       }
       detailText={

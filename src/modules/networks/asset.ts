@@ -1,6 +1,6 @@
-import BigNumber from 'bignumber.js';
 import type { Asset } from 'defi-sdk';
-import { baseToCommon } from 'src/shared/units/convert';
+import { baseToCommon, commonToBase } from 'src/shared/units/convert';
+import type BigNumber from 'bignumber.js';
 import type { Chain } from './Chain';
 
 export function getAssetImplementationInChain({
@@ -33,44 +33,25 @@ export function getAddress({
 export function getCommonQuantity({
   asset,
   chain,
-  quantity,
+  baseQuantity,
 }: {
   asset: Asset;
   chain: Chain;
-  quantity: number | string;
+  baseQuantity: BigNumber.Value;
 }) {
   const decimals = getDecimals({ asset, chain });
-  return baseToCommon(quantity, decimals);
+  return baseToCommon(baseQuantity, decimals);
 }
 
-export type AssetQuantity =
-  | { type: 'veryLarge' }
-  | { type: 'large' }
-  | {
-      type: 'normal';
-      value: BigNumber;
-    };
-
-export function getAssetQuantity({
+export function getBaseQuantity({
   asset,
   chain,
-  quantity,
+  commonQuantity,
 }: {
   asset: Asset;
   chain: Chain;
-  quantity: number | string;
-}): AssetQuantity {
-  const value = getCommonQuantity({
-    asset,
-    chain,
-    quantity,
-  });
-
-  if (value.gt(new BigNumber(1e21))) {
-    return { type: 'veryLarge' };
-  } else if (value.gt(new BigNumber(1e15))) {
-    return { type: 'large' };
-  }
-
-  return { type: 'normal', value };
+  commonQuantity: BigNumber.Value;
+}) {
+  const decimals = getDecimals({ asset, chain });
+  return commonToBase(commonQuantity, decimals);
 }
