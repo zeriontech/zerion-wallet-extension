@@ -240,12 +240,12 @@ function usePausedData() {
   const tabUrlHttp =
     protocol === 'https:' || protocol === 'http:' ? tabUrl : undefined;
   const isPausedForAll = Boolean(
-    globalPreferences?.providerInjection['<all_urls>']
+    globalPreferences?.providerInjection?.['<all_urls>']
   );
   const isPaused =
     isPausedForAll ||
     (tabUrlHttp
-      ? Boolean(globalPreferences?.providerInjection[tabUrlHttp.origin])
+      ? Boolean(globalPreferences?.providerInjection?.[tabUrlHttp.origin])
       : false);
   return {
     tabUrl: tabUrlHttp,
