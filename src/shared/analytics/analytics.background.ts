@@ -56,7 +56,8 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   emitter.on('daylightAction', ({ event_name, ...data }) => {
-    const params = createParams({
+    // We don't need user_id here (analytics requirement)
+    const params = createBaseParams({
       request_name: 'daylight_action',
       event_name,
       ...data,

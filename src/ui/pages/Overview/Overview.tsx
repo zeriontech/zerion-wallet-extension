@@ -375,16 +375,7 @@ function OverviewComponent() {
             >
               History <PendingTransactionsIndicator />
             </SegmentedControlLink>
-            <SegmentedControlLink
-              to="/overview/feed"
-              onClick={() => {
-                handleTabChange();
-                walletPort.request('daylightAction', {
-                  event_name: 'Perks: Card Opened',
-                  address: singleAddress,
-                });
-              }}
-            >
+            <SegmentedControlLink to="/overview/feed" onClick={handleTabChange}>
               Perks
             </SegmentedControlLink>
           </SegmentedControlGroup>

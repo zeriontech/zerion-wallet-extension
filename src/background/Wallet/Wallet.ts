@@ -721,10 +721,6 @@ export class Wallet {
     this.ensureRecord(this.record);
     this.record = Model.unmarkAbility(this.record, { abilityId });
     this.updateWalletStore(this.record);
-    emitter.emit('daylightAction', {
-      event_name: 'Perks: Reopen Tab Clicked',
-      ability_id: abilityId,
-    });
   }
 
   async userCanCreateInitialWallet({ context }: WalletMethodParams) {

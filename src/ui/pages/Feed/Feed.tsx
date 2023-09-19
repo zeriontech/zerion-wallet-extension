@@ -67,12 +67,6 @@ function StatusFilter({
     selectedItem: value,
     onSelectedItemChange: ({ selectedItem }) => {
       onChange(selectedItem);
-      if (selectedItem) {
-        walletPort.request('daylightAction', {
-          event_name: 'Perks: Select Status Filter',
-          perk_status: selectedItem,
-        });
-      }
     },
   });
 
@@ -225,12 +219,6 @@ function TypeFilter({
     selectedItem: value,
     onSelectedItemChange: ({ selectedItem }) => {
       onChange(selectedItem);
-      if (selectedItem) {
-        walletPort.request('daylightAction', {
-          event_name: 'Perks: Select Type Filter',
-          perk_type: selectedItem,
-        });
-      }
     },
   });
 
