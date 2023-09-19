@@ -1,10 +1,12 @@
 import { nanoid } from 'nanoid';
+import { invariant } from 'src/shared/invariant';
 import type { AddEthereumChainParameter } from '../ethereum/types/AddEthereumChainParameter';
 import type { NetworkConfig } from './NetworkConfig';
 
 export function toNetworkConfig(
   value: AddEthereumChainParameter
 ): NetworkConfig {
+  invariant(value.rpcUrls, 'RPC URL should exist in network config');
   return {
     supports_sending: true,
     supports_trading: false,
@@ -23,7 +25,7 @@ export function toNetworkConfig(
       address: null,
       decimals: value.nativeCurrency?.decimals,
       symbol: value.nativeCurrency?.symbol,
-      id: value.nativeCurrency?.symbol.toLowerCase() === 'eth' ? 'eth' : '',
+      id: value.nativeCurrency?.symbol?.toLowerCase() === 'eth' ? 'eth' : '',
     },
     rpc_url_internal: value.rpcUrls[0],
     rpc_url_public: value.rpcUrls,
