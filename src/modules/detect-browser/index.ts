@@ -1,6 +1,6 @@
 /**
  * NOTE:
- * Adapted from: https://github.com/lancedikson/bowser
+ * Adapted from: https://github.com/lancedikson/bowser/blob/master/src/parser-browsers.js
  */
 
 function getFirstMatch(regexp: RegExp, ua: string) {

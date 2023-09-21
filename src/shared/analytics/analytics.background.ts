@@ -51,6 +51,7 @@ function trackAppEvents({ account }: { account: Account }) {
       wallet_provider: data.address ? getProvider(data.address) : null,
       screen_name: data.pathname,
       previous_screen_name: data.previous,
+      window_size: data.windowSize,
     });
     sendToMetabase('screen_view', params);
   });
