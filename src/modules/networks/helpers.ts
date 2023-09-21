@@ -6,7 +6,7 @@ import type { NetworkConfig } from './NetworkConfig';
 export function toNetworkConfig(
   value: AddEthereumChainParameter
 ): NetworkConfig {
-  invariant(value.rpcUrls, 'RPC URL should exist in network config');
+  invariant(value.rpcUrls, 'RPC URL should be defined in network config');
   return {
     supports_sending: true,
     supports_trading: false,
