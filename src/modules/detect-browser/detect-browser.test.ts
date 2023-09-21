@@ -1,4 +1,4 @@
-import { detectBrowser } from './detectBrowser';
+import { detectBrowser } from './detect-browser';
 
 describe('detectBrowser', () => {
   const userAgents = {
