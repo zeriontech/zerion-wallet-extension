@@ -49,12 +49,15 @@ async function readOs() {
 readOs();
 
 const detectedBrowser = detectBrowser(globalThis.navigator.userAgent);
+const browserInfo = [detectedBrowser.browser, detectedBrowser.version].join(
+  ' '
+);
 
 export function createParams<T extends BaseParams>(data: T) {
   return {
     platform: os,
     // we use os_version for compatibility with mobile platforms
-    os_version: [detectedBrowser.browser, detectedBrowser.version].join(' '),
+    os_version: browserInfo,
     browser_info: globalThis.navigator.userAgent,
     api_client_name: 'Zerion Extension',
     origin: globalThis.location.origin,
