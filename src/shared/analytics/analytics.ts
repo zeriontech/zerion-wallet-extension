@@ -14,7 +14,7 @@ type MetabaseEvent =
   | 'error_screen_view'
   | 'loader_screen_view';
 
-type BaseParams<E = MetabaseEvent> = { request_name: E };
+export type BaseParams<E = MetabaseEvent> = { request_name: E };
 
 function onIdle(callback: () => void) {
   if ('requestIdleCallback' in globalThis) {
