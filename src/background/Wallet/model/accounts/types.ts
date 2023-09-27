@@ -17,7 +17,7 @@ export interface Device {
   /** Inspited by https://developer.mozilla.org/en-US/docs/Web/API/HIDDevice */
   productId: number;
   vendorId?: number;
-  productName?: number;
+  productName?: string;
 }
 
 export interface DeviceAccount extends ExternallyOwnedAccount {

@@ -219,12 +219,14 @@ function Main({
         ledger={ledger}
         onImport={(accounts) => {
           console.log('should handle import', { accounts, ledger });
+          // @ts-ignore
+          const { device } = ledger.appEth.transport.device as USBDevice;
           const importData: LedgerAccountImport = {
             accounts,
             device: {
-              productId: ledger.appEth.transport.device.productId,
-              vendorId: ledger.appEth.transport.device.vendorId,
-              productName: ledger.appEth.transport.device.productName,
+              productId: device.productId,
+              vendorId: device.vendorId,
+              productName: device.productName,
             },
             provider: 'ledger',
           };
@@ -273,6 +275,7 @@ class Controller {
   static async signTransaction(params: unknown) {
     await checkDevice();
     assertSignTransactionParams(params);
+    // @ts-ignore params.transaction is object
     return signTransaction(params.derivationPath, params.transaction);
   }
 

@@ -44,7 +44,7 @@ export const emitter = createNanoEvents<{
   daylightAction: (data: DaylightEventParams) => void;
   walletCreated: (wallet: {
     walletContainer: WalletContainer;
-    origin: WalletOrigin | null;
+    origin: WalletOrigin;
     groupId: string | null;
   }) => void;
   addEthereumChain: (data: { values: [NetworkConfig]; origin: string }) => void;

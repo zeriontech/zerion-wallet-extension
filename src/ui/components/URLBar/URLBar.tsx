@@ -4,7 +4,6 @@ import { RenderArea } from 'react-area';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Store } from 'store-unit';
 import { useStore } from '@store-unit/react';
-import { pageTemplateType } from 'src/ui/shared/getPageTemplateName';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { BackButton } from '../BackButton';
 

@@ -22,7 +22,6 @@
     "ui-lab:src/ui/shared/channels": "./src/ui/shared/channels.mock.ts",
     "ui-lab:src/modules/networks/networks-store.client": "./src/modules/networks/networks-store.client.mock.ts",
     "buffer-todo-set-to-false": false,
-    "https": false,
     "ui-lab:webextension-polyfill": "/src/ui-lab/webextension-polyfill.mock.ts"
   },
   "@parcel/bundler-default": {
@@ -62,6 +61,7 @@
     "@types/react-dom": "^18.2.6",
     "@types/socket.io-client": "^1.4.36",
     "@types/uuid": "^9.0.2",
+    "@types/w3c-web-usb": "^1.0.7",
     "@types/webextension-polyfill": "^0.10.1",
     "@typescript-eslint/eslint-plugin": "^5.61.0",
     "@typescript-eslint/parser": "^5.61.0",

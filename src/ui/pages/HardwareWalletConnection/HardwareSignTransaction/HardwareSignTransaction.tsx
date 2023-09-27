@@ -1,5 +1,5 @@
 import { useStore } from '@store-unit/react';
-import React, { useEffect, useId, useRef, useState } from 'react';
+import React, { useId, useRef } from 'react';
 import { themeStore } from 'src/ui/features/appearance';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -35,16 +35,13 @@ class MessageHandler {
 
   request<T>(request: RpcRequest, contentWindow: Window): Promise<T> {
     const { id } = request;
-    console.log('request', id);
     contentWindow.postMessage(request, '*');
     return new Promise((resolve, reject) => {
-      console.log('returning promise', this.emitter);
       const unlisten = this.emitter.on('message', (msg) => {
-        console.log('heard message', msg);
         if (isRpcResponse(msg)) {
           if (id === msg.id) {
             if (isRpcResult(msg)) {
-              resolve(msg.result);
+              resolve(msg.result as T);
             } else {
               reject(msg.error);
             }
@@ -100,7 +97,6 @@ export function HardwareSignTransaction({
       onSign(result.serialized);
     },
     onError(error) {
-      console.log('mutation error', { error });
       if (getError(error).message === 'disconnected') {
         navigate(
           `/connect-hardware-wallet?${new URLSearchParams({

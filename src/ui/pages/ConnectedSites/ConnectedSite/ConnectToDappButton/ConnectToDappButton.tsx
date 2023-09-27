@@ -1,6 +1,6 @@
 import React from 'react';
 import { useMutation } from '@tanstack/react-query';
-import type { BareWallet } from 'src/shared/types/BareWallet';
+import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { walletPort } from 'src/ui/shared/channels';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -13,7 +13,7 @@ export function ConnectToDappButton({
 }: {
   origin: string;
   originTitle: string;
-  wallet: BareWallet;
+  wallet: ExternallyOwnedAccount;
   onSuccess: () => void;
 }) {
   const acceptOriginAndConnectMutation = useMutation({

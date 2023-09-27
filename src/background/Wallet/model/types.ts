@@ -93,5 +93,5 @@ export interface WalletRecord extends Omit<WalletRecordVersion4, 'version'> {
 export interface PendingWallet {
   walletContainer: WalletContainer;
   groupId: string | null;
-  origin: WalletOrigin | null;
+  origin: WalletOrigin;
 }
