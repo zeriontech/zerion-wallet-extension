@@ -7,7 +7,6 @@ import { PageColumn } from 'src/ui/components/PageColumn';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { SeedType } from 'src/shared/SeedType';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { FillView } from 'src/ui/components/FillView';
 import { AddressBadge } from 'src/ui/components/AddressBadge';
@@ -20,6 +19,7 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
 import { Background } from 'src/ui/components/Background';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
+import { isMnemonicContainer } from 'src/shared/types/validators';
 import { ImportWallet } from './ImportWallet';
 import { GenerateWallet } from './GenerateWallet';
 
@@ -77,8 +77,8 @@ function Options() {
   const [params] = useSearchParams();
   const mnemonicGroups = useMemo(
     () =>
-      walletGroups?.filter(
-        (group) => group.walletContainer.seedType === SeedType.mnemonic
+      walletGroups?.filter((group) =>
+        isMnemonicContainer(group.walletContainer)
       ),
     [walletGroups]
   );
@@ -150,8 +150,8 @@ function WalletGroupSelect() {
   const { data: walletGroups, isLoading } = useWalletGroups();
   const mnemonicGroups = useMemo(
     () =>
-      walletGroups?.filter(
-        (group) => group.walletContainer.seedType === SeedType.mnemonic
+      walletGroups?.filter((group) =>
+        isMnemonicContainer(group.walletContainer)
       ),
     [walletGroups]
   );

@@ -56,7 +56,10 @@ import { invariant } from 'src/shared/invariant';
 import { getEthersError } from 'src/shared/errors/getEthersError';
 import type { DappSecurityStatus } from 'src/modules/phishing-defence/phishing-defence-service';
 import { phishingDefenceService } from 'src/modules/phishing-defence/phishing-defence-service';
-import { isMnemonicContainer } from 'src/shared/types/validators';
+import {
+  isDeviceAccount,
+  isMnemonicContainer,
+} from 'src/shared/types/validators';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -343,7 +346,7 @@ export class Wallet {
     return privateKey === value;
   }
 
-  async uiGetCurrentWallet({ context }: PublicMethodParams) {
+  async uiGetCurrentWallet({ context }: WalletMethodParams) {
     this.verifyInternalOrigin(context);
     if (!this.id) {
       return null;
@@ -899,6 +902,35 @@ export class Wallet {
     });
   }
 
+  async sendSignedTransaction({
+    params,
+    context,
+  }: WalletMethodParams<{
+    serialized: string;
+    chain: string;
+    initiator: string;
+    feeValueCommon: string | null;
+  }>): Promise<ethers.providers.TransactionResponse> {
+    this.verifyInternalOrigin(context);
+    this.ensureStringOrigin(context);
+    const { chain, serialized, initiator, feeValueCommon } = params;
+    const networks = await networksStore.load();
+    const chainId = networks.getChainId(createChain(chain));
+    const provider = await this.getProvider(chainId);
+    try {
+      const transactionResponse = await provider.sendTransaction(serialized);
+      const safeTx = removeSignature(transactionResponse);
+      emitter.emit('transactionSent', {
+        transaction: safeTx,
+        initiator,
+        feeValueCommon,
+      });
+      return safeTx;
+    } catch (error) {
+      throw getEthersError(error);
+    }
+  }
+
   async signTypedData_v4({
     params: { typedData: rawTypedData, initiator },
     context,
@@ -1206,6 +1238,9 @@ class PublicController {
     id,
   }: PublicMethodParams<UnsignedTransaction[]>) {
     const currentAddress = this.wallet.ensureCurrentAddress();
+    const currentWallet = await this.wallet.uiGetCurrentWallet({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
     // TODO: should we check transaction.from instead of currentAddress?
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
       throw new OriginNotAllowed();
@@ -1216,6 +1251,8 @@ class PublicController {
       this.safeOpenDialogWindow(context.origin, {
         requestId: `${context.origin}:${id}`,
         route: '/sendTransaction',
+        type:
+          currentWallet && isDeviceAccount(currentWallet) ? 'tab' : 'dialog',
         search: `?${new URLSearchParams({
           origin: context.origin,
           transaction: JSON.stringify(transaction),

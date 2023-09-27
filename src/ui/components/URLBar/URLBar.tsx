@@ -39,7 +39,7 @@ export function hideURLBarFor(path: string) {
 
 const urlBarStore = new Store(true);
 
-const isDialog = pageTemplateType === 'dialog';
+const isDialog = false; // pageTemplateType === 'dialog';
 
 export function toggleUrlBar(on: boolean) {
   urlBarStore.setState(on);

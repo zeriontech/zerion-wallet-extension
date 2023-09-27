@@ -12,9 +12,9 @@ export type DerivationPathType = 'bip44' | 'ledger' | 'ledgerLive';
 // m/44'/60'/0'/x: Electrum, MyEtherWallet (ledger), Ledger Chrome App, imToken
 
 const pathPatterns: Record<DerivationPathType, RegExp> = {
-  bip44: /m\/44'\/60'\/0'\/0\/(\d+)/,
-  ledgerLive: /m\/44'\/60'\/(\d+)'\/0\/0/,
-  ledger: /m\/44'\/60'\/0'\/(\d+)/,
+  bip44: /(?:m\/)?44'\/60'\/0'\/0\/(\d+)/,
+  ledgerLive: /(?:m\/)?44'\/60'\/(\d+)'\/0\/0/,
+  ledger: /(?:m\/)?44'\/60'\/0'\/(\d+)/,
 };
 
 export function getIndexFromPath(

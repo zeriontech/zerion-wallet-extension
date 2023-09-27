@@ -424,7 +424,7 @@ export function App({ initialView, mode, inspect }: AppProps) {
                 onKeyDown={() => {
                   // Helper for development and debugging :)
                   const url = new URL(window.location.href);
-                  url.searchParams.append('templateType', 'tab');
+                  url.searchParams.set('templateType', 'tab');
                   window.open(url, '_blank');
                 }}
               />

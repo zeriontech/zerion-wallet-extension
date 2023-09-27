@@ -9,8 +9,15 @@ import {
   connectDevice,
   checkDevice,
   getAddresses,
+  signTransaction,
 } from 'hardware-wallet-connection';
-import { HashRouter, Routes, Route, Link } from 'react-router-dom';
+import {
+  HashRouter,
+  Routes,
+  Route,
+  Link,
+  useSearchParams,
+} from 'react-router-dom';
 import browser from 'webextension-polyfill';
 import { createRoot } from 'react-dom/client';
 import { PortMessageChannel } from 'src/shared/PortMessageChannel';
@@ -25,17 +32,21 @@ import { invariant } from 'src/shared/invariant';
 import { getError } from 'src/shared/errors/getError';
 import type { DerivationPathType } from 'src/shared/wallet/getNextAccountPath';
 import type { DeviceAccount } from 'src/shared/types/Device';
-import type { RPCPort } from '../shared/channels.types';
-import { ErrorBoundary } from '../components/ErrorBoundary';
-import { ViewError } from '../components/ViewError';
-import { DesignTheme } from '../components/DesignTheme';
-import type { ThemeState } from '../features/appearance/ThemeState';
-import { applyTheme } from '../features/appearance/applyTheme';
-import { Button } from '../ui-kit/Button';
-import { UIText } from '../ui-kit/UIText';
-import { VStack } from '../ui-kit/VStack';
-import { ViewLoading } from '../components/ViewLoading';
-import { WalletList } from '../pages/GetStarted/ImportWallet/MnemonicImportView/AddressImportFlow/WalletList';
+import type { RPCPort } from 'src/ui/shared/channels.types';
+import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
+import { ViewError } from 'src/ui/components/ViewError';
+import { DesignTheme } from 'src/ui/components/DesignTheme';
+import { ViewLoading } from 'src/ui/components/ViewLoading';
+import type { ThemeState } from 'src/ui/features/appearance/ThemeState';
+import { applyTheme } from 'src/ui/features/appearance/applyTheme';
+import { Button } from 'src/ui/ui-kit/Button';
+import { UIText } from 'src/ui/ui-kit/UIText';
+import { VStack } from 'src/ui/ui-kit/VStack';
+import { WalletList } from 'src/ui/pages/GetStarted/ImportWallet/MnemonicImportView/AddressImportFlow/WalletList';
+import { PageColumn } from 'src/ui/components/PageColumn';
+import { isRpcRequest } from 'src/shared/custom-rpc';
+import { isObj } from 'src/shared/isObj';
+import { isClassProperty } from 'src/shared/core/isClassProperty';
 import type { LedgerAccountImport } from './types';
 
 const walletPort = new PortMessageChannel({
@@ -192,7 +203,15 @@ function ImportLedgerAddresses({
   );
 }
 
-function Main({ onPostMessage }: { onPostMessage: (data: unknown) => void }) {
+type Strategy = 'connect' | 'import';
+
+function Main({
+  onPostMessage,
+  strategy,
+}: {
+  strategy: Strategy;
+  onPostMessage: (data: unknown) => void;
+}) {
   const [ledger, setLedger] = useState<DeviceConnection | null>(null);
   if (ledger) {
     return (
@@ -214,8 +233,81 @@ function Main({ onPostMessage }: { onPostMessage: (data: unknown) => void }) {
       />
     );
   } else {
-    return <ConnectDevice onConnect={(data) => setLedger(data)} />;
+    return (
+      <>
+        <div>Strategy: {strategy}</div>
+        <ConnectDevice
+          onConnect={(data) => {
+            if (strategy === 'connect') {
+              onPostMessage({ type: 'ledger/connect' });
+            } else {
+              setLedger(data);
+            }
+          }}
+        />
+      </>
+    );
   }
+}
+
+interface SignTransactionParams {
+  derivationPath: string;
+  transaction: object;
+}
+
+function assertSignTransactionParams(
+  x: unknown
+): asserts x is SignTransactionParams {
+  if (
+    isObj(x) &&
+    typeof x.derivationPath === 'string' &&
+    isObj(x.transaction)
+  ) {
+    // ok
+  } else {
+    throw new Error('Invalid Payload');
+  }
+}
+
+class Controller {
+  static async signTransaction(params: unknown) {
+    await checkDevice();
+    assertSignTransactionParams(params);
+    return signTransaction(params.derivationPath, params.transaction);
+  }
+
+  static async listener(event: MessageEvent) {
+    if (isRpcRequest(event.data)) {
+      const { id, method, params } = event.data;
+      if (isClassProperty(Controller, method)) {
+        try {
+          // @ts-ignore
+          const result = await Controller[method](params);
+          console.log('method result', result);
+          window.parent.postMessage({ id, result }, window.location.origin);
+        } catch (error) {
+          console.log('method error', error);
+          window.parent.postMessage({ id, error }, window.location.origin);
+        }
+      }
+    }
+  }
+
+  listen() {
+    console.log('listeneing to messages');
+    window.addEventListener('message', Controller.listener);
+    return () => {
+      window.removeEventListener('message', Controller.listener);
+    };
+  }
+}
+
+function SignTransaction() {
+  const [controller] = useState(() => new Controller());
+  useEffect(() => {
+    return controller.listen();
+  }, [controller]);
+  return null;
 }
 
 function App({ requestId }: { requestId: string }) {
@@ -223,6 +315,7 @@ function App({ requestId }: { requestId: string }) {
     mutationFn: verifySandbox,
     useErrorBoundary: true,
   });
+  const [params] = useSearchParams();
   useEffect(() => {
     invokeVerifySandbox();
   }, [invokeVerifySandbox]);
@@ -230,17 +323,28 @@ function App({ requestId }: { requestId: string }) {
     window.parent.postMessage({ id: requestId, data }, window.location.origin);
   };
   return (
-    <Routes>
-      <Route path="/" element={<Main onPostMessage={handlePostMessage} />} />
-      <Route
-        path="/other"
-        element={
-          <div>
-            Other <Link to="/">main</Link>
-          </div>
-        }
-      />
-    </Routes>
+    <PageColumn>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <Main
+              strategy={(params.get('strategy') as Strategy) || 'import'}
+              onPostMessage={handlePostMessage}
+            />
+          }
+        />
+        <Route path="/signTransaction" element={<SignTransaction />} />
+        <Route
+          path="/other"
+          element={
+            <div>
+              Other <Link to="/">main</Link>
+            </div>
+          }
+        />
+      </Routes>
+    </PageColumn>
   );
 }
 

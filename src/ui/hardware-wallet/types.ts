@@ -1,3 +1,4 @@
+import type { signTransaction } from 'hardware-wallet-connection';
 import { isObj } from 'src/shared/isObj';
 import type { Device, DeviceAccount } from 'src/shared/types/Device';
 
@@ -28,3 +29,11 @@ export function verifyLedgerAccountImport(
   }
   throw Error('Type Error: not a LedgerDeviceImport');
 }
+
+export type SignTransactionResult = Awaited<ReturnType<typeof signTransaction>>;
+// type SignTransactionParams =
+// export function verifySignTransactionParams(
+//   params: unknown
+// ): params is Parameters<typeof signTransaction>[0] {
+//
+// }

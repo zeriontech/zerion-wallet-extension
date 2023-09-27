@@ -30,6 +30,12 @@ export function isRpcError(
   return isObj(payload) && 'id' in payload && 'error' in payload;
 }
 
+export function isRpcResponse<T = unknown>(
+  payload: Partial<RpcResult<T> | RpcError> | unknown
+): payload is RpcResult<T> | RpcError {
+  return isRpcResult(payload) || isRpcError(payload);
+}
+
 export function isRpcRequest(
   payload: Partial<RpcRequest> | unknown
 ): payload is RpcRequest {

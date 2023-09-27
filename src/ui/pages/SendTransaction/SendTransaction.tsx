@@ -1,4 +1,10 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { capitalize } from 'capitalize-ts';
 import { ethers } from 'ethers';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -56,6 +62,9 @@ import { describeTransaction } from 'src/modules/ethereum/transactions/describeT
 import { CustomAllowanceView } from 'src/ui/components/CustomAllowanceView';
 import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
+import { isDeviceAccount } from 'src/shared/types/validators';
+import { getTransactionCount } from 'src/modules/ethereum/transactions/getTransactionCount';
+import { HardwareSignTransaction } from '../HardwareWalletConnection/HardwareSignTransaction/HardwareSignTransaction';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
@@ -156,6 +165,18 @@ enum View {
   customAllowance = 'customAllowance',
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyFunction = (...args: any[]) => any;
+function useEvent<T extends AnyFunction>(callback: T) {
+  const ref = useRef<T | null>(null);
+  useLayoutEffect(() => {
+    ref.current = callback;
+  });
+  return useCallback<AnyFunction>((...args) => {
+    return ref.current?.(...args);
+  }, []) as T;
+}
+
 function TransactionDefaultView({
   networks,
   chain,
@@ -208,12 +229,8 @@ function TransactionDefaultView({
     feeValueCommonRef.current = value;
   }, []);
 
-  const {
-    mutate: signAndSendTransaction,
-    context,
-    ...signMutation
-  } = useMutation({
-    mutationFn: async (transaction: IncomingTransaction) => {
+  const configureTransactionToBeSigned = useEvent(
+    async (transaction: IncomingTransaction) => {
       let tx = transaction;
 
       if (transactionAction.type === 'approve' && allowanceQuantityBase) {
@@ -226,6 +243,41 @@ function TransactionDefaultView({
       }
 
       const txToSign = applyConfiguration(tx, configuration, chainGasPrices);
+      return txToSign;
+    }
+  );
+
+  const getTransaction = useEvent(async () => {
+    const value = await configureTransactionToBeSigned(incomingTransaction);
+    if (value.nonce == null) {
+      const { value: nonce } = await getTransactionCount({
+        address: singleAddress,
+        chain,
+        networks,
+        defaultBlock: 'pending',
+      });
+      return { ...value, nonce: parseInt(nonce) };
+    } else {
+      return value;
+    }
+  });
+
+  function handleSentTransaction(tx: ethers.providers.TransactionResponse) {
+    const windowId = params.get('windowId');
+    invariant(windowId, 'windowId get-parameter is required');
+    windowPort.confirm(windowId, tx.hash);
+    if (next) {
+      navigate(next);
+    }
+  }
+
+  const {
+    mutate: signAndSendTransaction,
+    context,
+    ...signMutation
+  } = useMutation({
+    mutationFn: async (transaction: IncomingTransaction) => {
+      const txToSign = await configureTransactionToBeSigned(transaction);
 
       const feeValueCommon = feeValueCommonRef.current || null;
 
@@ -238,14 +290,20 @@ function TransactionDefaultView({
     // a global onError handler (src/ui/shared/requests/queryClient.ts)
     // TODO: refactor to just emit error directly from the mutationFn
     onMutate: () => 'sendTransaction',
-    onSuccess: (tx) => {
-      const windowId = params.get('windowId');
-      invariant(windowId, 'windowId get-parameter is required');
-      windowPort.confirm(windowId, tx.hash);
-      if (next) {
-        navigate(next);
-      }
+    onSuccess: (tx) => handleSentTransaction(tx),
+  });
+
+  const { mutate: sendSignedTransaction, ...sendMutation } = useMutation({
+    mutationFn: (signedTx: string) => {
+      const feeValueCommon = feeValueCommonRef.current || null;
+      return walletPort.request('sendSignedTransaction', {
+        serialized: signedTx,
+        chain: chain.toString(),
+        feeValueCommon,
+        initiator: origin,
+      });
     },
+    onSuccess: (tx) => handleSentTransaction(tx),
   });
 
   const recipientAddress = addressAction.label?.display_value.wallet_address;
@@ -365,8 +423,25 @@ function TransactionDefaultView({
           <UIText kind="body/regular" color="var(--negative-500)">
             {signMutation.isError
               ? errorToMessage(signMutation.error as SendTransactionError)
+              : sendMutation.isError
+              ? `Send Signed Error: ${errorToMessage(
+                  sendMutation.error as SendTransactionError
+                )}`
               : null}
           </UIText>
+          {isDeviceAccount(wallet) ? (
+            <>
+              <div>hardware</div>
+              <HardwareSignTransaction
+                derivationPath={wallet.derivationPath}
+                getTransaction={getTransaction}
+                onSign={(serialized) => {
+                  sendSignedTransaction(serialized);
+                }}
+                isSending={sendMutation.isLoading}
+              />
+            </>
+          ) : null}
           <div
             style={{
               display: 'grid',

@@ -1,54 +1,38 @@
 import { useStore } from '@store-unit/react';
 import { useMutation } from '@tanstack/react-query';
-import React, {
-  useEffect,
-  useId,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { useEffect, useId } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FillView } from 'src/ui/components/FillView';
 import { PageBottom } from 'src/ui/components/PageBottom';
-import { PageColumn } from 'src/ui/components/PageColumn';
+import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { themeStore } from 'src/ui/features/appearance';
 import type { LedgerAccountImport } from 'src/ui/hardware-wallet/types';
 import { verifyLedgerAccountImport } from 'src/ui/hardware-wallet/types';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
+import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
+import { useIframeHeight } from './useIframeHeight';
 
 export function HardwareWalletConnection() {
   const themeState = useStore(themeStore);
-  const fillRef = useRef<HTMLDivElement | null>(null);
-  const [height, setHeight] = useState(0);
+  const { height, ref: fillRef } = useIframeHeight();
 
-  useLayoutEffect(() => {
-    if (!fillRef.current) {
-      return;
-    }
-    const observer = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      const { height } = entry.contentRect;
-      setHeight(height);
-    });
-    const element = fillRef.current;
-    observer.observe(element);
-    return () => {
-      observer.unobserve(element);
-    };
-  }, []);
+  const ready = useRenderDelay(300);
+  const [searchParams] = useSearchParams();
 
-  const {
-    mutate: finalize,
-    isSuccess,
-    ...finalizeMutation
-  } = useMutation({
+  const navigate = useNavigate();
+
+  const { mutate: finalize } = useMutation({
     mutationFn: async (params: LedgerAccountImport) => {
       console.log('finalize', params);
       const data = await walletPort.request('uiImportHardwareWallet', params);
       await accountPublicRPCPort.request('saveUserAndWallet');
       await setCurrentAddress({ address: data.address });
       console.log('DONE importing', params);
+    },
+    onSuccess() {
+      navigate(searchParams.get('next') || '/');
     },
   });
 
@@ -72,7 +56,9 @@ export function HardwareWalletConnection() {
         return;
       }
       const { type, params } = data;
-      if (type === 'ledger/import') {
+      if (type === 'ledger/connect') {
+        navigate(searchParams.get('next') || '/');
+      } else if (type === 'ledger/import') {
         verifyLedgerAccountImport(params);
         console.log('imported', params);
         finalize(params);
@@ -80,10 +66,21 @@ export function HardwareWalletConnection() {
     }
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
-  }, []);
+  }, [finalize, navigate, requestId, searchParams]);
   return (
-    <PageColumn>
+    <PageFullBleedColumn
+      paddingInline={false}
+      style={{
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       <PageTop />
+      <div>
+        <div>Next: {searchParams.get('next')}</div>
+        <div>Strategy: {searchParams.get('strategy')}</div>
+      </div>
 
       <FillView ref={fillRef}>
         {height ? (
@@ -97,20 +94,20 @@ export function HardwareWalletConnection() {
             allow="usb"
             src={`ui/hardware-wallet/ledger.html?theme-state=${encodeURIComponent(
               JSON.stringify(themeState)
-            )}&request-id=${requestId}`}
-            style={{ border: 'none', backgroundColor: 'transparent' }}
+            )}&request-id=${requestId}&#/?strategy=${
+              searchParams.get('strategy') || 'import'
+            }`}
+            style={{
+              border: 'none',
+              backgroundColor: 'transparent',
+              opacity: ready ? 1 : 0, // prevent iframe dark theme flicker
+            }}
             width="100%"
             height={height}
-            onLoad={() => {
-              console.log('iframe loaded');
-            }}
-            onError={() => {
-              console.log('iframe onerror');
-            }}
           />
         ) : null}
       </FillView>
       <PageBottom />
-    </PageColumn>
+    </PageFullBleedColumn>
   );
 }

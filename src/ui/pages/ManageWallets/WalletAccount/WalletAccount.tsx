@@ -32,11 +32,7 @@ import { invariant } from 'src/shared/invariant';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { InputDecorator } from 'src/ui/ui-kit/Input/InputDecorator';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
-import {
-  isBareWallet,
-  isDeviceAccount,
-  isSignerContainer,
-} from 'src/shared/types/validators';
+import { isBareWallet, isDeviceAccount } from 'src/shared/types/validators';
 
 function EditableWalletName({
   id,

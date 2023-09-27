@@ -8,10 +8,8 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Media } from 'src/ui/ui-kit/Media';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
-import {
-  DerivationPathType,
-  getIndexFromPath,
-} from 'src/shared/wallet/getNextAccountPath';
+import type { DerivationPathType } from 'src/shared/wallet/getNextAccountPath';
+import { getIndexFromPath } from 'src/shared/wallet/getNextAccountPath';
 import { AnimatedCheckmark } from 'src/ui/ui-kit/AnimatedCheckmark';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 
