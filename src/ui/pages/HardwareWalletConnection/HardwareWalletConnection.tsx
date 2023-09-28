@@ -77,10 +77,6 @@ export function HardwareWalletConnection() {
       }}
     >
       <PageTop />
-      <div>
-        <div>Next: {searchParams.get('next')}</div>
-        <div>Strategy: {searchParams.get('strategy')}</div>
-      </div>
 
       <FillView ref={fillRef}>
         {height ? (

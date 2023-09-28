@@ -12,17 +12,9 @@ import type { DerivationPathType } from 'src/shared/wallet/getNextAccountPath';
 import { getIndexFromPath } from 'src/shared/wallet/getNextAccountPath';
 import { AnimatedCheckmark } from 'src/ui/ui-kit/AnimatedCheckmark';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
+import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 
-export function WalletList({
-  wallets,
-  existingAddressesSet,
-  listTitle,
-  renderDetail,
-  values,
-  onSelect,
-  initialCount,
-  derivationPathType = 'bip44',
-}: {
+interface Props {
   wallets: BareWallet[];
   existingAddressesSet: Set<string>;
   listTitle: React.ReactNode;
@@ -31,17 +23,32 @@ export function WalletList({
   onSelect: (value: string) => void;
   initialCount?: number;
   derivationPathType?: DerivationPathType;
-}) {
-  const [count, setCount] = useState(initialCount ?? wallets.length);
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
+  onLoadMore: () => void;
+  showMoreText?: string;
+}
+
+export function WalletListPresentation({
+  wallets,
+  existingAddressesSet,
+  listTitle,
+  renderDetail,
+  values,
+  onSelect,
+  derivationPathType = 'bip44',
+  hasMore = false,
+  isLoadingMore = false,
+  onLoadMore,
+  showMoreText = 'Show More',
+}: Props) {
   return (
     <VStack gap={8}>
       {listTitle ? <UIText kind="small/accent">{listTitle}</UIText> : null}
       <SurfaceList
         items={wallets
-          .slice(0, count)
           .map<Item>((wallet, index) => ({
             key: wallet.address,
-
             onClick: existingAddressesSet.has(normalizeAddress(wallet.address))
               ? undefined
               : () => onSelect(wallet.address),
@@ -93,7 +100,7 @@ export function WalletList({
             ),
           }))
           .concat(
-            count < wallets.length
+            hasMore
               ? [
                   {
                     key: -1,
@@ -101,10 +108,14 @@ export function WalletList({
                     pad: false,
                     component: (
                       <SurfaceItemButton
-                        onClick={() => setCount((count) => count + 3)}
+                        onClick={onLoadMore}
+                        disabled={isLoadingMore}
                       >
                         <UIText kind="body/regular" color="var(--primary)">
-                          {count === 0 ? 'Show' : 'Show More'}
+                          <HStack alignItems="center" gap={8}>
+                            {isLoadingMore ? <CircleSpinner /> : null}
+                            {showMoreText}
+                          </HStack>
                         </UIText>
                       </SurfaceItemButton>
                     ),
@@ -114,5 +125,22 @@ export function WalletList({
           )}
       />
     </VStack>
+  );
+}
+
+export function WalletList({
+  wallets,
+  initialCount,
+  ...props
+}: Omit<Props, 'hasMore' | 'onLoadMore'>) {
+  const [count, setCount] = useState(initialCount ?? wallets.length);
+  return (
+    <WalletListPresentation
+      wallets={wallets.slice(0, count)}
+      hasMore={count < wallets.length}
+      onLoadMore={() => setCount((count) => count + 3)}
+      showMoreText={count === 0 ? 'Show' : undefined}
+      {...props}
+    />
   );
 }

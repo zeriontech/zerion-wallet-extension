@@ -6,7 +6,6 @@ import React, {
   useState,
 } from 'react';
 import {
-  connectDevice,
   checkDevice,
   getAddresses,
   signTransaction,
@@ -25,11 +24,10 @@ import type { Wallet } from 'src/shared/types/Wallet';
 import {
   QueryClient,
   QueryClientProvider,
+  useInfiniteQuery,
   useMutation,
-  useQuery,
 } from '@tanstack/react-query';
 import { invariant } from 'src/shared/invariant';
-import { getError } from 'src/shared/errors/getError';
 import type { DerivationPathType } from 'src/shared/wallet/getNextAccountPath';
 import type { DeviceAccount } from 'src/shared/types/Device';
 import type { RPCPort } from 'src/ui/shared/channels.types';
@@ -40,14 +38,19 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import type { ThemeState } from 'src/ui/features/appearance/ThemeState';
 import { applyTheme } from 'src/ui/features/appearance/applyTheme';
 import { Button } from 'src/ui/ui-kit/Button';
-import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { WalletList } from 'src/ui/pages/GetStarted/ImportWallet/MnemonicImportView/AddressImportFlow/WalletList';
+import { WalletListPresentation } from 'src/ui/pages/GetStarted/ImportWallet/MnemonicImportView/AddressImportFlow/WalletList';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { isRpcRequest } from 'src/shared/custom-rpc';
 import { isObj } from 'src/shared/isObj';
 import { isClassProperty } from 'src/shared/core/isClassProperty';
-import type { LedgerAccountImport } from './types';
+import {
+  SegmentedControlGroup,
+  SegmentedControlRadio,
+} from 'src/ui/ui-kit/SegmentedControl';
+import { useBodyStyle } from '../components/Background/Background';
+import type { DeviceConnection, LedgerAccountImport } from './types';
+import { ConnectLedgerDevice } from './ConnectLedgerDevice';
 
 const walletPort = new PortMessageChannel({
   name: `${browser.runtime.id}/wallet`,
@@ -71,79 +74,39 @@ async function verifySandbox() {
   );
 }
 
-type DeviceConnection = Awaited<ReturnType<typeof connectDevice>>;
-
-async function safelyConnectDevice() {
-  try {
-    return await checkDevice();
-  } catch (e) {
-    return connectDevice();
-  }
-}
-
-function ConnectDevice({
-  onConnect,
-}: {
-  onConnect: (data: DeviceConnection) => void;
-}) {
-  const {
-    mutate: invokeConnectDevice,
-    isLoading,
-    isError,
-    error: maybeError,
-  } = useMutation({
-    mutationFn: () => safelyConnectDevice(),
-    onSuccess: (data) => {
-      onConnect(data);
-    },
-  });
-  const error = isError ? getError(maybeError) : null;
-  return (
-    <div>
-      <ol>
-        <li>Connect your Ledger to begin</li>
-        <li>Open "Ethereum App" on your Ledger device</li>
-        <li>
-          Ensure that Browser Support and Contract Data are enabled in Settings
-        </li>
-        <li>
-          You may need to update firmware is Browser Support is not available
-        </li>
-      </ol>
-      <VStack gap={8}>
-        <UIText kind="small/regular" color="var(--negative-500)">
-          {error ? error.message : null}
-        </UIText>
-        <Button
-          kind="primary"
-          onClick={() => invokeConnectDevice()}
-          style={{ width: '100%' }}
-        >
-          {isLoading ? 'Looking for device...' : 'Connect Device'}
-        </Button>
-      </VStack>
-    </div>
-  );
-}
-
-function ImportLedgerAddresses({
+function AddressSelectList({
   ledger,
+  pathType,
   onImport,
 }: {
+  pathType: DerivationPathType;
   ledger: DeviceConnection;
   onImport: (values: DeviceAccount[]) => void;
 }) {
   const { appEth } = ledger;
-  const derivationPathType: DerivationPathType = 'ledgerLive';
-  const COUNT = 3;
-  const { data } = useQuery({
-    queryKey: ['ledger/addresses', appEth, COUNT],
-    queryFn: () =>
-      getAddresses(appEth, { type: 'ledgerLive', from: 0, count: COUNT }),
+  const COUNT = 5;
+  const { data, fetchNextPage, isFetchingNextPage } = useInfiniteQuery({
+    queryKey: ['ledger/addresses', COUNT, pathType, appEth],
+    queryKeyHashFn: (queryKey) => queryKey.filter((x) => x !== appEth).join(''),
+    queryFn: async ({ pageParam = 0 }) => {
+      return getAddresses(appEth, {
+        type: pathType as 'ledger' | 'ledgerLive',
+        from: pageParam,
+        count: COUNT,
+      });
+    },
+    getNextPageParam: (_lastPage, allPages) => {
+      return allPages.reduce((sum, items) => sum + items.length, 0);
+    },
+    staleTime: Infinity, // addresses found on ledger will not change
   });
-  console.log({ data, appEth });
   const itemsByAddress = useMemo(
-    () => new Map(data?.map((item) => [item.account.address, item])),
+    () =>
+      new Map(
+        data?.pages.flatMap((items) =>
+          items.map((item) => [item.account.address, item])
+        )
+      ),
     [data]
   );
   const [values, setValue] = useState<Set<string>>(() => new Set());
@@ -159,30 +122,38 @@ function ImportLedgerAddresses({
     });
   }, []);
   if (!data) {
-    return <p>loading..</p>;
+    return null;
   }
   return (
     <VStack gap={12}>
-      <WalletList
+      <WalletListPresentation
         values={values}
-        derivationPathType={derivationPathType}
-        wallets={data.map((item) => ({
-          address: item.account.address,
-          name: null,
-          privateKey: '<ledger-private-key>',
-          mnemonic: {
-            path: item.derivationPath,
-            phrase: '<ledger-mnemonic>',
-          },
-        }))}
+        derivationPathType={pathType}
+        wallets={data.pages.flatMap((items) =>
+          items.map((item) => ({
+            address: item.account.address,
+            name: null,
+            privateKey: '<ledger-private-key>',
+            mnemonic: {
+              path: item.derivationPath,
+              phrase: '<ledger-mnemonic>',
+            },
+          }))
+        )}
         renderDetail={null}
         initialCount={COUNT}
-        listTitle="Wallet List (temp title)"
+        listTitle="Select Addresses to Import"
         onSelect={toggleAddress}
         existingAddressesSet={new Set()}
+        hasMore={true} // ledger can derive infinite amount of addresses
+        isLoadingMore={isFetchingNextPage}
+        onLoadMore={() => {
+          fetchNextPage();
+        }}
       />
       <Button
         kind="primary"
+        disabled={values.size === 0}
         onClick={() => {
           onImport(
             Array.from(values).map((address) => {
@@ -197,8 +168,50 @@ function ImportLedgerAddresses({
           );
         }}
       >
-        Next
+        {'Next' + (values.size ? ` (${values.size})` : '')}
       </Button>
+    </VStack>
+  );
+}
+
+function ImportLedgerAddresses({
+  ledger,
+  onImport,
+}: {
+  ledger: DeviceConnection;
+  onImport: (values: DeviceAccount[]) => void;
+}) {
+  const [pathType, setPathType] = useState<DerivationPathType>('ledgerLive');
+  return (
+    <VStack gap={24}>
+      <SegmentedControlGroup style={{ paddingTop: 4 }}>
+        <SegmentedControlRadio
+          name="pathType"
+          value="ledger"
+          checked={pathType === 'ledger'}
+          onChange={(event) =>
+            setPathType(event.currentTarget.value as DerivationPathType)
+          }
+        >
+          Ledger
+        </SegmentedControlRadio>
+        <SegmentedControlRadio
+          name="pathType"
+          value="ledgerLive"
+          checked={pathType === 'ledgerLive'}
+          onChange={(event) =>
+            setPathType(event.currentTarget.value as DerivationPathType)
+          }
+        >
+          Ledger Live
+        </SegmentedControlRadio>
+      </SegmentedControlGroup>
+      <AddressSelectList
+        key={pathType}
+        ledger={ledger}
+        pathType={pathType}
+        onImport={onImport}
+      />
     </VStack>
   );
 }
@@ -218,9 +231,8 @@ function Main({
       <ImportLedgerAddresses
         ledger={ledger}
         onImport={(accounts) => {
-          console.log('should handle import', { accounts, ledger });
           // @ts-ignore
-          const { device } = ledger.appEth.transport.device as USBDevice;
+          const device = ledger.appEth.transport.device as USBDevice;
           const importData: LedgerAccountImport = {
             accounts,
             device: {
@@ -237,8 +249,7 @@ function Main({
   } else {
     return (
       <>
-        <div>Strategy: {strategy}</div>
-        <ConnectDevice
+        <ConnectLedgerDevice
           onConnect={(data) => {
             if (strategy === 'connect') {
               onPostMessage({ type: 'ledger/connect' });
@@ -286,10 +297,8 @@ class Controller {
         try {
           // @ts-ignore
           const result = await Controller[method](params);
-          console.log('method result', result);
           window.parent.postMessage({ id, result }, window.location.origin);
         } catch (error) {
-          console.log('method error', error);
           window.parent.postMessage({ id, error }, window.location.origin);
         }
       }
@@ -297,7 +306,6 @@ class Controller {
   }
 
   listen() {
-    console.log('listeneing to messages');
     window.addEventListener('message', Controller.listener);
     return () => {
       window.removeEventListener('message', Controller.listener);
@@ -372,6 +380,11 @@ function IframeDesignTheme() {
   return <DesignTheme />;
 }
 
+function FullBodyHeight() {
+  useBodyStyle(useMemo(() => ({ height: '100vh' }), []));
+  return null;
+}
+
 function renderApp() {
   const root = document.getElementById('root');
   if (!root) {
@@ -388,7 +401,14 @@ function renderApp() {
         <HashRouter>
           <ErrorBoundary renderError={(error) => <ViewError error={error} />}>
             <IframeDesignTheme />
-            <React.Suspense fallback={<ViewLoading />}>
+            <React.Suspense
+              fallback={
+                <>
+                  <FullBodyHeight />
+                  <ViewLoading />
+                </>
+              }
+            >
               <App requestId={requestId} />
             </React.Suspense>
           </ErrorBoundary>

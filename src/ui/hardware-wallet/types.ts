@@ -1,6 +1,11 @@
-import type { signTransaction } from 'hardware-wallet-connection';
+import type {
+  signTransaction,
+  connectDevice,
+} from 'hardware-wallet-connection';
 import { isObj } from 'src/shared/isObj';
 import type { Device, DeviceAccount } from 'src/shared/types/Device';
+
+export type DeviceConnection = Awaited<ReturnType<typeof connectDevice>>;
 
 export interface LedgerAccountImport {
   accounts: DeviceAccount[];
