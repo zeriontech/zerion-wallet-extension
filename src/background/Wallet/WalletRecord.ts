@@ -22,6 +22,7 @@ import {
   isReadonlyContainer,
   isSignerContainer,
 } from 'src/shared/types/validators';
+import { capitalize } from 'capitalize-ts';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
 import { SeedType } from './model/SeedType';
 import type {
@@ -61,7 +62,7 @@ function generateGroupName(
   const prefix = isSignerGroup
     ? 'Wallet'
     : isHardwareGroup
-    ? 'Hardware'
+    ? capitalize(walletContainer.provider)
     : 'Watch';
   const name = (index: number) => `${prefix} Group #${index}`;
   if (!record) {

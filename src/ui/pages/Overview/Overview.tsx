@@ -191,7 +191,7 @@ function RenderTimeMeasure() {
 
 function OverviewComponent() {
   useBodyStyle(
-    useMemo(() => ({ ['--background' as string]: 'var(--neutral-100)' }), [])
+    useMemo(() => ({ ['--background' as string]: 'var(--z-index-0)' }), [])
   );
   const { singleAddress, singleAddressNormalized, params, ready } =
     useAddressParams();
@@ -216,6 +216,8 @@ function OverviewComponent() {
     <PageColumn
       style={{
         ['--column-padding-inline' as string]: '8px',
+        ['--background' as string]: 'var(--neutral-100)',
+        backgroundColor: 'var(--background)',
       }}
     >
       <PageFullBleedColumn
@@ -224,6 +226,7 @@ function OverviewComponent() {
           position: 'sticky',
           top: 0,
           zIndex: 'var(--navbar-index)',
+          // ['--background' as string]: 'var(--neutral-100)',
           backgroundColor: 'var(--background)',
         }}
       >

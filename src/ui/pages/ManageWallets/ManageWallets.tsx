@@ -118,16 +118,21 @@ function HardwareWalletList({ walletGroups }: { walletGroups: WalletGroup[] }) {
           component: (
             <HStack gap={4} justifyContent="space-between" alignItems="center">
               <VStack gap={8}>
-                <UIText kind="small/accent" style={{ wordBreak: 'break-all' }}>
-                  {getGroupDisplayName(group.name)}
-                </UIText>
-                {isHardwareContainer(group.walletContainer) ? (
-                  <UIText kind="caption/regular" color="var(--neutral-500)">
-                    {capitalize(group.walletContainer.provider)}
-                    {' · '}
-                    {group.walletContainer.device.productName}
+                <VStack gap={0}>
+                  <UIText
+                    kind="small/accent"
+                    style={{ wordBreak: 'break-all' }}
+                  >
+                    {getGroupDisplayName(group.name)}
                   </UIText>
-                ) : null}
+                  {isHardwareContainer(group.walletContainer) ? (
+                    <UIText kind="caption/regular" color="var(--neutral-500)">
+                      {capitalize(group.walletContainer.provider)}
+                      {' · '}
+                      {group.walletContainer.device.productName}
+                    </UIText>
+                  ) : null}
+                </VStack>
                 <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                   {group.walletContainer.wallets.map((wallet) => (
                     <AddressBadge key={wallet.address} wallet={wallet} />

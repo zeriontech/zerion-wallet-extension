@@ -18,6 +18,8 @@ export interface RpcError {
   error: ErrorResponse;
 }
 
+export type RpcResponse<T = unknown> = RpcResult<T> | RpcError;
+
 export function isRpcResult<T = unknown>(
   payload: Partial<RpcResult<T>> | unknown
 ): payload is RpcResult<T> {
@@ -32,7 +34,7 @@ export function isRpcError(
 
 export function isRpcResponse<T = unknown>(
   payload: Partial<RpcResult<T> | RpcError> | unknown
-): payload is RpcResult<T> | RpcError {
+): payload is RpcResponse<T> {
   return isRpcResult(payload) || isRpcError(payload);
 }
 

@@ -1,6 +1,4 @@
-import { useStore } from '@store-unit/react';
-import React, { useId, useRef } from 'react';
-import { themeStore } from 'src/ui/features/appearance';
+import React, { useRef } from 'react';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { Button } from 'src/ui/ui-kit/Button';
 import { useMutation } from '@tanstack/react-query';
@@ -9,11 +7,11 @@ import type { RpcRequest } from 'src/shared/custom-rpc';
 import { isRpcResponse, isRpcResult } from 'src/shared/custom-rpc';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getError } from 'src/shared/errors/getError';
-import { UIText } from 'src/ui/ui-kit/UIText';
 import { prepareTransaction } from 'src/modules/ethereum/transactions/prepareTransaction';
 import { createNanoEvents } from 'nanoevents';
 import { nanoid } from 'nanoid';
 import type { SignTransactionResult } from 'src/ui/hardware-wallet/types';
+import { LedgerIframe } from 'src/ui/hardware-wallet/LedgerIframe';
 
 class MessageHandler {
   emitter = createNanoEvents<{
@@ -60,18 +58,17 @@ export function HardwareSignTransaction({
   getTransaction,
   onSign,
   isSending,
+  onSignError,
 }: {
   derivationPath: string;
   getTransaction: () => Promise<IncomingTransaction>;
   onSign: (serialized: string) => void;
   isSending: boolean;
+  onSignError: (error: Error) => void;
 }) {
-  const themeState = useStore(themeStore);
-
   const navigate = useNavigate();
   const location = useLocation();
 
-  const requestId = useId();
   const ref = useRef<HTMLIFrameElement | null>(null);
 
   const { mutate: signTransaction, ...signMutation } = useMutation({
@@ -97,50 +94,46 @@ export function HardwareSignTransaction({
       onSign(result.serialized);
     },
     onError(error) {
-      if (getError(error).message === 'disconnected') {
+      const normalizedError = getError(error);
+      if (normalizedError.message === 'disconnected') {
         navigate(
           `/connect-hardware-wallet?${new URLSearchParams({
             strategy: 'connect',
             next: `${location.pathname}${location.search}`,
           })}`
         );
+      } else {
+        onSignError(normalizedError);
       }
     },
   });
 
   return (
     <>
-      <iframe
+      <LedgerIframe
         ref={ref}
-        id="the-ledger-test"
-        // This is crucial: by lifting only "allow-scripts" restriction
-        // we restrict everything else, inluding "allow-same-origin" token.
-        // By doing this, the iframe code will be treated by the background script
-        // as a third-party origin.
-        sandbox="allow-scripts"
-        allow="usb"
-        src={`ui/hardware-wallet/ledger.html?theme-state=${encodeURIComponent(
-          JSON.stringify(themeState)
-        )}&request-id=${requestId}#/signTransaction`}
-        style={{ border: 'none', backgroundColor: 'transparent' }}
-        width="100%"
+        initialRoute="/signTransaction"
+        style={{
+          position: 'absolute',
+          border: 'none',
+          backgroundColor: 'transparent',
+        }}
+        tabIndex={-1}
         height={0}
       />
-      {signMutation.isError ? (
-        <UIText kind="small/regular" color="var(--negative-500)">
-          {getError(signMutation.error).message}
-        </UIText>
-      ) : null}
       <Button
         kind="primary"
         onClick={() => signTransaction()}
         disabled={signMutation.isLoading || isSending}
+        style={{
+          paddingInline: 24, // fit longer button label
+        }}
       >
         {isSending
           ? 'Sending...'
           : signMutation.isLoading
           ? 'Sign...'
-          : 'Sign Transaction from Ledger'}
+          : 'Sign from Ledger'}
       </Button>
     </>
   );

@@ -78,7 +78,7 @@ type SendTransactionError =
   | { reason: string }
   | { error: { body: string } };
 
-function errorToMessage(error?: SendTransactionError) {
+function errorToMessage(error?: SendTransactionError | Error) {
   const fallbackString = 'Unknown Error';
   if (!error) {
     return fallbackString;
@@ -305,6 +305,9 @@ function TransactionDefaultView({
     },
     onSuccess: (tx) => handleSentTransaction(tx),
   });
+  const [hardwareSignError, setHardwareSignError] = useState<Error | null>(
+    null
+  );
 
   const recipientAddress = addressAction.label?.display_value.wallet_address;
   const actionTransfers = addressAction.content?.transfers;
@@ -424,24 +427,11 @@ function TransactionDefaultView({
             {signMutation.isError
               ? errorToMessage(signMutation.error as SendTransactionError)
               : sendMutation.isError
-              ? `Send Signed Error: ${errorToMessage(
-                  sendMutation.error as SendTransactionError
-                )}`
+              ? errorToMessage(sendMutation.error as SendTransactionError)
+              : hardwareSignError
+              ? errorToMessage(sendMutation.error)
               : null}
           </UIText>
-          {isDeviceAccount(wallet) ? (
-            <>
-              <div>hardware</div>
-              <HardwareSignTransaction
-                derivationPath={wallet.derivationPath}
-                getTransaction={getTransaction}
-                onSign={(serialized) => {
-                  sendSignedTransaction(serialized);
-                }}
-                isSending={sendMutation.isLoading}
-              />
-            </>
-          ) : null}
           <div
             style={{
               display: 'grid',
@@ -457,18 +447,34 @@ function TransactionDefaultView({
             >
               Cancel
             </Button>
-            <Button
-              disabled={signMutation.isLoading}
-              onClick={() => {
-                try {
-                  signAndSendTransaction(incomingTransaction);
-                } catch (error) {
-                  showErrorBoundary(error);
-                }
-              }}
-            >
-              {signMutation.isLoading ? 'Sending...' : 'Confirm'}
-            </Button>
+            {isDeviceAccount(wallet) ? (
+              <HardwareSignTransaction
+                derivationPath={wallet.derivationPath}
+                getTransaction={getTransaction}
+                onSign={(serialized) => {
+                  try {
+                    sendSignedTransaction(serialized);
+                  } catch (error) {
+                    showErrorBoundary(error);
+                  }
+                }}
+                onSignError={(error) => setHardwareSignError(error)}
+                isSending={sendMutation.isLoading}
+              />
+            ) : (
+              <Button
+                disabled={signMutation.isLoading}
+                onClick={() => {
+                  try {
+                    signAndSendTransaction(incomingTransaction);
+                  } catch (error) {
+                    showErrorBoundary(error);
+                  }
+                }}
+              >
+                {signMutation.isLoading ? 'Sending...' : 'Confirm'}
+              </Button>
+            )}
           </div>
         </VStack>
       </Content>

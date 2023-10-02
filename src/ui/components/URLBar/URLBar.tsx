@@ -5,6 +5,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { Store } from 'store-unit';
 import { useStore } from '@store-unit/react';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
+import { getBackOrHome } from 'src/ui/shared/navigation/getBackOrHome';
 import { BackButton } from '../BackButton';
 
 function capitalize(str: string) {
@@ -94,7 +95,7 @@ export function URLBar() {
           ) : (
             <>
               <BackButton
-                onClick={() => navigate(-1)}
+                onClick={() => navigate(getBackOrHome() as number)}
                 title={`Press "backspace" to navigate back`}
               />
               <KeyboardShortcut

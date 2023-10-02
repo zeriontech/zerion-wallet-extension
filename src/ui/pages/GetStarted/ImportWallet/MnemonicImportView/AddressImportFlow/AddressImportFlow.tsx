@@ -1,14 +1,12 @@
 import groupBy from 'lodash/groupBy';
 import React from 'react';
 import { useCallback, useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { PageTop } from 'src/ui/components/PageTop';
-import { walletPort } from 'src/ui/shared/channels';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -16,23 +14,9 @@ import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { NBSP } from 'src/ui/shared/typography';
+import { useAllExistingAddresses } from 'src/ui/shared/requests/useAllExistingAddresses';
 import { AddressImportMessages } from './AddressImportMessages';
 import { WalletList } from './WalletList';
-
-function useAllExistingAddresses() {
-  const { data: walletGroups } = useQuery({
-    queryKey: ['wallet/uiGetWalletGroups'],
-    queryFn: () => walletPort.request('uiGetWalletGroups'),
-    useErrorBoundary: true,
-  });
-  return useMemo(
-    () =>
-      walletGroups
-        ?.flatMap((group) => group.walletContainer.wallets)
-        .map(({ address }) => normalizeAddress(address)),
-    [walletGroups]
-  );
-}
 
 function PortfolioValueDetail({ address }: { address: string }) {
   return (
@@ -99,7 +83,6 @@ function AddressImportList({
               <WalletList
                 listTitle="Active wallets"
                 wallets={active}
-                // showPortfolio={true}
                 renderDetail={(index) => (
                   <PortfolioValueDetail address={active[index].address} />
                 )}
@@ -112,7 +95,6 @@ function AddressImportList({
               <WalletList
                 listTitle="Inactive wallets"
                 wallets={rest}
-                // showPortfolio={false}
                 renderDetail={null}
                 existingAddressesSet={existingAddressesSet}
                 values={values}
