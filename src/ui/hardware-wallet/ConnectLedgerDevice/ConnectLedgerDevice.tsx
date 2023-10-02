@@ -2,7 +2,7 @@ import {
   connectDevice,
   checkDevice,
   interpretError,
-} from 'hardware-wallet-connection';
+} from '@zeriontech/hardware-wallet-connection';
 import { useMutation } from '@tanstack/react-query';
 import React from 'react';
 import { getError } from 'src/shared/errors/getError';

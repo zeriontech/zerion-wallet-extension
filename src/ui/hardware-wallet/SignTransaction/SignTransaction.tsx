@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
-import { checkDevice, signTransaction } from 'hardware-wallet-connection';
+import {
+  checkDevice,
+  signTransaction,
+} from '@zeriontech/hardware-wallet-connection';
 import { isObj } from 'src/shared/isObj';
 import { isRpcRequest } from 'src/shared/custom-rpc';
 import { isClassProperty } from 'src/shared/core/isClassProperty';

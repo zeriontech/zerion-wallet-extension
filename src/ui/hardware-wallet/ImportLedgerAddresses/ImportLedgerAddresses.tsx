@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { getAddresses } from 'hardware-wallet-connection';
+import { getAddresses } from '@zeriontech/hardware-wallet-connection';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import type { DeviceAccount } from 'src/shared/types/Device';
 import {

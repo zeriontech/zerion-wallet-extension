@@ -1,7 +1,7 @@
 import type {
   signTransaction,
   connectDevice,
-} from 'hardware-wallet-connection';
+} from '@zeriontech/hardware-wallet-connection';
 import { isObj } from 'src/shared/isObj';
 import type { Device, DeviceAccount } from 'src/shared/types/Device';
 
