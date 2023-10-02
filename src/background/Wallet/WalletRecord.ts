@@ -51,11 +51,9 @@ function generateGroupName(
   const isSignerGroup = isSignerContainer(walletContainer);
   const isHardwareGroup = isHardwareContainer(walletContainer);
   const isReadonlyGroup = isReadonlyContainer(walletContainer);
+  const isPrivateKeyGroup = isPrivateKeyContainer(walletContainer);
 
-  if (
-    isReadonlyGroup ||
-    (isSignerGroup && walletContainer.seedType === SeedType.privateKey)
-  ) {
+  if (isReadonlyGroup || isPrivateKeyGroup) {
     return '';
   }
 

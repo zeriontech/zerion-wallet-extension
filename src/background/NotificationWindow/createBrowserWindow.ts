@@ -65,18 +65,6 @@ export async function createBrowserWindow({
     left: left ?? currentWindowLeft + currentWindowWidth - width,
   };
 
-  console.log('create window for', type);
-  // if (type === 'tab') {
-  //   const { id: windowId } = await browser.windows.create({
-  //     focused: true,
-  //     url: getPopupRoute(`${initialRoute}?${params.toString()}`, type),
-  //   });
-  //   if (!windowId) {
-  //     throw new Error('Window ID not received from the window API.');
-  //   }
-  //
-  //   return { id, windowId };
-  // } else {
   const { id: windowId } = await browser.windows.create({
     focused: true,
     url: getPopupRoute(`${initialRoute}?${params.toString()}`, type),
@@ -91,5 +79,4 @@ export async function createBrowserWindow({
   }
 
   return { id, windowId };
-  // }
 }

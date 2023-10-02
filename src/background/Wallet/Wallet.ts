@@ -286,16 +286,17 @@ export class Wallet {
     provider: 'ledger';
   }>) {
     invariant(accounts.length > 0, 'Must import at least 1 account');
+    const walletContainer = new DeviceAccountContainer({
+      device,
+      wallets: accounts,
+      provider,
+    });
     this.pendingWallet = {
       origin: WalletOrigin.imported,
       groupId: null,
-      walletContainer: new DeviceAccountContainer({
-        device,
-        wallets: accounts,
-        provider,
-      }),
+      walletContainer,
     };
-    return accounts[0];
+    return walletContainer.getFirstWallet();
   }
 
   async getRecoveryPhrase({
