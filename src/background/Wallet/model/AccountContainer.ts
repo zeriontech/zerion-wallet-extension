@@ -22,13 +22,16 @@ export interface DeviceAccount extends ExternallyOwnedAccount {
   derivationPath: string;
 }
 
+type NonFunctionPropertyNames<T> = {
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  [K in keyof T]: T[K] extends Function ? never : K;
+}[keyof T];
+type NonFunctionProperties<T> = Pick<T, NonFunctionPropertyNames<T>>;
+
 interface AccountContainerBase<T extends ExternallyOwnedAccount> {
   wallets: T[];
   provider: string | null; // null for "watched" addresses
-  toPlainObject(): Omit<
-    AccountContainerBase<T>,
-    'toPlainObject' | 'getFirstWallet' | 'removeWallet' | 'getWalletByAddress'
-  >;
+  toPlainObject(): NonFunctionProperties<AccountContainerBase<T>>;
   getFirstWallet(): T;
   removeWallet(address: string): void;
   getWalletByAddress(address: string): T | null;
