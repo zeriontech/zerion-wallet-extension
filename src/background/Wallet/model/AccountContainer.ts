@@ -1,5 +1,3 @@
-// TODO: Rename file to AccountContainer.ts
-
 import type { ethers } from 'ethers';
 import { immerable } from 'immer';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
@@ -14,7 +12,7 @@ export interface ExternallyOwnedAccount {
 }
 
 export interface Device {
-  /** Inspited by https://developer.mozilla.org/en-US/docs/Web/API/HIDDevice */
+  /** Inspired by https://developer.mozilla.org/en-US/docs/Web/API/HIDDevice */
   productId: number;
   vendorId?: number;
   productName?: string;
@@ -88,10 +86,6 @@ export class ReadonlyAccountContainer
     this.wallets = wallets;
   }
 }
-
-// export interface ReadonlyAccountContainer extends AccountContainerBase {
-//   provider: null;
-// }
 
 export class DeviceAccountContainer
   extends AbstractAccountContainer<DeviceAccount>

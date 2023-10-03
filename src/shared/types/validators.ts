@@ -6,7 +6,7 @@ import type {
 import type {
   DeviceAccountContainer,
   ReadonlyAccountContainer,
-} from 'src/background/Wallet/model/accounts/types';
+} from 'src/background/Wallet/model/AccountContainer';
 import type { WalletContainer } from 'src/background/Wallet/model/types';
 import { SeedType } from '../SeedType';
 import type { BareWallet } from './BareWallet';
@@ -58,21 +58,6 @@ export function isDeviceAccount(
   return 'derivationPath' in wallet;
 }
 
-// function assertType<K, T extends K>(
-//   value: K,
-//   check: (value: K) => value is T
-// ): asserts value is T {
-//   if (!check(value)) {
-//     throw new Error('Type Error');
-//   }
-// }
-// function createAsserter<K, T extends K>(check: (value: K) => value is T) {
-//   return function (value: K): asserts value is T {
-//     return assertType(value, check);
-//   };
-// }
-
-// export const assertWalletContainer = createAsserter(isWalletContainer);
 export function assertSignerContainer(
   container: WalletContainer
 ): asserts container is SignerContainer {

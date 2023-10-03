@@ -77,8 +77,8 @@ import { WalletStore } from './persistence';
 import { WalletOrigin } from './model/WalletOrigin';
 import type { GlobalPreferences } from './GlobalPreferences';
 import type { State as GlobalPreferencesState } from './GlobalPreferences';
-import type { Device, DeviceAccount } from './model/accounts/types';
-import { DeviceAccountContainer } from './model/accounts/types';
+import type { Device, DeviceAccount } from './model/AccountContainer';
+import { DeviceAccountContainer } from './model/AccountContainer';
 
 const INTERNAL_SYMBOL_CONTEXT = { origin: INTERNAL_ORIGIN_SYMBOL };
 

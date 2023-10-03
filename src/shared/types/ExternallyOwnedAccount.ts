@@ -1,1 +1,1 @@
-export type { ExternallyOwnedAccount } from 'src/background/Wallet/model/accounts/types';
+export type { ExternallyOwnedAccount } from 'src/background/Wallet/model/AccountContainer';

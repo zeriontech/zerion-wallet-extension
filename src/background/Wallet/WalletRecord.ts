@@ -41,7 +41,7 @@ import {
   DeviceAccountContainer,
   ReadonlyAccountContainer,
   type ExternallyOwnedAccount,
-} from './model/accounts/types';
+} from './model/AccountContainer';
 
 function generateGroupName(
   record: WalletRecord | null,

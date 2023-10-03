@@ -1,7 +1,7 @@
 import { produce } from 'immer';
 import type { WalletGroup } from '../model/types';
 import type { BareWallet } from '../model/BareWallet';
-import type { ExternallyOwnedAccount } from '../model/accounts/types';
+import type { ExternallyOwnedAccount } from '../model/AccountContainer';
 
 function maskMnemonic(
   mnemonic: BareWallet['mnemonic']

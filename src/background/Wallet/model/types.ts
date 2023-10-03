@@ -2,7 +2,7 @@ import type { ethers } from 'ethers';
 import type { WalletAbility } from 'src/shared/types/Daylight';
 import type { SignerContainer } from './WalletContainer';
 import type { WalletOrigin } from './WalletOrigin';
-import type { AccountContainer } from './accounts/types';
+import type { AccountContainer } from './AccountContainer';
 
 export type WalletContainer = SignerContainer | AccountContainer;
 
