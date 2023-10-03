@@ -1,6 +1,7 @@
 import React, { useCallback, useId, useRef, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
+import { isTruthy } from 'is-truthy-ts';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { NotFoundPage } from 'src/ui/components/NotFoundPage';
@@ -308,14 +309,16 @@ export function WalletGroup() {
                 </HStack>
               ),
             })),
-            {
-              key: 1,
-              to: `/get-started/import/mnemonic?groupId=${walletGroup.id}`,
-              component: (
-                <div style={{ color: 'var(--primary)' }}>+ Add Wallet</div>
-              ),
-            },
-          ]}
+            isMnemonicGroup
+              ? {
+                  key: 1,
+                  to: `/get-started/import/mnemonic?groupId=${walletGroup.id}`,
+                  component: (
+                    <div style={{ color: 'var(--primary)' }}>+ Add Wallet</div>
+                  ),
+                }
+              : null,
+          ].filter(isTruthy)}
         />
         <VStack gap={4}>
           <SurfaceList
