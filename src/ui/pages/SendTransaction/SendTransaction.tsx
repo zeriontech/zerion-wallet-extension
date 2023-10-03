@@ -96,6 +96,10 @@ function errorToMessage(error?: SendTransactionError | Error) {
           fallbackString
         : fallbackString;
 
+    if (result === 'DeniedByUser') {
+      return '';
+    }
+
     if (result.toLowerCase() === 'insufficient funds for gas * price + value') {
       return 'Error: Insufficient funds';
     }
@@ -429,7 +433,7 @@ function TransactionDefaultView({
               : sendMutation.isError
               ? errorToMessage(sendMutation.error as SendTransactionError)
               : hardwareSignError
-              ? errorToMessage(sendMutation.error)
+              ? errorToMessage(hardwareSignError)
               : null}
           </UIText>
           <div
@@ -458,6 +462,7 @@ function TransactionDefaultView({
                     showErrorBoundary(error);
                   }
                 }}
+                onBeforeSign={() => setHardwareSignError(null)}
                 onSignError={(error) => setHardwareSignError(error)}
                 isSending={sendMutation.isLoading}
               />

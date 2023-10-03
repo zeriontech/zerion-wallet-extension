@@ -8,13 +8,7 @@ function isErrorMessageObject(value: unknown): value is { message: string } {
 
 function fromMessageObject(value: { message: string }) {
   const error = new Error(value.message) as ExtendedError;
-  if ('code' in value && typeof value.code === 'number') {
-    error.code = value.code;
-  }
-  if ('data' in value && typeof value.data === 'string') {
-    error.data = value.data;
-  }
-  return error;
+  return Object.assign(error, value);
 }
 
 function fromRpcError(value: Omit<JsonRpcError, 'error'> & { error: unknown }) {

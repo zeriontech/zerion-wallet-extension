@@ -58,12 +58,14 @@ export function HardwareSignTransaction({
   getTransaction,
   onSign,
   isSending,
+  onBeforeSign,
   onSignError,
 }: {
   derivationPath: string;
   getTransaction: () => Promise<IncomingTransaction>;
   onSign: (serialized: string) => void;
   isSending: boolean;
+  onBeforeSign: () => void;
   onSignError: (error: Error) => void;
 }) {
   const navigate = useNavigate();
@@ -93,6 +95,7 @@ export function HardwareSignTransaction({
       );
       onSign(result.serialized);
     },
+    onMutate: () => onBeforeSign(),
     onError(error) {
       const normalizedError = getError(error);
       if (normalizedError.message === 'disconnected') {

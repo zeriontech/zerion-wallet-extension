@@ -6,6 +6,8 @@ import {
 import { isObj } from 'src/shared/isObj';
 import { isRpcRequest } from 'src/shared/custom-rpc';
 import { isClassProperty } from 'src/shared/core/isClassProperty';
+import { getError } from 'src/shared/errors/getError';
+import { normalizeDeviceError } from '../shared/errors';
 
 interface SignTransactionParams {
   derivationPath: string;
@@ -46,7 +48,10 @@ class Controller {
           const result = await Controller[method](params);
           window.parent.postMessage({ id, result }, window.location.origin);
         } catch (error) {
-          window.parent.postMessage({ id, error }, window.location.origin);
+          window.parent.postMessage(
+            { id, error: normalizeDeviceError(getError(error)) },
+            window.location.origin
+          );
         }
       }
     }
