@@ -57,6 +57,7 @@ export function WalletAvatar({
     useErrorBoundary: false,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+    staleTime: 60000,
     retry: 0,
   });
 

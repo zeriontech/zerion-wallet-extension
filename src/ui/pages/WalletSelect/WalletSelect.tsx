@@ -78,7 +78,7 @@ export function WalletSelect() {
     );
   }
   const items: Item[] = [];
-  let isVisuallyGrouped = true;
+  let isVisuallyGrouped = false;
   for (const group of walletGroups) {
     // assertSignerContainer(group.walletContainer);
     if (walletGroups.length > 1) {

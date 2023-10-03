@@ -7,6 +7,7 @@ import { isObj } from 'src/shared/isObj';
 import { isRpcRequest } from 'src/shared/custom-rpc';
 import { isClassProperty } from 'src/shared/core/isClassProperty';
 import { getError } from 'src/shared/errors/getError';
+import { invariant } from 'src/shared/invariant';
 import { normalizeDeviceError } from '../shared/errors';
 
 interface SignTransactionParams {
@@ -17,15 +18,10 @@ interface SignTransactionParams {
 function assertSignTransactionParams(
   x: unknown
 ): asserts x is SignTransactionParams {
-  if (
-    isObj(x) &&
-    typeof x.derivationPath === 'string' &&
-    isObj(x.transaction)
-  ) {
-    // ok
-  } else {
-    throw new Error('Invalid Payload');
-  }
+  invariant(
+    isObj(x) && typeof x.derivationPath === 'string' && isObj(x.transaction),
+    'Invalid Payload'
+  );
 }
 
 class Controller {

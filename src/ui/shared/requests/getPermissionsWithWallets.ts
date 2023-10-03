@@ -13,7 +13,7 @@ export type ConnectedSiteItem = Permission & {
   wallets: ExternallyOwnedAccount[];
 };
 
-function createBareWallet(address: string): ExternallyOwnedAccount {
+function createExternallyOwnedAccount(address: string): ExternallyOwnedAccount {
   return {
     address: isEthereumAddress(address)
       ? ethers.utils.getAddress(address)
@@ -39,7 +39,7 @@ function updatePermissionsWithWallets(
       origin,
       wallets: permission.addresses.map((normalizedAddress) => {
         const wallet = walletsMap.get(normalizedAddress);
-        return wallet || createBareWallet(normalizedAddress);
+        return wallet || createExternallyOwnedAccount(normalizedAddress);
       }),
     });
   }
