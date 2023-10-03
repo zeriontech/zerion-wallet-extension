@@ -5,7 +5,7 @@ import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import { getIndexFromPath } from 'src/shared/wallet/getNextAccountPath';
+import { getIndexFromPath } from 'src/shared/wallet/derivation-paths';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { WalletAbility } from 'src/shared/types/Daylight';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';

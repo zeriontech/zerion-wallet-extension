@@ -7,7 +7,7 @@ import {
   SegmentedControlGroup,
   SegmentedControlRadio,
 } from 'src/ui/ui-kit/SegmentedControl';
-import type { DerivationPathType } from 'src/shared/wallet/getNextAccountPath';
+import type { DerivationPathType } from 'src/shared/wallet/derivation-paths';
 import { WalletListPresentation } from 'src/ui/pages/GetStarted/ImportWallet/MnemonicImportView/AddressImportFlow/WalletList';
 import { Button } from 'src/ui/ui-kit/Button';
 import { invariant } from 'src/shared/invariant';
