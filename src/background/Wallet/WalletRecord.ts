@@ -24,7 +24,6 @@ import {
 } from 'src/shared/types/validators';
 import { capitalize } from 'capitalize-ts';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
-import { SeedType } from './model/SeedType';
 import type {
   PendingWallet,
   WalletContainer,
@@ -48,16 +47,16 @@ function generateGroupName(
   record: WalletRecord | null,
   walletContainer: WalletContainer
 ) {
-  const isSignerGroup = isSignerContainer(walletContainer);
+  const isMnemonicGroup = isMnemonicContainer(walletContainer);
+  const isPrivateKeyGroup = isPrivateKeyContainer(walletContainer);
   const isHardwareGroup = isHardwareContainer(walletContainer);
   const isReadonlyGroup = isReadonlyContainer(walletContainer);
-  const isPrivateKeyGroup = isPrivateKeyContainer(walletContainer);
 
   if (isReadonlyGroup || isPrivateKeyGroup) {
     return '';
   }
 
-  const prefix = isSignerGroup
+  const prefix = isMnemonicGroup
     ? 'Wallet'
     : isHardwareGroup
     ? capitalize(walletContainer.provider)
@@ -67,11 +66,8 @@ function generateGroupName(
     return name(1);
   }
   const sameCategoryGroups = record.walletManager.groups.filter((group) => {
-    if (isSignerGroup) {
-      return (
-        isSignerContainer(group.walletContainer) &&
-        group.walletContainer.seedType === SeedType.mnemonic
-      );
+    if (isMnemonicGroup) {
+      return isMnemonicContainer(group.walletContainer);
     } else if (isHardwareGroup) {
       return isHardwareContainer(group.walletContainer);
     } else {
@@ -242,7 +238,6 @@ export class WalletRecordModel {
       const isReadonlyGroup = isReadonlyContainer(walletContainer);
       const isMnemonicGroup = isMnemonicContainer(walletContainer);
       const isPrivateKeyGroup = isPrivateKeyContainer(walletContainer);
-      // const { seedType, seedHash } = walletContainer;
       if (!draft.feed.completedAbilities) {
         draft.feed.completedAbilities = [];
       }
@@ -255,17 +250,14 @@ export class WalletRecordModel {
         // There can also be the same private key among Mnemonic Containers.
         // Should we create a private key group in this case, thus duplicating an account?
         // For now, that is what we're doing
-        const existingGroup = draft.walletManager.groups.find(
-          // (group) => group.walletContainer.getFirstWallet().privateKey === privateKey
-          (group) => {
-            return (
-              isPrivateKeyContainer(group.walletContainer) &&
-              group.walletContainer.wallets.some(
-                (wallet) => wallet.privateKey === privateKey
-              )
-            );
-          }
-        );
+        const existingGroup = draft.walletManager.groups.find((group) => {
+          return (
+            isPrivateKeyContainer(group.walletContainer) &&
+            group.walletContainer.wallets.some(
+              (wallet) => wallet.privateKey === privateKey
+            )
+          );
+        });
         if (existingGroup) {
           return draft; // NOTE: private key already exists, should we update record or keep untouched?
         } else {
@@ -391,17 +383,6 @@ export class WalletRecordModel {
         } else {
           throw new Error(`Unexpected Account Container`);
         }
-        // if (seedType === SeedType.mnemonic) {
-        //   group.walletContainer =
-        //     await MnemonicWalletContainer.restoreWalletContainer(
-        //       group.walletContainer,
-        //       credentials
-        //     );
-        // } else if (seedType === SeedType.privateKey) {
-        //   group.walletContainer = new PrivateKeyWalletContainer(wallets);
-        // } else {
-        //   throw new Error(`Unexpected SeedType: ${seedType}`);
-        // }
         return group;
       })
     );
