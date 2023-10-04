@@ -1,4 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -17,6 +23,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
+import ArrowDownIcon from 'jsx:src/ui/assets/arrow-down.svg';
 import { useSignTypedData_v4Mutation } from 'src/ui/shared/requests/message-signing';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
@@ -47,21 +54,25 @@ import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAcc
 import { useErrorBoundary } from 'src/ui/shared/useErrorBoundary';
 import { isDeviceAccount } from 'src/shared/types/validators';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
+import { BUG_REPORT_BUTTON_HEIGHT } from 'src/ui/components/BugReportButton';
 import { HardwareSignMessage } from '../HardwareWalletConnection/HardwareSignMessage';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
-function TypedDataRow({ data }: { data: string }) {
-  return (
-    <Surface padding={16} style={{ border: '1px solid var(--neutral-300)' }}>
-      <UIText
-        kind="small/regular"
-        style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}
-      >
-        {data}
-      </UIText>
-    </Surface>
-  );
-}
+export const TypedDataRow = React.forwardRef(
+  ({ data }: { data: string }, ref: React.Ref<HTMLDivElement>) => {
+    return (
+      <Surface padding={16} style={{ border: '1px solid var(--neutral-300)' }}>
+        <UIText
+          kind="small/regular"
+          style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}
+        >
+          {data}
+        </UIText>
+        <div ref={ref} style={{ display: 'hidden' }} />
+      </Surface>
+    );
+  }
+);
 
 enum View {
   default = 'default',
@@ -171,6 +182,77 @@ function TypedDataDefaultView({
     },
   });
 
+  const footerContentRef = useRef<HTMLDivElement | null>(null);
+  const [seenSigningData, setSeenSigningData] = useState(true);
+  const typedDataRowRef = useRef<HTMLDivElement | null>(null);
+  const onTypedDataRowRefSet = useCallback((node: HTMLDivElement | null) => {
+    if (!node || !footerContentRef?.current) {
+      return;
+    }
+    const footerHeight = footerContentRef.current.getBoundingClientRect().top;
+    const rootMargin =
+      window.innerHeight + BUG_REPORT_BUTTON_HEIGHT - footerHeight;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setSeenSigningData(true);
+          observer.disconnect();
+        } else {
+          setSeenSigningData(false);
+        }
+      },
+      { rootMargin: `-${rootMargin}px` }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  const disposables = useRef<Array<() => void>>([]);
+  useEffect(() => {
+    disposables.current.forEach((l) => l());
+  }, []);
+
+  const setTypedDataRow = (node: HTMLDivElement | null) => {
+    typedDataRowRef.current = node;
+    const unlisten = onTypedDataRowRefSet(node);
+    if (unlisten) {
+      disposables.current.push(unlisten);
+    }
+  };
+
+  const scrollSigningData = () =>
+    typedDataRowRef?.current?.scrollIntoView({ behavior: 'smooth' });
+
+  const submitButton = isDeviceAccount(wallet) ? (
+    <HardwareSignMessage
+      derivationPath={wallet.derivationPath}
+      message={stringifiedData}
+      type="signTypedData_v4"
+      isSigning={signTypedData_v4Mutation.isLoading}
+      onBeforeSign={() => setHardwareSignError(null)}
+      onSignError={(error) => setHardwareSignError(error)}
+      onSign={(signature) => {
+        try {
+          registerTypedDataSign(signature);
+        } catch (error) {
+          showErrorBoundary(error);
+        }
+      }}
+    />
+  ) : (
+    <Button
+      disabled={signTypedData_v4Mutation.isLoading}
+      onClick={() => {
+        signTypedData_v4Mutation.mutate({
+          typedData: stringifiedData,
+          initiator: origin,
+        });
+      }}
+    >
+      {signTypedData_v4Mutation.isLoading ? 'Signing...' : 'Sign'}
+    </Button>
+  );
+
   return (
     <>
       <PageTop />
@@ -233,73 +315,58 @@ function TypedDataDefaultView({
             ) : null}
           </>
         ) : interpretQuery.isFetched ? (
-          <TypedDataRow data={typedDataFormatted} />
+          <TypedDataRow ref={setTypedDataRow} data={typedDataFormatted} />
         ) : null}
       </VStack>
       <Spacer height={16} />
       <Content name="sign-transaction-footer">
-        <VStack
-          style={{
-            textAlign: 'center',
-            marginTop: 'auto',
-            paddingTop: 8,
-          }}
-          gap={8}
-        >
-          <UIText kind="caption/regular" color="var(--negative-500)">
-            {signTypedData_v4Mutation.isError
-              ? getError(signTypedData_v4Mutation?.error).message
-              : hardwareSignError
-              ? errorToMessage(hardwareSignError)
-              : null}
-          </UIText>
-
-          <div
+        <div ref={footerContentRef}>
+          <VStack
             style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: 8,
+              textAlign: 'center',
+              marginTop: 'auto',
+              paddingTop: 8,
             }}
+            gap={8}
           >
-            <Button
-              kind="regular"
-              type="button"
-              onClick={onReject}
-              ref={focusNode}
+            <UIText kind="caption/regular" color="var(--negative-500)">
+              {signTypedData_v4Mutation.isError
+                ? getError(signTypedData_v4Mutation?.error).message
+                : hardwareSignError
+                ? errorToMessage(hardwareSignError)
+                : null}
+            </UIText>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: 8,
+              }}
             >
-              Cancel
-            </Button>
-            {isDeviceAccount(wallet) ? (
-              <HardwareSignMessage
-                derivationPath={wallet.derivationPath}
-                message={stringifiedData}
-                type="signTypedData_v4"
-                isSigning={signTypedData_v4Mutation.isLoading}
-                onBeforeSign={() => setHardwareSignError(null)}
-                onSignError={(error) => setHardwareSignError(error)}
-                onSign={(signature) => {
-                  try {
-                    registerTypedDataSign(signature);
-                  } catch (error) {
-                    showErrorBoundary(error);
-                  }
-                }}
-              />
-            ) : (
               <Button
-                disabled={signTypedData_v4Mutation.isLoading}
-                onClick={() => {
-                  signTypedData_v4Mutation.mutate({
-                    typedData: stringifiedData,
-                    initiator: origin,
-                  });
-                }}
+                kind="regular"
+                type="button"
+                onClick={onReject}
+                ref={focusNode}
               >
-                {signTypedData_v4Mutation.isLoading ? 'Signing...' : 'Sign'}
+                Cancel
               </Button>
-            )}
-          </div>
-        </VStack>
+
+              {Boolean(interpretation?.action) ||
+              interpretQuery.isLoading ||
+              seenSigningData ? (
+                submitButton
+              ) : (
+                <Button onClick={scrollSigningData}>
+                  <HStack gap={8} alignItems="center" justifyContent="center">
+                    <span>Scroll</span>
+                    <ArrowDownIcon style={{ width: 24, height: 24 }} />
+                  </HStack>
+                </Button>
+              )}
+            </div>
+          </VStack>
+        </div>
       </Content>
     </>
   );
