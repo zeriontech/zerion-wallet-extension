@@ -36,10 +36,14 @@ export async function getNativeAsset({
   ]);
 }
 
-export function useNativeAsset(chain: Chain) {
+export function useNativeAssetId(chain: Chain) {
   const { networks } = useNetworks();
   const network = networks?.getNetworkByName(chain);
-  const id = network?.native_asset?.id;
+  return network?.native_asset?.id;
+}
+
+export function useNativeAsset(chain: Chain) {
+  const id = useNativeAssetId(chain);
   const entry = useAssetsPrices(
     {
       asset_codes: [id].filter(isTruthy),

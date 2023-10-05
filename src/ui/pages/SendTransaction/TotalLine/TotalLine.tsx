@@ -12,17 +12,20 @@ export function TotalLine({
 }) {
   // TODO: refactor, nativeAsset might be null, but we may still know nativeAssetSymbol
   const { costs, nativeAsset } = transactionFee;
-  const { totalValueFiat, totalValueCommon } = costs || {};
+  const { totalValueFiat, totalValueCommon, totalValueExceedsBalance } =
+    costs || {};
   let valueElement: JSX.Element | null = null;
   if (totalValueFiat) {
     valueElement = (
       <UIText kind="small/accent">
+        {totalValueExceedsBalance ? 'Up to ' : null}
         {formatCurrencyValue(totalValueFiat, 'en', 'usd')}
       </UIText>
     );
   } else if (totalValueCommon) {
     valueElement = (
       <UIText kind="small/accent" title={totalValueCommon.toString()}>
+        {totalValueExceedsBalance ? 'Up to ' : null}
         {formatTokenValue(totalValueCommon, nativeAsset?.symbol)}
       </UIText>
     );

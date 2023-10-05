@@ -11,7 +11,7 @@ import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import type { Chain } from 'src/modules/networks/Chain';
-import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
+import type { IncomingTransactionWithFrom } from 'src/modules/ethereum/types/IncomingTransaction';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import type { TransactionFee } from '../TransactionConfiguration/useTransactionFee';
@@ -37,7 +37,7 @@ export function NetworkFee({
   networkFeeConfiguration,
   onChange,
 }: {
-  transaction: IncomingTransaction;
+  transaction: IncomingTransactionWithFrom;
   transactionFee: TransactionFee;
   chain: Chain;
   networkFeeConfiguration: NetworkFeeConfiguration;
@@ -47,7 +47,8 @@ export function NetworkFee({
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const { time, feeEstimation, feeEstimationQuery, costs, costsQuery } =
     transactionFee;
-  const { feeValueFiat, feeValueCommon } = costs || {};
+  const { feeValueFiat, feeValueCommon, totalValueExceedsBalance } =
+    costs || {};
 
   const { data: chainGasPrices } = useGasPrices(chain);
 
@@ -58,6 +59,13 @@ export function NetworkFee({
 
   const isOptimistic = Boolean(chainGasPrices?.info.optimistic);
   const disabled = isLoading || isOptimistic || !onChange;
+
+  const feeValueLabel = totalValueExceedsBalance ? 'Up to ' : '';
+  const feeValueFormatted = feeValueFiat
+    ? formatCurrencyValue(feeValueFiat, 'en', 'usd')
+    : feeValueCommon
+    ? formatTokenValue(feeValueCommon.toString(), nativeAssetSymbol)
+    : undefined;
 
   return (
     <>
@@ -113,14 +121,7 @@ export function NetworkFee({
                     ? NETWORK_SPEED_TO_TITLE.custom
                     : time ||
                       NETWORK_SPEED_TO_TITLE[networkFeeConfiguration.speed],
-                  feeValueFiat
-                    ? formatCurrencyValue(feeValueFiat, 'en', 'usd')
-                    : feeValueCommon
-                    ? formatTokenValue(
-                        feeValueCommon.toString(),
-                        nativeAssetSymbol
-                      )
-                    : undefined,
+                  `${feeValueLabel}${feeValueFormatted}`,
                 ]
                   .filter(isTruthy)
                   .join(' · ')}

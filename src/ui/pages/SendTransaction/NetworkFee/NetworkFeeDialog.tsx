@@ -14,7 +14,10 @@ import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { formatSeconds } from 'src/shared/units/formatSeconds';
-import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
+import type {
+  IncomingTransaction,
+  IncomingTransactionWithFrom,
+} from 'src/modules/ethereum/types/IncomingTransaction';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import {
@@ -316,7 +319,7 @@ function NetworkFeeButton({
   chain: Chain;
   onClick(): void;
   chainGasPrices?: ChainGasPrice | null;
-  transaction: IncomingTransaction;
+  transaction: IncomingTransactionWithFrom;
 }) {
   const { networks } = useNetworks();
   const speedConfiguration = useMemo(() => {
@@ -327,12 +330,14 @@ function NetworkFeeButton({
   }, [networkFeeConfiguration, option]);
 
   const { costs, costsQuery } = useTransactionFee({
+    address: transaction.from,
     chain,
     transaction,
     networkFeeConfiguration: speedConfiguration,
     onFeeValueCommonReady: null,
   });
-  const { feeValueFiat, feeValueCommon } = costs || {};
+  const { feeValueFiat, feeValueCommon, totalValueExceedsBalance } =
+    costs || {};
 
   const seconds =
     option !== 'custom'
@@ -378,13 +383,15 @@ function NetworkFeeButton({
             kind="small/regular"
             color={selected ? 'var(--primary)' : 'var(--black)'}
           >
-            ~{formatCurrencyValue(feeValueFiat, 'en', 'usd')}
+            {totalValueExceedsBalance ? 'Up to ' : null}~
+            {formatCurrencyValue(feeValueFiat, 'en', 'usd')}
           </UIText>
         ) : feeValueCommon && nativeAssetSymbol ? (
           <UIText
             kind="small/regular"
             color={selected ? 'var(--primary)' : 'var(--black)'}
           >
+            {totalValueExceedsBalance ? 'Up to ' : null}~
             {formatTokenValue(feeValueCommon.toString(), nativeAssetSymbol)}
           </UIText>
         ) : null}
@@ -399,7 +406,7 @@ export const NetworkFeeDialog = React.forwardRef<
     onSubmit(value: NetworkFeeConfiguration): void;
     chain: Chain;
     value: NetworkFeeConfiguration;
-    transaction: IncomingTransaction;
+    transaction: IncomingTransactionWithFrom;
   }
 >(({ onSubmit, value, chain, transaction }, ref) => {
   const [view, setView] = useState<'eip1559' | 'classic' | 'default'>(

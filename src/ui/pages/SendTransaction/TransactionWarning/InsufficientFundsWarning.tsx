@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { Chain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
@@ -6,10 +6,8 @@ import ValidationErrorIcon from 'jsx:src/ui/assets/validation-error.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import BigNumber from 'bignumber.js';
-import { useEvmAddressPositions } from 'src/ui/shared/requests/useEvmAddressPositions';
-import { baseToCommon } from 'src/shared/units/convert';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { useNativeBalance } from 'src/ui/shared/requests/useNativeBalance';
 import type { NetworkFeeConfiguration } from '../NetworkFee/types';
 import { useTransactionFee } from '../TransactionConfiguration/useTransactionFee';
 
@@ -25,30 +23,22 @@ function useInsufficientFundsWarning({
   networkFeeConfiguration: NetworkFeeConfiguration;
 }) {
   const transactionFee = useTransactionFee({
+    address,
     transaction,
     chain,
     networkFeeConfiguration,
     onFeeValueCommonReady: null,
   });
 
-  const { data: addressPositions, isLoading } = useEvmAddressPositions({
+  const { data: nativeBalance, isLoading } = useNativeBalance({
     address,
     chain,
   });
 
-  const nativeTokenBalance = useMemo(
-    () =>
-      baseToCommon(
-        new BigNumber(addressPositions?.[0].quantity || 0),
-        addressPositions?.[0].asset.decimals || 18
-      ),
-    [addressPositions]
-  );
-
-  if (!chain || isLoading) {
+  if (isLoading || !nativeBalance) {
     return false;
   }
-  return nativeTokenBalance.lt(transactionFee.costs?.totalValueCommon || 0);
+  return nativeBalance.lt(transactionFee.costs?.totalValueCommon || 0);
 }
 
 export function InsufficientFundsWarning({

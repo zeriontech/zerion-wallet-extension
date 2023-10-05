@@ -8,7 +8,7 @@ import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { Chain } from 'src/modules/networks/Chain';
 import { httpConnectionPort } from '../channels';
 
-function createAddressPosition({
+export function createAddressPosition({
   balance,
   network,
 }: {
