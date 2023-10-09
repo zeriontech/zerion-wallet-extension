@@ -178,6 +178,16 @@ export class WalletRecordModel {
     return record.walletManager.groups[0]?.walletContainer.getFirstWallet();
   }
 
+  static getWalletGroupByAddress(record: WalletRecord, address: string) {
+    for (const group of record.walletManager.groups) {
+      const wallet = group.walletContainer.getWalletByAddress(address);
+      if (wallet) {
+        return group;
+      }
+    }
+    return null;
+  }
+
   static getWalletByAddress(record: WalletRecord, address: string) {
     for (const group of record.walletManager.groups) {
       const wallet = group.walletContainer.getWalletByAddress(address);

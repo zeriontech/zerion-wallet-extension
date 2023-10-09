@@ -4,6 +4,7 @@ import type {
   SignerContainer,
 } from 'src/background/Wallet/model/WalletContainer';
 import type {
+  AccountContainer,
   DeviceAccountContainer,
   ReadonlyAccountContainer,
 } from 'src/background/Wallet/model/AccountContainer';
@@ -44,6 +45,13 @@ export function isReadonlyContainer(
   container: WalletContainer
 ): container is ReadonlyAccountContainer {
   return 'provider' in container && container.provider == null;
+}
+
+export function isAccountContainer(
+  container: WalletContainer
+): container is AccountContainer {
+  // NOTE: Should we exclude signer containers?
+  return 'provider' in container && !isSignerContainer(container);
 }
 
 export function isBareWallet(

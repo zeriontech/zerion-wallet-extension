@@ -80,7 +80,7 @@ import type { State as GlobalPreferencesState } from './GlobalPreferences';
 import type { Device, DeviceAccount } from './model/AccountContainer';
 import { DeviceAccountContainer } from './model/AccountContainer';
 
-const INTERNAL_SYMBOL_CONTEXT = { origin: INTERNAL_ORIGIN_SYMBOL };
+export const INTERNAL_SYMBOL_CONTEXT = { origin: INTERNAL_ORIGIN_SYMBOL };
 
 type PublicMethodParams<T = undefined> = T extends undefined
   ? {
@@ -551,6 +551,29 @@ export class Wallet {
       (group) => group.id === groupId
     );
     return group ? maskWalletGroup(group) : null;
+  }
+
+  getWalletGroupByAddressSync({
+    params: { address },
+    context,
+  }: WalletMethodParams<{ address: string }>) {
+    this.verifyInternalOrigin(context);
+    if (!this.id) {
+      return null;
+    }
+    if (this.record) {
+      const group = Model.getWalletGroupByAddress(this.record, address);
+      return group ? maskWalletGroup(group) : null;
+    }
+    return null;
+  }
+
+  async getWalletGroupByAddress({
+    params,
+    context,
+  }: WalletMethodParams<{ address: string }>) {
+    this.verifyInternalOrigin(context);
+    return this.getWalletGroupByAddressSync({ params, context });
   }
 
   async removeWalletGroup({

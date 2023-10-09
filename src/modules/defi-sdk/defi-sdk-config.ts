@@ -10,10 +10,12 @@ export function registerRequestHooks(hooks: Partial<Hooks>) {
 
 export const hooks: Hooks = {
   willSendRequest: (request, options) => {
-    const finalRequest = Array.from(willSendRequestHooks).reduce(
-      (nextRequest, hook) => hook(nextRequest, options),
-      request
-    );
-    return finalRequest;
+    let promise = Promise.resolve(request);
+    for (const hook of willSendRequestHooks) {
+      promise = promise.then((nextRequest) => {
+        return hook(nextRequest, options);
+      });
+    }
+    return promise;
   },
 };
