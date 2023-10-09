@@ -17,9 +17,11 @@ import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
+import LedgerIcon from 'jsx:src/ui/assets/ledger-icon.svg';
 import { Background } from 'src/ui/components/Background';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
 import { isMnemonicContainer } from 'src/shared/types/validators';
+import { HStack } from 'src/ui/ui-kit/HStack';
 import { ImportWallet } from './ImportWallet';
 import { GenerateWallet } from './GenerateWallet';
 
@@ -98,6 +100,10 @@ function Options() {
   const beforeCreate = params.get('beforeCreate');
   const isIntro = params.has('intro');
   const importHref = createNextHref('/get-started/import', beforeCreate);
+  const importLedgerHref = createNextHref(
+    '/connect-hardware-wallet',
+    beforeCreate
+  );
   return (
     <Background backgroundKind="white">
       <PageColumn>
@@ -118,24 +124,21 @@ function Options() {
           </UIText>
         </FillView>
 
-        <VStack gap={16}>
+        <VStack gap={8}>
           {hasWallets || userCanCreateInitialWallet ? (
             <NewWalletOption
               beforeCreate={beforeCreate}
               mnemonicWalletGroups={mnemonicGroups || null}
             />
           ) : null}
-          <Button
-            kind="regular"
-            as={Link}
-            to={importHref}
-            size={44}
-            style={{
-              boxShadow: 'var(--elevation-300)',
-              backgroundColor: 'var(--white)',
-            }}
-          >
+          <Button kind="regular" as={Link} to={importHref} size={44}>
             Import Existing Wallet
+          </Button>
+          <Button kind="regular" as={Link} to={importLedgerHref} size={44}>
+            <HStack gap={8} alignItems="center">
+              <LedgerIcon />
+              Connect Ledger
+            </HStack>
           </Button>
         </VStack>
         <PageBottom />

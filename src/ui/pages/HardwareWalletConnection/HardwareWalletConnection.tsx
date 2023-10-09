@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import React, { useEffect, useId, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Route, Routes, useNavigate, useSearchParams } from 'react-router-dom';
 import { FillView } from 'src/ui/components/FillView';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
@@ -14,11 +14,15 @@ import { invariant } from 'src/shared/invariant';
 import { LedgerIframe } from 'src/ui/hardware-wallet/LedgerIframe';
 import { isRpcRequest } from 'src/shared/custom-rpc';
 import { useAllExistingAddresses } from 'src/ui/shared/requests/useAllExistingAddresses';
+import { NavigationTitle } from 'src/ui/components/NavigationTitle';
+import { useBackgroundKind } from 'src/ui/components/Background/Background';
 import { useIframeHeight } from './useIframeHeight';
 import { isAllowedMessage } from './shared/isAllowedMessage';
+import { ImportSuccess } from './ImportSuccess';
 
-export function HardwareWalletConnection() {
+function HardwareWalletConnectionStart() {
   const { height, ref: fillRef } = useIframeHeight();
+  useBackgroundKind({ kind: 'white' });
 
   const ready = useRenderDelay(100);
   const [searchParams] = useSearchParams();
@@ -31,9 +35,16 @@ export function HardwareWalletConnection() {
       const data = await walletPort.request('uiImportHardwareWallet', params);
       await accountPublicRPCPort.request('saveUserAndWallet');
       await setCurrentAddress({ address: data.address });
+      return params;
     },
-    onSuccess() {
-      navigate(searchParams.get('next') || '/');
+    onSuccess(result) {
+      const next = searchParams.get('next') || '/';
+      const addresses = result.accounts.map((account) => account.address);
+      const params = new URLSearchParams({ next });
+      for (const address of addresses) {
+        params.append('address', address);
+      }
+      navigate(`import-success?${params}`);
     },
   });
 
@@ -69,6 +80,7 @@ export function HardwareWalletConnection() {
       }}
     >
       <PageTop />
+      <NavigationTitle title={null} documentTitle="Connect your Ledger" />
 
       <FillView ref={fillRef}>
         {height ? (
@@ -90,5 +102,13 @@ export function HardwareWalletConnection() {
       </FillView>
       <PageBottom />
     </PageFullBleedColumn>
+  );
+}
+export function HardwareWalletConnection() {
+  return (
+    <Routes>
+      <Route path="/" element={<HardwareWalletConnectionStart />} />
+      <Route path="/import-success" element={<ImportSuccess />} />
+    </Routes>
   );
 }

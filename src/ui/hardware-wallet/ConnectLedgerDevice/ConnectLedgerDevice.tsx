@@ -10,8 +10,12 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
 import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
+import LedgerIcon from 'jsx:src/ui/assets/ledger-icon.svg';
+import { NavigationTitle } from 'src/ui/components/NavigationTitle';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { useBackgroundKind } from 'src/ui/components/Background/Background';
 import type { DeviceConnection } from '../types';
-import LedgerImage from '../assets/ledger-eth-app.png';
+import { ConnectIllustration } from './ConnectIllustration';
 
 async function safelyConnectDevice() {
   try {
@@ -26,6 +30,7 @@ export function ConnectLedgerDevice({
 }: {
   onConnect: (data: DeviceConnection) => void;
 }) {
+  useBackgroundKind({ kind: 'white' });
   const {
     mutate: invokeConnectDevice,
     isLoading,
@@ -39,25 +44,46 @@ export function ConnectLedgerDevice({
     },
   });
   const error = isError ? getError(maybeError) : null;
+  const title = 'Connect Your Ledger';
   return (
-    <VStack gap={28}>
-      <PageFullBleedColumn paddingInline={false}>
-        <img
-          style={{ width: '100%' }}
-          src={LedgerImage}
-          alt="Picture of Ledger with an Ethereum App open"
-        />
-      </PageFullBleedColumn>
+    <VStack gap={24}>
+      <NavigationTitle title={'lol'} documentTitle={title} />
+      <div>
+        <div
+          style={{
+            backgroundColor: 'var(--neutral-200)',
+            borderRadius: '50%',
+            padding: 10,
+            height: 52,
+            width: 52,
+          }}
+        >
+          <LedgerIcon style={{ width: 32, height: 32 }} />
+        </div>
+      </div>
+      <UIText kind="headline/hero">{title}</UIText>
+      <UIText kind="headline/h3">Ensure your device:</UIText>
       <UIText kind="body/regular">
-        <ol style={{ display: 'grid', gap: 8, margin: 0 }}>
-          <li>Connect your Ledger to begin</li>
-          <li>Open "Ethereum App" on your Ledger device</li>
-          <li>
-            Ensure that Browser Support and Contract Data are enabled in
-            Settings
-          </li>
+        <ol
+          style={{
+            display: 'grid',
+            gap: 8,
+            margin: 0,
+            color: 'var(--neutral-700)',
+          }}
+        >
+          <li>Is plugged into the computer</li>
+          <li>Has Ethereum App installed and open.</li>
+          <li>Browser Support and Contract Data are enabled in Settings</li>
         </ol>
       </UIText>
+      <PageFullBleedColumn paddingInline={false}>
+        <div>
+          <Spacer height={40} />
+          <ConnectIllustration />
+          <Spacer height={40} />
+        </div>
+      </PageFullBleedColumn>
       <VStack gap={8}>
         {error ? (
           <UIText kind="small/regular" color="var(--negative-500)">

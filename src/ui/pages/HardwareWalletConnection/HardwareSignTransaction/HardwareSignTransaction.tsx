@@ -11,7 +11,9 @@ import { prepareTransaction } from 'src/modules/ethereum/transactions/prepareTra
 import { createNanoEvents } from 'nanoevents';
 import { nanoid } from 'nanoid';
 import type { SignTransactionResult } from 'src/ui/hardware-wallet/types';
+import LedgerIcon from 'jsx:src/ui/assets/ledger-icon.svg';
 import { LedgerIframe } from 'src/ui/hardware-wallet/LedgerIframe';
+import { HStack } from 'src/ui/ui-kit/HStack';
 
 class MessageHandler {
   emitter = createNanoEvents<{
@@ -98,7 +100,7 @@ export function HardwareSignTransaction({
     onMutate: () => onBeforeSign(),
     onError(error) {
       const normalizedError = getError(error);
-      if (normalizedError.message === 'disconnected') {
+      if (normalizedError.message === 'ConnectError') {
         navigate(
           `/connect-hardware-wallet?${new URLSearchParams({
             strategy: 'connect',
@@ -132,11 +134,14 @@ export function HardwareSignTransaction({
           paddingInline: 24, // fit longer button label
         }}
       >
-        {isSending
-          ? 'Sending...'
-          : signMutation.isLoading
-          ? 'Sign...'
-          : 'Sign from Ledger'}
+        <HStack gap={8} alignItems="center">
+          <LedgerIcon />
+          {isSending
+            ? 'Sending...'
+            : signMutation.isLoading
+            ? 'Sign...'
+            : 'Sign from Ledger'}
+        </HStack>
       </Button>
     </>
   );
