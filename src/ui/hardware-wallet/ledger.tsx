@@ -18,6 +18,8 @@ import { PageColumn } from 'src/ui/components/PageColumn';
 import type { RpcRequest, RpcResponse } from 'src/shared/custom-rpc';
 import { nanoid } from 'nanoid';
 import { useBodyStyle } from '../components/Background/Background';
+import { VStack } from '../ui-kit/VStack';
+import { UIText } from '../ui-kit/UIText';
 import type { DeviceConnection, LedgerAccountImport } from './types';
 import { ConnectLedgerDevice } from './ConnectLedgerDevice';
 import { verifySandbox } from './shared/verifySandbox';
@@ -41,28 +43,31 @@ function ConnectDeviceFlow({
   const [ledger, setLedger] = useState<DeviceConnection | null>(null);
   if (ledger) {
     return (
-      <ImportLedgerAddresses
-        ledger={ledger}
-        existingAddressesSet={existingAddressesSet}
-        onImport={(accounts) => {
-          // @ts-ignore
-          const device = ledger.appEth.transport.device as USBDevice;
-          const importData: LedgerAccountImport = {
-            accounts,
-            device: {
-              productId: device.productId,
-              vendorId: device.vendorId,
-              productName: device.productName,
-            },
-            provider: 'ledger',
-          };
-          onPostMessage({
-            id: nanoid(),
-            method: 'ledger/import',
-            params: importData,
-          });
-        }}
-      />
+      <VStack gap={24}>
+        <UIText kind="headline/hero">Select Wallets</UIText>
+        <ImportLedgerAddresses
+          ledger={ledger}
+          existingAddressesSet={existingAddressesSet}
+          onImport={(accounts) => {
+            // @ts-ignore
+            const device = ledger.appEth.transport.device as USBDevice;
+            const importData: LedgerAccountImport = {
+              accounts,
+              device: {
+                productId: device.productId,
+                vendorId: device.vendorId,
+                productName: device.productName,
+              },
+              provider: 'ledger',
+            };
+            onPostMessage({
+              id: nanoid(),
+              method: 'ledger/import',
+              params: importData,
+            });
+          }}
+        />
+      </VStack>
     );
   } else {
     return (

@@ -22,6 +22,7 @@ import { Background } from 'src/ui/components/Background';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
 import { isMnemonicContainer } from 'src/shared/types/validators';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import { openInTabView } from 'src/ui/shared/openInTabView';
 import { ImportWallet } from './ImportWallet';
 import { GenerateWallet } from './GenerateWallet';
 
@@ -134,7 +135,13 @@ function Options() {
           <Button kind="regular" as={Link} to={importHref} size={44}>
             Import Existing Wallet
           </Button>
-          <Button kind="regular" as={Link} to={importLedgerHref} size={44}>
+          <Button
+            kind="regular"
+            as={Link}
+            to={importLedgerHref}
+            onClick={openInTabView}
+            size={44}
+          >
             <HStack gap={8} alignItems="center">
               <LedgerIcon />
               Connect Ledger

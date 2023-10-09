@@ -78,9 +78,15 @@ function generateGroupName(
     const index = sameCategoryGroups.findIndex((group) => group.name === name);
     return index !== -1;
   }
-  let potentialName = name(
-    record.walletManager.internalMnemonicGroupCounter + 1
-  );
+  let currentCount = -1;
+  if (isHardwareGroup) {
+    currentCount = record.walletManager.internalHardwareGroupCounter ?? 0;
+  } else if (isMnemonicGroup) {
+    currentCount = record.walletManager.internalMnemonicGroupCounter;
+  } else {
+    throw new Error('Unsupported group');
+  }
+  let potentialName = name(currentCount + 1);
   while (isNameUsed(potentialName)) {
     potentialName = `${potentialName} (2)`;
   }

@@ -27,6 +27,7 @@ import {
   isReadonlyContainer,
 } from 'src/shared/types/validators';
 import type { WalletContainer } from 'src/shared/types/WalletContainer';
+import { openInTabView } from 'src/ui/shared/openInTabView';
 import { WalletAccount as WalletAccountPage } from './WalletAccount';
 import { WalletGroup as WalletGroupPage } from './WalletGroup';
 
@@ -259,15 +260,7 @@ function WalletGroups() {
                 {
                   key: 2,
                   to: '/connect-hardware-wallet',
-                  onClick: (event) => {
-                    event.preventDefault();
-                    const attr = event.currentTarget.getAttributeNode('href');
-                    if (attr) {
-                      const url = new URL(attr.value, attr?.baseURI);
-                      url.searchParams.append('templateType', 'tab');
-                      window.open(url, '_blank');
-                    }
-                  },
+                  onClick: openInTabView,
                   component: (
                     <UIText kind="small/regular" color="var(--primary)">
                       Hardware Wallet

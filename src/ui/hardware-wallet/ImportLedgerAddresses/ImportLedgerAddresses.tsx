@@ -83,7 +83,7 @@ function AddressSelectList({
         )}
         renderDetail={null}
         initialCount={COUNT}
-        listTitle="Select Addresses to Import"
+        listTitle={null}
         onSelect={toggleAddress}
         existingAddressesSet={existingAddressesSet}
         hasMore={true} // ledger can derive infinite amount of addresses
@@ -115,6 +115,9 @@ function AddressSelectList({
   );
 }
 
+/** NOTE: We decided to only show ledger live addresses until users report feedback */
+const LEDGER_LIVE_ONLY = true;
+
 export function ImportLedgerAddresses({
   ledger,
   onImport,
@@ -127,28 +130,30 @@ export function ImportLedgerAddresses({
   const [pathType, setPathType] = useState<DerivationPathType>('ledgerLive');
   return (
     <VStack gap={24}>
-      <SegmentedControlGroup style={{ paddingTop: 4 }}>
-        <SegmentedControlRadio
-          name="pathType"
-          value="ledger"
-          checked={pathType === 'ledger'}
-          onChange={(event) =>
-            setPathType(event.currentTarget.value as DerivationPathType)
-          }
-        >
-          Ledger
-        </SegmentedControlRadio>
-        <SegmentedControlRadio
-          name="pathType"
-          value="ledgerLive"
-          checked={pathType === 'ledgerLive'}
-          onChange={(event) =>
-            setPathType(event.currentTarget.value as DerivationPathType)
-          }
-        >
-          Ledger Live
-        </SegmentedControlRadio>
-      </SegmentedControlGroup>
+      {LEDGER_LIVE_ONLY ? null : (
+        <SegmentedControlGroup style={{ paddingTop: 4 }}>
+          <SegmentedControlRadio
+            name="pathType"
+            value="ledger"
+            checked={pathType === 'ledger'}
+            onChange={(event) =>
+              setPathType(event.currentTarget.value as DerivationPathType)
+            }
+          >
+            Ledger
+          </SegmentedControlRadio>
+          <SegmentedControlRadio
+            name="pathType"
+            value="ledgerLive"
+            checked={pathType === 'ledgerLive'}
+            onChange={(event) =>
+              setPathType(event.currentTarget.value as DerivationPathType)
+            }
+          >
+            Ledger Live
+          </SegmentedControlRadio>
+        </SegmentedControlGroup>
+      )}
       <AddressSelectList
         key={pathType}
         ledger={ledger}
