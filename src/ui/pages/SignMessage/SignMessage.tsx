@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -46,6 +46,18 @@ function MessageRow({ message }: { message: string }) {
   );
 }
 
+function errorToMessage(error: Error) {
+  const fallbackString = 'Unknown Error';
+  if ('message' in error) {
+    if (error.message.startsWith('LockedDeviceError')) {
+      return 'Please, unlock your Ledger';
+    } else {
+      return error.message;
+    }
+  }
+  return fallbackString;
+}
+
 function SignMessageContent({
   message,
   origin,
@@ -60,6 +72,18 @@ function SignMessageContent({
   invariant(windowId, 'windowId get-parameter is required');
   const handleSignSuccess = (signature: string) =>
     windowPort.confirm(windowId, signature);
+
+  const { mutate: registerSignedMessage } = useMutation({
+    mutationFn: async (signature: string) => {
+      walletPort.request('registerPersonalSign', {
+        message,
+        address: wallet.address,
+        initiator: origin,
+      });
+      return signature;
+    },
+    onSuccess: (signature) => handleSignSuccess(signature),
+  });
 
   const personalSignMutation = usePersonalSignMutation({
     onSuccess: handleSignSuccess,
@@ -133,7 +157,7 @@ function SignMessageContent({
             {personalSignMutation.isError
               ? getError(personalSignMutation.error).message
               : hardwareSignError
-              ? 'Signing Error' // TODO: parse Ledger signing errors
+              ? errorToMessage(hardwareSignError)
               : null}
           </UIText>
 
@@ -162,8 +186,7 @@ function SignMessageContent({
                 onSignError={(error) => setHardwareSignError(error)}
                 onSign={(signature) => {
                   try {
-                    // TODO: add analytics via background script
-                    handleSignSuccess(signature);
+                    registerSignedMessage(signature);
                   } catch (error) {
                     showErrorBoundary(error);
                   }

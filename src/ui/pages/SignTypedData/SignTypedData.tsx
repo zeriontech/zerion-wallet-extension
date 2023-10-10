@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { walletPort, windowPort } from 'src/ui/shared/channels';
@@ -82,6 +82,16 @@ function getPermitAllowanceQuantity({ message }: TypedData) {
   return message.value || message.details?.amount;
 }
 
+function errorToMessage(error: Error) {
+  if ('message' in error) {
+    if (error.message.startsWith('LockedDeviceError')) {
+      return 'Please, unlock your Ledger';
+    } else {
+      return error.message;
+    }
+  }
+}
+
 function TypedDataDefaultView({
   origin,
   wallet,
@@ -151,6 +161,28 @@ function TypedDataDefaultView({
   const [hardwareSignError, setHardwareSignError] = useState<Error | null>(
     null
   );
+
+  const stringifiedData = useMemo(
+    () =>
+      JSON.stringify(
+        allowanceQuantityBase
+          ? applyAllowance(typedData, allowanceQuantityBase)
+          : typedData
+      ),
+    [allowanceQuantityBase, typedData]
+  );
+
+  const { mutate: registerTypedDataSign } = useMutation({
+    mutationFn: async (signature: string) => {
+      walletPort.request('registerTypedDataSign', {
+        rawTypedData: stringifiedData,
+        address: wallet.address,
+        initiator: origin,
+      });
+      return signature;
+    },
+    onSuccess: (signature) => onSignSuccess(signature),
+  });
 
   return (
     <>
@@ -233,7 +265,7 @@ function TypedDataDefaultView({
             {signTypedData_v4Mutation.isError
               ? getError(signTypedData_v4Mutation?.error).message
               : hardwareSignError
-              ? 'Signing Error' // TODO: parse Ledger signing errors
+              ? errorToMessage(hardwareSignError)
               : null}
           </UIText>
 
@@ -255,20 +287,14 @@ function TypedDataDefaultView({
             {isDeviceAccount(wallet) ? (
               <HardwareSignMessage
                 derivationPath={wallet.derivationPath}
-                getMessage={() => {
-                  const finalTypedData = allowanceQuantityBase
-                    ? applyAllowance(typedData, allowanceQuantityBase)
-                    : typedData;
-                  return JSON.stringify(finalTypedData);
-                }}
+                getMessage={() => stringifiedData}
                 type="signTypedData_v4"
                 isSigning={signTypedData_v4Mutation.isLoading}
                 onBeforeSign={() => setHardwareSignError(null)}
                 onSignError={(error) => setHardwareSignError(error)}
                 onSign={(signature) => {
                   try {
-                    // TODO: add analytics via background script
-                    onSignSuccess(signature);
+                    registerTypedDataSign(signature);
                   } catch (error) {
                     showErrorBoundary(error);
                   }
@@ -278,11 +304,8 @@ function TypedDataDefaultView({
               <Button
                 disabled={signTypedData_v4Mutation.isLoading}
                 onClick={() => {
-                  const finalTypedData = allowanceQuantityBase
-                    ? applyAllowance(typedData, allowanceQuantityBase)
-                    : typedData;
                   signTypedData_v4Mutation.mutate({
-                    typedData: JSON.stringify(finalTypedData),
+                    typedData: stringifiedData,
                     initiator: origin,
                   });
                 }}

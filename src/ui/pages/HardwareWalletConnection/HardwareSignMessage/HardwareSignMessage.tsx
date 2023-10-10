@@ -140,7 +140,7 @@ export function HardwareSignMessage({
         }
         disabled={isLoading || isSigning}
         style={{
-          paddingInline: 24, // fit longer button label
+          paddingInline: 16, // fit longer button label
         }}
       >
         <HStack gap={8} alignItems="center">
