@@ -22,7 +22,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { NavigationBackButton } from 'src/ui/components/NavigationBackButton';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import FullTextLogo from 'jsx:src/ui/assets/zerion-full-logo.svg';
-import lockIconSrc from 'src/ui/onboarding/assets/lock.png';
+import lockIconSrc from 'src/ui/Onboarding/assets/lock.png';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { isAllowedMessage } from './shared/isAllowedMessage';
 import { ImportSuccess } from './ImportSuccess';
