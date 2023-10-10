@@ -11,6 +11,8 @@ import type { DerivationPathType } from 'src/shared/wallet/derivation-paths';
 import { WalletListPresentation } from 'src/ui/pages/GetStarted/ImportWallet/MnemonicImportView/AddressImportFlow/WalletList';
 import { Button } from 'src/ui/ui-kit/Button';
 import { invariant } from 'src/shared/invariant';
+import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
+import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import type { DeviceConnection } from '../types';
 
 function AddressSelectList({
@@ -67,50 +69,55 @@ function AddressSelectList({
   }
   return (
     <VStack gap={12}>
-      <WalletListPresentation
-        values={values}
-        derivationPathType={pathType}
-        wallets={data.pages.flatMap((items) =>
-          items.map((item) => ({
-            address: item.account.address,
-            name: null,
-            privateKey: '<ledger-private-key>',
-            mnemonic: {
-              path: item.derivationPath,
-              phrase: '<ledger-mnemonic>',
-            },
-          }))
-        )}
-        renderDetail={null}
-        initialCount={COUNT}
-        listTitle={null}
-        onSelect={toggleAddress}
-        existingAddressesSet={existingAddressesSet}
-        hasMore={true} // ledger can derive infinite amount of addresses
-        isLoadingMore={isFetchingNextPage}
-        onLoadMore={() => {
-          fetchNextPage();
-        }}
-      />
-      <Button
-        kind="primary"
-        disabled={values.size === 0}
-        onClick={() => {
-          onImport(
-            Array.from(values).map((address) => {
-              const item = itemsByAddress.get(address);
-              invariant(item, `Record for ${address} not found`);
-              return {
-                address,
-                name: null,
-                derivationPath: item.derivationPath,
-              };
-            })
-          );
-        }}
-      >
-        {'Next' + (values.size ? ` (${values.size})` : '')}
-      </Button>
+      <PageFullBleedColumn paddingInline={false}>
+        <WalletListPresentation
+          values={values}
+          derivationPathType={pathType}
+          wallets={data.pages.flatMap((items) =>
+            items.map((item) => ({
+              address: item.account.address,
+              name: null,
+              privateKey: '<ledger-private-key>',
+              mnemonic: {
+                path: item.derivationPath,
+                phrase: '<ledger-mnemonic>',
+              },
+            }))
+          )}
+          renderDetail={null}
+          initialCount={COUNT}
+          listTitle={null}
+          onSelect={toggleAddress}
+          existingAddressesSet={existingAddressesSet}
+          hasMore={true} // ledger can derive infinite amount of addresses
+          isLoadingMore={isFetchingNextPage}
+          onLoadMore={() => {
+            fetchNextPage();
+          }}
+        />
+      </PageFullBleedColumn>
+      <div style={{ position: 'sticky', bottom: 0 }}>
+        <Button
+          style={{ width: '100%' }}
+          kind="primary"
+          disabled={values.size === 0}
+          onClick={() => {
+            onImport(
+              Array.from(values).map((address) => {
+                const item = itemsByAddress.get(address);
+                invariant(item, `Record for ${address} not found`);
+                return {
+                  address,
+                  name: null,
+                  derivationPath: item.derivationPath,
+                };
+              })
+            );
+          }}
+        >
+          {'Next' + (values.size ? ` (${values.size})` : '')}
+        </Button>
+      </div>
     </VStack>
   );
 }

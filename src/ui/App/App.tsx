@@ -184,6 +184,10 @@ function Views({ initialRoute }: { initialRoute?: string }) {
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/get-started/*" element={<GetStarted />} />
+          <Route
+            path="/connect-hardware-wallet/*"
+            element={<HardwareWalletConnection />}
+          />
           <Route path="/receive" element={<Receive />} />
           <Route path="/phishing-warning" element={<PhishingWarningPage />} />
           <Route
@@ -319,14 +323,6 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             element={
               <RequireAuth>
                 <WalletSelect />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/connect-hardware-wallet/*"
-            element={
-              <RequireAuth>
-                <HardwareWalletConnection />
               </RequireAuth>
             }
           />

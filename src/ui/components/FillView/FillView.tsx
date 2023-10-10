@@ -24,13 +24,13 @@ export const FillView = React.forwardRef(
           adjustForNavigationBar ? s.adjustForNavigationBar : null
         )}
         style={{
-          ...style,
           ['--navigation-bar-height' as string]: `${NAVIGATION_BAR_HEIGHT}px`,
           height: '100%',
           flexGrow: 1,
           display: 'grid',
           alignContent: 'center',
           justifyItems: 'center',
+          ...style,
         }}
         {...props}
       />

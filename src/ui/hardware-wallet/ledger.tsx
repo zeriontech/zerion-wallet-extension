@@ -17,7 +17,10 @@ import { applyTheme } from 'src/ui/features/appearance/applyTheme';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import type { RpcRequest, RpcResponse } from 'src/shared/custom-rpc';
 import { nanoid } from 'nanoid';
-import { useBodyStyle } from '../components/Background/Background';
+import {
+  useBackgroundKind,
+  useBodyStyle,
+} from '../components/Background/Background';
 import { VStack } from '../ui-kit/VStack';
 import { UIText } from '../ui-kit/UIText';
 import type { DeviceConnection, LedgerAccountImport } from './types';
@@ -87,6 +90,7 @@ function ConnectDeviceFlow({
 }
 
 function App() {
+  useBackgroundKind({ kind: 'transparent' });
   const { mutate: invokeVerifySandbox } = useMutation({
     mutationFn: verifySandbox,
     useErrorBoundary: true,

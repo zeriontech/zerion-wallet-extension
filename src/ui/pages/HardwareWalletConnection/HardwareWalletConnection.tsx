@@ -1,10 +1,9 @@
 import { useMutation } from '@tanstack/react-query';
-import React, { useEffect, useId, useRef } from 'react';
+import React, { useEffect, useId, useMemo, useRef } from 'react';
 import { Route, Routes, useNavigate, useSearchParams } from 'react-router-dom';
 import { FillView } from 'src/ui/components/FillView';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
-import { PageTop } from 'src/ui/components/PageTop';
 import type { LedgerAccountImport } from 'src/ui/hardware-wallet/types';
 import { verifyLedgerAccountImport } from 'src/ui/hardware-wallet/types';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
@@ -15,15 +14,85 @@ import { LedgerIframe } from 'src/ui/hardware-wallet/LedgerIframe';
 import { isRpcRequest } from 'src/shared/custom-rpc';
 import { useAllExistingAddresses } from 'src/ui/shared/requests/useAllExistingAddresses';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
-import { useBackgroundKind } from 'src/ui/components/Background/Background';
-import { useIframeHeight } from './useIframeHeight';
+import {
+  useBackgroundKind,
+  useBodyStyle,
+} from 'src/ui/components/Background/Background';
+import { UIText } from 'src/ui/ui-kit/UIText';
+import { NavigationBackButton } from 'src/ui/components/NavigationBackButton';
+import { PageColumn } from 'src/ui/components/PageColumn';
+import FullTextLogo from 'jsx:src/ui/assets/zerion-full-logo.svg';
+import lockIconSrc from 'src/ui/onboarding/assets/lock.png';
+import { HStack } from 'src/ui/ui-kit/HStack';
 import { isAllowedMessage } from './shared/isAllowedMessage';
 import { ImportSuccess } from './ImportSuccess';
 
-function HardwareWalletConnectionStart() {
-  const { height, ref: fillRef } = useIframeHeight();
-  useBackgroundKind({ kind: 'white' });
+function FrameLayout({ children }: React.PropsWithChildren) {
+  useBackgroundKind({ kind: 'transparent' });
+  useBodyStyle(useMemo(() => ({ border: 'none' }), []));
 
+  return (
+    <PageFullBleedColumn
+      paddingInline={false}
+      style={{
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <NavigationTitle
+        urlBar="none"
+        title={null}
+        documentTitle="Connect your Ledger"
+      />
+      <div
+        style={{
+          flexGrow: 1,
+          display: 'grid',
+          gridTemplateRows: 'auto 1fr auto',
+        }}
+      >
+        <div style={{ paddingTop: 24, paddingBottom: 25 }}>
+          <FullTextLogo />
+        </div>
+        <div
+          style={{
+            flexGrow: 1,
+            backgroundColor: 'var(--white)',
+            borderRadius: 16,
+            overflow: 'auto',
+            boxShadow: 'var(--elevation-200)',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <PageColumn style={{ paddingTop: 16, paddingBottom: 24 }}>
+            <div>
+              <NavigationBackButton />
+            </div>
+          </PageColumn>
+          <FillView
+            // grow children
+            style={{ display: 'flex' }}
+          >
+            {children}
+          </FillView>
+          <PageBottom />
+        </div>
+        <footer style={{ paddingTop: 32, paddingBottom: 36 }}>
+          <HStack gap={8}>
+            <img src={lockIconSrc} alt="" style={{ width: 20, height: 20 }} />
+            <UIText kind="small/accent" color="var(--neutral-600)">
+              We never store your keys, collect your full IP address, sell or
+              share your data. See here for our full policy.
+            </UIText>
+          </HStack>
+        </footer>
+      </div>
+    </PageFullBleedColumn>
+  );
+}
+function HardwareWalletConnectionStart() {
   const ready = useRenderDelay(100);
   const [searchParams] = useSearchParams();
 
@@ -71,44 +140,30 @@ function HardwareWalletConnectionStart() {
     return () => window.removeEventListener('message', handler);
   }, [finalize, navigate, requestId, searchParams]);
   return (
-    <PageFullBleedColumn
-      paddingInline={false}
+    <LedgerIframe
+      ref={iframeRef}
+      appSearchParams={new URLSearchParams({
+        strategy: searchParams.get('strategy') || 'import',
+        'existingAddresses[]': existingAddresses?.join(',') ?? '',
+      }).toString()}
       style={{
+        border: 'none',
+        backgroundColor: 'transparent',
+        opacity: ready ? 1 : 0, // prevent iframe dark theme flicker
         flexGrow: 1,
-        display: 'flex',
-        flexDirection: 'column',
       }}
-    >
-      <PageTop />
-      <NavigationTitle title={null} documentTitle="Connect your Ledger" />
-
-      <FillView ref={fillRef}>
-        {height ? (
-          <LedgerIframe
-            ref={iframeRef}
-            appSearchParams={new URLSearchParams({
-              strategy: searchParams.get('strategy') || 'import',
-              'existingAddresses[]': existingAddresses?.join(',') ?? '',
-            }).toString()}
-            style={{
-              border: 'none',
-              backgroundColor: 'transparent',
-              opacity: ready ? 1 : 0, // prevent iframe dark theme flicker
-            }}
-            width="100%"
-            height={height}
-          />
-        ) : null}
-      </FillView>
-      <PageBottom />
-    </PageFullBleedColumn>
+      width="100%"
+    />
   );
 }
+
 export function HardwareWalletConnection() {
   return (
-    <Routes>
-      <Route path="/" element={<HardwareWalletConnectionStart />} />
-      <Route path="/import-success" element={<ImportSuccess />} />
-    </Routes>
+    <FrameLayout>
+      <Routes>
+        <Route path="/" element={<HardwareWalletConnectionStart />} />
+        <Route path="/import-success" element={<ImportSuccess />} />
+      </Routes>
+    </FrameLayout>
   );
 }

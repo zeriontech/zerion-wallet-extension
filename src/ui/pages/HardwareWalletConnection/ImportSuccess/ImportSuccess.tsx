@@ -38,7 +38,12 @@ export function ImportSuccess() {
           You've successfully added {addresses.length}{' '}
           {pluralize(addresses.length)}
         </UIText>
-        <VStack gap={8}>
+        <VStack
+          gap={8}
+          style={{
+            ['--surface-background-color' as string]: 'var(--neutral-100)',
+          }}
+        >
           {addresses.map((address) => (
             <Surface padding={8}>
               <WalletMedia

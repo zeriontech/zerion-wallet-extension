@@ -24,7 +24,7 @@ import { TextLine } from 'src/ui/components/address-action/TextLine';
 import { Content } from 'react-area';
 import { Button } from 'src/ui/ui-kit/Button';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
-import { NavigationBar } from '../../SignInWithEthereum/NavigationBar';
+import { NavigationBar } from 'src/ui/components/NavigationBar';
 
 function maybeHexValue(value?: BigNumberish): string | null {
   return value ? ethers.utils.hexValue(value) : null;

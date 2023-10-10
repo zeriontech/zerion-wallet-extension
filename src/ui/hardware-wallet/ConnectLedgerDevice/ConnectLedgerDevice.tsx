@@ -13,7 +13,6 @@ import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import LedgerIcon from 'jsx:src/ui/assets/ledger-icon.svg';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
-import { useBackgroundKind } from 'src/ui/components/Background/Background';
 import type { DeviceConnection } from '../types';
 import { ConnectIllustration } from './ConnectIllustration';
 
@@ -30,7 +29,6 @@ export function ConnectLedgerDevice({
 }: {
   onConnect: (data: DeviceConnection) => void;
 }) {
-  useBackgroundKind({ kind: 'white' });
   const {
     mutate: invokeConnectDevice,
     isLoading,

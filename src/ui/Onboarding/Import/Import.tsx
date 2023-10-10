@@ -184,7 +184,7 @@ export function Import() {
         </div>
       ) : null}
       <HStack gap={16} justifyContent="center" alignItems="center">
-        <img src={lockIconSrc} style={{ width: 20, height: 20 }} />
+        <img src={lockIconSrc} alt="" style={{ width: 20, height: 20 }} />
         <UIText kind="small/accent" color="var(--neutral-600)" inline={true}>
           We never store your keys, collect your full IP address, sell or share
           your data. See here for our{' '}

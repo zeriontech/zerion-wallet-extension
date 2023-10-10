@@ -27,11 +27,11 @@ import { VerifyUser } from 'src/ui/components/VerifyUser';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { usePersonalSignMutation } from 'src/ui/shared/requests/message-signing';
 import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/PhishingDefenceStatus';
+import { NavigationBar } from 'src/ui/components/NavigationBar';
 import { SpeechBubble } from './SpeechBubble/SpeechBubble';
 import { useFetchUTCTime } from './useFetchUTCTime';
 import { SiweError } from './SiweError';
 import { DataVerificationFailed } from './DataVerificationFailed';
-import { NavigationBar } from './NavigationBar';
 
 export function SignInWithEthereum() {
   const [params, setSearchParams] = useSearchParams();
