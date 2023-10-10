@@ -36,7 +36,7 @@ export interface WindowProps {
   top?: number;
   left?: number;
   width?: number;
-  height?: number;
+  height?: number | 'max';
 }
 
 export async function createBrowserWindow({
@@ -65,12 +65,23 @@ export async function createBrowserWindow({
     left: left ?? currentWindowLeft + currentWindowWidth - width,
   };
 
+  let heightValue = DEFAULT_WINDOW_SIZE.height;
+  if (height === 'max') {
+    const currentWindow = await browser.windows.getCurrent();
+    heightValue = Math.max(
+      DEFAULT_WINDOW_SIZE.height,
+      currentWindow.height ?? 0
+    );
+  } else {
+    heightValue = height;
+  }
+
   const { id: windowId } = await browser.windows.create({
     focused: true,
     url: getPopupRoute(`${initialRoute}?${params.toString()}`, type),
     type: type === 'dialog' ? 'popup' : 'normal',
     width,
-    height,
+    height: heightValue,
     ...position,
   });
 

@@ -1271,12 +1271,13 @@ class PublicController {
     }
     const transaction = params[0];
     invariant(transaction, () => new InvalidParams());
+    const isDeviceWallet = currentWallet && isDeviceAccount(currentWallet);
     return new Promise((resolve, reject) => {
       this.safeOpenDialogWindow(context.origin, {
         requestId: `${context.origin}:${id}`,
         route: '/sendTransaction',
-        type:
-          currentWallet && isDeviceAccount(currentWallet) ? 'tab' : 'dialog',
+        type: isDeviceWallet ? 'tab' : 'dialog',
+        height: isDeviceWallet ? 'max' : undefined,
         search: `?${new URLSearchParams({
           origin: context.origin,
           transaction: JSON.stringify(transaction),
