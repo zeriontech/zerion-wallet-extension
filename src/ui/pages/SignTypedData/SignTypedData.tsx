@@ -47,6 +47,9 @@ import { CustomAllowanceView } from 'src/ui/components/CustomAllowanceView';
 import { produce } from 'immer';
 import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
+import { useErrorBoundary } from 'src/ui/shared/useErrorBoundary';
+import { isDeviceAccount } from 'src/shared/types/validators';
+import { HardwareSignMessage } from '../HardwareWalletConnection/HardwareSignMessage';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
 function TypedDataRow({ data }: { data: string }) {
@@ -144,6 +147,11 @@ function TypedDataDefaultView({
     [params]
   );
 
+  const showErrorBoundary = useErrorBoundary();
+  const [hardwareSignError, setHardwareSignError] = useState<Error | null>(
+    null
+  );
+
   return (
     <>
       <PageTop />
@@ -221,11 +229,14 @@ function TypedDataDefaultView({
           }}
           gap={8}
         >
-          {signTypedData_v4Mutation.isError ? (
-            <UIText kind="caption/regular" color="var(--negative-500)">
-              {getError(signTypedData_v4Mutation?.error).message}
-            </UIText>
-          ) : null}
+          <UIText kind="caption/regular" color="var(--negative-500)">
+            {signTypedData_v4Mutation.isError
+              ? getError(signTypedData_v4Mutation?.error).message
+              : hardwareSignError
+              ? 'Signing Error' // TODO: parse Ledger signing errors
+              : null}
+          </UIText>
+
           <div
             style={{
               display: 'grid',
@@ -241,20 +252,44 @@ function TypedDataDefaultView({
             >
               Cancel
             </Button>
-            <Button
-              disabled={signTypedData_v4Mutation.isLoading}
-              onClick={() => {
-                const finalTypedData = allowanceQuantityBase
-                  ? applyAllowance(typedData, allowanceQuantityBase)
-                  : typedData;
-                signTypedData_v4Mutation.mutate({
-                  typedData: JSON.stringify(finalTypedData),
-                  initiator: origin,
-                });
-              }}
-            >
-              {signTypedData_v4Mutation.isLoading ? 'Signing...' : 'Sign'}
-            </Button>
+            {isDeviceAccount(wallet) ? (
+              <HardwareSignMessage
+                derivationPath={wallet.derivationPath}
+                getMessage={() => {
+                  const finalTypedData = allowanceQuantityBase
+                    ? applyAllowance(typedData, allowanceQuantityBase)
+                    : typedData;
+                  return JSON.stringify(finalTypedData);
+                }}
+                type="signTypedData_v4"
+                isSigning={signTypedData_v4Mutation.isLoading}
+                onBeforeSign={() => setHardwareSignError(null)}
+                onSignError={(error) => setHardwareSignError(error)}
+                onSign={(signature) => {
+                  try {
+                    // TODO: add analytics via background script
+                    onSignSuccess(signature);
+                  } catch (error) {
+                    showErrorBoundary(error);
+                  }
+                }}
+              />
+            ) : (
+              <Button
+                disabled={signTypedData_v4Mutation.isLoading}
+                onClick={() => {
+                  const finalTypedData = allowanceQuantityBase
+                    ? applyAllowance(typedData, allowanceQuantityBase)
+                    : typedData;
+                  signTypedData_v4Mutation.mutate({
+                    typedData: JSON.stringify(finalTypedData),
+                    initiator: origin,
+                  });
+                }}
+              >
+                {signTypedData_v4Mutation.isLoading ? 'Signing...' : 'Sign'}
+              </Button>
+            )}
           </div>
         </VStack>
       </Content>

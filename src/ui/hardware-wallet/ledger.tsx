@@ -25,6 +25,7 @@ import { ConnectLedgerDevice } from './ConnectLedgerDevice';
 import { verifySandbox } from './shared/verifySandbox';
 import { SignTransaction } from './SignTransaction';
 import { ImportLedgerAddresses } from './ImportLedgerAddresses';
+import { SignMessage } from './SignMessage';
 
 type Strategy = 'connect' | 'import';
 
@@ -107,6 +108,8 @@ function App() {
         }
       />
       <Route path="/signTransaction" element={<SignTransaction />} />
+      <Route path="/personalSign" element={<SignMessage />} />
+      <Route path="/signTypedData_v4" element={<SignMessage />} />
     </Routes>
   );
 }

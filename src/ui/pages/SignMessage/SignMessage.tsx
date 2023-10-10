@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -24,6 +24,9 @@ import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/PhishingDefenceStatus';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
+import { isDeviceAccount } from 'src/shared/types/validators';
+import { useErrorBoundary } from 'src/ui/shared/useErrorBoundary';
+import { HardwareSignMessage } from '../HardwareWalletConnection/HardwareSignMessage';
 
 function MessageRow({ message }: { message: string }) {
   return (
@@ -65,6 +68,11 @@ function SignMessageContent({
   const originForHref = useMemo(() => prepareForHref(origin), [origin]);
 
   const handleReject = () => windowPort.reject(windowId);
+
+  const showErrorBoundary = useErrorBoundary();
+  const [hardwareSignError, setHardwareSignError] = useState<Error | null>(
+    null
+  );
 
   return (
     <Background backgroundKind="white">
@@ -121,11 +129,14 @@ function SignMessageContent({
           }}
           gap={8}
         >
-          {personalSignMutation.isError ? (
-            <UIText kind="caption/regular" color="var(--negative-500)">
-              {getError(personalSignMutation.error).message}
-            </UIText>
-          ) : null}
+          <UIText kind="caption/regular" color="var(--negative-500)">
+            {personalSignMutation.isError
+              ? getError(personalSignMutation.error).message
+              : hardwareSignError
+              ? 'Signing Error' // TODO: parse Ledger signing errors
+              : null}
+          </UIText>
+
           <div
             style={{
               display: 'grid',
@@ -141,17 +152,36 @@ function SignMessageContent({
             >
               Cancel
             </Button>
-            <Button
-              disabled={personalSignMutation.isLoading}
-              onClick={() => {
-                personalSignMutation.mutate({
-                  params: [message],
-                  initiator: origin,
-                });
-              }}
-            >
-              {personalSignMutation.isLoading ? 'Signing...' : 'Sign'}
-            </Button>
+            {isDeviceAccount(wallet) ? (
+              <HardwareSignMessage
+                derivationPath={wallet.derivationPath}
+                getMessage={() => message}
+                type="personalSign"
+                isSigning={personalSignMutation.isLoading}
+                onBeforeSign={() => setHardwareSignError(null)}
+                onSignError={(error) => setHardwareSignError(error)}
+                onSign={(signature) => {
+                  try {
+                    // TODO: add analytics via background script
+                    handleSignSuccess(signature);
+                  } catch (error) {
+                    showErrorBoundary(error);
+                  }
+                }}
+              />
+            ) : (
+              <Button
+                disabled={personalSignMutation.isLoading}
+                onClick={() => {
+                  personalSignMutation.mutate({
+                    params: [message],
+                    initiator: origin,
+                  });
+                }}
+              >
+                {personalSignMutation.isLoading ? 'Signing...' : 'Sign'}
+              </Button>
+            )}
           </div>
         </VStack>
       </PageStickyFooter>

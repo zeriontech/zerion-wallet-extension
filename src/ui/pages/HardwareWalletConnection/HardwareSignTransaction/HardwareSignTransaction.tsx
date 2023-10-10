@@ -3,57 +3,15 @@ import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTra
 import { Button } from 'src/ui/ui-kit/Button';
 import { useMutation } from '@tanstack/react-query';
 import { invariant } from 'src/shared/invariant';
-import type { RpcRequest } from 'src/shared/custom-rpc';
-import { isRpcResponse, isRpcResult } from 'src/shared/custom-rpc';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getError } from 'src/shared/errors/getError';
 import { prepareTransaction } from 'src/modules/ethereum/transactions/prepareTransaction';
-import { createNanoEvents } from 'nanoevents';
 import { nanoid } from 'nanoid';
 import type { SignTransactionResult } from 'src/ui/hardware-wallet/types';
 import LedgerIcon from 'jsx:src/ui/assets/ledger-icon.svg';
 import { LedgerIframe } from 'src/ui/hardware-wallet/LedgerIframe';
 import { HStack } from 'src/ui/ui-kit/HStack';
-
-class MessageHandler {
-  emitter = createNanoEvents<{
-    message: (msg: unknown) => void;
-    postMessage: (msg: RpcRequest) => void;
-  }>();
-
-  constructor() {
-    window.addEventListener('message', this.handleMessage);
-  }
-
-  handleMessage = (event: MessageEvent) => {
-    this.emitter.emit('message', event.data);
-  };
-
-  destroy() {
-    window.removeEventListener('message', this.handleMessage);
-  }
-
-  request<T>(request: RpcRequest, contentWindow: Window): Promise<T> {
-    const { id } = request;
-    contentWindow.postMessage(request, '*');
-    return new Promise((resolve, reject) => {
-      const unlisten = this.emitter.on('message', (msg) => {
-        if (isRpcResponse(msg)) {
-          if (id === msg.id) {
-            if (isRpcResult(msg)) {
-              resolve(msg.result as T);
-            } else {
-              reject(msg.error);
-            }
-            unlisten();
-          }
-        }
-      });
-    });
-  }
-}
-
-const messageHandler = new MessageHandler();
+import { hardwareMessageHandler } from '../shared/messageHandler';
 
 export function HardwareSignTransaction({
   derivationPath,
@@ -84,17 +42,18 @@ export function HardwareSignTransaction({
         ref.current.contentWindow,
         'Iframe contentWindow is not available'
       );
-      const result = await messageHandler.request<SignTransactionResult>(
-        {
-          id: nanoid(),
-          method: 'signTransaction',
-          params: {
-            derivationPath,
-            transaction: normalizedTransaction,
+      const result =
+        await hardwareMessageHandler.request<SignTransactionResult>(
+          {
+            id: nanoid(),
+            method: 'signTransaction',
+            params: {
+              derivationPath,
+              transaction: normalizedTransaction,
+            },
           },
-        },
-        ref.current.contentWindow
-      );
+          ref.current.contentWindow
+        );
       onSign(result.serialized);
     },
     onMutate: () => onBeforeSign(),
