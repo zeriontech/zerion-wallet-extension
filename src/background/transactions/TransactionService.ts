@@ -73,10 +73,9 @@ export class TransactionService {
       const chain = networks.getChainById(
         ethers.utils.hexValue(transaction.chainId)
       );
-      registerTransaction(
-        transaction.hash,
-        chain ? chain.toString() : ethers.utils.hexValue(transaction.chainId)
-      );
+      if (chain) {
+        registerTransaction(transaction.hash, chain);
+      }
     });
 
     this.transactionsPoller.emitter.on('mined', (receipt) => {
