@@ -2,7 +2,6 @@ import { useMutation } from '@tanstack/react-query';
 import React, { useEffect, useId, useMemo, useRef } from 'react';
 import { Route, Routes, useNavigate, useSearchParams } from 'react-router-dom';
 import { FillView } from 'src/ui/components/FillView';
-import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import type { LedgerAccountImport } from 'src/ui/hardware-wallet/types';
 import { verifyLedgerAccountImport } from 'src/ui/hardware-wallet/types';
@@ -49,7 +48,7 @@ function FrameLayout({ children }: React.PropsWithChildren) {
         style={{
           flexGrow: 1,
           display: 'grid',
-          gridTemplateRows: 'auto 1fr auto',
+          gridTemplateRows: 'auto minmax(650px, 1fr) auto',
         }}
       >
         <div style={{ paddingTop: 24, paddingBottom: 25 }}>
@@ -77,7 +76,6 @@ function FrameLayout({ children }: React.PropsWithChildren) {
           >
             {children}
           </FillView>
-          <PageBottom />
         </div>
         <footer style={{ paddingTop: 32, paddingBottom: 36 }}>
           <HStack gap={8}>

@@ -14,15 +14,12 @@ import 'src/ui/style/global.module.css';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import type { ThemeState } from 'src/ui/features/appearance/ThemeState';
 import { applyTheme } from 'src/ui/features/appearance/applyTheme';
-import { PageColumn } from 'src/ui/components/PageColumn';
 import type { RpcRequest, RpcResponse } from 'src/shared/custom-rpc';
 import { nanoid } from 'nanoid';
 import {
   useBackgroundKind,
   useBodyStyle,
 } from '../components/Background/Background';
-import { VStack } from '../ui-kit/VStack';
-import { UIText } from '../ui-kit/UIText';
 import type { DeviceConnection, LedgerAccountImport } from './types';
 import { ConnectLedgerDevice } from './ConnectLedgerDevice';
 import { verifySandbox } from './shared/verifySandbox';
@@ -38,6 +35,7 @@ function ConnectDeviceFlow({
   strategy: Strategy;
   onPostMessage: (data: RpcRequest | RpcResponse) => void;
 }) {
+  useBodyStyle(useMemo(() => ({ ['--body-height' as string]: '100vh' }), []));
   const [params] = useSearchParams();
   const existingAddressesSet = useMemo(() => {
     const addresses = params.get('existingAddresses[]');
@@ -46,51 +44,46 @@ function ConnectDeviceFlow({
   const [ledger, setLedger] = useState<DeviceConnection | null>(null);
   if (ledger) {
     return (
-      <VStack gap={24}>
-        <UIText kind="headline/hero">Select Wallets</UIText>
-        <ImportLedgerAddresses
-          ledger={ledger}
-          existingAddressesSet={existingAddressesSet}
-          onImport={(accounts) => {
-            // @ts-ignore
-            const device = ledger.appEth.transport.device as USBDevice;
-            const importData: LedgerAccountImport = {
-              accounts,
-              device: {
-                productId: device.productId,
-                vendorId: device.vendorId,
-                productName: device.productName,
-              },
-              provider: 'ledger',
-            };
-            onPostMessage({
-              id: nanoid(),
-              method: 'ledger/import',
-              params: importData,
-            });
-          }}
-        />
-      </VStack>
+      <ImportLedgerAddresses
+        ledger={ledger}
+        existingAddressesSet={existingAddressesSet}
+        onImport={(accounts) => {
+          // @ts-ignore
+          const device = ledger.appEth.transport.device as USBDevice;
+          const importData: LedgerAccountImport = {
+            accounts,
+            device: {
+              productId: device.productId,
+              vendorId: device.vendorId,
+              productName: device.productName,
+            },
+            provider: 'ledger',
+          };
+          onPostMessage({
+            id: nanoid(),
+            method: 'ledger/import',
+            params: importData,
+          });
+        }}
+      />
     );
   } else {
     return (
-      <>
-        <ConnectLedgerDevice
-          onConnect={(data) => {
-            if (strategy === 'connect') {
-              onPostMessage({ id: nanoid(), method: 'ledger/connect' });
-            } else {
-              setLedger(data);
-            }
-          }}
-        />
-      </>
+      <ConnectLedgerDevice
+        onConnect={(data) => {
+          if (strategy === 'connect') {
+            onPostMessage({ id: nanoid(), method: 'ledger/connect' });
+          } else {
+            setLedger(data);
+          }
+        }}
+      />
     );
   }
 }
 
 function App() {
-  useBackgroundKind({ kind: 'transparent' });
+  useBackgroundKind({ kind: 'white' });
   const { mutate: invokeVerifySandbox } = useMutation({
     mutationFn: verifySandbox,
     useErrorBoundary: true,
@@ -103,20 +96,18 @@ function App() {
     window.parent.postMessage(data, window.location.origin);
   };
   return (
-    <PageColumn>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <ConnectDeviceFlow
-              strategy={(params.get('strategy') as Strategy) || 'import'}
-              onPostMessage={handlePostMessage}
-            />
-          }
-        />
-        <Route path="/signTransaction" element={<SignTransaction />} />
-      </Routes>
-    </PageColumn>
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <ConnectDeviceFlow
+            strategy={(params.get('strategy') as Strategy) || 'import'}
+            onPostMessage={handlePostMessage}
+          />
+        }
+      />
+      <Route path="/signTransaction" element={<SignTransaction />} />
+    </Routes>
   );
 }
 

@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { getAddresses } from '@zeriontech/hardware-wallet-connection';
-import { VStack } from 'src/ui/ui-kit/VStack';
 import type { DeviceAccount } from 'src/shared/types/Device';
 import {
   SegmentedControlGroup,
@@ -12,6 +11,9 @@ import { WalletListPresentation } from 'src/ui/pages/GetStarted/ImportWallet/Mne
 import { Button } from 'src/ui/ui-kit/Button';
 import { invariant } from 'src/shared/invariant';
 import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
+import { PageColumn } from 'src/ui/components/PageColumn';
+import { UIText } from 'src/ui/ui-kit/UIText';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 import type { DeviceConnection } from '../types';
 
 function AddressSelectList({
@@ -67,8 +69,15 @@ function AddressSelectList({
     return null;
   }
   return (
-    <VStack gap={12}>
-      <PageFullBleedColumn paddingInline={false}>
+    <>
+      <PageFullBleedColumn
+        paddingInline={false}
+        style={{
+          flexGrow: 1,
+          overflow: 'auto',
+          ['--surface-background-color' as string]: 'var(--background)',
+        }}
+      >
         <WalletListPresentation
           values={values}
           derivationPathType={pathType}
@@ -94,8 +103,18 @@ function AddressSelectList({
             fetchNextPage();
           }}
         />
+        <Spacer height={12} />
       </PageFullBleedColumn>
-      <div style={{ position: 'sticky', bottom: 0 }}>
+      <PageFullBleedColumn
+        paddingInline={true}
+        style={{
+          position: 'sticky',
+          bottom: 0,
+          borderTop: '1px solid var(--neutral-300)',
+          backgroundColor: 'var(--background)',
+        }}
+      >
+        <Spacer height={24} />
         <Button
           style={{ width: '100%' }}
           kind="primary"
@@ -114,10 +133,11 @@ function AddressSelectList({
             );
           }}
         >
-          {'Next' + (values.size ? ` (${values.size})` : '')}
+          {'Continue' + (values.size ? ` (${values.size})` : '')}
         </Button>
-      </div>
-    </VStack>
+        <Spacer height={24} />
+      </PageFullBleedColumn>
+    </>
   );
 }
 
@@ -135,30 +155,45 @@ export function ImportLedgerAddresses({
 }) {
   const [pathType, setPathType] = useState<DerivationPathType>('ledgerLive');
   return (
-    <VStack gap={24}>
+    <PageColumn style={{ height: '100%', position: 'relative' }}>
+      <PageFullBleedColumn
+        paddingInline={true}
+        style={{
+          position: 'sticky',
+          top: 0,
+          backgroundColor: 'var(--background)',
+          zIndex: 1,
+        }}
+      >
+        <UIText kind="headline/hero">Select Wallets</UIText>
+        <Spacer height={24} />
+      </PageFullBleedColumn>
       {LEDGER_LIVE_ONLY ? null : (
-        <SegmentedControlGroup style={{ paddingTop: 4 }}>
-          <SegmentedControlRadio
-            name="pathType"
-            value="ledger"
-            checked={pathType === 'ledger'}
-            onChange={(event) =>
-              setPathType(event.currentTarget.value as DerivationPathType)
-            }
-          >
-            Ledger
-          </SegmentedControlRadio>
-          <SegmentedControlRadio
-            name="pathType"
-            value="ledgerLive"
-            checked={pathType === 'ledgerLive'}
-            onChange={(event) =>
-              setPathType(event.currentTarget.value as DerivationPathType)
-            }
-          >
-            Ledger Live
-          </SegmentedControlRadio>
-        </SegmentedControlGroup>
+        <>
+          <SegmentedControlGroup style={{ paddingTop: 4 }}>
+            <SegmentedControlRadio
+              name="pathType"
+              value="ledger"
+              checked={pathType === 'ledger'}
+              onChange={(event) =>
+                setPathType(event.currentTarget.value as DerivationPathType)
+              }
+            >
+              Ledger
+            </SegmentedControlRadio>
+            <SegmentedControlRadio
+              name="pathType"
+              value="ledgerLive"
+              checked={pathType === 'ledgerLive'}
+              onChange={(event) =>
+                setPathType(event.currentTarget.value as DerivationPathType)
+              }
+            >
+              Ledger Live
+            </SegmentedControlRadio>
+          </SegmentedControlGroup>
+          <Spacer height={24} />
+        </>
       )}
       <AddressSelectList
         key={pathType}
@@ -167,6 +202,6 @@ export function ImportLedgerAddresses({
         onImport={onImport}
         existingAddressesSet={existingAddressesSet}
       />
-    </VStack>
+    </PageColumn>
   );
 }
