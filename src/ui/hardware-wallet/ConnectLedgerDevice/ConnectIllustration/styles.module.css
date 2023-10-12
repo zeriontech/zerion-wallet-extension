@@ -1,6 +1,6 @@
 @keyframes connectWire {
   from {
-    transform: translateX(-50px);
+    transform: translateX(-120px);
   }
   to {
     transform: translateX(0);

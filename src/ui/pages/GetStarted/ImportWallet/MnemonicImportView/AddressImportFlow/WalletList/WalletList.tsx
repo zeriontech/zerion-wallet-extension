@@ -19,6 +19,7 @@ interface Props {
   existingAddressesSet: Set<string>;
   listTitle: React.ReactNode;
   renderDetail: null | ((index: number) => React.ReactNode);
+  renderMedia?: (index: number) => React.ReactNode;
   values: Set<string>;
   onSelect: (value: string) => void;
   initialCount?: number;
@@ -34,6 +35,7 @@ export function WalletListPresentation({
   existingAddressesSet,
   listTitle,
   renderDetail,
+  renderMedia,
   values,
   onSelect,
   derivationPathType = 'bip44',
@@ -71,19 +73,23 @@ export function WalletListPresentation({
                     ? getIndexFromPath(wallet.mnemonic.path, derivationPathType)
                     : null}
                 </UIText>
-                <Media
-                  image={
-                    <WalletAvatar
-                      address={wallet.address}
-                      active={false}
-                      size={40}
-                      borderRadius={4}
-                    />
-                  }
-                  text={<WalletDisplayName wallet={wallet} />}
-                  vGap={0}
-                  detailText={renderDetail?.(index)}
-                />
+                {renderMedia ? (
+                  renderMedia(index)
+                ) : (
+                  <Media
+                    image={
+                      <WalletAvatar
+                        address={wallet.address}
+                        active={false}
+                        size={40}
+                        borderRadius={4}
+                      />
+                    }
+                    text={<WalletDisplayName wallet={wallet} />}
+                    vGap={0}
+                    detailText={renderDetail?.(index)}
+                  />
+                )}
                 {existingAddressesSet.has(normalizeAddress(wallet.address)) ? (
                   <UIText kind="caption/regular" color="var(--neutral-500)">
                     Already added

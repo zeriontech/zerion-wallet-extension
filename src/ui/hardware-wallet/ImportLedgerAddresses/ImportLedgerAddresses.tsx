@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { getAddresses } from '@zeriontech/hardware-wallet-connection';
 import type { DeviceAccount } from 'src/shared/types/Device';
 import {
@@ -14,18 +14,95 @@ import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
+import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
+import type { RpcRequest } from 'src/shared/custom-rpc';
+import { Media } from 'src/ui/ui-kit/Media';
+import { AvatarIcon } from 'src/ui/components/WalletAvatar/AvatarIcon';
+import type { WalletInfo } from 'src/ui/pages/HardwareWalletConnection/shared/getWalletInfo';
+import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
+import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
+import { NBSP } from 'src/ui/shared/typography';
+import { getWalletDisplayName } from 'src/ui/shared/getWalletDisplayName';
 import type { DeviceConnection } from '../types';
+
+type ControllerRequest = Omit<RpcRequest, 'id'>;
+
+function WalletMediaPresentation({
+  wallet,
+  walletInfo,
+}: {
+  wallet: ExternallyOwnedAccount;
+  walletInfo?: WalletInfo;
+}) {
+  return (
+    <Media
+      image={
+        <AvatarIcon
+          address={wallet.address}
+          active={false}
+          size={40}
+          borderRadius={4}
+        />
+      }
+      text={walletInfo?.name ?? getWalletDisplayName(wallet)}
+      vGap={0}
+      detailText={
+        <UIText kind="headline/h3">
+          {' '}
+          {walletInfo?.portfolio != null ? (
+            <NeutralDecimals
+              parts={formatCurrencyToParts(
+                walletInfo?.portfolio ?? 0,
+                'en',
+                'usd'
+              )}
+            />
+          ) : (
+            NBSP
+          )}
+        </UIText>
+      }
+    />
+  );
+}
+
+function WalletMediaData({
+  wallet,
+  handleRequest,
+}: {
+  wallet: ExternallyOwnedAccount;
+  handleRequest: (request: ControllerRequest) => Promise<unknown>;
+}) {
+  const { data } = useQuery({
+    suspense: false,
+    queryKey: ['iframe/wallet-info', wallet.address],
+    queryFn: () =>
+      handleRequest({
+        method: 'wallet-info',
+        params: { address: wallet.address },
+      }),
+    staleTime: Infinity,
+  });
+  return (
+    <WalletMediaPresentation
+      wallet={wallet}
+      walletInfo={data as WalletInfo | undefined}
+    />
+  );
+}
 
 function AddressSelectList({
   ledger,
   pathType,
   onImport,
   existingAddressesSet,
+  handleRequest,
 }: {
   pathType: DerivationPathType;
   ledger: DeviceConnection;
   existingAddressesSet: Set<string>;
   onImport: (values: DeviceAccount[]) => void;
+  handleRequest: (request: ControllerRequest) => Promise<unknown>;
 }) {
   const { appEth } = ledger;
   const COUNT = 5;
@@ -68,6 +145,18 @@ function AddressSelectList({
   if (!data) {
     return null;
   }
+  const wallets = data.pages.flatMap((items) =>
+    items.map((item) => ({
+      address: item.account.address,
+      name: null,
+      privateKey: '<ledger-private-key>',
+      mnemonic: {
+        path: item.derivationPath,
+        phrase: '<ledger-mnemonic>',
+      },
+    }))
+  );
+
   return (
     <>
       <PageFullBleedColumn
@@ -75,22 +164,19 @@ function AddressSelectList({
         style={{
           flexGrow: 1,
           overflow: 'auto',
+          height: 0, // flexbox fix
           ['--surface-background-color' as string]: 'var(--background)',
         }}
       >
         <WalletListPresentation
           values={values}
           derivationPathType={pathType}
-          wallets={data.pages.flatMap((items) =>
-            items.map((item) => ({
-              address: item.account.address,
-              name: null,
-              privateKey: '<ledger-private-key>',
-              mnemonic: {
-                path: item.derivationPath,
-                phrase: '<ledger-mnemonic>',
-              },
-            }))
+          wallets={wallets}
+          renderMedia={(index) => (
+            <WalletMediaData
+              wallet={wallets[index]}
+              handleRequest={handleRequest}
+            />
           )}
           renderDetail={null}
           initialCount={COUNT}
@@ -146,12 +232,14 @@ const LEDGER_LIVE_ONLY = true;
 
 export function ImportLedgerAddresses({
   ledger,
-  onImport,
   existingAddressesSet,
+  onImport,
+  handleRequest,
 }: {
   ledger: DeviceConnection;
   existingAddressesSet: Set<string>;
   onImport: (values: DeviceAccount[]) => void;
+  handleRequest: (request: ControllerRequest) => Promise<unknown>;
 }) {
   const [pathType, setPathType] = useState<DerivationPathType>('ledgerLive');
   return (
@@ -200,6 +288,7 @@ export function ImportLedgerAddresses({
         ledger={ledger}
         pathType={pathType}
         onImport={onImport}
+        handleRequest={handleRequest}
         existingAddressesSet={existingAddressesSet}
       />
     </PageColumn>

@@ -11,7 +11,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
 import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import LedgerIcon from 'jsx:src/ui/assets/ledger-icon.svg';
-import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -25,6 +24,28 @@ async function safelyConnectDevice() {
   } catch (e) {
     return connectDevice();
   }
+}
+
+function CheckListItem({
+  checked,
+  text,
+}: {
+  checked: boolean;
+  text: React.ReactNode;
+}) {
+  return (
+    <li style={{ color: checked ? 'var(--black)' : 'var(--neutral-700)' }}>
+      <HStack gap={8}>
+        <AnimatedCheckmark
+          checked={checked}
+          uncheckedColor="var(--neutral-400)"
+          checkedColor="var(--black)"
+          tickColor="var(--white)"
+        />
+        {text}
+      </HStack>
+    </li>
+  );
 }
 
 export function ConnectLedgerDevice({
@@ -53,18 +74,19 @@ export function ConnectLedgerDevice({
   return (
     <PageColumn style={{ height: '100%' }}>
       <VStack gap={24}>
-        <NavigationTitle title={'lol'} documentTitle={title} />
         <div>
           <div
             style={{
-              backgroundColor: 'var(--neutral-200)',
+              backgroundColor: 'var(--black)',
               borderRadius: '50%',
               padding: 10,
               height: 52,
               width: 52,
             }}
           >
-            <LedgerIcon style={{ width: 32, height: 32 }} />
+            <LedgerIcon
+              style={{ color: 'var(--white)', width: 32, height: 32 }}
+            />
           </div>
         </div>
         <UIText kind="headline/hero">{title}</UIText>
@@ -76,40 +98,27 @@ export function ConnectLedgerDevice({
               gap: 16,
               margin: 0,
               padding: 0,
-              color: 'var(--neutral-700)',
               listStyle: 'none',
             }}
           >
-            <li>
-              <HStack gap={8}>
-                <AnimatedCheckmark
-                  checked={isSuccess || Boolean(isPhysicallyConnected)}
-                  uncheckedColor="var(--neutral-400)"
-                  checkedColor="var(--black)"
-                />
-                Is plugged into the computer.
-              </HStack>
-            </li>
-            <li>
-              <HStack gap={8}>
-                <AnimatedCheckmark
-                  checked={isSuccess}
-                  uncheckedColor="var(--neutral-400)"
-                  checkedColor="var(--black)"
-                />
-                Has Ethereum App installed and open.
-              </HStack>
-            </li>
+            <CheckListItem
+              checked={isSuccess || Boolean(isPhysicallyConnected)}
+              text="Is plugged into the computer."
+            />
+            <CheckListItem
+              checked={isSuccess}
+              text="Has Ethereum App installed and open."
+            />
           </ol>
         </UIText>
-        <PageFullBleedColumn paddingInline={false}>
-          <div>
-            <Spacer height={40} />
-            <ConnectIllustration />
-            <Spacer height={40} />
-          </div>
-        </PageFullBleedColumn>
       </VStack>
+      <PageFullBleedColumn paddingInline={false}>
+        <div>
+          <Spacer height={68} />
+          <ConnectIllustration />
+          <Spacer height={28} />
+        </div>
+      </PageFullBleedColumn>
       <div style={{ marginTop: 'auto' }}>
         {error ? (
           <UIText kind="small/regular" color="var(--negative-500)">

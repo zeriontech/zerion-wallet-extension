@@ -25,6 +25,7 @@ import lockIconSrc from 'src/ui/Onboarding/assets/lock.png';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { isAllowedMessage } from './shared/isAllowedMessage';
 import { ImportSuccess } from './ImportSuccess';
+import { getWalletInfo } from './shared/getWalletInfo';
 
 function FrameLayout({ children }: React.PropsWithChildren) {
   useBackgroundKind({ kind: 'transparent' });
@@ -46,9 +47,8 @@ function FrameLayout({ children }: React.PropsWithChildren) {
       />
       <div
         style={{
-          flexGrow: 1,
           display: 'grid',
-          gridTemplateRows: 'auto minmax(650px, 1fr) auto',
+          gridTemplateRows: 'auto minmax(670px, 1fr) auto',
         }}
       >
         <div style={{ paddingTop: 24, paddingBottom: 25 }}>
@@ -119,18 +119,25 @@ function HardwareWalletConnectionStart() {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
   useEffect(() => {
-    function handler(event: MessageEvent) {
+    async function handler(event: MessageEvent) {
       invariant(iframeRef.current, 'Iframe should be mounted');
       if (!isAllowedMessage(event, iframeRef.current)) {
         return;
       }
       if (isRpcRequest(event.data)) {
-        const { method, params } = event.data;
+        const { method, params, id } = event.data;
         if (method === 'ledger/connect') {
           navigate(searchParams.get('next') || '/');
         } else if (method === 'ledger/import') {
           verifyLedgerAccountImport(params);
           finalize(params);
+        } else if (method === 'wallet-info') {
+          const result = await getWalletInfo(
+            (params as { address: string }).address
+          );
+          if (iframeRef.current && iframeRef.current.contentWindow) {
+            iframeRef.current.contentWindow.postMessage({ id, result }, '*');
+          }
         }
       }
     }

@@ -1,13 +1,20 @@
 import { useEffect, useState } from 'react';
+import { nanoid } from 'nanoid';
 import {
   checkDevice,
   signTransaction,
   personalSign,
   signTypedData_v4,
 } from '@zeriontech/hardware-wallet-connection';
-import { isRpcRequest } from 'src/shared/custom-rpc';
+import type { RpcRequest } from 'src/shared/custom-rpc';
+import {
+  isRpcRequest,
+  isRpcResponse,
+  isRpcResult,
+} from 'src/shared/custom-rpc';
 import { isClassProperty } from 'src/shared/core/isClassProperty';
 import { getError } from 'src/shared/errors/getError';
+import { createNanoEvents } from 'nanoevents';
 import { normalizeDeviceError } from '../shared/errors';
 import {
   assertPersonalSignParams,
@@ -15,7 +22,11 @@ import {
   assertSignTypedData_v4Params,
 } from './helpers';
 
-class Controller {
+export class DeviceController {
+  private emitter = createNanoEvents<{
+    message: (msg: unknown) => void;
+  }>();
+
   static async signTransaction(params: unknown) {
     await checkDevice();
     assertSignTransactionParams(params);
@@ -36,16 +47,16 @@ class Controller {
     return signTypedData_v4(params.derivationPath, params.typedData);
   }
 
-  static async listener(event: MessageEvent) {
+  listener = async (event: MessageEvent) => {
     if (isRpcRequest(event.data)) {
       const { id, method, params } = event.data;
       if (
-        isClassProperty(Controller, method) &&
-        typeof Controller[method] === 'function'
+        isClassProperty(DeviceController, method) &&
+        typeof DeviceController[method] === 'function'
       ) {
         try {
           // @ts-ignore Controller[method] should be callable here
-          const result = await Controller[method](params);
+          const result = await DeviceController[method](params);
           window.parent.postMessage({ id, result }, window.location.origin);
         } catch (error) {
           window.parent.postMessage(
@@ -55,18 +66,42 @@ class Controller {
         }
       }
     }
+    this.emitter.emit('message', event.data);
+  };
+
+  request({
+    method,
+    params,
+    id: maybeId,
+  }: Omit<RpcRequest, 'id'> & { id?: string }) {
+    const id = maybeId ?? nanoid();
+    window.parent.postMessage({ id, method, params }, window.location.origin);
+    return new Promise((resolve, reject) => {
+      const unlisten = this.emitter.on('message', (msg: unknown) => {
+        if (isRpcResponse(msg)) {
+          if (msg.id === id) {
+            if (isRpcResult(msg)) {
+              resolve(msg.result);
+            } else {
+              reject(msg.error);
+            }
+            unlisten();
+          }
+        }
+      });
+    });
   }
 
   listen() {
-    window.addEventListener('message', Controller.listener);
+    window.addEventListener('message', this.listener);
     return () => {
-      window.removeEventListener('message', Controller.listener);
+      window.removeEventListener('message', this.listener);
     };
   }
 }
 
 export function SignConnector() {
-  const [controller] = useState(() => new Controller());
+  const [controller] = useState(() => new DeviceController());
   useEffect(() => {
     return controller.listen();
   }, [controller]);

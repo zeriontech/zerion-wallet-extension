@@ -25,6 +25,7 @@ import { ConnectLedgerDevice } from './ConnectLedgerDevice';
 import { verifySandbox } from './shared/verifySandbox';
 import { SignConnector } from './SignConnector';
 import { ImportLedgerAddresses } from './ImportLedgerAddresses';
+import { DeviceController } from './SignConnector/SignConnector';
 
 type Strategy = 'connect' | 'import';
 
@@ -42,11 +43,17 @@ function ConnectDeviceFlow({
     return new Set(addresses?.split(','));
   }, [params]);
   const [ledger, setLedger] = useState<DeviceConnection | null>(null);
+  const [controller] = useState(() => new DeviceController());
+  useEffect(() => {
+    return controller.listen();
+  }, [controller]);
+
   if (ledger) {
     return (
       <ImportLedgerAddresses
         ledger={ledger}
         existingAddressesSet={existingAddressesSet}
+        handleRequest={(request) => controller.request(request)}
         onImport={(accounts) => {
           // @ts-ignore
           const device = ledger.appEth.transport.device as USBDevice;

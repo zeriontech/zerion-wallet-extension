@@ -145,7 +145,7 @@ export function HardwareSignMessage({
             ? 'Sending...'
             : isLoading
             ? 'Sign...'
-            : 'Sign from Ledger'}
+            : 'Sign with Ledger'}
         </HStack>
       </Button>
     </>

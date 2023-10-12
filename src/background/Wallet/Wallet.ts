@@ -1302,8 +1302,8 @@ class PublicController {
       this.safeOpenDialogWindow(context.origin, {
         requestId: `${context.origin}:${id}`,
         route: '/sendTransaction',
-        type: isDeviceWallet ? 'tab' : 'dialog',
-        height: isDeviceWallet ? 'max' : undefined,
+        height: isDeviceWallet ? 800 : undefined,
+        width: isDeviceWallet ? 500 : undefined,
         search: `?${new URLSearchParams({
           origin: context.origin,
           transaction: JSON.stringify(transaction),

@@ -92,7 +92,7 @@
     "@store-unit/react": "^1.0.2",
     "@tanstack/react-query": "^4.35.3",
     "@tanstack/react-virtual": "^3.0.0-beta.54",
-    "@zeriontech/hardware-wallet-connection": "^1.0.5",
+    "@zeriontech/hardware-wallet-connection": "^1.0.7",
     "bignumber.js": "^9.1.1",
     "buffer": "^6.0.3",
     "canvas-confetti": "^1.6.0",

@@ -27,7 +27,11 @@ export function ImportSuccess() {
   );
   return (
     <PageColumn>
-      <NavigationTitle title={null} documentTitle="Import Success" />
+      <NavigationTitle
+        urlBar="none"
+        title={null}
+        documentTitle="Import Success"
+      />
       <PageTop />
       <VStack gap={24}>
         <CheckDouble

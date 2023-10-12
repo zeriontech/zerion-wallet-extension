@@ -15,7 +15,9 @@ export function ConnectIllustration() {
     >
       <LedgerWire
         style={{
-          animation: `${styles.connectWire} 1s`,
+          animation: `${styles.connectWire} 2.5s`,
+          animationDelay: '1s',
+          animationFillMode: 'backwards',
         }}
       />
       <div style={{ position: 'relative', left: -4 }}>
@@ -38,8 +40,8 @@ export function ConnectIllustration() {
             width: 56,
             height: 32,
             animationName: styles.flash,
-            animationDelay: '1s',
-            animationDuration: '1s',
+            animationDelay: '3.5s',
+            animationDuration: '2.5s',
             animationTimingFunction: 'steps(2, jump-none)',
             animationFillMode: 'backwards',
           }}

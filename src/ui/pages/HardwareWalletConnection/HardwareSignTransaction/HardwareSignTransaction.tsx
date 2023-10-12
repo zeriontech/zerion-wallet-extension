@@ -90,7 +90,7 @@ export function HardwareSignTransaction({
         onClick={() => signTransaction()}
         disabled={signMutation.isLoading || isSending}
         style={{
-          paddingInline: 24, // fit longer button label
+          paddingInline: 16, // fit longer button label
         }}
       >
         <HStack gap={8} alignItems="center">
@@ -99,7 +99,7 @@ export function HardwareSignTransaction({
             ? 'Sending...'
             : signMutation.isLoading
             ? 'Sign...'
-            : 'Sign from Ledger'}
+            : 'Sign with Ledger'}
         </HStack>
       </Button>
     </>

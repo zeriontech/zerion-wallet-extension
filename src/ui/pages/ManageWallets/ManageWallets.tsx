@@ -263,7 +263,7 @@ function WalletGroups() {
                   onClick: openInTabView,
                   component: (
                     <UIText kind="small/regular" color="var(--primary)">
-                      Hardware Wallet
+                      Connect Ledger
                     </UIText>
                   ),
                 },
