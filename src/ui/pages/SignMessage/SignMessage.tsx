@@ -49,11 +49,7 @@ function MessageRow({ message }: { message: string }) {
 function errorToMessage(error: Error) {
   const fallbackString = 'Unknown Error';
   if ('message' in error) {
-    if (error.message.startsWith('LockedDeviceError')) {
-      return 'Please, unlock your Ledger';
-    } else {
-      return error.message;
-    }
+    return error.message;
   }
   return fallbackString;
 }
@@ -80,9 +76,8 @@ function SignMessageContent({
         address: wallet.address,
         initiator: origin,
       });
-      return signature;
+      handleSignSuccess(signature);
     },
-    onSuccess: (signature) => handleSignSuccess(signature),
   });
 
   const personalSignMutation = usePersonalSignMutation({
@@ -179,7 +174,7 @@ function SignMessageContent({
             {isDeviceAccount(wallet) ? (
               <HardwareSignMessage
                 derivationPath={wallet.derivationPath}
-                getMessage={() => message}
+                message={message}
                 type="personalSign"
                 isSigning={personalSignMutation.isLoading}
                 onBeforeSign={() => setHardwareSignError(null)}

@@ -83,13 +83,11 @@ function getPermitAllowanceQuantity({ message }: TypedData) {
 }
 
 function errorToMessage(error: Error) {
+  const fallbackString = 'Unknown Error';
   if ('message' in error) {
-    if (error.message.startsWith('LockedDeviceError')) {
-      return 'Please, unlock your Ledger';
-    } else {
-      return error.message;
-    }
+    return error.message;
   }
+  return fallbackString;
 }
 
 function TypedDataDefaultView({
@@ -179,9 +177,8 @@ function TypedDataDefaultView({
         address: wallet.address,
         initiator: origin,
       });
-      return signature;
+      onSignSuccess(signature);
     },
-    onSuccess: (signature) => onSignSuccess(signature),
   });
 
   return (
@@ -287,7 +284,7 @@ function TypedDataDefaultView({
             {isDeviceAccount(wallet) ? (
               <HardwareSignMessage
                 derivationPath={wallet.derivationPath}
-                getMessage={() => stringifiedData}
+                message={stringifiedData}
                 type="signTypedData_v4"
                 isSigning={signTypedData_v4Mutation.isLoading}
                 onBeforeSign={() => setHardwareSignError(null)}

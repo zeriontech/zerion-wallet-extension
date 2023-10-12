@@ -1,19 +1,28 @@
 import { useEffect, useState } from 'react';
-import { isClassProperty } from 'src/shared/core/isClassProperty';
-import { isRpcRequest } from 'src/shared/custom-rpc';
-import { getError } from 'src/shared/errors/getError';
 import {
   checkDevice,
-  signTypedData_v4,
+  signTransaction,
   personalSign,
+  signTypedData_v4,
 } from '@zeriontech/hardware-wallet-connection';
+import { isRpcRequest } from 'src/shared/custom-rpc';
+import { isClassProperty } from 'src/shared/core/isClassProperty';
+import { getError } from 'src/shared/errors/getError';
 import { normalizeDeviceError } from '../shared/errors';
 import {
   assertPersonalSignParams,
+  assertSignTransactionParams,
   assertSignTypedData_v4Params,
 } from './helpers';
 
 class Controller {
+  static async signTransaction(params: unknown) {
+    await checkDevice();
+    assertSignTransactionParams(params);
+    // @ts-ignore params.transaction is object
+    return signTransaction(params.derivationPath, params.transaction);
+  }
+
   static async personalSign(params: unknown) {
     await checkDevice();
     assertPersonalSignParams(params);
@@ -56,7 +65,7 @@ class Controller {
   }
 }
 
-export function SignMessage() {
+export function SignConnector() {
   const [controller] = useState(() => new Controller());
   useEffect(() => {
     return controller.listen();

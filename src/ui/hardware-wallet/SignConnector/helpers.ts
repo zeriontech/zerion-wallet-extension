@@ -34,3 +34,17 @@ export function assertSignTypedData_v4Params(
     'Invalid Payload'
   );
 }
+
+interface SignTransactionParams {
+  derivationPath: string;
+  transaction: object;
+}
+
+export function assertSignTransactionParams(
+  x: unknown
+): asserts x is SignTransactionParams {
+  invariant(
+    isObj(x) && typeof x.derivationPath === 'string' && isObj(x.transaction),
+    'Invalid Payload'
+  );
+}

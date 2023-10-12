@@ -18,13 +18,13 @@ type Props = {
   onBeforeSign: () => void;
   onSignError: (error: Error) => void;
 } & (
-  | { type: 'personalSign'; getMessage(): string }
-  | { type: 'signTypedData_v4'; getMessage(): string | TypedData }
+  | { type: 'personalSign'; message: string }
+  | { type: 'signTypedData_v4'; message: string | TypedData }
 );
 
 export function HardwareSignMessage({
   type,
-  getMessage,
+  message,
   derivationPath,
   onSign,
   isSigning,
@@ -64,7 +64,6 @@ export function HardwareSignMessage({
         ref.current.contentWindow,
         'Iframe contentWindow is not available'
       );
-      const message = getMessage();
       const result = await hardwareMessageHandler.request<string>(
         {
           id: nanoid(),
@@ -94,14 +93,13 @@ export function HardwareSignMessage({
           ref.current.contentWindow,
           'Iframe contentWindow is not available'
         );
-        const typedData = getMessage();
         const result = await hardwareMessageHandler.request<string>(
           {
             id: nanoid(),
             method: 'signTypedData_v4',
             params: {
               derivationPath,
-              typedData,
+              typedData: message,
             },
           },
           ref.current.contentWindow
