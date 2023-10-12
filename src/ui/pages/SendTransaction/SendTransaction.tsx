@@ -5,7 +5,6 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { capitalize } from 'capitalize-ts';
 import { ethers } from 'ethers';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -67,6 +66,7 @@ import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset'
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { isDeviceAccount } from 'src/shared/types/validators';
 import { getTransactionCount } from 'src/modules/ethereum/transactions/getTransactionCount';
+import { getError } from 'src/shared/errors/getError';
 import { HardwareSignTransaction } from '../HardwareWalletConnection/HardwareSignTransaction/HardwareSignTransaction';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
@@ -87,17 +87,7 @@ function errorToMessage(error?: SendTransactionError | Error) {
     return fallbackString;
   }
   try {
-    const result =
-      'message' in error
-        ? error.message
-        : 'body' in error
-        ? capitalize(JSON.parse(error.body).error.message) || fallbackString
-        : 'reason' in error && error.reason
-        ? capitalize(error.reason)
-        : 'error' in error
-        ? capitalize(JSON.parse(error.error.body).error.message) ||
-          fallbackString
-        : fallbackString;
+    const result = getError(error).message;
 
     if (result === 'DeniedByUser') {
       return '';
@@ -248,6 +238,7 @@ function TransactionDefaultView({
           spender: transactionAction.spenderAddress,
         });
         tx.chainId = networks.getChainId(chain);
+        tx.from = singleAddress;
         const gas = await estimateGas(tx, networks);
         tx.gasLimit = gas;
       }
