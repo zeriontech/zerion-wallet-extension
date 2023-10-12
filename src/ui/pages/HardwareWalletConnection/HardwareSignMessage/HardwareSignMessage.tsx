@@ -120,9 +120,7 @@ export function HardwareSignMessage({
     <>
       <LedgerIframe
         ref={ref}
-        initialRoute={
-          type === 'personalSign' ? '/personalSign' : '/signTypedData_v4'
-        }
+        initialRoute="/signConnector"
         style={{
           position: 'absolute',
           border: 'none',

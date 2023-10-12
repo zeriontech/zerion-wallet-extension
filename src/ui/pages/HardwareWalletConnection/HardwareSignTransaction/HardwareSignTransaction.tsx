@@ -76,7 +76,7 @@ export function HardwareSignTransaction({
     <>
       <LedgerIframe
         ref={ref}
-        initialRoute="/signTransaction"
+        initialRoute="/signConnector"
         style={{
           position: 'absolute',
           border: 'none',

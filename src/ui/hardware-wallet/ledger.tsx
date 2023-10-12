@@ -106,9 +106,7 @@ function App() {
           />
         }
       />
-      <Route path="/signTransaction" element={<SignConnector />} />
-      <Route path="/personalSign" element={<SignConnector />} />
-      <Route path="/signTypedData_v4" element={<SignConnector />} />
+      <Route path="/signConnector" element={<SignConnector />} />
     </Routes>
   );
 }
