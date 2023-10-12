@@ -2,27 +2,18 @@ import { useEffect, useState } from 'react';
 import {
   checkDevice,
   signTransaction,
+  personalSign,
+  signTypedData_v4,
 } from '@zeriontech/hardware-wallet-connection';
-import { isObj } from 'src/shared/isObj';
 import { isRpcRequest } from 'src/shared/custom-rpc';
 import { isClassProperty } from 'src/shared/core/isClassProperty';
 import { getError } from 'src/shared/errors/getError';
-import { invariant } from 'src/shared/invariant';
 import { normalizeDeviceError } from '../shared/errors';
-
-interface SignTransactionParams {
-  derivationPath: string;
-  transaction: object;
-}
-
-function assertSignTransactionParams(
-  x: unknown
-): asserts x is SignTransactionParams {
-  invariant(
-    isObj(x) && typeof x.derivationPath === 'string' && isObj(x.transaction),
-    'Invalid Payload'
-  );
-}
+import {
+  assertPersonalSignParams,
+  assertSignTransactionParams,
+  assertSignTypedData_v4Params,
+} from './helpers';
 
 class Controller {
   static async signTransaction(params: unknown) {
@@ -30,6 +21,19 @@ class Controller {
     assertSignTransactionParams(params);
     // @ts-ignore params.transaction is object
     return signTransaction(params.derivationPath, params.transaction);
+  }
+
+  static async personalSign(params: unknown) {
+    await checkDevice();
+    assertPersonalSignParams(params);
+    return personalSign(params.derivationPath, params.message);
+  }
+
+  static async signTypedData_v4(params: unknown) {
+    await checkDevice();
+    assertSignTypedData_v4Params(params);
+    // @ts-ignore params.typedData is object
+    return signTypedData_v4(params.derivationPath, params.typedData);
   }
 
   static async listener(event: MessageEvent) {
@@ -61,7 +65,7 @@ class Controller {
   }
 }
 
-export function SignTransaction() {
+export function SignConnector() {
   const [controller] = useState(() => new Controller());
   useEffect(() => {
     return controller.listen();

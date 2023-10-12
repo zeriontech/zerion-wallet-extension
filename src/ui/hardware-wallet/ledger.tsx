@@ -23,7 +23,7 @@ import {
 import type { DeviceConnection, LedgerAccountImport } from './types';
 import { ConnectLedgerDevice } from './ConnectLedgerDevice';
 import { verifySandbox } from './shared/verifySandbox';
-import { SignTransaction } from './SignTransaction';
+import { SignConnector } from './SignConnector';
 import { ImportLedgerAddresses } from './ImportLedgerAddresses';
 
 type Strategy = 'connect' | 'import';
@@ -106,7 +106,7 @@ function App() {
           />
         }
       />
-      <Route path="/signTransaction" element={<SignTransaction />} />
+      <Route path="/signConnector" element={<SignConnector />} />
     </Routes>
   );
 }

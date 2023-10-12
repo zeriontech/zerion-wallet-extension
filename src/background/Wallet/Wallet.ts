@@ -955,6 +955,21 @@ export class Wallet {
     }
   }
 
+  async registerTypedDataSign({
+    params: { address, initiator, rawTypedData },
+  }: WalletMethodParams<{
+    address: string;
+    rawTypedData: TypedData | string;
+    initiator: string;
+  }>) {
+    const typedData = prepareTypedData(rawTypedData);
+    emitter.emit('typedDataSigned', {
+      typedData,
+      initiator,
+      address,
+    });
+  }
+
   async signTypedData_v4({
     params: { typedData: rawTypedData, initiator },
     context,
@@ -980,12 +995,25 @@ export class Wallet {
       filteredTypes,
       typedData.message
     );
-    emitter.emit('typedDataSigned', {
-      typedData,
-      initiator,
-      address: signer.address,
+    this.registerTypedDataSign({
+      params: { address: signer.address, initiator, rawTypedData },
     });
     return signature;
+  }
+
+  async registerPersonalSign({
+    params: { address, initiator, message },
+  }: WalletMethodParams<{
+    address: string;
+    message: string;
+    initiator: string;
+  }>) {
+    const messageAsUtf8String = toUtf8String(message);
+    emitter.emit('messageSigned', {
+      message: messageAsUtf8String,
+      initiator,
+      address,
+    });
   }
 
   async personalSign({
@@ -1013,10 +1041,8 @@ export class Wallet {
       : messageAsUtf8String;
 
     const signature = await signer.signMessage(messageToSign);
-    emitter.emit('messageSigned', {
-      message: messageAsUtf8String,
-      initiator,
-      address: signer.address,
+    this.registerPersonalSign({
+      params: { address: signer.address, initiator, message },
     });
     return signature;
   }
