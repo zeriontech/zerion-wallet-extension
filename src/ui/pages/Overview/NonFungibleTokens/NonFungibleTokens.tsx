@@ -228,7 +228,7 @@ export function NonFungibleTokens({
           {isLoading && isSupportedByBackend ? (
             <ViewLoading kind="network" />
           ) : (
-            <VStack gap={32} style={{ width: '100%' }}>
+            <VStack gap={32} style={{ width: '100%', paddingBlock: 16 }}>
               {maybeSingleAddress ? (
                 <DnaNFTBanner
                   address={normalizeAddress(maybeSingleAddress || '')}
