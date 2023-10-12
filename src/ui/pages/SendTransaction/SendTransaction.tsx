@@ -29,7 +29,10 @@ import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
-import { prepareGasAndNetworkFee } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
+import {
+  estimateGas,
+  prepareGasAndNetworkFee,
+} from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import { resolveChainForTx } from 'src/modules/ethereum/transactions/resolveChainForTx';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { invariant } from 'src/shared/invariant';
@@ -244,6 +247,9 @@ function TransactionDefaultView({
           allowanceQuantityBase,
           spender: transactionAction.spenderAddress,
         });
+        tx.chainId = networks.getChainId(chain);
+        const gas = await estimateGas(tx, networks);
+        tx.gasLimit = gas;
       }
 
       const txToSign = applyConfiguration(tx, configuration, chainGasPrices);
@@ -251,8 +257,11 @@ function TransactionDefaultView({
     }
   );
 
-  const getTransaction = useEvent(async () => {
-    const value = await configureTransactionToBeSigned(incomingTransaction);
+  const getTransactionForLedger = useEvent(async () => {
+    const configured = await configureTransactionToBeSigned(
+      incomingTransaction
+    );
+    const value = { ...configured };
     if (value.nonce == null) {
       const { value: nonce } = await getTransactionCount({
         address: singleAddress,
@@ -260,10 +269,12 @@ function TransactionDefaultView({
         networks,
         defaultBlock: 'pending',
       });
-      return { ...value, nonce: parseInt(nonce) };
-    } else {
-      return value;
+      value.nonce = parseInt(nonce);
     }
+    if (!value.chainId) {
+      value.chainId = networks.getChainId(chain);
+    }
+    return value;
   });
 
   function handleSentTransaction(tx: ethers.providers.TransactionResponse) {
@@ -454,7 +465,7 @@ function TransactionDefaultView({
             {isDeviceAccount(wallet) ? (
               <HardwareSignTransaction
                 derivationPath={wallet.derivationPath}
-                getTransaction={getTransaction}
+                getTransaction={getTransactionForLedger}
                 onSign={(serialized) => {
                   try {
                     sendSignedTransaction(serialized);

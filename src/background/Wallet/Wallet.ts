@@ -746,11 +746,11 @@ export class Wallet {
     const chainId = await this.getChainIdForOrigin({
       origin: new URL(initiator).origin,
     });
-    const signer = await this.getSigner(chainId);
+    const provider = await this.getProvider(chainId);
     const abi = [
       'function approve(address, uint256) public returns (bool success)',
     ];
-    const contract = new ethers.Contract(contractAddress, abi, signer);
+    const contract = new ethers.Contract(contractAddress, abi, provider);
     return await contract.populateTransaction.approve(
       spender,
       allowanceQuantityBase

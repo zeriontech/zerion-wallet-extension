@@ -17,7 +17,7 @@ function add10Percent(value: number) {
   return Math.round(value * 1.1); // result must be an integer
 }
 
-async function estimateGas(
+export async function estimateGas(
   transaction: IncomingTransaction,
   networks: Networks
 ) {

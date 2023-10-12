@@ -30,6 +30,8 @@ const URLBarBlacklist = new Set([
   '/overview/feed',
   '/login',
   '/sendTransaction',
+  '/signMessage',
+  '/signTypedData',
   '/phishing-warning',
 ]);
 
