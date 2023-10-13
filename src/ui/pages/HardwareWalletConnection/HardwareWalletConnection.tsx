@@ -17,12 +17,10 @@ import {
   useBackgroundKind,
   useBodyStyle,
 } from 'src/ui/components/Background/Background';
-import { UIText } from 'src/ui/ui-kit/UIText';
 import { NavigationBackButton } from 'src/ui/components/NavigationBackButton';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import FullTextLogo from 'jsx:src/ui/assets/zerion-full-logo.svg';
-import lockIconSrc from 'src/ui/Onboarding/assets/lock.png';
-import { HStack } from 'src/ui/ui-kit/HStack';
+import { PrivacyFooter } from 'src/ui/components/PrivacyFooter';
 import { isAllowedMessage } from './shared/isAllowedMessage';
 import { ImportSuccess } from './ImportSuccess';
 import { getWalletInfo } from './shared/getWalletInfo';
@@ -48,7 +46,8 @@ function FrameLayout({ children }: React.PropsWithChildren) {
       <div
         style={{
           display: 'grid',
-          gridTemplateRows: 'auto minmax(670px, 1fr) auto',
+          gridTemplateRows: 'auto minmax(620px, 1fr) auto',
+          paddingInline: 16,
         }}
       >
         <div style={{ paddingTop: 24, paddingBottom: 25 }}>
@@ -78,13 +77,7 @@ function FrameLayout({ children }: React.PropsWithChildren) {
           </FillView>
         </div>
         <footer style={{ paddingTop: 32, paddingBottom: 36 }}>
-          <HStack gap={8}>
-            <img src={lockIconSrc} alt="" style={{ width: 20, height: 20 }} />
-            <UIText kind="small/accent" color="var(--neutral-600)">
-              We never store your keys, collect your full IP address, sell or
-              share your data. See here for our full policy.
-            </UIText>
-          </HStack>
+          <PrivacyFooter />
         </footer>
       </div>
     </PageFullBleedColumn>

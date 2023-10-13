@@ -70,9 +70,9 @@ export function ConnectLedgerDevice({
     error &&
     error.name !== 'TransportOpenUserCancelled' &&
     error.name !== 'Error';
-  const title = 'Connect Your Ledger';
+  const title = 'Connect Ledger';
   return (
-    <PageColumn style={{ height: '100%' }}>
+    <PageColumn style={{ height: '100%' }} paddingInline={24}>
       <VStack gap={24}>
         <div>
           <div

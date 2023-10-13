@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { ethers } from 'ethers';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -67,6 +61,7 @@ import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAcc
 import { isDeviceAccount } from 'src/shared/types/validators';
 import { getTransactionCount } from 'src/modules/ethereum/transactions/getTransactionCount';
 import { getError } from 'src/shared/errors/getError';
+import { useEvent } from 'src/ui/shared/useEvent';
 import { HardwareSignTransaction } from '../HardwareWalletConnection/HardwareSignTransaction/HardwareSignTransaction';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
@@ -160,18 +155,6 @@ enum View {
   default = 'default',
   advanced = 'advanced',
   customAllowance = 'customAllowance',
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyFunction = (...args: any[]) => any;
-function useEvent<T extends AnyFunction>(callback: T) {
-  const ref = useRef<T | null>(null);
-  useLayoutEffect(() => {
-    ref.current = callback;
-  });
-  return useCallback<AnyFunction>((...args) => {
-    return ref.current?.(...args);
-  }, []) as T;
 }
 
 function TransactionDefaultView({

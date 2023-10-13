@@ -1303,7 +1303,6 @@ class PublicController {
         requestId: `${context.origin}:${id}`,
         route: '/sendTransaction',
         height: isDeviceWallet ? 800 : undefined,
-        width: isDeviceWallet ? 500 : undefined,
         search: `?${new URLSearchParams({
           origin: context.origin,
           transaction: JSON.stringify(transaction),
@@ -1335,10 +1334,15 @@ class PublicController {
     }
     const stringifiedData =
       typeof data === 'string' ? data : JSON.stringify(data);
+    const currentWallet = await this.wallet.uiGetCurrentWallet({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
+    const isDeviceWallet = currentWallet && isDeviceAccount(currentWallet);
     return new Promise((resolve, reject) => {
       this.safeOpenDialogWindow(context.origin, {
         requestId: `${context.origin}:${id}`,
         route: '/signTypedData',
+        height: isDeviceWallet ? 800 : undefined,
         search: `?${new URLSearchParams({
           origin: context.origin,
           typedDataRaw: stringifiedData,
@@ -1405,10 +1409,15 @@ class PublicController {
 
     const route = isSiweLike(message) ? '/siwe' : '/signMessage';
 
+    const currentWallet = await this.wallet.uiGetCurrentWallet({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
+    const isDeviceWallet = currentWallet && isDeviceAccount(currentWallet);
     return new Promise((resolve, reject) => {
       this.safeOpenDialogWindow(context.origin, {
         requestId: `${context.origin}:${id}`,
         route,
+        height: isDeviceWallet ? 800 : undefined,
         search: `?${new URLSearchParams({
           method: 'personal_sign',
           origin: context.origin,

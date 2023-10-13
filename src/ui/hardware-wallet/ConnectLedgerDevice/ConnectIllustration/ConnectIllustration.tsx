@@ -15,9 +15,10 @@ export function ConnectIllustration() {
     >
       <LedgerWire
         style={{
-          animation: `${styles.connectWire} 2.5s`,
+          animation: `${styles.connectWire} 2s`,
           animationDelay: '1s',
           animationFillMode: 'backwards',
+          animationTimingFunction: 'ease-in-out',
         }}
       />
       <div style={{ position: 'relative', left: -4 }}>

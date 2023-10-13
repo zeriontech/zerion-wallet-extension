@@ -243,7 +243,10 @@ export function ImportLedgerAddresses({
 }) {
   const [pathType, setPathType] = useState<DerivationPathType>('ledgerLive');
   return (
-    <PageColumn style={{ height: '100%', position: 'relative' }}>
+    <PageColumn
+      style={{ height: '100%', position: 'relative' }}
+      paddingInline={24}
+    >
       <PageFullBleedColumn
         paddingInline={true}
         style={{

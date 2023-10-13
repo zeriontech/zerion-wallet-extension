@@ -6,7 +6,6 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
@@ -14,7 +13,7 @@ import { HandshakeFailure } from 'src/ui/components/HandshakeFailure';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import { useErrorBoundary } from 'src/ui/shared/useErrorBoundary';
-import lockIconSrc from '../assets/lock.png';
+import { PrivacyFooter } from 'src/ui/components/PrivacyFooter';
 import { useSizeStore } from '../useSizeStore';
 import { Stack } from '../Stack';
 import * as styles from './styles.module.css';
@@ -183,23 +182,7 @@ export function Import() {
           <FAQ type={view === ViewParam.password ? 'password' : type} />
         </div>
       ) : null}
-      <HStack gap={16} justifyContent="center" alignItems="center">
-        <img src={lockIconSrc} alt="" style={{ width: 20, height: 20 }} />
-        <UIText kind="small/accent" color="var(--neutral-600)" inline={true}>
-          We never store your keys, collect your full IP address, sell or share
-          your data. See here for our{' '}
-          <TextAnchor
-            href="https://s3.amazonaws.com/cdn.zerion.io/assets/privacy.pdf"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ display: 'inline-block' }}
-          >
-            <UIText kind="small/accent" color="var(--primary)">
-              full policy.
-            </UIText>
-          </TextAnchor>
-        </UIText>
-      </HStack>
+      <PrivacyFooter />
     </VStack>
   );
 }

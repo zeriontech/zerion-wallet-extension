@@ -26,7 +26,7 @@ export function ImportSuccess() {
     'address parameters are missing'
   );
   return (
-    <PageColumn>
+    <PageColumn paddingInline={24}>
       <NavigationTitle
         urlBar="none"
         title={null}

@@ -1,9 +1,8 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getBackOrHome } from 'src/ui/shared/navigation/getBackOrHome';
+import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
 import { BackButton } from '../BackButton';
 
 export function NavigationBackButton() {
-  const navigate = useNavigate();
-  return <BackButton onClick={() => navigate(getBackOrHome() as number)} />;
+  const goBack = useGoBack();
+  return <BackButton onClick={goBack} />;
 }

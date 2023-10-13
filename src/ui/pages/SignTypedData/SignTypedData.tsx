@@ -443,9 +443,6 @@ function SignTypedDataContent({
             onChange={handleChangeAllowance}
           />
         ) : null}
-        {view === View.advanced && interpretationDataJSON ? (
-          <TypedDataAdvancedView dataJSON={interpretationDataJSON} />
-        ) : null}
         <Spacer height={16} />
         <PhishingDefenceStatus origin={origin} />
       </PageColumn>
