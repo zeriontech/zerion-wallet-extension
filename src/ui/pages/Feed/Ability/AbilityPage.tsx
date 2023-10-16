@@ -122,7 +122,7 @@ export function AbilityPage() {
           )}
         </div>
       </PageColumn>
-      {data?.ability ? (
+      {data?.ability && abilityActionUrl ? (
         <PageStickyFooter>
           <Spacer height={8} />
           <Button
@@ -134,9 +134,10 @@ export function AbilityPage() {
             style={{ position: 'sticky', bottom: 48 }}
             onClick={() => {
               walletPort.request('daylightAction', {
-                event_name: 'Perks: External Link Clicked',
+                event_name: 'Perks: Link Clicked',
                 ability_id: data.ability.uid,
                 perk_type: data.ability.type,
+                perk_url: abilityActionUrl,
                 source: 'page',
               });
             }}
