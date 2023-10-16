@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import type { AddressAction } from 'defi-sdk';
+import { useQuery } from '@tanstack/react-query';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Media } from 'src/ui/ui-kit/Media';
@@ -10,30 +11,22 @@ import type { Networks } from 'src/modules/networks/Networks';
 import { createChain } from 'src/modules/networks/Chain';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
-import ZerionIcon from 'jsx:src/ui/assets/zerion-squircle.svg';
-import { DNA_MINT_CONTRACT_ADDRESS } from 'src/ui/components/DnaClaim/dnaAddress';
-import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type {
   AnyAddressAction,
   LocalAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction';
-import {
-  getActionAddress,
-  getActionAsset,
-} from 'src/modules/ethereum/transactions/addressAction';
+import { getActionAddress } from 'src/modules/ethereum/transactions/addressAction';
 import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
-import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { AssetLink } from 'src/ui/components/AssetLink';
+import { walletPort } from 'src/ui/shared/channels';
 import { ActionDetailedView } from '../ActionDetailedView';
 import { isUnlimitedApproval } from '../isUnlimitedApproval';
 import {
@@ -41,62 +34,21 @@ import {
   TransactionCurrencyValue,
 } from './TransactionItemValue';
 import {
-  HistoryAssetIcon,
   transactionIconStyle,
   TransactionItemIcon,
   TRANSACTION_ICON_SIZE,
 } from './TransactionTypeIcon';
 import * as styles from './styles.module.css';
+import { isDnaMintAction } from './helpers';
 
-function checkIsDnaMint(action: AnyAddressAction) {
-  return (
-    normalizeAddress(action.label?.value || '') === DNA_MINT_CONTRACT_ADDRESS
-  );
-}
-
-function ActionTitle({
-  action,
-  explorerUrl,
-}: {
-  action: AnyAddressAction;
-  explorerUrl?: string | null;
-}) {
-  const isMintingDna = checkIsDnaMint(action);
+function ActionTitle({ action }: { action: AnyAddressAction }) {
+  const isMintingDna = isDnaMintAction(action);
   const titlePrefix = action.transaction.status === 'failed' ? 'Failed ' : '';
   const actionTitle = isMintingDna
     ? 'Mint DNA'
     : `${titlePrefix}${action.type.display_value}`;
 
-  const explorerUrlPrepared = useMemo(
-    () => (explorerUrl ? prepareForHref(explorerUrl)?.toString() : undefined),
-    [explorerUrl]
-  );
-
-  return (
-    <UIText kind="body/accent">
-      {explorerUrl ? (
-        <TextAnchor
-          href={explorerUrlPrepared}
-          target="_blank"
-          title={explorerUrlPrepared}
-          rel="noopener noreferrer"
-          onClick={(e) => {
-            e.stopPropagation();
-            openInNewWindow(e);
-          }}
-          style={{
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {actionTitle}
-        </TextAnchor>
-      ) : (
-        actionTitle
-      )}
-    </UIText>
-  );
+  return <UIText kind="body/accent">{actionTitle}</UIText>;
 }
 
 function AddressTruncated({ value }: { value: string }) {
@@ -160,11 +112,11 @@ function ActionDetail({
   );
 }
 
-function ActionItemBackend({
+function ActionItemView({
   action,
   networks,
 }: {
-  action: AddressAction;
+  action: AnyAddressAction;
   networks: Networks;
 }) {
   const [showDetailedView, setShowDetailedView] = useState(false);
@@ -214,8 +166,6 @@ function ActionItemBackend({
         gap={24}
         justifyContent="space-between"
         style={{
-          cursor: 'pointer',
-          position: 'relative',
           height: 42,
           gridTemplateColumns:
             'minmax(min-content, max-content) minmax(100px, max-content)',
@@ -235,22 +185,25 @@ function ActionItemBackend({
           gap={12}
           style={{ zIndex: 1 }}
           image={
-            action.transaction.status === 'failed' ? (
-              <FailedIcon style={transactionIconStyle} />
-            ) : action.transaction.status === 'pending' ? (
-              <CircleSpinner
-                size="38px"
-                trackWidth="7%"
-                color="var(--primary)"
-                style={{
-                  position: 'absolute',
-                  top: -1,
-                  left: -1,
-                }}
-              />
-            ) : (
-              <TransactionItemIcon action={action} />
-            )
+            <div style={{ position: 'relative', ...transactionIconStyle }}>
+              {action.transaction.status === 'pending' ? (
+                <CircleSpinner
+                  size={`${TRANSACTION_ICON_SIZE + 2}px`}
+                  trackWidth="7%"
+                  color="var(--primary)"
+                  style={{
+                    position: 'absolute',
+                    top: -1,
+                    left: -1,
+                  }}
+                />
+              ) : null}
+              {action.transaction.status === 'failed' ? (
+                <FailedIcon style={transactionIconStyle} />
+              ) : (
+                <TransactionItemIcon action={action} />
+              )}
+            </div>
           }
           text={<ActionTitle action={action} />}
           detailText={<ActionDetail networks={networks} action={action} />}
@@ -370,88 +323,36 @@ function ActionItemBackend({
   );
 }
 
-function ActionItemLocal({
+function ActionItemLocalWrapper({
   action,
   networks,
 }: {
   action: LocalAddressAction;
   networks: Networks;
 }) {
-  const asset = getActionAsset(action);
+  const { hash } = action.transaction;
 
-  const { params, ready } = useAddressParams();
+  const { data: localInterpretation } = useQuery({
+    queryKey: ['getLocalActionInterpretation', hash],
+    queryFn: async () => {
+      if (!hash) {
+        return null;
+      }
+      const interpretation = await walletPort.request(
+        'getLocalActionInterpretation',
+        { hash }
+      );
+      if (interpretation) {
+        interpretation.action.transaction.status = 'pending';
+      }
+      return interpretation;
+    },
+    suspense: false,
+  });
 
-  if (!ready) {
-    return null;
-  }
+  const displayedAction = localInterpretation?.action || action;
 
-  const address = 'address' in params ? params.address : undefined;
-
-  const isMintingDna = checkIsDnaMint(action);
-
-  const { chain: chainStr } = action.transaction;
-  const chain = chainStr ? createChain(chainStr) : null;
-
-  const explorerUrl = chain
-    ? networks.getExplorerTxUrlByName(chain, action.transaction.hash)
-    : null;
-
-  return (
-    <HStack
-      gap={24}
-      justifyContent="space-between"
-      style={{ height: 42 }}
-      alignItems="center"
-    >
-      <Media
-        vGap={0}
-        gap={12}
-        image={
-          <div style={{ position: 'relative', ...transactionIconStyle }}>
-            {action.transaction.status === 'pending' ? (
-              <CircleSpinner
-                size={`${TRANSACTION_ICON_SIZE + 2}px`}
-                trackWidth="7%"
-                color="var(--primary)"
-                style={{
-                  position: 'absolute',
-                  top: -1,
-                  left: -1,
-                }}
-              />
-            ) : null}
-            {isMintingDna ? (
-              <ZerionIcon
-                width={TRANSACTION_ICON_SIZE}
-                height={TRANSACTION_ICON_SIZE}
-              />
-            ) : (
-              <HistoryAssetIcon
-                size={TRANSACTION_ICON_SIZE}
-                asset={asset ? { fungible: asset } : undefined}
-                type={action.type.value}
-              />
-            )}
-          </div>
-        }
-        text={<ActionTitle action={action} explorerUrl={explorerUrl} />}
-        detailText={<ActionDetail networks={networks} action={action} />}
-      />
-      <UIText kind="body/regular">
-        {asset ? (
-          <AssetLink
-            asset={asset}
-            title={
-              action.type.value === 'approve'
-                ? asset.name || asset.symbol?.toUpperCase()
-                : undefined
-            }
-            address={address}
-          />
-        ) : null}
-      </UIText>
-    </HStack>
-  );
+  return <ActionItemView action={displayedAction} networks={networks} />;
 }
 
 export function ActionItem({
@@ -465,9 +366,9 @@ export function ActionItem({
     return null;
   }
   return 'local' in addressAction && addressAction.local ? (
-    <ActionItemLocal action={addressAction} networks={networks} />
+    <ActionItemLocalWrapper action={addressAction} networks={networks} />
   ) : (
-    <ActionItemBackend
+    <ActionItemView
       action={addressAction as AddressAction}
       networks={networks}
     />

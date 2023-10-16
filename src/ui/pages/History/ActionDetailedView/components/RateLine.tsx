@@ -1,17 +1,17 @@
 import React, { useMemo } from 'react';
-import type { AddressAction } from 'defi-sdk';
 import BigNumber from 'bignumber.js';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { AssetLink } from 'src/ui/components/AssetLink';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 
 export function RateLine({
   action,
   address,
 }: {
-  action: AddressAction;
+  action: AnyAddressAction;
   address?: string;
 }) {
   const rate = useMemo(() => {

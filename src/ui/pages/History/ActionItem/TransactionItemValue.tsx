@@ -63,7 +63,7 @@ function HistoryTokenValue({
         overflow: 'hidden',
         whiteSpace: 'nowrap',
       }}
-      title={`${sign}${formatted} ${tokenTitle}`}
+      title={value ? `${sign}${formatted} ${tokenTitle}` : tokenTitle}
     >
       <AssetQuantity sign={sign} commonQuantity={commonQuantity} />
       {withLink ? (
@@ -84,7 +84,7 @@ export function HistoryNFTValue({
   address,
   withLink,
 }: {
-  quantity?: number;
+  quantity?: number | string;
   nftAsset?: NFTAsset | null;
   chain?: Chain;
   name?: string;
@@ -98,7 +98,7 @@ export function HistoryNFTValue({
       alignItems="center"
       style={{ gridTemplateColumns: 'minmax(40px, 1fr) auto' }}
     >
-      {quantity > 1 ? (
+      {Number(quantity) > 1 ? (
         <span>
           {getSign(quantity, direction)}
           {quantity}
@@ -147,7 +147,7 @@ export function HistoryItemValue({
       address={address}
       nftAsset={nftAsset}
       direction={direction}
-      quantity={1}
+      quantity={transfers[0].quantity || 1}
       name={nftAsset.name || nftAsset.collection?.name}
       chain={chain}
       withLink={withLink}
@@ -176,7 +176,7 @@ export function TransactionCurrencyValue({
   }
   const transfer = transfers[0];
   const asset = getFungibleAsset(transfer.asset);
-  if (!asset) {
+  if (!asset || !transfer.quantity || !transfer.price) {
     return null;
   }
 
@@ -186,7 +186,7 @@ export function TransactionCurrencyValue({
     baseQuantity: transfer.quantity,
   });
   const value = formatCurrencyValue(
-    commonQuantity.times(transfer.price || 0),
+    commonQuantity.times(transfer.price),
     'en',
     'usd'
   );

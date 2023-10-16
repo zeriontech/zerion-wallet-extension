@@ -160,10 +160,16 @@ function FungibleTransfer({
         </UIText>
       }
       detailText={
-        <UIText kind="small/regular" color="var(--neutral-500)">
-          {almostEqual}
-          {formatCurrencyValue(balance.times(transfer.price || 0), 'en', 'usd')}
-        </UIText>
+        balance && transfer.price ? (
+          <UIText kind="small/regular" color="var(--neutral-500)">
+            {almostEqual}
+            {formatCurrencyValue(
+              balance.times(transfer.price || 0),
+              'en',
+              'usd'
+            )}
+          </UIText>
+        ) : null
       }
     />
   );

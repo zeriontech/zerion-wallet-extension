@@ -127,8 +127,10 @@ function useMinedAndPendingAddressActions({
           )
         : null,
       ...localActionsQuery,
-      isLoading: actionsIsLoading || localActionsQuery.isLoading,
       hasMore,
+      isLoading:
+        (actionsIsLoading && isSupportedByBackend) ||
+        localActionsQuery.isLoading,
       fetchMore,
     };
   }, [

@@ -5,6 +5,9 @@ import type { IncomingTransactionWithChainId } from '../types/IncomingTransactio
 import type { InterpretResponse } from './types';
 import { getGas } from './getGas';
 
+const namespace = 'interpret';
+const scope = 'transaction';
+
 export function interpretTransaction(
   address: string,
   transaction: IncomingTransactionWithChainId
@@ -16,13 +19,13 @@ export function interpretTransaction(
 
       const unsubscribe = client.subscribe<
         InterpretResponse,
-        'interpret',
-        'transaction'
+        typeof namespace,
+        typeof scope
       >({
-        namespace: 'interpret',
+        namespace,
         method: 'stream',
         body: {
-          scope: ['transaction'],
+          scope: [scope],
           payload: {
             address,
             chain_id: transaction.chainId,
