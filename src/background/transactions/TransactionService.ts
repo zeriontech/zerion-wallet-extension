@@ -68,7 +68,9 @@ export class TransactionService {
           draft.push(newItem);
         })
       );
+    });
 
+    emitter.on('transactionSent', async ({ transaction }) => {
       const networks = await networksStore.load();
       const chain = networks.getChainById(
         ethers.utils.hexValue(transaction.chainId)
