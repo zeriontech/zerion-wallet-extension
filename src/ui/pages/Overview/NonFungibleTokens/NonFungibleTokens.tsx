@@ -222,13 +222,15 @@ export function NonFungibleTokens({
 
   if (!isSupportedByBackend || items.length === 0) {
     return (
-      <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
+      <div style={{ position: 'relative' }}>
         <div style={{ position: 'absolute', right: 16 }}>{networkSelect}</div>
         <DelayedRender delay={100}>
           {isLoading && isSupportedByBackend ? (
-            <ViewLoading kind="network" />
+            <div style={{ paddingBlock: 40 }}>
+              <ViewLoading kind="network" />
+            </div>
           ) : (
-            <VStack gap={32} style={{ width: '100%' }}>
+            <VStack gap={32} style={{ width: '100%', paddingBlock: 40 }}>
               {maybeSingleAddress ? (
                 <DnaNFTBanner
                   address={normalizeAddress(maybeSingleAddress || '')}
@@ -246,7 +248,7 @@ export function NonFungibleTokens({
             </VStack>
           )}
         </DelayedRender>
-      </CenteredFillViewportView>
+      </div>
     );
   }
 
