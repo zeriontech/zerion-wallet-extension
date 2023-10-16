@@ -24,22 +24,34 @@
   background-color: var(--background);
 }
 
+:root {
+  height: 100%;
+  min-height: 600px;
+}
+
 body {
   font-family: 'Aeonik Pro', sans-serif;
   font-size: 14px;
   line-height: calc(20 / 14);
-  color: var(--black);
-  background-color: var(--background);
+  /** NOTE: See also ViewArea component */
   --body-width: 400px;
   --body-height: 600px;
+  min-height: 100%;
+  color: var(--black);
+  background-color: var(--background);
   width: var(--body-width);
-  height: var(--body-height);
+  /* height: var(--body-height); */
   margin-inline: auto;
 }
 
+body.isPopup {
+  --body-width: 400px;
+  --body-height: 600px;
+}
+
 body.isDialog {
-  height: 100vh;
-  width: 100%;
+  --body-width: 100%;
+  --body-height: 100vh;
   margin: auto;
 }
 
@@ -48,8 +60,10 @@ body.isDialog {
 }
 
 body.isTab {
-  --body-height: 100vh;
   --body-width: 450px;
+  --body-height: 100vh;
+  height: auto;
+  /* min-height: var(--body-height); */
   border-inline: 1px solid var(--neutral-300);
   margin-inline: auto;
 }
@@ -82,6 +96,7 @@ body.isDialog:not(.isOnboarding) {
 
 :global(#root) {
   height: 100%;
+  min-height: inherit;
 }
 
 @keyframes fadeIn {

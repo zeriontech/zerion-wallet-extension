@@ -5,7 +5,8 @@ export function ViewArea(props: React.HTMLAttributes<HTMLDivElement>) {
     <div
       {...props}
       style={{
-        minHeight: '100%',
+        height: '100%',
+        minHeight: 'inherit',
         display: 'flex',
         flexDirection: 'column',
         marginRight: 'auto',
