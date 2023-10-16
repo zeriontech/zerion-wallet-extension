@@ -38,7 +38,7 @@ export const FillView = React.forwardRef(
   }
 );
 
-export function StretchyFillView({
+export function CenteredFillViewportView({
   className,
   style,
   adjustForNavigationBar = false,
@@ -95,6 +95,7 @@ export function StretchyFillView({
           display: 'grid',
           alignContent: 'center',
           justifyItems: 'center',
+          position: 'relative',
           ...style,
         }}
       >

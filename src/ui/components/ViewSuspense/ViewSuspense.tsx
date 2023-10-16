@@ -34,8 +34,12 @@ function DelayLogger() {
 
 export function ViewSuspense({
   children,
+  fallback,
   logDelays,
-}: React.PropsWithChildren<{ logDelays?: boolean }>) {
+}: React.PropsWithChildren<{
+  logDelays?: boolean;
+  fallback?: React.ReactNode;
+}>) {
   return (
     <React.Suspense
       fallback={
@@ -46,9 +50,11 @@ export function ViewSuspense({
             documentTitle=""
             ignoreDocumentTitle_DO_NOT_USE_EXCEPT_FOR_LOADING_VIEW={true}
           />
-          <DelayedRender>
-            <ViewLoading />
-          </DelayedRender>
+          {fallback ?? (
+            <DelayedRender>
+              <ViewLoading />
+            </DelayedRender>
+          )}
           {logDelays ? <DelayLogger /> : null}
         </>
       }
