@@ -1,11 +1,11 @@
-import type { AddressAction } from 'defi-sdk';
 import React, { useMemo } from 'react';
 import { getNftAsset } from 'src/modules/ethereum/transactions/actionAsset';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UIText } from 'src/ui/ui-kit/UIText';
 
-export function CollectionLine({ action }: { action: AddressAction }) {
+export function CollectionLine({ action }: { action: AnyAddressAction }) {
   const { content } = action;
 
   const nftCollection = useMemo(() => {

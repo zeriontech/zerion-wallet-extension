@@ -63,6 +63,7 @@ import { getTransactionCount } from 'src/modules/ethereum/transactions/getTransa
 import { getError } from 'src/shared/errors/getError';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { HardwareSignTransaction } from '../HardwareWalletConnection/HardwareSignTransaction/HardwareSignTransaction';
+import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
@@ -166,6 +167,7 @@ function TransactionDefaultView({
   transactionAction,
   singleAsset,
   allowanceQuantityBase,
+  interpretation,
   interpretQuery,
   incomingTransaction,
   incomingTxWithGasAndFee,
@@ -179,6 +181,7 @@ function TransactionDefaultView({
   transactionAction: TransactionAction;
   singleAsset: NonNullable<AddressAction['content']>['single_asset'];
   allowanceQuantityBase?: string;
+  interpretation?: InterpretResponse | null;
   interpretQuery: {
     isLoading: boolean;
     isError: boolean;
@@ -272,7 +275,7 @@ function TransactionDefaultView({
 
       return await walletPort.request('signAndSendTransaction', [
         txToSign,
-        { initiator: origin, feeValueCommon },
+        { initiator: origin, feeValueCommon, interpretation },
       ]);
     },
     // The value returned by onMutate can be accessed in
@@ -603,6 +606,7 @@ function SendTransactionContent({
             allowanceQuantityBase={
               allowanceQuantityBase || requestedAllowanceQuantityBase
             }
+            interpretation={interpretation}
             interpretQuery={interpretQuery}
             incomingTransaction={incomingTransaction}
             incomingTxWithGasAndFee={incomingTxWithGasAndFee}

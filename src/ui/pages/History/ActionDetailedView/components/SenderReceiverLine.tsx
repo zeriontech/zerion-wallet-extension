@@ -15,6 +15,7 @@ import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 
 const ICON_SIZE = 20;
 
@@ -111,7 +112,7 @@ function SenderReceiver({
   );
 }
 
-export function SenderReceiverLine({ action }: { action: AddressAction }) {
+export function SenderReceiverLine({ action }: { action: AnyAddressAction }) {
   const { label } = action;
 
   if (!label) {

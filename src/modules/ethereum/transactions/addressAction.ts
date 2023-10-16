@@ -10,7 +10,6 @@ import type {
   IncomingTransaction,
   IncomingTransactionWithChainId,
 } from '../types/IncomingTransaction';
-import { getFungibleAsset } from './actionAsset';
 import type {
   TransactionAction,
   TransactionActionType,
@@ -213,18 +212,6 @@ export async function incomingTxToIncomingAddressAction(
     },
     content,
   };
-}
-
-export function getActionAsset(action: AnyAddressAction) {
-  const approvedAsset = action.content?.single_asset?.asset;
-  const sentAsset = action.content?.transfers?.outgoing?.[0]?.asset;
-
-  if (approvedAsset) {
-    return getFungibleAsset(approvedAsset);
-  } else if (sentAsset) {
-    return getFungibleAsset(sentAsset);
-  }
-  return null;
 }
 
 export function getActionAddress(action: AnyAddressAction) {
