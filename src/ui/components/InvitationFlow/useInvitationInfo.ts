@@ -51,6 +51,7 @@ export function useInvitationInfo(
       invariant(campaignId, 'campaignId should exist to fetch invitation data');
       return getInvitationInfo(address, campaignId);
     },
+    retry: 1,
     suspense: false,
     enabled: Boolean(address) && Boolean(campaignId),
     useErrorBoundary,

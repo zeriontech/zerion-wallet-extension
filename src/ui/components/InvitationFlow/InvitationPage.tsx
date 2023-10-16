@@ -17,6 +17,7 @@ import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { Background } from '../Background';
 import { PageColumn } from '../PageColumn';
 import { NavigationTitle } from '../NavigationTitle';
+import { EmptyView } from '../EmptyView';
 import {
   useInvitationInfo,
   type ClaimCode,
@@ -34,6 +35,7 @@ function InvitationCode({ claimCode }: { claimCode: ClaimCode }) {
       return getClaimLinkStatus(link_id);
     },
     suspense: false,
+    retry: 1,
     enabled: status === 'CLAIMED',
   });
 
@@ -129,7 +131,10 @@ function InvitationCode({ claimCode }: { claimCode: ClaimCode }) {
 
 export function InvitationPage() {
   const { singleAddressNormalized } = useAddressParams();
-  const { data, isLoading } = useInvitationInfo(singleAddressNormalized);
+  const { data, isLoading, isError } = useInvitationInfo(
+    singleAddressNormalized,
+    { useErrorBoundary: false }
+  );
 
   return (
     <Background backgroundKind="neutral">
@@ -161,7 +166,9 @@ export function InvitationPage() {
               <br />
               Early Access
             </UIText>
-            {isLoading ? (
+            {isError ? (
+              <EmptyView text="Unable to load invitations" />
+            ) : isLoading ? (
               <CircleSpinner />
             ) : (
               <VStack gap={20}>
