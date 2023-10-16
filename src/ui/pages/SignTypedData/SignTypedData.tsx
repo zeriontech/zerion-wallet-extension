@@ -1,4 +1,10 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -47,8 +53,8 @@ import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset'
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { useErrorBoundary } from 'src/ui/shared/useErrorBoundary';
 import { isDeviceAccount } from 'src/shared/types/validators';
-import { HardwareSignMessage } from '../HardwareWalletConnection/HardwareSignMessage';
 import { BUG_REPORT_BUTTON_HEIGHT } from 'src/ui/components/BugReportButton';
+import { HardwareSignMessage } from '../HardwareWalletConnection/HardwareSignMessage';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
 export const TypedDataRow = React.forwardRef(
@@ -176,7 +182,7 @@ function TypedDataDefaultView({
   });
 
   const footerContentRef = useRef<HTMLDivElement | null>(null);
-  const [seenSigningData, setSeenSigningData] = useState(Boolean);
+  const [seenSigningData, setSeenSigningData] = useState(true);
   const typedDataRowRef = useRef<HTMLDivElement | null>(null);
   const onTypedDataRowRefSet = useCallback((node: HTMLDivElement | null) => {
     if (!node || !footerContentRef?.current) {
@@ -190,6 +196,8 @@ function TypedDataDefaultView({
         if (entry.isIntersecting) {
           setSeenSigningData(true);
           observer.disconnect();
+        } else {
+          setSeenSigningData(false);
         }
       },
       { rootMargin: `-${rootMargin}px` }
@@ -198,13 +206,51 @@ function TypedDataDefaultView({
     return () => observer.disconnect();
   }, []);
 
+  const disposables = useRef<Array<() => void>>([]);
+  useEffect(() => {
+    disposables.current.forEach((l) => l());
+  }, []);
+
   const setTypedDataRow = (node: HTMLDivElement | null) => {
     typedDataRowRef.current = node;
-    onTypedDataRowRefSet(node);
+    const unlisten = onTypedDataRowRefSet(node);
+    if (unlisten) {
+      disposables.current.push(unlisten);
+    }
   };
 
   const scrollSigningData = () =>
     typedDataRowRef?.current?.scrollIntoView({ behavior: 'smooth' });
+
+  const submitButton = isDeviceAccount(wallet) ? (
+    <HardwareSignMessage
+      derivationPath={wallet.derivationPath}
+      message={stringifiedData}
+      type="signTypedData_v4"
+      isSigning={signTypedData_v4Mutation.isLoading}
+      onBeforeSign={() => setHardwareSignError(null)}
+      onSignError={(error) => setHardwareSignError(error)}
+      onSign={(signature) => {
+        try {
+          registerTypedDataSign(signature);
+        } catch (error) {
+          showErrorBoundary(error);
+        }
+      }}
+    />
+  ) : (
+    <Button
+      disabled={signTypedData_v4Mutation.isLoading}
+      onClick={() => {
+        signTypedData_v4Mutation.mutate({
+          typedData: stringifiedData,
+          initiator: origin,
+        });
+      }}
+    >
+      {signTypedData_v4Mutation.isLoading ? 'Signing...' : 'Sign'}
+    </Button>
+  );
 
   return (
     <>
@@ -305,36 +351,10 @@ function TypedDataDefaultView({
                 Cancel
               </Button>
 
-              {isDeviceAccount(wallet) ? (
-                <HardwareSignMessage
-                  derivationPath={wallet.derivationPath}
-                  message={stringifiedData}
-                  type="signTypedData_v4"
-                  isSigning={signTypedData_v4Mutation.isLoading}
-                  onBeforeSign={() => setHardwareSignError(null)}
-                  onSignError={(error) => setHardwareSignError(error)}
-                  onSign={(signature) => {
-                    try {
-                      registerTypedDataSign(signature);
-                    } catch (error) {
-                      showErrorBoundary(error);
-                    }
-                  }}
-                />
-              ) : Boolean(interpretation?.action) ||
-                interpretQuery.isLoading ||
-                seenSigningData ? (
-                <Button
-                  disabled={signTypedData_v4Mutation.isLoading}
-                  onClick={() => {
-                    signTypedData_v4Mutation.mutate({
-                      typedData: stringifiedData,
-                      initiator: origin,
-                    });
-                  }}
-                >
-                  {signTypedData_v4Mutation.isLoading ? 'Signing...' : 'Sign'}
-                </Button>
+              {Boolean(interpretation?.action) ||
+              interpretQuery.isLoading ||
+              seenSigningData ? (
+                submitButton
               ) : (
                 <Button onClick={scrollSigningData}>
                   <HStack gap={8} alignItems="center" justifyContent="center">
