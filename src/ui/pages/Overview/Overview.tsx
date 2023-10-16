@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { useAddressPortfolio } from 'defi-sdk';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -30,7 +30,10 @@ import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { CopyButton } from 'src/ui/components/CopyButton';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
+import {
+  DelayedRender,
+  useRenderDelay,
+} from 'src/ui/components/DelayedRender/DelayedRender';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { useProfileName } from 'src/ui/shared/useProfileName';
@@ -40,6 +43,7 @@ import {
 } from 'src/ui/components/PauseInjection';
 import { InvitationBanner } from 'src/ui/components/InvitationFlow';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
+import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -50,10 +54,12 @@ import { NonFungibleTokens } from './NonFungibleTokens';
 import { Positions } from './Positions';
 import { ActionButtonsRow } from './ActionButtonsRow';
 import {
-  TABS_HEIGHT,
-  TABS_OFFSET,
+  MIN_TAB_CONTENT_HEIGHT,
+  TAB_SELECTOR_HEIGHT,
+  TAB_STICKY_OFFSET,
   TABS_OFFSET_METER_ID,
-  TABS_PADDING,
+  TAB_TOP_PADDING,
+  getTabsOffset,
 } from './getTabsOffset';
 
 interface ChangeInfo {
@@ -208,9 +214,24 @@ function OverviewComponent() {
     { enabled: ready }
   );
 
+  const handleTabChange = useCallback(() => {
+    window.scrollTo({
+      behavior: 'instant',
+      top: Math.min(window.scrollY, getTabsOffset()),
+    });
+  }, []);
+
   if (!preferences) {
     return <ViewLoading />;
   }
+
+  const tabFallback = (
+    <CenteredFillViewportView maxHeight={MIN_TAB_CONTENT_HEIGHT}>
+      <DelayedRender delay={2000}>
+        <ViewLoading kind="network" />
+      </DelayedRender>
+    </CenteredFillViewportView>
+  );
 
   return (
     <PageColumn
@@ -316,7 +337,7 @@ function OverviewComponent() {
         paddingInline={false}
         style={{
           position: 'sticky',
-          top: TABS_OFFSET,
+          top: TAB_STICKY_OFFSET,
           zIndex: 'var(--max-layout-index)',
           backgroundColor: 'var(--background)',
         }}
@@ -326,8 +347,8 @@ function OverviewComponent() {
             borderTopLeftRadius: 24,
             borderTopRightRadius: 24,
             backgroundColor: 'var(--white)',
-            paddingTop: TABS_PADDING,
-            height: TABS_HEIGHT,
+            paddingTop: 16,
+            height: TAB_SELECTOR_HEIGHT,
           }}
         >
           <SegmentedControlGroup
@@ -338,18 +359,26 @@ function OverviewComponent() {
             }}
             childrenLayout="start"
           >
-            <SegmentedControlLink to="/overview" end={true}>
+            <SegmentedControlLink
+              to="/overview"
+              end={true}
+              onClick={handleTabChange}
+            >
               Tokens
             </SegmentedControlLink>
-            <SegmentedControlLink to="/overview/nfts">
+            <SegmentedControlLink to="/overview/nfts" onClick={handleTabChange}>
               NFTs
             </SegmentedControlLink>
-            <SegmentedControlLink to="/overview/history">
+            <SegmentedControlLink
+              to="/overview/history"
+              onClick={handleTabChange}
+            >
               History <PendingTransactionsIndicator />
             </SegmentedControlLink>
             <SegmentedControlLink
               to="/overview/feed"
               onClick={() => {
+                handleTabChange();
                 walletPort.request('daylightAction', {
                   event_name: 'Perks: Card Opened',
                   address: singleAddress,
@@ -372,51 +401,53 @@ function OverviewComponent() {
           ['--surface-background-color' as string]: 'var(--white)',
         }}
       >
-        <Spacer height={16} />
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <ViewSuspense logDelays={true}>
-                <Positions
-                  chain={preferences.overviewChain}
-                  onChainChange={setChain}
-                />
-              </ViewSuspense>
-            }
-          />
-          <Route
-            path="/nfts"
-            element={
-              <ViewSuspense logDelays={true}>
-                <NonFungibleTokens
-                  chain={preferences.overviewChain}
-                  onChainChange={setChain}
-                />
-              </ViewSuspense>
-            }
-          />
-          <Route
-            path="/history"
-            element={
-              <ViewSuspense logDelays={true}>
-                <HistoryList
-                  chain={preferences.overviewChain}
-                  onChainChange={setChain}
-                />
-              </ViewSuspense>
-            }
-          />
-          <Route
-            path="/feed"
-            element={
-              <ViewSuspense logDelays={true}>
-                <Feed />
-              </ViewSuspense>
-            }
-          />
-        </Routes>
-        <PageBottom />
+        <div style={{ minHeight: MIN_TAB_CONTENT_HEIGHT }}>
+          <Spacer height={TAB_TOP_PADDING} />
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <ViewSuspense logDelays={true} fallback={tabFallback}>
+                  <Positions
+                    chain={preferences.overviewChain}
+                    onChainChange={setChain}
+                  />
+                </ViewSuspense>
+              }
+            />
+            <Route
+              path="/nfts"
+              element={
+                <ViewSuspense logDelays={true} fallback={tabFallback}>
+                  <NonFungibleTokens
+                    chain={preferences.overviewChain}
+                    onChainChange={setChain}
+                  />
+                </ViewSuspense>
+              }
+            />
+            <Route
+              path="/history"
+              element={
+                <ViewSuspense logDelays={true} fallback={tabFallback}>
+                  <HistoryList
+                    chain={preferences.overviewChain}
+                    onChainChange={setChain}
+                  />
+                </ViewSuspense>
+              }
+            />
+            <Route
+              path="/feed"
+              element={
+                <ViewSuspense logDelays={true} fallback={tabFallback}>
+                  <Feed />
+                </ViewSuspense>
+              }
+            />
+          </Routes>
+          <PageBottom />
+        </div>
       </PageFullBleedColumn>
     </PageColumn>
   );

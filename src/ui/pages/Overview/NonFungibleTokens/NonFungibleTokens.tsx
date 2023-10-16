@@ -27,8 +27,10 @@ import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { EmptyViewForNetwork } from 'src/ui/components/EmptyViewForNetwork';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
+import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
 import { NetworkSelect } from '../../Networks/NetworkSelect';
+import { GROWN_TAB_MAX_HEIGHT } from '../getTabsOffset';
 import * as s from './styles.module.css';
 
 function NFTItem({
@@ -207,7 +209,11 @@ export function NonFungibleTokens({
   );
 
   if (totalValueIsLoading && isSupportedByBackend) {
-    return <ViewLoading kind="network" />;
+    return (
+      <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
+        <ViewLoading kind="network" />
+      </CenteredFillViewportView>
+    );
   }
 
   if (!ready || !items || !nftTotalValueIsReady) {
@@ -216,16 +222,8 @@ export function NonFungibleTokens({
 
   if (!isSupportedByBackend || items.length === 0) {
     return (
-      <>
-        <div
-          style={{
-            paddingInline: 16,
-            display: 'flex',
-            justifyContent: 'end',
-          }}
-        >
-          {networkSelect}
-        </div>
+      <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
+        <div style={{ position: 'absolute', right: 16 }}>{networkSelect}</div>
         <DelayedRender delay={100}>
           {isLoading && isSupportedByBackend ? (
             <ViewLoading kind="network" />
@@ -248,7 +246,7 @@ export function NonFungibleTokens({
             </VStack>
           )}
         </DelayedRender>
-      </>
+      </CenteredFillViewportView>
     );
   }
 

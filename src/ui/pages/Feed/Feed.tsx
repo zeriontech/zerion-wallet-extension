@@ -10,7 +10,6 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
-import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { EmptyView } from 'src/ui/components/EmptyView';
 import { useNavigationState } from 'src/ui/shared/useNavigationState';
 import type {
@@ -20,6 +19,9 @@ import type {
 import { walletPort } from 'src/ui/shared/channels';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
+import { GROWN_TAB_MAX_HEIGHT } from '../Overview/getTabsOffset';
 import { useWalletAbilities } from './daylight';
 import type { StatusFilterParams } from './daylight';
 import { Ability } from './Ability/Ability';
@@ -475,24 +477,31 @@ export function Feed() {
     (isLocalFetching &&
       (statusFilter === 'completed' || statusFilter === 'dismissed'));
 
+  const feedFilters = (
+    <HStack gap={8} alignItems="center" style={{ paddingInline: 16 }}>
+      <StatusFilter
+        value={statusFilter}
+        onChange={(value) => setStatusFilter(value || 'open')}
+      />
+      <TypeFilter
+        value={typeFilter}
+        onChange={(value) => setTypeFilter(value || 'all')}
+      />
+    </HStack>
+  );
+
+  if (!abilities?.length) {
+    return (
+      <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
+        <div style={{ position: 'absolute', left: 0 }}>{feedFilters}</div>
+        {fetching ? <ViewLoading /> : <EmptyView text="No perks yet" />}
+      </CenteredFillViewportView>
+    );
+  }
   return (
-    <VStack gap={16}>
-      <HStack gap={8} alignItems="center" style={{ paddingInline: 16 }}>
-        <StatusFilter
-          value={statusFilter}
-          onChange={(value) => setStatusFilter(value || 'open')}
-        />
-        <TypeFilter
-          value={typeFilter}
-          onChange={(value) => setTypeFilter(value || 'all')}
-        />
-      </HStack>
-      {!fetching && !abilities?.length ? (
-        <>
-          <Spacer height={24} />
-          <EmptyView text="No perks yet" />
-        </>
-      ) : null}
+    <>
+      {feedFilters}
+      <Spacer height={16} />
       <SurfaceList
         style={
           isPreviousData &&
@@ -559,6 +568,6 @@ export function Feed() {
           ]}
         />
       ) : null}
-    </VStack>
+    </>
   );
 }

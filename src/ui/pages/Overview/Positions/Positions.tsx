@@ -62,6 +62,8 @@ import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import { minus } from 'src/ui/shared/typography';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 import { useEvmAddressPositions } from 'src/ui/shared/requests/useEvmAddressPositions';
+import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
+import { GROWN_TAB_MAX_HEIGHT } from '../getTabsOffset';
 import { DappLink } from './DappLink';
 
 function LineToParent({
@@ -698,9 +700,11 @@ export function Positions({
   const { networks } = useNetworks();
   if (!networks || !ready) {
     return (
-      <DelayedRender delay={2000}>
-        <ViewLoading kind="network" />
-      </DelayedRender>
+      <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
+        <DelayedRender delay={2000}>
+          <ViewLoading kind="network" />
+        </DelayedRender>
+      </CenteredFillViewportView>
     );
   }
   const networkSelect = (
@@ -718,16 +722,8 @@ export function Positions({
       : networks.isSupportedByBackend(createChain(chainValue));
 
   const renderEmptyViewForNetwork = () => (
-    <>
-      <div
-        style={{
-          paddingInline: 16,
-          display: 'flex',
-          justifyContent: 'end',
-        }}
-      >
-        {networkSelect}
-      </div>
+    <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
+      <div style={{ position: 'absolute', right: 16 }}>{networkSelect}</div>
       <DelayedRender delay={50}>
         <EmptyViewForNetwork
           message="No assets yet"
@@ -735,7 +731,7 @@ export function Positions({
           onChainChange={onChainChange}
         />
       </DelayedRender>
-    </>
+    </CenteredFillViewportView>
   );
   if (!readyToRender) {
     return renderEmptyViewForNetwork();

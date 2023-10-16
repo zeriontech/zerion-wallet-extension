@@ -10,7 +10,6 @@ import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
-import { StretchyFillView } from 'src/ui/components/FillView/FillView';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
@@ -19,11 +18,8 @@ import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { pendingTransactionToAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
-import {
-  HISTORY_FILTERS_HEIGHT,
-  HISTORY_STRETCHY_VIEW_HEIGHT,
-  getTabsOffset,
-} from '../Overview/getTabsOffset';
+import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
+import { GROWN_TAB_MAX_HEIGHT, getTabsOffset } from '../Overview/getTabsOffset';
 import { ActionsList } from './ActionsList';
 import { ActionSearch } from './ActionSearch';
 import { isMatchForAllWords } from './matchSearcQuery';
@@ -191,7 +187,6 @@ export function HistoryList({
       style={{
         paddingInline: 16,
         gridTemplateColumns: '1fr auto',
-        height: HISTORY_FILTERS_HEIGHT,
       }}
     >
       <ActionSearch
@@ -212,31 +207,36 @@ export function HistoryList({
     </HStack>
   );
 
+  if (!transactions?.length) {
+    return (
+      <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
+        <div style={{ position: 'absolute', width: '100%' }}>
+          {actionFilters}
+        </div>
+        {isLoading ? (
+          <ViewLoading kind="network" />
+        ) : (
+          <EmptyView
+            onReset={() => {
+              setSearchQuery(undefined);
+              onChainChange(NetworkSelectValue.All);
+            }}
+          />
+        )}
+      </CenteredFillViewportView>
+    );
+  }
+
   return (
     <>
       {actionFilters}
       <Spacer height={16} />
-      {transactions?.length ? (
-        <ActionsList
-          actions={transactions}
-          hasMore={hasMore}
-          isLoading={isLoading}
-          onLoadMore={fetchMore}
-        />
-      ) : (
-        <StretchyFillView maxHeight={HISTORY_STRETCHY_VIEW_HEIGHT}>
-          {!isLoading ? (
-            <EmptyView
-              onReset={() => {
-                setSearchQuery(undefined);
-                onChainChange(NetworkSelectValue.All);
-              }}
-            />
-          ) : (
-            <ViewLoading kind="network" />
-          )}
-        </StretchyFillView>
-      )}
+      <ActionsList
+        actions={transactions}
+        hasMore={hasMore}
+        isLoading={isLoading}
+        onLoadMore={fetchMore}
+      />
     </>
   );
 }
