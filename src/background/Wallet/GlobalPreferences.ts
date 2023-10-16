@@ -1,6 +1,7 @@
 import { PersistentStore } from 'src/modules/persistent-store';
 import type { RemoteConfig } from 'src/modules/remote-config';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
+import { removeEmptyValues } from 'src/shared/removeEmptyValues';
 import { equal } from 'src/modules/fast-deep-equal';
 import type { WalletNameFlag } from './model/WalletNameFlag';
 
@@ -49,7 +50,7 @@ export class GlobalPreferences extends PersistentStore<State> {
   }
 
   getPreferences(): Required<State> {
-    const state = this.getState();
+    const state = removeEmptyValues(this.getState());
     return {
       ...this.defaults,
       ...state,
