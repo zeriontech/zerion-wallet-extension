@@ -17,23 +17,22 @@ interface Warning {
   message: string;
 }
 
-interface Field {
+interface Block {
   name: string;
-  type: string;
+  value: string;
 }
 
-interface Schema {
-  primary_type: string;
-  types: Record<string, Field[]>;
+interface Section {
+  name: string | null;
+  blocks: Block[];
 }
 
-interface Input {
-  data: string;
-  schema: Schema;
+export interface InterpretInput {
+  sections: Section[];
 }
 
 export interface InterpretResponse {
   action: AddressAction;
-  inputs: Input[];
+  input?: InterpretInput;
   warnings: Warning[];
 }

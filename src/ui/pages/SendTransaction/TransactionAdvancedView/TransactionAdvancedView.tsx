@@ -18,7 +18,7 @@ import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
 import type { BigNumberish } from 'ethers';
 import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
-import { getInterpretationFunctionSignature } from 'src/modules/ethereum/transactions/interpret';
+import { getInterpretationFunctionName } from 'src/modules/ethereum/transactions/interpret';
 import { PageTop } from 'src/ui/components/PageTop';
 import { TextLine } from 'src/ui/components/address-action/TextLine';
 import { Content } from 'react-area';
@@ -76,13 +76,11 @@ export function TransactionDetails({
   transaction: IncomingTransaction;
   interpretation?: InterpretResponse | null;
 }) {
-  const functionName = useMemo(() => {
-    const functionSignature = interpretation
-      ? getInterpretationFunctionSignature(interpretation)
-      : null;
-    const match = functionSignature ? functionSignature.match(/(\w+)\(/) : null;
-    return match?.[1] ?? null;
-  }, [interpretation]);
+  const functionName = useMemo(
+    () =>
+      interpretation ? getInterpretationFunctionName(interpretation) : null,
+    [interpretation]
+  );
 
   const accessList = useMemo(
     () =>

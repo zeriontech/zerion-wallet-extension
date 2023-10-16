@@ -32,10 +32,7 @@ import { setURLSearchParams } from 'src/ui/shared/setURLSearchParams';
 import { InterpretLoadingState } from 'src/ui/components/InterpretLoadingState';
 import { AddressActionDetails } from 'src/ui/components/address-action/AddressActionDetails';
 import { focusNode } from 'src/ui/shared/focusNode';
-import {
-  getInterpretationData,
-  interpretSignature,
-} from 'src/modules/ethereum/transactions/interpret';
+import { interpretSignature } from 'src/modules/ethereum/transactions/interpret';
 import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/PhishingDefenceStatus';
 import { Content, RenderArea } from 'react-area';
 import { PageBottom } from 'src/ui/components/PageBottom';
@@ -99,7 +96,6 @@ function TypedDataDefaultView({
   typedData,
   interpretQuery,
   interpretation,
-  interpretationDataJSON,
   allowanceQuantityBase,
   onSignSuccess,
   onReject,
@@ -116,7 +112,6 @@ function TypedDataDefaultView({
     isFetched: boolean;
   };
   interpretation?: InterpretResponse | null;
-  interpretationDataJSON: Record<string, unknown> | null;
   allowanceQuantityBase?: string;
   onSignSuccess: (signature: string) => void;
   onReject: () => void;
@@ -134,12 +129,6 @@ function TypedDataDefaultView({
     () => JSON.stringify(JSON.parse(typedDataRaw), null, 2),
     [typedDataRaw]
   );
-
-  const interpretationDataFormatted = useMemo(() => {
-    return interpretationDataJSON
-      ? JSON.stringify(interpretationDataJSON, null, 2)
-      : null;
-  }, [interpretationDataJSON]);
 
   const signTypedData_v4Mutation = useSignTypedData_v4Mutation({
     onSuccess: onSignSuccess,
@@ -236,16 +225,14 @@ function TypedDataDefaultView({
               allowanceQuantityBase={allowanceQuantityBase || undefined}
               allowanceViewHref={allowanceViewHref}
             />
-            {interpretationDataJSON ? (
+            {typedDataFormatted ? (
               <Button kind="regular" as={UnstyledLink} to={advancedViewHref}>
                 Advanced View
               </Button>
             ) : null}
           </>
         ) : interpretQuery.isFetched ? (
-          <TypedDataRow
-            data={interpretationDataFormatted || typedDataFormatted}
-          />
+          <TypedDataRow data={typedDataFormatted} />
         ) : null}
       </VStack>
       <Spacer height={16} />
@@ -336,13 +323,19 @@ function SignTypedDataContent({
   const navigate = useNavigate();
   const { networks } = useNetworks();
 
-  const typedData = useMemo(() => toTypedData(typedDataRaw), [typedDataRaw]);
+  const [allowanceQuantityBase, setAllowanceQuantityBase] = useState('');
+
+  const typedData = useMemo(() => {
+    const result = toTypedData(typedDataRaw);
+    if (allowanceQuantityBase) {
+      result.message.value = allowanceQuantityBase;
+    }
+    return result;
+  }, [typedDataRaw, allowanceQuantityBase]);
 
   const requestedAllowanceQuantityBase = isPermit(typedData)
     ? getPermitAllowanceQuantity(typedData)
     : undefined;
-
-  const [allowanceQuantityBase, setAllowanceQuantityBase] = useState('');
 
   const handleChangeAllowance = (value: BigNumber) => {
     setAllowanceQuantityBase(value.toString());
@@ -383,16 +376,6 @@ function SignTypedDataContent({
     refetchOnWindowFocus: false,
   });
 
-  const interpretationDataJSON = useMemo(() => {
-    if (!interpretation) return null;
-    const data = getInterpretationData(interpretation);
-    const result = JSON.parse(data) as Record<string, unknown>;
-    if (allowanceQuantityBase) {
-      result.value = allowanceQuantityBase;
-    }
-    return result;
-  }, [interpretation, allowanceQuantityBase]);
-
   const handleSignSuccess = (signature: string) =>
     windowPort.confirm(windowId, signature);
   const handleReject = () => windowPort.reject(windowId);
@@ -422,7 +405,6 @@ function SignTypedDataContent({
             typedData={typedData}
             interpretQuery={interpretQuery}
             interpretation={interpretation}
-            interpretationDataJSON={interpretationDataJSON}
             allowanceQuantityBase={
               allowanceQuantityBase || requestedAllowanceQuantityBase
             }
@@ -430,8 +412,8 @@ function SignTypedDataContent({
             onReject={handleReject}
           />
         ) : null}
-        {view === View.advanced && interpretationDataJSON ? (
-          <TypedDataAdvancedView dataJSON={interpretationDataJSON} />
+        {view === View.advanced && interpretation?.input ? (
+          <TypedDataAdvancedView data={interpretation.input} />
         ) : null}
         {view === View.customAllowance ? (
           <CustomAllowanceView
