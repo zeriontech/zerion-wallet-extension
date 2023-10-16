@@ -62,6 +62,8 @@ import { SignInWithEthereum } from '../pages/SignInWithEthereum';
 import { InvitationPage } from '../components/InvitationFlow';
 import { useBodyStyle } from '../components/Background/Background';
 import { PhishingWarningPage } from '../components/PhishingDefence/PhishingWarningPage';
+import { HardwareWalletConnection } from '../pages/HardwareWalletConnection';
+import { ThemeDecoration } from '../components/DesignTheme/ThemeDecoration';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -182,6 +184,10 @@ function Views({ initialRoute }: { initialRoute?: string }) {
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/get-started/*" element={<GetStarted />} />
+          <Route
+            path="/connect-hardware-wallet/*"
+            element={<HardwareWalletConnection />}
+          />
           <Route path="/receive" element={<Receive />} />
           <Route path="/phishing-warning" element={<PhishingWarningPage />} />
           <Route
@@ -396,6 +402,8 @@ export function App({ initialView, mode, inspect }: AppProps) {
             <ErrorBoundary renderError={(error) => <ViewError error={error} />}>
               <InactivityDetector />
               <SessionResetHandler />
+              <DesignTheme bodyClassList={bodyClassList} />
+              <ThemeDecoration />
               {inspect && !isProd ? (
                 <UIText
                   kind="small/regular"
@@ -412,7 +420,7 @@ export function App({ initialView, mode, inspect }: AppProps) {
                 onKeyDown={() => {
                   // Helper for development and debugging :)
                   const url = new URL(window.location.href);
-                  url.searchParams.append('templateType', 'tab');
+                  url.searchParams.set('templateType', 'tab');
                   window.open(url, '_blank');
                 }}
               />

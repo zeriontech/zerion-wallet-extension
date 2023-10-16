@@ -1,0 +1,1 @@
+export { HardwareSignTransaction } from './HardwareSignTransaction';

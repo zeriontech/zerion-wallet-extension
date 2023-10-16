@@ -8,41 +8,49 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Media } from 'src/ui/ui-kit/Media';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
-import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
-import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
-import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
-import { NBSP } from 'src/ui/shared/typography';
-import { getIndexFromPath } from 'src/shared/wallet/getNextAccountPath';
+import type { DerivationPathType } from 'src/shared/wallet/derivation-paths';
+import { getIndexFromPath } from 'src/shared/wallet/derivation-paths';
 import { AnimatedCheckmark } from 'src/ui/ui-kit/AnimatedCheckmark';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
+import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 
-export function WalletList({
-  wallets,
-  existingAddressesSet,
-  listTitle,
-  showPortfolio,
-  values,
-  onSelect,
-  initialCount,
-}: {
+interface Props {
   wallets: BareWallet[];
   existingAddressesSet: Set<string>;
   listTitle: React.ReactNode;
-  showPortfolio: boolean;
+  renderDetail: null | ((index: number) => React.ReactNode);
+  renderMedia?: (index: number) => React.ReactNode;
   values: Set<string>;
   onSelect: (value: string) => void;
   initialCount?: number;
-}) {
-  const [count, setCount] = useState(initialCount ?? wallets.length);
+  derivationPathType?: DerivationPathType;
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
+  onLoadMore: () => void;
+  showMoreText?: string;
+}
+
+export function WalletListPresentation({
+  wallets,
+  existingAddressesSet,
+  listTitle,
+  renderDetail,
+  renderMedia,
+  values,
+  onSelect,
+  derivationPathType = 'bip44',
+  hasMore = false,
+  isLoadingMore = false,
+  onLoadMore,
+  showMoreText = 'Show More',
+}: Props) {
   return (
     <VStack gap={8}>
       {listTitle ? <UIText kind="small/accent">{listTitle}</UIText> : null}
       <SurfaceList
         items={wallets
-          .slice(0, count)
-          .map<Item>((wallet) => ({
+          .map<Item>((wallet, index) => ({
             key: wallet.address,
-
             onClick: existingAddressesSet.has(normalizeAddress(wallet.address))
               ? undefined
               : () => onSelect(wallet.address),
@@ -62,43 +70,26 @@ export function WalletList({
                   style={{ cursor: 'help' }}
                 >
                   {wallet.mnemonic
-                    ? getIndexFromPath(wallet.mnemonic.path)
+                    ? getIndexFromPath(wallet.mnemonic.path, derivationPathType)
                     : null}
                 </UIText>
-                <Media
-                  image={
-                    <WalletAvatar
-                      address={wallet.address}
-                      active={false}
-                      size={40}
-                      borderRadius={4}
-                    />
-                  }
-                  text={<WalletDisplayName wallet={wallet} />}
-                  vGap={0}
-                  detailText={
-                    showPortfolio ? (
-                      <UIText kind="headline/h3">
-                        <PortfolioValue
-                          address={wallet.address}
-                          render={({ value }) =>
-                            value ? (
-                              <NeutralDecimals
-                                parts={formatCurrencyToParts(
-                                  value.total_value,
-                                  'en',
-                                  'usd'
-                                )}
-                              />
-                            ) : (
-                              <span>{NBSP}</span>
-                            )
-                          }
-                        />
-                      </UIText>
-                    ) : null
-                  }
-                />
+                {renderMedia ? (
+                  renderMedia(index)
+                ) : (
+                  <Media
+                    image={
+                      <WalletAvatar
+                        address={wallet.address}
+                        active={false}
+                        size={40}
+                        borderRadius={4}
+                      />
+                    }
+                    text={<WalletDisplayName wallet={wallet} />}
+                    vGap={0}
+                    detailText={renderDetail?.(index)}
+                  />
+                )}
                 {existingAddressesSet.has(normalizeAddress(wallet.address)) ? (
                   <UIText kind="caption/regular" color="var(--neutral-500)">
                     Already added
@@ -115,7 +106,7 @@ export function WalletList({
             ),
           }))
           .concat(
-            count < wallets.length
+            hasMore
               ? [
                   {
                     key: -1,
@@ -123,10 +114,14 @@ export function WalletList({
                     pad: false,
                     component: (
                       <SurfaceItemButton
-                        onClick={() => setCount((count) => count + 3)}
+                        onClick={onLoadMore}
+                        disabled={isLoadingMore}
                       >
                         <UIText kind="body/regular" color="var(--primary)">
-                          {count === 0 ? 'Show' : 'Show More'}
+                          <HStack alignItems="center" gap={8}>
+                            {isLoadingMore ? <CircleSpinner /> : null}
+                            {showMoreText}
+                          </HStack>
                         </UIText>
                       </SurfaceItemButton>
                     ),
@@ -136,5 +131,22 @@ export function WalletList({
           )}
       />
     </VStack>
+  );
+}
+
+export function WalletList({
+  wallets,
+  initialCount,
+  ...props
+}: Omit<Props, 'hasMore' | 'onLoadMore'>) {
+  const [count, setCount] = useState(initialCount ?? wallets.length);
+  return (
+    <WalletListPresentation
+      wallets={wallets.slice(0, count)}
+      hasMore={count < wallets.length}
+      onLoadMore={() => setCount((count) => count + 3)}
+      showMoreText={count === 0 ? 'Show' : undefined}
+      {...props}
+    />
   );
 }

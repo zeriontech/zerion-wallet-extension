@@ -4,13 +4,13 @@ import {
   SiweValidationError,
   SiweValidationWarning,
 } from 'src/modules/ethereum/message-signing/SIWE';
+import { NavigationBar } from 'src/ui/components/NavigationBar';
 import { PageTop } from 'src/ui/components/PageTop';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { NavigationBar } from './NavigationBar';
 
 function getErrors(siwe: SiweMessage) {
   const errors = [] as { message: string; kind: 'error' | 'warning' }[];

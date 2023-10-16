@@ -6,7 +6,6 @@ import type { ValidationResult } from 'src/shared/validation/ValidationResult';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import type { BareWallet } from 'src/shared/types/BareWallet';
 import { walletPort } from 'src/ui/shared/channels';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getError } from 'src/shared/errors/getError';
@@ -14,6 +13,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import { Input } from 'src/ui/ui-kit/Input';
+import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { useSizeStore } from '../useSizeStore';
 import { useWhitelistStatus } from '../checkWhitelistStatus';
 
@@ -22,7 +22,7 @@ export function ImportKey({
   onWalletCreate,
 }: {
   address: string;
-  onWalletCreate(wallet: BareWallet): void;
+  onWalletCreate(wallet: ExternallyOwnedAccount): void;
 }) {
   const { isNarrowView } = useSizeStore();
   const [validation, setValidation] = useState<ValidationResult | null>(null);

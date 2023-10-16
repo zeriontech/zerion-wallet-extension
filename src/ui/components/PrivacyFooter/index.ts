@@ -1,0 +1,1 @@
+export { PrivacyFooter } from './PrivacyFooter';

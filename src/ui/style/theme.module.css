@@ -71,6 +71,7 @@
 
 .theme-dark {
   color-scheme: dark;
+  --color-scheme: dark;
 
   --black: #ffffff;
   --white: #16161a;

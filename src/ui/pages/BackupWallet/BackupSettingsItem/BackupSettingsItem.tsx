@@ -1,6 +1,6 @@
 import React from 'react';
-import { SeedType } from 'src/shared/SeedType';
 import { WalletOrigin } from 'src/shared/WalletOrigin';
+import { isMnemonicContainer } from 'src/shared/types/validators';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
@@ -17,7 +17,7 @@ export function BackupFlowSettingsSection() {
   const { data: walletGroups, isLoading } = useWalletGroups();
   const notBackedUpGroups = walletGroups?.filter(
     (group) =>
-      group.walletContainer.seedType === SeedType.mnemonic &&
+      isMnemonicContainer(group.walletContainer) &&
       group.origin === WalletOrigin.extension &&
       group.lastBackedUp == null
   );
@@ -47,9 +47,7 @@ export function BackupFlowSettingsSection() {
           <Spacer height={16} />
           <VStack gap={24}>
             {notBackedUpGroups
-              .filter(
-                (group) => group.walletContainer.seedType == SeedType.mnemonic
-              )
+              .filter((group) => isMnemonicContainer(group.walletContainer))
               .filter((group) => group.lastBackedUp == null)
               .map((group) => (
                 <VStack

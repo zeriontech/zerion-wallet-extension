@@ -56,14 +56,18 @@ import { invariant } from 'src/shared/invariant';
 import { getEthersError } from 'src/shared/errors/getEthersError';
 import type { DappSecurityStatus } from 'src/modules/phishing-defence/phishing-defence-service';
 import { phishingDefenceService } from 'src/modules/phishing-defence/phishing-defence-service';
+import {
+  isDeviceAccount,
+  isMnemonicContainer,
+} from 'src/shared/types/validators';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
 import { isSessionCredentials } from '../account/Credentials';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
-import { SeedType } from './model/SeedType';
-import type { BareWallet, PendingWallet, WalletRecord } from './model/types';
+import type { PendingWallet, WalletRecord } from './model/types';
+import type { BareWallet } from './model/BareWallet';
 import {
   MnemonicWalletContainer,
   PrivateKeyWalletContainer,
@@ -73,8 +77,10 @@ import { WalletStore } from './persistence';
 import { WalletOrigin } from './model/WalletOrigin';
 import type { GlobalPreferences } from './GlobalPreferences';
 import type { State as GlobalPreferencesState } from './GlobalPreferences';
+import type { Device, DeviceAccount } from './model/AccountContainer';
+import { DeviceAccountContainer } from './model/AccountContainer';
 
-const INTERNAL_SYMBOL_CONTEXT = { origin: INTERNAL_ORIGIN_SYMBOL };
+export const INTERNAL_SYMBOL_CONTEXT = { origin: INTERNAL_ORIGIN_SYMBOL };
 
 type PublicMethodParams<T = undefined> = T extends undefined
   ? {
@@ -235,38 +241,62 @@ export class Wallet {
   // into a separate isolated class
   async uiGenerateMnemonic() {
     this.ensureActiveSession(this.userCredentials);
+    const walletContainer = await MnemonicWalletContainer.create({
+      credentials: this.userCredentials,
+    });
     this.pendingWallet = {
       origin: WalletOrigin.extension,
       groupId: null,
-      walletContainer: await MnemonicWalletContainer.create({
-        credentials: this.userCredentials,
-      }),
+      walletContainer,
     };
-    return maskWallet(this.pendingWallet.walletContainer.getFirstWallet());
+    return maskWallet(walletContainer.getFirstWallet());
   }
 
   async uiImportPrivateKey({ params: privateKey }: WalletMethodParams<string>) {
+    const walletContainer = new PrivateKeyWalletContainer([{ privateKey }]);
     this.pendingWallet = {
       origin: WalletOrigin.imported,
       groupId: null,
-      walletContainer: new PrivateKeyWalletContainer([{ privateKey }]),
+      walletContainer,
     };
-    return maskWallet(this.pendingWallet.walletContainer.getFirstWallet());
+    return maskWallet(walletContainer.getFirstWallet());
   }
 
   async uiImportSeedPhrase({
     params: mnemonics,
   }: WalletMethodParams<NonNullable<BareWallet['mnemonic']>[]>) {
     this.ensureActiveSession(this.userCredentials);
+    const walletContainer = await MnemonicWalletContainer.create({
+      wallets: mnemonics.map((mnemonic) => ({ mnemonic })),
+      credentials: this.userCredentials,
+    });
     this.pendingWallet = {
       origin: WalletOrigin.imported,
       groupId: null,
-      walletContainer: await MnemonicWalletContainer.create({
-        wallets: mnemonics.map((mnemonic) => ({ mnemonic })),
-        credentials: this.userCredentials,
-      }),
+      walletContainer,
     };
-    return maskWallet(this.pendingWallet.walletContainer.getFirstWallet());
+    return maskWallet(walletContainer.getFirstWallet());
+  }
+
+  async uiImportHardwareWallet({
+    params: { accounts, device, provider },
+  }: WalletMethodParams<{
+    accounts: DeviceAccount[];
+    device: Device;
+    provider: 'ledger';
+  }>) {
+    invariant(accounts.length > 0, 'Must import at least 1 account');
+    const walletContainer = new DeviceAccountContainer({
+      device,
+      wallets: accounts,
+      provider,
+    });
+    this.pendingWallet = {
+      origin: WalletOrigin.imported,
+      groupId: null,
+      walletContainer,
+    };
+    return walletContainer.getFirstWallet();
   }
 
   async getRecoveryPhrase({
@@ -317,7 +347,7 @@ export class Wallet {
     return privateKey === value;
   }
 
-  async uiGetCurrentWallet({ context }: PublicMethodParams) {
+  async uiGetCurrentWallet({ context }: WalletMethodParams) {
     this.verifyInternalOrigin(context);
     if (!this.id) {
       return null;
@@ -523,6 +553,29 @@ export class Wallet {
     return group ? maskWalletGroup(group) : null;
   }
 
+  getWalletGroupByAddressSync({
+    params: { address },
+    context,
+  }: WalletMethodParams<{ address: string }>) {
+    this.verifyInternalOrigin(context);
+    if (!this.id) {
+      return null;
+    }
+    if (this.record) {
+      const group = Model.getWalletGroupByAddress(this.record, address);
+      return group ? maskWalletGroup(group) : null;
+    }
+    return null;
+  }
+
+  async getWalletGroupByAddress({
+    params,
+    context,
+  }: WalletMethodParams<{ address: string }>) {
+    this.verifyInternalOrigin(context);
+    return this.getWalletGroupByAddressSync({ params, context });
+  }
+
   async removeWalletGroup({
     params: { groupId },
     context,
@@ -590,7 +643,7 @@ export class Wallet {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
     return this.record.walletManager.groups
-      .filter((group) => group.walletContainer.seedType === SeedType.mnemonic)
+      .filter((group) => isMnemonicContainer(group.walletContainer))
       .filter((group) => group.origin === WalletOrigin.extension)
       .filter((group) => group.lastBackedUp == null).length;
   }
@@ -693,11 +746,11 @@ export class Wallet {
     const chainId = await this.getChainIdForOrigin({
       origin: new URL(initiator).origin,
     });
-    const signer = await this.getSigner(chainId);
+    const provider = await this.getProvider(chainId);
     const abi = [
       'function approve(address, uint256) public returns (bool success)',
     ];
-    const contract = new ethers.Contract(contractAddress, abi, signer);
+    const contract = new ethers.Contract(contractAddress, abi, provider);
     return await contract.populateTransaction.approve(
       spender,
       allowanceQuantityBase
@@ -768,10 +821,10 @@ export class Wallet {
       throw new RecordNotFound();
     }
     const currentWallet = currentAddress
-      ? Model.getWalletByAddress(this.record, currentAddress)
+      ? Model.getSignerWalletByAddress(this.record, currentAddress)
       : null;
     if (!currentWallet) {
-      throw new Error('Wallet is not initialized');
+      throw new Error('Signer wallet for this address is not found');
     }
 
     const jsonRpcProvider = await this.getProvider(chainId);
@@ -873,6 +926,50 @@ export class Wallet {
     });
   }
 
+  async sendSignedTransaction({
+    params,
+    context,
+  }: WalletMethodParams<{
+    serialized: string;
+    chain: string;
+    initiator: string;
+    feeValueCommon: string | null;
+  }>): Promise<ethers.providers.TransactionResponse> {
+    this.verifyInternalOrigin(context);
+    this.ensureStringOrigin(context);
+    const { chain, serialized, initiator, feeValueCommon } = params;
+    const networks = await networksStore.load();
+    const chainId = networks.getChainId(createChain(chain));
+    const provider = await this.getProvider(chainId);
+    try {
+      const transactionResponse = await provider.sendTransaction(serialized);
+      const safeTx = removeSignature(transactionResponse);
+      emitter.emit('transactionSent', {
+        transaction: safeTx,
+        initiator,
+        feeValueCommon,
+      });
+      return safeTx;
+    } catch (error) {
+      throw getEthersError(error);
+    }
+  }
+
+  async registerTypedDataSign({
+    params: { address, initiator, rawTypedData },
+  }: WalletMethodParams<{
+    address: string;
+    rawTypedData: TypedData | string;
+    initiator: string;
+  }>) {
+    const typedData = prepareTypedData(rawTypedData);
+    emitter.emit('typedDataSigned', {
+      typedData,
+      initiator,
+      address,
+    });
+  }
+
   async signTypedData_v4({
     params: { typedData: rawTypedData, initiator },
     context,
@@ -898,12 +995,25 @@ export class Wallet {
       filteredTypes,
       typedData.message
     );
-    emitter.emit('typedDataSigned', {
-      typedData,
-      initiator,
-      address: signer.address,
+    this.registerTypedDataSign({
+      params: { address: signer.address, initiator, rawTypedData },
     });
     return signature;
+  }
+
+  async registerPersonalSign({
+    params: { address, initiator, message },
+  }: WalletMethodParams<{
+    address: string;
+    message: string;
+    initiator: string;
+  }>) {
+    const messageAsUtf8String = toUtf8String(message);
+    emitter.emit('messageSigned', {
+      message: messageAsUtf8String,
+      initiator,
+      address,
+    });
   }
 
   async personalSign({
@@ -931,10 +1041,8 @@ export class Wallet {
       : messageAsUtf8String;
 
     const signature = await signer.signMessage(messageToSign);
-    emitter.emit('messageSigned', {
-      message: messageAsUtf8String,
-      initiator,
-      address: signer.address,
+    this.registerPersonalSign({
+      params: { address: signer.address, initiator, message },
     });
     return signature;
   }
@@ -1180,16 +1288,21 @@ class PublicController {
     id,
   }: PublicMethodParams<UnsignedTransaction[]>) {
     const currentAddress = this.wallet.ensureCurrentAddress();
+    const currentWallet = await this.wallet.uiGetCurrentWallet({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
     // TODO: should we check transaction.from instead of currentAddress?
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
       throw new OriginNotAllowed();
     }
     const transaction = params[0];
     invariant(transaction, () => new InvalidParams());
+    const isDeviceWallet = currentWallet && isDeviceAccount(currentWallet);
     return new Promise((resolve, reject) => {
       this.safeOpenDialogWindow(context.origin, {
         requestId: `${context.origin}:${id}`,
         route: '/sendTransaction',
+        height: isDeviceWallet ? 800 : undefined,
         search: `?${new URLSearchParams({
           origin: context.origin,
           transaction: JSON.stringify(transaction),
@@ -1221,10 +1334,15 @@ class PublicController {
     }
     const stringifiedData =
       typeof data === 'string' ? data : JSON.stringify(data);
+    const currentWallet = await this.wallet.uiGetCurrentWallet({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
+    const isDeviceWallet = currentWallet && isDeviceAccount(currentWallet);
     return new Promise((resolve, reject) => {
       this.safeOpenDialogWindow(context.origin, {
         requestId: `${context.origin}:${id}`,
         route: '/signTypedData',
+        height: isDeviceWallet ? 800 : undefined,
         search: `?${new URLSearchParams({
           origin: context.origin,
           typedDataRaw: stringifiedData,
@@ -1291,10 +1409,15 @@ class PublicController {
 
     const route = isSiweLike(message) ? '/siwe' : '/signMessage';
 
+    const currentWallet = await this.wallet.uiGetCurrentWallet({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
+    const isDeviceWallet = currentWallet && isDeviceAccount(currentWallet);
     return new Promise((resolve, reject) => {
       this.safeOpenDialogWindow(context.origin, {
         requestId: `${context.origin}:${id}`,
         route,
+        height: isDeviceWallet ? 800 : undefined,
         search: `?${new URLSearchParams({
           method: 'personal_sign',
           origin: context.origin,

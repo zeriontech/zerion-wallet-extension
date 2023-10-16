@@ -1,11 +1,7 @@
-import { Store } from 'store-unit';
-import s from 'src/ui/style/theme.module.css';
 import { preferenceStore, ThemePreference } from './preference-store';
-
-export enum Theme {
-  light,
-  dark,
-}
+import { ThemeStore } from './ThemeStore';
+import { Theme } from './Theme';
+import { applyTheme } from './applyTheme';
 
 function getSystemMode(colorSchemeMedia: MediaQueryList) {
   return colorSchemeMedia.matches ? Theme.dark : Theme.light;
@@ -26,20 +22,6 @@ function getTheme(
 const colorSchemeMedia = window.matchMedia('(prefers-color-scheme: dark)');
 
 export const isSupported = true;
-
-interface State {
-  theme: Theme;
-}
-
-export class ThemeStore extends Store<State> {
-  static isDark(state: State) {
-    return state.theme === Theme.dark;
-  }
-
-  static isLight(state: State) {
-    return state.theme === Theme.light;
-  }
-}
 
 export const themeStore = new ThemeStore({
   theme: isSupported
@@ -70,14 +52,6 @@ const invertClassnames = ['.theme-dark-invert'];
 
 export function registerInvertClassname(className: string) {
   invertClassnames.push(className);
-}
-
-function applyTheme(theme: Theme) {
-  if (theme === Theme.dark) {
-    document.documentElement.classList.add(s['theme-dark']);
-  } else {
-    document.documentElement.classList.remove(s['theme-dark']);
-  }
 }
 
 export function followTheme() {

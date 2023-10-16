@@ -4,8 +4,8 @@ import { RenderArea } from 'react-area';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Store } from 'store-unit';
 import { useStore } from '@store-unit/react';
-import { pageTemplateType } from 'src/ui/shared/getPageTemplateName';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
+import { getBackOrHome } from 'src/ui/shared/navigation/getBackOrHome';
 import { BackButton } from '../BackButton';
 
 function capitalize(str: string) {
@@ -30,6 +30,8 @@ const URLBarBlacklist = new Set([
   '/overview/feed',
   '/login',
   '/sendTransaction',
+  '/signMessage',
+  '/signTypedData',
   '/phishing-warning',
 ]);
 
@@ -39,7 +41,7 @@ export function hideURLBarFor(path: string) {
 
 const urlBarStore = new Store(true);
 
-const isDialog = pageTemplateType === 'dialog';
+const isDialog = false; // pageTemplateType === 'dialog';
 
 export function toggleUrlBar(on: boolean) {
   urlBarStore.setState(on);
@@ -95,7 +97,7 @@ export function URLBar() {
           ) : (
             <>
               <BackButton
-                onClick={() => navigate(-1)}
+                onClick={() => navigate(getBackOrHome() as number)}
                 title={`Press "backspace" to navigate back`}
               />
               <KeyboardShortcut

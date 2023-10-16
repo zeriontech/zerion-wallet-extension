@@ -9,11 +9,13 @@ export function AnimatedCheckmark({
   checked,
   checkedColor,
   uncheckedColor = 'var(--neutral-400)',
+  tickColor,
 }: {
   animate?: boolean;
   checked: boolean;
   checkedColor: string;
   uncheckedColor?: string;
+  tickColor?: string;
 }) {
   const { style, trigger } = useTransformTrigger({
     scale: 1.15,
@@ -39,7 +41,12 @@ export function AnimatedCheckmark({
     return (
       <animated.div style={style}>
         <CheckmarkCheckedIcon
-          style={{ display: 'block', color: checkedColor }}
+          style={Object.assign(
+            { display: 'block', color: checkedColor },
+            tickColor
+              ? { ['--checkmark-tick-color' as string]: tickColor }
+              : null
+          )}
         />
       </animated.div>
     );

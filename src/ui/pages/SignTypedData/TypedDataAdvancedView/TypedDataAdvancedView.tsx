@@ -1,8 +1,8 @@
 import React from 'react';
+import { NavigationBar } from 'src/ui/components/NavigationBar';
 import { TextLine } from 'src/ui/components/address-action/TextLine';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { NavigationBar } from '../../SignInWithEthereum/NavigationBar';
 
 type Value = unknown;
 type TypedDataJSON = Record<string, Value>;

@@ -54,6 +54,7 @@ const mockRecord: WalletRecord = {
   walletManager: {
     currentAddress: testWallet.address,
     internalMnemonicGroupCounter: 1,
+    internalHardwareGroupCounter: 0,
     groups: [
       {
         id: '123',

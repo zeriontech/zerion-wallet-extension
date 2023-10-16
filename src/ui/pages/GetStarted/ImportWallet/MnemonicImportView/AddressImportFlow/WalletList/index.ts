@@ -1,1 +1,1 @@
-export { WalletList } from './WalletList';
+export { WalletList, WalletListPresentation } from './WalletList';

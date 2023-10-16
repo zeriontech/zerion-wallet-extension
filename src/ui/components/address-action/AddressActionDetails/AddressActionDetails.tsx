@@ -2,8 +2,8 @@ import React from 'react';
 import type { Chain } from 'src/modules/networks/Chain';
 import type { ActionTransfers, AddressAction } from 'defi-sdk';
 import type { Networks } from 'src/modules/networks/Networks';
-import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { RecipientLine } from '../RecipientLine';
 import { ApplicationLine } from '../ApplicationLine';
 import { Transfers } from '../Transfers';
@@ -24,7 +24,7 @@ export function AddressActionDetails({
   addressAction?: Pick<AnyAddressAction, 'label' | 'type'>;
   chain: Chain;
   networks: Networks;
-  wallet: BareWallet;
+  wallet: ExternallyOwnedAccount;
   actionTransfers?: ActionTransfers;
   singleAsset?: NonNullable<AddressAction['content']>['single_asset'];
   allowanceQuantityBase?: string;

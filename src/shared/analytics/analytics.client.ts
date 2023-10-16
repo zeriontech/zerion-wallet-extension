@@ -1,8 +1,16 @@
 import { getUserId } from 'src/background/account/account-helpers.client';
 import { emitter } from 'src/ui/shared/events';
+import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
 import { HandshakeFailed } from '../errors/errors';
 import { createParams, sendToMetabase } from './analytics';
-import { initialize as addWalletProviderToApiRequests } from './api-v4-zerion';
+import {
+  createAddProviderHook,
+  initialize as initializeApiV4Analytics,
+} from './api-v4-zerion';
+import {
+  getProviderForApiV4,
+  getProviderNameFromGroup,
+} from './getProviderNameFromGroup';
 
 function trackAppEvents() {
   emitter.on('signingError', async (signatureType, message) => {
@@ -66,6 +74,12 @@ function trackAppEvents() {
 }
 
 export function initializeClientAnalytics() {
-  addWalletProviderToApiRequests();
+  async function getWalletProvider(address: string) {
+    const group = await getWalletGroupByAddress(address);
+    return getProviderForApiV4(getProviderNameFromGroup(group));
+  }
+  initializeApiV4Analytics({
+    willSendRequest: createAddProviderHook({ getWalletProvider }),
+  });
   return trackAppEvents();
 }

@@ -5,7 +5,7 @@ import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import { getIndexFromPath } from 'src/shared/wallet/getNextAccountPath';
+import { getIndexFromPath } from 'src/shared/wallet/derivation-paths';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { WalletAbility } from 'src/shared/types/Daylight';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
@@ -14,43 +14,79 @@ import {
   decryptMnemonic,
 } from 'src/shared/wallet/encryption';
 import { invariant } from 'src/shared/invariant';
+import {
+  assertSignerContainer,
+  isHardwareContainer,
+  isMnemonicContainer,
+  isPrivateKeyContainer,
+  isReadonlyContainer,
+  isSignerContainer,
+} from 'src/shared/types/validators';
+import { capitalize } from 'capitalize-ts';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
-import { SeedType } from './model/SeedType';
 import type {
-  BareWallet,
   PendingWallet,
+  WalletContainer,
   WalletFeed,
   WalletGroup,
   WalletRecord,
 } from './model/types';
+import type { BareWallet } from './model/BareWallet';
 import { upgrade } from './model/versions';
-import type { WalletContainer } from './model/WalletContainer';
 import {
   MnemonicWalletContainer,
   PrivateKeyWalletContainer,
 } from './model/WalletContainer';
+import {
+  DeviceAccountContainer,
+  ReadonlyAccountContainer,
+  type ExternallyOwnedAccount,
+} from './model/AccountContainer';
 
 function generateGroupName(
   record: WalletRecord | null,
   walletContainer: WalletContainer
 ) {
-  if (walletContainer.seedType === SeedType.privateKey) {
+  const isMnemonicGroup = isMnemonicContainer(walletContainer);
+  const isPrivateKeyGroup = isPrivateKeyContainer(walletContainer);
+  const isHardwareGroup = isHardwareContainer(walletContainer);
+  const isReadonlyGroup = isReadonlyContainer(walletContainer);
+
+  if (isReadonlyGroup || isPrivateKeyGroup) {
     return '';
   }
-  const name = (index: number) => `Wallet Group #${index}`;
+
+  const prefix = isMnemonicGroup
+    ? 'Wallet'
+    : isHardwareGroup
+    ? capitalize(walletContainer.provider)
+    : 'Watch';
+  const name = (index: number) => `${prefix} Group #${index}`;
   if (!record) {
     return name(1);
   }
-  const mnemonicGroups = record.walletManager.groups.filter(
-    (group) => group.walletContainer.seedType === SeedType.mnemonic
-  );
+  const sameCategoryGroups = record.walletManager.groups.filter((group) => {
+    if (isMnemonicGroup) {
+      return isMnemonicContainer(group.walletContainer);
+    } else if (isHardwareGroup) {
+      return isHardwareContainer(group.walletContainer);
+    } else {
+      throw new Error('Unsupported category');
+    }
+  });
   function isNameUsed(name: string) {
-    const index = mnemonicGroups.findIndex((group) => group.name === name);
+    const index = sameCategoryGroups.findIndex((group) => group.name === name);
     return index !== -1;
   }
-  let potentialName = name(
-    record.walletManager.internalMnemonicGroupCounter + 1
-  );
+  let currentCount = -1;
+  if (isHardwareGroup) {
+    currentCount = record.walletManager.internalHardwareGroupCounter ?? 0;
+  } else if (isMnemonicGroup) {
+    currentCount = record.walletManager.internalMnemonicGroupCounter;
+  } else {
+    throw new Error('Unsupported group');
+  }
+  let potentialName = name(currentCount + 1);
   while (isNameUsed(potentialName)) {
     potentialName = `${potentialName} (2)`;
   }
@@ -144,18 +180,40 @@ export class WalletRecordModel {
     });
   }
 
-  static getFirstWallet(record: WalletRecord): BareWallet | null {
+  static getFirstWallet(record: WalletRecord): ExternallyOwnedAccount | null {
     return record.walletManager.groups[0]?.walletContainer.getFirstWallet();
   }
 
-  static getWalletByAddress(
-    record: WalletRecord,
-    address: string
-  ): BareWallet | null {
+  static getWalletGroupByAddress(record: WalletRecord, address: string) {
+    for (const group of record.walletManager.groups) {
+      const wallet = group.walletContainer.getWalletByAddress(address);
+      if (wallet) {
+        return group;
+      }
+    }
+    return null;
+  }
+
+  static getWalletByAddress(record: WalletRecord, address: string) {
     for (const group of record.walletManager.groups) {
       const wallet = group.walletContainer.getWalletByAddress(address);
       if (wallet) {
         return wallet;
+      }
+    }
+    return null;
+  }
+
+  static getSignerWalletByAddress(
+    record: WalletRecord,
+    address: string
+  ): BareWallet | null {
+    for (const group of record.walletManager.groups) {
+      if (isSignerContainer(group.walletContainer)) {
+        const wallet = group.walletContainer.getWalletByAddress(address);
+        if (wallet) {
+          return wallet;
+        }
       }
     }
     return null;
@@ -166,22 +224,23 @@ export class WalletRecordModel {
     pendingWallet: PendingWallet
   ): WalletRecord {
     if (!record) {
-      const isMnemonicWallet =
-        pendingWallet.walletContainer.seedType === SeedType.mnemonic;
+      const { walletContainer } = pendingWallet;
+      const isHardwareGroup = isHardwareContainer(walletContainer);
+      const isMnemonicGroup = isMnemonicContainer(walletContainer);
       return {
         version: 5,
         walletManager: {
           groups: [
             createGroup({
-              name: generateGroupName(record, pendingWallet.walletContainer),
-              walletContainer: pendingWallet.walletContainer,
+              name: generateGroupName(record, walletContainer),
+              walletContainer,
               origin: pendingWallet.origin,
               created: Date.now(),
             }),
           ],
-          currentAddress:
-            pendingWallet.walletContainer.getFirstWallet().address,
-          internalMnemonicGroupCounter: isMnemonicWallet ? 1 : 0,
+          currentAddress: walletContainer.getFirstWallet().address,
+          internalMnemonicGroupCounter: isMnemonicGroup ? 1 : 0,
+          internalHardwareGroupCounter: isHardwareGroup ? 1 : 0,
         },
         transactions: [],
         permissions: {},
@@ -191,19 +250,30 @@ export class WalletRecordModel {
     }
     return produce(record, (draft) => {
       const { walletContainer } = pendingWallet;
-      const { seedType, seedHash } = walletContainer;
+      const isHardwareGroup = isHardwareContainer(walletContainer);
+      const isReadonlyGroup = isReadonlyContainer(walletContainer);
+      const isMnemonicGroup = isMnemonicContainer(walletContainer);
+      const isPrivateKeyGroup = isPrivateKeyContainer(walletContainer);
       if (!draft.feed.completedAbilities) {
         draft.feed.completedAbilities = [];
       }
       if (!draft.feed.dismissedAbilities) {
         draft.feed.dismissedAbilities = [];
       }
-      if (seedType === SeedType.privateKey) {
+      if (isPrivateKeyGroup) {
         const { privateKey } = walletContainer.getFirstWallet();
-        const existingGroup = draft.walletManager.groups.find(
-          (group) =>
-            group.walletContainer.getFirstWallet().privateKey === privateKey
-        );
+        // NOTE:
+        // There can also be the same private key among Mnemonic Containers.
+        // Should we create a private key group in this case, thus duplicating an account?
+        // For now, that is what we're doing
+        const existingGroup = draft.walletManager.groups.find((group) => {
+          return (
+            isPrivateKeyContainer(group.walletContainer) &&
+            group.walletContainer.wallets.some(
+              (wallet) => wallet.privateKey === privateKey
+            )
+          );
+        });
         if (existingGroup) {
           return draft; // NOTE: private key already exists, should we update record or keep untouched?
         } else {
@@ -216,18 +286,24 @@ export class WalletRecordModel {
             })
           );
         }
-      } else if (seedType === SeedType.mnemonic) {
+      } else if (isMnemonicGroup) {
         const mnemonic = walletContainer.getMnemonic();
         invariant(mnemonic?.phrase, 'Mnemonic not found');
-        const existingGroup = draft.walletManager.groups.find((group) =>
-          seedHash
-            ? seedHash === group.walletContainer.seedHash
-            : group.walletContainer.getMnemonic()?.phrase === mnemonic.phrase
-        );
+        const { seedHash } = walletContainer;
+        const existingGroup = draft.walletManager.groups.find((group) => {
+          return (
+            isSignerContainer(group.walletContainer) &&
+            (seedHash
+              ? seedHash === group.walletContainer.seedHash
+              : group.walletContainer.getMnemonic()?.phrase === mnemonic.phrase)
+          );
+        });
         if (existingGroup && seedHash) {
-          walletContainer.wallets.forEach((wallet) => {
+          assertSignerContainer(existingGroup.walletContainer);
+          for (const wallet of walletContainer.wallets) {
             existingGroup.walletContainer.addWallet(wallet, seedHash);
-          });
+          }
+
           existingGroup.walletContainer.wallets.sort((a, b) => {
             const index1 = getIndexFromPath(a.mnemonic?.path || '');
             const index2 = getIndexFromPath(b.mnemonic?.path || '');
@@ -244,8 +320,41 @@ export class WalletRecordModel {
             })
           );
         }
+      } else if (isHardwareGroup) {
+        // I am not sure if walletContainer.device.productId is unique between devices
+        // of the same model or not, so for now we always create a new group for hardware imports
+        draft.walletManager.internalHardwareGroupCounter ??= 0;
+        draft.walletManager.internalHardwareGroupCounter += 1;
+        draft.walletManager.groups.push(
+          createGroup({
+            walletContainer,
+            name: generateGroupName(record, walletContainer),
+            origin: pendingWallet.origin,
+            created: Date.now(),
+          })
+        );
+      } else if (isReadonlyGroup) {
+        const { address } = walletContainer.getFirstWallet();
+
+        const existingGroup = draft.walletManager.groups.find((group) => {
+          return group.walletContainer.getWalletByAddress(address) != null;
+        });
+        if (existingGroup) {
+          // TODO: In the future, if we have a feature where user creates wallet name
+          // during import, we should update existing address with this name
+          return draft;
+        } else {
+          draft.walletManager.groups.push(
+            createGroup({
+              walletContainer,
+              name: generateGroupName(record, walletContainer),
+              origin: pendingWallet.origin,
+              created: Date.now(),
+            })
+          );
+        }
       } else {
-        throw new Error('Unknown SeedType');
+        throw new Error('Unknown Container type');
       }
     });
   }
@@ -271,17 +380,24 @@ export class WalletRecordModel {
 
     entry.walletManager.groups = await Promise.all(
       entry.walletManager.groups.map(async (group) => {
-        const { seedType, wallets } = group.walletContainer;
-        if (seedType === SeedType.mnemonic) {
+        if (isMnemonicContainer(group.walletContainer)) {
           group.walletContainer =
             await MnemonicWalletContainer.restoreWalletContainer(
               group.walletContainer,
               credentials
             );
-        } else if (seedType === SeedType.privateKey) {
+        } else if (isPrivateKeyContainer(group.walletContainer)) {
+          const { wallets } = group.walletContainer;
           group.walletContainer = new PrivateKeyWalletContainer(wallets);
+        } else if (isHardwareContainer(group.walletContainer)) {
+          group.walletContainer = new DeviceAccountContainer(
+            group.walletContainer
+          );
+        } else if (isReadonlyContainer(group.walletContainer)) {
+          const { wallets } = group.walletContainer;
+          group.walletContainer = new ReadonlyAccountContainer(wallets);
         } else {
-          throw new Error(`Unexpected SeedType: ${seedType}`);
+          throw new Error(`Unexpected Account Container`);
         }
         return group;
       })
@@ -302,6 +418,9 @@ export class WalletRecordModel {
     );
     if (!group) {
       throw new Error('Wallet Group not found');
+    }
+    if (!isMnemonicContainer(group.walletContainer)) {
+      throw new Error('Not a Mnemonic Container');
     }
     const encryptedMnemonic = group.walletContainer.getMnemonic();
     if (!encryptedMnemonic) {
@@ -325,6 +444,9 @@ export class WalletRecordModel {
   ) {
     let wallet: BareWallet | null = null;
     for (const group of record.walletManager.groups) {
+      if (!isSignerContainer(group.walletContainer)) {
+        continue;
+      }
       const matchedWallet = group.walletContainer.getWalletByAddress(address);
       if (matchedWallet) {
         wallet = matchedWallet;
@@ -404,12 +526,10 @@ export class WalletRecordModel {
         throw new Error('Group not found');
       }
       const isLastAddress = group.walletContainer.wallets.length === 1;
-      if (
-        group.walletContainer.seedType === SeedType.mnemonic &&
-        isLastAddress
-      ) {
+      if (isMnemonicContainer(group.walletContainer) && isLastAddress) {
+        // I guess this is a safetyguard to prevent removing unbackedup mnemonic groups
         throw new Error(
-          'Removing last wallet from a wallet group is not allowed. You can remove the whole group'
+          'Removing last wallet from a Mnemonic group is not allowed. You can remove the whole group'
         );
       }
       if (isLastAddress) {

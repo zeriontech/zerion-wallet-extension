@@ -31,8 +31,8 @@ import {
   UNLIMITED_APPROVAL_AMOUNT,
   isUnlimitedApproval,
 } from 'src/ui/pages/History/isUnlimitedApproval';
-import { NavigationBar } from 'src/ui/pages/SignInWithEthereum/NavigationBar';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { NavigationBar } from '../NavigationBar';
 
 const parsers: Parsers = {
   amount: (untypedValue: unknown): BigNumber | null => {

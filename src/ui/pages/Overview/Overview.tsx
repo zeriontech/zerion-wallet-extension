@@ -26,7 +26,6 @@ import { useQuery } from '@tanstack/react-query';
 import { walletPort } from 'src/ui/shared/channels';
 import { NBSP } from 'src/ui/shared/typography';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
-import type { BareWallet } from 'src/shared/types/BareWallet';
 import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { CopyButton } from 'src/ui/components/CopyButton';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
@@ -40,6 +39,7 @@ import {
   PauseInjectionControl,
 } from 'src/ui/components/PauseInjection';
 import { InvitationBanner } from 'src/ui/components/InvitationFlow';
+import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -106,7 +106,7 @@ function PercentChange({
   return render(formatPercentChange(value, locale));
 }
 
-function CurrentAccount({ wallet }: { wallet: BareWallet }) {
+function CurrentAccount({ wallet }: { wallet: ExternallyOwnedAccount }) {
   return (
     <span style={{ fontWeight: 'normal' }}>
       <WalletDisplayName wallet={wallet} maxCharacters={16} />
@@ -191,7 +191,7 @@ function RenderTimeMeasure() {
 
 function OverviewComponent() {
   useBodyStyle(
-    useMemo(() => ({ ['--background' as string]: 'var(--neutral-100)' }), [])
+    useMemo(() => ({ ['--background' as string]: 'var(--z-index-0)' }), [])
   );
   const { singleAddress, singleAddressNormalized, params, ready } =
     useAddressParams();
@@ -216,6 +216,8 @@ function OverviewComponent() {
     <PageColumn
       style={{
         ['--column-padding-inline' as string]: '8px',
+        ['--background' as string]: 'var(--neutral-100)',
+        backgroundColor: 'var(--background)',
       }}
     >
       <PageFullBleedColumn
@@ -224,6 +226,7 @@ function OverviewComponent() {
           position: 'sticky',
           top: 0,
           zIndex: 'var(--navbar-index)',
+          // ['--background' as string]: 'var(--neutral-100)',
           backgroundColor: 'var(--background)',
         }}
       >

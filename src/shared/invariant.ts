@@ -2,7 +2,7 @@
  * Inspired by: https://www.npmjs.com/package/tiny-invariant
  */
 export function invariant<T>(
-  value: T | null | undefined,
+  value: T | false | null | undefined,
   message: string | (() => Error)
 ): asserts value is T {
   if (value === false || value == null) {

@@ -33,6 +33,10 @@ import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { metaAppState } from 'src/ui/shared/meta-app-state';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
+import {
+  assertSignerContainer,
+  isSignerContainer,
+} from 'src/shared/types/validators';
 import { WithConfetti } from '../GetStarted/components/DecorativeMessage/DecorativeMessage';
 import { DecorativeMessage } from '../GetStarted/components/DecorativeMessage';
 import { clipboardWarning } from './clipboardWarning';
@@ -472,12 +476,15 @@ export function BackupWallet() {
     // Also, if we see the user pasting this message, we can show a more
     // detailed message about what's going on.
     text: clipboardWarning.getMessage(
-      walletGroup?.walletContainer.seedType || SeedType.mnemonic
+      walletGroup && isSignerContainer(walletGroup.walletContainer)
+        ? walletGroup.walletContainer.seedType
+        : SeedType.mnemonic
     ),
   });
   if (isLoading || !walletGroup) {
     return null;
   }
+  assertSignerContainer(walletGroup.walletContainer);
   const { seedType: groupSeedType } = walletGroup.walletContainer;
   const address = params.get('address') || null;
   const seedType = address ? SeedType.privateKey : SeedType.mnemonic;

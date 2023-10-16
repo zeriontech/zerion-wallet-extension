@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import type { BareWallet } from 'src/shared/types/BareWallet';
-import { getAccountPath } from 'src/shared/wallet/getNextAccountPath';
+import { getAccountPath } from 'src/shared/wallet/derivation-paths';
 
 export interface Params {
   phrase: string;

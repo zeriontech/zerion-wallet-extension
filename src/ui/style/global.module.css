@@ -54,6 +54,11 @@ body.isTab {
   margin-inline: auto;
 }
 
+:global(body.isIframe) {
+  --body-height: auto;
+  --body-width: auto;
+}
+
 :root:has(body.isOnboarding) {
   background-color: var(--background);
 }

@@ -1,8 +1,7 @@
-import { isTruthy } from 'is-truthy-ts';
 import React, { useCallback, useId, useRef, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { SeedType } from 'src/shared/SeedType';
+import { isTruthy } from 'is-truthy-ts';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { NotFoundPage } from 'src/ui/components/NotFoundPage';
@@ -33,10 +32,12 @@ import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { InputDecorator } from 'src/ui/ui-kit/Input/InputDecorator';
 import { BackupInfoNote } from 'src/ui/components/BackupInfoNote';
-
-function noNulls<T>(arr: (T | null)[]) {
-  return arr.filter(isTruthy);
-}
+import {
+  isHardwareContainer,
+  isMnemonicContainer,
+  isPrivateKeyContainer,
+  isSignerContainer,
+} from 'src/shared/types/validators';
 
 function useWalletGroup({ groupId }: { groupId: string }) {
   return useQuery({
@@ -195,14 +196,23 @@ export function WalletGroup() {
       </>
     );
   }
-  const { seedType } = walletGroup.walletContainer;
+  // const { seedType } = walletGroup.walletContainer;
+  const { walletContainer } = walletGroup;
+  const isSignerGroup = isSignerContainer(walletContainer);
+  const isMnemonicGroup = isMnemonicContainer(walletContainer);
+  const isPrivateKeyGroup = isPrivateKeyContainer(walletContainer);
+  const isHardwareGroup = isHardwareContainer(walletContainer);
+
   const strings = {
     recoveryPhraseTitle: 'Recovery Phrase',
     privateKeyTitle: 'Private Key',
-    removeWalletSubtitle:
-      seedType === SeedType.mnemonic
-        ? 'You can always import it again using your recovery phrase'
-        : 'You can always import it again using your private key',
+    removeWalletSubtitle: isMnemonicGroup
+      ? 'You can always import it again using your recovery phrase'
+      : isPrivateKeyGroup
+      ? 'You can always import it again using your private key'
+      : isHardwareGroup
+      ? 'You can import it again by connecting your hardware wallet'
+      : 'You can add it again on the Manage Wallets page',
   };
 
   return (
@@ -213,7 +223,7 @@ export function WalletGroup() {
       </BottomSheetDialog>
       <PageTop />
       <VStack gap={24}>
-        {walletGroup.walletContainer.seedType === SeedType.mnemonic ? (
+        {isMnemonicGroup || isHardwareGroup ? (
           <InputDecorator
             label="Name"
             htmlFor={groupInputId}
@@ -226,34 +236,36 @@ export function WalletGroup() {
             }
           />
         ) : null}
-        <VStack gap={8}>
-          <UIText kind="small/accent" color="var(--neutral-500)">
-            Backup
-          </UIText>
-          <SurfaceList
-            items={noNulls([
-              {
-                key: 1,
-                to: `/backup-wallet?groupId=${walletGroup.id}&backupKind=verify`,
-                component: (
-                  <HStack
-                    gap={4}
-                    justifyContent="space-between"
-                    alignItems="center"
-                  >
-                    <UIText kind="body/accent">
-                      {seedType === SeedType.mnemonic
-                        ? strings.recoveryPhraseTitle
-                        : strings.privateKeyTitle}
-                      <BackupInfoNote group={walletGroup} />
-                    </UIText>
-                    <ChevronRightIcon />
-                  </HStack>
-                ),
-              },
-            ])}
-          />
-        </VStack>
+        {isSignerGroup ? (
+          <VStack gap={8}>
+            <UIText kind="small/accent" color="var(--neutral-500)">
+              Backup
+            </UIText>
+            <SurfaceList
+              items={[
+                {
+                  key: 1,
+                  to: `/backup-wallet?groupId=${walletGroup.id}&backupKind=verify`,
+                  component: (
+                    <HStack
+                      gap={4}
+                      justifyContent="space-between"
+                      alignItems="center"
+                    >
+                      <UIText kind="body/accent">
+                        {isMnemonicGroup
+                          ? strings.recoveryPhraseTitle
+                          : strings.privateKeyTitle}
+                        <BackupInfoNote group={walletGroup} />
+                      </UIText>
+                      <ChevronRightIcon />
+                    </HStack>
+                  ),
+                },
+              ]}
+            />
+          </VStack>
+        ) : null}
 
         <SurfaceList
           items={[
@@ -297,14 +309,16 @@ export function WalletGroup() {
                 </HStack>
               ),
             })),
-            {
-              key: 1,
-              to: `/get-started/import/mnemonic?groupId=${walletGroup.id}`,
-              component: (
-                <div style={{ color: 'var(--primary)' }}>+ Add Wallet</div>
-              ),
-            },
-          ]}
+            isMnemonicGroup
+              ? {
+                  key: 1,
+                  to: `/get-started/import/mnemonic?groupId=${walletGroup.id}`,
+                  component: (
+                    <div style={{ color: 'var(--primary)' }}>+ Add Wallet</div>
+                  ),
+                }
+              : null,
+          ].filter(isTruthy)}
         />
         <VStack gap={4}>
           <SurfaceList

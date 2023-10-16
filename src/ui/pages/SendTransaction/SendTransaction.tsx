@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { capitalize } from 'capitalize-ts';
 import { ethers } from 'ethers';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -18,13 +17,15 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import type { BareWallet } from 'src/shared/types/BareWallet';
 import { Background } from 'src/ui/components/Background';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
-import { prepareGasAndNetworkFee } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
+import {
+  estimateGas,
+  prepareGasAndNetworkFee,
+} from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import { resolveChainForTx } from 'src/modules/ethereum/transactions/resolveChainForTx';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { invariant } from 'src/shared/invariant';
@@ -56,6 +57,12 @@ import type { TransactionAction } from 'src/modules/ethereum/transactions/descri
 import { describeTransaction } from 'src/modules/ethereum/transactions/describeTransaction';
 import { CustomAllowanceView } from 'src/ui/components/CustomAllowanceView';
 import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
+import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
+import { isDeviceAccount } from 'src/shared/types/validators';
+import { getTransactionCount } from 'src/modules/ethereum/transactions/getTransactionCount';
+import { getError } from 'src/shared/errors/getError';
+import { useEvent } from 'src/ui/shared/useEvent';
+import { HardwareSignTransaction } from '../HardwareWalletConnection/HardwareSignTransaction/HardwareSignTransaction';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import type { CustomConfiguration } from './TransactionConfiguration';
 import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
@@ -69,23 +76,17 @@ type SendTransactionError =
   | { reason: string }
   | { error: { body: string } };
 
-function errorToMessage(error?: SendTransactionError) {
+function errorToMessage(error?: SendTransactionError | Error) {
   const fallbackString = 'Unknown Error';
   if (!error) {
     return fallbackString;
   }
   try {
-    const result =
-      'message' in error
-        ? error.message
-        : 'body' in error
-        ? capitalize(JSON.parse(error.body).error.message) || fallbackString
-        : 'reason' in error && error.reason
-        ? capitalize(error.reason)
-        : 'error' in error
-        ? capitalize(JSON.parse(error.error.body).error.message) ||
-          fallbackString
-        : fallbackString;
+    const result = getError(error).message;
+
+    if (result === 'DeniedByUser') {
+      return '';
+    }
 
     if (result.toLowerCase() === 'insufficient funds for gas * price + value') {
       return 'Error: Insufficient funds';
@@ -173,7 +174,7 @@ function TransactionDefaultView({
   networks: Networks;
   chain: Chain;
   origin: string;
-  wallet: BareWallet;
+  wallet: ExternallyOwnedAccount;
   addressAction: AddressAction | IncomingAddressAction;
   transactionAction: TransactionAction;
   singleAsset: NonNullable<AddressAction['content']>['single_asset'];
@@ -208,12 +209,8 @@ function TransactionDefaultView({
     feeValueCommonRef.current = value;
   }, []);
 
-  const {
-    mutate: signAndSendTransaction,
-    context,
-    ...signMutation
-  } = useMutation({
-    mutationFn: async (transaction: IncomingTransaction) => {
+  const configureTransactionToBeSigned = useEvent(
+    async (transaction: IncomingTransaction) => {
       let tx = transaction;
 
       if (transactionAction.type === 'approve' && allowanceQuantityBase) {
@@ -223,9 +220,53 @@ function TransactionDefaultView({
           allowanceQuantityBase,
           spender: transactionAction.spenderAddress,
         });
+        tx.chainId = networks.getChainId(chain);
+        tx.from = singleAddress;
+        const gas = await estimateGas(tx, networks);
+        tx.gasLimit = gas;
       }
 
       const txToSign = applyConfiguration(tx, configuration, chainGasPrices);
+      return txToSign;
+    }
+  );
+
+  const getTransactionForLedger = useEvent(async () => {
+    const configured = await configureTransactionToBeSigned(
+      incomingTransaction
+    );
+    const value = { ...configured };
+    if (value.nonce == null) {
+      const { value: nonce } = await getTransactionCount({
+        address: singleAddress,
+        chain,
+        networks,
+        defaultBlock: 'pending',
+      });
+      value.nonce = parseInt(nonce);
+    }
+    if (!value.chainId) {
+      value.chainId = networks.getChainId(chain);
+    }
+    return value;
+  });
+
+  function handleSentTransaction(tx: ethers.providers.TransactionResponse) {
+    const windowId = params.get('windowId');
+    invariant(windowId, 'windowId get-parameter is required');
+    windowPort.confirm(windowId, tx.hash);
+    if (next) {
+      navigate(next);
+    }
+  }
+
+  const {
+    mutate: signAndSendTransaction,
+    context,
+    ...signMutation
+  } = useMutation({
+    mutationFn: async (transaction: IncomingTransaction) => {
+      const txToSign = await configureTransactionToBeSigned(transaction);
 
       const feeValueCommon = feeValueCommonRef.current || null;
 
@@ -238,15 +279,24 @@ function TransactionDefaultView({
     // a global onError handler (src/ui/shared/requests/queryClient.ts)
     // TODO: refactor to just emit error directly from the mutationFn
     onMutate: () => 'sendTransaction',
-    onSuccess: (tx) => {
-      const windowId = params.get('windowId');
-      invariant(windowId, 'windowId get-parameter is required');
-      windowPort.confirm(windowId, tx.hash);
-      if (next) {
-        navigate(next);
-      }
-    },
+    onSuccess: (tx) => handleSentTransaction(tx),
   });
+
+  const { mutate: sendSignedTransaction, ...sendMutation } = useMutation({
+    mutationFn: (signedTx: string) => {
+      const feeValueCommon = feeValueCommonRef.current || null;
+      return walletPort.request('sendSignedTransaction', {
+        serialized: signedTx,
+        chain: chain.toString(),
+        feeValueCommon,
+        initiator: origin,
+      });
+    },
+    onSuccess: (tx) => handleSentTransaction(tx),
+  });
+  const [hardwareSignError, setHardwareSignError] = useState<Error | null>(
+    null
+  );
 
   const recipientAddress = addressAction.label?.display_value.wallet_address;
   const actionTransfers = addressAction.content?.transfers;
@@ -365,6 +415,10 @@ function TransactionDefaultView({
           <UIText kind="body/regular" color="var(--negative-500)">
             {signMutation.isError
               ? errorToMessage(signMutation.error as SendTransactionError)
+              : sendMutation.isError
+              ? errorToMessage(sendMutation.error as SendTransactionError)
+              : hardwareSignError
+              ? errorToMessage(hardwareSignError)
               : null}
           </UIText>
           <div
@@ -382,18 +436,35 @@ function TransactionDefaultView({
             >
               Cancel
             </Button>
-            <Button
-              disabled={signMutation.isLoading}
-              onClick={() => {
-                try {
-                  signAndSendTransaction(incomingTransaction);
-                } catch (error) {
-                  showErrorBoundary(error);
-                }
-              }}
-            >
-              {signMutation.isLoading ? 'Sending...' : 'Confirm'}
-            </Button>
+            {isDeviceAccount(wallet) ? (
+              <HardwareSignTransaction
+                derivationPath={wallet.derivationPath}
+                getTransaction={getTransactionForLedger}
+                onSign={(serialized) => {
+                  try {
+                    sendSignedTransaction(serialized);
+                  } catch (error) {
+                    showErrorBoundary(error);
+                  }
+                }}
+                onBeforeSign={() => setHardwareSignError(null)}
+                onSignError={(error) => setHardwareSignError(error)}
+                isSending={sendMutation.isLoading}
+              />
+            ) : (
+              <Button
+                disabled={signMutation.isLoading}
+                onClick={() => {
+                  try {
+                    signAndSendTransaction(incomingTransaction);
+                  } catch (error) {
+                    showErrorBoundary(error);
+                  }
+                }}
+              >
+                {signMutation.isLoading ? 'Sending...' : 'Confirm'}
+              </Button>
+            )}
           </div>
         </VStack>
       </Content>
@@ -408,7 +479,7 @@ function SendTransactionContent({
 }: {
   transactionStringified: string;
   origin: string;
-  wallet: BareWallet;
+  wallet: ExternallyOwnedAccount;
 }) {
   const [params] = useSearchParams();
   const navigate = useNavigate();

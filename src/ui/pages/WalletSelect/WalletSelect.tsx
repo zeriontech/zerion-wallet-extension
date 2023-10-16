@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { FillView } from 'src/ui/components/FillView';
@@ -20,13 +20,16 @@ import { IsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToA
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
-import { SeedType } from 'src/shared/SeedType';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import AddWalletIcon from 'jsx:src/ui/assets/add-wallet.svg';
 import { Button } from 'src/ui/ui-kit/Button';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
 import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
+import {
+  isPrivateKeyContainer,
+  isReadonlyContainer,
+} from 'src/shared/types/validators';
 
 export function WalletSelect() {
   const navigate = useNavigate();
@@ -43,13 +46,6 @@ export function WalletSelect() {
       navigate(-1);
     },
   });
-  const hasMnemonicWallets = useMemo(
-    () =>
-      walletGroups?.some(
-        (group) => group.walletContainer.seedType === SeedType.mnemonic
-      ),
-    [walletGroups]
-  );
   if (isLoading) {
     return null;
   }
@@ -84,13 +80,16 @@ export function WalletSelect() {
   const items: Item[] = [];
   let isVisuallyGrouped = false;
   for (const group of walletGroups) {
-    if (hasMnemonicWallets && walletGroups.length > 1) {
+    // assertSignerContainer(group.walletContainer);
+    if (walletGroups.length > 1) {
       isVisuallyGrouped = true;
-      const isPrivateKeyGroup =
-        group.walletContainer.seedType === SeedType.privateKey;
-      const to = isPrivateKeyGroup
-        ? `/wallets/accounts/${group.walletContainer.wallets[0].address}?groupId=${group.id}`
-        : `/wallets/groups/${group.id}`;
+      const isPrivateKeyGroup = isPrivateKeyContainer(group.walletContainer);
+      const isReadonlyGroup = isReadonlyContainer(group.walletContainer);
+      // const isPrivateKeyGroup = group.walletContainer.seedType === SeedType.privateKey;
+      const to =
+        isPrivateKeyGroup || isReadonlyGroup
+          ? `/wallets/accounts/${group.walletContainer.wallets[0].address}?groupId=${group.id}`
+          : `/wallets/groups/${group.id}`;
       items.push({
         key: group.id,
         pad: false,
@@ -117,7 +116,7 @@ export function WalletSelect() {
     }
     for (const wallet of group.walletContainer.wallets) {
       items.push({
-        key: wallet.address,
+        key: `${group.id}-${wallet.address}`,
         onClick: () => {
           setCurrentAddressMutation.mutate(wallet.address);
         },

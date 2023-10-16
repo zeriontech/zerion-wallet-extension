@@ -2,8 +2,10 @@
   --highlight-color: var(--neutral-100);
 }
 
-.root.dark {
-  --highlight-color: var(--neutral-200);
+@container style(--color-scheme: dark) {
+  .root {
+    --highlight-color: var(--neutral-200);
+  }
 }
 
 .option {

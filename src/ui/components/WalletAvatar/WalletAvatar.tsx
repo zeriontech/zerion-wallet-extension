@@ -54,6 +54,11 @@ export function WalletAvatar({
     queryKey: ['fetchWalletNFT', address],
     queryFn: () => fetchWalletNFT(address),
     suspense: false,
+    useErrorBoundary: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    staleTime: 60000,
+    retry: 0,
   });
 
   if (isLoading) {

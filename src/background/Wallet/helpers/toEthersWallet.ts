@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import type { BareWallet } from '../model/types';
+import type { BareWallet } from '../model/BareWallet';
 
 export function toEthersWallet(wallet: BareWallet): ethers.Wallet {
   const { privateKey } = wallet;

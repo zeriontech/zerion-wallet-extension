@@ -34,6 +34,7 @@ export function useProfileName(
     retryOnMount: false,
     retry: 0,
     staleTime: 2000,
+    useErrorBoundary: false,
   });
 
   const domainName = isDomainLoading ? null : domain;

@@ -1,15 +1,15 @@
 import React from 'react';
-import type { BareWallet } from 'src/shared/types/BareWallet';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { WalletAvatar } from '../WalletAvatar';
 
 export function AddressBadge({
   wallet,
   style,
 }: {
-  wallet: BareWallet;
+  wallet: ExternallyOwnedAccount;
   style?: React.CSSProperties;
 }) {
   return (

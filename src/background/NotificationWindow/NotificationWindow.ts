@@ -36,7 +36,8 @@ interface Events {
 
 type PendingState = Record<string, { windowId: number; id: string }>;
 
-export type NotificationWindowProps<T> = WindowProps & {
+export type NotificationWindowProps<T> = Omit<WindowProps, 'type'> & {
+  type?: WindowProps['type'];
   requestId: string;
   onDismiss: (error?: ErrorResponse) => void;
   onResolve: (data: T) => void;
@@ -209,6 +210,7 @@ export class NotificationWindow extends PersistentStore<PendingState> {
   async open<T>({
     requestId,
     route,
+    type = 'dialog',
     search,
     onDismiss,
     onResolve,
@@ -249,6 +251,7 @@ export class NotificationWindow extends PersistentStore<PendingState> {
       width,
       height,
       route,
+      type,
       search,
     });
     this.events.emit('open', { requestId, windowId, id });
