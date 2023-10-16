@@ -54,7 +54,7 @@ export class TransactionService {
   }
 
   addListeners() {
-    emitter.on('transactionSent', async ({ transaction, initiator }) => {
+    emitter.on('transactionSent', ({ transaction, initiator }) => {
       const newItem = {
         transaction,
         hash: transaction.hash,
