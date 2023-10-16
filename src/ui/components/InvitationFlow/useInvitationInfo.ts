@@ -54,6 +54,7 @@ export function useInvitationInfo(
     suspense: false,
     enabled: Boolean(address) && Boolean(campaignId),
     useErrorBoundary,
+    staleTime: 120_000,
   });
 }
 

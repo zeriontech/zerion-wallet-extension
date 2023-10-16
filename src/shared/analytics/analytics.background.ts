@@ -3,6 +3,7 @@ import type { Account } from 'src/background/account/Account';
 import { emitter } from 'src/background/events';
 import { networksStore } from 'src/modules/networks/networks-store.background';
 import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
+import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { createParams as createBaseParams, sendToMetabase } from './analytics';
 import {
   createAddProviderHook,
@@ -103,6 +104,11 @@ function trackAppEvents({ account }: { account: Account }) {
     initiator: string;
     address: string;
   }) {
+    if (initiator === INTERNAL_ORIGIN) {
+      // Do not send analytics event for internal actions,
+      // e.g. a signature made before an invitation fetch request
+      return;
+    }
     const initiatorURL = new URL(initiator);
     const { origin } = initiatorURL;
     const eventToMethod = {
