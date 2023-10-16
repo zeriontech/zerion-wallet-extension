@@ -1,6 +1,7 @@
 import browser from 'webextension-polyfill';
 import { Loglevel, logTable } from 'src/shared/logger';
 import { version } from 'src/shared/packageVersion';
+import { detectBrowser } from 'src/modules/detect-browser/detect-browser';
 
 type MetabaseEvent =
   | 'screen_view'
@@ -47,9 +48,17 @@ async function readOs() {
 }
 readOs();
 
+const detectedBrowser = detectBrowser(globalThis.navigator.userAgent);
+const browserInfo = [detectedBrowser.browser, detectedBrowser.version].join(
+  ' '
+);
+
 export function createParams<T extends BaseParams>(data: T) {
   return {
     platform: os,
+    // we use os_version for compatibility with mobile platforms
+    os_version: browserInfo,
+    browser_info: globalThis.navigator.userAgent,
     api_client_name: 'Zerion Extension',
     origin: globalThis.location.origin,
     timestamp: new Date().toISOString(),

@@ -11,6 +11,7 @@ export interface ScreenViewParams {
   pathname: string;
   previous: string | null;
   address: string | null;
+  screenSize: string;
 }
 
 export interface DaylightEventParams {

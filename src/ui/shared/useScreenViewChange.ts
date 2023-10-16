@@ -18,6 +18,7 @@ export function useScreenViewChange() {
         pathname,
         address,
         previous: previousPathname.current,
+        screenSize: `${window.screen.width}x${window.screen.height}`,
       });
     },
     onSuccess() {
