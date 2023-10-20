@@ -77,10 +77,12 @@ export async function fetchAssetFromCacheOrAPI({
   id,
 }: CachedAssetQuery) {
   const requestAssetId = isNative ? id : normalizeNullableAddress(address);
-  const assets = await fetchAssetsPrices({
-    asset_codes: [requestAssetId || ''],
-    currency: 'usd',
-  });
+  const assets = requestAssetId
+    ? await fetchAssetsPrices({
+        asset_codes: [requestAssetId || ''],
+        currency: 'usd',
+      })
+    : null;
 
   const getAssetFromCache = memoize(
     (address: string | null, chain: Chain, isNative: boolean) => {
