@@ -1,12 +1,12 @@
 import React from 'react';
 import cx from 'classnames';
 import { useStore } from '@store-unit/react';
-import { textParams } from 'src/ui/ui-kit/UIText/UIText';
 import { ThemeStore, themeStore } from 'src/ui/features/appearance';
+import { uiTextParams } from 'src/ui/ui-kit/UIText';
 import * as s from './styles.module.css';
 
 const [fontSize, lineHeight, fontWeight, letterSpacing] =
-  textParams['body/regular'];
+  uiTextParams['body/regular'];
 
 const inputFontStyle = {
   fontSize,
