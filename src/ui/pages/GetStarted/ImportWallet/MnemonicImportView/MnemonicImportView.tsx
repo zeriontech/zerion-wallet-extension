@@ -1,5 +1,4 @@
-import { useSubscription } from 'defi-sdk';
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -8,6 +7,7 @@ import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { walletPort } from 'src/ui/shared/channels';
+import { useAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
 import type { MemoryLocationState } from '../memoryLocationState';
 import { useMemoryLocationState } from '../memoryLocationState';
 import { AddressImportFlow } from './AddressImportFlow';
@@ -69,28 +69,16 @@ export function MnemonicImportView({
     locationStateStore,
   });
   const { data: wallets } = useQuery({
-    queryKey: [`getFirstNMnemonicWallets(${phrase}, ${count})`],
+    queryKey: ['getFirstNMnemonicWallets', phrase, count],
     queryFn: async () =>
       phrase ? getFirstNMnemonicWallets({ phrase, n: count }) : undefined,
     enabled: Boolean(phrase),
     useErrorBoundary: true,
   });
-  const { value } = useSubscription<
-    Record<string, { address: string; active: boolean }>,
-    'address',
-    'activity'
-  >({
-    namespace: 'address',
-    enabled: Boolean(wallets),
-    body: useMemo(
-      () => ({
-        scope: ['activity'],
-        payload: wallets ? { addresses: wallets.map((w) => w.address) } : {},
-      }),
-      [wallets]
-    ),
-    keepStaleData: true,
-  });
+  const { value } = useAddressActivity(
+    { addresses: wallets?.map((w) => w.address) || [] },
+    { enabled: Boolean(wallets), keepStaleData: true }
+  );
   const { isStale: isStaleValue } = useStaleTime(value, 3000);
   const shouldWaitForValue = value == null && !isStaleValue;
   return (

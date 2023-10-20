@@ -53,7 +53,7 @@ export function ViewError({
   }, [error, pathname]);
 
   return (
-    <ViewArea>
+    <ViewArea style={{ maxWidth: 425 }}>
       <PageColumn>
         <PageTop />
         <VStack gap={24} style={{ alignContent: 'start' }}>

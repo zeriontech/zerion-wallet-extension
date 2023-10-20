@@ -6,8 +6,6 @@ export const DEFI_SDK_TRANSACTIONS_API_URL =
   process.env.DEFI_SDK_TRANSACTIONS_API_URL;
 export const SOCIAL_API_URL = process.env.SOCIAL_API_URL;
 export const BACKEND_ENV = process.env.BACKEND_ENV;
-export const FEATURE_WAITLIST_ONBOARDING =
-  process.env.FEATURE_WAITLIST_ONBOARDING;
 export const SLOW_MODE = false;
 
 if (!PROXY_URL) {

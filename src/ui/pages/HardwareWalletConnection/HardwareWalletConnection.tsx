@@ -25,7 +25,7 @@ import { isAllowedMessage } from './shared/isAllowedMessage';
 import { ImportSuccess } from './ImportSuccess';
 import { getWalletInfo } from './shared/getWalletInfo';
 
-function FrameLayout({ children }: React.PropsWithChildren) {
+export function FrameLayout({ children }: React.PropsWithChildren) {
   useBackgroundKind({ kind: 'transparent' });
   useBodyStyle(useMemo(() => ({ border: 'none' }), []));
 
@@ -83,7 +83,11 @@ function FrameLayout({ children }: React.PropsWithChildren) {
     </PageFullBleedColumn>
   );
 }
-function HardwareWalletConnectionStart() {
+export function HardwareWalletConnectionStart({
+  onImport,
+}: {
+  onImport?(params: LedgerAccountImport): void;
+}) {
   const ready = useRenderDelay(100);
   const [searchParams] = useSearchParams();
 
@@ -123,7 +127,11 @@ function HardwareWalletConnectionStart() {
           navigate(searchParams.get('next') || '/');
         } else if (method === 'ledger/import') {
           verifyLedgerAccountImport(params);
-          finalize(params);
+          if (onImport) {
+            onImport(params);
+          } else {
+            finalize(params);
+          }
         } else if (method === 'wallet-info') {
           const result = await getWalletInfo(
             (params as { address: string }).address
@@ -136,7 +144,7 @@ function HardwareWalletConnectionStart() {
     }
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
-  }, [finalize, navigate, requestId, searchParams]);
+  }, [finalize, onImport, navigate, requestId, searchParams]);
   return (
     <LedgerIframe
       ref={iframeRef}

@@ -1,8 +1,0 @@
-.closeButton {
-  color: var(--always-white);
-  border-radius: 4px;
-}
-
-.closeButton:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}

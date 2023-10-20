@@ -191,10 +191,13 @@ export class Account extends EventEmitter<AccountEvents> {
     await this.wallet.updateCredentials({
       id: payloadId(),
       params: {
-        id: user.id,
-        encryptionKey: this.encryptionKey,
-        seedPhraseEncryptionKey,
-        seedPhraseEncryptionKey_deprecated,
+        credentials: {
+          id: user.id,
+          encryptionKey: this.encryptionKey,
+          seedPhraseEncryptionKey,
+          seedPhraseEncryptionKey_deprecated,
+        },
+        isNewUser,
       },
     });
     if (!this.isPendingNewUser) {

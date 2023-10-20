@@ -18,9 +18,9 @@ import { useAllExistingAddresses } from 'src/ui/shared/requests/useAllExistingAd
 import { AddressImportMessages } from './AddressImportMessages';
 import { WalletList } from './WalletList';
 
-function PortfolioValueDetail({ address }: { address: string }) {
+export function PortfolioValueDetail({ address }: { address: string }) {
   return (
-    <UIText kind="headline/h3">
+    <UIText kind="headline/h2">
       <PortfolioValue
         address={address}
         render={({ value }) =>

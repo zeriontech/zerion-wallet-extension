@@ -124,7 +124,7 @@ export function Success() {
         <div className={styles.container}>
           <VStack gap={24}>
             <div className={styles.title}>
-              Welcome,
+              Nicely Done
               <br />
               Self-Custodial Human!
             </div>

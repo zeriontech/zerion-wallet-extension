@@ -1,6 +1,9 @@
 import React from 'react';
 
-export function ViewArea(props: React.HTMLAttributes<HTMLDivElement>) {
+export function ViewArea({
+  style,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       {...props}
@@ -10,6 +13,7 @@ export function ViewArea(props: React.HTMLAttributes<HTMLDivElement>) {
         flexDirection: 'column',
         marginRight: 'auto',
         marginLeft: 'auto',
+        ...style,
       }}
     />
   );

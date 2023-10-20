@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useReducer, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { SeedType } from 'src/shared/SeedType';
@@ -19,8 +19,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
-import InvisibleIcon from 'jsx:src/ui/assets/invisible.svg';
-import VisibleIcon from 'jsx:src/ui/assets/visible.svg';
 import CheckIcon from 'jsx:src/ui/assets/check.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { PageBottom } from 'src/ui/components/PageBottom';
@@ -41,6 +39,7 @@ import {
 import { WithConfetti } from '../GetStarted/components/DecorativeMessage/DecorativeMessage';
 import { DecorativeMessage } from '../GetStarted/components/DecorativeMessage';
 import { clipboardWarning } from './clipboardWarning';
+import { BlurredToggle } from './BlurredToggle';
 
 function Initial({ onSubmit }: { onSubmit: () => void }) {
   useBodyStyle(
@@ -127,43 +126,6 @@ function Initial({ onSubmit }: { onSubmit: () => void }) {
 }
 
 type BackupKind = 'reveal' | 'verify';
-
-function BlurredToggle({ children }: React.PropsWithChildren) {
-  const [hidden, toggleHidden] = useReducer((x) => !x, true);
-  const ref = useRef<HTMLButtonElement | null>(null);
-  return (
-    <ZStack>
-      <Button
-        kind="ghost"
-        ref={ref}
-        type="button"
-        aria-label="Visually reveal value"
-        size={32}
-        style={{ placeSelf: 'end', zIndex: 1, marginRight: 4, marginBottom: 4 }}
-        onClick={() => {
-          toggleHidden();
-        }}
-      >
-        {React.createElement(hidden ? InvisibleIcon : VisibleIcon, {
-          style: {
-            display: 'block',
-            width: 24,
-            height: 24,
-            color: 'var(--primary)',
-          },
-        })}
-      </Button>
-      <div
-        style={{
-          filter: hidden ? 'blur(5px)' : undefined,
-          transition: 'filter 250ms',
-        }}
-      >
-        {children}
-      </div>
-    </ZStack>
-  );
-}
 
 function RevealSecret({
   seedType,
