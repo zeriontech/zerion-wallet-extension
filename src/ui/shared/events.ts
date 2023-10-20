@@ -13,6 +13,7 @@ export const emitter = createNanoEvents<{
   networksSearchResponse: (query: string, resultsCount: number) => void;
   errorScreenView: (data: { message: string; location: string }) => void;
   loaderScreenView: (data: { location: string; duration: number }) => void;
+  reloadExtension: () => void;
 }>();
 
 emitter.on('mutationError', (error, _variables, context) => {

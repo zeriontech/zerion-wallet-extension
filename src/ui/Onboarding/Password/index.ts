@@ -1,0 +1,1 @@
+export { Password } from './Password';

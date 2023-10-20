@@ -1,0 +1,112 @@
+.container {
+  display: grid;
+  position: relative;
+  overflow: hidden;
+  padding: 88px;
+  border-radius: var(--card-border-radius);
+  background-color: var(--white);
+}
+
+.backButton {
+  padding: 6px;
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  left: 12px;
+  top: 12px;
+  background-color: var(--neutral-100);
+  transition: background-color 150ms;
+  border-radius: 8px;
+}
+
+.backButton:hover {
+  background-color: var(--neutral-300);
+}
+
+.faqContainer {
+  padding: 16px;
+  border-radius: var(--card-border-radius);
+  background-color: var(--white);
+}
+
+@media (max-width: 980px) {
+  .container {
+    padding: 88px 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 88px 16px 16px;
+  }
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes textAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.loadingOverlay {
+  position: absolute;
+  z-index: 2;
+  animation: appear 500ms ease-in-out;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--white);
+}
+
+.loadingTitle {
+  animation: textAppear 500ms ease-in-out;
+}
+
+@keyframes containerAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  1% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.appear {
+  animation: containerAppear 300ms ease-in-out;
+  animation-fill-mode: both;
+}
+
+.phraseInputGrip {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  overflow: hidden;
+  padding: 2px;
+  position: relative;
+  top: -2px;
+  left: -2px;
+  width: calc(100% + 4px);
+}

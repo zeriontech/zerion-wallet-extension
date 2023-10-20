@@ -8,7 +8,7 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import keyIconSrc from '../assets/key.png';
 import dialogIconSrc from '../assets/dialog.png';
-import lockIconSrc from '../assets/dialog.png';
+import lockIconSrc from '../assets/lock.png';
 import metamaskIconSrc from '../assets/metamask.png';
 import metamaskInstructionSrc from '../assets/metamask_instruction.png';
 import walletIconSrc from '../assets/wallet2.png';
@@ -17,7 +17,7 @@ import { useSizeStore } from '../useSizeStore';
 import * as styles from './styles.module.css';
 import { SidePanel } from './SidePanel';
 
-function SecretKeyFAQ() {
+export function SecretKeyFAQ() {
   const { isNarrowView } = useSizeStore();
   const [showMetamaskPanel, setShowMetamaskPanel] = useState(false);
   const [showWalletPanel, setShowWalletPanel] = useState(false);
@@ -164,7 +164,7 @@ function SecretKeyFAQ() {
   );
 }
 
-function PhraseFAQ() {
+export function PhraseFAQ() {
   const { isNarrowView } = useSizeStore();
   const [showMetamaskPanel, setShowMetamaskPanel] = useState(false);
   const [showWalletPanel, setShowWalletPanel] = useState(false);
@@ -286,7 +286,7 @@ function PhraseFAQ() {
   );
 }
 
-function PasswordFAQ() {
+export function PasswordFAQ() {
   const { isNarrowView } = useSizeStore();
 
   return (
@@ -300,23 +300,30 @@ function PasswordFAQ() {
         <UIText kind="small/regular">Why do I need a password?</UIText>
         <UIText kind="small/regular" color="var(--neutral-600)">
           This password will unlock your Zerion wallet extension when you want
-          to connect to a dApp or sign a transaction
+          to connect to a dApp or sign a transaction.
         </UIText>
       </VStack>
     </VStack>
   );
 }
 
-export function FAQ({
-  type,
-}: {
-  type: 'private-key' | 'mnemonic' | 'password';
-}) {
-  return type === 'private-key' ? (
-    <SecretKeyFAQ />
-  ) : type === 'mnemonic' ? (
-    <PhraseFAQ />
-  ) : (
-    <PasswordFAQ />
+export function SelectWalletsFAQ() {
+  const { isNarrowView } = useSizeStore();
+
+  return (
+    <VStack gap={24} style={{ alignContent: 'start' }}>
+      {isNarrowView ? null : (
+        <div className={styles.faqIcon}>
+          <img src={dialogIconSrc} style={{ width: 20, height: 20 }} />
+        </div>
+      )}
+      <VStack gap={8}>
+        <UIText kind="small/regular">Inactive wallets</UIText>
+        <UIText kind="small/regular" color="var(--neutral-600)">
+          The wallets has no transactions or zero balance on the supported
+          chains.
+        </UIText>
+      </VStack>
+    </VStack>
   );
 }

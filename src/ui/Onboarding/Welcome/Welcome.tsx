@@ -1,301 +1,213 @@
-import React, { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { useNavigate } from 'react-router';
-import { resolveDomain } from 'src/modules/name-service';
-import { isEthereumAddress } from 'src/shared/isEthereumAddress';
-import { Button } from 'src/ui/ui-kit/Button';
-import { HStack } from 'src/ui/ui-kit/HStack';
-import { Spacer } from 'src/ui/ui-kit/Spacer';
-import { UIText } from 'src/ui/ui-kit/UIText';
-import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import React from 'react';
+import cn from 'classnames';
+import { animated } from '@react-spring/web';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
-import LinkIcon from 'jsx:src/ui/assets/new-window.svg';
-import { isEmail } from 'src/shared/isEmail';
-import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
-import { normalizeAddress } from 'src/shared/normalizeAddress';
-import {
-  checkWhitelistStatus,
-  getWaitlistStatus,
-} from '../checkWhitelistStatus';
-import { SidePanel } from '../Import/SidePanel';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import { UIText } from 'src/ui/ui-kit/UIText';
+import CreateIcon from 'jsx:../assets/option_secondary_create.svg';
+import ImportIcon from 'jsx:../assets/option_secondary_import.svg';
+import HardWareIcon from 'jsx:../assets/option_secondary_hardware.svg';
+import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
 import { useSizeStore } from '../useSizeStore';
 import { Stack } from '../Stack';
-import {
-  NotAllowedError,
-  UnsupportedAddressError,
-  WaitlistCheckError,
-} from '../errors';
-import walletIconSrc from '../assets/wallet2.png';
-import welcomeImageSrc from '../assets/welcome_img.png';
-import welcomeImage2xSrc from '../assets/welcome_img_2x.png';
+import CreateImg from '../assets/option_create.png';
+import ImportImg from '../assets/option_import.png';
+import HardwareImg from '../assets/option_hardware.png';
+import * as helpersStyles from '../shared/helperStyles.module.css';
+import { useOnboardingSession } from '../shared/useOnboardingSession';
 import * as styles from './styles.module.css';
 
-type FormErrorType =
-  | 'unsupported-address'
-  | 'waitlist-not-found'
-  | 'no-access'
-  | 'unknown';
+interface ImportOptionConfig {
+  primaryImage: React.ReactNode;
+  secondaryIcon: React.ReactNode;
+  secondaryIconClassName: string;
+  to: string;
+  title: string;
+  className: string;
+}
 
-const ERRORS_DESCRIPTIOINS: Record<FormErrorType, string> = {
-  'unsupported-address':
-    'Sorry! We can’t parse your address. Please, check if it is correct',
-  'no-access':
-    'Sorry! You’re not eligible yet. But you have two options to get involved.',
-  'waitlist-not-found':
-    'Sorry! We can’t find you in the waitlist. Please, join it via link below.',
-  unknown: 'Something went wrong. Please, try again.',
-};
-
-function MainForm({
-  onSuccess,
-  onError,
-}: {
-  onSuccess(params: { address: string }): void;
-  onError?(e: WaitlistCheckError | UnsupportedAddressError): void;
-}) {
-  const [error, setError] = useState<FormErrorType | null>(null);
+function ImportOption({
+  primaryImage,
+  secondaryIcon,
+  secondaryIconClassName,
+  to,
+  title,
+  className,
+}: ImportOptionConfig) {
   const { isNarrowView } = useSizeStore();
-
-  const { mutate: checkAddress, isLoading } = useMutation({
-    mutationFn: async (addressOrDomain: string) => {
-      setError(null);
-
-      if (isEmail(addressOrDomain)) {
-        try {
-          const { status, address } = await getWaitlistStatus(addressOrDomain);
-          return { address, status };
-        } catch {
-          throw new WaitlistCheckError();
-        }
-      }
-
-      const address = isEthereumAddress(addressOrDomain)
-        ? addressOrDomain
-        : await resolveDomain(addressOrDomain);
-      if (!address) {
-        throw new UnsupportedAddressError();
-      }
-      const normalizedAddress = normalizeAddress(address);
-      const { status } = await checkWhitelistStatus(normalizedAddress);
-      return { address: normalizedAddress, status };
-    },
-    onSuccess,
-    onError: (e: Error) => {
-      setError(
-        e instanceof NotAllowedError
-          ? 'no-access'
-          : e instanceof UnsupportedAddressError
-          ? 'unsupported-address'
-          : e instanceof WaitlistCheckError
-          ? 'waitlist-not-found'
-          : 'unknown'
-      );
-      onError?.(e);
+  const { style, trigger: hoverTrigger } = useTransformTrigger({
+    scale: 1.05,
+    rotation: 8,
+    springConfig: {
+      tension: 300,
+      friction: 10,
     },
   });
 
   return (
-    <form
-      className={styles.container}
-      onSubmit={(event) => {
-        event.preventDefault();
-        const address = (
-          new FormData(event.currentTarget).get('addressOrDomain') as string
-        ).trim();
-        checkAddress(address);
+    <UnstyledLink to={to} className={styles.link} onMouseEnter={hoverTrigger}>
+      <VStack gap={isNarrowView ? 8 : 16} className={className}>
+        <UIText kind="headline/h3" className={styles.title}>
+          {title}
+        </UIText>
+        <div
+          style={{
+            position: 'relative',
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            height: isNarrowView ? 110 : 148,
+            paddingTop: 35,
+            top: isNarrowView ? -35 : 0,
+          }}
+        >
+          {primaryImage}
+          <div
+            style={{ position: 'absolute' }}
+            className={secondaryIconClassName}
+          >
+            <animated.div
+              style={{
+                ...style,
+                transformOrigin: '50% 50%',
+              }}
+            >
+              {secondaryIcon}
+            </animated.div>
+          </div>
+        </div>
+      </VStack>
+    </UnstyledLink>
+  );
+}
+
+const IMPORT_OPTIONS: ImportOptionConfig[] = [
+  {
+    title: 'Create New Wallet',
+    to: '/onboarding/create',
+    className: cn(styles.option, styles.create),
+    primaryImage: (
+      <img
+        src={CreateImg}
+        alt="Create New Wallet"
+        className={styles.createImg}
+      />
+    ),
+    secondaryIcon: (
+      <CreateIcon
+        className={styles.secondaryIcon}
+        style={{ width: 44, height: 44 }}
+      />
+    ),
+    secondaryIconClassName: styles.createIcon,
+  },
+  {
+    title: 'Import Existing Wallet',
+    to: '/onboarding/import',
+    className: cn(styles.option, styles.import),
+    primaryImage: (
+      <img
+        src={ImportImg}
+        alt="Import Existing Wallet"
+        className={styles.importImg}
+      />
+    ),
+    secondaryIcon: (
+      <ImportIcon
+        className={styles.secondaryIcon}
+        style={{ width: 49, height: 54 }}
+      />
+    ),
+    secondaryIconClassName: styles.importIcon,
+  },
+  {
+    title: 'Connect Ledger',
+    to: '/onboarding/hardware',
+    className: cn(styles.option, styles.hardware),
+    primaryImage: (
+      <img
+        src={HardwareImg}
+        alt="Connect Ledger"
+        className={styles.hardwareImg}
+      />
+    ),
+    secondaryIcon: (
+      <HardWareIcon
+        className={styles.secondaryIcon}
+        style={{ width: 34, height: 63 }}
+      />
+    ),
+    secondaryIconClassName: styles.hardwareIcon,
+  },
+];
+
+function ImportOptions() {
+  const { isNarrowView } = useSizeStore();
+  return (
+    <Stack
+      gap={16}
+      direction={isNarrowView ? 'vertical' : 'horizontal'}
+      className={helpersStyles.appear}
+      style={{
+        gridTemplateColumns: isNarrowView ? undefined : '1fr 1fr 1fr',
+        animationDelay: '300ms',
+        animationDuration: '500ms',
+      }}
+    >
+      {IMPORT_OPTIONS.map((option) => (
+        <ImportOption key={option.title} {...option} />
+      ))}
+    </Stack>
+  );
+}
+
+function Banner() {
+  const { isNarrowView } = useSizeStore();
+  return (
+    <VStack
+      gap={12}
+      className={helpersStyles.appear}
+      style={{
+        animationDuration: '500ms',
+        justifyItems: 'center',
+        borderRadius: 20,
+        boxShadow: '0px 12px 44px 0px rgba(0, 0, 0, 0.08)',
+        padding: isNarrowView ? '40px 16px' : '54px 32px',
+        textAlign: 'center',
+        maxHeight: 224,
+        backgroundSize: '100% 100%',
+        backgroundImage: `url(${require('../assets/welcome_background.png')})`,
       }}
     >
       <div
         style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          maxWidth: 516,
+          fontSize: isNarrowView ? 40 : 60,
+          fontWeight: 500,
+          lineHeight: isNarrowView ? '48px' : '80px',
+          letterSpacing: '-0.3px',
+          color: 'var(--always-white)',
         }}
       >
-        <UIText kind={isNarrowView ? 'headline/h2' : 'headline/h1'}>
-          Zerion Extension Status: Live
-        </UIText>
-        <Spacer height={24} />
-        <UIText kind="body/accent" style={{ opacity: 0.8, fontWeight: 400 }}>
-          We are slowly opening up access. See if you’re on the list.
-        </UIText>
-        <Spacer height={24} />
-        <input
-          name="addressOrDomain"
-          className={styles.input}
-          placeholder="Enter your address or domain"
-          required={true}
-          autoComplete="off"
-          autoFocus={true}
-        />
-        <Spacer height={isNarrowView ? 4 : 22} />
-        <UIText
-          kind={isNarrowView ? 'caption/regular' : 'small/regular'}
-          color="var(--notice-500)"
-          style={{
-            maxHeight: error ? 20 : 0,
-            transition: 'max-height 300ms',
-            textAlign: isNarrowView ? 'left' : undefined,
-          }}
-        >
-          {error ? ERRORS_DESCRIPTIOINS[error] : null}
-        </UIText>
-        <Spacer height={22} />
-        <Button
-          kind="primary"
-          size={44}
-          disabled={isLoading}
-          className={styles.submit}
-          style={{ width: isNarrowView ? '100%' : 267 }}
-        >
-          {isLoading ? 'Checking' : 'Check Eligibility'}
-        </Button>
+        Welcome to Zerion
       </div>
-      <img
-        className={styles.formImage}
-        src={welcomeImageSrc}
-        alt=""
-        srcSet={`${welcomeImageSrc}, ${welcomeImage2xSrc} 2x`}
-      />
-    </form>
-  );
-}
-
-function FAQButton({
-  text,
-  onClick,
-  disabled,
-}: {
-  text: string;
-  onClick(): void;
-  disabled?: boolean;
-}) {
-  return (
-    <UnstyledButton onClick={onClick} disabled={disabled}>
-      <HStack
-        gap={24}
-        justifyContent="space-between"
-        alignItems="center"
-        className={styles.faqButton}
+      <UIText
+        kind={isNarrowView ? 'body/accent' : 'headline/h3'}
+        color="var(--always-white)"
       >
-        <UIText kind="headline/h3" color="var(--always-white)">
-          {text}
-        </UIText>
-        <div className={styles.arrow}>
-          <ArrowRightIcon
-            style={{ width: 20, height: 20, color: 'var(--always-white)' }}
-          />
-        </div>
-      </HStack>
-    </UnstyledButton>
-  );
-}
-
-function EligibleFAQ({ show }: { show: boolean }) {
-  const { isNarrowView } = useSizeStore();
-  const [showJoinPanel, setShowJoinPanel] = useState(false);
-  const [showInvitePanel, setShowInvitePanel] = useState(false);
-
-  return (
-    <>
-      <SidePanel show={showJoinPanel} onDismiss={() => setShowJoinPanel(false)}>
-        <VStack gap={20}>
-          <div className={styles.faqIcon}>
-            <img
-              src={walletIconSrc}
-              style={{ width: 20, height: 20, borderRadius: 10 }}
-            />
-          </div>
-          <VStack gap={8}>
-            <UIText kind="body/accent">How to join the waitlist?</UIText>
-            <UIText kind="body/regular">
-              One way to get access to our extension is to join our waitlist.
-              We’ll be onboarding users in the coming weeks, and you’ll get an
-              email when your spot is open.
-            </UIText>
-            <TextAnchor
-              href="https://zerion.io/extension-waitlist"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <HStack gap={4} alignItems="center">
-                <UIText kind="body/regular" color="var(--primary)">
-                  Join the waitlist
-                </UIText>
-                <LinkIcon
-                  style={{ color: 'var(--primary)', width: 16, height: 16 }}
-                />
-              </HStack>
-            </TextAnchor>
-          </VStack>
-        </VStack>
-      </SidePanel>
-      <SidePanel
-        show={showInvitePanel}
-        onDismiss={() => setShowInvitePanel(false)}
-      >
-        <VStack gap={20}>
-          <div className={styles.faqIcon}>
-            <img
-              src={walletIconSrc}
-              style={{ width: 20, height: 20, borderRadius: 10 }}
-            />
-          </div>
-          <VStack gap={8}>
-            <UIText kind="body/accent">How to get your place?</UIText>
-            <UIText kind="body/regular">
-              We’re partnering with many leading communities in web3 to open up
-              places in our closed beta for the extension. We’re also dropping
-              access to limited numbers of people via our social channels.
-              (Especially Lens). Watch this space to grab your spot!
-            </UIText>
-          </VStack>
-        </VStack>
-      </SidePanel>
-      <VStack
-        gap={20}
-        style={{
-          opacity: show ? 1 : 0,
-          transform: show ? 'translateY(0)' : 'translateY(-10px)',
-          transition: 'opacity 300ms ease-in-out, transform 300ms ease-in-out',
-          width: '100%',
-        }}
-      >
-        <UIText kind="headline/h2">How can I become eligible?</UIText>
-        <Stack
-          gap={16}
-          direction={isNarrowView ? 'vertical' : 'horizontal'}
-          style={{ gridTemplateColumns: isNarrowView ? undefined : '1fr 1fr' }}
-        >
-          <FAQButton
-            text="Join the waitlist"
-            disabled={!show}
-            onClick={() => setShowJoinPanel(true)}
-          />
-          <FAQButton
-            text="Earn an invite"
-            disabled={!show}
-            onClick={() => setShowInvitePanel(true)}
-          />
-        </Stack>
-      </VStack>
-    </>
+        A wallet for self-custodial humans. All your crypto & NFTs. 10+ chains.
+      </UIText>
+    </VStack>
   );
 }
 
 export function Welcome() {
-  const [showFAQ, setShowFAQ] = useState(false);
-  const navigate = useNavigate();
+  const { isNarrowView } = useSizeStore();
+  useOnboardingSession('overview');
 
   return (
-    <VStack gap={40}>
-      <MainForm
-        onSuccess={({ address }) => navigate(`/onboarding/welcome/${address}`)}
-        onError={() => setShowFAQ(true)}
-      />
-      <EligibleFAQ show={showFAQ} />
+    <VStack gap={isNarrowView ? 24 : 40}>
+      <Banner />
+      <ImportOptions />
     </VStack>
   );
 }

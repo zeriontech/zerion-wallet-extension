@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageHeading } from 'src/ui/components/PageHeading';
@@ -16,19 +16,19 @@ import { focusNode } from 'src/ui/shared/focusNode';
 import { useEraseDataMutation } from 'src/ui/components/EraseData';
 import { EraseDataConfirmationDialog } from 'src/ui/components/EraseData';
 import { EraseDataInProgress } from 'src/ui/components/EraseData';
-import { FEATURE_WAITLIST_ONBOARDING } from 'src/env/config';
 import { maybeOpenOboarding } from 'src/ui/Onboarding/initialization';
+import { pageTemplateType } from 'src/ui/shared/getPageTemplateName';
+import { emitter } from 'src/ui/shared/events';
 import * as s from './styles.module.css';
 
 export function ForgotPassword() {
-  const navigate = useNavigate();
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const eraseAllData = useEraseDataMutation({
     onSuccess: () => {
-      if (FEATURE_WAITLIST_ONBOARDING === 'on') {
-        maybeOpenOboarding();
+      if (pageTemplateType === 'tab') {
+        emitter.emit('reloadExtension');
       } else {
-        navigate('/');
+        maybeOpenOboarding();
       }
     },
   });

@@ -438,6 +438,21 @@ export class WalletRecordModel {
     };
   }
 
+  static async getPendingRecoveryPhrase(
+    pendingWallet: PendingWallet,
+    credentials: SessionCredentials
+  ) {
+    const walletContainer = pendingWallet.walletContainer;
+    if (!walletContainer || !isMnemonicContainer(walletContainer)) {
+      throw new Error('Pending wallet is not a Mnemonic Container');
+    }
+    const encryptedPhrase = walletContainer.getMnemonic()?.phrase;
+    if (!encryptedPhrase) {
+      throw new Error('Pending wallet does not have a seed phrase');
+    }
+    return decryptMnemonic(encryptedPhrase, credentials);
+  }
+
   static async getPrivateKey(
     record: WalletRecord,
     { address }: { address: string }

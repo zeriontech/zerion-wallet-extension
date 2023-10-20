@@ -103,3 +103,5 @@ new BackgroundScriptUpdateHandler({
 }).keepAlive();
 
 initializeUI();
+
+emitter.on('reloadExtension', initializeUI);

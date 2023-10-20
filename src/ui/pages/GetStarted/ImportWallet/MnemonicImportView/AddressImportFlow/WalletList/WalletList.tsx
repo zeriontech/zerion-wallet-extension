@@ -16,7 +16,7 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 
 interface Props {
   wallets: BareWallet[];
-  existingAddressesSet: Set<string>;
+  existingAddressesSet?: Set<string>;
   listTitle: React.ReactNode;
   renderDetail: null | ((index: number) => React.ReactNode);
   renderMedia?: (index: number) => React.ReactNode;
@@ -28,6 +28,7 @@ interface Props {
   isLoadingMore?: boolean;
   onLoadMore: () => void;
   showMoreText?: string;
+  paddingInline?: React.CSSProperties['paddingInline'];
 }
 
 export function WalletListPresentation({
@@ -43,66 +44,84 @@ export function WalletListPresentation({
   isLoadingMore = false,
   onLoadMore,
   showMoreText = 'Show More',
+  paddingInline = 8,
 }: Props) {
   return (
-    <VStack gap={8}>
+    <VStack gap={2}>
       {listTitle ? <UIText kind="small/accent">{listTitle}</UIText> : null}
       <SurfaceList
         items={wallets
           .map<Item>((wallet, index) => ({
             key: wallet.address,
-            onClick: existingAddressesSet.has(normalizeAddress(wallet.address))
-              ? undefined
-              : () => onSelect(wallet.address),
+            pad: false,
+            isInteractive: true,
             component: (
-              <HStack
-                gap={8}
-                alignItems="center"
-                justifyContent="space-between"
-                style={{
-                  gridTemplateColumns: 'minmax(min-content, 18px) 1fr auto',
-                }}
+              <SurfaceItemButton
+                style={{ paddingInline }}
+                onClick={
+                  existingAddressesSet?.has(normalizeAddress(wallet.address))
+                    ? undefined
+                    : () => onSelect(wallet.address)
+                }
               >
-                <UIText
-                  kind="body/regular"
-                  color="var(--neutral-500)"
-                  title={`Derivation path: ${wallet.mnemonic?.path}`}
-                  style={{ cursor: 'help' }}
+                <HStack
+                  gap={8}
+                  alignItems="center"
+                  justifyContent="space-between"
+                  style={{
+                    gridTemplateColumns: 'minmax(min-content, 18px) 1fr auto',
+                  }}
                 >
-                  {wallet.mnemonic
-                    ? getIndexFromPath(wallet.mnemonic.path, derivationPathType)
-                    : null}
-                </UIText>
-                {renderMedia ? (
-                  renderMedia(index)
-                ) : (
-                  <Media
-                    image={
-                      <WalletAvatar
-                        address={wallet.address}
-                        active={false}
-                        size={40}
-                        borderRadius={4}
-                      />
-                    }
-                    text={<WalletDisplayName wallet={wallet} />}
-                    vGap={0}
-                    detailText={renderDetail?.(index)}
-                  />
-                )}
-                {existingAddressesSet.has(normalizeAddress(wallet.address)) ? (
-                  <UIText kind="caption/regular" color="var(--neutral-500)">
-                    Already added
+                  <UIText
+                    kind="body/regular"
+                    color="var(--neutral-500)"
+                    title={`Derivation path: ${wallet.mnemonic?.path}`}
+                    style={{ cursor: 'help' }}
+                  >
+                    {wallet.mnemonic
+                      ? getIndexFromPath(
+                          wallet.mnemonic.path,
+                          derivationPathType
+                        )
+                      : null}
                   </UIText>
-                ) : (
-                  <span>
-                    <AnimatedCheckmark
-                      checked={values.has(wallet.address)}
-                      checkedColor="var(--primary)"
+                  {renderMedia ? (
+                    renderMedia(index)
+                  ) : (
+                    <Media
+                      image={
+                        <WalletAvatar
+                          address={wallet.address}
+                          active={false}
+                          size={44}
+                          borderRadius={4}
+                        />
+                      }
+                      text={
+                        <UIText kind="small/regular">
+                          <WalletDisplayName wallet={wallet} />
+                        </UIText>
+                      }
+                      vGap={0}
+                      detailText={renderDetail?.(index)}
                     />
-                  </span>
-                )}
-              </HStack>
+                  )}
+                  {existingAddressesSet?.has(
+                    normalizeAddress(wallet.address)
+                  ) ? (
+                    <UIText kind="caption/regular" color="var(--neutral-500)">
+                      Already added
+                    </UIText>
+                  ) : (
+                    <span>
+                      <AnimatedCheckmark
+                        checked={values.has(wallet.address)}
+                        checkedColor="var(--primary)"
+                      />
+                    </span>
+                  )}
+                </HStack>
+              </SurfaceItemButton>
             ),
           }))
           .concat(

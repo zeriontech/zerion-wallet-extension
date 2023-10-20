@@ -1,12 +1,24 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import {
+  Navigate,
+  Route,
+  Routes,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
+import { animated } from '@react-spring/web';
+import { isTruthy } from 'is-truthy-ts';
+import { RenderArea } from 'react-area';
 import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
+import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import type { BareWallet } from 'src/shared/types/BareWallet';
+import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { HandshakeFailure } from 'src/ui/components/HandshakeFailure';
@@ -14,19 +26,23 @@ import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import { useErrorBoundary } from 'src/ui/shared/useErrorBoundary';
 import { PrivacyFooter } from 'src/ui/components/PrivacyFooter';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
 import { useSizeStore } from '../useSizeStore';
 import { Stack } from '../Stack';
+import keyIconSrc from '../assets/key.png';
+import dialogIconSrc from '../assets/dialog.png';
+import { Password } from '../Password';
+import { assertPasswordStep } from '../Password/passwordSearchParams';
+import * as helperStyles from '../shared/helperStyles.module.css';
+import { useOnboardingSession } from '../shared/useOnboardingSession';
+import { isSessionExpiredError } from '../shared/isSessionExpiredError';
 import * as styles from './styles.module.css';
-import { FAQ } from './FAQ';
 import { ImportKey } from './ImportKey';
-import { Password } from './Password';
 import { ImportMnemonic } from './ImportMnemonic';
-import {
-  PasswordStep,
-  ViewParam,
-  assertPasswordStep,
-  assertViewParam,
-} from './ImportSearchParams';
+import { ViewParam, assertViewParam } from './ImportSearchParams';
+import { SelectWallets } from './SelectWallets';
+import { SecurityInfo } from './SecurityInfo';
 
 function Step({ active }: { active: boolean }) {
   return (
@@ -39,20 +55,16 @@ function Step({ active }: { active: boolean }) {
   );
 }
 
-export function Import() {
+function ImportWallet() {
   const { isNarrowView } = useSizeStore();
   const navigate = useNavigate();
   const [showError, setShowError] = useState(false);
-  const { walletAddress, type } = useParams<{
-    walletAddress: string;
-    type: 'private-key' | 'mnemonic';
-  }>();
+  const { type } = useParams<{ type: 'private-key' | 'mnemonic' }>();
   const [params, setSearchParams] = useSearchParams();
   const view = params.get('view') || 'secret';
   const step = params.get('step') || 'create';
   assertViewParam(view);
   assertPasswordStep(step);
-  const isConfirmStep = step === PasswordStep.confirm;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -62,10 +74,11 @@ export function Import() {
     navigate(-1);
   }, [navigate]);
 
-  const [wallet, setWallet] = useState<BareWallet | null>(null);
-  const handleWallet = useCallback(
-    (wallet: BareWallet) => {
-      setWallet(wallet);
+  const [wallets, setWallets] = useState<BareWallet[] | null>(null);
+  const [mnemonic, setMnemonic] = useState<string | null>(null);
+  const handleWallets = useCallback(
+    (wallets: BareWallet[]) => {
+      setWallets(wallets);
       setSearchParams(`view=${ViewParam.password}`);
     },
     [setSearchParams]
@@ -74,23 +87,34 @@ export function Import() {
   const { mutate: createUserAndWallet, isLoading } = useMutation({
     mutationFn: async ({
       password,
-      wallet,
+      wallets,
     }: {
-      password: string;
-      wallet: BareWallet;
+      password: string | null;
+      wallets: BareWallet[];
     }) => {
       setShowError(false);
       return Promise.race([
         (async () => {
           await new Promise((r) => setTimeout(r, 1000));
-          await accountPublicRPCPort.request('createUser', {
-            password,
-          });
-          if (type === 'mnemonic' && wallet.mnemonic) {
-            await walletPort.request('uiImportSeedPhrase', [wallet.mnemonic]);
+          if (!wallets.length) {
+            throw new Error('No wallets found');
+          }
+          if (password) {
+            await accountPublicRPCPort.request('createUser', {
+              password,
+            });
+          }
+          let data: BareWallet | ExternallyOwnedAccount | null = null;
+          if (type === 'mnemonic') {
+            data = await walletPort.request(
+              'uiImportSeedPhrase',
+              wallets.map((wallet) => wallet.mnemonic).filter(isTruthy)
+            );
           }
           await accountPublicRPCPort.request('saveUserAndWallet');
-          await setCurrentAddress({ address: wallet.address });
+          await setCurrentAddress({
+            address: data?.address || wallets[0].address,
+          });
         })(),
         rejectAfterDelay(3000),
       ]);
@@ -99,52 +123,72 @@ export function Import() {
       zeroizeAfterSubmission();
       navigate('/onboarding/success');
     },
-    onError: () => {
+    onError: (e) => {
+      if (isSessionExpiredError(e)) {
+        navigate('/onboarding/session-expired', { replace: true });
+      }
       setShowError(true);
     },
+    useErrorBoundary: true,
   });
 
   const showErrorBoundary = useErrorBoundary();
 
   const handlePasswordSubmit = useCallback(
-    (password: string) => {
-      if (!wallet) {
-        showErrorBoundary(new Error('No wallet created'));
+    (password: string | null) => {
+      if (!wallets?.length) {
+        showErrorBoundary(new Error('No wallets created'));
         return;
       }
-      createUserAndWallet({ password, wallet });
+      createUserAndWallet({ password, wallets });
     },
-    [wallet, createUserAndWallet, showErrorBoundary]
+    [wallets, createUserAndWallet, showErrorBoundary]
   );
 
-  if (view === ViewParam.password && !wallet) {
-    setSearchParams(`view=${ViewParam.secret}`, { replace: true });
+  const { sessionDataIsLoading } = useOnboardingSession('session-expired');
+
+  if (sessionDataIsLoading) {
     return null;
+  }
+
+  if (view === ViewParam.password && !wallets?.length) {
+    return (
+      <Navigate to={{ search: `view=${ViewParam.secret}` }} replace={true} />
+    );
+  }
+
+  if (view === ViewParam['select-wallets'] && !mnemonic) {
+    return (
+      <Navigate to={{ search: `view=${ViewParam.secret}` }} replace={true} />
+    );
   }
 
   return (
     <VStack gap={isNarrowView ? 16 : 56}>
-      <div className={styles.container}>
+      <div className={helperStyles.container} style={{ minHeight: 430 }}>
         {isLoading ? (
-          <div className={styles.loadingOverlay}>
-            <UIText kind="headline/hero" className={styles.loadingTitle}>
-              Importing wallet
+          <div className={helperStyles.loadingOverlay}>
+            <UIText kind="headline/hero" className={helperStyles.loadingTitle}>
+              Importing Wallet
             </UIText>
           </div>
         ) : null}
         <UnstyledButton
           onClick={handleBackClick}
           aria-label="Go Back"
-          className={styles.backButton}
+          className={helperStyles.backButton}
         >
           <ArrowLeftIcon style={{ width: 20, height: 20 }} />
         </UnstyledButton>
         <HStack gap={4} className={styles.steps} justifyContent="center">
-          <Step active={view === ViewParam.secret} />
-          <Step active={view === ViewParam.password && !isConfirmStep} />
-          <Step active={view === ViewParam.password && isConfirmStep} />
+          <Step
+            active={
+              view === ViewParam.secret || view === ViewParam['select-wallets']
+            }
+          />
+          <Step active={view === ViewParam.password} />
         </HStack>
-        {walletAddress && type ? (
+        {type ? (
           <Stack
             gap={isNarrowView ? 0 : 60}
             direction={isNarrowView ? 'vertical' : 'horizontal'}
@@ -157,32 +201,145 @@ export function Import() {
             {showError ? (
               <HandshakeFailure />
             ) : view === 'password' ? (
-              <Password step={step} onSubmit={handlePasswordSubmit} />
+              <Password
+                title="Finally, create your password"
+                step={step}
+                onSubmit={handlePasswordSubmit}
+              />
             ) : view === 'secret' ? (
               type === 'private-key' ? (
                 <ImportKey
-                  address={walletAddress}
-                  onWalletCreate={handleWallet}
+                  onWalletCreate={(wallet) =>
+                    handleWallets([wallet as BareWallet])
+                  }
                 />
               ) : type === 'mnemonic' ? (
                 <ImportMnemonic
-                  address={walletAddress}
-                  onWalletCreate={handleWallet}
+                  onSubmit={(phrase) => {
+                    setMnemonic(phrase);
+                    setSearchParams(`view=${ViewParam['select-wallets']}`);
+                  }}
                 />
               ) : null
+            ) : view === 'select-wallets' ? (
+              <SelectWallets mnemonic={mnemonic} onSelect={handleWallets} />
             ) : null}
             {isNarrowView || showError ? null : (
-              <FAQ type={view === ViewParam.password ? 'password' : type} />
+              <RenderArea name="onboarding-faq" />
             )}
           </Stack>
         ) : null}
       </div>
-      {isNarrowView && type ? (
-        <div className={styles.faqContainer}>
-          <FAQ type={view === ViewParam.password ? 'password' : type} />
+      {isNarrowView && !showError ? (
+        <div className={helperStyles.faqContainer}>
+          <RenderArea name="onboarding-faq" />
         </div>
       ) : null}
       <PrivacyFooter />
     </VStack>
+  );
+}
+
+function TypeLink({
+  title,
+  to,
+  icon,
+}: {
+  title: string;
+  to: string;
+  icon: React.ReactNode;
+}) {
+  const { style: iconStyle, trigger: hoverTrigger } = useTransformTrigger({
+    x: 2,
+  });
+
+  return (
+    <UnstyledLink
+      to={to}
+      className={styles.link}
+      onMouseEnter={hoverTrigger}
+      onFocus={hoverTrigger}
+    >
+      <VStack
+        gap={16}
+        style={{
+          position: 'relative',
+          borderRadius: 20,
+          padding: 24,
+          backgroundColor: 'var(--neutral-100)',
+        }}
+      >
+        <div className={styles.typeLinkIcon}>{icon}</div>
+        <UIText kind="headline/h3">
+          Import
+          <br />
+          {title}
+        </UIText>
+        <div className={styles.linkArrow}>
+          <animated.div style={{ ...iconStyle, display: 'flex' }}>
+            <ArrowRightIcon />
+          </animated.div>
+        </div>
+      </VStack>
+    </UnstyledLink>
+  );
+}
+
+function TypeSelector() {
+  const { isNarrowView } = useSizeStore();
+  const navigate = useNavigate();
+
+  return (
+    <VStack gap={isNarrowView ? 16 : 56}>
+      <div
+        className={helperStyles.container}
+        style={{ paddingBottom: 0, paddingInline: 0, overflow: 'hidden' }}
+      >
+        <div style={{ paddingBottom: 80, paddingInline: 88 }}>
+          <UnstyledButton
+            onClick={() => navigate(-1)}
+            aria-label="Go Back"
+            className={helperStyles.backButton}
+          >
+            <ArrowLeftIcon style={{ width: 20, height: 20 }} />
+          </UnstyledButton>
+          <VStack gap={60}>
+            <VStack gap={8}>
+              <UIText kind="headline/h2">Import wallet</UIText>
+              <UIText kind="body/regular">
+                Select a method to import your existing wallet.
+              </UIText>
+            </VStack>
+            <Stack
+              direction={isNarrowView ? 'vertical' : 'horizontal'}
+              gap={16}
+              style={{ gridTemplateColumns: isNarrowView ? '1fr' : '1fr 1fr' }}
+            >
+              <TypeLink
+                title="Recovery Phrase"
+                to="./mnemonic"
+                icon={<img src={dialogIconSrc} />}
+              />
+              <TypeLink
+                title="Private Key"
+                to="./private-key"
+                icon={<img src={keyIconSrc} />}
+              />
+            </Stack>
+          </VStack>
+        </div>
+        <SecurityInfo />
+      </div>
+      <PrivacyFooter />
+    </VStack>
+  );
+}
+
+export function Import() {
+  return (
+    <Routes>
+      <Route path="/" element={<TypeSelector />} />
+      <Route path="/:type" element={<ImportWallet />} />
+    </Routes>
   );
 }

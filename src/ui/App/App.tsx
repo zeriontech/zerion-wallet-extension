@@ -59,7 +59,6 @@ import { NonFungibleToken } from '../pages/NonFungibleToken';
 import { Onboarding } from '../Onboarding';
 import { AddEthereumChain } from '../pages/AddEthereumChain';
 import { SignInWithEthereum } from '../pages/SignInWithEthereum';
-import { InvitationPage } from '../components/InvitationFlow';
 import { useBodyStyle } from '../components/Background/Background';
 import { PhishingWarningPage } from '../components/PhishingDefence/PhishingWarningPage';
 import { HardwareWalletConnection } from '../pages/HardwareWalletConnection';
@@ -216,14 +215,6 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             element={
               <RequireAuth>
                 <Overview />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/invitations"
-            element={
-              <RequireAuth>
-                <InvitationPage />
               </RequireAuth>
             }
           />
@@ -417,7 +408,6 @@ export function App({ initialView, mode, inspect }: AppProps) {
             <ErrorBoundary renderError={(error) => <ViewError error={error} />}>
               <InactivityDetector />
               <SessionResetHandler />
-              <DesignTheme bodyClassList={bodyClassList} />
               <ThemeDecoration />
               {inspect && !isProd ? (
                 <UIText

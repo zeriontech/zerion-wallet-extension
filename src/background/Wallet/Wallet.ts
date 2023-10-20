@@ -204,21 +204,23 @@ export class Wallet {
     }
   }
 
-  private setExpirationForSeedPhraseEncryptionKey() {
+  private setExpirationForSeedPhraseEncryptionKey(timeout: number) {
     clearTimeout(this.seedPhraseExpiryTimerId);
     this.seedPhraseExpiryTimerId = setTimeout(() => {
       if (this) {
         this.removeSeedPhraseEncryptionKey();
       }
-    }, 1000 * 120);
+    }, timeout);
   }
 
   async updateCredentials({
-    params: credentials,
-  }: PublicMethodParams<Credentials>) {
+    params: { credentials, isNewUser },
+  }: PublicMethodParams<{ credentials: Credentials; isNewUser: boolean }>) {
     this.id = credentials.id;
     this.userCredentials = credentials;
-    this.setExpirationForSeedPhraseEncryptionKey();
+    this.setExpirationForSeedPhraseEncryptionKey(
+      isNewUser ? 1000 * 1800 : 1000 * 120
+    );
     await this.walletStore.ready();
     await this.syncWithWalletStore();
   }
@@ -297,6 +299,24 @@ export class Wallet {
       walletContainer,
     };
     return walletContainer.getFirstWallet();
+  }
+
+  async getPendingRecoveryPhrase({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    this.ensureActiveSession(this.userCredentials);
+    if (!this.pendingWallet) {
+      return null;
+    }
+    return Model.getPendingRecoveryPhrase(
+      this.pendingWallet,
+      this.userCredentials
+    );
+  }
+
+  async getPendingWallet({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    const wallet = this.pendingWallet?.walletContainer.getFirstWallet();
+    return wallet ? maskWallet(wallet) : null;
   }
 
   async getRecoveryPhrase({
