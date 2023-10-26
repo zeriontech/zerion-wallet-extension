@@ -1,5 +1,6 @@
 import { client } from 'defi-sdk';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
+import { ethers } from 'ethers';
 import type { TypedData } from '../message-signing/TypedData';
 import type { IncomingTransactionWithChainId } from '../types/IncomingTransaction';
 import type { InterpretResponse } from './types';
@@ -9,6 +10,7 @@ export function interpretTransaction(
   address: string,
   transaction: IncomingTransactionWithChainId
 ): Promise<InterpretResponse> {
+  const gas = getGas(transaction);
   return Promise.race([
     rejectAfterDelay(10000),
     new Promise<InterpretResponse>((resolve) => {
@@ -32,7 +34,7 @@ export function interpretTransaction(
               to: transaction?.to,
               nonce: transaction?.nonce,
               chainId: transaction.chainId,
-              gas: getGas(transaction),
+              gas: gas != null ? ethers.utils.hexValue(gas) : null,
               gasPrice: transaction?.gasPrice,
               maxFee: transaction?.maxFeePerGas,
               maxPriorityFee: transaction?.maxPriorityFeePerGas,
