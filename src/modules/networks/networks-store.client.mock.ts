@@ -9,6 +9,8 @@ const ETHEREUM_CHAIN_SOURCES: EthereumChainSources = {
         updated: 0,
         origin: 'predefined',
         value: {
+          id: '421613',
+          is_testnet: false,
           chain: '421613',
           external_id: '0x66eed',
           name: 'Arbitrum Görli',
@@ -38,6 +40,8 @@ const ETHEREUM_CHAIN_SOURCES: EthereumChainSources = {
         updated: 0,
         origin: 'predefined',
         value: {
+          id: '5',
+          is_testnet: true,
           chain: '5',
           external_id: '0x5',
           name: 'Ethereum Görli',
@@ -67,6 +71,8 @@ const ETHEREUM_CHAIN_SOURCES: EthereumChainSources = {
         updated: 0,
         origin: 'predefined',
         value: {
+          id: '43113',
+          is_testnet: false,
           chain: '43113',
           external_id: '0xa869',
           name: 'Avalanche Fuji',
@@ -96,7 +102,9 @@ const ETHEREUM_CHAIN_SOURCES: EthereumChainSources = {
         updated: 0,
         origin: 'predefined',
         value: {
+          id: '11155111',
           chain: '11155111',
+          is_testnet: true,
           external_id: '0xaa36a7',
           name: 'Ethereum Sepolia',
           icon_url: 'https://chain-icons.s3.amazonaws.com/ethereum.png',
@@ -129,7 +137,9 @@ const ETHEREUM_CHAIN_SOURCES: EthereumChainSources = {
         updated: 0,
         origin: 'predefined',
         value: {
+          id: '97',
           chain: '97',
+          is_testnet: true,
           external_id: '0x61',
           name: 'Binance Smart Chain Testnet',
           icon_url:
@@ -167,6 +177,8 @@ const ETHEREUM_CHAIN_SOURCES: EthereumChainSources = {
         origin: 'predefined',
         value: {
           chain: '80001',
+          id: '80001',
+          is_testnet: true,
           external_id: '0x13881',
           name: 'Polygon Mumbai',
           icon_url: 'https://chain-icons.s3.amazonaws.com/polygon.png',
@@ -200,6 +212,8 @@ const ETHEREUM_CHAIN_SOURCES: EthereumChainSources = {
         origin: 'predefined',
         value: {
           chain: '420',
+          id: '420',
+          is_testnet: false,
           external_id: '0x1a4',
           name: 'Optimistic Görli',
           icon_url: 'https://chain-icons.s3.amazonaws.com/optimism.png',
@@ -228,7 +242,9 @@ const ETHEREUM_CHAIN_SOURCES: EthereumChainSources = {
         updated: 0,
         origin: 'predefined',
         value: {
+          id: '4002',
           chain: '4002',
+          is_testnet: true,
           external_id: '0xfa2',
           name: 'Fantom Testnet',
           icon_url: 'https://chain-icons.s3.amazonaws.com/fantom.png',
@@ -262,6 +278,8 @@ const ETHEREUM_CHAIN_SOURCES: EthereumChainSources = {
         updated: 1690198405783,
         value: {
           chain: 'eIxXzQbvAC8PcJi2O4Ya5',
+          id: 'eIxXzQbvAC8PcJi2O4Ya5',
+          is_testnet: false,
           explorer_address_url: null,
           explorer_home_url: 'https://explorer.zora.co',
           explorer_name: null,
@@ -293,6 +311,8 @@ const ETHEREUM_CHAIN_SOURCES: EthereumChainSources = {
         updated: 1690903462089,
         value: {
           chain: '534353',
+          id: '534353',
+          is_testnet: true,
           explorer_address_url:
             'https://blockscout.scroll.io/address/{ADDRESS}',
           explorer_home_url: 'https://blockscout.scroll.io',

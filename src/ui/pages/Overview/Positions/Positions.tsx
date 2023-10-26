@@ -642,7 +642,11 @@ function MultiChainPositions({
   );
 
   if (isLoading) {
-    return <ViewLoading kind="network" />;
+    return (
+      <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
+        <ViewLoading kind="network" />
+      </CenteredFillViewportView>
+    );
   }
 
   if (!items || items.length === 0) {
@@ -673,7 +677,11 @@ function RawChainPositions({
   }
 
   if (isLoading) {
-    return <ViewLoading kind="network" />;
+    return (
+      <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
+        <ViewLoading kind="network" />
+      </CenteredFillViewportView>
+    );
   }
   if (!addressPositions || !addressPositions.length) {
     return renderEmptyView() as JSX.Element;

@@ -7,13 +7,15 @@ export function toNetworkConfig(
   value: AddEthereumChainParameter
 ): NetworkConfig {
   invariant(value.rpcUrls, 'RPC URL should be defined in network config');
+  const chain = nanoid();
   return {
     supports_sending: true,
     supports_trading: false,
     supports_bridge: false,
     name: value.chainName,
     external_id: value.chainId,
-    chain: nanoid(),
+    id: chain,
+    chain,
     explorer_home_url: value.blockExplorerUrls?.[0] || null,
     explorer_address_url: null,
     explorer_name: null,
