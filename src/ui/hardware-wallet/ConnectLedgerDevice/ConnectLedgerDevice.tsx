@@ -113,7 +113,7 @@ export function ConnectLedgerDevice({
         </UIText>
       </VStack>
       <PageFullBleedColumn paddingInline={false}>
-        <div>
+        <div style={{ overflow: 'hidden' }}>
           <Spacer height={68} />
           <ConnectIllustration />
           <Spacer height={28} />
