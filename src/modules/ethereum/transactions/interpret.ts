@@ -34,7 +34,7 @@ export function interpretTransaction(
               to: transaction?.to,
               nonce: transaction?.nonce,
               chainId: transaction.chainId,
-              gas: gas !== undefined ? ethers.utils.hexValue(gas) : null,
+              gas: gas != null ? ethers.utils.hexValue(gas) : null,
               gasPrice: transaction?.gasPrice,
               maxFee: transaction?.maxFeePerGas,
               maxPriorityFee: transaction?.maxPriorityFeePerGas,
