@@ -1,8 +1,9 @@
+import throttle from 'lodash/throttle';
 import { useQuery } from '@tanstack/react-query';
-import { PROXY_URL } from 'src/env/config';
 import ky from 'ky';
+import { PROXY_URL } from 'src/env/config';
 import type { ConfigPlugin } from '../ConfigPlugin';
-import { promises, resolvers } from '../pluginSystem';
+import { registerPromise, resolvers } from '../pluginSystem';
 import type { RemoteConfig } from '../types';
 
 const defaultConfig: RemoteConfig = {
@@ -29,11 +30,14 @@ async function fetchRemoteConfig<T extends keyof RemoteConfig>(keys: T[]) {
 
 let remoteConfig: RemoteConfig | undefined;
 
-export const firebase: ConfigPlugin = {
+const REFRESH_RATE = 1000 * 60 * 5;
+
+export const firebase: ConfigPlugin & { refresh(): void } = {
   onRegister() {
-    promises.firebaseRemoteConfig = new Promise<void>((resolve) => {
+    const promise = new Promise<void>((resolve) => {
       resolvers.firebaseRemoteConfig = resolve;
     });
+    registerPromise('firebaseRemoteConfig', promise);
   },
 
   initialize() {
@@ -43,7 +47,18 @@ export const firebase: ConfigPlugin = {
     });
   },
 
+  refresh: throttle(() => firebase.initialize(), REFRESH_RATE, {
+    leading: false,
+  }),
+
   get(key: keyof RemoteConfig) {
+    /**
+     * As a side effect of this getter, we refetch the config value.
+     * The refresh() method is designed to be make actual fetch
+     * no more than once every {REFRESH_RATE}, so it's ok to call it every time inside this getter
+     * By doing this, we make the remoteConfig "eventually up-to-date"
+     */
+    firebase.refresh();
     const config = remoteConfig ?? defaultConfig;
     const value = config[key];
     return { value };
@@ -62,6 +77,7 @@ export function useFirebaseConfig<T extends keyof RemoteConfig>(
     queryFn: () => fetchRemoteConfig(keys),
     retry: 0,
     refetchOnWindowFocus: false,
+    staleTime: 20000,
     suspense,
   });
 }

@@ -165,8 +165,8 @@ export class ContentScriptManager {
     }
   }
 
-  handleChange() {
-    const { providerInjection } = this.globalPreferences.getPreferences();
+  async handleChange() {
+    const { providerInjection } = await this.globalPreferences.getPreferences();
     if (providerInjection !== this.providerInjection) {
       this.providerInjection = providerInjection;
       this.update();
