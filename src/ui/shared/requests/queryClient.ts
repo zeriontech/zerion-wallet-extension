@@ -4,9 +4,11 @@ import { emitter } from '../events';
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      networkMode: 'offlineFirst',
       suspense: true,
     },
     mutations: {
+      networkMode: 'always',
       onError(error, variables, context) {
         emitter.emit('mutationError', error, variables, context);
       },

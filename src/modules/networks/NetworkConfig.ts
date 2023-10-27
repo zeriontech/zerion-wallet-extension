@@ -7,6 +7,12 @@ interface NetworkAsset {
 }
 
 export interface NetworkConfig {
+  id: string;
+  evm_id?: number | null;
+  node_urls?: string[];
+  base_asset_id?: string;
+  block_explorer_urls?: string[];
+  is_testnet?: boolean;
   chain: string;
   name: string;
   icon_url: string;

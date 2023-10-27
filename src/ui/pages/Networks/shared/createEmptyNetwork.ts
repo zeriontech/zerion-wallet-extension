@@ -1,8 +1,10 @@
+import { nanoid } from 'nanoid';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 
 export const createEmptyNetwork = (): Omit<NetworkConfig, 'chain'> & {
   chain: null;
 } => ({
+  id: nanoid(),
   chain: null,
   external_id: '',
   explorer_address_url: '',
