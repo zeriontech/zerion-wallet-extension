@@ -1,3 +1,4 @@
+import throttle from 'lodash/throttle';
 import { PersistentStore } from 'src/modules/persistent-store';
 import type { RemoteConfig } from 'src/modules/remote-config';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
@@ -29,6 +30,9 @@ export interface State {
  * need to be accessible even before the user logs in
  */
 export class GlobalPreferences extends PersistentStore<State> {
+  /** 5 minutes */
+  private REFRESH_RATE = 1000 * 60 * 5;
+
   private defaults: Required<State> = {
     recognizableConnectButtons: true,
     providerInjection: {},
@@ -49,7 +53,16 @@ export class GlobalPreferences extends PersistentStore<State> {
     this.fetchDefaultWalletNameFlags();
   }
 
+  refresh = throttle(() => this.initialize(), this.REFRESH_RATE);
+
   getPreferences(): Required<State> {
+    /**
+     * As a side effect of anyone querying preferences, we refetch defaults that
+     * are queried externally. The refresh() method is designed to be make actual fetch
+     * no more than once every {this.REFRESH_RATE}, so it's ok to call it every time inside this getter
+     * By doing this, we make the defaults "eventually up-to-date"
+     */
+    this.refresh();
     const state = removeEmptyValues(this.getState());
     return {
       ...this.defaults,

@@ -22,7 +22,7 @@ async function fetchRemoteConfig<T extends keyof RemoteConfig>(keys: T[]) {
   return ky
     .get(new URL(`remote-config?${params.toString()}`, PROXY_URL), {
       timeout: 30000,
-      retry: 0,
+      retry: 2,
     })
     .json<Pick<RemoteConfig, T>>();
 }
