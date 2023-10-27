@@ -1,4 +1,3 @@
-import { memoize } from 'lodash';
 import type { AddressPosition, Asset } from 'defi-sdk';
 import { client } from 'defi-sdk';
 import type { ResponseData as AssetsPricesReponseData } from 'defi-sdk/lib/domains/assetsPrices';
@@ -84,16 +83,18 @@ export async function fetchAssetFromCacheOrAPI({
       })
     : null;
 
-  const getAssetFromCache = memoize(
-    (address: string | null, chain: Chain, isNative: boolean) => {
-      if (isNative) {
-        return queryCacheForNativeAsset(address, chain);
-      } else if (address) {
-        return queryCacheForAsset(address);
-      }
-      return null;
+  const getAssetFromCache = (
+    address: string | null,
+    chain: Chain,
+    isNative: boolean
+  ) => {
+    if (isNative) {
+      return queryCacheForNativeAsset(address, chain);
+    } else if (address) {
+      return queryCacheForAsset(address);
     }
-  );
+    return null;
+  };
 
   const responseAsset = requestAssetId ? assets?.[requestAssetId] : null;
   return responseAsset || getAssetFromCache(address, chain, isNative);
