@@ -22,12 +22,12 @@ import { focusNode } from 'src/ui/shared/focusNode';
 import { SiweMessage } from 'src/modules/ethereum/message-signing/SIWE';
 import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
 import SignInIcon from 'jsx:src/ui/assets/sign-in.svg';
-import { FillView } from 'src/ui/components/FillView';
 import { VerifyUser } from 'src/ui/components/VerifyUser';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { usePersonalSignMutation } from 'src/ui/shared/requests/message-signing';
 import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/PhishingDefenceStatus';
 import { NavigationBar } from 'src/ui/components/NavigationBar';
+import { PageBottom } from 'src/ui/components/PageBottom';
 import { SpeechBubble } from './SpeechBubble/SpeechBubble';
 import { useFetchUTCTime } from './useFetchUTCTime';
 import { SiweError } from './SiweError';
@@ -192,14 +192,12 @@ export function SignInWithEthereum() {
           ) : null}
           {params.get('step') === 'verifyUser' ? (
             <>
-              <NavigationBar title="Confirm With Password" />
-              <FillView adjustForNavigationBar={true}>
-                <VerifyUser
-                  style={{ alignItems: 'center' }}
-                  text="Verification is required in order to ignore the warning and proceed further"
-                  onSuccess={handleSignIn}
-                />
-              </FillView>
+              <PageTop />
+              <VerifyUser
+                text="Verification is required in order to ignore the warning and proceed further"
+                onSuccess={handleSignIn}
+              />
+              <PageBottom />
             </>
           ) : null}
         </>

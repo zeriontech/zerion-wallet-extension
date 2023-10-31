@@ -3,9 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { SessionExpired } from 'src/shared/errors/errors';
 import { accountPublicRPCPort } from 'src/ui/shared/channels';
 import { Background } from '../Background';
-import { FillView } from '../FillView';
 import { NavigationTitle } from '../NavigationTitle';
 import { PageColumn } from '../PageColumn';
+import { PageTop } from '../PageTop';
+import { PageBottom } from '../PageBottom';
 import { VerifyUser } from './VerifyUser';
 
 export function WithPasswordSession({
@@ -40,13 +41,13 @@ export function WithPasswordSession({
       <Background backgroundKind="white">
         <PageColumn>
           <NavigationTitle title="Enter password" />
-          <FillView adjustForNavigationBar={true}>
-            <VerifyUser
-              style={{ justifySelf: 'stretch' }}
-              text={text}
-              onSuccess={() => setVerified(true)}
-            />
-          </FillView>
+          <PageTop />
+          <VerifyUser
+            style={{ justifySelf: 'stretch' }}
+            text={text}
+            onSuccess={() => setVerified(true)}
+          />
+          <PageBottom />
         </PageColumn>
       </Background>
     );

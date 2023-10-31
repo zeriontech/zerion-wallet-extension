@@ -11,12 +11,10 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 export function VerifyUser({
   text,
   style,
-  contentStyle,
   onSuccess,
 }: {
   text?: React.ReactNode;
   style?: React.CSSProperties;
-  contentStyle?: React.CSSProperties;
   onSuccess: () => void;
 }) {
   const { data: user, isLoading } = useQuery({
@@ -46,24 +44,42 @@ export function VerifyUser({
     return null;
   }
   return (
-    <form
-      style={style}
-      onSubmit={(event) => {
-        event.preventDefault();
-        const password = new FormData(event.currentTarget).get('password') as
-          | string
-          | undefined;
-        if (!password) {
-          return;
-        }
-        if (!user) {
-          throw new Error('Cannot login: user not found');
-        }
-        loginMutation.mutate({ user, password });
+    <VStack
+      gap={32}
+      style={{
+        flexGrow: 1,
+        alignContent: 'stretch',
+        alignItems: 'stretch',
+        gridTemplateRows: 'auto 1fr',
       }}
     >
-      <VStack gap={16} style={contentStyle}>
-        <VStack gap={8}>
+      <VStack gap={4}>
+        <UIText kind="headline/h1">Enter Password</UIText>
+        <UIText kind="body/regular">{text}</UIText>
+      </VStack>
+      <form
+        style={{
+          justifySelf: 'stretch',
+          flexGrow: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          ...style,
+        }}
+        onSubmit={(event) => {
+          event.preventDefault();
+          const password = new FormData(event.currentTarget).get('password') as
+            | string
+            | undefined;
+          if (!password) {
+            return;
+          }
+          if (!user) {
+            throw new Error('Cannot login: user not found');
+          }
+          loginMutation.mutate({ user, password });
+        }}
+      >
+        <VStack gap={16} style={{ flexGrow: 1, gridTemplateRows: '1fr auto' }}>
           <VStack gap={4}>
             <Input
               id={inputId}
@@ -79,21 +95,11 @@ export function VerifyUser({
               </UIText>
             ) : null}
           </VStack>
+          <Button disabled={loginMutation.isLoading}>
+            {loginMutation.isLoading ? 'Checking...' : 'Unlock'}
+          </Button>
         </VStack>
-        <Button disabled={loginMutation.isLoading}>
-          {loginMutation.isLoading ? 'Checking...' : 'Unlock'}
-        </Button>
-        {text ? (
-          <UIText
-            color="var(--neutral-500)"
-            kind="small/regular"
-            as="label"
-            htmlFor={inputId}
-          >
-            {text}
-          </UIText>
-        ) : null}
-      </VStack>
-    </form>
+      </form>
+    </VStack>
   );
 }
