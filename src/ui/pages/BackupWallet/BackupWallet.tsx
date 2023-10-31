@@ -515,15 +515,39 @@ export function BackupWallet() {
       {isVerifyUserStep ? (
         <PageColumn>
           <Background backgroundKind="white">
-            <NavigationTitle title="Enter password" />
-            <FillView adjustForNavigationBar={true}>
+            <NavigationTitle title="Backup Wallet" />
+            <PageTop />
+            <VStack
+              gap={32}
+              style={{
+                flexGrow: 1,
+                alignContent: 'stretch',
+                alignItems: 'stretch',
+                gridTemplateRows: 'auto 1fr',
+              }}
+            >
+              <VStack gap={4}>
+                <UIText kind="headline/h1">Enter Password</UIText>
+                <UIText kind="body/regular">
+                  {`Verification is required to show your ${
+                    backupKind === 'verify' ? 'recovery phrase' : 'secret key'
+                  }`}
+                </UIText>
+              </VStack>
               <VerifyUser
-                style={{ justifySelf: 'stretch' }}
+                style={{
+                  justifySelf: 'stretch',
+                  flexGrow: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+                contentStyle={{ flexGrow: 1, gridTemplateRows: '1fr auto' }}
                 onSuccess={() =>
                   updateSearchParam('step', 'revealSecret', { replace: true })
                 }
               />
-            </FillView>
+            </VStack>
+            <PageBottom />
           </Background>
         </PageColumn>
       ) : null}

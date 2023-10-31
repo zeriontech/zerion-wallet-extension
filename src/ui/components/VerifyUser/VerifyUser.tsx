@@ -11,10 +11,12 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 export function VerifyUser({
   text,
   style,
+  contentStyle,
   onSuccess,
 }: {
   text?: React.ReactNode;
   style?: React.CSSProperties;
+  contentStyle?: React.CSSProperties;
   onSuccess: () => void;
 }) {
   const { data: user, isLoading } = useQuery({
@@ -60,7 +62,7 @@ export function VerifyUser({
         loginMutation.mutate({ user, password });
       }}
     >
-      <VStack gap={16}>
+      <VStack gap={16} style={contentStyle}>
         <VStack gap={8}>
           <VStack gap={4}>
             <Input
@@ -79,7 +81,7 @@ export function VerifyUser({
           </VStack>
         </VStack>
         <Button disabled={loginMutation.isLoading}>
-          {loginMutation.isLoading ? 'Checking...' : 'Confirm'}
+          {loginMutation.isLoading ? 'Checking...' : 'Unlock'}
         </Button>
         {text ? (
           <UIText
