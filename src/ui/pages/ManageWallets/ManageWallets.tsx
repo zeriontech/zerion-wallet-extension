@@ -34,7 +34,7 @@ import { WalletGroup as WalletGroupPage } from './WalletGroup';
 function PrivateKeyList({ walletGroups }: { walletGroups: WalletGroup[] }) {
   return (
     <VStack gap={8}>
-      <UIText kind="small/regular" color="var(--neutral-500)">
+      <UIText kind="small/accent" color="var(--neutral-500)">
         Imported by Private Key
       </UIText>
       <SurfaceList
@@ -56,9 +56,7 @@ function PrivateKeyList({ walletGroups }: { walletGroups: WalletGroup[] }) {
                     <WalletDisplayName wallet={wallet} />
                   </UIText>
                 </HStack>
-                <span>
-                  <ChevronRightIcon />
-                </span>
+                <ChevronRightIcon style={{ color: 'var(--neutral-400)' }} />
               </HStack>
             ),
           };
@@ -71,7 +69,7 @@ function PrivateKeyList({ walletGroups }: { walletGroups: WalletGroup[] }) {
 function MnemonicList({ walletGroups }: { walletGroups: WalletGroup[] }) {
   return (
     <VStack gap={8}>
-      <UIText kind="small/regular" color="var(--neutral-500)">
+      <UIText kind="small/accent" color="var(--neutral-500)">
         Wallets
       </UIText>
 
@@ -93,9 +91,7 @@ function MnemonicList({ walletGroups }: { walletGroups: WalletGroup[] }) {
                 </div>
                 <BackupInfoNote group={group} />
               </VStack>
-              <span>
-                <ChevronRightIcon />
-              </span>
+              <ChevronRightIcon style={{ color: 'var(--neutral-400)' }} />
             </HStack>
           ),
         }))}
@@ -141,9 +137,7 @@ function HardwareWalletList({ walletGroups }: { walletGroups: WalletGroup[] }) {
                 </div>
                 <BackupInfoNote group={group} />
               </VStack>
-              <span>
-                <ChevronRightIcon />
-              </span>
+              <ChevronRightIcon style={{ color: 'var(--neutral-400)' }} />
             </HStack>
           ),
         }))}
@@ -216,7 +210,7 @@ function WalletGroups() {
       ) : (
         <>
           <PageTop />
-          <VStack gap={24}>
+          <VStack gap={16}>
             {groupedBySeedType.map(([containerType, items]) => {
               if (containerType === ContainerType.privateKey) {
                 return (
@@ -243,7 +237,7 @@ function WalletGroups() {
                   key: 0,
                   to: '/get-started',
                   component: (
-                    <UIText kind="small/regular" color="var(--primary)">
+                    <UIText kind="body/accent" color="var(--primary)">
                       Create New Wallet
                     </UIText>
                   ),
@@ -252,7 +246,7 @@ function WalletGroups() {
                   key: 1,
                   to: '/get-started/import',
                   component: (
-                    <UIText kind="small/regular" color="var(--primary)">
+                    <UIText kind="body/accent" color="var(--primary)">
                       Import Wallet to Zerion
                     </UIText>
                   ),
@@ -262,14 +256,14 @@ function WalletGroups() {
                   to: '/connect-hardware-wallet',
                   onClick: openInTabView,
                   component: (
-                    <UIText kind="small/regular" color="var(--primary)">
+                    <UIText kind="body/accent" color="var(--primary)">
                       Connect Ledger
                     </UIText>
                   ),
                 },
               ]}
             />
-            <EraseDataListButton textKind="small/regular" />
+            <EraseDataListButton textKind="body/accent" />
           </VStack>
         </>
       )}
