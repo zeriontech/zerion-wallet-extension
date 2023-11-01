@@ -15,7 +15,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
-import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
+import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { NBSP } from 'src/ui/shared/typography';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
@@ -38,6 +38,7 @@ import {
   isPrivateKeyContainer,
   isSignerContainer,
 } from 'src/shared/types/validators';
+import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 
 function useWalletGroup({ groupId }: { groupId: string }) {
   return useQuery({
@@ -128,7 +129,7 @@ function RemoveGroupConfirmationDialog({
           You will need your recovery phrase to import this group of wallets in
           the future
         </UIText>
-        <UIText kind="caption/regular" color="var(--neutral-500)">
+        <UIText kind="small/accent" color="var(--neutral-500)">
           Wallets to remove
         </UIText>
         <VStack gap={8} style={{ maxHeight: 180, overflowY: 'auto' }}>
@@ -222,7 +223,7 @@ export function WalletGroup() {
         <RemoveGroupConfirmationDialog walletGroup={walletGroup} />
       </BottomSheetDialog>
       <PageTop />
-      <VStack gap={24}>
+      <VStack gap={16}>
         {isMnemonicGroup || isHardwareGroup ? (
           <InputDecorator
             label="Name"
@@ -258,7 +259,9 @@ export function WalletGroup() {
                           : strings.privateKeyTitle}
                         <BackupInfoNote group={walletGroup} />
                       </UIText>
-                      <ChevronRightIcon />
+                      <ChevronRightIcon
+                        style={{ color: 'var(--neutral-400)' }}
+                      />
                     </HStack>
                   ),
                 },
@@ -267,60 +270,72 @@ export function WalletGroup() {
           </VStack>
         ) : null}
 
-        <SurfaceList
-          items={[
-            ...walletGroup.walletContainer.wallets.map((wallet) => ({
-              key: wallet.address,
-              to: `/wallets/accounts/${wallet.address}?groupId=${walletGroup.id}`,
-              component: (
-                <HStack
-                  gap={4}
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <Media
-                    image={
-                      <WalletAvatar
-                        address={wallet.address}
-                        size={24}
-                        borderRadius={4}
-                      />
-                    }
-                    text={<WalletDisplayName wallet={wallet} />}
-                    vGap={0}
-                    detailText={
-                      <PortfolioValue
-                        address={wallet.address}
-                        render={(entry) => (
-                          <UIText kind="caption/regular">
-                            {entry.value
-                              ? formatCurrencyValue(
-                                  entry.value?.total_value || 0,
-                                  'en',
-                                  'usd'
-                                )
-                              : NBSP}
-                          </UIText>
-                        )}
-                      />
-                    }
-                  />
-                  <ChevronRightIcon />
-                </HStack>
-              ),
-            })),
-            isMnemonicGroup
-              ? {
-                  key: 1,
-                  to: `/get-started/import/mnemonic?groupId=${walletGroup.id}`,
-                  component: (
-                    <div style={{ color: 'var(--primary)' }}>+ Add Wallet</div>
-                  ),
-                }
-              : null,
-          ].filter(isTruthy)}
-        />
-        <VStack gap={4}>
+        <VStack gap={8}>
+          <UIText kind="small/accent" color="var(--neutral-500)">
+            Wallets
+          </UIText>
+          <SurfaceList
+            items={[
+              ...walletGroup.walletContainer.wallets.map((wallet) => ({
+                key: wallet.address,
+                to: `/wallets/accounts/${wallet.address}?groupId=${walletGroup.id}`,
+                component: (
+                  <HStack
+                    gap={4}
+                    justifyContent="space-between"
+                    alignItems="center"
+                  >
+                    <Media
+                      image={
+                        <WalletAvatar
+                          address={wallet.address}
+                          size={44}
+                          borderRadius={4}
+                        />
+                      }
+                      alignItems="center"
+                      text={<WalletDisplayName wallet={wallet} />}
+                      vGap={0}
+                      detailText={
+                        <PortfolioValue
+                          address={wallet.address}
+                          render={(entry) => (
+                            <UIText kind="headline/h2">
+                              {entry.value ? (
+                                <NeutralDecimals
+                                  parts={formatCurrencyToParts(
+                                    entry.value.total_value || 0,
+                                    'en',
+                                    'usd'
+                                  )}
+                                />
+                              ) : (
+                                NBSP
+                              )}
+                            </UIText>
+                          )}
+                        />
+                      }
+                    />
+                    <ChevronRightIcon style={{ color: 'var(--neutral-400)' }} />
+                  </HStack>
+                ),
+              })),
+              isMnemonicGroup
+                ? {
+                    key: 1,
+                    to: `/get-started/import/mnemonic?groupId=${walletGroup.id}`,
+                    component: (
+                      <UIText kind="body/accent" color="var(--primary)">
+                        + Add Wallet
+                      </UIText>
+                    ),
+                  }
+                : null,
+            ].filter(isTruthy)}
+          />
+        </VStack>
+        <VStack gap={8}>
           <SurfaceList
             items={[
               {
@@ -335,9 +350,9 @@ export function WalletGroup() {
                 },
                 component: (
                   <HStack gap={8}>
-                    <span style={{ color: 'var(--negative-500)' }}>
-                      Remove Group{' '}
-                    </span>
+                    <UIText kind="body/accent" color="var(--negative-500)">
+                      Remove Group
+                    </UIText>
                     {removeWalletGroupMutation.isLoading ? (
                       <CircleSpinner style={{ display: 'inline-block' }} />
                     ) : null}

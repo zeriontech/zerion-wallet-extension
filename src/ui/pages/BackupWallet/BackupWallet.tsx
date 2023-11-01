@@ -35,6 +35,7 @@ import { metaAppState } from 'src/ui/shared/meta-app-state';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import {
   assertSignerContainer,
+  isPrivateKeyContainer,
   isSignerContainer,
 } from 'src/shared/types/validators';
 import { WithConfetti } from '../GetStarted/components/DecorativeMessage/DecorativeMessage';
@@ -485,13 +486,16 @@ export function BackupWallet() {
     return null;
   }
   assertSignerContainer(walletGroup.walletContainer);
-  const { seedType: groupSeedType } = walletGroup.walletContainer;
+  const isPrivateKeyGroup = isPrivateKeyContainer(walletGroup.walletContainer);
   const address = params.get('address') || null;
+
+  // NOTE: we assume that if the address param is provided, then we want
+  // to display the Private Key, if not, then the Mnemonic
+  // I think this should be changed to a more explicit parameter
   const seedType = address ? SeedType.privateKey : SeedType.mnemonic;
-  if (groupSeedType === SeedType.privateKey && seedType === SeedType.mnemonic) {
-    throw new Error(
-      'Cannot display mnemonic for privateKey group. Address search-param is missing from BackupWallet view'
-    );
+  if (isPrivateKeyGroup && !address) {
+    // TODO: technically address shouldn't be required
+    throw new Error('Address search-param is required for private key flow');
   }
 
   /**
@@ -515,15 +519,19 @@ export function BackupWallet() {
       {isVerifyUserStep ? (
         <PageColumn>
           <Background backgroundKind="white">
-            <NavigationTitle title="Enter password" />
-            <FillView adjustForNavigationBar={true}>
-              <VerifyUser
-                style={{ justifySelf: 'stretch' }}
-                onSuccess={() =>
-                  updateSearchParam('step', 'revealSecret', { replace: true })
-                }
-              />
-            </FillView>
+            <NavigationTitle title="Backup Wallet" />
+            <PageTop />
+            <VerifyUser
+              text={`Verification is required to show your ${
+                seedType === SeedType.mnemonic
+                  ? 'recovery phrase'
+                  : 'secret key'
+              }`}
+              onSuccess={() =>
+                updateSearchParam('step', 'revealSecret', { replace: true })
+              }
+            />
+            <PageBottom />
           </Background>
         </PageColumn>
       ) : null}

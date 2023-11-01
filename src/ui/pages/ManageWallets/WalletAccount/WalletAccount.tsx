@@ -193,14 +193,14 @@ export function WalletAccount() {
         <RemoveAddressConfirmationDialog wallet={wallet} />
       </BottomSheetDialog>
       <PageTop />
-      <VStack gap={24}>
+      <VStack gap={16}>
         <Surface padding={12}>
           <VStack gap={8}>
             <Media
               image={
                 <WalletAvatar
                   address={wallet.address}
-                  size={36}
+                  size={44}
                   borderRadius={4}
                 />
               }
@@ -208,7 +208,7 @@ export function WalletAccount() {
                 <PortfolioValue
                   address={wallet.address}
                   render={(entry) => (
-                    <UIText kind="body/accent">
+                    <UIText kind="headline/h2">
                       {entry.value ? (
                         <NeutralDecimals
                           parts={formatCurrencyToParts(
@@ -250,7 +250,7 @@ export function WalletAccount() {
         />
         {isBareWallet(wallet) ? (
           <VStack gap={8}>
-            <UIText kind="small/regular" color="var(--neutral-500)">
+            <UIText kind="small/accent" color="var(--neutral-500)">
               Export Wallet
             </UIText>
             <SurfaceList
@@ -268,10 +268,10 @@ export function WalletAccount() {
                       justifyContent="space-between"
                       alignItems="center"
                     >
-                      <UIText kind="body/regular">Private key</UIText>
-                      <span>
-                        <ChevronRightIcon />
-                      </span>
+                      <UIText kind="body/accent">Private key</UIText>
+                      <ChevronRightIcon
+                        style={{ color: 'var(--neutral-400)' }}
+                      />
                     </HStack>
                   ),
                 },
@@ -280,7 +280,7 @@ export function WalletAccount() {
           </VStack>
         ) : null}
 
-        <VStack gap={4}>
+        <VStack gap={8}>
           <SurfaceList
             items={[
               {
@@ -294,11 +294,9 @@ export function WalletAccount() {
                   });
                 },
                 component: (
-                  <HStack gap={8}>
-                    <span style={{ color: 'var(--negative-500)' }}>
-                      Remove Address{' '}
-                    </span>
-                  </HStack>
+                  <UIText kind="body/accent" color="var(--negative-500)">
+                    Remove Address
+                  </UIText>
                 ),
               },
             ]}
