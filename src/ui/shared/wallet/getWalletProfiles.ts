@@ -31,7 +31,7 @@ async function getWalletProfile(address: string) {
   const socialData = await ky
     .get(`${endpoints.getProfiles}?${searchParams}`, {
       timeout: 30000,
-      retry: 0,
+      retry: 1,
     })
     .json<{ profiles: WalletProfile[] | null }>();
   return socialData.profiles?.[0];
