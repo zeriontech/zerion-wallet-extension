@@ -4,7 +4,11 @@ export const resolvers: {
   [key: string]: () => void;
 } = {};
 
-export const promises: { [key: string]: Promise<void> } = {};
+const promises: { [key: string]: Promise<void> } = {};
+
+export function registerPromise(key: string, promise: Promise<void>) {
+  promises[key] = promise;
+}
 
 const plugins: ConfigPlugin[] = [];
 
