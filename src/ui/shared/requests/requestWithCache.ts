@@ -12,7 +12,7 @@ export async function requestWithCache<T>(
   return Promise.any([
     sessionCacheService.request('getCache', { key }).then((result) => {
       if (
-        options?.cacheTime &&
+        options?.cacheTime != null &&
         Date.now() - result.timestamp > options.cacheTime
       ) {
         throw new Error('Cache is obsolete');
