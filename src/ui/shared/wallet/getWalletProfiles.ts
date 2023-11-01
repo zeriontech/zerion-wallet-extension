@@ -37,7 +37,7 @@ async function getWalletProfile(address: string) {
   return socialData.profiles?.[0];
 }
 
-export async function fetchWalletNFT(
+async function fetchWalletNFT(
   address: string,
   options?: { updateCache?: boolean }
 ): Promise<WalletProfile['nft'] | null> {
