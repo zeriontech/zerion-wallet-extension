@@ -116,11 +116,9 @@ export function ActionButtonsRow() {
       <li>
         <ActionButton
           title="Send"
+          as={UnstyledLink}
           icon={<SendIcon style={iconStyle} />}
-          href={`${ZERION_ORIGIN}/send?${addWalletParams}`}
-          onClick={performAction}
-          target="_blank"
-          rel="noopener noreferrer"
+          to="/send-form"
         />
       </li>
       <li>

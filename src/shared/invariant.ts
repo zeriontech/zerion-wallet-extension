@@ -4,7 +4,7 @@
 export function invariant<T>(
   value: T | false | null | undefined,
   message: string | (() => Error)
-): asserts value is T {
+): asserts value {
   if (value === false || value == null) {
     if (typeof message === 'function') {
       throw message();

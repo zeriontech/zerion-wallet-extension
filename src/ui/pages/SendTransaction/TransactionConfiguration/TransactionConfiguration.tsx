@@ -12,6 +12,7 @@ import { useTransactionFee } from './useTransactionFee';
 const DISPLAY_TOTAL = false;
 
 export interface CustomConfiguration {
+  slippage: number;
   nonce: string | null;
   networkFee: NetworkFeeConfiguration;
 }

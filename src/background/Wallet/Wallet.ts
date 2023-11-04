@@ -856,24 +856,24 @@ export class Wallet {
         'transaction "from" field is different from currently selected address'
       );
     }
-    const chainId = await this.getChainIdForOrigin({
+    const dappChainId = await this.getChainIdForOrigin({
       origin: new URL(initiator).origin,
     });
-    const targetChainId = getTransactionChainId(incomingTransaction);
-    if (targetChainId && chainId !== targetChainId) {
-      throw new Error(
-        'chainId in transaction object is different from current chainId'
-      );
-      // await this.wallet_switchEthereumChain({
-      //   params: [{ chainId: targetChainId }],
-      //   context,
-      // });
-      // return this.sendTransaction(incomingTransaction, context);
-    } else if (targetChainId == null) {
+    const txChainId = getTransactionChainId(incomingTransaction);
+    if (initiator === INTERNAL_ORIGIN) {
+      // Transaction is initiated from our own UI
+      invariant(txChainId, 'Internal transaction must have a chainId');
+    } else if (txChainId) {
+      if (dappChainId !== txChainId) {
+        throw new Error("Transaction chainId doesn't match dapp chainId");
+      }
+    } else {
       // eslint-disable-next-line no-console
       console.warn('chainId field is missing from transaction object');
-      incomingTransaction.chainId = chainId;
+      incomingTransaction.chainId = dappChainId;
     }
+    const chainId = getTransactionChainId(incomingTransaction);
+    invariant(chainId, 'Must resolve chainId first');
 
     const networks = await networksStore.load();
     const signer = await this.getSigner(chainId);

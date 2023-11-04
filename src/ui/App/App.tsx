@@ -64,6 +64,7 @@ import { useBodyStyle } from '../components/Background/Background';
 import { PhishingWarningPage } from '../components/PhishingDefence/PhishingWarningPage';
 import { HardwareWalletConnection } from '../pages/HardwareWalletConnection';
 import { ThemeDecoration } from '../components/DesignTheme/ThemeDecoration';
+import { SendForm } from '../pages/SendForm';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -340,6 +341,14 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             element={
               <RequireAuth>
                 <AbilityPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/send-form/*"
+            element={
+              <RequireAuth>
+                <SendForm />
               </RequireAuth>
             }
           />

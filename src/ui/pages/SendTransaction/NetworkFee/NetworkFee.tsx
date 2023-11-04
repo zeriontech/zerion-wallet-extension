@@ -79,6 +79,7 @@ export function NetworkFee({
           <CircleSpinner />
         ) : feeValueFiat || feeValueCommon ? (
           <UnstyledButton
+            type="button"
             className={disabled ? undefined : helperStyles.hoverUnderline}
             style={{
               color: disabled ? 'var(--black)' : 'var(--primary)',

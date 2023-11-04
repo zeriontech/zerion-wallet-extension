@@ -1,5 +1,5 @@
 import React from 'react';
-import type { BareWallet } from 'src/shared/types/BareWallet';
+import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { useProfileName } from 'src/ui/shared/useProfileName';
 
 export function WalletDisplayName({
@@ -7,7 +7,7 @@ export function WalletDisplayName({
   padding,
   maxCharacters,
 }: {
-  wallet: Pick<BareWallet, 'address' | 'name'>;
+  wallet: ExternallyOwnedAccount;
   padding?: number;
   maxCharacters?: number;
 }) {

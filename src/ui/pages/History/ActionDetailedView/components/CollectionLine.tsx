@@ -38,7 +38,7 @@ export function CollectionLine({ action }: { action: AddressAction }) {
         <TokenIcon
           src={nftCollection.icon_url}
           size={20}
-          symbol={nftCollection.name}
+          symbol={nftCollection.name ?? '?'}
           title={nftCollection.name}
           style={{ borderRadius: 4 }}
         />

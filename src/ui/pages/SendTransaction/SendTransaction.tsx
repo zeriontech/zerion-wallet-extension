@@ -64,8 +64,10 @@ import { getError } from 'src/shared/errors/getError';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { HardwareSignTransaction } from '../HardwareWalletConnection/HardwareSignTransaction/HardwareSignTransaction';
 import { TransactionConfiguration } from './TransactionConfiguration';
-import type { CustomConfiguration } from './TransactionConfiguration';
-import { applyConfiguration } from './TransactionConfiguration/applyConfiguration';
+import {
+  DEFAULT_CONFIGURATION,
+  applyConfiguration,
+} from './TransactionConfiguration/applyConfiguration';
 import { TransactionAdvancedView } from './TransactionAdvancedView';
 import { TransactionWarning } from './TransactionWarning';
 
@@ -141,15 +143,6 @@ function usePreparedTx(transaction: IncomingTransaction, origin: string) {
     incomingTxWithGasAndFee: resolveGasQuery.data,
   };
 }
-
-const DEFAULT_CONFIGURATION: CustomConfiguration = {
-  nonce: null,
-  networkFee: {
-    speed: 'fast',
-    custom1559GasPrice: null,
-    customClassicGasPrice: null,
-  },
-};
 
 enum View {
   default = 'default',
