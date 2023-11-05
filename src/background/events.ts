@@ -50,4 +50,8 @@ export const emitter = createNanoEvents<{
     groupId: string | null;
   }) => void;
   addEthereumChain: (data: { values: [NetworkConfig]; origin: string }) => void;
+  updateEthereumChain: (data: {
+    values: [NetworkConfig];
+    origin: string;
+  }) => void;
 }>();

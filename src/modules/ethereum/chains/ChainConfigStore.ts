@@ -57,6 +57,25 @@ export class ChainConfigStore extends PersistentStore<ChainConfig> {
     return newEntry;
   }
 
+  updateEthereumChain(value: NetworkConfig, { origin }: { origin: string }) {
+    const state = this.getState();
+    const chainIndex = state.ethereumChains.findIndex(
+      (item) => value.external_id === item.value.external_id
+    );
+    if (chainIndex === -1) {
+      throw new Error(
+        `Network with external_id = ${value.external_id} doesn't exist`
+      );
+    }
+    const newState = produce(state, (draft) => {
+      const chain = draft.ethereumChains[chainIndex];
+      chain.value = value;
+      chain.origin = origin;
+      chain.updated = Date.now();
+    });
+    this.setState(newState);
+  }
+
   removeEthereumChain(chain: Chain) {
     const chainStr = chain.toString();
     this.setState((state) =>

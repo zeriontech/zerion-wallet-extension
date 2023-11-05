@@ -1107,6 +1107,27 @@ export class Wallet {
     return result;
   }
 
+  async updateEthereumChain({
+    context,
+    params: { values, origin },
+  }: WalletMethodParams<{
+    values: [NetworkConfig];
+    origin: string;
+  }>) {
+    this.verifyInternalOrigin(context);
+    const [networkConfig] = values;
+    chainConfigStore.updateEthereumChain(networkConfig, {
+      origin,
+    });
+
+    this.emitter.emit('chainChanged', createChain(networkConfig.chain), origin);
+    emitter.emit('updateEthereumChain', {
+      values: [networkConfig],
+      origin,
+    });
+    return;
+  }
+
   async removeEthereumChain({
     context,
     params: { chain: chainStr },
