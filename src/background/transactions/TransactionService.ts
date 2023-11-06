@@ -72,12 +72,10 @@ export class TransactionService {
 
     emitter.on('transactionSent', async ({ transaction }) => {
       const networks = await networksStore.load();
-      const chain = networks.getChainById(
+      const network = networks.getNetworkById(
         ethers.utils.hexValue(transaction.chainId)
       );
-      if (chain) {
-        registerTransaction(transaction.hash, chain);
-      }
+      registerTransaction(transaction.hash, network);
     });
 
     this.transactionsPoller.emitter.on('mined', (receipt) => {
