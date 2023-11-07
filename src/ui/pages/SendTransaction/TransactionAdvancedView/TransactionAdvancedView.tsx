@@ -41,6 +41,8 @@ function AddressLine({
   label: React.ReactNode;
   address: string;
 }) {
+  const truncatedAddress = truncateAddress(address, 16);
+  const explorerUrl = networks.getExplorerAddressUrlByName(chain, address);
   return (
     <HStack gap={8} justifyContent="space-between" alignItems="center">
       <VStack gap={0}>
@@ -49,18 +51,22 @@ function AddressLine({
         </UIText>
         <Spacer height={4} />
         <UIText kind="body/regular" color="var(--black)" title={address}>
-          <TextAnchor
-            // Open URL in a new _window_ so that extension UI stays open and visible
-            onClick={openInNewWindow}
-            href={networks.getExplorerAddressUrlByName(chain, address)}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {truncateAddress(address, 16)}
-          </TextAnchor>
+          {explorerUrl ? (
+            <TextAnchor
+              // Open URL in a new _window_ so that extension UI stays open and visible
+              onClick={openInNewWindow}
+              href={explorerUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {truncatedAddress}
+            </TextAnchor>
+          ) : (
+            truncatedAddress
+          )}
         </UIText>
       </VStack>
-      <ArrowLeftTop />
+      {explorerUrl ? <ArrowLeftTop /> : null}
     </HStack>
   );
 }
