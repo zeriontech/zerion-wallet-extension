@@ -1,9 +1,10 @@
+import { ethers } from 'ethers';
 import { client } from 'defi-sdk';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
-import type { NetworkConfig } from '../networks/NetworkConfig';
 import { getNetworksBySearch } from '../ethereum/chains/requests';
+import { networksStore } from '../networks/networks-store.background';
 
-function probablyLocalChainId(id: string) {
+function maybeLocalChainId(id: string) {
   return id.length === 21; // nanoid() standart length
 }
 
@@ -11,23 +12,27 @@ const namespace = 'transaction';
 const scope = 'register';
 
 export async function registerTransaction(
-  hash: string,
-  network: NetworkConfig
+  transaction: ethers.providers.TransactionResponse
 ) {
+  const networks = await networksStore.load();
+  const network = networks.getNetworkById(
+    ethers.utils.hexValue(transaction.chainId)
+  );
+
   try {
-    let chain = network.id;
-    if (probablyLocalChainId(chain)) {
+    let { id } = network;
+    if (maybeLocalChainId(id)) {
       const possibleNetworks = await Promise.race([
         getNetworksBySearch({ query: Number(network.external_id).toString() }),
         rejectAfterDelay(3000),
       ]);
       const networkFromBackend = possibleNetworks.find(
-        (network) => network.external_id === network.external_id
+        (item) => item.external_id === network.external_id
       );
       if (!networkFromBackend) {
         return;
       }
-      chain = networkFromBackend.id;
+      id = networkFromBackend.id;
     }
 
     client.subscribe<object, typeof namespace, typeof scope>({
@@ -35,7 +40,7 @@ export async function registerTransaction(
       namespace,
       body: {
         scope: [scope],
-        payload: { hash, chain },
+        payload: { hash: transaction.hash, chain: id },
       },
       onMessage: () => null,
     });

@@ -8,7 +8,6 @@ import type {
 import { upsert } from 'src/shared/upsert';
 import { getPendingTransactions } from 'src/modules/ethereum/transactions/model';
 import { registerTransaction } from 'src/modules/defi-sdk/registerTransaction';
-import { networksStore } from 'src/modules/networks/networks-store.background';
 import { emitter } from '../events';
 import { createMockTxResponse } from './mocks';
 import type { PollingTx } from './TransactionPoller';
@@ -70,12 +69,8 @@ export class TransactionService {
       );
     });
 
-    emitter.on('transactionSent', async ({ transaction }) => {
-      const networks = await networksStore.load();
-      const network = networks.getNetworkById(
-        ethers.utils.hexValue(transaction.chainId)
-      );
-      registerTransaction(transaction.hash, network);
+    emitter.on('transactionSent', ({ transaction }) => {
+      registerTransaction(transaction);
     });
 
     this.transactionsPoller.emitter.on('mined', (receipt) => {
