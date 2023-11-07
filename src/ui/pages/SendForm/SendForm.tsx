@@ -50,7 +50,6 @@ import { NetworkSelect } from '../Networks/NetworkSelect';
 import { TransferVisualization } from './TransferVisualization';
 import { EstimateTransactionGas } from './EstimateTransactionGas';
 import { SuccessState } from './SuccessState';
-import { TokenNetworkSelect } from './fieldsets/TokenNetworkSelect';
 import { TokenTransferInput } from './fieldsets/TokenTransferInput';
 
 function StoreWatcherByKeys<T extends Record<string, unknown>>({
@@ -97,7 +96,6 @@ export function SendForm() {
     client,
   });
   const { tokenItem, store } = sendView;
-  // const state = useStore(sendView.store);
   const { type, tokenChain, nftChain } = useSelectorStore(store, [
     'type',
     'tokenChain',
@@ -123,8 +121,6 @@ export function SendForm() {
 
   const { data: gasPrices } = useGasPrices(chain);
 
-  // const [view, setView] = useState<'default' | 'success'>('default');
-
   const {
     mutate: send,
     data: transactionHash,
@@ -136,8 +132,6 @@ export function SendForm() {
       if (!gasPrices) {
         throw new Error('Unknown gas price');
       }
-      // await new Promise((r) => setTimeout(r, 1000));
-      // return '0x123123dead3ff';
       const asset = tokenItem?.asset;
       const { to, tokenChain, tokenValue } = store.getState();
       invariant(

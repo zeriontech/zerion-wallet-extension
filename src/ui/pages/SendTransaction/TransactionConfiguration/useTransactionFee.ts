@@ -95,7 +95,6 @@ function useFeeEstimation(
       gas,
     ],
     queryFn: async () => {
-      await new Promise((r) => setTimeout(r, 1000));
       const chainGasPrices = await queryGasPrices(chain);
       const gasPriceFromTransaction = getGasPriceFromTransaction(transaction);
       const gasPriceFromConfiguration = getGasPriceFromConfiguration({
