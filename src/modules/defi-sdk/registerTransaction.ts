@@ -1,18 +1,50 @@
+import { ethers } from 'ethers';
 import { client } from 'defi-sdk';
-import type { Chain } from '../networks/Chain';
+import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
+import { getNetworksBySearch } from '../ethereum/chains/requests';
+import { networksStore } from '../networks/networks-store.background';
+
+function maybeLocalChainId(id: string) {
+  return id.length === 21; // nanoid() standart length
+}
 
 const namespace = 'transaction';
 const scope = 'register';
 
-export async function registerTransaction(hash: string, chain: Chain) {
-  // TODO: Rewrite to rest api when backend is ready
-  client.subscribe<object, typeof namespace, typeof scope>({
-    method: 'get',
-    namespace,
-    body: {
-      scope: [scope],
-      payload: { hash, chain: chain.toString() },
-    },
-    onMessage: () => null,
-  });
+export async function registerTransaction(
+  transaction: ethers.providers.TransactionResponse
+) {
+  const networks = await networksStore.load();
+  const network = networks.getNetworkById(
+    ethers.utils.hexValue(transaction.chainId)
+  );
+
+  try {
+    let { id } = network;
+    if (maybeLocalChainId(id)) {
+      const possibleNetworks = await Promise.race([
+        getNetworksBySearch({ query: Number(network.external_id).toString() }),
+        rejectAfterDelay(3000),
+      ]);
+      const networkFromBackend = possibleNetworks.find(
+        (item) => item.external_id === network.external_id
+      );
+      if (!networkFromBackend) {
+        return;
+      }
+      id = networkFromBackend.id;
+    }
+
+    client.subscribe<object, typeof namespace, typeof scope>({
+      method: 'get',
+      namespace,
+      body: {
+        scope: [scope],
+        payload: { hash: transaction.hash, chain: id },
+      },
+      onMessage: () => null,
+    });
+  } catch {
+    // do nothing
+  }
 }
