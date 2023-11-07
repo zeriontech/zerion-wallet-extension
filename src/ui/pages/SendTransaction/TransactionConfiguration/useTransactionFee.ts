@@ -73,17 +73,20 @@ function getGasPriceFromConfiguration({
   };
 }
 
-export function useFeeEstimation(
+function useFeeEstimation(
   chain: Chain,
   transaction: IncomingTransaction,
   /** gas price derived from configuration takes precedence over gas price from transaction */
-  networkFeeConfiguration: NetworkFeeConfiguration | null
+  networkFeeConfiguration: NetworkFeeConfiguration | null,
+  { keepPreviousData = false } = {}
 ) {
   const gas = getGas(transaction);
   if (!gas || ethers.BigNumber.from(gas).isZero()) {
     throw new Error('gas field is expected to be found on Transaction object');
   }
   return useQuery({
+    keepPreviousData,
+    suspense: !keepPreviousData,
     queryKey: [
       'feeEstimation',
       chain,
@@ -92,6 +95,7 @@ export function useFeeEstimation(
       gas,
     ],
     queryFn: async () => {
+      await new Promise((r) => setTimeout(r, 1000));
       const chainGasPrices = await queryGasPrices(chain);
       const gasPriceFromTransaction = getGasPriceFromTransaction(transaction);
       const gasPriceFromConfiguration = getGasPriceFromConfiguration({
@@ -198,17 +202,20 @@ export function useTransactionFee({
   chain,
   onFeeValueCommonReady,
   networkFeeConfiguration,
+  keepPreviousData = false,
 }: {
   transaction: IncomingTransaction;
   chain: Chain;
   onFeeValueCommonReady?: (value: string) => void;
   networkFeeConfiguration: NetworkFeeConfiguration | null;
+  keepPreviousData?: boolean;
 }) {
   const { data: chainGasPrices } = useGasPrices(chain);
   const feeEstimationQuery = useFeeEstimation(
     chain,
     transaction,
-    networkFeeConfiguration
+    networkFeeConfiguration,
+    { keepPreviousData }
   );
 
   const feeEstimation = feeEstimationQuery.data?.feeEstimation;

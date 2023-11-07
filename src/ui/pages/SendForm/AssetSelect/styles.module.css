@@ -1,0 +1,10 @@
+.select {
+  color: var(--black);
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .select:hover {
+    color: var(--primary);
+  }
+}

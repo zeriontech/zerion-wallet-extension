@@ -16,7 +16,6 @@ import {
 } from 'src/ui/ui-kit/SegmentedControl';
 import { useSelectorStore, useStore } from '@store-unit/react';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { Input } from 'src/ui/ui-kit/Input';
 import { invariant } from 'src/shared/invariant';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
@@ -40,11 +39,14 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
+import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
+import { FormFieldset } from 'src/ui/ui-kit/FormFieldset';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
 } from '../SendTransaction/TransactionConfiguration/applyConfiguration';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
+import { NetworkSelect } from '../Networks/NetworkSelect';
 import { TransferVisualization } from './TransferVisualization';
 import { EstimateTransactionGas } from './EstimateTransactionGas';
 import { SuccessState } from './SuccessState';
@@ -131,7 +133,6 @@ export function SendForm() {
     isSuccess,
   } = useMutation({
     mutationFn: async () => {
-      console.log('mutation');
       if (!gasPrices) {
         throw new Error('Unknown gas price');
       }
@@ -179,7 +180,7 @@ export function SendForm() {
 
   const formId = useId();
 
-  if (!networks) {
+  if (!networks || !positions) {
     return <ViewLoading kind="network" />;
   }
 
@@ -254,29 +255,43 @@ export function SendForm() {
             </SegmentedControlRadio>
           </SegmentedControlGroup>
           <div>
-            <TokenNetworkSelect
-              networks={networks}
-              address={address}
-              name="tokenChain"
-              value={tokenChain ?? ''}
-              onChange={(event) => {
-                sendView.handleChange('tokenChain', event.currentTarget.value);
-              }}
-            />
+            {type === 'token' ? (
+              <NetworkSelect
+                type="connection"
+                value={tokenChain ?? ''}
+                onChange={(value) => {
+                  sendView.handleChange('tokenChain', value);
+                }}
+              />
+            ) : (
+              <NetworkSelect
+                type="connection"
+                value={nftChain ?? ''}
+                onChange={(value) => {
+                  sendView.handleChange('nftChain', value);
+                }}
+              />
+            )}
           </div>
           <VStack gap={8}>
             <StoreWatcherByKeys
               store={store}
               keys={['to']}
               render={({ to }) => (
-                <Input
-                  name="to"
-                  value={to || ''}
-                  placeholder="receiver address"
-                  onChange={(event) => {
-                    sendView.handleChange('to', event.currentTarget.value);
-                  }}
-                  required={true}
+                <FormFieldset
+                  title="Recipient"
+                  startInput={
+                    <UnstyledInput
+                      style={{ width: '100%', textOverflow: 'ellipsis' }}
+                      name="to"
+                      value={to || ''}
+                      placeholder="receiver address"
+                      onChange={(event) => {
+                        sendView.handleChange('to', event.currentTarget.value);
+                      }}
+                      required={true}
+                    />
+                  }
                 />
               )}
             />
@@ -301,8 +316,8 @@ export function SendForm() {
       >
         <EstimateTransactionGas
           sendFormView={sendView}
-          render={({ gasQuery, transaction }) =>
-            transaction && chain && gasQuery.isSuccess ? (
+          render={({ gasQuery: _gasQuery, transaction }) =>
+            transaction && chain && transaction.gas ? (
               <React.Suspense
                 fallback={
                   <div style={{ display: 'flex', justifyContent: 'end' }}>
@@ -314,6 +329,7 @@ export function SendForm() {
                   store={sendView.store.configuration}
                   render={(configuration) => (
                     <TransactionConfiguration
+                      keepPreviousData={true}
                       transaction={transaction}
                       from={address}
                       chain={chain}

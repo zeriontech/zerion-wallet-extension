@@ -32,6 +32,7 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { invariant } from 'src/shared/invariant';
+import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { useTransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import type { NetworkFeeConfiguration, NetworkFeeSpeed } from './types';
 import { NetworkFeeIcon } from './NetworkFeeIcon';
@@ -436,33 +437,35 @@ export const NetworkFeeDialog = React.forwardRef<
             closeKind="icon"
           />
           <Spacer height={10} />
-          <SurfaceList
-            style={{ paddingBlockEnd: 0 }}
-            items={OPTIONS.map((option) => {
-              return {
-                key: option,
-                isInteractive: true,
-                pad: false,
-                disabled: option === 'custom' && !chainGasPrices,
-                component: (
-                  <NetworkFeeButton
-                    networkFeeConfiguration={value}
-                    chainGasPrices={chainGasPrices}
-                    option={option}
-                    onClick={() => {
-                      if (option === 'custom') {
-                        setView(gasPriceType);
-                      } else {
-                        onSubmit({ ...value, speed: option });
-                      }
-                    }}
-                    chain={chain}
-                    transaction={transaction}
-                  />
-                ),
-              };
-            })}
-          />
+          <React.Suspense fallback={<ViewLoading />}>
+            <SurfaceList
+              style={{ paddingBlockEnd: 0 }}
+              items={OPTIONS.map((option) => {
+                return {
+                  key: option,
+                  isInteractive: true,
+                  pad: false,
+                  disabled: option === 'custom' && !chainGasPrices,
+                  component: (
+                    <NetworkFeeButton
+                      networkFeeConfiguration={value}
+                      chainGasPrices={chainGasPrices}
+                      option={option}
+                      onClick={() => {
+                        if (option === 'custom') {
+                          setView(gasPriceType);
+                        } else {
+                          onSubmit({ ...value, speed: option });
+                        }
+                      }}
+                      chain={chain}
+                      transaction={transaction}
+                    />
+                  ),
+                };
+              })}
+            />
+          </React.Suspense>
         </>
       ) : (
         <VStack

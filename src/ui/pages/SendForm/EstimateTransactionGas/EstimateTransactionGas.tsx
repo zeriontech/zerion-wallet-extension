@@ -51,6 +51,7 @@ export function EstimateTransactionGas({
   const asset = tokenItem?.asset;
   const { data: transactionData } = useQuery({
     suspense: false,
+    keepPreviousData: true,
     queryKey: [
       'sendForm/createSendTransaction',
       type,

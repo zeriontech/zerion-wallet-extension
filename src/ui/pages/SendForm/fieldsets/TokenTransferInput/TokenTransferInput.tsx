@@ -1,101 +1,122 @@
-import React from 'react';
-import { Media } from 'src/ui/ui-kit/Media';
+import React, { useId, useRef } from 'react';
 import type { SendFormView } from '@zeriontech/transactions';
-import { VStack } from 'src/ui/ui-kit/VStack';
-import { Input } from 'src/ui/ui-kit/Input';
 import { useSelectorStore } from '@store-unit/react';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { invariant } from 'src/shared/invariant';
 import { getPositionBalance } from 'src/ui/components/Positions/helpers';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
+import type { InputHandle } from 'src/ui/ui-kit/Input/DebouncedInput';
 import { DebouncedInput } from 'src/ui/ui-kit/Input/DebouncedInput';
+import { FormFieldset } from 'src/ui/ui-kit/FormFieldset';
+import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
+import { createChain } from 'src/modules/networks/Chain';
+import { AssetSelect } from '../../AssetSelect';
 
 export function TokenTransferInput({ sendView }: { sendView: SendFormView }) {
   const { tokenItem } = sendView;
-  const { tokenValue } = useSelectorStore(sendView.store, ['tokenValue']);
+  const { tokenValue, tokenChain } = useSelectorStore(sendView.store, [
+    'tokenValue',
+    'tokenChain',
+  ]);
+  const chain = tokenChain ? createChain(tokenChain) : null;
 
   const positionBalanceCommon = tokenItem
     ? getPositionBalance(tokenItem)
     : null;
 
   const exceedsBalance = Number(tokenValue) > Number(positionBalanceCommon);
+  const tokenValueInputRef = useRef<InputHandle | null>(null);
 
+  const inputId = useId();
   return (
     <>
-      <Media
-        image={
-          tokenItem?.asset.icon_url ? (
-            <img
-              src={tokenItem.asset.icon_url}
-              style={{ width: 24, height: 24 }}
-            />
-          ) : (
-            <svg viewBox="0 0 24 24" style={{ width: 24, height: 24 }}>
-              <circle r="12" rx="12" ry="12" fill="var(--neutral-300)" />
-            </svg>
-          )
+      <FormFieldset
+        title="Asset"
+        inputSelector={`#${CSS.escape(inputId)}`}
+        startInput={
+          <div>
+            {tokenItem ? (
+              <AssetSelect
+                items={sendView.availablePositions ?? []}
+                onChange={(position) =>
+                  sendView.handleChange(
+                    'tokenAssetCode',
+                    position.asset.asset_code
+                  )
+                }
+                chain={chain}
+                selectedItem={tokenItem}
+                noItemsMessage="No items message (todo)"
+              />
+            ) : (
+              <div
+                style={{
+                  height: 24 /* height of AssetSelect */,
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
+                <svg
+                  viewBox="0 0 20 20"
+                  style={{
+                    display: 'block',
+                    width: 20,
+                    height: 20,
+                  }}
+                >
+                  <circle r="10" cx="10" cy="10" fill="var(--neutral-300)" />
+                </svg>
+              </div>
+            )}
+          </div>
         }
-        text={
-          tokenItem
-            ? tokenItem.asset.name ?? tokenItem.asset.symbol
-            : 'No asset selected'
+        endInput={
+          <DebouncedInput
+            ref={tokenValueInputRef}
+            delay={300}
+            value={tokenValue ?? ''}
+            onChange={(value) => {
+              sendView.handleChange('tokenValue', value);
+            }}
+            render={({ value, handleChange }) => (
+              <UnstyledInput
+                id={inputId}
+                style={{ textAlign: 'end', textOverflow: 'ellipsis' }}
+                inputMode="numeric"
+                name="tokenValue"
+                value={value}
+                placeholder="0"
+                onChange={(event) => handleChange(event.currentTarget.value)}
+                required={true}
+              />
+            )}
+          />
         }
-        detailText={null}
+        startDescription={
+          <div>
+            <span style={{ color: 'var(--neutral-600)' }}>Balance:</span>{' '}
+            <UnstyledButton
+              type="button"
+              style={{
+                color: exceedsBalance
+                  ? 'var(--negative-500)'
+                  : 'var(--primary)',
+              }}
+              disabled={positionBalanceCommon == null}
+              onClick={() => {
+                invariant(positionBalanceCommon, 'Position quantity unknown');
+                const value = positionBalanceCommon.toFixed();
+                sendView.handleChange('tokenValue', value);
+                tokenValueInputRef.current?.setValue(value);
+              }}
+            >
+              {positionBalanceCommon
+                ? formatTokenValue(positionBalanceCommon)
+                : 'n/a'}
+            </UnstyledButton>
+          </div>
+        }
       />
-
-      <select
-        name="tokenAssetCode"
-        value={sendView.tokenItem?.asset.asset_code}
-        onChange={(event) => {
-          sendView.handleChange('tokenAssetCode', event.currentTarget.value);
-        }}
-      >
-        {sendView.availablePositions?.map((position) => (
-          <option key={position.asset.id} value={position.asset.asset_code}>
-            {position.asset.name ?? position.asset.symbol}
-          </option>
-        )) ?? <option>no positions</option>}
-      </select>
-      <VStack gap={4}>
-        <DebouncedInput
-          delay={300}
-          value={tokenValue ?? ''}
-          onChange={(value) => {
-            sendView.handleChange('tokenValue', value);
-          }}
-          render={({ value, handleChange }) => (
-            <Input
-              inputMode="numeric"
-              name="tokenValue"
-              value={value}
-              placeholder="0"
-              onChange={(event) => handleChange(event.currentTarget.value)}
-              required={true}
-            />
-          )}
-        />
-        <div>
-          <UnstyledButton
-            type="button"
-            style={{
-              color: exceedsBalance ? 'var(--negative-500)' : 'var(--primary)',
-            }}
-            disabled={positionBalanceCommon == null || exceedsBalance}
-            onClick={() => {
-              invariant(positionBalanceCommon, 'Position quantity unknown');
-              sendView.handleChange(
-                'tokenValue',
-                positionBalanceCommon.toFixed()
-              );
-            }}
-          >
-            Balance:{' '}
-            {positionBalanceCommon
-              ? formatTokenValue(positionBalanceCommon)
-              : 'n/a'}
-          </UnstyledButton>
-        </div>
-      </VStack>
     </>
   );
 }
