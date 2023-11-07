@@ -26,11 +26,10 @@ export function getPositionBalance(
 ) {
   return baseToCommon(
     position.quantity || 0,
-    0 -
-      getDecimals({
-        asset: position.asset,
-        chain: createChain(position.chain),
-      })
+    getDecimals({
+      asset: position.asset,
+      chain: createChain(position.chain),
+    })
   );
 }
 

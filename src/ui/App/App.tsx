@@ -64,6 +64,8 @@ import { useBodyStyle } from '../components/Background/Background';
 import { PhishingWarningPage } from '../components/PhishingDefence/PhishingWarningPage';
 import { HardwareWalletConnection } from '../pages/HardwareWalletConnection';
 import { ThemeDecoration } from '../components/DesignTheme/ThemeDecoration';
+import { SendForm } from '../pages/SendForm';
+import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -165,6 +167,9 @@ function Views({ initialRoute }: { initialRoute?: string }) {
     <RouteResolver>
       <ViewArea>
         <URLBar />
+        {pageTemplateType === 'popup' ? (
+          <RouteRestoration initialRoute={initialRoute} />
+        ) : null}
         <Routes>
           {initialRoute ? (
             <Route path="/" element={<Navigate to={initialRoute} />} />
@@ -344,6 +349,14 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             }
           />
           <Route
+            path="/send-form/*"
+            element={
+              <RequireAuth>
+                <SendForm />
+              </RequireAuth>
+            }
+          />
+          <Route
             path="/not-implemented"
             element={
               <FillView>
@@ -366,6 +379,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
 
 initializeApperance();
 dayjs.extend(relativeTime);
+registerPersistentRoute('/send-form');
 
 export interface AppProps {
   mode: 'onboarding' | 'wallet';

@@ -49,6 +49,7 @@ export function NetworkSelect({
         />
       </BottomSheetDialog>
       <Button
+        type="button"
         size={32}
         kind="text-primary"
         onClick={() => {

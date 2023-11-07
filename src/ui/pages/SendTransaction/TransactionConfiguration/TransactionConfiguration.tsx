@@ -12,6 +12,7 @@ import { useTransactionFee } from './useTransactionFee';
 const DISPLAY_TOTAL = false;
 
 export interface CustomConfiguration {
+  slippage: number;
   nonce: string | null;
   networkFee: NetworkFeeConfiguration;
 }
@@ -23,6 +24,7 @@ export function TransactionConfiguration({
   onFeeValueCommonReady,
   configuration,
   onConfigurationChange,
+  keepPreviousData = false,
 }: {
   transaction: IncomingTransaction;
   from: string;
@@ -30,6 +32,7 @@ export function TransactionConfiguration({
   onFeeValueCommonReady: (value: string) => void;
   configuration: CustomConfiguration;
   onConfigurationChange: (value: CustomConfiguration) => void;
+  keepPreviousData?: boolean;
 }) {
   const { preferences } = usePreferences();
   const transactionWithFrom = useMemo(
@@ -41,6 +44,7 @@ export function TransactionConfiguration({
     chain,
     onFeeValueCommonReady,
     networkFeeConfiguration: configuration.networkFee,
+    keepPreviousData,
   });
   return (
     <VStack gap={8}>

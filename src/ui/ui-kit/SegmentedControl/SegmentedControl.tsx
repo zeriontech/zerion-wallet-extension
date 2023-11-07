@@ -29,11 +29,12 @@ export function SegmentedControlRadio({
   value,
   checked,
   onChange,
+  style,
   children,
 }: HTMLProps<HTMLInputElement>) {
   const { kind } = useContext(SegmentedControlGroupContext);
   return (
-    <label className={cx(s.radio, { [s.radioChecked]: checked })}>
+    <label className={cx(s.radio, { [s.radioChecked]: checked })} style={style}>
       <UIText kind={labelParams[kind].kind}>{children}</UIText>
       <input
         type="radio"

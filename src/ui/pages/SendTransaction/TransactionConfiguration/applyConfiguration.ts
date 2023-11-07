@@ -4,8 +4,18 @@ import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/
 import { assignGasPrice } from 'src/modules/ethereum/transactions/gasPrices/assignGasPrice';
 import type { CustomConfiguration } from './TransactionConfiguration';
 
-export function applyConfiguration(
-  transaction: IncomingTransaction,
+export const DEFAULT_CONFIGURATION: CustomConfiguration = {
+  slippage: 0.01,
+  nonce: null,
+  networkFee: {
+    speed: 'fast',
+    custom1559GasPrice: null,
+    customClassicGasPrice: null,
+  },
+};
+
+export function applyConfiguration<T extends IncomingTransaction>(
+  transaction: T,
   configuration: CustomConfiguration,
   chainGasPrices?: ChainGasPrice | null
 ) {

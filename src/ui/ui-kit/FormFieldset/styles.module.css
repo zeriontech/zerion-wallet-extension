@@ -1,0 +1,17 @@
+.container {
+  background-color: var(--neutral-100);
+  border: 1px solid var(--neutral-100);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+
+.unstyled {
+  background-color: none;
+  border: none;
+}
+
+@media (hover: hover) {
+  .hoverable:hover {
+    border: 1px solid var(--neutral-400);
+  }
+}

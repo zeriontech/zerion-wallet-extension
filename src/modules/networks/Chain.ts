@@ -1,7 +1,7 @@
 import memoize from 'lodash/memoize';
 
 export class Chain {
-  private value: string;
+  value: string;
 
   constructor(value: string) {
     this.value = value;

@@ -128,11 +128,12 @@ export function SurfaceList({
   items,
   gap = 0,
   style,
+  ...props
 }: {
   items: Item[];
   gap?: number;
   style?: React.CSSProperties;
-}) {
+} & React.HTMLAttributes<HTMLDivElement>) {
   const emptyItemPaddingBlock = 8;
   const firstItemIsInteractive = items.length && isInteractive(items[0]);
   const lastItemIsInteractive =
@@ -145,6 +146,7 @@ export function SurfaceList({
         paddingBlockEnd: lastItemIsInteractive ? 6 : 0,
         ...style,
       }}
+      {...props}
     >
       <VStack gap={gap}>
         {items.map((item, index) => {

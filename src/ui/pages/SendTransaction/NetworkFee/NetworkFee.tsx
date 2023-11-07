@@ -78,49 +78,53 @@ export function NetworkFee({
         {isLoading ? (
           <CircleSpinner />
         ) : feeValueFiat || feeValueCommon ? (
-          <UnstyledButton
-            className={disabled ? undefined : helperStyles.hoverUnderline}
-            style={{
-              color: disabled ? 'var(--black)' : 'var(--primary)',
-              cursor: isOptimistic ? 'auto' : undefined,
-            }}
-            onClick={() => {
-              dialogRef.current?.showModal();
-            }}
-            disabled={disabled}
-          >
-            <UIText
-              kind="small/accent"
-              title={[
-                getFeeTypeTitle(feeEstimation?.type),
-                feeValueCommon
-                  ? formatTokenValue(feeValueCommon, nativeAssetSymbol)
-                  : null,
-              ]
-                .filter(isTruthy)
-                .join(' · ')}
+          <HStack gap={12} alignItems="center">
+            {feeEstimationQuery.isPreviousData ? <CircleSpinner /> : null}
+            <UnstyledButton
+              type="button"
+              className={disabled ? undefined : helperStyles.hoverUnderline}
+              style={{
+                color: disabled ? 'var(--black)' : 'var(--primary)',
+                cursor: isOptimistic ? 'auto' : undefined,
+              }}
+              onClick={() => {
+                dialogRef.current?.showModal();
+              }}
+              disabled={disabled}
             >
-              {[
-                networkFeeConfiguration.speed === 'custom' && time
-                  ? time
-                  : null,
-                networkFeeConfiguration.speed === 'custom'
-                  ? NETWORK_SPEED_TO_TITLE.custom
-                  : time ||
-                    NETWORK_SPEED_TO_TITLE[networkFeeConfiguration.speed],
-                feeValueFiat
-                  ? formatCurrencyValue(feeValueFiat, 'en', 'usd')
-                  : feeValueCommon
-                  ? formatTokenValue(
-                      feeValueCommon.toString(),
-                      nativeAssetSymbol
-                    )
-                  : undefined,
-              ]
-                .filter(isTruthy)
-                .join(' · ')}
-            </UIText>
-          </UnstyledButton>
+              <UIText
+                kind="small/accent"
+                title={[
+                  getFeeTypeTitle(feeEstimation?.type),
+                  feeValueCommon
+                    ? formatTokenValue(feeValueCommon, nativeAssetSymbol)
+                    : null,
+                ]
+                  .filter(isTruthy)
+                  .join(' · ')}
+              >
+                {[
+                  networkFeeConfiguration.speed === 'custom' && time
+                    ? time
+                    : null,
+                  networkFeeConfiguration.speed === 'custom'
+                    ? NETWORK_SPEED_TO_TITLE.custom
+                    : time ||
+                      NETWORK_SPEED_TO_TITLE[networkFeeConfiguration.speed],
+                  feeValueFiat
+                    ? formatCurrencyValue(feeValueFiat, 'en', 'usd')
+                    : feeValueCommon
+                    ? formatTokenValue(
+                        feeValueCommon.toString(),
+                        nativeAssetSymbol
+                      )
+                    : undefined,
+                ]
+                  .filter(isTruthy)
+                  .join(' · ')}
+              </UIText>
+            </UnstyledButton>
+          </HStack>
         ) : feeEstimationQuery.isSuccess ? (
           <UIText kind="small/regular" title="No fee data">
             {noValueDash}

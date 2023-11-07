@@ -114,14 +114,23 @@ export function ActionButtonsRow() {
         />
       </li>
       <li>
-        <ActionButton
-          title="Send"
-          icon={<SendIcon style={iconStyle} />}
-          href={`${ZERION_ORIGIN}/send?${addWalletParams}`}
-          onClick={performAction}
-          target="_blank"
-          rel="noopener noreferrer"
-        />
+        {process.env.FEATURE_SEND_FORM === 'on' ? (
+          <ActionButton
+            title="Send"
+            as={UnstyledLink}
+            icon={<SendIcon style={iconStyle} />}
+            to="/send-form"
+          />
+        ) : (
+          <ActionButton
+            title="Send"
+            icon={<SendIcon style={iconStyle} />}
+            href={`${ZERION_ORIGIN}/send?${addWalletParams}`}
+            onClick={performAction}
+            target="_blank"
+            rel="noopener noreferrer"
+          />
+        )}
       </li>
       <li>
         <ActionButton
