@@ -30,7 +30,7 @@ function useInsufficientFundsWarning({
     networkFeeConfiguration,
   });
 
-  const { data: addressPositions } = useEvmAddressPositions({
+  const { data: addressPositions, isLoading } = useEvmAddressPositions({
     address,
     chain,
   });
@@ -44,7 +44,7 @@ function useInsufficientFundsWarning({
     [addressPositions]
   );
 
-  if (!chain) {
+  if (!chain || isLoading) {
     return false;
   }
   return nativeTokenBalance.lt(transactionFee.costs?.totalValueCommon || 0);
