@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -10,14 +10,11 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Background } from 'src/ui/components/Background';
 import { Surface } from 'src/ui/ui-kit/Surface';
-import { SurfaceList, SurfaceItemButton } from 'src/ui/ui-kit/SurfaceList';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { FillView } from 'src/ui/components/FillView';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
-import { WalletMedia, Composition } from 'src/ui/components/WalletMedia';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { invariant } from 'src/shared/invariant';
 import { focusNode } from 'src/ui/shared/focusNode';
@@ -34,68 +31,32 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/PhishingDefenceStatus';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
-
-function WalletSelectList({
-  wallets,
-  value,
-}: {
-  wallets: ExternallyOwnedAccount[];
-  value: string;
-}) {
-  return (
-    <form method="dialog">
-      <SurfaceList
-        items={wallets.map((wallet) => ({
-          key: wallet.address,
-          isInteractive: true,
-          pad: false,
-          component: (
-            <SurfaceItemButton value={wallet.address}>
-              <HStack
-                gap={4}
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <WalletMedia
-                  composition={Composition.nameAndPortfolio}
-                  iconSize={24}
-                  activeIndicator={true}
-                  wallet={wallet}
-                />
-                {wallet.address.toLowerCase() === value ? (
-                  <span style={{ color: 'var(--primary)' }}>✔</span>
-                ) : null}
-              </HStack>
-            </SurfaceItemButton>
-          ),
-        }))}
-      />
-    </form>
-  );
-}
+import type { WalletGroup } from 'src/shared/types/WalletGroup';
+import type { BareWallet } from 'src/shared/types/BareWallet';
+import type { DeviceAccount } from 'src/shared/types/Device';
+import { WalletList } from '../WalletSelect/WalletList';
 
 function WalletSelectDialog({
   value,
-  wallets,
-  dialogRef,
+  walletGroups,
+  onSelect,
 }: {
   value: string;
-  wallets: ExternallyOwnedAccount[];
-  dialogRef: React.Ref<HTMLDialogElement>;
+  walletGroups?: WalletGroup[] | null;
+  onSelect(wallet: ExternallyOwnedAccount | BareWallet | DeviceAccount): void;
 }) {
-  return (
-    <CenteredDialog ref={dialogRef}>
-      <DialogTitle title={<UIText kind="body/accent">Select Wallet</UIText>} />
-      {wallets.length ? (
-        <WalletSelectList value={value} wallets={wallets} />
-      ) : (
-        <FillView>
-          <UIText kind="headline/h2" color="var(--neutral-500)">
-            No Wallets
-          </UIText>
-        </FillView>
-      )}
-    </CenteredDialog>
+  return walletGroups?.length ? (
+    <WalletList
+      selectedAddress={value}
+      walletGroups={walletGroups}
+      onSelect={onSelect}
+    />
+  ) : (
+    <FillView>
+      <UIText kind="headline/h2" color="var(--neutral-500)">
+        No Wallets
+      </UIText>
+    </FillView>
   );
 }
 
@@ -176,28 +137,38 @@ function RequestAccountsPermissions({ originName }: { originName: string }) {
 function RequestAccountsView({
   origin,
   wallet,
-  wallets,
+  walletGroups,
   onConfirm,
   onReject,
 }: {
   origin: string;
   wallet: ExternallyOwnedAccount;
-  wallets: ExternallyOwnedAccount[];
+  walletGroups?: WalletGroup[] | null;
   onConfirm: (value: { address: string; origin: string }) => void;
   onReject: () => void;
 }) {
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const [selectedWallet, setSelectedWallet] = useState(wallet);
   const originName = new URL(origin).hostname;
-  const walletsMap = useMemo(
-    () => new Map(wallets.map((wallet) => [wallet.address, wallet])),
-    [wallets]
-  );
   const iconSize = 32;
   const iconBorderRadius = 6;
   return (
     <Background backgroundKind="white">
       <NavigationTitle title={null} documentTitle="Connect Wallet" />
+      <CenteredDialog ref={dialogRef}>
+        <DialogTitle
+          title={<UIText kind="body/accent">Select Wallet</UIText>}
+          closeKind="icon"
+        />
+        <WalletSelectDialog
+          value={normalizeAddress(selectedWallet.address)}
+          walletGroups={walletGroups}
+          onSelect={(wallet) => {
+            dialogRef.current?.close();
+            setSelectedWallet(wallet);
+          }}
+        />
+      </CenteredDialog>
       <PageTop />
       <PageColumn
         style={{ ['--surface-background-color' as string]: 'var(--z-index-0)' }}
@@ -227,11 +198,6 @@ function RequestAccountsView({
             With wallet
           </UIText>
           <HStack gap={8} alignItems="center" justifyContent="space-between">
-            <WalletSelectDialog
-              value={normalizeAddress(selectedWallet.address)}
-              wallets={wallets}
-              dialogRef={dialogRef}
-            />
             <HStack gap={8} alignItems="center">
               <WalletAvatar
                 address={selectedWallet.address}
@@ -243,15 +209,8 @@ function RequestAccountsView({
               </UIText>
             </HStack>
             <ChangeWalletButton
-              onClick={async () => {
-                if (!dialogRef.current) {
-                  return;
-                }
-                const result = await showConfirmDialog(dialogRef.current);
-                const wallet = walletsMap.get(result);
-                if (wallet) {
-                  setSelectedWallet(wallet);
-                }
+              onClick={() => {
+                dialogRef.current?.showModal();
               }}
             />
           </HStack>
@@ -347,11 +306,7 @@ export function RequestAccounts() {
       <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
       <RequestAccountsView
         wallet={wallet}
-        wallets={
-          walletGroupsQuery.data?.flatMap(
-            (group) => group.walletContainer.wallets
-          ) ?? []
-        }
+        walletGroups={walletGroupsQuery.data}
         origin={origin}
         onConfirm={handleConfirm}
         onReject={handleReject}

@@ -7,29 +7,17 @@ import { PageTop } from 'src/ui/components/PageTop';
 import { walletPort } from 'src/ui/shared/channels';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { Media } from 'src/ui/ui-kit/Media';
-import type { Item } from 'src/ui/ui-kit/SurfaceList';
-import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
-import { NBSP } from 'src/ui/shared/typography';
 import { PageBottom } from 'src/ui/components/PageBottom';
-import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
-import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
-import { IsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
-import { WalletAvatar } from 'src/ui/components/WalletAvatar';
-import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
-import AddWalletIcon from 'jsx:src/ui/assets/add-wallet.svg';
+import AddIcon from 'jsx:src/ui/assets/plus.svg';
+import EditIcon from 'jsx:src/ui/assets/edit.svg';
 import { Button } from 'src/ui/ui-kit/Button';
-import { TextLink } from 'src/ui/ui-kit/TextLink';
-import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
-import {
-  isPrivateKeyContainer,
-  isReadonlyContainer,
-} from 'src/shared/types/validators';
+import { VStack } from 'src/ui/ui-kit/VStack';
+import { Background } from 'src/ui/components/Background';
+import { WalletList } from './WalletList';
 
 export function WalletSelect() {
   const navigate = useNavigate();
@@ -53,15 +41,32 @@ export function WalletSelect() {
     <NavigationTitle
       title="Wallets"
       elementEnd={
-        <Button
-          kind="ghost"
-          size={40}
-          as={UnstyledLink}
-          to="/get-started"
-          title="Add Wallet"
+        <HStack
+          gap={0}
+          alignItems="center"
+          style={{ position: 'relative', left: -36 }}
         >
-          <AddWalletIcon style={{ width: 24, height: 24 }} />
-        </Button>
+          <Button
+            kind="ghost"
+            size={36}
+            style={{ padding: 6 }}
+            as={UnstyledLink}
+            to="/wallets"
+            title="Edit Wallets"
+          >
+            <EditIcon style={{ width: 24, height: 24 }} />
+          </Button>
+          <Button
+            kind="ghost"
+            size={36}
+            style={{ padding: 6 }}
+            as={UnstyledLink}
+            to="/get-started"
+            title="Add Wallet"
+          >
+            <AddIcon style={{ width: 24, height: 24 }} />
+          </Button>
+        </HStack>
       }
     />
   );
@@ -77,115 +82,38 @@ export function WalletSelect() {
       </PageColumn>
     );
   }
-  const items: Item[] = [];
-  let isVisuallyGrouped = false;
-  for (const group of walletGroups) {
-    // assertSignerContainer(group.walletContainer);
-    if (walletGroups.length > 1) {
-      isVisuallyGrouped = true;
-      const isPrivateKeyGroup = isPrivateKeyContainer(group.walletContainer);
-      const isReadonlyGroup = isReadonlyContainer(group.walletContainer);
-      // const isPrivateKeyGroup = group.walletContainer.seedType === SeedType.privateKey;
-      const to =
-        isPrivateKeyGroup || isReadonlyGroup
-          ? `/wallets/accounts/${group.walletContainer.wallets[0].address}?groupId=${group.id}`
-          : `/wallets/groups/${group.id}`;
-      items.push({
-        key: group.id,
-        pad: false,
-        component: (
-          <UIText
-            as={TextLink}
-            to={to}
-            kind="caption/accent"
-            color="var(--neutral-700)"
-            style={{
-              paddingBottom: 4,
-              paddingTop: 12,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            {isPrivateKeyGroup
-              ? 'Private Key'
-              : getGroupDisplayName(group.name)}
-          </UIText>
-        ),
-      });
-    }
-    for (const wallet of group.walletContainer.wallets) {
-      items.push({
-        key: `${group.id}-${wallet.address}`,
-        onClick: () => {
-          setCurrentAddressMutation.mutate(wallet.address);
-        },
-        component: (
-          <HStack gap={4} justifyContent="space-between" alignItems="center">
-            <Media
-              image={
-                <IsConnectedToActiveTab
-                  address={wallet.address}
-                  render={({ data: isConnected }) => (
-                    <WalletAvatar
-                      address={wallet.address}
-                      size={40}
-                      active={Boolean(isConnected)}
-                      borderRadius={4}
-                    />
-                  )}
-                />
-              }
-              text={
-                <UIText kind="small/regular">
-                  <WalletDisplayName wallet={wallet} />
-                </UIText>
-              }
-              detailText={
-                <PortfolioValue
-                  address={wallet.address}
-                  render={(entry) => (
-                    <UIText kind="headline/h3">
-                      {entry.value ? (
-                        <NeutralDecimals
-                          parts={formatCurrencyToParts(
-                            entry.value?.total_value || 0,
-                            'en',
-                            'usd'
-                          )}
-                        />
-                      ) : (
-                        NBSP
-                      )}
-                    </UIText>
-                  )}
-                />
-              }
-            />
-            {wallet.address.toLowerCase() === singleAddress.toLowerCase() ? (
-              <span style={{ color: 'var(--primary)' }}>✔</span>
-            ) : null}
-          </HStack>
-        ),
-      });
-    }
-  }
-  items.push({
-    key: 0,
-    to: '/wallets',
-    separatorTop: true,
-    component: <div style={{ color: 'var(--primary)' }}>Manage Wallets</div>,
-  });
+
   return (
-    <PageColumn>
-      {title}
-      <PageTop />
-      <SurfaceList
-        items={items}
-        // I wish we had inline css pseudo-classes instead :(
-        style={isVisuallyGrouped ? { paddingTop: 4 } : undefined}
-      />
-      <PageBottom />
-    </PageColumn>
+    <Background backgroundKind="white">
+      <PageColumn>
+        {title}
+        <PageTop />
+        <VStack gap={2}>
+          <WalletList
+            walletGroups={walletGroups}
+            onSelect={(wallet) => {
+              setCurrentAddressMutation.mutate(wallet.address);
+            }}
+            selectedAddress={singleAddress}
+          />
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <Button
+              kind="neutral"
+              size={36}
+              style={{
+                paddingInline: 12,
+                backgroundColor: 'var(--neutral-100)',
+              }}
+              as={UnstyledLink}
+              to="/get-started"
+              title="Add Wallet"
+            >
+              Add Wallet
+            </Button>
+          </div>
+        </VStack>
+        <PageBottom />
+      </PageColumn>
+    </Background>
   );
 }
