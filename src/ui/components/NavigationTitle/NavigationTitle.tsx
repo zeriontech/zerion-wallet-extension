@@ -1,6 +1,7 @@
 import React, { useLayoutEffect } from 'react';
 import { Content } from 'react-area';
 import { useNavigate } from 'react-router-dom';
+import { getDocumentTitle } from 'src/ui/shared/getDocumentTitle';
 import { BackButton } from '../BackButton';
 import { toggleUrlBar } from '../URLBar/URLBar';
 
@@ -43,7 +44,7 @@ export function NavigationTitle({
         'NavigationTitle: either title or documentTitle is required'
       );
     }
-    document.title = stringTitle;
+    document.title = getDocumentTitle(stringTitle);
   }, [ignoreDocumentTitle_DO_NOT_USE_EXCEPT_FOR_LOADING_VIEW, stringTitle]);
 
   if (urlBar === 'none') {

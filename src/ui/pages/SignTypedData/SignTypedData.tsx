@@ -46,6 +46,7 @@ import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset'
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { useErrorBoundary } from 'src/ui/shared/useErrorBoundary';
 import { isDeviceAccount } from 'src/shared/types/validators';
+import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { HardwareSignMessage } from '../HardwareWalletConnection/HardwareSignMessage';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
@@ -388,6 +389,7 @@ function SignTypedDataContent({
 
   return (
     <Background backgroundKind="white">
+      <NavigationTitle title={null} documentTitle="Sign Typed Data" />
       <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
       <PageColumn
         // different surface color on backgroundKind="white"

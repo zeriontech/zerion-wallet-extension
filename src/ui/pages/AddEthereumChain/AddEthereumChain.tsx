@@ -18,6 +18,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
+import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { NetworkForm } from '../Networks/NetworkForm';
 import { NetworkCreateSuccess } from '../Networks/NetworkCreateSuccess';
 
@@ -60,6 +61,7 @@ function AddChain({
   }
   return (
     <PageColumn>
+      <NavigationTitle title={null} documentTitle="Add Ethereum Chain" />
       <PageTop />
       <div
         style={{

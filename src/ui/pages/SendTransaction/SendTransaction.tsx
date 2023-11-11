@@ -62,6 +62,7 @@ import { isDeviceAccount } from 'src/shared/types/validators';
 import { getTransactionCount } from 'src/modules/ethereum/transactions/getTransactionCount';
 import { getError } from 'src/shared/errors/getError';
 import { useEvent } from 'src/ui/shared/useEvent';
+import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { HardwareSignTransaction } from '../HardwareWalletConnection/HardwareSignTransaction/HardwareSignTransaction';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
@@ -577,6 +578,7 @@ function SendTransactionContent({
 
   return (
     <Background backgroundKind="white">
+      <NavigationTitle title={null} documentTitle="Send Transaction" />
       <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
       <PageColumn
         // different surface color on backgroundKind="white"

@@ -6,6 +6,7 @@ import { Store } from 'store-unit';
 import { useStore } from '@store-unit/react';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { getBackOrHome } from 'src/ui/shared/navigation/getBackOrHome';
+import { getDocumentTitle } from 'src/ui/shared/getDocumentTitle';
 import { BackButton } from '../BackButton';
 
 function capitalize(str: string) {
@@ -29,9 +30,12 @@ const URLBarBlacklist = new Set([
   '/overview/history',
   '/overview/feed',
   '/login',
+  '/addEthereumChain',
   '/sendTransaction',
   '/signMessage',
   '/signTypedData',
+  '/siwe',
+  '/requestAccounts',
   '/phishing-warning',
 ]);
 
@@ -53,7 +57,7 @@ export const NAVIGATION_BAR_HEIGHT = 46;
 
 function DocumentTitle({ title }: { title: string }) {
   useLayoutEffect(() => {
-    document.title = title;
+    document.title = getDocumentTitle(title);
   }, [title]);
   return null;
 }
