@@ -1,4 +1,5 @@
 import React, { useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { invariant } from 'src/shared/invariant';
@@ -21,11 +22,13 @@ export function NetworkSelect({
   onChange,
   type,
   valueMaxWidth,
+  dialogRootNode,
 }: {
   value: string;
   onChange: (value: string) => void;
   type: 'overview' | 'connection';
   valueMaxWidth?: number;
+  dialogRootNode?: HTMLElement;
 }) {
   const { params } = useAddressParams();
   const { value: portfolioDecomposition } = useAddressPortfolioDecomposition({
@@ -38,16 +41,21 @@ export function NetworkSelect({
     () => (chain && networks ? networks.getNetworkByName(chain) : null),
     [chain, networks]
   );
+
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialog = (
+    <BottomSheetDialog ref={dialogRef} containerStyle={{ padding: 0 }}>
+      <NetworkSelectDialog
+        value={value}
+        type={type}
+        chainDistribution={portfolioDecomposition}
+      />
+    </BottomSheetDialog>
+  );
   return (
     <>
-      <BottomSheetDialog ref={dialogRef} containerStyle={{ padding: 0 }}>
-        <NetworkSelectDialog
-          value={value}
-          type={type}
-          chainDistribution={portfolioDecomposition}
-        />
-      </BottomSheetDialog>
+      {dialogRootNode ? createPortal(dialog, dialogRootNode) : dialog}
+
       <Button
         type="button"
         size={32}

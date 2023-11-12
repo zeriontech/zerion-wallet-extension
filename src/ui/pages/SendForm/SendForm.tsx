@@ -41,6 +41,7 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 import { FormFieldset } from 'src/ui/ui-kit/FormFieldset';
+import { getRootDomNode } from 'src/ui/shared/getRootDomNode';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -75,6 +76,8 @@ function StoreWatcher<T>({
   const state = useStore(store);
   return render(state);
 }
+
+const rootNode = getRootDomNode();
 
 export function SendForm() {
   const { singleAddress: address } = useAddressParams();
@@ -256,6 +259,7 @@ export function SendForm() {
                 onChange={(value) => {
                   sendView.handleChange('tokenChain', value);
                 }}
+                dialogRootNode={rootNode}
               />
             ) : (
               <NetworkSelect
