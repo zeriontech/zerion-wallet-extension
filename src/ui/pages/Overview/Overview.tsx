@@ -44,6 +44,7 @@ import {
 import { InvitationBanner } from 'src/ui/components/InvitationFlow';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
+import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -399,6 +400,7 @@ function OverviewComponent() {
               path="/"
               element={
                 <ViewSuspense logDelays={true} fallback={tabFallback}>
+                  <NavigationTitle title={null} documentTitle="Overview" />
                   <Positions
                     chain={preferences.overviewChain}
                     onChainChange={setChain}
@@ -410,6 +412,7 @@ function OverviewComponent() {
               path="/nfts"
               element={
                 <ViewSuspense logDelays={true} fallback={tabFallback}>
+                  <NavigationTitle title={null} documentTitle="NFTs" />
                   <NonFungibleTokens
                     chain={preferences.overviewChain}
                     onChainChange={setChain}
@@ -421,6 +424,7 @@ function OverviewComponent() {
               path="/history"
               element={
                 <ViewSuspense logDelays={true} fallback={tabFallback}>
+                  <NavigationTitle title={null} documentTitle="History" />
                   <HistoryList
                     chain={preferences.overviewChain}
                     onChainChange={setChain}
@@ -432,6 +436,7 @@ function OverviewComponent() {
               path="/feed"
               element={
                 <ViewSuspense logDelays={true} fallback={tabFallback}>
+                  <NavigationTitle title={null} documentTitle="Perks" />
                   <Feed />
                 </ViewSuspense>
               }

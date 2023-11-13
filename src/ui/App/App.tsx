@@ -299,6 +299,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
               </RequireAuth>
             }
           />
+          {/* TODO: Should this page be removed? */}
           <Route
             path="/switchEthereumChain"
             element={

@@ -33,6 +33,7 @@ import { Address } from 'src/ui/components/Address';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/PhishingDefenceStatus';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
+import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 
 function WalletSelectList({
   wallets,
@@ -196,6 +197,7 @@ function RequestAccountsView({
   const iconBorderRadius = 6;
   return (
     <Background backgroundKind="white">
+      <NavigationTitle title={null} documentTitle="Connect Wallet" />
       <PageTop />
       <PageColumn
         style={{ ['--surface-background-color' as string]: 'var(--z-index-0)' }}

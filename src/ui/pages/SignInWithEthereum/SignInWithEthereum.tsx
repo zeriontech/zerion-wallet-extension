@@ -28,6 +28,7 @@ import { usePersonalSignMutation } from 'src/ui/shared/requests/message-signing'
 import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/PhishingDefenceStatus';
 import { NavigationBar } from 'src/ui/components/NavigationBar';
 import { PageBottom } from 'src/ui/components/PageBottom';
+import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { SpeechBubble } from './SpeechBubble/SpeechBubble';
 import { useFetchUTCTime } from './useFetchUTCTime';
 import { SiweError } from './SiweError';
@@ -99,6 +100,7 @@ export function SignInWithEthereum() {
 
   return (
     <Background backgroundKind="white">
+      <NavigationTitle title={null} documentTitle="Sign In with Ethereum" />
       <PageColumn>
         <>
           {params.has('step') === false ? (

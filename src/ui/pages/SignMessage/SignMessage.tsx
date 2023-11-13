@@ -26,6 +26,7 @@ import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/Phishin
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { isDeviceAccount } from 'src/shared/types/validators';
 import { useErrorBoundary } from 'src/ui/shared/useErrorBoundary';
+import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { HardwareSignMessage } from '../HardwareWalletConnection/HardwareSignMessage';
 
 function MessageRow({ message }: { message: string }) {
@@ -95,6 +96,7 @@ function SignMessageContent({
 
   return (
     <Background backgroundKind="white">
+      <NavigationTitle title={null} documentTitle="Sign Message" />
       <PageColumn
         // different surface color on backgroundKind="neutral"
         style={{
