@@ -3,13 +3,7 @@ import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { DeviceAccount } from 'src/shared/types/Device';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
-import {
-  isPrivateKeyContainer,
-  isReadonlyContainer,
-} from 'src/shared/types/validators';
-import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
 import { SurfaceList, type Item } from 'src/ui/ui-kit/SurfaceList';
-import { TextLink } from 'src/ui/ui-kit/TextLink';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -34,44 +28,7 @@ export function WalletList({
   onSelect(wallet: ExternallyOwnedAccount | BareWallet | DeviceAccount): void;
 }) {
   const items: Item[] = [];
-  let isFirstGroup = true;
   for (const group of walletGroups) {
-    // assertSignerContainer(group.walletContainer);
-    if (walletGroups.length > 1) {
-      const isPrivateKeyGroup = isPrivateKeyContainer(group.walletContainer);
-      const isReadonlyGroup = isReadonlyContainer(group.walletContainer);
-      // const isPrivateKeyGroup = group.walletContainer.seedType === SeedType.privateKey;
-      const to =
-        isPrivateKeyGroup || isReadonlyGroup
-          ? `/wallets/accounts/${group.walletContainer.wallets[0].address}?groupId=${group.id}`
-          : `/wallets/groups/${group.id}`;
-      items.push({
-        key: group.id,
-        pad: false,
-        isInteractive: true,
-        component: (
-          <UIText
-            as={TextLink}
-            to={to}
-            kind="caption/accent"
-            color="var(--neutral-700)"
-            style={{
-              display: 'block',
-              paddingBottom: 4,
-              paddingTop: isFirstGroup ? 0 : 12,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            {isPrivateKeyGroup
-              ? 'Private Key'
-              : getGroupDisplayName(group.name)}
-          </UIText>
-        ),
-      });
-    }
-    isFirstGroup = false;
     for (const wallet of group.walletContainer.wallets) {
       items.push({
         key: `${group.id}-${wallet.address}`,
@@ -92,6 +49,7 @@ export function WalletList({
           >
             <HStack gap={4} justifyContent="space-between" alignItems="center">
               <Media
+                vGap={0}
                 image={
                   <IsConnectedToActiveTab
                     address={wallet.address}

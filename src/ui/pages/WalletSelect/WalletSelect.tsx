@@ -3,7 +3,6 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { FillView } from 'src/ui/components/FillView';
 import { PageColumn } from 'src/ui/components/PageColumn';
-import { PageTop } from 'src/ui/components/PageTop';
 import { walletPort } from 'src/ui/shared/channels';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -17,6 +16,7 @@ import EditIcon from 'jsx:src/ui/assets/edit.svg';
 import { Button } from 'src/ui/ui-kit/Button';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Background } from 'src/ui/components/Background';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { WalletList } from './WalletList';
 
 export function WalletSelect() {
@@ -87,7 +87,7 @@ export function WalletSelect() {
     <Background backgroundKind="white">
       <PageColumn>
         {title}
-        <PageTop />
+        <Spacer height={10} />
         <VStack gap={2}>
           <WalletList
             walletGroups={walletGroups}
