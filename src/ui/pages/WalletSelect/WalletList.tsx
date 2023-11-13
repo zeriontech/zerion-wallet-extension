@@ -100,11 +100,5 @@ export function WalletList({
     }
   }
 
-  return (
-    <SurfaceList
-      items={items}
-      // I wish we had inline css pseudo-classes instead :(
-      style={{ padding: 0 }}
-    />
-  );
+  return <SurfaceList items={items} style={{ padding: 0 }} />;
 }
