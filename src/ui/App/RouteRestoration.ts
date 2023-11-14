@@ -9,6 +9,10 @@ export function registerPersistentRoute(value: string) {
   restorationWhiteList.add(value);
 }
 
+export async function resetPersistedRoutes() {
+  return browserStorage.remove('routeRestoration');
+}
+
 export function RouteRestoration({ initialRoute }: { initialRoute?: string }) {
   const { pathname, search } = useLocation();
   const didRestoreRef = useRef(false);

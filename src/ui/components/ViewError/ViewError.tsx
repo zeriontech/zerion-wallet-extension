@@ -15,6 +15,7 @@ import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { pageTemplateType } from 'src/ui/shared/getPageTemplateName';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { emitter } from 'src/ui/shared/events';
+import { resetPersistedRoutes } from 'src/ui/App/RouteRestoration';
 import { WarningIcon } from '../WarningIcon';
 import { getBugButtonUrl } from '../BugReportButton/getBugReportURL';
 import { PageStickyFooter } from '../PageStickyFooter';
@@ -125,7 +126,8 @@ export function ViewError({
         >
           <Button
             kind="regular"
-            onClick={() => {
+            onClick={async () => {
+              await resetPersistedRoutes();
               if (pageTemplateType !== 'dialog') {
                 navigate('/');
               }
