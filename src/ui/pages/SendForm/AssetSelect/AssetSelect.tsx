@@ -5,6 +5,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { createPortal } from 'react-dom';
 import type { AddressPosition } from 'defi-sdk';
 import noop from 'lodash/noop';
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -27,10 +28,12 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { normalizedContains } from 'normalized-contains';
 import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { Surface } from 'src/ui/ui-kit/Surface';
 import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { SurfaceItemButton, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
+import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
+import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
+import { getRootDomNode } from 'src/ui/shared/getRootDomNode';
 import * as styles from './styles.module.css';
 
 type AddressPositionItem = Pick<
@@ -128,7 +131,7 @@ function improvedScrollToIndex<A extends Element, B extends Element>(
   if (isVisible) {
     return;
   }
-  virtualList.scrollToIndex(Math.max(0, targetIndex - 5));
+  virtualList.scrollToIndex(Math.max(0, targetIndex));
 }
 
 function findOptionIndex(itemIndex: number, groupIndexes: number[]) {
@@ -143,6 +146,8 @@ function findOptionIndex(itemIndex: number, groupIndexes: number[]) {
   return result;
 }
 
+const rootNode = getRootDomNode();
+
 function AssetSelectComponent({
   items: allItems,
   isLoading,
@@ -152,8 +157,8 @@ function AssetSelectComponent({
   onChange,
   chain,
 }: Props) {
-  const menuRef = useRef<HTMLElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
+  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const [query, setQuery] = useState('');
@@ -204,7 +209,6 @@ function AssetSelectComponent({
   });
 
   const {
-    isOpen,
     highlightedIndex,
     getToggleButtonProps,
     getItemProps,
@@ -235,6 +239,7 @@ function AssetSelectComponent({
     onStateChange: noop,
     onIsOpenChange: (changes) => {
       if (changes.isOpen) {
+        dialogRef.current?.showModal();
         searchInputRef.current?.focus();
         const index = items.findIndex(
           (item) => item.asset.id === selectedItem.asset.id
@@ -242,6 +247,8 @@ function AssetSelectComponent({
         if (index >= 0) {
           setHighlightedIndex(index);
         }
+      } else {
+        dialogRef.current?.close();
       }
       return changes;
     },
@@ -304,7 +311,7 @@ function AssetSelectComponent({
     });
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div>
       <UnstyledButton
         {...getToggleButtonProps({
           tabIndex: 0,
@@ -348,139 +355,137 @@ function AssetSelectComponent({
           ) : null}
         </HStack>
       </UnstyledButton>
-      <Surface
-        style={{
-          visibility: isOpen ? 'visible' : 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          position: 'absolute',
-          width: 436,
-          maxWidth: '90vw',
-          zIndex: 'var(--dropdown-menu-index)',
-          paddingTop: isCombobox ? 0 : 8,
-          paddingBottom: 8,
-          top: 'calc(100% + 4px)',
-          left: -12,
-          backgroundColor: 'var(--z-index-1)',
-          boxShadow: 'var(--elevation-200)',
-          maxHeight: '50vh',
-          overflow: 'hidden',
-        }}
-        {...getMenuProps({ ref: menuRef })}
-      >
-        <div
-          style={{
-            display: isCombobox ? undefined : 'none',
-            padding: 20,
-            paddingTop: 12,
-            position: 'sticky',
-            width: '100%',
-            top: 0,
-            backgroundColor: 'var(--z-index-1)',
-            zIndex: 1,
+      {createPortal(
+        <BottomSheetDialog
+          ref={dialogRef}
+          height="90vh"
+          style={{ paddingTop: isCombobox ? 0 : 8 }}
+          containerStyle={{
+            paddingTop: isCombobox ? 0 : 8,
+            paddingBottom: 0,
+            paddingInline: 0,
+            /* flex styles are importand so that listRef element has a limited height */
+            display: 'flex',
+            flexDirection: 'column',
           }}
+          {...getMenuProps({ ref: dialogRef })}
+          onClosed={closeMenu}
         >
-          <SearchInput
-            {...getInputProps({
-              ref: searchInputRef,
-              onKeyDown: (event) => {
-                if (highlightedIndex === -1 && event.key === 'Enter') {
-                  event.preventDefault();
-                  selectFirstItemWithDelay();
-                  return false;
-                }
-              },
-            })}
-            placeholder="Search..."
-            onClear={() => {
-              setInputValue('');
-            }}
-          />
-        </div>
-        {!isOpen ? null : optionItems.length ? (
           <div
-            ref={listRef}
             style={{
-              overflowY: 'auto',
+              display: isCombobox ? undefined : 'none',
+              padding: 16,
+              paddingTop: 12,
+              position: 'sticky',
+              width: '100%',
+              top: 0,
+              backgroundColor: 'var(--z-index-1)',
+              zIndex: 1,
             }}
           >
-            <SurfaceList
+            <SearchInput
+              boxHeight={40}
+              {...getInputProps({
+                type: 'search',
+                ref: searchInputRef,
+                placeholder: 'Search tokens',
+                onKeyDown: (event) => {
+                  if (highlightedIndex === -1 && event.key === 'Enter') {
+                    event.preventDefault();
+                    selectFirstItemWithDelay();
+                    return false;
+                  }
+                },
+              })}
+            />
+          </div>
+          {optionItems.length ? (
+            <div
+              ref={listRef}
               style={{
-                height: virtualList.getTotalSize(),
-                position: 'relative',
+                overflowY: 'auto',
+                paddingBottom: 8,
               }}
-              items={virtualList.getVirtualItems().map((row) => {
-                const optionItem = optionItems[row.index];
-                if (optionItem.type === ItemType.group) {
-                  return {
-                    key: optionItem.name,
-                    component: (
-                      <UIText
-                        kind="body/accent"
-                        color="var(--neutral-700)"
-                        style={{
-                          textTransform: 'uppercase',
-                          paddingLeft: 20,
-                          paddingRight: 20,
-                          paddingTop: row.index === 0 ? 4 : 16,
-                          paddingBottom: 8,
+            >
+              <SurfaceList
+                style={{
+                  height: virtualList.getTotalSize(),
+                  position: 'relative',
+                }}
+                items={virtualList.getVirtualItems().map((row) => {
+                  const optionItem = optionItems[row.index];
+                  if (optionItem.type === ItemType.group) {
+                    return {
+                      key: optionItem.name,
+                      component: (
+                        <UIText
+                          kind="body/accent"
+                          color="var(--neutral-700)"
+                          style={{
+                            textTransform: 'uppercase',
+                            paddingLeft: 20,
+                            paddingRight: 20,
+                            paddingTop: row.index === 0 ? 4 : 16,
+                            paddingBottom: 8,
 
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          height: row.size,
-                          transform: `translateY(${row.start}px)`,
-                        }}
-                      >
-                        {optionItem.name}
-                      </UIText>
-                    ),
-                  };
-                } else if (optionItem.type === ItemType.option) {
-                  const index = optionItem.index;
-                  const item = items[index];
-
-                  return {
-                    key: item.asset.id,
-                    isInteractive: true,
-                    pad: false,
-                    separatorTop: false,
-                    component: (
-                      <SurfaceItemButton
-                        highlighted={highlightedIndex === index}
-                        {...getItemProps({
-                          item,
-                          index,
-                          style: {
                             position: 'absolute',
                             top: 0,
                             left: 0,
                             width: '100%',
                             height: row.size,
                             transform: `translateY(${row.start}px)`,
-                          },
-                        })}
-                      >
-                        <Option item={item} />
-                      </SurfaceItemButton>
-                    ),
-                  };
-                } else {
-                  // @ts-ignore unknown optionItem
-                  throw new Error(`Unexpected ItemType: ${optionItem.type}`);
-                }
-              })}
-            />
-          </div>
-        ) : isLoading ? (
-          <ViewLoading />
-        ) : (
-          <UIText kind="body/regular" style={{ padding: '8px 12px' }}>
-            {noItemsMessage}
-          </UIText>
-        )}
-      </Surface>
+                          }}
+                        >
+                          {optionItem.name}
+                        </UIText>
+                      ),
+                    };
+                  } else if (optionItem.type === ItemType.option) {
+                    const index = optionItem.index;
+                    const item = items[index];
+
+                    return {
+                      key: item.asset.id,
+                      isInteractive: true,
+                      pad: false,
+                      separatorTop: false,
+                      component: (
+                        <SurfaceItemButton
+                          highlighted={highlightedIndex === index}
+                          {...getItemProps({
+                            item,
+                            index,
+                            style: {
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              width: '100%',
+                              height: row.size,
+                              transform: `translateY(${row.start}px)`,
+                            },
+                          })}
+                        >
+                          <Option item={item} />
+                        </SurfaceItemButton>
+                      ),
+                    };
+                  } else {
+                    // @ts-ignore unknown optionItem
+                    throw new Error(`Unexpected ItemType: ${optionItem.type}`);
+                  }
+                })}
+              />
+            </div>
+          ) : isLoading ? (
+            <ViewLoading />
+          ) : (
+            <UIText kind="body/regular" style={{ padding: '8px 12px' }}>
+              {noItemsMessage}
+            </UIText>
+          )}
+        </BottomSheetDialog>,
+        rootNode
+      )}
     </div>
   );
 }

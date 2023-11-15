@@ -46,7 +46,7 @@ export function TokenTransferInput({ sendView }: { sendView: SendFormView }) {
                 }
                 chain={chain}
                 selectedItem={tokenItem}
-                noItemsMessage="No items message (todo)"
+                noItemsMessage="No positions found"
               />
             ) : (
               <div

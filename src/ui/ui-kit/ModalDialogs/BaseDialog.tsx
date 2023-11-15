@@ -7,6 +7,7 @@ export interface BaseDialogProps
   closeOnClickOutside?: boolean;
   render?: (open: boolean) => React.ReactNode;
   renderWhenOpen?: () => React.ReactNode;
+  onClosed?: () => void;
 }
 
 function setRef<T>(ref: React.Ref<T>, value: T) {
@@ -33,12 +34,17 @@ export const BaseDialog = React.forwardRef(
       closeOnClickOutside = true,
       render,
       renderWhenOpen,
+      onClosed,
       ...props
     }: BaseDialogProps,
     ref: React.Ref<HTMLDialogElement>
   ) => {
     const [open, setOpen] = useState(props.open ?? false);
     const dialogRef = useRef<HTMLDialogElement | null>(null);
+    const onClosedRef = useRef(onClosed);
+    if (onClosedRef.current !== onClosed) {
+      onClosedRef.current = onClosed;
+    }
 
     useEffect(() => {
       invariant(dialogRef.current, 'Dialog not mounted');
@@ -72,8 +78,9 @@ export const BaseDialog = React.forwardRef(
         return;
       }
       const handler = (event: MouseEvent) => {
-        if (ref && 'current' in ref && event.target === ref.current) {
-          ref.current?.close();
+        if (event.target === dialogRef.current) {
+          dialogRef.current?.close();
+          onClosedRef.current?.();
         }
       };
       document.body.addEventListener('click', handler);
