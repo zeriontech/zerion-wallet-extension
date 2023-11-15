@@ -68,10 +68,19 @@ export const ItemButton = React.forwardRef<
     style?: React.CSSProperties;
     highlighted?: boolean;
     outlined?: boolean;
+    decorationStyle?: React.CSSProperties;
   } & React.ButtonHTMLAttributes<HTMLButtonElement>
 >(
   (
-    { children, style, highlighted, outlined = false, className, ...props },
+    {
+      children,
+      style,
+      highlighted,
+      outlined = false,
+      decorationStyle,
+      className,
+      ...props
+    },
     ref
   ) => {
     return (
@@ -87,7 +96,10 @@ export const ItemButton = React.forwardRef<
       >
         <div
           className={s.decoration}
-          style={outlined ? { border: '1px solid var(--primary)' } : undefined}
+          style={{
+            border: outlined ? '1px solid var(--primary)' : undefined,
+            ...decorationStyle,
+          }}
         >
           {children}
         </div>
@@ -137,108 +149,114 @@ function isInteractive(item: Item): boolean {
   return item.isInteractive ?? Boolean(item.to || item.href || item.onClick);
 }
 
-export function SurfaceList({
-  items,
-  gap = 0,
-  style,
-  ...props
-}: {
-  items: Item[];
-  gap?: number;
-  style?: React.CSSProperties;
-} & React.HTMLAttributes<HTMLDivElement>) {
-  const emptyItemPaddingBlock = 8;
-  const firstItemIsInteractive = items.length && isInteractive(items[0]);
-  const lastItemIsInteractive =
-    items.length && isInteractive(items[items.length - 1]);
-  return (
-    <Surface
-      className={s.root}
-      style={{
-        paddingBlockStart: firstItemIsInteractive ? 6 : 0,
-        paddingBlockEnd: lastItemIsInteractive ? 6 : 0,
-        ...style,
-      }}
-      {...props}
-    >
-      <VStack gap={gap}>
-        {items.map((item, index) => {
-          const {
-            style,
-            separatorTop = false,
-            separatorLeadingInset = 0,
-            pad = true,
-          } = item;
-          const isInteractiveItem = isInteractive(item);
-          const component = item.to ? (
-            <ItemLink
-              to={item.to}
-              onClick={
-                item.onClick as React.AnchorHTMLAttributes<HTMLAnchorElement>['onClick']
-              }
-            >
-              {item.component}
-            </ItemLink>
-          ) : item.href ? (
-            <ItemAnchor
-              href={item.href}
-              target={item.target}
-              onClick={
-                item.onClick as React.AnchorHTMLAttributes<HTMLAnchorElement>['onClick']
-              }
-            >
-              {item.component}
-            </ItemAnchor>
-          ) : item.onClick ? (
-            <ItemButton
-              disabled={item.disabled}
-              onClick={item.onClick}
-              type={item.buttonType}
-            >
-              {item.component}
-            </ItemButton>
-          ) : pad === false ? (
-            item.component
-          ) : (
-            <div style={{ paddingBlock: emptyItemPaddingBlock }}>
-              {item.component}
-            </div>
-          );
-          if (item.key == null) {
-            throw new Error('No key');
-          }
-          // const nextItemHasNoSeparator =
-          //   index === items.length - 1 ||
-          //   items[index + 1].separatorTop !== true;
-          // const noSeparator = !separatorTop && nextItemHasNoSeparator;
-          return (
-            <div
-              key={item.key}
-              // not sure if this looks good yet. Seems too thick
-              // className={noSeparator ? s.noSeparator : undefined}
-              style={{
-                padding: isInteractiveItem ? undefined : `0 16px`,
-                ...style,
-              }}
-            >
-              {index > 0 && separatorTop ? (
-                <div
-                  style={{
-                    height: 1,
-                    marginLeft:
-                      (isInteractiveItem ? 16 : 0) + separatorLeadingInset,
-                    marginRight: isInteractiveItem ? 16 : 0,
-                    marginBottom: 4,
-                    marginTop: 4,
-                    backgroundColor: 'var(--neutral-300)',
-                  }}
-                />
-              ) : null}
-              {component}
-            </div>
-          );
-        })}
-      </VStack>
-    </Surface>
-  );
-}
+export const SurfaceList = React.forwardRef(
+  (
+    {
+      items,
+      gap = 0,
+      style,
+      ...props
+    }: {
+      items: Item[];
+      gap?: number;
+      style?: React.CSSProperties;
+    } & React.HTMLAttributes<HTMLDivElement>,
+    ref: React.Ref<HTMLDivElement>
+  ) => {
+    const emptyItemPaddingBlock = 8;
+    const firstItemIsInteractive = items.length && isInteractive(items[0]);
+    const lastItemIsInteractive =
+      items.length && isInteractive(items[items.length - 1]);
+    return (
+      <Surface
+        ref={ref}
+        className={s.root}
+        style={{
+          paddingBlockStart: firstItemIsInteractive ? 6 : 0,
+          paddingBlockEnd: lastItemIsInteractive ? 6 : 0,
+          ...style,
+        }}
+        {...props}
+      >
+        <VStack gap={gap}>
+          {items.map((item, index) => {
+            const {
+              style,
+              separatorTop = false,
+              separatorLeadingInset = 0,
+              pad = true,
+            } = item;
+            const isInteractiveItem = isInteractive(item);
+            const component = item.to ? (
+              <ItemLink
+                to={item.to}
+                onClick={
+                  item.onClick as React.AnchorHTMLAttributes<HTMLAnchorElement>['onClick']
+                }
+              >
+                {item.component}
+              </ItemLink>
+            ) : item.href ? (
+              <ItemAnchor
+                href={item.href}
+                target={item.target}
+                onClick={
+                  item.onClick as React.AnchorHTMLAttributes<HTMLAnchorElement>['onClick']
+                }
+              >
+                {item.component}
+              </ItemAnchor>
+            ) : item.onClick ? (
+              <ItemButton
+                disabled={item.disabled}
+                onClick={item.onClick}
+                type={item.buttonType}
+              >
+                {item.component}
+              </ItemButton>
+            ) : pad === false ? (
+              item.component
+            ) : (
+              <div style={{ paddingBlock: emptyItemPaddingBlock }}>
+                {item.component}
+              </div>
+            );
+            if (item.key == null) {
+              throw new Error('No key');
+            }
+            // const nextItemHasNoSeparator =
+            //   index === items.length - 1 ||
+            //   items[index + 1].separatorTop !== true;
+            // const noSeparator = !separatorTop && nextItemHasNoSeparator;
+            return (
+              <div
+                key={item.key}
+                // not sure if this looks good yet. Seems too thick
+                // className={noSeparator ? s.noSeparator : undefined}
+                style={{
+                  padding: isInteractiveItem ? undefined : `0 16px`,
+                  ...style,
+                }}
+              >
+                {index > 0 && separatorTop ? (
+                  <div
+                    style={{
+                      height: 1,
+                      marginLeft:
+                        (isInteractiveItem ? 16 : 0) + separatorLeadingInset,
+                      marginRight: isInteractiveItem ? 16 : 0,
+                      marginBottom: 4,
+                      marginTop: 4,
+                      backgroundColor: 'var(--neutral-300)',
+                    }}
+                  />
+                ) : null}
+                {component}
+              </div>
+            );
+          })}
+        </VStack>
+      </Surface>
+    );
+  }
+);

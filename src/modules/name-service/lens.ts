@@ -57,6 +57,13 @@ async function getLensProfileByHandle(request: {
   return response?.data?.profile?.ownedBy || null;
 }
 
+function lensMatch(maybeDomain: string) {
+  return /[^/?]+\.lens$/i.test(maybeDomain);
+}
+
 export async function lensResolve(handle: string): Promise<string | null> {
+  if (!lensMatch(handle)) {
+    return null;
+  }
   return getLensProfileByHandle({ handle });
 }

@@ -12,7 +12,7 @@ export type Registry = (address: string) => Promise<string | null>;
 export const registries = [ensLookup, lensLookup, udLookup];
 export const resolvers = [ensResolve, lensResolve, udResolve];
 
-async function lookupAddressNames(address: string): Promise<string[]> {
+export async function lookupAddressNames(address: string): Promise<string[]> {
   const addresses = await Promise.allSettled(
     registries.map((lookup: Registry) => lookup(address))
   ).then((results) => {

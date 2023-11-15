@@ -676,6 +676,7 @@ export class WalletRecordModel {
       overviewChain: '',
       configurableNonce: false,
       invitationBannerDismissed: false,
+      recentAddresses: [],
     };
     if (!record) {
       return defaults;
