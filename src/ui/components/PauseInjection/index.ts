@@ -1,1 +1,5 @@
-export { PauseInjectionControl, PausedBanner } from './PauseInjection';
+export {
+  PauseInjectionControl,
+  PausedHeader,
+  usePausedData,
+} from './PauseInjection';

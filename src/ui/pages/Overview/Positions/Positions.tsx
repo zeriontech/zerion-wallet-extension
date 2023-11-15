@@ -15,7 +15,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { Media } from 'src/ui/ui-kit/Media';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import WalletIcon from 'jsx:src/ui/assets/wallet.svg';
+import WalletIcon from 'jsx:src/ui/assets/wallet-fancy.svg';
 import GasIcon from 'jsx:src/ui/assets/gas.svg';
 // import { VirtualizedSurfaceList } from 'src/ui/ui-kit/SurfaceList/VirtualizedSurfaceList';
 import type { Item } from 'src/ui/ui-kit/SurfaceList';
@@ -42,19 +42,12 @@ import {
 import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { useNetworks } from 'src/modules/networks/useNetworks';
-import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
-import { walletPort } from 'src/ui/shared/channels';
 import { useQuery } from '@tanstack/react-query';
-import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
-import { FillView } from 'src/ui/components/FillView';
-import { NetworkSelect } from 'src/ui/pages/Networks/NetworkSelect';
 import { intersperce } from 'src/ui/shared/intersperce';
-import { NetworkResetButton } from 'src/ui/components/NetworkResetButton';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
-import { EmptyViewForNetwork } from 'src/ui/components/EmptyViewForNetwork';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { getCommonQuantity } from 'src/modules/networks/asset';
@@ -63,8 +56,19 @@ import { minus } from 'src/ui/shared/typography';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 import { useEvmAddressPositions } from 'src/ui/shared/requests/useEvmAddressPositions';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
-import { GROWN_TAB_MAX_HEIGHT } from '../getTabsOffset';
+import { EmptyView } from 'src/ui/components/EmptyView';
+import { invariant } from 'src/shared/invariant';
+import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOrigin';
+import { SurfaceItemAnchor } from 'src/ui/ui-kit/SurfaceList';
+import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
+import {
+  GROWN_TAB_MAX_HEIGHT,
+  TAB_SELECTOR_HEIGHT,
+  TAB_STICKY_OFFSET,
+  TAB_TOP_PADDING,
+} from '../getTabsOffset';
 import { DappLink } from './DappLink';
+import { NetworkBalance } from './NetworkBalance';
 
 function LineToParent({
   hasPreviosNestedPosition,
@@ -309,13 +313,8 @@ function usePreparedPositions({
   });
   const tabOrigin = tabData?.tabOrigin;
   const { data: siteChain } = useQuery({
-    queryKey: ['wallet/requestChainForOrigin', tabOrigin],
-    queryFn: async () =>
-      !tabOrigin
-        ? null
-        : walletPort
-            .request('requestChainForOrigin', { origin: tabOrigin })
-            .then((chain) => createChain(chain)),
+    queryKey: ['requestChainForOrigin', tabOrigin],
+    queryFn: () => requestChainForOrigin(tabOrigin),
     enabled: Boolean(tabOrigin),
     suspense: false,
   });
@@ -412,32 +411,15 @@ function ProtocolHeading({
   dappInfo,
   value,
   relativeValue,
-  displayImage = true,
 }: {
   dappInfo: AddressPositionDappInfo;
   value: number;
   relativeValue: number;
-  displayImage?: boolean;
 }) {
   return (
     <HStack gap={8} alignItems="center">
-      {!displayImage ? null : dappInfo.id === DEFAULT_PROTOCOL_ID ? (
-        <div
-          style={{
-            backgroundColor: 'var(--actions-default)',
-            padding: 4,
-            borderRadius: 4,
-          }}
-        >
-          <WalletIcon
-            style={{
-              display: 'block',
-              width: 20,
-              height: 20,
-              color: 'var(--always-white)',
-            }}
-          />
-        </div>
+      {dappInfo.id === DEFAULT_PROTOCOL_ID ? (
+        <WalletIcon />
       ) : (
         <TokenIcon
           src={dappInfo.icon_url}
@@ -458,7 +440,7 @@ function ProtocolHeading({
           paddingBlock: 4,
           paddingInline: 6,
           backgroundColor: 'var(--neutral-200)',
-          borderRadius: 4,
+          borderRadius: 8,
         }}
       >
         {`${formatPercent(relativeValue, 'en')}%`}
@@ -470,13 +452,11 @@ function ProtocolHeading({
 function PositionList({
   items,
   address,
-  firstHeaderItemEnd,
 }: {
   items: AddressPosition[];
   address: string | null;
-  firstHeaderItemEnd?: React.ReactNode;
 }) {
-  const COLLAPSED_COUNT = 8;
+  const COLLAPSED_COUNT = 5;
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const showMore = useCallback(
     (key: string) => setExpanded((expanded) => new Set(expanded).add(key)),
@@ -496,8 +476,8 @@ function PositionList({
   const preparedPositions = usePreparedPositions({ items, groupType });
 
   return (
-    <VStack gap={24}>
-      {preparedPositions.dappIds.map((dappId, index) => {
+    <VStack gap={16}>
+      {preparedPositions.dappIds.map((dappId) => {
         const items: Item[] = [];
         const {
           totalValue,
@@ -533,21 +513,33 @@ function PositionList({
           for (const position of nameIndex[name]) {
             items.push({
               key: position.id,
-              href: `https://app.zerion.io/tokens/${position.asset.symbol}-${
-                position.asset.asset_code
-              }${address ? `?address=${address}` : ''}`,
-              target: '_blank',
               separatorLeadingInset: position.parent_id ? 26 : 0,
+              pad: false,
+              style: { padding: 0 },
               component: (
-                <AddressPositionItem
-                  position={position}
-                  groupType={groupType}
-                  hasPreviosNestedPosition={
-                    namePositionCounter > 0 &&
-                    Boolean(nameIndex[name][namePositionCounter - 1].parent_id)
-                  }
-                  showGasIcon={preparedPositions.gasPositionId === position.id}
-                />
+                <SurfaceItemAnchor
+                  href={`https://app.zerion.io/tokens/${
+                    position.asset.symbol
+                  }-${position.asset.asset_code}${
+                    address ? `?address=${address}` : ''
+                  }`}
+                  target="_blank"
+                  decorationStyle={{ borderRadius: 16 }}
+                >
+                  <AddressPositionItem
+                    position={position}
+                    groupType={groupType}
+                    hasPreviosNestedPosition={
+                      namePositionCounter > 0 &&
+                      Boolean(
+                        nameIndex[name][namePositionCounter - 1].parent_id
+                      )
+                    }
+                    showGasIcon={
+                      preparedPositions.gasPositionId === position.id
+                    }
+                  />
+                </SurfaceItemAnchor>
               ),
             });
             namePositionCounter++;
@@ -584,28 +576,33 @@ function PositionList({
 
         return (
           <VStack gap={4} key={dappId}>
-            <HStack
-              gap={4}
-              justifyContent="space-between"
-              alignItems="center"
-              style={{
-                paddingInline: 16,
-                paddingBottom: 8,
-              }}
-            >
-              <ProtocolHeading
-                dappInfo={dappInfo}
-                value={totalValue}
-                relativeValue={relativeValue}
-                displayImage={dappId !== DEFAULT_PROTOCOL_ID}
-              />
-              {index === 0 && firstHeaderItemEnd ? firstHeaderItemEnd : null}
-            </HStack>
+            {preparedPositions.dappIds.length > 1 ? (
+              <div
+                style={{
+                  paddingInline: 16,
+                  paddingBottom: 4,
+                  position: 'sticky',
+                  top:
+                    TAB_STICKY_OFFSET + TAB_SELECTOR_HEIGHT + TAB_TOP_PADDING,
+                  zIndex: 1,
+                  backgroundColor: 'var(--white)',
+                }}
+              >
+                <ProtocolHeading
+                  dappInfo={dappInfo}
+                  value={totalValue}
+                  relativeValue={relativeValue}
+                />
+              </div>
+            ) : null}
             {dappInfo.url ? (
-              <DappLink dappInfo={dappInfo} style={{ marginInline: 16 }} />
+              <DappLink
+                dappInfo={dappInfo}
+                style={{ marginInline: 16, marginBlock: 4 }}
+              />
             ) : null}
             <SurfaceList
-              style={{ position: 'relative', paddingBlock: 0 }}
+              style={{ position: 'relative', paddingBlock: 0, zIndex: 0 }}
               // estimateSize={(index) => (index === 0 ? 52 : 60 + 1)}
               // overscan={5} // the library detects window edge incorrectly, increasing overscan just visually hides the problem
               items={items}
@@ -619,18 +616,26 @@ function PositionList({
 
 function MultiChainPositions({
   addressParams,
-  chainValue,
+  filterChain,
+  dappChain,
+  onChainChange,
   renderEmptyView,
+  renderLoadingView,
   ...positionListProps
 }: {
   addressParams: AddressParams;
-  chainValue: string;
   renderEmptyView: () => React.ReactNode;
+  renderLoadingView: () => React.ReactNode;
+  dappChain: string | null;
+  filterChain: string | null;
+  onChainChange: (value: string | null) => void;
 } & Omit<React.ComponentProps<typeof PositionList>, 'items'>) {
   const { value, isLoading } = useAddressPositions({
     ...addressParams,
     currency: 'usd',
   });
+
+  const chainValue = filterChain || dappChain || NetworkSelectValue.All;
 
   const positions = value?.positions;
   const items = useMemo(
@@ -640,35 +645,74 @@ function MultiChainPositions({
         : positions.filter((position) => position.chain === chainValue),
     [chainValue, positions]
   );
+  const groupedPositions = groupPositionsByDapp(items);
 
   if (isLoading) {
-    return (
-      <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
-        <ViewLoading kind="network" />
-      </CenteredFillViewportView>
-    );
+    return renderLoadingView() as JSX.Element;
   }
-
   if (!items || items.length === 0) {
     return renderEmptyView() as JSX.Element;
   }
-  return <PositionList items={items} {...positionListProps} />;
+
+  return (
+    <VStack gap={Object.keys(groupedPositions).length > 1 ? 16 : 8}>
+      <div style={{ paddingInline: 16 }}>
+        <NetworkBalance
+          dappChain={dappChain}
+          filterChain={filterChain}
+          onChange={onChainChange}
+          value={
+            <NeutralDecimals
+              parts={formatCurrencyToParts(
+                getFullPositionsValue(items),
+                'en',
+                'usd'
+              )}
+            />
+          }
+        />
+      </div>
+      <PositionList items={items} {...positionListProps} />
+    </VStack>
+  );
 }
 
 function RawChainPositions({
   addressParams,
-  chain,
   address,
   renderEmptyView,
+  renderLoadingView,
+  renderErrorView,
+  filterChain,
+  dappChain,
+  onChainChange,
   ...positionListProps
 }: {
   addressParams: AddressParams;
-  chain: Chain;
   renderEmptyView: () => React.ReactNode;
+  renderLoadingView: () => React.ReactNode;
+  renderErrorView: (chainName: string) => React.ReactNode;
+  dappChain: string | null;
+  filterChain: string | null;
+  onChainChange: (value: string | null) => void;
 } & Omit<React.ComponentProps<typeof PositionList>, 'items'>) {
   const addressParam =
     'address' in addressParams ? addressParams.address : address;
-  const { data: addressPositions, isLoading } = useEvmAddressPositions({
+  invariant(
+    filterChain !== NetworkSelectValue.All,
+    'All networks filter should not show custom chain positions'
+  );
+  const chainValue = filterChain || dappChain;
+  invariant(
+    chainValue,
+    'Chain filter should be defined to show custom chain positions'
+  );
+  const chain = createChain(chainValue);
+  const {
+    data: addressPositions,
+    isLoading,
+    isError,
+  } = useEvmAddressPositions({
     address: addressParam,
     chain,
   });
@@ -676,31 +720,51 @@ function RawChainPositions({
     return <div>Can't display this view for multiple addresss mode.</div>;
   }
 
+  if (isError) {
+    return renderErrorView(chainValue) as JSX.Element;
+  }
   if (isLoading) {
-    return (
-      <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
-        <ViewLoading kind="network" />
-      </CenteredFillViewportView>
-    );
+    return renderLoadingView() as JSX.Element;
   }
   if (!addressPositions || !addressPositions.length) {
     return renderEmptyView() as JSX.Element;
   }
+
   return (
-    <PositionList
-      address={address}
-      items={addressPositions}
-      {...positionListProps}
-    />
+    <VStack gap={8}>
+      <div style={{ paddingInline: 16 }}>
+        <NetworkBalance
+          dappChain={dappChain}
+          filterChain={filterChain}
+          onChange={onChainChange}
+          value={
+            <NeutralDecimals
+              parts={formatCurrencyToParts(
+                getFullPositionsValue(addressPositions),
+                'en',
+                'usd'
+              )}
+            />
+          }
+        />
+      </div>
+      <PositionList
+        address={address}
+        items={addressPositions}
+        {...positionListProps}
+      />
+    </VStack>
   );
 }
 
 export function Positions({
-  chain: chainValue,
+  dappChain,
+  filterChain,
   onChainChange,
 }: {
-  chain: string;
-  onChainChange: (value: string) => void;
+  dappChain: string | null;
+  filterChain: string | null;
+  onChainChange: (value: string | null) => void;
 }) {
   const { ready, params, singleAddressNormalized } = useAddressParams();
   // Cheap perceived performance hack: render expensive Positions component later so that initial UI render is faster
@@ -715,32 +779,58 @@ export function Positions({
       </CenteredFillViewportView>
     );
   }
-  const networkSelect = (
-    <NetworkSelect
-      value={chainValue}
-      onChange={onChainChange}
-      type="overview"
-      valueMaxWidth={180}
-    />
-  );
+  const chainValue = filterChain || dappChain || NetworkSelectValue.All;
   const chain = createChain(chainValue);
   const isSupportedByBackend =
     chainValue === NetworkSelectValue.All
       ? true
       : networks.isSupportedByBackend(createChain(chainValue));
 
+  const emptyNetworkBalance = (
+    <div
+      style={{
+        paddingInline: 16,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+      }}
+    >
+      <NetworkBalance
+        dappChain={dappChain}
+        filterChain={filterChain}
+        onChange={onChainChange}
+        value={null}
+      />
+    </div>
+  );
+
   const renderEmptyViewForNetwork = () => (
     <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
-      <div style={{ position: 'absolute', right: 16 }}>{networkSelect}</div>
+      {emptyNetworkBalance}
       <DelayedRender delay={50}>
-        <EmptyViewForNetwork
-          message="No assets yet"
-          chainValue={chainValue}
-          onChainChange={onChainChange}
-        />
+        <EmptyView text="No assets yet" />
       </DelayedRender>
     </CenteredFillViewportView>
   );
+  const renderLoadingViewForNetwork = () => (
+    <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
+      {emptyNetworkBalance}
+      <DelayedRender delay={50}>
+        <ViewLoading kind="network" />
+      </DelayedRender>
+    </CenteredFillViewportView>
+  );
+  const renderErrorViewForNetwork = (chainName: string) => (
+    <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
+      {emptyNetworkBalance}
+      <VStack gap={4} style={{ padding: 20, textAlign: 'center' }}>
+        <span style={{ fontSize: 20 }}>💔</span>
+        <UIText kind="body/regular">Error fetching for {chainName}</UIText>
+      </VStack>
+    </CenteredFillViewportView>
+  );
+
   if (!readyToRender) {
     return renderEmptyViewForNetwork();
   }
@@ -749,9 +839,11 @@ export function Positions({
       <MultiChainPositions
         addressParams={params}
         address={singleAddressNormalized}
-        chainValue={chainValue}
+        dappChain={dappChain}
+        filterChain={filterChain}
+        onChainChange={onChainChange}
         renderEmptyView={renderEmptyViewForNetwork}
-        firstHeaderItemEnd={networkSelect}
+        renderLoadingView={renderLoadingViewForNetwork}
       />
     );
   } else {
@@ -761,29 +853,16 @@ export function Positions({
     }
 
     return (
-      <ErrorBoundary
-        renderError={() => (
-          <FillView>
-            <VStack gap={4} style={{ padding: 20, textAlign: 'center' }}>
-              <span style={{ fontSize: 20 }}>💔</span>
-              <UIText kind="body/regular">
-                Error fetching for {chainValue}
-              </UIText>
-              <UIText kind="small/regular" color="var(--primary)">
-                <NetworkResetButton
-                  onClick={() => onChainChange(NetworkSelectValue.All)}
-                />
-              </UIText>
-            </VStack>
-          </FillView>
-        )}
-      >
+      <ErrorBoundary renderError={() => renderErrorViewForNetwork(chainValue)}>
         <RawChainPositions
           addressParams={params}
           address={singleAddressNormalized}
-          chain={chain}
+          dappChain={dappChain}
+          filterChain={filterChain}
+          onChainChange={onChainChange}
           renderEmptyView={renderEmptyViewForNetwork}
-          firstHeaderItemEnd={networkSelect}
+          renderLoadingView={renderLoadingViewForNetwork}
+          renderErrorView={renderErrorViewForNetwork}
         />
       </ErrorBoundary>
     );

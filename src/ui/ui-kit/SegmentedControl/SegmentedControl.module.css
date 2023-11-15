@@ -1,6 +1,7 @@
 .wrap {
   border-bottom: 1px solid var(--neutral-300);
   display: flex;
+  position: relative;
 }
 .wrap.secondary {
   border: 1px solid var(--neutral-300);
@@ -24,12 +25,12 @@
   cursor: pointer;
   padding-bottom: 8px;
   text-decoration: none;
-  color: var(--neutral-600);
+  color: var(--neutral-500);
 }
 
 .wrap.primary .radio.radioChecked,
 .wrap.primary .link.activeLink {
-  color: var(--primary);
+  color: var(--black);
 }
 
 .radio:focus-within:has(:focus-visible) {
@@ -90,7 +91,7 @@
 
 .wrap.primary .activeLink > .activeDecorator,
 .wrap.primary .input:checked + .activeDecorator {
-  color: var(--primary);
+  color: var(--black);
   height: 2px;
 }
 

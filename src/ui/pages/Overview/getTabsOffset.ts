@@ -1,12 +1,12 @@
 import { BUG_REPORT_BUTTON_HEIGHT } from 'src/ui/components/BugReportButton';
 
 export const TABS_OFFSET_METER_ID = 'overview-tabs-offset-meter';
-export const TAB_STICKY_OFFSET = 72;
-export const TAB_SELECTOR_HEIGHT = 48;
+export const TAB_STICKY_OFFSET = 124;
+export const TAB_SELECTOR_HEIGHT = 32;
 export const TAB_TOP_PADDING = 16;
 const TAB_BOTTOM_PADDING = 24; // similar to <PageBottom /> height
 
-const TAB_OFFSET =
+export const TAB_OFFSET =
   TAB_STICKY_OFFSET + TAB_SELECTOR_HEIGHT + BUG_REPORT_BUTTON_HEIGHT;
 const TAB_CONTENT_OFFSET = TAB_OFFSET + TAB_BOTTOM_PADDING + TAB_TOP_PADDING;
 

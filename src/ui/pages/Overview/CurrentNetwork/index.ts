@@ -1,1 +1,0 @@
-export { CurrentNetwork } from './CurrentNetwork';

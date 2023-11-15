@@ -1,33 +1,31 @@
-import React, { useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { createChain } from 'src/modules/networks/Chain';
-import { useNetworks } from 'src/modules/networks/useNetworks';
+import React, { useMemo, useRef, useState } from 'react';
+import { useAddressPortfolioDecomposition } from 'defi-sdk';
 import { invariant } from 'src/shared/invariant';
 import { NetworkSelectDialog } from 'src/ui/components/NetworkSelectDialog';
-import { Button } from 'src/ui/ui-kit/Button';
-import { HStack } from 'src/ui/ui-kit/HStack';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
-import AllNetworksIcon from 'jsx:src/ui/assets/all-networks.svg';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
-import { useAddressPortfolioDecomposition } from 'defi-sdk';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
+import { Button } from 'src/ui/ui-kit/Button';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import AllNetworksIcon from 'jsx:src/ui/assets/all-networks.svg';
+import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { noValueDash } from 'src/ui/shared/typography';
-import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
+import { createChain } from 'src/modules/networks/Chain';
+import { useNetworks } from 'src/modules/networks/useNetworks';
 
 export function NetworkSelect({
   value,
   onChange,
-  type,
-  valueMaxWidth,
+  renderButton,
   dialogRootNode,
 }: {
   value: string;
   onChange: (value: string) => void;
-  type: 'overview' | 'connection';
-  valueMaxWidth?: number;
+  renderButton?(params: { value: string; openDialog(): void }): React.ReactNode;
   dialogRootNode?: HTMLElement;
 }) {
   const { params } = useAddressParams();
@@ -35,6 +33,17 @@ export function NetworkSelect({
     ...params,
     currency: 'usd',
   });
+  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const [showNetworkDialog, setShowNetworkDialog] = useState(false);
+
+  function handleDialogOpen() {
+    invariant(dialogRef.current, 'Dialog element not found');
+    setShowNetworkDialog(true);
+    showConfirmDialog(dialogRef.current).then((chain) =>
+      onChange(chain === 'all' ? NetworkSelectValue.All : chain)
+    );
+  }
+
   const chain = value === NetworkSelectValue.All ? null : createChain(value);
   const { networks } = useNetworks();
   const network = useMemo(
@@ -42,68 +51,63 @@ export function NetworkSelect({
     [chain, networks]
   );
 
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const dialog = (
-    <BottomSheetDialog ref={dialogRef} containerStyle={{ padding: 0 }}>
-      <NetworkSelectDialog
-        value={value}
-        type={type}
-        chainDistribution={portfolioDecomposition}
-      />
+    <BottomSheetDialog
+      ref={dialogRef}
+      height="90vh"
+      containerStyle={{ padding: 0 }}
+      onClosed={() => setShowNetworkDialog(false)}
+    >
+      {showNetworkDialog ? (
+        <NetworkSelectDialog
+          value={value}
+          chainDistribution={portfolioDecomposition}
+        />
+      ) : null}
     </BottomSheetDialog>
   );
   return (
     <>
       {dialogRootNode ? createPortal(dialog, dialogRootNode) : dialog}
 
-      <Button
-        type="button"
-        size={32}
-        kind="text-primary"
-        onClick={() => {
-          invariant(dialogRef.current, 'Dialog element not found');
-          showConfirmDialog(dialogRef.current).then((chain) =>
-            onChange(chain === 'all' ? NetworkSelectValue.All : chain)
-          );
-        }}
-      >
-        <HStack gap={8} alignItems="center">
-          {!network || value === NetworkSelectValue.All || !network.icon_url ? (
-            <AllNetworksIcon
-              style={{ width: 24, height: 24 }}
-              role="presentation"
-            />
-          ) : (
-            <NetworkIcon
-              size={24}
-              src={network.icon_url}
-              name={network.name}
-              chainId={network.external_id}
-            />
-          )}
-          <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-            <span
-              style={
-                valueMaxWidth
-                  ? {
-                      maxWidth: valueMaxWidth,
-                      overflow: 'hidden',
-                      whiteSpace: 'nowrap',
-                      textOverflow: 'ellipsis',
-                    }
-                  : undefined
-              }
-            >
-              {value === NetworkSelectValue.All
-                ? 'All Networks'
-                : chain
-                ? networks?.getChainName(chain)
-                : noValueDash}
+      {renderButton ? (
+        renderButton({ value, openDialog: handleDialogOpen })
+      ) : (
+        <Button
+          type="button"
+          size={32}
+          kind="text-primary"
+          onClick={handleDialogOpen}
+        >
+          <HStack gap={8} alignItems="center">
+            {!network ||
+            value === NetworkSelectValue.All ||
+            !network.icon_url ? (
+              <AllNetworksIcon
+                style={{ width: 24, height: 24 }}
+                role="presentation"
+              />
+            ) : (
+              <NetworkIcon
+                size={24}
+                src={network.icon_url}
+                name={network.name}
+                chainId={network.external_id}
+              />
+            )}
+            <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+              <span>
+                {value === NetworkSelectValue.All
+                  ? 'All Networks'
+                  : chain
+                  ? networks?.getChainName(chain)
+                  : noValueDash}
+              </span>
+              <ArrowDownIcon style={{ width: 20, height: 20 }} />
             </span>
-            <ArrowDownIcon style={{ width: 20, height: 20 }} />
-          </span>
-        </HStack>
-      </Button>
+          </HStack>
+        </Button>
+      )}
     </>
   );
 }

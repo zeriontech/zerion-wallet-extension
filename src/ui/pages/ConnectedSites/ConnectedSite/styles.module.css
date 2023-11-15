@@ -1,0 +1,10 @@
+.siteLink {
+  padding: 12px 18px 12px 8px;
+  border-radius: 8;
+}
+
+@media (hover: hover) {
+  .siteLink:hover {
+    background-color: var(--neutral-200);
+  }
+}

@@ -1,23 +1,23 @@
 .actionButton {
-  --btn-bg-color: var(--white);
+  --btn-bg-color: var(--neutral-200);
   --btn-active-bg-color: var(--neutral-300);
 }
 
-.actionButton.dark {
-  --btn-bg-color: var(--neutral-200);
-}
-
 .icon {
-  height: 44px;
-  padding-inline: 16px;
+  height: 48px;
+  padding: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
+  border-radius: 50%;
   border: none;
   background-color: var(--btn-bg-color);
   color: var(--neutral-800);
-  box-shadow: 0px 2px 4px rgba(22, 22, 26, 0.06);
+}
+
+.icon svg {
+  height: 20;
+  width: 20;
 }
 
 .actionButton:focus {
@@ -34,10 +34,7 @@
 }
 
 @media (hover: hover) {
-  .actionButton:not(:disabled):hover {
-    color: var(--primary);
-  }
   .actionButton:not(:disabled):hover .icon {
-    color: var(--primary);
+    background-color: var(--neutral-300);
   }
 }

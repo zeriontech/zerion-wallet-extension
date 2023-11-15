@@ -51,7 +51,7 @@ export const SecretInput = React.forwardRef(
               <Button
                 type="button"
                 kind="ghost"
-                size={46}
+                size={48}
                 title="Reveal input"
                 onClick={() => toggleReveal()}
                 style={{

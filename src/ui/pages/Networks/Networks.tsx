@@ -242,7 +242,7 @@ function NetworkCreatePage({
   );
 }
 
-const FORBIDDEN_FIELS = new Set([
+const FORBIDDEN_FIELDS = new Set([
   'external_id',
   'native_asset.decimals',
   'hidden',
@@ -384,7 +384,7 @@ function NetworkPage({
           }
           onCancel={goBack}
           footerRenderArea={footerRenderArea}
-          disabledFields={isPredefinedNetwork ? FORBIDDEN_FIELS : null}
+          disabledFields={isPredefinedNetwork ? FORBIDDEN_FIELDS : null}
           restrictedChainIds={restrictedChainIds}
         />
       </PageColumn>

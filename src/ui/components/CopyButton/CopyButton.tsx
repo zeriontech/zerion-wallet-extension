@@ -9,18 +9,21 @@ interface Props {
   title?: string;
 }
 
-const ICON_SIZE = 24;
+const ICON_SIZE = 20;
 
 export function CopyButton({ address, title = 'Copy Address' }: Props) {
   const { handleCopy, isSuccess } = useCopyToClipboard({ text: address });
   return (
     <div style={{ position: 'relative' }}>
       <Button
-        kind="ghost"
-        size={40}
+        kind="text-primary"
+        size={36}
         title={title}
         onClick={handleCopy}
-        style={{ padding: 8 }}
+        style={{
+          ['--button-text-hover' as string]: 'var(--neutral-800)',
+          padding: 8,
+        }}
       >
         {isSuccess ? (
           <CheckIcon
@@ -45,8 +48,9 @@ export function CopyButton({ address, title = 'Copy Address' }: Props) {
             color: 'var(--white)',
             boxShadow: 'var(--elevation-200)',
             position: 'absolute',
-            bottom: -32,
-            left: -36,
+            top: 2,
+            right: 0,
+            transform: 'translateX(100%)',
             padding: '4px 8px',
             borderRadius: 4,
             whiteSpace: 'nowrap',

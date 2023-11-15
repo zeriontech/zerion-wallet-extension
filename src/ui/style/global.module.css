@@ -30,7 +30,7 @@ body {
   line-height: calc(20 / 14);
   color: var(--black);
   background-color: var(--background);
-  --body-width: 400px;
+  --body-width: 425px;
   --body-height: 600px;
   width: var(--body-width);
   height: var(--body-height);
@@ -77,7 +77,7 @@ body:not(.isOnboarding):not(.isTab):not(.isDialog) :global(.popup-only) {
 }
 
 body.isDialog:not(.isOnboarding) {
-  max-width: 400px;
+  max-width: 425px;
 }
 
 :global(#root) {
@@ -100,4 +100,14 @@ body.isDialog:not(.isOnboarding) {
 :global(#friendly-captcha) {
   position: fixed;
   top: 2000px;
+}
+
+:global(.parent-hover) :global(.content-hover) {
+  color: var(--parent-content-color);
+}
+
+@media (hover: hover) {
+  :global(.parent-hover):hover :global(.content-hover) {
+    color: var(--parent-hovered-content-color);
+  }
 }

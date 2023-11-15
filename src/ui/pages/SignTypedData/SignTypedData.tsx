@@ -32,7 +32,6 @@ import {
   toTypedData,
 } from 'src/modules/ethereum/message-signing/prepareTypedData';
 import type { Chain } from 'src/modules/networks/Chain';
-import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { setURLSearchParams } from 'src/ui/shared/setURLSearchParams';
@@ -53,8 +52,9 @@ import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset'
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { useErrorBoundary } from 'src/ui/shared/useErrorBoundary';
 import { isDeviceAccount } from 'src/shared/types/validators';
-import { NavigationTitle } from 'src/ui/components/NavigationTitle';
+import { NavigationTitle } from 'src/ui/components/NavigationTitle'
 import { BUG_REPORT_BUTTON_HEIGHT } from 'src/ui/components/BugReportButton';
+import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOrigin';
 import { HardwareSignMessage } from '../HardwareWalletConnection/HardwareSignMessage';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
@@ -411,11 +411,8 @@ function SignTypedDataContent({
   };
 
   const { data: chain, ...chainQuery } = useQuery({
-    queryKey: ['wallet/requestChainForOrigin', origin],
-    queryFn: () =>
-      walletPort
-        .request('requestChainForOrigin', { origin })
-        .then((chain) => createChain(chain)),
+    queryKey: ['requestChainForOrigin', origin],
+    queryFn: () => requestChainForOrigin(origin),
     useErrorBoundary: true,
     suspense: true,
   });

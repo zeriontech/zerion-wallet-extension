@@ -1,4 +1,5 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { isTruthy } from 'is-truthy-ts';
 import { createChain } from 'src/modules/networks/Chain';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { Networks } from 'src/modules/networks/Networks';
@@ -7,24 +8,17 @@ import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Media } from 'src/ui/ui-kit/Media';
-import IconLeft from 'jsx:src/ui/assets/arrow-left.svg';
-import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
 import AddCircleIcon from 'jsx:src/ui/assets/add-circle-outlined.svg';
-import FiltersIcon from 'jsx:src/ui/assets/filters-24.svg';
-import AllNetworksIcon from 'jsx:src/ui/assets/all-networks.svg';
-import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
-import {
-  SegmentedControlGroup,
-  SegmentedControlRadio,
-} from 'src/ui/ui-kit/SegmentedControl';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
-import type { Item as ListItemType } from 'src/ui/ui-kit/SurfaceList';
-import { SurfaceItemButton, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
+import {
+  SurfaceItemButton,
+  SurfaceItemLink,
+  SurfaceList,
+} from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { filterNetworksByQuery } from 'src/modules/ethereum/chains/filterNetworkByQuery';
-import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
 import type { ChainDistribution } from 'src/ui/shared/requests/PortfolioValue/ChainValue';
 import { ChainValue } from 'src/ui/shared/requests/PortfolioValue/ChainValue';
@@ -37,18 +31,23 @@ import { PageColumn } from '../PageColumn';
 import { ViewLoading } from '../ViewLoading';
 import { EmptyView } from '../EmptyView';
 import { KeyboardShortcut } from '../KeyboardShortcut';
-import { PseudoRoute } from '../PseudoRoute';
+
+const LIST_ITEM_CLASS = 'network-list-item';
 
 function NetworkList({
+  title,
   networks,
   networkList,
   value,
   chainDistribution,
+  previousListLength = 0,
 }: {
+  title?: string;
   value?: string;
   networks: Networks;
   networkList: NetworkConfig[];
   chainDistribution: ChainDistribution | null;
+  previousListLength?: number;
 }) {
   if (!networkList.length) {
     return (
@@ -71,39 +70,84 @@ function NetworkList({
   }
   return (
     <SurfaceList
-      items={networkList.map((network) => ({
-        key: network.external_id || network.chain,
-        isInteractive: true,
-        pad: false,
-        component: (
-          <SurfaceItemButton
-            value={network.chain}
-            outlined={network.chain === value}
-          >
-            <HStack gap={4} justifyContent="space-between" alignItems="center">
-              <Media
-                image={
-                  <NetworkIcon // TODO: Create NetworkIcon component
-                    size={24}
-                    src={network.icon_url}
-                    chainId={network.external_id}
-                    name={network.name}
+      style={{ paddingBlock: 0 }}
+      items={[
+        title
+          ? {
+              key: title,
+              pad: false,
+              style: { padding: 0 },
+              component: (
+                <UIText
+                  kind="small/accent"
+                  color="var(--neutral-500)"
+                  style={{ paddingBlock: 8 }}
+                >
+                  {title}
+                </UIText>
+              ),
+            }
+          : null,
+        ...networkList.map((network, index) => {
+          const isSupportedByBackend = networks.isSupportedByBackend(
+            createChain(network.chain)
+          );
+          return {
+            key: network.external_id || network.chain,
+            isInteractive: true,
+            pad: false,
+            component: (
+              <SurfaceItemButton
+                data-class={LIST_ITEM_CLASS}
+                data-index={previousListLength + index}
+                value={network.chain}
+                outlined={network.chain === value}
+                style={{ padding: 0 }}
+              >
+                <HStack
+                  gap={4}
+                  justifyContent="space-between"
+                  alignItems="center"
+                  style={{ paddingBlock: 4 }}
+                >
+                  <Media
+                    image={
+                      <NetworkIcon
+                        size={24}
+                        src={network.icon_url}
+                        chainId={network.external_id}
+                        name={network.name}
+                      />
+                    }
+                    text={
+                      <UIText kind="body/accent">
+                        {networks.getChainName(createChain(network.chain))}
+                      </UIText>
+                    }
+                    vGap={0}
+                    detailText={null}
                   />
-                }
-                text={networks.getChainName(createChain(network.chain))}
-                vGap={0}
-                detailText={null}
-              />
-              <UIText kind="small/regular" color="var(--neutral-500)">
-                <ChainValue
-                  chain={createChain(network.chain)}
-                  chainDistribution={chainDistribution}
-                />
-              </UIText>
-            </HStack>
-          </SurfaceItemButton>
-        ),
-      }))}
+                  <UIText
+                    kind="small/regular"
+                    color={
+                      network.chain === value
+                        ? 'var(--primary)'
+                        : 'var(--neutral-500)'
+                    }
+                  >
+                    {isSupportedByBackend ? (
+                      <ChainValue
+                        chain={createChain(network.chain)}
+                        chainDistribution={chainDistribution}
+                      />
+                    ) : null}
+                  </UIText>
+                </HStack>
+              </SurfaceItemButton>
+            ),
+          };
+        }),
+      ].filter(isTruthy)}
     />
   );
 }
@@ -124,169 +168,14 @@ function compareChains(
   return aString < bString ? -1 : aString > bString ? 1 : 0;
 }
 
-function MainNetworkView({
-  networks,
-  value,
-  onOpenMore,
-  type,
-  mainViewLeadingComponent,
-  chainDistribution,
-}: {
-  networks: Networks;
-  value: string;
-  onOpenMore: () => void;
-  type: 'overview' | 'connection';
-  mainViewLeadingComponent?: React.ReactNode;
-  chainDistribution: ChainDistribution | null;
-}) {
-  const chain = value === NetworkSelectValue.All ? null : createChain(value);
-  const networksItems = useMemo(() => {
-    const allItems = networks
-      .getMainnets()
-      .sort((a, b) => compareChains(a, b, chainDistribution));
-    const selectedItemIndex = chain
-      ? allItems.findIndex((item) => item.chain === value)
-      : -1;
-    const selectedItem = chain ? networks.getNetworkByName(chain) : null;
-    const AMOUNT_TO_SHOW = 6;
-    const isAmongFirstOnes =
-      selectedItemIndex !== -1 && selectedItemIndex < AMOUNT_TO_SHOW;
-    if (!selectedItem || isAmongFirstOnes) {
-      return allItems.slice(0, AMOUNT_TO_SHOW);
-    } else {
-      // Include selected item as the last shown item
-      return allItems.slice(0, AMOUNT_TO_SHOW - 1).concat(selectedItem);
-    }
-  }, [networks, chain, value, chainDistribution]);
-
-  const options: ListItemType[] = [];
-  if (type === 'overview') {
-    options.push({
-      key: 'all',
-      isInteractive: true,
-      separatorTop: true,
-      pad: false,
-      component: (
-        <SurfaceItemButton
-          value="all"
-          outlined={value === NetworkSelectValue.All}
-        >
-          <HStack gap={4} justifyContent="space-between" alignItems="center">
-            <Media
-              image={<AllNetworksIcon style={{ width: 24, height: 24 }} />}
-              vGap={0}
-              text={<UIText kind="body/accent">All Networks</UIText>}
-              detailText={
-                !chain || networks.isSupportedByBackend(chain) ? null : (
-                  <UIText kind="caption/regular" color="var(--neutral-500)">
-                    Does not include testnets
-                  </UIText>
-                )
-              }
-            />
-
-            <UIText kind="small/regular" color="var(--neutral-500)">
-              <ChainValue
-                chainDistribution={chainDistribution}
-                chain={NetworkSelectValue.All}
-              />
-            </UIText>
-          </HStack>
-        </SurfaceItemButton>
-      ),
-    });
-  }
-  options.push(
-    ...networksItems.map((network) => {
-      const chain = createChain(network.chain);
-      const isSelected = network.chain === value;
-      return {
-        key: network.external_id || network.chain,
-        isInteractive: true,
-        separatorTop: false,
-        pad: false,
-        component: (
-          <SurfaceItemButton value={network.chain} outlined={isSelected}>
-            <HStack gap={4} justifyContent="space-between" alignItems="center">
-              <HStack gap={8} alignItems="center">
-                <NetworkIcon
-                  src={network.icon_url}
-                  chainId={network.external_id}
-                  size={24}
-                  name={network.name}
-                />
-
-                <UIText kind="body/accent">
-                  {networks.getChainName(chain)}
-                </UIText>
-              </HStack>
-
-              <UIText kind="small/regular" color="var(--neutral-500)">
-                <ChainValue
-                  chainDistribution={chainDistribution}
-                  chain={chain}
-                />
-              </UIText>
-            </HStack>
-          </SurfaceItemButton>
-        ),
-      };
-    })
-  );
-  options.push({
-    key: -1,
-    onClick: onOpenMore,
-    buttonType: 'button',
-    component: (
-      <HStack gap={8} alignItems="center" style={{ color: 'var(--primary)' }}>
-        <UIText kind="body/regular">Available networks</UIText>
-        <ArrowRightIcon />
-      </HStack>
-    ),
-  });
-
-  return (
-    <>
-      <Spacer height={16} />
-      <div style={{ paddingInline: 16 }}>
-        {type === 'overview' ? (
-          <UIText kind="headline/h3">
-            <DialogTitle alignTitle="start" title="Filter by Network" />
-          </UIText>
-        ) : (
-          <DialogCloseButton />
-        )}
-      </div>
-      {mainViewLeadingComponent}
-      <form method="dialog">
-        <VStack gap={4}>
-          {type === 'overview' ? null : (
-            <UIText
-              style={{ paddingInline: 16 }}
-              kind="small/accent"
-              color="var(--neutral-500)"
-            >
-              Networks
-            </UIText>
-          )}
-          <SurfaceList items={options} />
-        </VStack>
-      </form>
-      <PageBottom />
-    </>
-  );
-}
-
 enum Tab {
   mainnets,
   testnets,
   customList,
 }
 
-function TabsView({
-  tab,
+function SectionView({
   networks,
-  onTabChange,
   value,
   chainDistribution,
 }: {
@@ -296,85 +185,64 @@ function TabsView({
   onTabChange: (event: React.FormEvent<HTMLInputElement>) => void;
   chainDistribution: ChainDistribution | null;
 }) {
-  const mainnetList = useMemo(() => networks.getMainnets(), [networks]);
-  const testnetList = useMemo(() => networks.getTestNetworks(), [networks]);
-  const customList = useMemo(() => networks.getCustomNetworks(), [networks]);
+  const mainnetList = useMemo(
+    () =>
+      networks
+        .getMainnets()
+        .filter((network) => !network.hidden)
+        .sort((a, b) => compareChains(a, b, chainDistribution)),
+    [networks, chainDistribution]
+  );
+  const customList = useMemo(
+    () => networks.getCustomNetworks().filter((network) => !network.hidden),
+    [networks]
+  );
+  const testnetList = useMemo(
+    () => networks.getTestNetworks().filter((network) => !network.hidden),
+    [networks]
+  );
+
   return (
-    <>
-      <SegmentedControlGroup style={{ paddingTop: 4 }}>
-        <SegmentedControlRadio
-          name="tab"
-          value={Tab.mainnets}
-          onChange={onTabChange}
-          checked={tab === Tab.mainnets}
-        >
-          Mainnets
-        </SegmentedControlRadio>
-        <SegmentedControlRadio
-          name="tab"
-          value={Tab.testnets}
-          onChange={onTabChange}
-          checked={tab === Tab.testnets}
-        >
-          Testnets
-        </SegmentedControlRadio>
-        <SegmentedControlRadio
-          name="tab"
-          value={Tab.customList}
-          onChange={onTabChange}
-          checked={tab === Tab.customList}
-        >
-          Custom
-        </SegmentedControlRadio>
-      </SegmentedControlGroup>
-      <Spacer height={8} />
-      <div
-        style={{
-          display: 'grid',
-          flexGrow: 1,
-        }}
-      >
-        <PseudoRoute
-          when={tab === Tab.mainnets}
-          component={
-            <form method="dialog">
-              <NetworkList
-                value={value}
-                networks={networks}
-                networkList={mainnetList}
-                chainDistribution={chainDistribution}
-              />
-            </form>
-          }
+    <form
+      method="dialog"
+      style={{
+        display: 'grid',
+        flexGrow: 1,
+      }}
+      onSubmit={(e) => {
+        e.stopPropagation();
+      }}
+    >
+      <VStack gap={8}>
+        <NetworkList
+          title="Mainnets"
+          value={value}
+          networks={networks}
+          networkList={mainnetList}
+          chainDistribution={chainDistribution}
         />
-        <PseudoRoute
-          when={tab === Tab.testnets}
-          component={
-            <form method="dialog">
-              <NetworkList
-                value={value}
-                networks={networks}
-                networkList={testnetList}
-                chainDistribution={chainDistribution}
-              />
-            </form>
-          }
+
+        {customList.length ? (
+          <NetworkList
+            title="Manually Added"
+            value={value}
+            networks={networks}
+            networkList={customList}
+            chainDistribution={chainDistribution}
+            previousListLength={mainnetList.length}
+          />
+        ) : null}
+
+        <NetworkList
+          title="Testnets"
+          value={value}
+          networks={networks}
+          networkList={testnetList}
+          chainDistribution={chainDistribution}
+          previousListLength={mainnetList.length + customList.length}
         />
-        <PseudoRoute
-          when={tab === Tab.customList}
-          component={
-            <form method="dialog">
-              <NetworkList
-                value={value}
-                networks={networks}
-                networkList={customList}
-                chainDistribution={chainDistribution}
-              />
-            </form>
-          }
-        />
-      </div>
-    </>
+      </VStack>
+    </form>
   );
 }
 
@@ -403,7 +271,12 @@ function SearchView({
         flexGrow: 1,
       }}
     >
-      <form method="dialog">
+      <form
+        method="dialog"
+        onSubmit={(e) => {
+          e.stopPropagation();
+        }}
+      >
         <NetworkList
           networkList={items}
           networks={networks}
@@ -414,17 +287,16 @@ function SearchView({
   );
 }
 
-function CompleteNetworkList({
+function AddressNetworkList({
   value,
   networks,
-  onGoBack,
   chainDistribution,
 }: {
   value: string;
   networks: Networks;
-  onGoBack: () => void;
   chainDistribution: ChainDistribution | null;
 }) {
+  const searchRef = useRef<HTMLInputElement | null>(null);
   const [searchValue, setSearchValue] = useState('');
   const [query, setQuery] = useState('');
   const [tab, setTab] = useState(Tab.mainnets);
@@ -438,28 +310,69 @@ function CompleteNetworkList({
     300
   );
 
+  const focusSearchInput = useCallback(() => {
+    if (searchRef.current) {
+      searchRef.current.focus();
+    }
+  }, []);
+
+  const selectNextNetwork = useCallback(() => {
+    const activeElement = document.activeElement as
+      | HTMLInputElement
+      | HTMLButtonElement;
+    let index: number | null = null;
+    if (activeElement === searchRef.current) {
+      index = -1;
+    }
+    if (activeElement?.dataset?.class === LIST_ITEM_CLASS) {
+      index = Number((activeElement as HTMLButtonElement).dataset.index);
+    }
+    if (index != null) {
+      const nextNetwork = document.querySelector<HTMLButtonElement>(
+        `button[data-class='${LIST_ITEM_CLASS}'][data-index='${index + 1}']`
+      );
+      if (nextNetwork) {
+        nextNetwork.focus();
+      }
+    }
+  }, []);
+
+  const selectPrevNetwork = useCallback(() => {
+    const activeElement = document.activeElement as
+      | HTMLInputElement
+      | HTMLButtonElement;
+    let index: number | null = null;
+    if (activeElement?.dataset?.class === LIST_ITEM_CLASS) {
+      index = Number((activeElement as HTMLButtonElement).dataset.index);
+    }
+    if (index != null && index > 0) {
+      const prevNetwork = document.querySelector<HTMLButtonElement>(
+        `button[data-class='${LIST_ITEM_CLASS}'][data-index='${index - 1}']`
+      );
+      if (prevNetwork) {
+        prevNetwork.focus();
+      }
+    }
+    if (index === 0) {
+      focusSearchInput();
+    }
+  }, [focusSearchInput]);
+
   return (
     <>
+      <KeyboardShortcut combination="ctrl+f" onKeyDown={focusSearchInput} />
+      <KeyboardShortcut combination="cmd+f" onKeyDown={focusSearchInput} />
+      <KeyboardShortcut combination="ArrowUp" onKeyDown={selectPrevNetwork} />
+      <KeyboardShortcut combination="ArrowDown" onKeyDown={selectNextNetwork} />
       <div
-        style={{ padding: 8, display: 'flex', justifyContent: 'space-between' }}
+        style={{
+          padding: '8px 8px 8px 16px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
       >
-        <HStack gap={8} alignItems="center">
-          <KeyboardShortcut combination="backspace" onKeyDown={onGoBack} />
-          <Button
-            kind="ghost"
-            aria-label="Go back"
-            onClick={onGoBack}
-            size={40}
-            style={{ padding: 8 }}
-            type="button"
-          >
-            <IconLeft
-              role="presentation"
-              style={{ display: 'block', width: 20, height: 20 }}
-            />
-          </Button>
-          <UIText kind="headline/h3">Available Networks</UIText>
-        </HStack>
+        <UIText kind="headline/h3">Networks</UIText>
         <HStack gap={0}>
           <Button
             as={UnstyledLink}
@@ -469,7 +382,7 @@ function CompleteNetworkList({
             size={40}
             style={{ padding: 8 }}
           >
-            <FiltersIcon style={{ display: 'block', marginInline: 'auto' }} />
+            <UIText kind="body/accent">Edit</UIText>
           </Button>
 
           <Button
@@ -482,14 +395,22 @@ function CompleteNetworkList({
           >
             <AddCircleIcon style={{ display: 'block', marginInline: 'auto' }} />
           </Button>
+          <DialogCloseButton />
         </HStack>
       </div>
       <PageColumn>
+        <Spacer height={8} />
         <SearchInput
+          ref={searchRef}
+          onKeyDown={(event) => {
+            if (event.key === 'ArrowDown') {
+              selectNextNetwork();
+            }
+          }}
           autoFocus={true}
           boxHeight={40}
           type="search"
-          placeholder="Search"
+          placeholder="Network name"
           value={searchValue}
           onChange={(event) => {
             debouncedSetSearchParams(event.currentTarget.value);
@@ -504,7 +425,7 @@ function CompleteNetworkList({
             chainDistribution={chainDistribution}
           />
         ) : (
-          <TabsView
+          <SectionView
             tab={tab}
             onTabChange={handleTabChange}
             networks={networks}
@@ -512,29 +433,55 @@ function CompleteNetworkList({
             chainDistribution={chainDistribution}
           />
         )}
+        <Spacer height={8} />
+        <div
+          style={{
+            height: 8,
+            width: '100%',
+            borderTop: '2px solid var(--neutral-200)',
+          }}
+        />
+        <SurfaceList
+          style={{ paddingBlock: 0 }}
+          items={[
+            {
+              key: 'Add network',
+              style: { padding: 0 },
+              pad: false,
+              component: (
+                <SurfaceItemLink
+                  to="/networks/create/search"
+                  style={{ paddingInline: 0 }}
+                >
+                  <HStack
+                    gap={8}
+                    alignItems="center"
+                    style={{ paddingBlock: 4 }}
+                  >
+                    <AddCircleIcon
+                      style={{ display: 'block', marginInline: 'auto' }}
+                    />
+                    <UIText kind="body/accent">Add Network</UIText>
+                  </HStack>
+                </SurfaceItemLink>
+              ),
+            },
+          ]}
+        />
         <PageBottom />
       </PageColumn>
     </>
   );
 }
 
-enum View {
-  main,
-  completeList,
-}
 export function NetworkSelectDialog({
   value,
-  type,
-  mainViewLeadingComponent,
   chainDistribution,
 }: {
   value: string;
-  type: 'overview' | 'connection';
-  mainViewLeadingComponent?: React.ReactNode;
   chainDistribution: ChainDistribution | null;
 }) {
   const { networks } = useNetworks();
-  const [view, setView] = useState<View>(View.main);
 
   if (!networks && !navigator.onLine) {
     return <ViewLoading kind="network" />;
@@ -551,29 +498,10 @@ export function NetworkSelectDialog({
         ['--surface-background-color' as string]: 'var(--z-index-1)',
       }}
     >
-      <PseudoRoute
-        when={view === View.main}
-        component={
-          <MainNetworkView
-            type={type}
-            value={value}
-            networks={networks}
-            onOpenMore={() => setView(View.completeList)}
-            mainViewLeadingComponent={mainViewLeadingComponent}
-            chainDistribution={chainDistribution}
-          />
-        }
-      />
-      <PseudoRoute
-        when={view === View.completeList}
-        component={
-          <CompleteNetworkList
-            value={value}
-            networks={networks}
-            chainDistribution={chainDistribution}
-            onGoBack={() => setView(View.main)}
-          />
-        }
+      <AddressNetworkList
+        value={value}
+        networks={networks}
+        chainDistribution={chainDistribution}
       />
     </div>
   );

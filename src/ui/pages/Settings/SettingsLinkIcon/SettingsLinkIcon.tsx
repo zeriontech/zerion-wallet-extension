@@ -11,13 +11,13 @@ export function SettingsLinkIcon() {
     <Button
       kind="ghost"
       as={UnstyledLink}
-      size={40}
+      size={36}
       to="/settings"
       title="Settings"
       style={{ paddingInline: 8 }}
     >
       <div style={{ position: 'relative' }}>
-        <SettingsIcon style={{ display: 'block', width: 24, height: 24 }} />
+        <SettingsIcon style={{ display: 'block', width: 20, height: 20 }} />
         {count > 0 ? (
           <UIText
             kind="body/regular"

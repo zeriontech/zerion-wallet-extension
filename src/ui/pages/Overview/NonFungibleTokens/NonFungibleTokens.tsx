@@ -12,8 +12,10 @@ import { SquareElement } from 'src/ui/ui-kit/SquareElement';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { normalizeAddress } from 'src/shared/normalizeAddress';
-import { useNftsTotalValue } from 'src/ui/shared/requests/addressNfts/useNftsTotalValue';
+import {
+  useAddressNFTDistribution,
+  useNftsTotalValue,
+} from 'src/ui/shared/requests/addressNfts/useNftsTotalValue';
 import {
   getNftId,
   useAddressNfts,
@@ -21,16 +23,16 @@ import {
 import type { AddressNFT } from 'src/ui/shared/requests/addressNfts/types';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
-import { HStack } from 'src/ui/ui-kit/HStack';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
-import { EmptyViewForNetwork } from 'src/ui/components/EmptyViewForNetwork';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
+import { EmptyView } from 'src/ui/components/EmptyView';
+import { useShowDNABanner } from 'src/ui/components/DnaClaim/DnaBanner';
 import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
-import { NetworkSelect } from '../../Networks/NetworkSelect';
 import { GROWN_TAB_MAX_HEIGHT } from '../getTabsOffset';
+import { NetworkBalance } from '../Positions/NetworkBalance';
 import * as s from './styles.module.css';
 
 function NFTItem({
@@ -74,7 +76,7 @@ function NFTItem({
                 }
                 style={{
                   ...style,
-                  borderRadius: 8,
+                  borderRadius: 16,
                   objectFit: 'cover',
                 }}
               />
@@ -159,17 +161,23 @@ function NFTItem({
 }
 
 export function NonFungibleTokens({
-  chain: chainValue,
+  dappChain,
+  filterChain,
   onChainChange,
 }: {
-  chain: string;
-  onChainChange: (value: string) => void;
+  dappChain: string | null;
+  filterChain: string | null;
+  onChainChange: (value: string | null) => void;
 }) {
-  const { ready, params, maybeSingleAddress } = useAddressParams();
-  const { value: nftTotalValue, isLoading: totalValueIsLoading } =
-    useNftsTotalValue(params);
+  const { ready, params, singleAddressNormalized } = useAddressParams();
+  const { value: nftDistribution } = useAddressNFTDistribution({
+    ...params,
+    currency: 'usd',
+  });
+  const { value: nftTotalValue } = useNftsTotalValue(params);
   const { networks } = useNetworks();
 
+  const chainValue = filterChain || dappChain || NetworkSelectValue.All;
   const isSupportedByBackend =
     chainValue === NetworkSelectValue.All
       ? true
@@ -197,87 +205,114 @@ export function NonFungibleTokens({
     }
   );
 
-  const nftTotalValueIsReady = nftTotalValue != null || totalValueIsLoading;
+  const shouldShowDNABanner = useShowDNABanner(singleAddressNormalized);
 
-  const networkSelect = (
-    <NetworkSelect
-      value={chainValue}
-      onChange={onChainChange}
-      type="overview"
-      valueMaxWidth={180}
-    />
+  if (!ready) {
+    return null;
+  }
+
+  const nftChainValue =
+    chainValue === NetworkSelectValue.All
+      ? nftTotalValue
+      : nftDistribution?.floor_price[chainValue];
+
+  const emptyNetworkBalance = (
+    <div
+      style={{
+        paddingInline: 16,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+      }}
+    >
+      <NetworkBalance
+        dappChain={dappChain}
+        filterChain={filterChain}
+        onChange={onChainChange}
+        value={null}
+      />
+    </div>
   );
 
-  if (totalValueIsLoading && isSupportedByBackend) {
+  if (!isSupportedByBackend) {
     return (
       <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
+        {emptyNetworkBalance}
+        <VStack gap={4} style={{ padding: 20, textAlign: 'center' }}>
+          <span style={{ fontSize: 20 }}>💔</span>
+          <UIText kind="body/regular">
+            NFTs for {chainValue} are not supported yet
+          </UIText>
+        </VStack>
+      </CenteredFillViewportView>
+    );
+  }
+
+  if (!items) {
+    return (
+      <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
+        {emptyNetworkBalance}
         <ViewLoading kind="network" />
       </CenteredFillViewportView>
     );
   }
 
-  if (!ready || !items || !nftTotalValueIsReady) {
-    return null;
-  }
-
-  if (!isSupportedByBackend || items.length === 0) {
+  if (!items?.length) {
     return (
-      <div style={{ position: 'relative' }}>
-        <div style={{ position: 'absolute', right: 16 }}>{networkSelect}</div>
+      <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
+        {emptyNetworkBalance}
         <DelayedRender delay={100}>
           {isLoading && isSupportedByBackend ? (
             <div style={{ paddingBlock: 40 }}>
               <ViewLoading kind="network" />
             </div>
           ) : (
-            <VStack gap={32} style={{ width: '100%', paddingBlock: 40 }}>
-              {maybeSingleAddress ? (
+            <>
+              {shouldShowDNABanner ? (
                 <DnaNFTBanner
-                  address={normalizeAddress(maybeSingleAddress || '')}
                   style={{
-                    width: '100%',
                     paddingInline: 16,
+                    position: 'absolute',
+                    left: 0,
+                    right: 0,
+                    top: 36,
                   }}
                 />
               ) : null}
-              <EmptyViewForNetwork
-                message="No NFTs yet"
-                chainValue={chainValue}
-                onChainChange={onChainChange}
-              />
-            </VStack>
+              <div
+                style={{
+                  width: '100%',
+                  paddingTop: shouldShowDNABanner ? 96 : 0,
+                }}
+              >
+                <EmptyView text="No NFTs yet" />
+              </div>
+            </>
           )}
         </DelayedRender>
-      </div>
+      </CenteredFillViewportView>
     );
   }
 
   return (
     <VStack gap={16}>
-      <HStack
-        gap={4}
-        justifyContent="space-between"
-        alignItems="center"
-        style={{
-          paddingBottom: 8,
-          paddingInline: 16,
-        }}
-      >
-        <UIText kind="body/accent">
-          Total Value
-          {' · '}
-          <NeutralDecimals
-            parts={formatCurrencyToParts(nftTotalValue || 0, 'en', 'usd')}
-          />
-        </UIText>
-        {networkSelect}
-      </HStack>
-
-      {maybeSingleAddress ? (
-        <DnaNFTBanner
-          address={normalizeAddress(maybeSingleAddress)}
-          style={{ paddingInline: 16 }}
+      <div style={{ paddingInline: 16 }}>
+        <NetworkBalance
+          dappChain={dappChain}
+          filterChain={filterChain}
+          onChange={onChainChange}
+          value={
+            nftChainValue != null ? (
+              <NeutralDecimals
+                parts={formatCurrencyToParts(nftChainValue, 'en', 'usd')}
+              />
+            ) : null
+          }
         />
+      </div>
+      {shouldShowDNABanner ? (
+        <DnaNFTBanner style={{ paddingInline: 16 }} />
       ) : null}
 
       <div

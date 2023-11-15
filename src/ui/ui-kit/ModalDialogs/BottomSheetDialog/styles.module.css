@@ -25,4 +25,5 @@
 
 .dialog::backdrop {
   animation: fadeIn 150ms linear;
+  background: rgba(0, 0, 0, 0.4);
 }

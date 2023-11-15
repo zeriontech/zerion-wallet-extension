@@ -19,6 +19,10 @@ import type { AnyAddressAction } from 'src/modules/ethereum/transactions/address
 import { pendingTransactionToAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
+import { NetworkIcon } from 'src/ui/components/NetworkIcon';
+import AllNetworksIcon from 'jsx:src/ui/assets/network.svg';
+import CloseIcon from 'jsx:src/ui/assets/close_solid.svg';
+import { Button } from 'src/ui/ui-kit/Button';
 import { GROWN_TAB_MAX_HEIGHT, getTabsOffset } from '../Overview/getTabsOffset';
 import { ActionsList } from './ActionsList';
 import { ActionSearch } from './ActionSearch';
@@ -163,14 +167,15 @@ function EmptyView({ onReset }: { onReset(): void }) {
   );
 }
 
-export function HistoryList({
-  chain: chainValue,
-  onChainChange,
-}: {
-  chain: string;
-  onChainChange: (value: string) => void;
-}) {
-  const chain = chainValue ? createChain(chainValue) : null;
+export function HistoryList() {
+  const { networks } = useNetworks();
+  const [filterChain, setFilterChain] = useState<string | null>(null);
+  const chain =
+    filterChain && filterChain !== NetworkSelectValue.All
+      ? createChain(filterChain)
+      : null;
+
+  const chainValue = filterChain || NetworkSelectValue.All;
 
   const [searchQuery, setSearchQuery] = useState<string | undefined>();
   const {
@@ -180,31 +185,82 @@ export function HistoryList({
     hasMore,
   } = useMinedAndPendingAddressActions({ chain, searchQuery });
 
+  const filterNetwork =
+    chainValue === NetworkSelectValue.All
+      ? null
+      : networks?.getNetworkByName(createChain(chainValue));
+
   const actionFilters = (
-    <HStack
-      gap={16}
-      alignItems="center"
-      style={{
-        paddingInline: 16,
-        gridTemplateColumns: '1fr auto',
-      }}
-    >
-      <ActionSearch
-        value={searchQuery}
-        onChange={setSearchQuery}
-        onFocus={() => {
-          window.scrollTo({
-            behavior: 'smooth',
-            top: getTabsOffset(),
-          });
+    <VStack gap={8}>
+      <HStack
+        gap={8}
+        alignItems="center"
+        style={{
+          paddingInline: 16,
+          gridTemplateColumns: '1fr auto',
         }}
-      />
-      <NetworkSelect
-        type="overview"
-        value={chainValue}
-        onChange={onChainChange}
-      />
-    </HStack>
+      >
+        <ActionSearch
+          value={searchQuery}
+          onChange={setSearchQuery}
+          onFocus={() => {
+            window.scrollTo({
+              behavior: 'smooth',
+              top: getTabsOffset(),
+            });
+          }}
+        />
+        <NetworkSelect
+          value={chainValue}
+          onChange={setFilterChain}
+          renderButton={({ value, openDialog }) => {
+            return (
+              <Button
+                kind="ghost"
+                size={36}
+                onClick={openDialog}
+                style={{ padding: 8 }}
+              >
+                {!filterNetwork || value === NetworkSelectValue.All ? (
+                  <AllNetworksIcon
+                    style={{ width: 20, height: 20 }}
+                    role="presentation"
+                  />
+                ) : (
+                  <NetworkIcon
+                    size={20}
+                    src={filterNetwork.icon_url}
+                    name={filterNetwork.name}
+                    chainId={filterNetwork.external_id}
+                  />
+                )}
+              </Button>
+            );
+          }}
+        />
+      </HStack>
+      {filterNetwork ? (
+        <div style={{ paddingInline: 16 }}>
+          <Button
+            kind="regular"
+            size={32}
+            style={{
+              borderWidth: 2,
+              borderColor: 'var(--neutral-200)',
+              paddingInline: '12px 8px',
+            }}
+            onClick={() => setFilterChain(null)}
+          >
+            <HStack gap={4} alignItems="center">
+              <UIText kind="small/accent">{filterNetwork.name}</UIText>
+              <CloseIcon
+                style={{ width: 16, height: 16, color: 'var(--black)' }}
+              />
+            </HStack>
+          </Button>
+        </div>
+      ) : null}
+    </VStack>
   );
 
   if (!transactions?.length) {
@@ -219,7 +275,7 @@ export function HistoryList({
           <EmptyView
             onReset={() => {
               setSearchQuery(undefined);
-              onChainChange(NetworkSelectValue.All);
+              setFilterChain(null);
             }}
           />
         )}

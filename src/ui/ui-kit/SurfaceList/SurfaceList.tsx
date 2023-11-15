@@ -37,12 +37,14 @@ export function ItemAnchor({
   onClick,
   children,
   style,
+  decorationStyle,
 }: {
   href: string;
   target?: React.AnchorHTMLAttributes<HTMLAnchorElement>['target'];
   children: React.ReactNode;
   onClick?: React.AnchorHTMLAttributes<HTMLAnchorElement>['onClick'];
   style?: React.CSSProperties;
+  decorationStyle?: React.CSSProperties;
 }) {
   return (
     <UnstyledAnchor
@@ -52,7 +54,9 @@ export function ItemAnchor({
       onClick={onClick}
       className={s.option}
     >
-      <div className={s.decoration}>{children}</div>
+      <div className={s.decoration} style={decorationStyle}>
+        {children}
+      </div>
     </UnstyledAnchor>
   );
 }
@@ -65,23 +69,32 @@ export const ItemButton = React.forwardRef<
     highlighted?: boolean;
     outlined?: boolean;
   } & React.ButtonHTMLAttributes<HTMLButtonElement>
->(({ children, style, highlighted, outlined = false, ...props }, ref) => {
-  return (
-    <UnstyledButton
-      style={{ color: 'inherit', ...style }}
-      className={cn(s.option, highlighted ? s.highlighted : undefined)}
-      ref={ref}
-      {...props}
-    >
-      <div
-        className={s.decoration}
-        style={outlined ? { border: '1px solid var(--primary)' } : undefined}
+>(
+  (
+    { children, style, highlighted, outlined = false, className, ...props },
+    ref
+  ) => {
+    return (
+      <UnstyledButton
+        style={{ color: 'inherit', ...style }}
+        className={cn(
+          className,
+          s.option,
+          highlighted ? s.highlighted : undefined
+        )}
+        ref={ref}
+        {...props}
       >
-        {children}
-      </div>
-    </UnstyledButton>
-  );
-});
+        <div
+          className={s.decoration}
+          style={outlined ? { border: '1px solid var(--primary)' } : undefined}
+        >
+          {children}
+        </div>
+      </UnstyledButton>
+    );
+  }
+);
 
 export const ItemLabel = React.forwardRef<
   HTMLLabelElement,

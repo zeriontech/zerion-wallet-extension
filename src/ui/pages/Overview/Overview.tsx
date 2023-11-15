@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { useAddressPortfolio } from 'defi-sdk';
+import { RenderArea } from 'react-area';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
@@ -10,7 +11,6 @@ import {
 } from 'src/shared/units/formatCurrencyValue';
 import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
-import PersonIcon from 'jsx:src/ui/assets/person.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { usePendingTransactions } from 'src/ui/transactions/usePendingTransactions';
@@ -34,23 +34,18 @@ import {
   DelayedRender,
   useRenderDelay,
 } from 'src/ui/components/DelayedRender/DelayedRender';
-import { usePreferences } from 'src/ui/features/preferences';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { useProfileName } from 'src/ui/shared/useProfileName';
-import {
-  PausedBanner,
-  PauseInjectionControl,
-} from 'src/ui/components/PauseInjection';
-import { InvitationBanner } from 'src/ui/components/InvitationFlow';
-import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
+import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
+import { useIsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
+import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOrigin';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
 import { Feed } from '../Feed';
 import { ViewSuspense } from '../../components/ViewSuspense';
-import { CurrentNetwork } from './CurrentNetwork';
 import { NonFungibleTokens } from './NonFungibleTokens';
 import { Positions } from './Positions';
 import { ActionButtonsRow } from './ActionButtonsRow';
@@ -62,6 +57,7 @@ import {
   TAB_TOP_PADDING,
   getTabsOffset,
 } from './getTabsOffset';
+import { ConnectionHeader } from './ConnectionHeader';
 
 interface ChangeInfo {
   isPositive: boolean;
@@ -113,14 +109,6 @@ function PercentChange({
   return render(formatPercentChange(value, locale));
 }
 
-function CurrentAccount({ wallet }: { wallet: ExternallyOwnedAccount }) {
-  return (
-    <span style={{ fontWeight: 'normal' }}>
-      <WalletDisplayName wallet={wallet} maxCharacters={16} />
-    </span>
-  );
-}
-
 function CurrentAccountControls() {
   const { singleAddress, ready } = useAddressParams();
   const { data: wallet } = useQuery({
@@ -139,25 +127,35 @@ function CurrentAccountControls() {
       style={{ visibility: visible ? 'visible' : 'hidden' }}
     >
       <Button
-        kind="ghost"
+        kind="text-primary"
         size={40}
         as={UnstyledLink}
         to="/wallet-select"
         title="Select Account"
-        style={{ paddingInline: 8 }}
+        className="parent-hover"
+        style={{
+          paddingInline: '8px 4px',
+          ['--button-text-hover' as string]: 'var(--neutral-800)',
+          ['--parent-content-color' as string]: 'var(--neutral-500)',
+          ['--parent-hovered-content-color' as string]: 'var(--black)',
+        }}
       >
         <HStack gap={4} alignItems="center">
-          <PersonIcon />
           <UIText
-            kind="body/accent"
+            kind="headline/h3"
             style={{ display: 'inline-flex', alignItems: 'center' }}
           >
-            <CurrentAccount wallet={wallet} />
-            <ArrowDownIcon />
+            <WalletDisplayName wallet={wallet} maxCharacters={16} />
+            <ArrowDownIcon
+              className="content-hover"
+              style={{ width: 24, height: 24 }}
+            />
           </UIText>
         </HStack>
       </Button>
       <CopyButton address={addressToCopy} />
+
+      <RenderArea name="wallet-name-end" />
     </HStack>
   );
 }
@@ -200,11 +198,11 @@ function OverviewComponent() {
   useBodyStyle(
     useMemo(() => ({ ['--background' as string]: 'var(--z-index-0)' }), [])
   );
-  const { singleAddress, singleAddressNormalized, params, ready } =
+  const location = useLocation();
+  const { singleAddress, params, ready, singleAddressNormalized } =
     useAddressParams();
   useProfileName({ address: singleAddress, name: null });
-  const { preferences, setPreferences } = usePreferences();
-  const setChain = (overviewChain: string) => setPreferences({ overviewChain });
+  const [filterChain, setFilterChain] = useState<string | null>(null);
   const { value, isLoading: isLoadingPortfolio } = useAddressPortfolio(
     {
       ...params,
@@ -215,16 +213,36 @@ function OverviewComponent() {
     { enabled: ready }
   );
 
-  const handleTabChange = useCallback(() => {
-    window.scrollTo({
-      behavior: 'instant',
-      top: Math.min(window.scrollY, getTabsOffset()),
-    });
-  }, []);
+  const handleTabChange = useCallback(
+    (to: string) => {
+      const isActiveTabClicked = location.pathname === to;
+      window.scrollTo({
+        behavior: isActiveTabClicked ? 'smooth' : 'instant',
+        top: Math.min(window.scrollY, getTabsOffset()),
+      });
+    },
+    [location]
+  );
 
-  if (!preferences) {
-    return <ViewLoading />;
-  }
+  const { data: tabData } = useQuery({
+    queryKey: ['activeTab/origin'],
+    queryFn: getActiveTabOrigin,
+    useErrorBoundary: true,
+  });
+  const activeTabOrigin = tabData?.tabOrigin;
+  const { data: siteChain } = useQuery({
+    queryKey: ['requestChainForOrigin', activeTabOrigin],
+    queryFn: () => requestChainForOrigin(activeTabOrigin),
+    enabled: Boolean(activeTabOrigin),
+    useErrorBoundary: true,
+    suspense: false,
+  });
+
+  const { data: isConnected } = useIsConnectedToActiveTab(
+    singleAddressNormalized
+  );
+
+  const dappChain = isConnected ? siteChain?.toString() : null;
 
   const tabFallback = (
     <CenteredFillViewportView maxHeight={MIN_TAB_CONTENT_HEIGHT}>
@@ -239,7 +257,6 @@ function OverviewComponent() {
       style={{
         ['--column-padding-inline' as string]: '8px',
         ['--background' as string]: 'var(--neutral-100)',
-        backgroundColor: 'var(--background)',
       }}
     >
       <PageFullBleedColumn
@@ -248,37 +265,45 @@ function OverviewComponent() {
           position: 'sticky',
           top: 0,
           zIndex: 'var(--navbar-index)',
-          // ['--background' as string]: 'var(--neutral-100)',
-          backgroundColor: 'var(--background)',
+          paddingInline: 0,
         }}
       >
-        <Spacer height={16} />
-        <HStack gap={12} justifyContent="space-between" alignItems="center">
-          <CurrentAccountControls />
-
-          <HStack gap={0} alignItems="center">
-            {preferences?.showNetworkSwitchShortcut === true ? (
-              <CurrentNetwork address={singleAddressNormalized} />
-            ) : null}
-            <PauseInjectionControl />
+        <div
+          style={{ backgroundColor: 'var(--background)', paddingInline: 16 }}
+        >
+          <Spacer height={16} />
+          <ConnectionHeader />
+          <Spacer height={16} />
+        </div>
+        <div style={{ backgroundColor: 'var(--white)' }}>
+          <Spacer height={16} />
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingInline: '8px 16px',
+              height: 24,
+            }}
+          >
+            <CurrentAccountControls />
             <SettingsLinkIcon />
-          </HStack>
-        </HStack>
-        <Spacer height={16} />
+          </div>
+          <Spacer height={16} />
+        </div>
       </PageFullBleedColumn>
-      <PausedBanner style={{ marginBottom: 16, marginInline: 8 }} />
       <div
         style={{
           height: isLoadingPortfolio ? 68 : undefined,
           paddingInline: 8,
         }}
       >
-        <HStack gap={16} alignItems="center">
+        <HStack gap={12} alignItems="center">
           {!isLoadingPortfolio ? (
-            <WalletAvatar address={singleAddress} size={64} borderRadius={6} />
+            <WalletAvatar address={singleAddress} size={64} borderRadius={12} />
           ) : null}
           <VStack gap={0}>
-            <UIText kind="headline/hero">
+            <UIText kind="headline/h1">
               {value?.total_value != null ? (
                 <NeutralDecimals
                   parts={formatCurrencyToParts(value.total_value, 'en', 'usd')}
@@ -316,23 +341,19 @@ function OverviewComponent() {
                 }}
               />
             ) : (
-              <UIText kind="body/regular">{NBSP}</UIText>
+              <UIText kind="small/regular">{NBSP}</UIText>
             )}
           </VStack>
         </HStack>
       </div>
-      <Spacer height={20} />
+      <Spacer height={16} />
       <div style={{ paddingInline: 'var(--column-padding-inline)' }}>
         <ActionButtonsRow />
       </div>
       <DevelopmentOnly>
         <RenderTimeMeasure />
       </DevelopmentOnly>
-      <Spacer height={20} />
-      <InvitationBanner
-        address={singleAddressNormalized}
-        style={{ marginInline: 8 }}
-      />
+      <Spacer height={24} />
       <div id={TABS_OFFSET_METER_ID} />
       <PageFullBleedColumn
         paddingInline={false}
@@ -345,10 +366,7 @@ function OverviewComponent() {
       >
         <div
           style={{
-            borderTopLeftRadius: 24,
-            borderTopRightRadius: 24,
             backgroundColor: 'var(--white)',
-            paddingTop: 16,
             height: TAB_SELECTOR_HEIGHT,
           }}
         >
@@ -360,23 +378,40 @@ function OverviewComponent() {
             }}
             childrenLayout="start"
           >
+            <div
+              style={{
+                height: 2,
+                backgroundColor: 'var(--neutral-200)',
+                position: 'absolute',
+                bottom: -1,
+                left: 16,
+                right: 16,
+                zIndex: 0,
+              }}
+            />
             <SegmentedControlLink
               to="/overview"
               end={true}
-              onClick={handleTabChange}
+              onClick={() => handleTabChange('/overview')}
             >
               Tokens
             </SegmentedControlLink>
-            <SegmentedControlLink to="/overview/nfts" onClick={handleTabChange}>
+            <SegmentedControlLink
+              to="/overview/nfts"
+              onClick={() => handleTabChange('/overview/nfts')}
+            >
               NFTs
             </SegmentedControlLink>
             <SegmentedControlLink
               to="/overview/history"
-              onClick={handleTabChange}
+              onClick={() => handleTabChange('/overview/history')}
             >
               History <PendingTransactionsIndicator />
             </SegmentedControlLink>
-            <SegmentedControlLink to="/overview/feed" onClick={handleTabChange}>
+            <SegmentedControlLink
+              to="/overview/feed"
+              onClick={() => handleTabChange('/overview/feed')}
+            >
               Perks
             </SegmentedControlLink>
           </SegmentedControlGroup>
@@ -394,16 +429,25 @@ function OverviewComponent() {
         }}
       >
         <div style={{ minHeight: MIN_TAB_CONTENT_HEIGHT }}>
-          <Spacer height={TAB_TOP_PADDING} />
           <Routes>
             <Route
               path="/"
               element={
                 <ViewSuspense logDelays={true} fallback={tabFallback}>
                   <NavigationTitle title={null} documentTitle="Overview" />
+                  <div
+                    style={{
+                      height: TAB_TOP_PADDING,
+                      position: 'sticky',
+                      top: TAB_STICKY_OFFSET + TAB_SELECTOR_HEIGHT,
+                      zIndex: 1,
+                      backgroundColor: 'var(--white)',
+                    }}
+                  />
                   <Positions
-                    chain={preferences.overviewChain}
-                    onChainChange={setChain}
+                    dappChain={dappChain || null}
+                    filterChain={filterChain}
+                    onChainChange={setFilterChain}
                   />
                 </ViewSuspense>
               }
@@ -413,9 +457,11 @@ function OverviewComponent() {
               element={
                 <ViewSuspense logDelays={true} fallback={tabFallback}>
                   <NavigationTitle title={null} documentTitle="NFTs" />
+                  <Spacer height={TAB_TOP_PADDING} />
                   <NonFungibleTokens
-                    chain={preferences.overviewChain}
-                    onChainChange={setChain}
+                    dappChain={dappChain || null}
+                    filterChain={filterChain}
+                    onChainChange={setFilterChain}
                   />
                 </ViewSuspense>
               }
@@ -425,10 +471,8 @@ function OverviewComponent() {
               element={
                 <ViewSuspense logDelays={true} fallback={tabFallback}>
                   <NavigationTitle title={null} documentTitle="History" />
-                  <HistoryList
-                    chain={preferences.overviewChain}
-                    onChainChange={setChain}
-                  />
+                  <Spacer height={TAB_TOP_PADDING} />
+                  <HistoryList />
                 </ViewSuspense>
               }
             />
@@ -437,6 +481,7 @@ function OverviewComponent() {
               element={
                 <ViewSuspense logDelays={true} fallback={tabFallback}>
                   <NavigationTitle title={null} documentTitle="Perks" />
+                  <Spacer height={TAB_TOP_PADDING} />
                   <Feed />
                 </ViewSuspense>
               }

@@ -254,7 +254,6 @@ export function SendForm() {
           <div>
             {type === 'token' ? (
               <NetworkSelect
-                type="connection"
                 value={tokenChain ?? ''}
                 onChange={(value) => {
                   sendView.handleChange('tokenChain', value);
@@ -263,11 +262,11 @@ export function SendForm() {
               />
             ) : (
               <NetworkSelect
-                type="connection"
                 value={nftChain ?? ''}
                 onChange={(value) => {
                   sendView.handleChange('nftChain', value);
                 }}
+                dialogRootNode={rootNode}
               />
             )}
           </div>

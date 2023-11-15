@@ -1,1 +1,0 @@
-export { ConnectToDappButton } from './ConnectToDappButton';

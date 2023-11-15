@@ -13,7 +13,7 @@ export function WindowSize({
       ref={setRefEl}
       style={{
         position: 'relative',
-        maxWidth: 400,
+        maxWidth: 425,
         height: 640,
         overflowY: 'auto',
         border: '1px solid var(--neutral-200)',

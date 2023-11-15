@@ -99,7 +99,6 @@ export function EstimateTransactionGas({
   });
 
   const transaction = transactionData?.transaction ?? null;
-  console.log({ transaction });
   const estimateGasQuery = useEstimateGas({
     transaction,
     keepPreviousData: true,

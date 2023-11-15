@@ -10,13 +10,7 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 export const DNA_NFT_COLLECTION_ADDRESS =
   '0x932261f9fc8da46c4a22e31b45c4de60623848bf';
 
-export function DnaNFTBanner({
-  address,
-  style,
-}: {
-  address: string;
-  style?: React.CSSProperties;
-}) {
+export function useShowDNABanner(address: string) {
   const { value } = useAddressNftContracts({
     address,
     currency: 'usd',
@@ -25,7 +19,7 @@ export function DnaNFTBanner({
 
   const localTransactions = useLocalAddressTransactions({ address });
 
-  const shouldShow = useMemo(
+  return useMemo(
     () =>
       value &&
       !value.some(
@@ -38,8 +32,10 @@ export function DnaNFTBanner({
       ),
     [value, localTransactions]
   );
+}
 
-  return shouldShow ? (
+export function DnaNFTBanner({ style }: { style?: React.CSSProperties }) {
+  return (
     <UnstyledLink
       to="/dna-claim"
       style={{ width: '100%', position: 'relative', ...style }}
@@ -95,5 +91,5 @@ export function DnaNFTBanner({
         </HStack>
       </div>
     </UnstyledLink>
-  ) : null;
+  );
 }

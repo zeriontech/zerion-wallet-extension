@@ -16,7 +16,7 @@ export function NavigationBar({ title }: { title: string }) {
         paddingTop: 8,
         display: 'grid',
         alignItems: 'center',
-        gridTemplateColumns: '40px 1fr 40px',
+        gridTemplateColumns: '36px 1fr 40px',
       }}
     >
       <BackButton onClick={() => navigate(-1)} />
