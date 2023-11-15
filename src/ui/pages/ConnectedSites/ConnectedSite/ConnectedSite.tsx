@@ -61,7 +61,7 @@ function RevokeAllButton({
         }}
       >
         <UIText kind="body/accent">
-          {removePermissionMutation.isLoading ? 'Loading...' : 'Revoke All'}
+          {removePermissionMutation.isLoading ? 'Loading...' : 'Disconnect All'}
         </UIText>
       </Button>
     </>
@@ -180,7 +180,7 @@ export function ConnectedSite() {
             {connectedSite.wallets.length ? (
               <VStack gap={8} style={{ paddingInline: 8 }}>
                 <UIText kind="small/regular" color="var(--neutral-500)">
-                  Permitted addresses
+                  Connected addresses
                 </UIText>
                 <SurfaceList
                   style={{
@@ -230,6 +230,7 @@ export function ConnectedSite() {
                             kind="danger"
                             size={36}
                             style={{ padding: 8 }}
+                            aria-label="disconnect address"
                             onClick={() => {
                               if (removeActionDialogRef.current) {
                                 showConfirmDialog(
