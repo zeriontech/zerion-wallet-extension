@@ -266,6 +266,7 @@ export function SendForm() {
                 onChange={(value) => {
                   sendView.handleChange('nftChain', value);
                 }}
+                dialogRootNode={rootNode}
               />
             )}
           </div>

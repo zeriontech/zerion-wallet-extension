@@ -209,6 +209,9 @@ function SectionView({
         display: 'grid',
         flexGrow: 1,
       }}
+      onSubmit={(e) => {
+        e.stopPropagation();
+      }}
     >
       <VStack gap={8}>
         <NetworkList
@@ -268,7 +271,12 @@ function SearchView({
         flexGrow: 1,
       }}
     >
-      <form method="dialog">
+      <form
+        method="dialog"
+        onSubmit={(e) => {
+          e.stopPropagation();
+        }}
+      >
         <NetworkList
           networkList={items}
           networks={networks}
