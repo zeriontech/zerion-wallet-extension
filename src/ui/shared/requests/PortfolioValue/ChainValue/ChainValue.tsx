@@ -20,11 +20,9 @@ export function ChainValue({
     chain === NetworkSelectValue.All
       ? chainDistribution?.total_value
       : chainDistribution?.positions_chains_distribution[chain.toString()];
-  if (!value) {
-    return null;
-  }
+
   return formatCurrencyValue(
-    value,
+    value || 0,
     'en',
     'usd'
   ) as React.ReactNode as JSX.Element;

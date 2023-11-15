@@ -49,3 +49,52 @@
   outline: 2px solid var(--primary);
   outline-style: double;
 }
+
+.cardDecoration {
+  position: relative;
+  border-radius: 20;
+  cursor: pointer;
+  border: 2px solid var(--neutral-300);
+}
+
+.input:checked + .cardDecoration {
+  border: 2px solid var(--primary-200);
+  background-color: var(--primary-200);
+}
+
+.label:hover .input:not(:checked) + .cardDecoration {
+  border: 2px solid var(--neutral-100);
+  background-color: var(--neutral-100);
+}
+
+.input:focus-visible + .cardDecoration {
+  border: 2px solid var(--primary);
+}
+
+.circle {
+  position: absolute;
+  top: 12;
+  right: 16;
+  width: 24;
+  height: 24;
+  border-radius: 50%;
+  border: 2px solid var(--neutral-400);
+}
+
+.checkedCircle {
+  position: absolute;
+  top: 12;
+  right: 16;
+  width: 24;
+  height: 24;
+  display: none;
+}
+
+.input:checked + .cardDecoration .circle {
+  display: none;
+}
+
+.input:checked + .cardDecoration .checkedCircle {
+  display: block;
+  color: var(--primary);
+}

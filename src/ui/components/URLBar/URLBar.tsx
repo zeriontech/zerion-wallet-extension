@@ -90,7 +90,7 @@ export function URLBar() {
         paddingInline: 8,
         display: 'grid',
         alignItems: 'center',
-        gridTemplateColumns: '40px 1fr 40px',
+        gridTemplateColumns: '36px 1fr 40px',
       }}
     >
       <RenderArea

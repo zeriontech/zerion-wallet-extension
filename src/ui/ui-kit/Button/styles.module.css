@@ -1,5 +1,7 @@
 .button {
   cursor: pointer;
+  background-color: var(--button-background);
+  color: var(--button-text);
 }
 
 .asButton {
@@ -7,7 +9,6 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  color: currentColor;
 }
 
 /**
@@ -19,18 +20,24 @@
  * you're welcome to refactor
  */
 .primary.primary {
-  background-color: var(--actions-default);
-  color: var(--always-white);
+  --button-background: var(--black);
+  --button-background-hover: var(--neutral-800);
+  --button-text: var(--white);
+}
+
+.neutral.neutral {
+  --button-background: var(--neutral-100);
+  --button-background-hover: var(--neutral-200);
 }
 
 .primary:disabled {
   cursor: default;
-  background-color: var(--actions-disabled);
-  color: var(--actions-on-disabled);
+  background-color: var(--neutral-600);
+  --button-text: var(--neutral-400);
 }
 
 .primary:focus-visible {
-  outline: 2px solid var(--actions-default);
+  outline: 2px solid var(--black);
   outline-offset: 2px;
 }
 
@@ -44,16 +51,11 @@
   background-color: transparent;
   border-radius: 4px;
   padding: 4px;
+  --button-background-hover: var(--neutral-200);
 }
 
 .ghost:disabled {
   cursor: default;
-}
-
-@media (hover: hover) {
-  .ghost:not(:disabled):hover {
-    background-color: var(--neutral-300);
-  }
 }
 
 .ghost:not(:disabled):active {
@@ -61,8 +63,10 @@
 }
 
 .danger.danger {
-  background-color: var(--negative-500);
-  color: var(--always-white);
+  --button-background: var(--negative-100);
+  --button-text: var(--negative-500);
+  --button-text-hover: var(--negative-600);
+  --button-background-hover: var(--negative-200);
 }
 
 .danger:disabled {
@@ -73,11 +77,13 @@
 .text-primary {
   padding: 0;
   background-color: transparent;
-  color: var(--black);
+  --button-text: var(--black);
+  --button-text-hover: var(--primary);
 }
 
 @media (hover: hover) {
-  .text-primary:not(:disabled):hover {
-    color: var(--primary);
+  .button:not(:disabled):hover {
+    color: var(--button-text-hover, var(--button-text));
+    background-color: var(--button-background-hover, var(--button-background));
   }
 }

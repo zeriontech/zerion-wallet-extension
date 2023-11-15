@@ -1,14 +1,12 @@
-@media (hover: hover) {
-  .hoverUnderline:hover {
-    text-decoration: underline;
-  }
-}
-
 .hoverNoUnderline {
   text-decoration: underline;
 }
 
 @media (hover: hover) {
+  .hoverUnderline:hover {
+    text-decoration: underline;
+  }
+
   .hoverNoUnderline:hover {
     text-decoration: none;
   }

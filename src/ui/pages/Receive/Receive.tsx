@@ -83,7 +83,7 @@ export function Receive() {
               qrStyle="dots"
               eyeRadius={2}
               size={200}
-              logoImage="https://protocol-icons.s3.amazonaws.com/zerion+defi+sdk.png"
+              logoImage="https://s3.amazonaws.com/cdn.zerion.io/assets/logo-icon-128.png"
               logoWidth={36}
               logoHeight={36}
               logoPadding={8}

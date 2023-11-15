@@ -25,7 +25,7 @@ function getPopupRoute(route: string, type: WindowType) {
 const IS_WINDOWS = /windows/i.test(navigator.userAgent);
 const BROWSER_HEADER = 80;
 const DEFAULT_WINDOW_SIZE = {
-  width: 400 + (IS_WINDOWS ? 14 : 0), // windows cuts the width
+  width: 425 + (IS_WINDOWS ? 14 : 0), // windows cuts the width
   height: 700,
 };
 

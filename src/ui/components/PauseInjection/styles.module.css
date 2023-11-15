@@ -1,0 +1,7 @@
+.radioCardTitle {
+  color: var(--black);
+}
+
+.radioCard input:checked + div .radioCardTitle {
+  color: var(--primary);
+}

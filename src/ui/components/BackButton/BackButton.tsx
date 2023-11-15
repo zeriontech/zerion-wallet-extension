@@ -10,11 +10,14 @@ export function BackButton({
     <Button
       kind="ghost"
       aria-label="Go back"
-      size={40}
+      size={36}
       style={{ padding: 8, ...style }}
       {...props}
     >
-      <IconLeft role="presentation" style={{ display: 'block' }} />
+      <IconLeft
+        role="presentation"
+        style={{ display: 'block', width: 20, height: 20 }}
+      />
     </Button>
   );
 }

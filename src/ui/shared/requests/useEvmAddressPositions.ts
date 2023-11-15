@@ -76,9 +76,11 @@ async function getEvmAddressPositions({
 export function useEvmAddressPositions({
   address,
   chain,
+  suspense = false,
 }: {
   address: string | null;
   chain: Chain;
+  suspense?: boolean;
 }) {
   return useQuery({
     queryKey: ['eth_getBalance', address, chain],
@@ -94,5 +96,6 @@ export function useEvmAddressPositions({
           });
     },
     enabled: Boolean(address),
+    suspense,
   });
 }

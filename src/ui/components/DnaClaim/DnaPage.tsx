@@ -28,6 +28,7 @@ import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { walletPort } from 'src/ui/shared/channels';
 import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
+import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOrigin';
 import { Background } from '../Background';
 import { useBodyStyle } from '../Background/Background';
 import { NavigationTitle } from '../NavigationTitle';
@@ -183,9 +184,8 @@ export function DnaPage() {
     isLoading: isChainDataLoading,
     refetch: refetchChainForZerionOrigin,
   } = useQuery({
-    queryKey: ['wallet/requestChainForOrigin', ZERION_ORIGIN],
-    queryFn: async () =>
-      walletPort.request('requestChainForOrigin', { origin: ZERION_ORIGIN }),
+    queryKey: ['requestChainForOrigin', ZERION_ORIGIN],
+    queryFn: () => requestChainForOrigin(ZERION_ORIGIN),
     suspense: false,
   });
 
@@ -426,7 +426,7 @@ export function DnaPage() {
               <Button style={{ width: '100%' }} disabled={true}>
                 Claim DNA
               </Button>
-            ) : chainForZerionOrigin !== NetworkId.Ethereum ? (
+            ) : chainForZerionOrigin?.toString() !== NetworkId.Ethereum ? (
               <Button
                 style={{ width: '100%' }}
                 onClick={() => changeChainForZerionOrigin()}

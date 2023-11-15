@@ -34,7 +34,7 @@ export function PhishingWarningPage() {
         style={{
           ['--surface-background-color' as string]: 'var(--always-black)',
           padding: '48px 24px 24px',
-          width: 400,
+          width: 425,
           position: 'relative',
         }}
       >

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import type { AddressPositionDappInfo } from 'defi-sdk';
+import cn from 'classnames';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { Surface } from 'src/ui/ui-kit/Surface';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
@@ -25,14 +25,16 @@ export function DappLink({
   }
 
   return (
-    <Surface
-      padding="8px 12px"
-      className={styles.link}
-      as={UnstyledAnchor}
+    <UnstyledAnchor
+      className={cn(styles.link, 'parent-hover')}
       href={url.href}
       rel="noopener noreferrer"
       onClick={openInNewWindow}
-      style={style}
+      style={{
+        ['--parent-content-color' as string]: 'var(--neutral-500)',
+        ['--parent-hovered-content-color' as string]: 'var(--black)',
+        ...style,
+      }}
     >
       <HStack gap={24} justifyContent="space-between" alignItems="center">
         <VStack gap={0}>
@@ -41,8 +43,8 @@ export function DappLink({
             {url.hostname}
           </UIText>
         </VStack>
-        <ArrowLeftTop className={styles.icon} />
+        <ArrowLeftTop className="content-hover" />
       </HStack>
-    </Surface>
+    </UnstyledAnchor>
   );
 }

@@ -15,7 +15,18 @@ type Kind =
   | 'ghost'
   | 'danger'
   | 'text-primary';
-type Size = 60 | 56 | 46 | 44 | 40 | 36 | 32 | 28;
+type Size = 60 | 56 | 48 | 44 | 40 | 36 | 32 | 28;
+
+const borderRaduis: Record<Size, number> = {
+  '28': 8,
+  '32': 8,
+  '36': 12,
+  '40': 12,
+  '44': 16,
+  '48': 16,
+  '56': 20,
+  '60': 20,
+};
 
 const kinds: { [kind in Kind]: (size: number) => React.CSSProperties } = {
   primary: () => ({ paddingInline: 48 }),
@@ -65,7 +76,7 @@ const ButtonElement = <As extends ElementType = 'button'>(
         {
           border: 'none',
           textDecoration: 'none',
-          borderRadius: 8,
+          borderRadius: borderRaduis[size],
           height: size,
           color: undefined,
         },

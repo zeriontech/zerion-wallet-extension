@@ -35,3 +35,7 @@
 .input[type='search'].darkTheme::-webkit-search-cancel-button {
   content: url('./assets/close-primary-dark.svg');
 }
+
+.input::placeholder {
+  color: var(--neutral-500);
+}

@@ -10,7 +10,7 @@ export function useIsConnectedToActiveTab(address: string) {
   });
   const tabOrigin = data?.tabOrigin;
   return useQuery({
-    queryKey: [`hasPermission(${address}, ${tabOrigin})`],
+    queryKey: ['isAccountAvailableToOrigin', address, tabOrigin],
     queryFn: async () => {
       if (tabOrigin) {
         return walletPort.request('isAccountAvailableToOrigin', {

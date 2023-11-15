@@ -1,5 +1,4 @@
 import browser from 'webextension-polyfill';
-import cx from 'classnames';
 import type { ComponentPropsWithoutRef, ElementType } from 'react';
 import React from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -10,12 +9,11 @@ import BridgeIcon from 'jsx:src/ui/assets/actions/bridge.svg';
 import BuyIcon from 'jsx:src/ui/assets/actions/buy.svg';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { walletPort } from 'src/ui/shared/channels';
-import { VStack } from 'src/ui/ui-kit/VStack';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
-import { ThemeStore, themeStore } from 'src/ui/features/appearance';
-import { useStore } from '@store-unit/react';
 import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
+import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import { Button } from 'src/ui/ui-kit/Button';
 import * as s from './styles.module.css';
 
 function ActionButton<As extends ElementType = 'a'>({
@@ -28,21 +26,11 @@ function ActionButton<As extends ElementType = 'a'>({
   title: React.AnchorHTMLAttributes<HTMLAnchorElement>['title'];
 } & { as?: As } & ComponentPropsWithoutRef<As>) {
   const Element = as || UnstyledAnchor;
-  const themeState = useStore(themeStore);
   return (
-    <Element
-      {...props}
-      className={cx(
-        s.actionButton,
-        ThemeStore.isDark(themeState) ? s.dark : undefined
-      )}
-    >
-      <VStack gap={6} style={{ placeItems: 'center' }}>
-        <div className={s.icon} title={title}>
-          {icon}
-        </div>
-        <UIText kind="caption/accent">{title}</UIText>
-      </VStack>
+    <Element {...props} className={s.actionButton}>
+      <div className={s.icon} title={title}>
+        {icon}
+      </div>
     </Element>
   );
 }
@@ -91,40 +79,29 @@ export function ActionButtonsRow() {
     }
   };
 
-  const iconStyle = { width: 28, height: 28 };
   return (
     <ul
       style={{
-        display: 'flex',
-        gap: 4,
-        justifyContent: 'space-between',
+        display: 'grid',
+        gap: 8,
+        gridTemplateColumns: 'repeat(4, 48px) 1fr',
         padding: 0,
         margin: 0,
         listStyle: 'none',
       }}
     >
       <li>
-        <ActionButton
-          title="Swap"
-          icon={<SwapIcon style={iconStyle} />}
-          href={`${ZERION_ORIGIN}/swap?${addWalletParams}`}
-          onClick={performAction}
-          target="_blank"
-          rel="noopener noreferrer"
-        />
-      </li>
-      <li>
         {process.env.FEATURE_SEND_FORM === 'on' ? (
           <ActionButton
             title="Send"
             as={UnstyledLink}
-            icon={<SendIcon style={iconStyle} />}
+            icon={<SendIcon />}
             to="/send-form"
           />
         ) : (
           <ActionButton
             title="Send"
-            icon={<SendIcon style={iconStyle} />}
+            icon={<SendIcon />}
             href={`${ZERION_ORIGIN}/send?${addWalletParams}`}
             onClick={performAction}
             target="_blank"
@@ -136,14 +113,14 @@ export function ActionButtonsRow() {
         <ActionButton
           title="Receive"
           as={UnstyledLink}
-          icon={<ReceiveIcon style={iconStyle} />}
+          icon={<ReceiveIcon />}
           to={`/receive?address=${wallet.address}`}
         />
       </li>
       <li>
         <ActionButton
           title="Bridge"
-          icon={<BridgeIcon style={iconStyle} />}
+          icon={<BridgeIcon />}
           href={`${ZERION_ORIGIN}/bridge?${addWalletParams}`}
           onClick={performAction}
           target="_blank"
@@ -153,12 +130,37 @@ export function ActionButtonsRow() {
       <li>
         <ActionButton
           title="Buy"
-          icon={<BuyIcon style={iconStyle} />}
+          icon={<BuyIcon />}
           href={`${ZERION_ORIGIN}/deposit?${addWalletParams}`}
           onClick={performAction}
           target="_blank"
           rel="noopener noreferrer"
         />
+      </li>
+      <li>
+        <Button
+          aria-label="Swap"
+          size={48}
+          as={UnstyledAnchor}
+          href={`${ZERION_ORIGIN}/swap?${addWalletParams}`}
+          onClick={performAction}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            borderRadius: 24,
+            width: '100%',
+            ['--button-background' as string]: 'var(--black)',
+            ['--button-text' as string]: 'var(--white)',
+            ['--button-background-hover' as string]: 'var(--neutral-800)',
+          }}
+        >
+          <HStack gap={6} alignItems="center">
+            <div style={{ display: 'flex' }}>
+              <SwapIcon />
+            </div>
+            <UIText kind="small/accent">Swap</UIText>
+          </HStack>
+        </Button>
       </li>
     </ul>
   );
