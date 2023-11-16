@@ -163,7 +163,10 @@ function AssetSelectComponent({
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const [query, setQuery] = useState('');
   const debouncedSetQuery = useDebouncedCallback(setQuery, 500);
-  const isCombobox = allItems.length >= 10;
+  // const isCombobox = allItems.length >= 10;
+  // isCombobox: false doesn't seem to work as expected, the arrows do not work
+  // and there is a rerender bug when Dialog is reopened, so we turn this mode off for now
+  const isCombobox = true;
 
   const items = useMemo(() => {
     if (!query || !isCombobox) {
