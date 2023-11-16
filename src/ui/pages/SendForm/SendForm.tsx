@@ -39,9 +39,8 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
-import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
-import { FormFieldset } from 'src/ui/ui-kit/FormFieldset';
 import { getRootDomNode } from 'src/ui/shared/getRootDomNode';
+import { usePreferences } from 'src/ui/features/preferences/usePreferences';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -52,6 +51,8 @@ import { TransferVisualization } from './TransferVisualization';
 import { EstimateTransactionGas } from './EstimateTransactionGas';
 import { SuccessState } from './SuccessState';
 import { TokenTransferInput } from './fieldsets/TokenTransferInput';
+import { AddressInputWrapper } from './fieldsets/AddressInput';
+import { updateRecentAddresses } from './fieldsets/AddressInput/updateRecentAddresses';
 
 function StoreWatcherByKeys<T extends Record<string, unknown>>({
   store,
@@ -123,6 +124,7 @@ export function SendForm() {
   }, []);
 
   const { data: gasPrices } = useGasPrices(chain);
+  const { preferences, setPreferences } = usePreferences();
 
   const {
     mutate: send,
@@ -159,6 +161,14 @@ export function SendForm() {
         transaction,
         { initiator: INTERNAL_ORIGIN, feeValueCommon },
       ]);
+      if (preferences) {
+        setPreferences({
+          recentAddresses: updateRecentAddresses(
+            to,
+            preferences.recentAddresses
+          ),
+        });
+      }
       return txResponse.hash;
     },
     // The value returned by onMutate can be accessed in
@@ -273,21 +283,16 @@ export function SendForm() {
           <VStack gap={8}>
             <StoreWatcherByKeys
               store={store}
-              keys={['to']}
-              render={({ to }) => (
-                <FormFieldset
-                  title="Recipient"
-                  startInput={
-                    <UnstyledInput
-                      style={{ width: '100%', textOverflow: 'ellipsis' }}
-                      name="to"
-                      value={to || ''}
-                      placeholder="receiver address"
-                      onChange={(event) => {
-                        sendView.handleChange('to', event.currentTarget.value);
-                      }}
-                      required={true}
-                    />
+              keys={['to', 'addressInputValue']}
+              render={({ to, addressInputValue }) => (
+                <AddressInputWrapper
+                  value={addressInputValue ?? null}
+                  resolvedAddress={to ?? null}
+                  onChange={(value) =>
+                    sendView.handleChange('addressInputValue', value)
+                  }
+                  onResolvedChange={(value) =>
+                    sendView.handleChange('to', value)
                   }
                 />
               )}

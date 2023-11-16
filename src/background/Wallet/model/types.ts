@@ -42,6 +42,7 @@ interface PublicPreferences {
    */
   configurableNonce?: boolean;
   invitationBannerDismissed?: boolean;
+  recentAddresses?: string[];
 }
 
 export interface Permission {

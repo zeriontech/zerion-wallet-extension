@@ -111,3 +111,7 @@ body.isDialog:not(.isOnboarding) {
     color: var(--parent-hovered-content-color);
   }
 }
+
+input::placeholder {
+  color: var(--neutral-500);
+}

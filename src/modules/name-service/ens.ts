@@ -11,7 +11,14 @@ export async function ensLookup(address: string): Promise<string | null> {
   return provider.lookupAddress(address);
 }
 
+function ensMatch(maybeDomain: string) {
+  return /[^/?]+\.eth$/i.test(maybeDomain);
+}
+
 export async function ensResolve(domain: string): Promise<string | null> {
+  if (!ensMatch(domain)) {
+    return null;
+  }
   const networks = await networksStore.load();
   const nodeUrl = networks.getRpcUrlInternal(
     networks.getChainById(ChainId.Mainnet)
