@@ -123,6 +123,7 @@ const SuggestedItem = React.forwardRef(
         highlighted={highlighted}
         decorationStyle={{ padding: 12 }}
         ref={ref}
+        tabIndex={-1}
         {...props}
       >
         <HStack
