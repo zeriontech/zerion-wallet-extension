@@ -209,7 +209,7 @@ function TransactionDefaultView({
 
       if (transactionAction.type === 'approve' && allowanceQuantityBase) {
         tx = await walletPort.request('createApprovalTransaction', {
-          initiator: origin,
+          chain: chain.toString(),
           contractAddress: transactionAction.contractAddress,
           allowanceQuantityBase,
           spender: transactionAction.spenderAddress,

@@ -33,6 +33,7 @@ import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { invariant } from 'src/shared/invariant';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
+import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
 import { useTransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import type { NetworkFeeConfiguration, NetworkFeeSpeed } from './types';
 import { NetworkFeeIcon } from './NetworkFeeIcon';
@@ -96,8 +97,6 @@ function setPatternValidity(event: React.ChangeEvent<HTMLInputElement>) {
     event.currentTarget.setCustomValidity('');
   }
 }
-
-const FLOAT_INPUT_PATTERN = '(\\d+\\.)?\\d+'; // positive floats and ints
 
 function CustomNetworkFeeForm({
   type,

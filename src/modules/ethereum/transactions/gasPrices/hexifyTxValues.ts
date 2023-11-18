@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { valueToHex } from 'src/shared/units/valueToHex';
 import type { IncomingTransaction } from '../../types/IncomingTransaction';
 
 const fields = ['data', 'value', 'gas'] as const;
@@ -14,7 +14,7 @@ export function hexifyTxValues(
   for (const field of fields) {
     const value = copy[field];
     if (value != null) {
-      copy[field] = ethers.utils.hexValue(value);
+      copy[field] = valueToHex(value);
     }
   }
   return copy as HexifiedTx<Keys>;

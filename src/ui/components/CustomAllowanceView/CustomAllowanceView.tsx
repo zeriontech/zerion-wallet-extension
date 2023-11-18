@@ -27,11 +27,9 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { AssetLink } from 'src/ui/components/AssetLink';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
-import {
-  UNLIMITED_APPROVAL_AMOUNT,
-  isUnlimitedApproval,
-} from 'src/ui/pages/History/isUnlimitedApproval';
+import { isUnlimitedApproval } from 'src/ui/pages/History/isUnlimitedApproval';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
 import { NavigationBar } from '../NavigationBar';
 
 const parsers: Parsers = {

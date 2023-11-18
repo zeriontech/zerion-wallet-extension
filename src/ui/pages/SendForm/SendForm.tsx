@@ -14,7 +14,7 @@ import {
   SegmentedControlGroup,
   SegmentedControlRadio,
 } from 'src/ui/ui-kit/SegmentedControl';
-import { useSelectorStore, useStore } from '@store-unit/react';
+import { useSelectorStore } from '@store-unit/react';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { invariant } from 'src/shared/invariant';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -41,6 +41,7 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { getRootDomNode } from 'src/ui/shared/getRootDomNode';
 import { usePreferences } from 'src/ui/features/preferences/usePreferences';
+import { StoreWatcher } from 'src/ui/shared/StoreWatcher';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -64,17 +65,6 @@ function StoreWatcherByKeys<T extends Record<string, unknown>>({
   render: (state: T) => React.ReactNode;
 }) {
   const state = useSelectorStore(store, keys);
-  return render(state);
-}
-
-function StoreWatcher<T>({
-  store,
-  render,
-}: {
-  store: Store<T>;
-  render: (state: T) => React.ReactNode;
-}) {
-  const state = useStore(store);
   return render(state);
 }
 
@@ -113,7 +103,7 @@ export function SendForm() {
       ? createChain(nftChain)
       : null;
 
-  const snapshotRef = useRef<Partial<SendFormState> | null>(null);
+  const snapshotRef = useRef<SendFormState | null>(null);
   const onBeforeSubmit = () => {
     snapshotRef.current = sendView.store.getState();
   };
@@ -127,7 +117,7 @@ export function SendForm() {
   const { preferences, setPreferences } = usePreferences();
 
   const {
-    mutate: send,
+    mutate: sendTransaction,
     data: transactionHash,
     isLoading,
     reset,
@@ -204,7 +194,7 @@ export function SendForm() {
         sendFormState={snapshotRef.current}
         onDone={() => {
           reset();
-          // setView('default');
+          snapshotRef.current = null;
         }}
       />
     );
@@ -238,7 +228,7 @@ export function SendForm() {
           event.preventDefault();
           invariant(confirmDialogRef.current, 'Dialog not found');
           showConfirmDialog(confirmDialogRef.current).then(() => {
-            send();
+            sendTransaction();
           });
         }}
       >

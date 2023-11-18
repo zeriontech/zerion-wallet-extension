@@ -6,7 +6,6 @@ import React, {
   useState,
 } from 'react';
 import { createPortal } from 'react-dom';
-import type { AddressPosition } from 'defi-sdk';
 import noop from 'lodash/noop';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useCombobox } from 'downshift';
@@ -34,14 +33,10 @@ import { SurfaceItemButton, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { getRootDomNode } from 'src/ui/shared/getRootDomNode';
+import type { BareAddressPosition } from '../../SwapForm/BareAddressPosition';
 import * as styles from './styles.module.css';
 
-type AddressPositionItem = Pick<
-  AddressPosition,
-  'id' | 'asset' | 'quantity' | 'chain'
->;
-
-function ResultItem({ addressAsset }: { addressAsset: AddressPositionItem }) {
+function ResultItem({ addressAsset }: { addressAsset: BareAddressPosition }) {
   const { asset } = addressAsset;
   const { price } = asset;
   const quantityCommon = baseToCommon(
@@ -81,12 +76,12 @@ function ResultItem({ addressAsset }: { addressAsset: AddressPositionItem }) {
 }
 
 interface Props {
-  items: AddressPositionItem[];
+  items: BareAddressPosition[];
   noItemsMessage: string;
   isLoading?: boolean;
-  getGroupName?: (item: AddressPositionItem) => string;
-  selectedItem: AddressPositionItem;
-  onChange(position: AddressPositionItem): void;
+  getGroupName?: (item: BareAddressPosition) => string;
+  selectedItem: BareAddressPosition;
+  onChange(position: BareAddressPosition): void;
   chain?: Chain | null;
 }
 
@@ -99,11 +94,11 @@ type OptionItem =
   | { type: ItemType.group; name: string }
   | { type: ItemType.option; index: number };
 
-const Option = React.memo(({ item }: { item: AddressPositionItem }) => {
+const Option = React.memo(({ item }: { item: BareAddressPosition }) => {
   return <ResultItem addressAsset={item} />;
 });
 
-function matches(inputValue: string | null, { asset }: AddressPositionItem) {
+function matches(inputValue: string | null, { asset }: BareAddressPosition) {
   if (!inputValue) {
     return false;
   }
@@ -221,7 +216,7 @@ function AssetSelectComponent({
     setInputValue,
     setHighlightedIndex,
     selectItem,
-  } = useCombobox<AddressPositionItem | null>({
+  } = useCombobox<BareAddressPosition | null>({
     items,
     selectedItem,
     initialInputValue: '',
@@ -331,7 +326,15 @@ function AssetSelectComponent({
             symbol={selectedItem.asset.symbol}
             title={selectedItem.asset.name}
           />
-          <HStack gap={4} alignItems="center">
+          <HStack
+            gap={4}
+            alignItems="center"
+            style={{
+              textAlign: 'start',
+              fontSize:
+                selectedItem.asset.symbol.length > 8 ? '0.8em' : undefined,
+            }}
+          >
             {selectedItem.asset.symbol.toUpperCase()}
             <DownIcon
               width={24}
