@@ -25,8 +25,10 @@ export interface TransactionDescription {
 export interface Quote {
   input_amount_estimation: string;
   input_token_address: string;
+  input_chain: string;
   output_amount_estimation: string;
   output_token_address: string;
+  output_chain: string;
   guaranteed_output_amount: string;
   token_spender: string;
   exchanges: ExchangeWithName[] | null;

@@ -1,6 +1,7 @@
 .reverseButton {
   position: absolute;
-  top: calc(50% - 20px);
+  /* half self height and half gap between inputs */
+  bottom: calc(0px - 20px - 2px);
   left: calc(50% - 20px);
   background-color: var(--neutral-100);
   width: 40px;
@@ -10,10 +11,26 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 1;
 }
 
 @media (hover: hover) {
   .reverseButton:hover {
     box-shadow: 0 0 0px 1px var(--neutral-400) inset;
+  }
+}
+
+.arcParent {
+  position: relative;
+}
+.bottomArc,
+.topArc {
+  opacity: 0;
+}
+
+@media (hover: hover) {
+  .arcParent:hover .bottomArc,
+  .arcParent:hover .topArc {
+    opacity: 1;
   }
 }

@@ -1,5 +1,5 @@
 import { useSelectorStore, useStore } from '@store-unit/react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import omit from 'lodash/omit';
 import type { SwapFormView } from '@zeriontech/transactions';
 import { commonToBase } from 'src/shared/units/convert';
@@ -21,6 +21,7 @@ export interface QuotesData {
   isLoading: boolean;
   done: boolean;
   error: Error | null;
+  refetch: () => void;
 }
 
 export function useQuotes({
@@ -49,6 +50,9 @@ export function useQuotes({
     'receiveInput',
   ]);
   const { slippage } = useStore(swapView.store.configuration);
+  const [refetchHash, setRefetchHash] = useState(0);
+  const refetch = useCallback(() => setRefetchHash((n) => n + 1), []);
+
   const url = useMemo(() => {
     const value = primaryInput === 'receive' ? receiveInput : spendInput;
     const position =
@@ -100,7 +104,7 @@ export function useQuotes({
   ]);
 
   const { value, isLoading, error, done } = useEventSource<Quote[]>(
-    url ?? 'no-url',
+    `${url ?? 'no-url'}-${refetchHash}`,
     url ?? null,
     {
       mergeResponse: (currentValue, nextValue) => {
@@ -143,5 +147,6 @@ export function useQuotes({
     isLoading,
     error,
     done,
+    refetch,
   };
 }

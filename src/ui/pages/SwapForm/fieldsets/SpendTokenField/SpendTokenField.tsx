@@ -16,6 +16,20 @@ import { createChain } from 'src/modules/networks/Chain';
 import { AssetSelect } from 'src/ui/pages/SendForm/AssetSelect';
 import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
 
+function useCustomValidity({
+  ref,
+  customValidity,
+}: {
+  ref: React.RefObject<HTMLInputElement>;
+  customValidity: string;
+}) {
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.setCustomValidity(customValidity);
+    }
+  }, [customValidity, ref]);
+}
+
 export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
   const { spendPosition } = swapView;
   const { primaryInput, spendInput, chainInput } = useSelectorStore(
@@ -43,6 +57,12 @@ export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
 
   const primaryInputRef = useRef(primaryInput);
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useCustomValidity({
+    ref: inputRef,
+    customValidity: exceedsBalance ? 'Insufficient balance' : '',
+  });
+
   useEffect(() => {
     if (primaryInputRef.current === 'receive' && primaryInput === 'spend') {
       // Detected change of primaryInput from 'receive' to 'spend',

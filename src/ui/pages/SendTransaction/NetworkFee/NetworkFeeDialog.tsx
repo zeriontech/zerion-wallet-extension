@@ -330,6 +330,7 @@ function NetworkFeeButton({
     chain,
     transaction,
     networkFeeConfiguration: speedConfiguration,
+    onFeeValueCommonReady: null,
   });
   const { feeValueFiat, feeValueCommon } = costs || {};
 

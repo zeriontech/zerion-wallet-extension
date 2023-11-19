@@ -746,10 +746,11 @@ export class Wallet {
       'function approve(address, uint256) public returns (bool success)',
     ];
     const contract = new ethers.Contract(contractAddress, abi, provider);
-    return await contract.populateTransaction.approve(
+    const tx = await contract.populateTransaction.approve(
       spender,
       allowanceQuantityBase
     );
+    return { ...tx, chainId };
   }
 
   async fetchAllowance({

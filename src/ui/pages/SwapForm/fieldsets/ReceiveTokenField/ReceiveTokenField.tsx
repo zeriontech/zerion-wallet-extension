@@ -34,10 +34,8 @@ export function ReceiveTokenField({ swapView }: { swapView: SwapFormView }) {
       /* formatted value must be a valid input value, e.g. 123456.67 and not 123,456.67 */
       const formatted = roundTokenValue(receiveInput);
       tokenValueInputRef.current?.setValue(formatted);
-      console.log('setting receive input value in effect', formatted);
     } else if (primaryInput === 'spend') {
       tokenValueInputRef.current?.setValue('');
-      console.log('setting receive input value in effect', 'empty');
     }
   }, [primaryInput, receiveInput]);
 

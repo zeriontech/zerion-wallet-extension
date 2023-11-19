@@ -41,7 +41,7 @@ export function NetworkFee({
   transactionFee: TransactionFee;
   chain: Chain;
   networkFeeConfiguration: NetworkFeeConfiguration;
-  onChange(value: NetworkFeeConfiguration): void;
+  onChange: null | ((value: NetworkFeeConfiguration) => void);
 }) {
   const { networks } = useNetworks();
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -57,20 +57,22 @@ export function NetworkFee({
     networks?.getNetworkByName(chain)?.native_asset?.symbol;
 
   const isOptimistic = Boolean(chainGasPrices?.info.optimistic);
-  const disabled = isLoading || isOptimistic;
+  const disabled = isLoading || isOptimistic || !onChange;
 
   return (
     <>
-      <NetworkFeeDialog
-        ref={dialogRef}
-        value={networkFeeConfiguration}
-        onSubmit={(value) => {
-          onChange(value);
-          dialogRef.current?.close();
-        }}
-        chain={chain}
-        transaction={transaction}
-      />
+      {onChange ? (
+        <NetworkFeeDialog
+          ref={dialogRef}
+          value={networkFeeConfiguration}
+          onSubmit={(value) => {
+            onChange(value);
+            dialogRef.current?.close();
+          }}
+          chain={chain}
+          transaction={transaction}
+        />
+      ) : null}
       <HStack gap={8} justifyContent="space-between">
         <UIText kind="small/regular" color="var(--neutral-700)">
           Network Fee
@@ -85,7 +87,7 @@ export function NetworkFee({
               className={disabled ? undefined : helperStyles.hoverUnderline}
               style={{
                 color: disabled ? 'var(--black)' : 'var(--primary)',
-                cursor: isOptimistic ? 'auto' : undefined,
+                cursor: isOptimistic || !onChange ? 'auto' : undefined,
               }}
               onClick={() => {
                 dialogRef.current?.showModal();

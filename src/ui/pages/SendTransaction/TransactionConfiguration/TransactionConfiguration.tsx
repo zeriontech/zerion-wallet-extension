@@ -29,9 +29,9 @@ export function TransactionConfiguration({
   transaction: IncomingTransaction;
   from: string;
   chain: Chain;
-  onFeeValueCommonReady: (value: string) => void;
+  onFeeValueCommonReady: null | ((value: string) => void);
   configuration: CustomConfiguration;
-  onConfigurationChange: (value: CustomConfiguration) => void;
+  onConfigurationChange: null | ((value: CustomConfiguration) => void);
   keepPreviousData?: boolean;
 }) {
   const { preferences } = usePreferences();
@@ -53,8 +53,11 @@ export function TransactionConfiguration({
         transactionFee={transactionFee}
         chain={chain}
         networkFeeConfiguration={configuration.networkFee}
-        onChange={(networkFee) =>
-          onConfigurationChange({ ...configuration, networkFee })
+        onChange={
+          onConfigurationChange
+            ? (networkFee) =>
+                onConfigurationChange({ ...configuration, networkFee })
+            : null
         }
       />
       {preferences?.configurableNonce ? (
@@ -62,8 +65,10 @@ export function TransactionConfiguration({
           userNonce={configuration.nonce}
           transaction={transactionWithFrom}
           chain={chain}
-          onChange={(nonce) =>
-            onConfigurationChange({ ...configuration, nonce })
+          onChange={
+            onConfigurationChange
+              ? (nonce) => onConfigurationChange({ ...configuration, nonce })
+              : null
           }
         />
       ) : null}

@@ -1,5 +1,4 @@
 import React from 'react';
-import { animated, useTransition } from '@react-spring/web';
 import ArrowIcon from 'jsx:src/ui/assets/arrow-right.svg';
 import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -15,22 +14,6 @@ const secondaryColor = 'var(--neutral-500)';
 
 // const EXPLAIN_APPROVE_URL =
 //   'https://help.zerion.io/en/articles/4228406-what-does-approve-mean-when-making-a-transaction';
-
-export function Appear({
-  display,
-  children,
-}: React.PropsWithChildren<{ display: boolean }>) {
-  const data = display ? [1] : [];
-  const transitions = useTransition(data, {
-    config: { tension: 400 },
-    from: { opacity: 0, y: 30 },
-    enter: { opacity: 1, y: 0 },
-    leave: { opacity: 0, y: 30 },
-  });
-  return transitions((style) => (
-    <animated.div style={style}>{children}</animated.div>
-  ));
-}
 
 export function ApproveHintLine({ approved, actionName }: Props) {
   return (
