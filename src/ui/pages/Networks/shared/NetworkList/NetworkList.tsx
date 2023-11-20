@@ -14,6 +14,7 @@ import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import InvisibleIcon from 'jsx:src/ui/assets/invisible.svg';
+import { isTruthy } from 'is-truthy-ts';
 
 function getOriginUrlFromMetaData(metadata: NetworkConfigMetaData) {
   if (
@@ -98,11 +99,13 @@ function NetworkDetail({
 }
 
 export function NetworkList({
+  title,
   networks,
   networkList,
   getItemTo,
   getItemIconEnd,
 }: {
+  title?: string;
   networks: Networks;
   networkList: NetworkConfig[];
   getItemTo?: (item: NetworkConfig) => string;
@@ -114,52 +117,78 @@ export function NetworkList({
   );
   return (
     <SurfaceList
-      items={networkList.map((network) => ({
-        key: network.external_id || network.chain,
-        to: getItemTo?.(network) ?? `/networks/network/${network.chain}`,
-        component: (
-          <HStack gap={4} justifyContent="space-between" alignItems="center">
-            <Media
-              image={
-                <NetworkIcon
-                  size={24}
-                  src={network.icon_url}
-                  chainId={network.external_id}
-                  name={network.name}
-                />
-              }
-              text={
-                <span
-                  style={
-                    network.hidden ? { color: 'var(--neutral-700)' } : undefined
-                  }
+      items={[
+        title
+          ? {
+              key: title,
+              pad: false,
+              style: { padding: 0 },
+              component: (
+                <UIText
+                  kind="small/accent"
+                  color="var(--neutral-500)"
+                  style={{ paddingBlock: 8 }}
                 >
-                  {networks.getChainName(createChain(network.name))}
-                </span>
-              }
-              vGap={0}
-              detailText={
-                <NetworkDetail
-                  networks={networks}
-                  network={network}
-                  metadataRecord={metadataRecord}
-                />
-              }
-            />
+                  {title}
+                </UIText>
+              ),
+            }
+          : null,
+        ...networkList.map((network) => ({
+          key: network.external_id || network.chain,
+          to: getItemTo?.(network) ?? `/networks/network/${network.chain}`,
+          component: (
+            <HStack
+              gap={4}
+              justifyContent="space-between"
+              alignItems="center"
+              style={{ paddingBlock: 4 }}
+            >
+              <Media
+                image={
+                  <NetworkIcon
+                    size={24}
+                    src={network.icon_url}
+                    chainId={network.external_id}
+                    name={network.name}
+                  />
+                }
+                text={
+                  <UIText
+                    kind="body/accent"
+                    color={network.hidden ? 'var(--neutral-700)' : undefined}
+                  >
+                    {networks.getChainName(createChain(network.name))}
+                  </UIText>
+                }
+                vGap={0}
+                detailText={
+                  <NetworkDetail
+                    networks={networks}
+                    network={network}
+                    metadataRecord={metadataRecord}
+                  />
+                }
+              />
 
-            <HStack gap={8} alignItems="center">
-              {network.hidden ? (
-                <InvisibleIcon
-                  style={{ width: 20, height: 20, color: 'var(--neutral-400)' }}
-                />
-              ) : null}
-              {getItemIconEnd?.(network) ?? (
-                <ChevronRightIcon style={{ color: 'var(--neutral-400)' }} />
-              )}
+              <HStack gap={8} alignItems="center">
+                {network.hidden ? (
+                  <InvisibleIcon
+                    style={{
+                      width: 20,
+                      height: 20,
+                      color: 'var(--neutral-400)',
+                    }}
+                  />
+                ) : null}
+                {getItemIconEnd?.(network) ?? (
+                  <ChevronRightIcon style={{ color: 'var(--neutral-400)' }} />
+                )}
+              </HStack>
             </HStack>
-          </HStack>
-        ),
-      }))}
+          ),
+        })),
+      ].filter(isTruthy)}
     />
   );
 }
