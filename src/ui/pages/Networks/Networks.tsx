@@ -21,7 +21,10 @@ import type { Networks as NetworksType } from 'src/modules/networks/Networks';
 import { networksStore } from 'src/modules/networks/networks-store.client';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { invariant } from 'src/shared/invariant';
-import { useBackgroundKind } from 'src/ui/components/Background/Background';
+import {
+  Background,
+  useBackgroundKind,
+} from 'src/ui/components/Background/Background';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -77,7 +80,7 @@ function NetworkCreateSearchPage() {
   );
   const { networks } = useNetworks();
   return (
-    <>
+    <Background backgroundKind="white">
       <PageColumn>
         <NavigationTitle title="Add Network" />
         <Spacer height={16} />
@@ -111,7 +114,7 @@ function NetworkCreateSearchPage() {
         </Button>
         <PageBottom />
       </PageStickyFooter>
-    </>
+    </Background>
   );
 }
 
@@ -440,44 +443,48 @@ function NetworksView({
     return null;
   }
   return (
-    <PageColumn
-      style={{ ['--surface-background-color' as string]: 'var(--white)' }}
-    >
-      <NavigationTitle
-        title="Networks"
-        elementEnd={
-          <Button
-            as={UnstyledLink}
-            to="/networks/create/search"
-            kind="ghost"
-            title="Add Network"
-            size={36}
-          >
-            <AddCircleIcon style={{ display: 'block', marginInline: 'auto' }} />
-          </Button>
-        }
-      />
-      <Spacer height={16} />
-      <SearchInput
-        boxHeight={40}
-        type="search"
-        placeholder="Search"
-        value={inputValue}
-        onChange={(event) => {
-          setInputValue(event.currentTarget.value);
-          debouncedSetSearchParams(event.currentTarget.value);
-        }}
-      />
-      <Spacer height={16} />
-      {query ? (
-        <ViewSuspense>
-          <SearchResults query={query} networks={networks} />
-        </ViewSuspense>
-      ) : (
-        <TabsView networks={networks} />
-      )}
-      <PageBottom />
-    </PageColumn>
+    <Background backgroundKind="white">
+      <PageColumn
+        style={{ ['--surface-background-color' as string]: 'var(--white)' }}
+      >
+        <NavigationTitle
+          title="Networks"
+          elementEnd={
+            <Button
+              as={UnstyledLink}
+              to="/networks/create/search"
+              kind="ghost"
+              title="Add Network"
+              size={36}
+            >
+              <AddCircleIcon
+                style={{ display: 'block', marginInline: 'auto' }}
+              />
+            </Button>
+          }
+        />
+        <Spacer height={16} />
+        <SearchInput
+          boxHeight={40}
+          type="search"
+          placeholder="Search"
+          value={inputValue}
+          onChange={(event) => {
+            setInputValue(event.currentTarget.value);
+            debouncedSetSearchParams(event.currentTarget.value);
+          }}
+        />
+        <Spacer height={16} />
+        {query ? (
+          <ViewSuspense>
+            <SearchResults query={query} networks={networks} />
+          </ViewSuspense>
+        ) : (
+          <TabsView networks={networks} />
+        )}
+        <PageBottom />
+      </PageColumn>
+    </Background>
   );
 }
 
