@@ -273,7 +273,7 @@ function CustomAllowanceForm({
                     type="button"
                     onClick={() => {
                       setIsAllowanceUnlimited(false);
-                      setAllowanceQuantityCommon(balance.toString());
+                      setAllowanceQuantityCommon(balance.toFixed());
                     }}
                   >
                     <UIText
