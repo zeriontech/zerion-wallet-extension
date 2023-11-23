@@ -8,7 +8,6 @@ import { getNetworksBySearch } from 'src/modules/ethereum/chains/requests';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { Networks } from 'src/modules/networks/Networks';
 import { EmptyView } from 'src/ui/components/EmptyView';
-import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
@@ -68,39 +67,36 @@ export function SearchResults({
     return <EmptyView text="Nothing found" />;
   }
   return (
-    <VStack gap={16} style={isPreviousData ? { opacity: 0.6 } : undefined}>
+    <VStack gap={8} style={isPreviousData ? { opacity: 0.6 } : undefined}>
       {grouped.map(({ title, items }) => (
-        <VStack key={title} gap={8}>
-          <UIText kind="small/accent" color="var(--neutral-600)">
-            {title}
-          </UIText>
-          <NetworkList
-            networks={networks}
-            networkList={items}
-            getItemTo={(item) =>
-              networks.hasNetworkById(item.external_id)
-                ? `/networks/network/${
-                    networks.getNetworkById(item.external_id).chain
-                  }?from=${encodeURIComponent(pathname)}`
-                : `/networks/create?${new URLSearchParams({
-                    from: pathname,
-                    network: JSON.stringify(item),
-                  })}`
-            }
-            getItemIconEnd={(item) =>
-              networks.hasNetworkById(item.external_id) ? (
-                <CheckIcon
-                  style={{
-                    width: 20,
-                    height: 20,
-                    color: 'var(--positive-500)',
-                  }}
-                  aria-label="Already added"
-                />
-              ) : undefined
-            }
-          />
-        </VStack>
+        <NetworkList
+          key={title}
+          title={title}
+          networks={networks}
+          networkList={items}
+          getItemTo={(item) =>
+            networks.hasNetworkById(item.external_id)
+              ? `/networks/network/${
+                  networks.getNetworkById(item.external_id).chain
+                }?from=${encodeURIComponent(pathname)}`
+              : `/networks/create?${new URLSearchParams({
+                  from: pathname,
+                  network: JSON.stringify(item),
+                })}`
+          }
+          getItemIconEnd={(item) =>
+            networks.hasNetworkById(item.external_id) ? (
+              <CheckIcon
+                style={{
+                  width: 20,
+                  height: 20,
+                  color: 'var(--positive-500)',
+                }}
+                aria-label="Already added"
+              />
+            ) : undefined
+          }
+        />
       ))}
     </VStack>
   );

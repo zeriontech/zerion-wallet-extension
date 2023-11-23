@@ -21,7 +21,10 @@ import type { Networks as NetworksType } from 'src/modules/networks/Networks';
 import { networksStore } from 'src/modules/networks/networks-store.client';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { invariant } from 'src/shared/invariant';
-import { useBackgroundKind } from 'src/ui/components/Background/Background';
+import {
+  Background,
+  useBackgroundKind,
+} from 'src/ui/components/Background/Background';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -29,18 +32,11 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { walletPort } from 'src/ui/shared/channels';
 import AddCircleIcon from 'jsx:src/ui/assets/add-circle-outlined.svg';
 import TrashIcon from 'jsx:src/ui/assets/trash.svg';
-import {
-  SegmentedControlGroup,
-  SegmentedControlLink,
-} from 'src/ui/ui-kit/SegmentedControl';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
-import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { PageBottom } from 'src/ui/components/PageBottom';
-import { EmptyView } from 'src/ui/components/EmptyView';
-import { TextLink } from 'src/ui/ui-kit/TextLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { ViewSuspense } from 'src/ui/components/ViewSuspense';
 import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
@@ -50,63 +46,13 @@ import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTML
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
+import { SurfaceItemLink, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { NetworkForm } from './NetworkForm';
 import { NetworkList } from './shared/NetworkList';
 import { SearchResults } from './shared/SearchResults';
 import { LocationStateHelperStore } from './shared/LocationStateHelperStore';
 import { createEmptyNetwork } from './shared/createEmptyNetwork';
 import { NetworkCreateSuccess } from './NetworkCreateSuccess';
-
-function MainnetList({ networks }: { networks: NetworksType }) {
-  const items = useMemo(() => networks.getMainnets(), [networks]);
-  return <NetworkList networks={networks} networkList={items} />;
-}
-
-function TestnetList({ networks }: { networks: NetworksType }) {
-  const items = useMemo(() => networks.getTestNetworks(), [networks]);
-  return items?.length ? (
-    <NetworkList networks={networks} networkList={items} />
-  ) : (
-    <EmptyView
-      text={
-        <VStack gap={8}>
-          <div>No Networks</div>
-          <div>
-            <TextLink
-              style={{ color: 'var(--primary)' }}
-              to="/networks/create/search"
-            >
-              Add First
-            </TextLink>
-          </div>
-        </VStack>
-      }
-    />
-  );
-}
-
-function CustomList({ networks }: { networks: NetworksType }) {
-  const items = useMemo(() => networks.getCustomNetworks(), [networks]);
-  return items?.length ? (
-    <NetworkList networks={networks} networkList={items} />
-  ) : (
-    <EmptyView
-      text={
-        <VStack gap={8}>
-          <div>No Custom Networks</div>
-          <div>
-            <TextLink
-              style={{ color: 'var(--primary)' }}
-              to="/networks/create/search"
-            >
-              Add First
-            </TextLink>
-          </div>
-        </VStack>
-      }
-    />
-  );
-}
 
 async function saveNetworkConfig(network: NetworkConfig) {
   const networks = await networksStore.load();
@@ -134,7 +80,7 @@ function NetworkCreateSearchPage() {
   );
   const { networks } = useNetworks();
   return (
-    <>
+    <Background backgroundKind="white">
       <PageColumn>
         <NavigationTitle title="Add Network" />
         <Spacer height={16} />
@@ -168,7 +114,7 @@ function NetworkCreateSearchPage() {
         </Button>
         <PageBottom />
       </PageStickyFooter>
-    </>
+    </Background>
   );
 }
 
@@ -398,42 +344,67 @@ function NetworkPage({
 }
 
 function TabsView({ networks }: { networks: NetworksType }) {
+  const mainnetList = useMemo(() => networks.getMainnets(), [networks]);
+  const customList = useMemo(() => networks.getCustomNetworks(), [networks]);
+  const testnetList = useMemo(() => networks.getTestNetworks(), [networks]);
+
   return (
-    <>
-      <PageFullBleedColumn paddingInline={false}>
-        <SegmentedControlGroup style={{ paddingTop: 4, paddingInline: 16 }}>
-          <SegmentedControlLink to="/networks" replace={true} end={true}>
-            Mainnets
-          </SegmentedControlLink>
-          <SegmentedControlLink to="/networks/testnets" replace={true}>
-            Testnets
-          </SegmentedControlLink>
-          <SegmentedControlLink to="/networks/custom" replace={true}>
-            Custom
-          </SegmentedControlLink>
-        </SegmentedControlGroup>
-      </PageFullBleedColumn>
-      <Spacer height={8} />
-      <Routes>
-        <Route path="/" element={<MainnetList networks={networks} />} />
-        <Route
-          path="/testnets"
-          element={
-            <>
-              <TestnetList networks={networks} />
-            </>
-          }
+    <VStack gap={8}>
+      <NetworkList
+        title="Mainnets"
+        networks={networks}
+        networkList={mainnetList}
+      />
+
+      {customList.length ? (
+        <NetworkList
+          title="Manually Added"
+          networks={networks}
+          networkList={customList}
         />
-        <Route
-          path="/custom"
-          element={
-            <>
-              <CustomList networks={networks} />
-            </>
-          }
-        />
-      </Routes>
-    </>
+      ) : null}
+
+      <NetworkList
+        title="Testnets"
+        networks={networks}
+        networkList={testnetList}
+      />
+      <div
+        style={{
+          height: 8,
+          width: '100%',
+          borderTop: '2px solid var(--neutral-200)',
+        }}
+      />
+      <SurfaceList
+        style={{ paddingBlock: 0 }}
+        items={[
+          {
+            key: 'Add network',
+            style: { padding: 0 },
+            pad: false,
+            component: (
+              <SurfaceItemLink
+                to="/networks/create/search"
+                // NOTE:
+                // Instead of passing paddingInline: 0 (and paddinBlock: 0 above),
+                // maybe this variation can be added as SurfaceList API,
+                // e.g. "decorationStyle": "mac-os-big-sur" | "full-bleed" | "full-bleed-rounded"
+                style={{ paddingInline: 0 }}
+              >
+                <HStack gap={8} alignItems="center" style={{ paddingBlock: 4 }}>
+                  <AddCircleIcon
+                    style={{ display: 'block', marginInline: 'auto' }}
+                  />
+                  <UIText kind="body/accent">Add Network</UIText>
+                </HStack>
+              </SurfaceItemLink>
+            ),
+          },
+        ]}
+      />
+      <PageBottom />
+    </VStack>
   );
 }
 
@@ -476,42 +447,48 @@ function NetworksView({
     return null;
   }
   return (
-    <PageColumn>
-      <NavigationTitle
-        title="Networks"
-        elementEnd={
-          <Button
-            as={UnstyledLink}
-            to="/networks/create/search"
-            kind="ghost"
-            title="Add Network"
-            size={40}
-          >
-            <AddCircleIcon style={{ display: 'block', marginInline: 'auto' }} />
-          </Button>
-        }
-      />
-      <Spacer height={16} />
-      <SearchInput
-        boxHeight={40}
-        type="search"
-        placeholder="Search"
-        value={inputValue}
-        onChange={(event) => {
-          setInputValue(event.currentTarget.value);
-          debouncedSetSearchParams(event.currentTarget.value);
-        }}
-      />
-      <Spacer height={16} />
-      {query ? (
-        <ViewSuspense>
-          <SearchResults query={query} networks={networks} />
-        </ViewSuspense>
-      ) : (
-        <TabsView networks={networks} />
-      )}
-      <PageBottom />
-    </PageColumn>
+    <Background backgroundKind="white">
+      <PageColumn
+        style={{ ['--surface-background-color' as string]: 'var(--white)' }}
+      >
+        <NavigationTitle
+          title="Networks"
+          elementEnd={
+            <Button
+              as={UnstyledLink}
+              to="/networks/create/search"
+              kind="ghost"
+              title="Add Network"
+              size={36}
+            >
+              <AddCircleIcon
+                style={{ display: 'block', marginInline: 'auto' }}
+              />
+            </Button>
+          }
+        />
+        <Spacer height={16} />
+        <SearchInput
+          boxHeight={40}
+          type="search"
+          placeholder="Search"
+          value={inputValue}
+          onChange={(event) => {
+            setInputValue(event.currentTarget.value);
+            debouncedSetSearchParams(event.currentTarget.value);
+          }}
+        />
+        <Spacer height={16} />
+        {query ? (
+          <ViewSuspense>
+            <SearchResults query={query} networks={networks} />
+          </ViewSuspense>
+        ) : (
+          <TabsView networks={networks} />
+        )}
+        <PageBottom />
+      </PageColumn>
+    </Background>
   );
 }
 
