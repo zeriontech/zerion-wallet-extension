@@ -100,10 +100,7 @@ export function WalletSelect() {
             <Button
               kind="neutral"
               size={36}
-              style={{
-                paddingInline: 12,
-                backgroundColor: 'var(--neutral-100)',
-              }}
+              style={{ paddingInline: 12 }}
               as={UnstyledLink}
               to="/get-started"
               title="Add Wallet"
