@@ -197,12 +197,14 @@ function SectionTitle({
 
 export function AddressInput({
   value,
+  autoFocus,
   resolvedAddress,
   onChange,
   onResolvedChange,
   items: allItems,
 }: {
   value: string | null;
+  autoFocus?: boolean;
   resolvedAddress: string | null;
   onChange(value: string): void;
   onResolvedChange(value: string | null): void;
@@ -342,6 +344,7 @@ export function AddressInput({
             </UnstyledButton>
             <UIText kind="headline/h3">
               <UnstyledInput
+                autoFocus={autoFocus}
                 {...getInputProps({
                   placeholder: 'Address, domain or identity',
                   style: { width: '100%' },
@@ -454,6 +457,7 @@ export function AddressInput({
 }
 
 export function AddressInputWrapper(props: {
+  autoFocus?: boolean;
   value: string | null;
   resolvedAddress: string | null;
   onChange(value: string): void;

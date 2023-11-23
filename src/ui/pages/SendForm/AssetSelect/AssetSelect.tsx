@@ -57,10 +57,10 @@ function ResultItem({ addressAsset }: { addressAsset: BareAddressPosition }) {
         image={
           <TokenIcon size={36} src={asset.icon_url} symbol={asset.symbol} />
         }
-        text={<UIText kind="caption/accent">{asset.name}</UIText>}
+        text={<UIText kind="body/accent">{asset.name}</UIText>}
         vGap={0}
         detailText={
-          <UIText kind="caption/regular" color="var(--neutral-700)">
+          <UIText kind="small/regular" color="var(--neutral-700)">
             {details[0]}
             {details.length > 1 ? ' · ' : null}
             {details[1]}
@@ -68,7 +68,7 @@ function ResultItem({ addressAsset }: { addressAsset: BareAddressPosition }) {
         }
       />
       {price ? (
-        <UIText kind="caption/accent" color="var(--black)">
+        <UIText kind="body/accent" color="var(--black)">
           {formatCurrencyValue(quantityCommon.times(price.value), 'en', 'usd')}
         </UIText>
       ) : null}
@@ -234,9 +234,10 @@ function AssetSelectComponent({
     return { optionItems: result, groupIndexes };
   }, [getGroupName, items]);
 
-  const ITEM_HEIGHT = 55;
+  const ITEM_HEIGHT = 60;
+  const LOAD_MORE_BUTTON_HEIGHT = 40;
   const FIRST_GROUP_NAME_HEIGHT = 24;
-  const GROUP_NAME_HEIGHT = 36;
+  const GROUP_NAME_HEIGHT = 28;
   const virtualList = useVirtualizer({
     count: optionItems.length,
     getScrollElement: () => listRef.current,
@@ -245,6 +246,8 @@ function AssetSelectComponent({
       (index) =>
         optionItems[index].type === ItemType.option
           ? ITEM_HEIGHT
+          : optionItems[index].type === ItemType.loadMoreButton
+          ? LOAD_MORE_BUTTON_HEIGHT
           : index === 0
           ? FIRST_GROUP_NAME_HEIGHT
           : GROUP_NAME_HEIGHT,
@@ -390,14 +393,15 @@ function AssetSelectComponent({
         key: optionItem.name,
         component: (
           <UIText
-            kind="small/accent"
+            kind="caption/accent"
             color="var(--neutral-700)"
             style={{
-              textTransform: 'uppercase',
+              // textTransform: 'uppercase',
               paddingLeft: 20,
               paddingRight: 20,
-              paddingTop: row.index === 0 ? 4 : 16,
-              paddingBottom: 8,
+              // paddingTop: row.index === 0 ? 4 : 16,
+              paddingTop: 8,
+              paddingBottom: 4,
 
               position: 'absolute',
               top: 0,
@@ -428,7 +432,7 @@ function AssetSelectComponent({
             highlighted={highlightedIndex === index}
             decorationStyle={
               selectedItem.id === item.id
-                ? { border: '1px solid var(--primary)' }
+                ? { outline: '1px solid var(--primary)', outlineOffset: -1 }
                 : undefined
             }
             {...getItemProps({

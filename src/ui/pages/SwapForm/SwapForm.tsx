@@ -1,14 +1,8 @@
 import { useSelectorStore } from '@store-unit/react';
 import { client, useAddressPositions } from 'defi-sdk';
-import { type SwapFormState, useSwapForm } from '@zeriontech/transactions';
-import React, {
-  useCallback,
-  useEffect,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import type { SwapFormState, SwapFormView } from '@zeriontech/transactions';
+import { useSwapForm } from '@zeriontech/transactions';
+import React, { useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
@@ -43,6 +37,9 @@ import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTML
 import { TransactionConfirmationView } from 'src/ui/components/address-action/TransactionConfirmationView';
 import { AnimatedAppear } from 'src/ui/components/AnimatedAppear';
 import { ViewLoadingSuspense } from 'src/ui/components/ViewLoading/ViewLoading';
+import type { FormErrorDescription } from 'src/ui/shared/forms/useFormValidity';
+import { useFormValidity } from 'src/ui/shared/forms/useFormValidity';
+import { getPositionBalance } from 'src/ui/components/Positions/helpers';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -65,42 +62,50 @@ import {
 
 const rootNode = getRootDomNode();
 
-interface CurrentError {
-  name: string;
+function getSubmitHint({
+  formError,
+}: {
+  formError: FormErrorDescription | null;
+}) {
+  if (formError) {
+    const formMessages: Record<string, string> = {
+      spendInput: 'Enter amount',
+      receiveInput: 'Enter amount',
+    };
+    if (formError.name in formMessages) {
+      return formMessages[formError.name];
+    } else {
+      return null;
+    }
+  } else {
+    return null;
+  }
 }
 
-function readFormValidity(form: HTMLFormElement): CurrentError | null {
-  for (const element of form.elements) {
-    if (
-      element instanceof HTMLInputElement ||
-      element instanceof HTMLSelectElement
-    ) {
-      if ('name' in element && element.name && !element.validity.valid) {
-        return { name: element.name };
-      }
-    }
-  }
-  return null;
-}
-function useFormValidity({
-  formRef,
+function FormHint({
+  swapView,
+  formError,
+  render,
 }: {
-  formRef: React.RefObject<HTMLFormElement>;
+  swapView: SwapFormView;
+  formError: FormErrorDescription | null;
+  render: (message: string | null) => React.ReactNode;
 }) {
-  const [currentError, setCurrentError] = useState<CurrentError | null>(null);
-  const handleFormChange = useCallback(
-    (event: React.FormEvent<HTMLFormElement>) => {
-      const form = event.currentTarget;
-      setCurrentError(readFormValidity(form));
-    },
-    []
-  );
-  useEffect(() => {
-    if (formRef.current) {
-      setCurrentError(readFormValidity(formRef.current));
-    }
-  }, [formRef]);
-  return { formError: currentError, handleFormChange };
+  const { spendPosition } = swapView;
+  const { spendInput } = useSelectorStore(swapView.store, ['spendInput']);
+
+  const positionBalanceCommon = spendPosition
+    ? getPositionBalance(spendPosition)
+    : null;
+  const exceedsBalance = Number(spendInput) > Number(positionBalanceCommon);
+
+  let message: string | null = null;
+  if (exceedsBalance) {
+    message = 'Insufficient balance';
+  } else if (formError) {
+    message = getSubmitHint({ formError });
+  }
+  return render(message);
 }
 
 export function SwapForm() {
@@ -146,6 +151,8 @@ export function SwapForm() {
   const chain = chainInput ? createChain(chainInput) : null;
   const { spendPosition, receivePosition, handleChange } = swapView;
 
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const { validity, handleFormChange } = useFormValidity({ formRef });
   const quotesData = useQuotes({ address, swapView });
   const {
     transaction: swapTransaction,
@@ -306,9 +313,6 @@ export function SwapForm() {
   const formId = useId();
 
   const confirmDialogRef = useRef<HTMLDialogElementInterface | null>(null);
-
-  const formRef = useRef<HTMLFormElement | null>(null);
-  const { formError, handleFormChange } = useFormValidity({ formRef });
 
   if (isSuccess) {
     invariant(
@@ -517,18 +521,28 @@ export function SwapForm() {
               value="swap"
               form={formId}
             />
-            <div>{formError?.name}</div>
-            <Button
-              form={formId}
-              kind="primary"
-              disabled={
-                isLoading ||
-                quotesData.isLoading ||
-                Boolean(quote && !swapTransaction)
-              }
-            >
-              {isLoading ? 'Sending...' : 'Swap'}
-            </Button>
+            <FormHint
+              formError={validity.formError}
+              swapView={swapView}
+              render={(hint) => (
+                <Button
+                  form={formId}
+                  kind="primary"
+                  disabled={
+                    isLoading ||
+                    quotesData.isLoading ||
+                    Boolean(quote && !swapTransaction)
+                  }
+                >
+                  {hint ||
+                    (quotesData.isLoading
+                      ? 'Fetching offers'
+                      : isLoading
+                      ? 'Sending...'
+                      : 'Swap')}
+                </Button>
+              )}
+            />
           </>
         )}
       </VStack>

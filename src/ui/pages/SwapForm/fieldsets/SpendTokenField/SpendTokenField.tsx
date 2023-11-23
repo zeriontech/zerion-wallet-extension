@@ -60,7 +60,11 @@ export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
 
   useCustomValidity({
     ref: inputRef,
-    customValidity: exceedsBalance ? 'Insufficient balance' : '',
+    customValidity: exceedsBalance
+      ? 'Insufficient balance'
+      : spendInput && Number(spendInput) <= 0
+      ? 'Enter a positive amount'
+      : '',
   });
 
   useEffect(() => {
@@ -126,6 +130,7 @@ export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
             }}
             render={({ value, handleChange }) => (
               <UnstyledInput
+                autoFocus={true}
                 id={inputId}
                 ref={inputRef}
                 style={{ textAlign: 'end', textOverflow: 'ellipsis' }}
