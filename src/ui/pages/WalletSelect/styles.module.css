@@ -1,0 +1,10 @@
+.wallet {
+  border: 2px solid var(--neutral-200);
+}
+
+@media (hover: hover) {
+  .wallet:hover {
+    border: 2px solid var(--neutral-100);
+    background-color: var(--neutral-100);
+  }
+}
