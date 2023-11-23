@@ -1,7 +1,14 @@
 import { useSelectorStore } from '@store-unit/react';
 import { client, useAddressPositions } from 'defi-sdk';
 import { type SwapFormState, useSwapForm } from '@zeriontech/transactions';
-import React, { useCallback, useEffect, useId, useMemo, useRef } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
@@ -57,6 +64,44 @@ import {
 } from './reverse/reverse-button-helpers';
 
 const rootNode = getRootDomNode();
+
+interface CurrentError {
+  name: string;
+}
+
+function readFormValidity(form: HTMLFormElement): CurrentError | null {
+  for (const element of form.elements) {
+    if (
+      element instanceof HTMLInputElement ||
+      element instanceof HTMLSelectElement
+    ) {
+      if ('name' in element && element.name && !element.validity.valid) {
+        return { name: element.name };
+      }
+    }
+  }
+  return null;
+}
+function useFormValidity({
+  formRef,
+}: {
+  formRef: React.RefObject<HTMLFormElement>;
+}) {
+  const [currentError, setCurrentError] = useState<CurrentError | null>(null);
+  const handleFormChange = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      const form = event.currentTarget;
+      setCurrentError(readFormValidity(form));
+    },
+    []
+  );
+  useEffect(() => {
+    if (formRef.current) {
+      setCurrentError(readFormValidity(formRef.current));
+    }
+  }, [formRef]);
+  return { formError: currentError, handleFormChange };
+}
 
 export function SwapForm() {
   useBackgroundKind({ kind: 'white' });
@@ -262,6 +307,9 @@ export function SwapForm() {
 
   const confirmDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const { formError, handleFormChange } = useFormValidity({ formRef });
+
   if (isSuccess) {
     invariant(
       spendPosition && receivePosition && transactionHash,
@@ -295,7 +343,6 @@ export function SwapForm() {
   const currentTransaction = isApproveMode
     ? approveTransaction
     : swapTransaction;
-
   return (
     <PageColumn>
       <PageTop />
@@ -347,6 +394,8 @@ export function SwapForm() {
       ></BottomSheetDialog>
       <form
         id={formId}
+        ref={formRef}
+        onChange={handleFormChange}
         onSubmit={(event) => {
           event.preventDefault();
 
@@ -468,6 +517,7 @@ export function SwapForm() {
               value="swap"
               form={formId}
             />
+            <div>{formError?.name}</div>
             <Button
               form={formId}
               kind="primary"

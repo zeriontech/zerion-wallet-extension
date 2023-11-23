@@ -11,9 +11,9 @@ import { DebouncedInput } from 'src/ui/ui-kit/Input/DebouncedInput';
 import { FormFieldset } from 'src/ui/ui-kit/FormFieldset';
 import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 import { createChain } from 'src/modules/networks/Chain';
-import { AssetSelect } from 'src/ui/pages/SendForm/AssetSelect';
 import { NBSP } from 'src/ui/shared/typography';
 import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
+import { MarketAssetSelect } from './MarketAssetSelect';
 
 export function ReceiveTokenField({ swapView }: { swapView: SwapFormView }) {
   const { receivePosition } = swapView;
@@ -47,19 +47,20 @@ export function ReceiveTokenField({ swapView }: { swapView: SwapFormView }) {
         inputSelector={`#${CSS.escape(inputId)}`}
         startInput={
           <div>
-            {receivePosition ? (
-              <AssetSelect
-                items={swapView.availablePositions}
-                onChange={(position) =>
-                  swapView.store.handleTokenChange(
-                    'receiveTokenInput',
-                    position.asset.asset_code
-                  )
-                }
-                chain={chain}
-                selectedItem={receivePosition}
-                noItemsMessage="No positions found"
-              />
+            {receivePosition && chain ? (
+              <>
+                <MarketAssetSelect
+                  chain={chain}
+                  selectedItem={receivePosition}
+                  onChange={(position) =>
+                    swapView.store.handleTokenChange(
+                      'receiveTokenInput',
+                      position.asset.asset_code
+                    )
+                  }
+                  addressPositions={swapView.availablePositions}
+                />
+              </>
             ) : (
               <div
                 style={{
