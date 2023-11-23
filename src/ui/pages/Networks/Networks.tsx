@@ -386,6 +386,10 @@ function TabsView({ networks }: { networks: NetworksType }) {
             component: (
               <SurfaceItemLink
                 to="/networks/create/search"
+                // NOTE:
+                // Instead of passing paddingInline: 0 (and paddinBlock: 0 above),
+                // maybe this variation can be added as SurfaceList API,
+                // e.g. "decorationStyle": "mac-os-big-sur" | "full-bleed" | "full-bleed-rounded"
                 style={{ paddingInline: 0 }}
               >
                 <HStack gap={8} alignItems="center" style={{ paddingBlock: 4 }}>
