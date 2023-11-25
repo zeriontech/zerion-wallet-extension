@@ -94,6 +94,14 @@ export class DeviceAccountContainer
   extends AbstractAccountContainer<DeviceAccount>
   implements AccountContainerBase<DeviceAccount>
 {
+  /**
+   * Important to add [immerable] = true property if we want
+   * to use immer to copy WalletContainers:
+   * https://immerjs.github.io/immer/complex-objects
+   * As of now, walletContainers are copied in the maskWalletGroup functions
+   */
+  [immerable] = true;
+
   device: Device;
   provider: string;
   wallets: DeviceAccount[];
