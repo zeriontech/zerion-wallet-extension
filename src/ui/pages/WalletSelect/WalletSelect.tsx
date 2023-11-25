@@ -88,7 +88,12 @@ export function WalletSelect() {
       <PageColumn>
         {title}
         <Spacer height={10} />
-        <VStack gap={2}>
+        <VStack
+          gap={2}
+          style={{
+            ['--surface-background-color' as string]: 'transparent',
+          }}
+        >
           <WalletList
             walletGroups={walletGroups}
             onSelect={(wallet) => {
