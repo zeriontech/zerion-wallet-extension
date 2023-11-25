@@ -13,9 +13,16 @@ import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 import { createChain } from 'src/modules/networks/Chain';
 import { NBSP } from 'src/ui/shared/typography';
 import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
+import { FiatInputValue } from '../FiatInputValue';
 import { MarketAssetSelect } from './MarketAssetSelect';
 
-export function ReceiveTokenField({ swapView }: { swapView: SwapFormView }) {
+export function ReceiveTokenField({
+  swapView,
+  readOnly,
+}: {
+  swapView: SwapFormView;
+  readOnly: boolean;
+}) {
   const { receivePosition } = swapView;
   const { primaryInput, receiveInput, chainInput } = useSelectorStore(
     swapView.store,
@@ -93,8 +100,13 @@ export function ReceiveTokenField({ swapView }: { swapView: SwapFormView }) {
             }}
             render={({ value, handleChange }) => (
               <UnstyledInput
+                readOnly={readOnly}
+                style={{
+                  textAlign: 'end',
+                  textOverflow: 'ellipsis',
+                  cursor: readOnly ? 'default' : undefined,
+                }}
                 id={inputId}
-                style={{ textAlign: 'end', textOverflow: 'ellipsis' }}
                 inputMode="decimal"
                 name="receiveInput"
                 value={value}
@@ -125,6 +137,9 @@ export function ReceiveTokenField({ swapView }: { swapView: SwapFormView }) {
               NBSP
             )}
           </div>
+        }
+        endDescription={
+          <FiatInputValue swapView={swapView} name="receiveInput" />
         }
       />
     </>

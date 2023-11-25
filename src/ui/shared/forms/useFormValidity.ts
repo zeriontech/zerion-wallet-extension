@@ -41,8 +41,16 @@ export function useFormValidity({
     []
   );
   useEffect(() => {
-    if (formRef.current) {
+    const form = formRef.current;
+    if (form) {
       setCurrentError(readFormValidity(formRef.current));
+      const handleInputValueChange = () => {
+        setCurrentError(readFormValidity(form));
+      };
+      form.addEventListener('inputValueChange', handleInputValueChange);
+      return () => {
+        form.removeEventListener('inputValueChange', handleInputValueChange);
+      };
     }
   }, [formRef]);
   return { validity, handleFormChange };

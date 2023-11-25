@@ -30,7 +30,7 @@ export function TransactionConfirmationView({
   return (
     <div
       style={{
-        ['--surface-background-color' as string]: 'var(--neutral-100)',
+        ['--surface-background-color' as string]: 'var(--z-index-1-inverted)',
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
@@ -62,7 +62,7 @@ export function TransactionConfirmationView({
           height: '100%',
         }}
       >
-        <TransactionSimulation transaction={transaction} vGap={4} />
+        <TransactionSimulation transaction={transaction} />
         <Spacer height={20} />
 
         <React.Suspense

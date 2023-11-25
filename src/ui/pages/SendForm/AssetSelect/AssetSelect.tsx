@@ -374,11 +374,6 @@ function AssetSelectComponent({
     }, 100);
   }, [firstItem, selectItem, setHighlightedIndex]);
 
-  const selectedItemExistsInItems = useMemo(
-    () => allItems.some((item) => item.id === selectedItem.id),
-    [selectedItem, allItems]
-  );
-
   const assetExistsOnChain =
     chain &&
     getAssetImplementationInChain({
@@ -528,8 +523,7 @@ function AssetSelectComponent({
               }}
             />
           </HStack>
-          {isLoading ||
-          (assetExistsOnChain && selectedItemExistsInItems) ? null : chain ? (
+          {!isLoading && chain && !assetExistsOnChain ? (
             <div
               style={{ display: 'flex' }}
               title={

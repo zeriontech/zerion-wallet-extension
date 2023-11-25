@@ -15,6 +15,7 @@ import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 import { createChain } from 'src/modules/networks/Chain';
 import { AssetSelect } from 'src/ui/pages/SendForm/AssetSelect';
 import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
+import { FiatInputValue } from '../FiatInputValue';
 
 function useCustomValidity({
   ref,
@@ -161,9 +162,14 @@ export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
               onClick={() => {
                 invariant(positionBalanceCommon, 'Position quantity unknown');
                 const value = positionBalanceCommon.toFixed();
-                // swapView.handleChange('spendInput', value);
                 swapView.store.handleAmountChange('spend', value);
                 tokenValueInputRef.current?.setValue(value);
+                if (inputRef.current) {
+                  inputRef.current.value = value;
+                  inputRef.current.dispatchEvent(
+                    new Event('inputValueChange', { bubbles: true })
+                  );
+                }
               }}
             >
               {positionBalanceCommon
@@ -171,6 +177,9 @@ export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
                 : 'n/a'}
             </UnstyledButton>
           </div>
+        }
+        endDescription={
+          <FiatInputValue swapView={swapView} name="spendInput" />
         }
       />
     </>

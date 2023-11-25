@@ -1,5 +1,5 @@
 import { useSelectorStore } from '@store-unit/react';
-import { client, useAddressPositions } from 'defi-sdk';
+import { client, useAddressMembership, useAddressPositions } from 'defi-sdk';
 import type { SwapFormState, SwapFormView } from '@zeriontech/transactions';
 import { useSwapForm } from '@zeriontech/transactions';
 import React, { useCallback, useEffect, useId, useMemo, useRef } from 'react';
@@ -40,6 +40,7 @@ import { ViewLoadingSuspense } from 'src/ui/components/ViewLoading/ViewLoading';
 import type { FormErrorDescription } from 'src/ui/shared/forms/useFormValidity';
 import { useFormValidity } from 'src/ui/shared/forms/useFormValidity';
 import { getPositionBalance } from 'src/ui/components/Positions/helpers';
+import { isPremiumMembership } from 'src/ui/shared/requests/premium/isPremiumMembership';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -59,6 +60,7 @@ import {
   ReverseButton,
   TopArc,
 } from './reverse/reverse-button-helpers';
+import { ProtocolFeeLine } from './shared/ProtocolFeeLine';
 
 const rootNode = getRootDomNode();
 
@@ -314,6 +316,14 @@ export function SwapForm() {
 
   const confirmDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
+  const { value: premiumValue } = useAddressMembership({ address });
+  const isPremium = isPremiumMembership(premiumValue);
+  useEffect(() => {
+    if (!isPremium) {
+      handleChange('primaryInput', 'spend');
+    }
+  }, [handleChange, isPremium]);
+
   if (isSuccess) {
     invariant(
       spendPosition && receivePosition && transactionHash,
@@ -353,19 +363,19 @@ export function SwapForm() {
       <NavigationTitle
         title="Swap"
         elementEnd={
-          <Button
-            as={UnstyledLink}
+          <UnstyledLink
             to="/wallet-select"
-            kind="ghost"
             title="Change Wallet"
+            // place element at the edge of PageColumn
+            style={{ placeSelf: 'center end', marginRight: 16 - 8 }}
           >
             <WalletAvatar
               active={false}
               address={address}
-              size={32}
+              size={24}
               borderRadius={4}
             />
-          </Button>
+          </UnstyledLink>
         }
       />
 
@@ -437,7 +447,7 @@ export function SwapForm() {
             </div>
             <div className={styles.arcParent}>
               <TopArc />
-              <ReceiveTokenField swapView={swapView} />
+              <ReceiveTokenField swapView={swapView} readOnly={!isPremium} />
             </div>
           </VStack>
         </VStack>
@@ -469,6 +479,7 @@ export function SwapForm() {
                 />
               )}
             />
+            {quote ? <ProtocolFeeLine quote={quote} /> : null}
           </React.Suspense>
         ) : null}
       </VStack>

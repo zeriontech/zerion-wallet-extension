@@ -10,6 +10,7 @@ import { DebouncedInput } from 'src/ui/ui-kit/Input/DebouncedInput';
 import { FormFieldset } from 'src/ui/ui-kit/FormFieldset';
 import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 import { createChain } from 'src/modules/networks/Chain';
+import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
 import { AssetSelect } from '../../AssetSelect';
 
 export function TokenTransferInput({ sendView }: { sendView: SendFormView }) {
@@ -82,11 +83,14 @@ export function TokenTransferInput({ sendView }: { sendView: SendFormView }) {
               <UnstyledInput
                 id={inputId}
                 style={{ textAlign: 'end', textOverflow: 'ellipsis' }}
-                inputMode="numeric"
                 name="tokenValue"
                 value={value}
                 placeholder="0"
-                onChange={(event) => handleChange(event.currentTarget.value)}
+                inputMode="decimal"
+                onChange={(event) =>
+                  handleChange(event.currentTarget.value.replace(',', '.'))
+                }
+                pattern={FLOAT_INPUT_PATTERN}
                 required={true}
               />
             )}

@@ -135,7 +135,7 @@ const SuggestedItem = React.forwardRef(
           }}
         >
           <HStack
-            gap={4}
+            gap={12}
             alignItems="center"
             style={{
               gridTemplateColumns: 'auto 1fr',
