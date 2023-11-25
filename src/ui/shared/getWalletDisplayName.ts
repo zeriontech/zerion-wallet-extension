@@ -20,6 +20,11 @@ export function getWalletDisplayName(
     maxCharacters,
   }: { padding?: number; maxCharacters?: number } = {}
 ) {
+  if (!wallet.address) {
+    throw new Error(
+      `Address is missing from Wallet object: ${JSON.stringify(wallet)}`
+    );
+  }
   const displayName = wallet.name ?? truncateAddress(wallet.address, padding);
   const value = emojify(displayName);
 
