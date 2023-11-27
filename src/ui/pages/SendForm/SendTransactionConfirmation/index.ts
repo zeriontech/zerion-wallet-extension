@@ -1,0 +1,1 @@
+export { SendTransactionConfirmation } from './SendTransactionConfirmation';

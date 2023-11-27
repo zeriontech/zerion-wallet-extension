@@ -138,29 +138,52 @@ export function ActionButtonsRow() {
         />
       </li>
       <li>
-        <Button
-          aria-label="Swap"
-          size={48}
-          as={UnstyledAnchor}
-          href={`${ZERION_ORIGIN}/swap?${addWalletParams}`}
-          onClick={performAction}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            borderRadius: 24,
-            width: '100%',
-            ['--button-background' as string]: 'var(--black)',
-            ['--button-text' as string]: 'var(--white)',
-            ['--button-background-hover' as string]: 'var(--neutral-800)',
-          }}
-        >
-          <HStack gap={6} alignItems="center">
-            <div style={{ display: 'flex' }}>
-              <SwapIcon />
-            </div>
-            <UIText kind="small/accent">Swap</UIText>
-          </HStack>
-        </Button>
+        {process.env.FEATURE_SEND_FORM === 'on' ? (
+          <Button
+            aria-label="Swap"
+            size={48}
+            as={UnstyledLink}
+            to="/swap-form"
+            style={{
+              borderRadius: 24,
+              width: '100%',
+              ['--button-background' as string]: 'var(--black)',
+              ['--button-text' as string]: 'var(--white)',
+              ['--button-background-hover' as string]: 'var(--neutral-800)',
+            }}
+          >
+            <HStack gap={6} alignItems="center">
+              <div style={{ display: 'flex' }}>
+                <SwapIcon />
+              </div>
+              <UIText kind="small/accent">Swap</UIText>
+            </HStack>
+          </Button>
+        ) : (
+          <Button
+            aria-label="Swap"
+            size={48}
+            as={UnstyledAnchor}
+            href={`${ZERION_ORIGIN}/swap?${addWalletParams}`}
+            onClick={performAction}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              borderRadius: 24,
+              width: '100%',
+              ['--button-background' as string]: 'var(--black)',
+              ['--button-text' as string]: 'var(--white)',
+              ['--button-background-hover' as string]: 'var(--neutral-800)',
+            }}
+          >
+            <HStack gap={6} alignItems="center">
+              <div style={{ display: 'flex' }}>
+                <SwapIcon />
+              </div>
+              <UIText kind="small/accent">Swap</UIText>
+            </HStack>
+          </Button>
+        )}
       </li>
     </ul>
   );

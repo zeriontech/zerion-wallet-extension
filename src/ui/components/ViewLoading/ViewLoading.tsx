@@ -3,7 +3,7 @@ import { ellipsis, NBSP } from 'src/ui/shared/typography';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { useRenderDelay } from '../DelayedRender/DelayedRender';
+import { DelayedRender, useRenderDelay } from '../DelayedRender/DelayedRender';
 import { FillView } from '../FillView';
 
 interface Props {
@@ -33,5 +33,22 @@ export function ViewLoading({ size = '24px', kind = 'default' }: Props) {
         </VStack>
       )}
     </FillView>
+  );
+}
+
+export function ViewLoadingSuspense({
+  children,
+  ...props
+}: React.PropsWithChildren<Props>) {
+  return (
+    <React.Suspense
+      fallback={
+        <DelayedRender>
+          <ViewLoading {...props} />
+        </DelayedRender>
+      }
+    >
+      {children}
+    </React.Suspense>
   );
 }

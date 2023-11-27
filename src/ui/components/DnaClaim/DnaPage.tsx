@@ -217,6 +217,7 @@ export function DnaPage() {
     transaction: mintTransaction,
     chain: createChain(NetworkId.Ethereum),
     networkFeeConfiguration: null,
+    onFeeValueCommonReady: null,
   });
   const feeValueFiat = costs?.totalValueFiat;
 

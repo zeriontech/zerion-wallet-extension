@@ -10,6 +10,8 @@ import { DebouncedInput } from 'src/ui/ui-kit/Input/DebouncedInput';
 import { FormFieldset } from 'src/ui/ui-kit/FormFieldset';
 import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 import { createChain } from 'src/modules/networks/Chain';
+import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
+import { useCustomValidity } from 'src/ui/shared/forms/useCustomValidity';
 import { AssetSelect } from '../../AssetSelect';
 
 export function TokenTransferInput({ sendView }: { sendView: SendFormView }) {
@@ -28,6 +30,17 @@ export function TokenTransferInput({ sendView }: { sendView: SendFormView }) {
   const tokenValueInputRef = useRef<InputHandle | null>(null);
 
   const inputId = useId();
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useCustomValidity({
+    ref: inputRef,
+    customValidity: exceedsBalance
+      ? 'Insufficient balance'
+      : tokenValue && Number(tokenValue) <= 0
+      ? 'Enter a positive amount'
+      : '',
+  });
+
   return (
     <>
       <FormFieldset
@@ -37,6 +50,7 @@ export function TokenTransferInput({ sendView }: { sendView: SendFormView }) {
           <div>
             {tokenItem ? (
               <AssetSelect
+                dialogTitle="Send"
                 items={sendView.availablePositions ?? []}
                 onChange={(position) =>
                   sendView.handleChange(
@@ -81,12 +95,16 @@ export function TokenTransferInput({ sendView }: { sendView: SendFormView }) {
             render={({ value, handleChange }) => (
               <UnstyledInput
                 id={inputId}
+                ref={inputRef}
                 style={{ textAlign: 'end', textOverflow: 'ellipsis' }}
-                inputMode="numeric"
                 name="tokenValue"
                 value={value}
                 placeholder="0"
-                onChange={(event) => handleChange(event.currentTarget.value)}
+                inputMode="decimal"
+                onChange={(event) =>
+                  handleChange(event.currentTarget.value.replace(',', '.'))
+                }
+                pattern={FLOAT_INPUT_PATTERN}
                 required={true}
               />
             )}

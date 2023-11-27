@@ -174,32 +174,37 @@ enum Tab {
   customList,
 }
 
+type ListGroup<T> = {
+  key: string;
+  name: string;
+  items: T[];
+};
+
+export type NetworkGroups = ListGroup<NetworkConfig>[];
 function SectionView({
   networks,
   value,
   chainDistribution,
+  groups: unsortedGroups,
 }: {
   tab: Tab;
   value: string;
   networks: Networks;
+  groups: NetworkGroups;
   onTabChange: (event: React.FormEvent<HTMLInputElement>) => void;
   chainDistribution: ChainDistribution | null;
 }) {
-  const mainnetList = useMemo(
+  const groups = useMemo(
     () =>
-      networks
-        .getMainnets()
-        .filter((network) => !network.hidden)
-        .sort((a, b) => compareChains(a, b, chainDistribution)),
-    [networks, chainDistribution]
-  );
-  const customList = useMemo(
-    () => networks.getCustomNetworks().filter((network) => !network.hidden),
-    [networks]
-  );
-  const testnetList = useMemo(
-    () => networks.getTestNetworks().filter((network) => !network.hidden),
-    [networks]
+      unsortedGroups.map((group) => {
+        return {
+          ...group,
+          items: group.items
+            .filter((network) => !network.hidden)
+            .sort((a, b) => compareChains(a, b, chainDistribution)),
+        };
+      }),
+    [chainDistribution, unsortedGroups]
   );
 
   return (
@@ -214,33 +219,18 @@ function SectionView({
       }}
     >
       <VStack gap={8}>
-        <NetworkList
-          title="Mainnets"
-          value={value}
-          networks={networks}
-          networkList={mainnetList}
-          chainDistribution={chainDistribution}
-        />
-
-        {customList.length ? (
-          <NetworkList
-            title="Manually Added"
-            value={value}
-            networks={networks}
-            networkList={customList}
-            chainDistribution={chainDistribution}
-            previousListLength={mainnetList.length}
-          />
-        ) : null}
-
-        <NetworkList
-          title="Testnets"
-          value={value}
-          networks={networks}
-          networkList={testnetList}
-          chainDistribution={chainDistribution}
-          previousListLength={mainnetList.length + customList.length}
-        />
+        {groups.map((group) =>
+          group.items.length ? (
+            <NetworkList
+              key={group.key}
+              title={group.name}
+              value={value}
+              networks={networks}
+              networkList={group.items}
+              chainDistribution={chainDistribution}
+            />
+          ) : null
+        )}
       </VStack>
     </form>
   );
@@ -250,19 +240,17 @@ function SearchView({
   query,
   networks,
   chainDistribution,
+  groups,
 }: {
   query: string;
   networks: Networks;
   chainDistribution: ChainDistribution | null;
+  groups: NetworkGroups;
 }) {
   const items = useMemo(() => {
-    const allNetworks = [
-      ...networks.getMainnets(),
-      ...networks.getTestNetworks(),
-      ...networks.getCustomNetworks(),
-    ];
+    const allNetworks = groups.flatMap((group) => group.items);
     return allNetworks.filter(filterNetworksByQuery(query));
-  }, [networks, query]);
+  }, [groups, query]);
   return (
     <div
       style={{
@@ -287,14 +275,27 @@ function SearchView({
   );
 }
 
+function createGroups(networks: Networks) {
+  const mainnetList = networks.getMainnets();
+  const customList = networks.getCustomNetworks();
+  const testnetList = networks.getTestNetworks();
+  return [
+    { key: 'mainnets', name: 'Mainnets', items: mainnetList },
+    { key: 'custom', name: 'Manually Added', items: customList },
+    { key: 'testnets', name: 'Testnets', items: testnetList },
+  ];
+}
+
 function AddressNetworkList({
   value,
   networks,
   chainDistribution,
+  groups: maybeGroups,
 }: {
   value: string;
   networks: Networks;
   chainDistribution: ChainDistribution | null;
+  groups?: NetworkGroups;
 }) {
   const searchRef = useRef<HTMLInputElement | null>(null);
   const [searchValue, setSearchValue] = useState('');
@@ -309,6 +310,10 @@ function AddressNetworkList({
     useCallback((value: string) => setQuery(value), []),
     300
   );
+
+  const groups: ListGroup<NetworkConfig>[] = useMemo(() => {
+    return maybeGroups || createGroups(networks);
+  }, [maybeGroups, networks]);
 
   const focusSearchInput = useCallback(() => {
     if (searchRef.current) {
@@ -421,12 +426,14 @@ function AddressNetworkList({
         {query ? (
           <SearchView
             query={query}
+            groups={groups}
             networks={networks}
             chainDistribution={chainDistribution}
           />
         ) : (
           <SectionView
             tab={tab}
+            groups={groups}
             onTabChange={handleTabChange}
             networks={networks}
             value={value}
@@ -477,9 +484,11 @@ function AddressNetworkList({
 export function NetworkSelectDialog({
   value,
   chainDistribution,
+  groups,
 }: {
   value: string;
   chainDistribution: ChainDistribution | null;
+  groups?: NetworkGroups;
 }) {
   const { networks } = useNetworks();
 
@@ -499,6 +508,7 @@ export function NetworkSelectDialog({
       }}
     >
       <AddressNetworkList
+        groups={groups}
         value={value}
         networks={networks}
         chainDistribution={chainDistribution}

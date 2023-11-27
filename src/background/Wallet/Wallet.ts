@@ -60,6 +60,7 @@ import {
   isDeviceAccount,
   isMnemonicContainer,
 } from 'src/shared/types/validators';
+import { ERC20_ALLOWANCE_ABI } from 'src/modules/ethereum/abi/allowance-abi';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -730,27 +731,48 @@ export class Wallet {
 
   async createApprovalTransaction({
     context,
-    params: { initiator, contractAddress, allowanceQuantityBase, spender },
+    params: { chain, contractAddress, allowanceQuantityBase, spender },
   }: WalletMethodParams<{
-    initiator: string;
+    chain: string;
     contractAddress: string;
     allowanceQuantityBase: string;
     spender: string;
   }>) {
     this.verifyInternalOrigin(context);
-
-    const chainId = await this.getChainIdForOrigin({
-      origin: new URL(initiator).origin,
-    });
+    const networks = await networksStore.load();
+    const chainId = networks.getChainId(createChain(chain));
     const provider = await this.getProvider(chainId);
     const abi = [
       'function approve(address, uint256) public returns (bool success)',
     ];
     const contract = new ethers.Contract(contractAddress, abi, provider);
-    return await contract.populateTransaction.approve(
+    const tx = await contract.populateTransaction.approve(
       spender,
       allowanceQuantityBase
     );
+    return { ...tx, chainId };
+  }
+
+  async fetchAllowance({
+    context,
+    params: { chain, contractAddress, owner, spender },
+  }: WalletMethodParams<{
+    chain: string;
+    contractAddress: string;
+    spender: string;
+    owner: string;
+  }>) {
+    this.verifyInternalOrigin(context);
+    const networks = await networksStore.load();
+    const chainId = networks.getChainId(createChain(chain));
+    const provider = await this.getProvider(chainId);
+    const contract = new ethers.Contract(
+      contractAddress,
+      ERC20_ALLOWANCE_ABI,
+      provider
+    );
+    const result = await contract.allowance(owner, spender);
+    return (result as ethers.BigNumber).toString();
   }
 
   async switchChainForOrigin({

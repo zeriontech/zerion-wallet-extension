@@ -32,7 +32,30 @@ export function DialogTitle({
       >
         {title}
       </div>
-      <form method="dialog" style={{ placeSelf: 'end' }}>
+      <form
+        method="dialog"
+        style={{ placeSelf: 'end' }}
+        onSubmit={(event) => {
+          /**
+           * We have to call stopPropagation() for cases where the dialog is rendered inside another form
+           * using a portal, e.g.:
+            <form>
+              <Portal>
+                <dialog>
+                  <form>
+                    <button value="cancel">Close</button>
+                  </form>
+                </dialog>
+              </Portal>
+            </form>
+           * The submit event of the inner form propagates to the outer form
+           * which is intended React behavior: https://legacy.reactjs.org/docs/portals.html#event-bubbling-through-portals
+           * But that's exactly the behavior we're trying to avoid by using a portal: we need a dialog form
+           * to be unrelated to the outer form.
+           */
+          event.stopPropagation();
+        }}
+      >
         <Button
           kind="ghost"
           value={DialogButtonValue.cancel}

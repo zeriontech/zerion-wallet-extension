@@ -1,7 +1,8 @@
 import { createPortal } from 'react-dom';
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { useAddressPortfolioDecomposition } from 'defi-sdk';
 import { invariant } from 'src/shared/invariant';
+import type { NetworkGroups } from 'src/ui/components/NetworkSelectDialog';
 import { NetworkSelectDialog } from 'src/ui/components/NetworkSelectDialog';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
@@ -22,11 +23,13 @@ export function NetworkSelect({
   onChange,
   renderButton,
   dialogRootNode,
+  groups,
 }: {
   value: string;
   onChange: (value: string) => void;
   renderButton?(params: { value: string; openDialog(): void }): React.ReactNode;
   dialogRootNode?: HTMLElement;
+  groups?: NetworkGroups;
 }) {
   const { params } = useAddressParams();
   const { value: portfolioDecomposition } = useAddressPortfolioDecomposition({
@@ -34,11 +37,9 @@ export function NetworkSelect({
     currency: 'usd',
   });
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
-  const [showNetworkDialog, setShowNetworkDialog] = useState(false);
 
   function handleDialogOpen() {
     invariant(dialogRef.current, 'Dialog element not found');
-    setShowNetworkDialog(true);
     showConfirmDialog(dialogRef.current).then((chain) =>
       onChange(chain === 'all' ? NetworkSelectValue.All : chain)
     );
@@ -56,15 +57,14 @@ export function NetworkSelect({
       ref={dialogRef}
       height="90vh"
       containerStyle={{ padding: 0 }}
-      onClosed={() => setShowNetworkDialog(false)}
-    >
-      {showNetworkDialog ? (
+      renderWhenOpen={() => (
         <NetworkSelectDialog
+          groups={groups}
           value={value}
           chainDistribution={portfolioDecomposition}
         />
-      ) : null}
-    </BottomSheetDialog>
+      )}
+    />
   );
   return (
     <>

@@ -1,6 +1,6 @@
 import { client } from 'defi-sdk';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
-import { ethers } from 'ethers';
+import { valueToHex } from 'src/shared/units/valueToHex';
 import type { TypedData } from '../message-signing/TypedData';
 import type { IncomingTransactionWithChainId } from '../types/IncomingTransaction';
 import type { InterpretResponse } from './types';
@@ -30,16 +30,16 @@ export function interpretTransaction(
             chain_id: transaction.chainId,
             currency: 'usd',
             transaction: {
-              from: transaction?.from,
-              to: transaction?.to,
-              nonce: transaction?.nonce,
+              from: transaction.from,
+              to: transaction.to,
+              nonce: transaction.nonce,
               chainId: transaction.chainId,
-              gas: gas != null ? ethers.utils.hexValue(gas) : null,
-              gasPrice: transaction?.gasPrice,
-              maxFee: transaction?.maxFeePerGas,
-              maxPriorityFee: transaction?.maxPriorityFeePerGas,
-              value: transaction?.value,
-              data: transaction?.data,
+              gas: gas != null ? valueToHex(gas) : null,
+              gasPrice: transaction.gasPrice,
+              maxFee: transaction.maxFeePerGas,
+              maxPriorityFee: transaction.maxPriorityFeePerGas,
+              value: transaction.value ? valueToHex(transaction.value) : '0x0',
+              data: transaction.data,
             },
           },
         },

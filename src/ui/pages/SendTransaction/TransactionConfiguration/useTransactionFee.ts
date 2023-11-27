@@ -205,7 +205,7 @@ export function useTransactionFee({
 }: {
   transaction: IncomingTransaction;
   chain: Chain;
-  onFeeValueCommonReady?: (value: string) => void;
+  onFeeValueCommonReady: null | ((value: string) => void);
   networkFeeConfiguration: NetworkFeeConfiguration | null;
   keepPreviousData?: boolean;
 }) {

@@ -28,6 +28,7 @@ function useInsufficientFundsWarning({
     transaction,
     chain,
     networkFeeConfiguration,
+    onFeeValueCommonReady: null,
   });
 
   const { data: addressPositions, isLoading } = useEvmAddressPositions({

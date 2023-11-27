@@ -10,7 +10,11 @@ export function DialogCloseButton({
   style?: React.CSSProperties;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <form method="dialog" style={style}>
+    <form
+      method="dialog"
+      style={style}
+      onSubmit={(event) => event.stopPropagation()}
+    >
       <Button
         kind="ghost"
         value={DialogButtonValue.cancel}

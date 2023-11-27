@@ -6,7 +6,6 @@ import React, {
   useState,
 } from 'react';
 import { createPortal } from 'react-dom';
-import type { AddressPosition } from 'defi-sdk';
 import noop from 'lodash/noop';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useCombobox } from 'downshift';
@@ -31,17 +30,15 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { SurfaceItemButton, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
+import type { Item } from 'src/ui/ui-kit/SurfaceList';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { getRootDomNode } from 'src/ui/shared/getRootDomNode';
+import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import type { BareAddressPosition } from '../../SwapForm/BareAddressPosition';
 import * as styles from './styles.module.css';
 
-type AddressPositionItem = Pick<
-  AddressPosition,
-  'id' | 'asset' | 'quantity' | 'chain'
->;
-
-function ResultItem({ addressAsset }: { addressAsset: AddressPositionItem }) {
+function ResultItem({ addressAsset }: { addressAsset: BareAddressPosition }) {
   const { asset } = addressAsset;
   const { price } = asset;
   const quantityCommon = baseToCommon(
@@ -61,10 +58,10 @@ function ResultItem({ addressAsset }: { addressAsset: AddressPositionItem }) {
         image={
           <TokenIcon size={36} src={asset.icon_url} symbol={asset.symbol} />
         }
-        text={<UIText kind="caption/accent">{asset.name}</UIText>}
+        text={<UIText kind="body/accent">{asset.name}</UIText>}
         vGap={0}
         detailText={
-          <UIText kind="caption/regular" color="var(--neutral-700)">
+          <UIText kind="small/regular" color="var(--neutral-700)">
             {details[0]}
             {details.length > 1 ? ' · ' : null}
             {details[1]}
@@ -72,7 +69,7 @@ function ResultItem({ addressAsset }: { addressAsset: AddressPositionItem }) {
         }
       />
       {price ? (
-        <UIText kind="caption/accent" color="var(--black)">
+        <UIText kind="body/accent" color="var(--black)">
           {formatCurrencyValue(quantityCommon.times(price.value), 'en', 'usd')}
         </UIText>
       ) : null}
@@ -80,30 +77,54 @@ function ResultItem({ addressAsset }: { addressAsset: AddressPositionItem }) {
   );
 }
 
-interface Props {
-  items: AddressPositionItem[];
+export interface Props {
+  items: BareAddressPosition[];
   noItemsMessage: string;
   isLoading?: boolean;
-  getGroupName?: (item: AddressPositionItem) => string;
-  selectedItem: AddressPositionItem;
-  onChange(position: AddressPositionItem): void;
+  getGroupName?: (item: BareAddressPosition) => string;
+  selectedItem: BareAddressPosition;
+  onChange(position: BareAddressPosition): void;
   chain?: Chain | null;
+  pagination?: {
+    fetchMore: () => void;
+    hasMore: boolean;
+    isLoading: boolean;
+  };
+  renderListTitle?: () => React.ReactNode;
+  onQueryDidChange?: (query: string) => void;
+  dialogTitle: React.ReactNode | null;
 }
 
 enum ItemType {
   group,
   option,
+  loadMoreButton,
 }
 
+type LoadMoreOption = { type: ItemType.loadMoreButton; index: number };
 type OptionItem =
   | { type: ItemType.group; name: string }
-  | { type: ItemType.option; index: number };
+  | { type: ItemType.option; index: number }
+  | LoadMoreOption;
 
-const Option = React.memo(({ item }: { item: AddressPositionItem }) => {
+const isOptionItem = (
+  value: OptionItem | BareAddressPosition
+): value is BareAddressPosition => {
+  return 'asset' in value;
+};
+const isButtonOptionItem = (
+  value: OptionItem | BareAddressPosition | null | undefined
+): value is LoadMoreOption => {
+  return value
+    ? 'type' in value && value.type === ItemType.loadMoreButton
+    : false;
+};
+
+const Option = React.memo(({ item }: { item: BareAddressPosition }) => {
   return <ResultItem addressAsset={item} />;
 });
 
-function matches(inputValue: string | null, { asset }: AddressPositionItem) {
+function matches(inputValue: string | null, { asset }: BareAddressPosition) {
   if (!inputValue) {
     return false;
   }
@@ -156,6 +177,10 @@ function AssetSelectComponent({
   getGroupName,
   onChange,
   chain,
+  pagination,
+  renderListTitle,
+  onQueryDidChange,
+  dialogTitle,
 }: Props) {
   const listRef = useRef<HTMLDivElement | null>(null);
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -168,12 +193,25 @@ function AssetSelectComponent({
   // and there is a rerender bug when Dialog is reopened, so we turn this mode off for now
   const isCombobox = true;
 
+  useEffect(() => {
+    onQueryDidChange?.(query);
+  }, [onQueryDidChange, query]);
+
+  const hasMore = pagination?.hasMore;
+
   const items = useMemo(() => {
+    let result: typeof allItems = [];
     if (!query || !isCombobox) {
-      return allItems;
+      result = allItems;
+    } else {
+      result = allItems.filter((item) => matches(query, item));
     }
-    return allItems.filter((item) => matches(query, item));
-  }, [allItems, query, isCombobox]);
+    const loadMoreButton: LoadMoreOption = {
+      type: ItemType.loadMoreButton,
+      index: result.length,
+    };
+    return [...result, ...(hasMore ? [loadMoreButton] : [])];
+  }, [hasMore, query, isCombobox, allItems]);
 
   const { optionItems, groupIndexes } = useMemo(() => {
     let lastGroupName: string | null = null;
@@ -181,29 +219,38 @@ function AssetSelectComponent({
     const result: Array<OptionItem> = [];
     let k = 0;
     for (let i = 0; i < items.length; i++) {
-      const groupName = getGroupName?.(items[i]);
-      if (groupName && groupName !== lastGroupName) {
-        lastGroupName = groupName;
-        result.push({ type: ItemType.group, name: groupName });
-        groupIndexes.push(k);
-        k++;
+      const item = items[i];
+      if (isButtonOptionItem(item)) {
+        result.push(item as { type: ItemType.loadMoreButton; index: number });
+      } else {
+        const groupName = getGroupName?.(item);
+        if (groupName && groupName !== lastGroupName) {
+          lastGroupName = groupName;
+          result.push({ type: ItemType.group, name: groupName });
+          groupIndexes.push(k);
+          k++;
+        }
+        result.push({ type: ItemType.option, index: i });
       }
-      result.push({ type: ItemType.option, index: i });
       k++;
     }
     return { optionItems: result, groupIndexes };
   }, [getGroupName, items]);
 
-  const ITEM_HEIGHT = 55;
+  const ITEM_HEIGHT = 60;
+  const LOAD_MORE_BUTTON_HEIGHT = 40;
   const FIRST_GROUP_NAME_HEIGHT = 24;
-  const GROUP_NAME_HEIGHT = 36;
+  const GROUP_NAME_HEIGHT = 28;
   const virtualList = useVirtualizer({
     count: optionItems.length,
     getScrollElement: () => listRef.current,
+    paddingEnd: 16,
     estimateSize: useCallback(
       (index) =>
         optionItems[index].type === ItemType.option
           ? ITEM_HEIGHT
+          : optionItems[index].type === ItemType.loadMoreButton
+          ? LOAD_MORE_BUTTON_HEIGHT
           : index === 0
           ? FIRST_GROUP_NAME_HEIGHT
           : GROUP_NAME_HEIGHT,
@@ -221,12 +268,18 @@ function AssetSelectComponent({
     setInputValue,
     setHighlightedIndex,
     selectItem,
-  } = useCombobox<AddressPositionItem | null>({
+  } = useCombobox<BareAddressPosition | LoadMoreOption | null>({
     items,
     selectedItem,
     initialInputValue: '',
-    getItemId: (index) => items[index]?.asset.id,
-    itemToString: (item) => item?.asset.name || '',
+    getItemId: (index) => {
+      const item = items[index];
+      return item && isButtonOptionItem(item) ? 'load-more' : item?.asset.id;
+    },
+    itemToString: (item) => {
+      // return item?.asset.name || ''
+      return item ? (isButtonOptionItem(item) ? '' : item?.asset.name) : '';
+    },
     onInputValueChange: ({ inputValue }) => debouncedSetQuery(inputValue ?? ''),
     scrollIntoView: noop,
     onHighlightedIndexChange: ({ highlightedIndex }) => {
@@ -235,6 +288,11 @@ function AssetSelectComponent({
         highlightedIndex !== -1 &&
         listRef.current
       ) {
+        // TODO: for some reason the virtualList doesn't correctly scroll to an
+        // element on "open" event if the highlighted element is located a bit above
+        // the last scroll portion of the view
+        // I tried calling the virtualList.scrollToIndex(targetIndex) directly,
+        // but it doesn't help
         const targetIndex = findOptionIndex(highlightedIndex, groupIndexes);
         improvedScrollToIndex(virtualList, listRef.current, targetIndex);
       }
@@ -245,8 +303,10 @@ function AssetSelectComponent({
         dialogRef.current?.showModal();
         searchInputRef.current?.focus();
         const index = items.findIndex(
-          (item) => item.asset.id === selectedItem.asset.id
+          (item) =>
+            isOptionItem(item) && item.asset.id === selectedItem.asset.id
         );
+        Object.assign(window, { virtualList });
         if (index >= 0) {
           setHighlightedIndex(index);
         }
@@ -261,6 +321,20 @@ function AssetSelectComponent({
         type === useCombobox.stateChangeTypes.ControlledPropUpdatedSelectedItem
       ) {
         return { ...changes, inputValue: state.inputValue };
+      } else if (
+        type === useCombobox.stateChangeTypes.ItemClick ||
+        type === useCombobox.stateChangeTypes.InputKeyDownEnter
+      ) {
+        // TODO: undoing item select
+        if (isButtonOptionItem(changes.selectedItem)) {
+          return {
+            ...changes,
+            selectedItem,
+            inputValue: query,
+            isOpen: true,
+            highlightedIndex: state.highlightedIndex,
+          };
+        }
       }
       return changes;
     },
@@ -268,9 +342,11 @@ function AssetSelectComponent({
       if (!s.selectedItem) {
         return;
       }
-      onChange(s.selectedItem);
-      setInputValue('');
-      closeMenu();
+      if (isOptionItem(s.selectedItem)) {
+        onChange(s.selectedItem);
+        setInputValue('');
+        closeMenu();
+      }
     },
   });
 
@@ -301,17 +377,116 @@ function AssetSelectComponent({
     }, 100);
   }, [firstItem, selectItem, setHighlightedIndex]);
 
-  const selectedItemExistsInItems = useMemo(
-    () => allItems.some((item) => item.id === selectedItem.id),
-    [selectedItem, allItems]
-  );
-
   const assetExistsOnChain =
     chain &&
     getAssetImplementationInChain({
       asset: selectedItem.asset,
       chain,
     });
+
+  const listItems: Item[] = virtualList.getVirtualItems().map((row) => {
+    const optionItem = optionItems[row.index];
+    if (optionItem.type === ItemType.group) {
+      return {
+        key: optionItem.name,
+        component: (
+          <UIText
+            kind="caption/accent"
+            color="var(--neutral-700)"
+            style={{
+              // textTransform: 'uppercase',
+              paddingLeft: 20,
+              paddingRight: 20,
+              // paddingTop: row.index === 0 ? 4 : 16,
+              paddingTop: 8,
+              paddingBottom: 4,
+
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: row.size,
+              transform: `translateY(${row.start}px)`,
+            }}
+          >
+            {optionItem.name}
+          </UIText>
+        ),
+      };
+    } else if (optionItem.type === ItemType.option) {
+      const index = optionItem.index;
+      const item = items[index];
+      if (!isOptionItem(item)) {
+        throw new Error('Invalid Option');
+      }
+
+      return {
+        key: item.asset.id,
+        isInteractive: true,
+        pad: false,
+        separatorTop: false,
+        component: (
+          <SurfaceItemButton
+            highlighted={highlightedIndex === index}
+            decorationStyle={
+              selectedItem.id === item.id
+                ? { outline: '1px solid var(--primary)', outlineOffset: -1 }
+                : undefined
+            }
+            {...getItemProps({
+              item,
+              index,
+              style: {
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: row.size,
+                transform: `translateY(${row.start}px)`,
+              },
+            })}
+          >
+            <Option item={item} />
+          </SurfaceItemButton>
+        ),
+      };
+    } else if (optionItem.type === ItemType.loadMoreButton) {
+      const index = optionItem.index;
+
+      return {
+        key: 'load-more',
+        isInteractive: true,
+        pad: false,
+        separatorTop: false,
+        component: (
+          <SurfaceItemButton
+            highlighted={highlightedIndex === index}
+            {...getItemProps({
+              item: null,
+              index,
+              type: 'button',
+              onClick: () => pagination?.fetchMore(),
+              style: {
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: row.size,
+                transform: `translateY(${row.start}px)`,
+              },
+            })}
+          >
+            <UIText kind="body/regular" color="var(--primary)">
+              Load More
+            </UIText>
+          </SurfaceItemButton>
+        ),
+      };
+    } else {
+      // @ts-ignore unknown optionItem
+      throw new Error(`Unexpected ItemType: ${optionItem.type}`);
+    }
+  });
 
   return (
     <div>
@@ -331,7 +506,15 @@ function AssetSelectComponent({
             symbol={selectedItem.asset.symbol}
             title={selectedItem.asset.name}
           />
-          <HStack gap={4} alignItems="center">
+          <HStack
+            gap={4}
+            alignItems="center"
+            style={{
+              textAlign: 'start',
+              fontSize:
+                selectedItem.asset.symbol.length > 8 ? '0.8em' : undefined,
+            }}
+          >
             {selectedItem.asset.symbol.toUpperCase()}
             <DownIcon
               width={24}
@@ -343,8 +526,7 @@ function AssetSelectComponent({
               }}
             />
           </HStack>
-          {isLoading ||
-          (assetExistsOnChain && selectedItemExistsInItems) ? null : chain ? (
+          {!isLoading && chain && !assetExistsOnChain ? (
             <div
               style={{ display: 'flex' }}
               title={
@@ -364,9 +546,9 @@ function AssetSelectComponent({
           height="90vh"
           style={{ paddingTop: isCombobox ? 0 : 8 }}
           containerStyle={{
-            paddingTop: isCombobox ? 0 : 8,
             paddingBottom: 0,
             paddingInline: 0,
+            paddingTop: dialogTitle ? 16 : 0,
             /* flex styles are importand so that listRef element has a limited height */
             display: 'flex',
             flexDirection: 'column',
@@ -374,14 +556,19 @@ function AssetSelectComponent({
           {...getMenuProps({ ref: dialogRef })}
           onClosed={closeMenu}
         >
+          {dialogTitle ? (
+            <div style={{ paddingInline: 16 }}>
+              <DialogTitle
+                title={<UIText kind="headline/h3">{dialogTitle}</UIText>}
+                alignTitle="start"
+              />
+            </div>
+          ) : null}
           <div
             style={{
               display: isCombobox ? undefined : 'none',
               padding: 16,
-              paddingTop: 12,
-              position: 'sticky',
               width: '100%',
-              top: 0,
               backgroundColor: 'var(--z-index-1)',
               zIndex: 1,
             }}
@@ -397,86 +584,31 @@ function AssetSelectComponent({
                     event.preventDefault();
                     selectFirstItemWithDelay();
                     return false;
+                  } else if (
+                    event.key === 'Enter' &&
+                    pagination &&
+                    isButtonOptionItem(items[highlightedIndex])
+                  ) {
+                    setHighlightedIndex(highlightedIndex);
+                    pagination.fetchMore();
                   }
                 },
               })}
+              // useCombobox selects current item on blur, but because we're using
+              // a BottomSheet dialog, this feels like unexpected behavior
+              onBlur={noop}
             />
           </div>
+          {renderListTitle?.() ?? null}
           {optionItems.length ? (
-            <div
-              ref={listRef}
-              style={{
-                overflowY: 'auto',
-                paddingBottom: 8,
-              }}
-            >
+            <div ref={listRef} style={{ overflowY: 'auto' }}>
               <SurfaceList
                 style={{
                   height: virtualList.getTotalSize(),
                   position: 'relative',
+                  opacity: pagination?.isLoading ? 0.5 : 1,
                 }}
-                items={virtualList.getVirtualItems().map((row) => {
-                  const optionItem = optionItems[row.index];
-                  if (optionItem.type === ItemType.group) {
-                    return {
-                      key: optionItem.name,
-                      component: (
-                        <UIText
-                          kind="body/accent"
-                          color="var(--neutral-700)"
-                          style={{
-                            textTransform: 'uppercase',
-                            paddingLeft: 20,
-                            paddingRight: 20,
-                            paddingTop: row.index === 0 ? 4 : 16,
-                            paddingBottom: 8,
-
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: row.size,
-                            transform: `translateY(${row.start}px)`,
-                          }}
-                        >
-                          {optionItem.name}
-                        </UIText>
-                      ),
-                    };
-                  } else if (optionItem.type === ItemType.option) {
-                    const index = optionItem.index;
-                    const item = items[index];
-
-                    return {
-                      key: item.asset.id,
-                      isInteractive: true,
-                      pad: false,
-                      separatorTop: false,
-                      component: (
-                        <SurfaceItemButton
-                          highlighted={highlightedIndex === index}
-                          {...getItemProps({
-                            item,
-                            index,
-                            style: {
-                              position: 'absolute',
-                              top: 0,
-                              left: 0,
-                              width: '100%',
-                              height: row.size,
-                              transform: `translateY(${row.start}px)`,
-                            },
-                          })}
-                        >
-                          <Option item={item} />
-                        </SurfaceItemButton>
-                      ),
-                    };
-                  } else {
-                    // @ts-ignore unknown optionItem
-                    throw new Error(`Unexpected ItemType: ${optionItem.type}`);
-                  }
-                })}
+                items={listItems}
               />
             </div>
           ) : isLoading ? (

@@ -135,7 +135,7 @@ const SuggestedItem = React.forwardRef(
           }}
         >
           <HStack
-            gap={4}
+            gap={12}
             alignItems="center"
             style={{
               gridTemplateColumns: 'auto 1fr',
@@ -197,12 +197,15 @@ function SectionTitle({
 
 export function AddressInput({
   value,
+  autoFocus,
   resolvedAddress,
   onChange,
   onResolvedChange,
   items: allItems,
-}: {
-  value: string | null;
+  ...inputProps
+}: Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> & {
+  value: string;
+  autoFocus?: boolean;
   resolvedAddress: string | null;
   onChange(value: string): void;
   onResolvedChange(value: string | null): void;
@@ -342,7 +345,9 @@ export function AddressInput({
             </UnstyledButton>
             <UIText kind="headline/h3">
               <UnstyledInput
+                autoFocus={autoFocus}
                 {...getInputProps({
+                  ...inputProps,
                   placeholder: 'Address, domain or identity',
                   style: { width: '100%' },
                 })}
@@ -453,12 +458,15 @@ export function AddressInput({
   );
 }
 
-export function AddressInputWrapper(props: {
-  value: string | null;
-  resolvedAddress: string | null;
-  onChange(value: string): void;
-  onResolvedChange(value: string | null): void;
-}) {
+export function AddressInputWrapper(
+  props: Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> & {
+    autoFocus?: boolean;
+    value: string;
+    resolvedAddress: string | null;
+    onChange(value: string): void;
+    onResolvedChange(value: string | null): void;
+  }
+) {
   const { data: walletGroups, isLoading } = useQuery({
     queryKey: ['wallet/uiGetWalletGroups'],
     queryFn: () => walletPort.request('uiGetWalletGroups'),

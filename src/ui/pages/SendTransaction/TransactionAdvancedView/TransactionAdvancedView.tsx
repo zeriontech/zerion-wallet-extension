@@ -25,9 +25,10 @@ import { Content } from 'react-area';
 import { Button } from 'src/ui/ui-kit/Button';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { NavigationBar } from 'src/ui/components/NavigationBar';
+import { valueToHex } from 'src/shared/units/valueToHex';
 
 function maybeHexValue(value?: BigNumberish): string | null {
-  return value ? ethers.utils.hexValue(value) : null;
+  return value ? valueToHex(value) : null;
 }
 
 function AddressLine({

@@ -108,7 +108,11 @@ enum NonceSource {
   blockchain,
 }
 
-function getNonceSourceTitle(source: NonceSource, rpcUrl: string | null) {
+function getNonceSourceTitle(
+  source: NonceSource,
+  isClickable: boolean,
+  rpcUrl: string | null
+) {
   const types = {
     [NonceSource.user]: 'Custom Nonce',
     [NonceSource.transaction]: 'Incoming Transaction',
@@ -118,7 +122,7 @@ function getNonceSourceTitle(source: NonceSource, rpcUrl: string | null) {
     throw new Error('Invalid NonceSource value');
   }
   const type = types[source];
-  return `Source: ${type}. Click to configure`;
+  return isClickable ? `Source: ${type}. Click to configure` : `Source ${type}`;
 }
 
 export function NonceLine({
@@ -133,7 +137,7 @@ export function NonceLine({
   >;
   chain: Chain;
   userNonce: string | null;
-  onChange: (nonce: string | null) => void;
+  onChange: null | ((nonce: string | null) => void);
 }) {
   const { networks } = useNetworks();
   const { from } = transaction;
@@ -164,19 +168,25 @@ export function NonceLine({
       : transaction.nonce != null
       ? NonceSource.transaction
       : NonceSource.blockchain;
-  const sourceTitle = getNonceSourceTitle(source, data?.source || null);
+  const sourceTitle = getNonceSourceTitle(
+    source,
+    Boolean(onChange),
+    data?.source || null
+  );
   return (
     <>
-      <BottomSheetDialog ref={dialogRef} height="90vh">
-        <NonceDialogForm
-          defaultValue={userNonce ? String(parseInt(userNonce)) : ''}
-          placeholder={nonce ? String(parseInt(nonce)) : ''}
-          onSubmit={(nonce) => {
-            dialogRef.current?.close();
-            onChange(nonce);
-          }}
-        />
-      </BottomSheetDialog>
+      {onChange ? (
+        <BottomSheetDialog ref={dialogRef} height="90vh">
+          <NonceDialogForm
+            defaultValue={userNonce ? String(parseInt(userNonce)) : ''}
+            placeholder={nonce ? String(parseInt(nonce)) : ''}
+            onSubmit={(nonce) => {
+              dialogRef.current?.close();
+              onChange(nonce);
+            }}
+          />
+        </BottomSheetDialog>
+      ) : null}
 
       <HStack gap={8} justifyContent="space-between">
         <UIText kind="small/regular" color="var(--neutral-700)">
@@ -185,11 +195,15 @@ export function NonceLine({
         <UnstyledButton
           type="button"
           title={sourceTitle}
-          className={helperStyles.hoverUnderline}
-          style={{ color: 'var(--primary)' }}
+          className={onChange ? helperStyles.hoverUnderline : undefined}
+          style={{
+            color: !onChange ? 'var(--black)' : 'var(--primary)',
+            cursor: !onChange ? 'auto' : undefined,
+          }}
           onClick={() => {
             dialogRef.current?.showModal();
           }}
+          disabled={!onChange}
         >
           <UIText kind="small/accent">
             {isError ? (
