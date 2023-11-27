@@ -102,7 +102,7 @@ export function RateLine({
 
   // If we decide to _not_ circle the images,
   // the gap in the parent HStack needs to be larger
-  const shouldCircleProtocolImages = true;
+  const shouldCircleProtocolImages = false;
   const gap = shouldCircleProtocolImages ? 4 : 8;
   const protocolBorderRadius = shouldCircleProtocolImages ? '50%' : undefined;
 

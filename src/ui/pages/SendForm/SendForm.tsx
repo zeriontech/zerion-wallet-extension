@@ -300,7 +300,9 @@ export function SendForm() {
               keys={['to', 'addressInputValue']}
               render={({ to, addressInputValue }) => (
                 <AddressInputWrapper
-                  value={addressInputValue ?? null}
+                  name="addressInputValue"
+                  value={addressInputValue ?? ''}
+                  required={true}
                   resolvedAddress={to ?? null}
                   onChange={(value) =>
                     sendView.handleChange('addressInputValue', value)
