@@ -10,7 +10,7 @@ export function PrivacyFooter() {
     <HStack gap={8}>
       <img src={lockIconSrc} alt="" style={{ width: 20, height: 20 }} />
       <UIText kind="small/accent" color="var(--neutral-600)">
-        We never store your keys. See here for our full{' '}
+        We never store your keys. See here for our{' '}
         <TextAnchor
           href="https://zerion.io/privacy.pdf"
           target="_blank"
