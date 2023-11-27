@@ -20,7 +20,7 @@ export function getWalletDisplayName(
     maxCharacters,
   }: { padding?: number; maxCharacters?: number } = {}
 ) {
-  if (!wallet.address) {
+  if (typeof wallet.address !== 'string') {
     throw new Error(
       `Address is missing from Wallet object: ${JSON.stringify(wallet)}`
     );
