@@ -108,7 +108,11 @@ enum NonceSource {
   blockchain,
 }
 
-function getNonceSourceTitle(source: NonceSource, rpcUrl: string | null) {
+function getNonceSourceTitle(
+  source: NonceSource,
+  isClickable: boolean,
+  rpcUrl: string | null
+) {
   const types = {
     [NonceSource.user]: 'Custom Nonce',
     [NonceSource.transaction]: 'Incoming Transaction',
@@ -118,7 +122,7 @@ function getNonceSourceTitle(source: NonceSource, rpcUrl: string | null) {
     throw new Error('Invalid NonceSource value');
   }
   const type = types[source];
-  return `Source: ${type}. Click to configure`;
+  return isClickable ? `Source: ${type}. Click to configure` : `Source ${type}`;
 }
 
 export function NonceLine({
@@ -164,7 +168,11 @@ export function NonceLine({
       : transaction.nonce != null
       ? NonceSource.transaction
       : NonceSource.blockchain;
-  const sourceTitle = getNonceSourceTitle(source, data?.source || null);
+  const sourceTitle = getNonceSourceTitle(
+    source,
+    Boolean(onChange),
+    data?.source || null
+  );
   return (
     <>
       {onChange ? (
