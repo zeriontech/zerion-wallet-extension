@@ -155,7 +155,7 @@ export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
                 if (inputRef.current) {
                   inputRef.current.value = value;
                   inputRef.current.dispatchEvent(
-                    new Event('inputValueChange', { bubbles: true })
+                    new Event('customInputValueChange', { bubbles: true })
                   );
                 }
               }}

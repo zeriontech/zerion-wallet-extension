@@ -47,9 +47,12 @@ export function useFormValidity({
       const handleInputValueChange = () => {
         setCurrentError(readFormValidity(form));
       };
-      form.addEventListener('inputValueChange', handleInputValueChange);
+      form.addEventListener('customInputValueChange', handleInputValueChange);
       return () => {
-        form.removeEventListener('inputValueChange', handleInputValueChange);
+        form.removeEventListener(
+          'customInputValueChange',
+          handleInputValueChange
+        );
       };
     }
   }, [formRef]);

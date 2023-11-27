@@ -11,7 +11,7 @@ export function useAssetsInfoPaginatedQuery(
   const LIMIT = 30;
   const query = useInfiniteQuery({
     suspense,
-    queryKey: ['asdf', LIMIT, params],
+    queryKey: ['assetsInfoPaginated', LIMIT, params],
     queryFn: async ({
       pageParam: { limit, offset } = { limit: LIMIT, offset: 0 },
     }) => {

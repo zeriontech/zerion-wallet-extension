@@ -40,7 +40,7 @@ function createAddressPosition({
         network.native_asset?.address ||
         network.native_asset?.symbol.toLowerCase() ||
         '<unknown-id>',
-      decimals: network.native_asset?.decimals || NaN,
+      decimals: Number(network.native_asset?.decimals) || NaN,
       icon_url: network.icon_url,
       is_verified: false,
       price: null,

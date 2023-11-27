@@ -289,7 +289,7 @@ function AssetSelectComponent({
         listRef.current
       ) {
         // TODO: for some reason the virtualList doesn't correctly scroll to an
-        // element on "open" event if the highlighted element is located a but above
+        // element on "open" event if the highlighted element is located a bit above
         // the last scroll portion of the view
         // I tried calling the virtualList.scrollToIndex(targetIndex) directly,
         // but it doesn't help
