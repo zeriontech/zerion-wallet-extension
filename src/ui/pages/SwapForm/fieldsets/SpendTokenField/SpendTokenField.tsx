@@ -15,21 +15,8 @@ import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 import { createChain } from 'src/modules/networks/Chain';
 import { AssetSelect } from 'src/ui/pages/SendForm/AssetSelect';
 import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
+import { useCustomValidity } from 'src/ui/shared/forms/useCustomValidity';
 import { FiatInputValue } from '../FiatInputValue';
-
-function useCustomValidity({
-  ref,
-  customValidity,
-}: {
-  ref: React.RefObject<HTMLInputElement>;
-  customValidity: string;
-}) {
-  useEffect(() => {
-    if (ref.current) {
-      ref.current.setCustomValidity(customValidity);
-    }
-  }, [customValidity, ref]);
-}
 
 export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
   const { spendPosition } = swapView;
@@ -88,6 +75,7 @@ export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
           <div>
             {spendPosition ? (
               <AssetSelect
+                dialogTitle="Pay With"
                 items={swapView.availablePositions}
                 onChange={(position) =>
                   swapView.store.handleTokenChange(

@@ -54,40 +54,19 @@ export function ReceiveTokenField({
         inputSelector={`#${CSS.escape(inputId)}`}
         startInput={
           <div>
-            {receivePosition && chain ? (
-              <>
-                <MarketAssetSelect
-                  chain={chain}
-                  selectedItem={receivePosition}
-                  onChange={(position) =>
-                    swapView.store.handleTokenChange(
-                      'receiveTokenInput',
-                      position.asset.asset_code
-                    )
-                  }
-                  addressPositions={swapView.availablePositions}
-                />
-              </>
-            ) : (
-              <div
-                style={{
-                  height: 24 /* height of AssetSelect */,
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-              >
-                <svg
-                  viewBox="0 0 20 20"
-                  style={{
-                    display: 'block',
-                    width: 20,
-                    height: 20,
-                  }}
-                >
-                  <circle r="10" cx="10" cy="10" fill="var(--neutral-300)" />
-                </svg>
-              </div>
-            )}
+            {chain ? (
+              <MarketAssetSelect
+                chain={chain}
+                selectedItem={receivePosition}
+                onChange={(position) =>
+                  swapView.store.handleTokenChange(
+                    'receiveTokenInput',
+                    position.asset.asset_code
+                  )
+                }
+                addressPositions={swapView.availablePositions}
+              />
+            ) : null}
           </div>
         }
         endInput={

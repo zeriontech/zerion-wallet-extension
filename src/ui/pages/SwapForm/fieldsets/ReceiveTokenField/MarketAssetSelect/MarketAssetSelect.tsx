@@ -23,10 +23,15 @@ export function MarketAssetSelect({
   onChange,
 }: {
   chain: Chain;
-  selectedItem: BareAddressPosition;
+  selectedItem: BareAddressPosition | null;
   addressPositions: BareAddressPosition[];
   onChange: AssetSelectProps['onChange'];
 }) {
+  // We need to save a selected item locally, because the SwapForm
+  // takes time to query the newly selected position if it is not among address positions,
+  // which results in a UI flicker. But storing an intermediary state, we avoid that flicker
+  const [savedSelectedItem, setCurrentSelectedItem] = useState(selectedItem);
+
   const positionsMap = useMemo(
     () =>
       new Map(
@@ -114,12 +119,38 @@ export function MarketAssetSelect({
     [popularAssetCodes]
   );
 
+  const currentItem = selectedItem || savedSelectedItem;
+  if (!currentItem) {
+    return (
+      <div
+        style={{
+          height: 24 /* height of AssetSelect */,
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
+        <svg
+          viewBox="0 0 20 20"
+          style={{
+            display: 'block',
+            width: 20,
+            height: 20,
+          }}
+        >
+          <circle r="10" cx="10" cy="10" fill="var(--neutral-300)" />
+        </svg>
+      </div>
+    );
+  }
   return (
     <AssetSelect
       items={items}
-      onChange={onChange}
+      onChange={(item) => {
+        setCurrentSelectedItem(item);
+        onChange(item);
+      }}
       chain={chain}
-      selectedItem={selectedItem}
+      selectedItem={currentItem}
       getGroupName={getGroupName}
       pagination={{
         fetchMore: fetchNextPage,
@@ -127,6 +158,7 @@ export function MarketAssetSelect({
         isLoading: isLoading || isFetchingNextPage,
       }}
       noItemsMessage="No assets found"
+      dialogTitle="Receive"
       renderListTitle={() =>
         shouldQueryByChain ? (
           <UIText

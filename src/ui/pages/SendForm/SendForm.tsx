@@ -1,11 +1,10 @@
-import React, { useCallback, useId, useRef } from 'react';
+import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import type { Store } from 'store-unit';
 import { client } from 'defi-sdk';
 import { useSendForm } from '@zeriontech/transactions';
 import type { SendFormState } from '@zeriontech/transactions';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
-import { useAddressPositions } from 'defi-sdk';
 import { networksStore } from 'src/modules/networks/networks-store.client';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -53,6 +52,7 @@ import { TokenTransferInput } from './fieldsets/TokenTransferInput';
 import { AddressInputWrapper } from './fieldsets/AddressInput';
 import { updateRecentAddresses } from './fieldsets/AddressInput/updateRecentAddresses';
 import { SendTransactionConfirmation } from './SendTransactionConfirmation';
+import { useAddressBackendOrEvmPositions } from './shared/useAddressBackendOrEvmPositions';
 
 function StoreWatcherByKeys<T extends Record<string, unknown>>({
   store,
@@ -74,17 +74,24 @@ export function SendForm() {
 
   useBackgroundKind({ kind: 'white' });
 
-  const { value: positionsValue } = useAddressPositions({
+  // Named intentionally so that this value is not used by other components of the form
+  const [chainForAddressPositions, setChainForPositions] = useState<
+    string | undefined
+  >(undefined);
+
+  const { data: positions } = useAddressBackendOrEvmPositions({
     address,
     currency: 'usd',
+    chain: chainForAddressPositions
+      ? createChain(chainForAddressPositions)
+      : null,
   });
 
-  const positions = positionsValue?.positions;
   const sendView = useSendForm({
     currencyCode: 'usd',
     DEFAULT_CONFIGURATION,
     address,
-    positions,
+    positions: positions || undefined,
     getNetworks: () => networksStore.load(),
     client,
   });
@@ -94,6 +101,17 @@ export function SendForm() {
     'tokenChain',
     'nftChain',
   ]);
+
+  useEffect(() => {
+    store.on('change', () => {
+      // The easiest way support custom networks is to track the tokenChain value change
+      // and pass positions based on it to `useSendForm` hook. The way the hook is agnostic about custom chain.
+      // Other solutions are possible:
+      // 1. Querying all custom networks for balance and mixing the results into backend addressPositions
+      // 2. Updating useSendForm hook to introduce a notion of "special" chains that need to query for positions separately
+      setChainForPositions(store.getState().tokenChain);
+    });
+  }, [store]);
 
   const chain =
     type === 'token' && tokenChain
@@ -229,10 +247,13 @@ export function SendForm() {
         id={formId}
         onSubmit={(event) => {
           event.preventDefault();
-          invariant(confirmDialogRef.current, 'Dialog not found');
-          showConfirmDialog(confirmDialogRef.current).then(() => {
-            sendTransaction();
-          });
+
+          if (event.currentTarget.checkValidity()) {
+            invariant(confirmDialogRef.current, 'Dialog not found');
+            showConfirmDialog(confirmDialogRef.current).then(() => {
+              sendTransaction();
+            });
+          }
         }}
       >
         <VStack gap={16}>

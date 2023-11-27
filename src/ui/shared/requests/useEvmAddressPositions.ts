@@ -47,7 +47,7 @@ function createAddressPosition({
       implementations: {
         [network.chain]: {
           address: network.native_asset?.address ?? null,
-          decimals: network.native_asset?.decimals || NaN,
+          decimals: Number(network.native_asset?.decimals) || NaN,
         },
       },
     },
@@ -77,10 +77,12 @@ export function useEvmAddressPositions({
   address,
   chain,
   suspense = false,
+  enabled = true,
 }: {
   address: string | null;
   chain: Chain;
   suspense?: boolean;
+  enabled?: boolean;
 }) {
   return useQuery({
     queryKey: ['eth_getBalance', address, chain],
@@ -95,7 +97,7 @@ export function useEvmAddressPositions({
             networks,
           });
     },
-    enabled: Boolean(address),
     suspense,
+    enabled: enabled && Boolean(address),
   });
 }

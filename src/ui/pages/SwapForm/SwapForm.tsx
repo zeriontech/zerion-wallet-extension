@@ -41,6 +41,7 @@ import type { FormErrorDescription } from 'src/ui/shared/forms/useFormValidity';
 import { useFormValidity } from 'src/ui/shared/forms/useFormValidity';
 import { getPositionBalance } from 'src/ui/components/Positions/helpers';
 import { isPremiumMembership } from 'src/ui/shared/requests/premium/isPremiumMembership';
+import type { NetworkGroups } from 'src/ui/components/NetworkSelectDialog';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -127,22 +128,34 @@ export function SwapForm() {
   const positions = positionsValue?.positions ?? null;
 
   const { networks } = useNetworks();
+  const { supportedNetworks, supportedChains } = useMemo(() => {
+    const allItems = networks?.getNetworks() || [];
+    const itemsForTrading = networks
+      ? allItems.filter((network) =>
+          networks.supports('trading', createChain(network.chain))
+        )
+      : [];
+    return {
+      supportedNetworks: itemsForTrading,
+      supportedChains: itemsForTrading.map((network) =>
+        createChain(network.chain)
+      ),
+    };
+  }, [networks]);
+
+  const networkOptions: NetworkGroups = useMemo(() => {
+    return [
+      { key: 'trading-networks', name: 'Networks', items: supportedNetworks },
+    ];
+  }, [supportedNetworks]);
+
   const swapView = useSwapForm({
     currency: 'usd',
     client,
     positions,
     asset_code: null,
     getNativeAsset: ({ chain }) => getNativeAsset({ chain, currency: 'usd' }),
-    supportedChains: useMemo(() => {
-      if (networks) {
-        return networks
-          .getNetworks()
-          .map((network) => createChain(network.chain))
-          .filter((chain) => networks.supports('trading', chain));
-      } else {
-        return [];
-      }
-    }, [networks]),
+    supportedChains,
     DEFAULT_CONFIGURATION,
   });
   Object.assign(window, { swapStore: swapView.store });
@@ -357,6 +370,7 @@ export function SwapForm() {
   const currentTransaction = isApproveMode
     ? approveTransaction
     : swapTransaction;
+
   return (
     <PageColumn>
       <PageTop />
@@ -436,6 +450,7 @@ export function SwapForm() {
               swapView.handleChange('chainInput', value);
             }}
             dialogRootNode={rootNode}
+            groups={networkOptions}
           />
           <VStack gap={4} style={{ position: 'relative' }}>
             <div style={{ position: 'relative' }}>

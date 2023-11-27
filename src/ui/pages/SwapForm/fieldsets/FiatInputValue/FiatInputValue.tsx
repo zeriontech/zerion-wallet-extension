@@ -5,6 +5,7 @@ import React from 'react';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import { isNumeric } from 'src/shared/isNumeric';
 import { exceedsPriceImpactThreshold } from '../../shared/price-impact';
 
 export function FiatInputValue({
@@ -30,7 +31,7 @@ export function FiatInputValue({
       ? primaryInput === 'receive'
       : primaryInput === 'spend';
 
-  if (inputValue == null || inputValue == '') {
+  if (inputValue == null || !isNumeric(inputValue)) {
     return null;
   }
 

@@ -34,6 +34,7 @@ import type { Item } from 'src/ui/ui-kit/SurfaceList';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { getRootDomNode } from 'src/ui/shared/getRootDomNode';
+import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import type { BareAddressPosition } from '../../SwapForm/BareAddressPosition';
 import * as styles from './styles.module.css';
 
@@ -91,6 +92,7 @@ export interface Props {
   };
   renderListTitle?: () => React.ReactNode;
   onQueryDidChange?: (query: string) => void;
+  dialogTitle: React.ReactNode | null;
 }
 
 enum ItemType {
@@ -178,6 +180,7 @@ function AssetSelectComponent({
   pagination,
   renderListTitle,
   onQueryDidChange,
+  dialogTitle,
 }: Props) {
   const listRef = useRef<HTMLDivElement | null>(null);
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -543,9 +546,9 @@ function AssetSelectComponent({
           height="90vh"
           style={{ paddingTop: isCombobox ? 0 : 8 }}
           containerStyle={{
-            paddingTop: isCombobox ? 0 : 8,
             paddingBottom: 0,
             paddingInline: 0,
+            paddingTop: dialogTitle ? 16 : 0,
             /* flex styles are importand so that listRef element has a limited height */
             display: 'flex',
             flexDirection: 'column',
@@ -553,11 +556,18 @@ function AssetSelectComponent({
           {...getMenuProps({ ref: dialogRef })}
           onClosed={closeMenu}
         >
+          {dialogTitle ? (
+            <div style={{ paddingInline: 16 }}>
+              <DialogTitle
+                title={<UIText kind="headline/h3">{dialogTitle}</UIText>}
+                alignTitle="start"
+              />
+            </div>
+          ) : null}
           <div
             style={{
               display: isCombobox ? undefined : 'none',
               padding: 16,
-              paddingTop: 12,
               width: '100%',
               backgroundColor: 'var(--z-index-1)',
               zIndex: 1,
