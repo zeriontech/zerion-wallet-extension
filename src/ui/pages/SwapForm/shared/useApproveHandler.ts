@@ -15,12 +15,14 @@ export function useApproveHandler({
   contractAddress,
   spender,
   chain,
+  enabled = true,
 }: {
   address: string;
   spendAmountBase: string | null;
   contractAddress: string | null;
   spender: string | null;
   chain: Chain | null;
+  enabled?: boolean;
 }) {
   const allowanceQuery = useQuery({
     queryKey: [
@@ -44,8 +46,7 @@ export function useApproveHandler({
     },
     staleTime: 20000,
     suspense: false,
-    enabled: Boolean(contractAddress && spender && chain),
-    // enabled: false,
+    enabled: Boolean(enabled && contractAddress && spender && chain),
     useErrorBoundary: true,
   });
   const allowance = allowanceQuery.data;

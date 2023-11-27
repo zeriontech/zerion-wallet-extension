@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useImperativeHandle, useRef } from 'react';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { Button } from 'src/ui/ui-kit/Button';
 import { useMutation } from '@tanstack/react-query';
@@ -11,97 +11,164 @@ import type { SignTransactionResult } from 'src/ui/hardware-wallet/types';
 import LedgerIcon from 'jsx:src/ui/assets/ledger-icon.svg';
 import { LedgerIframe } from 'src/ui/hardware-wallet/LedgerIframe';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import { getTransactionCount } from 'src/modules/ethereum/transactions/getTransactionCount';
+import type { Chain } from 'src/modules/networks/Chain';
+import type { Networks } from 'src/modules/networks/Networks';
+import { networksStore } from 'src/modules/networks/networks-store.client';
 import { hardwareMessageHandler } from '../shared/messageHandler';
 
-export function HardwareSignTransaction({
-  derivationPath,
-  getTransaction,
-  onSign,
-  isSending,
-  onBeforeSign,
-  onSignError,
-}: {
-  derivationPath: string;
-  getTransaction: () => Promise<IncomingTransaction>;
-  onSign: (serialized: string) => void;
-  isSending: boolean;
-  onBeforeSign: () => void;
-  onSignError: (error: Error) => void;
-}) {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const ref = useRef<HTMLIFrameElement | null>(null);
-
-  const { mutate: signTransaction, ...signMutation } = useMutation({
-    mutationFn: async () => {
-      const transaction = await getTransaction();
-      const normalizedTransaction = prepareTransaction(transaction);
-      invariant(ref.current, 'Ledger iframe not found');
-      invariant(
-        ref.current.contentWindow,
-        'Iframe contentWindow is not available'
-      );
-      const result =
-        await hardwareMessageHandler.request<SignTransactionResult>(
-          {
-            id: nanoid(),
-            method: 'signTransaction',
-            params: {
-              derivationPath,
-              transaction: normalizedTransaction,
-            },
-          },
-          ref.current.contentWindow
-        );
-      onSign(result.serialized);
-    },
-    onMutate: () => onBeforeSign(),
-    onError(error) {
-      const normalizedError = getError(error);
-      if (normalizedError.message === 'ConnectError') {
-        navigate(
-          `/connect-hardware-wallet?${new URLSearchParams({
-            strategy: 'connect',
-            next: `${location.pathname}${location.search}`,
-          })}`
-        );
-      } else {
-        onSignError(normalizedError);
-      }
-    },
-  });
-
-  return (
-    <>
-      <LedgerIframe
-        ref={ref}
-        initialRoute="/signConnector"
-        style={{
-          position: 'absolute',
-          border: 'none',
-          backgroundColor: 'transparent',
-        }}
-        tabIndex={-1}
-        height={0}
-      />
-      <Button
-        kind="primary"
-        onClick={() => signTransaction()}
-        disabled={signMutation.isLoading || isSending}
-        style={{
-          paddingInline: 16, // fit longer button label
-        }}
-      >
-        <HStack gap={8} alignItems="center">
-          <LedgerIcon />
-          {isSending
-            ? 'Sending...'
-            : signMutation.isLoading
-            ? 'Sign...'
-            : 'Sign with Ledger'}
-        </HStack>
-      </Button>
-    </>
-  );
+interface SignTransactionParams {
+  transaction: IncomingTransaction;
+  address: string;
+  chain: Chain;
 }
+
+export interface SignHandle {
+  signTransaction: ({
+    transaction,
+    address,
+    chain,
+  }: SignTransactionParams) => Promise<string>;
+}
+
+async function prepareForSignByLedger({
+  transaction,
+  address,
+  chain,
+  networks,
+}: {
+  transaction: IncomingTransaction;
+  address: string;
+  chain: Chain;
+  networks: Networks;
+}) {
+  const value = { ...transaction };
+  if (value.nonce == null) {
+    const { value: nonce } = await getTransactionCount({
+      address,
+      chain,
+      networks,
+      defaultBlock: 'pending',
+    });
+    value.nonce = parseInt(nonce);
+  }
+  if (!value.chainId) {
+    value.chainId = networks.getChainId(chain);
+  }
+  return value;
+}
+
+export const HardwareSignTransaction = React.forwardRef(
+  function HardwareSignTransaction(
+    {
+      derivationPath,
+      onClick,
+      isSending,
+      children,
+      ...buttonProps
+    }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+      derivationPath: string;
+      isSending: boolean;
+    },
+    ref: React.Ref<SignHandle>
+  ) {
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const iframeRef = useRef<HTMLIFrameElement | null>(null);
+
+    const { mutateAsync: signTransaction, ...signMutation } = useMutation({
+      mutationFn: async ({
+        transaction,
+        address,
+        chain,
+      }: SignTransactionParams): Promise<string> => {
+        const networks = await networksStore.load();
+        const txForLedger = await prepareForSignByLedger({
+          transaction,
+          address,
+          chain,
+          networks,
+        });
+        const normalizedTransaction = prepareTransaction(txForLedger);
+        invariant(iframeRef.current, 'Ledger iframe not found');
+        invariant(
+          iframeRef.current.contentWindow,
+          'Iframe contentWindow is not available'
+        );
+        try {
+          const result =
+            await hardwareMessageHandler.request<SignTransactionResult>(
+              {
+                id: nanoid(),
+                method: 'signTransaction',
+                params: {
+                  derivationPath,
+                  transaction: normalizedTransaction,
+                },
+              },
+              iframeRef.current.contentWindow
+            );
+          return result.serialized;
+        } catch (error) {
+          const normalizedError = getError(error);
+          if (normalizedError.message === 'ConnectError') {
+            navigate(
+              `/connect-hardware-wallet?${new URLSearchParams({
+                strategy: 'connect',
+                next: `${location.pathname}${location.search}`,
+              })}`
+            );
+            // NOTE: TODO: should we throw the same error here? Or return meaninless <string> to match fn signature?
+            throw normalizedError;
+          } else {
+            throw normalizedError;
+          }
+        }
+      },
+    });
+
+    useImperativeHandle(ref, () => ({ signTransaction }));
+
+    return (
+      <>
+        <LedgerIframe
+          ref={iframeRef}
+          initialRoute="/signConnector"
+          style={{
+            position: 'absolute',
+            border: 'none',
+            backgroundColor: 'transparent',
+          }}
+          tabIndex={-1}
+          height={0}
+        />
+        <Button
+          kind="primary"
+          disabled={signMutation.isLoading || isSending}
+          title={
+            signMutation.isLoading
+              ? 'Follow instructions on your ledger device'
+              : undefined
+          }
+          style={{
+            // TODO: maybe change cursor here?
+            // cursor: signMutation.isLoading ? 'help' : undefined,
+            paddingInline: 16, // fit longer button label
+          }}
+          {...buttonProps}
+        >
+          <HStack gap={8} alignItems="center" justifyContent="center">
+            <LedgerIcon />
+            {children || // all this will definitely be refactored soon
+              (signMutation.isLoading
+                ? 'Sign...'
+                : isSending
+                ? 'Sending'
+                : 'Sign with Ledger')}
+          </HStack>
+        </Button>
+      </>
+    );
+  }
+);
