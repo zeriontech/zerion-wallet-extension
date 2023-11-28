@@ -6,8 +6,7 @@ import * as styles from './styles.module.css';
 
 const HEADER_HEIGHT = 72;
 const MAX_CONTENT_WIDTH = 870;
-// TODO: change to 425 after overview refactor merge
-const HARDWARE_IMPORT_MAX_WIDTH = 400;
+const HARDWARE_IMPORT_MAX_WIDTH = 425;
 const CONTENT_PADDING = 24;
 
 function Header() {

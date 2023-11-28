@@ -6,6 +6,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import RightAngleIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
+import { apostrophe } from 'src/ui/shared/typography';
 import keyIconSrc from '../assets/key.png';
 import dialogIconSrc from '../assets/dialog.png';
 import lockIconSrc from '../assets/lock.png';
@@ -57,7 +58,12 @@ export function SecretKeyFAQ() {
           <UIText kind="small/regular" inline={true} color="var(--neutral-600)">
             Your key information is saved locally on your device. We cannot
             store or access it.{' '}
-            <TextAnchor style={{ display: 'inline' }}>
+            <TextAnchor
+              style={{ display: 'inline' }}
+              href="https://help.zerion.io/en/articles/8186414-how-to-import-an-existing-wallet"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <UIText
                 kind="small/regular"
                 color="var(--primary)"
@@ -92,14 +98,16 @@ export function SecretKeyFAQ() {
               Security & Privacy section.
             </UIText>
             <UIText kind="body/regular">
-              3. Click the Export Private Key option. You'll then have to enter
-              your wallet's password.
+              3. Click the Export Private Key option. You{apostrophe}ll then
+              have to enter your wallet{apostrophe}s password.
             </UIText>
             <UIText kind="body/regular">
-              4. Copy your private key and paste/ enter it in Zerion's browser
-              extension.
+              4. Copy your private key and paste/ enter it in Zerion{apostrophe}
+              s browser extension.
             </UIText>
-            <UIText kind="body/regular">5. That's it! You did it 🎉</UIText>
+            <UIText kind="body/regular">
+              5. That{apostrophe}s it! You did it 🎉
+            </UIText>
           </VStack>
         </VStack>
       </SidePanel>
@@ -193,7 +201,7 @@ export function PhraseFAQ() {
             </UIText>
             <UIText kind="body/regular">
               3. Click on the Reveal Secret Recovery Phrase button and enter
-              your wallet's password.
+              your wallet{apostrophe}s password.
             </UIText>
             <UIText kind="body/regular">
               4. Copy your Recovery Phrase and paste it the Zerion extension.
@@ -223,13 +231,14 @@ export function PhraseFAQ() {
             </UIText>
 
             <UIText kind="body/regular">
-              2. Copy your Recovery Phrase. It's usually 12 or 24 words long.
+              2. Copy your Recovery Phrase. It{apostrophe}s usually 12 or 24
+              words long.
             </UIText>
             <UIText kind="body/regular">
               3. Enter in the Recovery Phrase that you copied down into the
               Zerion extension. Click on Import wallet once complete.
             </UIText>
-            <UIText kind="body/regular">4: That it 🎉</UIText>
+            <UIText kind="body/regular">4. That{apostrophe}s it 🎉</UIText>
           </VStack>
         </VStack>
       </SidePanel>
