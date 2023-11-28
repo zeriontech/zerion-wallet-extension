@@ -24,16 +24,20 @@ function queryWalletProvider(account: Account, address: string) {
   return getProviderNameFromGroup(group);
 }
 
+const noUserIdEvents = ['screen_view', 'signed_message', 'signed_transaction'];
+
 function trackAppEvents({ account }: { account: Account }) {
   const getProvider = (address: string) =>
     getProviderForMetabase(queryWalletProvider(account, address));
 
   const createParams: typeof createBaseParams = (params) => {
     const getUserId = () => account.getUser()?.id;
-    return createBaseParams({
-      ...params,
-      userId: getUserId(),
-    });
+
+    const data = noUserIdEvents.includes(params.request_name)
+      ? { ...params, userId: getUserId() }
+      : params;
+
+    return createBaseParams(data);
   };
   emitter.on('dappConnection', ({ origin, address }) => {
     const params = createParams({
@@ -120,6 +124,7 @@ function trackAppEvents({ account }: { account: Account }) {
     const params = createParams({
       request_name: 'signed_message',
       type: eventToMethod[type] ?? 'unexpected type',
+      wallet_address: address,
       address,
       wallet_provider: getProvider(address),
       context:
