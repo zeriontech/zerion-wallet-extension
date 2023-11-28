@@ -30,8 +30,9 @@ export function scheduleAlarms() {
 export async function handleAlarm(alarm: browser.Alarms.Alarm) {
   if (alarm.name === 'lastActiveCheck') {
     const lastActive = await getLastActive();
-    const ONE_DAY = 1000 * 60 * 60 * 24;
-    if (lastActive && Date.now() - lastActive > ONE_DAY) {
+    // const ONE_DAY = 1000 * 60 * 60 * 24;
+    const HALF_A_DAY = 1000 * 60 * 60 * 12;
+    if (lastActive && Date.now() - lastActive > HALF_A_DAY) {
       emitter.emit('sessionExpired');
     }
   }
