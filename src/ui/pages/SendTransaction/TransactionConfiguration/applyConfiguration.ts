@@ -5,7 +5,7 @@ import { assignGasPrice } from 'src/modules/ethereum/transactions/gasPrices/assi
 import type { CustomConfiguration } from './TransactionConfiguration';
 
 export const DEFAULT_CONFIGURATION: CustomConfiguration = {
-  slippage: 0.01,
+  slippage: 0.005,
   nonce: null,
   networkFee: {
     speed: 'fast',

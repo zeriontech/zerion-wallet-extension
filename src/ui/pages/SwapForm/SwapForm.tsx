@@ -3,6 +3,8 @@ import { client, useAddressMembership, useAddressPositions } from 'defi-sdk';
 import type { SwapFormState, SwapFormView } from '@zeriontech/transactions';
 import { useSwapForm } from '@zeriontech/transactions';
 import React, { useCallback, useEffect, useId, useMemo, useRef } from 'react';
+import SettingsIcon from 'jsx:src/ui/assets/settings-sliders.svg';
+import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
@@ -45,6 +47,8 @@ import type { SignerSenderHandle } from 'src/ui/components/SignTransactionButton
 import { SignTransactionButton } from 'src/ui/components/SignTransactionButton';
 import { useSizeStore } from 'src/ui/Onboarding/useSizeStore';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import { Button } from 'src/ui/ui-kit/Button';
+import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -66,6 +70,7 @@ import {
   TopArc,
 } from './reverse/reverse-button-helpers';
 import { ProtocolFeeLine } from './shared/ProtocolFeeLine';
+import { SlippageSettings } from './SlippageSettings';
 
 const rootNode = getRootDomNode();
 
@@ -347,6 +352,7 @@ export function SwapForm() {
   const formId = useId();
 
   const confirmDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const slippageDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   const { value: premiumValue } = useAddressMembership({ address });
   const isPremium = isPremiumMembership(premiumValue);
@@ -398,20 +404,68 @@ export function SwapForm() {
       <NavigationTitle
         title="Swap"
         elementEnd={
-          <UnstyledLink
-            to="/wallet-select"
-            title="Change Wallet"
+          <HStack
+            gap={8}
+            alignItems="center"
             // place element at the edge of PageColumn
             style={{ placeSelf: 'center end', marginRight: 16 - 8 }}
           >
-            <WalletAvatar
-              active={false}
-              address={address}
-              size={24}
-              borderRadius={4}
-            />
-          </UnstyledLink>
+            <Button
+              kind="ghost"
+              size={36}
+              style={{ padding: 6 }}
+              title="Swap settings"
+              onClick={() => slippageDialogRef.current?.showModal()}
+            >
+              <SettingsIcon style={{ display: 'block' }} />
+            </Button>
+            <UnstyledLink to="/wallet-select" title="Change Wallet">
+              <WalletAvatar
+                active={false}
+                address={address}
+                size={24}
+                borderRadius={4}
+              />
+            </UnstyledLink>
+          </HStack>
         }
+      />
+      <BottomSheetDialog
+        ref={slippageDialogRef}
+        height="min-content"
+        renderWhenOpen={() => (
+          <>
+            <DialogTitle
+              alignTitle="start"
+              title={
+                <HStack gap={4} alignItems="center">
+                  <UIText kind="headline/h3">Slippage</UIText>
+                  <div
+                    style={{ cursor: 'help' }}
+                    title="Your transaction will revert if the price changes unfavourably by more than this percentage"
+                  >
+                    <QuestionHintIcon
+                      style={{ display: 'block', color: 'var(--neutral-500)' }}
+                    />
+                  </div>
+                </HStack>
+              }
+            />
+            <Spacer height={24} />
+            <StoreWatcher
+              store={swapView.store.configuration}
+              render={(configuration) => (
+                <SlippageSettings
+                  configuration={configuration}
+                  onConfigurationChange={(value) => {
+                    swapView.store.configuration.setState(value);
+                    slippageDialogRef.current?.close();
+                  }}
+                />
+              )}
+            />
+          </>
+        )}
       />
 
       <BottomSheetDialog

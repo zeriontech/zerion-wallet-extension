@@ -1,0 +1,1 @@
+export { SlippageSettings } from './SlippageSettings';
