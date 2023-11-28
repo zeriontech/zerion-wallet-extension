@@ -281,11 +281,13 @@ function AbilityCard({
   ability,
   onMark,
   filter,
+  address,
   status: initialStatus,
 }: {
   ability: WalletAbility;
   onMark(): void;
   filter: FeedStatus;
+  address: string;
   status: null | 'completed' | 'dismissed';
 }) {
   const [marking, setMarking] = useState<boolean>(false);
@@ -361,6 +363,7 @@ function AbilityCard({
           to={`/ability/${ability.uid}`}
           onClick={() => {
             walletPort.request('daylightAction', {
+              address,
               event_name: 'Perks: Card Opened',
               ability_id: ability.uid,
               perk_type: ability.type,
@@ -507,6 +510,7 @@ export function Feed() {
                 ability={ability}
                 onMark={refetch}
                 filter={statusFilter}
+                address={singleAddress}
                 status={
                   feedData?.completedSet.has(ability.uid)
                     ? 'completed'

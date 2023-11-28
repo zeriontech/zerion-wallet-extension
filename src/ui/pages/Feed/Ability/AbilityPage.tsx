@@ -17,6 +17,7 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
+import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { getAbility, getAbilityLinkTitle } from '../daylight';
 import { markAbility, unmarkAbility, useFeedInfo } from '../stored';
 import { Ability } from './Ability';
@@ -93,6 +94,8 @@ export function AbilityPage() {
     [linkUrl]
   );
 
+  const { singleAddress } = useAddressParams();
+
   return (
     <>
       <Content name="navigation-bar-end">
@@ -134,6 +137,7 @@ export function AbilityPage() {
             style={{ position: 'sticky', bottom: 48 }}
             onClick={() => {
               walletPort.request('daylightAction', {
+                address: singleAddress,
                 event_name: 'Perks: Link Clicked',
                 ability_id: data.ability.uid,
                 perk_type: data.ability.type,

@@ -24,23 +24,17 @@ function queryWalletProvider(account: Account, address: string) {
   return getProviderNameFromGroup(group);
 }
 
-const noUserIdEvents = ['screen_view', 'signed_message', 'signed_transaction'];
-
 function trackAppEvents({ account }: { account: Account }) {
   const getProvider = (address: string) =>
     getProviderForMetabase(queryWalletProvider(account, address));
 
   const createParams: typeof createBaseParams = (params) => {
     const getUserId = () => account.getUser()?.id;
-
-    const data = !noUserIdEvents.includes(params.request_name)
-      ? { ...params, userId: getUserId() }
-      : params;
-
-    return createBaseParams(data);
+    return createBaseParams({ ...params, userId: getUserId() });
   };
   emitter.on('dappConnection', ({ origin, address }) => {
-    const params = createParams({
+    // We don't need user_id here
+    const params = createBaseParams({
       request_name: 'dapp_connection',
       dapp_domain: origin,
       wallet_address: address,
@@ -50,7 +44,8 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   emitter.on('screenView', (data) => {
-    const params = createParams({
+    // We don't need user_id here
+    const params = createBaseParams({
       request_name: 'screen_view',
       wallet_address: data.address,
       wallet_provider: data.address ? getProvider(data.address) : null,
@@ -65,6 +60,7 @@ function trackAppEvents({ account }: { account: Account }) {
     // We don't need user_id here (analytics requirement)
     const params = createBaseParams({
       request_name: 'daylight_action',
+      wallet_address: data.address,
       event_name,
       ...data,
     });
@@ -79,7 +75,7 @@ function trackAppEvents({ account }: { account: Account }) {
       const networks = await networksStore.load();
       const chainId = ethers.utils.hexValue(transaction.chainId);
       const chain = networks.getChainById(chainId)?.toString() || chainId;
-      const params = createParams({
+      const params = createBaseParams({
         request_name: 'signed_transaction',
         screen_name: origin === initiator ? 'Transaction Request' : pathname,
         wallet_address: transaction.from,
@@ -121,7 +117,7 @@ function trackAppEvents({ account }: { account: Account }) {
       typedDataSigned: '_signTypedData',
       messageSigned: 'signMessage',
     } as const;
-    const params = createParams({
+    const params = createBaseParams({
       request_name: 'signed_message',
       type: eventToMethod[type] ?? 'unexpected type',
       wallet_address: address,

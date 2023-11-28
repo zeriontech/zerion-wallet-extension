@@ -702,6 +702,7 @@ export class Wallet {
     this.ensureRecord(this.record);
     this.record = Model.markAbility(this.record, { ability, action });
     this.updateWalletStore(this.record);
+    const currentAddress = normalizeAddress(this.ensureCurrentAddress());
     emitter.emit('daylightAction', {
       event_name:
         action === 'complete'
@@ -709,6 +710,7 @@ export class Wallet {
           : 'Perks: Dismiss Tab Clicked',
       ability_id: ability.uid,
       perk_type: ability.type,
+      address: currentAddress,
     });
   }
 
