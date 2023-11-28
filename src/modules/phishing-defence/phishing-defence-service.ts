@@ -1,5 +1,6 @@
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import browser from 'webextension-polyfill';
+import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { ZerionAPI } from '../zerion-api/zerion-api';
 
 export type DappSecurityStatus =
@@ -46,6 +47,12 @@ export class PhishingDefence {
   async checkDapp(
     url?: string
   ): Promise<{ status: DappSecurityStatus; isWhitelisted: boolean }> {
+    if (url === INTERNAL_ORIGIN) {
+      return {
+        status: 'ok',
+        isWhitelisted: false,
+      };
+    }
     const origin = url ? this.getSafeOrigin(url) : null;
     if (!origin || !url) {
       return {
@@ -78,6 +85,12 @@ export class PhishingDefence {
   async getDappSecurityStatus(
     url?: string | null
   ): Promise<{ status: DappSecurityStatus; isWhitelisted: boolean }> {
+    if (url === INTERNAL_ORIGIN) {
+      return {
+        status: 'ok',
+        isWhitelisted: false,
+      };
+    }
     const origin = url ? this.getSafeOrigin(url) : null;
     const result = {
       status: (origin && this.websiteStatus[origin]) || 'unknown',

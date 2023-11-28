@@ -14,7 +14,6 @@ import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import ZerionIcon from 'jsx:src/ui/assets/zerion-squircle.svg';
-import { DNA_MINT_CONTRACT_ADDRESS } from 'src/ui/components/DnaClaim/dnaAddress';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type {
   AnyAddressAction,
@@ -34,6 +33,7 @@ import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { AssetLink } from 'src/ui/components/AssetLink';
+import { DNA_MINT_CONTRACT_ADDRESS } from 'src/ui/DNA/shared/constants';
 import { ActionDetailedView } from '../ActionDetailedView';
 import { isUnlimitedApproval } from '../isUnlimitedApproval';
 import {

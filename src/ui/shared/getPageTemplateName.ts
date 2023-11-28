@@ -37,4 +37,14 @@ function getPageTemplateType(): TemplateType | null {
   return null;
 }
 
+function getFullScreenMode(): boolean {
+  const url = new URL(window.location.href);
+  if (url.searchParams.has('templateType')) {
+    const fullScreenMode = url.searchParams.get('fullScreen');
+    return fullScreenMode === 'true';
+  }
+  return false;
+}
+
 export const pageTemplateType = getPageTemplateType();
+export const isFullScreenMode = getFullScreenMode();

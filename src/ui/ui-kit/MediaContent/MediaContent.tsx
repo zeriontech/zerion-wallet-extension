@@ -47,6 +47,7 @@ export function MediaContent({
   renderLoading,
   className,
   forcePreview,
+  onReady,
 }: {
   content?: MediaContentValue;
   alt: string;
@@ -55,6 +56,7 @@ export function MediaContent({
   style?: React.CSSProperties;
   className?: string;
   forcePreview?: boolean;
+  onReady?(): void;
 }) {
   if (forcePreview && content?.image_preview_url) {
     return (
@@ -68,6 +70,7 @@ export function MediaContent({
           <MediaError style={errorStyle} src={content.image_preview_url} />
         )}
         renderLoading={renderLoading}
+        onReady={onReady}
       />
     );
   }
@@ -86,6 +89,7 @@ export function MediaContent({
           <MediaError image="📹" style={errorStyle} src={content.video_url} />
         )}
         renderLoading={renderLoading}
+        onReady={onReady}
       >
         <source src={content.video_url} />
         Sorry, your browser doesn't support embedded videos.
@@ -104,6 +108,7 @@ export function MediaContent({
           <MediaError image="🎵" style={errorStyle} src={content.audio_url} />
         )}
         renderLoading={renderLoading}
+        onReady={onReady}
       />
     );
   }
@@ -119,6 +124,7 @@ export function MediaContent({
           <MediaError style={errorStyle} src={content.image_url} />
         )}
         renderLoading={renderLoading}
+        onReady={onReady}
       />
     );
   }

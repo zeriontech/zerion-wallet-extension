@@ -5,6 +5,7 @@ type VideoProps = React.VideoHTMLAttributes<HTMLVideoElement>;
 type AudioProps = React.AudioHTMLAttributes<HTMLAudioElement>;
 
 interface FallbackProps {
+  onReady?(): void;
   renderError: () => React.ReactNode;
   renderLoading?: () => React.ReactNode;
 }
@@ -13,6 +14,7 @@ function MediaFallback<T extends ImageProps | AudioProps | VideoProps>({
   type,
   renderError,
   renderLoading,
+  onReady,
   ...props
 }: T & { type: 'img' | 'audio' | 'video' } & FallbackProps) {
   const [loading, setIsLoading] = useState(true);
@@ -34,9 +36,16 @@ function MediaFallback<T extends ImageProps | AudioProps | VideoProps>({
         onError: () => {
           setIsError(true);
           setIsLoading(false);
+          onReady?.();
         },
-        onLoad: () => setIsLoading(false),
-        onLoadedData: () => setIsLoading(false),
+        onLoad: () => {
+          setIsLoading(false);
+          onReady?.();
+        },
+        onLoadedData: () => {
+          setIsLoading(false);
+          onReady?.();
+        },
       })}
       {loading && renderLoading ? renderLoading() : null}
     </>

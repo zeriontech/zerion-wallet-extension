@@ -43,6 +43,8 @@ interface PublicPreferences {
   configurableNonce?: boolean;
   invitationBannerDismissed?: boolean;
   recentAddresses?: string[];
+  mintDnaBannerDismissed?: boolean;
+  upgradeDnaBannerDismissed?: boolean;
 }
 
 export interface Permission {

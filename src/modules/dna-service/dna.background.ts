@@ -1,8 +1,8 @@
 import { WalletOrigin } from 'src/shared/WalletOrigin';
 import ky from 'ky';
 import omit from 'lodash/omit';
-import browser from 'webextension-polyfill';
 import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
+import { createNanoEvents } from 'nanoevents';
 import { ethers } from 'ethers';
 import { version } from 'src/shared/packageVersion';
 import * as browserStorage from 'src/background/webapis/storage';
@@ -12,12 +12,16 @@ import { networksStore } from 'src/modules/networks/networks-store.background';
 import { emitter } from 'src/background/events';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import type { DnaAction } from './types';
-import { TRY_REGISTER_ACTION_EVENT } from './constants';
 
 const ACTION_QUEUE_KEY = 'actionDnaQueue-22-12-2021';
 const DNA_API_ENDPOINT = 'https://dna.zerion.io/api/v1';
 
 type DnaActionWithTimestamp = DnaAction & { timestamp: number };
+
+const dnaServiceEmitter = createNanoEvents<{
+  registerSuccess: (action: DnaAction) => void;
+  registerError: (error: Error, action: DnaAction) => void;
+}>();
 
 const ONE_DAY = 1000 * 60 * 60 * 24;
 
@@ -38,8 +42,20 @@ export class DnaService {
       ...(currentQueue || []),
       { ...action, timestamp: Date.now() },
     ]);
-    browser.runtime.sendMessage(browser.runtime.id, {
-      event: TRY_REGISTER_ACTION_EVENT,
+    return new Promise<void>((resolve, reject) => {
+      this.tryRegisterAction();
+      const unsub = [
+        dnaServiceEmitter.on('registerSuccess', (registeredAction) => {
+          if (action.id === registeredAction.id) {
+            unsub.forEach((un) => un());
+            resolve();
+          }
+        }),
+        dnaServiceEmitter.on('registerError', (error) => {
+          unsub.forEach((un) => un());
+          reject(error);
+        }),
+      ];
     });
   }
 
@@ -49,9 +65,7 @@ export class DnaService {
     );
     currentQueue?.shift();
     await browserStorage.set(ACTION_QUEUE_KEY, currentQueue);
-    browser.runtime.sendMessage(browser.runtime.id, {
-      event: TRY_REGISTER_ACTION_EVENT,
-    });
+    this.tryRegisterAction();
   }
 
   async takeFirstRecentAction() {
@@ -73,22 +87,24 @@ export class DnaService {
     return omit(currentQueue[0], 'timestamp');
   }
 
-  async registerAction({ request }: { request: { body: string } }) {
+  async registerAction(action: DnaAction) {
     this.sendingInProgress = true;
     return new Promise<{ success: boolean }>((resolve) => {
       ky.post(`${DNA_API_ENDPOINT}/actions`, {
         // random stuff for backend scheme validation
         headers: { 'Z-Proof': uuidv4() },
-        ...request,
+        body: JSON.stringify(action),
       })
         .json()
         .then(() => {
           this.popAction();
           this.sendingInProgress = false;
+          dnaServiceEmitter.emit('registerSuccess', action);
           resolve({ success: true });
         })
-        .catch(() => {
+        .catch((error) => {
           this.sendingInProgress = false;
+          dnaServiceEmitter.emit('registerError', error, action);
           resolve({ success: false });
         });
     });
@@ -98,23 +114,11 @@ export class DnaService {
     if (this.sendingInProgress) {
       return { success: false };
     }
-    const actionBody = await this.takeFirstRecentAction();
-    if (!actionBody) {
+    const action = await this.takeFirstRecentAction();
+    if (!action) {
       return { success: false };
     }
-    return this.registerAction({
-      request: {
-        body: JSON.stringify(actionBody),
-      },
-    });
-  }
-
-  async shouldRegisterAction() {
-    if (this.sendingInProgress) {
-      return false;
-    }
-    const actionBody = await this.takeFirstRecentAction();
-    return Boolean(actionBody);
+    return this.registerAction(action);
   }
 
   async promoteDnaToken({
@@ -149,12 +153,14 @@ export class DnaService {
   }
 
   async registerWallet({
-    address,
-    origin,
+    params,
   }: {
-    address: string;
-    origin: WalletOrigin;
+    params: {
+      address: string;
+      origin?: WalletOrigin;
+    };
   }) {
+    const { address, origin = WalletOrigin.imported } = params;
     const actionId = uuidv4();
     return this.pushAction({
       address: normalizeAddress(address),
@@ -162,7 +168,7 @@ export class DnaService {
       payload: {
         registerWallet: {
           imported: origin === WalletOrigin.imported,
-          platform: 'web',
+          platform: 'extension',
           version,
         },
       },
@@ -194,7 +200,7 @@ export class DnaService {
       payload: {
         signTx: {
           network: chain,
-          platform: 'web',
+          platform: 'extension',
           txHash: hash,
           version,
         },
@@ -202,10 +208,55 @@ export class DnaService {
     });
   }
 
+  async gm({ params }: { params: { address: string } }) {
+    const actionId = uuidv4();
+    const { address } = params;
+    return this.pushAction({
+      address: normalizeAddress(address),
+      id: actionId,
+      payload: {
+        gm: {},
+      },
+    });
+  }
+
+  async claimPerk({
+    params,
+  }: {
+    params: {
+      actionId: string;
+      address: string;
+      tokenId: string;
+      backgroundId: number;
+      signature: string;
+    };
+  }) {
+    const { actionId, address, tokenId, backgroundId, signature } = params;
+    return this.pushAction({
+      address: normalizeAddress(address),
+      id: actionId,
+      payload: {
+        claimPerk: {
+          extensionBackground: {
+            tokenId,
+            backgroundId,
+            signature,
+          },
+        },
+      },
+    });
+  }
+
+  async developerOnly_resetActionQueue() {
+    return browserStorage.set(ACTION_QUEUE_KEY, []);
+  }
+
   initialize() {
     emitter.on('walletCreated', async ({ walletContainer, origin }) => {
       for (const wallet of walletContainer.wallets) {
-        await this.registerWallet({ address: wallet.address, origin });
+        await this.registerWallet({
+          params: { address: wallet.address, origin },
+        });
       }
     });
     emitter.on('transactionSent', (data) => {

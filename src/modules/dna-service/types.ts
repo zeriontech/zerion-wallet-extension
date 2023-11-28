@@ -9,16 +9,26 @@ export type DnaActionPayload =
   | {
       registerWallet: {
         imported: boolean;
-        platform: 'web';
+        platform: 'extension';
         version: string;
       };
     }
   | {
       signTx: {
         network: string;
-        platform: 'web';
+        platform: 'extension';
         txHash: string;
         version: string;
+      };
+    }
+  | { gm: object } // gm: {}
+  | {
+      claimPerk: {
+        extensionBackground: {
+          tokenId: string;
+          backgroundId: number;
+          signature: string;
+        };
       };
     };
 

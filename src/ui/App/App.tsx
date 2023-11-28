@@ -25,7 +25,10 @@ import { Login } from '../pages/Login';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { accountPublicRPCPort, walletPort } from '../shared/channels';
 import { CreateAccount } from '../pages/CreateAccount';
-import { pageTemplateType } from '../shared/getPageTemplateName';
+import {
+  isFullScreenMode,
+  pageTemplateType,
+} from '../shared/getPageTemplateName';
 import { URLBar } from '../components/URLBar';
 import { SwitchEthereumChain } from '../pages/SwitchEthereumChain';
 import { DesignTheme } from '../components/DesignTheme';
@@ -54,7 +57,6 @@ import { KeyboardShortcut } from '../components/KeyboardShortcut';
 import { initialize as initializeApperance } from '../features/appearance';
 import { HandshakeFailure } from '../components/HandshakeFailure';
 import { useScreenViewChange } from '../shared/useScreenViewChange';
-import { DnaPage } from '../components/DnaClaim';
 import { NonFungibleToken } from '../pages/NonFungibleToken';
 import { Onboarding } from '../Onboarding';
 import { AddEthereumChain } from '../pages/AddEthereumChain';
@@ -65,6 +67,8 @@ import { HardwareWalletConnection } from '../pages/HardwareWalletConnection';
 import { ThemeDecoration } from '../components/DesignTheme/ThemeDecoration';
 import { SendForm } from '../pages/SendForm';
 import { SwapForm } from '../pages/SwapForm';
+import { MintDnaFlow } from '../DNA/pages/MintDnaFlow';
+import { UpgradeDnaFlow } from '../DNA/pages/UpgradeDnaFlow';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -161,6 +165,15 @@ function RequireAuth({ children }: { children: JSX.Element }) {
   return children;
 }
 
+function FullScreenViews() {
+  return (
+    <Routes>
+      <Route path="/mint-dna/*" element={<MintDnaFlow />} />
+      <Route path="/upgrade-dna/*" element={<UpgradeDnaFlow />} />
+    </Routes>
+  );
+}
+
 function Views({ initialRoute }: { initialRoute?: string }) {
   useScreenViewChange();
   return (
@@ -200,14 +213,6 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             element={
               <RequireAuth>
                 <NonFungibleToken />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/dna-claim"
-            element={
-              <RequireAuth>
-                <DnaPage />
               </RequireAuth>
             }
           />
@@ -397,8 +402,8 @@ export function App({ initialView, mode, inspect }: AppProps) {
     } else if (pageTemplateType === 'tab') {
       result.push(styles.isTab);
     }
-    if (mode === 'onboarding') {
-      result.push(styles.isOnboarding);
+    if (mode === 'onboarding' || isFullScreenMode) {
+      result.push(styles.fullScreen);
     }
     return result;
   }, [mode]);
@@ -444,6 +449,8 @@ export function App({ initialView, mode, inspect }: AppProps) {
                   {mode === 'onboarding' &&
                   initialView !== 'handshakeFailure' ? (
                     <Onboarding />
+                  ) : isFullScreenMode ? (
+                    <FullScreenViews />
                   ) : (
                     <Views
                       initialRoute={

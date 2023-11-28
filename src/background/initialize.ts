@@ -1,5 +1,5 @@
 import { prepareStorage } from 'src/shared/core/version';
-import { DnaService } from 'src/ui/components/DnaClaim/dna.background';
+import { DnaService } from 'src/modules/dna-service/dna.background';
 import { initialize as initializeAnalytics } from 'src/shared/analytics/analytics.background';
 import { initialize as initializeRemoteConfig } from 'src/modules/remote-config';
 import { Account, AccountPublicRPC } from './account/Account';

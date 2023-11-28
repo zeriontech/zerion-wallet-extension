@@ -41,6 +41,8 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 import { useIsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
 import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOrigin';
+import { OverviewDnaBanners } from 'src/ui/DNA/components/DnaBanners';
+import { updateAddressDnaInfo } from 'src/modules/dna-service/dna.client';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -238,6 +240,13 @@ function OverviewComponent() {
     suspense: false,
   });
 
+  // Update backend record with 'platform: extension'
+  useEffect(() => {
+    if (singleAddressNormalized) {
+      updateAddressDnaInfo(singleAddressNormalized);
+    }
+  }, [singleAddressNormalized]);
+
   const { data: isConnected } = useIsConnectedToActiveTab(
     singleAddressNormalized
   );
@@ -354,6 +363,9 @@ function OverviewComponent() {
         <RenderTimeMeasure />
       </DevelopmentOnly>
       <Spacer height={24} />
+      <div style={{ paddingInline: 'var(--column-padding-inline)' }}>
+        <OverviewDnaBanners address={singleAddressNormalized} />
+      </div>
       <div id={TABS_OFFSET_METER_ID} />
       <PageFullBleedColumn
         paddingInline={false}

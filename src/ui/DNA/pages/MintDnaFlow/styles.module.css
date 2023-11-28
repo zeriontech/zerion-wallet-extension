@@ -1,0 +1,72 @@
+.siteLink {
+  color: var(--neutral-400);
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  cursor: pointer;
+}
+
+.infoIcon {
+  border-radius: 20px;
+  padding: 8px;
+  width: 40px;
+  height: 40px;
+  background-color: var(--neutral-100);
+}
+
+@keyframes switching {
+  0%,
+  3% {
+    opacity: 0;
+  }
+  12.5%,
+  31.25% {
+    opacity: 1;
+  }
+  40.75%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes zindex {
+  0%,
+  24% {
+    z-index: 2;
+  }
+  25%,
+  100% {
+    z-index: 1;
+  }
+}
+
+.mintingImage {
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 868px;
+  object-fit: contain;
+  animation: switching 8s both infinite, zindex 8s both infinite;
+}
+
+@keyframes appear {
+  0% {
+    opacity: 0;
+    filter: blur(20px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
+
+.dnaPreview {
+  animation: appear 400ms both ease-out;
+  animation-delay: 200ms;
+}
+
+@media (hover: hover) {
+  .siteLink:hover {
+    color: var(--black);
+  }
+}

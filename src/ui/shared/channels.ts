@@ -5,8 +5,8 @@ import type { AccountPublicRPC } from 'src/shared/types/AccountPublicRPC';
 import type { MemoryCacheRPC } from 'src/shared/types/MemoryCacheRPC';
 import { UserRejected } from 'src/shared/errors/errors';
 import type { RpcRequestWithContext } from 'src/shared/custom-rpc';
-import type { DnaService } from '../components/DnaClaim/dna.background';
-import { initDnaApi } from '../components/DnaClaim/dna.client';
+import type { DnaService } from '../../modules/dna-service/dna.background';
+import { initDnaApi } from '../../modules/dna-service/dna.client';
 import type { SessionCacheService } from '../../background/resource/sessionCacheService';
 import type { RPCPort } from './channels.types';
 
