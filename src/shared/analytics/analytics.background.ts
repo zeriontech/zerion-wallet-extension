@@ -33,7 +33,7 @@ function trackAppEvents({ account }: { account: Account }) {
   const createParams: typeof createBaseParams = (params) => {
     const getUserId = () => account.getUser()?.id;
 
-    const data = noUserIdEvents.includes(params.request_name)
+    const data = !noUserIdEvents.includes(params.request_name)
       ? { ...params, userId: getUserId() }
       : params;
 
