@@ -102,7 +102,7 @@ export function SlippageSettings({
   const [percentValue, setPercentValue] = useState(() =>
     String(toPercents(slippage))
   );
-  const [useCustomValue, setUseCustomValue] = useState(
+  const [isCustomValue, setIsCustomValue] = useState(
     () => !SLIPPAGE_OPTIONS.includes(percentValue)
   );
   return (
@@ -128,31 +128,31 @@ export function SlippageSettings({
           <Radio
             name="slippage"
             value={value}
-            checked={!useCustomValue && value === percentValue}
+            checked={!isCustomValue && value === percentValue}
             onChange={() => {
               setPercentValue(value);
-              setUseCustomValue(false);
+              setIsCustomValue(false);
             }}
             onFocus={() => {
-              setUseCustomValue(false);
+              setIsCustomValue(false);
             }}
-            required={!useCustomValue}
+            required={!isCustomValue}
           >
             <UIText kind="body/accent">{`${value}%`}</UIText>
           </Radio>
         ))}
         <Input
           name="customSlippage"
-          value={useCustomValue ? percentValue : ''}
+          value={isCustomValue ? percentValue : ''}
           onFocus={() => {
-            if (!useCustomValue) {
+            if (!isCustomValue) {
               setPercentValue('');
             }
-            setUseCustomValue(true);
+            setIsCustomValue(true);
           }}
           onChange={(event) => setPercentValue(event.currentTarget.value)}
           pattern={FLOAT_INPUT_PATTERN}
-          required={useCustomValue}
+          required={isCustomValue}
         />
       </div>
       <Spacer height={16} />
@@ -163,7 +163,7 @@ export function SlippageSettings({
           kind="neutral"
           type="button"
           onClick={() => {
-            setUseCustomValue(false);
+            setIsCustomValue(false);
             setPercentValue(SLIPPAGE_OPTIONS[0]);
           }}
         >
