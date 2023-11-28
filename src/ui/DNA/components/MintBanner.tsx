@@ -30,7 +30,7 @@ export function MintBanner({
           </UIText>
         </VStack>
         <UnstyledAnchor
-          href={`#mint-dna?address=${address}`}
+          href={`#/mint-dna?address=${address}`}
           target="_blank"
           onClick={openInFullScreen}
           className={styles.button}

@@ -26,7 +26,7 @@ export function UpgradeBanner({
           <br />a new look
         </UIText>
         <UnstyledAnchor
-          href={`#upgrade-dna?address=${address}`}
+          href={`#/upgrade-dna?address=${address}`}
           target="_blank"
           onClick={openInFullScreen}
           className={styles.button}

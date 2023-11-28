@@ -384,6 +384,7 @@ export function MintDna() {
             className={styles.siteLink}
             target="_blank"
             href="https://zerion.io/dna"
+            title="Zerion DNA"
           >
             <GlobeIcon style={{ width: 24, height: 24 }} />
           </UnstyledAnchor>
