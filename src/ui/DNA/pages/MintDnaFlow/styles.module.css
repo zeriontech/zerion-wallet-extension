@@ -1,8 +1,8 @@
 .siteLink {
   color: var(--neutral-400);
   position: absolute;
-  top: 16;
-  right: 16;
+  top: 16px;
+  right: 16px;
   cursor: pointer;
 }
 
@@ -42,9 +42,9 @@
 
 .mintingImage {
   position: absolute;
-  bottom: -4;
+  bottom: -4px;
   left: 0;
-  width: 868;
+  width: 868px;
   object-fit: contain;
   animation: switching 8s both infinite, zindex 8s both infinite;
 }

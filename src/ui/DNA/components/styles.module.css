@@ -1,11 +1,11 @@
 .button {
   color: var(--always-black);
   background-color: var(--always-white);
-  border-radius: 12;
-  padding-block: 8;
+  border-radius: 12px;
+  padding-block: 8px;
   display: flex;
   justify-content: center;
-  min-width: 104;
+  min-width: 104px;
 }
 
 @media (hover: hover) {

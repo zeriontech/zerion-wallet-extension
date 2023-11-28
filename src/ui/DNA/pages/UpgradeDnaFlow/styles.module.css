@@ -11,22 +11,22 @@
 
 .backgroundImg {
   object-fit: cover;
-  width: 360;
-  height: 360;
+  width: 360px;
+  height: 360px;
   transform: rotate(8deg);
-  border-radius: 20;
+  border-radius: 20px;
   animation: imgAppear 200ms ease-out both;
 }
 
 .backgroundImageContainer {
   position: absolute;
-  top: 157;
-  left: -42;
+  top: 157px;
+  left: -42px;
 }
 
 .backgroundButton {
   position: relative;
-  border-radius: 10;
+  border-radius: 10px;
   overflow: hidden;
   width: 40px;
   height: 40px;
@@ -88,8 +88,8 @@
 .backgroundValueImage {
   animation: blur 300ms ease-in both;
   position: absolute;
-  width: 900;
-  height: 900;
+  width: 900px;
+  height: 900px;
   left: -25px;
   top: -157px;
 }

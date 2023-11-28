@@ -1,7 +1,7 @@
 .banner {
   position: relative;
-  padding: 20;
-  border-radius: 20;
+  padding: 20px;
+  border-radius: 20px;
   width: 100%;
   overflow: hidden;
 }
@@ -22,13 +22,13 @@
 .closeButton {
   color: var(--always-black);
   position: absolute;
-  top: 8;
-  right: 8;
+  top: 8px;
+  right: 8px;
   border-radius: 50%;
   background-color: var(--always-white);
-  padding: 4;
-  width: 24;
-  height: 24;
+  padding: 4px;
+  width: 24px;
+  height: 24px;
 }
 
 .image {
