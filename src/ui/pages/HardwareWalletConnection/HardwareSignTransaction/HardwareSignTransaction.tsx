@@ -62,7 +62,6 @@ export const HardwareSignTransaction = React.forwardRef(
   function HardwareSignTransaction(
     {
       derivationPath,
-      onClick,
       isSending,
       children,
       ...buttonProps
