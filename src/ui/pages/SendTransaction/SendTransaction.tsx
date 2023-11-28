@@ -210,7 +210,9 @@ function TransactionDefaultView({
   const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
     mutationFn: async () => {
       invariant(signerSenderRef.current, 'SignTransactionButton not found');
-      const tx = await configureTransactionToBeSigned(incomingTransaction);
+      const tx = await configureTransactionToBeSigned(
+        incomingTxWithGasAndFee || incomingTransaction
+      );
       const feeValueCommon = feeValueCommonRef.current || null;
       return signerSenderRef.current.sendTransaction({
         transaction: tx,
