@@ -3,7 +3,10 @@ import { useCallback, useMemo, useState } from 'react';
 import omit from 'lodash/omit';
 import type { SwapFormView } from '@zeriontech/transactions';
 import { commonToBase } from 'src/shared/units/convert';
-import { getDecimals } from 'src/modules/networks/asset';
+import {
+  getAssetImplementationInChain,
+  getDecimals,
+} from 'src/modules/networks/asset';
 import { createChain } from 'src/modules/networks/Chain';
 import { DEFI_SDK_TRANSACTIONS_API_URL } from 'src/env/config';
 import type { Quote, TransactionDescription } from './types';
@@ -62,19 +65,26 @@ export function useQuotes({
       receiveTokenInput &&
       chainInput &&
       value &&
-      position
+      position &&
+      spendPosition &&
+      receivePosition
     ) {
+      const chain = createChain(chainInput);
+      const spendAssetExistsOnChain = getAssetImplementationInChain({
+        asset: spendPosition.asset,
+        chain,
+      });
+      const receiveAssetExistsOnChain = getAssetImplementationInChain({
+        asset: receivePosition.asset,
+        chain,
+      });
+      if (!spendAssetExistsOnChain || !receiveAssetExistsOnChain) {
+        return;
+      }
       const valueBase = commonToBase(
         value,
-        getDecimals({ asset: position.asset, chain: createChain(chainInput) })
+        getDecimals({ asset: position.asset, chain })
       ).toFixed();
-      // const inputAmount = commonToBase(
-      //   spendInput,
-      //   getDecimals({
-      //     asset: spendPosition.asset,
-      //     chain: createChain(chainInput),
-      //   })
-      // ).toFixed();
       const searchParams = new URLSearchParams({
         from: address,
         input_token: spendTokenInput,
@@ -82,7 +92,6 @@ export function useQuotes({
         input_chain: chainInput,
         slippage: String(Number(slippage) * 100),
       });
-      // if ()
       if (primaryInput === 'receive') {
         searchParams.append('output_amount', valueBase);
       } else {
