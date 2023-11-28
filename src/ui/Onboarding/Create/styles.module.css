@@ -1,9 +1,9 @@
 .card {
-  padding-bottom: 32;
-  border-radius: 20;
+  padding-bottom: 32px;
+  border-radius: 20px;
   overflow: hidden;
-  width: 338;
-  height: 288;
+  width: 338px;
+  height: 288px;
   background-color: var(--primary-100);
 }
 

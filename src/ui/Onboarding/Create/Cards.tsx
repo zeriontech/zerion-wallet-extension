@@ -60,6 +60,7 @@ function Card({
         transition: 'opacity 300ms ease-in-out, filter 300ms ease-in-out',
         opacity:
           position < 0 ? 0 : position === 0 ? 1 : position === 1 ? 0.4 : 0.2,
+        pointerEvents: position < 0 ? 'none' : undefined,
         transformOrigin: position < 0 ? '50% 50%' : '100% 100%',
         filter: position < 0 ? 'blur(5px)' : undefined,
         zIndex: 2 - position,

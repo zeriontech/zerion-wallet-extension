@@ -52,7 +52,7 @@
 
 .cardDecoration {
   position: relative;
-  border-radius: 20;
+  border-radius: 20px;
   cursor: pointer;
   border: 2px solid var(--neutral-300);
 }
@@ -73,20 +73,20 @@
 
 .circle {
   position: absolute;
-  top: 12;
-  right: 16;
-  width: 24;
-  height: 24;
+  top: 12px;
+  right: 16px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   border: 2px solid var(--neutral-400);
 }
 
 .checkedCircle {
   position: absolute;
-  top: 12;
-  right: 16;
-  width: 24;
-  height: 24;
+  top: 12px;
+  right: 16px;
+  width: 24px;
+  height: 24px;
   display: none;
 }
 
