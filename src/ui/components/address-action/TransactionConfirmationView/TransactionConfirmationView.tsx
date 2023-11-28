@@ -10,6 +10,8 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import type { CustomConfiguration } from 'src/ui/pages/SendTransaction/TransactionConfiguration';
 import { TransactionConfiguration } from 'src/ui/pages/SendTransaction/TransactionConfiguration';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import LedgerIcon from 'jsx:src/ui/assets/ledger-icon.svg';
+import { isDeviceAccount } from 'src/shared/types/validators';
 import { WalletAvatar } from '../../WalletAvatar';
 import { WalletDisplayName } from '../../WalletDisplayName';
 import { TransactionSimulation } from '../TransactionSimulation';
@@ -31,9 +33,10 @@ export function TransactionConfirmationView({
     <div
       style={{
         ['--surface-background-color' as string]: 'var(--z-index-1-inverted)',
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
+        display: 'grid',
+        gap: 24,
+        gridTemplateRows: 'auto 1fr',
+        flexGrow: 1,
       }}
     >
       <div style={{ display: 'grid', placeItems: 'center' }}>
@@ -53,14 +56,9 @@ export function TransactionConfirmationView({
           </UIText>
         </HStack>
       </div>
-      <Spacer height={24} />
       <form
         method="dialog"
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100%',
-        }}
+        style={{ display: 'flex', flexDirection: 'column' }}
       >
         <TransactionSimulation transaction={transaction} />
         <Spacer height={20} />
@@ -98,7 +96,10 @@ export function TransactionConfirmationView({
             value="confirm"
             style={{ whiteSpace: 'nowrap' }}
           >
-            Sign and Send
+            <HStack gap={8} alignItems="center" justifyContent="center">
+              {isDeviceAccount(wallet) ? <LedgerIcon /> : null}
+              Sign and Send
+            </HStack>
           </Button>
         </HStack>
       </form>

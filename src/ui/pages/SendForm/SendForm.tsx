@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import type { Store } from 'store-unit';
 import { client } from 'defi-sdk';
 import { useSendForm } from '@zeriontech/transactions';
@@ -40,12 +40,19 @@ import { usePreferences } from 'src/ui/features/preferences/usePreferences';
 import { StoreWatcher } from 'src/ui/shared/StoreWatcher';
 import { ViewLoadingSuspense } from 'src/ui/components/ViewLoading/ViewLoading';
 import { useEvent } from 'src/ui/shared/useEvent';
+import type {
+  SignerSenderHandle} from 'src/ui/components/SignTransactionButton';
+import {
+  SignTransactionButton
+} from 'src/ui/components/SignTransactionButton';
+import { useSizeStore } from 'src/ui/Onboarding/useSizeStore';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
 } from '../SendTransaction/TransactionConfiguration/applyConfiguration';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { NetworkSelect } from '../Networks/NetworkSelect';
+import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { EstimateTransactionGas } from './EstimateTransactionGas';
 import { SuccessState } from './SuccessState';
 import { TokenTransferInput } from './fieldsets/TokenTransferInput';
@@ -71,6 +78,11 @@ const rootNode = getRootDomNode();
 
 export function SendForm() {
   const { singleAddress: address } = useAddressParams();
+  const { data: wallet } = useQuery({
+    queryKey: ['wallet/uiGetCurrentWallet'],
+    queryFn: () => walletPort.request('uiGetCurrentWallet'),
+    useErrorBoundary: true,
+  });
 
   useBackgroundKind({ kind: 'white' });
 
@@ -156,22 +168,31 @@ export function SendForm() {
     return transaction;
   });
 
+  const signerSenderRef = useRef<SignerSenderHandle | null>(null);
+
   const {
     mutate: sendTransaction,
     data: transactionHash,
     isLoading,
     reset,
     isSuccess,
+    ...sendTxMutation
   } = useMutation({
     mutationFn: async () => {
       const { to } = store.getState();
       invariant(to, 'Send Form parameters missing');
       const transaction = await configureTransactionToBeSigned();
       const feeValueCommon = feeValueCommonRef.current || null;
-      const txResponse = await walletPort.request('signAndSendTransaction', [
+
+      invariant(chain, 'Chain must be defined to sign the tx');
+      invariant(signerSenderRef.current, 'SignTransactionButton not found');
+
+      const txResponse = await signerSenderRef.current.sendTransaction({
         transaction,
-        { initiator: INTERNAL_ORIGIN, feeValueCommon },
-      ]);
+        chain,
+        initiator: INTERNAL_ORIGIN,
+        feeValueCommon,
+      });
       if (preferences) {
         setPreferences({
           recentAddresses: updateRecentAddresses(
@@ -197,6 +218,8 @@ export function SendForm() {
   const confirmDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   const formId = useId();
+
+  const { innerHeight } = useSizeStore();
 
   if (!networks || !positions) {
     return <ViewLoading kind="network" />;
@@ -367,6 +390,8 @@ export function SendForm() {
       <>
         <BottomSheetDialog
           ref={confirmDialogRef}
+          height={innerHeight >= 750 ? '70vh' : '90vh'}
+          containerStyle={{ display: 'flex', flexDirection: 'column' }}
           renderWhenOpen={() => {
             invariant(chain, 'Chain must be defined');
             return (
@@ -380,14 +405,21 @@ export function SendForm() {
             );
           }}
         ></BottomSheetDialog>
-        <Button
-          form={formId}
-          style={{ marginTop: 'auto' }}
-          kind="primary"
-          disabled={isLoading}
-        >
-          Send
-        </Button>
+        <VStack gap={8} style={{ marginTop: 'auto', textAlign: 'center' }}>
+          <UIText kind="body/regular" color="var(--negative-500)">
+            {sendTxMutation.isError
+              ? txErrorToMessage(sendTxMutation.error)
+              : null}
+          </UIText>
+          {wallet ? (
+            <SignTransactionButton
+              ref={signerSenderRef}
+              form={formId}
+              wallet={wallet}
+              disabled={isLoading}
+            />
+          ) : null}
+        </VStack>
       </>
       <PageBottom />
     </PageColumn>

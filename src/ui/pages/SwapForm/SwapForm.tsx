@@ -7,7 +7,6 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
-import { Button } from 'src/ui/ui-kit/Button';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { getNativeAsset } from 'src/ui/shared/requests/useNativeAsset';
@@ -42,12 +41,17 @@ import { useFormValidity } from 'src/ui/shared/forms/useFormValidity';
 import { getPositionBalance } from 'src/ui/components/Positions/helpers';
 import { isPremiumMembership } from 'src/ui/shared/requests/premium/isPremiumMembership';
 import type { NetworkGroups } from 'src/ui/components/NetworkSelectDialog';
+import type { SignerSenderHandle } from 'src/ui/components/SignTransactionButton';
+import { SignTransactionButton } from 'src/ui/components/SignTransactionButton';
+import { useSizeStore } from 'src/ui/Onboarding/useSizeStore';
+import { UIText } from 'src/ui/ui-kit/UIText';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
 } from '../SendTransaction/TransactionConfiguration/applyConfiguration';
 import { NetworkSelect } from '../Networks/NetworkSelect';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
+import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { SpendTokenField } from './fieldsets/SpendTokenField';
 import { ReceiveTokenField } from './fieldsets/ReceiveTokenField';
 import { RateLine } from './Quotes';
@@ -158,7 +162,7 @@ export function SwapForm() {
     supportedChains,
     DEFAULT_CONFIGURATION,
   });
-  Object.assign(window, { swapStore: swapView.store });
+
   const { primaryInput, chainInput, spendInput } = useSelectorStore(
     swapView.store,
     ['chainInput', 'spendInput', 'primaryInput']
@@ -242,7 +246,11 @@ export function SwapForm() {
     spendAmountBase,
     spender: quote?.token_spender ?? null,
     contractAddress,
+    enabled: quotesData.done && Boolean(quote && !quote.enough_allowance),
   });
+
+  const signerSenderRef = useRef<SignerSenderHandle | null>(null);
+  const approveSignerRef = useRef<SignerSenderHandle | null>(null);
 
   const {
     mutate: sendApproveTransaction,
@@ -254,10 +262,16 @@ export function SwapForm() {
       invariant(approveTransaction, 'approve transaction is not configured');
       const transaction = configureTransactionToBeSigned(approveTransaction);
       const feeValueCommon = feeValueCommonRef.current || null;
-      const txResponse = await walletPort.request('signAndSendTransaction', [
+
+      invariant(chain, 'Chain must be defined to sign the tx');
+      invariant(approveSignerRef.current, 'SignTransactionButton not found');
+
+      const txResponse = await approveSignerRef.current.sendTransaction({
         transaction,
-        { initiator: INTERNAL_ORIGIN, feeValueCommon },
-      ]);
+        chain,
+        initiator: INTERNAL_ORIGIN,
+        feeValueCommon,
+      });
       return txResponse.hash;
     },
     onMutate: () => 'sendTransaction',
@@ -298,6 +312,7 @@ export function SwapForm() {
     isLoading,
     reset,
     isSuccess,
+    ...sendTransactionMutation
   } = useMutation({
     mutationFn: async () => {
       if (!gasPrices) {
@@ -309,10 +324,14 @@ export function SwapForm() {
       );
       const transaction = configureTransactionToBeSigned(quote.transaction);
       const feeValueCommon = feeValueCommonRef.current || null;
-      const txResponse = await walletPort.request('signAndSendTransaction', [
+      invariant(chain, 'Chain must be defined to sign the tx');
+      invariant(signerSenderRef.current, 'SignTransactionButton not found');
+      const txResponse = await signerSenderRef.current.sendTransaction({
         transaction,
-        { initiator: INTERNAL_ORIGIN, feeValueCommon },
-      ]);
+        chain,
+        initiator: INTERNAL_ORIGIN,
+        feeValueCommon,
+      });
       return txResponse.hash;
     },
     // The value returned by onMutate can be accessed in
@@ -336,6 +355,8 @@ export function SwapForm() {
       handleChange('primaryInput', 'spend');
     }
   }, [handleChange, isPremium]);
+
+  const { innerHeight } = useSizeStore();
 
   if (isSuccess) {
     invariant(
@@ -396,6 +417,8 @@ export function SwapForm() {
       <BottomSheetDialog
         ref={confirmDialogRef}
         key={currentTransaction === approveTransaction ? 'approve' : 'swap'}
+        height={innerHeight >= 750 ? '70vh' : '90vh'}
+        containerStyle={{ display: 'flex', flexDirection: 'column' }}
         renderWhenOpen={() => {
           invariant(
             currentTransaction,
@@ -529,15 +552,25 @@ export function SwapForm() {
               value="approve"
               form={formId}
             />
-            <Button
-              form={formId}
-              kind="primary"
-              disabled={
-                approveMutation.isLoading || approveTxStatus === 'pending'
-              }
-            >
-              Approve {spendPosition?.asset.symbol ?? null}
-            </Button>
+            <VStack gap={8} style={{ marginTop: 'auto', textAlign: 'center' }}>
+              <UIText kind="body/regular" color="var(--negative-500)">
+                {approveMutation.isError
+                  ? txErrorToMessage(approveMutation.error)
+                  : null}
+              </UIText>
+              {wallet ? (
+                <SignTransactionButton
+                  ref={approveSignerRef}
+                  form={formId}
+                  wallet={wallet}
+                  disabled={
+                    approveMutation.isLoading || approveTxStatus === 'pending'
+                  }
+                >
+                  Approve {spendPosition?.asset.symbol ?? null}
+                </SignTransactionButton>
+              ) : null}
+            </VStack>
           </>
         ) : (
           <>
@@ -547,28 +580,39 @@ export function SwapForm() {
               value="swap"
               form={formId}
             />
-            <FormHint
-              formError={validity.formError}
-              swapView={swapView}
-              render={(hint) => (
-                <Button
-                  form={formId}
-                  kind="primary"
-                  disabled={
-                    isLoading ||
-                    quotesData.isLoading ||
-                    Boolean(quote && !swapTransaction)
-                  }
-                >
-                  {hint ||
-                    (quotesData.isLoading
-                      ? 'Fetching offers'
-                      : isLoading
-                      ? 'Sending...'
-                      : 'Swap')}
-                </Button>
-              )}
-            />
+            <VStack gap={8} style={{ marginTop: 'auto', textAlign: 'center' }}>
+              <UIText kind="body/regular" color="var(--negative-500)">
+                {sendTransactionMutation.isError
+                  ? txErrorToMessage(sendTransactionMutation.error)
+                  : null}
+              </UIText>
+              {wallet ? (
+                <FormHint
+                  formError={validity.formError}
+                  swapView={swapView}
+                  render={(hint) => (
+                    <SignTransactionButton
+                      ref={signerSenderRef}
+                      form={formId}
+                      wallet={wallet}
+                      style={{ marginTop: 'auto' }}
+                      disabled={
+                        isLoading ||
+                        quotesData.isLoading ||
+                        Boolean(quote && !swapTransaction)
+                      }
+                    >
+                      {hint ||
+                        (quotesData.isLoading
+                          ? 'Fetching offers'
+                          : isLoading
+                          ? 'Sending...'
+                          : 'Swap')}
+                    </SignTransactionButton>
+                  )}
+                />
+              ) : null}
+            </VStack>
           </>
         )}
       </VStack>
