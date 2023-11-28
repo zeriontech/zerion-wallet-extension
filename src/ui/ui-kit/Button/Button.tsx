@@ -31,11 +31,7 @@ const borderRaduis: Record<Size, number> = {
 const kinds: { [kind in Kind]: (size: number) => React.CSSProperties } = {
   primary: () => ({ paddingInline: 48 }),
   danger: () => ({}),
-  regular: () => ({
-    background: 'transparent',
-    color: 'var(--black)',
-    border: '1px solid var(--neutral-400)',
-  }),
+  regular: () => ({}),
   neutral: () => ({}),
   ghost: (size) => {
     const padding = size <= 44 ? 4 : 8;

@@ -34,6 +34,7 @@ export async function getAddressNftPosition(payload: Payload) {
         scope: [scope],
         payload,
       },
+      cachePolicy: 'network-only',
       onData: (data) => {
         if (data.isDone) {
           resolve(data);

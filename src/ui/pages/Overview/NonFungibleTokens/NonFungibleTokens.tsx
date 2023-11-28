@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
-import { DnaNFTBanner } from 'src/ui/components/DnaClaim';
 import TickIcon from 'jsx:src/ui/assets/check.svg';
 import { ViewLoading } from 'src/ui/components/ViewLoading/ViewLoading';
 import { NBSP } from 'src/ui/shared/typography';
@@ -29,7 +28,8 @@ import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { EmptyView } from 'src/ui/components/EmptyView';
-import { useShowDNABanner } from 'src/ui/components/DnaClaim/DnaBanner';
+import { useShowNftTabDnaBanner } from 'src/ui/DNA/shared/useShowDnaBanner';
+import { NftTabDnaBanner } from 'src/ui/DNA/components/DnaBanners';
 import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
 import { GROWN_TAB_MAX_HEIGHT } from '../getTabsOffset';
 import { NetworkBalance } from '../Positions/NetworkBalance';
@@ -205,7 +205,8 @@ export function NonFungibleTokens({
     }
   );
 
-  const shouldShowDNABanner = useShowDNABanner(singleAddressNormalized);
+  // Not sure is it possible to avoid this call here
+  const shouldShowDNABanner = useShowNftTabDnaBanner(singleAddressNormalized);
 
   if (!ready) {
     return null;
@@ -269,21 +270,20 @@ export function NonFungibleTokens({
             </div>
           ) : (
             <>
-              {shouldShowDNABanner ? (
-                <DnaNFTBanner
-                  style={{
-                    paddingInline: 16,
-                    position: 'absolute',
-                    left: 0,
-                    right: 0,
-                    top: 36,
-                  }}
-                />
-              ) : null}
+              <NftTabDnaBanner
+                address={singleAddressNormalized}
+                style={{
+                  paddingInline: 16,
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  top: 36,
+                }}
+              />
               <div
                 style={{
                   width: '100%',
-                  paddingTop: shouldShowDNABanner ? 96 : 0,
+                  paddingTop: shouldShowDNABanner ? 140 : 0,
                 }}
               >
                 <EmptyView text="No NFTs yet" />
@@ -311,9 +311,10 @@ export function NonFungibleTokens({
           }
         />
       </div>
-      {shouldShowDNABanner ? (
-        <DnaNFTBanner style={{ paddingInline: 16 }} />
-      ) : null}
+      <NftTabDnaBanner
+        address={singleAddressNormalized}
+        style={{ paddingInline: 16 }}
+      />
 
       <div
         style={{

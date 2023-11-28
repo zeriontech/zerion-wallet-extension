@@ -64,8 +64,7 @@ export function NonFungibleToken() {
       });
       return;
     },
-    // TODO: change onMutate to onSuccess?
-    onMutate: () => setPromotedAsPrimary(true),
+    onSuccess: () => setPromotedAsPrimary(true),
     onError: () => setPromotedAsPrimary(false),
   });
 

@@ -692,6 +692,8 @@ export class WalletRecordModel {
       configurableNonce: false,
       invitationBannerDismissed: false,
       recentAddresses: [],
+      mintDnaBannerDismissed: false,
+      upgradeDnaBannerDismissed: false,
     };
     if (!record) {
       return defaults;

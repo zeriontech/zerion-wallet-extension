@@ -25,9 +25,12 @@ import { apostrophe } from 'src/ui/shared/typography';
 import { AppearancePage } from 'src/ui/features/appearance/AppearancePage';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
+import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
+import { SettingsDnaBanners } from 'src/ui/DNA/components/DnaBanners';
 import { BackupFlowSettingsSection } from '../BackupWallet/BackupSettingsItem';
 
 function SettingsMain() {
+  const { singleAddressNormalized } = useAddressParams();
   const navigate = useNavigate();
   const logout = useMutation({
     mutationFn: () => accountPublicRPCPort.request('logout'),
@@ -116,6 +119,7 @@ function SettingsMain() {
             },
           ]}
         />
+        <SettingsDnaBanners address={singleAddressNormalized} />
       </VStack>
       <Spacer height={8} />
       <UIText

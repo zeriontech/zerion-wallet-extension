@@ -25,6 +25,12 @@
   --button-text: var(--white);
 }
 
+.regular.regular {
+  --button-background: var(--neutral-100);
+  --button-background-hover: var(--neutral-200);
+  --button-text: var(--black);
+}
+
 .neutral.neutral {
   --button-background: var(--neutral-100);
   --button-background-hover: var(--neutral-200);

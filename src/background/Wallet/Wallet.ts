@@ -1182,6 +1182,30 @@ export class Wallet {
   }: WalletMethodParams<{ url: string }>) {
     return phishingDefenceService.ignoreDappSecurityWarning(url);
   }
+
+  async openSendTransaction({
+    params: { params, context, id },
+    context: walletContext,
+  }: WalletMethodParams<PublicMethodParams<UnsignedTransaction[]>>) {
+    this.verifyInternalOrigin(walletContext);
+    return this.publicEthereumController.eth_sendTransaction({
+      params,
+      context,
+      id,
+    });
+  }
+
+  async openPersonalSign({
+    params: { params, context, id },
+    context: walletContext,
+  }: WalletMethodParams<PublicMethodParams<[string, string, string]>>) {
+    this.verifyInternalOrigin(walletContext);
+    return this.publicEthereumController.personal_sign({
+      params,
+      context,
+      id,
+    }) as Promise<string>;
+  }
 }
 
 interface Web3WalletPermission {

@@ -1,0 +1,15 @@
+.button {
+  color: var(--always-black);
+  background-color: var(--always-white);
+  border-radius: 12;
+  padding-block: 8;
+  display: flex;
+  justify-content: center;
+  min-width: 104;
+}
+
+@media (hover: hover) {
+  .button:hover {
+    color: #44444e;
+  }
+}

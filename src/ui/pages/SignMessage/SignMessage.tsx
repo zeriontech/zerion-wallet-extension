@@ -27,6 +27,7 @@ import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAcc
 import { isDeviceAccount } from 'src/shared/types/validators';
 import { useErrorBoundary } from 'src/ui/shared/useErrorBoundary';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
+import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { HardwareSignMessage } from '../HardwareWalletConnection/HardwareSignMessage';
 
 function MessageRow({ message }: { message: string }) {
@@ -110,7 +111,9 @@ function SignMessageContent({
             Signature Request
           </UIText>
           <UIText kind="small/regular" color="var(--neutral-500)">
-            {originForHref ? (
+            {origin === INTERNAL_ORIGIN ? (
+              'Zerion'
+            ) : originForHref ? (
               <TextAnchor
                 href={originForHref.href}
                 target="_blank"

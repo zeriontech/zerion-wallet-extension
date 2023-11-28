@@ -1,0 +1,95 @@
+@keyframes imgAppear {
+  0% {
+    opacity: 0;
+    filter: blur(5px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
+
+.backgroundImg {
+  object-fit: cover;
+  width: 360;
+  height: 360;
+  transform: rotate(8deg);
+  border-radius: 20;
+  animation: imgAppear 200ms ease-out both;
+}
+
+.backgroundImageContainer {
+  position: absolute;
+  top: 157;
+  left: -42;
+}
+
+.backgroundButton {
+  position: relative;
+  border-radius: 10;
+  overflow: hidden;
+  width: 40px;
+  height: 40px;
+  box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.16);
+  color: var(--always-white);
+  transition: transform 200ms ease-in-out;
+}
+
+.dnaButton {
+  transition: filter 200ms ease-in-out;
+}
+
+@media (hover: hover) {
+  .backgroundButton:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+  }
+
+  .dnaButton:hover img {
+    filter: brightness(0.8);
+  }
+}
+
+@keyframes fillBackground {
+  0% {
+    transform: rotate(0deg) scale(1) translateX(0);
+  }
+  100% {
+    transform: rotate(-8deg) scale(2.5) translateX(116px);
+  }
+}
+
+.selectedBackground {
+  animation: fillBackground 500ms ease-in-out both;
+}
+
+@keyframes disappear {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.contentDisappear {
+  animation: disappear 300ms ease-in both;
+}
+
+@keyframes blur {
+  0% {
+    filter: blur(0px);
+  }
+  100% {
+    filter: blur(3px);
+  }
+}
+
+.backgroundValueImage {
+  animation: blur 300ms ease-in both;
+  position: absolute;
+  width: 900;
+  height: 900;
+  left: -25px;
+  top: -157px;
+}

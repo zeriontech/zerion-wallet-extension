@@ -63,6 +63,7 @@ import {
   SignTransactionButton,
   type SignerSenderHandle,
 } from 'src/ui/components/SignTransactionButton';
+import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -233,7 +234,9 @@ function TransactionDefaultView({
           {addressAction.type.display_value}
         </UIText>
         <UIText kind="small/regular" color="var(--neutral-500)">
-          {originForHref ? (
+          {origin === INTERNAL_ORIGIN ? (
+            'Zerion'
+          ) : originForHref ? (
             <TextAnchor
               // Open URL in a new _window_ so that extension UI stays open and visible
               onClick={openInNewWindow}

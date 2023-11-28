@@ -41,11 +41,13 @@ export const useAddressNfts = createPaginatedDomainHook<
 export async function getAddressNfts(payload: Payload) {
   return new Promise<Result<AddressNFT[], typeof scope>>((resolve) => {
     client.cachedSubscribe<AddressNFT[], typeof namespace, typeof scope>({
+      method: 'get',
       namespace,
       body: {
         scope: [scope],
         payload,
       },
+      cachePolicy: 'network-only',
       onData: (data) => {
         if (data.isDone) {
           resolve(data);
