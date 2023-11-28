@@ -1,5 +1,6 @@
 import React, { useId, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Content } from 'react-area';
 import { PASSWORD_MIN_LENGTH } from 'src/shared/validation/user-input';
 import { StrengthIndicator } from 'src/ui/pages/CreateAccount/StrengthIndicator';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -20,7 +21,9 @@ import { focusNode } from 'src/ui/shared/focusNode';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { StrengthChecks } from 'src/ui/pages/CreateAccount/StrengthChecks';
 import { CheckmarkBadge } from 'src/ui/pages/CreateAccount/StrengthChecks/StrengthChecks';
-import { PasswordStep, ViewParam } from './ImportSearchParams';
+import { ViewParam } from '../Import/ImportSearchParams';
+import { PasswordFAQ } from '../FAQ';
+import { PasswordStep } from './passwordSearchParams';
 
 function WeakPasswordWarning() {
   const navigate = useNavigate();
@@ -122,7 +125,7 @@ function CreatePasswordForm({
         </VStack>
         <Button kind="primary" style={{ width: '100%' }}>
           <HStack gap={8} alignItems="center" justifyContent="center">
-            <span>Confirm</span>
+            <span>Confirm Password</span>
             <ArrowRightIcon style={{ width: 24, height: 24 }} />
           </HStack>
         </Button>
@@ -200,53 +203,61 @@ function ConfirmPasswordForm({
 }
 
 export function Password({
+  title,
   step,
   onSubmit,
 }: {
+  title: string;
   step: PasswordStep | null;
   onSubmit(value: string): void;
 }) {
   const navigate = useNavigate();
   const [value, setValue] = useState('');
 
-  return step === PasswordStep.warning ? (
-    <WeakPasswordWarning />
-  ) : (
-    <VStack gap={24} style={{ alignItems: 'start' }}>
-      <VStack gap={8}>
-        <UIText kind="headline/h2">
-          {step === PasswordStep.confirm
-            ? 'Confirm password'
-            : 'Finally, create your password'}
-        </UIText>
-        <UIText kind="body/regular">
-          This password will unlock Zerion wallet in your browser.
-        </UIText>
-      </VStack>
-      {step === 'create' ? (
-        <CreatePasswordForm
-          defaultValue={value}
-          onSubmit={({ value, stats }) => {
-            setValue(value);
-            if (stats.strength === Strength.weak) {
-              navigate(
-                `?view=${ViewParam.password}&step=${PasswordStep.warning}`
-              );
-            } else {
-              navigate(
-                `?view=${ViewParam.password}&step=${PasswordStep.confirm}`
-              );
-            }
-          }}
-        />
-      ) : step === 'confirm' ? (
-        <ConfirmPasswordForm
-          password={value}
-          onSubmit={() => {
-            onSubmit(value);
-          }}
-        />
-      ) : null}
-    </VStack>
+  return (
+    <>
+      {' '}
+      {step === PasswordStep.warning ? (
+        <WeakPasswordWarning />
+      ) : (
+        <VStack gap={24} style={{ alignItems: 'start' }}>
+          <VStack gap={8}>
+            <UIText kind="headline/h2">
+              {step === PasswordStep.confirm ? 'Confirm password' : title}
+            </UIText>
+            <UIText kind="body/regular">
+              This password will unlock Zerion wallet in your browser.
+            </UIText>
+          </VStack>
+          {step === 'create' ? (
+            <CreatePasswordForm
+              defaultValue={value}
+              onSubmit={({ value, stats }) => {
+                setValue(value);
+                if (stats.strength === Strength.weak) {
+                  navigate(
+                    `?view=${ViewParam.password}&step=${PasswordStep.warning}`
+                  );
+                } else {
+                  navigate(
+                    `?view=${ViewParam.password}&step=${PasswordStep.confirm}`
+                  );
+                }
+              }}
+            />
+          ) : step === 'confirm' ? (
+            <ConfirmPasswordForm
+              password={value}
+              onSubmit={() => {
+                onSubmit(value);
+              }}
+            />
+          ) : null}
+        </VStack>
+      )}
+      <Content name="onboarding-faq">
+        <PasswordFAQ />
+      </Content>
+    </>
   );
 }

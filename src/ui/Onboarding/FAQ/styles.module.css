@@ -1,0 +1,58 @@
+.faqIcon {
+  border-radius: 20px;
+  padding: 10px;
+  width: 40px;
+  height: 40px;
+  background-color: var(--neutral-100);
+  display: flex;
+}
+
+.faqButton:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.sidePanelBackdrop {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  padding: 32px;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: var(--over-layout-index);
+}
+
+.sidePanelBackdrop.show {
+  pointer-events: auto;
+}
+
+.sidePanel {
+  position: relative;
+  border-radius: 20px;
+  background-color: var(--z-index-1);
+  height: calc(100vh - 64px);
+  overflow-y: auto;
+  width: 410px;
+  padding: 72px 48px 32px;
+}
+
+.sidePanelCloseButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  background-color: var(--neutral-100);
+  transition: background-color 150ms;
+  border-radius: 8px;
+}
+
+.sidePanelCloseButton:hover {
+  background-color: var(--neutral-300);
+}

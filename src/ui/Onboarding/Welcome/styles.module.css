@@ -1,77 +1,100 @@
-.container {
-  position: relative;
-  background: linear-gradient(111.37deg, #0a0a9b 0%, #06003c 100%);
-  box-shadow: 0px 12px 40px rgba(0, 0, 0, 0.08);
-  border-radius: var(--card-border-radius);
-  text-align: center;
-  display: flex;
-  justify-content: center;
-  padding: 80px 24px 0;
-  height: 450px;
+.link {
+  outline: none;
+  color: var(--black);
+}
+
+.link:hover,
+.link:focus {
   color: var(--always-white);
 }
 
-.input {
-  border: none;
-  box-shadow: none;
-  text-align: center;
-  padding: 10px 12px;
-  width: 516px;
-  background: var(--always-white);
-  color: var(--always-black);
-  border-radius: 8px;
-  height: 44px;
-}
-
-.faqButton {
-  background: linear-gradient(0deg, #07013d, #07013d),
-    linear-gradient(272.02deg, #ff7583 0%, #3232dc 100%);
-  border-radius: var(--card-border-radius);
-  padding: 24px;
-}
-
-.arrow {
-  background: rgba(245, 245, 247, 0.4);
-  border-radius: 8px;
-  display: flex;
-  width: 32px;
-  height: 32px;
-  padding: 6px;
-}
-
-.faqButton:hover .arrow {
-  background: rgba(245, 245, 247, 0.6);
-}
-
-.faqIcon {
+.option {
+  position: relative;
+  padding-top: 36px;
   border-radius: 20px;
-  padding: 10px;
-  width: 40px;
-  height: 40px;
-  background-color: var(--neutral-100);
+  background-color: var(--white);
+  overflow: hidden;
+  transition: background-color 300ms ease-in-out;
+  justify-content: center;
 }
 
-.submit:disabled {
-  background-color: #0937aa !important;
-}
-
-.formImage {
+.option::before {
   position: absolute;
-  bottom: -95px;
-  right: -175px;
+  content: '';
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  opacity: 0;
+  transition: opacity 300ms ease-in-out;
 }
 
-@media (max-width: 768px) {
-  .container {
-    height: auto;
-    padding: 60px 24px;
-  }
+.link:hover .option::before,
+.link:focus .option::before {
+  opacity: 1;
+}
 
-  .input {
-    width: 100%;
-  }
+.title {
+  z-index: 2;
+  transition: color 200ms ease-in-out;
+}
 
-  .formImage {
-    display: none;
-  }
+.createImg {
+  z-index: 2;
+  width: 143px;
+  height: 113px;
+}
+
+.importImg {
+  z-index: 2;
+  width: 149px;
+  height: 118px;
+}
+
+.hardwareImg {
+  z-index: 2;
+  width: 116px;
+  height: 121px;
+}
+
+.createIcon {
+  top: 42px;
+  left: 117px;
+}
+
+.importIcon {
+  top: 37px;
+  left: 85px;
+}
+
+.hardwareIcon {
+  top: 35px;
+  left: 70px;
+}
+
+.secondaryIcon {
+  color: var(--neutral-200);
+  transition: color 200ms ease-in-out;
+}
+
+.link:hover .secondaryIcon,
+.link:focus .secondaryIcon {
+  color: var(--always-white);
+}
+
+.link:hover .option,
+.link:focus .option {
+  background-color: transparent;
+}
+
+.create::before {
+  background: linear-gradient(180deg, #56acff 0%, #3232dc 100%);
+}
+
+.import::before {
+  background: linear-gradient(180deg, #3232dc 0%, #ff7583 100%);
+}
+
+.hardware::before {
+  background: linear-gradient(180deg, #3232dc 0%, #06003c 100%);
 }

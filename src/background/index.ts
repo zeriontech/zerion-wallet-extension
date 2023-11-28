@@ -2,7 +2,6 @@ import browser from 'webextension-polyfill';
 import { ethers } from 'ethers';
 import { networksStore } from 'src/modules/networks/networks-store.background';
 import { configureBackgroundClient } from 'src/modules/defi-sdk/background';
-import { FEATURE_WAITLIST_ONBOARDING } from 'src/env/config';
 import { SessionCacheService } from 'src/background/resource/sessionCacheService';
 import { initialize } from './initialize';
 import { PortRegistry } from './messaging/PortRegistry';
@@ -41,6 +40,14 @@ if (process.env.NODE_ENV === 'development') {
 
 configureBackgroundClient();
 networksStore.load();
+
+function isOnboardingContext(port: RuntimePort) {
+  if (!port.sender?.url) {
+    return false;
+  }
+  const portSenderUrl = new URL(port.sender.url);
+  return portSenderUrl.searchParams.get('context') === 'onboarding';
+}
 
 function verifyPort(port: RuntimePort) {
   const protocol = port.sender?.url ? new URL(port.sender.url).protocol : null;
@@ -170,7 +177,10 @@ initialize().then((values) => {
   ethereumEventsBroadcaster.startListening();
 
   portRegistry.addListener('disconnect', (port: RuntimePort) => {
-    if (port.name === `${browser.runtime.id}/wallet`) {
+    if (
+      port.name === `${browser.runtime.id}/wallet` &&
+      !isOnboardingContext(port)
+    ) {
       // Means extension UI is closed
       account.expirePasswordSession();
     }
@@ -188,9 +198,6 @@ initialize().then((values) => {
 
 browser.runtime.onInstalled.addListener(({ reason }) => {
   if (reason === 'install') {
-    if (FEATURE_WAITLIST_ONBOARDING !== 'on') {
-      return;
-    }
     const popupUrl = browser.runtime.getManifest().action?.default_popup;
     if (!popupUrl) {
       throw new Error('popupUrl not found');

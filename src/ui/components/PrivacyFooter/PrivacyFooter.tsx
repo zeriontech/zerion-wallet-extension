@@ -7,10 +7,10 @@ import * as styles from 'src/ui/style/helpers.module.css';
 
 export function PrivacyFooter() {
   return (
-    <HStack gap={8}>
+    <HStack gap={8} justifyContent="center">
       <img src={lockIconSrc} alt="" style={{ width: 20, height: 20 }} />
       <UIText kind="small/accent" color="var(--neutral-600)">
-        We never store your keys. See here for our{' '}
+        We never store your keys. Please find more details in our{' '}
         <TextAnchor
           href="https://zerion.io/privacy.pdf"
           target="_blank"
@@ -18,7 +18,7 @@ export function PrivacyFooter() {
           className={styles.hoverUnderline}
         >
           <UIText kind="small/accent" color="var(--primary)" inline={true}>
-            full policy.
+            Privacy Policy.
           </UIText>
         </TextAnchor>
       </UIText>

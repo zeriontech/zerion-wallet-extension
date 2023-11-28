@@ -1,78 +1,21 @@
 import React, { useMemo } from 'react';
-import { RenderArea } from 'react-area';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import Logo from 'jsx:src/ui/assets/zerion-full-logo.svg';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useScreenViewChange } from '../shared/useScreenViewChange';
-import { HStack } from '../ui-kit/HStack';
 import { useBodyStyle } from '../components/Background/Background';
-import { Dashboard } from './Dashboard';
 import { Welcome } from './Welcome';
 import { Import } from './Import';
 import { Success } from './Success';
-import * as styles from './styles.module.css';
+import { Create } from './Create';
+import { Hardware } from './Hardware';
+import { PageLayout } from './shared/PageLayout/PageLayout';
+import { SessionExpired } from './shared/SessionExpired';
 
-const HEADER_HEIGHT = 72;
-const MAX_CONTENT_WIDTH = 870;
-const CONTENT_PADDING = 24;
-
-function PageLayout({
-  style,
-  children,
-  ...props
-}: React.HTMLProps<HTMLDivElement>) {
-  return (
-    <div
-      style={{
-        width: '100%',
-        paddingLeft: CONTENT_PADDING,
-        paddingRight: CONTENT_PADDING,
-        paddingBottom: CONTENT_PADDING,
-        backgroundColor: 'var(--neutral-100)',
-        ['--card-border-radius' as string]: '20px',
-      }}
-    >
-      <div
-        {...props}
-        style={{
-          paddingTop: HEADER_HEIGHT,
-          maxWidth: MAX_CONTENT_WIDTH,
-          marginInline: 'auto',
-          ...style,
-        }}
-      >
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function Header() {
-  return (
-    <div
-      className={styles.header}
-      style={{
-        height: `calc(${HEADER_HEIGHT} - 24px)`,
-        paddingLeft: CONTENT_PADDING,
-        paddingRight: CONTENT_PADDING,
-      }}
-    >
-      <HStack
-        className={styles.headerContent}
-        gap={24}
-        justifyContent="space-between"
-        alignItems="center"
-        style={{
-          maxWidth: MAX_CONTENT_WIDTH,
-        }}
-      >
-        <Logo />
-        <RenderArea name="header-end" />
-      </HStack>
-    </div>
-  );
+function EmptyRoute() {
+  return null;
 }
 
 export function Onboarding() {
+  const navigate = useNavigate();
   useScreenViewChange();
   useBodyStyle(
     useMemo(
@@ -84,28 +27,51 @@ export function Onboarding() {
   );
 
   return (
-    <PageLayout>
-      <Header />
-      <Routes>
-        <Route
-          path="/"
-          element={<Navigate to="/onboarding" replace={true} />}
-        />
-        <Route path="/onboarding" element={<Welcome />} />
-        <Route
-          path="/onboarding/welcome/:walletAddress"
-          element={<Dashboard />}
-        />
-        <Route
-          path="/onboarding/import/:walletAddress/:type"
-          element={<Import />}
-        />
-        <Route path="/onboarding/success" element={<Success />} />
-        <Route
-          path="*"
-          element={<Navigate to="/onboarding" replace={true} />}
-        />
-      </Routes>
-    </PageLayout>
+    <Routes>
+      <Route path="/" element={<Navigate to="/onboarding" replace={true} />} />
+      <Route
+        path="/onboarding"
+        element={
+          <PageLayout>
+            <Welcome />
+          </PageLayout>
+        }
+      />
+      <Route
+        path="/onboarding/create/*"
+        element={
+          <PageLayout>
+            <Create />
+          </PageLayout>
+        }
+      />
+      <Route
+        path="/onboarding/import/*"
+        element={
+          <PageLayout>
+            <Import />
+          </PageLayout>
+        }
+      />
+      <Route path="/onboarding/hardware/*" element={<Hardware />} />
+      <Route
+        path="/onboarding/success"
+        element={
+          <PageLayout>
+            <Success />
+          </PageLayout>
+        }
+      />
+      <Route
+        path="/onboarding/session-expired"
+        element={
+          <PageLayout>
+            <SessionExpired onSubmit={() => navigate('/onboarding')} />
+          </PageLayout>
+        }
+      />
+      <Route path="/overview" element={<EmptyRoute />} />
+      <Route path="*" element={<Navigate to="/onboarding" replace={true} />} />
+    </Routes>
   );
 }

@@ -103,3 +103,6 @@ new BackgroundScriptUpdateHandler({
 }).keepAlive();
 
 initializeUI();
+
+// TODO: replace with window.location.reload
+emitter.on('reloadExtension', initializeUI);
