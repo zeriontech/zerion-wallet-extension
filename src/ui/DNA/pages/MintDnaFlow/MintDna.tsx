@@ -22,7 +22,6 @@ import GlobeIcon from 'jsx:src/ui/assets/globe.svg';
 import InfoIcon from 'jsx:src/ui/assets/info.svg';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { Button } from 'src/ui/ui-kit/Button';
-import { SidePanel } from 'src/ui/Onboarding/Import/SidePanel';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import { walletPort } from 'src/ui/shared/channels';
@@ -31,6 +30,7 @@ import { AddressDetails } from 'src/ui/pages/Receive/AddressDetails';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { invariant } from 'src/shared/invariant';
+import { SidePanel } from 'src/ui/Onboarding/FAQ/SidePanel';
 import Dna1 from '../../assets/dna_1.png';
 import Dna2 from '../../assets/dna_2.png';
 import Dna3 from '../../assets/dna_3.png';
@@ -61,6 +61,7 @@ function useDnaMintTransaction(address: string) {
     transaction: mintTransaction,
     chain: createChain(NetworkId.Ethereum),
     networkFeeConfiguration: null,
+    onFeeValueCommonReady: null,
   });
   const feeValueFiat = costs?.totalValueFiat;
 

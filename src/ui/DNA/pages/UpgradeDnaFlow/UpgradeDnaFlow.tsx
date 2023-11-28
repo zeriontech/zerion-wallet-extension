@@ -1,6 +1,6 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { PageLayout } from '../../shared/PageLayout';
+import { PageLayout } from 'src/ui/Onboarding/shared/PageLayout/PageLayout';
 import { WideScreen } from '../../shared/WideScreen';
 import { Success } from './Success';
 import { SelectBackground } from './SelectBackground';
