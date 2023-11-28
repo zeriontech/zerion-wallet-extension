@@ -330,7 +330,7 @@ function OverviewComponent() {
                       {`${sign}${change.formatted}`}{' '}
                       {value?.absolute_change_24h
                         ? `(${formatCurrencyValue(
-                            value?.absolute_change_24h,
+                            Math.abs(value.absolute_change_24h),
                             'en',
                             'usd'
                           )})`
