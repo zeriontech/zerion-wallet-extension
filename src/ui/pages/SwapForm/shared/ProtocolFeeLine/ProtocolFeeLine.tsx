@@ -6,7 +6,8 @@ import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import type { Quote } from '../../Quotes/types';
 
-const MEMBERSHIP_BLOG_URL = 'https://zerion.io/blog/genesis-meets-dna/';
+const ZERION_FEES_ARTICLE =
+  'https://zerion.io/blog/preparing-for-a-decentralized-future-at-zerion/';
 
 export function ProtocolFeeLine({ quote }: { quote: Quote }) {
   return (
@@ -16,7 +17,7 @@ export function ProtocolFeeLine({ quote }: { quote: Quote }) {
           Zerion Fee
           <UnstyledAnchor
             title="Applies to all Multichain transactions. Zerion Premium DNA holders get discounts. Click to learn more."
-            href={MEMBERSHIP_BLOG_URL}
+            href={ZERION_FEES_ARTICLE}
             rel="noopener noreferrer"
             target="_blank"
           >
@@ -27,7 +28,7 @@ export function ProtocolFeeLine({ quote }: { quote: Quote }) {
           </UnstyledAnchor>
         </HStack>
       </UIText>
-      <UIText kind="small/regular" color="var(--neutral-700)">
+      <UIText kind="small/regular">
         {`${formatPercent(quote.protocol_fee, 'en')}%`}
       </UIText>
     </HStack>

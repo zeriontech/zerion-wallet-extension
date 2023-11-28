@@ -3,6 +3,7 @@ import ArrowIcon from 'jsx:src/ui/assets/arrow-right.svg';
 import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 
 interface Props {
   approved: boolean;
@@ -12,8 +13,8 @@ interface Props {
 const mainColor = 'var(--black)';
 const secondaryColor = 'var(--neutral-500)';
 
-// const EXPLAIN_APPROVE_URL =
-//   'https://help.zerion.io/en/articles/4228406-what-does-approve-mean-when-making-a-transaction';
+const EXPLAIN_APPROVE_URL =
+  'https://help.zerion.io/en/articles/4228406-what-does-approve-mean-when-making-a-transaction';
 
 export function ApproveHintLine({ approved, actionName }: Props) {
   return (
@@ -26,11 +27,16 @@ export function ApproveHintLine({ approved, actionName }: Props) {
         >
           1. Approve
         </UIText>
-        <div title="Allow Zerion to spend the asset">
+        <UnstyledAnchor
+          title="Allow Zerion to spend the asset"
+          href={EXPLAIN_APPROVE_URL}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
           <QuestionHintIcon
             style={{ display: 'block', color: 'var(--neutral-500)' }}
           />
-        </div>
+        </UnstyledAnchor>
       </HStack>
       <ArrowIcon
         style={{

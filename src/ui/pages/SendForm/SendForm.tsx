@@ -40,11 +40,8 @@ import { usePreferences } from 'src/ui/features/preferences/usePreferences';
 import { StoreWatcher } from 'src/ui/shared/StoreWatcher';
 import { ViewLoadingSuspense } from 'src/ui/components/ViewLoading/ViewLoading';
 import { useEvent } from 'src/ui/shared/useEvent';
-import type {
-  SignerSenderHandle} from 'src/ui/components/SignTransactionButton';
-import {
-  SignTransactionButton
-} from 'src/ui/components/SignTransactionButton';
+import type { SignerSenderHandle } from 'src/ui/components/SignTransactionButton';
+import { SignTransactionButton } from 'src/ui/components/SignTransactionButton';
 import { useSizeStore } from 'src/ui/Onboarding/useSizeStore';
 import {
   DEFAULT_CONFIGURATION,
@@ -75,6 +72,8 @@ function StoreWatcherByKeys<T extends Record<string, unknown>>({
 }
 
 const rootNode = getRootDomNode();
+
+const ENABLE_NFT_TRANSFER = false;
 
 export function SendForm() {
   const { singleAddress: address } = useAddressParams();
@@ -280,24 +279,26 @@ export function SendForm() {
         }}
       >
         <VStack gap={16}>
-          <SegmentedControlGroup childrenLayout="spread-children-evenly">
-            <SegmentedControlRadio
-              name="type"
-              value="token"
-              onChange={() => sendView.handleChange('type', 'token')}
-              checked={type === 'token'}
-            >
-              Token
-            </SegmentedControlRadio>
-            <SegmentedControlRadio
-              name="type"
-              value="nft"
-              onChange={() => sendView.handleChange('type', 'nft')}
-              checked={type === 'nft'}
-            >
-              NFTs
-            </SegmentedControlRadio>
-          </SegmentedControlGroup>
+          {ENABLE_NFT_TRANSFER ? (
+            <SegmentedControlGroup childrenLayout="spread-children-evenly">
+              <SegmentedControlRadio
+                name="type"
+                value="token"
+                onChange={() => sendView.handleChange('type', 'token')}
+                checked={type === 'token'}
+              >
+                Token
+              </SegmentedControlRadio>
+              <SegmentedControlRadio
+                name="type"
+                value="nft"
+                onChange={() => sendView.handleChange('type', 'nft')}
+                checked={type === 'nft'}
+              >
+                NFTs
+              </SegmentedControlRadio>
+            </SegmentedControlGroup>
+          ) : null}
           <div>
             {type === 'token' ? (
               <NetworkSelect
