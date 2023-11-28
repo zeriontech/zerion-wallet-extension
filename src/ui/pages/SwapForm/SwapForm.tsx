@@ -486,7 +486,7 @@ export function SwapForm() {
                 title={
                   currentTransaction === approveTransaction
                     ? 'Approve'
-                    : 'Spend'
+                    : 'Trade'
                 }
                 wallet={wallet}
                 chain={chain}
