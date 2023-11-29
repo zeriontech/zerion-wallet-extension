@@ -27,6 +27,7 @@ import { usePreferences } from 'src/ui/features/preferences';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { SettingsDnaBanners } from 'src/ui/DNA/components/DnaBanners';
+import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { BackupFlowSettingsSection } from '../BackupWallet/BackupSettingsItem';
 
 function SettingsMain() {
@@ -170,6 +171,7 @@ function UserPreferences() {
 
   return (
     <PageColumn>
+      <NavigationTitle title="Preferences" />
       <PageTop />
       <VStack gap={8}>
         <UIText kind="body/regular">Advanced Settings</UIText>

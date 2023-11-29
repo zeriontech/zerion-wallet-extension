@@ -247,21 +247,24 @@ export function ConnectionHeader() {
                   textAlign: 'start',
                   height: 36,
                   justifyItems: 'start',
+                  alignItems: 'center',
                 }}
               >
-                <UIText
-                  kind="body/accent"
-                  style={{
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    width: '100%',
-                  }}
-                >
-                  {activeTabOrigin === INTERNAL_ORIGIN
-                    ? 'Zerion Extension'
-                    : activeTabHostname}
-                </UIText>
+                {isConnectableSite || activeTabOrigin === INTERNAL_ORIGIN ? (
+                  <UIText
+                    kind="body/accent"
+                    style={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      width: '100%',
+                    }}
+                  >
+                    {activeTabOrigin === INTERNAL_ORIGIN
+                      ? 'Zerion Extension'
+                      : activeTabHostname}
+                  </UIText>
+                ) : null}
                 <UIText kind="caption/regular" color="var(--neutral-500)">
                   {isConnectableSite ? 'Not Connected' : 'Not a Website'}
                 </UIText>

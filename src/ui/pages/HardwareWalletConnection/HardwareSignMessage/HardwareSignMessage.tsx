@@ -139,7 +139,7 @@ export function HardwareSignMessage({
           paddingInline: 16, // fit longer button label
         }}
       >
-        <HStack gap={8} alignItems="center">
+        <HStack gap={8} alignItems="center" justifyContent="center">
           <LedgerIcon />
           {isSigning
             ? 'Sending...'
