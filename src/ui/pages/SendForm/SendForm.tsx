@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import type { Store } from 'store-unit';
 import { client } from 'defi-sdk';
@@ -220,6 +221,8 @@ export function SendForm() {
 
   const { innerHeight } = useSizeStore();
 
+  const navigate = useNavigate();
+
   if (!networks || !positions) {
     return <ViewLoading kind="network" />;
   }
@@ -238,6 +241,7 @@ export function SendForm() {
         onDone={() => {
           reset();
           snapshotRef.current = null;
+          navigate('/overview/history');
         }}
       />
     );

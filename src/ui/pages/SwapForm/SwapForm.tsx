@@ -49,6 +49,7 @@ import { useSizeStore } from 'src/ui/Onboarding/useSizeStore';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import { useNavigate } from 'react-router-dom';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -364,6 +365,8 @@ export function SwapForm() {
 
   const { innerHeight } = useSizeStore();
 
+  const navigate = useNavigate();
+
   if (isSuccess) {
     invariant(
       spendPosition && receivePosition && transactionHash,
@@ -382,6 +385,7 @@ export function SwapForm() {
         onDone={() => {
           reset();
           snapshotRef.current = null;
+          navigate('/overview/history');
         }}
       />
     );
