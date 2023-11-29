@@ -50,6 +50,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { useNavigate } from 'react-router-dom';
+import { isNumeric } from 'src/shared/isNumeric';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -97,15 +98,22 @@ function getSubmitHint({
 
 function FormHint({
   swapView,
-  formError,
+  // formError,
   render,
 }: {
   swapView: SwapFormView;
-  formError: FormErrorDescription | null;
+  // formError: FormErrorDescription | null;
   render: (message: string | null) => React.ReactNode;
 }) {
   const { spendPosition } = swapView;
-  const { spendInput } = useSelectorStore(swapView.store, ['spendInput']);
+  const { spendInput, receiveInput, primaryInput } = useSelectorStore(
+    swapView.store,
+    ['spendInput', 'receiveInput', 'primaryInput']
+  );
+
+  const value = primaryInput === 'spend' ? spendInput : receiveInput;
+  const invalidValue = value && !isNumeric(value);
+  const valueMissing = !value || Number(value) === 0;
 
   const positionBalanceCommon = spendPosition
     ? getPositionBalance(spendPosition)
@@ -115,8 +123,10 @@ function FormHint({
   let message: string | null = null;
   if (exceedsBalance) {
     message = 'Insufficient balance';
-  } else if (formError) {
-    message = getSubmitHint({ formError });
+  } else if (valueMissing) {
+    message = 'Enter amount';
+  } else if (invalidValue) {
+    message = 'Incorrect amount';
   }
   return render(message);
 }
@@ -646,7 +656,7 @@ export function SwapForm() {
               </UIText>
               {wallet ? (
                 <FormHint
-                  formError={validity.formError}
+                  // formError={validity.formError}
                   swapView={swapView}
                   render={(hint) => (
                     <SignTransactionButton

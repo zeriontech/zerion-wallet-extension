@@ -626,7 +626,7 @@ function AssetSelectComponent({
 }
 
 export function AssetSelect({ items, selectedItem, ...props }: Props) {
-  if (!items.length) {
+  if (!items.length && !selectedItem) {
     return (
       <div style={{ whiteSpace: 'nowrap' }}>
         <UIText kind="caption/accent">No Assets</UIText>
