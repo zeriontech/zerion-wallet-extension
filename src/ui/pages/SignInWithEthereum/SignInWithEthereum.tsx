@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useMemo, useState } from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { invariant } from 'src/shared/invariant';
 import { Background } from 'src/ui/components/Background';
@@ -29,6 +29,11 @@ import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/Phishin
 import { NavigationBar } from 'src/ui/components/NavigationBar';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
+import { isDeviceAccount } from 'src/shared/types/validators';
+import { useErrorBoundary } from 'src/ui/shared/useErrorBoundary';
+import { getError } from 'src/shared/errors/getError';
+import { HardwareSignMessage } from '../HardwareWalletConnection/HardwareSignMessage';
+import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { SpeechBubble } from './SpeechBubble/SpeechBubble';
 import { useFetchUTCTime } from './useFetchUTCTime';
 import { SiweError } from './SiweError';
@@ -90,6 +95,24 @@ export function SignInWithEthereum() {
     });
   };
   const handleReject = () => windowPort.reject(windowId);
+
+  const showErrorBoundary = useErrorBoundary();
+  const [hardwareSignError, setHardwareSignError] = useState<Error | null>(
+    null
+  );
+  const { mutate: registerSignedMessage } = useMutation({
+    mutationFn: async (signature: string) => {
+      if (!wallet) {
+        return;
+      }
+      walletPort.request('registerPersonalSign', {
+        message,
+        address: wallet.address,
+        initiator: origin,
+      });
+      handleSignSuccess(signature);
+    },
+  });
 
   if (isError) {
     return <p>Some Error</p>;
@@ -205,50 +228,91 @@ export function SignInWithEthereum() {
         </>
         <Spacer height={16} />
         <PhishingDefenceStatus origin={origin} />
-        {params.has('step') === false || params.get('step') === 'data' ? (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: !siweMessage?.isValid() ? 'none' : '1fr 1fr',
-              gap: 8,
-              marginTop: 'auto',
-              paddingBottom: 32,
-            }}
-          >
-            {!siweMessage?.isValid() ? (
-              <>
-                <Button ref={focusNode} onClick={handleReject}>
-                  Close
-                </Button>
-                <Button
-                  kind="ghost"
-                  onClick={() => updateSearchParam('step', 'verifyUser')}
-                >
-                  <UIText kind="caption/accent" color="var(--neutral-500)">
-                    Proceed anyway
-                  </UIText>
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  type="button"
-                  kind="regular"
-                  onClick={handleReject}
-                  ref={focusNode}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  disabled={personalSignMutation.isLoading}
-                  onClick={handleSignIn}
-                >
-                  {personalSignMutation.isLoading ? 'Signing In...' : 'Sign In'}
-                </Button>
-              </>
-            )}
-          </div>
-        ) : null}
+        <VStack
+          gap={8}
+          style={{
+            textAlign: 'center',
+            marginTop: 'auto',
+            paddingBottom: 32,
+            paddingTop: 8,
+          }}
+        >
+          <UIText kind="caption/regular" color="var(--negative-500)">
+            {personalSignMutation.isError
+              ? getError(personalSignMutation.error).message
+              : hardwareSignError
+              ? txErrorToMessage(hardwareSignError)
+              : null}
+          </UIText>
+          {params.has('step') === false || params.get('step') === 'data' ? (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: !siweMessage?.isValid()
+                  ? 'none'
+                  : '1fr 1fr',
+                gap: 8,
+                // marginTop: 'auto',
+                // paddingBottom: 32,
+              }}
+            >
+              {/* Temporarily "proceed anyway" flow is only for SignerWallets, not Hardware Wallets */}
+              {!siweMessage?.isValid() && !isDeviceAccount(wallet) ? (
+                <>
+                  <Button ref={focusNode} onClick={handleReject}>
+                    Close
+                  </Button>
+                  <Button
+                    kind="ghost"
+                    onClick={() => updateSearchParam('step', 'verifyUser')}
+                  >
+                    <UIText kind="caption/accent" color="var(--neutral-500)">
+                      Proceed anyway
+                    </UIText>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    type="button"
+                    kind="regular"
+                    onClick={handleReject}
+                    ref={focusNode}
+                  >
+                    Cancel
+                  </Button>
+                  {isDeviceAccount(wallet) ? (
+                    <HardwareSignMessage
+                      derivationPath={wallet.derivationPath}
+                      message={message}
+                      type="personalSign"
+                      // TODO: there's no async isSigning state for hardware, remove prop? Also in pages/SignMessage
+                      isSigning={personalSignMutation.isLoading}
+                      onBeforeSign={() => setHardwareSignError(null)}
+                      onSignError={(error) => setHardwareSignError(error)}
+                      onSign={(signature) => {
+                        try {
+                          registerSignedMessage(signature);
+                        } catch (error) {
+                          showErrorBoundary(error);
+                        }
+                      }}
+                    />
+                  ) : (
+                    <Button
+                      disabled={personalSignMutation.isLoading}
+                      onClick={handleSignIn}
+                    >
+                      {personalSignMutation.isLoading
+                        ? 'Signing In...'
+                        : 'Sign In'}
+                    </Button>
+                  )}
+                </>
+              )}
+            </div>
+          ) : null}
+        </VStack>
       </PageColumn>
       <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
     </Background>
