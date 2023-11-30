@@ -11,6 +11,7 @@ export function showConfirmDialog(
       } else {
         resolve(dialog.returnValue);
       }
+      dialog.returnValue = '';
       dialog.removeEventListener('close', handler);
       dialog.removeEventListener('cancel', handler);
     }
