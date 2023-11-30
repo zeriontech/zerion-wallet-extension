@@ -56,7 +56,7 @@ This command will compile the extension and run it in a mode suitable for develo
     
 2. **Import the Extension**: Click on 'Load unpacked' and select the build folder.
 
-## ⚠️ WIP - License
+## License
 
 [GPL-3.0](LICENSE) License
 
