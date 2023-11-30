@@ -58,7 +58,7 @@ This command will compile the extension and run it in a mode suitable for develo
 
 ## ⚠️ WIP - License
 
-[GPL-3.0](https://github.com/zeriontech/zerion-wallet-extension/blob/new-readme/LICENSE) License
+[GPL-3.0](LICENSE) License
 
 ## Contact Us
 
