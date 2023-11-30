@@ -10,12 +10,14 @@ const defaultConfig: RemoteConfig = {
   user_can_create_initial_wallet: false,
   extension_wallet_name_flags: {},
   extension_invitation_campaign_id: '',
+  extension_show_footer_bug_button: false,
 };
 
 const knownKeys: (keyof RemoteConfig)[] = [
   'user_can_create_initial_wallet',
   'extension_wallet_name_flags',
   'extension_invitation_campaign_id',
+  'extension_show_footer_bug_button',
 ];
 
 async function fetchRemoteConfig<T extends keyof RemoteConfig>(keys: T[]) {

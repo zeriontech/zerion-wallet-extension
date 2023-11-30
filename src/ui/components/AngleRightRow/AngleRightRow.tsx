@@ -1,12 +1,18 @@
 import React from 'react';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
+import ExternalLinkIcon from 'jsx:src/ui/assets/new-window.svg';
 
 export function AngleRightRow({
   iconColor = 'var(--neutral-500)',
   hideIcon = false,
+  kind = 'button',
   children,
-}: React.PropsWithChildren<{ iconColor?: string; hideIcon?: boolean }>) {
+}: React.PropsWithChildren<{
+  iconColor?: string;
+  hideIcon?: boolean;
+  kind?: 'button' | 'link';
+}>) {
   return (
     <HStack
       gap={4}
@@ -18,7 +24,11 @@ export function AngleRightRow({
 
       {hideIcon ? null : (
         <span style={{ color: iconColor }}>
-          <ChevronRightIcon style={{ display: 'block' }} />
+          {kind === 'button' ? (
+            <ChevronRightIcon style={{ display: 'block' }} />
+          ) : (
+            <ExternalLinkIcon style={{ display: 'block' }} />
+          )}
         </span>
       )}
     </HStack>

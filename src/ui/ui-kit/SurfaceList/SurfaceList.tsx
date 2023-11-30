@@ -38,6 +38,7 @@ export function ItemAnchor({
   children,
   style,
   decorationStyle,
+  rel,
 }: {
   href: string;
   target?: React.AnchorHTMLAttributes<HTMLAnchorElement>['target'];
@@ -45,6 +46,7 @@ export function ItemAnchor({
   onClick?: React.AnchorHTMLAttributes<HTMLAnchorElement>['onClick'];
   style?: React.CSSProperties;
   decorationStyle?: React.CSSProperties;
+  rel?: string;
 }) {
   return (
     <UnstyledAnchor
@@ -53,6 +55,7 @@ export function ItemAnchor({
       target={target}
       onClick={onClick}
       className={s.option}
+      rel={rel}
     >
       <div className={s.decoration} style={decorationStyle}>
         {children}

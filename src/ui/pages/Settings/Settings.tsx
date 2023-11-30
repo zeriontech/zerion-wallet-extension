@@ -28,6 +28,7 @@ import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { SettingsDnaBanners } from 'src/ui/DNA/components/DnaBanners';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
+import { BugReportButton } from 'src/ui/components/BugReportButton';
 import { BackupFlowSettingsSection } from '../BackupWallet/BackupSettingsItem';
 
 function SettingsMain() {
@@ -105,6 +106,12 @@ function SettingsMain() {
             },
             {
               key: 6,
+              pad: false,
+              style: { paddingInline: 0 },
+              component: <BugReportButton />,
+            },
+            {
+              key: 7,
               onClick: async () => {
                 await logout.mutateAsync();
                 navigate('/login');
