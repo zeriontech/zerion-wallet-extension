@@ -22,7 +22,7 @@ function ResetWarningForm() {
             glow={true}
           />
           <UIText kind="headline/h3">
-            Reset data for the browser extension?
+            Erase data for the browser extension?
           </UIText>
           <UIText kind="body/regular">
             Your crypto assets remain secured on the blockchain and can be
@@ -32,7 +32,7 @@ function ResetWarningForm() {
         <Spacer height={28} />
         <label>
           <HStack gap={12} justifyContent="space-between" alignItems="center">
-            <UIText kind="body/regular">Yes, clear my data</UIText>
+            <UIText kind="body/regular">Yes, erase my data</UIText>
             <Toggle defaultChecked={false} required={true} />
           </HStack>
         </label>

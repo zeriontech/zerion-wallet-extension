@@ -329,8 +329,7 @@ export function SelectWalletsFAQ() {
       <VStack gap={8}>
         <UIText kind="small/regular">Inactive wallets</UIText>
         <UIText kind="small/regular" color="var(--neutral-600)">
-          The wallets has no transactions or zero balance on the supported
-          chains.
+          The wallets with zero balance or no transactions on supported chains.
         </UIText>
       </VStack>
     </VStack>

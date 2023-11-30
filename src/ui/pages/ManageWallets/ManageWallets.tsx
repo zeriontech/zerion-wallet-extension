@@ -28,6 +28,7 @@ import {
 } from 'src/shared/types/validators';
 import type { WalletContainer } from 'src/shared/types/WalletContainer';
 import { openInTabView } from 'src/ui/shared/openInTabView';
+import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { WalletAccount as WalletAccountPage } from './WalletAccount';
 import { WalletGroup as WalletGroupPage } from './WalletGroup';
 
@@ -201,6 +202,7 @@ function WalletGroups() {
 
   return (
     <PageColumn>
+      <NavigationTitle title="Manage Wallets" />
       {groupedBySeedType == null ? (
         <FillView>
           <UIText kind="headline/h2" color="var(--neutral-500)">
