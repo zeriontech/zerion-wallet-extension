@@ -9,6 +9,7 @@ import {
 } from 'src/modules/networks/asset';
 import { createChain } from 'src/modules/networks/Chain';
 import { DEFI_SDK_TRANSACTIONS_API_URL } from 'src/env/config';
+import { isNumeric } from 'src/shared/isNumeric';
 import type { Quote, TransactionDescription } from './types';
 import { useEventSource } from './useEventSource';
 
@@ -79,6 +80,9 @@ export function useQuotes({
         chain,
       });
       if (!spendAssetExistsOnChain || !receiveAssetExistsOnChain) {
+        return;
+      }
+      if (!isNumeric(value) || Number(value) === 0) {
         return;
       }
       const valueBase = commonToBase(
