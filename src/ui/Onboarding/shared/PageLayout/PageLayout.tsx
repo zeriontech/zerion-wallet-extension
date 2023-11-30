@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { RenderArea } from 'react-area';
 import Logo from 'jsx:src/ui/assets/zerion-full-logo.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import { useBodyStyle } from 'src/ui/components/Background/Background';
 import * as styles from './styles.module.css';
 
 const HEADER_HEIGHT = 72;
@@ -41,6 +42,15 @@ export function PageLayout({
   hardwareImportStyle,
   ...props
 }: React.HTMLProps<HTMLDivElement> & { hardwareImportStyle?: boolean }) {
+  useBodyStyle(
+    useMemo(
+      () => ({
+        ['--background' as string]: 'var(--neutral-100)',
+      }),
+      []
+    )
+  );
+
   return (
     <div
       style={{
