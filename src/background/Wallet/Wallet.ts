@@ -1125,7 +1125,6 @@ export class Wallet {
       values: [networkConfig],
       origin,
     });
-    return;
   }
 
   async removeEthereumChain({

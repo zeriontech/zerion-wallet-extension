@@ -94,7 +94,7 @@ export function RpcUrlForm({
           required={true}
         />
         <ArrowDownIcon
-          style={{ width: 16, height: 16, color: 'var(--neutral-500)' }}
+          style={{ width: 24, height: 24, color: 'var(--neutral-500)' }}
         />
         <Field
           ref={newRpcUrlRef}
