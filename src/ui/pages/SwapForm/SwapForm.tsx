@@ -298,20 +298,6 @@ export function SwapForm() {
     resetApproveMutation,
   ]);
 
-  useEffect(() => {
-    swapView.store.on('change', (state, prevState) => {
-      const keys = [
-        'chainInput',
-        'spendInput',
-        'spendTokenInput',
-        'receiveTokenInput',
-      ] as const;
-      if (keys.some((key) => state[key] !== prevState[key])) {
-        resetApproveMutation();
-      }
-    });
-  }, [resetApproveMutation, swapView.store]);
-
   const {
     mutate: sendTransaction,
     data: transactionHash,
@@ -349,6 +335,27 @@ export function SwapForm() {
       return 'sendTransaction';
     },
   });
+
+  const resetMutationIfNotLoading = useEvent(() => {
+    if (!isLoading) {
+      reset();
+    }
+  });
+
+  useEffect(() => {
+    swapView.store.on('change', (state, prevState) => {
+      const keys = [
+        'chainInput',
+        'spendInput',
+        'spendTokenInput',
+        'receiveTokenInput',
+      ] as const;
+      if (keys.some((key) => state[key] !== prevState[key])) {
+        resetMutationIfNotLoading();
+        resetApproveMutation();
+      }
+    });
+  }, [resetApproveMutation, resetMutationIfNotLoading, swapView.store]);
 
   const formId = useId();
 
