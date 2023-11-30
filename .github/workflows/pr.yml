@@ -53,7 +53,6 @@ jobs:
           DEFI_SDK_API_TOKEN: Zerion.0JOY6zZTTw6yl5Cvz9sdmXc7d5AhzVMG
           SOCIAL_API_URL: ${{ github.event.inputs.SOCIAL_API_URL || 'https://social.zerion.io/' }}
           TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
-          FEATURE_WAITLIST_ONBOARDING: on
           FEATURE_SEND_FORM: on
         run: |
           npm install
