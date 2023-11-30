@@ -51,7 +51,7 @@ import { VersionUpgrade } from '../components/VersionUpgrade';
 import { queryClient } from '../shared/requests/queryClient';
 import { ForgotPassword } from '../pages/ForgotPassword';
 import { AbilityPage } from '../pages/Feed/Ability';
-import { BugReportButton } from '../components/BugReportButton';
+import { FooterBugReportButton } from '../components/BugReportButton';
 import { Receive } from '../pages/Receive';
 import { KeyboardShortcut } from '../components/KeyboardShortcut';
 import { initialize as initializeApperance } from '../features/appearance';
@@ -463,7 +463,7 @@ export function App({ initialView, mode, inspect }: AppProps) {
                 </ViewSuspense>
               </VersionUpgrade>
             </ErrorBoundary>
-            <BugReportButton />
+            <FooterBugReportButton />
           </Router>
         </QueryClientProvider>
       </UIContext.Provider>
