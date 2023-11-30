@@ -79,7 +79,10 @@ export const BaseDialog = React.forwardRef(
       }
       const handler = (event: MouseEvent) => {
         if (event.target === dialogRef.current) {
-          dialogRef.current?.close();
+          if (dialogRef.current) {
+            dialogRef.current.returnValue = '';
+            dialogRef.current.close();
+          }
           onClosedRef.current?.();
         }
       };
