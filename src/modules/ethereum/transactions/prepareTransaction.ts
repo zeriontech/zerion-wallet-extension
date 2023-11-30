@@ -30,6 +30,9 @@ export function prepareTransaction(incomingTransaction: IncomingTransaction) {
   if (incomingTransaction.gas) {
     transaction.gasLimit = valueToHex(incomingTransaction.gas);
   }
+  if (incomingTransaction.value) {
+    transaction.value = valueToHex(incomingTransaction.value);
+  }
   if (
     incomingTransaction.chainId &&
     typeof incomingTransaction.chainId === 'string'

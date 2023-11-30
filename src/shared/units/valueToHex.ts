@@ -5,6 +5,8 @@ import { hexValue, isHexString } from '@ethersproject/bytes';
 export function valueToHex(value: BigNumberish): string {
   if (isHexString(value)) {
     return value as string;
+  } else if (value === '') {
+    return value;
   } else if (typeof value === 'string') {
     return hexValue(BigNumber.from(value));
   } else {
