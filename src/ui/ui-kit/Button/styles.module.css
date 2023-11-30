@@ -82,6 +82,7 @@
 
 .text-primary {
   padding: 0;
+  border-radius: 0;
   background-color: transparent;
   --button-text: var(--black);
   --button-text-hover: var(--primary);

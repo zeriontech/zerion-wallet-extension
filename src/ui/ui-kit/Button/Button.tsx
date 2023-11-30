@@ -37,7 +37,7 @@ const kinds: { [kind in Kind]: (size: number) => React.CSSProperties } = {
     const padding = size <= 44 ? 4 : 8;
     return { paddingLeft: padding, paddingRight: padding };
   },
-  'text-primary': () => ({ height: 'auto' }),
+  'text-primary': () => ({ height: 'auto', borderRadius: 0 }),
 };
 
 interface Props {
