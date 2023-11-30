@@ -13,6 +13,7 @@ import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 import { createChain } from 'src/modules/networks/Chain';
 import { NBSP } from 'src/ui/shared/typography';
 import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
+import { useCustomValidity } from 'src/ui/shared/forms/useCustomValidity';
 import { FiatInputValue } from '../FiatInputValue';
 import { MarketAssetSelect } from './MarketAssetSelect';
 
@@ -47,6 +48,15 @@ export function ReceiveTokenField({
   }, [primaryInput, receiveInput]);
 
   const inputId = useId();
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useCustomValidity({
+    ref: inputRef,
+    customValidity:
+      primaryInput === 'receive' && receiveInput && Number(receiveInput) <= 0
+        ? 'Enter a positive amount'
+        : '',
+  });
   return (
     <>
       <FormFieldset
@@ -80,6 +90,7 @@ export function ReceiveTokenField({
             render={({ value, handleChange }) => (
               <UnstyledInput
                 readOnly={readOnly}
+                ref={inputRef}
                 style={{
                   textAlign: 'end',
                   textOverflow: 'ellipsis',

@@ -3,7 +3,6 @@ import type { Asset } from 'defi-sdk';
 import type { SwapFormView } from '@zeriontech/transactions';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { getError } from 'src/shared/errors/getError';
 import { baseToCommon } from 'src/shared/units/convert';
 import BigNumber from 'bignumber.js';
 import { getDecimals } from 'src/modules/networks/asset';
@@ -12,6 +11,7 @@ import { createChain } from 'src/modules/networks/Chain';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { animated, useTransition } from '@react-spring/web';
 import type { QuotesData } from './useQuotes';
+import { getQuotesErrorMessage } from './getQuotesErrorMessage';
 
 function getRate({
   spendAsset,
@@ -175,7 +175,7 @@ export function RateLine({
           </HStack>
         ) : error ? (
           <UIText kind="small/regular" color="var(--notice-600)">
-            {getError(error).message}
+            {getQuotesErrorMessage(quotesData)}
           </UIText>
         ) : null}
       </span>

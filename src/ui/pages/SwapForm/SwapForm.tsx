@@ -38,8 +38,6 @@ import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTML
 import { TransactionConfirmationView } from 'src/ui/components/address-action/TransactionConfirmationView';
 import { AnimatedAppear } from 'src/ui/components/AnimatedAppear';
 import { ViewLoadingSuspense } from 'src/ui/components/ViewLoading/ViewLoading';
-import type { FormErrorDescription } from 'src/ui/shared/forms/useFormValidity';
-import { useFormValidity } from 'src/ui/shared/forms/useFormValidity';
 import { getPositionBalance } from 'src/ui/components/Positions/helpers';
 import { isPremiumMembership } from 'src/ui/shared/requests/premium/isPremiumMembership';
 import type { NetworkGroups } from 'src/ui/components/NetworkSelectDialog';
@@ -61,6 +59,7 @@ import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMe
 import { SpendTokenField } from './fieldsets/SpendTokenField';
 import { ReceiveTokenField } from './fieldsets/ReceiveTokenField';
 import { RateLine } from './Quotes';
+import type { QuotesData } from './Quotes/useQuotes';
 import { useQuotes } from './Quotes/useQuotes';
 import { SuccessState } from './SuccessState';
 import * as styles from './styles.module.css';
@@ -73,36 +72,17 @@ import {
 } from './reverse/reverse-button-helpers';
 import { ProtocolFeeLine } from './shared/ProtocolFeeLine';
 import { SlippageSettings } from './SlippageSettings';
+import { getQuotesErrorMessage } from './Quotes/getQuotesErrorMessage';
 
 const rootNode = getRootDomNode();
 
-function getSubmitHint({
-  formError,
-}: {
-  formError: FormErrorDescription | null;
-}) {
-  if (formError) {
-    const formMessages: Record<string, string> = {
-      spendInput: 'Enter amount',
-      receiveInput: 'Enter amount',
-    };
-    if (formError.name in formMessages) {
-      return formMessages[formError.name];
-    } else {
-      return null;
-    }
-  } else {
-    return null;
-  }
-}
-
 function FormHint({
   swapView,
-  // formError,
+  quotesData,
   render,
 }: {
   swapView: SwapFormView;
-  // formError: FormErrorDescription | null;
+  quotesData: QuotesData;
   render: (message: string | null) => React.ReactNode;
 }) {
   const { spendPosition } = swapView;
@@ -127,6 +107,8 @@ function FormHint({
     message = 'Enter amount';
   } else if (invalidValue) {
     message = 'Incorrect amount';
+  } else if (quotesData.error) {
+    message = getQuotesErrorMessage(quotesData);
   }
   return render(message);
 }
@@ -187,7 +169,6 @@ export function SwapForm() {
   const { spendPosition, receivePosition, handleChange } = swapView;
 
   const formRef = useRef<HTMLFormElement | null>(null);
-  const { validity, handleFormChange } = useFormValidity({ formRef });
   const quotesData = useQuotes({ address, swapView });
   const {
     transaction: swapTransaction,
@@ -514,7 +495,6 @@ export function SwapForm() {
       <form
         id={formId}
         ref={formRef}
-        onChange={handleFormChange}
         onSubmit={(event) => {
           event.preventDefault();
 
@@ -656,7 +636,7 @@ export function SwapForm() {
               </UIText>
               {wallet ? (
                 <FormHint
-                  // formError={validity.formError}
+                  quotesData={quotesData}
                   swapView={swapView}
                   render={(hint) => (
                     <SignTransactionButton
@@ -667,15 +647,24 @@ export function SwapForm() {
                       disabled={
                         isLoading ||
                         quotesData.isLoading ||
-                        Boolean(quote && !swapTransaction)
+                        Boolean((quote && !swapTransaction) || quotesData.error)
                       }
                     >
-                      {hint ||
-                        (quotesData.isLoading
-                          ? 'Fetching offers'
-                          : isLoading
-                          ? 'Sending...'
-                          : 'Swap')}
+                      <span
+                        style={{
+                          display: 'block',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {hint ||
+                          (quotesData.isLoading
+                            ? 'Fetching offers'
+                            : isLoading
+                            ? 'Sending...'
+                            : 'Swap')}
+                      </span>
                     </SignTransactionButton>
                   )}
                 />
