@@ -1119,8 +1119,9 @@ export class Wallet {
     chainConfigStore.updateEthereumChain(networkConfig, {
       origin,
     });
+    const chain = createChain(networkConfig.chain);
+    this.setChainForOrigin(chain, origin);
 
-    this.emitter.emit('chainChanged', createChain(networkConfig.chain), origin);
     emitter.emit('updateEthereumChain', {
       values: [networkConfig],
       origin,
