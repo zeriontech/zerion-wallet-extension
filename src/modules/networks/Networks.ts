@@ -94,9 +94,9 @@ export class Networks {
     networks: NetworkConfig[];
     ethereumChainSources?: EthereumChainSources;
   }) {
-    this.networks = networks.sort((a, b) =>
-      localeCompareWithPriority(a.name, b.name, 'Ethereum')
-    );
+    this.networks = networks
+      .filter((network) => Boolean(network.evm_id))
+      .sort((a, b) => localeCompareWithPriority(a.name, b.name, 'Ethereum'));
     this.ethereumChainSources = ethereumChainSources;
     const {
       collection,
