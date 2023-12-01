@@ -8,6 +8,7 @@ import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { Input } from 'src/ui/ui-kit/Input';
+import { clipboardWarning } from 'src/ui/pages/BackupWallet/clipboardWarning';
 import { useSizeStore } from '../useSizeStore';
 import { useMnemonicInput } from '../shared/useMnemonicInput';
 import * as helperStyles from '../shared/helperStyles.module.css';
@@ -22,10 +23,12 @@ export function VerifyBackup({ onSuccess }: { onSuccess(): void }) {
   const { isNarrowView } = useSizeStore();
   const [value, setValue] = useState(() => ARRAY_OF_NUMBERS.map(() => ''));
   const [validationError, setValidationError] = useState(false);
+  const isTechnicalHint = clipboardWarning.isWarningMessage(value);
 
   const { getInputProps } = useMnemonicInput({
     setValue,
     maxInputNumber: INPUT_NUMBER,
+    showCleanedClipboardMessage: isTechnicalHint,
   });
 
   const { data: mnemonic, isLoading, error } = usePendingRecoveryPhrase();
@@ -99,7 +102,7 @@ export function VerifyBackup({ onSuccess }: { onSuccess(): void }) {
                       {...getInputProps(index)}
                       id={`word-${index}`}
                       name={`word-${index}`}
-                      style={{ width: '100%', paddingLeft: 32 }}
+                      style={{ width: '100%', paddingLeft: 30 }}
                       value={value[index]}
                     />
                     <UIText
@@ -131,6 +134,12 @@ export function VerifyBackup({ onSuccess }: { onSuccess(): void }) {
                   style={errorStyle}
                 >
                   Incorrect seed phrase
+                </UIText>
+              ) : isTechnicalHint ? (
+                <UIText kind="caption/regular" color="var(--notice-500)">
+                  We cleared your clipboard after you copied the recovery
+                  phrase. If you saved it somewhere, you can copy and paste it
+                  here now.
                 </UIText>
               ) : null}
             </VStack>

@@ -14,6 +14,8 @@ import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import { BlurredToggle } from 'src/ui/pages/BackupWallet/BlurredToggle';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
+import { clipboardWarning } from 'src/ui/pages/BackupWallet/clipboardWarning';
+import { SeedType } from 'src/shared/SeedType';
 import { useSizeStore } from '../useSizeStore';
 import * as helperStyles from '../shared/helperStyles.module.css';
 import { isSessionExpiredError } from '../shared/isSessionExpiredError';
@@ -38,6 +40,15 @@ export function Backup({
 
   const { handleCopy, isSuccess: isCopySuccess } = useCopyToClipboard({
     text: mnemonic || '',
+  });
+
+  const { handleCopy: emptyClipboard } = useCopyToClipboard({
+    // We replace user clipboard with a warning message.
+    // This works as "emptying" the clipboard, but it's more helpful
+    // than just putting empty string there, in my opinion.
+    // Also, if we see the user pasting this message, we can show a more
+    // detailed message about what's going on.
+    text: clipboardWarning.getMessage(SeedType.mnemonic),
   });
 
   return (
@@ -123,7 +134,10 @@ export function Backup({
               <VStack gap={16}>
                 <Button
                   disabled={isLoading || Boolean(error)}
-                  onClick={onNextStep}
+                  onClick={() => {
+                    emptyClipboard();
+                    onNextStep();
+                  }}
                 >
                   Verify Backup
                 </Button>
