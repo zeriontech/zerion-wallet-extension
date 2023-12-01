@@ -7,7 +7,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { getAddressNftPosition } from 'src/ui/pages/NonFungibleToken/useAddressNftPosition';
 import { NetworkId } from 'src/modules/networks/NetworkId';
-import { DelayedRender } from 'src/ui/components/DelayedRender';
+import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import BackgroundImg1 from '../../assets/self-custodial.png';
 import BackgroundImg2 from '../../assets/seek-alpha.png';
 import BackgroundImg3 from '../../assets/dont-be-maxi.png';
@@ -68,6 +68,8 @@ export function UpgradeDnaWaiting() {
     }
   }, [data, address, navigate, value]);
 
+  const showDeadlingTitle = useRenderDelay(5000);
+
   return (
     <div className={helpersStyles.container} style={{ height: 600 }}>
       <img
@@ -103,15 +105,15 @@ export function UpgradeDnaWaiting() {
         >
           Applying New Background
         </UIText>
-        <DelayedRender delay={5000}>
-          <UIText
-            kind="body/accent"
-            color="var(--always-white)"
-            style={{ textAlign: 'center' }}
-          >
-            It can take around 30 sec
-          </UIText>
-        </DelayedRender>
+        <UIText
+          kind="body/accent"
+          color="var(--always-white)"
+          style={{ textAlign: 'center' }}
+        >
+          {showDeadlingTitle
+            ? 'Onchain magic can take around 30 seconds'
+            : 'DNA sequencing in progress'}
+        </UIText>
       </VStack>
     </div>
   );
