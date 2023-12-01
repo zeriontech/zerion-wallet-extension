@@ -38,7 +38,7 @@ Run the following command to install all the required dependencies. This command
 npm install
 ```
 
-### Set Up Your .env File
+### 3. Set Up Your .env File
 
 Copy the `.env.example` file:
 
