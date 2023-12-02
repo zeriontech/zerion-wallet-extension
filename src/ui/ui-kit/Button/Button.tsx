@@ -14,6 +14,7 @@ type Kind =
   | 'neutral'
   | 'ghost'
   | 'danger'
+  | 'loading-border'
   | 'text-primary';
 type Size = 60 | 56 | 48 | 44 | 40 | 36 | 32 | 28;
 
@@ -38,6 +39,7 @@ const kinds: { [kind in Kind]: (size: number) => React.CSSProperties } = {
     return { paddingLeft: padding, paddingRight: padding };
   },
   'text-primary': () => ({ height: 'auto', borderRadius: 0 }),
+  'loading-border': () => ({ border: '2px solid transparent' }),
 };
 
 interface Props {

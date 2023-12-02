@@ -29,6 +29,7 @@ import { useErrorBoundary } from 'src/ui/shared/useErrorBoundary';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { HardwareSignMessage } from '../HardwareWalletConnection/HardwareSignMessage';
+import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 
 function MessageRow({ message }: { message: string }) {
   return (
@@ -46,14 +47,6 @@ function MessageRow({ message }: { message: string }) {
       </Surface>
     </VStack>
   );
-}
-
-function errorToMessage(error: Error) {
-  const fallbackString = 'Unknown Error';
-  if ('message' in error) {
-    return error.message;
-  }
-  return fallbackString;
 }
 
 function SignMessageContent({
@@ -157,7 +150,7 @@ function SignMessageContent({
             {personalSignMutation.isError
               ? getError(personalSignMutation.error).message
               : hardwareSignError
-              ? errorToMessage(hardwareSignError)
+              ? txErrorToMessage(hardwareSignError)
               : null}
           </UIText>
 

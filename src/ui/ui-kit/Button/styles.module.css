@@ -4,6 +4,10 @@
   color: var(--button-text);
 }
 
+.button:disabled {
+  cursor: default;
+}
+
 .asButton {
   display: inline-flex;
   align-items: center;
@@ -37,7 +41,6 @@
 }
 
 .primary:disabled {
-  cursor: default;
   background-color: var(--neutral-600);
   --button-text: var(--neutral-400);
 }
@@ -58,10 +61,6 @@
   border-radius: 4px;
   padding: 4px;
   --button-background-hover: var(--neutral-200);
-}
-
-.ghost:disabled {
-  cursor: default;
 }
 
 .ghost:not(:disabled):active {
@@ -94,3 +93,37 @@
     background-color: var(--button-background-hover, var(--button-background));
   }
 }
+
+/** >>>> Gradient-border button */
+@property --angle {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: 0deg;
+}
+
+@keyframes rotate-gradient {
+  from {
+    --angle: 0deg;
+  }
+  to {
+    --angle: 360deg;
+  }
+}
+
+.loading-border.loading-border {
+  --button-background: var(--white);
+  --button-text: var(--black);
+  --angle: 0deg;
+  background: linear-gradient(
+        var(--button-background),
+        var(--button-background)
+      )
+      padding-box,
+    conic-gradient(from var(--angle), var(--neutral-300), var(--black))
+      border-box;
+  border: 2px solid transparent;
+  border-radius: 16px;
+  animation: rotate-gradient 2.5s infinite linear;
+}
+
+/** <<<< Gradient-border button */
