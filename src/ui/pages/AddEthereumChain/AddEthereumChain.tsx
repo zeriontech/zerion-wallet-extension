@@ -62,7 +62,9 @@ function AddOrUpdateChain({
 
   const { network, prevNetwork } = useMemo(() => {
     const chainId = valueToHex(addEthereumChainParameter.chainId);
-    const prevNetwork = networks?.getNetworkById(chainId) ?? null;
+    const prevNetwork = networks?.hasNetworkById(chainId)
+      ? networks.getNetworkById(chainId) ?? null
+      : null;
     const chain = prevNetwork ? createChain(prevNetwork.chain) : null;
     const network = toNetworkConfig(addEthereumChainParameter, chain);
     return { network, prevNetwork };
