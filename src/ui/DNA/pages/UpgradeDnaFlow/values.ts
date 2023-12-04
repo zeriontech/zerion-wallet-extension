@@ -40,3 +40,11 @@ export const VALUE_TEXTS: Record<
       'Be true to yourself and to others, and be open & proactive about it.',
   },
 };
+
+export const VALUE_IMAGE_URLS = [
+  'https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/self-custodial.png',
+  'https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/seek-alpha.png',
+  'https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/dont-be-maxi.png',
+  'https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/be-invested.png',
+  'https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/its-all-on-chain.png',
+];

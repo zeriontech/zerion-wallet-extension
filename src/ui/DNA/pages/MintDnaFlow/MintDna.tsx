@@ -31,12 +31,6 @@ import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTML
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { invariant } from 'src/shared/invariant';
 import { SidePanel } from 'src/ui/Onboarding/FAQ/SidePanel';
-import Dna1 from '../../assets/dna_1.png';
-import Dna2 from '../../assets/dna_2.png';
-import Dna3 from '../../assets/dna_3.png';
-import Dna4 from '../../assets/dna_4.png';
-import Dna5 from '../../assets/dna_5.png';
-import Dna6 from '../../assets/dna_6.png';
 import * as helpersStyles from '../../shared/styles.module.css';
 import { Step } from '../../shared/Step';
 import { DNA_MINT_CONTRACT_ADDRESS } from '../../shared/constants';
@@ -297,7 +291,7 @@ export function MintDna() {
         <div style={{ position: 'absolute', bottom: -4, left: 128 }}>
           <animated.div style={chainAppearStyle[4]}>
             <img
-              src={Dna6}
+              src="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/dna-6.png"
               alt="dna image"
               style={{ objectFit: 'contain', width: 202 }}
             />
@@ -306,7 +300,7 @@ export function MintDna() {
         <div style={{ position: 'absolute', bottom: -4, left: 193 }}>
           <animated.div style={chainAppearStyle[3]}>
             <img
-              src={Dna5}
+              src="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/dna-5.png"
               alt="dna image"
               style={{ objectFit: 'contain', width: 220 }}
             />
@@ -315,7 +309,7 @@ export function MintDna() {
         <div style={{ position: 'absolute', bottom: -4, left: 250 }}>
           <animated.div style={chainAppearStyle[2]}>
             <img
-              src={Dna4}
+              src="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/dna-4.png"
               alt="dna image"
               style={{ width: 248, height: 264 }}
             />
@@ -324,7 +318,7 @@ export function MintDna() {
         <div style={{ position: 'absolute', bottom: -4, left: 330 }}>
           <animated.div style={chainAppearStyle[1]}>
             <img
-              src={Dna3}
+              src="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/dna-3.png"
               alt="dna image"
               style={{ objectFit: 'contain', width: 244 }}
             />
@@ -333,7 +327,7 @@ export function MintDna() {
         <div style={{ position: 'absolute', bottom: -4, left: 385 }}>
           <animated.div style={chainAppearStyle[0]}>
             <img
-              src={Dna2}
+              src="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/dna-2.png"
               alt="dna image"
               style={{ objectFit: 'contain', width: 273 }}
             />
@@ -348,7 +342,7 @@ export function MintDna() {
               }}
             >
               <img
-                src={Dna1}
+                src="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/dna-1.png"
                 alt="dna image"
                 style={{ objectFit: 'contain', width: 270 }}
               />
