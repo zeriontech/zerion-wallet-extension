@@ -1635,7 +1635,7 @@ class PublicController {
         },
       });
     }).then(() => {
-      // Automatically switch dapp to this network because this is what most dapp seem to expect
+      // Automatically switch dapp to this network because this is what most dapps seem to expect
       return this.wallet_switchEthereumChain({
         id,
         context,
