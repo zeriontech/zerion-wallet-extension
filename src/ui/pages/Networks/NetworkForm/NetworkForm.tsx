@@ -239,7 +239,7 @@ export function NetworkForm({
             <Field
               label="RPC URL"
               name="rpc_url_user"
-              placeholder={new URL(network.rpc_url_internal).hostname}
+              placeholder={network.rpc_url_internal}
               type="url"
               defaultValue={network.rpc_url_user || ''}
               error={errors.rpc_url_user}
@@ -253,7 +253,7 @@ export function NetworkForm({
               name="rpc_url_user"
               type="url"
               defaultValue={network.rpc_url_user}
-              error={errors['rpc_url_user']}
+              error={errors.rpc_url_user}
               disabled={disabledFields?.has('rpc_url_user')}
               required={true}
             />

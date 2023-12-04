@@ -34,8 +34,8 @@ export class ChainConfigStore extends PersistentStore<ChainConfig> {
     const existingItems = new Map(
       state.ethereumChains.map((config) => [config.value.chain, config])
     );
-    const chainId = value.external_id; // ethers.utils.hexValue(value.chainId);
-    const existingEntry = existingItems.get(chainId);
+
+    const existingEntry = existingItems.get(value.chain);
     const now = Date.now();
     const newEntry = {
       origin,
@@ -55,25 +55,6 @@ export class ChainConfigStore extends PersistentStore<ChainConfig> {
     });
     this.setState(newState);
     return newEntry;
-  }
-
-  updateEthereumChain(value: NetworkConfig, { origin }: { origin: string }) {
-    const state = this.getState();
-    const chainIndex = state.ethereumChains.findIndex(
-      (item) => value.external_id === item.value.external_id
-    );
-    if (chainIndex === -1) {
-      throw new Error(
-        `Network with external_id = ${value.external_id} doesn't exist`
-      );
-    }
-    const newState = produce(state, (draft) => {
-      const chain = draft.ethereumChains[chainIndex];
-      chain.value = value;
-      chain.origin = origin;
-      chain.updated = Date.now();
-    });
-    this.setState(newState);
   }
 
   removeEthereumChain(chain: Chain) {
