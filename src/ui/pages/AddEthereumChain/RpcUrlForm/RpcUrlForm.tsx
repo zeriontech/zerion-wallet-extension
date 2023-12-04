@@ -110,28 +110,22 @@ export function RpcUrlForm({
         <ArrowDownIcon
           style={{ width: 24, height: 24, color: 'var(--neutral-500)' }}
         />
-        {prevNetwork.rpc_url_internal || prevNetwork.rpc_url_user ? (
+        <Field
+          label="New RPC URL"
           /**
            * If network HAS `rpc_url_internal`, we introduce a `rpc_url_user` field
            * as a mechanism to overwrite it,
            * else - we use `rpc_url_public`
            */
-          <Field
-            label="New RPC URL"
-            name="rpc_url_user"
-            type="url"
-            defaultValue={network.rpc_url_public?.[0] || ''}
-            required={true}
-          />
-        ) : (
-          <Field
-            label="New RPC URL"
-            name="rpc_url_public[]"
-            type="url"
-            defaultValue={network.rpc_url_public?.[0] || ''}
-            required={true}
-          />
-        )}
+          name={
+            prevNetwork.rpc_url_internal || prevNetwork.rpc_url_user
+              ? 'rpc_url_user'
+              : 'rpc_url_public[]'
+          }
+          type="url"
+          defaultValue={network.rpc_url_public?.[0] || ''}
+          required={true}
+        />
         <UIText kind="small/regular" color="var(--neutral-500)">
           You can always revert this change and switch back to the default RPC
           URL from your network settings at any time

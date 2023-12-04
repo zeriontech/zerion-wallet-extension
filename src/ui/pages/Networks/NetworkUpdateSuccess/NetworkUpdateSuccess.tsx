@@ -10,8 +10,6 @@ import { noValueDash } from 'src/ui/shared/typography';
 import { Button } from 'src/ui/ui-kit/Button';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import { useNetworks } from 'src/modules/networks/useNetworks';
-import { createChain } from 'src/modules/networks/Chain';
 import { Networks } from 'src/modules/networks/Networks';
 import { ValueCell } from '../shared/ValueCell';
 
@@ -24,10 +22,8 @@ export function NetworkUpdateSuccess({
   prevNetwork: NetworkConfig;
   onClose: () => void;
 }) {
-  const { networks } = useNetworks();
-
   const prevRpcUrl = Networks.getNetworkRpcUrlInternal(prevNetwork);
-  const rpcUrl = networks?.getRpcUrlInternal(createChain(network.chain));
+  const rpcUrl = Networks.getNetworkRpcUrlInternal(network);
   const networkName = network.name || network.external_id;
 
   return (
