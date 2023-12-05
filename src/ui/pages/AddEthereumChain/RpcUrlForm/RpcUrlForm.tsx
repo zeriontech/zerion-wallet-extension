@@ -4,10 +4,8 @@ import merge from 'lodash/merge';
 import ArrowDownIcon from 'jsx:src/ui/assets/arrow-down.svg';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { Button } from 'src/ui/ui-kit/Button';
-import { Input } from 'src/ui/ui-kit/Input';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { ZStack } from 'src/ui/ui-kit/ZStack';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Content } from 'react-area';
@@ -17,37 +15,7 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { createChain } from 'src/modules/networks/Chain';
 import { collectData } from 'src/ui/shared/form-data';
-
-const Field = React.forwardRef(
-  (
-    {
-      label,
-      disabled,
-      ...inputProps
-    }: {
-      label: React.ReactNode;
-    } & React.InputHTMLAttributes<HTMLInputElement>,
-    ref: React.Ref<HTMLInputElement>
-  ) => {
-    const id = useId();
-    return (
-      <VStack gap={4}>
-        <UIText kind="small/accent" as="label" htmlFor={id}>
-          {label}
-        </UIText>
-        <ZStack>
-          <Input
-            id={id}
-            ref={ref}
-            disabled={disabled}
-            boxHeight={40}
-            {...inputProps}
-          />
-        </ZStack>
-      </VStack>
-    );
-  }
-);
+import { Field } from '../../Networks/NetworkForm/NetworkForm';
 
 export function RpcUrlForm({
   network,

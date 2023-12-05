@@ -25,7 +25,7 @@ function isCompleteNetwork(x: InitialNetworkConfig): x is NetworkConfig {
   return x.chain != null && x.chain !== '';
 }
 
-function Field({
+export function Field({
   label,
   error,
   disabled,
