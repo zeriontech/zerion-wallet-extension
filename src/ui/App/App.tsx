@@ -306,7 +306,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             }
           />
           <Route
-            path="/addEthereumChain"
+            path="/addEthereumChain/*"
             element={
               <RequireAuth>
                 <AddEthereumChain />

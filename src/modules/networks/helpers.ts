@@ -2,20 +2,23 @@ import { nanoid } from 'nanoid';
 import { invariant } from 'src/shared/invariant';
 import type { AddEthereumChainParameter } from '../ethereum/types/AddEthereumChainParameter';
 import type { NetworkConfig } from './NetworkConfig';
+import type { Chain } from './Chain';
 
 export function toNetworkConfig(
-  value: AddEthereumChainParameter
+  value: AddEthereumChainParameter,
+  chain: Chain | null
 ): NetworkConfig {
   invariant(value.rpcUrls, 'RPC URL should be defined in network config');
-  const chain = nanoid();
+  invariant(value.chainId, 'chainId should be defined in network config');
+  const id = chain?.toString() || nanoid();
   return {
     supports_sending: true,
     supports_trading: false,
     supports_bridge: false,
     name: value.chainName,
     external_id: value.chainId,
-    id: chain,
-    chain,
+    id,
+    chain: id,
     explorer_home_url: value.blockExplorerUrls?.[0] || null,
     explorer_address_url: null,
     explorer_name: null,
@@ -29,7 +32,7 @@ export function toNetworkConfig(
       symbol: value.nativeCurrency?.symbol,
       id: value.nativeCurrency?.symbol?.toLowerCase() === 'eth' ? 'eth' : '',
     },
-    rpc_url_internal: value.rpcUrls[0],
+    rpc_url_internal: null,
     rpc_url_public: value.rpcUrls,
     wrapped_native_asset: null,
   };

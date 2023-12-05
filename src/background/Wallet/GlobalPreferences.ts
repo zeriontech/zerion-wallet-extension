@@ -95,7 +95,7 @@ export class GlobalPreferences extends PersistentStore<State> {
           delete valueWithoutDefaults[key];
         }
       }
-      // we need to remove all empty walletNageFlags configs if they don't override default settings
+      // we need to remove all empty walletNameFlags configs if they don't override default settings
       for (const origin in valueWithoutDefaults.walletNameFlags) {
         if (
           (!valueWithoutDefaults.walletNameFlags[origin].length &&

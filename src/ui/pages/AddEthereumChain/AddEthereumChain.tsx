@@ -1,8 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
+import { Route, Routes, useSearchParams } from 'react-router-dom';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
-import type { EthereumChainConfig } from 'src/modules/ethereum/chains/ChainConfigStore';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { toNetworkConfig } from 'src/modules/networks/helpers';
 import { invariant } from 'src/shared/invariant';
@@ -19,10 +18,26 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
+import { RenderArea } from 'react-area';
+import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
+import type { EthereumChainConfig } from 'src/modules/ethereum/chains/ChainConfigStore';
+import { valueToHex } from 'src/shared/units/valueToHex';
+import { createChain } from 'src/modules/networks/Chain';
+import { networksStore } from 'src/modules/networks/networks-store.client';
+import { Networks } from 'src/modules/networks/Networks';
+import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { NetworkForm } from '../Networks/NetworkForm';
 import { NetworkCreateSuccess } from '../Networks/NetworkCreateSuccess';
+import { NetworkUpdateSuccess } from '../Networks/NetworkUpdateSuccess';
+import { RpcUrlForm } from './RpcUrlForm';
+import { RpcUrlHelp } from './RpcUrlHelp';
 
-function AddChain({
+interface AddChainResult {
+  config: EthereumChainConfig;
+  prevNetwork: NetworkConfig | null;
+}
+
+function AddOrUpdateChain({
   origin,
   addEthereumChainParameterStringified,
   onReject,
@@ -31,8 +46,9 @@ function AddChain({
   origin: string;
   addEthereumChainParameterStringified: string;
   onReject: () => void;
-  onSuccess: (result: EthereumChainConfig) => void;
+  onSuccess: (value: AddChainResult) => void;
 }) {
+  const [params] = useSearchParams();
   const hostname = useMemo(() => new URL(origin).hostname, [origin]);
   const addEthereumChainParameter = useMemo(
     () =>
@@ -41,59 +57,107 @@ function AddChain({
       ) as AddEthereumChainParameter,
     [addEthereumChainParameterStringified]
   );
+
+  const { networks } = useNetworks();
+
+  const { network, prevNetwork } = useMemo(() => {
+    const chainId = valueToHex(addEthereumChainParameter.chainId);
+    const prevNetwork = networks?.hasNetworkById(chainId)
+      ? networks.getNetworkById(chainId) ?? null
+      : null;
+    const chain = prevNetwork ? createChain(prevNetwork.chain) : null;
+    const network = toNetworkConfig(addEthereumChainParameter, chain);
+    return { network, prevNetwork };
+  }, [addEthereumChainParameter, networks]);
+
   const addEthereumChainMutation = useMutation({
-    mutationFn: (param: NetworkConfig) => {
-      return walletPort.request('addEthereumChain', {
+    mutationFn: async (param: NetworkConfig) => {
+      const config = await walletPort.request('addEthereumChain', {
         values: [param],
         origin,
       });
+      return { config, prevNetwork };
     },
-    onSuccess: (result) => onSuccess(result),
+    onSuccess: (result) => {
+      networksStore.update();
+      onSuccess(result);
+    },
   });
-  const { networks } = useNetworks();
+
   const restrictedChainIds = useMemo(() => {
     return networks
       ? new Set(networks.getAllNetworks().map((n) => n.external_id))
       : null;
   }, [networks]);
+
   if (!restrictedChainIds) {
     return <ViewLoading kind="network" />;
   }
+
   return (
-    <PageColumn>
-      <NavigationTitle title={null} documentTitle="Add Ethereum Chain" />
-      <PageTop />
-      <div
-        style={{
-          padding: 16,
-          border: '1px solid var(--neutral-400)',
-          borderRadius: 12,
-        }}
-      >
-        <VStack gap={8}>
-          <HStack gap={8} alignItems="center">
-            <SiteFaviconImg url={origin} alt="" size={32} />
-            <UIText kind="headline/h2">{hostname}</UIText>
-          </HStack>
-          <UIText kind="small/accent" color="var(--neutral-500)">
-            Suggests you add this network
-          </UIText>
-        </VStack>
-      </div>
-      <Spacer height={16} />
-      <NetworkForm
-        network={toNetworkConfig(addEthereumChainParameter)}
-        submitText="Add"
-        isSubmitting={addEthereumChainMutation.isLoading}
-        onCancel={onReject}
-        onSubmit={(result) => {
-          addEthereumChainMutation.mutate(result);
-        }}
-        restrictedChainIds={restrictedChainIds}
-        disabledFields={null}
-      />
-      <PageBottom />
-    </PageColumn>
+    <>
+      <PageColumn>
+        <NavigationTitle
+          title={null}
+          documentTitle={prevNetwork ? 'Update network' : 'Add network'}
+        />
+        <PageTop />
+        <div
+          style={{
+            padding: 16,
+            border: '1px solid var(--neutral-400)',
+            borderRadius: 12,
+          }}
+        >
+          <VStack gap={8}>
+            <HStack gap={8} alignItems="center">
+              <SiteFaviconImg url={origin} alt="" size={32} />
+              <UIText kind="headline/h2">{hostname}</UIText>
+            </HStack>
+            <UIText kind="small/accent" color="var(--neutral-500)">
+              {`Suggests you ${
+                prevNetwork ? 'update RPC URL' : 'add this network'
+              }`}
+            </UIText>
+          </VStack>
+        </div>
+        <Spacer height={16} />
+        <UIText kind="headline/h1">
+          {prevNetwork?.name || Networks.getName(network)}
+        </UIText>
+        <Spacer height={16} />
+        {prevNetwork ? (
+          <RpcUrlForm
+            network={network}
+            prevNetwork={prevNetwork}
+            rpcUrlHelpHref={`/addEthereumChain/what-is-rpc-url?${params}`}
+            isSubmitting={addEthereumChainMutation.isLoading}
+            onCancel={onReject}
+            onSubmit={(network) => {
+              addEthereumChainMutation.mutate(network);
+            }}
+          />
+        ) : (
+          <NetworkForm
+            network={network}
+            submitText="Add"
+            isSubmitting={addEthereumChainMutation.isLoading}
+            onCancel={onReject}
+            onSubmit={(network) => {
+              addEthereumChainMutation.mutate(network);
+            }}
+            restrictedChainIds={restrictedChainIds}
+            disabledFields={null}
+            footerRenderArea="add-ethereum-chain-footer"
+          />
+        )}
+        <PageBottom />
+      </PageColumn>
+      <PageStickyFooter>
+        <RenderArea name="add-ethereum-chain-footer" />
+        <PageBottom />
+      </PageStickyFooter>
+    </>
   );
 }
 
@@ -108,14 +172,23 @@ function AddEthereumChainContent({
   onReject: () => void;
   onDone: () => void;
 }) {
-  const [result, setResult] = useState<EthereumChainConfig | null>(null);
+  const [result, setResult] = useState<AddChainResult | null>(null);
   useBackgroundKind({ kind: 'white' });
 
   if (result) {
-    return <NetworkCreateSuccess result={result} onDone={onDone} />;
+    return result.prevNetwork ? (
+      <NetworkUpdateSuccess
+        network={result.config.value}
+        prevNetwork={result.prevNetwork}
+        onClose={onDone}
+      />
+    ) : (
+      <NetworkCreateSuccess network={result.config.value} onDone={onDone} />
+    );
   }
+
   return (
-    <AddChain
+    <AddOrUpdateChain
       addEthereumChainParameterStringified={
         addEthereumChainParameterStringified
       }
@@ -137,12 +210,31 @@ export function AddEthereumChain() {
     addEthereumChainParameter,
     'addEtheretumChainParameter get-parameter is required for this view'
   );
+  const handleReject = useCallback(
+    () => windowPort.reject(windowId),
+    [windowId]
+  );
+
   return (
-    <AddEthereumChainContent
-      addEthereumChainParameterStringified={addEthereumChainParameter}
-      origin={origin}
-      onReject={useCallback(() => windowPort.reject(windowId), [windowId])}
-      onDone={useCallback(() => windowPort.confirm(windowId, null), [windowId])}
-    />
+    <>
+      <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <AddEthereumChainContent
+              addEthereumChainParameterStringified={addEthereumChainParameter}
+              origin={origin}
+              onReject={handleReject}
+              onDone={useCallback(
+                () => windowPort.confirm(windowId, null),
+                [windowId]
+              )}
+            />
+          }
+        />
+        <Route path="/what-is-rpc-url" element={<RpcUrlHelp />} />
+      </Routes>
+    </>
   );
 }

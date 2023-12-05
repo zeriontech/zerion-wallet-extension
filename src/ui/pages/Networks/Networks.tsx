@@ -161,7 +161,7 @@ function NetworkCreatePage({
         />
         <NetworkCreateSuccess
           paddingTop={24}
-          result={mutation.data}
+          network={mutation.data.value}
           onDone={() => {
             onSuccess(mutation.data.value);
             navigate(isFromSearch ? -2 : -1);

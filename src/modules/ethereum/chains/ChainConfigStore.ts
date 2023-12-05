@@ -34,8 +34,8 @@ export class ChainConfigStore extends PersistentStore<ChainConfig> {
     const existingItems = new Map(
       state.ethereumChains.map((config) => [config.value.chain, config])
     );
-    const chainId = value.external_id; // ethers.utils.hexValue(value.chainId);
-    const existingEntry = existingItems.get(chainId);
+
+    const existingEntry = existingItems.get(value.chain);
     const now = Date.now();
     const newEntry = {
       origin,

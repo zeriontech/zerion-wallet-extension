@@ -25,7 +25,7 @@ function isCompleteNetwork(x: InitialNetworkConfig): x is NetworkConfig {
   return x.chain != null && x.chain !== '';
 }
 
-function Field({
+export function Field({
   label,
   error,
   disabled,
@@ -239,13 +239,23 @@ export function NetworkForm({
             <Field
               label="RPC URL"
               name="rpc_url_user"
-              placeholder={new URL(network.rpc_url_internal).hostname}
+              placeholder={network.rpc_url_internal}
               type="url"
               defaultValue={network.rpc_url_user || ''}
               error={errors.rpc_url_user}
               disabled={disabledFields?.has('rpc_url_user')}
               // not required because rpc_url_internal is defined
               required={false}
+            />
+          ) : network.rpc_url_user ? (
+            <Field
+              label="RPC URL"
+              name="rpc_url_user"
+              type="url"
+              defaultValue={network.rpc_url_user}
+              error={errors.rpc_url_user}
+              disabled={disabledFields?.has('rpc_url_user')}
+              required={true}
             />
           ) : (
             <Field
