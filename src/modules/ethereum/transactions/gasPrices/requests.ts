@@ -90,7 +90,7 @@ class GasChainPricesSubscription {
     } else {
       return Promise.race([
         this.initiateRequest(),
-        rejectAfterDelay(10000),
+        rejectAfterDelay(10000, 'GasChainPricesSubscription'),
       ]).catch((error) => {
         this.initialPromise = null; // reset promise so that subsequent get() call will retry
         throw error;

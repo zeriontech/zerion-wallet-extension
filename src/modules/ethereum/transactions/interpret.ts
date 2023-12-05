@@ -12,7 +12,7 @@ export function interpretTransaction(
 ): Promise<InterpretResponse> {
   const gas = getGas(transaction);
   return Promise.race([
-    rejectAfterDelay(10000),
+    rejectAfterDelay(10000, 'interpret transaction'),
     new Promise<InterpretResponse>((resolve) => {
       let value: InterpretResponse | null = null;
 
@@ -68,7 +68,7 @@ export function interpretSignature({
   typedData: TypedData;
 }): Promise<InterpretResponse> {
   return Promise.race([
-    rejectAfterDelay(10000),
+    rejectAfterDelay(10000, 'interpret signature'),
     new Promise<InterpretResponse>((resolve) => {
       let value: InterpretResponse | null = null;
 

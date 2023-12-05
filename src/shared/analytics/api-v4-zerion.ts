@@ -24,7 +24,7 @@ export function createAddProviderHook({
     try {
       const provider = await Promise.race([
         getWalletProvider(address),
-        rejectAfterDelay(1000),
+        rejectAfterDelay(1000, `getWalletProvider(${address})`),
       ]);
       payload[ANALYTICS_WALLET_PROVIDER_KEY] = provider;
       return request;

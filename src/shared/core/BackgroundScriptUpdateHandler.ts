@@ -75,7 +75,7 @@ export class BackgroundScriptUpdateHandler {
     const number = getRandomInteger();
     return Promise.race([
       sendPortMessage<{ syn: number }, { ack: number }>(port, { syn: number }),
-      rejectAfterDelay(1000),
+      rejectAfterDelay(1000, 'sendPortMessage'),
     ])
       .then((response) => {
         if (!response || response.ack !== number + 1) {

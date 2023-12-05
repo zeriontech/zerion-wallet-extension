@@ -60,5 +60,8 @@ async function fetchTestnets() {
 const MAX_WAIT_TIME_MS = 12000;
 
 export async function getPredefinedChains(): Promise<ChainConfig> {
-  return Promise.race([fetchTestnets(), rejectAfterDelay(MAX_WAIT_TIME_MS)]);
+  return Promise.race([
+    fetchTestnets(),
+    rejectAfterDelay(MAX_WAIT_TIME_MS, 'fetchTestnets'),
+  ]);
 }

@@ -116,7 +116,7 @@ function ImportWallet() {
             address: data?.address || wallets[0].address,
           });
         })(),
-        rejectAfterDelay(3000),
+        rejectAfterDelay(10000, 'Onboarding Import: createUser'),
       ]);
     },
     onSuccess: () => {

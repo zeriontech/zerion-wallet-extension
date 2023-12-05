@@ -30,7 +30,7 @@ export function useAssetsInfoPaginatedQuery(
             }
           );
         }),
-        rejectAfterDelay(10000),
+        rejectAfterDelay(10000, 'assetsInfoPaginated'),
       ]);
     },
     getNextPageParam: (lastPage, allPages) => {
