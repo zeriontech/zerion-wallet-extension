@@ -18,7 +18,7 @@ import { getNetworkFeeEstimation } from 'src/modules/ethereum/transactions/gasPr
 import type { EIP1559 } from 'src/modules/ethereum/transactions/gasPrices/EIP1559';
 import { formatSeconds } from 'src/shared/units/formatSeconds';
 import { getDecimals } from 'src/modules/networks/asset';
-import { baseToCommon } from 'src/shared/units/convert';
+import { baseToCommon, commonToBase } from 'src/shared/units/convert';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import {
   queryGasPrices,
@@ -157,7 +157,8 @@ function calculateTransactionCosts({
   }
 
   const price = nativeAsset?.price?.value;
-  const totalValueExceedsBalance = totalValue.gt(nativeBalance);
+  const nativeBalanceBase = commonToBase(nativeBalance, decimals);
+  const totalValueExceedsBalance = totalValue.gt(nativeBalanceBase);
   const feeValue = totalValueExceedsBalance && maxFee ? maxFee : estimatedFee;
   const feeValueCommon = baseToCommon(feeValue, decimals);
   const feeValueFiat = price != null ? feeValueCommon.times(price) : null;

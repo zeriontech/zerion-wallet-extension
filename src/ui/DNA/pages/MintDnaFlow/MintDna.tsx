@@ -58,6 +58,7 @@ function useDnaMintTransaction(address: string) {
   );
 
   const { costs } = useTransactionFee({
+    address,
     transaction: mintTransaction,
     chain: createChain(NetworkId.Ethereum),
     networkFeeConfiguration: null,
