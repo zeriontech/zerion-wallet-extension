@@ -35,6 +35,9 @@ import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog'
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { getRootDomNode } from 'src/ui/shared/getRootDomNode';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import { ZStack } from 'src/ui/ui-kit/ZStack';
+import * as helperStyles from 'src/ui/style/helpers.module.css';
+import { useCustomValidity } from 'src/ui/shared/forms/useCustomValidity';
 import type { BareAddressPosition } from '../../SwapForm/BareAddressPosition';
 import * as styles from './styles.module.css';
 
@@ -93,6 +96,7 @@ export interface Props {
   renderListTitle?: () => React.ReactNode;
   onQueryDidChange?: (query: string) => void;
   dialogTitle: React.ReactNode | null;
+  onClosed?: () => void;
 }
 
 enum ItemType {
@@ -181,6 +185,7 @@ function AssetSelectComponent({
   renderListTitle,
   onQueryDidChange,
   dialogTitle,
+  onClosed,
 }: Props) {
   const listRef = useRef<HTMLDivElement | null>(null);
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -312,6 +317,7 @@ function AssetSelectComponent({
         }
       } else {
         dialogRef.current?.close();
+        onClosed?.();
       }
       return changes;
     },
@@ -488,58 +494,71 @@ function AssetSelectComponent({
     }
   });
 
+  // This is a helper input that serves only to provide native form validation
+  const readonlyInputRef = useRef<HTMLInputElement | null>(null);
+  useCustomValidity({
+    ref: readonlyInputRef,
+    customValidity: assetExistsOnChain
+      ? ''
+      : 'Asset is not found on selected chain',
+  });
+
   return (
     <div>
-      <UnstyledButton
-        {...getToggleButtonProps({
-          tabIndex: 0,
-          type: 'button',
-          className: styles.select,
-          style: { display: 'block' },
-        })}
-        {...(isCombobox ? {} : getInputProps())}
-      >
-        <HStack gap={8} alignItems="center">
-          <TokenIcon
-            size={20}
-            src={selectedItem.asset.icon_url}
-            symbol={selectedItem.asset.symbol}
-            title={selectedItem.asset.name}
-          />
-          <HStack
-            gap={4}
-            alignItems="center"
-            style={{
-              textAlign: 'start',
-              fontSize:
-                selectedItem.asset.symbol.length > 8 ? '0.8em' : undefined,
-            }}
-          >
-            {selectedItem.asset.symbol.toUpperCase()}
-            <DownIcon
-              width={24}
-              height={24}
-              style={{
-                position: 'relative',
-                top: 2,
-                color: 'var(--primary)',
-              }}
+      <ZStack>
+        <input
+          ref={readonlyInputRef}
+          className={helperStyles.visuallyHiddenInput}
+          style={{ placeSelf: 'center' }}
+          type="readonly"
+        />
+        <UnstyledButton
+          {...getToggleButtonProps({
+            tabIndex: 0,
+            type: 'button',
+            className: styles.select,
+            style: { display: 'block' },
+          })}
+          {...(isCombobox ? {} : getInputProps())}
+        >
+          <HStack gap={8} alignItems="center">
+            <TokenIcon
+              size={20}
+              src={selectedItem.asset.icon_url}
+              symbol={selectedItem.asset.symbol}
+              title={selectedItem.asset.name}
             />
-          </HStack>
-          {!isLoading && chain && !assetExistsOnChain ? (
-            <div
-              style={{ display: 'flex' }}
-              title={
-                assetExistsOnChain
-                  ? 'Asset is not available for transfer'
-                  : 'Asset is not found on selected chain'
-              }
+            <HStack
+              gap={4}
+              alignItems="center"
+              style={{
+                textAlign: 'start',
+                fontSize:
+                  selectedItem.asset.symbol.length > 8 ? '0.8em' : undefined,
+              }}
             >
-              <ErrorIcon color="var(--negative-500)" />
-            </div>
-          ) : null}
-        </HStack>
-      </UnstyledButton>
+              {selectedItem.asset.symbol.toUpperCase()}
+              <DownIcon
+                width={24}
+                height={24}
+                style={{
+                  position: 'relative',
+                  top: 2,
+                  color: 'var(--primary)',
+                }}
+              />
+            </HStack>
+            {!isLoading && chain && !assetExistsOnChain ? (
+              <div
+                style={{ display: 'flex' }}
+                title="Asset is not found on selected chain"
+              >
+                <ErrorIcon color="var(--negative-500)" />
+              </div>
+            ) : null}
+          </HStack>
+        </UnstyledButton>
+      </ZStack>
       {createPortal(
         <BottomSheetDialog
           ref={dialogRef}
