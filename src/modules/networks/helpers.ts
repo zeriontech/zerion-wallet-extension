@@ -2,13 +2,15 @@ import { nanoid } from 'nanoid';
 import { invariant } from 'src/shared/invariant';
 import type { AddEthereumChainParameter } from '../ethereum/types/AddEthereumChainParameter';
 import type { NetworkConfig } from './NetworkConfig';
+import type { Chain } from './Chain';
 
 export function toNetworkConfig(
-  value: AddEthereumChainParameter
+  value: AddEthereumChainParameter,
+  chain: Chain | null
 ): NetworkConfig {
   invariant(value.rpcUrls, 'RPC URL should be defined in network config');
   invariant(value.chainId, 'chainId should be defined in network config');
-  const id = nanoid();
+  const id = chain?.toString() || nanoid();
   return {
     supports_sending: true,
     supports_trading: false,

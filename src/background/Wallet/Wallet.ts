@@ -1107,27 +1107,6 @@ export class Wallet {
     return result;
   }
 
-  async updateEthereumChain({
-    context,
-    params: { values, origin },
-  }: WalletMethodParams<{
-    values: [NetworkConfig];
-    origin: string;
-  }>) {
-    this.verifyInternalOrigin(context);
-    const [networkConfig] = values;
-    chainConfigStore.updateEthereumChain(networkConfig, {
-      origin,
-    });
-    const chain = createChain(networkConfig.chain);
-    this.setChainForOrigin(chain, origin);
-
-    emitter.emit('updateEthereumChain', {
-      values: [networkConfig],
-      origin,
-    });
-  }
-
   async removeEthereumChain({
     context,
     params: { chain: chainStr },
@@ -1656,7 +1635,7 @@ class PublicController {
         },
       });
     }).then(() => {
-      // Automatically switch dapp to this network because this is what most dapp seem to expect
+      // Automatically switch dapp to this network because this is what most dapps seem to expect
       return this.wallet_switchEthereumChain({
         id,
         context,

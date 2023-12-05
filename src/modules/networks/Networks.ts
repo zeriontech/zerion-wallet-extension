@@ -405,19 +405,23 @@ export class Networks {
       : false;
   }
 
-  getRpcUrlInternal(chain: Chain) {
-    const network = this.getNetworkByName(chain);
-    if (!network) {
-      throw new Error(`Cannot find network: ${chain}`);
-    }
+  static getNetworkRpcUrlInternal(network: NetworkConfig) {
     const url =
       network.rpc_url_user ||
       network.rpc_url_internal ||
       network.rpc_url_public?.[0];
     if (!url) {
-      throw new Error(`Network url missing: ${chain}`);
+      throw new Error(`Network url missing: ${network.chain}`);
     }
     return url;
+  }
+
+  getRpcUrlInternal(chain: Chain) {
+    const network = this.getNetworkByName(chain);
+    if (!network) {
+      throw new Error(`Cannot find network: ${chain}`);
+    }
+    return Networks.getNetworkRpcUrlInternal(network);
   }
 
   getRpcUrlPublic(chain: Chain) {
