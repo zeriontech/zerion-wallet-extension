@@ -18,15 +18,15 @@ import { invariant } from 'src/shared/invariant';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import CheckIcon from 'jsx:src/ui/assets/check.svg';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
-import BackgroundImg1 from '../../assets/self-custodial.png';
-import BackgroundImg2 from '../../assets/seek-alpha.png';
-import BackgroundImg3 from '../../assets/dont-be-maxi.png';
-import BackgroundImg4 from '../../assets/be-invested.png';
-import BackgroundImg5 from '../../assets/its-all-on-chain.png';
 import { Step } from '../../shared/Step';
 import * as helpersStyles from '../../shared/styles.module.css';
 import * as styles from './styles.module.css';
-import { VALUE_INDEX, VALUE_TEXTS, type Value } from './values';
+import {
+  VALUE_IMAGE_URLS,
+  VALUE_INDEX,
+  VALUE_TEXTS,
+  type Value,
+} from './values';
 
 const VALUE_ORDER: Value[] = [
   'self-custodial',
@@ -34,14 +34,6 @@ const VALUE_ORDER: Value[] = [
   'dont-be-maxi',
   'be-invested',
   'its-all-on-chain',
-];
-
-const IMAGES = [
-  BackgroundImg1,
-  BackgroundImg2,
-  BackgroundImg3,
-  BackgroundImg4,
-  BackgroundImg5,
 ];
 
 type Step = 'preview' | 'select';
@@ -175,7 +167,7 @@ function SelectBackgroundContent() {
                   }}
                 >
                   <img
-                    src={IMAGES[index]}
+                    src={VALUE_IMAGE_URLS[index]}
                     alt={value}
                     className={styles.backgroundImg}
                     style={{ animationDelay: `${index * 100}ms` }}
@@ -296,7 +288,7 @@ function SelectBackgroundContent() {
                         </>
                       ) : null}
                       <img
-                        src={IMAGES[index]}
+                        src={VALUE_IMAGE_URLS[index]}
                         alt={value}
                         style={{ width: 40, height: 40, objectFit: 'cover' }}
                       />

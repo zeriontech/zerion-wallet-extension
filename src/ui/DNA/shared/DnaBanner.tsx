@@ -2,7 +2,6 @@ import React from 'react';
 import cn from 'classnames';
 import CloseIcon from 'jsx:src/ui/assets/close.svg';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import BannerImg from '../assets/dna-banner.png';
 import * as styles from './styles.module.css';
 
 export function DnaBanner({
@@ -15,7 +14,11 @@ export function DnaBanner({
 } & React.HTMLProps<HTMLDivElement>) {
   return (
     <div {...props} className={cn(className, styles.banner)}>
-      <img src={BannerImg} alt="zerion dna" className={styles.image} />
+      <img
+        src="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/dna-banner.png"
+        alt="zerion dna"
+        className={styles.image}
+      />
       {onDismiss ? (
         <UnstyledButton
           onClick={onDismiss}

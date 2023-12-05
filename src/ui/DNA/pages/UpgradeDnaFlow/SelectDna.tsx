@@ -19,23 +19,10 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { BackButton } from 'src/ui/components/BackButton';
 import { getError } from 'src/shared/errors/getError';
 import * as helpersStyles from '../../shared/styles.module.css';
-import BackgroundImg1 from '../../assets/self-custodial.png';
-import BackgroundImg2 from '../../assets/seek-alpha.png';
-import BackgroundImg3 from '../../assets/dont-be-maxi.png';
-import BackgroundImg4 from '../../assets/be-invested.png';
-import BackgroundImg5 from '../../assets/its-all-on-chain.png';
 import { DNA_COLLECTION_ID } from '../../shared/constants';
 import type { Value } from './values';
-import { VALUE_INDEX, VALUE_TEXTS } from './values';
+import { VALUE_IMAGE_URLS, VALUE_INDEX, VALUE_TEXTS } from './values';
 import * as styles from './styles.module.css';
-
-const IMAGES = [
-  BackgroundImg1,
-  BackgroundImg2,
-  BackgroundImg3,
-  BackgroundImg4,
-  BackgroundImg5,
-];
 
 export function SelectDna() {
   const navigate = useNavigate();
@@ -108,7 +95,7 @@ export function SelectDna() {
   return (
     <div className={helpersStyles.container} style={{ height: 600 }}>
       <img
-        src={IMAGES[VALUE_INDEX[value]]}
+        src={VALUE_IMAGE_URLS[VALUE_INDEX[value]]}
         alt={value}
         className={styles.backgroundValueImage}
       />
