@@ -20,5 +20,8 @@ function fetchNetworks(): Promise<NetworkConfig[]> {
 }
 
 export function get(): Promise<NetworkConfig[]> {
-  return Promise.race([fetchNetworks(), rejectAfterDelay(12000)]);
+  return Promise.race([
+    fetchNetworks(),
+    rejectAfterDelay(12000, 'fetchNetworks'),
+  ]);
 }

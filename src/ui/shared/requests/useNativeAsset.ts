@@ -32,7 +32,7 @@ export async function getNativeAsset({
         }
       );
     }),
-    rejectAfterDelay(10000),
+    rejectAfterDelay(10000, `assetsPrices, ${id}`),
   ]);
 }
 

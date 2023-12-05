@@ -22,9 +22,10 @@ export async function registerTransaction(
   try {
     let { id } = network;
     if (maybeLocalChainId(id)) {
+      const query = Number(network.external_id).toString();
       const possibleNetworks = await Promise.race([
-        getNetworksBySearch({ query: Number(network.external_id).toString() }),
-        rejectAfterDelay(3000),
+        getNetworksBySearch({ query }),
+        rejectAfterDelay(3000, `getNetworksBySearch(${query})`),
       ]);
       const networkFromBackend = possibleNetworks.find(
         (item) => item.external_id === network.external_id
