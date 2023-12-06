@@ -47,8 +47,13 @@ export function NetworkFee({
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const { time, feeEstimation, feeEstimationQuery, costs, costsQuery } =
     transactionFee;
-  const { feeValueFiat, feeValueCommon, totalValueExceedsBalance } =
-    costs || {};
+  const {
+    feeValueCommon: expectedFeeValueCommon,
+    maxFeeValueCommon,
+    relevantFeeValueFiat: feeValueFiat,
+    relevantFeeValueCommon: feeValueCommon,
+    totalValueExceedsBalance,
+  } = costs || {};
 
   const { data: chainGasPrices } = useGasPrices(chain);
 
@@ -60,7 +65,7 @@ export function NetworkFee({
   const isOptimistic = Boolean(chainGasPrices?.info.optimistic);
   const disabled = isLoading || isOptimistic || !onChange;
 
-  const feeValueLabel = totalValueExceedsBalance ? 'Up to ' : '';
+  const feeValuePrefix = totalValueExceedsBalance ? 'Up to ' : '';
   const feeValueFormatted = feeValueFiat
     ? formatCurrencyValue(feeValueFiat, 'en', 'usd')
     : feeValueCommon
@@ -106,8 +111,19 @@ export function NetworkFee({
                 kind="small/accent"
                 title={[
                   getFeeTypeTitle(feeEstimation?.type),
-                  feeValueCommon
-                    ? formatTokenValue(feeValueCommon, nativeAssetSymbol)
+                  expectedFeeValueCommon
+                    ? `${
+                        totalValueExceedsBalance ? 'Expected Fee: ' : ''
+                      }${formatTokenValue(
+                        expectedFeeValueCommon,
+                        nativeAssetSymbol
+                      )}`
+                    : null,
+                  totalValueExceedsBalance && maxFeeValueCommon
+                    ? `Max Fee: ${formatTokenValue(
+                        maxFeeValueCommon,
+                        nativeAssetSymbol
+                      )}`
                     : null,
                 ]
                   .filter(isTruthy)
@@ -121,7 +137,7 @@ export function NetworkFee({
                     ? NETWORK_SPEED_TO_TITLE.custom
                     : time ||
                       NETWORK_SPEED_TO_TITLE[networkFeeConfiguration.speed],
-                  `${feeValueLabel}${feeValueFormatted}`,
+                  `${feeValuePrefix}${feeValueFormatted}`,
                 ]
                   .filter(isTruthy)
                   .join(' · ')}

@@ -5,15 +5,18 @@ import BigNumber from 'bignumber.js';
 import { getDecimals } from 'src/modules/networks/asset';
 import { useAddressPositions } from 'defi-sdk';
 import { isTruthy } from 'is-truthy-ts';
+import { useNetworks } from 'src/modules/networks/useNetworks';
 import { useEvmNativeAddressPosition } from './useEvmNativeAddressPosition';
 import { useNativeAssetId } from './useNativeAsset';
 
 function useNativeAddressPosition({
   address,
   chain,
+  enabled = true,
 }: {
   address: string;
   chain: Chain;
+  enabled?: boolean;
 }) {
   const id = useNativeAssetId(chain);
   const { value, isLoading } = useAddressPositions(
@@ -22,7 +25,7 @@ function useNativeAddressPosition({
       assets: [id].filter(isTruthy),
       currency: 'usd',
     },
-    { enabled: Boolean(id) }
+    { enabled: enabled && Boolean(id) }
   );
 
   return useMemo(() => {
@@ -42,12 +45,19 @@ export function useNativeBalance({
   address: string;
   chain: Chain;
 }) {
-  const nativeAddressPosition = useNativeAddressPosition({ address, chain });
+  const { networks } = useNetworks();
+  const isSupportedByBackend = networks
+    ? networks.isSupportedByBackend(chain)
+    : null;
+  const nativeAddressPosition = useNativeAddressPosition({
+    address,
+    chain,
+    enabled: isSupportedByBackend === true,
+  });
   const evmNativeAddressPosition = useEvmNativeAddressPosition({
     address,
     chain,
-    enabled:
-      !nativeAddressPosition.isLoading && !nativeAddressPosition.data?.quantity,
+    enabled: isSupportedByBackend === false,
   });
 
   const isLoading =
