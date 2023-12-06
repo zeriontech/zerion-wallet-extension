@@ -66,7 +66,8 @@ export async function estimateNetworkFee({
       gas,
       eip1559Base: getEip1559Base(eip1559, gasPrices.info.eip1559),
     });
-    return { estimatedFee, type: 'eip1559' };
+    const maxFee = Number(gas) * eip1559.max_fee;
+    return { estimatedFee, maxFee, type: 'eip1559' };
   }
   if (classic) {
     return { estimatedFee: Number(gas) * Number(classic), type: 'classic' };
