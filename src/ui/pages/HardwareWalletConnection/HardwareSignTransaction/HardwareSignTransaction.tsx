@@ -15,6 +15,7 @@ import { getTransactionCount } from 'src/modules/ethereum/transactions/getTransa
 import type { Chain } from 'src/modules/networks/Chain';
 import type { Networks } from 'src/modules/networks/Networks';
 import { networksStore } from 'src/modules/networks/networks-store.client';
+import { TextPulse } from 'src/ui/components/TextPulse';
 import { hardwareMessageHandler } from '../shared/messageHandler';
 
 interface SignTransactionParams {
@@ -118,7 +119,7 @@ export const HardwareSignTransaction = React.forwardRef(
                 next: `${location.pathname}${location.search}`,
               })}`
             );
-            // NOTE: TODO: should we throw the same error here? Or return meaninless <string> to match fn signature?
+            // NOTE: TODO: should we throw the same error here? Or return meaningless <string> to match fn signature?
             throw normalizedError;
           } else {
             throw normalizedError;
@@ -142,31 +143,30 @@ export const HardwareSignTransaction = React.forwardRef(
           tabIndex={-1}
           height={0}
         />
-        <Button
-          kind="primary"
-          disabled={signMutation.isLoading || isSending}
-          title={
-            signMutation.isLoading
-              ? 'Follow instructions on your ledger device'
-              : undefined
-          }
-          style={{
-            // TODO: maybe change cursor here?
-            // cursor: signMutation.isLoading ? 'help' : undefined,
-            paddingInline: 16, // fit longer button label
-          }}
-          {...buttonProps}
-        >
-          <HStack gap={8} alignItems="center" justifyContent="center">
-            <LedgerIcon />
-            {children || // all this will definitely be refactored soon
-              (signMutation.isLoading
-                ? 'Sign...'
-                : isSending
-                ? 'Sending'
-                : 'Sign with Ledger')}
-          </HStack>
-        </Button>
+        {signMutation.isLoading ? (
+          <Button
+            kind="loading-border"
+            disabled={true}
+            title="Follow instructions on your ledger device"
+          >
+            <TextPulse>Sign on Device</TextPulse>
+          </Button>
+        ) : (
+          <Button
+            kind="primary"
+            disabled={signMutation.isLoading || isSending}
+            style={{
+              paddingInline: 16, // fit longer button label
+            }}
+            {...buttonProps}
+          >
+            <HStack gap={8} alignItems="center" justifyContent="center">
+              <LedgerIcon />
+              {children || // all this will definitely be refactored soon
+                (isSending ? 'Sending' : 'Sign with Ledger')}
+            </HStack>
+          </Button>
+        )}
       </>
     );
   }

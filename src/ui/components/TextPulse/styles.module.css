@@ -1,0 +1,15 @@
+@keyframes pulse-color {
+  from {
+    color: var(--black);
+  }
+  50% {
+    color: var(--neutral-500);
+  }
+  to {
+    color: var(--black);
+  }
+}
+
+.pulse {
+  animation: pulse-color 1.25s infinite;
+}

@@ -9,6 +9,7 @@ import { getError } from 'src/shared/errors/getError';
 import { useMutation } from '@tanstack/react-query';
 import { invariant } from 'src/shared/invariant';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
+import { TextPulse } from 'src/ui/components/TextPulse';
 import { hardwareMessageHandler } from '../shared/messageHandler';
 
 type Props = {
@@ -129,25 +130,31 @@ export function HardwareSignMessage({
         tabIndex={-1}
         height={0}
       />
-      <Button
-        kind="primary"
-        onClick={() =>
-          type === 'personalSign' ? personalSign() : signTypedData_v4()
-        }
-        disabled={isLoading || isSigning}
-        style={{
-          paddingInline: 16, // fit longer button label
-        }}
-      >
-        <HStack gap={8} alignItems="center" justifyContent="center">
-          <LedgerIcon />
-          {isSigning
-            ? 'Sending...'
-            : isLoading
-            ? 'Sign...'
-            : 'Sign with Ledger'}
-        </HStack>
-      </Button>
+      {isLoading ? (
+        <Button
+          kind="loading-border"
+          disabled={true}
+          title="Follow instructions on your ledger device"
+        >
+          <TextPulse>Sign on Device</TextPulse>
+        </Button>
+      ) : (
+        <Button
+          kind="primary"
+          onClick={() =>
+            type === 'personalSign' ? personalSign() : signTypedData_v4()
+          }
+          disabled={isLoading || isSigning}
+          style={{
+            paddingInline: 16, // fit longer button label
+          }}
+        >
+          <HStack gap={8} alignItems="center" justifyContent="center">
+            <LedgerIcon />
+            {isSigning ? 'Sending...' : 'Sign with Ledger'}
+          </HStack>
+        </Button>
+      )}
     </>
   );
 }
