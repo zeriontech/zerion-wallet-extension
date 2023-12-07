@@ -67,7 +67,7 @@ export function TokenTransferInput({ sendView }: { sendView: SendFormView }) {
     ref: inputRef,
     customValidity: exceedsBalance
       ? 'Insufficient balance'
-      : tokenValue && Number(tokenValue) <= 0
+      : tokenValue && Number(tokenValue) < 0
       ? 'Enter a positive amount'
       : '',
   });
