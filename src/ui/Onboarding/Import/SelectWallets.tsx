@@ -14,6 +14,7 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { wait } from 'src/shared/wait';
 import { useAllExistingAddresses } from 'src/ui/shared/requests/useAllExistingAddresses';
 import { useAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
+import { useStaleTime } from 'src/ui/pages/GetStarted/ImportWallet/MnemonicImportView/useStaleTime';
 import * as helperStyles from '../shared/helperStyles.module.css';
 import { SelectWalletsFAQ } from '../FAQ';
 
@@ -38,11 +39,16 @@ export function SelectWallets({
     suspense: false,
   });
 
-  const { value: activeWallets, isLoading: activeWalletsAreLoading } =
+  const { value: activeWalletsValue, isLoading: activeWalletsAreLoading } =
     useAddressActivity(
       { addresses: wallets?.map((w) => w.address) || [] },
       { enabled: Boolean(wallets), keepStaleData: true }
     );
+
+  const { isStale: isStaleValue } = useStaleTime(activeWalletsValue, 5000);
+  const shouldWaitForValue = Boolean(activeWalletsValue) || !isStaleValue;
+  // we don't need UI to jump when backend response was too long
+  const activeWallets = shouldWaitForValue ? activeWalletsValue : null;
 
   const grouped = groupBy(wallets, ({ address }) =>
     activeWallets?.[normalizeAddress(address)]?.active ? 'active' : 'rest'
@@ -71,7 +77,7 @@ export function SelectWallets({
     [existingAddresses]
   );
 
-  return isLoading || activeWalletsAreLoading ? (
+  return shouldWaitForValue && (isLoading || activeWalletsAreLoading) ? (
     <div className={helperStyles.loadingOverlay}>
       <UIText kind="headline/hero" className={helperStyles.loadingTitle}>
         Looking for Wallets
@@ -108,9 +114,9 @@ export function SelectWallets({
             />
           ) : null}
           {rest ? (
-            showInactiveWallets ? (
+            showInactiveWallets || !active?.length ? (
               <WalletList
-                listTitle="Inactive wallets"
+                listTitle={active?.length ? 'Inactive wallets' : null}
                 wallets={rest}
                 renderDetail={null}
                 values={values}
