@@ -139,6 +139,9 @@ export class Wallet {
     this.id = id;
     this.walletStore = new WalletStore({}, 'wallet');
     this.globalPreferences = globalPreferences;
+    this.globalPreferences.on('change', (state, prevState) => {
+      emitter.emit('globalPreferencesChange', state, prevState);
+    });
     this.notificationWindow = notificationWindow;
     networksStore.on('change', () => {
       this.verifyOverviewChain();
