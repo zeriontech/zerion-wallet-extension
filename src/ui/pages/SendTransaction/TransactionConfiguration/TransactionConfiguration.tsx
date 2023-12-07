@@ -40,6 +40,7 @@ export function TransactionConfiguration({
     [from, incomingTransaction]
   );
   const transactionFee = useTransactionFee({
+    address: from,
     transaction: transactionWithFrom,
     chain,
     onFeeValueCommonReady,

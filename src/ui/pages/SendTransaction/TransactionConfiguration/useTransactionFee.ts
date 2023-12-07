@@ -5,6 +5,7 @@ import { ethers } from 'ethers';
 import { useQuery } from '@tanstack/react-query';
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { useNativeAsset } from 'src/ui/shared/requests/useNativeAsset';
+import { useNativeBalance } from 'src/ui/shared/requests/useNativeBalance';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { Chain } from 'src/modules/networks/Chain';
 import type {
@@ -17,13 +18,14 @@ import { getNetworkFeeEstimation } from 'src/modules/ethereum/transactions/gasPr
 import type { EIP1559 } from 'src/modules/ethereum/transactions/gasPrices/EIP1559';
 import { formatSeconds } from 'src/shared/units/formatSeconds';
 import { getDecimals } from 'src/modules/networks/asset';
-import { baseToCommon } from 'src/shared/units/convert';
+import { baseToCommon, commonToBase } from 'src/shared/units/convert';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import {
   queryGasPrices,
   useGasPrices,
 } from 'src/ui/shared/requests/useGasPrices';
 import type { Networks } from 'src/modules/networks/Networks';
+import BigNumber from 'bignumber.js';
 import type { NetworkFeeConfiguration } from '../NetworkFee/types';
 
 function getGasPriceFromTransaction(
@@ -123,26 +125,35 @@ function useFeeEstimation(
   });
 }
 
+function calculateTotalValue({
+  txValue,
+  fee,
+}: {
+  txValue: BigNumber;
+  fee: number | BigNumber;
+}) {
+  return txValue.plus(typeof fee === 'number' ? String(fee) : fee.toFixed());
+}
+
 function calculateTransactionCosts({
   chain,
   networks,
   transaction,
   nativeAsset,
+  nativeBalance,
   estimatedFeeValue,
 }: {
   chain: Chain;
   networks: Networks;
   transaction: IncomingTransaction;
   nativeAsset: Asset | null;
+  nativeBalance: BigNumber;
   estimatedFeeValue: EstimatedFeeValue;
 }) {
-  const txValue = ethers.BigNumber.from(String(transaction.value ?? 0));
-  const { estimatedFee } = estimatedFeeValue;
-  const totalValue = txValue.add(
-    typeof estimatedFee === 'number'
-      ? String(estimatedFee)
-      : estimatedFee.toFixed()
-  );
+  const txValue = new BigNumber((transaction.value ?? 0).toString());
+  const { estimatedFee, maxFee = estimatedFee } = estimatedFeeValue;
+  const totalValueBase = calculateTotalValue({ txValue, fee: estimatedFee });
+  const maxTotalValueBase = calculateTotalValue({ txValue, fee: maxFee });
 
   const decimals = nativeAsset
     ? getDecimals({ asset: nativeAsset, chain })
@@ -152,13 +163,23 @@ function calculateTransactionCosts({
     return null;
   }
 
-  const feeValueCommon = baseToCommon(estimatedFee, decimals);
-  const txValueCommon = baseToCommon(txValue.toString(), decimals);
-  const totalValueCommon = baseToCommon(totalValue.toString(), decimals);
   const price = nativeAsset?.price?.value;
+  const nativeBalanceBase = commonToBase(nativeBalance, decimals);
+  const isLowBalance = maxTotalValueBase.gt(nativeBalanceBase);
+  const feeValueCommon = baseToCommon(estimatedFee, decimals);
+  const feeValueFiat = price != null ? feeValueCommon.times(price) : null;
+  const maxFeeValueCommon = baseToCommon(maxFee, decimals);
+  const maxFeeValueFiat = price != null ? maxFeeValueCommon.times(price) : null;
+  const txValueCommon = baseToCommon(txValue.toString(), decimals);
+  const totalValueCommon = baseToCommon(totalValueBase.toString(), decimals);
   return {
     feeValueCommon,
-    feeValueFiat: price != null ? feeValueCommon.times(price) : null,
+    feeValueFiat,
+    maxFeeValueCommon,
+    maxFeeValueFiat,
+    relevantFeeValueCommon: isLowBalance ? maxFeeValueCommon : feeValueCommon,
+    relevantFeeValueFiat: isLowBalance ? maxFeeValueFiat : feeValueFiat,
+    totalValueExceedsBalance: isLowBalance,
     txValueCommon,
     // TODO: add txValueFiat?
     totalValueCommon,
@@ -197,12 +218,14 @@ function getFeeTime(
 }
 
 export function useTransactionFee({
+  address,
   transaction,
   chain,
   onFeeValueCommonReady,
   networkFeeConfiguration,
   keepPreviousData = false,
 }: {
+  address: string;
   transaction: IncomingTransaction;
   chain: Chain;
   onFeeValueCommonReady: null | ((value: string) => void);
@@ -228,18 +251,22 @@ export function useTransactionFee({
   const { value: nativeAsset, isLoading: isLoadingNativeAsset } =
     useNativeAsset(chain);
   const { networks } = useNetworks();
+
+  const { data: nativeBalance } = useNativeBalance({ address, chain });
+
   const costs = useMemo(
     () =>
-      networks && feeEstimation
+      networks && feeEstimation && nativeBalance
         ? calculateTransactionCosts({
             chain,
             transaction,
             networks,
             estimatedFeeValue: feeEstimation,
             nativeAsset: nativeAsset || null,
+            nativeBalance,
           })
         : null,
-    [chain, feeEstimation, nativeAsset, networks, transaction]
+    [chain, feeEstimation, nativeAsset, nativeBalance, networks, transaction]
   );
   const costsAreLoading =
     !costs &&

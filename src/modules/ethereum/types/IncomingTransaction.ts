@@ -15,3 +15,8 @@ export type IncomingTransactionWithChainId = PartiallyRequired<
   IncomingTransaction,
   'chainId'
 >;
+
+export type IncomingTransactionWithFrom = PartiallyRequired<
+  IncomingTransaction,
+  'from'
+>;
