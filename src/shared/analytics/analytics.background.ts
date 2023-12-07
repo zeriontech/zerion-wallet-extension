@@ -18,6 +18,7 @@ import {
   getProviderForMetabase,
   getProviderNameFromGroup,
 } from './getProviderNameFromGroup';
+import { addressActionToAnalytics } from './shared/addressActionToAnalytics';
 
 function queryWalletProvider(account: Account, address: string) {
   const apiLayer = account.getCurrentWallet();
@@ -73,7 +74,13 @@ function trackAppEvents({ account }: { account: Account }) {
 
   emitter.on(
     'transactionSent',
-    async ({ transaction, initiator, feeValueCommon }) => {
+    async ({
+      transaction,
+      initiator,
+      feeValueCommon,
+      addressAction,
+      quote,
+    }) => {
       const initiatorURL = new URL(initiator);
       const { origin, pathname } = initiatorURL;
       const networks = await networksStore.load();
@@ -95,6 +102,7 @@ function trackAppEvents({ account }: { account: Account }) {
         gas_price: null, // TODO
         network_fee: null, // TODO
         network_fee_value: feeValueCommon,
+        ...addressActionToAnalytics({ addressAction, quote }),
       });
       sendToMetabase('signed_transaction', params);
     }

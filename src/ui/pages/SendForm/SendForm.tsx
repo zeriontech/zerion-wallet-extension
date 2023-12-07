@@ -44,6 +44,7 @@ import { useEvent } from 'src/ui/shared/useEvent';
 import type { SignerSenderHandle } from 'src/ui/components/SignTransactionButton';
 import { SignTransactionButton } from 'src/ui/components/SignTransactionButton';
 import { useSizeStore } from 'src/ui/Onboarding/useSizeStore';
+import { createSendAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -164,8 +165,7 @@ export function SendForm() {
       sendView.store.configuration.getState(),
       gasPrices
     );
-    const { transaction } = result;
-    return transaction;
+    return result;
   });
 
   const signerSenderRef = useRef<SignerSenderHandle | null>(null);
@@ -181,7 +181,8 @@ export function SendForm() {
     mutationFn: async () => {
       const { to } = store.getState();
       invariant(to, 'Send Form parameters missing');
-      const transaction = await configureTransactionToBeSigned();
+      const { transaction, amount, asset } =
+        await configureTransactionToBeSigned();
       const feeValueCommon = feeValueCommonRef.current || null;
 
       invariant(chain, 'Chain must be defined to sign the tx');
@@ -192,6 +193,12 @@ export function SendForm() {
         chain,
         initiator: INTERNAL_ORIGIN,
         feeValueCommon,
+        addressAction: createSendAddressAction({
+          transaction,
+          asset,
+          quantity: amount,
+          chain,
+        }),
       });
       if (preferences) {
         setPreferences({
@@ -402,7 +409,10 @@ export function SendForm() {
             return (
               <ViewLoadingSuspense>
                 <SendTransactionConfirmation
-                  getTransaction={configureTransactionToBeSigned}
+                  getTransaction={async () => {
+                    const result = await configureTransactionToBeSigned();
+                    return result.transaction;
+                  }}
                   chain={chain}
                   sendView={sendView}
                 />

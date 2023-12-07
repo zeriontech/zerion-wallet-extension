@@ -1,11 +1,12 @@
 import { capitalize } from 'capitalize-ts';
-import type { AddressAction } from 'defi-sdk';
+import type { AddressAction, Asset } from 'defi-sdk';
 import { ethers } from 'ethers';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { CachedAssetQuery } from 'src/modules/defi-sdk/queries';
 import { fetchAssetFromCacheOrAPI } from 'src/modules/defi-sdk/queries';
 import type { Chain } from 'src/modules/networks/Chain';
 import { UnsupportedNetwork } from 'src/modules/networks/errors';
+import { nanoid } from 'nanoid';
 import type {
   IncomingTransaction,
   IncomingTransactionWithChainId,
@@ -24,7 +25,6 @@ export type ClientTransactionStatus =
 
 export type LocalAddressAction = Omit<AddressAction, 'transaction'> & {
   transaction: Omit<AddressAction['transaction'], 'status'> & {
-    hash: string;
     status: ClientTransactionStatus;
   };
   local: true;
@@ -40,6 +40,108 @@ export type IncomingAddressAction = Omit<
     nonce?: number;
   };
 };
+
+const ZERO_HASH =
+  '0x0000000000000000000000000000000000000000000000000000000000000000';
+
+const toActionTx = (tx: IncomingTransaction, chain: Chain) =>
+  ({
+    ...tx,
+    chain: chain.toString(),
+    hash: (tx as { hash?: string }).hash || ZERO_HASH,
+    fee: null,
+    status: 'pending',
+    nonce: -1,
+  } as const);
+
+export function createSendAddressAction({
+  transaction,
+  asset,
+  quantity,
+  chain,
+}: {
+  transaction: IncomingTransaction;
+  asset: Asset;
+  quantity: string;
+  chain: Chain;
+}): AddressAction {
+  return {
+    id: nanoid(),
+    datetime: new Date().toISOString(),
+    type: { display_value: 'Send', value: 'send' },
+    label: null,
+    transaction: toActionTx(transaction, chain),
+    content: {
+      transfers: {
+        outgoing: [
+          {
+            asset: { fungible: asset },
+            quantity,
+            price: asset.price?.value ?? null,
+          },
+        ],
+        incoming: [],
+      },
+    },
+  };
+}
+
+type AssetQuantity = { asset: Asset; quantity: string };
+
+export function createTradeAddressAction({
+  transaction,
+  outgoing,
+  incoming,
+  chain,
+}: {
+  transaction: IncomingTransaction;
+  outgoing: AssetQuantity[];
+  incoming: AssetQuantity[];
+  chain: Chain;
+}): AddressAction {
+  return {
+    id: nanoid(),
+    datetime: new Date().toISOString(),
+    type: { value: 'trade', display_value: 'Trade' },
+    transaction: toActionTx(transaction, chain),
+    label: null,
+    content: {
+      transfers: {
+        outgoing: outgoing.map(({ asset, quantity }) => ({
+          asset: { fungible: asset },
+          quantity,
+          price: asset.price?.value ?? null,
+        })),
+        incoming: incoming.map(({ asset, quantity }) => ({
+          asset: { fungible: asset },
+          quantity,
+          price: asset.price?.value ?? null,
+        })),
+      },
+    },
+  };
+}
+
+export function createApproveAddressAction({
+  transaction,
+  asset,
+  quantity,
+  chain,
+}: {
+  transaction: IncomingTransaction;
+  asset: Asset;
+  quantity: string;
+  chain: Chain;
+}): AddressAction {
+  return {
+    id: nanoid(),
+    datetime: new Date().toISOString(),
+    type: { value: 'approve', display_value: 'Approve' },
+    transaction: toActionTx(transaction, chain),
+    label: null,
+    content: { single_asset: { asset: { fungible: asset }, quantity } },
+  };
+}
 
 export type AnyAddressAction = AddressAction | LocalAddressAction;
 

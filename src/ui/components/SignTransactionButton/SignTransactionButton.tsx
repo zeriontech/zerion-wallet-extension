@@ -1,10 +1,12 @@
 import { useMutation } from '@tanstack/react-query';
+import type { AddressAction } from 'defi-sdk';
 import type { ethers } from 'ethers';
 import React, { useImperativeHandle, useRef } from 'react';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { Chain } from 'src/modules/networks/Chain';
 import { invariant } from 'src/shared/invariant';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
+import type { Quote } from 'src/shared/types/Quote';
 import { isDeviceAccount } from 'src/shared/types/validators';
 import {
   HardwareSignTransaction,
@@ -18,6 +20,8 @@ interface SendTxParams {
   chain: Chain;
   feeValueCommon: string | null;
   initiator: string;
+  addressAction: AddressAction | null;
+  quote?: Quote;
 }
 
 export interface SignerSenderHandle {
