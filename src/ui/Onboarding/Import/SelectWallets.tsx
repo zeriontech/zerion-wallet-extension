@@ -46,7 +46,7 @@ export function SelectWallets({
     );
 
   const { isStale: isStaleValue } = useStaleTime(activeWallets, 5000);
-  const shouldWaitForValue = Boolean(activeWallets) || !isStaleValue;
+  const shouldWaitForValue = activeWallets == null && !isStaleValue;
 
   const grouped = groupBy(wallets, ({ address }) =>
     activeWallets?.[normalizeAddress(address)]?.active ? 'active' : 'rest'
