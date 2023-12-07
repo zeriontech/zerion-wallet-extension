@@ -14,6 +14,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { capitalize } from 'capitalize-ts';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
+import { getAssetImplementationInChain } from 'src/modules/networks/asset';
 import type { BareAddressPosition } from '../../../BareAddressPosition';
 
 export function MarketAssetSelect({
@@ -51,17 +52,6 @@ export function MarketAssetSelect({
     ].filter(Boolean) as string[],
   });
 
-  const popularPositions = useMemo(() => {
-    if (!popularAssetsResponse) {
-      return [];
-    }
-    return Object.values(popularAssetsResponse.prices).map((asset) => {
-      return (
-        positionsMap.get(asset.id) || new EmptyAddressPosition({ asset, chain })
-      );
-    });
-  }, [chain, popularAssetsResponse, positionsMap]);
-
   const [query, setQuery] = useState('');
   const handleQueryDidChange = useCallback(
     (value: string) => setQuery(value),
@@ -70,6 +60,22 @@ export function MarketAssetSelect({
 
   const [searchAllNetworks, setSearchAllNetworks] = useState(false);
   const shouldQueryByChain = !searchAllNetworks && chain && !query;
+
+  const popularPositions = useMemo(() => {
+    if (!popularAssetsResponse) {
+      return [];
+    }
+    return Object.values(popularAssetsResponse.prices)
+      .map((asset) => {
+        const position = positionsMap.get(asset.id);
+        return position || new EmptyAddressPosition({ asset, chain });
+      })
+      .filter(({ asset }) => {
+        return shouldQueryByChain
+          ? Boolean(getAssetImplementationInChain({ chain, asset })) // exists on chain
+          : true;
+      });
+  }, [chain, popularAssetsResponse, positionsMap, shouldQueryByChain]);
 
   const {
     items: marketAssets,
@@ -178,6 +184,7 @@ export function MarketAssetSelect({
         ) : null
       }
       onQueryDidChange={handleQueryDidChange}
+      onClosed={() => setSearchAllNetworks(false)}
     />
   );
 }
