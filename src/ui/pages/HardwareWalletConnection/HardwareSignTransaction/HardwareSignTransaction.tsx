@@ -117,6 +117,7 @@ export const HardwareSignTransaction = React.forwardRef(
               `/connect-hardware-wallet?${new URLSearchParams({
                 strategy: 'connect',
                 next: `${location.pathname}${location.search}`,
+                replaceAfterRedirect: 'true',
               })}`
             );
             // NOTE: TODO: should we throw the same error here? Or return meaningless <string> to match fn signature?
