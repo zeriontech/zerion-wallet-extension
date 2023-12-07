@@ -39,16 +39,14 @@ export function SelectWallets({
     suspense: false,
   });
 
-  const { value: activeWalletsValue, isLoading: activeWalletsAreLoading } =
+  const { value: activeWallets, isLoading: activeWalletsAreLoading } =
     useAddressActivity(
       { addresses: wallets?.map((w) => w.address) || [] },
       { enabled: Boolean(wallets), keepStaleData: true }
     );
 
-  const { isStale: isStaleValue } = useStaleTime(activeWalletsValue, 5000);
-  const shouldWaitForValue = Boolean(activeWalletsValue) || !isStaleValue;
-  // we don't need UI to jump when backend response was too long
-  const activeWallets = shouldWaitForValue ? activeWalletsValue : null;
+  const { isStale: isStaleValue } = useStaleTime(activeWallets, 5000);
+  const shouldWaitForValue = Boolean(activeWallets) || !isStaleValue;
 
   const grouped = groupBy(wallets, ({ address }) =>
     activeWallets?.[normalizeAddress(address)]?.active ? 'active' : 'rest'
