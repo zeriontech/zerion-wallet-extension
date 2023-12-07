@@ -209,6 +209,7 @@ function AssetSelectComponent({
     if (!query || !isCombobox) {
       result = allItems;
     } else {
+      // TODO: do not locally filter Market Asset List
       result = allItems.filter((item) => matches(query, item));
     }
     const loadMoreButton: LoadMoreOption = {

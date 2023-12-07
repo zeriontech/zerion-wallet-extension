@@ -10,7 +10,7 @@ import {
 import { createChain } from 'src/modules/networks/Chain';
 import { DEFI_SDK_TRANSACTIONS_API_URL } from 'src/env/config';
 import { isNumeric } from 'src/shared/isNumeric';
-import type { Quote, TransactionDescription } from './types';
+import type { Quote, TransactionDescription } from 'src/shared/types/Quote';
 import { useEventSource } from './useEventSource';
 
 const apiUrl = `${DEFI_SDK_TRANSACTIONS_API_URL}/swap/quote/stream`;

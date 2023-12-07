@@ -2,6 +2,7 @@ import type { UnsignedTransaction } from 'ethers';
 import { ethers } from 'ethers';
 import type { Emitter } from 'nanoevents';
 import { createNanoEvents } from 'nanoevents';
+import type { AddressAction } from 'defi-sdk';
 import { Store } from 'store-unit';
 import { isTruthy } from 'is-truthy-ts';
 import { encrypt, decrypt } from 'src/modules/crypto';
@@ -61,6 +62,7 @@ import {
   isMnemonicContainer,
 } from 'src/shared/types/validators';
 import { ERC20_ALLOWANCE_ABI } from 'src/modules/ethereum/abi/allowance-abi';
+import type { Quote } from 'src/shared/types/Quote';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -881,10 +883,14 @@ export class Wallet {
       context,
       initiator,
       feeValueCommon,
+      addressAction,
+      quote,
     }: {
       context: Partial<ChannelContext> | undefined;
       initiator: string;
       feeValueCommon: string | null;
+      addressAction: AddressAction | null;
+      quote?: Quote;
     }
   ): Promise<ethers.providers.TransactionResponse> {
     this.verifyInternalOrigin(context);
@@ -937,6 +943,8 @@ export class Wallet {
         transaction: safeTx,
         initiator,
         feeValueCommon,
+        addressAction,
+        quote,
       });
       return safeTx;
     } catch (error) {
@@ -953,12 +961,15 @@ export class Wallet {
       {
         initiator: string;
         feeValueCommon: string | null;
+        addressAction: AddressAction | null;
+        quote?: Quote;
       }
     ]
   >) {
     this.verifyInternalOrigin(context);
     this.ensureStringOrigin(context);
-    const [transaction, { initiator, feeValueCommon }] = params;
+    const [transaction, { initiator, feeValueCommon, addressAction, quote }] =
+      params;
     if (!transaction) {
       throw new InvalidParams();
     }
@@ -966,6 +977,8 @@ export class Wallet {
       context,
       initiator,
       feeValueCommon,
+      addressAction,
+      quote,
     });
   }
 
@@ -977,10 +990,19 @@ export class Wallet {
     chain: string;
     initiator: string;
     feeValueCommon: string | null;
+    addressAction: AddressAction | null;
+    quote?: Quote;
   }>): Promise<ethers.providers.TransactionResponse> {
     this.verifyInternalOrigin(context);
     this.ensureStringOrigin(context);
-    const { chain, serialized, initiator, feeValueCommon } = params;
+    const {
+      chain,
+      serialized,
+      initiator,
+      feeValueCommon,
+      addressAction,
+      quote,
+    } = params;
     const networks = await networksStore.load();
     const chainId = networks.getChainId(createChain(chain));
     const provider = await this.getProvider(chainId);
@@ -991,6 +1013,8 @@ export class Wallet {
         transaction: safeTx,
         initiator,
         feeValueCommon,
+        addressAction,
+        quote,
       });
       return safeTx;
     } catch (error) {

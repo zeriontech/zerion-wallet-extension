@@ -4,7 +4,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
-import type { Quote } from '../../Quotes/types';
+import type { Quote } from 'src/shared/types/Quote';
 
 const ZERION_FEES_ARTICLE =
   'https://zerion.io/blog/preparing-for-a-decentralized-future-at-zerion/';

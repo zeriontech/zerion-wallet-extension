@@ -1,7 +1,9 @@
 import type { ethers } from 'ethers';
+import type { AddressAction } from 'defi-sdk';
 import { createNanoEvents } from 'nanoevents';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { Quote } from 'src/shared/types/Quote';
 import type { State as GlobalPreferencesState } from './Wallet/GlobalPreferences';
 import type { WalletOrigin } from './Wallet/model/WalletOrigin';
 import type { WalletContainer } from './Wallet/model/types';
@@ -28,6 +30,8 @@ export const emitter = createNanoEvents<{
     transaction: TransactionResponse;
     initiator: string;
     feeValueCommon: string | null;
+    addressAction: AddressAction | null;
+    quote?: Quote;
   }) => void;
   typedDataSigned: (data: {
     typedData: TypedData;

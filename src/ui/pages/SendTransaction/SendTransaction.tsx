@@ -219,6 +219,7 @@ function TransactionDefaultView({
         chain,
         feeValueCommon,
         initiator: origin,
+        addressAction: null,
       });
     },
     onMutate: () => 'sendTransaction',

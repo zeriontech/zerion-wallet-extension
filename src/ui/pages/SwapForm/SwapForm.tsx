@@ -50,6 +50,10 @@ import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { useNavigate } from 'react-router-dom';
 import { isNumeric } from 'src/shared/isNumeric';
 import {
+  createApproveAddressAction,
+  createTradeAddressAction,
+} from 'src/modules/ethereum/transactions/addressAction';
+import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
 } from '../SendTransaction/TransactionConfiguration/applyConfiguration';
@@ -262,12 +266,20 @@ export function SwapForm() {
 
       invariant(chain, 'Chain must be defined to sign the tx');
       invariant(approveSignerRef.current, 'SignTransactionButton not found');
+      invariant(spendPosition, 'Spend position must be defined');
+      invariant(quote, 'Cannot submit transaction without a quote');
 
       const txResponse = await approveSignerRef.current.sendTransaction({
         transaction,
         chain,
         initiator: INTERNAL_ORIGIN,
         feeValueCommon,
+        addressAction: createApproveAddressAction({
+          transaction,
+          asset: spendPosition.asset,
+          quantity: quote.input_amount_estimation,
+          chain,
+        }),
       });
       return txResponse.hash;
     },
@@ -308,12 +320,25 @@ export function SwapForm() {
       const transaction = configureTransactionToBeSigned(quote.transaction);
       const feeValueCommon = feeValueCommonRef.current || null;
       invariant(chain, 'Chain must be defined to sign the tx');
+      invariant(
+        spendPosition && receivePosition,
+        'Trade positions must be defined'
+      );
       invariant(signerSenderRef.current, 'SignTransactionButton not found');
+      const spendValue = quote.input_amount_estimation;
+      const receiveValue = quote.output_amount_estimation;
       const txResponse = await signerSenderRef.current.sendTransaction({
         transaction,
         chain,
         initiator: INTERNAL_ORIGIN,
         feeValueCommon,
+        addressAction: createTradeAddressAction({
+          transaction,
+          outgoing: [{ asset: spendPosition.asset, quantity: spendValue }],
+          incoming: [{ asset: receivePosition.asset, quantity: receiveValue }],
+          chain,
+        }),
+        quote,
       });
       return txResponse.hash;
     },
