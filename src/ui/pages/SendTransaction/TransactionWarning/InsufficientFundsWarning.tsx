@@ -7,7 +7,6 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
-import { useNativeBalance } from 'src/ui/shared/requests/useNativeBalance';
 import type { NetworkFeeConfiguration } from '../NetworkFee/types';
 import { useTransactionFee } from '../TransactionConfiguration/useTransactionFee';
 
@@ -30,15 +29,7 @@ function useInsufficientFundsWarning({
     onFeeValueCommonReady: null,
   });
 
-  const { data: nativeBalance, isLoading } = useNativeBalance({
-    address,
-    chain,
-  });
-
-  if (isLoading || !nativeBalance) {
-    return false;
-  }
-  return nativeBalance.lt(transactionFee.costs?.totalValueCommon || 0);
+  return transactionFee.costs?.totalValueExceedsBalance ?? false;
 }
 
 export function InsufficientFundsWarning({

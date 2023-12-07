@@ -336,8 +336,11 @@ function NetworkFeeButton({
     networkFeeConfiguration: speedConfiguration,
     onFeeValueCommonReady: null,
   });
-  const { feeValueFiat, feeValueCommon, totalValueExceedsBalance } =
-    costs || {};
+  const {
+    relevantFeeValueFiat: feeValueFiat,
+    relevantFeeValueCommon: feeValueCommon,
+    totalValueExceedsBalance,
+  } = costs || {};
 
   const seconds =
     option !== 'custom'
@@ -353,6 +356,11 @@ function NetworkFeeButton({
       style={{ height: 48, borderRadius: 12, paddingInline: 0 }}
       outlined={selected}
       onClick={onClick}
+      title={
+        feeValueCommon
+          ? formatTokenValue(feeValueCommon, nativeAssetSymbol)
+          : undefined
+      }
     >
       <HStack gap={4} justifyContent="space-between" alignItems="center">
         <Media

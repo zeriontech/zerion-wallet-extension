@@ -151,10 +151,9 @@ function calculateTransactionCosts({
   estimatedFeeValue: EstimatedFeeValue;
 }) {
   const txValue = new BigNumber((transaction.value ?? 0).toString());
-  const { estimatedFee, maxFee } = estimatedFeeValue;
+  const { estimatedFee, maxFee = estimatedFee } = estimatedFeeValue;
   const totalValueBase = calculateTotalValue({ txValue, fee: estimatedFee });
-  const maxFeeValue = maxFee || estimatedFee;
-  const maxTotalValueBase = calculateTotalValue({ txValue, fee: maxFeeValue });
+  const maxTotalValueBase = calculateTotalValue({ txValue, fee: maxFee });
 
   const decimals = nativeAsset
     ? getDecimals({ asset: nativeAsset, chain })
@@ -166,16 +165,21 @@ function calculateTransactionCosts({
 
   const price = nativeAsset?.price?.value;
   const nativeBalanceBase = commonToBase(nativeBalance, decimals);
-  const totalValueExceedsBalance = maxTotalValueBase.gt(nativeBalanceBase);
-  const feeValue = totalValueExceedsBalance && maxFee ? maxFee : estimatedFee;
-  const feeValueCommon = baseToCommon(feeValue, decimals);
+  const isLowBalance = maxTotalValueBase.gt(nativeBalanceBase);
+  const feeValueCommon = baseToCommon(estimatedFee, decimals);
   const feeValueFiat = price != null ? feeValueCommon.times(price) : null;
+  const maxFeeValueCommon = baseToCommon(maxFee, decimals);
+  const maxFeeValueFiat = price != null ? maxFeeValueCommon.times(price) : null;
   const txValueCommon = baseToCommon(txValue.toString(), decimals);
   const totalValueCommon = baseToCommon(totalValueBase.toString(), decimals);
   return {
     feeValueCommon,
     feeValueFiat,
-    totalValueExceedsBalance,
+    maxFeeValueCommon,
+    maxFeeValueFiat,
+    relevantFeeValueCommon: isLowBalance ? maxFeeValueCommon : feeValueCommon,
+    relevantFeeValueFiat: isLowBalance ? maxFeeValueFiat : feeValueFiat,
+    totalValueExceedsBalance: isLowBalance,
     txValueCommon,
     // TODO: add txValueFiat?
     totalValueCommon,
