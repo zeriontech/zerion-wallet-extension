@@ -14,6 +14,7 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { wait } from 'src/shared/wait';
 import { useAllExistingAddresses } from 'src/ui/shared/requests/useAllExistingAddresses';
 import { useAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
+import { useStaleTime } from 'src/ui/pages/GetStarted/ImportWallet/MnemonicImportView/useStaleTime';
 import * as helperStyles from '../shared/helperStyles.module.css';
 import { SelectWalletsFAQ } from '../FAQ';
 
@@ -44,6 +45,9 @@ export function SelectWallets({
       { enabled: Boolean(wallets), keepStaleData: true }
     );
 
+  const { isStale: isStaleValue } = useStaleTime(activeWallets, 5000);
+  const shouldWaitForValue = activeWallets == null && !isStaleValue;
+
   const grouped = groupBy(wallets, ({ address }) =>
     activeWallets?.[normalizeAddress(address)]?.active ? 'active' : 'rest'
   );
@@ -71,7 +75,7 @@ export function SelectWallets({
     [existingAddresses]
   );
 
-  return isLoading || activeWalletsAreLoading ? (
+  return shouldWaitForValue && (isLoading || activeWalletsAreLoading) ? (
     <div className={helperStyles.loadingOverlay}>
       <UIText kind="headline/hero" className={helperStyles.loadingTitle}>
         Looking for Wallets
@@ -89,7 +93,7 @@ export function SelectWallets({
         <VStack
           gap={6}
           style={{
-            maxHeight: 490,
+            maxHeight: 500,
             overflow: 'auto',
             ['--surface-background-color' as string]: 'none',
           }}
@@ -108,9 +112,9 @@ export function SelectWallets({
             />
           ) : null}
           {rest ? (
-            showInactiveWallets ? (
+            showInactiveWallets || !active?.length ? (
               <WalletList
-                listTitle="Inactive wallets"
+                listTitle={active?.length ? 'Inactive wallets' : null}
                 wallets={rest}
                 renderDetail={null}
                 values={values}
