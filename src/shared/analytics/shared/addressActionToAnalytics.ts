@@ -7,8 +7,6 @@ import { getDecimals } from 'src/modules/networks/asset';
 import type { Quote } from 'src/shared/types/Quote';
 import { baseToCommon } from 'src/shared/units/convert';
 
-// type ClientTransactionType =  'Send' | 'Approve' | 'Swap' | 'Mint';
-
 interface AnalyticsTransactionData {
   type: string;
   usd_amount_sent: number | null;
@@ -19,13 +17,6 @@ interface AnalyticsTransactionData {
   asset_amount_received?: (string | null)[];
   asset_name_received?: string[];
   asset_address_received?: string[];
-  // guaranteed_asset_amount_received?: (string | null)[];
-  // network_fee: string | null;
-  // gas_price: string | null;
-  // gas: string;
-  // protocols?: string[];
-  // contract_type: string | null;
-  // chain: string;
   zerion_fee_percentage?: number;
   zerion_fee_usd_amount?: number;
 }
@@ -36,10 +27,10 @@ interface AssetQuantity {
 }
 
 function assetQuantityToValue(
-  assetQuantity: AssetQuantity,
+  assetWithQuantity: AssetQuantity,
   chain: Chain
 ): number {
-  const { asset: actionAsset, quantity } = assetQuantity;
+  const { asset: actionAsset, quantity } = assetWithQuantity;
   const asset = getFungibleAsset(actionAsset);
   if (asset && 'implementations' in asset && asset.price && quantity !== null) {
     return baseToCommon(quantity, getDecimals({ asset, chain }))
@@ -76,7 +67,9 @@ function getAssetName({ asset }: { asset: ActionAsset }) {
   return getFungibleAsset(asset)?.name;
 }
 
-function toMaybeArr<T>(arr: (T | null | undefined)[] | null | undefined) {
+function toMaybeArr<T>(
+  arr: (T | null | undefined)[] | null | undefined
+): T[] | undefined {
   return arr?.length ? arr.filter(isTruthy) : undefined;
 }
 
