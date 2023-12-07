@@ -13,11 +13,13 @@ type MetabaseEvent =
   | 'add_custom_evm'
   | 'network_search'
   | 'error_screen_view'
+  | 'error_screen_view'
+  | 'metamask_mode'
   | 'loader_screen_view';
 
 type BaseParams<E = MetabaseEvent> = { request_name: E };
 
-function onIdle(callback: () => void) {
+export function onIdle(callback: () => void) {
   if ('requestIdleCallback' in globalThis) {
     globalThis.requestIdleCallback(callback);
   } else {
