@@ -124,7 +124,9 @@ export function HardwareWalletConnectionStart({
       if (isRpcRequest(event.data)) {
         const { method, params, id } = event.data;
         if (method === 'ledger/connect') {
-          navigate(searchParams.get('next') || '/');
+          navigate(searchParams.get('next') || '/', {
+            replace: searchParams.get('replaceAfterRedirect') === 'true',
+          });
         } else if (method === 'ledger/import') {
           verifyLedgerAccountImport(params);
           if (onImport) {
