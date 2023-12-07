@@ -8,13 +8,13 @@ export function useMnemonicInput({
   rows = 4,
   maxInputNumber = 24,
   setValue,
-  showCleanedClipboardMessage,
+  type,
 }: {
   columns?: number;
   rows?: number;
   maxInputNumber?: number;
   setValue: Dispatch<SetStateAction<string[]>>;
-  showCleanedClipboardMessage?: boolean;
+  type?: 'text' | 'password';
 }) {
   const [revealEnabled, setRevealEnabled] = useState(true);
   const [hoveredInput, setHoveredInput] = useState<number | null>(null);
@@ -90,7 +90,7 @@ export function useMnemonicInput({
   return {
     getInputProps: (index: number) => ({
       type:
-        showCleanedClipboardMessage ||
+        type ||
         (revealEnabled && (hoveredInput === index || focusedInput === index))
           ? 'text'
           : 'password',

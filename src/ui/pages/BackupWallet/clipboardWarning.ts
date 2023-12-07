@@ -6,6 +6,5 @@ export const clipboardWarning = {
       seedType === SeedType.privateKey ? 'private key' : 'recovery phrase';
     return `Did you save the ${secretName}?`;
   },
-  isWarningMessage: (value: string | string[]) =>
-    (Array.isArray(value) ? value.join(' ') : value).startsWith('Did you save'),
+  isWarningMessage: (value: string) => value.startsWith('Did you save'),
 };

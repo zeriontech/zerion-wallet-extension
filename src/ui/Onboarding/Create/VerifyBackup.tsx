@@ -23,12 +23,12 @@ export function VerifyBackup({ onSuccess }: { onSuccess(): void }) {
   const { isNarrowView } = useSizeStore();
   const [value, setValue] = useState(() => ARRAY_OF_NUMBERS.map(() => ''));
   const [validationError, setValidationError] = useState(false);
-  const isTechnicalHint = clipboardWarning.isWarningMessage(value);
+  const isTechnicalHint = clipboardWarning.isWarningMessage(value.join(' '));
 
   const { getInputProps } = useMnemonicInput({
     setValue,
     maxInputNumber: INPUT_NUMBER,
-    showCleanedClipboardMessage: isTechnicalHint,
+    type: isTechnicalHint ? 'text' : undefined,
   });
 
   const { data: mnemonic, isLoading, error } = usePendingRecoveryPhrase();
