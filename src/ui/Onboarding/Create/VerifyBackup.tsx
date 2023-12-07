@@ -137,9 +137,8 @@ export function VerifyBackup({ onSuccess }: { onSuccess(): void }) {
                 </UIText>
               ) : isTechnicalHint ? (
                 <UIText kind="caption/regular" color="var(--notice-500)">
-                  We cleared your clipboard after you copied the recovery
-                  phrase. If you saved it somewhere, you can copy and paste it
-                  here now.
+                  Your clipboard was cleared after copying the recovery phrase.
+                  If saved, you can now paste it here.
                 </UIText>
               ) : null}
             </VStack>
