@@ -95,7 +95,7 @@ export function SelectWallets({
         <VStack
           gap={6}
           style={{
-            maxHeight: 490,
+            maxHeight: 500,
             overflow: 'auto',
             ['--surface-background-color' as string]: 'none',
           }}
