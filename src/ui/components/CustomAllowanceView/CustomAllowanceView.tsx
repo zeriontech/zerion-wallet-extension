@@ -12,7 +12,6 @@ import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 import type { Asset } from 'defi-sdk';
 import { useAddressPositions } from 'defi-sdk';
 import BigNumber from 'bignumber.js';
-import type { Parsers } from 'src/ui/shared/form-data';
 import { collectData } from 'src/ui/shared/form-data';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
@@ -32,17 +31,6 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
 import { NavigationBar } from '../NavigationBar';
 
-const parsers: Parsers = {
-  amount: (untypedValue: unknown): BigNumber | null => {
-    const value = untypedValue as string;
-    if (value === '') {
-      return null;
-    } else {
-      return new BigNumber(value);
-    }
-  },
-};
-
 function CustomAllowanceForm({
   asset,
   chain,
@@ -58,7 +46,7 @@ function CustomAllowanceForm({
   balance: BigNumber | null;
   requestedAllowanceQuantityBase: BigNumber;
   value: BigNumber;
-  onSubmit(newValue: BigNumber): void;
+  onSubmit(newValue: string): void;
 }) {
   const isRequestedAllowanceUnlimited = isUnlimitedApproval(
     requestedAllowanceQuantityBase
@@ -149,19 +137,19 @@ function CustomAllowanceForm({
           if (!form.checkValidity()) {
             return;
           }
-          const formData = collectData(form, parsers);
-          const newAllowanceQuantityCommon = formData.amount as BigNumber;
+          const formData = collectData(form, {});
+          const newAllowanceQuantityCommon = formData.amount as string;
           const newValue = getBaseQuantity({
             asset,
             chain,
             commonQuantity: newAllowanceQuantityCommon,
           });
-          onSubmit(newValue);
+          onSubmit(newValue.toFixed());
         } else {
           onSubmit(
             isRequestedAllowanceUnlimited
-              ? requestedAllowanceQuantityBase
-              : UNLIMITED_APPROVAL_AMOUNT
+              ? requestedAllowanceQuantityBase.toFixed()
+              : UNLIMITED_APPROVAL_AMOUNT.toFixed()
           );
         }
       }}
@@ -359,7 +347,7 @@ export function CustomAllowanceView({
   asset?: Asset | null;
   value: string;
   requestedAllowanceQuantityBase?: string;
-  onChange: (value: BigNumber) => void;
+  onChange: (value: string) => void;
 }) {
   invariant(
     requestedAllowanceQuantityBase,
