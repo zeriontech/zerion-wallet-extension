@@ -70,7 +70,7 @@ import {
   applyConfiguration,
 } from './TransactionConfiguration/applyConfiguration';
 import { TransactionAdvancedView } from './TransactionAdvancedView';
-import { TransactionWarning } from './TransactionWarning';
+import { TransactionWarnings } from './TransactionWarnings';
 import { txErrorToMessage } from './shared/transactionErrorToMessage';
 
 async function resolveChain(
@@ -296,8 +296,9 @@ function TransactionDefaultView({
         <>
           <ErrorBoundary renderError={() => null}>
             <React.Suspense fallback={null}>
-              <TransactionWarning
+              <TransactionWarnings
                 address={singleAddress}
+                addressAction={addressAction}
                 transaction={incomingTxWithGasAndFee}
                 chain={chain}
                 networkFeeConfiguration={configuration.networkFee}
