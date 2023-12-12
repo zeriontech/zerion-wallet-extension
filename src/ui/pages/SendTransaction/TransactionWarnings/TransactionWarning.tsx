@@ -5,7 +5,13 @@ import ValidationErrorIcon from 'jsx:src/ui/assets/validation-error.svg';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 
-export function TransactionMayFailWarning() {
+export function TransactionWarning({
+  title,
+  message,
+}: {
+  title: string;
+  message: string;
+}) {
   return (
     <>
       <VStack
@@ -19,12 +25,11 @@ export function TransactionMayFailWarning() {
         <HStack gap={8} alignItems="center">
           <ValidationErrorIcon style={{ color: 'var(--notice-600)' }} />
           <UIText kind="body/accent" color="var(--notice-600)">
-            Transaction may fail
+            {title}
           </UIText>
         </HStack>
         <UIText kind="small/regular" color="var(--notice-600)">
-          This transaction can not be broadcasted or it may fail during
-          execution. Proceed with caution.
+          {message}
         </UIText>
       </VStack>
       <Spacer height={16} />

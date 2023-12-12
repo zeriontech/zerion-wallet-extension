@@ -12,7 +12,7 @@ export interface TransactionObject {
 
 export type StoredTransactions = Array<TransactionObject>;
 
-export interface InterpretWarning {
+interface Warning {
   severity: string;
   message: string;
 }
@@ -34,5 +34,5 @@ export interface InterpretInput {
 export interface InterpretResponse {
   action: AddressAction;
   input?: InterpretInput;
-  warnings: InterpretWarning[];
+  warnings: Warning[];
 }

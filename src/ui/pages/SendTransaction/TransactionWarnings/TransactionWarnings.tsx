@@ -5,7 +5,7 @@ import type { IncomingAddressAction } from 'src/modules/ethereum/transactions/ad
 import type { AddressAction } from 'defi-sdk';
 import type { NetworkFeeConfiguration } from '../NetworkFee/types';
 import { InsufficientFundsWarning } from './InsufficientFundsWarning';
-import { TransactionMayFailWarning } from './TransactionMayFailWarning';
+import { TransactionWarning } from './TransactionWarning';
 
 export function TransactionWarnings({
   address,
@@ -20,11 +20,14 @@ export function TransactionWarnings({
   chain: Chain;
   networkFeeConfiguration: NetworkFeeConfiguration;
 }) {
-  // TODO: Render interpretation warnings
   return (
     <>
       {addressAction.transaction.status === 'failed' ? (
-        <TransactionMayFailWarning />
+        <TransactionWarning
+          title="Transaction may fail"
+          message="This transaction can not be broadcasted or it may fail during
+          execution. Proceed with caution."
+        />
       ) : null}
       <InsufficientFundsWarning
         address={address}
