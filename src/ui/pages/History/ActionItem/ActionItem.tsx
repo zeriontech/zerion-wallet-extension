@@ -28,7 +28,6 @@ import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
@@ -80,10 +79,6 @@ function ActionTitle({
           target="_blank"
           title={explorerUrlPrepared}
           rel="noopener noreferrer"
-          onClick={(e) => {
-            e.stopPropagation();
-            openInNewWindow(e);
-          }}
           style={{
             overflow: 'hidden',
             textOverflow: 'ellipsis',

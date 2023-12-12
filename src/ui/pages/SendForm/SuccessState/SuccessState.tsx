@@ -15,7 +15,6 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
-import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { TransferVisualization } from '../TransferVisualization';
 
 export function SuccessState({
@@ -106,7 +105,6 @@ export function SuccessState({
               href={networks.getExplorerTxUrlByName(chain, hash)}
               rel="noopener noreferrer"
               target="_blank"
-              onClick={openInNewWindow}
             >
               {networks.getExplorerNameById(networks.getChainId(chain))}
             </TextAnchor>

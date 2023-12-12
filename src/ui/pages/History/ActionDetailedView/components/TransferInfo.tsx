@@ -18,7 +18,6 @@ import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
-import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { AssetLink } from 'src/ui/components/AssetLink';
@@ -216,10 +215,6 @@ function NFTTransfer({
       target="_blank"
       title={nft.name}
       rel="noopener noreferrer"
-      onClick={(e) => {
-        e.stopPropagation();
-        openInNewWindow(e);
-      }}
       className={helperStyles.hoverUnderline}
       style={{ color: 'var(--positive-500)' }}
     >

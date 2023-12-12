@@ -3,7 +3,6 @@ import { animated } from '@react-spring/web';
 import type { AddressAction } from 'defi-sdk';
 import { createChain } from 'src/modules/networks/Chain';
 import type { Networks } from 'src/modules/networks/Networks';
-import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
@@ -35,7 +34,6 @@ export function ExplorerLink({
     <UnstyledAnchor
       href={urlPrepared}
       rel="noopener noreferrer"
-      onClick={openInNewWindow}
       onMouseEnter={trigger}
       className={helperStyles.hoverUnderline}
       style={{ justifySelf: 'end', color: 'var(--primary)' }}

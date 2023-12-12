@@ -6,7 +6,6 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import ArrowLeftTop from 'jsx:src/ui/assets/arrow-left-top.svg';
-import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import * as styles from './styles.module.css';
 
@@ -29,7 +28,6 @@ export function DappLink({
       className={cn(styles.link, 'parent-hover')}
       href={url.href}
       rel="noopener noreferrer"
-      onClick={openInNewWindow}
       style={{
         ['--parent-content-color' as string]: 'var(--neutral-500)',
         ['--parent-hovered-content-color' as string]: 'var(--black)',
