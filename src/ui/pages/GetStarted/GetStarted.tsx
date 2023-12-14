@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Link, Route, Routes, useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import { Button } from 'src/ui/ui-kit/Button';
 import { PageTop } from 'src/ui/components/PageTop';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -11,7 +10,6 @@ import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { FillView } from 'src/ui/components/FillView';
 import { AddressBadge } from 'src/ui/components/AddressBadge';
 import { useWalletGroups } from 'src/ui/shared/requests/useWalletGroups';
-import { walletPort } from 'src/ui/shared/channels';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
@@ -85,14 +83,6 @@ function Options() {
       ),
     [walletGroups]
   );
-  const hasWallets = walletGroups ? walletGroups?.length > 0 : false;
-
-  const { data: userCanCreateInitialWallet } = useQuery({
-    queryKey: ['wallet/userCanCreateInitialWallet'],
-    queryFn: () => walletPort.request('userCanCreateInitialWallet'),
-    useErrorBoundary: true,
-    suspense: true,
-  });
 
   if (isLoading) {
     return null;
@@ -126,12 +116,10 @@ function Options() {
         </FillView>
 
         <VStack gap={8}>
-          {hasWallets || userCanCreateInitialWallet ? (
-            <NewWalletOption
-              beforeCreate={beforeCreate}
-              mnemonicWalletGroups={mnemonicGroups || null}
-            />
-          ) : null}
+          <NewWalletOption
+            beforeCreate={beforeCreate}
+            mnemonicWalletGroups={mnemonicGroups || null}
+          />
           <Button kind="regular" as={Link} to={importHref} size={44}>
             Import Existing Wallet
           </Button>
