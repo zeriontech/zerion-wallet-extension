@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Content } from 'react-area';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -18,23 +18,36 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
+import { BackButton } from 'src/ui/components/BackButton';
+import { getBackOrHome } from 'src/ui/shared/navigation/getBackOrHome';
 import { getAbility, getAbilityLinkTitle } from '../daylight';
 import { markAbility, unmarkAbility, useFeedInfo } from '../stored';
 import { Ability } from './Ability';
 import { AbilityMenu } from './AbilityMenu';
 
+const IMAGE_SHIFT = -70;
+
 export function AbilityPage() {
+  const navigate = useNavigate();
+  const { singleAddressNormalized, ready } = useAddressParams();
   useBodyStyle(
-    useMemo(() => ({ ['--background' as string]: 'var(--z-index-1)' }), [])
+    useMemo(
+      () => ({
+        ['--background' as string]: 'var(--white)',
+        ['--url-bar-background' as string]: 'transparent',
+      }),
+      []
+    )
   );
 
   const { ability_uid } = useParams();
   invariant(ability_uid, 'ability_uid path segment is required');
 
   const { data } = useQuery({
-    queryKey: [`ability/${ability_uid}`],
-    queryFn: () => getAbility(ability_uid),
+    queryKey: ['getAbility', singleAddressNormalized, ability_uid],
+    queryFn: () => getAbility(singleAddressNormalized, ability_uid),
     suspense: false,
+    enabled: ready,
   });
 
   const linkTitle = useMemo(() => {
@@ -98,6 +111,17 @@ export function AbilityPage() {
 
   return (
     <>
+      <Content name="navigation-bar-back-button">
+        <BackButton
+          kind="neutral"
+          style={{
+            paddingInline: 8,
+            ['--button-background' as string]: 'var(--white)',
+          }}
+          onClick={() => navigate(getBackOrHome() as number)}
+          title={`Press "backspace" to navigate back`}
+        />
+      </Content>
       <Content name="navigation-bar-end">
         <AbilityMenu
           onMark={status ? undefined : handleMarkButtonClick}
@@ -107,12 +131,41 @@ export function AbilityPage() {
           }}
         />
       </Content>
-      <PageColumn style={{ paddingTop: 18 }}>
+      <PageColumn
+        style={{
+          paddingTop: 18,
+          position: 'relative',
+          backgroundColor: 'var(--white)',
+        }}
+      >
         <NavigationTitle
           title={null}
           documentTitle={data?.ability.title || 'Ability Page'}
         />
-        <div style={{ paddingBottom: 80 }}>
+        {data?.ability.imageUrl ? (
+          <img
+            alt={data.ability.title}
+            src={data.ability.imageUrl}
+            style={{
+              position: 'relative',
+              top: IMAGE_SHIFT,
+              left: -16,
+              width: 'calc(100% + 32px)',
+              objectFit: 'cover',
+              objectPosition: '50% 50%',
+            }}
+          />
+        ) : (
+          <Spacer height={56} />
+        )}
+
+        <div
+          style={{
+            paddingBottom: 8,
+            transform: `translateY(${IMAGE_SHIFT}px)`,
+          }}
+        >
+          <Spacer height={16} />
           {data?.ability ? (
             <Ability
               ability={data.ability}

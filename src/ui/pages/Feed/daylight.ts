@@ -64,7 +64,7 @@ export function useWalletAbilities({
   onSuccess?(data: InfiniteData<WalletAbilitiesResponse>): void;
 }) {
   const { data, ...result } = useInfiniteQuery({
-    queryKey: ['wallet/abilities/', address, JSON.stringify(params), limit],
+    queryKey: ['getWalletAbilities', address, JSON.stringify(params), limit],
     queryFn: ({ pageParam = { address, params, limit } }) =>
       getWalletAbilities(pageParam),
     getNextPageParam: (lastPage) =>
@@ -87,9 +87,11 @@ export function useWalletAbilities({
   return { value, ...result };
 }
 
-export async function getAbility(uid: string) {
+export async function getAbility(address: string, uid: string) {
   const result = await ky
-    .get(new URL(`daylight/v1/abilities/${uid}`, PROXY_URL), { timeout: 20000 })
+    .get(new URL(`daylight/v1/wallets/${address}/ability/${uid}`, PROXY_URL), {
+      timeout: 20000,
+    })
     .json<{ ability: WalletAbility }>();
   return result;
 }

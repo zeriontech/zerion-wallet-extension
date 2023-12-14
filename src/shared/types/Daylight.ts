@@ -21,54 +21,17 @@ interface WalletAbilitySupplier {
   url: string;
 }
 
-type CommunityType = 'ERC-20' | 'ERC-721' | 'ERC-1155';
-
-interface WalletAbilityTokenRequirement {
-  chain: 'ethereum';
-  type: 'hasTokenBalance';
-  address: string;
-  minAmount: number;
-  community: {
-    title: string;
-    contractAddress: string;
-    type: CommunityType;
-    chain: 'ethereum';
-    imageUrl: string;
-    linkUrl: string;
-    description: string;
-    currencyCode: string;
-    slug: string;
-  };
-}
-
-interface WalletAbilityNFTRequirement {
-  chain: 'ethereum';
-  type: 'hasNftWithSpecificId';
-  address: string;
-  id: string[];
-  community: {
-    title: string;
-    contractAddress: string;
-    type: CommunityType;
-    chain: 'ethereum';
-    imageUrl: string;
-    linkUrl: string;
-    description: string;
-    currencyCode: string;
-    slug: string;
-  };
-}
-
-interface WalletAbilityAllowlistTokenRequirement {
-  chain: 'ethereum';
-  type: 'onAllowlist';
-  addresses: string[];
-}
-
-type WalletAbilityRequirement =
-  | WalletAbilityTokenRequirement
-  | WalletAbilityNFTRequirement
-  | WalletAbilityAllowlistTokenRequirement;
+type WalletAbilityReason = {
+  text: string;
+  type:
+    | 'allowlist'
+    | 'tokengate'
+    | 'open'
+    | 'static-list'
+    | 'influencer'
+    | 'trending'; // could be extended later
+  imageUrl: string | null;
+};
 
 export interface WalletAbility {
   type: WalletAbilityType;
@@ -88,7 +51,7 @@ export interface WalletAbility {
     linkUrl: string;
     // in the future here will be more info for completing the ability
   };
-  requirements: WalletAbilityRequirement[];
+  reason: WalletAbilityReason;
   submitter: {
     publicKey: string;
     chain: 'ethereum';
