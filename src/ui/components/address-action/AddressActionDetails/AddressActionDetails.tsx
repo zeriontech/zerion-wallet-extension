@@ -18,8 +18,6 @@ export function AddressActionDetails({
   actionTransfers,
   singleAsset,
   allowanceQuantityBase,
-  allowanceViewHref,
-  disabled = false,
 }: {
   recipientAddress?: string;
   addressAction?: Pick<AnyAddressAction, 'label' | 'type'>;
@@ -29,8 +27,6 @@ export function AddressActionDetails({
   actionTransfers?: ActionTransfers;
   singleAsset?: NonNullable<AddressAction['content']>['single_asset'];
   allowanceQuantityBase?: string;
-  allowanceViewHref?: string;
-  disabled?: boolean;
 }) {
   return (
     <>
@@ -63,8 +59,6 @@ export function AddressActionDetails({
           actionType={addressAction.type.value}
           singleAsset={singleAsset}
           allowanceQuantityBase={allowanceQuantityBase}
-          allowanceViewHref={allowanceViewHref}
-          disabled={disabled}
         />
       ) : null}
     </>

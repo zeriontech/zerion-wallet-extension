@@ -2,7 +2,14 @@ import { useSelectorStore } from '@store-unit/react';
 import { client, useAddressMembership, useAddressPositions } from 'defi-sdk';
 import type { SwapFormState, SwapFormView } from '@zeriontech/transactions';
 import { useSwapForm } from '@zeriontech/transactions';
-import React, { useCallback, useEffect, useId, useMemo, useRef } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import SettingsIcon from 'jsx:src/ui/assets/settings-sliders.svg';
 import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -53,6 +60,9 @@ import {
   createApproveAddressAction,
   createTradeAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction';
+import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
+import { AllowanceForm } from 'src/ui/components/AllowanceForm';
+import BigNumber from 'bignumber.js';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -223,6 +233,10 @@ export function SwapForm() {
     return { ...txToSign, from: address, chainId };
   });
 
+  const [allowanceQuantityBase, setAllowanceQuantityBase] = useState(
+    UNLIMITED_APPROVAL_AMOUNT.toFixed()
+  );
+
   const spendAmountBase = useMemo(
     () =>
       spendInput && spendPosition && chain
@@ -245,6 +259,7 @@ export function SwapForm() {
     address,
     chain,
     spendAmountBase,
+    allowanceQuantityBase,
     spender: quote?.token_spender ?? null,
     contractAddress,
     enabled: quotesData.done && Boolean(quote && !quote.enough_allowance),
@@ -375,6 +390,7 @@ export function SwapForm() {
 
   const formId = useId();
 
+  const allowanceDialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const confirmDialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const slippageDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
@@ -519,11 +535,67 @@ export function SwapForm() {
                 chain={chain}
                 transaction={configureTransactionToBeSigned(currentTransaction)}
                 configuration={swapView.store.configuration.getState()}
+                onOpenAllowanceForm={() =>
+                  allowanceDialogRef.current?.showModal()
+                }
               />
             </ViewLoadingSuspense>
           );
         }}
-      ></BottomSheetDialog>
+      />
+
+      <BottomSheetDialog
+        ref={allowanceDialogRef}
+        height="min-content"
+        renderWhenOpen={() => {
+          invariant(chain, 'Chain must be defined');
+          invariant(
+            spendPosition?.asset,
+            'Spend position asset must be defined'
+          );
+          invariant(
+            spendPosition?.quantity,
+            'Spend position quantity must be defined'
+          );
+          const value = new BigNumber(allowanceQuantityBase);
+          const positionBalanceCommon = getPositionBalance(spendPosition);
+          return (
+            <ViewLoadingSuspense>
+              <>
+                <DialogTitle
+                  alignTitle="start"
+                  title={<UIText kind="headline/h3">Edit allowance</UIText>}
+                />
+                <Spacer height={24} />
+                <div
+                  style={{
+                    ['--surface-background-color' as string]:
+                      'var(--z-index-1-inverted)',
+                    display: 'grid',
+                    gap: 12,
+                    gridTemplateRows: 'auto 1fr',
+                    flexGrow: 1,
+                  }}
+                >
+                  <AllowanceForm
+                    asset={spendPosition.asset}
+                    chain={chain}
+                    address={address}
+                    balance={positionBalanceCommon}
+                    requestedAllowanceQuantityBase={UNLIMITED_APPROVAL_AMOUNT}
+                    value={value}
+                    onSubmit={(quantity) => {
+                      setAllowanceQuantityBase(quantity);
+                      allowanceDialogRef.current?.close();
+                    }}
+                  />
+                </div>
+              </>
+            </ViewLoadingSuspense>
+          );
+        }}
+      />
+
       <form
         id={formId}
         ref={formRef}

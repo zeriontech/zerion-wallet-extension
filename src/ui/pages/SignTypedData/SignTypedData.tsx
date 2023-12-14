@@ -44,7 +44,7 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
 import type { Networks } from 'src/modules/networks/Networks';
 import { PageTop } from 'src/ui/components/PageTop';
-import { CustomAllowanceView } from 'src/ui/components/CustomAllowanceView';
+import { AllowanceView } from 'src/ui/components/AllowanceView';
 import { produce } from 'immer';
 import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
@@ -56,6 +56,7 @@ import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOri
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import { TextLink } from 'src/ui/ui-kit/TextLink';
 import { HardwareSignMessage } from '../HardwareWalletConnection/HardwareSignMessage';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
@@ -305,11 +306,19 @@ function TypedDataDefaultView({
               wallet={wallet}
               singleAsset={addressAction?.content?.single_asset}
               allowanceQuantityBase={allowanceQuantityBase || undefined}
-              allowanceViewHref={allowanceViewHref}
-              // TODO: create SignMessageButton (like SignTransactionButton)
-              // and set disabled state when sign mutation is loading (see SendTransaction.tsx)
-              // disabled={...}
             />
+            {allowanceQuantityBase && addressAction.type.value === 'approve' ? (
+              <Content name="single-asset-quantity-right">
+                <UIText
+                  as={TextLink}
+                  kind="small/accent"
+                  style={{ color: 'var(--primary)' }}
+                  to={allowanceViewHref}
+                >
+                  Edit
+                </UIText>
+              </Content>
+            ) : null}
             {typedDataFormatted ? (
               <Button kind="regular" onClick={onOpenAdvancedView}>
                 Advanced View
@@ -500,7 +509,7 @@ function SignTypedDataContent({
           )}
         />
         {view === View.customAllowance ? (
-          <CustomAllowanceView
+          <AllowanceView
             address={wallet.address}
             asset={getFungibleAsset(singleAsset?.asset)}
             value={allowanceQuantityBase}

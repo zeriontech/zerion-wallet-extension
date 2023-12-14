@@ -52,7 +52,7 @@ import type { Networks } from 'src/modules/networks/Networks';
 import type { AddressAction } from 'defi-sdk';
 import type { TransactionAction } from 'src/modules/ethereum/transactions/describeTransaction';
 import { describeTransaction } from 'src/modules/ethereum/transactions/describeTransaction';
-import { CustomAllowanceView } from 'src/ui/components/CustomAllowanceView';
+import { AllowanceView } from 'src/ui/components/AllowanceView';
 import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { useEvent } from 'src/ui/shared/useEvent';
@@ -66,6 +66,7 @@ import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import { TextLink } from 'src/ui/ui-kit/TextLink';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -277,9 +278,19 @@ function TransactionDefaultView({
           actionTransfers={actionTransfers}
           singleAsset={singleAsset}
           allowanceQuantityBase={allowanceQuantityBase}
-          allowanceViewHref={allowanceViewHref}
-          disabled={sendTransactionMutation.isLoading}
         />
+        {allowanceQuantityBase && addressAction.type.value === 'approve' ? (
+          <Content name="single-asset-quantity-right">
+            <UIText
+              as={TextLink}
+              kind="small/accent"
+              style={{ color: 'var(--primary)' }}
+              to={allowanceViewHref}
+            >
+              Edit
+            </UIText>
+          </Content>
+        ) : null}
         {interpretQuery.isInitialLoading ? (
           <InterpretLoadingState />
         ) : interpretQuery.isError ? (
@@ -542,7 +553,7 @@ function SendTransactionContent({
           )}
         ></CenteredDialog>
         {view === View.customAllowance ? (
-          <CustomAllowanceView
+          <AllowanceView
             address={wallet.address}
             asset={getFungibleAsset(singleAsset?.asset)}
             requestedAllowanceQuantityBase={requestedAllowanceQuantityBase}

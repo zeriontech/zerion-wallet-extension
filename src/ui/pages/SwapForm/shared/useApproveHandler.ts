@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { useMemo } from 'react';
-import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
 import { estimateGas } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import type { Chain } from 'src/modules/networks/Chain';
 import { networksStore } from 'src/modules/networks/networks-store.client';
@@ -12,6 +11,7 @@ import { walletPort } from 'src/ui/shared/channels';
 export function useApproveHandler({
   address,
   spendAmountBase,
+  allowanceQuantityBase,
   contractAddress,
   spender,
   chain,
@@ -19,6 +19,7 @@ export function useApproveHandler({
 }: {
   address: string;
   spendAmountBase: string | null;
+  allowanceQuantityBase: string;
   contractAddress: string | null;
   spender: string | null;
   chain: Chain | null;
@@ -62,6 +63,7 @@ export function useApproveHandler({
       'wallet/createApprovalTransaction',
       contractAddress,
       spender,
+      allowanceQuantityBase,
       chain,
       address,
     ],
@@ -74,7 +76,7 @@ export function useApproveHandler({
         chain: chain.toString(),
         contractAddress,
         spender,
-        allowanceQuantityBase: UNLIMITED_APPROVAL_AMOUNT.toFixed(),
+        allowanceQuantityBase,
         // allowanceQuantityBase: '40000000000000000000', // TESTING
       });
       const tx = { ...approveTx, from: address };
@@ -84,6 +86,7 @@ export function useApproveHandler({
       return { ...tx, gas: gasAsHex, gasLimit: gasAsHex };
     },
     staleTime: Infinity,
+    keepPreviousData: true,
     suspense: false,
     enabled: allowanceQuery.isSuccess && !enough,
     // enabled: false,

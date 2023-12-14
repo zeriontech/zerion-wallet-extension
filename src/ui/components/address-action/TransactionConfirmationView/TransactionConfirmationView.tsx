@@ -22,12 +22,14 @@ export function TransactionConfirmationView({
   transaction,
   chain,
   configuration,
+  onOpenAllowanceForm,
 }: {
   title: React.ReactNode;
   wallet: ExternallyOwnedAccount;
   transaction: IncomingTransactionWithChainId;
   chain: Chain;
   configuration: CustomConfiguration;
+  onOpenAllowanceForm?: () => void;
 }) {
   return (
     <div
@@ -61,8 +63,9 @@ export function TransactionConfirmationView({
         style={{ display: 'flex', flexDirection: 'column' }}
       >
         <TransactionSimulation
-          transaction={transaction}
+          onOpenAllowanceForm={onOpenAllowanceForm}
           address={wallet.address}
+          transaction={transaction}
         />
         <Spacer height={20} />
 

@@ -16,7 +16,7 @@ import type { Chain } from 'src/modules/networks/Chain';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { isUnlimitedApproval } from 'src/ui/pages/History/isUnlimitedApproval';
-import { TextLink } from 'src/ui/ui-kit/TextLink';
+import { RenderArea } from 'react-area';
 import { AssetQuantity } from '../../AssetQuantity';
 import { AssetLink } from '../../AssetLink';
 
@@ -40,16 +40,12 @@ function FungibleAsset({
   actionType,
   fungible,
   quantity,
-  allowanceViewHref,
-  disabled,
 }: {
   address: string;
   chain: Chain;
   actionType: ActionType;
   fungible: Asset;
   quantity: string;
-  allowanceViewHref?: string;
-  disabled: boolean;
 }) {
   const commonQuantity = useMemo(
     () =>
@@ -99,24 +95,7 @@ function FungibleAsset({
                 )}{' '}
                 <AssetLink asset={fungible} address={address} />
               </UIText>
-              {actionType === 'approve' &&
-              Boolean(quantity) &&
-              allowanceViewHref ? (
-                disabled ? (
-                  <UIText kind="small/accent" color="var(--neutral-500)">
-                    Edit
-                  </UIText>
-                ) : (
-                  <UIText
-                    as={TextLink}
-                    kind="small/accent"
-                    color="var(--primary)"
-                    to={allowanceViewHref}
-                  >
-                    Edit
-                  </UIText>
-                )
-              ) : null}
+              <RenderArea name="single-asset-quantity-right" />
             </HStack>
           }
           detailText={null}
@@ -163,8 +142,6 @@ export function SingleAsset({
   actionType,
   singleAsset,
   allowanceQuantityBase,
-  allowanceViewHref,
-  disabled,
 }: {
   address: string;
   chain: Chain;
@@ -173,8 +150,6 @@ export function SingleAsset({
     NonNullable<AddressAction['content']>['single_asset']
   >;
   allowanceQuantityBase?: string;
-  allowanceViewHref?: string;
-  disabled: boolean;
 }) {
   const fungibleAsset = getFungibleAsset(singleAsset.asset);
   const nftAsset = getNftAsset(singleAsset.asset);
@@ -192,8 +167,6 @@ export function SingleAsset({
         actionType={actionType}
         fungible={fungibleAsset}
         quantity={quantity}
-        allowanceViewHref={allowanceViewHref}
-        disabled={disabled}
       />
     );
   }

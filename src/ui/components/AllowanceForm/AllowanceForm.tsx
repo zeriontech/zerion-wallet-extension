@@ -1,6 +1,5 @@
 import React, { useCallback, useId, useMemo, useRef, useState } from 'react';
 import InfinityIcon from 'jsx:src/ui/assets/infinity.svg';
-import { PageTop } from 'src/ui/components/PageTop';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Media } from 'src/ui/ui-kit/Media';
@@ -10,13 +9,10 @@ import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import UnknownIcon from 'jsx:src/ui/assets/actionTypes/unknown.svg';
 import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 import type { Asset } from 'defi-sdk';
-import { useAddressPositions } from 'defi-sdk';
 import BigNumber from 'bignumber.js';
 import { collectData } from 'src/ui/shared/form-data';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
-import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { almostEqual, noValueDash } from 'src/ui/shared/typography';
-import { invariant } from 'src/shared/invariant';
 import * as s from 'src/ui/style/helpers.module.css';
 import { getBaseQuantity, getCommonQuantity } from 'src/modules/networks/asset';
 import type { Chain } from 'src/modules/networks/Chain';
@@ -29,9 +25,8 @@ import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { isUnlimitedApproval } from 'src/ui/pages/History/isUnlimitedApproval';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
-import { NavigationBar } from '../NavigationBar';
 
-function CustomAllowanceForm({
+export function AllowanceForm({
   asset,
   chain,
   address,
@@ -39,6 +34,7 @@ function CustomAllowanceForm({
   requestedAllowanceQuantityBase,
   value,
   onSubmit,
+  footerRenderArea,
 }: {
   asset: Asset;
   chain: Chain;
@@ -47,6 +43,7 @@ function CustomAllowanceForm({
   requestedAllowanceQuantityBase: BigNumber;
   value: BigNumber;
   onSubmit(newValue: string): void;
+  footerRenderArea?: string;
 }) {
   const isRequestedAllowanceUnlimited = isUnlimitedApproval(
     requestedAllowanceQuantityBase
@@ -119,6 +116,23 @@ function CustomAllowanceForm({
   };
 
   const id = useId();
+
+  const submitRow = (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: 8,
+      }}
+    >
+      <Button ref={focusNode} kind="regular" onClick={handleReset}>
+        Reset
+      </Button>
+      <Button kind="primary" form={id}>
+        Save
+      </Button>
+    </div>
+  );
 
   return (
     <form
@@ -314,95 +328,12 @@ function CustomAllowanceForm({
           />
         </HStack>
       </VStack>
-      <Content name="sign-transaction-footer">
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: 8,
-          }}
-        >
-          <Button ref={focusNode} kind="regular" onClick={handleReset}>
-            Reset
-          </Button>
-          <Button kind="primary" form={id}>
-            Save
-          </Button>
-        </div>
-      </Content>
+      <Spacer height={20} />
+      {footerRenderArea ? (
+        <Content name={footerRenderArea}>{submitRow}</Content>
+      ) : (
+        submitRow
+      )}
     </form>
-  );
-}
-
-export function CustomAllowanceView({
-  address,
-  chain,
-  asset,
-  value,
-  requestedAllowanceQuantityBase,
-  onChange,
-}: {
-  address: string;
-  chain: Chain;
-  asset?: Asset | null;
-  value: string;
-  requestedAllowanceQuantityBase?: string;
-  onChange: (value: string) => void;
-}) {
-  invariant(
-    requestedAllowanceQuantityBase,
-    'requestedAllowanceQuantityBase is required to set custom allowance'
-  );
-
-  const { value: positionsResponse, isLoading: arePositionsLoading } =
-    useAddressPositions(
-      {
-        address,
-        assets: asset ? [asset?.asset_code] : [],
-        currency: 'usd',
-      },
-      { enabled: Boolean(asset) }
-    );
-
-  const positionQuantity = useMemo(
-    () =>
-      positionsResponse?.positions.find(
-        (position) => position.chain === chain.toString()
-      )?.quantity,
-    [chain, positionsResponse?.positions]
-  );
-
-  const balance = useMemo(
-    () =>
-      positionQuantity && asset
-        ? getCommonQuantity({
-            asset,
-            chain,
-            baseQuantity: positionQuantity,
-          })
-        : null,
-    [asset, chain, positionQuantity]
-  );
-
-  if (arePositionsLoading || !asset) {
-    return <ViewLoading kind="network" />;
-  }
-
-  return (
-    <>
-      <NavigationBar title="Custom Allowance" />
-      <PageTop />
-      <CustomAllowanceForm
-        asset={asset}
-        chain={chain}
-        address={address}
-        balance={balance}
-        requestedAllowanceQuantityBase={
-          new BigNumber(requestedAllowanceQuantityBase)
-        }
-        value={new BigNumber(value || requestedAllowanceQuantityBase)}
-        onSubmit={onChange}
-      />
-    </>
   );
 }
