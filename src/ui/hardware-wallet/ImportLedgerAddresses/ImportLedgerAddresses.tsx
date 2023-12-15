@@ -227,9 +227,6 @@ function AddressSelectList({
   );
 }
 
-/** NOTE: We decided to only show ledger live addresses until users report feedback */
-const LEDGER_LIVE_ONLY = true;
-
 export function ImportLedgerAddresses({
   ledger,
   existingAddressesSet,
@@ -259,33 +256,39 @@ export function ImportLedgerAddresses({
         <UIText kind="headline/hero">Select Wallets</UIText>
         <Spacer height={24} />
       </PageFullBleedColumn>
-      {LEDGER_LIVE_ONLY ? null : (
-        <>
-          <SegmentedControlGroup style={{ paddingTop: 4 }}>
-            <SegmentedControlRadio
-              name="pathType"
-              value="ledger"
-              checked={pathType === 'ledger'}
-              onChange={(event) =>
-                setPathType(event.currentTarget.value as DerivationPathType)
-              }
-            >
-              Ledger
-            </SegmentedControlRadio>
-            <SegmentedControlRadio
-              name="pathType"
-              value="ledgerLive"
-              checked={pathType === 'ledgerLive'}
-              onChange={(event) =>
-                setPathType(event.currentTarget.value as DerivationPathType)
-              }
-            >
-              Ledger Live
-            </SegmentedControlRadio>
-          </SegmentedControlGroup>
-          <Spacer height={24} />
-        </>
-      )}
+      <SegmentedControlGroup style={{ paddingTop: 4 }}>
+        <SegmentedControlRadio
+          name="pathType"
+          value="ledgerLive"
+          checked={pathType === 'ledgerLive'}
+          onChange={(event) =>
+            setPathType(event.currentTarget.value as DerivationPathType)
+          }
+        >
+          Ledger Live
+        </SegmentedControlRadio>
+        <SegmentedControlRadio
+          name="pathType"
+          value="bip44"
+          checked={pathType === 'bip44'}
+          onChange={(event) =>
+            setPathType(event.currentTarget.value as DerivationPathType)
+          }
+        >
+          BIP44
+        </SegmentedControlRadio>
+        <SegmentedControlRadio
+          name="pathType"
+          value="ledger"
+          checked={pathType === 'ledger'}
+          onChange={(event) =>
+            setPathType(event.currentTarget.value as DerivationPathType)
+          }
+        >
+          Legacy
+        </SegmentedControlRadio>
+      </SegmentedControlGroup>
+      <Spacer height={24} />
       <AddressSelectList
         key={pathType}
         ledger={ledger}
