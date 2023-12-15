@@ -48,7 +48,6 @@ import { AddressActionDetails } from 'src/ui/components/address-action/AddressAc
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { interpretTransaction } from 'src/modules/ethereum/transactions/interpret';
 import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/PhishingDefenceStatus';
-import type BigNumber from 'bignumber.js';
 import { Content, RenderArea } from 'react-area';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { AddressAction } from 'defi-sdk';

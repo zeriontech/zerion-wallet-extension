@@ -45,14 +45,13 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
 import type { Networks } from 'src/modules/networks/Networks';
 import { PageTop } from 'src/ui/components/PageTop';
-import type BigNumber from 'bignumber.js';
 import { CustomAllowanceView } from 'src/ui/components/CustomAllowanceView';
 import { produce } from 'immer';
 import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { useErrorBoundary } from 'src/ui/shared/useErrorBoundary';
 import { isDeviceAccount } from 'src/shared/types/validators';
-import { NavigationTitle } from 'src/ui/components/NavigationTitle'
+import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { BUG_REPORT_BUTTON_HEIGHT } from 'src/ui/components/BugReportButton';
 import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOrigin';
 import { HardwareSignMessage } from '../HardwareWalletConnection/HardwareSignMessage';
@@ -405,8 +404,8 @@ function SignTypedDataContent({
     ? getPermitAllowanceQuantity(typedData)
     : undefined;
 
-  const handleChangeAllowance = (value: BigNumber) => {
-    setAllowanceQuantityBase(value.toString());
+  const handleChangeAllowance = (value: string) => {
+    setAllowanceQuantityBase(value);
     navigate(-1);
   };
 
