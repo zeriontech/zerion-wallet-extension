@@ -136,6 +136,7 @@ export function AbilityPage() {
           paddingTop: 18,
           position: 'relative',
           backgroundColor: 'var(--white)',
+          top: IMAGE_SHIFT,
         }}
       >
         <NavigationTitle
@@ -148,7 +149,6 @@ export function AbilityPage() {
             src={data.ability.imageUrl}
             style={{
               position: 'relative',
-              top: IMAGE_SHIFT,
               left: -16,
               width: 'calc(100% + 32px)',
               objectFit: 'cover',
@@ -159,12 +159,7 @@ export function AbilityPage() {
           <Spacer height={56} />
         )}
 
-        <div
-          style={{
-            paddingBottom: 8,
-            transform: `translateY(${IMAGE_SHIFT}px)`,
-          }}
-        >
+        <div style={{ paddingBottom: 8 }}>
           <Spacer height={16} />
           {data?.ability ? (
             <Ability
