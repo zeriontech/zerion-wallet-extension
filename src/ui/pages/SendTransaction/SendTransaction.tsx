@@ -64,6 +64,7 @@ import {
   type SignerSenderHandle,
 } from 'src/ui/components/SignTransactionButton';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
+import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -83,7 +84,7 @@ async function resolveChain(
   return { ...transaction, chainId };
 }
 
-async function resolveGas(transaction: IncomingTransactionWithChainId) {
+async function resolveGasAndFee(transaction: IncomingTransactionWithChainId) {
   const networks = await networksStore.load();
   return await prepareGasAndNetworkFee(transaction, networks);
 }
@@ -105,8 +106,8 @@ function usePreparedTx(transaction: IncomingTransaction, origin: string) {
   });
   const withChainId = resolveChainQuery.data;
   const resolveGasQuery = useQuery({
-    queryKey: ['resolveGas', withChainId],
-    queryFn: async () => (withChainId ? resolveGas(withChainId) : null),
+    queryKey: ['resolveGasAndFee', withChainId],
+    queryFn: async () => (withChainId ? resolveGasAndFee(withChainId) : null),
     enabled: Boolean(withChainId),
     useErrorBoundary: true,
     suspense: false,
@@ -146,7 +147,7 @@ function TransactionDefaultView({
   singleAsset: NonNullable<AddressAction['content']>['single_asset'];
   allowanceQuantityBase?: string;
   interpretQuery: {
-    isLoading: boolean;
+    isInitialLoading: boolean;
     isError: boolean;
   };
   incomingTransaction: IncomingTransaction;
@@ -279,7 +280,7 @@ function TransactionDefaultView({
           allowanceQuantityBase={allowanceQuantityBase}
           allowanceViewHref={allowanceViewHref}
         />
-        {interpretQuery.isLoading ? (
+        {interpretQuery.isInitialLoading ? (
           <InterpretLoadingState />
         ) : interpretQuery.isError ? (
           <UIText kind="small/regular" color="var(--notice-600)">
@@ -334,7 +335,13 @@ function TransactionDefaultView({
             </ErrorBoundary>
           </div>
         </>
-      ) : null}
+      ) : (
+        <DelayedRender delay={2000}>
+          <div style={{ display: 'flex', justifyContent: 'end' }}>
+            <CircleSpinner />
+          </div>
+        </DelayedRender>
+      )}
       <Content name="sign-transaction-footer">
         <VStack
           style={{
