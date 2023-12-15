@@ -21,14 +21,15 @@ export async function estimateGas(
   transaction: IncomingTransaction,
   networks: Networks
 ) {
-  const chainId = resolveChainId(transaction);
-  const rpcUrl = networks.getRpcUrlInternal(networks.getChainById(chainId));
+  const chainIdHex = resolveChainId(transaction);
+  const rpcUrl = networks.getRpcUrlInternal(networks.getChainById(chainIdHex));
   const { result } = await sendRpcRequest<string>(rpcUrl, {
     method: 'eth_estimateGas',
     params: [
-      omit({ ...transaction, /* convert to hex */ chainId }, [
+      omit({ ...transaction, chainId: chainIdHex }, [
         'gas', // error on Aurora if gas: 0x0, so we omit it
         'nonce', // error on Polygon if nonce is int, but we don't need it at all
+        'gasPrice', // error on Avalanche about maxFee being less than baseFee, event though only gasPrice in tx
       ]),
     ],
   });
