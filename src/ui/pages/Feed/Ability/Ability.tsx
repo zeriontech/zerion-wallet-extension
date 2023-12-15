@@ -94,6 +94,7 @@ export function Ability({
                   width={20}
                   height={20}
                   style={{ borderRadius: 4 }}
+                  alt={ability.title}
                 />
               ) : null}
               <UIText kind="small/accent" color="var(--neutral-600)">
@@ -125,7 +126,6 @@ export function Ability({
                 maxHeight: 160,
                 objectFit: 'cover',
                 borderRadius: 12,
-                objectPosition: '50% 50%',
               }}
             />
           ) : null}

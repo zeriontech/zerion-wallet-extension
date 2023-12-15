@@ -20,6 +20,7 @@ import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { BackButton } from 'src/ui/components/BackButton';
 import { getBackOrHome } from 'src/ui/shared/navigation/getBackOrHome';
+import { PageTop } from 'src/ui/components/PageTop';
 import { getAbility, getAbilityLinkTitle } from '../daylight';
 import { markAbility, unmarkAbility, useFeedInfo } from '../stored';
 import { Ability } from './Ability';
@@ -133,12 +134,12 @@ export function AbilityPage() {
       </Content>
       <PageColumn
         style={{
-          paddingTop: 18,
           position: 'relative',
           backgroundColor: 'var(--white)',
           top: IMAGE_SHIFT,
         }}
       >
+        <PageTop />
         <NavigationTitle
           title={null}
           documentTitle={data?.ability.title || 'Ability Page'}
@@ -152,7 +153,6 @@ export function AbilityPage() {
               left: -16,
               width: 'calc(100% + 32px)',
               objectFit: 'cover',
-              objectPosition: '50% 50%',
             }}
           />
         ) : (
