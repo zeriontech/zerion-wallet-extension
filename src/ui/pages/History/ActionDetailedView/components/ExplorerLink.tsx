@@ -33,6 +33,7 @@ export function ExplorerLink({
   return (
     <UnstyledAnchor
       href={urlPrepared}
+      target="_blank"
       rel="noopener noreferrer"
       onMouseEnter={trigger}
       className={helperStyles.hoverUnderline}

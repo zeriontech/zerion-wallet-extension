@@ -27,6 +27,7 @@ export function DappLink({
     <UnstyledAnchor
       className={cn(styles.link, 'parent-hover')}
       href={url.href}
+      target="_blank"
       rel="noopener noreferrer"
       style={{
         ['--parent-content-color' as string]: 'var(--neutral-500)',
