@@ -472,8 +472,8 @@ function SendTransactionContent({
   const addressAction = interpretAddressAction || localAddressAction;
   const singleAsset = addressAction?.content?.single_asset;
 
-  const handleChangeAllowance = (value: BigNumber) => {
-    setAllowanceQuantityBase(value.toString());
+  const handleChangeAllowance = (value: string) => {
+    setAllowanceQuantityBase(value);
     navigate(-1);
   };
 
