@@ -40,6 +40,8 @@ async function getWalletAbilities({
   const { type, ...rest } = params || { type: [] };
   const searchParams = new URLSearchParams([
     ['limit', limit?.toString() || '10'],
+    ['showOpenMints', 'true'],
+    ['sortDirection', 'desc'],
     ...(type.map((item) => ['type', item]) || []),
     ...(Object.entries(rest) as [string, string][]),
   ]);
