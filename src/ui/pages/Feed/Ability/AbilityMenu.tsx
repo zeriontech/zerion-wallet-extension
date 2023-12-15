@@ -30,9 +30,12 @@ export function AbilityMenu({
   return (
     <div style={{ position: 'relative', ...style }}>
       <Button
-        kind="ghost"
-        size={40}
-        style={{ padding: 8 }}
+        kind="neutral"
+        size={36}
+        style={{
+          padding: 6,
+          ['--button-background' as string]: 'var(--white)',
+        }}
         {...getToggleButtonProps()}
       >
         <DotsIcon />

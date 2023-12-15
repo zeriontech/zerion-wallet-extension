@@ -84,7 +84,7 @@ export function URLBar() {
         position: 'sticky',
         top: 0,
         zIndex: 1,
-        backgroundColor: 'var(--background)',
+        backgroundColor: 'var(--url-bar-background, var(--background))',
         opacity: pathname !== pathnameRef.current ? 0 : 1,
         paddingTop: 16,
         paddingInline: 8,

@@ -125,58 +125,49 @@ function StatusFilter({
   );
 }
 
-type FeedType = 'all' | 'claim' | 'airdrop' | 'mint' | 'vote' | 'other';
+type FeedType = 'all' | 'claim' | 'airdrop' | 'mint';
 
 const TYPE_TO_TITLE: Record<FeedType, string> = {
   all: 'All',
   claim: 'Claim',
   airdrop: 'Airdrop',
-  vote: 'Vote',
   mint: 'Mint',
-  other: 'Other',
 };
 
-const TYPE_ITEMS: FeedType[] = [
-  'all',
-  'claim',
-  'airdrop',
-  'mint',
-  'vote',
-  'other',
-];
+const TYPE_ITEMS: FeedType[] = ['all', 'claim', 'airdrop', 'mint'];
 
 function getAbilityTypeParams(type: FeedType): WalletAbilityType[] {
   if (type === 'all') {
-    // we exlude article type from feed
     return [
-      'vote',
       'claim',
       'airdrop',
       'mint',
-      'access',
-      'result',
-      'event',
-      'merch',
-      'misc',
-      'raffle',
-      'discount',
-      'stake',
-      'revoke',
+      // 'article',
+      // 'access',
+      // 'result',
+      // 'event',
+      // 'merch',
+      // 'misc',
+      // 'raffle',
+      // 'discount',
+      // 'stake',
+      // 'revoke',
     ];
   }
-  if (type === 'other') {
-    return [
-      'access',
-      'event',
-      'misc',
-      'merch',
-      'result',
-      'raffle',
-      'discount',
-      'stake',
-      'revoke',
-    ];
-  }
+  // if (type === 'other') {
+  //   return [
+  //     'access',
+  //     'event',
+  //     'misc',
+  //     'merch',
+  //     'result',
+  //     'raffle',
+  //     'discount',
+  //     'stake',
+  //     'revoke',
+  //     'vote',
+  //   ];
+  // }
   return [type];
 }
 

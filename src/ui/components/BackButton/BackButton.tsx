@@ -5,7 +5,7 @@ import { Button } from 'src/ui/ui-kit/Button';
 export function BackButton({
   style,
   ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+}: React.ComponentProps<typeof Button>) {
   return (
     <Button
       kind="ghost"

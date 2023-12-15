@@ -1,12 +1,10 @@
 import React, { useMemo } from 'react';
 import dayjs from 'dayjs';
-import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import DoubleCheckIcon from 'jsx:src/ui/assets/check_double.svg';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Tag } from 'src/ui/ui-kit/Tag';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import type { WalletAbility } from 'src/shared/types/Daylight';
 
 export function Ability({
@@ -20,8 +18,6 @@ export function Ability({
   status: 'dismissed' | 'completed' | null;
   loading?: boolean;
 }) {
-  const { singleAddress } = useAddressParams();
-
   const dateString = useMemo(() => {
     if (ability.closeAt) {
       return `${ability.isClosed ? 'Closed' : 'Closes'} ${dayjs(
@@ -89,44 +85,22 @@ export function Ability({
         </VStack>
         <HStack gap={16} justifyContent="space-between" alignItems="center">
           <VStack gap={8}>
-            {ability.requirements.map((requirement, index) => (
-              <HStack gap={8} alignItems="center" key={index}>
-                {requirement.type === 'onAllowlist' ? (
-                  <DoubleCheckIcon style={{ color: 'var(--neutral-600)' }} />
-                ) : requirement.community.imageUrl ? (
-                  <img
-                    src={requirement.community.imageUrl}
-                    width={20}
-                    height={20}
-                    style={{ borderRadius: 4 }}
-                  />
-                ) : null}
-                {requirement.type === 'onAllowlist' ? (
-                  <UIText kind="small/accent" color="var(--neutral-600)">
-                    On the allowlist
-                  </UIText>
-                ) : requirement.community.currencyCode ? (
-                  <UIText kind="small/accent" color="var(--neutral-600)">
-                    Hold{' '}
-                    {mode === 'full' ? (
-                      <TextAnchor
-                        href={`https://app.zerion.io/tokens/${requirement.community.contractAddress}?address=${singleAddress}}`}
-                        target="_blank"
-                      >
-                        ${requirement.community.currencyCode.toUpperCase()}
-                      </TextAnchor>
-                    ) : (
-                      `$${requirement.community.currencyCode.toUpperCase()}`
-                    )}
-                  </UIText>
-                ) : (
-                  <UIText
-                    kind="small/accent"
-                    color="var(--neutral-600)"
-                  >{`Hold ${requirement.community.title}`}</UIText>
-                )}
-              </HStack>
-            ))}
+            <HStack gap={8} alignItems="center">
+              {ability.reason.type === 'allowlist' ? (
+                <DoubleCheckIcon style={{ color: 'var(--neutral-600)' }} />
+              ) : ability.reason.imageUrl ? (
+                <img
+                  src={ability.reason.imageUrl}
+                  width={20}
+                  height={20}
+                  style={{ borderRadius: 4 }}
+                  alt={ability.title}
+                />
+              ) : null}
+              <UIText kind="small/accent" color="var(--neutral-600)">
+                {ability.reason.text}
+              </UIText>
+            </HStack>
           </VStack>
           {dateString ? (
             <UIText
@@ -142,18 +116,32 @@ export function Ability({
         </HStack>
       </VStack>
       {mode === 'compact' ? (
-        <UIText
-          kind="body/regular"
-          style={{
-            display: '-webkit-box',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-          }}
-        >
-          {ability.description}
-        </UIText>
+        <VStack gap={16}>
+          {ability.imageUrl ? (
+            <img
+              alt={ability.title}
+              src={ability.imageUrl}
+              style={{
+                width: '100%',
+                maxHeight: 160,
+                objectFit: 'cover',
+                borderRadius: 12,
+              }}
+            />
+          ) : null}
+          <UIText
+            kind="body/regular"
+            style={{
+              display: '-webkit-box',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+            }}
+          >
+            {ability.description}
+          </UIText>
+        </VStack>
       ) : (
         <UIText kind="body/regular" style={{ whiteSpace: 'pre-line' }}>
           <VStack gap={0}>
