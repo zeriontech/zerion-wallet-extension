@@ -1,5 +1,6 @@
 import { capitalize } from 'capitalize-ts';
 import type { AddressAction, Asset } from 'defi-sdk';
+import type { BigNumberish, BytesLike } from 'ethers';
 import { ethers } from 'ethers';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { CachedAssetQuery } from 'src/modules/defi-sdk/queries';
@@ -27,6 +28,9 @@ export type ClientTransactionStatus =
 export type LocalAddressAction = Omit<AddressAction, 'transaction'> & {
   transaction: Omit<AddressAction['transaction'], 'status'> & {
     status: ClientTransactionStatus;
+    data?: BytesLike;
+    value?: BigNumberish;
+    from?: string;
   };
   local: true;
   relatedTransaction?: string; // hash of related transaction (cancelled or sped-up)
@@ -173,6 +177,26 @@ export function createAcceleratedAddressAction(
       createChain(addressAction.transaction.chain)
     ),
     relatedTransaction: addressAction.transaction.hash,
+  };
+}
+
+export function createCancelAddressAction(
+  originalAddressAction: AnyAddressAction,
+  transaction: IncomingTransactionWithFrom
+): LocalAddressAction {
+  return {
+    id: nanoid(),
+    datetime: new Date().toISOString(),
+    local: true,
+    address: transaction.from,
+    type: { display_value: 'Send', value: 'send' },
+    label: null,
+    content: null,
+    transaction: toActionTx(
+      transaction,
+      createChain(originalAddressAction.transaction.chain)
+    ),
+    relatedTransaction: originalAddressAction.transaction.hash,
   };
 }
 

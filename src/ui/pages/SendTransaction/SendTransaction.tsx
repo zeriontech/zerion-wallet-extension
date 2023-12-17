@@ -343,12 +343,7 @@ function TransactionDefaultView({
         </DelayedRender>
       )}
       <Content name="sign-transaction-footer">
-        <VStack
-          style={{
-            textAlign: 'center',
-          }}
-          gap={8}
-        >
+        <VStack style={{ textAlign: 'center' }} gap={8}>
           <UIText kind="body/regular" color="var(--negative-500)">
             {sendTransactionMutation.isError
               ? txErrorToMessage(sendTransactionMutation.error)

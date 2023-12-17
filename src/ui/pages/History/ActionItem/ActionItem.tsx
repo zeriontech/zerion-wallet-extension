@@ -401,7 +401,11 @@ function ActionItemLocal({
   return (
     <>
       {isPending ? (
-        <AccelerateTransactionDialog ref={dialogRef} action={action} />
+        <AccelerateTransactionDialog
+          ref={dialogRef}
+          action={action}
+          onDismiss={() => dialogRef.current?.close()}
+        />
       ) : null}
       <Spacer height={16} />
       <HStack

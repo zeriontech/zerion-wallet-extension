@@ -2,29 +2,10 @@ import { useEffect, useMemo } from 'react';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 import { useSelectorStore } from '@store-unit/react';
-import { estimateGas } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { SendFormView } from '@zeriontech/transactions';
-import { useNetworks } from 'src/modules/networks/useNetworks';
 import { invariant } from 'src/shared/invariant';
-
-function useEstimateGas({
-  transaction,
-  keepPreviousData = false,
-}: {
-  transaction: IncomingTransaction | null;
-  keepPreviousData?: boolean;
-}) {
-  const { networks } = useNetworks();
-  return useQuery({
-    suspense: false,
-    queryKey: ['estimateGas', transaction, networks],
-    queryFn: () =>
-      networks && transaction ? estimateGas(transaction, networks) : null,
-    enabled: Boolean(networks && transaction),
-    keepPreviousData,
-  });
-}
+import { useEstimateGas } from 'src/modules/ethereum/transactions/useEstimateGas';
 
 export function EstimateTransactionGas({
   sendFormView,
