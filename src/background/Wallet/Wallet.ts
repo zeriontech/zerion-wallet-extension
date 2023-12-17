@@ -2,7 +2,6 @@ import type { UnsignedTransaction } from 'ethers';
 import { ethers } from 'ethers';
 import type { Emitter } from 'nanoevents';
 import { createNanoEvents } from 'nanoevents';
-import type { AddressAction } from 'defi-sdk';
 import { Store } from 'store-unit';
 import { isTruthy } from 'is-truthy-ts';
 import { encrypt, decrypt } from 'src/modules/crypto';
@@ -62,6 +61,7 @@ import {
 } from 'src/shared/types/validators';
 import { ERC20_ALLOWANCE_ABI } from 'src/modules/ethereum/abi/allowance-abi';
 import type { Quote } from 'src/shared/types/Quote';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -883,7 +883,7 @@ export class Wallet {
       context: Partial<ChannelContext> | undefined;
       initiator: string;
       feeValueCommon: string | null;
-      addressAction: AddressAction | null;
+      addressAction: AnyAddressAction | null;
       quote?: Quote;
     }
   ): Promise<ethers.providers.TransactionResponse> {
@@ -955,7 +955,7 @@ export class Wallet {
       {
         initiator: string;
         feeValueCommon: string | null;
-        addressAction: AddressAction | null;
+        addressAction: AnyAddressAction | null;
         quote?: Quote;
       }
     ]
@@ -984,7 +984,7 @@ export class Wallet {
     chain: string;
     initiator: string;
     feeValueCommon: string | null;
-    addressAction: AddressAction | null;
+    addressAction: AnyAddressAction | null;
     quote?: Quote;
   }>): Promise<ethers.providers.TransactionResponse> {
     this.verifyInternalOrigin(context);

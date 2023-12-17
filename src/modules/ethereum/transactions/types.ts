@@ -8,6 +8,7 @@ export interface TransactionObject {
   initiator: string;
   receipt?: ethers.providers.TransactionReceipt;
   dropped?: boolean;
+  relatedTransactionHash?: string; // hash of related transaction (cancelled or sped-up)
 }
 
 export type StoredTransactions = Array<TransactionObject>;

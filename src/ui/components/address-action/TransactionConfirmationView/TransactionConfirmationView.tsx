@@ -60,7 +60,10 @@ export function TransactionConfirmationView({
         method="dialog"
         style={{ display: 'flex', flexDirection: 'column' }}
       >
-        <TransactionSimulation transaction={transaction} />
+        <TransactionSimulation
+          transaction={transaction}
+          address={wallet.address}
+        />
         <Spacer height={20} />
 
         <React.Suspense

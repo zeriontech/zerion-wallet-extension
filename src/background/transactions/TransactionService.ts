@@ -8,6 +8,7 @@ import type {
 import { upsert } from 'src/shared/upsert';
 import { getPendingTransactions } from 'src/modules/ethereum/transactions/model';
 import { registerTransaction } from 'src/modules/defi-sdk/registerTransaction';
+import { isLocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { emitter } from '../events';
 import { createMockTxResponse } from './mocks';
 import type { PollingTx } from './TransactionPoller';
@@ -52,22 +53,38 @@ export class TransactionService {
     this.addListeners();
   }
 
-  addListeners() {
-    emitter.on('transactionSent', ({ transaction, initiator }) => {
-      const newItem = {
-        transaction,
-        hash: transaction.hash,
-        initiator,
-        timestamp: Date.now(),
-      };
-      this.transactionsPoller.add([toPollingObj(newItem)]);
+  private markAsDropped(item: TransactionObject | undefined) {
+    if (item) {
+      this.transactionsStore.upsertTransaction({ ...item, dropped: true });
+    }
+  }
 
-      this.transactionsStore.setState((state) =>
-        produce(state, (draft) => {
-          draft.push(newItem);
-        })
-      );
-    });
+  addListeners() {
+    emitter.on(
+      'transactionSent',
+      ({ transaction, initiator, addressAction }) => {
+        const newItem: TransactionObject = {
+          transaction,
+          hash: transaction.hash,
+          initiator,
+          timestamp: Date.now(),
+        };
+        if (
+          addressAction &&
+          isLocalAddressAction(addressAction) &&
+          addressAction.relatedTransaction
+        ) {
+          newItem.relatedTransactionHash = addressAction.relatedTransaction;
+        }
+        this.transactionsPoller.add([toPollingObj(newItem)]);
+
+        this.transactionsStore.setState((state) =>
+          produce(state, (draft) => {
+            draft.push(newItem);
+          })
+        );
+      }
+    );
 
     emitter.on('transactionSent', ({ transaction }) => {
       registerTransaction(transaction);
@@ -77,13 +94,20 @@ export class TransactionService {
       const item = this.transactionsStore.getByHash(receipt.transactionHash);
       if (item) {
         this.transactionsStore.upsertTransaction({ ...item, receipt });
+        if (item.relatedTransactionHash) {
+          const relatedItem = this.transactionsStore.getByHash(
+            item.relatedTransactionHash
+          );
+          // NOTE: there still a possible opposite case:
+          // There can be a transaction with "ratedTransactionHash" equal to currently mined one,
+          // but this might be resolved by transactionsPoller
+          this.markAsDropped(relatedItem);
+        }
       }
     });
     this.transactionsPoller.emitter.on('dropped', (hash) => {
       const item = this.transactionsStore.getByHash(hash);
-      if (item) {
-        this.transactionsStore.upsertTransaction({ ...item, dropped: true });
-      }
+      this.markAsDropped(item);
     });
   }
 }

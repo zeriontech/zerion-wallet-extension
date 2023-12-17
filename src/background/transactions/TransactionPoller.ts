@@ -165,7 +165,7 @@ export class TransactionsPoller {
       if (
         tx.from === value.from &&
         tx.chainId === value.chainId &&
-        tx.nonce < latestNonce
+        tx.nonce < latestNonce // for equal nonces we don't know if this tx has been mined or dropped
       ) {
         this.emitter.emit('dropped', tx.hash);
         this.hashes.delete(tx.hash);

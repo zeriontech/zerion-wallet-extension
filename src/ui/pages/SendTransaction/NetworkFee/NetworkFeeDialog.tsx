@@ -2,7 +2,10 @@ import React, { useMemo, useState } from 'react';
 import type { BigNumber } from 'bignumber.js';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
-import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import {
+  DialogButtonValue,
+  DialogTitle,
+} from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 // import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
@@ -33,7 +36,6 @@ import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
-import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { invariant } from 'src/shared/invariant';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
@@ -334,6 +336,7 @@ function NetworkFeeButton({
     chain,
     transaction,
     networkFeeConfiguration: speedConfiguration,
+    chainGasPrices: chainGasPrices ?? null,
     onFeeValueCommonReady: null,
   });
   const {
@@ -415,115 +418,159 @@ export const NetworkFeeDialog = React.forwardRef<
     chain: Chain;
     value: NetworkFeeConfiguration;
     transaction: IncomingTransactionWithFrom;
+    chainGasPrices: ChainGasPrice | null;
+    customViewOnly?: boolean;
   }
->(({ onSubmit, value, chain, transaction }, ref) => {
-  const [view, setView] = useState<'eip1559' | 'classic' | 'default'>(
-    'default'
-  );
+>(
+  (
+    {
+      onSubmit,
+      value,
+      chain,
+      transaction,
+      chainGasPrices,
+      customViewOnly = false,
+    },
+    ref
+  ) => {
+    const [view, setView] = useState<'custom' | 'default'>(
+      customViewOnly ? 'custom' : 'default'
+    );
 
-  const dialogHeight = view === 'default' ? '230px' : '90vh';
-  const { data: chainGasPrices } = useGasPrices(chain);
+    const dialogHeight = view === 'default' ? '230px' : '90vh';
 
-  const gasPriceType = chainGasPrices?.info.eip1559 ? 'eip1559' : 'classic';
+    const gasPriceType = chainGasPrices?.info.eip1559 ? 'eip1559' : 'classic';
 
-  return (
-    <BottomSheetDialog
-      ref={ref}
-      height={dialogHeight}
-      containerStyle={{
-        ['--surface-background-color' as string]: 'var(--z-index-1)',
-      }}
-    >
-      {view === 'default' ? (
-        <>
-          <DialogTitle
-            alignTitle="start"
-            title={
-              <HStack gap={8} alignItems="center">
-                <UIText kind="headline/h3">Network Fee</UIText>
-                {/* <div
+    return (
+      <BottomSheetDialog
+        ref={ref}
+        height={dialogHeight}
+        containerStyle={{
+          ['--surface-background-color' as string]: 'var(--z-index-1)',
+        }}
+      >
+        {view === 'default' ? (
+          <>
+            <DialogTitle
+              alignTitle="start"
+              title={
+                <HStack gap={8} alignItems="center">
+                  <UIText kind="headline/h3">Network Fee</UIText>
+                  {/* <div
                   style={{ display: 'flex' }}
                   title={`The fee required to successfully conduct a transaction on the ${chain.toString()} blockchain`}
                 >
                   <QuestionHintIcon style={{ color: 'var(--neutral-500)' }} />
                 </div> */}
-              </HStack>
-            }
-            closeKind="icon"
-          />
-          <Spacer height={10} />
-          <React.Suspense fallback={<ViewLoading />}>
-            <SurfaceList
-              style={{ paddingBlockEnd: 0 }}
-              items={OPTIONS.map((option) => {
-                return {
-                  key: option,
-                  isInteractive: true,
-                  pad: false,
-                  disabled: option === 'custom' && !chainGasPrices,
-                  component: (
-                    <NetworkFeeButton
-                      networkFeeConfiguration={value}
-                      chainGasPrices={chainGasPrices}
-                      option={option}
-                      onClick={() => {
-                        if (option === 'custom') {
-                          setView(gasPriceType);
-                        } else {
-                          onSubmit({ ...value, speed: option });
-                        }
-                      }}
-                      chain={chain}
-                      transaction={transaction}
-                    />
-                  ),
-                };
-              })}
+                </HStack>
+              }
+              closeKind="icon"
             />
-          </React.Suspense>
-        </>
-      ) : (
-        <VStack
-          gap={24}
-          style={{ gridTemplateRows: 'auto 1fr', height: '100%' }}
-        >
-          <div
-            style={{
-              position: 'relative',
-              display: 'flex',
-              justifyContent: 'center',
-            }}
+            <Spacer height={10} />
+            <React.Suspense fallback={<ViewLoading />}>
+              <SurfaceList
+                style={{ paddingBlockEnd: 0 }}
+                items={OPTIONS.map((option) => {
+                  return {
+                    key: option,
+                    isInteractive: true,
+                    pad: false,
+                    disabled: option === 'custom' && !chainGasPrices,
+                    component: (
+                      <NetworkFeeButton
+                        networkFeeConfiguration={value}
+                        chainGasPrices={chainGasPrices}
+                        option={option}
+                        onClick={() => {
+                          if (option === 'custom') {
+                            setView('custom');
+                          } else {
+                            onSubmit({ ...value, speed: option });
+                          }
+                        }}
+                        chain={chain}
+                        transaction={transaction}
+                      />
+                    ),
+                  };
+                })}
+              />
+            </React.Suspense>
+          </>
+        ) : (
+          <VStack
+            gap={24}
+            style={{ gridTemplateRows: 'auto 1fr', height: '100%' }}
           >
-            <Button
-              aria-label="Go back"
-              onClick={() => setView('default')}
-              kind="ghost"
-              style={{ padding: 4, position: 'absolute', top: -4, left: -8 }}
-              size={32}
-            >
-              <ArrowLeftcon />
-            </Button>
-            <UIText style={{ placeSelf: 'center' }} kind="body/accent">
-              Custom Gas Price
-            </UIText>
-          </div>
-          {chainGasPrices ? (
-            <CustomNetworkFeeForm
-              type={view}
-              chain={chain}
-              value={value}
-              onSubmit={(value) => {
-                setView('default');
-                onSubmit(value);
+            <div
+              style={{
+                position: 'relative',
+                display: 'flex',
+                justifyContent: 'center',
               }}
-              transaction={transaction}
-              chainGasPrices={chainGasPrices}
-            />
-          ) : (
-            <CircleSpinner />
-          )}
-        </VStack>
-      )}
-    </BottomSheetDialog>
-  );
-});
+            >
+              {customViewOnly ? (
+                <form
+                  method="dialog"
+                  onSubmit={(e) => {
+                    e.stopPropagation();
+                  }}
+                >
+                  <Button
+                    aria-label="Go back"
+                    value={DialogButtonValue.cancel}
+                    kind="ghost"
+                    style={{
+                      padding: 4,
+                      position: 'absolute',
+                      top: -4,
+                      left: -8,
+                    }}
+                    size={32}
+                  >
+                    <ArrowLeftcon />
+                  </Button>
+                </form>
+              ) : (
+                <Button
+                  aria-label="Go back"
+                  onClick={() => setView('default')}
+                  kind="ghost"
+                  style={{
+                    padding: 4,
+                    position: 'absolute',
+                    top: -4,
+                    left: -8,
+                  }}
+                  size={32}
+                >
+                  <ArrowLeftcon />
+                </Button>
+              )}
+              <UIText style={{ placeSelf: 'center' }} kind="body/accent">
+                Custom Gas Price
+              </UIText>
+            </div>
+            {chainGasPrices ? (
+              <CustomNetworkFeeForm
+                type={gasPriceType}
+                chain={chain}
+                value={value}
+                onSubmit={(value) => {
+                  if (!customViewOnly) {
+                    setView('default');
+                  }
+                  onSubmit(value);
+                }}
+                transaction={transaction}
+                chainGasPrices={chainGasPrices}
+              />
+            ) : (
+              <CircleSpinner />
+            )}
+          </VStack>
+        )}
+      </BottomSheetDialog>
+    );
+  }
+);

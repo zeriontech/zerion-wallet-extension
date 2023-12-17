@@ -15,9 +15,11 @@ import { AddressActionDetails } from '../AddressActionDetails';
 
 export function TransactionSimulation({
   vGap = 16,
+  address,
   transaction,
 }: {
   vGap?: number;
+  address: string;
   transaction: IncomingTransactionWithChainId;
 }) {
   const { networks } = useNetworks();
@@ -47,11 +49,16 @@ export function TransactionSimulation({
       transaction,
       transactionAction,
       networks,
+      address,
     ],
     queryFn: () => {
       return transaction && networks && transactionAction
         ? incomingTxToIncomingAddressAction(
-            { transaction, hash: '', timestamp: 0 },
+            {
+              transaction: { ...transaction, from: address },
+              hash: '',
+              timestamp: 0,
+            },
             transactionAction,
             networks
           )

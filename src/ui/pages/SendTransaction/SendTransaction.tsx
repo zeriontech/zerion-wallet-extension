@@ -424,11 +424,16 @@ function SendTransactionContent({
       transaction,
       transactionAction,
       networks,
+      singleAddress,
     ],
     queryFn: () => {
       return transaction && networks && transactionAction
         ? incomingTxToIncomingAddressAction(
-            { transaction, hash: '', timestamp: 0 },
+            {
+              transaction: { ...transaction, from: singleAddress },
+              hash: '',
+              timestamp: 0,
+            },
             transactionAction,
             networks
           )
