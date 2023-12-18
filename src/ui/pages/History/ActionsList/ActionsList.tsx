@@ -6,7 +6,10 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import {
+  isLocalAddressAction,
+  type AnyAddressAction,
+} from 'src/modules/ethereum/transactions/addressAction';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { ActionItem } from '../ActionItem';
 
@@ -41,15 +44,20 @@ export function ActionsList({
               <UIText kind="small/accent">
                 {new Intl.DateTimeFormat('en', {
                   dateStyle: 'medium',
-                }).format(Number(timestamp))}
+                }).format(Number(timestamp))}{' '}
               </UIText>
             </HStack>
             <SurfaceList
               gap={4}
-              items={items.map((addressTransaction) => ({
-                key: addressTransaction.transaction.hash,
-                component: <ActionItem addressAction={addressTransaction} />,
-              }))}
+              items={items.map((addressAction) => {
+                const hash = addressAction.transaction.hash;
+                return {
+                  key: isLocalAddressAction(addressAction)
+                    ? addressAction.relatedTransaction || hash
+                    : hash,
+                  component: <ActionItem addressAction={addressAction} />,
+                };
+              })}
             />
           </VStack>
         ))}

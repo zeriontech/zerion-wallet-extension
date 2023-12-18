@@ -70,7 +70,10 @@ function NetworkList({
   }
   return (
     <SurfaceList
-      style={{ paddingBlock: 0 }}
+      style={{
+        paddingBlock: 0,
+        ['--surface-background-color' as string]: 'transparent',
+      }}
       items={[
         title
           ? {
@@ -449,7 +452,10 @@ function AddressNetworkList({
           }}
         />
         <SurfaceList
-          style={{ paddingBlock: 0 }}
+          style={{
+            paddingBlock: 0,
+            ['--surface-background-color' as string]: 'transparent',
+          }}
           items={[
             {
               key: 'Add network',

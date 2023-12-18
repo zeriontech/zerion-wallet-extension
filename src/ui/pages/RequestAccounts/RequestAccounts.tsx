@@ -155,7 +155,12 @@ function RequestAccountsView({
   return (
     <Background backgroundKind="white">
       <NavigationTitle title={null} documentTitle="Connect Wallet" />
-      <CenteredDialog ref={dialogRef}>
+      <CenteredDialog
+        ref={dialogRef}
+        containerStyle={{
+          ['--surface-background-color' as string]: 'transparent',
+        }}
+      >
         <DialogTitle
           title={<UIText kind="body/accent">Select Wallet</UIText>}
           closeKind="icon"

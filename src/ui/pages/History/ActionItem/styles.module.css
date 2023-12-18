@@ -8,6 +8,10 @@
   border-radius: 12px;
 }
 
+.actionItem > *:not(.actionItemBackdropButton) {
+  z-index: 1;
+}
+
 .actionItem:hover .actionItemBackdropButton {
   background-color: var(--neutral-200);
 }

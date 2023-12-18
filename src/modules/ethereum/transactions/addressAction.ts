@@ -1,15 +1,17 @@
 import { capitalize } from 'capitalize-ts';
 import type { AddressAction, Asset } from 'defi-sdk';
+import type { BigNumberish, BytesLike } from 'ethers';
 import { ethers } from 'ethers';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { CachedAssetQuery } from 'src/modules/defi-sdk/queries';
 import { fetchAssetFromCacheOrAPI } from 'src/modules/defi-sdk/queries';
-import type { Chain } from 'src/modules/networks/Chain';
+import { createChain, type Chain } from 'src/modules/networks/Chain';
 import { UnsupportedNetwork } from 'src/modules/networks/errors';
 import { nanoid } from 'nanoid';
 import type {
   IncomingTransaction,
   IncomingTransactionWithChainId,
+  IncomingTransactionWithFrom,
 } from '../types/IncomingTransaction';
 import { getFungibleAsset } from './actionAsset';
 import type {
@@ -26,9 +28,21 @@ export type ClientTransactionStatus =
 export type LocalAddressAction = Omit<AddressAction, 'transaction'> & {
   transaction: Omit<AddressAction['transaction'], 'status'> & {
     status: ClientTransactionStatus;
+    data?: BytesLike;
+    value?: BigNumberish;
+    from?: string;
   };
   local: true;
+  relatedTransaction?: string; // hash of related transaction (cancelled or sped-up)
 };
+
+export type AnyAddressAction = AddressAction | LocalAddressAction;
+
+export function isLocalAddressAction(
+  addressAction: AnyAddressAction
+): addressAction is LocalAddressAction {
+  return 'local' in addressAction && addressAction.local;
+}
 
 export type IncomingAddressAction = Omit<
   AddressAction,
@@ -60,14 +74,15 @@ export function createSendAddressAction({
   quantity,
   chain,
 }: {
-  transaction: IncomingTransaction;
+  transaction: IncomingTransactionWithFrom;
   asset: Asset;
   quantity: string;
   chain: Chain;
-}): AddressAction {
+}): LocalAddressAction {
   return {
     id: nanoid(),
     datetime: new Date().toISOString(),
+    address: transaction.from,
     type: { display_value: 'Send', value: 'send' },
     label: null,
     transaction: toActionTx(transaction, chain),
@@ -83,6 +98,7 @@ export function createSendAddressAction({
         incoming: [],
       },
     },
+    local: true,
   };
 }
 
@@ -94,14 +110,15 @@ export function createTradeAddressAction({
   incoming,
   chain,
 }: {
-  transaction: IncomingTransaction;
+  transaction: IncomingTransactionWithFrom;
   outgoing: AssetQuantity[];
   incoming: AssetQuantity[];
   chain: Chain;
-}): AddressAction {
+}): LocalAddressAction {
   return {
     id: nanoid(),
     datetime: new Date().toISOString(),
+    address: transaction.from,
     type: { value: 'trade', display_value: 'Trade' },
     transaction: toActionTx(transaction, chain),
     label: null,
@@ -119,6 +136,7 @@ export function createTradeAddressAction({
         })),
       },
     },
+    local: true,
   };
 }
 
@@ -128,22 +146,55 @@ export function createApproveAddressAction({
   quantity,
   chain,
 }: {
-  transaction: IncomingTransaction;
+  transaction: IncomingTransactionWithFrom;
   asset: Asset;
   quantity: string;
   chain: Chain;
-}): AddressAction {
+}): LocalAddressAction {
   return {
     id: nanoid(),
+    address: transaction.from,
     datetime: new Date().toISOString(),
     type: { value: 'approve', display_value: 'Approve' },
     transaction: toActionTx(transaction, chain),
     label: null,
     content: { single_asset: { asset: { fungible: asset }, quantity } },
+    local: true,
   };
 }
 
-export type AnyAddressAction = AddressAction | LocalAddressAction;
+export function createAcceleratedAddressAction(
+  addressAction: AnyAddressAction,
+  transaction: IncomingTransaction
+): LocalAddressAction {
+  const chain = createChain(addressAction.transaction.chain);
+  return {
+    ...addressAction,
+    id: nanoid(),
+    datetime: new Date().toISOString(),
+    local: true,
+    transaction: toActionTx(transaction, chain),
+    relatedTransaction: addressAction.transaction.hash,
+  };
+}
+
+export function createCancelAddressAction(
+  originalAddressAction: AnyAddressAction,
+  transaction: IncomingTransactionWithFrom
+): LocalAddressAction {
+  const chain = createChain(originalAddressAction.transaction.chain);
+  return {
+    id: nanoid(),
+    datetime: new Date().toISOString(),
+    local: true,
+    address: transaction.from,
+    type: { display_value: 'Send', value: 'send' },
+    label: null,
+    content: null,
+    transaction: toActionTx(transaction, chain),
+    relatedTransaction: originalAddressAction.transaction.hash,
+  };
+}
 
 type AddressActionLabelType = 'to' | 'from' | 'application' | 'contract';
 
@@ -255,7 +306,9 @@ export async function pendingTransactionToAddressAction(
   const content = action ? await createActionContent(action) : null;
   return {
     id: hash,
+    address: transaction.from,
     transaction: {
+      ...transaction,
       hash,
       chain: chain
         ? chain.toString()
@@ -282,12 +335,16 @@ export async function pendingTransactionToAddressAction(
       : { display_value: '[Missing network data]', value: 'execute' },
     content,
     local: true,
+    relatedTransaction: transactionObject.relatedTransactionHash,
   };
 }
 
 export async function incomingTxToIncomingAddressAction(
   transactionObject: {
-    transaction: IncomingTransactionWithChainId & { nonce?: number };
+    transaction: IncomingTransactionWithChainId & {
+      nonce?: number;
+      from: string;
+    };
   } & Pick<TransactionObject, 'hash' | 'receipt' | 'timestamp' | 'dropped'>,
   transactionAction: TransactionAction,
   networks: Networks
@@ -300,6 +357,7 @@ export async function incomingTxToIncomingAddressAction(
   const content = await createActionContent(transactionAction);
   return {
     id: null,
+    address: transaction.from,
     transaction: {
       hash: null,
       chain: chain.toString(),

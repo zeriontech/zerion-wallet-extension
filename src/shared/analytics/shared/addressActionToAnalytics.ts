@@ -1,6 +1,7 @@
 import type { ActionAsset, AddressAction } from 'defi-sdk';
 import { isTruthy } from 'is-truthy-ts';
 import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { getDecimals } from 'src/modules/networks/asset';
@@ -81,7 +82,7 @@ export function addressActionToAnalytics({
   addressAction,
   quote,
 }: {
-  addressAction: AddressAction | null;
+  addressAction: AnyAddressAction | null;
   quote?: Quote;
 }): AnalyticsTransactionData | null {
   if (!addressAction) {

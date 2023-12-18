@@ -31,6 +31,7 @@ import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTML
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { invariant } from 'src/shared/invariant';
 import { SidePanel } from 'src/ui/Onboarding/FAQ/SidePanel';
+import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import * as helpersStyles from '../../shared/styles.module.css';
 import { Step } from '../../shared/Step';
 import { DNA_MINT_CONTRACT_ADDRESS } from '../../shared/constants';
@@ -51,10 +52,13 @@ function useDnaMintTransaction(address: string) {
     [address]
   );
 
+  const chain = createChain(NetworkId.Ethereum);
+  const { data: chainGasPrices = null } = useGasPrices(chain);
   const { costs } = useTransactionFee({
     address,
     transaction: mintTransaction,
-    chain: createChain(NetworkId.Ethereum),
+    chain,
+    chainGasPrices,
     networkFeeConfiguration: null,
     onFeeValueCommonReady: null,
   });

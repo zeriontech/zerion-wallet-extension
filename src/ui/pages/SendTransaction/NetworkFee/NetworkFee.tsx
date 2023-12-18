@@ -13,7 +13,6 @@ import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTML
 import type { Chain } from 'src/modules/networks/Chain';
 import type { IncomingTransactionWithFrom } from 'src/modules/ethereum/types/IncomingTransaction';
 import { useNetworks } from 'src/modules/networks/useNetworks';
-import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import type { TransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import { NetworkFeeDialog } from './NetworkFeeDialog';
 import type { NetworkFeeConfiguration } from './types';
@@ -35,13 +34,24 @@ export function NetworkFee({
   transactionFee,
   chain,
   networkFeeConfiguration,
+  chainGasPrices,
+  customViewOnly,
   onChange,
+  label,
+  renderDisplayValue,
 }: {
   transaction: IncomingTransactionWithFrom;
   transactionFee: TransactionFee;
   chain: Chain;
   networkFeeConfiguration: NetworkFeeConfiguration;
+  chainGasPrices: ChainGasPrice | null;
   onChange: null | ((value: NetworkFeeConfiguration) => void);
+  customViewOnly?: boolean;
+  label?: React.ReactNode;
+  renderDisplayValue?: (params: {
+    hintTitle: string;
+    displayValue: string;
+  }) => React.ReactNode;
 }) {
   const { networks } = useNetworks();
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -55,14 +65,12 @@ export function NetworkFee({
     totalValueExceedsBalance,
   } = costs || {};
 
-  const { data: chainGasPrices } = useGasPrices(chain);
-
   const isLoading = feeEstimationQuery.isLoading || costsQuery.isLoading;
 
   const nativeAssetSymbol =
     networks?.getNetworkByName(chain)?.native_asset?.symbol;
 
-  const isOptimistic = Boolean(chainGasPrices?.info.optimistic);
+  const isOptimistic = feeEstimation?.type === 'optimistic';
   const disabled = isLoading || isOptimistic || !onChange;
 
   const feeValuePrefix = totalValueExceedsBalance ? 'Up to ' : '';
@@ -71,6 +79,33 @@ export function NetworkFee({
     : feeValueCommon
     ? formatTokenValue(feeValueCommon.toString(), nativeAssetSymbol)
     : undefined;
+
+  const hintTitle = [
+    getFeeTypeTitle(feeEstimation?.type),
+    expectedFeeValueCommon
+      ? `${totalValueExceedsBalance ? 'Expected Fee: ' : ''}${formatTokenValue(
+          expectedFeeValueCommon,
+          nativeAssetSymbol
+        )}`
+      : null,
+    totalValueExceedsBalance && maxFeeValueCommon
+      ? `Max Fee: ${formatTokenValue(maxFeeValueCommon, nativeAssetSymbol)}`
+      : null,
+  ]
+    .filter(isTruthy)
+    .join(' · ');
+
+  const displayValue = feeValueFormatted
+    ? [
+        networkFeeConfiguration.speed === 'custom' && time ? time : null,
+        networkFeeConfiguration.speed === 'custom'
+          ? NETWORK_SPEED_TO_TITLE.custom
+          : time || NETWORK_SPEED_TO_TITLE[networkFeeConfiguration.speed],
+        `${feeValuePrefix}${feeValueFormatted}`,
+      ]
+        .filter(isTruthy)
+        .join(' · ')
+    : null;
 
   return (
     <>
@@ -83,16 +118,22 @@ export function NetworkFee({
             dialogRef.current?.close();
           }}
           chain={chain}
+          chainGasPrices={chainGasPrices}
           transaction={transaction}
+          customViewOnly={customViewOnly}
         />
       ) : null}
       <HStack gap={8} justifyContent="space-between">
-        <UIText kind="small/regular" color="var(--neutral-700)">
-          Network Fee
-        </UIText>
+        {label !== undefined ? (
+          label
+        ) : (
+          <UIText kind="small/regular" color="var(--neutral-700)">
+            Network Fee
+          </UIText>
+        )}
         {isLoading ? (
           <CircleSpinner />
-        ) : feeValueFiat || feeValueCommon ? (
+        ) : displayValue ? (
           <HStack gap={12} alignItems="center">
             {feeEstimationQuery.isPreviousData ? <CircleSpinner /> : null}
             <UnstyledButton
@@ -107,41 +148,11 @@ export function NetworkFee({
               }}
               disabled={disabled}
             >
-              <UIText
-                kind="small/accent"
-                title={[
-                  getFeeTypeTitle(feeEstimation?.type),
-                  expectedFeeValueCommon
-                    ? `${
-                        totalValueExceedsBalance ? 'Expected Fee: ' : ''
-                      }${formatTokenValue(
-                        expectedFeeValueCommon,
-                        nativeAssetSymbol
-                      )}`
-                    : null,
-                  totalValueExceedsBalance && maxFeeValueCommon
-                    ? `Max Fee: ${formatTokenValue(
-                        maxFeeValueCommon,
-                        nativeAssetSymbol
-                      )}`
-                    : null,
-                ]
-                  .filter(isTruthy)
-                  .join(' · ')}
-              >
-                {[
-                  networkFeeConfiguration.speed === 'custom' && time
-                    ? time
-                    : null,
-                  networkFeeConfiguration.speed === 'custom'
-                    ? NETWORK_SPEED_TO_TITLE.custom
-                    : time ||
-                      NETWORK_SPEED_TO_TITLE[networkFeeConfiguration.speed],
-                  `${feeValuePrefix}${feeValueFormatted}`,
-                ]
-                  .filter(isTruthy)
-                  .join(' · ')}
-              </UIText>
+              {renderDisplayValue?.({ hintTitle, displayValue }) ?? (
+                <UIText kind="small/accent" title={hintTitle}>
+                  {displayValue}
+                </UIText>
+              )}
             </UnstyledButton>
           </HStack>
         ) : feeEstimationQuery.isSuccess ? (

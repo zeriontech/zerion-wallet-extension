@@ -275,7 +275,7 @@ export function SwapForm() {
         initiator: INTERNAL_ORIGIN,
         feeValueCommon,
         addressAction: createApproveAddressAction({
-          transaction,
+          transaction: { ...transaction, from: address },
           asset: spendPosition.asset,
           quantity: quote.input_amount_estimation,
           chain,

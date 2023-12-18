@@ -33,7 +33,7 @@ export const BottomSheetDialog = React.forwardRef(
           ...style,
         }}
         containerStyle={{
-          backgroundColor: 'var(--z-index-1)',
+          backgroundColor: 'var(--z-index-0)',
           borderTopLeftRadius: 12,
           borderTopRightRadius: 12,
           paddingInline: 16,

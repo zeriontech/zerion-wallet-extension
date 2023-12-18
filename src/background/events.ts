@@ -1,6 +1,6 @@
 import type { ethers } from 'ethers';
-import type { AddressAction } from 'defi-sdk';
 import { createNanoEvents } from 'nanoevents';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { Quote } from 'src/shared/types/Quote';
@@ -30,7 +30,7 @@ export const emitter = createNanoEvents<{
     transaction: TransactionResponse;
     initiator: string;
     feeValueCommon: string | null;
-    addressAction: AddressAction | null;
+    addressAction: AnyAddressAction | null;
     quote?: Quote;
   }) => void;
   typedDataSigned: (data: {

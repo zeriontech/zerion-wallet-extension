@@ -3,6 +3,7 @@ import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTra
 import type { Chain } from 'src/modules/networks/Chain';
 import { usePreferences } from 'src/ui/features/preferences';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { NetworkFee } from '../NetworkFee';
 import { NonceLine } from '../NonceLine';
 import { TotalLine } from '../TotalLine';
@@ -39,6 +40,7 @@ export function TransactionConfiguration({
     () => ({ ...incomingTransaction, from }),
     [from, incomingTransaction]
   );
+  const { data: chainGasPrices = null } = useGasPrices(chain);
   const transactionFee = useTransactionFee({
     address: from,
     transaction: transactionWithFrom,
@@ -46,6 +48,7 @@ export function TransactionConfiguration({
     onFeeValueCommonReady,
     networkFeeConfiguration: configuration.networkFee,
     keepPreviousData,
+    chainGasPrices,
   });
   return (
     <VStack gap={8}>
@@ -53,6 +56,7 @@ export function TransactionConfiguration({
         transaction={transactionWithFrom}
         transactionFee={transactionFee}
         chain={chain}
+        chainGasPrices={chainGasPrices}
         networkFeeConfiguration={configuration.networkFee}
         onChange={
           onConfigurationChange

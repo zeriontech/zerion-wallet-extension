@@ -20,10 +20,6 @@ import { formatSeconds } from 'src/shared/units/formatSeconds';
 import { getDecimals } from 'src/modules/networks/asset';
 import { baseToCommon, commonToBase } from 'src/shared/units/convert';
 import { useNetworks } from 'src/modules/networks/useNetworks';
-import {
-  queryGasPrices,
-  useGasPrices,
-} from 'src/ui/shared/requests/useGasPrices';
 import type { Networks } from 'src/modules/networks/Networks';
 import BigNumber from 'bignumber.js';
 import type { NetworkFeeConfiguration } from '../NetworkFee/types';
@@ -76,10 +72,18 @@ function getGasPriceFromConfiguration({
 }
 
 function useFeeEstimation(
-  chain: Chain,
-  transaction: IncomingTransaction,
-  /** gas price derived from configuration takes precedence over gas price from transaction */
-  networkFeeConfiguration: NetworkFeeConfiguration | null,
+  {
+    chain,
+    transaction,
+    networkFeeConfiguration,
+    chainGasPrices,
+  }: {
+    chain: Chain;
+    transaction: IncomingTransaction;
+    /** gas price derived from configuration takes precedence over gas price from transaction */
+    networkFeeConfiguration: NetworkFeeConfiguration | null;
+    chainGasPrices: ChainGasPrice | null;
+  },
   { keepPreviousData = false } = {}
 ) {
   const gas = getGas(transaction);
@@ -94,10 +98,10 @@ function useFeeEstimation(
       chain,
       transaction,
       networkFeeConfiguration,
+      chainGasPrices,
       gas,
     ],
     queryFn: async () => {
-      const chainGasPrices = await queryGasPrices(chain);
       const gasPriceFromTransaction = getGasPriceFromTransaction(transaction);
       const gasPriceFromConfiguration = getGasPriceFromConfiguration({
         chainGasPrices,
@@ -223,6 +227,7 @@ export function useTransactionFee({
   chain,
   onFeeValueCommonReady,
   networkFeeConfiguration,
+  chainGasPrices,
   keepPreviousData = false,
 }: {
   address: string;
@@ -231,12 +236,10 @@ export function useTransactionFee({
   onFeeValueCommonReady: null | ((value: string) => void);
   networkFeeConfiguration: NetworkFeeConfiguration | null;
   keepPreviousData?: boolean;
+  chainGasPrices: ChainGasPrice | null;
 }) {
-  const { data: chainGasPrices } = useGasPrices(chain);
   const feeEstimationQuery = useFeeEstimation(
-    chain,
-    transaction,
-    networkFeeConfiguration,
+    { chain, transaction, networkFeeConfiguration, chainGasPrices },
     { keepPreviousData }
   );
 

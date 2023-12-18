@@ -77,7 +77,7 @@ function NetworkDetail({
           originUrl ? (
             <span key={0}>
               Added by{' '}
-              <span style={{ color: 'var(--primary)' }}>{originUrl}</span> ·{' '}
+              <span style={{ color: 'var(--primary)' }}>{originUrl}</span>
             </span>
           ) : null,
           updated && !isCustom ? (

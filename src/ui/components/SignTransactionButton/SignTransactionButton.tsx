@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
-import type { AddressAction } from 'defi-sdk';
 import type { ethers } from 'ethers';
 import React, { useImperativeHandle, useRef } from 'react';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { Chain } from 'src/modules/networks/Chain';
 import { invariant } from 'src/shared/invariant';
@@ -20,7 +20,7 @@ interface SendTxParams {
   chain: Chain;
   feeValueCommon: string | null;
   initiator: string;
-  addressAction: AddressAction | null;
+  addressAction: AnyAddressAction | null;
   quote?: Quote;
 }
 

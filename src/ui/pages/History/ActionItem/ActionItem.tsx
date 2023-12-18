@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import type { AddressAction } from 'defi-sdk';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
@@ -33,8 +33,11 @@ import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { AssetLink } from 'src/ui/components/AssetLink';
 import { DNA_MINT_CONTRACT_ADDRESS } from 'src/ui/DNA/shared/constants';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { isInteractiveElement } from 'src/ui/shared/isInteractiveElement';
 import { ActionDetailedView } from '../ActionDetailedView';
 import { isUnlimitedApproval } from '../isUnlimitedApproval';
+import { AccelerateTransactionDialog } from '../AccelerateTransactionDialog';
 import {
   HistoryItemValue,
   TransactionCurrencyValue,
@@ -76,8 +79,8 @@ function ActionTitle({
       {explorerUrl ? (
         <TextAnchor
           href={explorerUrlPrepared}
-          target="_blank"
           title={explorerUrlPrepared}
+          target="_blank"
           rel="noopener noreferrer"
           style={{
             overflow: 'hidden',
@@ -162,23 +165,15 @@ function ActionItemBackend({
   action: AddressAction;
   networks: Networks;
 }) {
-  const [showDetailedView, setShowDetailedView] = useState(false);
   const { params, ready } = useAddressParams();
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   const handleDialogOpen = useCallback(() => {
-    if (!dialogRef.current) {
-      return;
-    }
-    dialogRef.current.showModal();
-    setShowDetailedView(true);
+    dialogRef.current?.showModal();
   }, []);
 
   const handleDialogDismiss = useCallback(() => {
-    if (dialogRef.current) {
-      dialogRef.current.close();
-    }
-    setShowDetailedView(false);
+    dialogRef.current?.close();
   }, []);
 
   if (!ready) {
@@ -216,7 +211,12 @@ function ActionItemBackend({
             'minmax(min-content, max-content) minmax(100px, max-content)',
         }}
         alignItems="center"
-        onClick={handleDialogOpen}
+        onClick={(event) => {
+          if (isInteractiveElement(event.target)) {
+            return;
+          }
+          handleDialogOpen();
+        }}
       >
         <UnstyledButton
           className={styles.actionItemBackdropButton}
@@ -228,7 +228,6 @@ function ActionItemBackend({
         <Media
           vGap={0}
           gap={12}
-          style={{ zIndex: 1 }}
           image={
             action.transaction.status === 'failed' ? (
               <FailedIcon style={transactionIconStyle} />
@@ -256,7 +255,6 @@ function ActionItemBackend({
             justifyItems: 'end',
             overflow: 'hidden',
             textAlign: 'left',
-            zIndex: 1,
           }}
         >
           <UIText
@@ -337,30 +335,31 @@ function ActionItemBackend({
       <CenteredDialog
         ref={dialogRef}
         containerStyle={{ backgroundColor: 'var(--neutral-100)' }}
-      >
-        <Button
-          kind="ghost"
-          value="cancel"
-          size={40}
-          style={{
-            width: 40,
-            padding: 8,
-            position: 'absolute',
-            top: 16,
-            left: 8,
-          }}
-          onClick={handleDialogDismiss}
-        >
-          <ArrowLeftIcon />
-        </Button>
-        {showDetailedView ? (
-          <ActionDetailedView
-            action={action}
-            networks={networks}
-            address={address}
-          />
-        ) : null}
-      </CenteredDialog>
+        renderWhenOpen={() => (
+          <>
+            <Button
+              kind="ghost"
+              value="cancel"
+              size={40}
+              style={{
+                width: 40,
+                padding: 8,
+                position: 'absolute',
+                top: 16,
+                left: 8,
+              }}
+              onClick={handleDialogDismiss}
+            >
+              <ArrowLeftIcon />
+            </Button>
+            <ActionDetailedView
+              action={action}
+              networks={networks}
+              address={address}
+            />
+          </>
+        )}
+      ></CenteredDialog>
     </>
   );
 }
@@ -375,6 +374,12 @@ function ActionItemLocal({
   const asset = getActionAsset(action);
 
   const { params, ready } = useAddressParams();
+
+  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+
+  const handleDialogOpen = useCallback(() => {
+    dialogRef.current?.showModal();
+  }, []);
 
   if (!ready) {
     return null;
@@ -391,61 +396,93 @@ function ActionItemLocal({
     ? networks.getExplorerTxUrlByName(chain, action.transaction.hash)
     : null;
 
+  const isPending = action.transaction.status === 'pending';
+
   return (
-    <HStack
-      gap={24}
-      justifyContent="space-between"
-      style={{ height: 42 }}
-      alignItems="center"
-    >
-      <Media
-        vGap={0}
-        gap={12}
-        image={
-          <div style={{ position: 'relative', ...transactionIconStyle }}>
-            {action.transaction.status === 'pending' ? (
-              <CircleSpinner
-                size={`${TRANSACTION_ICON_SIZE + 2}px`}
-                trackWidth="7%"
-                color="var(--primary)"
-                style={{
-                  position: 'absolute',
-                  top: -1,
-                  left: -1,
-                }}
-              />
-            ) : null}
-            {isMintingDna ? (
-              <ZerionIcon
-                width={TRANSACTION_ICON_SIZE}
-                height={TRANSACTION_ICON_SIZE}
-              />
-            ) : (
-              <HistoryAssetIcon
-                size={TRANSACTION_ICON_SIZE}
-                asset={asset ? { fungible: asset } : undefined}
-                type={action.type.value}
-              />
-            )}
-          </div>
+    <>
+      {isPending ? (
+        <AccelerateTransactionDialog
+          ref={dialogRef}
+          action={action}
+          onDismiss={() => dialogRef.current?.close()}
+        />
+      ) : null}
+      <Spacer height={16} />
+      <HStack
+        className={isPending ? styles.actionItem : undefined}
+        gap={24}
+        justifyContent="space-between"
+        style={{ position: 'relative', height: 42 }}
+        alignItems="center"
+        onClick={
+          isPending
+            ? (event) => {
+                if (isInteractiveElement(event.target)) {
+                  return;
+                }
+                handleDialogOpen();
+              }
+            : undefined
         }
-        text={<ActionTitle action={action} explorerUrl={explorerUrl} />}
-        detailText={<ActionDetail networks={networks} action={action} />}
-      />
-      <UIText kind="body/regular">
-        {asset ? (
-          <AssetLink
-            asset={asset}
-            title={
-              action.type.value === 'approve'
-                ? asset.name || asset.symbol?.toUpperCase()
-                : undefined
-            }
-            address={address}
+      >
+        {isPending ? (
+          <UnstyledButton
+            className={styles.actionItemBackdropButton}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDialogOpen();
+            }}
           />
         ) : null}
-      </UIText>
-    </HStack>
+        <Media
+          vGap={0}
+          gap={12}
+          image={
+            <div style={{ position: 'relative', ...transactionIconStyle }}>
+              {isPending ? (
+                <CircleSpinner
+                  size={`${TRANSACTION_ICON_SIZE + 2}px`}
+                  trackWidth="7%"
+                  color="var(--primary)"
+                  style={{
+                    position: 'absolute',
+                    top: -1,
+                    left: -1,
+                  }}
+                />
+              ) : null}
+              {isMintingDna ? (
+                <ZerionIcon
+                  width={TRANSACTION_ICON_SIZE}
+                  height={TRANSACTION_ICON_SIZE}
+                />
+              ) : (
+                <HistoryAssetIcon
+                  size={TRANSACTION_ICON_SIZE}
+                  asset={asset ? { fungible: asset } : undefined}
+                  type={action.type.value}
+                />
+              )}
+            </div>
+          }
+          text={<ActionTitle action={action} explorerUrl={explorerUrl} />}
+          detailText={<ActionDetail networks={networks} action={action} />}
+        />
+        <UIText kind="body/regular">
+          {asset ? (
+            <AssetLink
+              asset={asset}
+              title={
+                action.type.value === 'approve'
+                  ? asset.name || asset.symbol?.toUpperCase()
+                  : undefined
+              }
+              address={address}
+            />
+          ) : null}
+        </UIText>
+      </HStack>
+    </>
   );
 }
 
