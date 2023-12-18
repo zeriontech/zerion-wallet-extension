@@ -45,7 +45,6 @@ export function ActionsList({
                 {new Intl.DateTimeFormat('en', {
                   dateStyle: 'medium',
                 }).format(Number(timestamp))}{' '}
-                {timestamp}
               </UIText>
             </HStack>
             <SurfaceList

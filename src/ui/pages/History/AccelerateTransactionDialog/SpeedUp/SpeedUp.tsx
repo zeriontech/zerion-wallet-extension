@@ -179,7 +179,7 @@ export function SpeedUp({
             />
           </div>
         </VStack>
-        <VStack gap={8}>
+        <VStack gap={8} style={{ textAlign: 'center' }}>
           <UIText kind="body/regular" color="var(--negative-500)">
             {isError ? txErrorToMessage(error) : null}
           </UIText>

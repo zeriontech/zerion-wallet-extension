@@ -81,7 +81,11 @@ function NetworkCreateSearchPage() {
   const { networks } = useNetworks();
   return (
     <Background backgroundKind="white">
-      <PageColumn>
+      <PageColumn
+        style={{
+          ['--surface-background-color' as string]: 'transparent',
+        }}
+      >
         <NavigationTitle title="Add Network" />
         <Spacer height={16} />
         <SearchInput
