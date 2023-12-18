@@ -245,7 +245,7 @@ function AssetSelectComponent({
 
   const ITEM_HEIGHT = 60;
   const LOAD_MORE_BUTTON_HEIGHT = 40;
-  const FIRST_GROUP_NAME_HEIGHT = 24;
+  const FIRST_GROUP_NAME_HEIGHT = 28;
   const GROUP_NAME_HEIGHT = 28;
   const virtualList = useVirtualizer({
     count: optionItems.length,
@@ -589,7 +589,6 @@ function AssetSelectComponent({
               display: isCombobox ? undefined : 'none',
               padding: 16,
               width: '100%',
-              backgroundColor: 'var(--z-index-1)',
               zIndex: 1,
             }}
           >
@@ -627,6 +626,7 @@ function AssetSelectComponent({
                   height: virtualList.getTotalSize(),
                   position: 'relative',
                   opacity: pagination?.isLoading ? 0.5 : 1,
+                  ['--surface-background-color' as string]: 'transparent',
                 }}
                 items={listItems}
               />

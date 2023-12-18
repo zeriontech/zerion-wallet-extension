@@ -446,7 +446,7 @@ export const NetworkFeeDialog = React.forwardRef<
         ref={ref}
         height={dialogHeight}
         containerStyle={{
-          ['--surface-background-color' as string]: 'var(--z-index-1)',
+          ['--surface-background-color' as string]: 'transparent',
         }}
       >
         {view === 'default' ? (
