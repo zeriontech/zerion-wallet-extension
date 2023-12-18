@@ -84,7 +84,7 @@ export function Ability({
           </UIText>
         </VStack>
         <HStack gap={16} justifyContent="space-between" alignItems="center">
-          <VStack gap={8}>
+          {ability.reason ? (
             <HStack gap={8} alignItems="center">
               {ability.reason.type === 'allowlist' ? (
                 <DoubleCheckIcon style={{ color: 'var(--neutral-600)' }} />
@@ -101,7 +101,7 @@ export function Ability({
                 {ability.reason.text}
               </UIText>
             </HStack>
-          </VStack>
+          ) : null}
           {dateString ? (
             <UIText
               kind="small/accent"

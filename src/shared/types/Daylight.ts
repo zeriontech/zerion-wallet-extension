@@ -51,7 +51,7 @@ export interface WalletAbility {
     linkUrl: string;
     // in the future here will be more info for completing the ability
   };
-  reason: WalletAbilityReason;
+  reason?: WalletAbilityReason;
   submitter: {
     publicKey: string;
     chain: 'ethereum';
