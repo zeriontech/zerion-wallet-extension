@@ -167,15 +167,13 @@ export function createAcceleratedAddressAction(
   addressAction: AnyAddressAction,
   transaction: IncomingTransaction
 ): LocalAddressAction {
+  const chain = createChain(addressAction.transaction.chain);
   return {
     ...addressAction,
     id: nanoid(),
     datetime: new Date().toISOString(),
     local: true,
-    transaction: toActionTx(
-      transaction,
-      createChain(addressAction.transaction.chain)
-    ),
+    transaction: toActionTx(transaction, chain),
     relatedTransaction: addressAction.transaction.hash,
   };
 }
@@ -184,6 +182,7 @@ export function createCancelAddressAction(
   originalAddressAction: AnyAddressAction,
   transaction: IncomingTransactionWithFrom
 ): LocalAddressAction {
+  const chain = createChain(originalAddressAction.transaction.chain);
   return {
     id: nanoid(),
     datetime: new Date().toISOString(),
@@ -192,10 +191,7 @@ export function createCancelAddressAction(
     type: { display_value: 'Send', value: 'send' },
     label: null,
     content: null,
-    transaction: toActionTx(
-      transaction,
-      createChain(originalAddressAction.transaction.chain)
-    ),
+    transaction: toActionTx(transaction, chain),
     relatedTransaction: originalAddressAction.transaction.hash,
   };
 }

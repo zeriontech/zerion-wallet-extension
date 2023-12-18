@@ -327,7 +327,6 @@ export function SwapForm() {
       invariant(signerSenderRef.current, 'SignTransactionButton not found');
       const spendValue = quote.input_amount_estimation;
       const receiveValue = quote.output_amount_estimation;
-      console.log('swap submit', transaction);
       const txResponse = await signerSenderRef.current.sendTransaction({
         transaction,
         chain,
