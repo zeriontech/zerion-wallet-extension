@@ -84,26 +84,24 @@ export function Ability({
           </UIText>
         </VStack>
         <HStack gap={16} justifyContent="space-between" alignItems="center">
-          <VStack gap={8}>
-            {ability.reason ? (
-              <HStack gap={8} alignItems="center">
-                {ability.reason.type === 'allowlist' ? (
-                  <DoubleCheckIcon style={{ color: 'var(--neutral-600)' }} />
-                ) : ability.reason.imageUrl ? (
-                  <img
-                    src={ability.reason.imageUrl}
-                    width={20}
-                    height={20}
-                    style={{ borderRadius: 4 }}
-                    alt={ability.title}
-                  />
-                ) : null}
-                <UIText kind="small/accent" color="var(--neutral-600)">
-                  {ability.reason.text}
-                </UIText>
-              </HStack>
-            ) : null}
-          </VStack>
+          {ability.reason ? (
+            <HStack gap={8} alignItems="center">
+              {ability.reason.type === 'allowlist' ? (
+                <DoubleCheckIcon style={{ color: 'var(--neutral-600)' }} />
+              ) : ability.reason.imageUrl ? (
+                <img
+                  src={ability.reason.imageUrl}
+                  width={20}
+                  height={20}
+                  style={{ borderRadius: 4 }}
+                  alt={ability.title}
+                />
+              ) : null}
+              <UIText kind="small/accent" color="var(--neutral-600)">
+                {ability.reason.text}
+              </UIText>
+            </HStack>
+          ) : null}
           {dateString ? (
             <UIText
               kind="small/accent"
