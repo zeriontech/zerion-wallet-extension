@@ -7,9 +7,11 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import ZerionIcon from 'jsx:src/ui/assets/zerion-logo.svg';
+import BlockaidLogo from 'jsx:src/ui/components/PhishingDefence/blockaid.svg';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import browser from 'webextension-polyfill';
 import { walletPort } from 'src/ui/shared/channels';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { FillView } from '../FillView';
 import { useBodyStyle } from '../Background/Background';
 import { WarningIcon } from '../WarningIcon';
@@ -127,15 +129,28 @@ export function PhishingWarningPage() {
             </VStack>
             <Button
               kind="primary"
+              style={{
+                ['--button-background' as string]: 'var(--always-white)',
+                ['--button-background-hover' as string]: '#f0f0f2',
+              }}
               onClick={() => {
                 browser.tabs.create({});
                 window.close();
               }}
             >
-              Back to Safety
+              <span style={{ color: 'var(--always-black)' }}>
+                Back to Safety
+              </span>
             </Button>
           </VStack>
         </VStack>
+        <Spacer height={16} />
+        <HStack gap={4} alignItems="center" justifyContent="center">
+          <UIText kind="caption/regular" color="var(--neutral-500)">
+            Powered by
+          </UIText>
+          <BlockaidLogo style={{ height: 16, width: 56 }} />
+        </HStack>
       </Surface>
     </FillView>
   );
