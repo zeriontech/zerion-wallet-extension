@@ -1,17 +1,17 @@
 import { useMemo } from 'react';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import { useAddressNftContracts } from 'src/ui/shared/requests/useAddresNftContracts';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import { useAddressNfts } from 'src/ui/shared/requests/addressNfts/useAddressNfts';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useAddressMembership } from 'src/ui/shared/requests/useAddressMembership';
+import { useAddressNFTCollectionStats } from 'src/ui/shared/requests/addressNfts/useAddressNftCollectionStats';
 import { DNA_COLLECTION_ID, DNA_NFT_COLLECTION_ADDRESS } from './constants';
 
 export function useShowDnaMintBanner(address: string) {
-  const { value } = useAddressNftContracts({
+  const { value } = useAddressNFTCollectionStats({
     address,
     currency: 'usd',
-    sorted_by: 'amount_high',
+    sorted_by: 'created_recently',
   });
 
   const localTransactions = useLocalAddressTransactions({ address });
@@ -20,7 +20,7 @@ export function useShowDnaMintBanner(address: string) {
     () =>
       value &&
       !value.some(
-        (item) => normalizeAddress(item.address) === DNA_NFT_COLLECTION_ADDRESS
+        (item) => item.collection.id.toString() === DNA_COLLECTION_ID
       ) &&
       !localTransactions.some(
         (item) =>
