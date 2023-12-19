@@ -8,9 +8,13 @@ import type { RemoteConfig } from '../types';
 
 const defaultConfig: RemoteConfig = {
   extension_wallet_name_flags: {},
+  extension_uninstall_link: '',
 };
 
-const knownKeys: (keyof RemoteConfig)[] = ['extension_wallet_name_flags'];
+const knownKeys: (keyof RemoteConfig)[] = [
+  'extension_wallet_name_flags',
+  'extension_uninstall_link',
+];
 
 async function fetchRemoteConfig<T extends keyof RemoteConfig>(keys: T[]) {
   const params = new URLSearchParams(keys.map((key) => ['key', key]));
