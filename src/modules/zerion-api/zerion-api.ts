@@ -3,8 +3,12 @@ import { version } from 'src/shared/packageVersion';
 import { ZERION_API_URL } from 'src/env/config';
 import type {
   Payload as SecurityCheckUrlPayload,
-  Response as SecurityCheckUrlRespose,
+  Response as SecurityCheckUrlResponse,
 } from './requests/security-check-url';
+import type {
+  Payload as RegisterChainPayload,
+  Response as RegisterChainResponse,
+} from './requests/register-chain';
 
 function getZpiHeaders() {
   return {
@@ -21,6 +25,17 @@ export class ZerionAPI {
         searchParams: { url: payload.url },
         headers: getZpiHeaders(),
       })
-      .json<SecurityCheckUrlRespose>();
+      .json<SecurityCheckUrlResponse>();
+  }
+  static registerChain(payload: RegisterChainPayload) {
+    return ky
+      .post(new URL('wallet/connect/v1', ZERION_API_URL), {
+        body: JSON.stringify({
+          chain: payload.chain,
+          identifier: payload.address,
+        }),
+        headers: getZpiHeaders(),
+      })
+      .json<RegisterChainResponse>();
   }
 }
