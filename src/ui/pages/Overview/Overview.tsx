@@ -43,6 +43,7 @@ import { useIsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnected
 import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOrigin';
 import { OverviewDnaBanners } from 'src/ui/DNA/components/DnaBanners';
 import { updateAddressDnaInfo } from 'src/modules/dna-service/dna.client';
+import { WalletSourceIcon } from 'src/ui/components/WalletSourceIcon';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -309,7 +310,17 @@ function OverviewComponent() {
       >
         <HStack gap={12} alignItems="center">
           {!isLoadingPortfolio ? (
-            <WalletAvatar address={singleAddress} size={64} borderRadius={12} />
+            <WalletAvatar
+              address={singleAddress}
+              size={64}
+              borderRadius={12}
+              icon={
+                <WalletSourceIcon
+                  address={singleAddress}
+                  style={{ width: 24, height: 24 }}
+                />
+              }
+            />
           ) : null}
           <VStack gap={0}>
             <UIText kind="headline/h1">

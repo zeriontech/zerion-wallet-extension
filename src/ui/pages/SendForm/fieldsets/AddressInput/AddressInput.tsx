@@ -34,6 +34,7 @@ import { usePreferences } from 'src/ui/features/preferences/usePreferences';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getWalletDisplayName } from 'src/ui/shared/getWalletDisplayName';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
+import { WalletSourceIcon } from 'src/ui/components/WalletSourceIcon';
 
 type Item = {
   name: string | null;
@@ -141,7 +142,17 @@ const SuggestedItem = React.forwardRef(
               gridTemplateColumns: 'auto 1fr',
             }}
           >
-            <WalletAvatar address={item.address} size={22} borderRadius={6} />
+            <WalletAvatar
+              address={item.address}
+              size={22}
+              borderRadius={6}
+              icon={
+                <WalletSourceIcon
+                  address={item.address}
+                  style={{ width: 10, height: 10 }}
+                />
+              }
+            />
             <UIText
               kind="body/regular"
               style={{

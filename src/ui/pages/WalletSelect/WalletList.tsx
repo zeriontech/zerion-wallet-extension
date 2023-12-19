@@ -16,6 +16,7 @@ import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { NBSP } from 'src/ui/shared/typography';
 import CheckIcon from 'jsx:src/ui/assets/check.svg';
+import { WalletSourceIcon } from 'src/ui/components/WalletSourceIcon';
 import * as styles from './styles.module.css';
 
 export function WalletList({
@@ -59,6 +60,12 @@ export function WalletList({
                         size={40}
                         active={Boolean(isConnected)}
                         borderRadius={4}
+                        icon={
+                          <WalletSourceIcon
+                            address={wallet.address}
+                            style={{ width: 16, height: 16 }}
+                          />
+                        }
                       />
                     )}
                   />
