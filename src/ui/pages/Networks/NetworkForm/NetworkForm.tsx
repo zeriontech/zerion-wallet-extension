@@ -116,6 +116,10 @@ const parsers: Parsers = {
     const value = untypedValue as 'on' | null;
     return Boolean(value);
   },
+  'native_asset.decimals': (untypedValue) => {
+    const value = untypedValue as string;
+    return Number(value);
+  },
 };
 
 function NetworkHiddenFieldLine({
