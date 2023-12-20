@@ -6,6 +6,7 @@ import { Account, AccountPublicRPC } from './account/Account';
 import { TransactionService } from './transactions/TransactionService';
 import { GlobalPreferences } from './Wallet/GlobalPreferences';
 import { NotificationWindow } from './NotificationWindow/NotificationWindow';
+import { setUninstallURL } from './uninstall';
 
 let didInitialize = false;
 
@@ -34,6 +35,7 @@ export async function initialize() {
   await transactionService.initialize();
   initializeRemoteConfig().then(() => {
     globalPreferences.initialize();
+    setUninstallURL();
   });
   initializeAnalytics({ account });
 
