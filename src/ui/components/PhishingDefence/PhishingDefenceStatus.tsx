@@ -62,8 +62,8 @@ export function PhishingDefenceStatus({ origin }: { origin: string }) {
             </UIText>
           </HStack>
           <UIText kind="small/regular" color="var(--notice-600)">
-            Phishing Defence verification is temporarily Unavailable. Proceed
-            with caution.
+            Phishing defense check is temporarily unavailable. Proceed with
+            caution.
           </UIText>
         </VStack>
         <Spacer height={16} />
