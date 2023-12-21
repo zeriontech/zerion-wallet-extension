@@ -1,5 +1,6 @@
 import { Store } from 'store-unit';
 import throttle from 'lodash/throttle';
+import { produce } from 'immer';
 import type { EthereumChainSources } from './Networks';
 import { Networks } from './Networks';
 import { get as getNetworks } from './networks-api';
@@ -29,6 +30,24 @@ export class NetworksStore extends Store<State> {
     this.getEthereumChainSources = getEthereumChainSources ?? null;
   }
 
+  private prepareNetworkConfigTypes(
+    ethereumChainSources?: EthereumChainSources
+  ): EthereumChainSources | undefined {
+    if (!ethereumChainSources) {
+      return undefined;
+    }
+    return produce(ethereumChainSources, (draft) => {
+      draft.custom?.ethereumChains?.forEach((chainConfig) => {
+        if (chainConfig.value.native_asset?.decimals) {
+          // there was a problem where some native_token decimals were saved as string
+          chainConfig.value.native_asset.decimals = Number(
+            chainConfig.value.native_asset.decimals
+          );
+        }
+      });
+    });
+  }
+
   private async fetchAndUpdate() {
     return Promise.allSettled([
       getNetworks(),
@@ -41,7 +60,7 @@ export class NetworksStore extends Store<State> {
             : chainsInfo,
         ethereumChainSources:
           ethereumChainSources.status === 'fulfilled'
-            ? ethereumChainSources.value
+            ? this.prepareNetworkConfigTypes(ethereumChainSources.value)
             : undefined,
       });
       this.setState({ networks });
