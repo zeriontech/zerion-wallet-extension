@@ -30,7 +30,7 @@ export class NetworksStore extends Store<State> {
     this.getEthereumChainSources = getEthereumChainSources ?? null;
   }
 
-  private ensureNetworkConfigTypes(
+  private prepareNetworkConfigTypes(
     ethereumChainSources?: EthereumChainSources
   ): EthereumChainSources | undefined {
     if (!ethereumChainSources) {
@@ -60,7 +60,7 @@ export class NetworksStore extends Store<State> {
             : chainsInfo,
         ethereumChainSources:
           ethereumChainSources.status === 'fulfilled'
-            ? this.ensureNetworkConfigTypes(ethereumChainSources.value)
+            ? this.prepareNetworkConfigTypes(ethereumChainSources.value)
             : undefined,
       });
       this.setState({ networks });
