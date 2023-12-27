@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { Background } from 'src/ui/components/Background';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
-import { dnaServicePort } from 'src/ui/shared/channels';
+import { dnaServicePort, walletPort } from 'src/ui/shared/channels';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { Button } from 'src/ui/ui-kit/Button';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
@@ -17,6 +17,7 @@ import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import { useAddressNftPosition } from './useAddressNftPosition';
 
 export function NonFungibleToken() {
@@ -39,18 +40,26 @@ export function NonFungibleToken() {
     address: singleAddress,
   });
 
+  const { data: wallet } = useQuery({
+    queryKey: ['wallet/uiGetCurrentWallet'],
+    queryFn: () => {
+      return walletPort.request('uiGetCurrentWallet');
+    },
+  });
+  const addWalletParams = useWalletParams(wallet);
+
   const url = useMemo(() => {
     if (!nft?.chain || !nft.contract_address || !nft.token_id) {
       return null;
     }
     const urlObject = new URL(
-      `https://app.zerion.io/nfts/${nft.chain}/${nft.contract_address}:${nft.token_id}`
+      `http://localhost:3000/nfts/${nft.chain}/${nft.contract_address}:${nft.token_id}?${addWalletParams}`
     );
     if (singleAddress) {
       urlObject.searchParams.append('address', singleAddress);
     }
     return urlObject.toString();
-  }, [singleAddress, nft]);
+  }, [singleAddress, nft, addWalletParams]);
 
   const { mutate: promoteTokenMutation, isLoading } = useMutation({
     mutationFn: async () => {
