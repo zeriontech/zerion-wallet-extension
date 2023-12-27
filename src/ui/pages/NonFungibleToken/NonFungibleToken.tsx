@@ -53,7 +53,7 @@ export function NonFungibleToken() {
       return null;
     }
     const urlObject = new URL(
-      `http://localhost:3000/nfts/${nft.chain}/${nft.contract_address}:${nft.token_id}?${addWalletParams}`
+      `https://app.zerion.io/nfts/${nft.chain}/${nft.contract_address}:${nft.token_id}?${addWalletParams}`
     );
     if (singleAddress) {
       urlObject.searchParams.append('address', singleAddress);
