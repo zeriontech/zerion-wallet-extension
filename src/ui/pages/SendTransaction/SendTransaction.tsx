@@ -278,6 +278,7 @@ function TransactionDefaultView({
           singleAsset={singleAsset}
           allowanceQuantityBase={allowanceQuantityBase}
           allowanceViewHref={allowanceViewHref}
+          disabled={sendTransactionMutation.isLoading}
         />
         {interpretQuery.isInitialLoading ? (
           <InterpretLoadingState />

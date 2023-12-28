@@ -41,6 +41,7 @@ function FungibleAsset({
   fungible,
   quantity,
   allowanceViewHref,
+  disabled,
 }: {
   address: string;
   chain: Chain;
@@ -48,6 +49,7 @@ function FungibleAsset({
   fungible: Asset;
   quantity: string;
   allowanceViewHref?: string;
+  disabled: boolean;
 }) {
   const commonQuantity = useMemo(
     () =>
@@ -100,14 +102,20 @@ function FungibleAsset({
               {actionType === 'approve' &&
               Boolean(quantity) &&
               allowanceViewHref ? (
-                <UIText
-                  as={TextLink}
-                  kind="small/accent"
-                  style={{ color: 'var(--primary)' }}
-                  to={allowanceViewHref}
-                >
-                  Edit
-                </UIText>
+                disabled ? (
+                  <UIText kind="small/accent" color="var(--neutral-500)">
+                    Edit
+                  </UIText>
+                ) : (
+                  <UIText
+                    as={TextLink}
+                    kind="small/accent"
+                    color="var(--primary)"
+                    to={allowanceViewHref}
+                  >
+                    Edit
+                  </UIText>
+                )
               ) : null}
             </HStack>
           }
@@ -156,6 +164,7 @@ export function SingleAsset({
   singleAsset,
   allowanceQuantityBase,
   allowanceViewHref,
+  disabled,
 }: {
   address: string;
   chain: Chain;
@@ -165,6 +174,7 @@ export function SingleAsset({
   >;
   allowanceQuantityBase?: string;
   allowanceViewHref?: string;
+  disabled: boolean;
 }) {
   const fungibleAsset = getFungibleAsset(singleAsset.asset);
   const nftAsset = getNftAsset(singleAsset.asset);
@@ -183,6 +193,7 @@ export function SingleAsset({
         fungible={fungibleAsset}
         quantity={quantity}
         allowanceViewHref={allowanceViewHref}
+        disabled={disabled}
       />
     );
   }
