@@ -165,7 +165,7 @@ function TransactionDefaultView({
 
   const { data: chainGasPrices } = useGasPrices(chain);
   const allowanceViewHref = useMemo(
-    () => setURLSearchParams(params, { view: View.customAllowance }).toString(),
+    () => `?${setURLSearchParams(params, { view: View.customAllowance })}`,
     [params]
   );
 
