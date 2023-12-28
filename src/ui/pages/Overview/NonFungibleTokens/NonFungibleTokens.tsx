@@ -28,7 +28,6 @@ import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { EmptyView } from 'src/ui/components/EmptyView';
-import { useShowNftTabDnaBanner } from 'src/ui/DNA/shared/useShowDnaBanner';
 import { NftTabDnaBanner } from 'src/ui/DNA/components/DnaBanners';
 import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
 import { GROWN_TAB_MAX_HEIGHT } from '../getTabsOffset';
@@ -205,9 +204,6 @@ export function NonFungibleTokens({
     }
   );
 
-  // Not sure is it possible to avoid this call here
-  const shouldShowDNABanner = useShowNftTabDnaBanner(singleAddressNormalized);
-
   if (!ready) {
     return null;
   }
@@ -280,12 +276,7 @@ export function NonFungibleTokens({
                   top: 36,
                 }}
               />
-              <div
-                style={{
-                  width: '100%',
-                  paddingTop: shouldShowDNABanner ? 140 : 0,
-                }}
-              >
+              <div style={{ width: '100%', paddingTop: 164 }}>
                 <EmptyView text="No NFTs yet" />
               </div>
             </>
