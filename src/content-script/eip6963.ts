@@ -1,5 +1,5 @@
 import type { EthereumProvider } from 'src/modules/ethereum/provider';
-import zerionLogoDataUrl from 'data-url:src/ui/assets/zerion-squircle.svg';
+import zerionLogoDataUrl from 'data-url:src/ui/assets/zerion-logo-blue.svg';
 
 interface EIP6963ProviderInfo {
   uuid: string;

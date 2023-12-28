@@ -1,4 +1,4 @@
-import zerionLogoSrc from 'data-url:src/ui/assets/zerion-squircle.svg';
+import zerionLogoSrc from 'data-url:src/ui/assets/zerion-logo-blue.svg';
 
 function visitTextNodes(node: Element, cb: (node: Node) => boolean) {
   const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
