@@ -35,7 +35,9 @@ export const CenteredDialog = React.forwardRef(
         containerStyle={{
           backgroundColor: 'var(--z-index-0)',
           borderRadius: isLargeViewport ? 12 : 0,
-          padding: 16,
+          paddingBlock: 16,
+          ['--column-padding-inline' as string]: '16px',
+          paddingInline: 'var(--column-padding-inline)',
           ...containerStyle,
         }}
         {...props}

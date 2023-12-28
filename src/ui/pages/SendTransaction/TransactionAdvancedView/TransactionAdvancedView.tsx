@@ -21,11 +21,11 @@ import type { InterpretResponse } from 'src/modules/ethereum/transactions/types'
 import { getInterpretationFunctionName } from 'src/modules/ethereum/transactions/interpret';
 import { PageTop } from 'src/ui/components/PageTop';
 import { TextLine } from 'src/ui/components/address-action/TextLine';
-import { Content } from 'react-area';
 import { Button } from 'src/ui/ui-kit/Button';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
-import { NavigationBar } from 'src/ui/components/NavigationBar';
 import { valueToHex } from 'src/shared/units/valueToHex';
+import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
+import { PageBottom } from 'src/ui/components/PageBottom';
 
 function maybeHexValue(value?: BigNumberish): string | null {
   return value ? valueToHex(value) : null;
@@ -216,7 +216,6 @@ export function TransactionAdvancedView({
 
   return (
     <>
-      <NavigationBar title="Advanced View" />
       <PageTop />
       {transaction ? (
         <TransactionDetails
@@ -226,7 +225,12 @@ export function TransactionAdvancedView({
           interpretation={interpretation}
         />
       ) : null}
-      <Content name="sign-transaction-footer">
+      <Spacer height={8} />
+      <PageStickyFooter
+        style={{
+          marginInline: 'calc(-1 * var(--column-padding-inline))',
+        }}
+      >
         <Spacer height={8} />
         <Button
           type="button"
@@ -246,7 +250,8 @@ export function TransactionAdvancedView({
             })}
           </HStack>
         </Button>
-      </Content>
+        <PageBottom />
+      </PageStickyFooter>
     </>
   );
 }

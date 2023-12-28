@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { invariant } from 'src/shared/invariant';
+import { UIContext, defaultUIContextValue } from 'src/ui/components/UIContext';
 
 export interface BaseDialogProps
   extends React.DialogHTMLAttributes<HTMLDialogElement> {
@@ -45,6 +46,8 @@ export const BaseDialog = React.forwardRef(
     if (onClosedRef.current !== onClosed) {
       onClosedRef.current = onClosed;
     }
+
+    const [uiContextValue, setUIContextValue] = useState(defaultUIContextValue);
 
     useEffect(() => {
       invariant(dialogRef.current, 'Dialog not mounted');
@@ -93,7 +96,8 @@ export const BaseDialog = React.forwardRef(
     }, [closeOnClickOutside, ref]);
     return (
       <dialog
-        ref={composeRefs(ref, dialogRef)}
+        // "useCallback" deps are statically unknown, but only "ref" is potentially unstable
+        ref={useCallback(composeRefs(ref, dialogRef), [ref])}
         style={{
           overflow: 'visible',
           backgroundColor: 'transparent',
@@ -111,6 +115,11 @@ export const BaseDialog = React.forwardRef(
          * we can interpret this as an outside click.
          */}
         <div
+          ref={useCallback((node: HTMLDivElement | null) => {
+            setUIContextValue(
+              node ? { uiScrollRootElement: node } : defaultUIContextValue
+            );
+          }, [])}
           style={{
             height: '100%',
             overflow: 'auto',
@@ -119,13 +128,15 @@ export const BaseDialog = React.forwardRef(
             ...containerStyle,
           }}
         >
-          {renderWhenOpen
-            ? open
-              ? renderWhenOpen()
-              : null
-            : render
-            ? render(open)
-            : children}
+          <UIContext.Provider value={uiContextValue}>
+            {renderWhenOpen
+              ? open
+                ? renderWhenOpen()
+                : null
+              : render
+              ? render(open)
+              : children}
+          </UIContext.Provider>
         </div>
       </dialog>
     );
