@@ -33,7 +33,6 @@ import {
 } from 'src/modules/ethereum/message-signing/prepareTypedData';
 import type { Chain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
-import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { setURLSearchParams } from 'src/ui/shared/setURLSearchParams';
 import { InterpretLoadingState } from 'src/ui/components/InterpretLoadingState';
 import { AddressActionDetails } from 'src/ui/components/address-action/AddressActionDetails';
@@ -54,6 +53,9 @@ import { isDeviceAccount } from 'src/shared/types/validators';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { BUG_REPORT_BUTTON_HEIGHT } from 'src/ui/components/BugReportButton';
 import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOrigin';
+import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
+import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
+import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { HardwareSignMessage } from '../HardwareWalletConnection/HardwareSignMessage';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
@@ -75,7 +77,6 @@ export const TypedDataRow = React.forwardRef(
 
 enum View {
   default = 'default',
-  advanced = 'advanced',
   customAllowance = 'customAllowance',
 }
 
@@ -110,6 +111,7 @@ function TypedDataDefaultView({
   allowanceQuantityBase,
   onSignSuccess,
   onReject,
+  onOpenAdvancedView,
 }: {
   origin: string;
   wallet: ExternallyOwnedAccount;
@@ -126,6 +128,7 @@ function TypedDataDefaultView({
   allowanceQuantityBase?: string;
   onSignSuccess: (signature: string) => void;
   onReject: () => void;
+  onOpenAdvancedView: () => void;
 }) {
   const [params] = useSearchParams();
 
@@ -147,11 +150,8 @@ function TypedDataDefaultView({
 
   const originForHref = useMemo(() => prepareForHref(origin), [origin]);
 
-  const [advancedViewHref, allowanceViewHref] = useMemo(
-    () =>
-      [View.advanced, View.customAllowance].map(
-        (view) => `?${setURLSearchParams(params, { view }).toString()}`
-      ),
+  const allowanceViewHref = useMemo(
+    () => `?${setURLSearchParams(params, { view: View.customAllowance })}`,
     [params]
   );
 
@@ -308,7 +308,7 @@ function TypedDataDefaultView({
               allowanceViewHref={allowanceViewHref}
             />
             {typedDataFormatted ? (
-              <Button kind="regular" as={UnstyledLink} to={advancedViewHref}>
+              <Button kind="regular" onClick={onOpenAdvancedView}>
                 Advanced View
               </Button>
             ) : null}
@@ -383,6 +383,10 @@ function SignTypedDataContent({
   const [params] = useSearchParams();
 
   const view = params.get('view') || View.default;
+  const advancedDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const openAdvancedView = useCallback(() => {
+    advancedDialogRef.current?.showModal();
+  }, []);
 
   const windowId = params.get('windowId');
   invariant(windowId, 'windowId get-parameter is required');
@@ -474,12 +478,25 @@ function SignTypedDataContent({
               allowanceQuantityBase || requestedAllowanceQuantityBase
             }
             onSignSuccess={handleSignSuccess}
+            onOpenAdvancedView={openAdvancedView}
             onReject={handleReject}
           />
         ) : null}
-        {view === View.advanced && interpretation?.input ? (
-          <TypedDataAdvancedView data={interpretation.input} />
-        ) : null}
+        <CenteredDialog
+          ref={advancedDialogRef}
+          containerStyle={{ paddingBottom: 0 }}
+          renderWhenOpen={() => (
+            <>
+              <DialogTitle
+                title={<UIText kind="body/accent">Advanced View</UIText>}
+                closeKind="icon"
+              />
+              {interpretation?.input ? (
+                <TypedDataAdvancedView data={interpretation.input} />
+              ) : null}
+            </>
+          )}
+        />
         {view === View.customAllowance ? (
           <CustomAllowanceView
             address={wallet.address}
