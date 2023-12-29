@@ -287,7 +287,7 @@ function TransactionDefaultView({
             Unable to analyze the details of the transaction
           </UIText>
         ) : null}
-        <Button kind="regular" onClick={() => onOpenAdvancedView()}>
+        <Button kind="regular" onClick={onOpenAdvancedView}>
           Advanced View
         </Button>
       </VStack>

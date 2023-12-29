@@ -306,6 +306,9 @@ function TypedDataDefaultView({
               singleAsset={addressAction?.content?.single_asset}
               allowanceQuantityBase={allowanceQuantityBase || undefined}
               allowanceViewHref={allowanceViewHref}
+              // TODO: create SignMessageButton (like SignTransactionButton)
+              // and set disabled state when sign mutation is loading (see SendTransaction.tsx)
+              // disabled={...}
             />
             {typedDataFormatted ? (
               <Button kind="regular" onClick={onOpenAdvancedView}>
