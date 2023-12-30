@@ -41,7 +41,6 @@ import { networksStore } from 'src/modules/networks/networks-store.client';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
-import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { setURLSearchParams } from 'src/ui/shared/setURLSearchParams';
 import { InterpretLoadingState } from 'src/ui/components/InterpretLoadingState';
 import { AddressActionDetails } from 'src/ui/components/address-action/AddressActionDetails';
@@ -64,6 +63,9 @@ import {
 } from 'src/ui/components/SignTransactionButton';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
+import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
+import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
+import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -119,7 +121,6 @@ function usePreparedTx(transaction: IncomingTransaction, origin: string) {
 
 enum View {
   default = 'default',
-  advanced = 'advanced',
   customAllowance = 'customAllowance',
 }
 
@@ -135,6 +136,7 @@ function TransactionDefaultView({
   interpretQuery,
   incomingTransaction,
   incomingTxWithGasAndFee,
+  onOpenAdvancedView,
   onReject,
 }: {
   networks: Networks;
@@ -151,6 +153,7 @@ function TransactionDefaultView({
   };
   incomingTransaction: IncomingTransaction;
   incomingTxWithGasAndFee?: IncomingTransactionWithChainId | null;
+  onOpenAdvancedView: () => void;
   onReject: () => void;
 }) {
   const navigate = useNavigate();
@@ -161,11 +164,8 @@ function TransactionDefaultView({
   const originForHref = useMemo(() => prepareForHref(origin), [origin]);
 
   const { data: chainGasPrices } = useGasPrices(chain);
-  const [advancedViewHref, allowanceViewHref] = useMemo(
-    () =>
-      [View.advanced, View.customAllowance].map(
-        (view) => `?${setURLSearchParams(params, { view }).toString()}`
-      ),
+  const allowanceViewHref = useMemo(
+    () => `?${setURLSearchParams(params, { view: View.customAllowance })}`,
     [params]
   );
 
@@ -278,6 +278,7 @@ function TransactionDefaultView({
           singleAsset={singleAsset}
           allowanceQuantityBase={allowanceQuantityBase}
           allowanceViewHref={allowanceViewHref}
+          disabled={sendTransactionMutation.isLoading}
         />
         {interpretQuery.isInitialLoading ? (
           <InterpretLoadingState />
@@ -286,7 +287,7 @@ function TransactionDefaultView({
             Unable to analyze the details of the transaction
           </UIText>
         ) : null}
-        <Button kind="regular" as={UnstyledLink} to={advancedViewHref}>
+        <Button kind="regular" onClick={onOpenAdvancedView}>
           Advanced View
         </Button>
       </VStack>
@@ -467,6 +468,10 @@ function SendTransactionContent({
   const interpretAddressAction = interpretation?.action;
 
   const view = params.get('view') || View.default;
+  const advancedDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const openAdvancedView = useCallback(() => {
+    advancedDialogRef.current?.showModal();
+  }, []);
 
   if (localAddressActionQuery.isSuccess && !localAddressAction) {
     throw new Error('Unexpected missing localAddressAction');
@@ -516,18 +521,26 @@ function SendTransactionContent({
             interpretQuery={interpretQuery}
             incomingTransaction={incomingTransaction}
             incomingTxWithGasAndFee={incomingTxWithGasAndFee}
+            onOpenAdvancedView={openAdvancedView}
             onReject={handleReject}
           />
         ) : null}
-        {view === View.advanced ? (
-          <TransactionAdvancedView
-            networks={networks}
-            chain={chain}
-            interpretation={interpretation}
-            transaction={incomingTransaction}
-            transactionStringified={transactionStringified}
-          />
-        ) : null}
+        <CenteredDialog
+          ref={advancedDialogRef}
+          containerStyle={{ paddingBottom: 0 }}
+          renderWhenOpen={() => (
+            <>
+              <DialogTitle title="Advanced View" closeKind="icon" />
+              <TransactionAdvancedView
+                networks={networks}
+                chain={chain}
+                interpretation={interpretation}
+                transaction={incomingTransaction}
+                transactionStringified={transactionStringified}
+              />
+            </>
+          )}
+        ></CenteredDialog>
         {view === View.customAllowance ? (
           <CustomAllowanceView
             address={wallet.address}
