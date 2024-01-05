@@ -103,6 +103,11 @@ export class EthereumProvider extends JsonRpcProvider {
     return this;
   }
 
+  off(event: string, listener: (params: unknown) => unknown) {
+    super.off(event, listener);
+    return this;
+  }
+
   markAsMetamask() {
     this.isMetaMask = true;
     this._metamask = new MetamaskExperimentalNamespace();
