@@ -46,6 +46,9 @@
   },
   "homepage": "https://github.com/zeriontech/zerion-wallet-extension#readme",
   "browserslist": "> 0.5%, last 2 versions, not dead",
+  "engines": {
+    "node": ">=20.10.0"
+  },
   "devDependencies": {
     "@parcel/config-webextension": "^2.9.3",
     "@parcel/optimizer-data-url": "^2.9.3",
