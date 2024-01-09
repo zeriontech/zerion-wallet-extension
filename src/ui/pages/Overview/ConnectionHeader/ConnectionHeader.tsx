@@ -73,7 +73,7 @@ export function ConnectionHeader() {
     <>
       <BottomSheetDialog
         ref={dialogRef}
-        height={236}
+        height="fit-content"
         onClosed={handleDialogDismiss}
         containerStyle={{ backgroundColor: 'var(--z-index-0)' }}
       >
