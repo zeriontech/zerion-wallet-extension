@@ -15,6 +15,7 @@ import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { NBSP } from 'src/ui/shared/typography';
 import { useAllExistingAddresses } from 'src/ui/shared/requests/useAllExistingAddresses';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { AddressImportMessages } from './AddressImportMessages';
 import { WalletList } from './WalletList';
 
@@ -108,13 +109,8 @@ function AddressImportList({
       </PageColumn>
 
       <PageStickyFooter lineColor="var(--neutral-300)">
-        <VStack
-          style={{
-            marginTop: 8,
-            textAlign: 'center',
-          }}
-          gap={8}
-        >
+        <Spacer height={8} />
+        <VStack style={{ textAlign: 'center' }} gap={8}>
           <Button
             disabled={values.size === 0}
             onClick={() => {

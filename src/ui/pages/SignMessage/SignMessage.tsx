@@ -137,6 +137,7 @@ function SignMessageContent({
         <PhishingDefenceStatus origin={origin} />
       </PageColumn>
       <PageStickyFooter>
+        <Spacer height={16} />
         <VStack
           style={{
             textAlign: 'center',
@@ -146,13 +147,15 @@ function SignMessageContent({
           }}
           gap={8}
         >
-          <UIText kind="caption/regular" color="var(--negative-500)">
-            {personalSignMutation.isError
-              ? getError(personalSignMutation.error).message
-              : hardwareSignError
-              ? txErrorToMessage(hardwareSignError)
-              : null}
-          </UIText>
+          {personalSignMutation.isError ? (
+            <UIText kind="caption/regular" color="var(--negative-500)">
+              {getError(personalSignMutation.error).message}
+            </UIText>
+          ) : hardwareSignError ? (
+            <UIText kind="caption/regular" color="var(--negative-500)">
+              {txErrorToMessage(hardwareSignError)}
+            </UIText>
+          ) : null}
 
           <div
             style={{

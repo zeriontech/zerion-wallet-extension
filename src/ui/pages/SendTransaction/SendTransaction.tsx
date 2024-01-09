@@ -345,11 +345,11 @@ function TransactionDefaultView({
       )}
       <Content name="sign-transaction-footer">
         <VStack style={{ textAlign: 'center' }} gap={8}>
-          <UIText kind="body/regular" color="var(--negative-500)">
-            {sendTransactionMutation.isError
-              ? txErrorToMessage(sendTransactionMutation.error)
-              : null}
-          </UIText>
+          {sendTransactionMutation.isError ? (
+            <UIText kind="body/regular" color="var(--negative-500)">
+              {txErrorToMessage(sendTransactionMutation.error)}
+            </UIText>
+          ) : null}
           <div
             style={{
               display: 'grid',
@@ -554,6 +554,7 @@ function SendTransactionContent({
         <Spacer height={16} />
       </PageColumn>
       <PageStickyFooter>
+        <Spacer height={16} />
         <RenderArea name="sign-transaction-footer" />
         <PageBottom />
       </PageStickyFooter>
