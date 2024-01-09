@@ -24,7 +24,7 @@ You can also download the latest build of the Zerion Extension from [here](https
 
 ### 1. Set up Node
 
-This project requires Node.js version 18. If you don't have Node.js installed, download and install it from the [official website](https://nodejs.org/). After installation, you can verify the Node version using the following command:
+This project requires Node.js version >=16. If you don't have Node.js installed, download and install it from the [official website](https://nodejs.org/). After installation, you can verify the Node version using the following command:
 
 ```shell
 node --version
@@ -54,12 +54,12 @@ Start the extension locally with:
 npm start
 ```
 
-This command will compile the extension and run it in a mode suitable for development. Ensure you follow specific instructions or prerequisites for running the extension in your development environment.
+This command will build the extension in development mode. The output files are written to the `./dist` folder.
 
 ### 5. Import Extension
 
-1. **Enable Developer Mode in Chrome**: Go to `chrome://extensions/` and enable Developer mode.
-2. **Import the Extension**: Click on 'Load unpacked' and select the build folder.
+1. **Enable Developer Mode in Chrome**: Go to `chrome://extensions` and enable Developer mode.
+2. **Import the Extension**: Click on 'Load unpacked' and select the build folder (`./dist` from the previous step).
 
 ## License
 
