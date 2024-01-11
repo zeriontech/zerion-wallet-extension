@@ -132,6 +132,7 @@ export class Account extends EventEmitter<AccountEvents> {
     this.user = null;
     this.encryptionKey = null;
     this.wallet.resetCredentials();
+    this.wallet.destroy();
     this.wallet = new Wallet(
       TEMPORARY_ID,
       null,
