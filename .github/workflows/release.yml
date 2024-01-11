@@ -19,7 +19,6 @@ jobs:
 
       - name: Install dependencies and build
         env:
-          ALCHEMY_KEY: RKg5wIwcuh32powb0blKdPh0UwSsgmFI
           DEFI_SDK_API_URL: wss://api-v4.zerion.io/
           ZERION_API_URL: https://zpi.zerion.io/
           PROXY_URL: https://proxy.zerion.io/

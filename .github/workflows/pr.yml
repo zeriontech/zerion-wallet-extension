@@ -44,7 +44,6 @@ jobs:
 
       - name: Install dependencies and build
         env:
-          ALCHEMY_KEY: RKg5wIwcuh32powb0blKdPh0UwSsgmFI
           DEFI_SDK_API_URL: ${{ github.event.inputs.DEFI_SDK_API_URL || 'wss://api-v4.zerion.io/' }}
           ZERION_API_URL: ${{ github.event.inputs.ZERION_API_URL || 'https://zpi.zerion.io/' }}
           BACKEND_ENV: ${{ github.event.inputs.BACKEND_ENV || '' }}
