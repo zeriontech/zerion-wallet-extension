@@ -14,6 +14,7 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import * as helpersStyles from '../../shared/styles.module.css';
 import { Step } from '../../shared/Step';
 import { DNA_NFT_COLLECTION_ADDRESS } from '../../shared/constants';
+import { useAddressHasDnaUpgradeBackgroundPerk } from '../../shared/useShowDnaBanner';
 
 export function Success() {
   const [params] = useSearchParams();
@@ -111,6 +112,8 @@ export function Success() {
     },
   });
 
+  const showContinueButton = useAddressHasDnaUpgradeBackgroundPerk(address);
+
   return (
     <>
       <canvas
@@ -161,15 +164,17 @@ export function Success() {
               />
             </animated.div>
           )}
-          <Button
-            kind="primary"
-            size={48}
-            style={{ paddingInline: 16 }}
-            as={UnstyledLink}
-            to={`/upgrade-dna?steps=true&address=${address}`}
-          >
-            Continue
-          </Button>
+          {showContinueButton ? (
+            <Button
+              kind="primary"
+              size={48}
+              style={{ paddingInline: 16 }}
+              as={UnstyledLink}
+              to={`/upgrade-dna?steps=true&address=${address}`}
+            >
+              Continue
+            </Button>
+          ) : null}
         </VStack>
         <HStack gap={4} className={helpersStyles.steps} justifyContent="center">
           <Step active={false} />
