@@ -154,6 +154,7 @@ function AddOrUpdateChain({
         <PageBottom />
       </PageColumn>
       <PageStickyFooter>
+        <Spacer height={16} />
         <RenderArea name="add-ethereum-chain-footer" />
         <PageBottom />
       </PageStickyFooter>

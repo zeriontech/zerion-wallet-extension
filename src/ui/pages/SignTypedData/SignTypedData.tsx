@@ -327,7 +327,6 @@ function TypedDataDefaultView({
             style={{
               textAlign: 'center',
               marginTop: 'auto',
-              paddingTop: 8,
             }}
             gap={8}
           >
@@ -514,6 +513,7 @@ function SignTypedDataContent({
         <PhishingDefenceStatus origin={origin} />
       </PageColumn>
       <PageStickyFooter>
+        <Spacer height={16} />
         <RenderArea name="sign-transaction-footer" />
         <PageBottom />
       </PageStickyFooter>
