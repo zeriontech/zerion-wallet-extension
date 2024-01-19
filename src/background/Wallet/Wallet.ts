@@ -62,6 +62,7 @@ import {
 import { ERC20_ALLOWANCE_ABI } from 'src/modules/ethereum/abi/allowance-abi';
 import type { Quote } from 'src/shared/types/Quote';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import { Disposable } from 'src/shared/Disposable';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -123,6 +124,8 @@ export class Wallet {
 
   private store: Store<{ chainId: string }>;
 
+  private disposer = new Disposable();
+
   walletStore: WalletStore;
   notificationWindow: NotificationWindow;
 
@@ -140,13 +143,17 @@ export class Wallet {
     this.id = id;
     this.walletStore = new WalletStore({}, 'wallet');
     this.globalPreferences = globalPreferences;
-    this.globalPreferences.on('change', (state, prevState) => {
-      emitter.emit('globalPreferencesChange', state, prevState);
-    });
+    this.disposer.add(
+      this.globalPreferences.on('change', (state, prevState) => {
+        emitter.emit('globalPreferencesChange', state, prevState);
+      })
+    );
     this.notificationWindow = notificationWindow;
-    networksStore.on('change', () => {
-      this.verifyOverviewChain();
-    });
+    this.disposer.add(
+      networksStore.on('change', () => {
+        this.verifyOverviewChain();
+      })
+    );
     this.userCredentials = userCredentials;
     this.record = null;
 
@@ -157,6 +164,10 @@ export class Wallet {
     this.publicEthereumController = new PublicController(this, {
       notificationWindow,
     });
+  }
+
+  destroy() {
+    this.disposer.clearAll();
   }
 
   private async syncWithWalletStore() {

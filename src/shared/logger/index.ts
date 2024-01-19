@@ -26,7 +26,7 @@ async function setLoglevel(flag: Loglevel) {
 function logToConsole<M extends 'log' | 'table'>(
   level: Loglevel,
   consoleMethod: M,
-  ...args: Parameters<typeof console[M]>
+  ...args: Parameters<(typeof console)[M]>
 ) {
   if (level & loglevelState.getState().level) {
     console[consoleMethod](...args); // eslint-disable-line no-console
@@ -35,16 +35,24 @@ function logToConsole<M extends 'log' | 'table'>(
 
 export function log(
   level: Loglevel,
-  ...args: Parameters<typeof console['log']>
+  ...args: Parameters<(typeof console)['log']>
 ) {
   return logToConsole(level, 'log', ...args);
 }
 
 export function logTable(
   level: Loglevel,
-  ...args: Parameters<typeof console['table']>
+  ...args: Parameters<(typeof console)['table']>
 ) {
   return logToConsole(level, 'table', ...args);
 }
 
-Object.assign(globalThis, { logger: { Loglevel, setLoglevel } });
+Object.assign(globalThis, {
+  logger: {
+    Loglevel,
+    setLoglevel,
+    logEverything: () => setLoglevel(Loglevel.info),
+    logErrorsOnly: () => setLoglevel(Loglevel.error),
+    logNothing: () => setLoglevel(Loglevel.none),
+  },
+});
