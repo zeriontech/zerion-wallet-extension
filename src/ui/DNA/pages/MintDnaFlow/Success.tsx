@@ -11,6 +11,8 @@ import { useAddressNftPosition } from 'defi-sdk';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { MediaContent } from 'src/ui/ui-kit/MediaContent';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import CloseTabIcon from 'jsx:src/ui/DNA/assets/close-tab.svg';
+import TabLine from 'jsx:src/ui/DNA/assets/tab.svg';
 import * as helpersStyles from '../../shared/styles.module.css';
 import { Step } from '../../shared/Step';
 import { DNA_NFT_COLLECTION_ADDRESS } from '../../shared/constants';
@@ -174,7 +176,43 @@ export function Success() {
             >
               Continue
             </Button>
-          ) : null}
+          ) : (
+            <VStack gap={0} style={{ justifyItems: 'center' }}>
+              <UIText kind="small/accent" color="var(--neutral-600)">
+                Zerion is the safest and easiest way to explore web3.
+              </UIText>
+              <HStack gap={13} alignItems="center">
+                <UIText kind="small/accent" color="var(--neutral-600)">
+                  You can
+                </UIText>
+                <HStack
+                  gap={8}
+                  alignItems="center"
+                  style={{ position: 'relative' }}
+                >
+                  <UIText kind="small/accent">close this tab</UIText>
+                  <CloseTabIcon
+                    style={{
+                      width: 14,
+                      height: 14,
+                      position: 'relative',
+                      top: 1,
+                    }}
+                  />
+                  <TabLine
+                    style={{
+                      position: 'absolute',
+                      top: -1,
+                      left: -21,
+                    }}
+                  />
+                </HStack>
+                <UIText kind="small/accent" color="var(--neutral-600)">
+                  to get started!
+                </UIText>
+              </HStack>
+            </VStack>
+          )}
         </VStack>
         <HStack gap={4} className={helpersStyles.steps} justifyContent="center">
           <Step active={false} />
