@@ -3,7 +3,7 @@ import { usePreferences } from 'src/ui/features/preferences';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import {
   useShowDnaMintBanner,
-  useShowDnaUpgradeBanner,
+  useAddressHasDnaUpgradeBackgroundPerk,
 } from '../shared/useShowDnaBanner';
 import { MintBanner } from './MintBanner';
 import { UpgradeBanner } from './UpgradeBanner';
@@ -11,7 +11,7 @@ import { UpgradeBanner } from './UpgradeBanner';
 export function OverviewDnaBanners({ address }: { address: string }) {
   const { preferences, setPreferences } = usePreferences();
   const showDnaMintBanner = useShowDnaMintBanner(address);
-  const showUpgradeBanner = useShowDnaUpgradeBanner(address);
+  const showUpgradeBanner = useAddressHasDnaUpgradeBackgroundPerk(address);
 
   return (
     <>
@@ -60,7 +60,7 @@ export function NftTabDnaBanner({
 
 export function SettingsDnaBanners({ address }: { address: string }) {
   const showDnaMintBanner = useShowDnaMintBanner(address);
-  const showUpgradeBanner = useShowDnaUpgradeBanner(address);
+  const showUpgradeBanner = useAddressHasDnaUpgradeBackgroundPerk(address);
 
   return showDnaMintBanner ? (
     <MintBanner address={address} />

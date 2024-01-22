@@ -33,7 +33,7 @@ export function useShowDnaMintBanner(address: string) {
 
 const DNA_BACKGROUND_PERK = 'extensionBackground';
 
-export function useShowDnaUpgradeBanner(address: string) {
+export function useAddressHasDnaUpgradeBackgroundPerk(address: string) {
   const { value, isLoading } = useAddressNfts(
     {
       address,

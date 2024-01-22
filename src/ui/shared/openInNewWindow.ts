@@ -18,5 +18,7 @@ export function openInFullScreen(
   const url = new URL(event.currentTarget.href);
   url.searchParams.set('templateType', 'tab');
   url.searchParams.set('fullScreen', 'true');
-  window.open(url, '_blank');
+  browser.tabs.create({
+    url: url.toString(),
+  });
 }
