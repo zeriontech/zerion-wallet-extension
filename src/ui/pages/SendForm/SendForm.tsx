@@ -1,10 +1,16 @@
-import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import type { Store } from 'store-unit';
 import { client } from 'defi-sdk';
 import { useSendForm } from '@zeriontech/transactions';
-import type { SendFormState } from '@zeriontech/transactions';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { networksStore } from 'src/modules/networks/networks-store.client';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -45,6 +51,9 @@ import type { SignerSenderHandle } from 'src/ui/components/SignTransactionButton
 import { SignTransactionButton } from 'src/ui/components/SignTransactionButton';
 import { useSizeStore } from 'src/ui/Onboarding/useSizeStore';
 import { createSendAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { NetworkGroups } from 'src/ui/components/NetworkSelectDialog';
+import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput';
+import { DelayedRender } from 'src/ui/components/DelayedRender';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -54,11 +63,13 @@ import { NetworkSelect } from '../Networks/NetworkSelect';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { EstimateTransactionGas } from './EstimateTransactionGas';
 import { SuccessState } from './SuccessState';
+import type { SendFormSnapshot } from './SuccessState/SuccessState';
 import { TokenTransferInput } from './fieldsets/TokenTransferInput';
 import { AddressInputWrapper } from './fieldsets/AddressInput';
 import { updateRecentAddresses } from './fieldsets/AddressInput/updateRecentAddresses';
 import { SendTransactionConfirmation } from './SendTransactionConfirmation';
 import { useAddressBackendOrEvmPositions } from './shared/useAddressBackendOrEvmPositions';
+import { NftTransferInput } from './fieldsets/NftTransferInput';
 
 function StoreWatcherByKeys<T extends Record<string, unknown>>({
   store,
@@ -75,7 +86,43 @@ function StoreWatcherByKeys<T extends Record<string, unknown>>({
 
 const rootNode = getRootDomNode();
 
-const ENABLE_NFT_TRANSFER = false;
+const ENABLE_NFT_TRANSFER = true;
+
+function NFTNetworkSelect({
+  value,
+  onChange,
+  dialogRootNode,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  dialogRootNode?: HTMLElement;
+}) {
+  const { networks } = useNetworks();
+  const { supportedNetworks } = useMemo(() => {
+    const allItems = networks?.getNetworks() || [];
+    const networksForSending = networks
+      ? allItems.filter((network) =>
+          networks.supports('sending', createChain(network.chain))
+        )
+      : [];
+    return { supportedNetworks: networksForSending };
+  }, [networks]);
+
+  const nftNetworkOptions: NetworkGroups = useMemo(() => {
+    return [
+      { key: 'trading-networks', name: 'Networks', items: supportedNetworks },
+    ];
+  }, [supportedNetworks]);
+
+  return (
+    <NetworkSelect
+      value={value}
+      onChange={onChange}
+      dialogRootNode={dialogRootNode}
+      groups={nftNetworkOptions}
+    />
+  );
+}
 
 export function SendForm() {
   const { singleAddress: address } = useAddressParams();
@@ -108,12 +155,17 @@ export function SendForm() {
     getNetworks: () => networksStore.load(),
     client,
   });
-  const { tokenItem, store } = sendView;
+  const { tokenItem, nftItem, store } = sendView;
   const { type, tokenChain, nftChain } = useSelectorStore(store, [
     'type',
     'tokenChain',
     'nftChain',
   ]);
+
+  useEffect(() => {
+    // TODO: update useSendForm to calculate default nft chain (using NFT Portfolio Decomposition)
+    store.setDefault('nftChain', 'ethereum');
+  }, [store]);
 
   useEffect(() => {
     store.on('change', () => {
@@ -133,9 +185,10 @@ export function SendForm() {
       ? createChain(nftChain)
       : null;
 
-  const snapshotRef = useRef<SendFormState | null>(null);
+  const snapshotRef = useRef<SendFormSnapshot | null>(null);
   const onBeforeSubmit = () => {
-    snapshotRef.current = sendView.store.getState();
+    const state = sendView.store.getState();
+    snapshotRef.current = { state, tokenItem, nftItem };
   };
 
   const feeValueCommonRef = useRef<string>(); /** for analytics only */
@@ -148,24 +201,47 @@ export function SendForm() {
 
   const configureTransactionToBeSigned = useEvent(async () => {
     const asset = tokenItem?.asset;
-    const { to, tokenChain, tokenValue } = store.getState();
-    invariant(
-      address && to && asset && tokenChain && tokenValue,
-      'Send Form parameters missing'
-    );
-    const result = await sendView.store.createSendTransaction({
-      from: address,
-      to,
-      asset,
-      tokenChain,
-      tokenValue,
-    });
-    result.transaction = applyConfiguration(
-      result.transaction,
-      sendView.store.configuration.getState(),
-      gasPrices
-    );
-    return result;
+    const { type, to, tokenChain, tokenValue, nftChain, nftAmount } =
+      store.getState();
+    if (type === 'token') {
+      invariant(
+        address && to && asset && tokenChain && tokenValue,
+        'Send Form parameters missing'
+      );
+      const result = await sendView.store.createSendTransaction({
+        from: address,
+        to,
+        asset,
+        tokenChain,
+        tokenValue,
+      });
+      result.transaction = applyConfiguration(
+        result.transaction,
+        sendView.store.configuration.getState(),
+        gasPrices
+      );
+      return result;
+    } else if (type === 'nft') {
+      invariant(
+        nftChain && nftItem && nftAmount && to,
+        'Missing sendForm/createSendNFTTransaction params'
+      );
+      const result = await store.createSendNFTTransaction({
+        from: address,
+        to,
+        nftChain,
+        nftAmount,
+        nftItem,
+      });
+      result.transaction = applyConfiguration(
+        result.transaction,
+        sendView.store.configuration.getState(),
+        gasPrices
+      );
+      return result;
+    } else {
+      throw new Error('Unexpected FormType (expected "token" | "nft")');
+    }
   });
 
   const signerSenderRef = useRef<SignerSenderHandle | null>(null);
@@ -235,7 +311,7 @@ export function SendForm() {
   }
 
   if (isSuccess) {
-    invariant(tokenItem && transactionHash, 'Missing Form State View values');
+    invariant(transactionHash, 'Missing Form State View values');
     invariant(
       snapshotRef.current,
       'State snapshot must be taken before submit'
@@ -243,8 +319,7 @@ export function SendForm() {
     return (
       <SuccessState
         hash={transactionHash}
-        tokenItem={tokenItem}
-        sendFormState={snapshotRef.current}
+        sendFormSnapshot={snapshotRef.current}
         onDone={() => {
           reset();
           snapshotRef.current = null;
@@ -320,7 +395,7 @@ export function SendForm() {
                 dialogRootNode={rootNode}
               />
             ) : (
-              <NetworkSelect
+              <NFTNetworkSelect
                 value={nftChain ?? ''}
                 onChange={(value) => {
                   sendView.handleChange('nftChain', value);
@@ -351,7 +426,7 @@ export function SendForm() {
             {type === 'token' ? (
               <TokenTransferInput sendView={sendView} />
             ) : type === 'nft' ? (
-              <span>NFT select input</span>
+              <NftTransferInput address={address} sendView={sendView} />
             ) : null}
           </VStack>
         </VStack>
@@ -364,13 +439,38 @@ export function SendForm() {
               <WarningIcon />
             </span>{' '}
             Failed to load network fee
+            <div style={{ position: 'relative' }}>
+              <HiddenValidationInput
+                form={formId}
+                customValidity="Failed to load network fee. Please try adjusting transaction parameters"
+              />
+            </div>
           </UIText>
         )}
       >
         <EstimateTransactionGas
+          key={type}
           sendFormView={sendView}
-          render={({ gasQuery: _gasQuery, transaction }) =>
-            transaction && chain && transaction.gas ? (
+          render={({ gasQuery, transaction }) => {
+            if (gasQuery.isInitialLoading) {
+              return (
+                <>
+                  <DelayedRender delay={5000}>
+                    <p>Estimating network fee...</p>
+                  </DelayedRender>
+                  <div style={{ position: 'relative' }}>
+                    <HiddenValidationInput
+                      form={formId}
+                      customValidity="wait until network fee is estimated"
+                    />
+                  </div>
+                </>
+              );
+            }
+            if (gasQuery.isError) {
+              throw new Error('Failed to estimate gas');
+            }
+            return transaction && chain && transaction.gas ? (
               <React.Suspense
                 fallback={
                   <div style={{ display: 'flex', justifyContent: 'end' }}>
@@ -395,8 +495,15 @@ export function SendForm() {
                   )}
                 />
               </React.Suspense>
-            ) : null
-          }
+            ) : (
+              <div style={{ position: 'relative' }}>
+                <HiddenValidationInput
+                  form={formId}
+                  customValidity="Failed to estimate gas. Please try adjusting transaction parameters"
+                />
+              </div>
+            );
+          }}
         />
       </ErrorBoundary>
       <>

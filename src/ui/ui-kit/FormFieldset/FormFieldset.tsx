@@ -80,10 +80,10 @@ export const FormFieldset = React.forwardRef<
           </HStack>
           {startDescription || endDescription ? (
             <HStack gap={8} justifyContent="space-between">
-              <UIText kind="small/regular" color="ver(--neutral-600)">
+              <UIText kind="small/regular" color="var(--neutral-600)">
                 {startDescription}
               </UIText>
-              <UIText kind="small/regular" color="ver(--neutral-600)">
+              <UIText kind="small/regular" color="var(--neutral-600)">
                 {endDescription}
               </UIText>
             </HStack>
