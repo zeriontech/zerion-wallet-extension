@@ -19,11 +19,13 @@ export function TransactionSimulation({
   vGap = 16,
   address,
   transaction,
+  localAllowanceQuantityBase,
   onOpenAllowanceForm,
 }: {
   vGap?: number;
   address: string;
   transaction: IncomingTransactionWithChainId;
+  localAllowanceQuantityBase?: string;
   onOpenAllowanceForm?: () => void;
 }) {
   const { networks } = useNetworks();
@@ -97,7 +99,9 @@ export function TransactionSimulation({
   const actionTransfers = addressAction.content?.transfers;
   const singleAsset = addressAction.content?.single_asset;
 
-  const allowanceQuantityBase = addressAction.content?.single_asset?.quantity;
+  const allowanceQuantityBase = interpretQuery.isFetching
+    ? localAllowanceQuantityBase
+    : addressAction.content?.single_asset?.quantity;
 
   return (
     <VStack gap={vGap}>

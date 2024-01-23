@@ -253,8 +253,9 @@ export function SwapForm() {
       : null;
   const {
     enough_allowance,
-    transaction: approveTransaction,
     allowanceQuery: { refetch: refetchAllowanceQuery },
+    approvalTransactionQuery: { isFetching: approvalTransactionIsFetching },
+    approvalTransaction,
   } = useApproveHandler({
     address,
     chain,
@@ -275,8 +276,8 @@ export function SwapForm() {
     ...approveMutation
   } = useMutation({
     mutationFn: async () => {
-      invariant(approveTransaction, 'approve transaction is not configured');
-      const transaction = configureTransactionToBeSigned(approveTransaction);
+      invariant(approvalTransaction, 'approve transaction is not configured');
+      const transaction = configureTransactionToBeSigned(approvalTransaction);
       const feeValueCommon = feeValueCommonRef.current || null;
 
       invariant(chain, 'Chain must be defined to sign the tx');
@@ -438,7 +439,7 @@ export function SwapForm() {
     (quotesData.done && !enough_allowance) || !approveMutation.isIdle;
 
   const currentTransaction = isApproveMode
-    ? approveTransaction
+    ? approvalTransaction
     : swapTransaction;
 
   return (
@@ -513,7 +514,7 @@ export function SwapForm() {
 
       <BottomSheetDialog
         ref={confirmDialogRef}
-        key={currentTransaction === approveTransaction ? 'approve' : 'swap'}
+        key={currentTransaction === approvalTransaction ? 'approve' : 'swap'}
         height={innerHeight >= 750 ? '70vh' : '90vh'}
         containerStyle={{ display: 'flex', flexDirection: 'column' }}
         renderWhenOpen={() => {
@@ -527,7 +528,7 @@ export function SwapForm() {
             <ViewLoadingSuspense>
               <TransactionConfirmationView
                 title={
-                  currentTransaction === approveTransaction
+                  currentTransaction === approvalTransaction
                     ? 'Approve'
                     : 'Trade'
                 }
@@ -535,6 +536,7 @@ export function SwapForm() {
                 chain={chain}
                 transaction={configureTransactionToBeSigned(currentTransaction)}
                 configuration={swapView.store.configuration.getState()}
+                localAllowanceQuantityBase={allowanceQuantityBase}
                 onOpenAllowanceForm={() =>
                   allowanceDialogRef.current?.showModal()
                 }
@@ -716,7 +718,9 @@ export function SwapForm() {
                   form={formId}
                   wallet={wallet}
                   disabled={
-                    approveMutation.isLoading || approveTxStatus === 'pending'
+                    approvalTransactionIsFetching ||
+                    approveMutation.isLoading ||
+                    approveTxStatus === 'pending'
                   }
                 >
                   Approve {spendPosition?.asset.symbol ?? null}

@@ -46,6 +46,7 @@ export function useApproveHandler({
       });
     },
     staleTime: 20000,
+    keepPreviousData: true,
     suspense: false,
     enabled: Boolean(enabled && contractAddress && spender && chain),
     useErrorBoundary: true,
@@ -58,7 +59,7 @@ export function useApproveHandler({
     return new BigNumber(allowance).gte(spendAmountBase);
   }, [allowance, spendAmountBase]);
 
-  const approveTransactionQuery = useQuery({
+  const approvalTransactionQuery = useQuery({
     queryKey: [
       'wallet/createApprovalTransaction',
       contractAddress,
@@ -95,7 +96,7 @@ export function useApproveHandler({
   return {
     allowanceQuery,
     enough_allowance: enough,
-    approveTransactionQuery,
-    transaction: approveTransactionQuery.data,
+    approvalTransactionQuery,
+    approvalTransaction: approvalTransactionQuery.data,
   };
 }
