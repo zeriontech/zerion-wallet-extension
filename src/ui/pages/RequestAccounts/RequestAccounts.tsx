@@ -35,6 +35,7 @@ import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { DeviceAccount } from 'src/shared/types/Device';
 import { reloadTabsByOrigin } from 'src/ui/shared/reloadActiveTab';
+import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { WalletList } from '../WalletSelect/WalletList';
 import { ChooseGlobalProvider } from './ChooseGlobalProvider';
 
@@ -227,9 +228,10 @@ function RequestAccountsView({
           />
         </VStack>
         <Spacer height={16} />
-        <RequestAccountsPermissions originName={originName} />
-        <Spacer height={16} />
-        <PhishingDefenceStatus origin={origin} />
+        <ZStack hideLowerElements={true}>
+          <PhishingDefenceStatus origin={origin} />
+          <RequestAccountsPermissions originName={originName} />
+        </ZStack>
         <div
           style={{
             display: 'grid',
