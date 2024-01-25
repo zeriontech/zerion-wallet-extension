@@ -1,6 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { produce } from 'immer';
-import dayjs from 'dayjs';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from 'src/ui/ui-kit/Button';
 import ConnectionIconOn from 'jsx:src/ui/assets/connection-toggle-on.svg';
@@ -15,25 +13,18 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { naiveFormDataToObject } from 'src/ui/shared/form-data';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
-import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
 import { reloadActiveTab } from 'src/ui/shared/reloadActiveTab';
 import { RadioCard } from 'src/ui/ui-kit/Radio/Radio';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { ViewLoading } from '../ViewLoading';
 import * as styles from './styles.module.css';
-
-const TESTING = process.env.NODE_ENV !== 'production';
-
-enum TurnOffDuration {
-  oneHour,
-  untilTomorrow,
-  forever,
-}
-
-interface SubmitData {
-  origin: '<all_urls>' | string;
-  duration: TurnOffDuration;
-}
+import type { SubmitData } from './actions';
+import {
+  TESTING,
+  TurnOffDuration,
+  createPreference,
+  disablePreference,
+} from './actions';
 
 function PauseInjectionDialog({
   activeTabUrl,
@@ -176,24 +167,6 @@ function PauseInjectionDialog({
   );
 }
 
-function calculateExpires(duration: TurnOffDuration) {
-  if (duration === TurnOffDuration.oneHour) {
-    const FORTY_SECONDS = 1000 * 40;
-    const HOUR = 1000 * 60 * 60;
-    return Date.now() + (TESTING ? FORTY_SECONDS : HOUR);
-  } else if (duration === TurnOffDuration.untilTomorrow) {
-    const now = dayjs();
-    if (now.hour() < 3) {
-      return now.hour(9).valueOf(); // 9AM same day
-    } else {
-      return now.add(1, 'day').hour(9).valueOf(); // 9AM next day
-    }
-  } else if (duration === TurnOffDuration.forever) {
-    return null;
-  }
-  throw new Error('Unexpected duration enum');
-}
-
 export function usePausedData() {
   const { data: tabData } = useQuery({
     queryKey: ['activeTab/origin'],
@@ -220,34 +193,6 @@ export function usePausedData() {
     globalPreferences,
     setGlobalPreferences: mutation.mutateAsync,
     tabData,
-  };
-}
-
-function createPreference(
-  globalPreferences: GlobalPreferences,
-  formData: SubmitData
-): Pick<GlobalPreferences, 'providerInjection'> {
-  return {
-    providerInjection: {
-      ...globalPreferences.providerInjection,
-      [formData.origin]: {
-        expires: calculateExpires(formData.duration),
-      },
-    },
-  };
-}
-
-function disablePreference(
-  globalPreferences: GlobalPreferences,
-  pattern: string | null
-): Pick<GlobalPreferences, 'providerInjection'> {
-  if (!globalPreferences.providerInjection || !pattern) {
-    return {};
-  }
-  return {
-    providerInjection: produce(globalPreferences.providerInjection, (draft) => {
-      delete draft[pattern];
-    }),
   };
 }
 

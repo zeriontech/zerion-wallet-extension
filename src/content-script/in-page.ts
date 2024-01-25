@@ -2,6 +2,7 @@ import { EthereumProvider } from 'src/modules/ethereum/provider';
 import { Connection } from 'src/modules/ethereum/connection';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
+import { isObj } from 'src/shared/isObj';
 import { pageObserver } from './dapp-mutation';
 import * as dappDetection from './dapp-detection';
 import * as competingProviders from './competing-providers';
@@ -40,7 +41,35 @@ competingProviders.onBeforeAssignToWindow({
 });
 dappDetection.initialize(provider);
 dappDetection.onBeforeAssignToWindow(window.ethereum);
-window.ethereum = provider;
+
+/**
+ * Create Proxy to overwrite `eth_requestAccounts` method so that the background script
+ * knows when the request is made using window.ethereum vs using EIP-6963
+ */
+const proxiedProvider = new Proxy(provider, {
+  get(target, prop, receiver) {
+    if (prop === 'request') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (...args: any[]) => {
+        const payload = args[0];
+        if (
+          isObj(payload) &&
+          'method' in payload &&
+          payload.method === 'eth_requestAccounts' &&
+          // If no other providers detected, it makes no sense to offer to choose other wallets
+          competingProviders.hasOtherProviders()
+        ) {
+          return target.request(payload as { method: string }, {
+            nonEip6963Request: true,
+          });
+        }
+        return target.request(args[0], args[1]);
+      };
+    }
+    return Reflect.get(target, prop, receiver);
+  },
+});
+window.ethereum = proxiedProvider;
 
 dappDetection.onChange(({ dappIsZerionAware }) => {
   if (dappIsZerionAware) {
@@ -52,7 +81,7 @@ Object.defineProperty(window, 'ethereum', {
   configurable: false, // explicitly set to false to disallow redefining the property by other wallets
   get() {
     dappDetection.onAccessThroughWindow();
-    return provider;
+    return proxiedProvider;
   },
   set(value: EthereumProvider) {
     dappDetection.handleForeignProvider(value);
@@ -67,7 +96,12 @@ if (dappsWithoutCorrectEIP1193Support.has(window.location.origin)) {
   provider.markAsMetamask();
 }
 
-initializeEIP6963(provider);
+initializeEIP6963(provider, {
+  onRequestProvider: () => {
+    // DApp supports EIP-6963
+    pageObserver.stop();
+  },
+});
 
 provider
   .request({ method: 'wallet_getGlobalPreferences' })

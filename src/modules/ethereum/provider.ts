@@ -7,6 +7,7 @@ import type {
 import { formatJsonRpcRequest, isJsonRpcError } from '@json-rpc-tools/utils';
 import { InvalidParams, MethodNotImplemented } from 'src/shared/errors/errors';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
+import { isObj } from 'src/shared/isObj';
 import type { Connection } from './connection';
 
 function accountsEquals(arr1: string[], arr2: string[]) {
@@ -140,8 +141,22 @@ export class EthereumProvider extends JsonRpcProvider {
     if (request.method === 'eth_accounts' && this.accounts.length) {
       return Promise.resolve(this.accounts);
     }
+    let params = request.params;
+    if (
+      request.method === 'eth_requestAccounts' &&
+      isObj(context) &&
+      context.nonEip6963Request
+    ) {
+      params = [
+        {
+          ...(request.params || [])[0],
+          nonEip6963Request: context.nonEip6963Request,
+        },
+        ...(request.params || []).slice(1),
+      ];
+    }
     return this._getRequestPromise(
-      formatJsonRpcRequest(request.method, request.params || [], request.id),
+      formatJsonRpcRequest(request.method, params || [], request.id),
       context
     );
   };

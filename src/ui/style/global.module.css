@@ -116,6 +116,9 @@ body.isDialog:not(.fullScreen) {
   :global(.hover\:color-primary):hover {
     color: var(--primary);
   }
+  :global(.hover\:underline):hover {
+    text-decoration: underline;
+  }
 }
 
 input::placeholder {

@@ -25,13 +25,19 @@ export function handleForeignProvider({
   foreignProvider,
   ourProvider,
 }: Params) {
-  otherProviders.add(foreignProvider);
+  if (foreignProvider) {
+    otherProviders.add(foreignProvider);
+  }
   if (foreignProvider?.isRabby) {
     // Rabby does some weird stuff with reconfiguring some provider properties,
     // which leads to infinite recursion. To avoid that,
     // we disallow properties of our provider to be reconfigured
     makeNotConfigurable(ourProvider);
   }
+}
+
+export function hasOtherProviders() {
+  return otherProviders.size > 0;
 }
 
 export function onBeforeAssignToWindow(params: Params) {
