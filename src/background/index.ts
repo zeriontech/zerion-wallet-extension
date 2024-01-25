@@ -3,6 +3,7 @@ import { ethers } from 'ethers';
 import { networksStore } from 'src/modules/networks/networks-store.background';
 import { configureBackgroundClient } from 'src/modules/defi-sdk/background';
 import { SessionCacheService } from 'src/background/resource/sessionCacheService';
+import { openOnboarding } from 'src/shared/openOnboarding';
 import { initialize } from './initialize';
 import { PortRegistry } from './messaging/PortRegistry';
 import { createWalletMessageHandler } from './messaging/port-message-handlers/createWalletMessageHandler';
@@ -203,9 +204,6 @@ browser.runtime.onInstalled.addListener(({ reason }) => {
       throw new Error('popupUrl not found');
     }
     const url = new URL(browser.runtime.getURL(popupUrl));
-    url.searchParams.append('templateType', 'tab');
-    browser.tabs.create({
-      url: url.toString(),
-    });
+    openOnboarding(url);
   }
 });

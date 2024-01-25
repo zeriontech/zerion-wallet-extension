@@ -11,6 +11,6 @@ export function usePendingRecoveryPhrase() {
     retry: 0,
     refetchOnMount: false,
     refetchOnWindowFocus: true,
-    useErrorBoundary: true,
+    useErrorBoundary: false,
   });
 }
