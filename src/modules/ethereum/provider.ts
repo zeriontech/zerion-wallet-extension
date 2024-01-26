@@ -60,6 +60,8 @@ export class EthereumProvider extends JsonRpcProvider {
   connection: Connection;
   _openPromise: Promise<void> | null = null;
 
+  nonEip6963Request = false;
+
   constructor(connection: Connection) {
     super(connection);
     this.connection = connection;
@@ -142,15 +144,11 @@ export class EthereumProvider extends JsonRpcProvider {
       return Promise.resolve(this.accounts);
     }
     let params = request.params;
-    if (
-      request.method === 'eth_requestAccounts' &&
-      isObj(context) &&
-      context.nonEip6963Request
-    ) {
+    if (request.method === 'eth_requestAccounts' && this.nonEip6963Request) {
       params = [
         {
           ...(request.params || [])[0],
-          nonEip6963Request: context.nonEip6963Request,
+          nonEip6963Request: this.nonEip6963Request,
         },
         ...(request.params || []).slice(1),
       ];

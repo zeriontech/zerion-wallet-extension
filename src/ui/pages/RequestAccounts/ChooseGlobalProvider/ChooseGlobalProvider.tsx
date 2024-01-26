@@ -3,6 +3,7 @@ import { PageColumn } from 'src/ui/components/PageColumn';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
+import ZerionLogo from 'jsx:src/ui/assets/zerion-logo-squircle-white.svg';
 import { useBackgroundKind } from 'src/ui/components/Background/Background';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
@@ -13,7 +14,7 @@ import {
   createPreference,
 } from 'src/ui/components/PauseInjection/actions';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
-import { reloadTabsByOrigin } from 'src/ui/shared/reloadActiveTab';
+import { HStack } from 'src/ui/ui-kit/HStack';
 
 const bgKind = { kind: 'white' } as const;
 export function ChooseGlobalProvider({
@@ -58,7 +59,10 @@ export function ChooseGlobalProvider({
             </UIText>
             <VStack gap={8}>
               <Button kind="primary" onClick={() => onConfirm()}>
-                Continue with Zerion
+                <HStack gap={8} justifyContent="center">
+                  <ZerionLogo style={{ width: 20, height: 20 }} />
+                  <span>Continue with Zerion</span>
+                </HStack>
               </Button>
               <Button
                 kind="regular"

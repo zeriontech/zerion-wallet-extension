@@ -2,7 +2,6 @@ import { EthereumProvider } from 'src/modules/ethereum/provider';
 import { Connection } from 'src/modules/ethereum/connection';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
-import { isObj } from 'src/shared/isObj';
 import { pageObserver } from './dapp-mutation';
 import * as dappDetection from './dapp-detection';
 import * as competingProviders from './competing-providers';
@@ -48,25 +47,21 @@ dappDetection.onBeforeAssignToWindow(window.ethereum);
  */
 const proxiedProvider = new Proxy(provider, {
   get(target, prop, receiver) {
-    if (prop === 'request') {
+    if (typeof target[prop as keyof typeof target] === 'function') {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return (...args: any[]) => {
-        const payload = args[0];
-        if (
-          isObj(payload) &&
-          'method' in payload &&
-          payload.method === 'eth_requestAccounts' &&
-          // If no other providers detected, it makes no sense to offer to choose other wallets
-          competingProviders.hasOtherProviders()
-        ) {
-          return target.request(payload as { method: string }, {
-            nonEip6963Request: true,
-          });
+        if (competingProviders.hasOtherProviders()) {
+          provider.nonEip6963Request = true;
         }
-        return target.request(args[0], args[1]);
+
+        // @ts-ignore
+        const result = target[prop](...args);
+        provider.nonEip6963Request = false;
+        return result;
       };
+    } else {
+      return Reflect.get(target, prop, receiver);
     }
-    return Reflect.get(target, prop, receiver);
   },
 });
 window.ethereum = proxiedProvider;
