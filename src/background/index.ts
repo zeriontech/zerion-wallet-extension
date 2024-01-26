@@ -110,7 +110,6 @@ userActivity.scheduleAlarms();
 // Listeners for alarms must also be registered at the top level.
 // It's not mentioned on the Alarms API page, but it's mentioned here:
 // https://developer.chrome.com/docs/extensions/mv3/migrating_to_service_workers/#alarms
-browser.alarms.onAlarm.addListener(userActivity.handleAlarm);
 browser.alarms.onAlarm.addListener(ContentScriptManager.handleAlarm);
 
 console.time('bg initialize'); // eslint-disable-line no-console
@@ -122,6 +121,12 @@ initialize().then((values) => {
     globalPreferences,
     notificationWindow,
   } = values;
+  browser.alarms.onAlarm.addListener(
+    userActivity.handleAlarm(async () => {
+      const preferences = await globalPreferences.getPreferences();
+      return preferences.autoLockTimer;
+    })
+  );
   console.timeEnd('bg initialize'); // eslint-disable-line no-console
   notifyContentScriptsAndUIAboutInitialization();
   // const httpConnection = new HttpConnection(() => account.getCurrentWallet());

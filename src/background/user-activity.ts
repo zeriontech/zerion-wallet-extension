@@ -17,7 +17,7 @@ export function scheduleAlarms() {
     // To my understanding, if an alarm with an existing name is created, it's
     // not gonna create duplicate alarms. Only one will be active and that's what we need
     browser.alarms.create('lastActiveCheck', {
-      periodInMinutes: 5, // Is this too frequent or too infrequent?
+      periodInMinutes: 1, // Is this too frequent or too infrequent?
     });
   });
 
@@ -27,13 +27,14 @@ export function scheduleAlarms() {
   });
 }
 
-export async function handleAlarm(alarm: browser.Alarms.Alarm) {
-  if (alarm.name === 'lastActiveCheck') {
-    const lastActive = await getLastActive();
-    // const ONE_DAY = 1000 * 60 * 60 * 24;
-    const HALF_A_DAY = 1000 * 60 * 60 * 12;
-    if (lastActive && Date.now() - lastActive > HALF_A_DAY) {
-      emitter.emit('sessionExpired');
+export function handleAlarm(getIdleTimeout: () => Promise<number>) {
+  return async (alarm: browser.Alarms.Alarm) => {
+    if (alarm.name === 'lastActiveCheck') {
+      const lastActive = await getLastActive();
+      const idleTimeout = await getIdleTimeout();
+      if (idleTimeout && lastActive && Date.now() - lastActive > idleTimeout) {
+        emitter.emit('sessionExpired');
+      }
     }
-  }
+  };
 }
