@@ -1,6 +1,7 @@
 import browser from 'webextension-polyfill';
 import * as browserStorage from 'src/background/webapis/storage';
 import { emitter } from './events';
+import { globalPreferences } from './Wallet/GlobalPreferences';
 
 export function trackLastActive() {
   emitter.on('userActivity', () => {
@@ -27,14 +28,17 @@ export function scheduleAlarms() {
   });
 }
 
-export function handleAlarm(getIdleTimeout: () => Promise<number>) {
-  return async (alarm: browser.Alarms.Alarm) => {
-    if (alarm.name === 'lastActiveCheck') {
-      const lastActive = await getLastActive();
-      const idleTimeout = await getIdleTimeout();
-      if (idleTimeout && lastActive && Date.now() - lastActive > idleTimeout) {
-        emitter.emit('sessionExpired');
-      }
+async function getIdleTimeout() {
+  const preferences = await globalPreferences.getPreferences();
+  return preferences.autoLockTimeout;
+}
+
+export async function handleAlarm(alarm: browser.Alarms.Alarm) {
+  if (alarm.name === 'lastActiveCheck') {
+    const lastActive = await getLastActive();
+    const idleTimeout = await getIdleTimeout();
+    if (idleTimeout && lastActive && Date.now() - lastActive > idleTimeout) {
+      emitter.emit('sessionExpired');
     }
-  };
+  }
 }

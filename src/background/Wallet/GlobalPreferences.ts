@@ -25,7 +25,7 @@ export interface State {
   recognizableConnectButtons?: boolean;
   providerInjection?: ProviderInjection;
   walletNameFlags?: Record<string, WalletNameFlag[]>;
-  autoLockTimer?: number;
+  autoLockTimeout?: number;
 }
 
 /**
@@ -40,7 +40,7 @@ export class GlobalPreferences extends PersistentStore<State> {
     recognizableConnectButtons: true,
     providerInjection: {},
     walletNameFlags: {},
-    autoLockTimer: ONE_DAY,
+    autoLockTimeout: ONE_DAY,
   };
 
   private async fetchDefaultWalletNameFlags() {
@@ -116,3 +116,5 @@ export class GlobalPreferences extends PersistentStore<State> {
     });
   }
 }
+
+export const globalPreferences = new GlobalPreferences({}, 'globalPreferences');

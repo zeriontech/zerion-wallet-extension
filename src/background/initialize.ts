@@ -4,7 +4,7 @@ import { initialize as initializeAnalytics } from 'src/shared/analytics/analytic
 import { initialize as initializeRemoteConfig } from 'src/modules/remote-config';
 import { Account, AccountPublicRPC } from './account/Account';
 import { TransactionService } from './transactions/TransactionService';
-import { GlobalPreferences } from './Wallet/GlobalPreferences';
+import { globalPreferences } from './Wallet/GlobalPreferences';
 import { NotificationWindow } from './NotificationWindow/NotificationWindow';
 import { setUninstallURL } from './uninstall';
 
@@ -23,10 +23,10 @@ export async function initialize() {
   // or that the browser decided to "restart" the background scripts
   // Either way, we either create a user from scratch or find one in storage
   await Account.ensureUserAndWallet();
-  const globalPreferences = new GlobalPreferences({}, 'globalPreferences');
+
   const notificationWindow = new NotificationWindow();
   await notificationWindow.initialize();
-  const account = new Account({ globalPreferences, notificationWindow });
+  const account = new Account({ notificationWindow });
   await account.initialize();
   const accountPublicRPC = new AccountPublicRPC(account);
   const transactionService = new TransactionService();
@@ -53,7 +53,6 @@ export async function initialize() {
     accountPublicRPC,
     transactionService,
     dnaService,
-    globalPreferences,
     notificationWindow,
   };
 }

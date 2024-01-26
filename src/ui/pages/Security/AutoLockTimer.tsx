@@ -44,7 +44,7 @@ export const AUTO_LOCK_TIMER_OPTIONS_TITLES = Object.fromEntries(
 
 export function AutoLockTimer() {
   const { globalPreferences, setGlobalPreferences } = useGlobalPreferences();
-  const value = globalPreferences?.autoLockTimer;
+  const value = globalPreferences?.autoLockTimeout;
 
   return (
     <PageColumn>
@@ -76,7 +76,7 @@ export function AutoLockTimer() {
                       checked={value === preference.value}
                       onChange={() =>
                         setGlobalPreferences({
-                          autoLockTimer: preference.value,
+                          autoLockTimeout: preference.value,
                         })
                       }
                     />

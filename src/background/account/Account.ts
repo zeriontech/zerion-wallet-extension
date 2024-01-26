@@ -11,7 +11,6 @@ import type { PublicUser, User } from 'src/shared/types/User';
 import { payloadId } from '@json-rpc-tools/utils';
 import { Wallet } from '../Wallet/Wallet';
 import { peakSavedWalletState } from '../Wallet/persistence';
-import type { GlobalPreferences } from '../Wallet/GlobalPreferences';
 import type { NotificationWindow } from '../NotificationWindow/NotificationWindow';
 import { credentialsKey } from './storage-keys';
 
@@ -42,7 +41,6 @@ export class Account extends EventEmitter<AccountEvents> {
   private user: User | null;
   private encryptionKey: string | null;
   private wallet: Wallet;
-  private globalPreferences: GlobalPreferences;
   private notificationWindow: NotificationWindow;
 
   isPendingNewUser: boolean;
@@ -91,24 +89,16 @@ export class Account extends EventEmitter<AccountEvents> {
   }
 
   constructor({
-    globalPreferences,
     notificationWindow,
   }: {
-    globalPreferences: GlobalPreferences;
     notificationWindow: NotificationWindow;
   }) {
     super();
     this.user = null;
     this.isPendingNewUser = false;
     this.encryptionKey = null;
-    this.globalPreferences = globalPreferences;
     this.notificationWindow = notificationWindow;
-    this.wallet = new Wallet(
-      TEMPORARY_ID,
-      null,
-      this.globalPreferences,
-      this.notificationWindow
-    );
+    this.wallet = new Wallet(TEMPORARY_ID, null, this.notificationWindow);
     this.on('authenticated', () => {
       if (this.encryptionKey) {
         Account.writeCredentials({ encryptionKey: this.encryptionKey });
@@ -133,12 +123,7 @@ export class Account extends EventEmitter<AccountEvents> {
     this.encryptionKey = null;
     this.wallet.resetCredentials();
     this.wallet.destroy();
-    this.wallet = new Wallet(
-      TEMPORARY_ID,
-      null,
-      this.globalPreferences,
-      this.notificationWindow
-    );
+    this.wallet = new Wallet(TEMPORARY_ID, null, this.notificationWindow);
     this.emit('reset');
   }
 

@@ -78,7 +78,7 @@ import {
 import { WalletRecordModel as Model } from './WalletRecord';
 import { WalletStore } from './persistence';
 import { WalletOrigin } from './model/WalletOrigin';
-import type { GlobalPreferences } from './GlobalPreferences';
+import { globalPreferences } from './GlobalPreferences';
 import type { State as GlobalPreferencesState } from './GlobalPreferences';
 import type { Device, DeviceAccount } from './model/AccountContainer';
 import { DeviceAccountContainer } from './model/AccountContainer';
@@ -118,7 +118,6 @@ export class Wallet {
   public publicEthereumController: PublicController;
   private userCredentials: Credentials | null;
   private seedPhraseExpiryTimerId: NodeJS.Timeout | number = 0;
-  private globalPreferences: GlobalPreferences;
   private pendingWallet: PendingWallet | null = null;
   private record: WalletRecord | null;
 
@@ -134,7 +133,6 @@ export class Wallet {
   constructor(
     id: string,
     userCredentials: Credentials | null,
-    globalPreferences: GlobalPreferences,
     notificationWindow: NotificationWindow
   ) {
     this.store = new Store({ chainId: '0x1' });
@@ -142,9 +140,8 @@ export class Wallet {
 
     this.id = id;
     this.walletStore = new WalletStore({}, 'wallet');
-    this.globalPreferences = globalPreferences;
     this.disposer.add(
-      this.globalPreferences.on('change', (state, prevState) => {
+      globalPreferences.on('change', (state, prevState) => {
         emitter.emit('globalPreferencesChange', state, prevState);
       })
     );
@@ -705,8 +702,8 @@ export class Wallet {
 
   async getGlobalPreferences({ context }: WalletMethodParams) {
     this.verifyInternalOrigin(context);
-    await this.globalPreferences.ready();
-    return this.globalPreferences.getPreferences();
+    await globalPreferences.ready();
+    return globalPreferences.getPreferences();
   }
 
   async setGlobalPreferences({
@@ -714,8 +711,8 @@ export class Wallet {
     params: { preferences },
   }: WalletMethodParams<{ preferences: Partial<GlobalPreferencesState> }>) {
     this.verifyInternalOrigin(context);
-    await this.globalPreferences.ready();
-    return this.globalPreferences.setPreferences(preferences);
+    await globalPreferences.ready();
+    return globalPreferences.setPreferences(preferences);
   }
 
   async getFeedInfo({

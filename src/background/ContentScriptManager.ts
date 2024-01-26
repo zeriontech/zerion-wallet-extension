@@ -2,7 +2,10 @@ import browser from 'webextension-polyfill';
 import { createNanoEvents } from 'nanoevents';
 import { produce } from 'immer';
 import { isTruthy } from 'is-truthy-ts';
-import type { GlobalPreferences } from './Wallet/GlobalPreferences';
+import {
+  globalPreferences,
+  type GlobalPreferences,
+} from './Wallet/GlobalPreferences';
 
 function difference<T>(a: T[], b: T[]) {
   const set = new Set(b);
@@ -56,7 +59,6 @@ function setPausedIcon() {
 }
 
 export class ContentScriptManager {
-  private globalPreferences: GlobalPreferences;
   private providerInjection: GlobalPreferences['state']['providerInjection'];
   static ALARM_NAME = 'provider-injection';
   static emitter = createNanoEvents<{ alarm: () => void }>();
@@ -67,8 +69,7 @@ export class ContentScriptManager {
     }
   }
 
-  constructor(globalPreferences: GlobalPreferences) {
-    this.globalPreferences = globalPreferences;
+  constructor() {
     ContentScriptManager.emitter.on('alarm', () => {
       this.removeExpiredRecords();
     });
@@ -76,7 +77,7 @@ export class ContentScriptManager {
 
   removeExpiredRecords() {
     const now = Date.now();
-    this.globalPreferences.setState((state) =>
+    globalPreferences.setState((state) =>
       produce(state, (draft) => {
         if (draft.providerInjection) {
           for (const key in draft.providerInjection) {
@@ -135,8 +136,8 @@ export class ContentScriptManager {
   activate() {
     // TODO: may be call this.removeExpiredRecords() here instead of outside
     this.handleChange();
-    this.globalPreferences.on('change', this.handleChange.bind(this));
-    this.globalPreferences.on('change', this.setAndDiscardAlarms.bind(this));
+    globalPreferences.on('change', this.handleChange.bind(this));
+    globalPreferences.on('change', this.setAndDiscardAlarms.bind(this));
     this.updateActionIcon();
   }
 
@@ -166,7 +167,7 @@ export class ContentScriptManager {
   }
 
   async handleChange() {
-    const { providerInjection } = await this.globalPreferences.getPreferences();
+    const { providerInjection } = await globalPreferences.getPreferences();
     if (providerInjection !== this.providerInjection) {
       this.providerInjection = providerInjection;
       this.update();

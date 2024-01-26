@@ -34,7 +34,7 @@ function SecurityMain() {
                     <UIText kind="small/regular" color="var(--neutral-500)">
                       {
                         AUTO_LOCK_TIMER_OPTIONS_TITLES[
-                          globalPreferences.autoLockTimer
+                          globalPreferences.autoLockTimeout
                         ]
                       }
                     </UIText>
