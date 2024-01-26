@@ -39,6 +39,7 @@ import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { invariant } from 'src/shared/invariant';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
+import { ethers } from 'ethers';
 import { useTransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import type { NetworkFeeConfiguration, NetworkFeeSpeed } from './types';
 import { NetworkFeeIcon } from './NetworkFeeIcon';
@@ -139,6 +140,7 @@ function CustomNetworkFeeForm({
   const defaultBaseFeeGWEI = weiToGwei(defaultBaseFee);
   const defaultPriorityFeeGWEI = weiToGwei(defaultPriorityFee);
   const defaultMaxFeeGWEI = weiToGwei(defaultMaxFee);
+  const defaultGas = ethers.BigNumber.from(getGas(transaction)).toString();
 
   const baseFee = configuration.customClassicGasPrice ?? defaultBaseFee;
   const priorityFee =
@@ -230,6 +232,16 @@ function CustomNetworkFeeForm({
               required={true}
             />
           </HStack>
+          <InnerLabelInput
+            inputMode="numeric"
+            label="Gas Limit"
+            name="gas"
+            placeholder="0"
+            style={{ border: '1px solid var(--neutral-400)' }}
+            defaultValue={defaultGas}
+            onChange={setPatternValidity}
+            required={true}
+          />
           <VStack gap={8}>
             <HStack gap={24} justifyContent="space-between">
               <UIText kind="small/regular">Expected Fee</UIText>
