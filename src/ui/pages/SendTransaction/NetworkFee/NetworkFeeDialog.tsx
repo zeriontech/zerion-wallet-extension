@@ -1,6 +1,10 @@
 import React, { useMemo, useRef, useState } from 'react';
 import type { BigNumber } from 'bignumber.js';
 import { ethers } from 'ethers';
+import type {
+  NetworkFeeConfiguration,
+  NetworkFeeSpeed,
+} from '@zeriontech/transactions';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import {
@@ -42,10 +46,6 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
 import { useEstimateGas } from 'src/modules/ethereum/transactions/useEstimateGas';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import type {
-  NetworkFeeConfiguration,
-  NetworkFeeSpeed,
-} from '@zeriontech/transactions/lib/shared/user-configuration/types';
 import { useTransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import { NetworkFeeIcon } from './NetworkFeeIcon';
 import { NETWORK_SPEED_TO_TITLE } from './constants';

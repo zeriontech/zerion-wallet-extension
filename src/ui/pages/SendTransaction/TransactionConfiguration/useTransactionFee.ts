@@ -3,6 +3,11 @@ import type { Asset } from 'defi-sdk';
 import { isTruthy } from 'is-truthy-ts';
 import { ethers } from 'ethers';
 import { useQuery } from '@tanstack/react-query';
+import BigNumber from 'bignumber.js';
+import type {
+  EIP1559,
+  NetworkFeeConfiguration,
+} from '@zeriontech/transactions';
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { useNativeAsset } from 'src/ui/shared/requests/useNativeAsset';
 import { useNativeBalance } from 'src/ui/shared/requests/useNativeBalance';
@@ -20,11 +25,6 @@ import { getDecimals } from 'src/modules/networks/asset';
 import { baseToCommon, commonToBase } from 'src/shared/units/convert';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import type { Networks } from 'src/modules/networks/Networks';
-import BigNumber from 'bignumber.js';
-import type {
-  EIP1559,
-  NetworkFeeConfiguration,
-} from '@zeriontech/transactions/lib/shared/user-configuration/types';
 
 function getGasPriceFromTransaction(
   transaction: IncomingTransaction

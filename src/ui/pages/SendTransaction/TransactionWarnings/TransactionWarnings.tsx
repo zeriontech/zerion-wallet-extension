@@ -1,9 +1,9 @@
 import React from 'react';
+import type { AddressAction } from 'defi-sdk';
+import type { NetworkFeeConfiguration } from '@zeriontech/transactions';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { Chain } from 'src/modules/networks/Chain';
 import type { IncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction';
-import type { AddressAction } from 'defi-sdk';
-import type { NetworkFeeConfiguration } from '@zeriontech/transactions/lib/shared/user-configuration/types';
 import { InsufficientFundsWarning } from './InsufficientFundsWarning';
 import { TransactionWarning } from './TransactionWarning';
 

@@ -1,4 +1,4 @@
-import type { EIP1559 } from '@zeriontech/transactions/lib/shared/user-configuration/types';
+import type { EIP1559 } from '@zeriontech/transactions';
 import type { EIP1559Base } from '../EIP1559';
 import type { EIP1559GasPrices } from '../requests';
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import type { CustomConfiguration } from '@zeriontech/transactions';
 import type { IncomingTransactionWithChainId } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -11,7 +12,6 @@ import { TransactionConfiguration } from 'src/ui/pages/SendTransaction/Transacti
 import { UIText } from 'src/ui/ui-kit/UIText';
 import LedgerIcon from 'jsx:src/ui/assets/ledger-icon.svg';
 import { isDeviceAccount } from 'src/shared/types/validators';
-import type { CustomConfiguration } from '@zeriontech/transactions/lib/shared/user-configuration/types';
 import { WalletAvatar } from '../../WalletAvatar';
 import { WalletDisplayName } from '../../WalletDisplayName';
 import { TransactionSimulation } from '../TransactionSimulation';

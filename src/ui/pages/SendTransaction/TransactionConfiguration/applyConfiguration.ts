@@ -1,9 +1,9 @@
 import { produce } from 'immer';
+import type { CustomConfiguration } from '@zeriontech/transactions';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/requests';
 import { assignGasPrice } from 'src/modules/ethereum/transactions/gasPrices/assignGasPrice';
 import { assignGasLimit } from 'src/modules/ethereum/transactions/assignGasLimit';
-import type { CustomConfiguration } from '@zeriontech/transactions/lib/shared/user-configuration/types';
 
 export const DEFAULT_CONFIGURATION: CustomConfiguration = {
   slippage: 0.005,

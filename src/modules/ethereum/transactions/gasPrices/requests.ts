@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import { client, mergeSingleEntity } from 'defi-sdk';
-import type { EIP1559 } from '@zeriontech/transactions/lib/shared/user-configuration/types';
+import type { EIP1559 } from '@zeriontech/transactions';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 import type { Chain } from 'src/modules/networks/Chain';
 import { sendRpcRequest } from 'src/shared/custom-rpc/rpc-request';
