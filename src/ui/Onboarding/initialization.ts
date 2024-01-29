@@ -1,5 +1,5 @@
-import browser from 'webextension-polyfill';
 import { getCurrentUser } from 'src/shared/getCurrentUser';
+import { openOnboarding } from 'src/shared/openOnboarding';
 import { pageTemplateType } from '../shared/getPageTemplateName';
 import { OnboardingInterrupt } from './errors';
 
@@ -11,11 +11,7 @@ export async function maybeOpenOboarding() {
   const userHasWallets = Boolean(currentUser);
   if (isPopup && !userHasWallets) {
     const url = new URL('../popup.html', import.meta.url);
-    url.searchParams.append('templateType', 'tab');
-    url.searchParams.append('context', 'onboarding');
-    browser.tabs.create({
-      url: url.toString(),
-    });
+    openOnboarding(url);
     throw new OnboardingInterrupt();
   }
   const mode =

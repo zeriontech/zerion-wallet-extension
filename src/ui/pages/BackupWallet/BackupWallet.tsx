@@ -36,6 +36,7 @@ import {
   isPrivateKeyContainer,
   isSignerContainer,
 } from 'src/shared/types/validators';
+import { isSessionExpiredError } from 'src/ui/Onboarding/shared/isSessionExpiredError';
 import { WithConfetti } from '../GetStarted/components/DecorativeMessage/DecorativeMessage';
 import { DecorativeMessage } from '../GetStarted/components/DecorativeMessage';
 import { clipboardWarning } from './clipboardWarning';
@@ -133,14 +134,20 @@ function RevealSecret({
   address,
   backupKind,
   onSubmit,
+  onSessionExpired,
 }: {
   seedType: SeedType;
   groupId: string;
   address: string | null;
   backupKind: BackupKind;
   onSubmit: ({ didCopy }: { didCopy: boolean }) => void;
+  onSessionExpired(): void;
 }) {
-  const { data: secretValue, isLoading } = useSecretValue({
+  const {
+    data: secretValue,
+    isLoading,
+    error,
+  } = useSecretValue({
     groupId,
     address,
     seedType,
@@ -154,6 +161,11 @@ function RevealSecret({
     handleCopy();
   };
   useEffect(() => {
+    if (isSessionExpiredError(error)) {
+      onSessionExpired();
+    }
+  }, [error, onSessionExpired]);
+  useEffect(() => {
     // listen to copy event. If it occurred on this view,
     // we will clear clipboard before navigating to next view
     const handler = () => {
@@ -166,6 +178,9 @@ function RevealSecret({
     return <ViewLoading />;
   }
   if (!secretValue) {
+    if (isSessionExpiredError(error)) {
+      return null;
+    }
     throw new Error('Could not get mnemonic');
   }
   const isMnemonic = seedType === SeedType.mnemonic;
@@ -503,6 +518,9 @@ export function BackupWallet() {
           address={address}
           seedType={seedType}
           backupKind={backupKind}
+          onSessionExpired={() => {
+            updateSearchParam('step', 'verifyUser', { replace: true });
+          }}
           onSubmit={({ didCopy }) => {
             if (didCopy && seedType === SeedType.mnemonic) {
               emptyClipboard();
