@@ -13,9 +13,9 @@ import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTML
 import type { Chain } from 'src/modules/networks/Chain';
 import type { IncomingTransactionWithFrom } from 'src/modules/ethereum/types/IncomingTransaction';
 import { useNetworks } from 'src/modules/networks/useNetworks';
+import type { NetworkFeeConfiguration } from '@zeriontech/transactions/lib/shared/user-configuration/types';
 import type { TransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import { NetworkFeeDialog } from './NetworkFeeDialog';
-import type { NetworkFeeConfiguration } from './types';
 import { NETWORK_SPEED_TO_TITLE } from './constants';
 
 function getFeeTypeTitle(type: keyof ChainGasPrice['info'] | undefined) {

@@ -15,14 +15,16 @@ import type {
 import type { GasPriceObject } from 'src/modules/ethereum/transactions/gasPrices/GasPriceObject';
 import type { EstimatedFeeValue } from 'src/modules/ethereum/transactions/gasPrices/estimateNetworkFee';
 import { getNetworkFeeEstimation } from 'src/modules/ethereum/transactions/gasPrices/feeEstimation';
-import type { EIP1559 } from 'src/modules/ethereum/transactions/gasPrices/EIP1559';
 import { formatSeconds } from 'src/shared/units/formatSeconds';
 import { getDecimals } from 'src/modules/networks/asset';
 import { baseToCommon, commonToBase } from 'src/shared/units/convert';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import type { Networks } from 'src/modules/networks/Networks';
 import BigNumber from 'bignumber.js';
-import type { NetworkFeeConfiguration } from '../NetworkFee/types';
+import type {
+  EIP1559,
+  NetworkFeeConfiguration,
+} from '@zeriontech/transactions/lib/shared/user-configuration/types';
 
 function getGasPriceFromTransaction(
   transaction: IncomingTransaction

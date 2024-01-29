@@ -1,12 +1,12 @@
 import { ethers } from 'ethers';
 import { client, mergeSingleEntity } from 'defi-sdk';
+import type { EIP1559 } from '@zeriontech/transactions/lib/shared/user-configuration/types';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 import type { Chain } from 'src/modules/networks/Chain';
 import { sendRpcRequest } from 'src/shared/custom-rpc/rpc-request';
 import type { Networks } from 'src/modules/networks/Networks';
 import { SLOW_MODE } from 'src/env/config';
 import { wait } from 'src/shared/wait';
-import type { EIP1559 } from './EIP1559';
 
 export interface OptimisticGasPriceInfo {
   l1?: number;

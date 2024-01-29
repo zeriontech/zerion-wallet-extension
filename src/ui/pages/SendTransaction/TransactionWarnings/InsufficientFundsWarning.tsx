@@ -3,7 +3,7 @@ import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTra
 import type { Chain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
-import type { NetworkFeeConfiguration } from '../NetworkFee/types';
+import type { NetworkFeeConfiguration } from '@zeriontech/transactions/lib/shared/user-configuration/types';
 import { useTransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import { TransactionWarning } from './TransactionWarning';
 

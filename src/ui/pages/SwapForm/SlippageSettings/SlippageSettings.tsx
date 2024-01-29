@@ -9,7 +9,7 @@ import { Surface } from 'src/ui/ui-kit/Surface';
 import { apostrophe } from 'src/ui/shared/typography';
 import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
 import { isNumeric } from 'src/shared/isNumeric';
-import type { CustomConfiguration } from '../../SendTransaction/TransactionConfiguration';
+import type { CustomConfiguration } from '@zeriontech/transactions/lib/shared/user-configuration/types';
 import * as styles from './styles.module.css';
 
 function Radio({

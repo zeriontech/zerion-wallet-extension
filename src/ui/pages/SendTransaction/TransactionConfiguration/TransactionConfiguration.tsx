@@ -4,19 +4,13 @@ import type { Chain } from 'src/modules/networks/Chain';
 import { usePreferences } from 'src/ui/features/preferences';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
+import type { CustomConfiguration } from '@zeriontech/transactions/lib/shared/user-configuration/types';
 import { NetworkFee } from '../NetworkFee';
 import { NonceLine } from '../NonceLine';
 import { TotalLine } from '../TotalLine';
-import type { NetworkFeeConfiguration } from '../NetworkFee/types';
 import { useTransactionFee } from './useTransactionFee';
 
 const DISPLAY_TOTAL = false;
-
-export interface CustomConfiguration {
-  slippage: number;
-  nonce: string | null;
-  networkFee: NetworkFeeConfiguration;
-}
 
 export function TransactionConfiguration({
   transaction: incomingTransaction,

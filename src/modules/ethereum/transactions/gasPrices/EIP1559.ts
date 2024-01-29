@@ -1,8 +1,4 @@
-export interface EIP1559 {
-  estimation_seconds?: number;
-  max_fee: number;
-  priority_fee: number;
-}
+import type { EIP1559 } from '@zeriontech/transactions/lib/shared/user-configuration/types';
 
 export type EIP1559Base = EIP1559 & {
   base_fee: number;
