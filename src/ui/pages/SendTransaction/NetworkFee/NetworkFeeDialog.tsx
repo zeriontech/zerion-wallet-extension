@@ -321,7 +321,7 @@ function CustomNetworkFeeForm({
                 </UnstyledButton>
                 .
                 {showLowGasLimitWarning
-                  ? `We don${apostrophe}t recommend using a gas limit significantly lower than the estimated value.`
+                  ? ` We don${apostrophe}t recommend using a gas limit significantly lower than the estimated value.`
                   : null}
               </UIText>
             ) : null}
@@ -550,17 +550,7 @@ export const NetworkFeeDialog = React.forwardRef<
           <>
             <DialogTitle
               alignTitle="start"
-              title={
-                <HStack gap={8} alignItems="center">
-                  <UIText kind="headline/h3">Network Fee</UIText>
-                  {/* <div
-                  style={{ display: 'flex' }}
-                  title={`The fee required to successfully conduct a transaction on the ${chain.toString()} blockchain`}
-                >
-                  <QuestionHintIcon style={{ color: 'var(--neutral-500)' }} />
-                </div> */}
-                </HStack>
-              }
+              title={<UIText kind="headline/h3">Network Fee</UIText>}
               closeKind="icon"
             />
             <Spacer height={10} />
