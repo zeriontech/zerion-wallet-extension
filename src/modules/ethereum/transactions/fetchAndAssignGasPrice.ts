@@ -4,7 +4,6 @@ import omit from 'lodash/omit';
 import type { Networks } from 'src/modules/networks/Networks';
 import { sendRpcRequest } from 'src/shared/custom-rpc/rpc-request';
 import { createChain } from 'src/modules/networks/Chain';
-import { valueToHex } from 'src/shared/units/valueToHex';
 import type { IncomingTransaction } from '../types/IncomingTransaction';
 import { assignChainGasPrice } from './gasPrices/assignGasPrice';
 import { hasNetworkFee } from './gasPrices/hasNetworkFee';
@@ -13,6 +12,7 @@ import type { ChainGasPrice } from './gasPrices/requests';
 import { fetchGasPrice } from './gasPrices/requests';
 import { wrappedGetNetworkById } from './wrappedGetNetworkById';
 import { resolveChainId } from './resolveChainId';
+import { hexifyTxValues } from './gasPrices/hexifyTxValues';
 
 function add10Percent(value: number) {
   return Math.round(value * 1.1); // result must be an integer
@@ -27,21 +27,11 @@ export async function estimateGas(
   const { result } = await sendRpcRequest<string>(rpcUrl, {
     method: 'eth_estimateGas',
     params: [
-      omit(
-        {
-          ...transaction,
-          chainId: chainIdHex,
-          value:
-            transaction.value != null
-              ? valueToHex(transaction.value)
-              : undefined,
-        },
-        [
-          'gas', // error on Aurora if gas: 0x0, so we omit it
-          'nonce', // error on Polygon if nonce is int, but we don't need it at all
-          'gasPrice', // error on Avalanche about maxFee being less than baseFee, event though only gasPrice in tx
-        ]
-      ),
+      omit({ ...hexifyTxValues(transaction), chainId: chainIdHex }, [
+        'gas', // error on Aurora if gas: 0x0, so we omit it
+        'nonce', // error on Polygon if nonce is int, but we don't need it at all
+        'gasPrice', // error on Avalanche about maxFee being less than baseFee, event though only gasPrice in tx
+      ]),
     ],
   });
 

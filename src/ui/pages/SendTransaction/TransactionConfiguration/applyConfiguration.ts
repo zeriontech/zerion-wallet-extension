@@ -1,9 +1,9 @@
 import { produce } from 'immer';
 import type { CustomConfiguration } from '@zeriontech/transactions';
+import { valueToHex } from 'src/shared/units/valueToHex';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/requests';
 import { assignGasPrice } from 'src/modules/ethereum/transactions/gasPrices/assignGasPrice';
-import { assignGasLimit } from 'src/modules/ethereum/transactions/assignGasLimit';
 
 export const DEFAULT_CONFIGURATION: CustomConfiguration = {
   slippage: 0.005,
@@ -28,7 +28,8 @@ export function applyConfiguration<T extends IncomingTransaction>(
     }
     if (networkFee.speed === 'custom') {
       if (networkFee.gasLimit) {
-        assignGasLimit(draft, networkFee.gasLimit);
+        draft.gas = valueToHex(networkFee.gasLimit);
+        draft.gasLimit = valueToHex(networkFee.gasLimit);
       }
       if (networkFee.custom1559GasPrice || networkFee.customClassicGasPrice) {
         assignGasPrice(draft, {

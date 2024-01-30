@@ -1,6 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import type { BigNumber } from 'bignumber.js';
-import { ethers } from 'ethers';
+import { BigNumber } from 'bignumber.js';
 import type {
   NetworkFeeConfiguration,
   NetworkFeeSpeed,
@@ -43,9 +42,13 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { invariant } from 'src/shared/invariant';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
-import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
+import {
+  FLOAT_INPUT_PATTERN,
+  INT_INPUT_PATTERN,
+} from 'src/ui/shared/forms/inputs';
 import { useEstimateGas } from 'src/modules/ethereum/transactions/useEstimateGas';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { apostrophe } from 'src/ui/shared/typography';
 import { useTransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import { NetworkFeeIcon } from './NetworkFeeIcon';
 import { NETWORK_SPEED_TO_TITLE } from './constants';
@@ -142,6 +145,7 @@ function CustomNetworkFeeForm({
     { transaction }
   );
 
+  const formRef = useRef<HTMLFormElement | null>(null);
   const defaultBaseFee = value.customClassicGasPrice ?? classic?.fast ?? 0;
   const defaultPriorityFee =
     value.custom1559GasPrice?.priority_fee ?? eip1559?.fast?.priority_fee ?? 0;
@@ -151,7 +155,10 @@ function CustomNetworkFeeForm({
   const defaultBaseFeeGWEI = weiToGwei(defaultBaseFee);
   const defaultPriorityFeeGWEI = weiToGwei(defaultPriorityFee);
   const defaultMaxFeeGWEI = weiToGwei(defaultMaxFee);
-  const defaultGas = ethers.BigNumber.from(getGas(transaction)).toString();
+  const transactionGasLimit = new BigNumber(
+    Number(getGas(transaction))
+  ).toFixed();
+  const defaultGas = value.gasLimit || transactionGasLimit;
 
   const baseFee = configuration.customClassicGasPrice ?? defaultBaseFee;
   const priorityFee =
@@ -186,6 +193,7 @@ function CustomNetworkFeeForm({
 
   return (
     <form
+      ref={formRef}
       style={{
         height: '100%',
         position: 'relative',
@@ -258,7 +266,7 @@ function CustomNetworkFeeForm({
                   </UIText>
                   <div
                     style={{ display: 'flex', color: 'var(--neutral-600)' }}
-                    title="Specifies the maximum amount of computational work you're willing to pay for a transaction or contract interaction"
+                    title={`Specifies the maximum amount of computational work you${apostrophe}re willing to pay for a transaction or contract interaction`}
                   >
                     <QuestionHintIcon />
                   </div>
@@ -271,7 +279,8 @@ function CustomNetworkFeeForm({
                   ? '1px solid var(--notice-500)'
                   : '1px solid var(--neutral-400)',
               }}
-              value={gasLimit}
+              defaultValue={gasLimit}
+              pattern={INT_INPUT_PATTERN}
               onChange={(e) => setGasLimit(e.target.value)}
               required={true}
               ref={gasLimitInputRef}
@@ -282,7 +291,7 @@ function CustomNetworkFeeForm({
                 color="var(--negative-500)"
                 style={{ paddingInline: 2 }}
               >
-                Can't estimate transaction recommended gas limit
+                Can{apostrophe}t estimate transaction recommended gas limit
               </UIText>
             ) : gasEstimation ? (
               <UIText
@@ -298,11 +307,22 @@ function CustomNetworkFeeForm({
                 <UnstyledButton
                   type="button"
                   style={{ color: 'var(--primary)' }}
-                  onClick={() => setGasLimit(String(gasEstimation))}
+                  onClick={() => {
+                    if (formRef.current) {
+                      setFormValue(
+                        formRef.current,
+                        'gasLimit',
+                        String(gasEstimation)
+                      );
+                    }
+                  }}
                 >
                   {gasEstimation}
                 </UnstyledButton>
                 .
+                {showLowGasLimitWarning
+                  ? `We don${apostrophe}t recommend using a gas limit significantly lower than the estimated value.`
+                  : null}
               </UIText>
             ) : null}
           </VStack>
@@ -373,6 +393,7 @@ function CustomNetworkFeeForm({
               const maxFee = weiToGwei(eip1559?.fast?.max_fee || 0);
               setFormValue(form, 'maxFee', maxFee);
             }
+            setFormValue(form, 'gasLimit', transactionGasLimit);
             setConfiguration(formDataToGasConfiguration(new FormData(form)));
           }}
         >
