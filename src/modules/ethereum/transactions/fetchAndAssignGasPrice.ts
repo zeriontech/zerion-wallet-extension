@@ -34,7 +34,6 @@ export async function estimateGas(
       ]),
     ],
   });
-
   return add10Percent(parseInt(result));
 }
 

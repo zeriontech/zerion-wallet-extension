@@ -79,7 +79,7 @@ function formDataToGasConfiguration(
     return {
       speed: 'custom',
       custom1559GasPrice: null,
-      gasLimit: null,
+      gasLimit,
       customClassicGasPrice: gweiToWei(baseFee),
     };
   } else {
