@@ -6,7 +6,7 @@ import { removeEmptyValues } from 'src/shared/removeEmptyValues';
 import { equal } from 'src/modules/fast-deep-equal';
 import type { WalletNameFlag } from './model/WalletNameFlag';
 
-const ONE_DAY = 1000 * 60 * 60 * 24;
+const HALF_DAY = 1000 * 60 * 60 * 12;
 
 interface Expiration {
   /**
@@ -25,7 +25,7 @@ export interface State {
   recognizableConnectButtons?: boolean;
   providerInjection?: ProviderInjection;
   walletNameFlags?: Record<string, WalletNameFlag[]>;
-  autoLockTimeout?: number;
+  autoLockTimeout?: number | 'none';
 }
 
 /**
@@ -40,7 +40,7 @@ export class GlobalPreferences extends PersistentStore<State> {
     recognizableConnectButtons: true,
     providerInjection: {},
     walletNameFlags: {},
-    autoLockTimeout: ONE_DAY,
+    autoLockTimeout: HALF_DAY,
   };
 
   private async fetchDefaultWalletNameFlags() {

@@ -36,8 +36,11 @@ async function getIdleTimeout() {
 export async function handleAlarm(alarm: browser.Alarms.Alarm) {
   if (alarm.name === 'lastActiveCheck') {
     const lastActive = await getLastActive();
-    const idleTimeout = await getIdleTimeout();
-    if (idleTimeout && lastActive && Date.now() - lastActive > idleTimeout) {
+    const autoLockTimeout = await getIdleTimeout();
+    if (autoLockTimeout === 'none') {
+      return;
+    }
+    if (lastActive && Date.now() - lastActive > autoLockTimeout) {
       emitter.emit('sessionExpired');
     }
   }

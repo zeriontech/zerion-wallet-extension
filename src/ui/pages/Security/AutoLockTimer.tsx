@@ -1,4 +1,5 @@
 import React from 'react';
+import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -12,23 +13,29 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 
 const DEBUG_SPEED_UP = true;
 
-const AUTO_LOCK_TIMER_OPTIONS_PROD: { title: string; value: number }[] = [
+const AUTO_LOCK_TIMER_OPTIONS_PROD: {
+  title: string;
+  value: GlobalPreferences['autoLockTimeout'];
+}[] = [
   { title: '1 Minute', value: 1000 * 60 },
   { title: '10 Minutes', value: 1000 * 60 * 10 },
   { title: '1 Hour', value: 1000 * 60 * 60 },
   { title: '12 Hours', value: 1000 * 60 * 60 * 12 },
   { title: '24 Hours', value: 1000 * 60 * 60 * 24 },
-  { title: 'None', value: 0 },
+  { title: 'None', value: 'none' },
 ];
 
-const AUTO_LOCK_TIMER_OPTIONS_DEBUG: { title: string; value: number }[] = [
+const AUTO_LOCK_TIMER_OPTIONS_DEBUG: {
+  title: string;
+  value: GlobalPreferences['autoLockTimeout'];
+}[] = [
   { title: '1 Minute', value: 1000 * 60 },
   { title: '2 Minutes', value: 1000 * 60 * 2 },
   { title: '3 Minutes', value: 1000 * 60 * 3 },
   { title: '5 Minutes', value: 1000 * 60 * 5 },
   { title: '10 Minutes', value: 1000 * 60 * 10 },
   { title: '24 Hours', value: 1000 * 60 * 60 * 24 },
-  { title: 'None', value: 0 },
+  { title: 'None', value: 'none' },
 ];
 
 const AUTO_LOCK_TIMER_OPTIONS = DEBUG_SPEED_UP
