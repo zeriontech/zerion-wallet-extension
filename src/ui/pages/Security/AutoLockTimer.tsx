@@ -34,7 +34,7 @@ const AUTO_LOCK_TIMER_OPTIONS_DEBUG: {
   { title: '3 Minutes', value: 1000 * 60 * 3 },
   { title: '5 Minutes', value: 1000 * 60 * 5 },
   { title: '10 Minutes', value: 1000 * 60 * 10 },
-  { title: '24 Hours', value: 1000 * 60 * 60 * 24 },
+  { title: '12 Hours', value: 1000 * 60 * 60 * 12 },
   { title: 'None', value: 'none' },
 ];
 
