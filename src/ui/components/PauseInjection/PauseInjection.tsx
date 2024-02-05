@@ -19,8 +19,8 @@ import type { SubmitData } from './actions';
 import {
   TESTING,
   TurnOffDuration,
-  createPreference,
-  disablePreference,
+  createInjectionPreference,
+  disableInjectionPreference,
 } from './actions';
 
 function PauseInjectionDialog({
@@ -171,7 +171,7 @@ export function PauseInjectionControl() {
               activeTabUrl={tabUrl || null}
               onSubmit={(formData) => {
                 setGlobalPreferences(
-                  createPreference(globalPreferences, formData)
+                  createInjectionPreference(globalPreferences, formData)
                 ).then(reloadActiveTab);
                 handleDialogDismiss();
               }}
@@ -281,7 +281,7 @@ export function PausedHeader() {
         }}
         onClick={() =>
           setGlobalPreferences(
-            disablePreference(globalPreferences, pattern)
+            disableInjectionPreference(globalPreferences, pattern)
           ).then(reloadActiveTab)
         }
       >

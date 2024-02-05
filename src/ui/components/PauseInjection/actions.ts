@@ -33,7 +33,7 @@ function calculateExpires(duration: TurnOffDuration) {
   throw new Error('Unexpected duration enum');
 }
 
-export function createPreference(
+export function createInjectionPreference(
   globalPreferences: GlobalPreferences,
   formData: SubmitData
 ): Pick<GlobalPreferences, 'providerInjection'> {
@@ -47,7 +47,7 @@ export function createPreference(
   };
 }
 
-export function disablePreference(
+export function disableInjectionPreference(
   globalPreferences: GlobalPreferences,
   pattern: string | null
 ): Pick<GlobalPreferences, 'providerInjection'> {

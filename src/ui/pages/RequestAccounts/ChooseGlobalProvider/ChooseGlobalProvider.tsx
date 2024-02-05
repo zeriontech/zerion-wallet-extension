@@ -8,7 +8,7 @@ import { useBackgroundKind } from 'src/ui/components/Background/Background';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import {
   TurnOffDuration,
-  createPreference,
+  createInjectionPreference,
 } from 'src/ui/components/PauseInjection/actions';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -65,7 +65,7 @@ export function ChooseGlobalProvider({
                 kind="regular"
                 onClick={async () => {
                   await setGlobalPreferencesAsync(
-                    createPreference(globalPreferences, {
+                    createInjectionPreference(globalPreferences, {
                       origin,
                       duration: TurnOffDuration.forever,
                     })
