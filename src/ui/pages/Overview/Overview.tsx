@@ -278,13 +278,7 @@ function OverviewComponent() {
           paddingInline: 0,
         }}
       >
-        <div
-          style={{ backgroundColor: 'var(--background)', paddingInline: 16 }}
-        >
-          <Spacer height={16} />
-          <ConnectionHeader />
-          <Spacer height={16} />
-        </div>
+        <ConnectionHeader />
         <div style={{ backgroundColor: 'var(--white)' }}>
           <Spacer height={16} />
           <div

@@ -69,8 +69,11 @@ export function ConnectionHeader() {
     ? isConnectableDapp(new URL(activeTabOrigin))
     : false;
 
+  if (!isConnectableSite && !showPausedHeader) {
+    return null;
+  }
   return (
-    <>
+    <div style={{ backgroundColor: 'var(--background)', padding: 16 }}>
       <BottomSheetDialog
         ref={dialogRef}
         height="fit-content"
@@ -274,6 +277,6 @@ export function ConnectionHeader() {
         )}
         <PauseInjectionControl />
       </HStack>
-    </>
+    </div>
   );
 }

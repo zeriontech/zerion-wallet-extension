@@ -7,7 +7,6 @@ import type {
 import { formatJsonRpcRequest, isJsonRpcError } from '@json-rpc-tools/utils';
 import { InvalidParams, MethodNotImplemented } from 'src/shared/errors/errors';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
-import { isObj } from 'src/shared/isObj';
 import type { Connection } from './connection';
 
 function accountsEquals(arr1: string[], arr2: string[]) {

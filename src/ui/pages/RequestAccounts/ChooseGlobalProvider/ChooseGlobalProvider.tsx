@@ -5,9 +5,6 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import ZerionLogo from 'jsx:src/ui/assets/zerion-logo-squircle-white.svg';
 import { useBackgroundKind } from 'src/ui/components/Background/Background';
-import { PageBottom } from 'src/ui/components/PageBottom';
-import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
-import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import {
   TurnOffDuration,
@@ -47,13 +44,13 @@ export function ChooseGlobalProvider({
             alignSelf: 'center',
             border: '1px solid var(--neutral-200)',
             borderRadius: 24,
-            padding: 24,
+            padding: 40,
           }}
         >
           <VStack gap={24}>
-            <UIText kind="headline/h2">
-              <div>Choose a wallet to connect to</div>
-              <div style={{ textAlign: 'center', color: 'var(--neutral-500)' }}>
+            <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
+              <div>Connect to</div>
+              <div style={{ color: 'var(--neutral-500)' }}>
                 {new URL(origin).hostname}
               </div>
             </UIText>
@@ -76,18 +73,12 @@ export function ChooseGlobalProvider({
                   onReject();
                 }}
               >
-                Use Other (will reload dapp)
+                Use Other Wallet
               </Button>
             </VStack>
-            <UIText
-              kind="body/accent"
-              color="var(--neutral-500)"
-              style={{ textAlign: 'center' }}
-            >
-              You can always change this later inside Zerion Wallet
-            </UIText>
           </VStack>
         </div>
+        {/*
         <div style={{ textAlign: 'center' }}>
           <UIText
             kind="small/accent"
@@ -103,6 +94,7 @@ export function ChooseGlobalProvider({
           </UIText>
           <PageBottom />
         </div>
+        */}
       </div>
     </PageColumn>
   );
