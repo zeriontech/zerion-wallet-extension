@@ -63,6 +63,7 @@ import { ERC20_ALLOWANCE_ABI } from 'src/modules/ethereum/abi/allowance-abi';
 import type { Quote } from 'src/shared/types/Quote';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { Disposable } from 'src/shared/Disposable';
+import { getWalletNameFlagsByOrigin } from 'src/shared/preferences-helpers';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -1597,7 +1598,7 @@ class PublicController {
        */
       context: INTERNAL_SYMBOL_CONTEXT,
     });
-    return preferences.walletNameFlags[origin] || [];
+    return getWalletNameFlagsByOrigin(preferences, origin);
   }
 
   async wallet_getGlobalPreferences({ context: _context }: PublicMethodParams) {

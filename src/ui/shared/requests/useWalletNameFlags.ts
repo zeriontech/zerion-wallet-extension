@@ -1,9 +1,12 @@
 import { produce } from 'immer';
-import { useMemo } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { pushUnique, removeFromArray } from 'src/shared/array-mutations';
-import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
+import type { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
+import {
+  getWalletNameFlagsByOrigin,
+  isMetamaskModeOn,
+} from 'src/shared/preferences-helpers';
 
 export function useWalletNameFlags(tabOrigin?: string) {
   const { globalPreferences, query, mutation } = useGlobalPreferences();
@@ -20,14 +23,19 @@ export function useWalletNameFlags(tabOrigin?: string) {
         if (!draft || !tabOrigin) {
           return;
         }
-        if (draft.walletNameFlags[tabOrigin]) {
-          if (checked) {
-            pushUnique(draft.walletNameFlags[tabOrigin], flag);
+        const value = draft.walletNameFlags[tabOrigin];
+        if (checked) {
+          if (value) {
+            pushUnique(value, flag);
           } else {
-            removeFromArray(draft.walletNameFlags[tabOrigin], flag);
+            draft.walletNameFlags[tabOrigin] = [flag];
           }
-        } else if (checked) {
-          draft.walletNameFlags = { [tabOrigin]: [flag] };
+        } else {
+          if (value) {
+            removeFromArray(value, flag);
+          } else {
+            draft.walletNameFlags[tabOrigin] = [];
+          }
         }
       });
       if (updatedPreferences) {
@@ -36,21 +44,17 @@ export function useWalletNameFlags(tabOrigin?: string) {
     },
   });
 
-  const isMetaMask = useMemo(() => {
-    if (!tabOrigin) {
-      return false;
-    }
-    return Boolean(
-      globalPreferences?.walletNameFlags[tabOrigin]?.includes(
-        WalletNameFlag.isMetaMask
-      )
-    );
-  }, [globalPreferences, tabOrigin]);
+  const walletNameFlags =
+    globalPreferences && tabOrigin
+      ? getWalletNameFlagsByOrigin(globalPreferences, tabOrigin)
+      : null;
+
+  const isMetaMask = walletNameFlags
+    ? isMetamaskModeOn(walletNameFlags)
+    : false;
 
   return {
-    walletNameFlags: tabOrigin
-      ? globalPreferences?.walletNameFlags[tabOrigin] || []
-      : undefined,
+    walletNameFlags,
     isLoading: query.isLoading,
     setWalletNameFlags,
     isMetaMask,

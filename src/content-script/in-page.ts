@@ -1,7 +1,7 @@
 import { EthereumProvider } from 'src/modules/ethereum/provider';
 import { Connection } from 'src/modules/ethereum/connection';
-import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
+import { isMetamaskModeOn } from 'src/shared/preferences-helpers';
 import { pageObserver } from './dapp-mutation';
 import * as dappDetection from './dapp-detection';
 import * as competingProviders from './competing-providers';
@@ -68,7 +68,11 @@ window.ethereum = proxiedProvider;
 
 dappDetection.onChange(({ dappIsZerionAware }) => {
   if (dappIsZerionAware) {
-    pageObserver.stop();
+    // Some libs (such as rainbow) access "isZerion" flag
+    // to filter out wallets, and it doesn't mean the dapp is showing
+    // the connect button for Zerion specifically. This is why we
+    // do not turn off the page observer. But we might change this later.
+    // pageObserver.stop();
   }
 });
 
@@ -110,14 +114,23 @@ provider
     }
   });
 
+/**
+ * Current strategy:
+ * window.ethereum provider should:
+ *   Appear as metamask by default
+ *   if user explicitly disables this, then appear as zerion
+ */
+provider.markAsMetamask();
 provider
   .request({
     method: 'wallet_getWalletNameFlags',
     params: { origin: window.location.origin },
   })
   .then((result) => {
-    if (result.includes(WalletNameFlag.isMetaMask)) {
+    if (isMetamaskModeOn(result)) {
       provider.markAsMetamask();
+    } else {
+      provider.unmarkAsMetamask();
     }
   });
 

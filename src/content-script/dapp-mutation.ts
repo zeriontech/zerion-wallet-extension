@@ -300,9 +300,10 @@ async function observeAndUpdatePageButtons() {
 class PageObserver {
   private unlisten: null | (() => void) = null;
   private isStarting = false;
+  private startPromise?: Promise<void> = undefined;
   isObserving = false;
 
-  async start() {
+  private async startObserving() {
     if (this.isObserving || this.isStarting) {
       return;
     }
@@ -312,7 +313,15 @@ class PageObserver {
     this.isObserving = true;
   }
 
-  stop() {
+  async start() {
+    this.startPromise = this.startObserving();
+    await this.startPromise;
+  }
+
+  async stop() {
+    if (this.isStarting) {
+      await this.startPromise;
+    }
     this.unlisten?.();
     this.isObserving = false;
     this.unlisten = null;

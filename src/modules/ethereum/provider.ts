@@ -53,7 +53,7 @@ export class EthereumProvider extends JsonRpcProvider {
   networkVersion: string;
   isZerion = true;
   isMetaMask?: boolean;
-  // Metamask provides this proxy with few experimantal functions
+  // Metamask provides this proxy with few experimental functions
   // Some dapps rely on it's methods (e.g. app.hop.exchange)
   _metamask?: MetamaskExperimentalNamespace;
   connection: Connection;
@@ -113,6 +113,10 @@ export class EthereumProvider extends JsonRpcProvider {
   markAsMetamask() {
     this.isMetaMask = true;
     this._metamask = new MetamaskExperimentalNamespace();
+  }
+
+  unmarkAsMetamask() {
+    this.isMetaMask = false;
   }
 
   private async _prepareState() {
