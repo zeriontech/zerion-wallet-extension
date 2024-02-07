@@ -1,0 +1,15 @@
+.buttonOption {
+  --nft-option-box-shadow: 0px 0px 0px 2px
+      var(--box-backgound-color, var(--white)),
+    0px 0px 0px 4px var(--primary);
+}
+
+@media (hover: hover) {
+  .buttonOption:hover {
+    box-shadow: var(--nft-option-box-shadow);
+  }
+}
+
+.highlighted {
+  box-shadow: var(--nft-option-box-shadow);
+}

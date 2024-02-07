@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import type { AddressNFT } from 'defi-sdk';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import TickIcon from 'jsx:src/ui/assets/check.svg';
 import { ViewLoading } from 'src/ui/components/ViewLoading/ViewLoading';
@@ -19,7 +20,6 @@ import {
   getNftId,
   useAddressNfts,
 } from 'src/ui/shared/requests/addressNfts/useAddressNfts';
-import type { AddressNFT } from 'src/ui/shared/requests/addressNfts/types';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';

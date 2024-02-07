@@ -1,5 +1,5 @@
 import { capitalize } from 'capitalize-ts';
-import type { AddressAction, Asset } from 'defi-sdk';
+import type { AddressAction, Asset, NFT, NFTAsset } from 'defi-sdk';
 import type { BigNumberish, BytesLike } from 'ethers';
 import { ethers } from 'ethers';
 import type { Networks } from 'src/modules/networks/Networks';
@@ -68,6 +68,33 @@ const toActionTx = (tx: IncomingTransaction, chain: Chain) =>
     nonce: -1,
   } as const);
 
+function isAsset(x: Asset | NFT): x is Asset {
+  return 'asset_code' in x && 'decimals' in x && 'symbol' in x;
+}
+function isNFT(x: Asset | NFT): x is NFT {
+  return 'contract_address' in x && 'token_id' in x;
+}
+
+function toNftAsset(x: NFT): NFTAsset {
+  return {
+    ...x,
+    asset_code: `${x.contract_address}:${x.token_id}`,
+    name: x.metadata.name,
+    symbol: '',
+    preview: { url: null, meta: null },
+    detail: { url: null, meta: null },
+    interface: x.contract_standard,
+    type: 'nft',
+    price: null,
+    icon_url: null,
+    is_verified: false,
+    collection_info: null,
+    tags: null,
+    floor_price: x.prices.converted?.floor_price ?? 0,
+    last_price: 0,
+  };
+}
+
 export function createSendAddressAction({
   transaction,
   asset,
@@ -75,7 +102,7 @@ export function createSendAddressAction({
   chain,
 }: {
   transaction: IncomingTransactionWithFrom;
-  asset: Asset;
+  asset: Asset | NFT;
   quantity: string;
   chain: Chain;
 }): LocalAddressAction {
@@ -88,13 +115,23 @@ export function createSendAddressAction({
     transaction: toActionTx(transaction, chain),
     content: {
       transfers: {
-        outgoing: [
-          {
-            asset: { fungible: asset },
-            quantity,
-            price: asset.price?.value ?? null,
-          },
-        ],
+        outgoing: isAsset(asset)
+          ? [
+              {
+                asset: { fungible: asset },
+                quantity,
+                price: asset.price?.value ?? null,
+              },
+            ]
+          : isNFT(asset)
+          ? [
+              {
+                asset: { nft: toNftAsset(asset) },
+                quantity,
+                price: asset.prices.converted?.floor_price ?? null,
+              },
+            ]
+          : [],
         incoming: [],
       },
     },

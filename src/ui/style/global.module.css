@@ -112,6 +112,12 @@ body.isDialog:not(.fullScreen) {
   }
 }
 
+@media (hover: hover) {
+  :global(.hover\:color-primary):hover {
+    color: var(--primary);
+  }
+}
+
 input::placeholder {
   color: var(--neutral-500);
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { animated, useTrail } from '@react-spring/web';
-import type { SendFormState, FormPosition } from '@zeriontech/transactions';
+import type { SendFormState, SendFormView } from '@zeriontech/transactions';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import CheckIcon from 'jsx:src/ui/assets/check-circle-thin.svg';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
@@ -15,24 +15,31 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
+import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { TransferVisualization } from '../TransferVisualization';
+
+export interface SendFormSnapshot {
+  state: SendFormState;
+  tokenItem: SendFormView['tokenItem'];
+  nftItem: SendFormView['nftItem'];
+}
 
 export function SuccessState({
   paddingTop = 64,
-  sendFormState,
-  tokenItem,
+  sendFormSnapshot,
   hash,
   onDone,
 }: {
   paddingTop?: number;
-  tokenItem: FormPosition;
-  sendFormState: SendFormState;
+  sendFormSnapshot: SendFormSnapshot;
   hash: string | null;
   onDone: () => void;
 }) {
   const { networks } = useNetworks();
-  const { tokenChain, to, tokenValue } = sendFormState;
-  invariant(to && tokenChain, 'Required Form values are missing');
+  const { tokenItem, nftItem, state } = sendFormSnapshot;
+  const { type, tokenChain, nftChain, to, tokenValue } = state;
+  const currentChain = type === 'token' ? tokenChain : nftChain;
+  invariant(to && currentChain, 'Required Form values are missing');
   const trail = useTrail(3, {
     config: { tension: 400 },
     from: {
@@ -47,10 +54,11 @@ export function SuccessState({
   if (!networks) {
     return <ViewLoading />;
   }
-  const chain = createChain(tokenChain);
+  const chain = createChain(currentChain);
   const chainName = networks.getChainName(chain);
   return (
     <PageColumn>
+      <NavigationTitle urlBar="none" title="Send Success" />
       <Spacer height={paddingTop} />
       <animated.div style={trail[0]}>
         <CheckIcon
@@ -86,13 +94,23 @@ export function SuccessState({
         </div>
       </animated.div>
       <Spacer height={32} />
-      <animated.div style={trail[2]}>
-        <TransferVisualization
-          tokenItem={tokenItem}
-          to={to}
-          amount={tokenValue ?? '0'}
-        />
-      </animated.div>
+      {type === 'token' && tokenItem ? (
+        <animated.div style={trail[2]}>
+          <TransferVisualization
+            tokenItem={tokenItem}
+            to={to}
+            amount={tokenValue ?? '0'}
+          />
+        </animated.div>
+      ) : type === 'nft' && nftItem ? (
+        <animated.div style={trail[2]}>
+          <TransferVisualization
+            nftItem={nftItem}
+            to={to}
+            amount={tokenValue ?? '0'}
+          />
+        </animated.div>
+      ) : null}
       <PageBottom />
       <VStack gap={16} style={{ marginTop: 'auto', textAlign: 'center' }}>
         {hash ? (
