@@ -45,7 +45,7 @@ export function SendTransactionConfirmation({
 
   return (
     <TransactionConfirmationView
-      title={'Send'}
+      title="Send"
       wallet={wallet}
       chain={chain}
       transaction={transaction as IncomingTransactionWithChainId}

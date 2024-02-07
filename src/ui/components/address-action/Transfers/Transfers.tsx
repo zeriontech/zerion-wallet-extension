@@ -118,6 +118,11 @@ function TransferItemNFT({
         <UIText
           kind="headline/h3"
           color={direction === 'in' ? 'var(--positive-500)' : 'var(--black)'}
+          style={{
+            textOverflow: 'ellipsis',
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
+          }}
         >
           <NFTLink nft={nft} />
         </UIText>

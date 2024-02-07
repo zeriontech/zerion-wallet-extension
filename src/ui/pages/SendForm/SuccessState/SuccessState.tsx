@@ -15,6 +15,7 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
+import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { TransferVisualization } from '../TransferVisualization';
 
 export interface SendFormSnapshot {
@@ -57,6 +58,7 @@ export function SuccessState({
   const chainName = networks.getChainName(chain);
   return (
     <PageColumn>
+      <NavigationTitle urlBar="none" title="Send Success" />
       <Spacer height={paddingTop} />
       <animated.div style={trail[0]}>
         <CheckIcon

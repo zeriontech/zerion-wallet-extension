@@ -381,7 +381,7 @@ export function SendForm() {
                 onChange={() => sendView.handleChange('type', 'nft')}
                 checked={type === 'nft'}
               >
-                NFTs
+                NFT
               </SegmentedControlRadio>
             </SegmentedControlGroup>
           ) : null}

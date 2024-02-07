@@ -33,7 +33,6 @@ import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Media } from 'src/ui/ui-kit/Media';
-import { NBSP } from 'src/ui/shared/typography';
 import { Button } from 'src/ui/ui-kit/Button';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import * as styles from './styles.module.css';
@@ -198,7 +197,7 @@ function NFTSelect({
   const assetExistsOnChain = value && value.chain === chain.toString();
   const displayName = value
     ? value.metadata.name || `#${value.token_id}`
-    : 'No Item Selected';
+    : 'Select NFT';
 
   return (
     <>
@@ -210,7 +209,7 @@ function NFTSelect({
           renderWhenOpen={() => (
             <>
               <DialogTitle
-                title={<UIText kind="headline/h3">Send</UIText>}
+                title={<UIText kind="headline/h3">Choose NFT</UIText>}
                 alignTitle="start"
               />
               <Spacer height={24} />
@@ -270,14 +269,14 @@ function NFTSelect({
             }}
           >
             <HStack gap={8} alignItems="center">
-              {}
               <HStack
                 gap={4}
                 alignItems="center"
                 style={{
                   gridTemplateColumns: 'auto',
                   textAlign: 'start',
-                  fontSize: displayName.length || 0 > 8 ? '0.8em' : undefined,
+                  fontSize:
+                    (displayName.length || 0) > 11 ? '0.8em' : undefined,
                 }}
               >
                 <span
@@ -411,11 +410,7 @@ export function NftTransferInput({
                           {itemBalance ? formatTokenValue(itemBalance) : 'n/a'}
                         </UnstyledButton>
                       </UIText>
-                    ) : (
-                      <UIText kind="small/regular" color="var(--neutral-600)">
-                        {NBSP}
-                      </UIText>
-                    )
+                    ) : null
                   }
                 />
               ) : null}
