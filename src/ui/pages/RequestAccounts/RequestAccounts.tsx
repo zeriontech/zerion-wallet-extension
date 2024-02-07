@@ -34,7 +34,9 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { DeviceAccount } from 'src/shared/types/Device';
+import { reloadTabsByOrigin } from 'src/ui/shared/reloadActiveTab';
 import { WalletList } from '../WalletSelect/WalletList';
+import { ChooseGlobalProvider } from './ChooseGlobalProvider';
 
 function WalletSelectDialog({
   value,
@@ -262,9 +264,14 @@ export function RequestAccounts() {
   const [params] = useSearchParams();
   const origin = params.get('origin');
   const windowId = params.get('windowId');
+  const nonEip6963Request = params.get('nonEip6963Request') === 'yes';
 
   invariant(origin, 'origin get-parameter is required');
   invariant(windowId, 'windowId get-parameter is required');
+
+  const [step, setStep] = useState<'choose-global-provider' | 'main'>(
+    nonEip6963Request ? 'choose-global-provider' : 'main'
+  );
 
   const walletGroupsQuery = useQuery({
     queryKey: ['wallet/uiGetWalletGroups'],
@@ -309,13 +316,24 @@ export function RequestAccounts() {
   return (
     <>
       <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
-      <RequestAccountsView
-        wallet={wallet}
-        walletGroups={walletGroupsQuery.data}
-        origin={origin}
-        onConfirm={handleConfirm}
-        onReject={handleReject}
-      />
+      {step === 'choose-global-provider' ? (
+        <ChooseGlobalProvider
+          origin={origin}
+          onConfirm={() => setStep('main')}
+          onReject={() => {
+            reloadTabsByOrigin({ origin });
+            handleReject();
+          }}
+        />
+      ) : (
+        <RequestAccountsView
+          wallet={wallet}
+          walletGroups={walletGroupsQuery.data}
+          origin={origin}
+          onConfirm={handleConfirm}
+          onReject={handleReject}
+        />
+      )}
     </>
   );
 }

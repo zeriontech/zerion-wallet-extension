@@ -29,8 +29,9 @@ import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { EmptyView } from 'src/ui/components/EmptyView';
 import { NftTabDnaBanner } from 'src/ui/DNA/components/DnaBanners';
+import { useStore } from '@store-unit/react';
 import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
-import { GROWN_TAB_MAX_HEIGHT } from '../getTabsOffset';
+import { getGrownTabMaxHeight, offsetValues } from '../getTabsOffset';
 import { NetworkBalance } from '../Positions/NetworkBalance';
 import * as s from './styles.module.css';
 
@@ -204,6 +205,8 @@ export function NonFungibleTokens({
     }
   );
 
+  const offsetValuesState = useStore(offsetValues);
+
   if (!ready) {
     return null;
   }
@@ -234,7 +237,9 @@ export function NonFungibleTokens({
 
   if (!isSupportedByBackend) {
     return (
-      <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
+      <CenteredFillViewportView
+        maxHeight={getGrownTabMaxHeight(offsetValuesState)}
+      >
         {emptyNetworkBalance}
         <VStack gap={4} style={{ padding: 20, textAlign: 'center' }}>
           <span style={{ fontSize: 20 }}>💔</span>
@@ -248,7 +253,9 @@ export function NonFungibleTokens({
 
   if (!items) {
     return (
-      <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
+      <CenteredFillViewportView
+        maxHeight={getGrownTabMaxHeight(offsetValuesState)}
+      >
         {emptyNetworkBalance}
         <ViewLoading kind="network" />
       </CenteredFillViewportView>
@@ -257,7 +264,9 @@ export function NonFungibleTokens({
 
   if (!items?.length) {
     return (
-      <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
+      <CenteredFillViewportView
+        maxHeight={getGrownTabMaxHeight(offsetValuesState)}
+      >
         {emptyNetworkBalance}
         <DelayedRender delay={100}>
           {isLoading && isSupportedByBackend ? (

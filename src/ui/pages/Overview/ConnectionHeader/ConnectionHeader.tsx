@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import SettingsIcon from 'jsx:src/ui/assets/filters.svg';
 import { invariant } from 'src/shared/invariant';
@@ -25,7 +25,9 @@ import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { ConnectedSiteDialog } from '../../ConnectedSites/ConnectedSite';
 import { NetworkSelect } from '../../Networks/NetworkSelect';
 import { isConnectableDapp } from '../../ConnectedSites/shared/isConnectableDapp';
+import { offsetValues } from '../getTabsOffset';
 
+const COMPONENT_HEIGHT = 68;
 export function ConnectionHeader() {
   const { isPaused, globalPreferences } = usePausedData();
   const { networks } = useNetworks();
@@ -69,8 +71,18 @@ export function ConnectionHeader() {
     ? isConnectableDapp(new URL(activeTabOrigin))
     : false;
 
+  const isHidden = !isConnectableSite && !showPausedHeader;
+  useEffect(() => {
+    offsetValues.setState({
+      connectionHeaderHeight: isHidden ? 0 : COMPONENT_HEIGHT,
+    });
+  }, [isHidden]);
+
+  if (isHidden) {
+    return null;
+  }
   return (
-    <>
+    <div style={{ backgroundColor: 'var(--background)', padding: 16 }}>
       <BottomSheetDialog
         ref={dialogRef}
         height="fit-content"
@@ -274,6 +286,6 @@ export function ConnectionHeader() {
         )}
         <PauseInjectionControl />
       </HStack>
-    </>
+    </div>
   );
 }

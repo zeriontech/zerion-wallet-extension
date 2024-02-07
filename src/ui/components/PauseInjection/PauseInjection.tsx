@@ -1,10 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { produce } from 'immer';
-import dayjs from 'dayjs';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from 'src/ui/ui-kit/Button';
-import ConnectionIconOn from 'jsx:src/ui/assets/connection-toggle-on.svg';
-import ConnectionIconOff from 'jsx:src/ui/assets/connection-toggle-off.svg';
+import ConnectionIconOn from 'jsx:src/ui/assets/pause-feature-on.svg';
+import ConnectionIconOff from 'jsx:src/ui/assets/pause-feature-off.svg';
 import CloseIcon from 'jsx:src/ui/assets/close.svg';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
@@ -15,25 +13,15 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { naiveFormDataToObject } from 'src/ui/shared/form-data';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
-import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
 import { reloadActiveTab } from 'src/ui/shared/reloadActiveTab';
-import { RadioCard } from 'src/ui/ui-kit/Radio/Radio';
-import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { ViewLoading } from '../ViewLoading';
-import * as styles from './styles.module.css';
-
-const TESTING = process.env.NODE_ENV !== 'production';
-
-enum TurnOffDuration {
-  oneHour,
-  untilTomorrow,
-  forever,
-}
-
-interface SubmitData {
-  origin: '<all_urls>' | string;
-  duration: TurnOffDuration;
-}
+import type { SubmitData } from './actions';
+import {
+  TESTING,
+  TurnOffDuration,
+  createInjectionPreference,
+  disableInjectionPreference,
+} from './actions';
 
 function PauseInjectionDialog({
   activeTabUrl,
@@ -42,35 +30,15 @@ function PauseInjectionDialog({
   activeTabUrl: URL | null;
   onSubmit: (data: SubmitData) => void;
 }) {
-  const options: Array<{
-    value: string;
-    subtitle: string;
-    title: string;
-    defaultChecked: boolean;
-  }> = [];
-
-  if (activeTabUrl) {
-    options.push({
-      value: activeTabUrl.origin,
-      subtitle: activeTabUrl.hostname,
-      title: 'Current Dapp',
-      defaultChecked: true,
-    });
-  }
-  options.push({
-    value: '<all_urls>',
-    subtitle: 'Disable for all',
-    title: 'Any Dapps',
-    defaultChecked: !activeTabUrl,
-  });
+  invariant(activeTabUrl != null, '`activeTabUrl` is required');
 
   const buttons = [
     {
       value: TurnOffDuration.oneHour,
-      label: `Pause for 1 Hour${TESTING ? ' (40 sec for testing)' : ''}`,
+      label: `For 1 Hour${TESTING ? ' (40 sec for testing)' : ''}`,
     },
-    { value: TurnOffDuration.untilTomorrow, label: 'Pause until Tomorrow' },
-    { value: TurnOffDuration.forever, label: 'Turn Off' },
+    // { value: TurnOffDuration.untilTomorrow, label: 'Pause until Tomorrow' },
+    { value: TurnOffDuration.forever, label: 'Forever' },
   ];
   const formRef = useRef<HTMLFormElement | null>(null);
   const onSubmitRef = useRef(onSubmit);
@@ -91,7 +59,10 @@ function PauseInjectionDialog({
         ),
         (key, value) => (key === 'duration' ? Number(value) : (value as string))
       );
-      onSubmitRef.current(data as unknown as SubmitData);
+      onSubmitRef.current({
+        origin: data.origin as string,
+        duration: data.duration as TurnOffDuration,
+      });
     }
     /**
      * NOTE: we add a 'submit' listener instead of using `onSubmit` prop
@@ -111,87 +82,31 @@ function PauseInjectionDialog({
         minHeight: '100%',
       }}
     >
-      <VStack gap={8} style={{ justifyItems: 'center', textAlign: 'center' }}>
-        <UIText kind="headline/h2">Wallet Visibility</UIText>
-        <UIText
-          kind="caption/regular"
-          color="var(--neutral-500)"
-          style={{ paddingInline: 32 }}
-        >
-          Pause Zerion for the current Dapp, or disable it entirely, allowing
-          you to use other wallet extensions
-        </UIText>
-      </VStack>
+      <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
+        Disable Zerion for
+        <br />
+        <span style={{ color: 'var(--neutral-500)', wordBreak: 'break-all' }}>
+          {activeTabUrl?.hostname}
+        </span>
+      </UIText>
       <form ref={formRef}>
-        <VStack gap={16}>
-          <HStack
-            gap={8}
-            style={{ width: '100%', gridTemplateColumns: '1fr 1fr' }}
-          >
-            {options.map((option) => (
-              <RadioCard
-                className={styles.radioCard}
-                key={option.value}
-                name="origin"
-                value={option.value}
-                defaultChecked={option.defaultChecked}
-                required={true}
-              >
-                <VStack gap={4} style={{ padding: '12px 16px' }}>
-                  <Spacer height={24} />
-                  <div className={styles.radioCardTitle}>
-                    <UIText kind="headline/h3">{option.title}</UIText>
-                  </div>
-                  <UIText
-                    kind="small/regular"
-                    title={option.subtitle}
-                    style={{
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {option.subtitle}
-                  </UIText>
-                </VStack>
-              </RadioCard>
-            ))}
-          </HStack>
-          <VStack gap={4}>
-            {buttons.map((button) => (
-              <Button
-                key={button.value}
-                size={48}
-                name="duration"
-                kind="neutral"
-                value={button.value}
-              >
-                <UIText kind="body/accent">{button.label}</UIText>
-              </Button>
-            ))}
-          </VStack>
+        <input type="hidden" name="origin" value={activeTabUrl.origin} />
+        <VStack gap={4}>
+          {buttons.map((button) => (
+            <Button
+              key={button.value}
+              size={48}
+              name="duration"
+              kind="neutral"
+              value={button.value}
+            >
+              <UIText kind="body/accent">{button.label}</UIText>
+            </Button>
+          ))}
         </VStack>
       </form>
     </VStack>
   );
-}
-
-function calculateExpires(duration: TurnOffDuration) {
-  if (duration === TurnOffDuration.oneHour) {
-    const FORTY_SECONDS = 1000 * 40;
-    const HOUR = 1000 * 60 * 60;
-    return Date.now() + (TESTING ? FORTY_SECONDS : HOUR);
-  } else if (duration === TurnOffDuration.untilTomorrow) {
-    const now = dayjs();
-    if (now.hour() < 3) {
-      return now.hour(9).valueOf(); // 9AM same day
-    } else {
-      return now.add(1, 'day').hour(9).valueOf(); // 9AM next day
-    }
-  } else if (duration === TurnOffDuration.forever) {
-    return null;
-  }
-  throw new Error('Unexpected duration enum');
 }
 
 export function usePausedData() {
@@ -223,34 +138,6 @@ export function usePausedData() {
   };
 }
 
-function createPreference(
-  globalPreferences: GlobalPreferences,
-  formData: SubmitData
-): Pick<GlobalPreferences, 'providerInjection'> {
-  return {
-    providerInjection: {
-      ...globalPreferences.providerInjection,
-      [formData.origin]: {
-        expires: calculateExpires(formData.duration),
-      },
-    },
-  };
-}
-
-function disablePreference(
-  globalPreferences: GlobalPreferences,
-  pattern: string | null
-): Pick<GlobalPreferences, 'providerInjection'> {
-  if (!globalPreferences.providerInjection || !pattern) {
-    return {};
-  }
-  return {
-    providerInjection: produce(globalPreferences.providerInjection, (draft) => {
-      delete draft[pattern];
-    }),
-  };
-}
-
 export function PauseInjectionControl() {
   const {
     isPaused,
@@ -274,7 +161,7 @@ export function PauseInjectionControl() {
     <>
       <BottomSheetDialog
         ref={dialogRef}
-        height={416}
+        height="fit-content"
         onClosed={handleDialogDismiss}
         containerStyle={{ backgroundColor: 'var(--z-index-0)' }}
       >
@@ -284,7 +171,7 @@ export function PauseInjectionControl() {
               activeTabUrl={tabUrl || null}
               onSubmit={(formData) => {
                 setGlobalPreferences(
-                  createPreference(globalPreferences, formData)
+                  createInjectionPreference(globalPreferences, formData)
                 ).then(reloadActiveTab);
                 handleDialogDismiss();
               }}
@@ -313,13 +200,7 @@ export function PauseInjectionControl() {
         size={36}
         type="button"
         title="Disable Wallet Provider"
-        style={{
-          padding: 8,
-          ['--button-background' as string]: 'var(--white)',
-          ['--button-background-hover' as string]: 'var(--white)',
-          ['--button-text-hover' as string]: 'var(--neutral-800)',
-          cursor: isPaused ? 'auto' : undefined,
-        }}
+        style={{ padding: 0, cursor: isPaused ? 'auto' : undefined }}
         disabled={isPaused}
         onClick={() => {
           invariant(dialogRef.current, 'Dialog element must be mounted');
@@ -330,8 +211,8 @@ export function PauseInjectionControl() {
         {React.createElement(isPaused ? ConnectionIconOff : ConnectionIconOn, {
           style: {
             display: 'block',
-            width: 20,
-            height: 20,
+            width: 36,
+            height: 36,
             color: isPausedForAll
               ? 'var(--notice-600)'
               : isPaused
@@ -368,7 +249,9 @@ export function PausedHeader() {
         alignItems="center"
         style={{ gridTemplateColumns: 'auto 1fr' }}
       >
-        <UIText kind="body/regular">Paused for</UIText>
+        <UIText kind="body/regular" color="var(--notice-500)">
+          Paused for
+        </UIText>
         {isPausedForAll ? (
           <UIText kind="body/accent" color="var(--notice-600)" inline={true}>
             All DApps
@@ -398,7 +281,7 @@ export function PausedHeader() {
         }}
         onClick={() =>
           setGlobalPreferences(
-            disablePreference(globalPreferences, pattern)
+            disableInjectionPreference(globalPreferences, pattern)
           ).then(reloadActiveTab)
         }
       >

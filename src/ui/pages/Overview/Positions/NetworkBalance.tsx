@@ -9,11 +9,10 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { useStore } from '@store-unit/react';
 import { NetworkSelect } from '../../Networks/NetworkSelect';
-import { TAB_OFFSET } from '../getTabsOffset';
+import { getTabScrollContentHeight, offsetValues } from '../getTabsOffset';
 import * as styles from './styles.module.css';
-
-const SCROLL_THRESHOLD = TAB_OFFSET - 8;
 
 export function NetworkBalance({
   value: totalValue,
@@ -28,6 +27,8 @@ export function NetworkBalance({
 }) {
   const { networks } = useNetworks();
   const [showWalletNameContent, setShowWalletNameContent] = useState(false);
+  const offsetValuesState = useStore(offsetValues);
+  const SCROLL_THRESHOLD = getTabScrollContentHeight(offsetValuesState) - 8;
 
   const network = dappChain
     ? networks?.getNetworkByName(createChain(dappChain))

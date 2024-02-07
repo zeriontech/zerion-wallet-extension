@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import { useAddressPortfolio } from 'defi-sdk';
 import { RenderArea } from 'react-area';
@@ -44,6 +44,7 @@ import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOri
 import { OverviewDnaBanners } from 'src/ui/DNA/components/DnaBanners';
 import { updateAddressDnaInfo } from 'src/modules/dna-service/dna.client';
 import { WalletSourceIcon } from 'src/ui/components/WalletSourceIcon';
+import { useStore } from '@store-unit/react';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -53,12 +54,13 @@ import { NonFungibleTokens } from './NonFungibleTokens';
 import { Positions } from './Positions';
 import { ActionButtonsRow } from './ActionButtonsRow';
 import {
-  MIN_TAB_CONTENT_HEIGHT,
   TAB_SELECTOR_HEIGHT,
-  TAB_STICKY_OFFSET,
+  getStickyOffset,
   TABS_OFFSET_METER_ID,
   TAB_TOP_PADDING,
-  getTabsOffset,
+  getCurrentTabsOffset,
+  offsetValues,
+  getMinTabContentHeight,
 } from './getTabsOffset';
 import { ConnectionHeader } from './ConnectionHeader';
 
@@ -216,16 +218,15 @@ function OverviewComponent() {
     { enabled: ready }
   );
 
-  const handleTabChange = useCallback(
-    (to: string) => {
-      const isActiveTabClicked = location.pathname === to;
-      window.scrollTo({
-        behavior: isActiveTabClicked ? 'smooth' : 'instant',
-        top: Math.min(window.scrollY, getTabsOffset()),
-      });
-    },
-    [location]
-  );
+  const offsetValuesState = useStore(offsetValues);
+
+  const handleTabChange = (to: string) => {
+    const isActiveTabClicked = location.pathname === to;
+    window.scrollTo({
+      behavior: isActiveTabClicked ? 'smooth' : 'instant',
+      top: Math.min(window.scrollY, getCurrentTabsOffset(offsetValuesState)),
+    });
+  };
 
   const { data: tabData } = useQuery({
     queryKey: ['activeTab/origin'],
@@ -255,7 +256,9 @@ function OverviewComponent() {
   const dappChain = isConnected ? siteChain?.toString() : null;
 
   const tabFallback = (
-    <CenteredFillViewportView maxHeight={MIN_TAB_CONTENT_HEIGHT}>
+    <CenteredFillViewportView
+      maxHeight={getMinTabContentHeight(offsetValuesState)}
+    >
       <DelayedRender delay={2000}>
         <ViewLoading kind="network" />
       </DelayedRender>
@@ -278,13 +281,7 @@ function OverviewComponent() {
           paddingInline: 0,
         }}
       >
-        <div
-          style={{ backgroundColor: 'var(--background)', paddingInline: 16 }}
-        >
-          <Spacer height={16} />
-          <ConnectionHeader />
-          <Spacer height={16} />
-        </div>
+        <ConnectionHeader />
         <div style={{ backgroundColor: 'var(--white)' }}>
           <Spacer height={16} />
           <div
@@ -382,7 +379,7 @@ function OverviewComponent() {
         paddingInline={false}
         style={{
           position: 'sticky',
-          top: TAB_STICKY_OFFSET,
+          top: getStickyOffset(offsetValuesState),
           zIndex: 'var(--max-layout-index)',
           backgroundColor: 'var(--background)',
         }}
@@ -451,7 +448,7 @@ function OverviewComponent() {
           ['--surface-background-color' as string]: 'var(--white)',
         }}
       >
-        <div style={{ minHeight: MIN_TAB_CONTENT_HEIGHT }}>
+        <div style={{ minHeight: getMinTabContentHeight(offsetValuesState) }}>
           <Routes>
             <Route
               path="/"
@@ -462,7 +459,9 @@ function OverviewComponent() {
                     style={{
                       height: TAB_TOP_PADDING,
                       position: 'sticky',
-                      top: TAB_STICKY_OFFSET + TAB_SELECTOR_HEIGHT,
+                      top:
+                        getStickyOffset(offsetValuesState) +
+                        TAB_SELECTOR_HEIGHT,
                       zIndex: 1,
                       backgroundColor: 'var(--white)',
                     }}

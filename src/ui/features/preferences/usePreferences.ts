@@ -59,5 +59,6 @@ export function useGlobalPreferences() {
     globalPreferences: query.data,
     mutation,
     setGlobalPreferences: mutation.mutate,
+    setGlobalPreferencesAsync: mutation.mutateAsync,
   };
 }

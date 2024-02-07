@@ -15,7 +15,12 @@ const info = {
   rdns: 'io.zerion.wallet',
 } satisfies EIP6963ProviderInfo;
 
-export function initializeEIP6963(provider: EthereumProvider) {
+type Options = { onRequestProvider: () => void };
+
+export function initializeEIP6963(
+  provider: EthereumProvider,
+  options?: Options
+) {
   const announceEvent = new CustomEvent('eip6963:announceProvider', {
     detail: Object.freeze({ info, provider }),
   });
@@ -23,5 +28,6 @@ export function initializeEIP6963(provider: EthereumProvider) {
 
   window.addEventListener('eip6963:requestProvider', () => {
     window.dispatchEvent(announceEvent);
+    options?.onRequestProvider();
   });
 }

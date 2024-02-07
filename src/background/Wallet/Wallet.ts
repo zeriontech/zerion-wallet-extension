@@ -1299,7 +1299,11 @@ class PublicController {
     }
   }
 
-  async eth_requestAccounts({ context, id }: PublicMethodParams) {
+  async eth_requestAccounts({
+    context,
+    id,
+    params,
+  }: PublicMethodParams<[] | [{ nonEip6963Request?: boolean }] | null>) {
     if (debugValue && process.env.NODE_ENV === 'development') {
       // eslint-disable-next-line no-console
       console.log('PublicController: eth_requestAccounts', debugValue);
@@ -1322,7 +1326,9 @@ class PublicController {
     return new Promise((resolve, reject) => {
       this.safeOpenDialogWindow(origin, {
         route: '/requestAccounts',
-        search: `?origin=${origin}`,
+        search: `?origin=${origin}&nonEip6963Request=${String(
+          params?.[0]?.nonEip6963Request ? 'yes' : 'no'
+        )}`,
         requestId: `${origin}:${id}`,
         onResolve: async ({
           address,
@@ -1629,7 +1635,7 @@ class PublicController {
   }: PublicMethodParams<[{ [name: string]: unknown }]>): Promise<
     Web3WalletPermission[]
   > {
-    await this.eth_requestAccounts({ context, id });
+    await this.eth_requestAccounts({ context, id, params: [] });
     return this.generatePermissionResponse(params);
   }
 
