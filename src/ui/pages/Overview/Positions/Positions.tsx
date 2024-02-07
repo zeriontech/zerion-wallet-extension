@@ -61,11 +61,13 @@ import { invariant } from 'src/shared/invariant';
 import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOrigin';
 import { SurfaceItemAnchor } from 'src/ui/ui-kit/SurfaceList';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
+import { useStore } from '@store-unit/react';
 import {
-  GROWN_TAB_MAX_HEIGHT,
   TAB_SELECTOR_HEIGHT,
-  TAB_STICKY_OFFSET,
   TAB_TOP_PADDING,
+  getGrownTabMaxHeight,
+  getStickyOffset,
+  offsetValues,
 } from '../getTabsOffset';
 import { DappLink } from './DappLink';
 import { NetworkBalance } from './NetworkBalance';
@@ -474,6 +476,7 @@ function PositionList({
 
   const groupType = PositionsGroupType.platform;
   const preparedPositions = usePreparedPositions({ items, groupType });
+  const offsetValuesState = useStore(offsetValues);
 
   return (
     <VStack gap={16}>
@@ -583,7 +586,9 @@ function PositionList({
                   paddingBottom: 4,
                   position: 'sticky',
                   top:
-                    TAB_STICKY_OFFSET + TAB_SELECTOR_HEIGHT + TAB_TOP_PADDING,
+                    getStickyOffset(offsetValuesState) +
+                    TAB_SELECTOR_HEIGHT +
+                    TAB_TOP_PADDING,
                   zIndex: 1,
                   backgroundColor: 'var(--white)',
                 }}
@@ -767,12 +772,15 @@ export function Positions({
   onChainChange: (value: string | null) => void;
 }) {
   const { ready, params, singleAddressNormalized } = useAddressParams();
+  const offsetValuesState = useStore(offsetValues);
   // Cheap perceived performance hack: render expensive Positions component later so that initial UI render is faster
   const readyToRender = useRenderDelay(16);
   const { networks } = useNetworks();
   if (!networks || !ready) {
     return (
-      <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
+      <CenteredFillViewportView
+        maxHeight={getGrownTabMaxHeight(offsetValuesState)}
+      >
         <DelayedRender delay={2000}>
           <ViewLoading kind="network" />
         </DelayedRender>
@@ -806,7 +814,9 @@ export function Positions({
   );
 
   const renderEmptyViewForNetwork = () => (
-    <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
+    <CenteredFillViewportView
+      maxHeight={getGrownTabMaxHeight(offsetValuesState)}
+    >
       {emptyNetworkBalance}
       <DelayedRender delay={50}>
         <EmptyView text="No assets yet" />
@@ -814,7 +824,9 @@ export function Positions({
     </CenteredFillViewportView>
   );
   const renderLoadingViewForNetwork = () => (
-    <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
+    <CenteredFillViewportView
+      maxHeight={getGrownTabMaxHeight(offsetValuesState)}
+    >
       {emptyNetworkBalance}
       <DelayedRender delay={50}>
         <ViewLoading kind="network" />
@@ -822,7 +834,9 @@ export function Positions({
     </CenteredFillViewportView>
   );
   const renderErrorViewForNetwork = (chainName: string) => (
-    <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
+    <CenteredFillViewportView
+      maxHeight={getGrownTabMaxHeight(offsetValuesState)}
+    >
       {emptyNetworkBalance}
       <VStack gap={4} style={{ padding: 20, textAlign: 'center' }}>
         <span style={{ fontSize: 20 }}>💔</span>

@@ -23,7 +23,12 @@ import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import AllNetworksIcon from 'jsx:src/ui/assets/network.svg';
 import CloseIcon from 'jsx:src/ui/assets/close_solid.svg';
 import { Button } from 'src/ui/ui-kit/Button';
-import { GROWN_TAB_MAX_HEIGHT, getTabsOffset } from '../Overview/getTabsOffset';
+import { useStore } from '@store-unit/react';
+import {
+  getCurrentTabsOffset,
+  getGrownTabMaxHeight,
+  offsetValues,
+} from '../Overview/getTabsOffset';
 import { ActionsList } from './ActionsList';
 import { ActionSearch } from './ActionSearch';
 import { isMatchForAllWords } from './matchSearcQuery';
@@ -177,6 +182,7 @@ function EmptyView({
 
 export function HistoryList() {
   const { networks } = useNetworks();
+  const offsetValuesState = useStore(offsetValues);
   const [filterChain, setFilterChain] = useState<string | null>(null);
   const chain =
     filterChain && filterChain !== NetworkSelectValue.All
@@ -214,7 +220,7 @@ export function HistoryList() {
           onFocus={() => {
             window.scrollTo({
               behavior: 'smooth',
-              top: getTabsOffset(),
+              top: getCurrentTabsOffset(offsetValuesState),
             });
           }}
         />
@@ -273,7 +279,9 @@ export function HistoryList() {
 
   if (!transactions?.length) {
     return (
-      <CenteredFillViewportView maxHeight={GROWN_TAB_MAX_HEIGHT}>
+      <CenteredFillViewportView
+        maxHeight={getGrownTabMaxHeight(offsetValuesState)}
+      >
         <div style={{ position: 'absolute', width: '100%' }}>
           {actionFilters}
         </div>
