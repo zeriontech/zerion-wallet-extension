@@ -11,7 +11,7 @@ import { SurfaceItemLabel, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 
-const DEBUG_SPEED_UP = true;
+const DEBUG_SPEED_UP = process.env.NODE_ENV === 'development';
 
 const AUTO_LOCK_TIMER_OPTIONS_PROD: {
   title: string;
