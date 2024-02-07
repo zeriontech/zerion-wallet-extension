@@ -93,7 +93,7 @@ export function useApproveHandler({
     staleTime: Infinity,
     keepPreviousData: true,
     suspense: false,
-    enabled: allowanceQuery.isSuccess && !enough,
+    enabled: Boolean(allowanceQuery.isSuccess && spender && !enough),
     // enabled: false,
   });
 
