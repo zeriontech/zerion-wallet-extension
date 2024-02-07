@@ -19,6 +19,7 @@ import GlobeIcon from 'jsx:src/ui/assets/globe.svg';
 import SettingsIcon from 'jsx:src/ui/assets/settings.svg';
 import DarkModeLampIcon from 'jsx:src/ui/assets/dark-mode-lamp.svg';
 import NetworksIcon from 'jsx:src/ui/assets/network.svg';
+import SecurityIcon from 'jsx:src/ui/assets/security.svg';
 import { version } from 'src/shared/packageVersion';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { apostrophe } from 'src/ui/shared/typography';
@@ -30,6 +31,7 @@ import { SettingsDnaBanners } from 'src/ui/DNA/components/DnaBanners';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { BugReportButton } from 'src/ui/components/BugReportButton';
 import { BackupFlowSettingsSection } from '../BackupWallet/BackupSettingsItem';
+import { Security } from '../Security';
 
 function SettingsMain() {
   const { singleAddressNormalized } = useAddressParams();
@@ -94,6 +96,18 @@ function SettingsMain() {
             },
             {
               key: 5,
+              to: '/settings/security',
+              component: (
+                <AngleRightRow>
+                  <HStack gap={8} alignItems="center">
+                    <SecurityIcon />
+                    <UIText kind="body/regular">Security</UIText>
+                  </HStack>
+                </AngleRightRow>
+              ),
+            },
+            {
+              key: 6,
               to: '/settings/user-preferences',
               component: (
                 <AngleRightRow>
@@ -105,13 +119,13 @@ function SettingsMain() {
               ),
             },
             {
-              key: 6,
+              key: 7,
               pad: false,
               style: { paddingInline: 0 },
               component: <BugReportButton />,
             },
             {
-              key: 7,
+              key: 8,
               onClick: async () => {
                 await logout.mutateAsync();
                 navigate('/login');
@@ -257,6 +271,14 @@ export function Settings() {
         element={
           <ViewSuspense>
             <AppearancePage />
+          </ViewSuspense>
+        }
+      />
+      <Route
+        path="/security/*"
+        element={
+          <ViewSuspense>
+            <Security />
           </ViewSuspense>
         }
       />

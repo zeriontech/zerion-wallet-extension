@@ -116,19 +116,13 @@ browser.alarms.onAlarm.addListener(ContentScriptManager.handleAlarm);
 
 console.time('bg initialize'); // eslint-disable-line no-console
 initialize().then((values) => {
-  const {
-    account,
-    accountPublicRPC,
-    dnaService,
-    globalPreferences,
-    notificationWindow,
-  } = values;
+  const { account, accountPublicRPC, dnaService, notificationWindow } = values;
   console.timeEnd('bg initialize'); // eslint-disable-line no-console
   notifyContentScriptsAndUIAboutInitialization();
   // const httpConnection = new HttpConnection(() => account.getCurrentWallet());
   const memoryCacheRPC = new MemoryCacheRPC();
 
-  new ContentScriptManager(globalPreferences).removeExpiredRecords().activate();
+  new ContentScriptManager().removeExpiredRecords().activate();
 
   portRegistry.addMessageHandler(
     createWalletMessageHandler(() => account.getCurrentWallet())
