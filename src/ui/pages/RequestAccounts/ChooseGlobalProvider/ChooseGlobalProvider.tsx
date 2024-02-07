@@ -70,6 +70,8 @@ export function ChooseGlobalProvider({
                       duration: TurnOffDuration.forever,
                     })
                   );
+                  // Give ContentScriptManager time to update
+                  await new Promise((r) => setTimeout(r, 100));
                   onReject();
                 }}
               >

@@ -24,8 +24,8 @@ interface ProviderInjection {
 export interface State {
   recognizableConnectButtons?: boolean;
   providerInjection?: ProviderInjection;
-  walletNameFlags?: Record<string, WalletNameFlag[]>;
   autoLockTimeout?: number | 'none';
+  walletNameFlags?: Record<string, WalletNameFlag[] | undefined>;
 }
 
 /**
@@ -102,8 +102,10 @@ export class GlobalPreferences extends PersistentStore<State> {
       // we need to remove all empty walletNameFlags configs if they don't override default settings
       for (const origin in valueWithoutDefaults.walletNameFlags) {
         if (
-          (!valueWithoutDefaults.walletNameFlags[origin].length &&
-            !(origin in this.defaults.walletNameFlags)) ||
+          // Next two lines are commented out because we changed
+          // the default value. Empty arrays must kept as a user-set "off" value.
+          // (!valueWithoutDefaults.walletNameFlags[origin]?.length &&
+          //   !(origin in this.defaults.walletNameFlags)) ||
           equal(
             valueWithoutDefaults.walletNameFlags[origin],
             this.defaults.walletNameFlags[origin]
