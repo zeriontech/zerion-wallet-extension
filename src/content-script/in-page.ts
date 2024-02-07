@@ -42,28 +42,30 @@ dappDetection.initialize(provider);
 dappDetection.onBeforeAssignToWindow(window.ethereum);
 
 /**
- * Create Proxy to overwrite `eth_requestAccounts` method so that the background script
+ * Create a proxy object to overwrite all provider methods so that the background script
  * knows when the request is made using window.ethereum vs using EIP-6963
+ * Originally I tried to use the Proxy global, but for some reason
+ * on https://stargate.finance/ this lead to "max call stack" error.
+ * The following monkey-patch approach seems to work everywhere.
  */
-const proxiedProvider = new Proxy(provider, {
-  get(target, prop, receiver) {
-    if (typeof target[prop as keyof typeof target] === 'function') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (...args: any[]) => {
-        if (competingProviders.hasOtherProviders()) {
-          provider.nonEip6963Request = true;
-        }
+const proxiedProvider = Object.create(provider);
+for (const untypedKey in provider) {
+  const key = untypedKey as keyof typeof provider;
+  if (typeof provider[key] === 'function') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    proxiedProvider[key] = (...args: any[]) => {
+      if (competingProviders.hasOtherProviders()) {
+        provider.nonEip6963Request = true;
+      }
 
-        // @ts-ignore
-        const result = target[prop](...args);
-        provider.nonEip6963Request = false;
-        return result;
-      };
-    } else {
-      return Reflect.get(target, prop, receiver);
-    }
-  },
-});
+      // eslint-disable-next-line @typescript-eslint/ban-types
+      const result = (provider[key] as Function)(...args);
+      provider.nonEip6963Request = false;
+      return result;
+    };
+  }
+}
+
 window.ethereum = proxiedProvider;
 
 dappDetection.onChange(({ dappIsZerionAware }) => {
