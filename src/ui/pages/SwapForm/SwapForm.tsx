@@ -233,10 +233,6 @@ export function SwapForm() {
     return { ...txToSign, from: address, chainId };
   });
 
-  const [allowanceQuantityBase, setAllowanceQuantityBase] = useState(
-    UNLIMITED_APPROVAL_AMOUNT.toFixed()
-  );
-
   const spendAmountBase = useMemo(
     () =>
       spendInput && spendPosition && chain
@@ -247,6 +243,12 @@ export function SwapForm() {
         : null,
     [chain, spendInput, spendPosition]
   );
+
+  const [allowanceQuantityBase, setAllowanceQuantityBase] =
+    useState(spendAmountBase);
+
+  useEffect(() => setAllowanceQuantityBase(spendAmountBase), [spendAmountBase]);
+
   const contractAddress =
     spendPosition && chain
       ? getAddress({ asset: spendPosition.asset, chain }) ?? null
@@ -536,7 +538,7 @@ export function SwapForm() {
                 chain={chain}
                 transaction={configureTransactionToBeSigned(currentTransaction)}
                 configuration={swapView.store.configuration.getState()}
-                localAllowanceQuantityBase={allowanceQuantityBase}
+                localAllowanceQuantityBase={allowanceQuantityBase || undefined}
                 onOpenAllowanceForm={() =>
                   allowanceDialogRef.current?.showModal()
                 }
@@ -558,6 +560,10 @@ export function SwapForm() {
           invariant(
             spendPosition?.quantity,
             'Spend position quantity must be defined'
+          );
+          invariant(
+            allowanceQuantityBase,
+            'Allowance quantity must be defined'
           );
           const value = new BigNumber(allowanceQuantityBase);
           const positionBalanceCommon = getPositionBalance(spendPosition);

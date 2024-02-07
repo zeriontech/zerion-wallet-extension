@@ -19,7 +19,7 @@ export function useApproveHandler({
 }: {
   address: string;
   spendAmountBase: string | null;
-  allowanceQuantityBase: string;
+  allowanceQuantityBase: string | null;
   contractAddress: string | null;
   spender: string | null;
   chain: Chain | null;
@@ -53,11 +53,15 @@ export function useApproveHandler({
   });
   const allowance = allowanceQuery.data;
   const enough = useMemo(() => {
-    if (allowance == null || spendAmountBase == null) {
+    if (
+      allowance == null ||
+      spendAmountBase == null ||
+      allowanceQuantityBase == null
+    ) {
       return true;
     }
     return new BigNumber(allowance).gte(spendAmountBase);
-  }, [allowance, spendAmountBase]);
+  }, [allowance, spendAmountBase, allowanceQuantityBase]);
 
   const approvalTransactionQuery = useQuery({
     queryKey: [
@@ -70,7 +74,7 @@ export function useApproveHandler({
     ],
     queryFn: async () => {
       invariant(
-        contractAddress && spender && chain,
+        contractAddress && spender && chain && allowanceQuantityBase,
         'Allowance params are missing'
       );
       const approveTx = await walletPort.request('createApprovalTransaction', {
