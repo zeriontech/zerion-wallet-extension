@@ -12,9 +12,10 @@ function difference<T>(a: T[], b: T[]) {
   return a.filter((value) => !set.has(value));
 }
 
-function setActiveIcon() {
+function setActiveIcon({ tabId }: { tabId?: number }) {
   if (process.env.NODE_ENV === 'development') {
     browser.action.setIcon({
+      tabId,
       path: new URL(
         `../images/logo-icon-dev-128.png`,
         import.meta.url
@@ -22,6 +23,7 @@ function setActiveIcon() {
     });
   } else {
     browser.action.setIcon({
+      tabId,
       path: {
         16: new URL(`../images/logo-icon-16.png`, import.meta.url).toString(),
         32: new URL(`../images/logo-icon-32.png`, import.meta.url).toString(),
@@ -30,11 +32,12 @@ function setActiveIcon() {
       },
     });
   }
-  browser.action.setBadgeText({ text: '' });
+  browser.action.setBadgeText({ tabId, text: '' });
 }
 
-function setPausedIcon() {
+function setPausedIcon({ tabId }: { tabId?: number }) {
   browser.action.setIcon({
+    tabId,
     path: {
       16: new URL(
         `../images/logo-icon-16-disabled.png`,
@@ -54,8 +57,8 @@ function setPausedIcon() {
       ).toString(),
     },
   });
-  browser.action.setBadgeText({ text: '!' });
-  browser.action.setBadgeBackgroundColor({ color: '#FF9D1C' });
+  browser.action.setBadgeText({ tabId, text: '!' });
+  browser.action.setBadgeBackgroundColor({ tabId, color: '#FF9D1C' });
 }
 
 export class ContentScriptManager {
@@ -104,9 +107,9 @@ export class ContentScriptManager {
       !matches ||
       (origin && excludeMatches?.some((item) => item.includes(origin)))
     ) {
-      setPausedIcon();
+      setPausedIcon({ tabId: tab?.id });
     } else {
-      setActiveIcon();
+      setActiveIcon({ tabId: tab?.id });
     }
   }
 
