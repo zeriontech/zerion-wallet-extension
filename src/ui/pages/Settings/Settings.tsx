@@ -18,8 +18,8 @@ import LockIcon from 'jsx:src/ui/assets/lock.svg';
 import GlobeIcon from 'jsx:src/ui/assets/globe.svg';
 import SettingsIcon from 'jsx:src/ui/assets/settings.svg';
 import QuestionIcon from 'jsx:src/ui/assets/question-hint.svg';
-import InfoIcon from 'jsx:src/ui/assets/info.svg';
-import ZerionLogoIcon from 'jsx:src/ui/assets/zerion-logo.svg';
+import RocketIcon from 'jsx:src/ui/assets/rocket-outline.svg';
+import PremiumIcon from 'jsx:src/ui/assets/premium.svg';
 import DarkModeLampIcon from 'jsx:src/ui/assets/dark-mode-lamp.svg';
 import NetworksIcon from 'jsx:src/ui/assets/network.svg';
 import SecurityIcon from 'jsx:src/ui/assets/security.svg';
@@ -139,13 +139,7 @@ function SettingsMain() {
                 >
                   <AngleRightRow kind="link">
                     <HStack gap={8} alignItems="center">
-                      <ZerionLogoIcon
-                        style={{
-                          width: 24,
-                          height: 24,
-                          color: 'transparent',
-                        }}
-                      />
+                      <PremiumIcon style={{ color: 'var(--black)' }} />
                       <UIText kind="body/regular">Zerion Premium</UIText>
                     </HStack>
                   </AngleRightRow>
@@ -164,7 +158,7 @@ function SettingsMain() {
                 >
                   <AngleRightRow kind="link">
                     <HStack gap={8} alignItems="center">
-                      <InfoIcon />
+                      <RocketIcon />
                       <UIText kind="body/regular">What's New</UIText>
                     </HStack>
                   </AngleRightRow>
