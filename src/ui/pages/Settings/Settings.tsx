@@ -9,7 +9,7 @@ import { ViewSuspense } from 'src/ui/components/ViewSuspense';
 import { accountPublicRPCPort } from 'src/ui/shared/channels';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Media } from 'src/ui/ui-kit/Media';
-import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
+import { SurfaceItemAnchor, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { Toggle } from 'src/ui/ui-kit/Toggle';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -17,6 +17,9 @@ import WalletIcon from 'jsx:src/ui/assets/wallet.svg';
 import LockIcon from 'jsx:src/ui/assets/lock.svg';
 import GlobeIcon from 'jsx:src/ui/assets/globe.svg';
 import SettingsIcon from 'jsx:src/ui/assets/settings.svg';
+import QuestionIcon from 'jsx:src/ui/assets/question-hint.svg';
+import InfoIcon from 'jsx:src/ui/assets/info.svg';
+import ZerionLogoIcon from 'jsx:src/ui/assets/zerion-logo.svg';
 import DarkModeLampIcon from 'jsx:src/ui/assets/dark-mode-lamp.svg';
 import NetworksIcon from 'jsx:src/ui/assets/network.svg';
 import SecurityIcon from 'jsx:src/ui/assets/security.svg';
@@ -126,6 +129,69 @@ function SettingsMain() {
             },
             {
               key: 8,
+              pad: false,
+              style: { paddingInline: 0 },
+              component: (
+                <SurfaceItemAnchor
+                  href="http://zerion.io/premium"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <AngleRightRow kind="link">
+                    <HStack gap={8} alignItems="center">
+                      <ZerionLogoIcon
+                        style={{
+                          width: 24,
+                          height: 24,
+                          color: 'transparent',
+                        }}
+                      />
+                      <UIText kind="body/regular">Zerion Premium</UIText>
+                    </HStack>
+                  </AngleRightRow>
+                </SurfaceItemAnchor>
+              ),
+            },
+            {
+              key: 9,
+              pad: false,
+              style: { paddingInline: 0 },
+              component: (
+                <SurfaceItemAnchor
+                  href="https://app.getbeamer.com/zerion/en?category=extension"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <AngleRightRow kind="link">
+                    <HStack gap={8} alignItems="center">
+                      <InfoIcon />
+                      <UIText kind="body/regular">What's New</UIText>
+                    </HStack>
+                  </AngleRightRow>
+                </SurfaceItemAnchor>
+              ),
+            },
+            {
+              key: 10,
+              pad: false,
+              style: { paddingInline: 0 },
+              component: (
+                <SurfaceItemAnchor
+                  href="https://help.zerion.io/en/collections/5525626-zerion-extension"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <AngleRightRow kind="link">
+                    <HStack gap={8} alignItems="center">
+                      <QuestionIcon style={{ width: 24, height: 24 }} />
+                      <UIText kind="body/regular">Help & Support</UIText>
+                    </HStack>
+                  </AngleRightRow>
+                </SurfaceItemAnchor>
+              ),
+            },
+            {
+              key: 11,
               onClick: async () => {
                 await logout.mutateAsync();
                 navigate('/login');
