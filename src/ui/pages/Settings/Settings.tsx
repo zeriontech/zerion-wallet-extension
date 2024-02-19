@@ -139,7 +139,7 @@ function SettingsMain() {
                 >
                   <AngleRightRow kind="link">
                     <HStack gap={8} alignItems="center">
-                      <PremiumIcon style={{ color: 'var(--black)' }} />
+                      <PremiumIcon />
                       <UIText kind="body/regular">Zerion Premium</UIText>
                     </HStack>
                   </AngleRightRow>
