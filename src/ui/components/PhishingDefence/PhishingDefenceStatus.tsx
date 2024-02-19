@@ -9,7 +9,13 @@ import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import { useRenderDelay } from '../DelayedRender/DelayedRender';
 import { usePhishingDefenceStatus } from './usePhishingDefenceStatus';
 
-export function PhishingDefenceStatus({ origin }: { origin: string }) {
+export function PhishingDefenceStatus({
+  origin,
+  type = 'dapp',
+}: {
+  origin: string;
+  type?: 'dapp' | 'transaction';
+}) {
   const render = useRenderDelay(500);
   const { data } = usePhishingDefenceStatus(origin);
 
@@ -85,7 +91,12 @@ export function PhishingDefenceStatus({ origin }: { origin: string }) {
           <HStack gap={8} alignItems="center">
             <ValidationErrorIcon style={{ color: 'var(--negative-500)' }} />
             <UIText kind="body/accent" color="var(--negative-500)">
-              Malicious Transaction
+              Malicious{' '}
+              {type === 'transaction'
+                ? 'Transaction'
+                : type === 'dapp'
+                ? 'Dapp'
+                : 'Initiator'}
             </UIText>
           </HStack>
           <UIText kind="small/regular" color="var(--negative-500)">

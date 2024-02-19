@@ -292,7 +292,7 @@ function TransactionDefaultView({
         </Button>
       </VStack>
       <Spacer height={16} />
-      <PhishingDefenceStatus origin={origin} />
+      <PhishingDefenceStatus origin={origin} type="transaction" />
       {incomingTxWithGasAndFee ? (
         <>
           <ErrorBoundary renderError={() => null}>
