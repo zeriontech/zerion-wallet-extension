@@ -291,7 +291,7 @@ function CustomNetworkFeeForm({
                 color="var(--negative-500)"
                 style={{ paddingInline: 2 }}
               >
-                Can{apostrophe}t estimate transaction recommended gas limit
+                Can{apostrophe}t estimate recommended gas limit
               </UIText>
             ) : gasEstimation ? (
               <UIText
