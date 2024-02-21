@@ -189,7 +189,6 @@ function CustomNetworkFeeForm({
   const [gasLimit, setGasLimit] = useState(defaultGas);
   const showLowGasLimitWarning =
     gasEstimation && Number(gasLimit) * 1.1 < gasEstimation;
-  const gasLimitInputRef = useRef<HTMLInputElement | null>(null);
 
   return (
     <form
@@ -283,7 +282,6 @@ function CustomNetworkFeeForm({
               pattern={INT_INPUT_PATTERN}
               onChange={(e) => setGasLimit(e.target.value)}
               required={true}
-              ref={gasLimitInputRef}
             />
             {isGasEstimationError ? (
               <UIText
