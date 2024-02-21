@@ -10,7 +10,9 @@ export function setUninstallURL() {
 
   if (uninstallLink) {
     const uninstallURL = new URL(uninstallLink);
-    uninstallURL.hash = `#app_version=${version}`;
+    uninstallURL.hash = uninstallURL.hash
+      ? `${uninstallURL.hash}&app_version=${version}`
+      : `#app_version=${version}`;
     browser.runtime.setUninstallURL(uninstallURL.toString());
   }
 }
