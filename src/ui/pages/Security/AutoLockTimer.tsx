@@ -1,3 +1,4 @@
+import { isTruthy } from 'is-truthy-ts';
 import React from 'react';
 import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -11,36 +12,24 @@ import { SurfaceItemLabel, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 
-const DEBUG_SPEED_UP = process.env.NODE_ENV === 'development';
+const isDev = process.env.NODE_ENV === 'development';
 
-const AUTO_LOCK_TIMER_OPTIONS_PROD: {
+type TimerOptions = Array<{
   title: string;
   value: GlobalPreferences['autoLockTimeout'];
-}[] = [
+}>;
+
+const AUTO_LOCK_TIMER_OPTIONS = [
   { title: '1 Minute', value: 1000 * 60 },
+  isDev ? { title: '2 Minutes', value: 1000 * 60 * 2 } : null,
+  isDev ? { title: '3 Minutes', value: 1000 * 60 * 3 } : null,
+  isDev ? { title: '5 Minutes', value: 1000 * 60 * 5 } : null,
   { title: '10 Minutes', value: 1000 * 60 * 10 },
   { title: '1 Hour', value: 1000 * 60 * 60 },
   { title: '12 Hours', value: 1000 * 60 * 60 * 12 },
   { title: '24 Hours', value: 1000 * 60 * 60 * 24 },
-  { title: 'None', value: 'none' },
-];
-
-const AUTO_LOCK_TIMER_OPTIONS_DEBUG: {
-  title: string;
-  value: GlobalPreferences['autoLockTimeout'];
-}[] = [
-  { title: '1 Minute', value: 1000 * 60 },
-  { title: '2 Minutes', value: 1000 * 60 * 2 },
-  { title: '3 Minutes', value: 1000 * 60 * 3 },
-  { title: '5 Minutes', value: 1000 * 60 * 5 },
-  { title: '10 Minutes', value: 1000 * 60 * 10 },
-  { title: '12 Hours', value: 1000 * 60 * 60 * 12 },
-  { title: 'None', value: 'none' },
-];
-
-const AUTO_LOCK_TIMER_OPTIONS = DEBUG_SPEED_UP
-  ? AUTO_LOCK_TIMER_OPTIONS_DEBUG
-  : AUTO_LOCK_TIMER_OPTIONS_PROD;
+  { title: 'None', value: 'none' } as const,
+].filter(isTruthy) satisfies TimerOptions;
 
 export const AUTO_LOCK_TIMER_OPTIONS_TITLES = Object.fromEntries(
   Object.values(AUTO_LOCK_TIMER_OPTIONS).map(({ title, value }) => [
