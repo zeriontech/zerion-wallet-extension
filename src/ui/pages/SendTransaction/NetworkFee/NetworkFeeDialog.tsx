@@ -1,5 +1,9 @@
-import React, { useMemo, useState } from 'react';
-import type { BigNumber } from 'bignumber.js';
+import React, { useMemo, useRef, useState } from 'react';
+import { BigNumber } from 'bignumber.js';
+import type {
+  NetworkFeeConfiguration,
+  NetworkFeeSpeed,
+} from '@zeriontech/transactions';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import {
@@ -8,7 +12,7 @@ import {
 } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { UIText } from 'src/ui/ui-kit/UIText';
-// import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
+import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import ArrowLeftcon from 'jsx:src/ui/assets/arrow-left.svg';
 import type { Chain } from 'src/modules/networks/Chain';
 import { Media } from 'src/ui/ui-kit/Media';
@@ -38,9 +42,14 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { invariant } from 'src/shared/invariant';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
-import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
+import {
+  FLOAT_INPUT_PATTERN,
+  INT_INPUT_PATTERN,
+} from 'src/ui/shared/forms/inputs';
+import { useEstimateGas } from 'src/modules/ethereum/transactions/useEstimateGas';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { apostrophe } from 'src/ui/shared/typography';
 import { useTransactionFee } from '../TransactionConfiguration/useTransactionFee';
-import type { NetworkFeeConfiguration, NetworkFeeSpeed } from './types';
 import { NetworkFeeIcon } from './NetworkFeeIcon';
 import { NETWORK_SPEED_TO_TITLE } from './constants';
 
@@ -64,11 +73,13 @@ function formDataToGasConfiguration(
   const priorityFee = (formData.get('priorityFee') ?? '') as string;
   const maxFee = (formData.get('maxFee') ?? '') as string;
   const baseFee = (formData.get('baseFee') ?? '') as string;
+  const gasLimit = (formData.get('gasLimit') ?? '') as string;
 
   if (formData.has('baseFee')) {
     return {
       speed: 'custom',
       custom1559GasPrice: null,
+      gasLimit,
       customClassicGasPrice: gweiToWei(baseFee),
     };
   } else {
@@ -79,6 +90,7 @@ function formDataToGasConfiguration(
         priority_fee: gweiToWei(priorityFee),
         max_fee: gweiToWei(maxFee),
       },
+      gasLimit,
     };
   }
 }
@@ -129,7 +141,11 @@ function CustomNetworkFeeForm({
   const [configuration, setConfiguration] = useState(value);
 
   const { value: nativeAsset } = useNativeAsset(chain);
+  const { data: gasEstimation, isError: isGasEstimationError } = useEstimateGas(
+    { transaction }
+  );
 
+  const formRef = useRef<HTMLFormElement | null>(null);
   const defaultBaseFee = value.customClassicGasPrice ?? classic?.fast ?? 0;
   const defaultPriorityFee =
     value.custom1559GasPrice?.priority_fee ?? eip1559?.fast?.priority_fee ?? 0;
@@ -139,6 +155,10 @@ function CustomNetworkFeeForm({
   const defaultBaseFeeGWEI = weiToGwei(defaultBaseFee);
   const defaultPriorityFeeGWEI = weiToGwei(defaultPriorityFee);
   const defaultMaxFeeGWEI = weiToGwei(defaultMaxFee);
+  const transactionGasLimit = new BigNumber(
+    Number(getGas(transaction))
+  ).toFixed();
+  const defaultGas = value.gasLimit || transactionGasLimit;
 
   const baseFee = configuration.customClassicGasPrice ?? defaultBaseFee;
   const priorityFee =
@@ -166,8 +186,13 @@ function CustomNetworkFeeForm({
     };
   }, [nativeAsset, priorityFee, maxFee, baseFee, eip1559, transaction, chain]);
 
+  const [gasLimit, setGasLimit] = useState(defaultGas);
+  const showLowGasLimitWarning =
+    gasEstimation && Number(gasLimit) * 1.1 < gasEstimation;
+
   return (
     <form
+      ref={formRef}
       style={{
         height: '100%',
         position: 'relative',
@@ -230,6 +255,75 @@ function CustomNetworkFeeForm({
               required={true}
             />
           </HStack>
+          <VStack gap={4}>
+            <InnerLabelInput
+              inputMode="numeric"
+              label={
+                <HStack gap={4} alignItems="center">
+                  <UIText kind="caption/regular" color="var(--neutral-600)">
+                    Gas Limit
+                  </UIText>
+                  <div
+                    style={{ display: 'flex', color: 'var(--neutral-600)' }}
+                    title={`Specifies the maximum amount of computational work you${apostrophe}re willing to pay for a transaction or contract interaction`}
+                  >
+                    <QuestionHintIcon />
+                  </div>
+                </HStack>
+              }
+              name="gasLimit"
+              placeholder="0"
+              style={{
+                border: showLowGasLimitWarning
+                  ? '1px solid var(--notice-500)'
+                  : '1px solid var(--neutral-400)',
+              }}
+              defaultValue={gasLimit}
+              pattern={INT_INPUT_PATTERN}
+              onChange={(e) => setGasLimit(e.target.value)}
+              required={true}
+            />
+            {isGasEstimationError ? (
+              <UIText
+                kind="caption/regular"
+                color="var(--negative-500)"
+                style={{ paddingInline: 2 }}
+              >
+                Can{apostrophe}t estimate recommended gas limit
+              </UIText>
+            ) : gasEstimation ? (
+              <UIText
+                kind="caption/regular"
+                color={
+                  showLowGasLimitWarning
+                    ? 'var(--notice-500)'
+                    : 'var(--neutral-500)'
+                }
+                style={{ paddingInline: 2 }}
+              >
+                Recommended value:{' '}
+                <UnstyledButton
+                  type="button"
+                  style={{ color: 'var(--primary)' }}
+                  onClick={() => {
+                    if (formRef.current) {
+                      setFormValue(
+                        formRef.current,
+                        'gasLimit',
+                        String(gasEstimation)
+                      );
+                    }
+                  }}
+                >
+                  {gasEstimation}
+                </UnstyledButton>
+                .
+                {showLowGasLimitWarning
+                  ? ` We don${apostrophe}t recommend using a gas limit significantly lower than the estimated value.`
+                  : null}
+              </UIText>
+            ) : null}
+          </VStack>
           <VStack gap={8}>
             <HStack gap={24} justifyContent="space-between">
               <UIText kind="small/regular">Expected Fee</UIText>
@@ -297,6 +391,7 @@ function CustomNetworkFeeForm({
               const maxFee = weiToGwei(eip1559?.fast?.max_fee || 0);
               setFormValue(form, 'maxFee', maxFee);
             }
+            setFormValue(form, 'gasLimit', transactionGasLimit);
             setConfiguration(formDataToGasConfiguration(new FormData(form)));
           }}
         >
@@ -453,17 +548,7 @@ export const NetworkFeeDialog = React.forwardRef<
           <>
             <DialogTitle
               alignTitle="start"
-              title={
-                <HStack gap={8} alignItems="center">
-                  <UIText kind="headline/h3">Network Fee</UIText>
-                  {/* <div
-                  style={{ display: 'flex' }}
-                  title={`The fee required to successfully conduct a transaction on the ${chain.toString()} blockchain`}
-                >
-                  <QuestionHintIcon style={{ color: 'var(--neutral-500)' }} />
-                </div> */}
-                </HStack>
-              }
+              title={<UIText kind="headline/h3">Network Fee</UIText>}
               closeKind="icon"
             />
             <Spacer height={10} />

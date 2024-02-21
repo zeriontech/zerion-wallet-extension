@@ -12,6 +12,7 @@ import type { ChainGasPrice } from './gasPrices/requests';
 import { fetchGasPrice } from './gasPrices/requests';
 import { wrappedGetNetworkById } from './wrappedGetNetworkById';
 import { resolveChainId } from './resolveChainId';
+import { hexifyTxValues } from './gasPrices/hexifyTxValues';
 
 function add10Percent(value: number) {
   return Math.round(value * 1.1); // result must be an integer
@@ -26,7 +27,7 @@ export async function estimateGas(
   const { result } = await sendRpcRequest<string>(rpcUrl, {
     method: 'eth_estimateGas',
     params: [
-      omit({ ...transaction, chainId: chainIdHex }, [
+      omit({ ...hexifyTxValues(transaction), chainId: chainIdHex }, [
         'gas', // error on Aurora if gas: 0x0, so we omit it
         'nonce', // error on Polygon if nonce is int, but we don't need it at all
         'gasPrice', // error on Avalanche about maxFee being less than baseFee, event though only gasPrice in tx

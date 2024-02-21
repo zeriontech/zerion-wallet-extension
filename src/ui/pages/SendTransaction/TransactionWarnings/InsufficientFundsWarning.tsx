@@ -1,9 +1,9 @@
 import React from 'react';
+import type { NetworkFeeConfiguration } from '@zeriontech/transactions';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { Chain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
-import type { NetworkFeeConfiguration } from '../NetworkFee/types';
 import { useTransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import { TransactionWarning } from './TransactionWarning';
 

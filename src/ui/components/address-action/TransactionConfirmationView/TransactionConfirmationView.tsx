@@ -1,4 +1,5 @@
 import React from 'react';
+import type { CustomConfiguration } from '@zeriontech/transactions';
 import type { IncomingTransactionWithChainId } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -7,7 +8,6 @@ import { focusNode } from 'src/ui/shared/focusNode';
 import { Button } from 'src/ui/ui-kit/Button';
 import type { Chain } from 'src/modules/networks/Chain';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
-import type { CustomConfiguration } from 'src/ui/pages/SendTransaction/TransactionConfiguration';
 import { TransactionConfiguration } from 'src/ui/pages/SendTransaction/TransactionConfiguration';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import LedgerIcon from 'jsx:src/ui/assets/ledger-icon.svg';
