@@ -21,7 +21,7 @@ export function initialize(account: Account) {
     });
   }
   listenForChainChange();
-  // update subscription on Wallet recreation inside Account
+  // Update subscription after Wallet's recreation inside Account
   account.on('reset', () => {
     listenForChainChange();
   });
