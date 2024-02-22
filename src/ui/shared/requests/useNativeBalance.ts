@@ -31,18 +31,16 @@ function useNativeAddressPosition({
   );
 
   return useMemo(() => {
-    const nativePositions = value?.positions?.filter(
-      (item) =>
-        item.chain === chain.toString() &&
-        item.type === 'asset' &&
-        !item.protocol
-    );
-    invariant(
-      !nativePositions || nativePositions.length <= 1,
-      'multiple native positions'
-    );
+    const nativePositions =
+      value?.positions?.filter(
+        (item) =>
+          item.chain === chain.toString() &&
+          item.type === 'asset' &&
+          !item.protocol
+      ) ?? [];
+    invariant(nativePositions.length <= 1, 'multiple native positions');
     return {
-      data: nativePositions?.[0],
+      data: nativePositions[0],
       isLoading,
     };
   }, [chain, isLoading, value?.positions]);
