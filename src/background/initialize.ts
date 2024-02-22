@@ -3,6 +3,7 @@ import { DnaService } from 'src/modules/dna-service/dna.background';
 import { initialize as initializeAnalytics } from 'src/shared/analytics/analytics.background';
 import { initialize as initializeRemoteConfig } from 'src/modules/remote-config';
 import { initialize as initializeRegisterChain } from './requests/registerChain';
+import { initialize as initializeRegisterAddresses } from './requests/registerAddresses';
 import { Account, AccountPublicRPC } from './account/Account';
 import { TransactionService } from './transactions/TransactionService';
 import { globalPreferences } from './Wallet/GlobalPreferences';
@@ -39,7 +40,8 @@ export async function initialize() {
     setUninstallURL();
   });
   initializeAnalytics({ account });
-  initializeRegisterChain(account.getCurrentWallet());
+  initializeRegisterChain(account);
+  initializeRegisterAddresses();
 
   Object.assign(globalThis, {
     account,

@@ -36,7 +36,7 @@ export class ZerionAPI {
       .post(new URL('wallet/connect-chain/v1', ZERION_API_URL), {
         body: JSON.stringify({
           chain: payload.chain,
-          identifier: payload.address,
+          addresses: payload.addresses,
         }),
         headers: getZpiHeaders(),
       })

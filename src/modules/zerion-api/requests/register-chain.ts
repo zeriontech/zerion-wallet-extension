@@ -1,5 +1,5 @@
 export interface Payload {
-  address: string;
+  addresses: string[];
   chain: string;
 }
 
