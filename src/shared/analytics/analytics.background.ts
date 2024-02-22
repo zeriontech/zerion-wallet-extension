@@ -4,6 +4,7 @@ import { emitter } from 'src/background/events';
 import { networksStore } from 'src/modules/networks/networks-store.background';
 import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
+import { getWalletNameFlagsChange } from 'src/background/Wallet/GlobalPreferences';
 import {
   createParams as createBaseParams,
   sendToMetabase,
@@ -164,13 +165,8 @@ function trackAppEvents({ account }: { account: Account }) {
 
   emitter.on('globalPreferencesChange', (state, prevState) => {
     onIdle(() => {
-      const currentKeys = Object.keys(state.walletNameFlags || {});
-      const prevKeys = Object.keys(prevState.walletNameFlags || {});
-      const currentKeysSet = new Set(currentKeys);
-      const prevKeysSet = new Set(prevKeys);
-
-      const newlyEnabled = currentKeys.filter((key) => !prevKeysSet.has(key));
-      const newlyDisabled = prevKeys.filter((key) => !currentKeysSet.has(key));
+      const { enabled: newlyEnabled, disabled: newlyDisabled } =
+        getWalletNameFlagsChange(state, prevState);
 
       newlyEnabled.forEach((key) => {
         const params = createParams({

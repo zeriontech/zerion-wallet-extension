@@ -28,6 +28,28 @@ export interface State {
   walletNameFlags?: Record<string, WalletNameFlag[] | undefined>;
 }
 
+function difference<T>(arr1: T[], arr2: T[]) {
+  const set = new Set(arr2);
+  return arr1.filter((key) => !set.has(key));
+}
+
+export function getWalletNameFlagsChange(state: State, prevState: State) {
+  const currentKeys = Object.keys(state.walletNameFlags || {});
+  const prevKeys = Object.keys(prevState.walletNameFlags || {});
+
+  const newlyEnabled = difference(currentKeys, prevKeys);
+  const newlyDisabled = difference(prevKeys, currentKeys);
+  return { enabled: newlyEnabled, disabled: newlyDisabled };
+}
+
+export function getProviderInjectionChange(state: State, prevState: State) {
+  const currentKeys = Object.keys(state.providerInjection || {});
+  const prevKeys = Object.keys(prevState.providerInjection || {});
+  const newlyPaused = difference(currentKeys, prevKeys);
+  const newlyUnpaused = difference(prevKeys, currentKeys);
+  return { paused: newlyPaused, unpaused: newlyUnpaused };
+}
+
 /**
  * Used to store unencrypted preferences which
  * need to be accessible even before the user logs in

@@ -23,7 +23,8 @@ function messageHandler(msg: unknown) {
   } else if (
     msg != null &&
     typeof msg === 'object' &&
-    (msg as { type?: string }).type === 'ethereumEvent'
+    ((msg as { type?: string }).type === 'ethereumEvent' ||
+      (msg as { type?: string }).type === 'walletEvent')
   ) {
     broadcastChannel.postMessage(msg);
   } else {

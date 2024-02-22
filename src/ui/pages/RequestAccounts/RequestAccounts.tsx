@@ -34,7 +34,6 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { DeviceAccount } from 'src/shared/types/Device';
-import { reloadTabsByOrigin } from 'src/ui/shared/reloadActiveTab';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { WalletList } from '../WalletSelect/WalletList';
 import { ChooseGlobalProvider } from './ChooseGlobalProvider';
@@ -323,7 +322,12 @@ export function RequestAccounts() {
           origin={origin}
           onConfirm={() => setStep('main')}
           onReject={() => {
-            reloadTabsByOrigin({ origin });
+            // Do not reload the dapp because we will forward request
+            // automatically to the other wallet. But I want to leave the comment here
+            // in case we need to revert
+            //
+            // reloadTabsByOrigin({ origin });
+
             handleReject();
           }}
         />

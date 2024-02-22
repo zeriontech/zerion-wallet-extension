@@ -32,6 +32,14 @@ const broadcastChannel = new BroadcastChannel(walletChannelId);
 const connection = new Connection(broadcastChannel);
 const provider = new EthereumProvider(connection);
 
+let isPaused = false;
+
+connection.on('walletEvent', (data) => {
+  if (data.event === 'pauseInjection') {
+    isPaused = true;
+  }
+});
+
 provider.connect();
 
 competingProviders.onBeforeAssignToWindow({
@@ -48,12 +56,12 @@ dappDetection.onBeforeAssignToWindow(window.ethereum);
  * on https://stargate.finance/ this lead to "max call stack" error.
  * The following monkey-patch approach seems to work everywhere.
  */
-const proxiedProvider = Object.create(provider);
+const patchedProvider = Object.create(provider);
 for (const untypedKey in provider) {
   const key = untypedKey as keyof typeof provider;
   if (typeof provider[key] === 'function') {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    proxiedProvider[key] = (...args: any[]) => {
+    patchedProvider[key] = (...args: any[]) => {
       if (competingProviders.hasOtherProviders()) {
         provider.nonEip6963Request = true;
       }
@@ -65,6 +73,41 @@ for (const untypedKey in provider) {
     };
   }
 }
+
+/**
+ * Provide a way to automatically invoke the `request` method
+ * of a foreign provider if user prefers "other wallet"
+ */
+provider.prefersOtherWalletStrategy = ({ request, originalError }) => {
+  if (isPaused && competingProviders.hasOtherProviders()) {
+    const otherProvider = competingProviders.getFirstOtherProvider();
+    return (otherProvider as EthereumProvider).request(request);
+  } else {
+    throw originalError;
+  }
+};
+
+const proxiedProvider = new Proxy(patchedProvider, {
+  get(target, prop, receiver) {
+    if (isPaused && competingProviders.hasOtherProviders()) {
+      const otherProvider = competingProviders.getFirstOtherProvider();
+      // @ts-ignore
+      return otherProvider[prop];
+    } else {
+      return Reflect.get(target, prop, receiver);
+    }
+  },
+  set(target, prop, value, receiver) {
+    if (isPaused && competingProviders.hasOtherProviders()) {
+      const otherProvider = competingProviders.getFirstOtherProvider();
+      // @ts-ignore
+      otherProvider[prop] = value;
+      return true;
+    } else {
+      return Reflect.set(target, prop, value, receiver);
+    }
+  },
+});
 
 window.ethereum = proxiedProvider;
 
@@ -81,6 +124,9 @@ dappDetection.onChange(({ dappIsZerionAware }) => {
 Object.defineProperty(window, 'ethereum', {
   configurable: false, // explicitly set to false to disallow redefining the property by other wallets
   get() {
+    if (isPaused && competingProviders.hasOtherProviders()) {
+      return competingProviders.getFirstOtherProvider();
+    }
     dappDetection.onAccessThroughWindow();
     return proxiedProvider;
   },
