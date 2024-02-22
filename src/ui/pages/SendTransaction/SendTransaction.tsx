@@ -2,6 +2,8 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { ethers } from 'ethers';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Content, RenderArea } from 'react-area';
+import type { AddressAction } from 'defi-sdk';
 import type { IncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { incomingTxToIncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type {
@@ -42,14 +44,10 @@ import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired'
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { setURLSearchParams } from 'src/ui/shared/setURLSearchParams';
-import { InterpretLoadingState } from 'src/ui/components/InterpretLoadingState';
 import { AddressActionDetails } from 'src/ui/components/address-action/AddressActionDetails';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { interpretTransaction } from 'src/modules/ethereum/transactions/interpret';
-import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/PhishingDefenceStatus';
-import { Content, RenderArea } from 'react-area';
 import type { Networks } from 'src/modules/networks/Networks';
-import type { AddressAction } from 'defi-sdk';
 import type { TransactionAction } from 'src/modules/ethereum/transactions/describeTransaction';
 import { describeTransaction } from 'src/modules/ethereum/transactions/describeTransaction';
 import { AllowanceView } from 'src/ui/components/AllowanceView';
@@ -67,6 +65,9 @@ import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
+import { InterpretationState } from 'src/ui/components/InterpretationState';
+import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
+import { hasCriticalWarning } from 'src/ui/components/InterpretationState/InterpretationState';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -134,6 +135,7 @@ function TransactionDefaultView({
   transactionAction,
   singleAsset,
   allowanceQuantityBase,
+  interpretation,
   interpretQuery,
   incomingTransaction,
   incomingTxWithGasAndFee,
@@ -148,6 +150,7 @@ function TransactionDefaultView({
   transactionAction: TransactionAction;
   singleAsset: NonNullable<AddressAction['content']>['single_asset'];
   allowanceQuantityBase?: string;
+  interpretation: InterpretResponse | null | undefined;
   interpretQuery: {
     isInitialLoading: boolean;
     isError: boolean;
@@ -229,6 +232,9 @@ function TransactionDefaultView({
 
   const recipientAddress = addressAction.label?.display_value.wallet_address;
   const actionTransfers = addressAction.content?.transfers;
+  const interpretationHasCriticalWarning = hasCriticalWarning(
+    interpretation?.warnings
+  );
 
   return (
     <>
@@ -291,19 +297,17 @@ function TransactionDefaultView({
             ) : null
           }
         />
-        {interpretQuery.isInitialLoading ? (
-          <InterpretLoadingState />
-        ) : interpretQuery.isError ? (
-          <UIText kind="small/regular" color="var(--notice-600)">
-            Unable to analyze the details of the transaction
-          </UIText>
-        ) : null}
-        <Button kind="regular" onClick={onOpenAdvancedView}>
-          Advanced View
-        </Button>
+        <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
+          <InterpretationState
+            interpretation={interpretation}
+            interpretQuery={interpretQuery}
+          />
+          <Button kind="regular" size={36} onClick={onOpenAdvancedView}>
+            Advanced View
+          </Button>
+        </HStack>
       </VStack>
       <Spacer height={16} />
-      <PhishingDefenceStatus origin={origin} type="transaction" />
       {incomingTxWithGasAndFee ? (
         <>
           <ErrorBoundary renderError={() => null}>
@@ -315,6 +319,7 @@ function TransactionDefaultView({
                 chain={chain}
                 networkFeeConfiguration={configuration.networkFee}
               />
+              <Spacer height={16} />
             </React.Suspense>
           </ErrorBoundary>
           <div style={{ marginTop: 'auto' }}>
@@ -364,13 +369,15 @@ function TransactionDefaultView({
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
+              gridTemplateColumns: interpretationHasCriticalWarning
+                ? '1fr'
+                : '1fr 1fr',
               gap: 8,
             }}
           >
             <Button
               ref={focusNode}
-              kind="regular"
+              kind={interpretationHasCriticalWarning ? 'primary' : 'regular'}
               type="button"
               onClick={onReject}
             >
@@ -380,6 +387,10 @@ function TransactionDefaultView({
               wallet={wallet}
               ref={signerSenderRef}
               onClick={() => sendTransaction()}
+              kind={interpretationHasCriticalWarning ? 'danger' : 'primary'}
+              buttonTitle={
+                interpretationHasCriticalWarning ? 'Proceed Anyway' : undefined
+              }
             />
           </div>
         </VStack>
@@ -457,10 +468,19 @@ function SendTransactionContent({
   });
 
   const { data: interpretation, ...interpretQuery } = useQuery({
-    queryKey: ['interpretTransaction', incomingTxWithGasAndFee, singleAddress],
+    queryKey: [
+      'interpretTransaction',
+      incomingTxWithGasAndFee,
+      singleAddress,
+      origin,
+    ],
     queryFn: () => {
       return incomingTxWithGasAndFee
-        ? interpretTransaction(singleAddress, incomingTxWithGasAndFee)
+        ? interpretTransaction({
+            address: singleAddress,
+            transaction: incomingTxWithGasAndFee,
+            origin,
+          })
         : null;
     },
     enabled: Boolean(incomingTxWithGasAndFee),
@@ -529,6 +549,7 @@ function SendTransactionContent({
             allowanceQuantityBase={
               allowanceQuantityBase || requestedAllowanceQuantityBase
             }
+            interpretation={interpretation}
             interpretQuery={interpretQuery}
             incomingTransaction={incomingTransaction}
             incomingTxWithGasAndFee={incomingTxWithGasAndFee}

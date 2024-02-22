@@ -227,7 +227,7 @@ export function SignInWithEthereum() {
           ) : null}
         </>
         <Spacer height={16} />
-        <PhishingDefenceStatus origin={origin} />
+        <PhishingDefenceStatus origin={origin} type="dapp" />
         <VStack
           gap={8}
           style={{

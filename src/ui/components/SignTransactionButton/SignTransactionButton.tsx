@@ -13,7 +13,7 @@ import {
   type SignHandle,
 } from 'src/ui/pages/HardwareWalletConnection/HardwareSignTransaction';
 import { walletPort } from 'src/ui/shared/channels';
-import { Button } from 'src/ui/ui-kit/Button';
+import { Button, type Kind as ButtonKind } from 'src/ui/ui-kit/Button';
 
 interface SendTxParams {
   transaction: IncomingTransaction;
@@ -35,9 +35,12 @@ export const SignTransactionButton = React.forwardRef(
     {
       wallet,
       children,
+      buttonTitle,
       ...buttonProps
     }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
       wallet: ExternallyOwnedAccount;
+      kind?: ButtonKind;
+      buttonTitle?: React.ReactNode;
     },
     ref: React.Ref<SignerSenderHandle>
   ) {
@@ -75,11 +78,13 @@ export const SignTransactionButton = React.forwardRef(
         derivationPath={wallet.derivationPath}
         isSending={sendTxMutation.isLoading}
         children={children}
+        buttonTitle={buttonTitle}
         {...buttonProps}
       />
     ) : (
       <Button disabled={sendTxMutation.isLoading} {...buttonProps}>
-        {children || (sendTxMutation.isLoading ? 'Sending...' : 'Confirm')}
+        {children ||
+          (sendTxMutation.isLoading ? 'Sending...' : buttonTitle || 'Confirm')}
       </Button>
     );
   }

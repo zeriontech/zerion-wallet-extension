@@ -6,10 +6,15 @@ import type { IncomingTransactionWithChainId } from '../types/IncomingTransactio
 import type { InterpretResponse } from './types';
 import { getGas } from './getGas';
 
-export function interpretTransaction(
-  address: string,
-  transaction: IncomingTransactionWithChainId
-): Promise<InterpretResponse> {
+export function interpretTransaction({
+  address,
+  transaction,
+  origin,
+}: {
+  address: string;
+  transaction: IncomingTransactionWithChainId;
+  origin: string;
+}): Promise<InterpretResponse> {
   const gas = getGas(transaction);
   return Promise.race([
     rejectAfterDelay(10000, 'interpret transaction'),
@@ -41,6 +46,7 @@ export function interpretTransaction(
               value: transaction.value ? valueToHex(transaction.value) : '0x0',
               data: transaction.data,
             },
+            domain: origin,
           },
         },
         // Here we're using onMessage instead of onData because of

@@ -79,6 +79,18 @@
   background-color: var(--negative-300);
 }
 
+.warning.warning {
+  --button-background: var(--notice-100);
+  --button-text: var(--notice-500);
+  --button-text-hover: var(--notice-600);
+  --button-background-hover: var(--notice-200);
+}
+
+.warning:disabled {
+  cursor: default;
+  background-color: var(--notice-300);
+}
+
 .text-primary {
   padding: 0;
   border-radius: 0;

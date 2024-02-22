@@ -134,7 +134,7 @@ function SignMessageContent({
         <Spacer height={24} />
         <MessageRow message={message} />
         <Spacer height={16} />
-        <PhishingDefenceStatus origin={origin} />
+        <PhishingDefenceStatus origin={origin} type="dapp" />
       </PageColumn>
       <PageStickyFooter>
         <Spacer height={16} />

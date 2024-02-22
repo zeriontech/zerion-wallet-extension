@@ -3,7 +3,7 @@ import React, { useCallback, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import LedgerIcon from 'jsx:src/ui/assets/ledger-icon.svg';
 import { LedgerIframe } from 'src/ui/hardware-wallet/LedgerIframe';
-import { Button } from 'src/ui/ui-kit/Button';
+import { Button, type Kind as ButtonKind } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { getError } from 'src/shared/errors/getError';
 import { useMutation } from '@tanstack/react-query';
@@ -18,6 +18,8 @@ type Props = {
   isSigning: boolean;
   onBeforeSign: () => void;
   onSignError: (error: Error) => void;
+  kind?: ButtonKind;
+  buttonTitle?: React.ReactNode;
 } & (
   | { type: 'personalSign'; message: string }
   | { type: 'signTypedData_v4'; message: string | TypedData }
@@ -31,6 +33,8 @@ export function HardwareSignMessage({
   isSigning,
   onBeforeSign,
   onSignError,
+  kind = 'primary',
+  buttonTitle,
 }: Props) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -140,7 +144,7 @@ export function HardwareSignMessage({
         </Button>
       ) : (
         <Button
-          kind="primary"
+          kind={kind}
           onClick={() =>
             type === 'personalSign' ? personalSign() : signTypedData_v4()
           }
@@ -151,7 +155,7 @@ export function HardwareSignMessage({
         >
           <HStack gap={8} alignItems="center" justifyContent="center">
             <LedgerIcon />
-            {isSigning ? 'Sending...' : 'Sign with Ledger'}
+            {isSigning ? 'Sending...' : buttonTitle || 'Sign with Ledger'}
           </HStack>
         </Button>
       )}

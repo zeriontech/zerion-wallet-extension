@@ -34,11 +34,9 @@ import {
 import type { Chain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { setURLSearchParams } from 'src/ui/shared/setURLSearchParams';
-import { InterpretLoadingState } from 'src/ui/components/InterpretLoadingState';
 import { AddressActionDetails } from 'src/ui/components/address-action/AddressActionDetails';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { interpretSignature } from 'src/modules/ethereum/transactions/interpret';
-import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/PhishingDefenceStatus';
 import { Content, RenderArea } from 'react-area';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
@@ -57,13 +55,23 @@ import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTML
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
+import { InterpretationState } from 'src/ui/components/InterpretationState';
+import { hasCriticalWarning } from 'src/ui/components/InterpretationState/InterpretationState';
 import { HardwareSignMessage } from '../HardwareWalletConnection/HardwareSignMessage';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
-export const TypedDataRow = React.forwardRef(
+const TypedDataRow = React.forwardRef(
   ({ data }: { data: string }, ref: React.Ref<HTMLDivElement>) => {
     return (
-      <Surface padding={16} style={{ border: '1px solid var(--neutral-300)' }}>
+      <Surface
+        padding={16}
+        style={{
+          border: '2px solid var(--neutral-200)',
+          maxHeight: 256,
+          overflowY: 'auto',
+          ['--surface-background-color' as string]: 'var(--white)',
+        }}
+      >
         <UIText
           kind="small/regular"
           style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}
@@ -125,7 +133,7 @@ function TypedDataDefaultView({
   typedDataRaw: string;
   typedData: TypedData;
   interpretQuery: {
-    isLoading: boolean;
+    isInitialLoading: boolean;
     isError: boolean;
     isFetched: boolean;
   };
@@ -224,6 +232,10 @@ function TypedDataDefaultView({
   const scrollSigningData = () =>
     typedDataRowRef?.current?.scrollIntoView({ behavior: 'smooth' });
 
+  const interpretationHasCriticalWarning = hasCriticalWarning(
+    interpretation?.warnings
+  );
+
   const submitButton = isDeviceAccount(wallet) ? (
     <HardwareSignMessage
       derivationPath={wallet.derivationPath}
@@ -232,6 +244,10 @@ function TypedDataDefaultView({
       isSigning={signTypedData_v4Mutation.isLoading}
       onBeforeSign={() => setHardwareSignError(null)}
       onSignError={(error) => setHardwareSignError(error)}
+      kind={interpretationHasCriticalWarning ? 'danger' : 'primary'}
+      buttonTitle={
+        interpretationHasCriticalWarning ? 'Proceed Anyway' : undefined
+      }
       onSign={(signature) => {
         try {
           registerTypedDataSign(signature);
@@ -242,6 +258,7 @@ function TypedDataDefaultView({
     />
   ) : (
     <Button
+      kind={interpretationHasCriticalWarning ? 'danger' : 'primary'}
       disabled={signTypedData_v4Mutation.isLoading}
       onClick={() => {
         signTypedData_v4Mutation.mutate({
@@ -250,7 +267,11 @@ function TypedDataDefaultView({
         });
       }}
     >
-      {signTypedData_v4Mutation.isLoading ? 'Signing...' : 'Sign'}
+      {signTypedData_v4Mutation.isLoading
+        ? 'Signing...'
+        : interpretationHasCriticalWarning
+        ? 'Proceed Anyway'
+        : 'Sign'}
     </Button>
   );
 
@@ -289,47 +310,44 @@ function TypedDataDefaultView({
       </div>
       <Spacer height={24} />
       <VStack gap={16}>
-        {interpretQuery.isLoading ? (
-          <InterpretLoadingState />
-        ) : interpretQuery.isError ? (
-          <UIText kind="small/regular" color="var(--notice-600)">
-            Unable to analyze the details of the transaction
-          </UIText>
-        ) : null}
         {addressAction ? (
-          <>
-            <AddressActionDetails
-              recipientAddress={recipientAddress}
-              addressAction={addressAction}
-              chain={chain}
-              networks={networks}
-              actionTransfers={addressAction?.content?.transfers}
-              wallet={wallet}
-              singleAsset={addressAction?.content?.single_asset}
-              allowanceQuantityBase={allowanceQuantityBase || undefined}
-              singleAssetElementEnd={
-                allowanceQuantityBase &&
-                addressAction.type.value === 'approve' ? (
-                  <UIText
-                    as={TextLink}
-                    kind="small/accent"
-                    style={{ color: 'var(--primary)' }}
-                    to={allowanceViewHref}
-                  >
-                    Edit
-                  </UIText>
-                ) : null
-              }
-            />
-            {typedDataFormatted ? (
-              <Button kind="regular" onClick={onOpenAdvancedView}>
-                Advanced View
-              </Button>
-            ) : null}
-          </>
+          <AddressActionDetails
+            recipientAddress={recipientAddress}
+            addressAction={addressAction}
+            chain={chain}
+            networks={networks}
+            actionTransfers={addressAction?.content?.transfers}
+            wallet={wallet}
+            singleAsset={addressAction?.content?.single_asset}
+            allowanceQuantityBase={allowanceQuantityBase || undefined}
+            singleAssetElementEnd={
+              allowanceQuantityBase &&
+              addressAction.type.value === 'approve' ? (
+                <UIText
+                  as={TextLink}
+                  kind="small/accent"
+                  style={{ color: 'var(--primary)' }}
+                  to={allowanceViewHref}
+                >
+                  Edit
+                </UIText>
+              ) : null
+            }
+          />
         ) : interpretQuery.isFetched ? (
           <TypedDataRow ref={setTypedDataRow} data={typedDataFormatted} />
         ) : null}
+        <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
+          <InterpretationState
+            interpretation={interpretation}
+            interpretQuery={interpretQuery}
+          />
+          {typedDataFormatted ? (
+            <Button kind="regular" onClick={onOpenAdvancedView} size={36}>
+              Advanced View
+            </Button>
+          ) : null}
+        </HStack>
       </VStack>
       <Spacer height={16} />
       <Content name="sign-transaction-footer">
@@ -341,22 +359,26 @@ function TypedDataDefaultView({
             }}
             gap={8}
           >
-            <UIText kind="caption/regular" color="var(--negative-500)">
-              {signTypedData_v4Mutation.isError
-                ? getError(signTypedData_v4Mutation?.error).message
-                : hardwareSignError
-                ? errorToMessage(hardwareSignError)
-                : null}
-            </UIText>
+            {signTypedData_v4Mutation.isError ? (
+              <UIText kind="caption/regular" color="var(--negative-500)">
+                {getError(signTypedData_v4Mutation?.error).message}
+              </UIText>
+            ) : hardwareSignError ? (
+              <UIText kind="caption/regular" color="var(--negative-500)">
+                {errorToMessage(hardwareSignError)}
+              </UIText>
+            ) : null}
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
+                gridTemplateColumns: interpretationHasCriticalWarning
+                  ? '1fr'
+                  : '1fr 1fr',
                 gap: 8,
               }}
             >
               <Button
-                kind="regular"
+                kind={interpretationHasCriticalWarning ? 'primary' : 'regular'}
                 type="button"
                 onClick={onReject}
                 ref={focusNode}
@@ -365,11 +387,14 @@ function TypedDataDefaultView({
               </Button>
 
               {Boolean(interpretation?.action) ||
-              interpretQuery.isLoading ||
+              interpretQuery.isInitialLoading ||
               seenSigningData ? (
                 submitButton
               ) : (
-                <Button onClick={scrollSigningData}>
+                <Button
+                  onClick={scrollSigningData}
+                  kind={interpretationHasCriticalWarning ? 'danger' : undefined}
+                >
                   <HStack gap={8} alignItems="center" justifyContent="center">
                     <span>Scroll</span>
                     <ArrowDownIcon style={{ width: 24, height: 24 }} />
@@ -524,8 +549,7 @@ function SignTypedDataContent({
             onChange={handleChangeAllowance}
           />
         ) : null}
-        <Spacer height={16} />
-        <PhishingDefenceStatus origin={origin} />
+        <RenderArea name="transaction-warning-section" />
       </PageColumn>
       <PageStickyFooter>
         <Spacer height={16} />
