@@ -19,12 +19,12 @@ import type { Chain } from 'src/modules/networks/Chain';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { Content } from 'react-area';
 import { Button } from 'src/ui/ui-kit/Button';
-import { focusNode } from 'src/ui/shared/focusNode';
 import { AssetLink } from 'src/ui/components/AssetLink';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { isUnlimitedApproval } from 'src/ui/pages/History/isUnlimitedApproval';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
+import { focusNode } from 'src/ui/shared/focusNode';
 
 export function AllowanceForm({
   asset,
@@ -135,205 +135,207 @@ export function AllowanceForm({
   );
 
   return (
-    <form
-      id={id}
-      style={{
-        height: '100%',
-        position: 'relative',
-        display: 'grid',
-        gridTemplateRows: '1fr auto',
-      }}
-      onSubmit={(event) => {
-        event.preventDefault();
+    <>
+      <form
+        id={id}
+        style={{
+          height: '100%',
+          position: 'relative',
+          display: 'grid',
+          gridTemplateRows: '1fr auto',
+        }}
+        onSubmit={(event) => {
+          event.preventDefault();
 
-        if (!isAllowanceUnlimited) {
-          const form = event.currentTarget;
-          if (!form.checkValidity()) {
-            return;
-          }
-          const formData = collectData(form, {});
-          const newAllowanceQuantityCommon = formData.amount as string;
-          const newValue = getBaseQuantity({
-            asset,
-            chain,
-            commonQuantity: newAllowanceQuantityCommon,
-          });
-          onSubmit(newValue.toFixed());
-        } else {
-          onSubmit(
-            isRequestedAllowanceUnlimited
-              ? requestedAllowanceQuantityBase.toFixed()
-              : UNLIMITED_APPROVAL_AMOUNT.toFixed()
-          );
-        }
-      }}
-    >
-      <VStack gap={16}>
-        <VStack gap={4}>
-          <UIText kind="small/regular" color="var(--black)">
-            Amount
-          </UIText>
-          <Media
-            style={{ gridAutoColumns: 'min-content 1fr' }}
-            vGap={0}
-            image={
-              asset.icon_url ? (
-                <TokenIcon
-                  size={36}
-                  src={asset.icon_url}
-                  symbol={asset.symbol}
-                />
-              ) : (
-                <UnknownIcon />
-              )
+          if (!isAllowanceUnlimited) {
+            const form = event.currentTarget;
+            if (!form.checkValidity()) {
+              return;
             }
-            text={
-              <HStack
-                gap={16}
-                style={{
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <UIText kind="headline/h3">
-                  <AssetLink asset={asset} address={address} />
-                </UIText>
-                {isAllowanceUnlimited ? (
-                  <InfinityIcon
-                    style={{
-                      width: 24,
-                      height: 24,
-                      color: 'var(--neutral-500)',
-                    }}
+            const formData = collectData(form, {});
+            const newAllowanceQuantityCommon = formData.amount as string;
+            const newValue = getBaseQuantity({
+              asset,
+              chain,
+              commonQuantity: newAllowanceQuantityCommon,
+            });
+            onSubmit(newValue.toFixed());
+          } else {
+            onSubmit(
+              isRequestedAllowanceUnlimited
+                ? requestedAllowanceQuantityBase.toFixed()
+                : UNLIMITED_APPROVAL_AMOUNT.toFixed()
+            );
+          }
+        }}
+      >
+        <VStack gap={16}>
+          <VStack gap={4}>
+            <UIText kind="small/regular" color="var(--black)">
+              Amount
+            </UIText>
+            <Media
+              style={{ gridAutoColumns: 'min-content 1fr' }}
+              vGap={0}
+              image={
+                asset.icon_url ? (
+                  <TokenIcon
+                    size={36}
+                    src={asset.icon_url}
+                    symbol={asset.symbol}
                   />
-                ) : null}
-                <UIText
-                  kind="headline/h3"
+                ) : (
+                  <UnknownIcon />
+                )
+              }
+              text={
+                <HStack
+                  gap={16}
                   style={{
-                    display: isAllowanceUnlimited ? 'none' : 'initial',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
                   }}
                 >
-                  <UnstyledInput
-                    ref={allowanceQuantityCommonRef}
-                    type="text"
-                    inputMode="decimal"
-                    placeholder="0"
-                    name="amount"
-                    style={{ textAlign: 'end' }}
-                    required={!isAllowanceUnlimited}
-                    pattern="^(\d+\.)?\d+"
-                    defaultValue={currentAllowanceQuantityCommon?.toFixed()}
-                    onInvalid={(event) => {
-                      if (event.currentTarget.validity.patternMismatch) {
-                        event.currentTarget.setCustomValidity(
-                          'Amount must be a positive number'
-                        );
-                      } else if (event.currentTarget.validity.valueMissing) {
-                        event.currentTarget.setCustomValidity(
-                          'Amount is required'
-                        );
-                      }
-                    }}
-                    onInput={(event) => {
-                      event.currentTarget.setCustomValidity('');
-                      if (event.currentTarget.validity.valid) {
-                        updateAllowanceQuantityUsd(event.currentTarget.value);
-                      } else {
-                        setAllowanceQuantityUsd(null);
-                      }
-                    }}
-                  />
-                </UIText>
-              </HStack>
-            }
-            detailText={null}
-          />
-          <HStack
-            gap={12}
-            style={{
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gridAutoColumns: 'max-content auto',
-            }}
-          >
-            <HStack gap={4}>
-              <UIText
-                kind="small/regular"
-                style={{ color: 'var(--neutral-600)' }}
-              >
-                Balance:
-              </UIText>
-              <UIText
-                title={balance?.toString()}
-                kind="small/regular"
-                style={{ color: 'var(--primary-500)' }}
-              >
-                {balance ? (
-                  <UnstyledButton
-                    type="button"
-                    onClick={() => {
-                      setIsAllowanceUnlimited(false);
-                      setAllowanceQuantityCommon(balance.toFixed());
+                  <UIText kind="headline/h3">
+                    <AssetLink asset={asset} address={address} />
+                  </UIText>
+                  {isAllowanceUnlimited ? (
+                    <InfinityIcon
+                      style={{
+                        width: 24,
+                        height: 24,
+                        color: 'var(--neutral-500)',
+                      }}
+                    />
+                  ) : null}
+                  <UIText
+                    kind="headline/h3"
+                    style={{
+                      display: isAllowanceUnlimited ? 'none' : 'initial',
                     }}
                   >
-                    <UIText
-                      className={s.hoverUnderline}
-                      kind="small/regular"
-                      color="var(--primary-500)"
+                    <UnstyledInput
+                      ref={allowanceQuantityCommonRef}
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="0"
+                      name="amount"
+                      style={{ textAlign: 'end' }}
+                      required={!isAllowanceUnlimited}
+                      pattern="^(\d+\.)?\d+"
+                      defaultValue={currentAllowanceQuantityCommon?.toFixed()}
+                      onInvalid={(event) => {
+                        if (event.currentTarget.validity.patternMismatch) {
+                          event.currentTarget.setCustomValidity(
+                            'Amount must be a positive number'
+                          );
+                        } else if (event.currentTarget.validity.valueMissing) {
+                          event.currentTarget.setCustomValidity(
+                            'Amount is required'
+                          );
+                        }
+                      }}
+                      onInput={(event) => {
+                        event.currentTarget.setCustomValidity('');
+                        if (event.currentTarget.validity.valid) {
+                          updateAllowanceQuantityUsd(event.currentTarget.value);
+                        } else {
+                          setAllowanceQuantityUsd(null);
+                        }
+                      }}
+                    />
+                  </UIText>
+                </HStack>
+              }
+              detailText={null}
+            />
+            <HStack
+              gap={12}
+              style={{
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gridAutoColumns: 'max-content auto',
+              }}
+            >
+              <HStack gap={4}>
+                <UIText
+                  kind="small/regular"
+                  style={{ color: 'var(--neutral-600)' }}
+                >
+                  Balance:
+                </UIText>
+                <UIText
+                  title={balance?.toString()}
+                  kind="small/regular"
+                  style={{ color: 'var(--primary-500)' }}
+                >
+                  {balance ? (
+                    <UnstyledButton
+                      type="button"
+                      onClick={() => {
+                        setIsAllowanceUnlimited(false);
+                        setAllowanceQuantityCommon(balance.toFixed());
+                      }}
                     >
-                      {formatTokenValue(balance)}
-                    </UIText>
-                  </UnstyledButton>
-                ) : (
-                  noValueDash
-                )}
-              </UIText>
+                      <UIText
+                        className={s.hoverUnderline}
+                        kind="small/regular"
+                        color="var(--primary-500)"
+                      >
+                        {formatTokenValue(balance)}
+                      </UIText>
+                    </UnstyledButton>
+                  ) : (
+                    noValueDash
+                  )}
+                </UIText>
+              </HStack>
+              {isAllowanceUnlimited || allowanceQuantityUsd == null ? null : (
+                <UIText
+                  kind="small/regular"
+                  style={{
+                    color: 'var(--neutral-500)',
+                    textAlign: 'end',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: '100%',
+                  }}
+                >
+                  {almostEqual}
+                  {formatCurrencyValue(allowanceQuantityUsd, 'en', 'usd')}
+                </UIText>
+              )}
             </HStack>
-            {isAllowanceUnlimited || allowanceQuantityUsd == null ? null : (
-              <UIText
-                kind="small/regular"
-                style={{
-                  color: 'var(--neutral-500)',
-                  textAlign: 'end',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  maxWidth: '100%',
-                }}
-              >
-                {almostEqual}
-                {formatCurrencyValue(allowanceQuantityUsd, 'en', 'usd')}
-              </UIText>
-            )}
+          </VStack>
+          <Spacer
+            style={{ borderTop: '1px solid var(--neutral-300)' }}
+            height={1}
+          />
+          <HStack gap={4} justifyContent="space-between">
+            <Media
+              image={null}
+              text={<UIText kind="body/accent">Unlimited Amount</UIText>}
+              vGap={4}
+              detailText={null}
+            />
+            <Toggle
+              checked={isAllowanceUnlimited}
+              onChange={(event) => {
+                setIsAllowanceUnlimited(event.currentTarget.checked);
+                if (event.currentTarget.checked) {
+                  allowanceQuantityCommonRef?.current?.setCustomValidity('');
+                }
+              }}
+            />
           </HStack>
         </VStack>
-        <Spacer
-          style={{ borderTop: '1px solid var(--neutral-300)' }}
-          height={1}
-        />
-        <HStack gap={4} justifyContent="space-between">
-          <Media
-            image={null}
-            text={<UIText kind="body/accent">Unlimited Amount</UIText>}
-            vGap={4}
-            detailText={null}
-          />
-          <Toggle
-            checked={isAllowanceUnlimited}
-            onChange={(event) => {
-              setIsAllowanceUnlimited(event.currentTarget.checked);
-              if (event.currentTarget.checked) {
-                allowanceQuantityCommonRef?.current?.setCustomValidity('');
-              }
-            }}
-          />
-        </HStack>
-      </VStack>
+      </form>
       <Spacer height={20} />
       {footerRenderArea ? (
         <Content name={footerRenderArea}>{submitRow}</Content>
       ) : (
         submitRow
       )}
-    </form>
+    </>
   );
 }
