@@ -438,4 +438,21 @@ export class Networks {
     }
     return url;
   }
+
+  hasMatchingConfig(config: AddEthereumChainParameter) {
+    /**
+     * Checks whether a network config for this chainId already exists
+     * and its RPC_URL value is the same
+     */
+    if (this.hasNetworkById(config.chainId)) {
+      const network = this.getNetworkById(config.chainId);
+      const currentRpcUrl = this.getRpcUrlInternal(createChain(network.chain));
+      return (
+        new URL(currentRpcUrl).toString() ===
+        new URL(config.rpcUrls[0]).toString()
+      );
+    } else {
+      return false;
+    }
+  }
 }
