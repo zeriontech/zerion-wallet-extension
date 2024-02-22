@@ -9,6 +9,10 @@ import type {
   Payload as RegisterChainPayload,
   Response as RegisterChainResponse,
 } from './requests/register-chain';
+import type {
+  Payload as RegisterAddressesPayload,
+  Response as RegisterAddressesResponse,
+} from './requests/register-wallets';
 
 function getZpiHeaders() {
   return {
@@ -29,7 +33,7 @@ export class ZerionAPI {
   }
   static registerChain(payload: RegisterChainPayload) {
     return ky
-      .post(new URL('wallet/connect/v1', ZERION_API_URL), {
+      .post(new URL('wallet/connect-chain/v1', ZERION_API_URL), {
         body: JSON.stringify({
           chain: payload.chain,
           identifier: payload.address,
@@ -37,5 +41,15 @@ export class ZerionAPI {
         headers: getZpiHeaders(),
       })
       .json<RegisterChainResponse>();
+  }
+  static registerAddresses(payload: RegisterAddressesPayload) {
+    return ky
+      .post(new URL('wallet/import/v1', ZERION_API_URL), {
+        body: JSON.stringify({
+          addresses: payload.addressses,
+        }),
+        headers: getZpiHeaders(),
+      })
+      .json<RegisterAddressesResponse>();
   }
 }
