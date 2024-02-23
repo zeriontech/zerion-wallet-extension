@@ -38,7 +38,9 @@ function useNativeAddressPosition({
           item.type === 'asset' &&
           !item.protocol
       ) ?? [];
-    invariant(nativePositions.length <= 1, 'multiple native positions');
+    if (nativePositions.length > 1) {
+      console.warn('multiple native positions');
+    }
     return {
       data: nativePositions[0],
       isLoading,
