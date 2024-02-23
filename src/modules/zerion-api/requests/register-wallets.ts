@@ -1,5 +1,5 @@
 export interface Payload {
-  addressses: string[];
+  addresses: string[];
 }
 
 export interface Response {

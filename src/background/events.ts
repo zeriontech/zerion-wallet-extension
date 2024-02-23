@@ -4,6 +4,7 @@ import type { AnyAddressAction } from 'src/modules/ethereum/transactions/address
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { Quote } from 'src/shared/types/Quote';
+import type { Chain } from 'src/modules/networks/Chain';
 import type { State as GlobalPreferencesState } from './Wallet/GlobalPreferences';
 import type { WalletOrigin } from './Wallet/model/WalletOrigin';
 import type { WalletContainer } from './Wallet/model/types';
@@ -25,7 +26,8 @@ export interface DaylightEventParams {
 
 export const emitter = createNanoEvents<{
   accountsChanged: () => void;
-  chainChanged: () => void;
+  chainsUpdated: () => void;
+  chainChanged: (chain: Chain) => void;
   transactionSent: (data: {
     transaction: TransactionResponse;
     initiator: string;

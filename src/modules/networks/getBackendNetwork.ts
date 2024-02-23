@@ -6,10 +6,10 @@ import type { Chain } from './Chain';
 import type { NetworkConfig } from './NetworkConfig';
 
 function maybeLocalChainId(id: string) {
-  return id.length === 21; // nanoid() standart length
+  return id.length === 21; // nanoid() standard length
 }
 
-async function getChainId(network?: NetworkConfig) {
+async function fetchNetworkConfigIfSupported(network?: NetworkConfig) {
   if (!network) {
     return null;
   }
@@ -34,11 +34,11 @@ async function getChainId(network?: NetworkConfig) {
 export async function getBackendNetworkByLocalChain(chain: Chain) {
   const networks = await networksStore.load();
   const network = networks.getNetworkByName(chain);
-  return getChainId(network);
+  return fetchNetworkConfigIfSupported(network);
 }
 
 export async function getBackendNetworkByChainId(chainId: string | number) {
   const networks = await networksStore.load();
   const network = networks.getNetworkById(ethers.utils.hexValue(chainId));
-  return getChainId(network);
+  return fetchNetworkConfigIfSupported(network);
 }

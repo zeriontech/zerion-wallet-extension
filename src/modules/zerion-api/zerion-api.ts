@@ -46,7 +46,7 @@ export class ZerionAPI {
     return ky
       .post(new URL('wallet/import/v1', ZERION_API_URL), {
         body: JSON.stringify({
-          addresses: payload.addressses,
+          addresses: payload.addresses,
         }),
         headers: getZpiHeaders(),
       })

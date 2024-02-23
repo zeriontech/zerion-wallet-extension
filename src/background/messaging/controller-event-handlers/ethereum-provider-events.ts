@@ -60,7 +60,7 @@ export class EthereumEventsBroadcaster implements Listener {
     );
 
     this.disposers.push(
-      emitter.on('chainChanged', async () => {
+      emitter.on('chainsUpdated', async () => {
         this.getClientPorts().forEach(async (port) => {
           const wallet = this.account.getCurrentWallet();
           const chainId = await wallet.publicEthereumController.eth_chainId({
