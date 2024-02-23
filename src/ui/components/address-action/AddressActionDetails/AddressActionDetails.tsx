@@ -18,6 +18,7 @@ export function AddressActionDetails({
   actionTransfers,
   singleAsset,
   allowanceQuantityBase,
+  singleAssetElementEnd,
 }: {
   recipientAddress?: string;
   addressAction?: Pick<AnyAddressAction, 'label' | 'type'>;
@@ -27,6 +28,7 @@ export function AddressActionDetails({
   actionTransfers?: ActionTransfers;
   singleAsset?: NonNullable<AddressAction['content']>['single_asset'];
   allowanceQuantityBase?: string;
+  singleAssetElementEnd: React.ReactNode;
 }) {
   return (
     <>
@@ -59,6 +61,7 @@ export function AddressActionDetails({
           actionType={addressAction.type.value}
           singleAsset={singleAsset}
           allowanceQuantityBase={allowanceQuantityBase}
+          elementEnd={singleAssetElementEnd}
         />
       ) : null}
     </>

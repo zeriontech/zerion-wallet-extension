@@ -278,19 +278,19 @@ function TransactionDefaultView({
           actionTransfers={actionTransfers}
           singleAsset={singleAsset}
           allowanceQuantityBase={allowanceQuantityBase}
+          singleAssetElementEnd={
+            allowanceQuantityBase && addressAction.type.value === 'approve' ? (
+              <UIText
+                as={TextLink}
+                kind="small/accent"
+                style={{ color: 'var(--primary)' }}
+                to={allowanceViewHref}
+              >
+                Edit
+              </UIText>
+            ) : null
+          }
         />
-        {allowanceQuantityBase && addressAction.type.value === 'approve' ? (
-          <Content name="single-asset-quantity-right">
-            <UIText
-              as={TextLink}
-              kind="small/accent"
-              style={{ color: 'var(--primary)' }}
-              to={allowanceViewHref}
-            >
-              Edit
-            </UIText>
-          </Content>
-        ) : null}
         {interpretQuery.isInitialLoading ? (
           <InterpretLoadingState />
         ) : interpretQuery.isError ? (

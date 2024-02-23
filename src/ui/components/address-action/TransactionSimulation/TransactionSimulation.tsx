@@ -10,7 +10,6 @@ import { incomingTxToIncomingAddressAction } from 'src/modules/ethereum/transact
 import { interpretTransaction } from 'src/modules/ethereum/transactions/interpret';
 import { walletPort } from 'src/ui/shared/channels';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { Content } from 'react-area';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { InterpretLoadingState } from '../../InterpretLoadingState';
 import { AddressActionDetails } from '../AddressActionDetails';
@@ -114,16 +113,20 @@ export function TransactionSimulation({
         actionTransfers={actionTransfers}
         singleAsset={singleAsset}
         allowanceQuantityBase={allowanceQuantityBase}
+        singleAssetElementEnd={
+          allowanceQuantityBase && onOpenAllowanceForm ? (
+            <UnstyledButton
+              type="button"
+              className="hover:underline"
+              onClick={onOpenAllowanceForm}
+            >
+              <UIText kind="small/accent" color="var(--primary)">
+                Edit
+              </UIText>
+            </UnstyledButton>
+          ) : null
+        }
       />
-      {allowanceQuantityBase && onOpenAllowanceForm ? (
-        <Content name="single-asset-quantity-right">
-          <UnstyledButton type="button" onClick={onOpenAllowanceForm}>
-            <UIText kind="small/accent" color="var(--primary)">
-              Edit
-            </UIText>
-          </UnstyledButton>
-        </Content>
-      ) : null}
       {interpretQuery.isLoading ? (
         <InterpretLoadingState />
       ) : interpretQuery.isError ? (

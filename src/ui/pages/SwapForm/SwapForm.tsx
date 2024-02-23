@@ -266,6 +266,7 @@ export function SwapForm() {
     spender: quote?.token_spender ?? null,
     contractAddress,
     enabled: quotesData.done && Boolean(quote && !quote.enough_allowance),
+    keepPreviousData: true,
   });
 
   const signerSenderRef = useRef<SignerSenderHandle | null>(null);

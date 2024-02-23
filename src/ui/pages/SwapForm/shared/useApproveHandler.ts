@@ -16,6 +16,7 @@ export function useApproveHandler({
   spender,
   chain,
   enabled = true,
+  keepPreviousData = false,
 }: {
   address: string;
   spendAmountBase: string | null;
@@ -24,6 +25,7 @@ export function useApproveHandler({
   spender: string | null;
   chain: Chain | null;
   enabled?: boolean;
+  keepPreviousData?: boolean;
 }) {
   const allowanceQuery = useQuery({
     queryKey: [
@@ -46,7 +48,7 @@ export function useApproveHandler({
       });
     },
     staleTime: 20000,
-    keepPreviousData: true,
+    keepPreviousData,
     suspense: false,
     enabled: Boolean(enabled && contractAddress && spender && chain),
     useErrorBoundary: true,
