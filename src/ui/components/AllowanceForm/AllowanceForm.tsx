@@ -220,7 +220,7 @@ export function AllowanceForm({
                       inputMode="decimal"
                       placeholder="0"
                       name="amount"
-                      style={{ textAlign: 'end' }}
+                      style={{ width: '100%', textAlign: 'end' }}
                       required={!isAllowanceUnlimited}
                       pattern="^(\d+\.)?\d+"
                       defaultValue={currentAllowanceQuantityCommon?.toFixed()}
