@@ -83,7 +83,11 @@ enum View {
 
 function applyAllowance(typedData: TypedData, allowanceQuantityBase: string) {
   return produce(typedData, (draft) => {
-    draft.message.value = allowanceQuantityBase;
+    if (draft.message.details) {
+      draft.message.details.amount = allowanceQuantityBase;
+    } else {
+      draft.message.value = allowanceQuantityBase;
+    }
   });
 }
 
@@ -161,15 +165,12 @@ function TypedDataDefaultView({
     null
   );
 
-  const stringifiedData = useMemo(
-    () =>
-      JSON.stringify(
-        allowanceQuantityBase
-          ? applyAllowance(typedData, allowanceQuantityBase)
-          : typedData
-      ),
-    [allowanceQuantityBase, typedData]
-  );
+  const stringifiedData = useMemo(() => {
+    const newTypedData = allowanceQuantityBase
+      ? applyAllowance(typedData, allowanceQuantityBase)
+      : typedData;
+    return JSON.stringify(newTypedData);
+  }, [allowanceQuantityBase, typedData]);
 
   const { mutate: registerTypedDataSign } = useMutation({
     mutationFn: async (signature: string) => {
@@ -411,7 +412,11 @@ function SignTypedDataContent({
   const typedData = useMemo(() => {
     const result = toTypedData(typedDataRaw);
     if (allowanceQuantityBase) {
-      result.message.value = allowanceQuantityBase;
+      if (result.message.details) {
+        result.message.details.amount = allowanceQuantityBase;
+      } else {
+        result.message.value = allowanceQuantityBase;
+      }
     }
     return result;
   }, [typedDataRaw, allowanceQuantityBase]);
