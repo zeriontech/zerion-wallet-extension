@@ -202,6 +202,7 @@ export class ContentScriptManager {
     await chrome.scripting.registerContentScripts([
       {
         id: 'zerion-extension-content-script',
+        allFrames: true,
         js: inPageScriptLocation.resources,
         excludeMatches,
         matches,
