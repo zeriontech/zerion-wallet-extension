@@ -4,6 +4,7 @@ import {
   DEFI_SDK_API_TOKEN,
   BACKEND_ENV,
 } from 'src/env/config';
+import { platform, version } from 'src/shared/packageVersion';
 import { hooks } from './defi-sdk-config';
 
 export function configureBackgroundClient() {
@@ -16,8 +17,11 @@ export function configureBackgroundClient() {
     url: DEFI_SDK_API_URL,
     apiToken: DEFI_SDK_API_TOKEN,
     hooks,
-    ioOptions: BACKEND_ENV
-      ? { query: { backend_env: BACKEND_ENV } }
-      : undefined,
+    ioOptions: {
+      query: Object.assign(
+        { platform, platform_version: version },
+        BACKEND_ENV ? { backend_env: BACKEND_ENV } : undefined
+      ),
+    },
   });
 }

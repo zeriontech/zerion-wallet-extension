@@ -1,5 +1,5 @@
 import ky from 'ky';
-import { version } from 'src/shared/packageVersion';
+import { platform, version } from 'src/shared/packageVersion';
 import { ZERION_API_URL } from 'src/env/config';
 import type {
   Payload as SecurityCheckUrlPayload,
@@ -17,7 +17,7 @@ import type {
 function getZpiHeaders() {
   return {
     'X-Request-Id': crypto.randomUUID(),
-    'Zerion-Client-Type': 'web-extension',
+    'Zerion-Client-Type': platform,
     'Zerion-Client-Version': version,
   };
 }
