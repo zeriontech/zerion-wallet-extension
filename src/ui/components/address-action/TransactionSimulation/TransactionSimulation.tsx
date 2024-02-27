@@ -10,6 +10,7 @@ import { incomingTxToIncomingAddressAction } from 'src/modules/ethereum/transact
 import { interpretTransaction } from 'src/modules/ethereum/transactions/interpret';
 import { walletPort } from 'src/ui/shared/channels';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { InterpretLoadingState } from '../../InterpretLoadingState';
 import { AddressActionDetails } from '../AddressActionDetails';
 
@@ -17,10 +18,14 @@ export function TransactionSimulation({
   vGap = 16,
   address,
   transaction,
+  localAllowanceQuantityBase,
+  onOpenAllowanceForm,
 }: {
   vGap?: number;
   address: string;
   transaction: IncomingTransactionWithChainId;
+  localAllowanceQuantityBase?: string;
+  onOpenAllowanceForm?: () => void;
 }) {
   const { networks } = useNetworks();
   invariant(transaction.chainId, 'transaction must have a chainId value');
@@ -92,7 +97,10 @@ export function TransactionSimulation({
   const recipientAddress = addressAction.label?.display_value.wallet_address;
   const actionTransfers = addressAction.content?.transfers;
   const singleAsset = addressAction.content?.single_asset;
-  const allowanceQuantityBase = addressAction.content?.single_asset?.quantity;
+
+  const allowanceQuantityBase = interpretQuery.isFetching
+    ? localAllowanceQuantityBase
+    : addressAction.content?.single_asset?.quantity;
 
   return (
     <VStack gap={vGap}>
@@ -105,7 +113,19 @@ export function TransactionSimulation({
         actionTransfers={actionTransfers}
         singleAsset={singleAsset}
         allowanceQuantityBase={allowanceQuantityBase}
-        allowanceViewHref={undefined}
+        singleAssetElementEnd={
+          allowanceQuantityBase && onOpenAllowanceForm ? (
+            <UnstyledButton
+              type="button"
+              className="hover:underline"
+              onClick={onOpenAllowanceForm}
+            >
+              <UIText kind="small/accent" color="var(--primary)">
+                Edit
+              </UIText>
+            </UnstyledButton>
+          ) : null
+        }
       />
       {interpretQuery.isLoading ? (
         <InterpretLoadingState />

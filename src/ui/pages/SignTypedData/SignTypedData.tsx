@@ -44,7 +44,7 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
 import type { Networks } from 'src/modules/networks/Networks';
 import { PageTop } from 'src/ui/components/PageTop';
-import { CustomAllowanceView } from 'src/ui/components/CustomAllowanceView';
+import { AllowanceView } from 'src/ui/components/AllowanceView';
 import { produce } from 'immer';
 import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
@@ -56,6 +56,7 @@ import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOri
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import { TextLink } from 'src/ui/ui-kit/TextLink';
 import { HardwareSignMessage } from '../HardwareWalletConnection/HardwareSignMessage';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
@@ -82,7 +83,11 @@ enum View {
 
 function applyAllowance(typedData: TypedData, allowanceQuantityBase: string) {
   return produce(typedData, (draft) => {
-    draft.message.value = allowanceQuantityBase;
+    if (draft.message.details) {
+      draft.message.details.amount = allowanceQuantityBase;
+    } else {
+      draft.message.value = allowanceQuantityBase;
+    }
   });
 }
 
@@ -160,15 +165,12 @@ function TypedDataDefaultView({
     null
   );
 
-  const stringifiedData = useMemo(
-    () =>
-      JSON.stringify(
-        allowanceQuantityBase
-          ? applyAllowance(typedData, allowanceQuantityBase)
-          : typedData
-      ),
-    [allowanceQuantityBase, typedData]
-  );
+  const stringifiedData = useMemo(() => {
+    const newTypedData = allowanceQuantityBase
+      ? applyAllowance(typedData, allowanceQuantityBase)
+      : typedData;
+    return JSON.stringify(newTypedData);
+  }, [allowanceQuantityBase, typedData]);
 
   const { mutate: registerTypedDataSign } = useMutation({
     mutationFn: async (signature: string) => {
@@ -305,10 +307,19 @@ function TypedDataDefaultView({
               wallet={wallet}
               singleAsset={addressAction?.content?.single_asset}
               allowanceQuantityBase={allowanceQuantityBase || undefined}
-              allowanceViewHref={allowanceViewHref}
-              // TODO: create SignMessageButton (like SignTransactionButton)
-              // and set disabled state when sign mutation is loading (see SendTransaction.tsx)
-              // disabled={...}
+              singleAssetElementEnd={
+                allowanceQuantityBase &&
+                addressAction.type.value === 'approve' ? (
+                  <UIText
+                    as={TextLink}
+                    kind="small/accent"
+                    style={{ color: 'var(--primary)' }}
+                    to={allowanceViewHref}
+                  >
+                    Edit
+                  </UIText>
+                ) : null
+              }
             />
             {typedDataFormatted ? (
               <Button kind="regular" onClick={onOpenAdvancedView}>
@@ -401,7 +412,11 @@ function SignTypedDataContent({
   const typedData = useMemo(() => {
     const result = toTypedData(typedDataRaw);
     if (allowanceQuantityBase) {
-      result.message.value = allowanceQuantityBase;
+      if (result.message.details) {
+        result.message.details.amount = allowanceQuantityBase;
+      } else {
+        result.message.value = allowanceQuantityBase;
+      }
     }
     return result;
   }, [typedDataRaw, allowanceQuantityBase]);
@@ -500,7 +515,7 @@ function SignTypedDataContent({
           )}
         />
         {view === View.customAllowance ? (
-          <CustomAllowanceView
+          <AllowanceView
             address={wallet.address}
             asset={getFungibleAsset(singleAsset?.asset)}
             value={allowanceQuantityBase}
