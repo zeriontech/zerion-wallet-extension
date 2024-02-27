@@ -1655,21 +1655,26 @@ class PublicController {
     invariant(context?.origin, 'This method requires origin');
     invariant(params[0], () => new InvalidParams());
     const { origin } = context;
+    const networks = await networksStore.load();
     return new Promise((resolve, reject) => {
-      this.notificationWindow.open({
-        requestId: `${origin}:${id}`,
-        route: '/addEthereumChain',
-        search: `?${new URLSearchParams({
-          origin,
-          addEthereumChainParameter: JSON.stringify(params[0]),
-        })}`,
-        onResolve: () => {
-          resolve(null); // null indicates success as per spec
-        },
-        onDismiss: () => {
-          reject(new UserRejected());
-        },
-      });
+      if (networks.hasMatchingConfig(params[0])) {
+        resolve(null); // null indicates success as per spec
+      } else {
+        this.notificationWindow.open({
+          requestId: `${origin}:${id}`,
+          route: '/addEthereumChain',
+          search: `?${new URLSearchParams({
+            origin,
+            addEthereumChainParameter: JSON.stringify(params[0]),
+          })}`,
+          onResolve: () => {
+            resolve(null); // null indicates success as per spec
+          },
+          onDismiss: () => {
+            reject(new UserRejected());
+          },
+        });
+      }
     }).then(() => {
       // Automatically switch dapp to this network because this is what most dapps seem to expect
       return this.wallet_switchEthereumChain({
