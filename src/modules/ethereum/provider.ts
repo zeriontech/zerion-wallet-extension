@@ -35,7 +35,8 @@ async function fetchInitialState(connection: Connection) {
 
 class MetamaskExperimentalNamespace {
   isUnlocked() {
-    throw new MethodNotImplemented('_metamask.isUnlocked: Not implemented');
+    return true;
+    // throw new MethodNotImplemented('_metamask.isUnlocked: Not implemented');
   }
 
   requestBatch() {
@@ -54,7 +55,7 @@ export class EthereumProvider extends JsonRpcProvider {
   isZerion = true;
   isMetaMask?: boolean;
   // Metamask provides this proxy with few experimental functions
-  // Some dapps rely on it's methods (e.g. app.hop.exchange)
+  // Some dapps rely on its methods (e.g. app.hop.exchange)
   _metamask?: MetamaskExperimentalNamespace;
   connection: Connection;
   _openPromise: Promise<void> | null = null;
