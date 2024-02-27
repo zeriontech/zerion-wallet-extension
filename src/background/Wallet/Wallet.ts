@@ -1536,6 +1536,7 @@ class PublicController {
   async wallet_switchEthereumChain({
     params,
     context,
+    id,
   }: PublicMethodParams<[{ chainId: string | number }]>): Promise<
     null | object
   > {
@@ -1543,13 +1544,34 @@ class PublicController {
     if (!currentAddress) {
       throw new Error('Wallet is not initialized');
     }
-    if (!this.wallet.allowedOrigin(context, currentAddress)) {
+    if (!context || !context.origin) {
       throw new OriginNotAllowed();
     }
     invariant(params[0], () => new InvalidParams());
     const { origin } = context;
     const { chainId: chainIdParameter } = params[0];
     const chainId = ethers.utils.hexValue(chainIdParameter);
+
+    if (!this.wallet.allowedOrigin(context, currentAddress)) {
+      const networks = await networksStore.load();
+      const chain = networks.getChainById(chainId);
+      return new Promise((resolve, reject) => {
+        this.safeOpenDialogWindow(origin, {
+          requestId: `${context.origin}:${id}_switchEthereumChain`,
+          route: '/switchEthereumChain',
+          search: `?origin=${origin}&chainId=${chainId}`,
+          onResolve: () => {
+            this.wallet.setChainForOrigin(chain, origin);
+            resolve(null);
+            this.wallet.emitter.emit('chainChanged', chain, origin);
+          },
+          onDismiss: () => {
+            reject(new UserRejected('User Rejected the Request'));
+          },
+        });
+      });
+    }
+
     const currentChainIdForThisOrigin = await this.wallet.getChainIdForOrigin({
       origin,
     });
@@ -1568,20 +1590,6 @@ class PublicController {
     } catch (e) {
       throw new SwitchChainError(`Chain not configured: ${chainIdParameter}`);
     }
-    // return new Promise((resolve, reject) => {
-    //   notificationWindow.open({
-    //     route: '/switchEthereumChain',
-    //     search: `?origin=${origin}&chainId=${chainId}`,
-    //     onResolve: () => {
-    //       this.wallet.setChainId(chainId);
-    //       resolve(null);
-    //       this.wallet.emitter.emit('chainChanged', chainId);
-    //     },
-    //     onDismiss: () => {
-    //       reject(new UserRejected('User Rejected the Request'));
-    //     },
-    //   });
-    // });
   }
 
   async wallet_getWalletNameFlags({
@@ -1660,7 +1668,7 @@ class PublicController {
       if (networks.hasMatchingConfig(params[0])) {
         resolve(null); // null indicates success as per spec
       } else {
-        this.notificationWindow.open({
+        this.safeOpenDialogWindow(origin, {
           requestId: `${origin}:${id}`,
           route: '/addEthereumChain',
           search: `?${new URLSearchParams({
@@ -1673,15 +1681,15 @@ class PublicController {
           onDismiss: () => {
             reject(new UserRejected());
           },
+        }).then(async () => {
+          // Automatically switch dapp to this network because this is what most dapps seem to expect
+          return this.wallet_switchEthereumChain({
+            id,
+            context,
+            params: [{ chainId: params[0].chainId }],
+          });
         });
       }
-    }).then(() => {
-      // Automatically switch dapp to this network because this is what most dapps seem to expect
-      return this.wallet_switchEthereumChain({
-        id,
-        context,
-        params: [{ chainId: params[0].chainId }],
-      });
     });
   }
 

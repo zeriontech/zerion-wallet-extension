@@ -1,5 +1,6 @@
 import React from 'react';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import type { Kind } from 'src/ui/ui-kit/UIText';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { Chain } from 'src/modules/networks/Chain';
@@ -9,21 +10,23 @@ export function NetworkIndicator({
   chain,
   networks,
   size = 20,
+  kind = 'small/regular',
 }: {
   chain: Chain;
   networks: Networks;
   size?: number;
+  kind?: Kind;
 }) {
   const network = networks.getNetworkByName(chain);
   return (
-    <HStack gap={4} alignItems="center">
+    <HStack gap={size < 28 ? 4 : 8} alignItems="center">
       <NetworkIcon
         src={network?.icon_url}
         chainId={network?.external_id || ''}
         size={size}
         name={network?.name || null}
       />
-      <UIText kind="small/regular">{networks.getChainName(chain)}</UIText>
+      <UIText kind={kind}>{networks.getChainName(chain)}</UIText>
     </HStack>
   );
 }

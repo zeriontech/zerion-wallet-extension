@@ -61,8 +61,8 @@ export async function createBrowserWindow({
   } as Windows.GetInfo);
 
   const position = {
-    top: top ?? currentWindowTop + BROWSER_HEADER,
-    left: left ?? currentWindowLeft + currentWindowWidth - width,
+    top: Math.max(top ?? currentWindowTop + BROWSER_HEADER, 0),
+    left: Math.max(left ?? currentWindowLeft + currentWindowWidth - width, 0),
   };
 
   let heightValue = DEFAULT_WINDOW_SIZE.height;

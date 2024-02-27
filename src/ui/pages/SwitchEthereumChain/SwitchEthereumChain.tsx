@@ -7,12 +7,15 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
-import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { useQuery } from '@tanstack/react-query';
 import { NetworkIndicator } from 'src/ui/components/NetworkIndicator';
-import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
 import { invariant } from 'src/shared/invariant';
 import { useNetworks } from 'src/modules/networks/useNetworks';
+import { NavigationTitle } from 'src/ui/components/NavigationTitle';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
+import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
+import { PageBottom } from 'src/ui/components/PageBottom';
 
 export function SwitchEthereumChain() {
   const [params] = useSearchParams();
@@ -44,55 +47,72 @@ export function SwitchEthereumChain() {
   }
 
   return (
-    <PageColumn>
-      <PageTop />
-      <div style={{ display: 'grid', placeItems: 'center' }}>
-        <ZerionSquircle style={{ width: 44, height: 44 }} />
+    <>
+      <PageColumn>
+        <NavigationTitle title={null} documentTitle={'Switch network'} />
+        <PageTop />
+        <div
+          style={{
+            padding: 16,
+            border: '1px solid var(--neutral-400)',
+            borderRadius: 12,
+          }}
+        >
+          <VStack gap={8}>
+            <HStack gap={8} alignItems="center">
+              <SiteFaviconImg url={origin} alt="" size={32} />
+              <UIText kind="headline/h2">{originName}</UIText>
+            </HStack>
+            <UIText kind="small/accent" color="var(--neutral-500)">
+              Suggests you switch current network
+            </UIText>
+          </VStack>
+        </div>
         <Spacer height={16} />
-        <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
-          Switch Chain Request ({chainId})
-        </UIText>
-        <Spacer height={8} />
-        <UIText kind="small/regular" color="var(--primary)">
-          {originName}
-        </UIText>
-        <Spacer height={8} />
-        <NetworkIndicator
-          chain={networks.getChainById(chainId)}
-          networks={networks}
-        />
-      </div>
-      <Spacer height={24} />
-      <UIText kind="small/regular" style={{ textAlign: 'center' }}>
-        <i>Screen to be completed</i>
-      </UIText>
-      <Spacer height={16} />
-      <Spacer height={16} />
-
-      <VStack
-        style={{ textAlign: 'center', marginTop: 'auto', paddingBottom: 32 }}
-        gap={8}
-      >
-        <Button
-          onClick={() => {
-            const windowId = params.get('windowId');
-            invariant(windowId, 'windowId get-parameter is required');
-            windowPort.confirm(windowId, null);
+        <VStack gap={8}>
+          <UIText kind="small/accent" color="var(--neutral-500)">
+            New network:
+          </UIText>
+          <NetworkIndicator
+            size={32}
+            kind="headline/h3"
+            chain={networks.getChainById(chainId)}
+            networks={networks}
+          />
+        </VStack>
+      </PageColumn>
+      <PageStickyFooter>
+        <Spacer height={16} />
+        <div
+          style={{
+            marginTop: 'auto',
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: 8,
           }}
         >
-          Approve
-        </Button>
-        <UnstyledButton
-          style={{ color: 'var(--primary)' }}
-          onClick={() => {
-            const windowId = params.get('windowId');
-            invariant(windowId, 'windowId get-parameter is required');
-            windowPort.reject(windowId);
-          }}
-        >
-          Reject
-        </UnstyledButton>
-      </VStack>
-    </PageColumn>
+          <Button
+            kind="regular"
+            onClick={() => {
+              const windowId = params.get('windowId');
+              invariant(windowId, 'windowId get-parameter is required');
+              windowPort.reject(windowId);
+            }}
+          >
+            Reject
+          </Button>
+          <Button
+            onClick={() => {
+              const windowId = params.get('windowId');
+              invariant(windowId, 'windowId get-parameter is required');
+              windowPort.confirm(windowId, null);
+            }}
+          >
+            Approve
+          </Button>
+        </div>
+        <PageBottom />
+      </PageStickyFooter>
+    </>
   );
 }
