@@ -65,10 +65,12 @@ export const HardwareSignTransaction = React.forwardRef(
       derivationPath,
       isSending,
       children,
+      buttonTitle,
       ...buttonProps
     }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
       derivationPath: string;
       isSending: boolean;
+      buttonTitle?: React.ReactNode;
     },
     ref: React.Ref<SignHandle>
   ) {
@@ -164,7 +166,7 @@ export const HardwareSignTransaction = React.forwardRef(
             <HStack gap={8} alignItems="center" justifyContent="center">
               <LedgerIcon />
               {children || // all this will definitely be refactored soon
-                (isSending ? 'Sending' : 'Sign with Ledger')}
+                (isSending ? 'Sending' : buttonTitle || 'Sign with Ledger')}
             </HStack>
           </Button>
         )}

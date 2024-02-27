@@ -6,7 +6,6 @@ import { getDecimals } from 'src/modules/networks/asset';
 import { useAddressPositions } from 'defi-sdk';
 import { isTruthy } from 'is-truthy-ts';
 import { useNetworks } from 'src/modules/networks/useNetworks';
-import { invariant } from 'src/shared/invariant';
 import { useEvmNativeAddressPosition } from './useEvmNativeAddressPosition';
 import { useNativeAssetId } from './useNativeAsset';
 

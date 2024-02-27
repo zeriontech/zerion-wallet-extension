@@ -8,12 +8,13 @@ import cx from 'classnames';
 import { UIText } from '../UIText';
 import * as styles from './styles.module.css';
 
-type Kind =
+export type Kind =
   | 'primary'
   | 'regular'
   | 'neutral'
   | 'ghost'
   | 'danger'
+  | 'warning'
   | 'loading-border'
   | 'text-primary';
 type Size = 60 | 56 | 48 | 44 | 40 | 36 | 32 | 28;
@@ -32,6 +33,7 @@ const borderRaduis: Record<Size, number> = {
 const kinds: { [kind in Kind]: (size: number) => React.CSSProperties } = {
   primary: () => ({ paddingInline: 48 }),
   danger: () => ({}),
+  warning: () => ({}),
   regular: () => ({}),
   neutral: () => ({}),
   ghost: (size) => {

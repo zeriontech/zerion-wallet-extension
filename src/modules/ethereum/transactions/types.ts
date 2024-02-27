@@ -13,9 +13,12 @@ export interface TransactionObject {
 
 export type StoredTransactions = Array<TransactionObject>;
 
+export type WarningSeverity = 'Red' | 'Orange' | 'Yellow' | 'Gray';
+
 interface Warning {
-  severity: string;
-  message: string;
+  severity: WarningSeverity;
+  title?: string;
+  description: string;
 }
 
 interface Block {

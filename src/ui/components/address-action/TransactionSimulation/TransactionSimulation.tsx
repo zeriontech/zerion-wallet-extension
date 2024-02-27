@@ -1,6 +1,7 @@
 import React from 'react';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { useQuery } from '@tanstack/react-query';
+import { RenderArea } from 'react-area';
 import type { IncomingTransactionWithChainId } from 'src/modules/ethereum/types/IncomingTransaction';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { describeTransaction } from 'src/modules/ethereum/transactions/describeTransaction';
@@ -11,8 +12,8 @@ import { interpretTransaction } from 'src/modules/ethereum/transactions/interpre
 import { walletPort } from 'src/ui/shared/channels';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { InterpretLoadingState } from '../../InterpretLoadingState';
 import { AddressActionDetails } from '../AddressActionDetails';
+import { InterpretationState } from '../../InterpretationState';
 
 export function TransactionSimulation({
   vGap = 16,
@@ -80,7 +81,11 @@ export function TransactionSimulation({
     queryKey: ['interpretTransaction', transaction],
     queryFn: () => {
       invariant(transaction.from, 'transaction must have a from value');
-      return interpretTransaction(transaction.from, transaction);
+      return interpretTransaction({
+        address: transaction.from,
+        transaction,
+        origin: 'https://app.zerion.io',
+      });
     },
     // enabled: Boolean(incomingTxWithGasAndFee),
     keepPreviousData: true,
@@ -127,13 +132,11 @@ export function TransactionSimulation({
           ) : null
         }
       />
-      {interpretQuery.isLoading ? (
-        <InterpretLoadingState />
-      ) : interpretQuery.isError ? (
-        <UIText kind="small/regular" color="var(--notice-600)">
-          Unable to analyze the details of the transaction
-        </UIText>
-      ) : null}
+      <InterpretationState
+        interpretation={interpretation}
+        interpretQuery={interpretQuery}
+      />
+      <RenderArea name="transaction-warning-section" />
     </VStack>
   );
 }

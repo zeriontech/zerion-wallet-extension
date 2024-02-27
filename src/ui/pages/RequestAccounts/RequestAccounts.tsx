@@ -229,7 +229,7 @@ function RequestAccountsView({
         </VStack>
         <Spacer height={16} />
         <ZStack hideLowerElements={true}>
-          <PhishingDefenceStatus origin={origin} />
+          <PhishingDefenceStatus origin={origin} type="dapp" />
           <RequestAccountsPermissions originName={originName} />
         </ZStack>
         <div
