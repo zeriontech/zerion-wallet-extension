@@ -1557,7 +1557,7 @@ class PublicController {
       const chain = networks.getChainById(chainId);
       return new Promise((resolve, reject) => {
         this.safeOpenDialogWindow(origin, {
-          requestId: `${context.origin}:${id}_switchEthereumChain`,
+          requestId: `${context.origin}:${id}`,
           route: '/switchEthereumChain',
           search: `?origin=${origin}&chainId=${chainId}`,
           onResolve: () => {

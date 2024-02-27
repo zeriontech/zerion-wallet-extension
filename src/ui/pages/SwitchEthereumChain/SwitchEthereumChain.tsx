@@ -8,7 +8,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { useQuery } from '@tanstack/react-query';
-import { NetworkIndicator } from 'src/ui/components/NetworkIndicator';
 import { invariant } from 'src/shared/invariant';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -16,6 +15,11 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { PageBottom } from 'src/ui/components/PageBottom';
+import { NetworkIcon } from 'src/ui/components/NetworkIcon';
+import { noValueDash } from 'src/ui/shared/typography';
+import { DelayedRender } from 'src/ui/components/DelayedRender';
+import { Background } from 'src/ui/components/Background';
+import { ValueCell } from '../Networks/shared/ValueCell';
 
 export function SwitchEthereumChain() {
   const [params] = useSearchParams();
@@ -46,10 +50,13 @@ export function SwitchEthereumChain() {
     throw new Error('This view requires a chainId get-param');
   }
 
+  const chain = networks.getChainById(chainId);
+  const network = networks.getNetworkByName(chain);
+
   return (
-    <>
+    <Background backgroundKind="white">
       <PageColumn>
-        <NavigationTitle title={null} documentTitle={'Switch network'} />
+        <NavigationTitle title={null} documentTitle="Switch network" />
         <PageTop />
         <div
           style={{
@@ -68,18 +75,42 @@ export function SwitchEthereumChain() {
             </UIText>
           </VStack>
         </div>
-        <Spacer height={16} />
-        <VStack gap={8}>
-          <UIText kind="small/accent" color="var(--neutral-500)">
-            New network:
-          </UIText>
-          <NetworkIndicator
-            size={32}
-            kind="headline/h3"
-            chain={networks.getChainById(chainId)}
-            networks={networks}
-          />
-        </VStack>
+        <Spacer height={24} />
+        {network ? (
+          <VStack gap={32} style={{ justifyItems: 'center' }}>
+            <VStack gap={4} style={{ justifyItems: 'center' }}>
+              <NetworkIcon
+                src={network.icon_url}
+                chainId={network.external_id || ''}
+                size={40}
+                name={network.name || null}
+              />
+              <UIText kind="headline/h1">{networks.getChainName(chain)}</UIText>
+            </VStack>
+            <VStack
+              gap={8}
+              style={{ justifyItems: 'center', textAlign: 'center' }}
+            >
+              <ValueCell
+                label="RPC URL"
+                value={network.rpc_url_public?.[0] || noValueDash}
+              />
+              <ValueCell label="Chain ID" value={network.external_id} />
+              <ValueCell
+                label="Currency Symbol"
+                value={network.native_asset?.symbol ?? noValueDash}
+              />
+              <ValueCell
+                label="Block Explorer URL"
+                value={network.explorer_home_url || noValueDash}
+              />
+            </VStack>
+          </VStack>
+        ) : (
+          <DelayedRender delay={6000}>
+            <UIText kind="headline/h1">{chainId}</UIText>
+          </DelayedRender>
+        )}
       </PageColumn>
       <PageStickyFooter>
         <Spacer height={16} />
@@ -113,6 +144,6 @@ export function SwitchEthereumChain() {
         </div>
         <PageBottom />
       </PageStickyFooter>
-    </>
+    </Background>
   );
 }
