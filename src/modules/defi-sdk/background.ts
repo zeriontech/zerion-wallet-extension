@@ -4,7 +4,8 @@ import {
   DEFI_SDK_API_TOKEN,
   BACKEND_ENV,
 } from 'src/env/config';
-import { platform, version } from 'src/shared/packageVersion';
+import { version } from 'src/shared/packageVersion';
+import { platform } from 'src/shared/analytics/platform';
 import { hooks } from './defi-sdk-config';
 
 export function configureBackgroundClient() {

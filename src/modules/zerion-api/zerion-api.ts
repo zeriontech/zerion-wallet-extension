@@ -1,6 +1,7 @@
 import ky from 'ky';
-import { platform, version } from 'src/shared/packageVersion';
+import { version } from 'src/shared/packageVersion';
 import { ZERION_API_URL } from 'src/env/config';
+import { platform } from 'src/shared/analytics/platform';
 import type {
   Payload as SecurityCheckUrlPayload,
   Response as SecurityCheckUrlResponse,
