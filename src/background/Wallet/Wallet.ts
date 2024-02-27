@@ -1681,7 +1681,7 @@ class PublicController {
           onDismiss: () => {
             reject(new UserRejected());
           },
-        }).then(async () => {
+        }).then(() => {
           // Automatically switch dapp to this network because this is what most dapps seem to expect
           return this.wallet_switchEthereumChain({
             id,
