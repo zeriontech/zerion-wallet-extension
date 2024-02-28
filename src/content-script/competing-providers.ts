@@ -20,6 +20,7 @@ interface Params {
 // Expose other providers similar to how coinbase wallet extension does it:
 // https://docs.cloud.coinbase.com/wallet-sdk/docs/injected-provider-guidance
 const otherProviders = new Set();
+let firstOtherProvider: unknown = null;
 
 export function handleForeignProvider({
   foreignProvider,
@@ -27,6 +28,9 @@ export function handleForeignProvider({
 }: Params) {
   if (foreignProvider) {
     otherProviders.add(foreignProvider);
+    if (!firstOtherProvider) {
+      firstOtherProvider = foreignProvider;
+    }
   }
   if (foreignProvider?.isRabby) {
     // Rabby does some weird stuff with reconfiguring some provider properties,
@@ -38,6 +42,10 @@ export function handleForeignProvider({
 
 export function hasOtherProviders() {
   return otherProviders.size > 0;
+}
+
+export function getFirstOtherProvider() {
+  return firstOtherProvider;
 }
 
 export function onBeforeAssignToWindow(params: Params) {

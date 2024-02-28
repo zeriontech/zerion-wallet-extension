@@ -62,6 +62,11 @@ export class EthereumProvider extends JsonRpcProvider {
 
   nonEip6963Request = false;
 
+  prefersOtherWalletStrategy?: (params: {
+    request: RequestArguments & { id?: number };
+    originalError: Error;
+  }) => Promise<unknown>;
+
   constructor(connection: Connection) {
     super(connection);
     this.connection = connection;
@@ -157,10 +162,20 @@ export class EthereumProvider extends JsonRpcProvider {
         ...(request.params || []).slice(1),
       ];
     }
-    return this._getRequestPromise(
+    const promise = this._getRequestPromise(
       formatJsonRpcRequest(request.method, params || [], request.id),
       context
     );
+    if (request.method === 'eth_requestAccounts' && this.nonEip6963Request) {
+      return promise.catch((originalError) => {
+        if (this.prefersOtherWalletStrategy) {
+          return this.prefersOtherWalletStrategy({ request, originalError });
+        } else {
+          throw originalError;
+        }
+      });
+    }
+    return promise;
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -23,6 +23,11 @@ export class Connection extends EventEmitter implements IJsonRpcConnection {
           event: event.data.event,
           value: event.data.value,
         });
+      } else if (event.data?.type === 'walletEvent') {
+        this.emit('walletEvent', {
+          event: event.data.event,
+          value: event.data.value,
+        });
       } else {
         this.emit('payload', event.data);
       }
