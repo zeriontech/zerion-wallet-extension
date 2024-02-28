@@ -160,7 +160,7 @@ export function InterpretationState({
           type="button"
           onClick={() => warningDialogRef.current?.showModal()}
         >
-          {warningSeverity === 'Yellow' ? 'Verification Failed' : 'Risk'}
+          {warningSeverity === 'Yellow' ? 'Unverified' : 'Risk'}
         </Button>
       ) : mode === 'loading' ? (
         <VStack gap={0}>
