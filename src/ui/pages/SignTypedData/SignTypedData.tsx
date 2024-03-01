@@ -74,7 +74,7 @@ const TypedDataRow = React.forwardRef(
       >
         <UIText
           kind="small/regular"
-          style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}
+          style={{ whiteSpace: 'pre-wrap', overflowWrap: 'break-word' }}
         >
           {data}
         </UIText>

@@ -24,7 +24,7 @@ export function TextLine({
         color="var(--black)"
         style={
           wrap
-            ? { whiteSpace: 'pre-wrap', wordBreak: 'break-all' }
+            ? { whiteSpace: 'pre-wrap', overflowWrap: 'break-word' }
             : { whiteSpace: 'nowrap' }
         }
       >
