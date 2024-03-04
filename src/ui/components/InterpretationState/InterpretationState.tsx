@@ -162,7 +162,7 @@ export function InterpretationState({
           type="button"
           disabled={!showShowMoreButton}
           style={{
-            backgroundColor:
+            ['--button-disabled-background' as string]:
               warningSeverity === 'Yellow'
                 ? 'var(--notice-100)'
                 : 'var(--negative-100)',
