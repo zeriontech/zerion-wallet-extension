@@ -121,8 +121,6 @@ function InterpretationDescritionDialog({
   );
 }
 
-const VISIBLE_WARNING_DESCRIPTION_LENGTH = 100;
-
 export function InterpretationState({
   interpretQuery,
   interpretation,
@@ -267,7 +265,7 @@ export function InterpretationState({
                 .map((warning, index) => (
                   <VStack gap={0} key={index}>
                     <UIText kind="body/accent">{warning.title}</UIText>
-                    <UIText kind="body/regular">{warning.description}</UIText>
+                    <UIText kind="body/regular">{warning.details}</UIText>
                   </VStack>
                 ))}
               <form
@@ -313,8 +311,7 @@ export function InterpretationState({
             }
             footer={
               (interpretation?.warnings.length || 0) > 1 ||
-              mostSevereWarning.description.length >
-                VISIBLE_WARNING_DESCRIPTION_LENGTH ? (
+              mostSevereWarning.details ? (
                 <Button
                   onClick={() => warningDialogRef.current?.showModal()}
                   kind="text-primary"
