@@ -147,6 +147,10 @@ export function InterpretationState({
   );
   const warningSeverity = mostSevereWarning?.severity;
 
+  const showShowMoreButton = Boolean(
+    (interpretation?.warnings.length || 0) > 1 || mostSevereWarning?.details
+  );
+
   return (
     <>
       {warningSeverity === 'Red' ||
@@ -156,9 +160,32 @@ export function InterpretationState({
           kind={warningSeverity === 'Yellow' ? 'warning' : 'danger'}
           size={36}
           type="button"
-          onClick={() => warningDialogRef.current?.showModal()}
+          disabled={!showShowMoreButton}
+          style={{
+            backgroundColor:
+              warningSeverity === 'Yellow'
+                ? 'var(--notice-100)'
+                : 'var(--negative-100)',
+          }}
+          onClick={() => {
+            if (showShowMoreButton) {
+              warningDialogRef.current?.showModal();
+            }
+          }}
         >
-          {warningSeverity === 'Yellow' ? 'Unverified' : 'Risk'}
+          <HStack gap={4} alignItems="center" justifyContent="center">
+            <ValidationErrorIcon
+              style={{
+                color:
+                  warningSeverity === 'Yellow'
+                    ? 'var(--notice-500)'
+                    : 'var(--negative-500)',
+                width: 20,
+                height: 20,
+              }}
+            />
+            {warningSeverity === 'Yellow' ? 'Unverified' : 'Risk'}
+          </HStack>
         </Button>
       ) : mode === 'loading' ? (
         <VStack gap={0}>
@@ -217,7 +244,12 @@ export function InterpretationState({
           kind="regular"
           size={36}
           type="button"
-          onClick={() => warningDialogRef.current?.showModal()}
+          disabled={!showShowMoreButton}
+          onClick={() => {
+            if (showShowMoreButton) {
+              warningDialogRef.current?.showModal();
+            }
+          }}
         >
           <HStack gap={4} alignItems="center" justifyContent="center">
             <ValidationErrorIcon
@@ -292,12 +324,13 @@ export function InterpretationState({
               <div
                 style={{
                   display: '-webkit-box',
-                  WebkitLineClamp: 2,
+                  WebkitLineClamp: 5,
                   WebkitBoxOrient: 'vertical',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   width: '100%',
                 }}
+                title={mostSevereWarning.description}
               >
                 {mostSevereWarning.description}
               </div>
@@ -310,8 +343,7 @@ export function InterpretationState({
                 : 'info'
             }
             footer={
-              (interpretation?.warnings.length || 0) > 1 ||
-              mostSevereWarning.details ? (
+              showShowMoreButton ? (
                 <Button
                   onClick={() => warningDialogRef.current?.showModal()}
                   kind="text-primary"
