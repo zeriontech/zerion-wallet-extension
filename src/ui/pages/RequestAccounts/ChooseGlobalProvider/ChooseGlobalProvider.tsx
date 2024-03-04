@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -12,6 +13,9 @@ import {
 } from 'src/ui/components/PauseInjection/actions';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import { invariant } from 'src/shared/invariant';
+import { windowPort } from 'src/ui/shared/channels';
+import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 
 const bgKind = { kind: 'white' } as const;
 export function ChooseGlobalProvider({
@@ -99,5 +103,53 @@ export function ChooseGlobalProvider({
         */}
       </div>
     </PageColumn>
+  );
+}
+
+export function ChooseGlobalProviderGuard({
+  children,
+}: React.PropsWithChildren) {
+  const [params, setParams] = useSearchParams();
+  const origin = params.get('origin');
+  const windowId = params.get('windowId');
+  const nonEip6963Request = params.get('nonEip6963Request') === 'yes';
+  const providerSelected = params.get('providerSelected') === 'yes';
+
+  invariant(origin, 'origin get-parameter is required');
+  invariant(windowId, 'windowId get-parameter is required');
+
+  const handleReject = () => windowPort.reject(windowId);
+
+  const showSelectView = nonEip6963Request && !providerSelected;
+  if (!showSelectView) {
+    return children;
+  }
+
+  return (
+    <>
+      <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
+      <ChooseGlobalProvider
+        origin={origin}
+        onConfirm={() => {
+          setParams(
+            (params) => {
+              const newParams = new URLSearchParams(params);
+              newParams.set('providerSelected', 'yes');
+              return newParams;
+            },
+            { replace: true }
+          );
+        }}
+        onReject={() => {
+          // Do not reload the dapp because we will forward request
+          // automatically to the other wallet. But I want to leave the comment here
+          // in case we need to revert
+          //
+          // reloadTabsByOrigin({ origin });
+
+          handleReject();
+        }}
+      />
+    </>
   );
 }
