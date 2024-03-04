@@ -20,6 +20,7 @@ import {
   getProviderNameFromGroup,
 } from './getProviderNameFromGroup';
 import { addressActionToAnalytics } from './shared/addressActionToAnalytics';
+import { mixPanelTrack } from './mixpanel';
 
 function queryWalletProvider(account: Account, address: string) {
   const apiLayer = account.getCurrentWallet();
@@ -33,9 +34,9 @@ function queryWalletProvider(account: Account, address: string) {
 function trackAppEvents({ account }: { account: Account }) {
   const getProvider = (address: string) =>
     getProviderForMetabase(queryWalletProvider(account, address));
+  const getUserId = () => account.getUser()?.id;
 
   const createParams: typeof createBaseParams = (params) => {
-    const getUserId = () => account.getUser()?.id;
     return createBaseParams({ ...params, userId: getUserId() });
   };
   emitter.on('dappConnection', ({ origin, address }) => {
@@ -46,7 +47,12 @@ function trackAppEvents({ account }: { account: Account }) {
       wallet_address: address,
       wallet_provider: getProvider(address),
     });
+    console.log('analytics dapp connection');
     sendToMetabase('dapp_connection', params);
+    mixPanelTrack(account, 'DApp: DApp Connection', {
+      user_id: getUserId(),
+      dapp_domain: origin,
+    });
   });
 
   emitter.on('screenView', (data) => {
@@ -87,6 +93,7 @@ function trackAppEvents({ account }: { account: Account }) {
       const networks = await networksStore.load();
       const chainId = ethers.utils.hexValue(transaction.chainId);
       const chain = networks.getChainById(chainId)?.toString() || chainId;
+      const addressActionAnalytics = addressActionToAnalytics({ addressAction, quote })
       const params = createBaseParams({
         request_name: 'signed_transaction',
         screen_name: origin === initiator ? 'Transaction Request' : pathname,
@@ -94,7 +101,7 @@ function trackAppEvents({ account }: { account: Account }) {
         wallet_provider: getProvider(transaction.from),
         context:
           globalThis.location.origin === origin ? 'Extension' : 'External Dapp',
-        type: 'sign',
+        type: 'Sign',
         dapp_domain: globalThis.location.origin === origin ? null : origin,
         chain,
         gas: transaction.gasLimit.toString(),
@@ -103,9 +110,13 @@ function trackAppEvents({ account }: { account: Account }) {
         gas_price: null, // TODO
         network_fee: null, // TODO
         network_fee_value: feeValueCommon,
-        ...addressActionToAnalytics({ addressAction, quote }),
+        ...addressActionAnalytics,
       });
       sendToMetabase('signed_transaction', params);
+      mixPanelTrack(account, 'Transaction: Signed Transaction', {
+        context: addressActionAnalytics?.type ?? 'Unknown',
+
+      })
     }
   );
 
@@ -185,6 +196,18 @@ function trackAppEvents({ account }: { account: Account }) {
         sendToMetabase('metamask_mode', params);
       });
     });
+  });
+
+  emitter.on('walletCreated', ({ walletContainer }) => {
+    // const provider = getProviderNameFromGroup(walletContainer)
+    for (const wallet of walletContainer.wallets) {
+      const provider = getProvider(wallet.address);
+
+      mixPanelTrack(account, 'Wallet: Wallet Added', {
+        user_id: getUserId(),
+        wallet_provider: provider,
+      });
+    }
   });
 }
 

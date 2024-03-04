@@ -1,3 +1,4 @@
+import { capitalize } from 'capitalize-ts';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { isAccountContainer } from 'src/shared/types/validators';
 
@@ -47,6 +48,23 @@ export function getProviderForMetabase(provider: AccountProvider | string) {
     }
     default: {
       return provider;
+    }
+  }
+}
+
+export function getProviderForMixPanel(provider: AccountProvider | string) {
+  switch (provider) {
+    case AccountProvider.viewerNotAdded: {
+      return 'viewer_not_added';
+    }
+    case AccountProvider.zerionExtension: {
+      return 'Zerion';
+    }
+    case AccountProvider.readOnly: {
+      return 'Read Only';
+    }
+    default: {
+      return capitalize(provider);
     }
   }
 }
