@@ -1,27 +1,32 @@
-import { normalizeAddress } from 'src/shared/normalizeAddress';
 import {
   EmptyResult,
   requestWithCache,
 } from 'src/ui/shared/requests/requestWithCache';
-import { ensLookup, ensResolve } from './ens';
-import { lensLookup, lensResolve } from './lens';
-import { udLookup, udResolve } from './ud';
+import { ZerionAPI } from '../zerion-api/zerion-api';
+import type { Identity } from '../zerion-api/requests/wallets-meta';
 
-export type Registry = (address: string) => Promise<string | null>;
+const DOMAIN_PRIORITY: Record<Identity['provider'], number> = {
+  ens: 0,
+  lens: 1,
+  ud: 2,
+  unspecified: 3,
+};
 
-export const registries = [ensLookup, lensLookup, udLookup];
-export const resolvers = [ensResolve, lensResolve, udResolve];
+function identityComparator(a: Identity, b: Identity) {
+  return DOMAIN_PRIORITY[a.provider] - DOMAIN_PRIORITY[b.provider];
+}
 
 export async function lookupAddressNames(address: string): Promise<string[]> {
-  const addresses = await Promise.allSettled(
-    registries.map((lookup: Registry) => lookup(address))
-  ).then((results) => {
-    const fulfilled = results.filter(
-      (res) => res.status === 'fulfilled'
-    ) as PromiseFulfilledResult<string>[];
-    return fulfilled.map((res) => res.value);
-  });
-  return addresses.filter((address): address is string => address !== null);
+  try {
+    const response = await ZerionAPI.getWalletsMeta({ identifiers: [address] });
+    return (
+      response.data?.[0].identities
+        .sort(identityComparator)
+        .map(({ handle }) => handle) || []
+    );
+  } catch {
+    return [];
+  }
 }
 
 export async function lookupAddressName(
@@ -40,22 +45,10 @@ export async function lookupAddressName(
 }
 
 export async function resolveDomain(domain: string): Promise<string | null> {
-  const addresses = await Promise.allSettled(
-    resolvers.map((resolve: Registry) => {
-      try {
-        return resolve(domain);
-      } catch {
-        return null;
-      }
-    })
-  ).then((results) => {
-    const fulfilled = results.filter(
-      (res) => res.status === 'fulfilled'
-    ) as PromiseFulfilledResult<string>[];
-    return fulfilled.map((res) => res.value);
-  });
-  const resolvedAddress = addresses.filter(
-    (address): address is string => address !== null
-  )[0];
-  return resolvedAddress ? normalizeAddress(resolvedAddress) : null;
+  try {
+    const response = await ZerionAPI.getWalletsMeta({ identifiers: [domain] });
+    return response?.data?.[0]?.address || null;
+  } catch {
+    return null;
+  }
 }
