@@ -74,10 +74,6 @@ export function increaseGasPrices(
       draft.info.eip1559.fast.max_fee = increase(max_fee, 1.1);
       draft.info.eip1559.fast.priority_fee = increase(priority_fee, 1.3);
     }
-    if (draft.info.optimistic?.l2) {
-      const { l2 } = draft.info.optimistic;
-      draft.info.optimistic.l2 = increase(l2, 1.1);
-    }
   });
 }
 
