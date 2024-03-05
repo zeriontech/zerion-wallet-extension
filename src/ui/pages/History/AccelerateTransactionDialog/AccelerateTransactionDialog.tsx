@@ -23,6 +23,8 @@ import { walletPort } from 'src/ui/shared/channels';
 import { useQuery } from '@tanstack/react-query';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { ViewLoadingSuspense } from 'src/ui/components/ViewLoading/ViewLoading';
+import { useNetworks } from 'src/modules/networks/useNetworks';
+import { ExplorerInfo } from '../ActionDetailedView/components/ExplorerInfo';
 import { SpeedUp } from './SpeedUp';
 import { CancelTx } from './CancelTx';
 import { isCancelTx } from './shared/accelerate-helpers';
@@ -35,6 +37,7 @@ function AccelerateTransactionContent({
   onDismiss: () => void;
 }) {
   const [view, setView] = useState<'speedup' | 'cancel' | 'default'>('default');
+  const { networks } = useNetworks();
   const { data: wallet, isLoading } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
@@ -113,6 +116,11 @@ function AccelerateTransactionContent({
             </HStack>
           </VStack>
         </div>
+        {networks ? (
+          <div style={{ paddingInline: 16 }}>
+            <ExplorerInfo action={action} networks={networks} />
+          </div>
+        ) : null}
         <form
           method="dialog"
           style={{ marginTop: 16 }}

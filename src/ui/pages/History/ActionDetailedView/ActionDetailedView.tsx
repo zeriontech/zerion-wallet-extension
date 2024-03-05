@@ -5,17 +5,14 @@ import type { Networks } from 'src/modules/networks/Networks';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Surface } from 'src/ui/ui-kit/Surface';
-import { HStack } from 'src/ui/ui-kit/HStack';
-import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { createChain } from 'src/modules/networks/Chain';
 import type { ClientTransactionStatus } from 'src/modules/ethereum/transactions/addressAction';
 import { ApprovalInfo, TransferInfo } from './components/TransferInfo';
-import { ExplorerLink } from './components/ExplorerLink';
-import { HashButton } from './components/HashButton';
 import { CollectionLine } from './components/CollectionLine';
 import { RateLine } from './components/RateLine';
 import { SenderReceiverLine } from './components/SenderReceiverLine';
 import { FeeLine } from './components/FeeLine';
+import { ExplorerInfo } from './components/ExplorerInfo';
 
 const dateFormatter = new Intl.DateTimeFormat('en', {
   year: 'numeric',
@@ -35,10 +32,6 @@ export function ActionDetailedView({
   networks: Networks;
 }) {
   const chain = useMemo(() => createChain(action.transaction.chain), [action]);
-  const network = useMemo(
-    () => networks.getNetworkByName(chain),
-    [networks, chain]
-  );
 
   const actionDate = useMemo(() => {
     return dateFormatter.format(new Date(action.datetime));
@@ -105,27 +98,7 @@ export function ActionDetailedView({
       ) : null}
       <Surface padding={16}>
         <VStack gap={24}>
-          <HStack
-            gap={16}
-            alignItems="center"
-            style={{
-              gridTemplateColumns: network ? '1fr auto auto' : undefined,
-            }}
-          >
-            {network ? (
-              <HStack gap={8} alignItems="center">
-                <NetworkIcon
-                  src={network?.icon_url}
-                  chainId={network?.external_id || ''}
-                  size={24}
-                  name={network?.name || null}
-                />
-                <UIText kind="small/accent">{network?.name}</UIText>
-              </HStack>
-            ) : null}
-            <ExplorerLink action={action} networks={networks} />
-            <HashButton hash={action.transaction.hash} />
-          </HStack>
+          <ExplorerInfo action={action} networks={networks} />
           <VStack gap={20}>
             <CollectionLine action={action} />
             <RateLine action={action} address={address} />
