@@ -15,7 +15,11 @@ async function getSecretValue({
     if (!address) {
       throw new Error('Address param is required for privateKey seedType');
     }
-    return walletPort.request('getPrivateKey', { address });
+    const rawPrivateKey = await walletPort.request('getPrivateKey', {
+      address,
+    });
+    // remove 0x prefix for better compatibility with other wallets
+    return rawPrivateKey.slice(2);
   } else if (seedType === SeedType.mnemonic) {
     if (!groupId) {
       throw new Error('GroupId param is required for mnemonic seedType');
