@@ -69,6 +69,7 @@ import { SendForm } from '../pages/SendForm';
 import { SwapForm } from '../pages/SwapForm';
 import { MintDnaFlow } from '../DNA/pages/MintDnaFlow';
 import { UpgradeDnaFlow } from '../DNA/pages/UpgradeDnaFlow';
+import { ChooseGlobalProviderGuard } from '../pages/RequestAccounts/ChooseGlobalProvider/ChooseGlobalProvider';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -259,9 +260,11 @@ function Views({ initialRoute }: { initialRoute?: string }) {
           <Route
             path="/requestAccounts"
             element={
-              <RequireAuth>
-                <RequestAccounts />
-              </RequireAuth>
+              <ChooseGlobalProviderGuard>
+                <RequireAuth>
+                  <RequestAccounts />
+                </RequireAuth>
+              </ChooseGlobalProviderGuard>
             }
           />
           <Route

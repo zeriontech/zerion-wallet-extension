@@ -36,7 +36,6 @@ import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { DeviceAccount } from 'src/shared/types/Device';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { WalletList } from '../WalletSelect/WalletList';
-import { ChooseGlobalProvider } from './ChooseGlobalProvider';
 
 function WalletSelectDialog({
   value,
@@ -265,14 +264,9 @@ export function RequestAccounts() {
   const [params] = useSearchParams();
   const origin = params.get('origin');
   const windowId = params.get('windowId');
-  const nonEip6963Request = params.get('nonEip6963Request') === 'yes';
 
   invariant(origin, 'origin get-parameter is required');
   invariant(windowId, 'windowId get-parameter is required');
-
-  const [step, setStep] = useState<'choose-global-provider' | 'main'>(
-    nonEip6963Request ? 'choose-global-provider' : 'main'
-  );
 
   const walletGroupsQuery = useQuery({
     queryKey: ['wallet/uiGetWalletGroups'],
@@ -317,29 +311,13 @@ export function RequestAccounts() {
   return (
     <>
       <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
-      {step === 'choose-global-provider' ? (
-        <ChooseGlobalProvider
-          origin={origin}
-          onConfirm={() => setStep('main')}
-          onReject={() => {
-            // Do not reload the dapp because we will forward request
-            // automatically to the other wallet. But I want to leave the comment here
-            // in case we need to revert
-            //
-            // reloadTabsByOrigin({ origin });
-
-            handleReject();
-          }}
-        />
-      ) : (
-        <RequestAccountsView
-          wallet={wallet}
-          walletGroups={walletGroupsQuery.data}
-          origin={origin}
-          onConfirm={handleConfirm}
-          onReject={handleReject}
-        />
-      )}
+      <RequestAccountsView
+        wallet={wallet}
+        walletGroups={walletGroupsQuery.data}
+        origin={origin}
+        onConfirm={handleConfirm}
+        onReject={handleReject}
+      />
     </>
   );
 }
