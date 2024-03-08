@@ -1541,9 +1541,6 @@ class PublicController {
     null | object
   > {
     const currentAddress = this.wallet.readCurrentAddress();
-    if (!currentAddress) {
-      throw new Error('Wallet is not initialized');
-    }
     if (!context || !context.origin) {
       throw new OriginNotAllowed();
     }
@@ -1552,7 +1549,10 @@ class PublicController {
     const { chainId: chainIdParameter } = params[0];
     const chainId = ethers.utils.hexValue(chainIdParameter);
 
-    if (!this.wallet.allowedOrigin(context, currentAddress)) {
+    if (
+      !currentAddress ||
+      !this.wallet.allowedOrigin(context, currentAddress)
+    ) {
       const networks = await networksStore.load();
       const chain = networks.getChainById(chainId);
       return new Promise((resolve, reject) => {
@@ -1681,15 +1681,15 @@ class PublicController {
           onDismiss: () => {
             reject(new UserRejected());
           },
-        }).then(() => {
-          // Automatically switch dapp to this network because this is what most dapps seem to expect
-          return this.wallet_switchEthereumChain({
-            id,
-            context,
-            params: [{ chainId: params[0].chainId }],
-          });
         });
       }
+    }).then(() => {
+      // Automatically switch dapp to this network because this is what most dapps seem to expect
+      return this.wallet_switchEthereumChain({
+        id,
+        context,
+        params: [{ chainId: params[0].chainId }],
+      });
     });
   }
 
