@@ -32,13 +32,12 @@ export async function estimateNetworkFee({
   if (!gas || gas === '') {
     return null;
   }
-  const optimistic = gasPrices?.info.optimistic;
   const chainId = transaction ? resolveChainId(transaction) : null;
-  const shouldTryOptimistic = Boolean(optimistic);
+  const shouldTryOptimistic = Boolean(gasPrices?.info.optimistic);
   const optimisticFee =
-    optimistic && transaction && address
+    gasPrices?.info && transaction && address
       ? await createOptimisticFee({
-          optimisticGasPriceInfo: optimistic,
+          gasPriceInfo: gasPrices?.info,
           transaction: hexifyTxValues(transaction),
           getNonce: async () => (chainId ? getNonce(address, chainId) : 0),
         })
