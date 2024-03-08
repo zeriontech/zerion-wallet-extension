@@ -20,7 +20,7 @@ export async function lookupAddressNames(address: string): Promise<string[]> {
   try {
     const response = await ZerionAPI.getWalletsMeta({ identifiers: [address] });
     return (
-      response.data?.[0].identities
+      response.data?.[0]?.identities
         .sort(identityComparator)
         .map(({ handle }) => handle) || []
     );

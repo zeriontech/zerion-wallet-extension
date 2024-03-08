@@ -1,4 +1,4 @@
-import type { AddressMembership, NFT } from 'defi-sdk';
+import type { AddressMembership } from 'defi-sdk';
 
 export interface Payload {
   identifiers: string[];
@@ -18,7 +18,13 @@ export interface WalletMeta {
     tokenId: string;
     metadata: {
       name: string | null;
-      content: NFT['metadata']['content'] | null;
+      content: {
+        imagePreviewUrl?: string;
+        imageUrl?: string | null;
+        audioUrl?: string | null;
+        videoUrl?: string | null;
+        type: 'video' | 'image' | 'audio';
+      } | null;
     } | null;
   } | null;
   nftMetaInformation: {
