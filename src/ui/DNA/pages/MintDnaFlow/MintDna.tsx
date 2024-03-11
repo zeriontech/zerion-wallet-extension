@@ -224,7 +224,7 @@ export function MintDna() {
     useMutation({
       mutationFn: async () => {
         return walletPort.request('openSendTransaction', {
-          params: [mintTransaction],
+          params: [mintTransaction, { clientScope: 'Zerion DNA' }],
           context: { origin: INTERNAL_ORIGIN },
           id: payloadId(),
         });

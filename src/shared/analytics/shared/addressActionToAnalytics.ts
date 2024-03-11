@@ -1,4 +1,4 @@
-import type { ActionAsset, AddressAction } from 'defi-sdk';
+import type { ActionAsset } from 'defi-sdk';
 import { isTruthy } from 'is-truthy-ts';
 import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
@@ -9,7 +9,7 @@ import type { Quote } from 'src/shared/types/Quote';
 import { baseToCommon } from 'src/shared/units/convert';
 
 interface AnalyticsTransactionData {
-  type: string;
+  action_type: string;
   usd_amount_sent: number | null;
   usd_amount_received: number | null;
   asset_amount_sent?: (string | null)[];
@@ -74,10 +74,6 @@ function toMaybeArr<T>(
   return arr?.length ? arr.filter(isTruthy) : undefined;
 }
 
-function actionTypeToAnalytics(type: AddressAction['type']) {
-  return type.value === 'trade' ? 'Swap' : type.display_value;
-}
-
 export function addressActionToAnalytics({
   addressAction,
   quote,
@@ -96,7 +92,7 @@ export function addressActionToAnalytics({
   const incoming = addressAction.content?.transfers?.incoming;
 
   const value = {
-    type: actionTypeToAnalytics(addressAction.type),
+    action_type: addressAction.type.display_value,
     usd_amount_sent: outgoing?.reduce(addAssetPrice, 0) ?? null,
     usd_amount_received: incoming?.reduce(addAssetPrice, 0) ?? null,
     asset_amount_sent: toMaybeArr(outgoing?.map(convertQuantity)),

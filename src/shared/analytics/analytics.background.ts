@@ -47,7 +47,6 @@ function trackAppEvents({ account }: { account: Account }) {
       wallet_address: address,
       wallet_provider: getProvider(address),
     });
-    console.log('analytics dapp connection');
     sendToMetabase('dapp_connection', params);
     mixPanelTrack(account, 'DApp: DApp Connection', {
       user_id: getUserId(),
@@ -66,6 +65,8 @@ function trackAppEvents({ account }: { account: Account }) {
       screen_size: data.screenSize,
     });
     sendToMetabase('screen_view', params);
+    // TODO: should wallet_address and wallet_provider be
+    mixPanelTrack(account, 'General: Screen Viewed', params);
   });
 
   emitter.on('daylightAction', ({ event_name, ...data }) => {
@@ -87,21 +88,30 @@ function trackAppEvents({ account }: { account: Account }) {
       feeValueCommon,
       addressAction,
       quote,
+      clientScope,
     }) => {
       const initiatorURL = new URL(initiator);
       const { origin, pathname } = initiatorURL;
+      const isInternalOrigin = globalThis.location.origin === origin;
+      const initiatorName = isInternalOrigin ? 'Extension' : 'External Dapp';
       const networks = await networksStore.load();
       const chainId = ethers.utils.hexValue(transaction.chainId);
       const chain = networks.getChainById(chainId)?.toString() || chainId;
-      const addressActionAnalytics = addressActionToAnalytics({ addressAction, quote })
+      const addressActionAnalytics = addressActionToAnalytics({
+        addressAction,
+        quote,
+      });
       const params = createBaseParams({
         request_name: 'signed_transaction',
         screen_name: origin === initiator ? 'Transaction Request' : pathname,
         wallet_address: transaction.from,
         wallet_provider: getProvider(transaction.from),
-        context:
-          globalThis.location.origin === origin ? 'Extension' : 'External Dapp',
+        /* @deprecated*/
+        context: initiatorName,
+        /* @deprecated*/
         type: 'Sign',
+        clientScope: clientScope ?? initiatorName,
+        action_type: addressActionAnalytics?.action_type ?? 'Execute',
         dapp_domain: globalThis.location.origin === origin ? null : origin,
         chain,
         gas: transaction.gasLimit.toString(),
@@ -114,9 +124,11 @@ function trackAppEvents({ account }: { account: Account }) {
       });
       sendToMetabase('signed_transaction', params);
       mixPanelTrack(account, 'Transaction: Signed Transaction', {
-        context: addressActionAnalytics?.type ?? 'Unknown',
-
-      })
+        ...params,
+        contract_type: quote?.contract_metadata
+          ? quote.contract_metadata.name
+          : null,
+      });
     }
   );
 
@@ -124,34 +136,51 @@ function trackAppEvents({ account }: { account: Account }) {
     type,
     initiator,
     address,
+    clientScope,
   }: {
     type: 'typedDataSigned' | 'messageSigned';
     initiator: string;
     address: string;
+    clientScope: string | null;
   }) {
-    if (initiator === INTERNAL_ORIGIN) {
+    if (!clientScope && initiator === INTERNAL_ORIGIN) {
       // Do not send analytics event for internal actions,
       // e.g. a signature made before an invitation fetch request
       return;
     }
     const initiatorURL = new URL(initiator);
     const { origin } = initiatorURL;
+    const isInternalOrigin = globalThis.location.origin === origin;
+    const initiatorName = isInternalOrigin ? 'Extension' : 'External Dapp';
+
+    /* @deprecated */
     const eventToMethod = {
       // values are ethers method names
       typedDataSigned: '_signTypedData',
       messageSigned: 'signMessage',
     } as const;
+
+    const eventToActionType = {
+      typedDataSigned: 'eth_signTypedData',
+      messageSigned: 'personal_sign',
+    } as const;
+
     const params = createBaseParams({
       request_name: 'signed_message',
+      /* @deprecated */
       type: eventToMethod[type] ?? 'unexpected type',
+      /* @deprecated */
+      context: initiatorName,
+      client_scope: initiatorName,
+      action_type: eventToActionType[type] ?? 'unexpected type',
       wallet_address: address,
       address,
       wallet_provider: getProvider(address),
-      context:
-        globalThis.location.origin === origin ? 'Extension' : 'External Dapp',
+
       dapp_domain: globalThis.location.origin === origin ? null : origin,
     });
     sendToMetabase('signed_message', params);
+    mixPanelTrack(account, 'Transaction: Signed Message', params);
   }
 
   emitter.on('typedDataSigned', ({ typedData, ...rest }) => {

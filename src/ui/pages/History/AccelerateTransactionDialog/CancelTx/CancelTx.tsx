@@ -103,8 +103,9 @@ function CancelTxContent({
       );
       const txResponse = await signerSenderRef.current.sendTransaction({
         transaction: tx,
-        chain,
+        chain: chain.toString(),
         initiator: INTERNAL_ORIGIN,
+        clientScope: 'Cancel',
         feeValueCommon,
         addressAction: createCancelAddressAction(addressAction, tx),
       });

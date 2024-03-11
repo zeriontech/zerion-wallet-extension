@@ -71,23 +71,23 @@ import { MintDnaFlow } from '../DNA/pages/MintDnaFlow';
 import { UpgradeDnaFlow } from '../DNA/pages/UpgradeDnaFlow';
 import { ChooseGlobalProviderGuard } from '../pages/RequestAccounts/ChooseGlobalProvider/ChooseGlobalProvider';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
-import mixpanel from 'mixpanel-browser';
+// import mixpanel from 'mixpanel-browser';
 // import { mixPanelTrack } from 'src/shared/analytics/mixpanel';
 
-const mixPanelTokenDev = 'a30959c6848ddba6ee5cb8feda61922f';
-const mixPanelTokenProd = '1713511ace475d2c78689b3d66558b62';
-console.log('mixpanel init in debug mode');
-mixpanel.init(
-  process.env.NODE_ENV === 'production' ? mixPanelTokenProd : mixPanelTokenDev,
-  {
-    debug: true,
-    loaded: () => {
-      console.log('loaded clalback');
-    },
-    
-  }
-);
-mixpanel.track('hellllllooo?...');
+// const mixPanelTokenDev = 'a30959c6848ddba6ee5cb8feda61922f';
+// const mixPanelTokenProd = '1713511ace475d2c78689b3d66558b62';
+// console.log('mixpanel init in debug mode');
+// mixpanel.init(
+//   process.env.NODE_ENV === 'production' ? mixPanelTokenProd : mixPanelTokenDev,
+//   {
+//     debug: true,
+//     loaded: () => {
+//       console.log('loaded clalback');
+//     },
+//
+//   }
+// );
+// mixpanel.track('hellllllooo?...');
 const isProd = process.env.NODE_ENV === 'production';
 
 const useAuthState = () => {

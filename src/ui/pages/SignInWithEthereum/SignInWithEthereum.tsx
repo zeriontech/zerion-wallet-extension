@@ -51,6 +51,7 @@ export function SignInWithEthereum() {
     setSearchParams(newParams, navigateOptions);
   };
 
+  const clientScope = params.get('clientScope') || 'External Dapp';
   const origin = params.get('origin');
   const windowId = params.get('windowId');
   const message = params.get('message');
@@ -92,6 +93,7 @@ export function SignInWithEthereum() {
     personalSignMutation.mutate({
       params: [siweMessage?.rawMessage || ''],
       initiator: origin,
+      clientScope,
     });
   };
   const handleReject = () => windowPort.reject(windowId);
@@ -109,6 +111,7 @@ export function SignInWithEthereum() {
         message,
         address: wallet.address,
         initiator: origin,
+        clientScope,
       });
       handleSignSuccess(signature);
     },

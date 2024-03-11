@@ -78,7 +78,7 @@ class MixpanelApi {
     if (this.debugMode) {
       url.searchParams.append('verbose', '1');
     }
-    url.searchParams.append('ip', '1');
+    // url.searchParams.append('ip', '1');
     const payload = {
       event,
       properties: {
@@ -168,6 +168,10 @@ async function getBaseMixpanelParams(account: Account) {
     num_wallet_groups: groups?.length ?? 0,
     currency: 'usd',
     language: 'en',
+    total_balance: /* todo */ 0,
+    zerion_premium_holder: /* todo */ false,
+    og_dna_premium_holder: /* todo */ false,
+    dna_holder: /* todo */ false,
     // total_balance,
   };
 }

@@ -1,12 +1,11 @@
 import { useMutation } from '@tanstack/react-query';
 import type { ethers } from 'ethers';
 import React, { useImperativeHandle, useRef } from 'react';
-import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
-import type { Chain } from 'src/modules/networks/Chain';
+import { createChain } from 'src/modules/networks/Chain';
 import { invariant } from 'src/shared/invariant';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
-import type { Quote } from 'src/shared/types/Quote';
+import type { TransactionContextParams } from 'src/shared/types/SignatureContextParams';
 import { isDeviceAccount } from 'src/shared/types/validators';
 import {
   HardwareSignTransaction,
@@ -15,14 +14,9 @@ import {
 import { walletPort } from 'src/ui/shared/channels';
 import { Button, type Kind as ButtonKind } from 'src/ui/ui-kit/Button';
 
-interface SendTxParams {
+type SendTxParams = TransactionContextParams & {
   transaction: IncomingTransaction;
-  chain: Chain;
-  feeValueCommon: string | null;
-  initiator: string;
-  addressAction: AnyAddressAction | null;
-  quote?: Quote;
-}
+};
 
 export interface SignerSenderHandle {
   sendTransaction(
@@ -54,13 +48,13 @@ export const SignTransactionButton = React.forwardRef(
           );
           const signedTx = await hardwareSignRef.current.signTransaction({
             transaction,
-            chain: params.chain,
+            chain: createChain(params.chain),
             address: wallet.address,
           });
           return walletPort.request('sendSignedTransaction', {
             serialized: signedTx,
             ...params,
-            chain: params.chain.toString(),
+            // chain: params.chain.toString(),
           });
         } else {
           return await walletPort.request('signAndSendTransaction', [
