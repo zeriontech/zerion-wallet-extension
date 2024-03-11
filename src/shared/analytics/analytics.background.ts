@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import omit from 'lodash/omit';
 import type { Account } from 'src/background/account/Account';
 import { emitter } from 'src/background/events';
 import { networksStore } from 'src/modules/networks/networks-store.background';
@@ -48,10 +49,8 @@ function trackAppEvents({ account }: { account: Account }) {
       wallet_provider: getProvider(address),
     });
     sendToMetabase('dapp_connection', params);
-    mixPanelTrack(account, 'DApp: DApp Connection', {
-      user_id: getUserId(),
-      dapp_domain: origin,
-    });
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixPanelTrack(account, 'DApp: DApp Connection', mixpanelParams);
   });
 
   emitter.on('screenView', (data) => {
@@ -65,8 +64,8 @@ function trackAppEvents({ account }: { account: Account }) {
       screen_size: data.screenSize,
     });
     sendToMetabase('screen_view', params);
-    // TODO: should wallet_address and wallet_provider be
-    mixPanelTrack(account, 'General: Screen Viewed', params);
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixPanelTrack(account, 'General: Screen Viewed', mixpanelParams);
   });
 
   emitter.on('daylightAction', ({ event_name, ...data }) => {
@@ -120,15 +119,18 @@ function trackAppEvents({ account }: { account: Account }) {
         gas_price: null, // TODO
         network_fee: null, // TODO
         network_fee_value: feeValueCommon,
-        ...addressActionAnalytics,
-      });
-      sendToMetabase('signed_transaction', params);
-      mixPanelTrack(account, 'Transaction: Signed Transaction', {
-        ...params,
         contract_type: quote?.contract_metadata
           ? quote.contract_metadata.name
           : null,
+        ...addressActionAnalytics,
       });
+      sendToMetabase('signed_transaction', params);
+      const mixpanelParams = omit(params, [
+        'request_name',
+        'hash',
+        'wallet_address',
+      ]);
+      mixPanelTrack(account, 'Transaction: Signed Transaction', mixpanelParams);
     }
   );
 
@@ -180,7 +182,12 @@ function trackAppEvents({ account }: { account: Account }) {
       dapp_domain: globalThis.location.origin === origin ? null : origin,
     });
     sendToMetabase('signed_message', params);
-    mixPanelTrack(account, 'Transaction: Signed Message', params);
+    const mixpanelParams = omit(params, [
+      'request_name',
+      'wallet_address',
+      'address',
+    ]);
+    mixPanelTrack(account, 'Transaction: Signed Message', mixpanelParams);
   }
 
   emitter.on('typedDataSigned', ({ typedData, ...rest }) => {
@@ -228,14 +235,10 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   emitter.on('walletCreated', ({ walletContainer }) => {
-    // const provider = getProviderNameFromGroup(walletContainer)
     for (const wallet of walletContainer.wallets) {
-      const provider = getProvider(wallet.address);
+      const wallet_provider = getProvider(wallet.address);
 
-      mixPanelTrack(account, 'Wallet: Wallet Added', {
-        user_id: getUserId(),
-        wallet_provider: provider,
-      });
+      mixPanelTrack(account, 'Wallet: Wallet Added', { wallet_provider });
     }
   });
 }
