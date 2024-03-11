@@ -1,12 +1,10 @@
 import ky from 'ky';
-import mixpanel from 'mixpanel-browser';
 import type { Account } from 'src/background/account/Account';
-import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
 import { PersistentStore } from 'src/modules/persistent-store';
 import { version } from 'src/shared/packageVersion';
-import { getAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
 import { invariant } from '../invariant';
 import { Loglevel, logTable } from '../logger';
+import { getBaseMixpanelParams } from './shared/mixpanel-data-helpers';
 
 const mixPanelTokenDev = 'a30959c6848ddba6ee5cb8feda61922f';
 const mixPanelTokenProd = '1713511ace475d2c78689b3d66558b62';
@@ -105,76 +103,10 @@ const mixpanelApi = new MixpanelApi({
 
 Object.assign(globalThis, { mixpanelApi });
 
-mixpanel.init(mixPanelToken, { debug: true });
-Object.assign(globalThis, { mixpanel });
-
 mixpanelApi.setBaseProperties({
   origin: globalThis.location.origin,
   app_version: version,
 });
-
-mixpanel.register({
-  origin: globalThis.location.origin,
-  app_version: version,
-});
-
-async function getFundedWalletsCount({ addresses }: { addresses: string[] }) {
-  // TODO: cache results and periodically make new checks only for non-funded addresses
-  // const toCheck = addresses.filter()
-  const result = await getAddressActivity({ addresses });
-  console.log({ result });
-  if (!result) {
-    return 0;
-  }
-  return Object.values(result).reduce(
-    (sum, value) => sum + (value.active ? 1 : 0),
-    0
-  );
-}
-
-async function getBaseMixpanelParams(account: Account) {
-  const getUserId = () => account.getUser()?.id;
-  const apiLayer = account.getCurrentWallet();
-  const groups = await apiLayer.uiGetWalletGroups({
-    context: INTERNAL_SYMBOL_CONTEXT,
-  });
-  const addresses = groups?.flatMap((group) =>
-    group.walletContainer.wallets.map((wallet) => wallet.address)
-  );
-  const walletsCount =
-    groups?.reduce(
-      (sum, group) => sum + group.walletContainer.wallets.length,
-      0
-    ) ?? 0;
-  const userId = getUserId();
-  return {
-    $user_id: userId,
-    num_favourite_tokens: 0,
-    user_id: userId,
-
-    num_wallets: walletsCount,
-    num_watch_list_wallets: 0,
-    num_watch_list_wallets_with_provider: 0,
-    num_my_wallets: walletsCount,
-    num_my_wallets_with_provider: walletsCount,
-    num_wallets_with_provider: walletsCount,
-    num_funded_wallets_with_provider: addresses
-      ? await getFundedWalletsCount({
-          addresses,
-        })
-      : 0,
-    num_zerion_wallets: walletsCount,
-    num_connected_wallets: 0,
-    num_wallet_groups: groups?.length ?? 0,
-    currency: 'usd',
-    language: 'en',
-    total_balance: /* todo */ 0,
-    zerion_premium_holder: /* todo */ false,
-    og_dna_premium_holder: /* todo */ false,
-    dna_holder: /* todo */ false,
-    // total_balance,
-  };
-}
 
 export async function mixPanelTrack(
   account: Account,
@@ -182,7 +114,7 @@ export async function mixPanelTrack(
   values: Record<string, unknown>
 ) {
   const baseParams = await getBaseMixpanelParams(account);
-  console.log({ baseParams });
-  mixpanel.track(event, { ...baseParams, ...values });
-  mixpanelApi.track(event, { ...baseParams, ...values });
+  const params = { ...baseParams, ...values };
+  logTable(Loglevel.info, params);
+  mixpanelApi.track(event, params);
 }

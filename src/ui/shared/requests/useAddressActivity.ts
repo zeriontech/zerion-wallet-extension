@@ -22,7 +22,7 @@ export async function getAddressActivity(
   options?: { cachePolicy?: CachePolicy }
 ) {
   return new Promise<Response | null>((resolve, reject) => {
-    setTimeout(
+    const rejectTimerId = setTimeout(
       () => reject(new Error(`Request timed out: getAddressActivity`)),
       10000
     );
@@ -36,6 +36,7 @@ export async function getAddressActivity(
       onData: ({ value }) => {
         if (value != null) {
           resolve(value);
+          clearTimeout(rejectTimerId);
         }
       },
       ...options,
