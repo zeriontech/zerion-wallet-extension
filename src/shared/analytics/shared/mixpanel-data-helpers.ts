@@ -56,8 +56,6 @@ export async function getBaseMixpanelParams(account: Account) {
   );
   const userId = getUserId();
 
-  // // TODO: Filter out "watched" addresses once this feature is introduced
-  // const ownedAddresses = addresses;
   const portfolioStats =
     ownedAddresses && ownedAddresses.length
       ? await getPortfolioStats(ownedAddresses)

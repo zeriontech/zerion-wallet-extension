@@ -939,10 +939,6 @@ export class Wallet {
       const safeTx = removeSignature(transactionResponse);
       emitter.emit('transactionSent', {
         transaction: safeTx,
-        // initiator,
-        // feeValueCommon,
-        // addressAction,
-        // quote,
         ...transactionContextParams,
       });
       return safeTx;

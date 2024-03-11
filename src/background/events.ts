@@ -31,21 +31,13 @@ export const emitter = createNanoEvents<{
   chainsUpdated: () => void;
   chainChanged: (chain: Chain) => void;
   transactionSent: (
-    data: {
-      transaction: TransactionResponse;
-    } & TransactionContextParams
+    data: { transaction: TransactionResponse } & TransactionContextParams
   ) => void;
   typedDataSigned: (
-    data: {
-      typedData: TypedData;
-      address: string;
-    } & MessageContextParams
+    data: { typedData: TypedData; address: string } & MessageContextParams
   ) => void;
   messageSigned: (
-    data: {
-      message: string;
-      address: string;
-    } & MessageContextParams
+    data: { message: string; address: string } & MessageContextParams
   ) => void;
   userActivity: () => void;
   connectToSiteEvent: (info: { origin: string }) => void;

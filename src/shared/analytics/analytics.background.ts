@@ -35,9 +35,9 @@ function queryWalletProvider(account: Account, address: string) {
 function trackAppEvents({ account }: { account: Account }) {
   const getProvider = (address: string) =>
     getProviderForMetabase(queryWalletProvider(account, address));
-  const getUserId = () => account.getUser()?.id;
 
   const createParams: typeof createBaseParams = (params) => {
+    const getUserId = () => account.getUser()?.id;
     return createBaseParams({ ...params, userId: getUserId() });
   };
   emitter.on('dappConnection', ({ origin, address }) => {
@@ -105,13 +105,13 @@ function trackAppEvents({ account }: { account: Account }) {
         screen_name: origin === initiator ? 'Transaction Request' : pathname,
         wallet_address: transaction.from,
         wallet_provider: getProvider(transaction.from),
-        /* @deprecated*/
+        /* @deprecated */
         context: initiatorName,
-        /* @deprecated*/
+        /* @deprecated */
         type: 'Sign',
-        clientScope: clientScope ?? initiatorName,
+        client_scope: clientScope ?? initiatorName,
         action_type: addressActionAnalytics?.action_type ?? 'Execute',
-        dapp_domain: globalThis.location.origin === origin ? null : origin,
+        dapp_domain: isInternalOrigin ? null : origin,
         chain,
         gas: transaction.gasLimit.toString(),
         hash: transaction.hash,
@@ -119,9 +119,7 @@ function trackAppEvents({ account }: { account: Account }) {
         gas_price: null, // TODO
         network_fee: null, // TODO
         network_fee_value: feeValueCommon,
-        contract_type: quote?.contract_metadata
-          ? quote.contract_metadata.name
-          : null,
+        contract_type: quote?.contract_metadata?.name ?? null,
         ...addressActionAnalytics,
       });
       sendToMetabase('signed_transaction', params);
@@ -173,13 +171,12 @@ function trackAppEvents({ account }: { account: Account }) {
       type: eventToMethod[type] ?? 'unexpected type',
       /* @deprecated */
       context: initiatorName,
-      client_scope: initiatorName,
+      client_scope: clientScope ?? initiatorName,
       action_type: eventToActionType[type] ?? 'unexpected type',
       wallet_address: address,
       address,
       wallet_provider: getProvider(address),
-
-      dapp_domain: globalThis.location.origin === origin ? null : origin,
+      dapp_domain: isInternalOrigin ? null : origin,
     });
     sendToMetabase('signed_message', params);
     const mixpanelParams = omit(params, [

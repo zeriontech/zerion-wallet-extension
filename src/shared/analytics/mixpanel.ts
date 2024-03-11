@@ -6,6 +6,7 @@ import { invariant } from '../invariant';
 import { Loglevel, logTable } from '../logger';
 import { getBaseMixpanelParams } from './shared/mixpanel-data-helpers';
 
+// TODO: move to src/env/config.ts
 const mixPanelTokenDev = 'a30959c6848ddba6ee5cb8feda61922f';
 const mixPanelTokenProd = '1713511ace475d2c78689b3d66558b62';
 const mixPanelToken =
@@ -115,6 +116,5 @@ export async function mixPanelTrack(
 ) {
   const baseParams = await getBaseMixpanelParams(account);
   const params = { ...baseParams, ...values };
-  logTable(Loglevel.info, params);
   mixpanelApi.track(event, params);
 }

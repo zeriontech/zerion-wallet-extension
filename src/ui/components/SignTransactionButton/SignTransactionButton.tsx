@@ -54,7 +54,6 @@ export const SignTransactionButton = React.forwardRef(
           return walletPort.request('sendSignedTransaction', {
             serialized: signedTx,
             ...params,
-            // chain: params.chain.toString(),
           });
         } else {
           return await walletPort.request('signAndSendTransaction', [

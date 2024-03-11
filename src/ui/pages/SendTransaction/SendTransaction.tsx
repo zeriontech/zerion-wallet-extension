@@ -220,11 +220,6 @@ function TransactionDefaultView({
         incomingTxWithGasAndFee || incomingTransaction
       );
       const feeValueCommon = feeValueCommonRef.current || null;
-      // NOTE:
-      // clientScope can also be read from searchParams if we pass it.
-      // For example, if we redirect to SendTransaction view from our own UI
-      // TODO: Pass it when completing the "Mint Zerion DNA" flow
-      // const clientScope = 'External Dapp';
       return signerSenderRef.current.sendTransaction({
         transaction: tx,
         chain: chain.toString(),
