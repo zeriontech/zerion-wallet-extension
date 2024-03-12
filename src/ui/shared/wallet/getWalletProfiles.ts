@@ -5,24 +5,17 @@ import {
   EmptyResult,
   requestWithCache,
 } from 'src/ui/shared/requests/requestWithCache';
-import type { MediaContentValue } from 'src/ui/ui-kit/MediaContent/MediaContent';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
+import type { WalletMeta } from 'src/modules/zerion-api/requests/wallets-meta';
 
+// TODO: move to ZPI endpoint
 const endpoints = {
   getProfiles: `${SOCIAL_API_URL}api/v2/profiles/`,
 };
 
 export interface WalletProfile {
   address: string;
-  nft: {
-    chain: string;
-    contract_address: string;
-    token_id: string;
-    metadata: {
-      name: string;
-      content: MediaContentValue;
-    };
-  } | null;
+  nft: WalletMeta['nft'];
 }
 
 async function getWalletProfile(address: string) {

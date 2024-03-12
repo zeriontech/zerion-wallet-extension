@@ -20,7 +20,7 @@ export function AvatarIcon({
   return (
     <div className={s.root}>
       <div className={active ? s.activeIndicatorClip : undefined}>
-        {nft ? (
+        {nft?.metadata?.content ? (
           <MediaContent
             className={s.media}
             style={{
