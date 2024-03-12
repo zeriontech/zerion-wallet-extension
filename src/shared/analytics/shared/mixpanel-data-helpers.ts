@@ -2,6 +2,8 @@ import type { Account } from 'src/background/account/Account';
 import { getAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
 import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
 import { isReadonlyContainer } from 'src/shared/types/validators';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api';
+import { backgroundQueryClient } from 'src/modules/query-client/query-client.background';
 import { getAddressesPortfolio } from './getTotalWalletsBalance';
 
 async function getFundedWalletsCount(addresses: string[]) {
@@ -33,6 +35,44 @@ async function getPortfolioStats(addresses: string[]) {
   });
 }
 
+async function getZerionStats(addresses: string[]) {
+  const response = await backgroundQueryClient.fetchQuery({
+    queryKey: ['ZerionAPI.getWalletsMeta', addresses],
+    queryFn: () => ZerionAPI.getWalletsMeta({ identifiers: addresses }),
+    staleTime: 1000 * 60 * 60 * 12, // HALF A DAY
+  });
+  if (!response.data) {
+    return null;
+  }
+  const stats = {
+    zerion_premium_holder: false,
+    og_dna_premium_holder: false,
+    dna_holder: false,
+  };
+  for (const item of response.data) {
+    if (item.membership.premium) {
+      stats.zerion_premium_holder = true;
+    }
+    if (item.membership.premium?.features.early_access) {
+      // TODO: make sure this is the right check
+      stats.og_dna_premium_holder = true;
+    }
+
+    if (item.membership.tokens?.length) {
+      stats.dna_holder = true;
+    }
+    if (
+      stats.dna_holder &&
+      stats.og_dna_premium_holder &&
+      stats.zerion_premium_holder
+    ) {
+      // No need to make further checks
+      break;
+    }
+  }
+  return stats;
+}
+
 export async function getBaseMixpanelParams(account: Account) {
   const getUserId = () => account.getUser()?.id;
   const apiLayer = account.getCurrentWallet();
@@ -56,10 +96,12 @@ export async function getBaseMixpanelParams(account: Account) {
   );
   const userId = getUserId();
 
-  const portfolioStats =
-    ownedAddresses && ownedAddresses.length
-      ? await getPortfolioStats(ownedAddresses)
-      : null;
+  const portfolioStats = ownedAddresses?.length
+    ? await getPortfolioStats(ownedAddresses)
+    : null;
+  const zerionStats = ownedAddresses?.length
+    ? await getZerionStats(ownedAddresses)
+    : null;
   return {
     $user_id: userId,
     num_favourite_tokens: 0,
@@ -78,8 +120,8 @@ export async function getBaseMixpanelParams(account: Account) {
     total_balance: portfolioStats?.totalValue ?? 0,
     currency: 'usd',
     language: 'en',
-    zerion_premium_holder: /* todo */ false,
-    og_dna_premium_holder: /* todo */ false,
-    dna_holder: /* todo */ false,
+    zerion_premium_holder: zerionStats?.zerion_premium_holder ?? false,
+    og_dna_premium_holder: zerionStats?.og_dna_premium_holder ?? false,
+    dna_holder: zerionStats?.dna_holder ?? false,
   };
 }
