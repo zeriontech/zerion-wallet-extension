@@ -10,9 +10,7 @@ module.exports = {
     'react-hooks/rules-of-hooks': 'error', // Checks rules of Hooks
     'react-hooks/exhaustive-deps': 'warn', // Checks effect dependencies
     'no-use-before-define': ['error', { classes: false }],
-    'no-restricted-globals': ['error']
-      .concat(confusingBrowserGlobals)
-      .concat(['origin']),
+    'no-restricted-globals': ['error', ...confusingBrowserGlobals, 'origin'],
     'import/order': 'error',
     '@typescript-eslint/consistent-type-imports': 'error',
     '@tanstack/query/exhaustive-deps': 'error',
@@ -52,3 +50,4 @@ module.exports = {
     },
   ],
 };
+
