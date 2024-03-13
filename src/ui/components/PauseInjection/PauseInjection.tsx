@@ -85,7 +85,9 @@ function PauseInjectionDialog({
       <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
         Disable Zerion for
         <br />
-        <span style={{ color: 'var(--neutral-500)', wordBreak: 'break-all' }}>
+        <span
+          style={{ color: 'var(--neutral-500)', overflowWrap: 'break-word' }}
+        >
           {activeTabUrl?.hostname}
         </span>
       </UIText>

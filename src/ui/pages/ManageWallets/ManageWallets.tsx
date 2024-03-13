@@ -82,7 +82,10 @@ function MnemonicList({ walletGroups }: { walletGroups: WalletGroup[] }) {
           component: (
             <HStack gap={4} justifyContent="space-between" alignItems="center">
               <VStack gap={8}>
-                <UIText kind="small/accent" style={{ wordBreak: 'break-all' }}>
+                <UIText
+                  kind="small/accent"
+                  style={{ overflowWrap: 'break-word' }}
+                >
                   {getGroupDisplayName(group.name)}
                 </UIText>
                 <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>

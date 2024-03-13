@@ -124,7 +124,7 @@ function GenerateWalletView() {
         <VStack gap={4} style={{ marginTop: 'auto' }}>
           {finalizeMutation.isError ? (
             <UIText
-              style={{ textAlign: 'center', wordBreak: 'break-all' }}
+              style={{ textAlign: 'center', overflowWrap: 'break-word' }}
               kind="caption/regular"
               color="var(--negative-500)"
             >

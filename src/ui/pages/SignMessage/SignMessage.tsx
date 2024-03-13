@@ -40,7 +40,7 @@ function MessageRow({ message }: { message: string }) {
       <Surface padding={16} style={{ border: '1px solid var(--neutral-300)' }}>
         <UIText
           kind="small/regular"
-          style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}
+          style={{ whiteSpace: 'pre-wrap', overflowWrap: 'break-word' }}
         >
           {toUtf8String(message)}
         </UIText>
