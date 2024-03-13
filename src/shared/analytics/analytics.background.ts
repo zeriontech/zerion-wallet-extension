@@ -33,6 +33,8 @@ function queryWalletProvider(account: Account, address: string) {
 }
 
 function trackAppEvents({ account }: { account: Account }) {
+  const eip6963Dapps = new Set<string>();
+
   const getProvider = (address: string) =>
     getProviderForMetabase(queryWalletProvider(account, address));
 
@@ -47,6 +49,7 @@ function trackAppEvents({ account }: { account: Account }) {
       dapp_domain: origin,
       wallet_address: address,
       wallet_provider: getProvider(address),
+      eip6963_supported: eip6963Dapps.has(origin),
     });
     sendToMetabase('dapp_connection', params);
     const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
@@ -241,6 +244,10 @@ function trackAppEvents({ account }: { account: Account }) {
 
   emitter.on('firstScreenView', () => {
     mixpanelTrack(account, 'General: Launch first time', {});
+  });
+
+  emitter.on('eip6963SupportDetected', ({ origin }) => {
+    eip6963Dapps.add(origin);
   });
 }
 

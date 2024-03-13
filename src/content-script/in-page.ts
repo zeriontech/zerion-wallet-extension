@@ -145,8 +145,12 @@ if (dappsWithoutCorrectEIP1193Support.has(window.location.origin)) {
 
 initializeEIP6963(provider, {
   onRequestProvider: () => {
-    // DApp supports EIP-6963
     pageObserver.stop();
+    dappDetection.registerEip6963SupportOnce(provider);
+  },
+  onAccessProvider: () => {
+    pageObserver.stop();
+    dappDetection.registerEip6963SupportOnce(provider);
   },
 });
 

@@ -62,3 +62,16 @@ export function onAccessThroughWindow() {
     }
   }
 }
+
+let didRegisterEip6963Support = false;
+
+export function registerEip6963SupportOnce(ourProvider: EthereumProvider) {
+  if (didRegisterEip6963Support) {
+    return;
+  }
+  ourProvider.request({
+    method: 'wallet_registerEip6963Support',
+    params: [{ origin: window.location.origin }],
+  });
+  didRegisterEip6963Support = true;
+}
