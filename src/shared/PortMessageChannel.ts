@@ -8,6 +8,8 @@ import {
 import type { JsonRpcPayload, JsonRpcRequest } from '@json-rpc-tools/utils';
 import { createNanoEvents } from 'nanoevents';
 import { invariant } from './invariant';
+import type { CustomRpcContext } from './custom-rpc/CustomRpcContext';
+import { formatWrappedRpcRequest } from './custom-rpc/CustomRpcContext';
 
 type Port = browser.Runtime.Port;
 export class PortMessageChannel {
@@ -52,15 +54,21 @@ export class PortMessageChannel {
     });
   }
 
-  async request<Method extends string, Params, Result>(
-    method: Method,
-    params: Params,
-    id?: number
-  ) {
+  async request<Method extends string, Params, Result>({
+    method,
+    params,
+    id,
+    customContext,
+  }: {
+    method: Method;
+    params: Params;
+    id?: number;
+    customContext?: CustomRpcContext | unknown;
+  }) {
     // NOTE: Should we assert this.port _after_ emitting the custom 'postMessage'?
     // Or not assert at all?
     invariant(this.port, `Port not initialized: (${this.name})`);
-    const payload = formatJsonRpcRequest(method, params, id);
+    const payload = formatWrappedRpcRequest(method, params, id, customContext);
     this.emitter.emit('postMessage', payload);
     this.port.postMessage(payload);
     return this.getPromise<Result>(payload.id);

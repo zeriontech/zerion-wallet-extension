@@ -8,6 +8,7 @@ import { formatJsonRpcRequest, isJsonRpcError } from '@json-rpc-tools/utils';
 import { InvalidParams, MethodNotImplemented } from 'src/shared/errors/errors';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import type { Connection } from './connection';
+import { CustomRpcContext } from 'src/shared/custom-rpc/CustomRpcContext';
 
 function accountsEquals(arr1: string[], arr2: string[]) {
   // it's okay to perform search like this because `accounts`
@@ -143,7 +144,7 @@ export class EthereumProvider extends JsonRpcProvider {
    */
   public request = async (
     request: RequestArguments & { id?: number },
-    context?: unknown
+    context?: CustomRpcContext | unknown
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any> => {
     if (request.method === 'eth_chainId') {
@@ -181,7 +182,7 @@ export class EthereumProvider extends JsonRpcProvider {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async _getRequestPromise<Result = any, Params = any>(
     request: JsonRpcRequest<Params>,
-    _context?: any // eslint-disable-line @typescript-eslint/no-explicit-any
+    context?: CustomRpcContext | unknown
   ): Promise<Result> {
     if (!this.connection.connected) {
       await this.open();
@@ -194,7 +195,7 @@ export class EthereumProvider extends JsonRpcProvider {
           resolve(response.result);
         }
       });
-      this.connection.send(request);
+      this.connection.send(request, context);
     });
   }
 

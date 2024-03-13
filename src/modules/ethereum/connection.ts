@@ -5,6 +5,7 @@ import type {
   JsonRpcResult,
 } from '@json-rpc-tools/utils';
 import { isJsonRpcError, isJsonRpcResponse } from '@json-rpc-tools/utils';
+import { CustomRpcContext } from 'src/shared/custom-rpc/CustomRpcContext';
 
 export class Connection extends EventEmitter implements IJsonRpcConnection {
   public events = new EventEmitter();
@@ -44,8 +45,11 @@ export class Connection extends EventEmitter implements IJsonRpcConnection {
     return Promise.resolve();
   }
 
-  send<Result = unknown>(payload: JsonRpcPayload): Promise<Result> {
-    this.broadcastChannel.postMessage(payload);
+  send<Result = unknown>(
+    payload: JsonRpcPayload,
+    customContext?: CustomRpcContext | unknown
+  ): Promise<Result> {
+    this.broadcastChannel.postMessage({ ...payload, customContext });
     return this.getPromise<Result>(payload.id);
   }
 

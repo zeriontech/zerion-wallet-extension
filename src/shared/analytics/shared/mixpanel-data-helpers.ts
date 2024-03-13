@@ -57,7 +57,6 @@ async function getZerionStats(addresses: string[]) {
       // TODO: make sure this is the right check
       stats.og_dna_premium_holder = true;
     }
-
     if (item.membership.tokens?.length) {
       stats.dna_holder = true;
     }
