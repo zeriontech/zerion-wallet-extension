@@ -147,7 +147,7 @@ export function InterpretationState({
   );
   const warningSeverity = mostSevereWarning?.severity;
 
-  const showShowMoreButton = Boolean(
+  const hasShowMoreButton = Boolean(
     (interpretation?.warnings.length || 0) > 1 || mostSevereWarning?.details
   );
 
@@ -160,7 +160,7 @@ export function InterpretationState({
           kind={warningSeverity === 'Yellow' ? 'warning' : 'danger'}
           size={36}
           type="button"
-          disabled={!showShowMoreButton}
+          disabled={!hasShowMoreButton}
           style={{
             ['--button-disabled-background' as string]:
               warningSeverity === 'Yellow'
@@ -168,7 +168,7 @@ export function InterpretationState({
                 : 'var(--negative-100)',
           }}
           onClick={() => {
-            if (showShowMoreButton) {
+            if (hasShowMoreButton) {
               warningDialogRef.current?.showModal();
             }
           }}
@@ -244,9 +244,9 @@ export function InterpretationState({
           kind="regular"
           size={36}
           type="button"
-          disabled={!showShowMoreButton}
+          disabled={!hasShowMoreButton}
           onClick={() => {
-            if (showShowMoreButton) {
+            if (hasShowMoreButton) {
               warningDialogRef.current?.showModal();
             }
           }}
@@ -343,7 +343,7 @@ export function InterpretationState({
                 : 'info'
             }
             footer={
-              showShowMoreButton ? (
+              hasShowMoreButton ? (
                 <Button
                   onClick={() => warningDialogRef.current?.showModal()}
                   kind="text-primary"
