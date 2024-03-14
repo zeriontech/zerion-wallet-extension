@@ -30,6 +30,7 @@ jobs:
           TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
           FEATURE_SEND_FORM: on
           FEATURE_FOOTER_BUG_BUTTON: off
+          MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_PROD }}
         run: |
           npm install
           npm run build:production

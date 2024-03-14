@@ -1,16 +1,19 @@
 import ky from 'ky';
+import type { Options } from 'ky';
 import type { Account } from 'src/background/account/Account';
 import { PersistentStore } from 'src/modules/persistent-store';
 import { version } from 'src/shared/packageVersion';
+import { MIXPANEL_TOKEN_PUBLIC } from 'src/env/config';
 import { invariant } from '../invariant';
-import { Loglevel, logTable } from '../logger';
+import { Loglevel, logTable, log } from '../logger';
 import { getBaseMixpanelParams } from './shared/mixpanel-data-helpers';
 
-// TODO: move to src/env/config.ts
-const mixPanelTokenDev = 'a30959c6848ddba6ee5cb8feda61922f';
-const mixPanelTokenProd = '1713511ace475d2c78689b3d66558b62';
-const mixPanelToken =
-  process.env.NODE_ENV === 'production' ? mixPanelTokenProd : mixPanelTokenDev;
+const mixPanelToken = MIXPANEL_TOKEN_PUBLIC;
+
+if (!mixPanelToken) {
+  // eslint-disable-next-line no-console
+  console.warn('MIXPANEL_TOKEN_PUBLIC env var not found.');
+}
 
 class DeviceIdStore extends PersistentStore<string | undefined> {
   constructor() {
@@ -36,18 +39,18 @@ class MixpanelApi {
   baseProperties?: Record<string, unknown>;
   deviceId?: string;
   url: string;
-  token: string;
+  token: string | null;
   debugMode: boolean;
   private isReady: boolean;
   private readyPromise: Promise<void>;
 
   constructor({
     token,
-    url = 'https://api.mixpanel.com/track',
+    url = 'https://api.mixpanel.com',
     debugMode = false,
     resolveDeviceId,
   }: {
-    token: string;
+    token: string | null;
     url?: string;
     debugMode?: boolean;
     resolveDeviceId: () => Promise<string>;
@@ -73,7 +76,7 @@ class MixpanelApi {
 
   async track(event: string, values: Record<string, unknown>) {
     await this.ready();
-    const url = new URL(this.url);
+    const url = new URL('/track', this.url);
     if (this.debugMode) {
       url.searchParams.append('verbose', '1');
     }
@@ -90,14 +93,21 @@ class MixpanelApi {
       },
     };
 
-    logTable(Loglevel.info, payload);
+    log(Loglevel.info, payload.event);
+    logTable(Loglevel.info, payload.properties);
 
-    return ky.post(this.url, { json: [payload] });
+    return this.sendEvent(url.toString(), { json: [payload] });
+  }
+
+  async sendEvent(url: string, options: Options) {
+    if (this.token != null) {
+      return ky.post(url, options);
+    }
   }
 }
 
 const mixpanelApi = new MixpanelApi({
-  token: mixPanelToken,
+  token: mixPanelToken ?? null,
   resolveDeviceId: () => deviceIdStore.getSavedState(),
   debugMode: process.env.NODE_ENV !== 'production',
 });
