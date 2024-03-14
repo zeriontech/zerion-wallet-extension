@@ -17,7 +17,6 @@ import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { noValueDash } from 'src/ui/shared/typography';
-import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { Background } from 'src/ui/components/Background';
 import { ValueCell } from '../Networks/shared/ValueCell';
 
@@ -46,12 +45,11 @@ export function SwitchEthereumChain() {
   }
   const originName = new URL(origin).hostname;
   const chainId = params.get('chainId');
-  if (!chainId) {
-    throw new Error('This view requires a chainId get-param');
-  }
+  invariant(chainId, 'This view requires a chainId get-param');
 
   const chain = networks.getChainById(chainId);
   const network = networks.getNetworkByName(chain);
+  invariant(network, 'Network config does not exists');
 
   return (
     <Background backgroundKind="white">
@@ -76,41 +74,35 @@ export function SwitchEthereumChain() {
           </VStack>
         </div>
         <Spacer height={24} />
-        {network ? (
-          <VStack gap={32} style={{ justifyItems: 'center' }}>
-            <VStack gap={4} style={{ justifyItems: 'center' }}>
-              <NetworkIcon
-                src={network.icon_url}
-                chainId={network.external_id || ''}
-                size={40}
-                name={network.name || null}
-              />
-              <UIText kind="headline/h1">{networks.getChainName(chain)}</UIText>
-            </VStack>
-            <VStack
-              gap={8}
-              style={{ justifyItems: 'center', textAlign: 'center' }}
-            >
-              <ValueCell
-                label="RPC URL"
-                value={network.rpc_url_public?.[0] || noValueDash}
-              />
-              <ValueCell label="Chain ID" value={network.external_id} />
-              <ValueCell
-                label="Currency Symbol"
-                value={network.native_asset?.symbol ?? noValueDash}
-              />
-              <ValueCell
-                label="Block Explorer URL"
-                value={network.explorer_home_url || noValueDash}
-              />
-            </VStack>
+        <VStack gap={32} style={{ justifyItems: 'center' }}>
+          <VStack gap={4} style={{ justifyItems: 'center' }}>
+            <NetworkIcon
+              src={network.icon_url}
+              chainId={network.external_id || ''}
+              size={40}
+              name={network.name || null}
+            />
+            <UIText kind="headline/h1">{networks.getChainName(chain)}</UIText>
           </VStack>
-        ) : (
-          <DelayedRender delay={6000}>
-            <UIText kind="headline/h1">{chainId}</UIText>
-          </DelayedRender>
-        )}
+          <VStack
+            gap={8}
+            style={{ justifyItems: 'center', textAlign: 'center' }}
+          >
+            <ValueCell
+              label="RPC URL"
+              value={networks.getRpcUrlPublic(chain)}
+            />
+            <ValueCell label="Chain ID" value={network.external_id} />
+            <ValueCell
+              label="Currency Symbol"
+              value={network.native_asset?.symbol ?? noValueDash}
+            />
+            <ValueCell
+              label="Block Explorer URL"
+              value={network.explorer_home_url || noValueDash}
+            />
+          </VStack>
+        </VStack>
       </PageColumn>
       <PageStickyFooter>
         <Spacer height={16} />

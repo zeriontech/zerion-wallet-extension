@@ -1562,8 +1562,7 @@ class PublicController {
           search: `?origin=${origin}&chainId=${chainId}`,
           onResolve: () => {
             this.wallet.setChainForOrigin(chain, origin);
-            resolve(null);
-            this.wallet.emitter.emit('chainChanged', chain, origin);
+            setTimeout(() => resolve(null));
           },
           onDismiss: () => {
             reject(new UserRejected('User Rejected the Request'));
