@@ -1,3 +1,4 @@
+import { isTruthy } from 'is-truthy-ts';
 import type { Account } from 'src/background/account/Account';
 import { getAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
 import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
@@ -35,32 +36,52 @@ async function getPortfolioStats(addresses: string[]) {
   });
 }
 
+function splitIntoChunks<T>(arr: T[], size: number) {
+  const chunks: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    chunks.push(arr.slice(i, i + size));
+  }
+  return chunks;
+}
+
+async function getWalletsMetaByChunks(addresses: string[]) {
+  const chunks = splitIntoChunks(addresses, 10);
+  const results = await Promise.all(
+    chunks.map((chunk) => ZerionAPI.getWalletsMeta({ identifiers: chunk }))
+  );
+  return results
+    .map((response) => response.data)
+    .filter(isTruthy)
+    .flat();
+}
+
 async function getZerionStats(addresses: string[]) {
-  const response = await backgroundQueryClient.fetchQuery({
+  const results = await backgroundQueryClient.fetchQuery({
     queryKey: ['ZerionAPI.getWalletsMeta', addresses],
-    queryFn: () => ZerionAPI.getWalletsMeta({ identifiers: addresses }),
+    queryFn: () => getWalletsMetaByChunks(addresses),
     staleTime: 1000 * 60 * 60 * 12, // HALF A DAY
   });
-  if (!response.data) {
-    return null;
-  }
   const stats = {
     zerion_premium_holder: false,
     og_dna_premium_holder: false,
     dna_holder: false,
   };
-  for (const item of response.data) {
-    if (item.membership.premium) {
+  for (const item of results) {
+    if (item.membership.premium?.plan != null) {
       stats.zerion_premium_holder = true;
     }
-    if (item.membership.premium?.features.early_access) {
-      // TODO: make sure this is the right check
+
+    if (
+      item.membership.premium?.plan &&
+      item.membership.premium.expiration_time == null
+    ) {
       stats.og_dna_premium_holder = true;
     }
 
     if (item.membership.tokens?.length) {
       stats.dna_holder = true;
     }
+
     if (
       stats.dna_holder &&
       stats.og_dna_premium_holder &&
