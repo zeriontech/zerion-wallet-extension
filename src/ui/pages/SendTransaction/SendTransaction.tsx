@@ -4,7 +4,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Content, RenderArea } from 'react-area';
 import type { AddressAction } from 'defi-sdk';
-import type { IncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { incomingTxToIncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type {
   IncomingTransaction,
@@ -148,7 +148,7 @@ function TransactionDefaultView({
   origin: string;
   clientScope: string | null;
   wallet: ExternallyOwnedAccount;
-  addressAction: AddressAction | IncomingAddressAction;
+  addressAction: AnyAddressAction;
   transactionAction: TransactionAction;
   singleAsset: NonNullable<AddressAction['content']>['single_asset'];
   allowanceQuantityBase?: string;
@@ -226,7 +226,7 @@ function TransactionDefaultView({
         feeValueCommon,
         initiator: origin,
         clientScope: clientScope || 'External Dapp',
-        addressAction: null,
+        addressAction,
       });
     },
     onMutate: () => 'sendTransaction',

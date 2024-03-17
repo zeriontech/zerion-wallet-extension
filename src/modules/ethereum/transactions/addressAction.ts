@@ -44,17 +44,6 @@ export function isLocalAddressAction(
   return 'local' in addressAction && addressAction.local;
 }
 
-export type IncomingAddressAction = Omit<
-  AddressAction,
-  'transaction' | 'id'
-> & {
-  id: null;
-  transaction: Omit<AddressAction['transaction'], 'hash' | 'nonce'> & {
-    hash: null;
-    nonce?: number;
-  };
-};
-
 const ZERO_HASH =
   '0x0000000000000000000000000000000000000000000000000000000000000000';
 
@@ -385,7 +374,7 @@ export async function incomingTxToIncomingAddressAction(
   } & Pick<TransactionObject, 'hash' | 'receipt' | 'timestamp' | 'dropped'>,
   transactionAction: TransactionAction,
   networks: Networks
-): Promise<IncomingAddressAction> {
+): Promise<LocalAddressAction> {
   const { transaction, timestamp } = transactionObject;
   const chain = networks.getChainById(
     ethers.utils.hexValue(transaction.chainId)
@@ -393,14 +382,15 @@ export async function incomingTxToIncomingAddressAction(
   const label = createActionLabel(transaction, transactionAction);
   const content = await createActionContent(transactionAction);
   return {
-    id: null,
+    id: nanoid(),
+    local: true,
     address: transaction.from,
     transaction: {
-      hash: null,
+      hash: ZERO_HASH,
       chain: chain.toString(),
       status: 'pending',
       fee: null,
-      nonce: transaction.nonce,
+      nonce: transaction.nonce ?? -1,
     },
     datetime: new Date(timestamp ?? Date.now()).toISOString(),
     label,
