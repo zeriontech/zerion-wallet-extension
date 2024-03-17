@@ -95,7 +95,6 @@ async function getZerionStats(addresses: string[]) {
 }
 
 export async function getBaseMixpanelParams(account: Account) {
-  const getUserId = () => account.getUser()?.id;
   const apiLayer = account.getCurrentWallet();
   const groups = await apiLayer.uiGetWalletGroups({
     context: INTERNAL_SYMBOL_CONTEXT,
@@ -115,7 +114,6 @@ export async function getBaseMixpanelParams(account: Account) {
     (sum, group) => sum + group.walletContainer.wallets.length,
     0
   );
-  const userId = getUserId();
 
   const portfolioStats = ownedAddresses?.length
     ? await getPortfolioStats(ownedAddresses)
@@ -124,10 +122,7 @@ export async function getBaseMixpanelParams(account: Account) {
     ? await getZerionStats(ownedAddresses)
     : null;
   return {
-    $user_id: userId,
     num_favourite_tokens: 0,
-    user_id: userId,
-
     num_wallets: addressesCount,
     num_watch_list_wallets: 0,
     num_watch_list_wallets_with_provider: 0,

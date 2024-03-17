@@ -21,7 +21,7 @@ import {
   getProviderNameFromGroup,
 } from './getProviderNameFromGroup';
 import { addressActionToAnalytics } from './shared/addressActionToAnalytics';
-import { mixPanelTrack } from './mixpanel';
+import { mixPanelTrack, mixpanelIdentify, mixpanelReset } from './mixpanel';
 
 function queryWalletProvider(account: Account, address: string) {
   const apiLayer = account.getCurrentWallet();
@@ -246,6 +246,14 @@ export function initialize({ account }: { account: Account }) {
   }
   initializeApiV4Analytics({
     willSendRequest: createAddProviderHook({ getWalletProvider }),
+  });
+  const handleUserId = () => mixpanelIdentify(account);
+  account.on('authenticated', () => handleUserId());
+  if (account.getUser()) {
+    handleUserId();
+  }
+  account.on('reset', () => {
+    mixpanelReset();
   });
   return trackAppEvents({ account });
 }
