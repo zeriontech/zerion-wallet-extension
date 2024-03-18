@@ -97,6 +97,7 @@ class MixpanelApi {
   url: string;
   token: string | null;
   debugMode: boolean;
+  private sendRequestsOverTheNetwork: boolean;
   private isReady: boolean;
   private readyPromise: Promise<void>;
 
@@ -104,16 +105,19 @@ class MixpanelApi {
     token,
     url = 'https://api.mixpanel.com',
     debugMode = false,
+    sendRequestsOverTheNetwork = true,
     resolveDeviceId,
   }: {
     token: string | null;
     url?: string;
     debugMode?: boolean;
+    sendRequestsOverTheNetwork?: boolean;
     resolveDeviceId: () => Promise<string>;
   }) {
     this.url = url;
     this.token = token;
     this.debugMode = debugMode;
+    this.sendRequestsOverTheNetwork = sendRequestsOverTheNetwork;
 
     this.isReady = false;
     this.readyPromise = resolveDeviceId().then((value) => {
@@ -181,6 +185,9 @@ class MixpanelApi {
       token: this.token,
       $set: userProfileProperties,
     };
+
+    logTable(Loglevel.info, payload);
+
     return this.sendEvent(url.toString(), { json: [payload] });
   }
 
@@ -199,7 +206,7 @@ class MixpanelApi {
   }
 
   async sendEvent(url: string, options: Options) {
-    if (this.token != null) {
+    if (this.token != null && this.sendRequestsOverTheNetwork) {
       return ky.post(url, options);
     }
   }
@@ -215,6 +222,7 @@ const mixpanelApi = new MixpanelApi({
   token: mixPanelToken ?? null,
   resolveDeviceId: () => deviceIdStore.getSavedState(),
   debugMode: process.env.NODE_ENV !== 'production',
+  sendRequestsOverTheNetwork: process.env.NODE_ENV === 'production',
 });
 
 Object.assign(globalThis, { mixpanelApi });
