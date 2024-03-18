@@ -7,6 +7,7 @@ import {
 } from '@json-rpc-tools/utils';
 import { BackgroundScriptUpdateHandler } from 'src/shared/core/BackgroundScriptUpdateHandler';
 import { PortMessageChannel } from 'src/shared/PortMessageChannel';
+import type { WrappedRpc } from 'src/shared/custom-rpc/CustomRpcContext';
 
 const id = nanoid();
 
@@ -48,7 +49,12 @@ broadcastChannel.addEventListener('message', async (event) => {
   const { data } = event;
   if (isJsonRpcRequest(data)) {
     try {
-      await port.request(data.method, data.params, data.id);
+      await port.request({
+        method: data.method,
+        params: data.params,
+        id: data.id,
+        customContext: (data as WrappedRpc).customContext,
+      });
     } catch (error) {
       if (
         error instanceof Error &&

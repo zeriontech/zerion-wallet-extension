@@ -77,7 +77,6 @@ async function getZerionStats(addresses: string[]) {
     ) {
       stats.og_dna_premium_holder = true;
     }
-
     if (item.membership.tokens?.length) {
       stats.dna_holder = true;
     }

@@ -17,7 +17,7 @@ function getPortOrigin(port: RuntimePort) {
   }
 }
 
-export function getPortContext(port: RuntimePort): Partial<ChannelContext> {
+export function getPortContext(port: RuntimePort, msg: null | unknown): Partial<ChannelContext> {
   return {
     origin: getPortOrigin(port),
     tabId: port.sender?.tab?.id,
