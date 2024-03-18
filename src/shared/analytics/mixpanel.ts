@@ -41,7 +41,7 @@ class MixpanelApi {
    *
    * ## Events
    * Events are sent to /track endpoint.
-   * They include $device_id, $user_id, $distinct_id, $insert_id
+   * They include $device_id, $user_id, distinct_id, $insert_id
    * $device_id is persisted for current device
    * $user_id is sent when its known
    * distinct_id is equal to "$device:<$device_id>" before $user_id is known,
@@ -51,7 +51,7 @@ class MixpanelApi {
    * ## Identification
    * When $user_id first becomes known,
    * 2 events are sent:
-   * /track event:
+   * /track event: (TODO: is this not required?)
    * {
        event: "$identify",
        properties: {
@@ -65,6 +65,7 @@ class MixpanelApi {
    * /engage event:
    * {
         $set_once?: { ... },
+        $set?: { ... },
         $token: ...,
         $distinct_id: "user-id",
         $device_id: "<$device_id>",
@@ -143,7 +144,7 @@ class MixpanelApi {
         time: Date.now() / 1000,
         $insert_id: crypto.randomUUID(),
         $device_id: this.deviceId,
-        $distinct_id: this.userId ?? `$device:${this.deviceId}`,
+        distinct_id: this.userId ?? `$device:${this.deviceId}`,
         token: this.token,
         ...values,
         ...(this.userId
@@ -175,7 +176,7 @@ class MixpanelApi {
     }
     const payload = {
       $device_id: this.deviceId,
-      distinct_id: this.userId,
+      $distinct_id: this.userId,
       $user_id: this.userId,
       token: this.token,
       $set: userProfileProperties,
@@ -191,6 +192,7 @@ class MixpanelApi {
     this.userId = userId;
     const $anon_distinct_id = `$device:${this.deviceId}`;
     return Promise.all([
+      // TODO: "$identify" track event is not necessary?
       this.track('$identify', { $anon_distinct_id }),
       this.engage(userProfileProperties),
     ]);
