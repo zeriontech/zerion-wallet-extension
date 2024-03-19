@@ -2,6 +2,10 @@ import { capitalize } from 'capitalize-ts';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { isAccountContainer } from 'src/shared/types/validators';
 
+type Branded<T, TypeName> = T & { __type: TypeName };
+
+type AccountProviderName = Branded<string, 'AccountProviderName'>;
+
 enum AccountProvider {
   zerionExtension = 'zerionExtension',
   viewerNotAdded = 'viewerNotAdded',
@@ -10,15 +14,18 @@ enum AccountProvider {
 
 export function getProviderNameFromGroup(
   group: WalletGroup | null
-): AccountProvider | string {
+): AccountProvider | AccountProviderName {
   return group
     ? isAccountContainer(group.walletContainer)
-      ? group.walletContainer.provider ?? AccountProvider.readOnly
+      ? (group.walletContainer.provider as AccountProviderName) ??
+        AccountProvider.readOnly
       : AccountProvider.zerionExtension
     : AccountProvider.viewerNotAdded;
 }
 
-export function getProviderForApiV4(provider: AccountProvider | string) {
+export function getProviderForApiV4(
+  provider: AccountProvider | AccountProviderName
+) {
   switch (provider) {
     case AccountProvider.viewerNotAdded: {
       return 'viewer_not_added';
@@ -35,7 +42,9 @@ export function getProviderForApiV4(provider: AccountProvider | string) {
   }
 }
 
-export function getProviderForMetabase(provider: AccountProvider | string) {
+export function getProviderForMetabase(
+  provider: AccountProvider | AccountProviderName
+) {
   switch (provider) {
     case AccountProvider.viewerNotAdded: {
       return 'viewer_not_added';
@@ -52,13 +61,13 @@ export function getProviderForMetabase(provider: AccountProvider | string) {
   }
 }
 
-export function getProviderForMixPanel(provider: AccountProvider | string) {
+export function getProviderForMixpanel(provider: AccountProvider | string) {
   switch (provider) {
     case AccountProvider.viewerNotAdded: {
       return 'viewer_not_added';
     }
     case AccountProvider.zerionExtension: {
-      return 'Zerion';
+      return 'Zerion Wallet';
     }
     case AccountProvider.readOnly: {
       return 'Read Only';

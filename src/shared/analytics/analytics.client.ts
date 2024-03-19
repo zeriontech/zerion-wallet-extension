@@ -10,7 +10,7 @@ import {
 import {
   getProviderForApiV4,
   getProviderNameFromGroup,
-} from './getProviderNameFromGroup';
+} from './shared/getProviderNameFromGroup';
 
 function trackAppEvents() {
   emitter.on('signingError', async (signatureType, message) => {

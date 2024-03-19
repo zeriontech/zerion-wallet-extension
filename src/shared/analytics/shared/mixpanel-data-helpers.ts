@@ -6,6 +6,10 @@ import { isReadonlyContainer } from 'src/shared/types/validators';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api';
 import { backgroundQueryClient } from 'src/modules/query-client/query-client.background';
 import { getAddressesPortfolio } from './getTotalWalletsBalance';
+import {
+  getProviderForMixpanel,
+  getProviderNameFromGroup,
+} from './getProviderNameFromGroup';
 
 async function getFundedWalletsCount(addresses: string[]) {
   // TODO: cache results and periodically make new checks only for non-funded addresses
@@ -115,6 +119,10 @@ export async function getBaseMixpanelParams(account: Account) {
     0
   );
 
+  const ownedWalletProviders = ownedGroups?.map((group) =>
+    getProviderForMixpanel(getProviderNameFromGroup(group))
+  );
+
   const portfolioStats = ownedAddresses?.length
     ? await getPortfolioStats(ownedAddresses)
     : null;
@@ -139,5 +147,6 @@ export async function getBaseMixpanelParams(account: Account) {
     zerion_premium_holder: zerionStats?.zerion_premium_holder ?? false,
     og_dna_premium_holder: zerionStats?.og_dna_premium_holder ?? false,
     dna_holder: zerionStats?.dna_holder ?? false,
+    wallet_providers: Array.from(new Set(ownedWalletProviders)),
   };
 }

@@ -19,7 +19,7 @@ import {
   getProviderForApiV4,
   getProviderForMetabase,
   getProviderNameFromGroup,
-} from './getProviderNameFromGroup';
+} from './shared/getProviderNameFromGroup';
 import { addressActionToAnalytics } from './shared/addressActionToAnalytics';
 import { mixPanelTrack, mixpanelIdentify, mixpanelReset } from './mixpanel';
 
