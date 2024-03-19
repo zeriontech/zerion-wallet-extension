@@ -232,7 +232,7 @@ mixpanelApi.setBaseProperties({
   app_version: version,
 });
 
-export async function mixPanelTrack(
+export async function mixpanelTrack(
   account: Account,
   event: string,
   values: Record<string, unknown>

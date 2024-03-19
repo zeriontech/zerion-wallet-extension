@@ -44,6 +44,7 @@ export const emitter = createNanoEvents<{
   sessionExpired: () => void;
   dappConnection: (data: { origin: string; address: string }) => void;
   screenView: (data: ScreenViewParams) => void;
+  firstScreenView: (timestamp: number) => void;
   daylightAction: (data: DaylightEventParams) => void;
   walletCreated: (wallet: {
     walletContainer: WalletContainer;

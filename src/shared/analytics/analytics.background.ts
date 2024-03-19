@@ -21,7 +21,7 @@ import {
   getProviderNameFromGroup,
 } from './shared/getProviderNameFromGroup';
 import { addressActionToAnalytics } from './shared/addressActionToAnalytics';
-import { mixPanelTrack, mixpanelIdentify, mixpanelReset } from './mixpanel';
+import { mixpanelTrack, mixpanelIdentify, mixpanelReset } from './mixpanel';
 
 function queryWalletProvider(account: Account, address: string) {
   const apiLayer = account.getCurrentWallet();
@@ -50,7 +50,7 @@ function trackAppEvents({ account }: { account: Account }) {
     });
     sendToMetabase('dapp_connection', params);
     const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixPanelTrack(account, 'DApp: DApp Connection', mixpanelParams);
+    mixpanelTrack(account, 'DApp: DApp Connection', mixpanelParams);
   });
 
   emitter.on('screenView', (data) => {
@@ -65,7 +65,7 @@ function trackAppEvents({ account }: { account: Account }) {
     });
     sendToMetabase('screen_view', params);
     const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixPanelTrack(account, 'General: Screen Viewed', mixpanelParams);
+    mixpanelTrack(account, 'General: Screen Viewed', mixpanelParams);
   });
 
   emitter.on('daylightAction', ({ event_name, ...data }) => {
@@ -128,7 +128,7 @@ function trackAppEvents({ account }: { account: Account }) {
         'hash',
         'wallet_address',
       ]);
-      mixPanelTrack(account, 'Transaction: Signed Transaction', mixpanelParams);
+      mixpanelTrack(account, 'Transaction: Signed Transaction', mixpanelParams);
     }
   );
 
@@ -184,7 +184,7 @@ function trackAppEvents({ account }: { account: Account }) {
       'wallet_address',
       'address',
     ]);
-    mixPanelTrack(account, 'Transaction: Signed Message', mixpanelParams);
+    mixpanelTrack(account, 'Transaction: Signed Message', mixpanelParams);
   }
 
   emitter.on('typedDataSigned', ({ typedData, ...rest }) => {
@@ -235,8 +235,12 @@ function trackAppEvents({ account }: { account: Account }) {
     for (const wallet of walletContainer.wallets) {
       const wallet_provider = getProvider(wallet.address);
 
-      mixPanelTrack(account, 'Wallet: Wallet Added', { wallet_provider });
+      mixpanelTrack(account, 'Wallet: Wallet Added', { wallet_provider });
     }
+  });
+
+  emitter.on('firstScreenView', () => {
+    mixpanelTrack(account, 'General: Launch first time', {});
   });
 }
 
