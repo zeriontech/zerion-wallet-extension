@@ -56,24 +56,9 @@ export function getProviderForMetabase(
       return 'Read Only';
     }
     default: {
-      return provider;
-    }
-  }
-}
-
-export function getProviderForMixpanel(provider: AccountProvider | string) {
-  switch (provider) {
-    case AccountProvider.viewerNotAdded: {
-      return 'viewer_not_added';
-    }
-    case AccountProvider.zerionExtension: {
-      return 'Zerion Wallet';
-    }
-    case AccountProvider.readOnly: {
-      return 'Read Only';
-    }
-    default: {
       return capitalize(provider);
     }
   }
 }
+
+export const getProviderForMixpanel = getProviderForMetabase;
