@@ -1610,6 +1610,11 @@ class PublicController {
     return getWalletNameFlagsByOrigin(preferences, origin);
   }
 
+  async wallet_registerEip6963Support({ context }: PublicMethodParams) {
+    invariant(context?.origin, 'This method requires origin');
+    emitter.emit('eip6963SupportDetected', { origin: context.origin });
+  }
+
   async wallet_getGlobalPreferences({ context: _context }: PublicMethodParams) {
     return this.wallet.getGlobalPreferences({
       /** wallet.getGlobalPreferences does not return any private data */

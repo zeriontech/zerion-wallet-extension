@@ -56,4 +56,5 @@ export const emitter = createNanoEvents<{
     state: GlobalPreferencesState,
     prevState: GlobalPreferencesState
   ) => void;
+  eip6963SupportDetected: (data: { origin: string }) => void;
 }>();

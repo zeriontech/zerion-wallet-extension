@@ -15,7 +15,8 @@ type MetabaseEvent =
   | 'error_screen_view'
   | 'error_screen_view'
   | 'metamask_mode'
-  | 'loader_screen_view';
+  | 'loader_screen_view'
+  | 'eip_6963_support';
 
 type BaseParams<E = MetabaseEvent> = { request_name: E };
 
