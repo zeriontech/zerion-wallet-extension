@@ -60,10 +60,12 @@ import {
   isMnemonicContainer,
 } from 'src/shared/types/validators';
 import { ERC20_ALLOWANCE_ABI } from 'src/modules/ethereum/abi/allowance-abi';
-import type { Quote } from 'src/shared/types/Quote';
-import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { Disposable } from 'src/shared/Disposable';
 import { getWalletNameFlagsByOrigin } from 'src/shared/preferences-helpers';
+import type {
+  MessageContextParams,
+  TransactionContextParams,
+} from 'src/shared/types/SignatureContextParams';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -880,22 +882,14 @@ export class Wallet {
     return wallet.connect(jsonRpcProvider);
   }
 
-  private async sendTransaction(
-    incomingTransaction: IncomingTransaction,
-    {
-      context,
-      initiator,
-      feeValueCommon,
-      addressAction,
-      quote,
-    }: {
-      context: Partial<ChannelContext> | undefined;
-      initiator: string;
-      feeValueCommon: string | null;
-      addressAction: AnyAddressAction | null;
-      quote?: Quote;
-    }
-  ): Promise<ethers.providers.TransactionResponse> {
+  private async sendTransaction({
+    transaction: incomingTransaction,
+    context,
+    ...transactionContextParams
+  }: {
+    transaction: IncomingTransaction;
+    context: Partial<ChannelContext> | undefined;
+  } & TransactionContextParams): Promise<ethers.providers.TransactionResponse> {
     this.verifyInternalOrigin(context);
     if (!incomingTransaction.from) {
       throw new Error(
@@ -903,6 +897,7 @@ export class Wallet {
       );
     }
     const currentAddress = this.ensureCurrentAddress();
+    const { initiator } = transactionContextParams;
     if (
       normalizeAddress(incomingTransaction.from) !==
       normalizeAddress(currentAddress)
@@ -944,10 +939,7 @@ export class Wallet {
       const safeTx = removeSignature(transactionResponse);
       emitter.emit('transactionSent', {
         transaction: safeTx,
-        initiator,
-        feeValueCommon,
-        addressAction,
-        quote,
+        ...transactionContextParams,
       });
       return safeTx;
     } catch (error) {
@@ -958,54 +950,30 @@ export class Wallet {
   async signAndSendTransaction({
     params,
     context,
-  }: WalletMethodParams<
-    [
-      IncomingTransaction,
-      {
-        initiator: string;
-        feeValueCommon: string | null;
-        addressAction: AnyAddressAction | null;
-        quote?: Quote;
-      }
-    ]
-  >) {
+  }: WalletMethodParams<[IncomingTransaction, TransactionContextParams]>) {
     this.verifyInternalOrigin(context);
     this.ensureStringOrigin(context);
-    const [transaction, { initiator, feeValueCommon, addressAction, quote }] =
-      params;
+    const [transaction, transactionContextParams] = params;
     if (!transaction) {
       throw new InvalidParams();
     }
-    return this.sendTransaction(transaction, {
+    return this.sendTransaction({
+      transaction,
       context,
-      initiator,
-      feeValueCommon,
-      addressAction,
-      quote,
+      ...transactionContextParams,
     });
   }
 
   async sendSignedTransaction({
     params,
     context,
-  }: WalletMethodParams<{
-    serialized: string;
-    chain: string;
-    initiator: string;
-    feeValueCommon: string | null;
-    addressAction: AnyAddressAction | null;
-    quote?: Quote;
-  }>): Promise<ethers.providers.TransactionResponse> {
+  }: WalletMethodParams<
+    { serialized: string } & TransactionContextParams
+  >): Promise<ethers.providers.TransactionResponse> {
     this.verifyInternalOrigin(context);
     this.ensureStringOrigin(context);
-    const {
-      chain,
-      serialized,
-      initiator,
-      feeValueCommon,
-      addressAction,
-      quote,
-    } = params;
+    const { serialized, ...transactionContextParams } = params;
+    const { chain } = transactionContextParams;
     const networks = await networksStore.load();
     const chainId = networks.getChainId(createChain(chain));
     const provider = await this.getProvider(chainId);
@@ -1014,10 +982,7 @@ export class Wallet {
       const safeTx = removeSignature(transactionResponse);
       emitter.emit('transactionSent', {
         transaction: safeTx,
-        initiator,
-        feeValueCommon,
-        addressAction,
-        quote,
+        ...transactionContextParams,
       });
       return safeTx;
     } catch (error) {
@@ -1026,24 +991,27 @@ export class Wallet {
   }
 
   async registerTypedDataSign({
-    params: { address, initiator, rawTypedData },
-  }: WalletMethodParams<{
-    address: string;
-    rawTypedData: TypedData | string;
-    initiator: string;
-  }>) {
+    params: { address, rawTypedData, ...messageContextParams },
+  }: WalletMethodParams<
+    {
+      address: string;
+      rawTypedData: TypedData | string;
+    } & MessageContextParams
+  >) {
     const typedData = prepareTypedData(rawTypedData);
     emitter.emit('typedDataSigned', {
       typedData,
-      initiator,
       address,
+      ...messageContextParams,
     });
   }
 
   async signTypedData_v4({
-    params: { typedData: rawTypedData, initiator },
+    params: { typedData: rawTypedData, ...messageContextParams },
     context,
-  }: WalletMethodParams<{ typedData: TypedData | string; initiator: string }>) {
+  }: WalletMethodParams<
+    { typedData: TypedData | string } & MessageContextParams
+  >) {
     this.verifyInternalOrigin(context);
     if (!rawTypedData) {
       throw new InvalidParams();
@@ -1066,36 +1034,41 @@ export class Wallet {
       typedData.message
     );
     this.registerTypedDataSign({
-      params: { address: signer.address, initiator, rawTypedData },
+      params: {
+        address: signer.address,
+        rawTypedData,
+        ...messageContextParams,
+      },
     });
     return signature;
   }
 
   async registerPersonalSign({
-    params: { address, initiator, message },
-  }: WalletMethodParams<{
-    address: string;
-    message: string;
-    initiator: string;
-  }>) {
+    params: { message, ...messageContextParams },
+  }: WalletMethodParams<
+    {
+      address: string;
+      message: string;
+    } & MessageContextParams
+  >) {
     const messageAsUtf8String = toUtf8String(message);
     emitter.emit('messageSigned', {
       message: messageAsUtf8String,
-      initiator,
-      address,
+      ...messageContextParams,
     });
   }
 
   async personalSign({
     params: {
       params: [message],
-      initiator,
+      ...messageContextParams
     },
     context,
-  }: WalletMethodParams<{
-    params: [string, string?, string?];
-    initiator: string;
-  }>) {
+  }: WalletMethodParams<
+    {
+      params: [string, string?, string?];
+    } & MessageContextParams
+  >) {
     this.verifyInternalOrigin(context);
     if (message == null) {
       throw new InvalidParams();
@@ -1112,7 +1085,7 @@ export class Wallet {
 
     const signature = await signer.signMessage(messageToSign);
     this.registerPersonalSign({
-      params: { address: signer.address, initiator, message },
+      params: { address: signer.address, message, ...messageContextParams },
     });
     return signature;
   }
@@ -1218,7 +1191,9 @@ export class Wallet {
   async openSendTransaction({
     params: { params, context, id },
     context: walletContext,
-  }: WalletMethodParams<PublicMethodParams<UnsignedTransaction[]>>) {
+  }: WalletMethodParams<
+    Parameters<(typeof this.publicEthereumController)['eth_sendTransaction']>[0]
+  >) {
     this.verifyInternalOrigin(walletContext);
     return this.publicEthereumController.eth_sendTransaction({
       params,
@@ -1230,7 +1205,9 @@ export class Wallet {
   async openPersonalSign({
     params: { params, context, id },
     context: walletContext,
-  }: WalletMethodParams<PublicMethodParams<[string, string, string]>>) {
+  }: WalletMethodParams<
+    Parameters<(typeof this.publicEthereumController)['personal_sign']>[0]
+  >) {
     this.verifyInternalOrigin(walletContext);
     return this.publicEthereumController.personal_sign({
       params,
@@ -1386,7 +1363,12 @@ class PublicController {
     params,
     context,
     id,
-  }: PublicMethodParams<UnsignedTransaction[]>) {
+  }: PublicMethodParams<
+    [
+      UnsignedTransaction,
+      /* TODO: refactor to use {context} instead? */ { clientScope?: string }?
+    ]
+  >) {
     const currentAddress = this.wallet.ensureCurrentAddress();
     const currentWallet = await this.wallet.uiGetCurrentWallet({
       context: INTERNAL_SYMBOL_CONTEXT,
@@ -1395,18 +1377,22 @@ class PublicController {
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
       throw new OriginNotAllowed();
     }
-    const transaction = params[0];
+    const [transaction, { clientScope } = { clientScope: undefined }] = params;
     invariant(transaction, () => new InvalidParams());
     const isDeviceWallet = currentWallet && isDeviceAccount(currentWallet);
+    const searchParams = new URLSearchParams({
+      origin: context.origin,
+      transaction: JSON.stringify(transaction),
+    });
+    if (clientScope) {
+      searchParams.append('clientScope', clientScope);
+    }
     return new Promise((resolve, reject) => {
       this.safeOpenDialogWindow(context.origin, {
         requestId: `${context.origin}:${id}`,
         route: '/sendTransaction',
         height: isDeviceWallet ? 800 : undefined,
-        search: `?${new URLSearchParams({
-          origin: context.origin,
-          transaction: JSON.stringify(transaction),
-        })}`,
+        search: `?${searchParams}`,
         onResolve: (hash) => {
           resolve(hash);
         },
@@ -1470,11 +1456,23 @@ class PublicController {
     id,
     params,
     context,
-  }: PublicMethodParams<[string, string, string]>) {
+  }: PublicMethodParams<
+    [
+      string,
+      string,
+      string,
+      /* TODO: refactor to use {context} instead? */ { clientScope?: string }?
+    ]
+  >) {
     if (!params.length) {
       throw new InvalidParams();
     }
-    const [shouldBeMessage, shouldBeAddress, _password] = params;
+    const [
+      shouldBeMessage,
+      shouldBeAddress,
+      _password,
+      { clientScope } = { clientScope: undefined },
+    ] = params;
     const currentAddress = this.wallet.ensureCurrentAddress();
 
     let address = '';
@@ -1513,16 +1511,20 @@ class PublicController {
       context: INTERNAL_SYMBOL_CONTEXT,
     });
     const isDeviceWallet = currentWallet && isDeviceAccount(currentWallet);
+    const searchParams = new URLSearchParams({
+      method: 'personal_sign',
+      origin: context.origin,
+      message,
+    });
+    if (clientScope) {
+      searchParams.append('clientScope', clientScope);
+    }
     return new Promise((resolve, reject) => {
       this.safeOpenDialogWindow(context.origin, {
         requestId: `${context.origin}:${id}`,
         route,
         height: isDeviceWallet ? 800 : undefined,
-        search: `?${new URLSearchParams({
-          method: 'personal_sign',
-          origin: context.origin,
-          message,
-        })}`,
+        search: `?${searchParams}`,
         onResolve: (signature) => {
           resolve(signature);
         },

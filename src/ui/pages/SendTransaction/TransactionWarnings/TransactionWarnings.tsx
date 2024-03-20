@@ -1,9 +1,8 @@
 import React from 'react';
-import type { AddressAction } from 'defi-sdk';
 import type { NetworkFeeConfiguration } from '@zeriontech/transactions';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { Chain } from 'src/modules/networks/Chain';
-import type { IncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { RenderArea } from 'react-area';
 import { InsufficientFundsWarning } from './InsufficientFundsWarning';
@@ -18,7 +17,7 @@ export function TransactionWarnings({
 }: {
   address: string;
   transaction: IncomingTransaction;
-  addressAction: AddressAction | IncomingAddressAction;
+  addressAction: AnyAddressAction;
   chain: Chain;
   networkFeeConfiguration: NetworkFeeConfiguration;
 }) {

@@ -16,6 +16,12 @@ export class PersistentStore<T> extends Store<T> {
     this.isReady = false;
     this.readyPromise = this.restore();
     this.on('change', (state) => {
+      // TODO: FIX:
+      // only write to disk after restore so that we're not making
+      // a redundant write on each initialization
+      // if (this.isReady) {
+      //   browserStorage.set(this.key, state);
+      // }
       browserStorage.set(this.key, state);
     });
   }

@@ -114,6 +114,7 @@ function errorToMessage(error: Error) {
 
 function TypedDataDefaultView({
   origin,
+  clientScope: clientScopeParam,
   wallet,
   chain,
   networks,
@@ -127,6 +128,7 @@ function TypedDataDefaultView({
   onOpenAdvancedView,
 }: {
   origin: string;
+  clientScope: string | null;
   wallet: ExternallyOwnedAccount;
   chain: Chain;
   networks: Networks;
@@ -180,12 +182,14 @@ function TypedDataDefaultView({
     return JSON.stringify(newTypedData);
   }, [allowanceQuantityBase, typedData]);
 
+  const clientScope = clientScopeParam || 'External Dapp';
   const { mutate: registerTypedDataSign } = useMutation({
     mutationFn: async (signature: string) => {
       walletPort.request('registerTypedDataSign', {
         rawTypedData: stringifiedData,
         address: wallet.address,
         initiator: origin,
+        clientScope,
       });
       onSignSuccess(signature);
     },
@@ -264,6 +268,7 @@ function TypedDataDefaultView({
         signTypedData_v4Mutation.mutate({
           typedData: stringifiedData,
           initiator: origin,
+          clientScope,
         });
       }}
     >
@@ -411,10 +416,12 @@ function TypedDataDefaultView({
 
 function SignTypedDataContent({
   origin,
+  clientScope,
   typedDataRaw,
   wallet,
 }: {
   origin: string;
+  clientScope: string | null;
   typedDataRaw: string;
   wallet: ExternallyOwnedAccount;
 }) {
@@ -509,6 +516,7 @@ function SignTypedDataContent({
         {view === View.default ? (
           <TypedDataDefaultView
             origin={origin}
+            clientScope={clientScope}
             wallet={wallet}
             chain={chain}
             networks={networks}
@@ -572,6 +580,7 @@ export function SignTypedData() {
   }
   const origin = params.get('origin');
   invariant(origin, 'origin get-parameter is required for this view');
+  const clientScope = params.get('clientScope');
 
   const typedDataRaw = params.get('typedDataRaw');
   invariant(
@@ -583,6 +592,7 @@ export function SignTypedData() {
     <SignTypedDataContent
       typedDataRaw={typedDataRaw}
       origin={origin}
+      clientScope={clientScope}
       wallet={wallet}
     />
   );

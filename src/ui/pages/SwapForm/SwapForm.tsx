@@ -290,8 +290,9 @@ export function SwapForm() {
 
       const txResponse = await approveSignerRef.current.sendTransaction({
         transaction,
-        chain,
+        chain: chain.toString(),
         initiator: INTERNAL_ORIGIN,
+        clientScope: 'Swap',
         feeValueCommon,
         addressAction: createApproveAddressAction({
           transaction: { ...transaction, from: address },
@@ -348,8 +349,9 @@ export function SwapForm() {
       const receiveValue = quote.output_amount_estimation;
       const txResponse = await signerSenderRef.current.sendTransaction({
         transaction,
-        chain,
+        chain: chain.toString(),
         initiator: INTERNAL_ORIGIN,
+        clientScope: 'Swap',
         feeValueCommon,
         addressAction: createTradeAddressAction({
           transaction,

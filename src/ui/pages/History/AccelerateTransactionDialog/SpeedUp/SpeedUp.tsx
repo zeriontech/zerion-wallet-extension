@@ -97,8 +97,9 @@ export function SpeedUp({
       );
       const txResponse = await signerSenderRef.current.sendTransaction({
         transaction: tx,
-        chain,
+        chain: chain.toString(),
         initiator: INTERNAL_ORIGIN,
+        clientScope: 'Speed Up',
         feeValueCommon,
         addressAction: createAcceleratedAddressAction(addressAction, tx),
       });

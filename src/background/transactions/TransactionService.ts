@@ -118,6 +118,8 @@ function testAddTransaction() {
     initiator: 'https://app.zerion.io',
     feeValueCommon: '0.123',
     addressAction: null,
+    clientScope: 'Local Testing',
+    chain: 'ethereum',
   });
 }
 

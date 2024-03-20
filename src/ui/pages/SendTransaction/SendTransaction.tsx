@@ -4,7 +4,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Content, RenderArea } from 'react-area';
 import type { AddressAction } from 'defi-sdk';
-import type { IncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { incomingTxToIncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type {
   IncomingTransaction,
@@ -130,6 +130,7 @@ function TransactionDefaultView({
   networks,
   chain,
   origin,
+  clientScope,
   wallet,
   addressAction,
   transactionAction,
@@ -145,8 +146,9 @@ function TransactionDefaultView({
   networks: Networks;
   chain: Chain;
   origin: string;
+  clientScope: string | null;
   wallet: ExternallyOwnedAccount;
-  addressAction: AddressAction | IncomingAddressAction;
+  addressAction: AnyAddressAction;
   transactionAction: TransactionAction;
   singleAsset: NonNullable<AddressAction['content']>['single_asset'];
   allowanceQuantityBase?: string;
@@ -220,10 +222,11 @@ function TransactionDefaultView({
       const feeValueCommon = feeValueCommonRef.current || null;
       return signerSenderRef.current.sendTransaction({
         transaction: tx,
-        chain,
+        chain: chain.toString(),
         feeValueCommon,
         initiator: origin,
-        addressAction: null,
+        clientScope: clientScope || 'External Dapp',
+        addressAction,
       });
     },
     onMutate: () => 'sendTransaction',
@@ -402,10 +405,12 @@ function TransactionDefaultView({
 function SendTransactionContent({
   transactionStringified,
   origin,
+  clientScope,
   wallet,
 }: {
   transactionStringified: string;
   origin: string;
+  clientScope: string | null;
   wallet: ExternallyOwnedAccount;
 }) {
   const [params] = useSearchParams();
@@ -542,6 +547,7 @@ function SendTransactionContent({
             networks={networks}
             chain={chain}
             origin={origin}
+            clientScope={clientScope}
             wallet={wallet}
             transactionAction={transactionAction}
             addressAction={addressAction}
@@ -606,6 +612,7 @@ export function SendTransaction() {
   }
 
   const origin = params.get('origin');
+  const clientScope = params.get('clientScope');
   invariant(origin, 'origin get-parameter is required for this view');
 
   const transactionStringified = params.get('transaction');
@@ -618,6 +625,7 @@ export function SendTransaction() {
     <SendTransactionContent
       transactionStringified={transactionStringified}
       origin={origin}
+      clientScope={clientScope}
       wallet={wallet}
     />
   );

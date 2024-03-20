@@ -4,6 +4,7 @@ import { networksStore } from 'src/modules/networks/networks-store.background';
 import { configureBackgroundClient } from 'src/modules/defi-sdk/background';
 import { SessionCacheService } from 'src/background/resource/sessionCacheService';
 import { openOnboarding } from 'src/shared/openOnboarding';
+import { userLifecycleStore } from 'src/shared/analytics/shared/UserLifecycle';
 import { initialize } from './initialize';
 import { PortRegistry } from './messaging/PortRegistry';
 import { createWalletMessageHandler } from './messaging/port-message-handlers/createWalletMessageHandler';
@@ -193,6 +194,7 @@ initialize().then((values) => {
 
 browser.runtime.onInstalled.addListener(({ reason }) => {
   if (reason === 'install') {
+    userLifecycleStore.handleRuntimeInstalledEvent();
     const popupUrl = browser.runtime.getManifest().action?.default_popup;
     if (!popupUrl) {
       throw new Error('popupUrl not found');

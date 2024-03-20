@@ -1,10 +1,12 @@
 import type { ethers } from 'ethers';
 import { createNanoEvents } from 'nanoevents';
-import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import type { Quote } from 'src/shared/types/Quote';
 import type { Chain } from 'src/modules/networks/Chain';
+import type {
+  MessageContextParams,
+  TransactionContextParams,
+} from 'src/shared/types/SignatureContextParams';
 import type { State as GlobalPreferencesState } from './Wallet/GlobalPreferences';
 import type { WalletOrigin } from './Wallet/model/WalletOrigin';
 import type { WalletContainer } from './Wallet/model/types';
@@ -28,28 +30,21 @@ export const emitter = createNanoEvents<{
   accountsChanged: () => void;
   chainsUpdated: () => void;
   chainChanged: (chain: Chain) => void;
-  transactionSent: (data: {
-    transaction: TransactionResponse;
-    initiator: string;
-    feeValueCommon: string | null;
-    addressAction: AnyAddressAction | null;
-    quote?: Quote;
-  }) => void;
-  typedDataSigned: (data: {
-    typedData: TypedData;
-    initiator: string;
-    address: string;
-  }) => void;
-  messageSigned: (data: {
-    message: string;
-    initiator: string;
-    address: string;
-  }) => void;
+  transactionSent: (
+    data: { transaction: TransactionResponse } & TransactionContextParams
+  ) => void;
+  typedDataSigned: (
+    data: { typedData: TypedData; address: string } & MessageContextParams
+  ) => void;
+  messageSigned: (
+    data: { message: string; address: string } & MessageContextParams
+  ) => void;
   userActivity: () => void;
   connectToSiteEvent: (info: { origin: string }) => void;
   sessionExpired: () => void;
   dappConnection: (data: { origin: string; address: string }) => void;
   screenView: (data: ScreenViewParams) => void;
+  firstScreenView: (timestamp: number) => void;
   daylightAction: (data: DaylightEventParams) => void;
   walletCreated: (wallet: {
     walletContainer: WalletContainer;

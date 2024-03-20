@@ -135,6 +135,7 @@ export class DnaService {
       params: {
         params: [signingMessage],
         initiator: INTERNAL_ORIGIN,
+        clientScope: null,
       },
       context: { origin: INTERNAL_ORIGIN },
     });

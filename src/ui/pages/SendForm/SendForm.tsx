@@ -266,8 +266,9 @@ export function SendForm() {
 
       const txResponse = await signerSenderRef.current.sendTransaction({
         transaction,
-        chain,
+        chain: chain.toString(),
         initiator: INTERNAL_ORIGIN,
+        clientScope: 'Send',
         feeValueCommon,
         addressAction: createSendAddressAction({
           transaction,

@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
+import type { MessageContextParams } from 'src/shared/types/SignatureContextParams';
 import { walletPort } from 'src/ui/shared/channels';
 
 type SignMutationProps = { onSuccess: (value: string) => void };
@@ -8,14 +9,13 @@ export function useSignTypedData_v4Mutation({ onSuccess }: SignMutationProps) {
   return useMutation({
     mutationFn: async ({
       typedData,
-      initiator,
+      ...messageContextParams
     }: {
       typedData: TypedData | string;
-      initiator: string;
-    }) => {
+    } & MessageContextParams) => {
       return await walletPort.request('signTypedData_v4', {
         typedData,
-        initiator,
+        ...messageContextParams,
       });
     },
     // The value returned by onMutate can be accessed in
@@ -28,7 +28,7 @@ export function useSignTypedData_v4Mutation({ onSuccess }: SignMutationProps) {
 
 export function usePersonalSignMutation({ onSuccess }: SignMutationProps) {
   return useMutation({
-    mutationFn: async (params: { params: [string]; initiator: string }) => {
+    mutationFn: async (params: { params: [string] } & MessageContextParams) => {
       return await walletPort.request('personalSign', params);
     },
     // The value returned by onMutate can be accessed in

@@ -52,10 +52,12 @@ function MessageRow({ message }: { message: string }) {
 function SignMessageContent({
   message,
   origin,
+  clientScope: clientScopeParam,
   wallet,
 }: {
   message: string;
   origin: string;
+  clientScope: string | null;
   wallet: ExternallyOwnedAccount;
 }) {
   const [params] = useSearchParams();
@@ -64,12 +66,15 @@ function SignMessageContent({
   const handleSignSuccess = (signature: string) =>
     windowPort.confirm(windowId, signature);
 
+  const clientScope = clientScopeParam || 'External Dapp';
+
   const { mutate: registerSignedMessage } = useMutation({
     mutationFn: async (signature: string) => {
       walletPort.request('registerPersonalSign', {
         message,
         address: wallet.address,
         initiator: origin,
+        clientScope,
       });
       handleSignSuccess(signature);
     },
@@ -195,6 +200,7 @@ function SignMessageContent({
                   personalSignMutation.mutate({
                     params: [message],
                     initiator: origin,
+                    clientScope,
                   });
                 }}
               >
@@ -219,15 +225,17 @@ export function SignMessage() {
   if (isLoading || !wallet) {
     return null;
   }
+  const clientScope = params.get('clientScope');
   const origin = params.get('origin');
-  if (!origin) {
-    throw new Error('origin get-parameter is required for this view');
-  }
   const message = params.get('message');
-  if (!message) {
-    throw new Error('message get-parameter is required for this view');
-  }
+  invariant(origin, 'origin get-parameter is required for this view');
+  invariant(message, 'message get-parameter is required for this view');
   return (
-    <SignMessageContent message={message} origin={origin} wallet={wallet} />
+    <SignMessageContent
+      message={message}
+      origin={origin}
+      clientScope={clientScope}
+      wallet={wallet}
+    />
   );
 }
