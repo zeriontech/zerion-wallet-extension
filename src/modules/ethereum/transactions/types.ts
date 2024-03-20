@@ -19,6 +19,7 @@ interface Warning {
   severity: WarningSeverity;
   title?: string;
   description: string;
+  details?: string;
 }
 
 interface Block {
