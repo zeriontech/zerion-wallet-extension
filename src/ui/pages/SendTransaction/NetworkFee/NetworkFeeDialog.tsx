@@ -165,7 +165,7 @@ function CustomNetworkFeeForm({
     configuration.custom1559GasPrice?.priority_fee ?? defaultPriorityFee;
   const maxFee = configuration.custom1559GasPrice?.max_fee ?? defaultMaxFee;
 
-  const { priorityFeeFiat, maxFeeFiat, baseFeeFiat } = useMemo(() => {
+  const { expectedFeeFiat, maxFeeFiat, baseFeeFiat } = useMemo(() => {
     const gas = getGas(transaction);
     if (!nativeAsset?.price || !gas) {
       return {};
@@ -178,8 +178,8 @@ function CustomNetworkFeeForm({
     }
 
     return {
-      priorityFeeFiat: getFiatValue(
-        (priorityFee || 0) + (eip1559?.base_fee || 0)
+      expectedFeeFiat: getFiatValue(
+        Math.min((priorityFee || 0) + (eip1559?.base_fee || 0), maxFee)
       ),
       maxFeeFiat: getFiatValue(maxFee),
       baseFeeFiat: getFiatValue(baseFee),
@@ -329,8 +329,11 @@ function CustomNetworkFeeForm({
               <UIText kind="small/regular">Expected Fee</UIText>
               <UIText kind="small/accent">
                 {getCustomFeeDescription({
-                  fiat: priorityFeeFiat,
-                  gasPrice: eip1559.base_fee + (priorityFee || 0),
+                  fiat: expectedFeeFiat,
+                  gasPrice: Math.min(
+                    eip1559.base_fee + (priorityFee || 0),
+                    maxFee
+                  ),
                 })}
               </UIText>
             </HStack>
