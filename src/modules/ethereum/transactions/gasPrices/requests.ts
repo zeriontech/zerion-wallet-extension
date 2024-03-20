@@ -10,7 +10,6 @@ import { wait } from 'src/shared/wait';
 
 export interface OptimisticGasPriceInfo {
   l1?: number;
-  l2?: number;
   fixed_overhead?: number;
   dynamic_overhead?: number;
 }

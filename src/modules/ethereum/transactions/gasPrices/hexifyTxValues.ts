@@ -1,7 +1,15 @@
 import { valueToHex } from 'src/shared/units/valueToHex';
 import type { IncomingTransaction } from '../../types/IncomingTransaction';
 
-const fields = ['data', 'value', 'gas'] as const;
+const fields = [
+  'data',
+  'value',
+  'gas',
+  'gasLimit',
+  'gasPrice',
+  'maxPriorityFeePerGas',
+  'maxFeePerGas',
+] as const;
 type Keys = (typeof fields)[number];
 type HexifiedTx<Keys extends keyof IncomingTransaction> =
   IncomingTransaction & { [key in Keys]?: string };

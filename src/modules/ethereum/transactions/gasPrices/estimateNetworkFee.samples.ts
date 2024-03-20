@@ -27,7 +27,6 @@ export const samples = {
           },
           optimistic: {
             l1: 19660610252,
-            l2: 29961678,
             fixed_overhead: 188,
             dynamic_overhead: 684000,
           },
