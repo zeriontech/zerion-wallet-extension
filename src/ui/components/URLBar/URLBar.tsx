@@ -31,6 +31,7 @@ const URLBarBlacklist = new Set([
   '/overview/feed',
   '/login',
   '/addEthereumChain',
+  '/switchEthereumChain',
   '/sendTransaction',
   '/signMessage',
   '/signTypedData',

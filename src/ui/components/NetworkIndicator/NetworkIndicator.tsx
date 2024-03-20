@@ -16,7 +16,7 @@ export function NetworkIndicator({
 }) {
   const network = networks.getNetworkByName(chain);
   return (
-    <HStack gap={4} alignItems="center">
+    <HStack gap={size < 28 ? 4 : 8} alignItems="center">
       <NetworkIcon
         src={network?.icon_url}
         chainId={network?.external_id || ''}
