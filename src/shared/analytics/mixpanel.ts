@@ -187,7 +187,7 @@ class MixpanelApi {
       $set: userProfileProperties,
     };
 
-    logToConsole(Loglevel.info, 'group', 'LOGGER: Mixpanel engage');
+    logToConsole(Loglevel.info, 'group', 'Mixpanel engage');
     logTable(Loglevel.info, payload, ['index']);
     logTable(Loglevel.info, payload.$set);
     logToConsole(Loglevel.info, 'groupEnd');
