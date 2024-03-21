@@ -5,7 +5,7 @@ import { PersistentStore } from 'src/modules/persistent-store';
 import { version } from 'src/shared/packageVersion';
 import { MIXPANEL_TOKEN_PUBLIC } from 'src/env/config';
 import { invariant } from '../invariant';
-import { Loglevel, logTable, log } from '../logger';
+import { Loglevel, logTable, logToConsole } from '../logger';
 import { getBaseMixpanelParams } from './shared/mixpanel-data-helpers';
 
 const mixPanelToken = MIXPANEL_TOKEN_PUBLIC;
@@ -161,8 +161,9 @@ class MixpanelApi {
       },
     };
 
-    log(Loglevel.info, payload.event);
-    logTable(Loglevel.info, payload.properties);
+    logToConsole(Loglevel.info, 'group', `Mixpanel track: ${payload.event}`);
+    logTable(Loglevel.info, payload.properties, ['index']);
+    logToConsole(Loglevel.info, 'groupEnd');
 
     return this.sendEvent(url.toString(), { json: [payload] });
   }
@@ -186,7 +187,10 @@ class MixpanelApi {
       $set: userProfileProperties,
     };
 
-    logTable(Loglevel.info, payload);
+    logToConsole(Loglevel.info, 'group', 'LOGGER: Mixpanel engage');
+    logTable(Loglevel.info, payload, ['index']);
+    logTable(Loglevel.info, payload.$set);
+    logToConsole(Loglevel.info, 'groupEnd');
 
     return this.sendEvent(url.toString(), { json: [payload] });
   }

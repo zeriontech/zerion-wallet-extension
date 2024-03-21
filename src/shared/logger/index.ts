@@ -23,7 +23,7 @@ async function setLoglevel(flag: Loglevel) {
   loglevelState.setState({ level: flag });
 }
 
-function logToConsole<M extends 'log' | 'table'>(
+export function logToConsole<M extends 'log' | 'table' | 'group' | 'groupEnd'>(
   level: Loglevel,
   consoleMethod: M,
   ...args: Parameters<(typeof console)[M]>
