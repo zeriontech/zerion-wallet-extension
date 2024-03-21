@@ -420,8 +420,8 @@ export class Wallet {
     if (!this.userCredentials) {
       throw new Error('Cannot save pending wallet: userCredentials are null');
     }
-    emitter.emit('walletCreated', this.pendingWallet);
     this.record = Model.createOrUpdateRecord(this.record, this.pendingWallet);
+    emitter.emit('walletCreated', this.pendingWallet);
     this.pendingWallet = null;
     this.removeSeedPhraseEncryptionKey();
     this.updateWalletStore(this.record);
