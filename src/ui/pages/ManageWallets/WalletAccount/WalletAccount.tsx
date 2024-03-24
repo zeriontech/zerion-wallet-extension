@@ -32,7 +32,13 @@ import { invariant } from 'src/shared/invariant';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { InputDecorator } from 'src/ui/ui-kit/Input/InputDecorator';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
-import { isBareWallet, isDeviceAccount } from 'src/shared/types/validators';
+import {
+  ContainerType,
+  getContainerType,
+  isBareWallet,
+  isDeviceAccount,
+} from 'src/shared/types/validators';
+import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
 
 function EditableWalletName({
   id,
@@ -95,8 +101,10 @@ function EditableWalletName({
 }
 
 function RemoveAddressConfirmationDialog({
+  containerType,
   wallet,
 }: {
+  containerType: ContainerType;
   wallet: ExternallyOwnedAccount;
 }) {
   return (
@@ -113,10 +121,20 @@ function RemoveAddressConfirmationDialog({
           glow={true}
         />
         <UIText kind="headline/h3">Do you want to remove this wallet?</UIText>
-        <UIText kind="body/regular">
-          You can always import it again using your recovery phrase or private
-          key
-        </UIText>
+        {containerType === ContainerType.readonly ? (
+          <UIText kind="body/regular">
+            You can always add it back to your watch list
+          </UIText>
+        ) : containerType === ContainerType.hardware ? (
+          <UIText kind="body/regular">
+            You can always add it again by connecting your hardware device
+          </UIText>
+        ) : (
+          <UIText kind="body/regular">
+            You can always import it again using your recovery phrase or private
+            key
+          </UIText>
+        )}
         <Media
           image={
             <WalletAvatar address={wallet.address} size={32} borderRadius={4} />
@@ -163,6 +181,10 @@ export function WalletAccount() {
     queryFn: () => walletPort.request('uiGetWalletByAddress', { address }),
     useErrorBoundary: true,
   });
+  const { data: walletGroup, isLoading: walletGroupIsLoading } = useQuery({
+    queryKey: ['getWalletGroupByAddress', address],
+    queryFn: () => getWalletGroupByAddress(address),
+  });
   const displayName = useProfileName({ address, name: wallet?.name || null });
   const removeAddressMutation = useMutation({
     mutationFn: () => walletPort.request('removeAddress', { address }),
@@ -174,10 +196,10 @@ export function WalletAccount() {
   });
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const nameInputId = useId();
-  if (isLoading) {
+  if (isLoading || walletGroupIsLoading) {
     return <NavigationTitle title={null} documentTitle="" />;
   }
-  if (!wallet) {
+  if (!wallet || !walletGroup) {
     return (
       <>
         <NavigationTitle title={null} documentTitle="" />
@@ -190,7 +212,10 @@ export function WalletAccount() {
     <PageColumn>
       <NavigationTitle title={displayName} />
       <BottomSheetDialog ref={dialogRef} style={{ height: '48vh' }}>
-        <RemoveAddressConfirmationDialog wallet={wallet} />
+        <RemoveAddressConfirmationDialog
+          containerType={getContainerType(walletGroup.walletContainer)}
+          wallet={wallet}
+        />
       </BottomSheetDialog>
       <PageTop />
       <VStack gap={16}>

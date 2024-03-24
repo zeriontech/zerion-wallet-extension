@@ -73,3 +73,26 @@ export function assertSignerContainer(
     throw new Error('Not a WalletContainer');
   }
 }
+
+export enum ContainerType {
+  mnemonic,
+  privateKey,
+  hardware,
+  readonly,
+}
+
+function throwErr(error: Error): never {
+  throw error;
+}
+
+export function getContainerType(container: WalletContainer): ContainerType {
+  return isMnemonicContainer(container)
+    ? ContainerType.mnemonic
+    : isPrivateKeyContainer(container)
+    ? ContainerType.privateKey
+    : isHardwareContainer(container)
+    ? ContainerType.hardware
+    : isReadonlyContainer(container)
+    ? ContainerType.readonly
+    : throwErr(new Error('Unexpected Container type'));
+}

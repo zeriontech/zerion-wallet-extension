@@ -50,11 +50,11 @@ const bgClassNames = {
   transparent: 'transparent-bg',
 } as const;
 
-export function useBackgroundKind({
-  kind,
-}: {
-  kind: 'neutral' | 'white' | 'transparent';
-}) {
+type Props = { kind: 'neutral' | 'white' | 'transparent' };
+
+export const whiteBackgroundKind: Props = { kind: 'white' };
+
+export function useBackgroundKind({ kind }: Props) {
   const { uiScrollRootElement } = useContext(UIContext);
 
   useEffect(() => {

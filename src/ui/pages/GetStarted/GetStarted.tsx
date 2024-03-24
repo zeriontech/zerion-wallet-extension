@@ -23,6 +23,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { openInTabView } from 'src/ui/shared/openInTabView';
 import { ImportWallet } from './ImportWallet';
 import { GenerateWallet } from './GenerateWallet';
+import { AddReadonlyAddress } from './AddReadonlyAddress';
 
 function createNextHref(path: string, beforePath: string | null) {
   return beforePath ? `${beforePath}?next=${encodeURIComponent(path)}` : path;
@@ -135,6 +136,9 @@ function Options() {
               Connect Ledger
             </HStack>
           </Button>
+          <Button kind="regular" as={Link} to="/get-started/readonly" size={44}>
+            Watch Address
+          </Button>
         </VStack>
         <PageBottom />
       </PageColumn>
@@ -239,6 +243,7 @@ export function GetStarted() {
       <Route path="/new" element={<GenerateWallet />} />
       <Route path="/import/*" element={<ImportWallet />} />
       <Route path="/wallet-group-select" element={<WalletGroupSelect />} />
+      <Route path="/readonly" element={<AddReadonlyAddress />} />
     </Routes>
   );
 }
