@@ -33,12 +33,28 @@ import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { InputDecorator } from 'src/ui/ui-kit/Input/InputDecorator';
 import { BackupInfoNote } from 'src/ui/components/BackupInfoNote';
 import {
+  ContainerType,
+  getContainerType,
   isHardwareContainer,
   isMnemonicContainer,
-  isPrivateKeyContainer,
   isSignerContainer,
 } from 'src/shared/types/validators';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
+
+const strings = {
+  recoveryPhraseTitle: 'Recovery Phrase',
+  privateKeyTitle: 'Private Key',
+  removeWalletSubtitle: (containerType: ContainerType) =>
+    containerType === ContainerType.mnemonic
+      ? 'You can always import it again using your recovery phrase'
+      : containerType === ContainerType.privateKey
+      ? 'You can always import it again using your private key'
+      : containerType === ContainerType.hardware
+      ? 'You can import it again by connecting your hardware wallet'
+      : containerType === ContainerType.readonly
+      ? 'You can always add it back to your watch list'
+      : 'You can add it again on the Manage Wallets page',
+};
 
 function useWalletGroup({ groupId }: { groupId: string }) {
   return useQuery({
@@ -111,10 +127,16 @@ function RemoveGroupConfirmationDialog({
 }: {
   walletGroup: WalletGroup;
 }) {
+  const containerType = getContainerType(walletGroup.walletContainer);
   return (
     <form
       method="dialog"
-      style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 24,
+        height: '100%',
+      }}
     >
       <VStack gap={8}>
         <WarningIcon
@@ -126,8 +148,7 @@ function RemoveGroupConfirmationDialog({
         />
         <UIText kind="headline/h3">Did you backup your recovery phrase?</UIText>
         <UIText kind="body/regular">
-          You will need your recovery phrase to import this group of wallets in
-          the future
+          {strings.removeWalletSubtitle(containerType)}
         </UIText>
         <UIText kind="small/accent" color="var(--neutral-500)">
           Wallets to remove
@@ -197,29 +218,16 @@ export function WalletGroup() {
       </>
     );
   }
-  // const { seedType } = walletGroup.walletContainer;
   const { walletContainer } = walletGroup;
   const isSignerGroup = isSignerContainer(walletContainer);
   const isMnemonicGroup = isMnemonicContainer(walletContainer);
-  const isPrivateKeyGroup = isPrivateKeyContainer(walletContainer);
   const isHardwareGroup = isHardwareContainer(walletContainer);
-
-  const strings = {
-    recoveryPhraseTitle: 'Recovery Phrase',
-    privateKeyTitle: 'Private Key',
-    removeWalletSubtitle: isMnemonicGroup
-      ? 'You can always import it again using your recovery phrase'
-      : isPrivateKeyGroup
-      ? 'You can always import it again using your private key'
-      : isHardwareGroup
-      ? 'You can import it again by connecting your hardware wallet'
-      : 'You can add it again on the Manage Wallets page',
-  };
+  const containerType = getContainerType(walletContainer);
 
   return (
     <PageColumn>
       <NavigationTitle title={getGroupDisplayName(walletGroup.name)} />
-      <BottomSheetDialog ref={dialogRef}>
+      <BottomSheetDialog ref={dialogRef} height="fit-content">
         <RemoveGroupConfirmationDialog walletGroup={walletGroup} />
       </BottomSheetDialog>
       <PageTop />
@@ -362,7 +370,7 @@ export function WalletGroup() {
             ]}
           />
           <UIText kind="caption/regular" color="var(--neutral-500)">
-            {strings.removeWalletSubtitle}
+            {strings.removeWalletSubtitle(containerType)}
           </UIText>
         </VStack>
       </VStack>

@@ -21,22 +21,26 @@ import { EraseDataListButton } from 'src/ui/components/EraseData';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { BackupInfoNote } from 'src/ui/components/BackupInfoNote';
 import {
+  ContainerType,
+  getContainerType,
   isHardwareContainer,
-  isMnemonicContainer,
-  isPrivateKeyContainer,
-  isReadonlyContainer,
 } from 'src/shared/types/validators';
-import type { WalletContainer } from 'src/shared/types/WalletContainer';
 import { openInTabView } from 'src/ui/shared/openInTabView';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { WalletAccount as WalletAccountPage } from './WalletAccount';
 import { WalletGroup as WalletGroupPage } from './WalletGroup';
 
-function PrivateKeyList({ walletGroups }: { walletGroups: WalletGroup[] }) {
+function FlatAddressList({
+  walletGroups,
+  title,
+}: {
+  walletGroups: WalletGroup[];
+  title: React.ReactNode;
+}) {
   return (
     <VStack gap={8}>
       <UIText kind="small/accent" color="var(--neutral-500)">
-        Imported by Private Key
+        {title}
       </UIText>
       <SurfaceList
         items={walletGroups.map((group) => {
@@ -150,29 +154,6 @@ function HardwareWalletList({ walletGroups }: { walletGroups: WalletGroup[] }) {
   );
 }
 
-enum ContainerType {
-  mnemonic,
-  privateKey,
-  hardwareDevice,
-  readonly,
-}
-
-function throwErr(error: Error): never {
-  throw error;
-}
-
-function getContainerType(container: WalletContainer): ContainerType {
-  return isMnemonicContainer(container)
-    ? ContainerType.mnemonic
-    : isPrivateKeyContainer(container)
-    ? ContainerType.privateKey
-    : isHardwareContainer(container)
-    ? ContainerType.hardwareDevice
-    : isReadonlyContainer(container)
-    ? ContainerType.readonly
-    : throwErr(new Error('Unexpected Container type'));
-}
-
 function WalletGroups() {
   const { data: walletGroups, isLoading } = useQuery({
     queryKey: ['wallet/uiGetWalletGroups'],
@@ -190,7 +171,7 @@ function WalletGroups() {
     return [
       ContainerType.mnemonic,
       ContainerType.privateKey,
-      ContainerType.hardwareDevice,
+      ContainerType.hardware,
       ContainerType.readonly,
     ]
       .filter((containerType) => grouped[containerType])
@@ -219,21 +200,31 @@ function WalletGroups() {
             {groupedBySeedType.map(([containerType, items]) => {
               if (containerType === ContainerType.privateKey) {
                 return (
-                  <PrivateKeyList key={containerType} walletGroups={items} />
+                  <FlatAddressList
+                    key={containerType}
+                    walletGroups={items}
+                    title="Imported by Private Key"
+                  />
                 );
               } else if (containerType === ContainerType.mnemonic) {
                 return (
                   <MnemonicList key={containerType} walletGroups={items} />
                 );
-              } else if (containerType === ContainerType.hardwareDevice) {
+              } else if (containerType === ContainerType.hardware) {
                 return (
                   <HardwareWalletList
                     key={containerType}
                     walletGroups={items}
                   />
                 );
-              } else {
-                return <div>Unknown seed type</div>;
+              } else if (containerType === ContainerType.readonly) {
+                return (
+                  <FlatAddressList
+                    key={containerType}
+                    walletGroups={items}
+                    title="Watchlist"
+                  />
+                );
               }
             })}
             <SurfaceList
@@ -263,6 +254,15 @@ function WalletGroups() {
                   component: (
                     <UIText kind="body/accent" color="var(--primary)">
                       Connect Ledger
+                    </UIText>
+                  ),
+                },
+                {
+                  key: 3,
+                  to: '/get-started/readonly',
+                  component: (
+                    <UIText kind="body/accent" color="var(--primary)">
+                      Add Watch Address
                     </UIText>
                   ),
                 },

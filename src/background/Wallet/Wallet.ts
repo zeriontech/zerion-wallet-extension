@@ -85,7 +85,10 @@ import { WalletOrigin } from './model/WalletOrigin';
 import { globalPreferences } from './GlobalPreferences';
 import type { State as GlobalPreferencesState } from './GlobalPreferences';
 import type { Device, DeviceAccount } from './model/AccountContainer';
-import { DeviceAccountContainer } from './model/AccountContainer';
+import {
+  DeviceAccountContainer,
+  ReadonlyAccountContainer,
+} from './model/AccountContainer';
 
 export const INTERNAL_SYMBOL_CONTEXT = { origin: INTERNAL_ORIGIN_SYMBOL };
 
@@ -314,6 +317,18 @@ export class Wallet {
       origin: WalletOrigin.imported,
       groupId: null,
       walletContainer,
+    };
+    return walletContainer.getFirstWallet();
+  }
+
+  async uiImportReadonlyAddress({
+    params: { address, name },
+  }: WalletMethodParams<{ address: string; name: string | null }>) {
+    const walletContainer = new ReadonlyAccountContainer([{ address, name }]);
+    this.pendingWallet = {
+      origin: WalletOrigin.imported,
+      walletContainer,
+      groupId: null,
     };
     return walletContainer.getFirstWallet();
   }
