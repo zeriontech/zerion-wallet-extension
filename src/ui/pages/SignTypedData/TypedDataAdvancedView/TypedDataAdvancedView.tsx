@@ -11,9 +11,14 @@ export function TypedDataAdvancedView({ data }: { data: InterpretInput }) {
       <PageTop />
       <Surface padding={16}>
         <VStack gap={16}>
-          {data.sections.flatMap(({ blocks }) =>
+          {data.sections.flatMap(({ blocks }, index) =>
             blocks.map(({ name, value }) => (
-              <TextLine wrap={true} key={name} label={name} value={value} />
+              <TextLine
+                wrap={true}
+                key={`${name}-${index}`}
+                label={name}
+                value={value}
+              />
             ))
           )}
         </VStack>
