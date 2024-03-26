@@ -1,14 +1,11 @@
 import { getChainId } from 'src/modules/networks/helpers';
 import { Store } from 'store-unit';
-import { isTruthy } from 'is-truthy-ts';
 import type { ChainConfig } from '../ethereum/chains/ChainConfigStore';
 import { isCustomNetworkId } from '../ethereum/chains/helpers';
-import type { AddEthereumChainParameter } from './../ethereum/types/AddEthereumChainParameter';
 import { Networks } from './Networks';
 import { getNetworkByChainId, getNetworks } from './networks-api';
 import type { NetworkConfig } from './NetworkConfig';
 import { toNetworkConfig } from './helpers';
-import { createChain } from './Chain';
 
 interface State {
   networks: Networks | null;
@@ -54,6 +51,19 @@ export class NetworksStore extends Store<State> {
     ]);
   }
 
+  private async updateNetworks() {
+    const savedChainConfigs = await this.getEthereumChainConfigs?.();
+    const networks = new Networks({
+      networks: mergeNetworkConfigs(
+        this.networkConfigs,
+        this.customNetworkConfigs
+      ),
+      ethereumChainConfigs: savedChainConfigs?.ethereumChainConfigs || [],
+    });
+    this.setState({ networks });
+    return networks;
+  }
+
   private async fetchNetworks({
     chains,
     update,
@@ -68,51 +78,37 @@ export class NetworksStore extends Store<State> {
     if (!shouldUpdateNetworksInfo && existingNetworks) {
       return existingNetworks;
     }
-    const savedChainConfigs = await this.getEthereumChainConfigs?.();
-    this.customNetworkConfigs =
-      savedChainConfigs?.ethereumChainConfigs
-        ?.filter((config) => isCustomNetworkId(config.id))
-        .map((config) =>
-          toNetworkConfig(config.value, createChain(config.id))
-        ) || [];
 
-    const savedChainConfigById: Record<string, AddEthereumChainParameter> =
-      Object.fromEntries(
-        savedChainConfigs?.ethereumChainConfigs
-          ?.map((config) =>
-            isCustomNetworkId(config.id) ? null : [config.id, config.value]
-          )
-          .filter(isTruthy) || []
-      );
-    const chainsToFetch = Object.keys(savedChainConfigById).concat(
-      ...(chains?.filter((id) => !savedChainConfigById[id]) || [])
+    const savedChainConfigs = await this.getEthereumChainConfigs?.();
+    const savedIds = savedChainConfigs?.ethereumChainConfigs?.map(
+      (config) => config.id
+    );
+    const chainsToFetch = Array.from(
+      new Set([...(savedIds || []), ...(chains || [])])
     );
 
     const [extraNetworkConfigs, commonNetworkConfis] = await Promise.allSettled(
       [getNetworks(chainsToFetch), getNetworks()]
     );
-    if (
-      extraNetworkConfigs.status === 'fulfilled' &&
+    const updatedNetworkConfigs = mergeNetworkConfigs(
       commonNetworkConfis.status === 'fulfilled'
-    ) {
-      this.networkConfigs = mergeNetworkConfigs(
-        this.networkConfigs,
-        mergeNetworkConfigs(
-          commonNetworkConfis.value,
-          extraNetworkConfigs.value
-        )
-      );
-    }
+        ? commonNetworkConfis.value
+        : [],
+      extraNetworkConfigs.status === 'fulfilled'
+        ? extraNetworkConfigs.value
+        : []
+    );
 
-    const networks = new Networks({
-      networks: mergeNetworkConfigs(
-        this.networkConfigs,
-        this.customNetworkConfigs
-      ),
-      ethereumChainConfigs: savedChainConfigs?.ethereumChainConfigs || [],
-    });
-    this.setState({ networks });
-    return networks;
+    this.networkConfigs = mergeNetworkConfigs(
+      this.networkConfigs,
+      updatedNetworkConfigs
+    );
+    this.customNetworkConfigs =
+      savedChainConfigs?.ethereumChainConfigs
+        ?.filter((config) => isCustomNetworkId(config.id))
+        .map((config) => toNetworkConfig(config.value)) || [];
+
+    return this.updateNetworks();
   }
 
   private async fetchNetworkById(chainId: number) {
@@ -124,20 +120,20 @@ export class NetworksStore extends Store<State> {
     if (hasInformationAboutChain && existingNetworks) {
       return existingNetworks;
     }
-    const savedChainConfigs = await this.getEthereumChainConfigs?.();
+
     const network = await getNetworkByChainId(chainId);
     if (network) {
       this.networkConfigs = mergeNetworkConfigs(this.networkConfigs, [network]);
     }
-    const networks = new Networks({
-      networks: mergeNetworkConfigs(
-        this.networkConfigs,
-        this.customNetworkConfigs
-      ),
-      ethereumChainConfigs: savedChainConfigs?.ethereumChainConfigs || [],
-    });
-    this.setState({ networks });
-    return networks;
+    return this.updateNetworks();
+  }
+
+  async pushConfigs(...extraNetworkConfigs: NetworkConfig[]) {
+    this.networkConfigs = mergeNetworkConfigs(
+      this.networkConfigs,
+      extraNetworkConfigs
+    );
+    return this.updateNetworks();
   }
 
   async load(chains?: string[]) {
@@ -171,22 +167,5 @@ export class NetworksStore extends Store<State> {
       delete this.loaderPromises[key];
       return networks;
     });
-  }
-
-  async push(...extraNetworkConfigs: NetworkConfig[]) {
-    const savedChainConfigs = await this.getEthereumChainConfigs?.();
-    this.networkConfigs = mergeNetworkConfigs(
-      this.networkConfigs,
-      extraNetworkConfigs
-    );
-    const networks = new Networks({
-      networks: mergeNetworkConfigs(
-        this.networkConfigs,
-        this.customNetworkConfigs
-      ),
-      ethereumChainConfigs: savedChainConfigs?.ethereumChainConfigs || [],
-    });
-    this.setState({ networks });
-    return networks;
   }
 }

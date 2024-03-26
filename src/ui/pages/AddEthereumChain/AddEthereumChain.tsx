@@ -79,7 +79,7 @@ function AddOrUpdateChain({
       : null;
     const network = prevNetwork
       ? mergeChainAndNetworkConfigs(prevNetwork, addEthereumChainParameter)
-      : toNetworkConfig(addEthereumChainParameter, null);
+      : toNetworkConfig(addEthereumChainParameter);
     return { network, prevNetwork };
   }, [addEthereumChainParameter, updatedNetworks, chainId]);
 

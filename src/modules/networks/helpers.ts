@@ -2,19 +2,17 @@ import { invariant } from 'src/shared/invariant';
 import type { AddEthereumChainParameter } from '../ethereum/types/AddEthereumChainParameter';
 import { getCustomNetworkId } from '../ethereum/chains/helpers';
 import type { NetworkConfig } from './NetworkConfig';
-import type { Chain } from './Chain';
 
 export function getChainId(network: NetworkConfig) {
   return network.standard === 'eip155' ? network.specification.eip155.id : null;
 }
 
 export function toNetworkConfig(
-  value: AddEthereumChainParameter,
-  chain: Chain | null
+  value: AddEthereumChainParameter
 ): NetworkConfig {
   invariant(value.rpcUrls, 'RPC URL should be defined in network config');
   invariant(value.chainId, 'chainId should be defined in network config');
-  const id = chain?.toString() || getCustomNetworkId(Number(value.chainId));
+  const id = getCustomNetworkId(Number(value.chainId));
   return {
     supports_sending: true,
     supports_trading: false,
@@ -48,7 +46,7 @@ export function toNetworkConfig(
     specification: {
       eip155: {
         eip1559: false,
-        id: parseInt(value.chainId),
+        id: Number(value.chainId),
       },
     },
   };

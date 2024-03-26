@@ -792,7 +792,7 @@ export function Positions({
     if (chainValue !== NetworkSelectValue.All) {
       chainsSet.add(chainValue);
     }
-    return [...chainsSet];
+    return Array.from(chainsSet);
   }, [portfolioDecomposition, chainValue]);
   const offsetValuesState = useStore(offsetValues);
   // Cheap perceived performance hack: render expensive Positions component later so that initial UI render is faster
@@ -813,8 +813,6 @@ export function Positions({
     chainValue === NetworkSelectValue.All
       ? true
       : networks.isSupportedByBackend(createChain(chainValue), 'positions');
-
-  console.log(isSupportedByBackend);
 
   const emptyNetworkBalance = (
     <div

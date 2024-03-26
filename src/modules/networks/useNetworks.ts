@@ -36,7 +36,7 @@ export function useSearchNetworks({ query = '' }: { query?: string }) {
   const { networks } = useNetworks();
   useEffect(() => {
     if (itemsForQuery) {
-      networksStore.push(...itemsForQuery);
+      networksStore.pushConfigs(...itemsForQuery);
     }
   }, [itemsForQuery]);
   return { networks, itemsForQuery, ...queryResult };
