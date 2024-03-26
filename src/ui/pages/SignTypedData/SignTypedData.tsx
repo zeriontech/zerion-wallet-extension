@@ -57,6 +57,7 @@ import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
 import { InterpretationState } from 'src/ui/components/InterpretationState';
 import { hasCriticalWarning } from 'src/ui/components/InterpretationState/InterpretationState';
+import { WithReadonlyWarningDialog } from 'src/ui/components/SignTransactionButton/ReadonlyWarningDialog';
 import { HardwareSignMessage } from '../HardwareWalletConnection/HardwareSignMessage';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
@@ -261,9 +262,8 @@ function TypedDataDefaultView({
       }}
     />
   ) : (
-    <Button
-      kind={interpretationHasCriticalWarning ? 'danger' : 'primary'}
-      disabled={signTypedData_v4Mutation.isLoading}
+    <WithReadonlyWarningDialog
+      address={wallet.address}
       onClick={() => {
         signTypedData_v4Mutation.mutate({
           typedData: stringifiedData,
@@ -271,13 +271,20 @@ function TypedDataDefaultView({
           clientScope,
         });
       }}
-    >
-      {signTypedData_v4Mutation.isLoading
-        ? 'Signing...'
-        : interpretationHasCriticalWarning
-        ? 'Proceed Anyway'
-        : 'Sign'}
-    </Button>
+      render={({ handleClick }) => (
+        <Button
+          kind={interpretationHasCriticalWarning ? 'danger' : 'primary'}
+          disabled={signTypedData_v4Mutation.isLoading}
+          onClick={handleClick}
+        >
+          {signTypedData_v4Mutation.isLoading
+            ? 'Signing...'
+            : interpretationHasCriticalWarning
+            ? 'Proceed Anyway'
+            : 'Sign'}
+        </Button>
+      )}
+    />
   );
 
   return (

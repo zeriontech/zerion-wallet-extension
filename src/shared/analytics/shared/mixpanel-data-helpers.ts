@@ -111,6 +111,13 @@ export async function getBaseMixpanelParams(account: Account) {
   const ownedGroups = groups?.filter(
     (group) => !isReadonlyContainer(group.walletContainer)
   );
+  const readonlyGroups = groups?.filter((group) =>
+    isReadonlyContainer(group.walletContainer)
+  );
+  const readonlyAddressesCount = readonlyGroups?.reduce(
+    (sum, group) => sum + group.walletContainer.wallets.length,
+    0
+  );
   const ownedAddresses = ownedGroups?.flatMap((group) =>
     group.walletContainer.wallets.map((wallet) => wallet.address)
   );
@@ -132,7 +139,7 @@ export async function getBaseMixpanelParams(account: Account) {
   return {
     num_favourite_tokens: 0,
     num_wallets: addressesCount,
-    num_watch_list_wallets: 0,
+    num_watch_list_wallets: readonlyAddressesCount,
     num_watch_list_wallets_with_provider: 0,
     num_my_wallets: ownedAddressesCount,
     num_my_wallets_with_provider: ownedAddressesCount,

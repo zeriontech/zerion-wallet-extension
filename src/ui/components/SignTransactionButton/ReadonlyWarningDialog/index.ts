@@ -1,1 +1,4 @@
-export { ReadonlyWarningDialog } from './ReadonlyWarningDialog';
+export {
+  ReadonlyWarningDialog,
+  WithReadonlyWarningDialog,
+} from './ReadonlyWarningDialog';
