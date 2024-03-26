@@ -63,6 +63,7 @@ export function WalletList({
                         icon={
                           <WalletSourceIcon
                             address={wallet.address}
+                            groupId={group.id}
                             style={{ width: 16, height: 16 }}
                           />
                         }

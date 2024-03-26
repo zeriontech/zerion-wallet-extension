@@ -36,7 +36,8 @@ function SenderReceiver({
 
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetWalletByAddress', address],
-    queryFn: () => walletPort.request('uiGetWalletByAddress', { address }),
+    queryFn: () =>
+      walletPort.request('uiGetWalletByAddress', { address, groupId: null }),
     enabled: Boolean(address),
     suspense: false,
   });

@@ -6,14 +6,17 @@ import { walletPort } from 'src/ui/shared/channels';
 
 export function WalletSourceIcon({
   address,
+  groupId,
   style,
 }: {
   address: string;
+  groupId: string | null;
   style?: React.CSSProperties;
 }) {
   const { data: wallet } = useQuery({
-    queryKey: ['wallet/uiGetWalletByAddress', address],
-    queryFn: () => walletPort.request('uiGetWalletByAddress', { address }),
+    queryKey: ['wallet/uiGetWalletByAddress', address, groupId],
+    queryFn: () =>
+      walletPort.request('uiGetWalletByAddress', { address, groupId }),
     suspense: false,
   });
 
