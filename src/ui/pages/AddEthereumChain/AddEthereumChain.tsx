@@ -120,7 +120,7 @@ function AddOrUpdateChain({
       : null;
   }, [networks]);
 
-  if (!restrictedChainIds) {
+  if (!restrictedChainIds || isLoading) {
     return <ViewLoading kind="network" />;
   }
 

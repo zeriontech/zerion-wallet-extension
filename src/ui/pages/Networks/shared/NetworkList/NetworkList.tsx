@@ -17,6 +17,7 @@ import InvisibleIcon from 'jsx:src/ui/assets/invisible.svg';
 import { LIST_ITEM_CLASS } from 'src/ui/components/NetworkSelectDialog/constants';
 import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import { getChainId } from 'src/modules/networks/helpers';
+import { VirtualizedSurfaceList } from 'src/ui/ui-kit/SurfaceList/VirtualizedSurfaceList';
 
 function getOriginUrlFromMetaData(metadata: NetworkConfigMetaData) {
   if (
@@ -120,92 +121,105 @@ export function NetworkList({
     () => networks.getNetworksMetaData(),
     [networks]
   );
-  return (
+
+  const items = [
+    title
+      ? {
+          key: title,
+          pad: false,
+          style: { padding: 0 },
+          component: (
+            <UIText
+              kind="small/accent"
+              color="var(--neutral-500)"
+              style={{ paddingBlock: 8 }}
+            >
+              {title}
+            </UIText>
+          ),
+        }
+      : null,
+    ...networkList.map((network, index) => ({
+      key: network.id,
+      pad: false,
+      isInteractive: true,
+      component: (
+        <SurfaceItemLink
+          to={getItemTo?.(network) ?? `/networks/network/${network.id}`}
+          style={{ paddingInline: 0 }}
+          data-class={LIST_ITEM_CLASS}
+          data-index={index + previousListLength}
+        >
+          <HStack
+            gap={4}
+            justifyContent="space-between"
+            alignItems="center"
+            style={{ paddingBlock: 4 }}
+          >
+            <Media
+              image={
+                <NetworkIcon
+                  size={24}
+                  src={network.icon_url}
+                  chainId={getChainId(network)}
+                  name={network.name}
+                />
+              }
+              text={
+                <UIText
+                  kind="body/accent"
+                  color={network.hidden ? 'var(--neutral-700)' : undefined}
+                >
+                  {networks.getChainName(createChain(network.name))}
+                </UIText>
+              }
+              vGap={0}
+              detailText={
+                <NetworkDetail
+                  networks={networks}
+                  network={network}
+                  metadataRecord={metadataRecord}
+                />
+              }
+            />
+
+            <HStack gap={8} alignItems="center">
+              {network.hidden ? (
+                <InvisibleIcon
+                  style={{
+                    width: 20,
+                    height: 20,
+                    color: 'var(--neutral-400)',
+                  }}
+                />
+              ) : null}
+              {getItemIconEnd?.(network) ?? (
+                <ChevronRightIcon style={{ color: 'var(--neutral-400)' }} />
+              )}
+            </HStack>
+          </HStack>
+        </SurfaceItemLink>
+      ),
+    })),
+  ].filter(isTruthy);
+
+  return items.length > 50 ? (
+    <VirtualizedSurfaceList
+      style={{
+        paddingBlock: 0,
+        ['--surface-background-color' as string]: 'transparent',
+      }}
+      items={items}
+      estimateSize={() => 48}
+      overscan={5}
+    />
+  ) : (
     <SurfaceList
       style={{
         paddingBlock: 0,
         ['--surface-background-color' as string]: 'transparent',
       }}
-      items={[
-        title
-          ? {
-              key: title,
-              pad: false,
-              style: { padding: 0 },
-              component: (
-                <UIText
-                  kind="small/accent"
-                  color="var(--neutral-500)"
-                  style={{ paddingBlock: 8 }}
-                >
-                  {title}
-                </UIText>
-              ),
-            }
-          : null,
-        ...networkList.map((network, index) => ({
-          key: network.id,
-          pad: false,
-          isInteractive: true,
-          component: (
-            <SurfaceItemLink
-              to={getItemTo?.(network) ?? `/networks/network/${network.id}`}
-              style={{ paddingInline: 0 }}
-              data-class={LIST_ITEM_CLASS}
-              data-index={index + previousListLength}
-            >
-              <HStack
-                gap={4}
-                justifyContent="space-between"
-                alignItems="center"
-                style={{ paddingBlock: 4 }}
-              >
-                <Media
-                  image={
-                    <NetworkIcon
-                      size={24}
-                      src={network.icon_url}
-                      chainId={getChainId(network)}
-                      name={network.name}
-                    />
-                  }
-                  text={
-                    <UIText
-                      kind="body/accent"
-                      color={network.hidden ? 'var(--neutral-700)' : undefined}
-                    >
-                      {networks.getChainName(createChain(network.name))}
-                    </UIText>
-                  }
-                  vGap={0}
-                  detailText={
-                    <NetworkDetail
-                      networks={networks}
-                      network={network}
-                      metadataRecord={metadataRecord}
-                    />
-                  }
-                />
-
-                <HStack gap={8} alignItems="center">
-                  {network.hidden ? (
-                    <InvisibleIcon
-                      style={{
-                        width: 20,
-                        height: 20,
-                        color: 'var(--neutral-400)',
-                      }}
-                    />
-                  ) : null}
-                  {getItemIconEnd?.(network) ?? (
-                    <ChevronRightIcon style={{ color: 'var(--neutral-400)' }} />
-                  )}
-                </HStack>
-              </HStack>
-            </SurfaceItemLink>
-          ),
-        })),
-      ].filter(isTruthy)}
+      items={items}
     />
   );
 }

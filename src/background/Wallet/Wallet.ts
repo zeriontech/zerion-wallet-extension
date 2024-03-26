@@ -1697,7 +1697,8 @@ class PublicController {
     invariant(context?.origin, 'This method requires origin');
     invariant(params[0], () => new InvalidParams());
     const { origin } = context;
-    const networks = await networksStore.load();
+    const chainId = Number(params[0].chainId);
+    const networks = await networksStore.loadNetworksWithChainId(chainId);
     return new Promise((resolve, reject) => {
       if (networks.hasMatchingConfig(params[0])) {
         resolve(null); // null indicates success as per spec
