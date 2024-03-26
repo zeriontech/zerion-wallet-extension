@@ -26,6 +26,7 @@ import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import AllNetworksIcon from 'jsx:src/ui/assets/all-networks.svg';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { getChainId } from 'src/modules/networks/helpers';
+import { VirtualizedSurfaceList } from 'src/ui/ui-kit/SurfaceList/VirtualizedSurfaceList';
 import { DelayedRender } from '../DelayedRender';
 import { NetworkIcon } from '../NetworkIcon';
 import { PageBottom } from '../PageBottom';
@@ -135,76 +136,88 @@ function NetworkList({
   previousListLength?: number;
   showAllNetworks?: boolean;
 }) {
-  return (
+  const items = [
+    title
+      ? {
+          key: title,
+          pad: false,
+          style: { padding: 0 },
+          component: (
+            <UIText
+              kind="small/accent"
+              color="var(--neutral-500)"
+              style={{ paddingBlock: 8 }}
+            >
+              {title}
+            </UIText>
+          ),
+        }
+      : null,
+    showAllNetworks
+      ? {
+          key: NetworkSelectValue.All,
+          isInteractive: true,
+          pad: false,
+          component: (
+            <NetworkItem
+              index={previousListLength}
+              name="All Networks"
+              value={NetworkSelectValue.All}
+              selected={value === NetworkSelectValue.All}
+              chainDistribution={chainDistribution}
+              icon={
+                <AllNetworksIcon
+                  style={{ width: 24, height: 24 }}
+                  role="presentation"
+                />
+              }
+            />
+          ),
+        }
+      : null,
+    ...networkList.map((network, index) => {
+      return {
+        key: network.id,
+        isInteractive: true,
+        pad: false,
+        component: (
+          <NetworkItem
+            index={previousListLength + index + (showAllNetworks ? 1 : 0)}
+            name={networks.getChainName(createChain(network.id))}
+            value={network.id}
+            icon={
+              <NetworkIcon
+                size={24}
+                src={network.icon_url}
+                chainId={getChainId(network)}
+                name={network.name}
+              />
+            }
+            chainDistribution={chainDistribution}
+            selected={network.id === value}
+          />
+        ),
+      };
+    }),
+  ].filter(isTruthy);
+
+  return items.length > 50 ? (
+    <VirtualizedSurfaceList
+      style={{
+        paddingBlock: 0,
+        ['--surface-background-color' as string]: 'transparent',
+      }}
+      estimateSize={() => 48}
+      items={items}
+      context="dialog"
+    />
+  ) : (
     <SurfaceList
       style={{
         paddingBlock: 0,
         ['--surface-background-color' as string]: 'transparent',
       }}
-      items={[
-        title
-          ? {
-              key: title,
-              pad: false,
-              style: { padding: 0 },
-              component: (
-                <UIText
-                  kind="small/accent"
-                  color="var(--neutral-500)"
-                  style={{ paddingBlock: 8 }}
-                >
-                  {title}
-                </UIText>
-              ),
-            }
-          : null,
-        showAllNetworks
-          ? {
-              key: NetworkSelectValue.All,
-              isInteractive: true,
-              pad: false,
-              component: (
-                <NetworkItem
-                  index={previousListLength}
-                  name="All Networks"
-                  value={NetworkSelectValue.All}
-                  selected={value === NetworkSelectValue.All}
-                  chainDistribution={chainDistribution}
-                  icon={
-                    <AllNetworksIcon
-                      style={{ width: 24, height: 24 }}
-                      role="presentation"
-                    />
-                  }
-                />
-              ),
-            }
-          : null,
-        ...networkList.map((network, index) => {
-          return {
-            key: network.id,
-            isInteractive: true,
-            pad: false,
-            component: (
-              <NetworkItem
-                index={previousListLength + index + (showAllNetworks ? 1 : 0)}
-                name={networks.getChainName(createChain(network.id))}
-                value={network.id}
-                icon={
-                  <NetworkIcon
-                    size={24}
-                    src={network.icon_url}
-                    chainId={getChainId(network)}
-                    name={network.name}
-                  />
-                }
-                chainDistribution={chainDistribution}
-                selected={network.id === value}
-              />
-            ),
-          };
-        }),
-      ].filter(isTruthy)}
+      items={items}
     />
   );
 }
