@@ -18,6 +18,7 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { noValueDash } from 'src/ui/shared/typography';
 import { Background } from 'src/ui/components/Background';
+import { getChainId } from 'src/modules/networks/helpers';
 import { ValueCell } from '../Networks/shared/ValueCell';
 
 export function SwitchEthereumChain() {
@@ -47,7 +48,7 @@ export function SwitchEthereumChain() {
   const chainId = params.get('chainId');
   invariant(chainId, 'This view requires a chainId get-param');
 
-  const chain = networks.getChainById(chainId);
+  const chain = networks.getChainById(Number(chainId));
   const network = networks.getNetworkByName(chain);
   invariant(network, 'Network config does not exists');
 
@@ -78,7 +79,7 @@ export function SwitchEthereumChain() {
           <VStack gap={4} style={{ justifyItems: 'center' }}>
             <NetworkIcon
               src={network.icon_url}
-              chainId={network.external_id || ''}
+              chainId={getChainId(network)}
               size={40}
               name={network.name || null}
             />

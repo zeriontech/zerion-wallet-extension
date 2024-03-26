@@ -1576,7 +1576,7 @@ class PublicController {
     invariant(params[0], () => new InvalidParams());
     const { origin } = context;
     const { chainId: chainIdParameter } = params[0];
-    const chainId = ethers.utils.hexValue(chainIdParameter);
+    const chainId = Number(chainIdParameter);
 
     if (
       !currentAddress ||
@@ -1603,13 +1603,12 @@ class PublicController {
     const currentChainIdForThisOrigin = await this.wallet.getChainIdForOrigin({
       origin,
     });
-    const parsedChainId = parseInt(chainId);
-    if (parsedChainId === currentChainIdForThisOrigin) {
+    if (chainId === currentChainIdForThisOrigin) {
       return null;
     }
-    const networks = await networksStore.loadNetworksWithChainId(parsedChainId);
+    const networks = await networksStore.loadNetworksWithChainId(chainId);
     try {
-      const chain = networks.getChainById(parsedChainId);
+      const chain = networks.getChainById(chainId);
       // Switch immediately and return success
       this.wallet.setChainForOrigin(chain, origin);
       // return null in next tick to give provider enough time to change chainId property

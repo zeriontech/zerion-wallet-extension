@@ -1,4 +1,3 @@
-import { ethers } from 'ethers';
 import omit from 'lodash/omit';
 import { getChainId } from 'src/modules/networks/helpers';
 import type { Account } from 'src/background/account/Account';
@@ -98,7 +97,7 @@ function trackAppEvents({ account }: { account: Account }) {
       const isInternalOrigin = globalThis.location.origin === origin;
       const initiatorName = isInternalOrigin ? 'Extension' : 'External Dapp';
       const networks = await networksStore.load();
-      const chainId = ethers.utils.hexValue(transaction.chainId);
+      const chainId = transaction.chainId;
       const chain = networks.getChainById(chainId)?.toString() || chainId;
       const addressActionAnalytics = addressActionToAnalytics({
         addressAction,

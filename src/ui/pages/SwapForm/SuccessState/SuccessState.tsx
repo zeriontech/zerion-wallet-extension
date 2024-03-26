@@ -131,7 +131,7 @@ export function SuccessState({
                 <NetworkIcon
                   size={20}
                   name={chainName}
-                  src={networks.getNetworkByName(chain)?.icon_url}
+                  src={networks.getNetworkByName(chain)?.icon_url || ''}
                   chainId={networks.getChainId(chain)}
                 />{' '}
                 {chainName}
