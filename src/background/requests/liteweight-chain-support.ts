@@ -26,6 +26,9 @@ export function initialize(account: Account) {
     const chainId = await account
       .getCurrentWallet()
       .getChainIdForOrigin({ origin });
+    if (!chainId) {
+      return;
+    }
     const network = await getBackendNetworkByChainId(chainId);
     if (address && network) {
       ZerionAPI.registerChain({

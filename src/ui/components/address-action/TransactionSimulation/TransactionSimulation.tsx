@@ -6,7 +6,6 @@ import type { IncomingTransactionWithChainId } from 'src/modules/ethereum/types/
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { describeTransaction } from 'src/modules/ethereum/transactions/describeTransaction';
 import { invariant } from 'src/shared/invariant';
-import { valueToHex } from 'src/shared/units/valueToHex';
 import { incomingTxToIncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { interpretTransaction } from 'src/modules/ethereum/transactions/interpret';
 import { walletPort } from 'src/ui/shared/channels';
@@ -31,7 +30,7 @@ export function TransactionSimulation({
   const { networks } = useNetworks();
   invariant(transaction.chainId, 'transaction must have a chainId value');
 
-  const chain = networks?.getChainById(valueToHex(transaction.chainId));
+  const chain = networks?.getChainById(Number(transaction.chainId));
 
   // TODO: "wallet" must not be used here,
   // instead, a sender address must be taken from AddressAction

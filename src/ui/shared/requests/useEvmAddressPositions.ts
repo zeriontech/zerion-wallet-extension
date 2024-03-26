@@ -10,7 +10,7 @@ async function getEvmAddressPositions({
   networks,
 }: {
   address: string;
-  chainId: string;
+  chainId: number;
   networks: Networks;
 }) {
   const position = await fetchNativeEvmPosition({ address, chainId, networks });
@@ -31,8 +31,8 @@ export function useEvmAddressPositions({
   return useQuery({
     queryKey: ['eth_getBalance/evmAddressPositions', address, chain],
     queryFn: async () => {
-      const networks = await networksStore.load();
-      const chainId = networks.getNetworkByName(chain)?.external_id;
+      const networks = await networksStore.load([chain.toString()]);
+      const chainId = networks.getChainId(chain);
       return !address || !chainId
         ? null
         : getEvmAddressPositions({

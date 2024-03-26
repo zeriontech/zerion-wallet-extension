@@ -9,22 +9,21 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { noValueDash } from 'src/ui/shared/typography';
 import { Button } from 'src/ui/ui-kit/Button';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import { Networks } from 'src/modules/networks/Networks';
+import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import { ValueCell } from '../shared/ValueCell';
 
 export function NetworkUpdateSuccess({
-  network,
-  prevNetwork,
+  chainConfig,
+  prevChainConfig,
   onClose,
 }: {
-  network: NetworkConfig;
-  prevNetwork: NetworkConfig;
+  chainConfig: AddEthereumChainParameter;
+  prevChainConfig: AddEthereumChainParameter;
   onClose: () => void;
 }) {
-  const prevRpcUrl = Networks.getNetworkRpcUrlInternal(prevNetwork);
-  const rpcUrl = Networks.getNetworkRpcUrlInternal(network);
-  const networkName = network.name || network.external_id;
+  const prevRpcUrl = prevChainConfig.rpcUrls[0];
+  const rpcUrl = chainConfig.rpcUrls[0];
+  const networkName = chainConfig.chainName || chainConfig.chainId;
 
   return (
     <PageColumn>

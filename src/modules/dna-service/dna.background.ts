@@ -185,10 +185,8 @@ export class DnaService {
     hash: string;
     chainId: number;
   }) {
-    const networks = await networksStore.load();
-    const chain = networks
-      .getChainById(ethers.utils.hexValue(chainId))
-      .toString();
+    const networks = await networksStore.loadNetworksWithChainId(chainId);
+    const chain = networks.getChainById(chainId).toString();
 
     const actionId = uuidv5(
       `sign(${chain}, ${hash})`,

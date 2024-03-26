@@ -1,27 +1,17 @@
-import { client } from 'defi-sdk';
+import { wait } from 'src/shared/wait';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
+import { fetchChains } from '../ethereum/chains/requests';
 import type { NetworkConfig } from './NetworkConfig';
+import { networksFallbackInfo } from './networks-fallback';
 
-function fetchNetworks(): Promise<NetworkConfig[]> {
-  return new Promise((resolve) => {
-    client.cachedSubscribe<NetworkConfig[], 'chains', 'info'>({
-      namespace: 'chains',
-      body: {
-        scope: ['info'],
-        payload: {},
-      },
-      onData: ({ value }) => {
-        if (value) {
-          resolve(value);
-        }
-      },
-    });
-  });
+async function getNetworksFallback() {
+  await wait(12000);
+  return networksFallbackInfo;
 }
 
-export function get(): Promise<NetworkConfig[]> {
+export function getNetworks(ids?: string[]): Promise<NetworkConfig[]> {
   return Promise.race([
-    fetchNetworks(),
-    rejectAfterDelay(12000, 'fetchNetworks'),
+    fetchChains({ ids, include_testnets: Boolean(ids), supported_only: false }),
+    ids ? rejectAfterDelay(12000, 'fetchChains') : getNetworksFallback(),
   ]);
 }

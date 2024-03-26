@@ -1,4 +1,3 @@
-import { ethers } from 'ethers';
 import { PersistentStore } from 'src/modules/persistent-store';
 import { produce } from 'immer';
 import type {
@@ -31,7 +30,7 @@ class TransactionsStore extends PersistentStore<StoredTransactions> {
 function toPollingObj(value: TransactionObject): PollingTx {
   return {
     hash: value.hash,
-    chainId: ethers.utils.hexValue(value.transaction.chainId),
+    chainId: value.transaction.chainId,
     nonce: value.transaction.nonce,
     from: value.transaction.from,
   };

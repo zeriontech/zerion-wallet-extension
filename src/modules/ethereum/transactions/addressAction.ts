@@ -317,7 +317,7 @@ export async function pendingTransactionToAddressAction(
   const { transaction, hash, receipt, timestamp, dropped } = transactionObject;
   let chain: Chain | null;
   try {
-    chain = networks.getChainById(ethers.utils.hexValue(transaction.chainId));
+    chain = networks.getChainById(transaction.chainId);
   } catch (error) {
     if (error instanceof UnsupportedNetwork) {
       chain = null;
@@ -376,9 +376,7 @@ export async function incomingTxToIncomingAddressAction(
   networks: Networks
 ): Promise<LocalAddressAction> {
   const { transaction, timestamp } = transactionObject;
-  const chain = networks.getChainById(
-    ethers.utils.hexValue(transaction.chainId)
-  );
+  const chain = networks.getChainById(Number(transaction.chainId));
   const label = createActionLabel(transaction, transactionAction);
   const content = await createActionContent(transactionAction);
   return {

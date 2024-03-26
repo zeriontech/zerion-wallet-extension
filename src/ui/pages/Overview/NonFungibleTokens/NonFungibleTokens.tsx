@@ -30,6 +30,7 @@ import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { EmptyView } from 'src/ui/components/EmptyView';
 import { NftTabDnaBanner } from 'src/ui/DNA/components/DnaBanners';
 import { useStore } from '@store-unit/react';
+import { getChainId } from 'src/modules/networks/helpers';
 import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
 import { getGrownTabMaxHeight, offsetValues } from '../getTabsOffset';
 import { NetworkBalance } from '../Positions/NetworkBalance';
@@ -92,7 +93,7 @@ function NFTItem({
                   }}
                 >
                   <NetworkIcon
-                    chainId={network.external_id}
+                    chainId={getChainId(network)}
                     size={12}
                     name={network.name}
                     src={network.icon_url}
@@ -181,7 +182,7 @@ export function NonFungibleTokens({
   const isSupportedByBackend =
     chainValue === NetworkSelectValue.All
       ? true
-      : networks?.isSupportedByBackend(createChain(chainValue));
+      : networks?.isSupportedByBackend(createChain(chainValue), 'nfts');
 
   const {
     value: items,

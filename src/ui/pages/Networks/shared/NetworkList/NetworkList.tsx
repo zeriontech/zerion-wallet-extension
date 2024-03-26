@@ -1,5 +1,5 @@
-import React from 'react';
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
+import { isTruthy } from 'is-truthy-ts';
 import { createChain } from 'src/modules/networks/Chain';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type {
@@ -14,7 +14,9 @@ import { SurfaceItemLink, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import InvisibleIcon from 'jsx:src/ui/assets/invisible.svg';
-import { isTruthy } from 'is-truthy-ts';
+import { LIST_ITEM_CLASS } from 'src/ui/components/NetworkSelectDialog/constants';
+import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
+import { getChainId } from 'src/modules/networks/helpers';
 
 function getOriginUrlFromMetaData(metadata: NetworkConfigMetaData) {
   if (
@@ -31,37 +33,38 @@ function getOriginUrlFromMetaData(metadata: NetworkConfigMetaData) {
   }
 }
 
-function getUpdatedFromMetadata(metadata: NetworkConfigMetaData) {
+function getUpdatedFromMetadata(
+  metadata: NetworkConfigMetaData,
+  isCustom?: boolean
+) {
   const { updated, created } = metadata;
-  return updated === created || updated === 0 ? null : metadata.updated;
+  if (!isCustom) {
+    return updated || null;
+  }
+  return updated === created || updated === 0 ? null : updated;
 }
 
 function NetworkDetail({
   metadataRecord,
   network,
-  networks,
 }: {
   metadataRecord: Record<string, NetworkConfigMetaData | undefined>;
   network: NetworkConfig;
   networks: Networks;
 }) {
-  const chainId = network.external_id;
-  const chain = createChain(network.chain);
-  const metadata = metadataRecord[network.chain];
-  const { originUrl, updated, sourceType } = useMemo(() => {
-    if (!chainId || !metadata) {
+  const metadata = metadataRecord[network.id];
+  const { originUrl, updated } = useMemo(() => {
+    if (!network.id || !metadata) {
       return {};
     }
     return {
       originUrl: getOriginUrlFromMetaData(metadata),
-      updated: getUpdatedFromMetadata(metadata),
-      sourceType: networks.getSourceType(chain),
+      updated: getUpdatedFromMetadata(metadata, isCustomNetworkId(network.id)),
     };
-  }, [chainId, metadata, networks, chain]);
-  if (!chainId || !metadata) {
+  }, [metadata, network]);
+  if (!network.id || !metadata) {
     return null;
   }
-  const isCustom = sourceType === 'custom';
   return (
     <UIText
       kind="caption/regular"
@@ -80,7 +83,7 @@ function NetworkDetail({
               <span style={{ color: 'var(--primary)' }}>{originUrl}</span>
             </span>
           ) : null,
-          updated && !isCustom ? (
+          updated ? (
             <span key={1}>
               Edited{' '}
               {new Intl.DateTimeFormat('en', {
@@ -104,12 +107,14 @@ export function NetworkList({
   networkList,
   getItemTo,
   getItemIconEnd,
+  previousListLength = 0,
 }: {
-  title?: string;
+  title?: string | null;
   networks: Networks;
   networkList: NetworkConfig[];
   getItemTo?: (item: NetworkConfig) => string;
   getItemIconEnd?: (item: NetworkConfig) => React.ReactNode;
+  previousListLength?: number;
 }) {
   const metadataRecord = useMemo(
     () => networks.getNetworksMetaData(),
@@ -117,6 +122,10 @@ export function NetworkList({
   );
   return (
     <SurfaceList
+      style={{
+        paddingBlock: 0,
+        ['--surface-background-color' as string]: 'transparent',
+      }}
       items={[
         title
           ? {
@@ -134,14 +143,16 @@ export function NetworkList({
               ),
             }
           : null,
-        ...networkList.map((network) => ({
-          key: network.external_id || network.chain,
+        ...networkList.map((network, index) => ({
+          key: network.id,
           pad: false,
           isInteractive: true,
           component: (
             <SurfaceItemLink
-              to={getItemTo?.(network) ?? `/networks/network/${network.chain}`}
+              to={getItemTo?.(network) ?? `/networks/network/${network.id}`}
               style={{ paddingInline: 0 }}
+              data-class={LIST_ITEM_CLASS}
+              data-index={index + previousListLength}
             >
               <HStack
                 gap={4}
@@ -154,7 +165,7 @@ export function NetworkList({
                     <NetworkIcon
                       size={24}
                       src={network.icon_url}
-                      chainId={network.external_id}
+                      chainId={getChainId(network)}
                       name={network.name}
                     />
                   }

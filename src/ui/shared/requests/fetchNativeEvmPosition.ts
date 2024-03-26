@@ -9,12 +9,12 @@ export async function fetchNativeEvmPosition({
   networks,
 }: {
   address: string;
-  chainId: string;
+  chainId: number;
   networks: Networks;
 }) {
   const balanceInHex = await httpConnectionPort.request('eth_getBalance', {
     params: [address, 'latest'],
-    context: { chainId },
+    context: { chainId: chainId.toString() },
   });
   const network = networks.getNetworkById(chainId);
   const balance = ethers.BigNumber.from(balanceInHex).toString();

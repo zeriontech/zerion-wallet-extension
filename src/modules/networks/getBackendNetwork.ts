@@ -1,9 +1,9 @@
-import { ethers } from 'ethers';
-import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
-import { getNetworksBySearch } from '../ethereum/chains/requests';
+import { invariant } from 'src/shared/invariant';
 import { networksStore } from './networks-store.background';
 import type { Chain } from './Chain';
 import type { NetworkConfig } from './NetworkConfig';
+import { getNetworkByChainId } from './getNetworkByChainId';
+import { getChainId } from './helpers';
 
 function maybeLocalChainId(id: string) {
   return id.length === 21; // nanoid() standard length
@@ -17,14 +17,9 @@ async function fetchNetworkConfigIfSupported(network?: NetworkConfig) {
     return network;
   }
   try {
-    const query = Number(network.external_id).toString();
-    const possibleNetworks = await Promise.race([
-      getNetworksBySearch({ query }),
-      rejectAfterDelay(3000, `getNetworksBySearch(${query})`),
-    ]);
-    const networkFromBackend = possibleNetworks.find(
-      (item) => item.external_id === network.external_id
-    );
+    const chainId = getChainId(network);
+    invariant(chainId, 'ChainId is required for network');
+    const networkFromBackend = await getNetworkByChainId(chainId);
     return networkFromBackend ?? null;
   } catch {
     return null;
@@ -32,13 +27,13 @@ async function fetchNetworkConfigIfSupported(network?: NetworkConfig) {
 }
 
 export async function getBackendNetworkByLocalChain(chain: Chain) {
-  const networks = await networksStore.load();
+  const networks = await networksStore.load([chain.toString()]);
   const network = networks.getNetworkByName(chain);
   return fetchNetworkConfigIfSupported(network);
 }
 
-export async function getBackendNetworkByChainId(chainId: string | number) {
-  const networks = await networksStore.load();
-  const network = networks.getNetworkById(ethers.utils.hexValue(chainId));
+export async function getBackendNetworkByChainId(chainId: number) {
+  const networks = await networksStore.loadNetworksWithChainId(chainId);
+  const network = networks.getNetworkById(chainId);
   return fetchNetworkConfigIfSupported(network);
 }

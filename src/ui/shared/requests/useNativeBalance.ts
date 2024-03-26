@@ -56,7 +56,7 @@ export function useNativeBalance({
 }) {
   const { networks } = useNetworks();
   const isSupportedByBackend = networks
-    ? networks.isSupportedByBackend(chain)
+    ? networks.isSupportedByBackend(chain, 'positions')
     : null;
   const nativeAddressPosition = useNativeAddressPosition({
     address,

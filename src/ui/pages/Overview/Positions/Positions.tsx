@@ -3,7 +3,10 @@ import type {
   AddressPosition,
   AddressPositionDappInfo,
 } from 'defi-sdk';
-import { useAddressPositions } from 'defi-sdk';
+import {
+  useAddressPortfolioDecomposition,
+  useAddressPositions,
+} from 'defi-sdk';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   formatCurrencyToParts,
@@ -62,6 +65,7 @@ import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOri
 import { SurfaceItemAnchor } from 'src/ui/ui-kit/SurfaceList';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { useStore } from '@store-unit/react';
+import { getChainId } from 'src/modules/networks/helpers';
 import {
   TAB_SELECTOR_HEIGHT,
   TAB_TOP_PADDING,
@@ -209,7 +213,7 @@ function AddressPositionItem({
                 <NetworkIcon
                   size={16}
                   name={network?.name || null}
-                  chainId={network?.external_id || null}
+                  chainId={network ? getChainId(network) : null}
                   src={network?.icon_url || ''}
                 />
               ) : null}
@@ -772,10 +776,28 @@ export function Positions({
   onChainChange: (value: string | null) => void;
 }) {
   const { ready, params, singleAddressNormalized } = useAddressParams();
+  const { value: portfolioDecomposition } = useAddressPortfolioDecomposition(
+    {
+      address: singleAddressNormalized,
+      currency: 'usd',
+    },
+    { enabled: ready }
+  );
+  const chainValue = filterChain || dappChain || NetworkSelectValue.All;
+  const chain = createChain(chainValue);
+  const positionChains = useMemo(() => {
+    const chainsSet = new Set(
+      Object.keys(portfolioDecomposition?.chains || {})
+    );
+    if (chainValue !== NetworkSelectValue.All) {
+      chainsSet.add(chainValue);
+    }
+    return [...chainsSet];
+  }, [portfolioDecomposition, chainValue]);
   const offsetValuesState = useStore(offsetValues);
   // Cheap perceived performance hack: render expensive Positions component later so that initial UI render is faster
   const readyToRender = useRenderDelay(16);
-  const { networks } = useNetworks();
+  const { networks } = useNetworks(positionChains);
   if (!networks || !ready) {
     return (
       <CenteredFillViewportView
@@ -787,12 +809,12 @@ export function Positions({
       </CenteredFillViewportView>
     );
   }
-  const chainValue = filterChain || dappChain || NetworkSelectValue.All;
-  const chain = createChain(chainValue);
   const isSupportedByBackend =
     chainValue === NetworkSelectValue.All
       ? true
-      : networks.isSupportedByBackend(createChain(chainValue));
+      : networks.isSupportedByBackend(createChain(chainValue), 'positions');
+
+  console.log(isSupportedByBackend);
 
   const emptyNetworkBalance = (
     <div
@@ -862,8 +884,16 @@ export function Positions({
     );
   } else {
     const network = networks.getNetworkByName(chain);
-    if (!network || !network.external_id) {
-      throw new Error(`Custom network must have an external_id: ${chainValue}`);
+    if (!network?.id) {
+      return (
+        <ErrorBoundary
+          renderError={() => renderErrorViewForNetwork(chainValue)}
+        >
+          <DelayedRender delay={2000}>
+            {renderErrorViewForNetwork(chainValue)}
+          </DelayedRender>
+        </ErrorBoundary>
+      );
     }
 
     return (

@@ -4,12 +4,12 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 
 interface BaseProps {
   src?: string | null;
-  chainId: string | number | null;
+  chainId: number | null;
   size?: number;
   style?: React.CSSProperties;
   name: string | null;
 }
-type Props = BaseProps & ({ src: string } | { chainId: string | number });
+type Props = BaseProps & { src: string };
 
 function TextFallback({
   size,
@@ -19,7 +19,7 @@ function TextFallback({
 }: {
   size: number;
   name: string | null;
-  chainId: string | number | null;
+  chainId: number | null;
   style?: React.CSSProperties;
 }) {
   const value = chainId

@@ -51,9 +51,9 @@ import type { SignerSenderHandle } from 'src/ui/components/SignTransactionButton
 import { SignTransactionButton } from 'src/ui/components/SignTransactionButton';
 import { useSizeStore } from 'src/ui/Onboarding/useSizeStore';
 import { createSendAddressAction } from 'src/modules/ethereum/transactions/addressAction';
-import type { NetworkGroups } from 'src/ui/components/NetworkSelectDialog';
 import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
+import type { NetworkGroups } from 'src/ui/components/NetworkSelectDialog/createNetworkGroups';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -102,7 +102,7 @@ function NFTNetworkSelect({
     const allItems = networks?.getNetworks() || [];
     const networksForSending = networks
       ? allItems.filter((network) =>
-          networks.supports('sending', createChain(network.chain))
+          networks.supports('sending', createChain(network.id))
         )
       : [];
     return { supportedNetworks: networksForSending };

@@ -47,7 +47,7 @@ export function FeeLine({
           <span>{formatTokenValue(feeEth, '')}</span>
           <AssetLink
             asset={{
-              asset_code: nativeAsset.id,
+              asset_code: nativeAsset.id || '',
               name: nativeAsset.name,
               symbol: nativeAsset.symbol,
             }}

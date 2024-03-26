@@ -2,7 +2,6 @@ import { createPortal } from 'react-dom';
 import React, { useMemo, useRef } from 'react';
 import { useAddressPortfolioDecomposition } from 'defi-sdk';
 import { invariant } from 'src/shared/invariant';
-import type { NetworkGroups } from 'src/ui/components/NetworkSelectDialog';
 import { NetworkSelectDialog } from 'src/ui/components/NetworkSelectDialog';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
@@ -17,6 +16,8 @@ import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { noValueDash } from 'src/ui/shared/typography';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
+import type { NetworkGroups } from 'src/ui/components/NetworkSelectDialog/createNetworkGroups';
+import { getChainId } from 'src/modules/networks/helpers';
 
 export function NetworkSelect({
   value,
@@ -24,12 +25,14 @@ export function NetworkSelect({
   renderButton,
   dialogRootNode,
   groups,
+  showAllNetworks,
 }: {
   value: string;
   onChange: (value: string) => void;
   renderButton?(params: { value: string; openDialog(): void }): React.ReactNode;
   dialogRootNode?: HTMLElement;
   groups?: NetworkGroups;
+  showAllNetworks?: boolean;
 }) {
   const { params } = useAddressParams();
   const { value: portfolioDecomposition } = useAddressPortfolioDecomposition({
@@ -46,7 +49,7 @@ export function NetworkSelect({
   }
 
   const chain = value === NetworkSelectValue.All ? null : createChain(value);
-  const { networks } = useNetworks();
+  const { networks } = useNetworks(chain ? [chain.toString()] : []);
   const network = useMemo(
     () => (chain && networks ? networks.getNetworkByName(chain) : null),
     [chain, networks]
@@ -62,6 +65,7 @@ export function NetworkSelect({
           groups={groups}
           value={value}
           chainDistribution={portfolioDecomposition}
+          showAllNetworks={showAllNetworks}
         />
       )}
     />
@@ -92,7 +96,7 @@ export function NetworkSelect({
                 size={24}
                 src={network.icon_url}
                 name={network.name}
-                chainId={network.external_id}
+                chainId={getChainId(network)}
               />
             )}
             <span style={{ display: 'inline-flex', alignItems: 'center' }}>

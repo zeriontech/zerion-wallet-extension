@@ -28,7 +28,9 @@ export function createHttpConnectionMessageHandler(
         wallet.publicEthereumController
           .eth_chainId({ context, id: msg.id })
           .then((chainId) => {
-            const httpConnection = new HttpConnection({ chainId });
+            const httpConnection = new HttpConnection({
+              chainId: Number(chainId),
+            });
             return httpConnection.send(msg, context);
           })
           .then((result) => {
@@ -43,7 +45,7 @@ export function createHttpConnectionMessageHandler(
         } = msg;
         const request = requestWithContextToRpcRequest(msg);
         const httpConnection = new HttpConnection({
-          chainId: requestContext.chainId,
+          chainId: Number(requestContext.chainId),
         });
         httpConnection
           .send(request, context)
