@@ -1,21 +1,18 @@
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api';
-import {
-  getBackendNetworkByChainId,
-  getBackendNetworkByLocalChain,
-} from 'src/modules/networks/getBackendNetwork';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { WalletOrigin } from 'src/shared/WalletOrigin';
+import { networksStore } from 'src/modules/networks/networks-store.background';
+import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import { emitter } from '../events';
 import type { Account } from '../account/Account';
 
 export function initialize(account: Account) {
   // Backend needs this event to initialize chain listening for the address in case the chain is not fully supported
   emitter.on('chainChanged', async (chain) => {
-    const network = await getBackendNetworkByLocalChain(chain);
     const address = account.getCurrentWallet().readCurrentAddress();
-    if (network && address) {
+    if (isCustomNetworkId(chain.toString()) && address) {
       ZerionAPI.registerChain({
-        chain: network.id,
+        chain: chain.toString(),
         addresses: [normalizeAddress(address)],
       });
     }
@@ -29,8 +26,10 @@ export function initialize(account: Account) {
     if (!chainId) {
       return;
     }
-    const network = await getBackendNetworkByChainId(chainId);
-    if (address && network) {
+    const networks = await networksStore.loadNetworksWithChainId(chainId);
+    const network = networks.getNetworkById(chainId);
+
+    if (address && !isCustomNetworkId(network.id)) {
       ZerionAPI.registerChain({
         chain: network.id,
         addresses: [normalizeAddress(address)],

@@ -40,12 +40,3 @@ export async function getNetworksBySearch({ query }: { query: string }) {
     search_query: query.trim().toLowerCase(),
   });
 }
-
-// TODO: update for new UX
-export async function fetchTestnets() {
-  return fetchChains({
-    include_testnets: true,
-    group: 'testnets',
-    supported_only: false,
-  });
-}

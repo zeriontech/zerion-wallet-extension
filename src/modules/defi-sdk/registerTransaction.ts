@@ -1,6 +1,7 @@
 import type { ethers } from 'ethers';
 import { client } from 'defi-sdk';
-import { getBackendNetworkByChainId } from '../networks/getBackendNetwork';
+import { networksStore } from '../networks/networks-store.background';
+import { isCustomNetworkId } from '../ethereum/chains/helpers';
 
 const namespace = 'transaction';
 const scope = 'register';
@@ -8,9 +9,12 @@ const scope = 'register';
 export async function registerTransaction(
   transaction: ethers.providers.TransactionResponse
 ) {
-  const network = await getBackendNetworkByChainId(transaction.chainId);
+  const networks = await networksStore.loadNetworksWithChainId(
+    transaction.chainId
+  );
+  const network = networks.getNetworkById(transaction.chainId);
 
-  if (!network) {
+  if (isCustomNetworkId(network.id)) {
     return;
   }
 

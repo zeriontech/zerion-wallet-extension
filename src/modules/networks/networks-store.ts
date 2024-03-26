@@ -2,15 +2,13 @@ import { getChainId } from 'src/modules/networks/helpers';
 import { Store } from 'store-unit';
 import { isTruthy } from 'is-truthy-ts';
 import type { ChainConfig } from '../ethereum/chains/ChainConfigStore';
-import { fetchTestnets } from '../ethereum/chains/requests';
 import { isCustomNetworkId } from '../ethereum/chains/helpers';
 import type { AddEthereumChainParameter } from './../ethereum/types/AddEthereumChainParameter';
 import { Networks } from './Networks';
-import { getNetworks } from './networks-api';
+import { getNetworkByChainId, getNetworks } from './networks-api';
 import type { NetworkConfig } from './NetworkConfig';
 import { toNetworkConfig } from './helpers';
 import { createChain } from './Chain';
-import { getNetworkByChainId } from './getNetworkByChainId';
 
 interface State {
   networks: Networks | null;
@@ -90,26 +88,18 @@ export class NetworksStore extends Store<State> {
       ...(chains?.filter((id) => !savedChainConfigById[id]) || [])
     );
 
-    const [extraNetworkConfigs, commonNetworkConfis, defaultTestnetConfigs] =
-      await Promise.allSettled([
-        getNetworks(chainsToFetch),
-        getNetworks(),
-        fetchTestnets(),
-        // Promise.resolve([] as NetworkConfig[]),
-      ]);
+    const [extraNetworkConfigs, commonNetworkConfis] = await Promise.allSettled(
+      [getNetworks(chainsToFetch), getNetworks()]
+    );
     if (
       extraNetworkConfigs.status === 'fulfilled' &&
-      commonNetworkConfis.status === 'fulfilled' &&
-      defaultTestnetConfigs.status === 'fulfilled'
+      commonNetworkConfis.status === 'fulfilled'
     ) {
       this.networkConfigs = mergeNetworkConfigs(
         this.networkConfigs,
         mergeNetworkConfigs(
-          mergeNetworkConfigs(
-            commonNetworkConfis.value,
-            extraNetworkConfigs.value
-          ),
-          defaultTestnetConfigs.value
+          commonNetworkConfis.value,
+          extraNetworkConfigs.value
         )
       );
     }

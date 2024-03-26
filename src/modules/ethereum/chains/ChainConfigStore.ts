@@ -7,7 +7,7 @@ import { invariant } from 'src/shared/invariant';
 import { upsert } from 'src/shared/upsert';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { toAddEthereumChainParamer } from 'src/modules/networks/helpers';
-import { getNetworkByChainId } from 'src/modules/networks/getNetworkByChainId';
+import { getNetworkByChainId } from 'src/modules/networks/networks-api';
 import type { AddEthereumChainParameter } from '../types/AddEthereumChainParameter';
 import { getCustomNetworkId } from './helpers';
 
