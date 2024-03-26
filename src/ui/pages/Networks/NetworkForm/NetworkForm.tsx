@@ -212,7 +212,7 @@ export function NetworkForm({
           const result = produce(chainConfig, (draft) =>
             merge(draft, formObject)
           );
-          onSubmit(chain || getCustomNetworkId(result.chainId), result);
+          onSubmit(chain || getCustomNetworkId(Number(result.chainId)), result);
         }}
       >
         <VStack gap={8}>

@@ -26,7 +26,7 @@ interface EtherenumNetworkConfig extends NetworkConfigMetaData {
 
 export interface ChainConfig {
   ethereumChainConfigs?: EthereumChainConfig[];
-  migrated?: boolean;
+  migratedToV1?: boolean;
   /** @deprecated */
   ethereumChains: EtherenumNetworkConfig[];
 }
@@ -42,7 +42,7 @@ export class ChainConfigStore extends PersistentStore<ChainConfig> {
   static initialState: ChainConfig = {
     ethereumChains: [],
     ethereumChainConfigs: [],
-    migrated: false,
+    migratedToV1: false,
   };
 
   addEthereumChain(
@@ -102,11 +102,11 @@ export class ChainConfigStore extends PersistentStore<ChainConfig> {
 
   private async migrateOldConfigs() {
     const {
-      migrated,
+      migratedToV1,
       ethereumChainConfigs = [],
       ethereumChains,
     } = this.getState();
-    if (migrated) {
+    if (migratedToV1) {
       return;
     }
     const existedIdSet = new Set(
@@ -120,18 +120,16 @@ export class ChainConfigStore extends PersistentStore<ChainConfig> {
           ? networkConfig.value.chain
           : null;
       if (!id) {
+        const evmId =
+          networkConfig.value.evm_id || Number(networkConfig.value.external_id);
         try {
-          const network = await getNetworkByChainId(
-            parseInt(networkConfig.value.external_id)
-          );
+          const network = await getNetworkByChainId(evmId);
           if (!network) {
-            throw new Error(
-              `Unable to fetch network info by chain id: ${networkConfig.value.external_id}`
-            );
+            throw new Error(`Unable to fetch network info by emvIid: ${evmId}`);
           }
           id = network.id;
         } catch {
-          id = getCustomNetworkId(networkConfig.value.external_id);
+          id = getCustomNetworkId(evmId);
         }
       }
       if (!existedIdSet.has(id)) {

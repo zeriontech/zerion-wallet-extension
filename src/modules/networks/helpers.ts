@@ -14,7 +14,7 @@ export function toNetworkConfig(
 ): NetworkConfig {
   invariant(value.rpcUrls, 'RPC URL should be defined in network config');
   invariant(value.chainId, 'chainId should be defined in network config');
-  const id = chain?.toString() || getCustomNetworkId(value.chainId);
+  const id = chain?.toString() || getCustomNetworkId(Number(value.chainId));
   return {
     supports_sending: true,
     supports_trading: false,

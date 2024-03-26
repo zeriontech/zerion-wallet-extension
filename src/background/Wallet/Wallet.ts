@@ -1105,7 +1105,8 @@ export class Wallet {
     chain?: string;
   }>) {
     this.verifyInternalOrigin(context);
-    const chain = chainStr || getCustomNetworkId(values[0].chainId);
+    const chainId = Number(values[0].chainId);
+    const chain = chainStr || getCustomNetworkId(chainId);
     const result = chainConfigStore.addEthereumChain(values[0], {
       id: chain,
       origin,
