@@ -177,8 +177,9 @@ export function WalletAccount() {
     isLoading,
     refetch: refetchWallet,
   } = useQuery({
-    queryKey: ['wallet/uiGetWalletByAddress', address],
-    queryFn: () => walletPort.request('uiGetWalletByAddress', { address }),
+    queryKey: ['wallet/uiGetWalletByAddress', address, groupId],
+    queryFn: () =>
+      walletPort.request('uiGetWalletByAddress', { address, groupId }),
     useErrorBoundary: true,
   });
   const { data: walletGroup, isLoading: walletGroupIsLoading } = useQuery({
@@ -187,7 +188,7 @@ export function WalletAccount() {
   });
   const displayName = useProfileName({ address, name: wallet?.name || null });
   const removeAddressMutation = useMutation({
-    mutationFn: () => walletPort.request('removeAddress', { address }),
+    mutationFn: () => walletPort.request('removeAddress', { address, groupId }),
     useErrorBoundary: true,
     onSuccess() {
       refetchWallet();

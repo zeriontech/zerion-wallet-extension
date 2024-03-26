@@ -75,6 +75,7 @@ export function assertSignerContainer(
 }
 
 export enum ContainerType {
+  // These values also define order priority when getting a group by address
   mnemonic,
   privateKey,
   hardware,
