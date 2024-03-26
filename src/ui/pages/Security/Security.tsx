@@ -7,22 +7,23 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
+import { Frame } from 'src/ui/ui-kit/Frame/Frame';
+import { ListItemLink } from 'src/ui/ui-kit/List/ListItem';
+import { Background } from 'src/ui/components/Background';
+import { VStack } from 'src/ui/ui-kit/VStack';
 import { AUTO_LOCK_TIMER_OPTIONS_TITLES, AutoLockTimer } from './AutoLockTimer';
 
 function SecurityMain() {
   const { globalPreferences } = useGlobalPreferences();
 
   return (
-    <PageColumn>
-      <PageTop />
-      <SurfaceList
-        items={[
-          {
-            key: 0,
-            to: 'auto-lock-timer',
-            component: (
+    <Background backgroundKind="white">
+      <PageColumn>
+        <PageTop />
+        <Frame>
+          <VStack gap={0}>
+            <ListItemLink to="auto-lock-timer">
               <AngleRightRow>
                 <HStack
                   gap={24}
@@ -43,11 +44,11 @@ function SecurityMain() {
                   )}
                 </HStack>
               </AngleRightRow>
-            ),
-          },
-        ]}
-      />
-    </PageColumn>
+            </ListItemLink>
+          </VStack>
+        </Frame>
+      </PageColumn>
+    </Background>
   );
 }
 

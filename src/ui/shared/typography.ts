@@ -7,3 +7,4 @@ export const NBSP = '\u00a0';
 export const muchGreater = '≫';
 export const veryMuchGreater = '⋙';
 export const almostEqual = '\u2248';
+export const middot = '·';

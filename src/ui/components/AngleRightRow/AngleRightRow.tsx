@@ -4,7 +4,7 @@ import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import ExternalLinkIcon from 'jsx:src/ui/assets/new-window.svg';
 
 export function AngleRightRow({
-  iconColor = 'var(--neutral-500)',
+  iconColor = 'var(--neutral-400)',
   hideIcon = false,
   kind = 'button',
   children,
