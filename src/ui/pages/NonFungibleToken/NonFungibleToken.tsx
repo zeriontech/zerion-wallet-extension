@@ -17,6 +17,8 @@ import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { WithReadonlyWarningDialog } from 'src/ui/components/SignTransactionButton/ReadonlyWarningDialog';
+import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { useAddressNftPosition } from './useAddressNftPosition';
 
 export function NonFungibleToken() {
@@ -52,7 +54,11 @@ export function NonFungibleToken() {
     return urlObject.toString();
   }, [singleAddress, nft]);
 
-  const { mutate: promoteTokenMutation, isLoading } = useMutation({
+  const {
+    mutate: promoteToken,
+    isLoading,
+    ...promoteTokenMutation
+  } = useMutation({
     mutationFn: async () => {
       if (!nft?.collection.name) {
         return;
@@ -142,15 +148,32 @@ export function NonFungibleToken() {
               </VStack>
             ) : null}
             {nftTags.has('#dna') ? (
-              <Button
-                disabled={isPrimary || isLoading}
-                onClick={() => promoteTokenMutation()}
-              >
-                <HStack gap={8} alignItems="center" justifyContent="center">
-                  <div>{isPrimary ? 'Active' : 'Set as Active'}</div>
-                  {isLoading ? <CircleSpinner /> : null}
-                </HStack>
-              </Button>
+              <VStack gap={8}>
+                {promoteTokenMutation.isError ? (
+                  <UIText kind="body/regular" color="var(--negative-500)">
+                    {txErrorToMessage(promoteTokenMutation.error)}
+                  </UIText>
+                ) : null}
+                <WithReadonlyWarningDialog
+                  address={singleAddress}
+                  onClick={() => promoteToken()}
+                  render={({ handleClick }) => (
+                    <Button
+                      disabled={isPrimary || isLoading}
+                      onClick={handleClick}
+                    >
+                      <HStack
+                        gap={8}
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <div>{isPrimary ? 'Active' : 'Set as Active'}</div>
+                        {isLoading ? <CircleSpinner /> : null}
+                      </HStack>
+                    </Button>
+                  )}
+                />
+              </VStack>
             ) : null}
           </VStack>
         ) : null}
