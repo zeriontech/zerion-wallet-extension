@@ -1,0 +1,9 @@
+.root {
+  --highlight-color: var(--neutral-100);
+}
+
+@container style(--color-scheme: dark) {
+  .root {
+    --highlight-color: var(--neutral-200);
+  }
+}
