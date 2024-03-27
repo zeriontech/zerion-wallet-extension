@@ -2,14 +2,13 @@ import React from 'react';
 import { Image } from 'src/ui/ui-kit/MediaFallback';
 import { UIText } from 'src/ui/ui-kit/UIText';
 
-interface BaseProps {
+interface Props {
   src?: string | null;
   chainId: string | null;
   size?: number;
   style?: React.CSSProperties;
   name: string | null;
 }
-type Props = BaseProps & { src: string };
 
 function TextFallback({
   size,

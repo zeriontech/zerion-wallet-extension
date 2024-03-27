@@ -140,7 +140,7 @@ function ActionDetail({
     <HStack alignItems="center" gap={4}>
       <NetworkIcon
         size={16}
-        src={network?.icon_url || ''}
+        src={network?.icon_url}
         chainId={network ? getChainId(network) : null}
         name={network?.name || null}
       />

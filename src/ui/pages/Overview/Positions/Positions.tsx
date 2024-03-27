@@ -214,7 +214,7 @@ function AddressPositionItem({
                   size={16}
                   name={network?.name || null}
                   chainId={network ? getChainId(network) : null}
-                  src={network?.icon_url || ''}
+                  src={network?.icon_url}
                 />
               ) : null}
               {intersperce(

@@ -19,7 +19,7 @@ export function NetworkIndicator({
   return (
     <HStack gap={size < 28 ? 4 : 8} alignItems="center">
       <NetworkIcon
-        src={network?.icon_url || ''}
+        src={network?.icon_url}
         chainId={network ? getChainId(network) : null}
         size={size}
         name={network?.name || null}
