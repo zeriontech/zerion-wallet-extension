@@ -316,6 +316,8 @@ function OverviewComponent() {
                   address={singleAddress}
                   groupId={null}
                   style={{ width: 24, height: 24 }}
+                  borderRadius={8}
+                  cutoutStroke={3}
                 />
               }
             />
