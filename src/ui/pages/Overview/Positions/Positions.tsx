@@ -711,6 +711,7 @@ function RawChainPositions({
     filterChain !== NetworkSelectValue.All,
     'All networks filter should not show custom chain positions'
   );
+  const { networks } = useNetworks();
   const chainValue = filterChain || dappChain;
   invariant(
     chainValue,
@@ -730,7 +731,9 @@ function RawChainPositions({
   }
 
   if (isError) {
-    return renderErrorView(chainValue) as JSX.Element;
+    return renderErrorView(
+      networks?.getChainName(chain) || chainValue
+    ) as JSX.Element;
   }
   if (isLoading) {
     return renderLoadingView() as JSX.Element;

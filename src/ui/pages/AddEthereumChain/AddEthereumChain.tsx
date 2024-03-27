@@ -62,7 +62,7 @@ function AddOrUpdateChain({
     [addEthereumChainParameterStringified]
   );
 
-  const chainId = Number(addEthereumChainParameter.chainId);
+  const chainId = addEthereumChainParameter.chainId;
   const { networks, loadNetworkByChainId } = useNetworks();
 
   const { data: updatedNetworks, isLoading } = useQuery({
@@ -91,10 +91,18 @@ function AddOrUpdateChain({
       chain: string;
       param: AddEthereumChainParameter;
     }) => {
+      const chainsMetadata = networks?.getNetworksMetaData();
+      const metadata = chainsMetadata?.[prevNetwork?.id || chain];
+      if (prevNetwork && prevNetwork?.id !== chain) {
+        await walletPort.request('removeEthereumChain', {
+          chain: prevNetwork.id,
+        });
+      }
       const config = await walletPort.request('addEthereumChain', {
         values: [param],
         origin,
         chain,
+        created: metadata?.created ? metadata.created.toString() : undefined,
       });
       return {
         config,

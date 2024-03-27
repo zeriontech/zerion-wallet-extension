@@ -84,7 +84,7 @@ export function createCancelTransaction({
 }: {
   from: string;
   nonce: number;
-  chainId: number;
+  chainId: string;
 }) {
   return { from, to: from, value: valueToHex(0), chainId, data: '0x', nonce };
 }

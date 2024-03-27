@@ -49,7 +49,7 @@ export function SwitchEthereumChain() {
   const chainId = params.get('chainId');
   invariant(chainId, 'This view requires a chainId get-param');
 
-  const chain = networks.getChainById(Number(chainId));
+  const chain = networks.getChainById(chainId);
   const network = networks.getNetworkByName(chain);
   invariant(network, 'Network config does not exists');
 

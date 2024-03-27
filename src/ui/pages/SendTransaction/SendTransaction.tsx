@@ -67,6 +67,7 @@ import { TextLink } from 'src/ui/ui-kit/TextLink';
 import { InterpretationState } from 'src/ui/components/InterpretationState';
 import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
 import { hasCriticalWarning } from 'src/ui/components/InterpretationState/InterpretationState';
+import { valueToHex } from 'src/shared/units/valueToHex';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -81,7 +82,9 @@ async function resolveChain(
   currentChain: Chain
 ): Promise<PartiallyRequired<IncomingTransaction, 'chainId'>> {
   const networks = await networksStore.load([currentChain.toString()]);
-  const chainId = transaction.chainId || networks.getChainId(currentChain);
+  const chainId = transaction.chainId
+    ? valueToHex(transaction.chainId)
+    : networks.getChainId(currentChain);
   invariant(chainId, 'chainId should exist for resolving transaction');
   return { ...transaction, chainId };
 }
@@ -429,7 +432,7 @@ function SendTransactionContent({
 
   const chain =
     transaction && networks
-      ? networks.getChainById(Number(transaction.chainId))
+      ? networks.getChainById(valueToHex(transaction.chainId))
       : null;
 
   const transactionAction =

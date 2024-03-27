@@ -29,7 +29,7 @@ export function createHttpConnectionMessageHandler(
           .eth_chainId({ context, id: msg.id })
           .then((chainId) => {
             const httpConnection = new HttpConnection({
-              chainId: Number(chainId),
+              chainId,
             });
             return httpConnection.send(msg, context);
           })
@@ -45,7 +45,7 @@ export function createHttpConnectionMessageHandler(
         } = msg;
         const request = requestWithContextToRpcRequest(msg);
         const httpConnection = new HttpConnection({
-          chainId: Number(requestContext.chainId),
+          chainId: requestContext.chainId,
         });
         httpConnection
           .send(request, context)

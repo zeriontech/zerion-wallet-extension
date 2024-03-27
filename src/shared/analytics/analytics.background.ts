@@ -1,3 +1,4 @@
+import { valueToHex } from 'src/shared/units/valueToHex';
 import omit from 'lodash/omit';
 import { getChainId } from 'src/modules/networks/helpers';
 import type { Account } from 'src/background/account/Account';
@@ -98,7 +99,8 @@ function trackAppEvents({ account }: { account: Account }) {
       const initiatorName = isInternalOrigin ? 'Extension' : 'External Dapp';
       const networks = await networksStore.load();
       const chainId = transaction.chainId;
-      const chain = networks.getChainById(chainId)?.toString() || chainId;
+      const chain =
+        networks.getChainById(valueToHex(chainId))?.toString() || chainId;
       const addressActionAnalytics = addressActionToAnalytics({
         addressAction,
         quote,

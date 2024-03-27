@@ -111,7 +111,7 @@ export class NetworksStore extends Store<State> {
     return this.updateNetworks();
   }
 
-  private async fetchNetworkById(chainId: number) {
+  private async fetchNetworkById(chainId: string) {
     const hasInformationAboutChain = [
       ...this.networkConfigs,
       ...this.customNetworkConfigs,
@@ -158,7 +158,7 @@ export class NetworksStore extends Store<State> {
     });
   }
 
-  async loadNetworksWithChainId(chainId: number) {
+  async loadNetworksWithChainId(chainId: string) {
     const key = `chainId-${chainId}`;
     if (!this.loaderPromises[key]) {
       this.loaderPromises[key] = this.fetchNetworkById(chainId);

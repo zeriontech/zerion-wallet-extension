@@ -9,9 +9,9 @@ import { formatJsonRpcError, isJsonRpcRequest } from '@json-rpc-tools/utils';
 import { networksStore } from 'src/modules/networks/networks-store.background';
 
 export class HttpConnection extends EventEmitter {
-  private chainId: number;
+  private chainId: string;
 
-  constructor({ chainId }: { chainId: number }) {
+  constructor({ chainId }: { chainId: string }) {
     super();
     /** TODO: Should we save just the URL instead of chainId? */
     this.chainId = chainId;

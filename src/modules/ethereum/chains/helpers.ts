@@ -1,4 +1,4 @@
-export function getCustomNetworkId(chainId: number) {
+export function getCustomNetworkId(chainId: string) {
   return `zerion-extension-${chainId}`;
 }
 

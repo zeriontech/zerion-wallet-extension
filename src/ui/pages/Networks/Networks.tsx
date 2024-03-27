@@ -65,16 +65,22 @@ import { NetworkForm } from './NetworkForm';
 async function saveChainConfig({
   chain,
   chainConfig,
+  prevChain,
 }: {
   chain: string;
   chainConfig: AddEthereumChainParameter;
+  prevChain?: string;
 }) {
   const networks = await networksStore.load();
   const chainsMetadata = networks.getNetworksMetaData();
-  const metadata = chainsMetadata[chain];
+  const metadata = chainsMetadata[prevChain || chain];
+  if (prevChain && prevChain !== chain) {
+    await walletPort.request('removeEthereumChain', { chain: prevChain });
+  }
   return walletPort.request('addEthereumChain', {
     values: [chainConfig],
     origin: metadata?.origin ?? window.location.origin,
+    created: metadata?.created ? metadata.created.toString() : undefined,
     chain,
   });
 }
@@ -268,7 +274,11 @@ function NetworkPage() {
           chain={chainStr}
           chainConfig={toAddEthereumChainParamer(network)}
           onSubmit={(id, value) =>
-            mutation.mutate({ chain: id, chainConfig: value })
+            mutation.mutate({
+              chain: id,
+              chainConfig: value,
+              prevChain: network.id,
+            })
           }
           isSubmitting={mutation.isLoading}
           onReset={

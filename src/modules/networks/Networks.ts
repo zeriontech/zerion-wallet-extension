@@ -16,7 +16,7 @@ type Collection<T> = { [key: string]: T };
 
 function toCollection<T, K>(
   items: T[],
-  getKey: (item: T) => string | number,
+  getKey: (item: T) => string,
   getItem: (item: T) => K
 ) {
   const result: Collection<ReturnType<typeof getItem>> = {};
@@ -92,7 +92,7 @@ export class Networks {
     );
     this.collectionByEvmId = toCollection(
       this.networks,
-      (x) => getChainId(x) || 0,
+      (x) => getChainId(x) || '',
       (x) => x
     ) as { [key: number]: NetworkConfig | undefined };
   }
@@ -140,7 +140,7 @@ export class Networks {
     return this.networks.filter((item) => item.is_testnet);
   }
 
-  findEthereumChainById(chainId: number) {
+  findEthereumChainById(chainId: string) {
     return this.collectionByEvmId[chainId];
   }
 
@@ -168,7 +168,7 @@ export class Networks {
     return this.collection[chain.toString()]?.name || capitalize(String(chain));
   }
 
-  getNetworkById(chainId: number) {
+  getNetworkById(chainId: string) {
     const network = this.collectionByEvmId[chainId];
     if (!network) {
       throw new UnsupportedNetwork(`Unsupported network id: ${chainId}`);
@@ -176,7 +176,7 @@ export class Networks {
     return network;
   }
 
-  hasNetworkById(chainId: number) {
+  hasNetworkById(chainId: string) {
     return Boolean(this.collectionByEvmId[chainId]);
   }
 
@@ -184,12 +184,12 @@ export class Networks {
     return this.collection[chain.toString()];
   }
 
-  getChainById(chainId: number): Chain {
+  getChainById(chainId: string): Chain {
     const network = this.getNetworkById(chainId);
     return createChain(network.id);
   }
 
-  getChainNameById(chainId: number) {
+  getChainNameById(chainId: string) {
     const network = this.getNetworkById(chainId);
     return this.getChainName(createChain(network.id));
   }
@@ -206,7 +206,7 @@ export class Networks {
     }
   }
 
-  getExplorerTxUrlById(chainId: number, hash: string) {
+  getExplorerTxUrlById(chainId: string, hash: string) {
     return this.getExplorerTxUrl(this.collectionByEvmId[chainId], hash);
   }
 
@@ -235,7 +235,7 @@ export class Networks {
     return network?.explorer_token_url?.replace('{ADDRESS}', address);
   }
 
-  getExplorerTokenUrlById(chainId: number, address: string) {
+  getExplorerTokenUrlById(chainId: string, address: string) {
     return this.getExplorerTokenUrl(this.collection[chainId], address);
   }
 
@@ -243,14 +243,14 @@ export class Networks {
     return this.getExplorerTokenUrl(this.collection[chain.toString()], address);
   }
 
-  getExplorerNameById(chainId: number | null) {
+  getExplorerNameById(chainId: string | null) {
     if (!chainId) {
       return undefined;
     }
     return this.collectionByEvmId[chainId]?.explorer_name;
   }
 
-  getEthereumChainParameter(chainId: number): AddEthereumChainParameter {
+  getEthereumChainParameter(chainId: string): AddEthereumChainParameter {
     const network = this.collectionByEvmId[chainId];
     if (!network || !network.rpc_url_public || !network.native_asset) {
       throw new UnsupportedNetwork(`Unsupported network id: ${chainId}`);
@@ -280,7 +280,7 @@ export class Networks {
     return network[key];
   }
 
-  isNativeAsset(asset: Asset, chainId: number): boolean {
+  isNativeAsset(asset: Asset, chainId: string): boolean {
     const network = this.getNetworkById(chainId);
     return network.native_asset
       ? getAddress({ asset, chain: createChain(network.id) }) ===
@@ -288,7 +288,7 @@ export class Networks {
       : false;
   }
 
-  isNativeAddress(address: string | null, chainId: number): boolean {
+  isNativeAddress(address: string | null, chainId: string): boolean {
     const network = this.getNetworkById(chainId);
     if (!network.native_asset) {
       throw new Error(`Native asset is not defined for: ${chainId}`);
@@ -337,7 +337,7 @@ export class Networks {
      * Checks whether a network config for this chainId already exists
      * and its RPC_URL value is the same
      */
-    const chainId = parseInt(config.chainId);
+    const chainId = valueToHex(config.chainId);
     if (this.hasNetworkById(chainId)) {
       const network = this.getNetworkById(chainId);
       const currentRpcUrl = this.getRpcUrlInternal(createChain(network.id));

@@ -1,10 +1,13 @@
 import { invariant } from 'src/shared/invariant';
+import { valueToHex } from 'src/shared/units/valueToHex';
 import type { AddEthereumChainParameter } from '../ethereum/types/AddEthereumChainParameter';
 import { getCustomNetworkId } from '../ethereum/chains/helpers';
 import type { NetworkConfig } from './NetworkConfig';
 
 export function getChainId(network: NetworkConfig) {
-  return network.standard === 'eip155' ? network.specification.eip155.id : null;
+  return network.standard === 'eip155'
+    ? valueToHex(network.specification.eip155.id)
+    : null;
 }
 
 export function toNetworkConfig(
@@ -12,7 +15,7 @@ export function toNetworkConfig(
 ): NetworkConfig {
   invariant(value.rpcUrls, 'RPC URL should be defined in network config');
   invariant(value.chainId, 'chainId should be defined in network config');
-  const id = getCustomNetworkId(Number(value.chainId));
+  const id = getCustomNetworkId(value.chainId);
   return {
     supports_sending: true,
     supports_trading: false,
@@ -97,7 +100,7 @@ export function toAddEthereumChainParamer(
       decimals: (item.native_asset?.decimals || NaN) as 18,
       name: item.native_asset?.name || '<unknown>',
     },
-    chainId: getChainId(item)?.toString() || '',
+    chainId: getChainId(item) || '',
     chainName: item.name,
     blockExplorerUrls: item.explorer_address_url
       ? [item.explorer_address_url]

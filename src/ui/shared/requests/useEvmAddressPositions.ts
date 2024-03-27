@@ -10,7 +10,7 @@ async function getEvmAddressPositions({
   networks,
 }: {
   address: string;
-  chainId: number;
+  chainId: string;
   networks: Networks;
 }) {
   const position = await fetchNativeEvmPosition({ address, chainId, networks });

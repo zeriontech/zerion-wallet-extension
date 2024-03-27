@@ -12,8 +12,7 @@ function contains(str1?: string, str2?: string) {
 export function filterNetworksByQuery(query: string) {
   return (item: NetworkConfig) =>
     contains(item.id, query) ||
-    contains(getChainId(item)?.toString(), query) ||
-    contains(getChainId(item)?.toString(16), query) ||
+    contains(getChainId(item) || '', query) ||
     contains(item.name, query) ||
     contains(item.native_asset?.name, query) ||
     contains(item.native_asset?.symbol, query) ||

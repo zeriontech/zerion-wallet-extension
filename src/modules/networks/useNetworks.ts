@@ -17,7 +17,7 @@ export function useNetworks(chainIds?: string[]) {
   return {
     networks,
     loadNetworkByChainId: useCallback(
-      (chainId: number) => networksStore.loadNetworksWithChainId(chainId),
+      (chainId: string) => networksStore.loadNetworksWithChainId(chainId),
       []
     ),
   };

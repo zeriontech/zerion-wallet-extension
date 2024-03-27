@@ -16,7 +16,11 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import type { Parsers } from 'src/ui/shared/form-data';
 import { collectData } from 'src/ui/shared/form-data';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
-import { getCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
+import {
+  getCustomNetworkId,
+  isCustomNetworkId,
+} from 'src/modules/ethereum/chains/helpers';
+import { valueToHex } from 'src/shared/units/valueToHex';
 
 export function Field({
   label,
@@ -99,7 +103,7 @@ function findInput(
 const parsers: Parsers = {
   chainId: (untypedValue) => {
     const value = untypedValue as string;
-    return parseInt(value);
+    return valueToHex(value);
   },
   hidden: (untypedValue) => {
     const value = untypedValue as 'on' | null;
@@ -161,13 +165,13 @@ export function NetworkForm({
   onCancel: () => void;
   onReset?: () => void;
   footerRenderArea?: string;
-  restrictedChainIds: Set<number>;
+  restrictedChainIds: Set<string>;
   disabledFields: null | Set<string>;
 }) {
   const id = useId();
   const validators: Validators = {
     chainId: (element) => {
-      const value = parsers.chainId(element.value) as number;
+      const value = parsers.chainId(element.value) as string;
       if (restrictedChainIds.has(value)) {
         return 'Network already exists';
       }
@@ -212,7 +216,12 @@ export function NetworkForm({
           const result = produce(chainConfig, (draft) =>
             merge(draft, formObject)
           );
-          onSubmit(chain || getCustomNetworkId(Number(result.chainId)), result);
+          onSubmit(
+            !chain || isCustomNetworkId(chain)
+              ? getCustomNetworkId(valueToHex(result.chainId))
+              : chain,
+            result
+          );
         }}
       >
         <VStack gap={8}>

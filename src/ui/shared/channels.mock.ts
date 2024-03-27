@@ -85,7 +85,7 @@ const mockRecord: WalletRecord = {
 
 class WalletPortMock {
   state = {
-    chainId: 137 as number | null,
+    chainId: '0x89' as string | null,
   };
 
   async setPreference({

@@ -4,7 +4,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 
 interface BaseProps {
   src?: string | null;
-  chainId: number | null;
+  chainId: string | null;
   size?: number;
   style?: React.CSSProperties;
   name: string | null;
@@ -19,7 +19,7 @@ function TextFallback({
 }: {
   size: number;
   name: string | null;
-  chainId: number | null;
+  chainId: string | null;
   style?: React.CSSProperties;
 }) {
   const value = chainId
@@ -49,19 +49,21 @@ function TextFallback({
     </UIText>
   );
 }
-export function NetworkIcon({ src, chainId, name, size = 32, style }: Props) {
-  return src ? (
-    <div style={{ width: size, height: size }} title={name || undefined}>
-      <Image
-        src={src}
-        alt=""
-        style={{ width: '100%', display: 'block', ...style }}
-        renderError={() => (
-          <TextFallback name={name} chainId={chainId} size={size} />
-        )}
-      />
-    </div>
-  ) : (
-    <TextFallback name={name} chainId={chainId} size={size} />
-  );
-}
+export const NetworkIcon = React.memo(
+  ({ src, chainId, name, size = 32, style }: Props) => {
+    return src ? (
+      <div style={{ width: size, height: size }} title={name || undefined}>
+        <Image
+          src={src}
+          alt=""
+          style={{ width: '100%', display: 'block', ...style }}
+          renderError={() => (
+            <TextFallback name={name} chainId={chainId} size={size} />
+          )}
+        />
+      </div>
+    ) : (
+      <TextFallback name={name} chainId={chainId} size={size} />
+    );
+  }
+);

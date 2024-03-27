@@ -9,7 +9,7 @@ import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { toAddEthereumChainParamer } from 'src/modules/networks/helpers';
 import { getNetworkByChainId } from 'src/modules/networks/networks-api';
 import type { AddEthereumChainParameter } from '../types/AddEthereumChainParameter';
-import { getCustomNetworkId } from './helpers';
+import { getCustomNetworkId, isCustomNetworkId } from './helpers';
 
 export function maybeLocalChainId(id: string) {
   return id.length === 21; // nanoid() standard length
@@ -47,7 +47,7 @@ export class ChainConfigStore extends PersistentStore<ChainConfig> {
 
   addEthereumChain(
     value: AddEthereumChainParameter,
-    { origin, id }: { origin: string; id: string }
+    { origin, id, created }: { origin: string; id: string; created?: number }
   ): EthereumChainConfig {
     invariant(
       value.chainId,
@@ -65,7 +65,7 @@ export class ChainConfigStore extends PersistentStore<ChainConfig> {
     const now = Date.now();
     const newEntry = {
       origin,
-      created: existingEntry ? existingEntry.created : now,
+      created: created ?? (existingEntry ? existingEntry.created : now),
       updated: now,
       value,
       id,
@@ -120,16 +120,17 @@ export class ChainConfigStore extends PersistentStore<ChainConfig> {
           ? networkConfig.value.chain
           : null;
       if (!id) {
-        const evmId =
-          networkConfig.value.evm_id || Number(networkConfig.value.external_id);
+        const chainId = networkConfig.value.external_id;
         try {
-          const network = await getNetworkByChainId(evmId);
+          const network = await getNetworkByChainId(chainId);
           if (!network) {
-            throw new Error(`Unable to fetch network info by emvIid: ${evmId}`);
+            throw new Error(
+              `Unable to fetch network info by chainId: ${chainId}`
+            );
           }
           id = network.id;
         } catch {
-          id = getCustomNetworkId(evmId);
+          id = getCustomNetworkId(chainId);
         }
       }
       if (!existedIdSet.has(id)) {
@@ -145,6 +146,27 @@ export class ChainConfigStore extends PersistentStore<ChainConfig> {
       migrated: true,
       ethereumChainConfigs,
     }));
+  }
+
+  async checkCustomChainsForUpdates() {
+    const { ethereumChainConfigs } = this.getState();
+    if (ethereumChainConfigs) {
+      const updatedEthereumChainConfigs: EthereumChainConfig[] = [];
+      for (const config of ethereumChainConfigs) {
+        if (!isCustomNetworkId(config.id)) {
+          updatedEthereumChainConfigs.push(config);
+          continue;
+        }
+        const network = await getNetworkByChainId(config.value.chainId);
+        updatedEthereumChainConfigs.push(
+          network ? { ...config, id: network.id } : config
+        );
+      }
+      this.setState((current) => ({
+        ...current,
+        ethereumChainConfigs: updatedEthereumChainConfigs,
+      }));
+    }
   }
 
   async ready() {

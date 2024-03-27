@@ -11,6 +11,7 @@ import { interpretTransaction } from 'src/modules/ethereum/transactions/interpre
 import { walletPort } from 'src/ui/shared/channels';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { valueToHex } from 'src/shared/units/valueToHex';
 import { AddressActionDetails } from '../AddressActionDetails';
 import { InterpretationState } from '../../InterpretationState';
 
@@ -30,7 +31,7 @@ export function TransactionSimulation({
   const { networks } = useNetworks();
   invariant(transaction.chainId, 'transaction must have a chainId value');
 
-  const chain = networks?.getChainById(Number(transaction.chainId));
+  const chain = networks?.getChainById(valueToHex(transaction.chainId));
 
   // TODO: "wallet" must not be used here,
   // instead, a sender address must be taken from AddressAction

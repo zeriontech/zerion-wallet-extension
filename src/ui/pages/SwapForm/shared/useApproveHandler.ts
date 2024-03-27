@@ -88,8 +88,8 @@ export function useApproveHandler({
         // allowanceQuantityBase: '40000000000000000000', // TESTING
       });
       const tx = { ...approveTx, from: address };
-      const chainIdHex = resolveChainId(tx);
-      const networks = await networksStore.loadNetworksWithChainId(chainIdHex);
+      const chainId = resolveChainId(tx);
+      const networks = await networksStore.loadNetworksWithChainId(chainId);
       const gas = await estimateGas(tx, networks);
       const gasAsHex = valueToHex(gas);
       return { ...tx, gas: gasAsHex, gasLimit: gasAsHex };

@@ -52,7 +52,7 @@ class ReceiptGetter {
 
 export interface PollingTx {
   hash: string;
-  chainId: number;
+  chainId: string;
   from: string;
   nonce: number;
 }
