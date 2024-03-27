@@ -28,6 +28,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { getError } from 'src/shared/errors/getError';
+import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 
 async function submitReadonlyAddress({ address }: { address: string }) {
   await walletPort.request('uiImportReadonlyAddress', {
@@ -139,10 +140,12 @@ export function AddReadonlyAddress() {
   const errorMessage = isError ? getError(error).message : null;
   const hints = getHints(query, data);
 
+  const title = 'Watch Address';
   return (
     <PageColumn>
       <PageTop />
-      <PageHeading>Watch Address</PageHeading>
+      <NavigationTitle title={null} documentTitle={title} />
+      <PageHeading>{title}</PageHeading>
       <Spacer height={4} />
       <UIText kind="body/regular">
         Search or paste an address, domain or identity to start watching a

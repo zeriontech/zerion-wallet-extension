@@ -6,6 +6,7 @@ import type {
 import type {
   AccountContainer,
   DeviceAccountContainer,
+  ExternallyOwnedAccount,
   ReadonlyAccountContainer,
 } from 'src/background/Wallet/model/AccountContainer';
 import type { WalletContainer } from 'src/background/Wallet/model/types';
@@ -64,6 +65,13 @@ export function isDeviceAccount(
   wallet: WalletContainer['wallets'][number]
 ): wallet is DeviceAccount {
   return 'derivationPath' in wallet;
+}
+
+export function isReadonlyAccount(
+  wallet: WalletContainer['wallets'][number]
+): wallet is ExternallyOwnedAccount {
+  // NOTE: Can we perform a more definitive check?
+  return !isBareWallet(wallet) && !isDeviceAccount(wallet);
 }
 
 export function assertSignerContainer(
