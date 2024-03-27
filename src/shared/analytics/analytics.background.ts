@@ -42,7 +42,11 @@ function trackAppEvents({ account }: { account: Account }) {
     const getUserId = () => account.getUser()?.id;
     return createBaseParams({ ...params, userId: getUserId() });
   };
+  console.log('background analytcs: adding dappConnection listener');
   emitter.on('dappConnection', ({ origin, address }) => {
+    console.log(
+      `[${origin}]: dappConnection listener invoked, will send metabase and mixpanel events`
+    );
     // We don't need user_id here
     const params = createBaseParams({
       request_name: 'dapp_connection',
@@ -252,6 +256,7 @@ function trackAppEvents({ account }: { account: Account }) {
 }
 
 export function initialize({ account }: { account: Account }) {
+  console.log('analytics initialize');
   async function getWalletProvider(address: string) {
     return getProviderForApiV4(queryWalletProvider(account, address));
   }

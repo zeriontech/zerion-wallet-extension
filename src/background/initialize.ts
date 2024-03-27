@@ -38,6 +38,7 @@ export async function initialize() {
     globalPreferences.initialize();
     setUninstallURL();
   });
+  console.log('initialize.ts: will initializeAnalytics');
   initializeAnalytics({ account });
   initializeLiteweightChainSupport(account);
 
