@@ -13,6 +13,7 @@ import {
 } from 'src/ui/pages/HardwareWalletConnection/HardwareSignTransaction';
 import { walletPort } from 'src/ui/shared/channels';
 import { Button, type Kind as ButtonKind } from 'src/ui/ui-kit/Button';
+import { WithReadonlyWarningDialog } from './ReadonlyWarningDialog';
 
 type SendTxParams = TransactionContextParams & {
   transaction: IncomingTransaction;
@@ -30,6 +31,7 @@ export const SignTransactionButton = React.forwardRef(
       wallet,
       children,
       buttonTitle,
+      onClick,
       ...buttonProps
     }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
       wallet: ExternallyOwnedAccount;
@@ -72,13 +74,26 @@ export const SignTransactionButton = React.forwardRef(
         isSending={sendTxMutation.isLoading}
         children={children}
         buttonTitle={buttonTitle}
+        onClick={onClick}
         {...buttonProps}
       />
     ) : (
-      <Button disabled={sendTxMutation.isLoading} {...buttonProps}>
-        {children ||
-          (sendTxMutation.isLoading ? 'Sending...' : buttonTitle || 'Confirm')}
-      </Button>
+      <WithReadonlyWarningDialog
+        address={wallet.address}
+        onClick={onClick}
+        render={({ handleClick }) => (
+          <Button
+            disabled={sendTxMutation.isLoading}
+            onClick={handleClick}
+            {...buttonProps}
+          >
+            {children ||
+              (sendTxMutation.isLoading
+                ? 'Sending...'
+                : buttonTitle || 'Confirm')}
+          </Button>
+        )}
+      />
     );
   }
 );

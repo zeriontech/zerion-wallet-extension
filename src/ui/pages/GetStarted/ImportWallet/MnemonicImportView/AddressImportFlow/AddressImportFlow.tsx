@@ -14,7 +14,7 @@ import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { NBSP } from 'src/ui/shared/typography';
-import { useAllExistingAddresses } from 'src/ui/shared/requests/useAllExistingAddresses';
+import { useAllExistingMnemonicAddresses } from 'src/ui/shared/requests/useAllExistingAddresses';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { AddressImportMessages } from './AddressImportMessages';
 import { WalletList } from './WalletList';
@@ -54,7 +54,7 @@ function AddressImportList({
     'active' | 'rest',
     BareWallet[] | undefined
   >;
-  const existingAddresses = useAllExistingAddresses();
+  const existingAddresses = useAllExistingMnemonicAddresses();
   const existingAddressesSet = useMemo(
     () => new Set(existingAddresses),
     [existingAddresses]

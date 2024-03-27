@@ -38,6 +38,7 @@ import { WalletSourceIcon } from 'src/ui/components/WalletSourceIcon';
 
 type Item = {
   name: string | null;
+  groupId: string | null;
   address: string;
   groupType: 'saved' | 'recent';
 };
@@ -149,6 +150,7 @@ const SuggestedItem = React.forwardRef(
               icon={
                 <WalletSourceIcon
                   address={item.address}
+                  groupId={item.groupId}
                   style={{ width: 10, height: 10 }}
                 />
               }
@@ -494,6 +496,7 @@ export function AddressInputWrapper(
           const address = normalizeAddress(wallet.address);
           wallets.push({
             address,
+            groupId: group.id,
             name: wallet.name || null,
             groupType: 'saved',
           });
@@ -513,6 +516,7 @@ export function AddressInputWrapper(
       preferences?.recentAddresses.map((address) => {
         return {
           address,
+          groupId: null,
           name: savedNamesMap[address] || null,
           groupType: 'recent',
         };

@@ -32,6 +32,7 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { isDeviceAccount } from 'src/shared/types/validators';
 import { useErrorBoundary } from 'src/ui/shared/useErrorBoundary';
 import { getError } from 'src/shared/errors/getError';
+import { WithReadonlyWarningDialog } from 'src/ui/components/SignTransactionButton/ReadonlyWarningDialog';
 import { HardwareSignMessage } from '../HardwareWalletConnection/HardwareSignMessage';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { SpeechBubble } from './SpeechBubble/SpeechBubble';
@@ -302,14 +303,20 @@ export function SignInWithEthereum() {
                       }}
                     />
                   ) : (
-                    <Button
-                      disabled={personalSignMutation.isLoading}
+                    <WithReadonlyWarningDialog
+                      address={wallet.address}
                       onClick={handleSignIn}
-                    >
-                      {personalSignMutation.isLoading
-                        ? 'Signing In...'
-                        : 'Sign In'}
-                    </Button>
+                      render={({ handleClick }) => (
+                        <Button
+                          disabled={personalSignMutation.isLoading}
+                          onClick={handleClick}
+                        >
+                          {personalSignMutation.isLoading
+                            ? 'Signing In...'
+                            : 'Sign In'}
+                        </Button>
+                      )}
+                    />
                   )}
                 </>
               )}

@@ -6,6 +6,7 @@ import type {
 import type {
   AccountContainer,
   DeviceAccountContainer,
+  ExternallyOwnedAccount,
   ReadonlyAccountContainer,
 } from 'src/background/Wallet/model/AccountContainer';
 import type { WalletContainer } from 'src/background/Wallet/model/types';
@@ -66,10 +67,41 @@ export function isDeviceAccount(
   return 'derivationPath' in wallet;
 }
 
+export function isReadonlyAccount(
+  wallet: WalletContainer['wallets'][number]
+): wallet is ExternallyOwnedAccount {
+  // NOTE: Can we perform a more definitive check?
+  return !isBareWallet(wallet) && !isDeviceAccount(wallet);
+}
+
 export function assertSignerContainer(
   container: WalletContainer
 ): asserts container is SignerContainer {
   if (!isSignerContainer(container)) {
     throw new Error('Not a WalletContainer');
   }
+}
+
+export enum ContainerType {
+  // These values also define order priority when getting a group by address
+  mnemonic,
+  privateKey,
+  hardware,
+  readonly,
+}
+
+function throwErr(error: Error): never {
+  throw error;
+}
+
+export function getContainerType(container: WalletContainer): ContainerType {
+  return isMnemonicContainer(container)
+    ? ContainerType.mnemonic
+    : isPrivateKeyContainer(container)
+    ? ContainerType.privateKey
+    : isHardwareContainer(container)
+    ? ContainerType.hardware
+    : isReadonlyContainer(container)
+    ? ContainerType.readonly
+    : throwErr(new Error('Unexpected Container type'));
 }

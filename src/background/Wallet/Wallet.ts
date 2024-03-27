@@ -84,7 +84,10 @@ import { WalletOrigin } from './model/WalletOrigin';
 import { globalPreferences } from './GlobalPreferences';
 import type { State as GlobalPreferencesState } from './GlobalPreferences';
 import type { Device, DeviceAccount } from './model/AccountContainer';
-import { DeviceAccountContainer } from './model/AccountContainer';
+import {
+  DeviceAccountContainer,
+  ReadonlyAccountContainer,
+} from './model/AccountContainer';
 
 export const INTERNAL_SYMBOL_CONTEXT = { origin: INTERNAL_ORIGIN_SYMBOL };
 
@@ -317,6 +320,18 @@ export class Wallet {
     return walletContainer.getFirstWallet();
   }
 
+  async uiImportReadonlyAddress({
+    params: { address, name },
+  }: WalletMethodParams<{ address: string; name: string | null }>) {
+    const walletContainer = new ReadonlyAccountContainer([{ address, name }]);
+    this.pendingWallet = {
+      origin: WalletOrigin.imported,
+      walletContainer,
+      groupId: null,
+    };
+    return walletContainer.getFirstWallet();
+  }
+
   async getPendingRecoveryPhrase({ context }: WalletMethodParams) {
     this.verifyInternalOrigin(context);
     this.ensureActiveSession(this.userCredentials);
@@ -391,8 +406,10 @@ export class Wallet {
     const currentAddress = this.readCurrentAddress();
     if (this.record && currentAddress) {
       const wallet =
-        Model.getWalletByAddress(this.record, currentAddress) ||
-        Model.getFirstWallet(this.record);
+        Model.getWalletByAddress(this.record, {
+          address: currentAddress,
+          groupId: null,
+        }) || Model.getFirstWallet(this.record);
       return wallet ? maskWallet(wallet) : null;
     }
     return null;
@@ -400,8 +417,8 @@ export class Wallet {
 
   async uiGetWalletByAddress({
     context,
-    params: { address },
-  }: WalletMethodParams<{ address: string }>) {
+    params: { address, groupId },
+  }: WalletMethodParams<{ address: string; groupId: string | null }>) {
     this.verifyInternalOrigin(context);
     if (!this.record) {
       throw new RecordNotFound();
@@ -409,7 +426,7 @@ export class Wallet {
     if (!address) {
       throw new Error('Illegal argument: address is required for this method');
     }
-    const wallet = Model.getWalletByAddress(this.record, address);
+    const wallet = Model.getWalletByAddress(this.record, { address, groupId });
     return wallet ? maskWallet(wallet) : null;
   }
 
@@ -649,12 +666,12 @@ export class Wallet {
   }
 
   async removeAddress({
-    params: { address },
+    params: { address, groupId },
     context,
-  }: WalletMethodParams<{ address: string }>) {
+  }: WalletMethodParams<{ address: string; groupId: string | null }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
-    this.record = Model.removeAddress(this.record, { address });
+    this.record = Model.removeAddress(this.record, { address, groupId });
     this.updateWalletStore(this.record);
   }
 
