@@ -25,6 +25,7 @@ export interface State {
   recognizableConnectButtons?: boolean;
   providerInjection?: ProviderInjection;
   autoLockTimeout?: number | 'none';
+  enableTestnets?: boolean;
   walletNameFlags?: Record<string, WalletNameFlag[] | undefined>;
 }
 
@@ -63,6 +64,7 @@ export class GlobalPreferences extends PersistentStore<State> {
     providerInjection: {},
     walletNameFlags: {},
     autoLockTimeout: HALF_DAY,
+    enableTestnets: false,
   };
 
   private async fetchDefaultWalletNameFlags() {

@@ -35,6 +35,7 @@ import { AssetLink } from 'src/ui/components/AssetLink';
 import { DNA_MINT_CONTRACT_ADDRESS } from 'src/ui/DNA/shared/constants';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { isInteractiveElement } from 'src/ui/shared/isInteractiveElement';
+import { getChainId } from 'src/modules/networks/helpers';
 import { ActionDetailedView } from '../ActionDetailedView';
 import { isUnlimitedApproval } from '../isUnlimitedApproval';
 import { AccelerateTransactionDialog } from '../AccelerateTransactionDialog';
@@ -140,7 +141,7 @@ function ActionDetail({
       <NetworkIcon
         size={16}
         src={network?.icon_url}
-        chainId={network?.external_id || ''}
+        chainId={network ? getChainId(network) : null}
         name={network?.name || null}
       />
       <UIText kind="small/regular" color="var(--neutral-500)">

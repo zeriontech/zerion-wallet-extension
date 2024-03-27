@@ -240,6 +240,31 @@ function DeveloperTools() {
         <PageTop />
         <VStack gap={16}>
           <Frame>
+            <VStack gap={0}>
+              <ToggleSettingLine
+                text="Enable Testnets"
+                checked={globalPreferences?.enableTestnets ?? false}
+                onChange={(event) => {
+                  setGlobalPreferences({
+                    enableTestnets: event.target.checked,
+                  });
+                }}
+                detailText={
+                  <span>
+                    Enables viewing and interacting with test
+                    <br />
+                    networks
+                  </span>
+                }
+              />
+              <ListItemLink to="/settings/developer-tools/testnets">
+                <AngleRightRow>
+                  <UIText kind="body/accent">Testnet Faucets</UIText>
+                </AngleRightRow>
+              </ListItemLink>
+            </VStack>
+          </Frame>
+          <Frame>
             <ToggleSettingLine
               text="Custom Nonce"
               checked={preferences?.configurableNonce ?? false}

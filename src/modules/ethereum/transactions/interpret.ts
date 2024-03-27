@@ -70,7 +70,7 @@ export function interpretSignature({
   typedData,
 }: {
   address: string;
-  chainId?: string | number;
+  chainId?: string | number | null;
   typedData: TypedData;
 }): Promise<InterpretResponse> {
   return Promise.race([

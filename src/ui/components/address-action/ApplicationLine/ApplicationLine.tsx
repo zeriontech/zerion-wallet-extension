@@ -17,6 +17,7 @@ import { ShuffleText } from 'src/ui/components/ShuffleText';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
+import { getChainId } from 'src/modules/networks/helpers';
 
 const FadeOutAndIn = ({
   src,
@@ -96,7 +97,7 @@ function ApplicationImage({
             <NetworkIcon
               size={16}
               name={network?.name || null}
-              chainId={network?.external_id || null}
+              chainId={network ? getChainId(network) : null}
               src={network?.icon_url || ''}
             />
           </div>

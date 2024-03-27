@@ -1,3 +1,4 @@
+import { valueToHex } from 'src/shared/units/valueToHex';
 import { capitalize } from 'capitalize-ts';
 import type { AddressAction, Asset, NFT, NFTAsset } from 'defi-sdk';
 import type { BigNumberish, BytesLike } from 'ethers';
@@ -317,7 +318,7 @@ export async function pendingTransactionToAddressAction(
   const { transaction, hash, receipt, timestamp, dropped } = transactionObject;
   let chain: Chain | null;
   try {
-    chain = networks.getChainById(ethers.utils.hexValue(transaction.chainId));
+    chain = networks.getChainById(valueToHex(transaction.chainId));
   } catch (error) {
     if (error instanceof UnsupportedNetwork) {
       chain = null;
@@ -376,9 +377,7 @@ export async function incomingTxToIncomingAddressAction(
   networks: Networks
 ): Promise<LocalAddressAction> {
   const { transaction, timestamp } = transactionObject;
-  const chain = networks.getChainById(
-    ethers.utils.hexValue(transaction.chainId)
-  );
+  const chain = networks.getChainById(valueToHex(transaction.chainId));
   const label = createActionLabel(transaction, transactionAction);
   const content = await createActionContent(transactionAction);
   return {

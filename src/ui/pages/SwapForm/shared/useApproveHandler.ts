@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { useMemo } from 'react';
 import { estimateGas } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
+import { resolveChainId } from 'src/modules/ethereum/transactions/resolveChainId';
 import type { Chain } from 'src/modules/networks/Chain';
 import { networksStore } from 'src/modules/networks/networks-store.client';
 import { invariant } from 'src/shared/invariant';
@@ -87,7 +88,8 @@ export function useApproveHandler({
         // allowanceQuantityBase: '40000000000000000000', // TESTING
       });
       const tx = { ...approveTx, from: address };
-      const networks = await networksStore.load();
+      const chainId = resolveChainId(tx);
+      const networks = await networksStore.loadNetworksWithChainId(chainId);
       const gas = await estimateGas(tx, networks);
       const gasAsHex = valueToHex(gas);
       return { ...tx, gas: gasAsHex, gasLimit: gasAsHex };

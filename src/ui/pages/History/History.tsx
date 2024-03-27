@@ -24,6 +24,7 @@ import AllNetworksIcon from 'jsx:src/ui/assets/network.svg';
 import CloseIcon from 'jsx:src/ui/assets/close_solid.svg';
 import { Button } from 'src/ui/ui-kit/Button';
 import { useStore } from '@store-unit/react';
+import { getChainId } from 'src/modules/networks/helpers';
 import {
   getCurrentTabsOffset,
   getGrownTabMaxHeight,
@@ -74,7 +75,7 @@ function useMinedAndPendingAddressActions({
   const { params } = useAddressParams();
   const { networks } = useNetworks();
   const isSupportedByBackend = chain
-    ? networks?.isSupportedByBackend(chain)
+    ? networks?.isSupportedByBackend(chain, 'actions')
     : true;
   const localActions = useLocalAddressTransactions(params);
 
@@ -245,7 +246,7 @@ export function HistoryList() {
                     size={20}
                     src={filterNetwork.icon_url}
                     name={filterNetwork.name}
-                    chainId={filterNetwork.external_id}
+                    chainId={getChainId(filterNetwork)}
                   />
                 )}
               </Button>

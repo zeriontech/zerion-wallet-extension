@@ -13,14 +13,16 @@ export function ItemLink({
   onClick,
   children,
   style,
+  ...props
 }: {
   to: LinkProps['to'];
   children: React.ReactNode;
   onClick?: React.AnchorHTMLAttributes<HTMLAnchorElement>['onClick'];
   style?: React.CSSProperties;
-}) {
+} & React.AnchorHTMLAttributes<HTMLAnchorElement>) {
   return (
     <UnstyledLink
+      {...props}
       style={{ color: 'inherit', ...style }}
       to={to}
       onClick={onClick}

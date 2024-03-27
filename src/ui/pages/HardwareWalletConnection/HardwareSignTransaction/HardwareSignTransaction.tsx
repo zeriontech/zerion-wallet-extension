@@ -54,7 +54,7 @@ async function prepareForSignByLedger({
     value.nonce = parseInt(nonce);
   }
   if (!value.chainId) {
-    value.chainId = networks.getChainId(chain);
+    value.chainId = networks.getChainId(chain) || undefined;
   }
   return value;
 }
@@ -85,7 +85,7 @@ export const HardwareSignTransaction = React.forwardRef(
         address,
         chain,
       }: SignTransactionParams): Promise<string> => {
-        const networks = await networksStore.load();
+        const networks = await networksStore.load([chain.toString()]);
         const txForLedger = await prepareForSignByLedger({
           transaction,
           address,

@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { ethers } from 'ethers';
+import type { ethers } from 'ethers';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Content, RenderArea } from 'react-area';
@@ -28,7 +28,6 @@ import {
   estimateGas,
   prepareGasAndNetworkFee,
 } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
-import { resolveChainForTx } from 'src/modules/ethereum/transactions/resolveChainForTx';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { invariant } from 'src/shared/invariant';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
@@ -68,6 +67,7 @@ import { TextLink } from 'src/ui/ui-kit/TextLink';
 import { InterpretationState } from 'src/ui/components/InterpretationState';
 import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
 import { hasCriticalWarning } from 'src/ui/components/InterpretationState/InterpretationState';
+import { valueToHex } from 'src/shared/units/valueToHex';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -81,9 +81,11 @@ async function resolveChain(
   transaction: IncomingTransaction,
   currentChain: Chain
 ): Promise<PartiallyRequired<IncomingTransaction, 'chainId'>> {
-  const networks = await networksStore.load();
-  const chain = resolveChainForTx(transaction, currentChain, networks);
-  const chainId = networks.getChainId(chain);
+  const networks = await networksStore.load([currentChain.toString()]);
+  const chainId = transaction.chainId
+    ? valueToHex(transaction.chainId)
+    : networks.getChainId(currentChain);
+  invariant(chainId, 'chainId should exist for resolving transaction');
   return { ...transaction, chainId };
 }
 
@@ -191,7 +193,7 @@ function TransactionDefaultView({
           allowanceQuantityBase,
           spender: transactionAction.spenderAddress,
         });
-        tx.chainId = networks.getChainId(chain);
+        tx.chainId = networks.getChainId(chain) ?? undefined;
         tx.from = singleAddress;
         const gas = await estimateGas(tx, networks);
         tx.gasLimit = gas;
@@ -430,7 +432,7 @@ function SendTransactionContent({
 
   const chain =
     transaction && networks
-      ? networks.getChainById(ethers.utils.hexValue(transaction.chainId))
+      ? networks.getChainById(valueToHex(transaction.chainId))
       : null;
 
   const transactionAction =

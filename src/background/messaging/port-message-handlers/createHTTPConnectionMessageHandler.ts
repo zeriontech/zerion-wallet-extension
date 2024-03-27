@@ -28,7 +28,9 @@ export function createHttpConnectionMessageHandler(
         wallet.publicEthereumController
           .eth_chainId({ context, id: msg.id })
           .then((chainId) => {
-            const httpConnection = new HttpConnection({ chainId });
+            const httpConnection = new HttpConnection({
+              chainId,
+            });
             return httpConnection.send(msg, context);
           })
           .then((result) => {

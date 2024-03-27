@@ -84,6 +84,7 @@ export function NetworkBalance({
         }}
       >
         <NetworkSelect
+          showAllNetworks={true}
           value={chain}
           onChange={(selectedValue) =>
             onChange(selectedValue === dappChain ? null : selectedValue)

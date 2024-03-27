@@ -11,6 +11,7 @@ import type { Account } from 'src/background/account/Account';
 import { networksStore } from 'src/modules/networks/networks-store.background';
 import { emitter } from 'src/background/events';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
+import { valueToHex } from 'src/shared/units/valueToHex';
 import type { DnaAction } from './types';
 
 const ACTION_QUEUE_KEY = 'actionDnaQueue-22-12-2021';
@@ -185,10 +186,9 @@ export class DnaService {
     hash: string;
     chainId: number;
   }) {
-    const networks = await networksStore.load();
-    const chain = networks
-      .getChainById(ethers.utils.hexValue(chainId))
-      .toString();
+    const hexedChainId = valueToHex(chainId);
+    const networks = await networksStore.loadNetworksWithChainId(hexedChainId);
+    const chain = networks.getChainById(hexedChainId).toString();
 
     const actionId = uuidv5(
       `sign(${chain}, ${hash})`,

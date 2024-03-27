@@ -47,7 +47,6 @@ import { AnimatedAppear } from 'src/ui/components/AnimatedAppear';
 import { ViewLoadingSuspense } from 'src/ui/components/ViewLoading/ViewLoading';
 import { getPositionBalance } from 'src/ui/components/Positions/helpers';
 import { isPremiumMembership } from 'src/ui/shared/requests/premium/isPremiumMembership';
-import type { NetworkGroups } from 'src/ui/components/NetworkSelectDialog';
 import type { SignerSenderHandle } from 'src/ui/components/SignTransactionButton';
 import { SignTransactionButton } from 'src/ui/components/SignTransactionButton';
 import { useSizeStore } from 'src/ui/Onboarding/useSizeStore';
@@ -63,6 +62,7 @@ import {
 import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
 import { AllowanceForm } from 'src/ui/components/AllowanceForm';
 import BigNumber from 'bignumber.js';
+import type { NetworkGroups } from 'src/ui/components/NetworkSelectDialog/createNetworkGroups';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -148,13 +148,13 @@ export function SwapForm() {
     const allItems = networks?.getNetworks() || [];
     const itemsForTrading = networks
       ? allItems.filter((network) =>
-          networks.supports('trading', createChain(network.chain))
+          networks.supports('trading', createChain(network.id))
         )
       : [];
     return {
       supportedNetworks: itemsForTrading,
       supportedChains: itemsForTrading.map((network) =>
-        createChain(network.chain)
+        createChain(network.id)
       ),
     };
   }, [networks]);
@@ -228,6 +228,10 @@ export function SwapForm() {
   const configureTransactionToBeSigned = useEvent((tx: IncomingTransaction) => {
     invariant(chain && networks, 'Not ready to prepare the transaction');
     const chainId = networks.getChainId(chain);
+    invariant(
+      chainId,
+      'chainId should exist for creating an approve transaction'
+    );
     const configuration = swapView.store.configuration.getState();
     const txToSign = applyConfiguration(tx, configuration, gasPrices);
     return { ...txToSign, from: address, chainId };

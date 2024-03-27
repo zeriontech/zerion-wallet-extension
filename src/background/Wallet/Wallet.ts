@@ -1,3 +1,4 @@
+import { valueToHex } from 'src/shared/units/valueToHex';
 import type { UnsignedTransaction } from 'ethers';
 import { ethers } from 'ethers';
 import type { Emitter } from 'nanoevents';
@@ -42,14 +43,15 @@ import {
 import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
 import { removeSignature } from 'src/modules/ethereum/transactions/removeSignature';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import { getTransactionChainId } from 'src/modules/ethereum/transactions/resolveChainForTx';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { isKnownDapp } from 'src/shared/dapps/known-dapps';
 import type { WalletAbility } from 'src/shared/types/Daylight';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
-import { chainConfigStore } from 'src/modules/ethereum/chains/ChainConfigStore';
+import {
+  chainConfigStore,
+  maybeLocalChainId,
+} from 'src/modules/ethereum/chains/ChainConfigStore';
 import { NetworkId } from 'src/modules/networks/NetworkId';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { isSiweLike } from 'src/modules/ethereum/message-signing/SIWE';
 import { invariant } from 'src/shared/invariant';
 import { getEthersError } from 'src/shared/errors/getEthersError';
@@ -66,6 +68,8 @@ import type {
   MessageContextParams,
   TransactionContextParams,
 } from 'src/shared/types/SignatureContextParams';
+import { getCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
+import { getTransactionChainId } from 'src/modules/ethereum/transactions/getTransactionChainId';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -771,8 +775,9 @@ export class Wallet {
     spender: string;
   }>) {
     this.verifyInternalOrigin(context);
-    const networks = await networksStore.load();
+    const networks = await networksStore.load([chain]);
     const chainId = networks.getChainId(createChain(chain));
+    invariant(chainId, 'Chain id should exist for approve transaction');
     const provider = await this.getProvider(chainId);
     const abi = [
       'function approve(address, uint256) public returns (bool success)',
@@ -795,8 +800,9 @@ export class Wallet {
     owner: string;
   }>) {
     this.verifyInternalOrigin(context);
-    const networks = await networksStore.load();
+    const networks = await networksStore.load([chain]);
     const chainId = networks.getChainId(createChain(chain));
+    invariant(chainId, 'Chain id should exist for fetch allowance');
     const provider = await this.getProvider(chainId);
     const contract = new ethers.Contract(
       contractAddress,
@@ -833,8 +839,8 @@ export class Wallet {
       return '0x1';
     }
     const chain = Model.getChainForOrigin(this.record, { origin });
-    const networks = await networksStore.load();
-    return networks.getChainId(chain);
+    const networks = await networksStore.load([chain.toString()]);
+    return networks.getChainId(chain) || '0x1';
   }
 
   async requestChainForOrigin({
@@ -860,7 +866,7 @@ export class Wallet {
   }
 
   private async getProvider(chainId: string) {
-    const networks = await networksStore.load();
+    const networks = await networksStore.loadNetworksWithChainId(chainId);
     const nodeUrl = networks.getRpcUrlInternal(networks.getChainById(chainId));
     return new ethers.providers.JsonRpcProvider(nodeUrl);
   }
@@ -910,6 +916,7 @@ export class Wallet {
     const dappChainId = await this.getChainIdForOrigin({
       origin: new URL(initiator).origin,
     });
+
     const txChainId = getTransactionChainId(incomingTransaction);
     if (initiator === INTERNAL_ORIGIN) {
       // Transaction is initiated from our own UI
@@ -926,7 +933,7 @@ export class Wallet {
     const chainId = getTransactionChainId(incomingTransaction);
     invariant(chainId, 'Must resolve chainId first');
 
-    const networks = await networksStore.load();
+    const networks = await networksStore.loadNetworksWithChainId(chainId);
     const signer = await this.getSigner(chainId);
     const prepared = prepareTransaction(incomingTransaction);
     const transaction = await prepareGasAndNetworkFee(prepared, networks);
@@ -974,8 +981,9 @@ export class Wallet {
     this.ensureStringOrigin(context);
     const { serialized, ...transactionContextParams } = params;
     const { chain } = transactionContextParams;
-    const networks = await networksStore.load();
+    const networks = await networksStore.load([chain]);
     const chainId = networks.getChainId(createChain(chain));
+    invariant(chainId, 'Chain id should exist for send signed transaction');
     const provider = await this.getProvider(chainId);
     try {
       const transactionResponse = await provider.sendTransaction(serialized);
@@ -1092,21 +1100,28 @@ export class Wallet {
 
   async addEthereumChain({
     context,
-    params: { values, origin },
+    params: { values, origin, chain: chainStr, created },
   }: WalletMethodParams<{
-    values: [NetworkConfig];
+    values: [AddEthereumChainParameter];
     origin: string;
+    chain?: string;
+    created?: string;
   }>) {
     this.verifyInternalOrigin(context);
+    const chainId = valueToHex(values[0].chainId);
+    const chain = chainStr || getCustomNetworkId(chainId);
     const result = chainConfigStore.addEthereumChain(values[0], {
+      id: chain,
       origin,
+      created: created != null ? Number(created) : undefined,
     });
 
-    this.emitter.emit('chainChanged', createChain(values[0].chain), origin);
-    emitter.emit('addEthereumChain', {
-      values: [result.value],
-      origin: result.origin,
-    });
+    this.emitter.emit('chainChanged', createChain(chain), origin);
+    // TODO: return after merge
+    // emitter.emit('addEthereumChain', {
+    //   values: [result.value],
+    //   origin: result.origin,
+    // });
     return result;
   }
 
@@ -1128,6 +1143,22 @@ export class Wallet {
     this.verifyOverviewChain();
   }
 
+  async cleanupOldCustomChainPermissions() {
+    const oldChainConfigs = chainConfigStore.getState().ethereumChains;
+    oldChainConfigs.forEach((config) => {
+      if (maybeLocalChainId(config.value.chain)) {
+        const chain = createChain(config.value.chain);
+        this.ensureRecord(this.record);
+        const affectedPermissions = Model.getPermissionsByChain(this.record, {
+          chain,
+        });
+        affectedPermissions.forEach(({ origin }) => {
+          this.setChainForOrigin(createChain(NetworkId.Ethereum), origin);
+        });
+      }
+    });
+  }
+
   private async verifyOverviewChain() {
     const networks = await networksStore.load();
     if (this.record) {
@@ -1142,9 +1173,8 @@ export class Wallet {
 
   async getEthereumChainSources({ context }: PublicMethodParams) {
     this.verifyInternalOrigin(context);
-    return networksStore
-      .load()
-      .then(() => networksStore.getState().networks?.ethereumChainSources);
+    await chainConfigStore.ready();
+    return chainConfigStore.getState();
   }
 
   async getPendingTransactions({ context }: PublicMethodParams) {
@@ -1351,7 +1381,9 @@ class PublicController {
     if (!context || !context.origin) {
       throw new Error('Unknown sender origin');
     }
-    return this.wallet.getChainIdForOrigin({ origin: context.origin });
+    return valueToHex(
+      (await this.wallet.getChainIdForOrigin({ origin: context.origin })) || 1
+    );
   }
 
   async net_version({ context, id }: PublicMethodParams) {
@@ -1549,7 +1581,7 @@ class PublicController {
     invariant(params[0], () => new InvalidParams());
     const { origin } = context;
     const { chainId: chainIdParameter } = params[0];
-    const chainId = ethers.utils.hexValue(chainIdParameter);
+    const chainId = valueToHex(chainIdParameter);
 
     if (
       !currentAddress ||
@@ -1579,7 +1611,7 @@ class PublicController {
     if (chainId === currentChainIdForThisOrigin) {
       return null;
     }
-    const networks = await networksStore.load();
+    const networks = await networksStore.loadNetworksWithChainId(chainId);
     try {
       const chain = networks.getChainById(chainId);
       // Switch immediately and return success
@@ -1669,7 +1701,8 @@ class PublicController {
     invariant(context?.origin, 'This method requires origin');
     invariant(params[0], () => new InvalidParams());
     const { origin } = context;
-    const networks = await networksStore.load();
+    const chainId = valueToHex(params[0].chainId);
+    const networks = await networksStore.loadNetworksWithChainId(chainId);
     return new Promise((resolve, reject) => {
       if (networks.hasMatchingConfig(params[0])) {
         resolve(null); // null indicates success as per spec

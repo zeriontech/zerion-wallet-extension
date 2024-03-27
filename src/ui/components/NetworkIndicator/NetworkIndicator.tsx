@@ -3,6 +3,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { Chain } from 'src/modules/networks/Chain';
+import { getChainId } from 'src/modules/networks/helpers';
 import { NetworkIcon } from '../NetworkIcon';
 
 export function NetworkIndicator({
@@ -19,7 +20,7 @@ export function NetworkIndicator({
     <HStack gap={size < 28 ? 4 : 8} alignItems="center">
       <NetworkIcon
         src={network?.icon_url}
-        chainId={network?.external_id || ''}
+        chainId={network ? getChainId(network) : null}
         size={size}
         name={network?.name || null}
       />

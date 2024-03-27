@@ -18,6 +18,8 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { noValueDash } from 'src/ui/shared/typography';
 import { Background } from 'src/ui/components/Background';
+import { getChainId } from 'src/modules/networks/helpers';
+import { valueToHex } from 'src/shared/units/valueToHex';
 import { ValueCell } from '../Networks/shared/ValueCell';
 
 export function SwitchEthereumChain() {
@@ -78,7 +80,7 @@ export function SwitchEthereumChain() {
           <VStack gap={4} style={{ justifyItems: 'center' }}>
             <NetworkIcon
               src={network.icon_url}
-              chainId={network.external_id || ''}
+              chainId={getChainId(network)}
               size={40}
               name={network.name || null}
             />
@@ -92,7 +94,7 @@ export function SwitchEthereumChain() {
               label="RPC URL"
               value={networks.getRpcUrlPublic(chain)}
             />
-            <ValueCell label="Chain ID" value={network.external_id} />
+            <ValueCell label="Chain ID" value={valueToHex(chainId)} />
             <ValueCell
               label="Currency Symbol"
               value={network.native_asset?.symbol ?? noValueDash}

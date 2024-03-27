@@ -15,6 +15,7 @@ import SuccessIcon from 'jsx:src/ui/assets/checkmark-allowed.svg';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import { getChainId } from 'src/modules/networks/helpers';
 
 const ICON_SIZE = 20;
 
@@ -118,7 +119,7 @@ export function ExplorerInfo({
         <HStack gap={8} alignItems="center">
           <NetworkIcon
             src={network?.icon_url}
-            chainId={network?.external_id || ''}
+            chainId={getChainId(network)}
             size={24}
             name={network?.name || null}
           />

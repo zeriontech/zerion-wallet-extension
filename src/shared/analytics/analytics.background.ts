@@ -1,5 +1,6 @@
-import { ethers } from 'ethers';
+import { valueToHex } from 'src/shared/units/valueToHex';
 import omit from 'lodash/omit';
+import { getChainId } from 'src/modules/networks/helpers';
 import type { Account } from 'src/background/account/Account';
 import { emitter } from 'src/background/events';
 import { networksStore } from 'src/modules/networks/networks-store.background';
@@ -97,8 +98,9 @@ function trackAppEvents({ account }: { account: Account }) {
       const isInternalOrigin = globalThis.location.origin === origin;
       const initiatorName = isInternalOrigin ? 'Extension' : 'External Dapp';
       const networks = await networksStore.load();
-      const chainId = ethers.utils.hexValue(transaction.chainId);
-      const chain = networks.getChainById(chainId)?.toString() || chainId;
+      const chainId = transaction.chainId;
+      const chain =
+        networks.getChainById(valueToHex(chainId))?.toString() || chainId;
       const addressActionAnalytics = addressActionToAnalytics({
         addressAction,
         quote,
@@ -201,7 +203,7 @@ function trackAppEvents({ account }: { account: Account }) {
     const params = createParams({
       request_name: 'add_custom_evm',
       source: origin,
-      network_external_id: network.external_id,
+      network_external_id: getChainId(network),
       network_rpc_url_internal: network.rpc_url_internal,
       network_name: network.name,
       network_native_asset_symbol: network.native_asset?.symbol || null,

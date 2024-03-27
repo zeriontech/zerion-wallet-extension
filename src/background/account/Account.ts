@@ -116,6 +116,7 @@ export class Account extends EventEmitter<AccountEvents> {
         await this.setUser(user, credentials);
       }
     }
+    this.wallet.cleanupOldCustomChainPermissions();
   }
 
   private reset() {

@@ -10,10 +10,10 @@ export function createAddressPosition({
   network: NetworkConfig;
 }): AddressPosition {
   return {
-    chain: network.chain,
+    chain: network.id,
     value: null,
     apy: null,
-    id: `${network.native_asset?.symbol}-${network.chain}-asset`,
+    id: `${network.native_asset?.symbol}-${network.id}-asset`,
     included_in_chart: false,
     name: 'Asset',
     quantity: balance,
@@ -39,7 +39,7 @@ export function createAddressPosition({
       is_verified: false,
       price: null,
       implementations: {
-        [network.chain]: {
+        [network.id]: {
           address: network.native_asset?.address ?? null,
           decimals: Number(network.native_asset?.decimals) || NaN,
         },

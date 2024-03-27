@@ -5,7 +5,7 @@ import { getTransactionCount } from '../getTransactionCount';
 import { estimateNetworkFee } from './estimateNetworkFee';
 
 const fetchNonce = memoize(async (address: string, chainId: string) => {
-  const networks = await networksStore.load();
+  const networks = await networksStore.loadNetworksWithChainId(chainId);
   const chain = chainId ? networks.getChainById(chainId) : null;
   invariant(chain, `Chain not found for ${chainId}`);
   const { value } = await getTransactionCount({ address, chain, networks });

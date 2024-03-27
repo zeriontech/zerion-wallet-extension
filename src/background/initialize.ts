@@ -2,6 +2,7 @@ import { prepareStorage } from 'src/shared/core/version';
 import { DnaService } from 'src/modules/dna-service/dna.background';
 import { initialize as initializeAnalytics } from 'src/shared/analytics/analytics.background';
 import { initialize as initializeRemoteConfig } from 'src/modules/remote-config';
+import { chainConfigStore } from 'src/modules/ethereum/chains/ChainConfigStore';
 import { initialize as initializeLiteweightChainSupport } from './requests/liteweight-chain-support';
 import { Account, AccountPublicRPC } from './account/Account';
 import { TransactionService } from './transactions/TransactionService';
@@ -40,6 +41,7 @@ export async function initialize() {
   });
   initializeAnalytics({ account });
   initializeLiteweightChainSupport(account);
+  chainConfigStore.checkCustomChainsForUpdates();
 
   Object.assign(globalThis, {
     account,

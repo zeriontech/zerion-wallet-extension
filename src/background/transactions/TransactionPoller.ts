@@ -114,10 +114,10 @@ export class TransactionsPoller {
       return;
     }
     this.requestInProgress = true;
-    const networks = await networksStore.load();
 
     const promises = Array.from(this.hashes.values()).map(async (value) => {
       const { chainId, hash } = value;
+      const networks = await networksStore.loadNetworksWithChainId(chainId);
       const rpcUrl = networks.getRpcUrlInternal(networks.getChainById(chainId));
       return Promise.all([
         this.getTransactionCount(rpcUrl, value.from).then((count) =>
