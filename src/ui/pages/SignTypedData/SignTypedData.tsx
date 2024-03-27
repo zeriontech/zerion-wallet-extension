@@ -534,7 +534,6 @@ function SignTypedDataContent({
         ) : null}
         <CenteredDialog
           ref={advancedDialogRef}
-          containerStyle={{ paddingBottom: 0 }}
           renderWhenOpen={() => (
             <>
               <DialogTitle
