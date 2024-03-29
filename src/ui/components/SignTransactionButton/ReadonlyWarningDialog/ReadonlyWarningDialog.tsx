@@ -82,7 +82,7 @@ export function WithReadonlyWarningDialog({
     : null;
   return (
     <>
-      <ReadonlyWarningDialog ref={dialogRef} />
+      {isReadonlyGroup ? <ReadonlyWarningDialog ref={dialogRef} /> : null}
       {render({
         handleClick: (event) => {
           if (isReadonlyGroup) {

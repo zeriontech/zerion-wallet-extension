@@ -10,7 +10,6 @@ import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { isMnemonicContainer } from 'src/shared/types/validators';
 import { AddressBadge } from 'src/ui/components/AddressBadge';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
-import { Background } from 'src/ui/components/Background';
 import { FillView } from 'src/ui/components/FillView';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageBottom } from 'src/ui/components/PageBottom';
@@ -127,6 +126,8 @@ function Options() {
     [walletGroups]
   );
 
+  useBackgroundKind(whiteBackgroundKind);
+
   if (isLoading) {
     return null;
   }
@@ -134,34 +135,30 @@ function Options() {
   const beforeCreate = params.get('beforeCreate');
   const isIntro = params.has('intro');
   return (
-    <Background backgroundKind="white">
-      <PageColumn>
-        <NavigationTitle
-          urlBar={isIntro ? 'none' : undefined}
-          title={null}
-          documentTitle="Get Started"
-        />
-        <ScreenCover />
+    <PageColumn>
+      <NavigationTitle
+        urlBar={isIntro ? 'none' : undefined}
+        title={null}
+        documentTitle="Get Started"
+      />
+      <ScreenCover />
 
-        <VStack gap={8}>
-          <NewWalletOption
-            beforeCreate={beforeCreate}
-            mnemonicWalletGroups={mnemonicGroups || null}
-          />
-          <Button
-            kind="regular"
-            size={44}
-            as={Link}
-            to={`/get-started/existing-select?beforeCreate=${
-              beforeCreate || ''
-            }`}
-          >
-            Add Existing Wallet
-          </Button>
-        </VStack>
-        <PageBottom />
-      </PageColumn>
-    </Background>
+      <VStack gap={8}>
+        <NewWalletOption
+          beforeCreate={beforeCreate}
+          mnemonicWalletGroups={mnemonicGroups || null}
+        />
+        <Button
+          kind="regular"
+          size={44}
+          as={Link}
+          to={`/get-started/existing-select?beforeCreate=${beforeCreate || ''}`}
+        >
+          Add Existing Wallet
+        </Button>
+      </VStack>
+      <PageBottom />
+    </PageColumn>
   );
 }
 
@@ -200,49 +197,48 @@ function ExistingWalletOptions() {
     beforeCreate
   );
   const addReadonlyHref = createNextHref('/get-started/readonly', beforeCreate);
+  useBackgroundKind(whiteBackgroundKind);
   return (
-    <Background backgroundKind="white">
-      <PageColumn>
-        <NavigationTitle title="Add Existing Wallet" />
-        <ScreenCover />
+    <PageColumn>
+      <NavigationTitle title="Add Existing Wallet" />
+      <ScreenCover />
 
-        <VStack gap={8}>
-          <TemporaryListItem to={importHref}>
-            <AngleRightRow>
-              <HStack gap={8} alignItems="center">
-                <SpaceZone>
-                  <DownloadIcon />
-                </SpaceZone>
-                <div>
-                  <span>Import Wallet</span>
-                </div>
-              </HStack>
-            </AngleRightRow>
-          </TemporaryListItem>
-          <TemporaryListItem to={importLedgerHref} onClick={openInTabView}>
-            <AngleRightRow>
-              <HStack gap={8} alignItems="center">
-                <SpaceZone>
-                  <ConnectIcon />
-                </SpaceZone>
-                <span>Connect Hardware Wallet</span>
-              </HStack>
-            </AngleRightRow>
-          </TemporaryListItem>
-          <TemporaryListItem to={addReadonlyHref}>
-            <AngleRightRow>
-              <HStack gap={8} alignItems="center">
-                <SpaceZone>
-                  <VisibleIcon />
-                </SpaceZone>
-                <span>Watch Address</span>
-              </HStack>
-            </AngleRightRow>
-          </TemporaryListItem>
-        </VStack>
-        <PageBottom />
-      </PageColumn>
-    </Background>
+      <VStack gap={8}>
+        <TemporaryListItem to={importHref}>
+          <AngleRightRow>
+            <HStack gap={8} alignItems="center">
+              <SpaceZone>
+                <DownloadIcon />
+              </SpaceZone>
+              <div>
+                <span>Import Wallet</span>
+              </div>
+            </HStack>
+          </AngleRightRow>
+        </TemporaryListItem>
+        <TemporaryListItem to={importLedgerHref} onClick={openInTabView}>
+          <AngleRightRow>
+            <HStack gap={8} alignItems="center">
+              <SpaceZone>
+                <ConnectIcon />
+              </SpaceZone>
+              <span>Connect Hardware Wallet</span>
+            </HStack>
+          </AngleRightRow>
+        </TemporaryListItem>
+        <TemporaryListItem to={addReadonlyHref}>
+          <AngleRightRow>
+            <HStack gap={8} alignItems="center">
+              <SpaceZone>
+                <VisibleIcon />
+              </SpaceZone>
+              <span>Watch Address</span>
+            </HStack>
+          </AngleRightRow>
+        </TemporaryListItem>
+      </VStack>
+      <PageBottom />
+    </PageColumn>
   );
 }
 function WalletGroupSelect() {

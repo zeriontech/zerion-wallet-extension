@@ -11,7 +11,7 @@ import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import { invariant } from 'src/shared/invariant';
 import { LedgerIframe } from 'src/ui/hardware-wallet/LedgerIframe';
 import { isRpcRequest } from 'src/shared/custom-rpc';
-import { useAllExistingMnemonicAddresses } from 'src/ui/shared/requests/useAllExistingAddresses';
+import { useAllSignerOrHwAddresses } from 'src/ui/shared/requests/useAllExistingAddresses';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import {
   useBackgroundKind,
@@ -92,7 +92,7 @@ export function HardwareWalletConnectionStart({
   const [searchParams] = useSearchParams();
 
   const navigate = useNavigate();
-  const existingAddresses = useAllExistingMnemonicAddresses();
+  const existingAddresses = useAllSignerOrHwAddresses();
 
   const { mutate: finalize } = useMutation({
     mutationFn: async (params: LedgerAccountImport) => {

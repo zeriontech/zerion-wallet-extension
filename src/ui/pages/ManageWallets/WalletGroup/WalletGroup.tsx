@@ -44,7 +44,7 @@ import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 const strings = {
   recoveryPhraseTitle: 'Recovery Phrase',
   privateKeyTitle: 'Private Key',
-  removeWalletSubtitle: (containerType: ContainerType) =>
+  getRemoveWalletSubtitle: (containerType: ContainerType) =>
     containerType === ContainerType.mnemonic
       ? 'You can always import it again using your recovery phrase'
       : containerType === ContainerType.privateKey
@@ -148,7 +148,7 @@ function RemoveGroupConfirmationDialog({
         />
         <UIText kind="headline/h3">Did you backup your recovery phrase?</UIText>
         <UIText kind="body/regular">
-          {strings.removeWalletSubtitle(containerType)}
+          {strings.getRemoveWalletSubtitle(containerType)}
         </UIText>
         <UIText kind="small/accent" color="var(--neutral-500)">
           Wallets to remove
@@ -370,7 +370,7 @@ export function WalletGroup() {
             ]}
           />
           <UIText kind="caption/regular" color="var(--neutral-500)">
-            {strings.removeWalletSubtitle(containerType)}
+            {strings.getRemoveWalletSubtitle(containerType)}
           </UIText>
         </VStack>
       </VStack>
