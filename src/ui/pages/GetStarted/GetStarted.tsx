@@ -4,6 +4,8 @@ import DownloadIcon from 'jsx:src/ui/assets/download.svg';
 import ConnectIcon from 'jsx:src/ui/assets/technology-connect.svg';
 import VisibleIcon from 'jsx:src/ui/assets/visible.svg';
 import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
+import InfoIcon from 'jsx:src/ui/assets/info.svg';
+import AddCircleIcon from 'jsx:src/ui/assets/add-circle-outlined.svg';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { isMnemonicContainer } from 'src/shared/types/validators';
 import { AddressBadge } from 'src/ui/components/AddressBadge';
@@ -13,19 +15,20 @@ import { FillView } from 'src/ui/components/FillView';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
-import { PageTop } from 'src/ui/components/PageTop';
 import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
 import { openInTabView } from 'src/ui/shared/openInTabView';
 import { useWalletGroups } from 'src/ui/shared/requests/useWalletGroups';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
-import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
-import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { ItemLink as SurfaceItemLink } from 'src/ui/ui-kit/SurfaceList/SurfaceList';
+import * as surfaceListStyles from 'src/ui/ui-kit/SurfaceList/styles.module.css';
+import {
+  useBackgroundKind,
+  whiteBackgroundKind,
+} from 'src/ui/components/Background/Background';
 import { AddReadonlyAddress } from './AddReadonlyAddress';
 import { GenerateWallet } from './GenerateWallet';
 import { ImportWallet } from './ImportWallet';
@@ -94,6 +97,25 @@ function SpaceZone({ children }: React.PropsWithChildren) {
   );
 }
 
+function ScreenCover() {
+  return (
+    <FillView style={{ alignContent: 'start' }}>
+      <Spacer height={70} />
+      <ZerionSquircle style={{ width: 64, height: 64 }} />
+      <Spacer height={24} />
+      <UIText kind="headline/h1">Add Wallet</UIText>
+      <Spacer height={4} />
+      <UIText
+        kind="body/regular"
+        color="var(--neutral-500)"
+        style={{ textAlign: 'center' }}
+      >
+        Choose your wallet setup options
+      </UIText>
+    </FillView>
+  );
+}
+
 function Options() {
   const { data: walletGroups, isLoading } = useWalletGroups();
   const [params] = useSearchParams();
@@ -105,101 +127,21 @@ function Options() {
     [walletGroups]
   );
 
-  const existingOptionsDialogRef = useRef<HTMLDialogElementInterface | null>(
-    null
-  );
-
   if (isLoading) {
     return null;
   }
 
   const beforeCreate = params.get('beforeCreate');
   const isIntro = params.has('intro');
-  const importHref = createNextHref('/get-started/import', beforeCreate);
-  const importLedgerHref = createNextHref(
-    '/connect-hardware-wallet',
-    beforeCreate
-  );
-  const addReadonlyHref = createNextHref('/get-started/readonly', beforeCreate);
   return (
     <Background backgroundKind="white">
-      <BottomSheetDialog
-        ref={existingOptionsDialogRef}
-        height="fit-content"
-        containerStyle={{ backgroundColor: 'var(--neutral-100)' }}
-        renderWhenOpen={() => (
-          <div style={{ textAlign: 'start' }}>
-            <UIText kind="headline/h3">
-              <DialogTitle
-                title="Add Existing Wallet"
-                alignTitle="start"
-                closeKind="icon"
-              />
-            </UIText>
-            <Spacer height={24} />
-            <SurfaceList
-              items={[
-                {
-                  key: 0,
-                  to: importHref,
-                  component: (
-                    <HStack gap={8} alignItems="center">
-                      <SpaceZone>
-                        <DownloadIcon />
-                      </SpaceZone>
-                      <div>
-                        <span>Import Wallet</span>
-                      </div>
-                    </HStack>
-                  ),
-                },
-                {
-                  key: 1,
-                  to: importLedgerHref,
-                  onClick: openInTabView,
-                  component: (
-                    <HStack gap={8} alignItems="center">
-                      <SpaceZone>
-                        <ConnectIcon />
-                      </SpaceZone>
-                      <span>Connect Hardware Wallet</span>
-                    </HStack>
-                  ),
-                },
-                {
-                  key: 2,
-                  to: addReadonlyHref,
-                  component: (
-                    <HStack gap={8} alignItems="center">
-                      <SpaceZone>
-                        <VisibleIcon />
-                      </SpaceZone>
-                      <span>Watch Address</span>
-                    </HStack>
-                  ),
-                },
-              ]}
-            />
-          </div>
-        )}
-      />
       <PageColumn>
         <NavigationTitle
           urlBar={isIntro ? 'none' : undefined}
           title={null}
           documentTitle="Get Started"
         />
-        <FillView>
-          <ZerionSquircle style={{ width: 64, height: 64 }} />
-          <Spacer height={46} />
-          <UIText kind="headline/h1">Zerion Wallet</UIText>
-          <Spacer height={8} />
-          <UIText kind="body/regular" style={{ textAlign: 'center' }}>
-            All your crypto and NFTs. 10+ chains.
-            <br />
-            Non-custodial.
-          </UIText>
-        </FillView>
+        <ScreenCover />
 
         <VStack gap={8}>
           <NewWalletOption
@@ -209,7 +151,10 @@ function Options() {
           <Button
             kind="regular"
             size={44}
-            onClick={() => existingOptionsDialogRef.current?.showModal()}
+            as={Link}
+            to={`/get-started/existing-select?beforeCreate=${
+              beforeCreate || ''
+            }`}
           >
             Add Existing Wallet
           </Button>
@@ -220,6 +165,86 @@ function Options() {
   );
 }
 
+function TemporaryListItem({
+  to,
+  onClick,
+  children,
+}: React.PropsWithChildren<{
+  to: string;
+  onClick?: React.AnchorHTMLAttributes<HTMLAnchorElement>['onClick'];
+}>) {
+  return (
+    <SurfaceItemLink
+      // apply --hightlight-color
+      className={surfaceListStyles.root}
+      style={{
+        padding: 0,
+        border: '2px solid var(--neutral-100)',
+        borderRadius: 14,
+      }}
+      to={to}
+      onClick={onClick}
+    >
+      <div style={{ padding: 2 }}>{children}</div>
+    </SurfaceItemLink>
+  );
+}
+
+function ExistingWalletOptions() {
+  const [params] = useSearchParams();
+
+  const beforeCreate = params.get('beforeCreate');
+  const importHref = createNextHref('/get-started/import', beforeCreate);
+  const importLedgerHref = createNextHref(
+    '/connect-hardware-wallet',
+    beforeCreate
+  );
+  const addReadonlyHref = createNextHref('/get-started/readonly', beforeCreate);
+  return (
+    <Background backgroundKind="white">
+      <PageColumn>
+        <NavigationTitle title="Add Existing Wallet" />
+        <ScreenCover />
+
+        <VStack gap={8}>
+          <TemporaryListItem to={importHref}>
+            <AngleRightRow>
+              <HStack gap={8} alignItems="center">
+                <SpaceZone>
+                  <DownloadIcon />
+                </SpaceZone>
+                <div>
+                  <span>Import Wallet</span>
+                </div>
+              </HStack>
+            </AngleRightRow>
+          </TemporaryListItem>
+          <TemporaryListItem to={importLedgerHref} onClick={openInTabView}>
+            <AngleRightRow>
+              <HStack gap={8} alignItems="center">
+                <SpaceZone>
+                  <ConnectIcon />
+                </SpaceZone>
+                <span>Connect Hardware Wallet</span>
+              </HStack>
+            </AngleRightRow>
+          </TemporaryListItem>
+          <TemporaryListItem to={addReadonlyHref}>
+            <AngleRightRow>
+              <HStack gap={8} alignItems="center">
+                <SpaceZone>
+                  <VisibleIcon />
+                </SpaceZone>
+                <span>Watch Address</span>
+              </HStack>
+            </AngleRightRow>
+          </TemporaryListItem>
+        </VStack>
+        <PageBottom />
+      </PageColumn>
+    </Background>
+  );
+}
 function WalletGroupSelect() {
   const [params] = useSearchParams();
   const beforeCreate = params.get('beforeCreate');
@@ -231,6 +256,8 @@ function WalletGroupSelect() {
       ),
     [walletGroups]
   );
+  useBackgroundKind(whiteBackgroundKind);
+  const title = 'Select Backup';
   if (isLoading) {
     return null;
   }
@@ -239,71 +266,62 @@ function WalletGroupSelect() {
   }
   return (
     <PageColumn>
-      <NavigationTitle title="Create New Wallet" />
-      <PageTop />
-      <VStack gap={20}>
-        <VStack gap={8}>
-          <UIText kind="small/regular" color="var(--neutral-500)">
-            Add new address to an existing group
-          </UIText>
+      <NavigationTitle title={null} documentTitle={title} />
+      <Spacer height={8} />
+      <UIText kind="headline/h2">
+        {title}{' '}
+        <span
+          title="Each group contains wallets that are associated with same recovery phrase, stored locally on your device. Zerion does not have access to this data.
 
-          <SurfaceList
-            items={mnemonicGroups.map((group) => {
-              return {
-                key: group.id,
-                to: createNextHref(
-                  `/get-started/import/mnemonic?groupId=${group.id}`,
-                  beforeCreate
-                ),
-                component: (
-                  <AngleRightRow>
-                    <VStack gap={4}>
-                      <UIText kind="small/accent">
-                        {getGroupDisplayName(group.name)}
-                      </UIText>
-                      <div
-                        style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}
-                      >
-                        {group.walletContainer.wallets.map((wallet) => (
-                          <AddressBadge key={wallet.address} wallet={wallet} />
-                        ))}
-                      </div>
-                    </VStack>
-                  </AngleRightRow>
-                ),
-              };
-            })}
+We do not cross-associate wallet addresses or have a way to know that these wallets are grouped."
+        >
+          <InfoIcon
+            role="presentation"
+            style={{
+              width: 28,
+              height: 28,
+              verticalAlign: 'bottom',
+              color: 'var(--neutral-500)',
+            }}
           />
-        </VStack>
-        <VStack gap={8}>
-          <UIText kind="small/regular" color="var(--neutral-500)">
-            Or create a new wallet group
-          </UIText>
-          <SurfaceList
-            items={[
-              {
-                key: 0,
-                to: createNextHref('/get-started/new', beforeCreate),
-                component: (
-                  <UIText kind="body/regular" color="var(--primary)">
-                    <span
-                      style={{ fontSize: '1.25em', verticalAlign: 'middle' }}
-                    >
-                      +
-                    </span>{' '}
-                    <span style={{ verticalAlign: 'middle' }}>
-                      Create New Wallet Group
-                    </span>
+        </span>
+      </UIText>
+      <Spacer height={16} />
+      <VStack gap={8}>
+        {mnemonicGroups.map((group) => {
+          return (
+            <TemporaryListItem
+              key={group.id}
+              to={createNextHref(
+                `/get-started/import/mnemonic?groupId=${group.id}`,
+                beforeCreate
+              )}
+            >
+              <AngleRightRow>
+                <VStack gap={8}>
+                  <UIText kind="body/accent">
+                    {getGroupDisplayName(group.name)}
                   </UIText>
-                ),
-              },
-            ]}
-          />
-
-          <UIText kind="small/regular" color="var(--neutral-500)">
-            This will create a new recovery phrase
-          </UIText>
-        </VStack>
+                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                    {group.walletContainer.wallets.map((wallet) => (
+                      <AddressBadge key={wallet.address} wallet={wallet} />
+                    ))}
+                  </div>
+                </VStack>
+              </AngleRightRow>
+            </TemporaryListItem>
+          );
+        })}
+        <TemporaryListItem
+          to={createNextHref('/get-started/new', beforeCreate)}
+        >
+          <HStack gap={8} alignItems="center">
+            <SpaceZone>
+              <AddCircleIcon />
+            </SpaceZone>
+            <UIText kind="body/accent">Create New Backup</UIText>
+          </HStack>
+        </TemporaryListItem>
       </VStack>
       <PageBottom />
     </PageColumn>
@@ -317,6 +335,7 @@ export function GetStarted() {
       <Route path="/new" element={<GenerateWallet />} />
       <Route path="/import/*" element={<ImportWallet />} />
       <Route path="/wallet-group-select" element={<WalletGroupSelect />} />
+      <Route path="/existing-select" element={<ExistingWalletOptions />} />
       <Route path="/readonly" element={<AddReadonlyAddress />} />
     </Routes>
   );
