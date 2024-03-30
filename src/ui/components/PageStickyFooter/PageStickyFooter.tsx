@@ -5,7 +5,13 @@ import { PageFullBleedLine } from '../PageFullBleedLine';
 import { UIContext } from '../UIContext';
 
 function canBeScrolled(node: HTMLElement) {
-  return node.scrollHeight > node.clientHeight;
+  if (node.scrollHeight > node.clientHeight) {
+    return true;
+  }
+  if (node.parentElement === document.documentElement) {
+    return node.clientHeight > window.innerHeight;
+  }
+  return false;
 }
 
 export function PageStickyFooter({
