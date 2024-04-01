@@ -6,12 +6,12 @@ import {
   isJsonRpcError,
   isJsonRpcResult,
   formatJsonRpcRequest,
-} from '@json-rpc-tools/utils';
+} from '@walletconnect/jsonrpc-utils';
 import type {
   JsonRpcError,
   JsonRpcResult,
   JsonRpcRequest,
-} from '@json-rpc-tools/utils';
+} from '@walletconnect/jsonrpc-utils';
 import { getError } from '../errors/getError';
 
 /**

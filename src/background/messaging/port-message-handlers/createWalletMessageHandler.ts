@@ -1,5 +1,8 @@
 import browser from 'webextension-polyfill';
-import { isJsonRpcPayload, isJsonRpcRequest } from '@json-rpc-tools/utils';
+import {
+  isJsonRpcPayload,
+  isJsonRpcRequest,
+} from '@walletconnect/jsonrpc-utils';
 import type { Wallet } from 'src/shared/types/Wallet';
 import { isClassProperty } from 'src/shared/core/isClassProperty';
 import { mapRPCMessageToController } from '../mapRPCMessageToController';

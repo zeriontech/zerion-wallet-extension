@@ -1,4 +1,4 @@
-import { STANDARD_ERROR_MAP } from '@json-rpc-tools/utils';
+import { STANDARD_ERROR_MAP } from '@walletconnect/jsonrpc-utils';
 
 /**
  * Provider Errors: https://eips.ethereum.org/EIPS/eip-1193#provider-errors

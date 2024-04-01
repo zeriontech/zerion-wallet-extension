@@ -3,8 +3,11 @@ import type {
   ErrorResponse,
   JsonRpcPayload,
   JsonRpcResponse,
-} from '@json-rpc-tools/utils';
-import { isJsonRpcPayload, isJsonRpcRequest } from '@json-rpc-tools/utils';
+} from '@walletconnect/jsonrpc-utils';
+import {
+  isJsonRpcPayload,
+  isJsonRpcRequest,
+} from '@walletconnect/jsonrpc-utils';
 import { formatJsonRpcResultForPort } from 'src/shared/formatJsonRpcResultForPort';
 import { formatJsonRpcWalletError } from 'src/shared/formatJsonRpcWalletError';
 import { isClassProperty } from 'src/shared/core/isClassProperty';

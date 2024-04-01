@@ -1,4 +1,4 @@
-import { formatJsonRpcError } from '@json-rpc-tools/utils';
+import { formatJsonRpcError } from '@walletconnect/jsonrpc-utils';
 import type { ExtendedError } from './errors/errors';
 
 export function formatJsonRpcWalletError(

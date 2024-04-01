@@ -4,8 +4,11 @@ import {
   isJsonRpcPayload,
   isJsonRpcResponse,
   isJsonRpcResult,
-} from '@json-rpc-tools/utils';
-import type { JsonRpcPayload, JsonRpcRequest } from '@json-rpc-tools/utils';
+} from '@walletconnect/jsonrpc-utils';
+import type {
+  JsonRpcPayload,
+  JsonRpcRequest,
+} from '@walletconnect/jsonrpc-utils';
 import { createNanoEvents } from 'nanoevents';
 import { invariant } from './invariant';
 

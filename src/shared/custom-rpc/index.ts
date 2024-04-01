@@ -1,5 +1,11 @@
-import type { ErrorResponse, JsonRpcRequest } from '@json-rpc-tools/utils';
-import { isJsonRpcPayload, isJsonRpcRequest } from '@json-rpc-tools/utils';
+import type {
+  ErrorResponse,
+  JsonRpcRequest,
+} from '@walletconnect/jsonrpc-utils';
+import {
+  isJsonRpcPayload,
+  isJsonRpcRequest,
+} from '@walletconnect/jsonrpc-utils';
 import { isObj } from '../isObj';
 
 export interface RpcRequest<T = unknown> {

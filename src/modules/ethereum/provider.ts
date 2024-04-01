@@ -1,10 +1,13 @@
-import { JsonRpcProvider } from '@json-rpc-tools/provider';
+import { JsonRpcProvider } from '@walletconnect/jsonrpc-provider';
 import type {
   JsonRpcPayload,
   JsonRpcRequest,
   RequestArguments,
-} from '@json-rpc-tools/utils';
-import { formatJsonRpcRequest, isJsonRpcError } from '@json-rpc-tools/utils';
+} from '@walletconnect/jsonrpc-utils';
+import {
+  formatJsonRpcRequest,
+  isJsonRpcError,
+} from '@walletconnect/jsonrpc-utils';
 import { InvalidParams, MethodNotImplemented } from 'src/shared/errors/errors';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import type { Connection } from './connection';
