@@ -16,7 +16,7 @@ import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
-import { pendingTransactionToAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import { pendingTransactionToAddressAction } from 'src/modules/ethereum/transactions/addressAction/creators';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';

@@ -5,7 +5,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Content, RenderArea } from 'react-area';
 import type { AddressAction } from 'defi-sdk';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
-import { incomingTxToIncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import { incomingTxToIncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction/creators';
 import type {
   IncomingTransaction,
   IncomingTransactionWithChainId,

@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { RequestCache } from './request-cache';
 
 jest.useFakeTimers();
