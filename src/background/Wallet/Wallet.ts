@@ -66,6 +66,7 @@ import type {
   MessageContextParams,
   TransactionContextParams,
 } from 'src/shared/types/SignatureContextParams';
+import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -1549,7 +1550,7 @@ class PublicController {
     invariant(params[0], () => new InvalidParams());
     const { origin } = context;
     const { chainId: chainIdParameter } = params[0];
-    const chainId = ethers.utils.hexValue(chainIdParameter);
+    const chainId = normalizeChainId(chainIdParameter);
 
     if (
       !currentAddress ||
@@ -1670,8 +1671,13 @@ class PublicController {
     invariant(params[0], () => new InvalidParams());
     const { origin } = context;
     const networks = await networksStore.load();
+    const { chainId: chainIdParameter } = params[0];
+    const normalizedParams = {
+      ...params[0],
+      chainId: normalizeChainId(chainIdParameter),
+    };
     return new Promise((resolve, reject) => {
-      if (networks.hasMatchingConfig(params[0])) {
+      if (networks.hasMatchingConfig(normalizedParams)) {
         resolve(null); // null indicates success as per spec
       } else {
         this.safeOpenDialogWindow(origin, {
@@ -1679,7 +1685,7 @@ class PublicController {
           route: '/addEthereumChain',
           search: `?${new URLSearchParams({
             origin,
-            addEthereumChainParameter: JSON.stringify(params[0]),
+            addEthereumChainParameter: JSON.stringify(normalizedParams),
           })}`,
           onResolve: () => {
             resolve(null); // null indicates success as per spec
@@ -1694,7 +1700,7 @@ class PublicController {
       return this.wallet_switchEthereumChain({
         id,
         context,
-        params: [{ chainId: params[0].chainId }],
+        params: [{ chainId: normalizedParams.chainId }],
       });
     });
   }
