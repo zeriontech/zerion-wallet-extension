@@ -46,7 +46,7 @@ export function Login() {
     },
     onSuccess() {
       zeroizeAfterSubmission();
-      navigate(params.get('next') || '/overview', {
+      navigate(params.get('next') || '/', {
         // If user clicks "back" when we redirect them,
         // we should take them to overview, not back to the login view
         replace: true,

@@ -94,42 +94,27 @@ const useAuthState = () => {
     refetchOnWindowFocus: false,
   });
   const { isAuthenticated, existingUser, wallet } = data || {};
-  // const { data: isAuthenticated, ...isAuthenticatedQuery } = useQuery(
-  //   'isAuthenticated',
-  //   () => accountPublicRPCPort.request('isAuthenticated'),
-  //   { useErrorBoundary: true, retry: false }
-  // );
-  // const { data: existingUser, ...getExistingUserQuery } = useQuery(
-  //   'getExistingUser',
-  //   () => accountPublicRPCPort.request('getExistingUser'),
-  //   { useErrorBoundary: true, retry: false }
-  // );
-  // const { data: wallet, ...currentWalletQuery } = useQuery(
-  //   'wallet/getCurrentWallet',
-  //   () => walletPort.request('getCurrentWallet'),
-  //   { useErrorBoundary: true, retry: false }
-  // );
-  // const isLoading =
-  //   isAuthenticatedQuery.isFetching ||
-  //   getExistingUserQuery.isFetching ||
-  //   currentWalletQuery.isLoading;
   return {
-    isAuthenticated: Boolean(isAuthenticated && wallet),
+    isAuthenticated,
     existingUser,
+    hasWallet: Boolean(wallet),
     isLoading: isFetching,
   };
 };
 
 function SomeKindOfResolver({
   noUser,
+  noWallet,
   notAuthenticated,
   authenticated,
 }: {
   noUser: JSX.Element;
+  noWallet: JSX.Element;
   notAuthenticated: JSX.Element;
   authenticated: JSX.Element;
 }) {
-  const { isLoading, isAuthenticated, existingUser } = useAuthState();
+  const { isLoading, isAuthenticated, existingUser, hasWallet } =
+    useAuthState();
   if (isLoading) {
     return null;
   }
@@ -138,6 +123,9 @@ function SomeKindOfResolver({
   }
   if (!isAuthenticated) {
     return notAuthenticated;
+  }
+  if (!hasWallet) {
+    return noWallet;
   }
   return authenticated;
 }
@@ -193,6 +181,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             element={
               <SomeKindOfResolver
                 noUser={<Navigate to="/intro" replace={true} />}
+                noWallet={<Navigate to="/get-started?intro" replace={true} />}
                 notAuthenticated={<Navigate to="/login" replace={true} />}
                 authenticated={<Navigate to="/overview" replace={true} />}
               />
