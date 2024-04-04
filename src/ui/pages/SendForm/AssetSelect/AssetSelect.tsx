@@ -85,7 +85,7 @@ export interface Props {
   filterItemsLocally?: boolean;
   noItemsMessage: string;
   isLoading?: boolean;
-  getGroupName?: (item: BareAddressPosition) => string;
+  getGroupName?: (item: BareAddressPosition) => string | null;
   selectedItem: BareAddressPosition;
   onChange(position: BareAddressPosition): void;
   chain?: Chain | null;

@@ -118,11 +118,13 @@ export function MarketAssetSelect({
   const items = [...popularPositions, ...marketPositions];
   const getGroupName = useCallback(
     (position: BareAddressPosition) => {
-      return popularAssetCodes.has(position.asset.asset_code)
+      return query
+        ? null
+        : popularAssetCodes.has(position.asset.asset_code)
         ? 'Popular'
         : 'Others';
     },
-    [popularAssetCodes]
+    [popularAssetCodes, query]
   );
 
   const currentItem = selectedItem || savedSelectedItem;
