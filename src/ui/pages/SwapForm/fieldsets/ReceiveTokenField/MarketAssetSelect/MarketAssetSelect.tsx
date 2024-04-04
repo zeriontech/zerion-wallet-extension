@@ -59,10 +59,10 @@ export function MarketAssetSelect({
   );
 
   const [searchAllNetworks, setSearchAllNetworks] = useState(false);
-  const shouldQueryByChain = !searchAllNetworks && chain && !query;
+  const shouldQueryByChain = !searchAllNetworks && chain;
 
   const popularPositions = useMemo(() => {
-    if (!popularAssetsResponse) {
+    if (!popularAssetsResponse || query) {
       return [];
     }
     return Object.values(popularAssetsResponse.prices)
@@ -75,7 +75,7 @@ export function MarketAssetSelect({
           ? Boolean(getAssetImplementationInChain({ chain, asset })) // exists on chain
           : true;
       });
-  }, [chain, popularAssetsResponse, positionsMap, shouldQueryByChain]);
+  }, [chain, query, popularAssetsResponse, positionsMap, shouldQueryByChain]);
 
   const {
     items: marketAssets,
@@ -151,6 +151,7 @@ export function MarketAssetSelect({
   return (
     <AssetSelect
       items={items}
+      filterItemsLocally={false}
       onChange={(item) => {
         setCurrentSelectedItem(item);
         onChange(item);

@@ -82,6 +82,7 @@ function ResultItem({ addressAsset }: { addressAsset: BareAddressPosition }) {
 
 export interface Props {
   items: BareAddressPosition[];
+  filterItemsLocally?: boolean;
   noItemsMessage: string;
   isLoading?: boolean;
   getGroupName?: (item: BareAddressPosition) => string;
@@ -135,7 +136,8 @@ function matches(inputValue: string | null, { asset }: BareAddressPosition) {
   const value = inputValue.toLowerCase();
   return (
     normalizedContains(asset.name.toLowerCase(), value) ||
-    normalizedContains(asset.symbol.toLowerCase(), value)
+    normalizedContains(asset.symbol.toLowerCase(), value) ||
+    normalizedContains(asset.asset_code.toLowerCase(), value)
   );
 }
 
@@ -175,6 +177,7 @@ const rootNode = getRootDomNode();
 
 function AssetSelectComponent({
   items: allItems,
+  filterItemsLocally = true,
   isLoading,
   noItemsMessage,
   selectedItem,
@@ -206,10 +209,9 @@ function AssetSelectComponent({
 
   const items = useMemo(() => {
     let result: typeof allItems = [];
-    if (!query || !isCombobox) {
+    if (!query || !isCombobox || !filterItemsLocally) {
       result = allItems;
     } else {
-      // TODO: do not locally filter Market Asset List
       result = allItems.filter((item) => matches(query, item));
     }
     const loadMoreButton: LoadMoreOption = {
@@ -217,7 +219,7 @@ function AssetSelectComponent({
       index: result.length,
     };
     return [...result, ...(hasMore ? [loadMoreButton] : [])];
-  }, [hasMore, query, isCombobox, allItems]);
+  }, [hasMore, query, isCombobox, allItems, filterItemsLocally]);
 
   const { optionItems, groupIndexes } = useMemo(() => {
     let lastGroupName: string | null = null;
