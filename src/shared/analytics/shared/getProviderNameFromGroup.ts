@@ -1,10 +1,9 @@
 import { capitalize } from 'capitalize-ts';
+import type { Brand } from 'src/shared/type-utils/Brand';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { isAccountContainer } from 'src/shared/types/validators';
 
-type Branded<T, TypeName> = T & { __type: TypeName };
-
-type AccountProviderName = Branded<string, 'AccountProviderName'>;
+type AccountProviderName = Brand<string, 'AccountProviderName'>;
 
 enum AccountProvider {
   zerionExtension = 'zerionExtension',
