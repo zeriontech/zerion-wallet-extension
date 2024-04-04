@@ -19,7 +19,7 @@ import {
   describeTransaction,
   type TransactionAction,
 } from '../describeTransaction';
-import { ZERO_HASH, type LocalAddressAction } from './addressAction';
+import { ZERO_HASH, type LocalAddressAction } from './addressActionMain';
 
 export async function createActionContent(
   action: TransactionAction
