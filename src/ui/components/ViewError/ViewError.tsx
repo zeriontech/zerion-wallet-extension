@@ -30,10 +30,12 @@ export function ViewError({
   title = 'Unable to perform this action right now',
   subtitle = 'Please try again and report the issue if it persists.',
   error,
+  onRetry,
 }: {
   title?: string;
   subtitle?: string | null;
   error?: Error | null;
+  onRetry?: () => void;
 }) {
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
@@ -131,7 +133,7 @@ export function ViewError({
               if (pageTemplateType !== 'dialog') {
                 navigate('/');
               }
-              window.location.reload();
+              onRetry?.();
             }}
             style={{ paddingInline: 8 }}
           >

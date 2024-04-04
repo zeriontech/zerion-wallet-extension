@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { AreaProvider } from 'react-area';
 import { QueryClientProvider, useQuery } from '@tanstack/react-query';
 import {
@@ -398,6 +398,7 @@ export interface AppProps {
 }
 
 export function App({ initialView, mode, inspect }: AppProps) {
+  const [retryKey, setRetryKey] = useState(0);
   const bodyClassList = useMemo(() => {
     const result = [];
     if (pageTemplateType === 'dialog') {
@@ -423,7 +424,15 @@ export function App({ initialView, mode, inspect }: AppProps) {
         <QueryClientProvider client={queryClient}>
           <DesignTheme bodyClassList={bodyClassList} />
           <Router>
-            <ErrorBoundary renderError={(error) => <ViewError error={error} />}>
+            <ErrorBoundary
+              retryKey={retryKey}
+              renderError={(error) => (
+                <ViewError
+                  error={error}
+                  onRetry={() => setRetryKey((count) => count + 1)}
+                />
+              )}
+            >
               <InactivityDetector />
               <SessionResetHandler />
               <ThemeDecoration />
