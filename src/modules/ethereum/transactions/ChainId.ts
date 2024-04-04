@@ -1,3 +1,3 @@
-export enum ChainId {
-  Mainnet = '0x1',
-}
+import type { Brand } from 'src/shared/type-utils/Brand';
+
+export type ChainId = Brand<string, 'chainIdAsHex'>;

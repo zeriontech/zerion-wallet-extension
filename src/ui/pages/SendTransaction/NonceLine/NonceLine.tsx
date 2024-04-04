@@ -1,7 +1,6 @@
 import { ethers } from 'ethers';
 import React, { useId, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getTransactionCount } from 'src/modules/ethereum/transactions/getTransactionCount';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { Chain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
@@ -18,6 +17,7 @@ import { InnerLabelInput } from 'src/ui/ui-kit/Input/InnerLabelInput';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { collectData } from 'src/ui/shared/form-data';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
+import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/uiGetBestKnownTransactionCount';
 
 function parseNonce(untypedValue: unknown) {
   const value = untypedValue as string;
@@ -147,7 +147,7 @@ export function NonceLine({
       if (!networks) {
         return;
       }
-      return getTransactionCount({
+      return uiGetBestKnownTransactionCount({
         address: from,
         chain,
         networks,

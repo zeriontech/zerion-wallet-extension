@@ -67,6 +67,8 @@ import type {
   TransactionContextParams,
 } from 'src/shared/types/SignatureContextParams';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
+import type { Networks } from 'src/modules/networks/Networks';
+import { backgroundGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/backgroundGetBestKnownTransactionCount';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -86,6 +88,25 @@ import { globalPreferences } from './GlobalPreferences';
 import type { State as GlobalPreferencesState } from './GlobalPreferences';
 import type { Device, DeviceAccount } from './model/AccountContainer';
 import { DeviceAccountContainer } from './model/AccountContainer';
+
+async function prepareNonce<T extends { nonce?: number; from?: string }>(
+  transaction: T,
+  networks: Networks,
+  chain: string
+) {
+  if (transaction.nonce == null) {
+    invariant(transaction.from, '"from" field is missing from transaction');
+    const txCount = await backgroundGetBestKnownTransactionCount({
+      networks,
+      chain: createChain(chain),
+      address: transaction.from,
+      defaultBlock: 'pending',
+    });
+    return { ...transaction, nonce: parseInt(txCount.value) };
+  } else {
+    return transaction;
+  }
+}
 
 export const INTERNAL_SYMBOL_CONTEXT = { origin: INTERNAL_ORIGIN_SYMBOL };
 
@@ -928,9 +949,11 @@ export class Wallet {
     invariant(chainId, 'Must resolve chainId first');
 
     const networks = await networksStore.load();
+    const { chain } = transactionContextParams;
     const signer = await this.getSigner(chainId);
     const prepared = prepareTransaction(incomingTransaction);
-    const transaction = await prepareGasAndNetworkFee(prepared, networks);
+    const txWithFee = await prepareGasAndNetworkFee(prepared, networks);
+    const transaction = await prepareNonce(txWithFee, networks, chain);
 
     try {
       const transactionResponse = await signer.sendTransaction({

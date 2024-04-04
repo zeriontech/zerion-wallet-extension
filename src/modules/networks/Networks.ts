@@ -3,6 +3,7 @@ import { isTruthy } from 'is-truthy-ts';
 import { capitalize } from 'capitalize-ts';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import type { ChainConfig } from 'src/modules/ethereum/chains/ChainConfigStore';
+import type { ChainId } from '../ethereum/transactions/ChainId';
 import type { Chain } from './Chain';
 import { createChain } from './Chain';
 import type { NetworkConfig } from './NetworkConfig';
@@ -169,7 +170,7 @@ export class Networks {
     if (!item) {
       throw new Error(`Chain not found: ${chain}`);
     }
-    return item.external_id;
+    return item.external_id as ChainId;
   }
 
   getNetworks() {

@@ -46,6 +46,10 @@ export class TransactionService {
     this.transactionsPoller = new TransactionsPoller();
   }
 
+  getTransactionsStore() {
+    return this.transactionsStore;
+  }
+
   async initialize() {
     await this.transactionsStore.ready();
     const pending = getPendingTransactions(this.transactionsStore.getState());
@@ -123,4 +127,5 @@ function testAddTransaction() {
   });
 }
 
+export const transactionService = new TransactionService();
 Object.assign(globalThis, { testAddTransaction });
