@@ -80,7 +80,7 @@ export function AbilityMenu({
                     ),
                   },
                   {
-                    key: 'dissmiss',
+                    key: 'dismiss',
                     isInteractive: true,
                     pad: false,
                     separatorTop: false,
@@ -88,7 +88,7 @@ export function AbilityMenu({
                       <SurfaceItemButton
                         highlighted={highlightedIndex === 1}
                         {...getItemProps({
-                          item: 'dissmiss',
+                          item: 'dismiss',
                           index: 1,
                           onClick: () => onMark('dismiss'),
                         })}
@@ -111,7 +111,7 @@ export function AbilityMenu({
                       <SurfaceItemButton
                         highlighted={highlightedIndex === 0}
                         {...getItemProps({
-                          item: 'dissmiss',
+                          item: 'dismiss',
                           index: 1,
                           onClick: onUnmark,
                         })}

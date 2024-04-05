@@ -39,7 +39,7 @@ const STATUS_TO_TITLE: Record<FeedStatus, string> = {
   open: 'Open',
   completed: 'Completed',
   expired: 'Expired',
-  dismissed: 'Dissmised',
+  dismissed: 'Dismissed',
 };
 
 const STATUS_ITEMS: FeedStatus[] = [
