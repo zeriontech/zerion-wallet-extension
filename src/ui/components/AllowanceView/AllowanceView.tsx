@@ -43,7 +43,7 @@ export function AllowanceView({
   const positionQuantity = useMemo(
     () =>
       positionsResponse?.positions.find(
-        (position) => position.chain === chain.toString()
+        (position) => position.chain === chain.toString() && !position.dapp?.id
       )?.quantity,
     [chain, positionsResponse?.positions]
   );
