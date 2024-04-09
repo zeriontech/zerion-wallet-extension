@@ -29,6 +29,7 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { getError } from 'src/shared/errors/getError';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
+import { hasChecksumError } from 'src/modules/ethereum/toChecksumAddress';
 
 async function submitReadonlyAddress({ address }: { address: string }) {
   await walletPort.request('uiImportReadonlyAddress', {
@@ -137,7 +138,11 @@ export function AddReadonlyAddress() {
       : '',
   });
 
-  const errorMessage = isError ? getError(error).message : null;
+  // Do not _display_ error for input like {hello},
+  // only show for inputs like {hello.}, {hello.eth}, etc
+  // NOTE: form error (custom validity) must still be set
+  const errorMessage =
+    isError && query.includes('.') ? getError(error).message : null;
   const hints = getHints(query, data);
 
   const title = 'Watch Address';
@@ -215,6 +220,11 @@ export function AddReadonlyAddress() {
               />
             )}
           </ZStack>
+          {isEthereumAddress && hasChecksumError(query) ? (
+            <UIText kind="caption/regular" color="var(--notice-500)">
+              Warning: address might have an error
+            </UIText>
+          ) : null}
           {errorMessage ? (
             <UIText
               kind="caption/regular"

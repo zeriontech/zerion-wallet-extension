@@ -210,9 +210,7 @@ function ExistingWalletOptions() {
               <SpaceZone>
                 <DownloadIcon />
               </SpaceZone>
-              <div>
-                <span>Import Wallet</span>
-              </div>
+              <UIText kind="body/accent">Import Wallet</UIText>
             </HStack>
           </AngleRightRow>
         </TemporaryListItem>
@@ -222,7 +220,7 @@ function ExistingWalletOptions() {
               <SpaceZone>
                 <ConnectIcon />
               </SpaceZone>
-              <span>Connect Hardware Wallet</span>
+              <UIText kind="body/accent">Connect Ledger</UIText>
             </HStack>
           </AngleRightRow>
         </TemporaryListItem>
@@ -232,7 +230,7 @@ function ExistingWalletOptions() {
               <SpaceZone>
                 <VisibleIcon />
               </SpaceZone>
-              <span>Watch Address</span>
+              <UIText kind="body/accent">Watch Address</UIText>
             </HStack>
           </AngleRightRow>
         </TemporaryListItem>
