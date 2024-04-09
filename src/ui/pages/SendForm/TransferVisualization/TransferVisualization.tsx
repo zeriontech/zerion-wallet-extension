@@ -27,7 +27,11 @@ export function TransferVisualization({
 )) {
   const { data: existingWallet } = useQuery({
     queryKey: ['wallet/uiGetWalletByAddress', to],
-    queryFn: () => walletPort.request('uiGetWalletByAddress', { address: to }),
+    queryFn: () =>
+      walletPort.request('uiGetWalletByAddress', {
+        address: to,
+        groupId: null,
+      }),
     useErrorBoundary: true,
     suspense: false,
   });

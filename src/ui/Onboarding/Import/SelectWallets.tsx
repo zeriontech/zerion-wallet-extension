@@ -12,7 +12,7 @@ import { WalletList } from 'src/ui/pages/GetStarted/ImportWallet/MnemonicImportV
 import { PortfolioValueDetail } from 'src/ui/pages/GetStarted/ImportWallet/MnemonicImportView/AddressImportFlow/AddressImportFlow';
 import { Button } from 'src/ui/ui-kit/Button';
 import { wait } from 'src/shared/wait';
-import { useAllExistingAddresses } from 'src/ui/shared/requests/useAllExistingAddresses';
+import { useAllExistingMnemonicAddresses } from 'src/ui/shared/requests/useAllExistingAddresses';
 import { useAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
 import { useStaleTime } from 'src/ui/pages/GetStarted/ImportWallet/MnemonicImportView/useStaleTime';
 import * as helperStyles from '../shared/helperStyles.module.css';
@@ -69,7 +69,7 @@ export function SelectWallets({
     });
   }, []);
 
-  const existingAddresses = useAllExistingAddresses();
+  const existingAddresses = useAllExistingMnemonicAddresses();
   const existingAddressesSet = useMemo(
     () => new Set(existingAddresses),
     [existingAddresses]

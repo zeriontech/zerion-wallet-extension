@@ -1,6 +1,7 @@
 import { decrypt, encrypt } from 'src/modules/crypto';
 import { produce } from 'immer';
 import { nanoid } from 'nanoid';
+import sortBy from 'lodash/sortBy';
 import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
@@ -16,6 +17,7 @@ import {
 import { invariant } from 'src/shared/invariant';
 import {
   assertSignerContainer,
+  getContainerType,
   isHardwareContainer,
   isMnemonicContainer,
   isPrivateKeyContainer,
@@ -185,7 +187,10 @@ export class WalletRecordModel {
   }
 
   static getWalletGroupByAddress(record: WalletRecord, address: string) {
-    for (const group of record.walletManager.groups) {
+    const sortedGroups = sortBy(record.walletManager.groups, (group) =>
+      getContainerType(group.walletContainer)
+    );
+    for (const group of sortedGroups) {
       const wallet = group.walletContainer.getWalletByAddress(address);
       if (wallet) {
         return group;
@@ -194,21 +199,32 @@ export class WalletRecordModel {
     return null;
   }
 
-  static getWalletByAddress(record: WalletRecord, address: string) {
-    for (const group of record.walletManager.groups) {
-      const wallet = group.walletContainer.getWalletByAddress(address);
-      if (wallet) {
-        return wallet;
+  static getWalletByAddress(
+    record: WalletRecord,
+    { address, groupId }: { address: string; groupId: string | null }
+  ) {
+    const sortedGroups = sortBy(record.walletManager.groups, (group) =>
+      getContainerType(group.walletContainer)
+    );
+    const group = sortedGroups.find((group) => {
+      if (groupId) {
+        return group.id === groupId;
+      } else {
+        return group.walletContainer.getWalletByAddress(address);
       }
-    }
-    return null;
+    });
+    const wallet = group?.walletContainer.getWalletByAddress(address) ?? null;
+    return wallet;
   }
 
   static getSignerWalletByAddress(
     record: WalletRecord,
     address: string
   ): BareWallet | null {
-    for (const group of record.walletManager.groups) {
+    const sortedGroups = sortBy(record.walletManager.groups, (group) =>
+      getContainerType(group.walletContainer)
+    );
+    for (const group of sortedGroups) {
       if (isSignerContainer(group.walletContainer)) {
         const wallet = group.walletContainer.getWalletByAddress(address);
         if (wallet) {
@@ -260,6 +276,44 @@ export class WalletRecordModel {
       if (!draft.feed.dismissedAbilities) {
         draft.feed.dismissedAbilities = [];
       }
+      /**
+       * NOTE:
+       * (De)duplication logic:
+       * When adding signer/hw wallet, existing readonly wallet should be removed
+       * When adding readonly address, it should be ignored if signer/hw wallet exists
+       * Duplication of addresses between mnemonic/privateKey/HW wallets is allowed
+       */
+
+      // Reuse existing wallet names for new addresses
+      for (const wallet of walletContainer.wallets) {
+        if (!wallet.name) {
+          const existingWallet = WalletRecordModel.getWalletByAddress(record, {
+            address: wallet.address,
+            groupId: null,
+          });
+          if (existingWallet && existingWallet.name) {
+            wallet.name = existingWallet.name;
+          }
+        }
+      }
+
+      // Remove existing readonly wallets if they exist
+      if (!isReadonlyContainer(walletContainer)) {
+        for (const wallet of walletContainer.wallets) {
+          const existingReadonlyGroup = draft.walletManager.groups.find(
+            (group) =>
+              isReadonlyContainer(group.walletContainer) &&
+              group.walletContainer.getWalletByAddress(wallet.address)
+          );
+          if (existingReadonlyGroup) {
+            WalletRecordModel.mutateRemoveAddress(draft, {
+              address: wallet.address,
+              groupId: existingReadonlyGroup.id,
+            });
+          }
+        }
+      }
+
       if (isPrivateKeyGroup) {
         const { privateKey } = walletContainer.getFirstWallet();
         // NOTE:
@@ -529,44 +583,61 @@ export class WalletRecordModel {
     });
   }
 
-  static removeAddress(record: WalletRecord, { address }: { address: string }) {
-    return produce(record, (draft) => {
-      const normalizedAddress = normalizeAddress(address);
-      const [pos, group] = findWithIndex(draft.walletManager.groups, (group) =>
-        group.walletContainer.wallets.some(
+  /**
+   * if {groupId} is provided, remove wallet from this group,
+   * otherwise, find first group that holds this address
+   */
+  static mutateRemoveAddress(
+    draft: WalletRecord,
+    { address, groupId }: { address: string; groupId: string | null }
+  ) {
+    const normalizedAddress = normalizeAddress(address);
+    const [pos, group] = findWithIndex(draft.walletManager.groups, (group) => {
+      if (groupId) {
+        return group.id === groupId;
+      } else {
+        return group.walletContainer.wallets.some(
           (wallet) => normalizeAddress(wallet.address) === normalizedAddress
-        )
-      );
-      if (!group) {
-        throw new Error('Group not found');
-      }
-      const isLastAddress = group.walletContainer.wallets.length === 1;
-      if (isMnemonicContainer(group.walletContainer) && isLastAddress) {
-        // I guess this is a safetyguard to prevent removing unbackedup mnemonic groups
-        throw new Error(
-          'Removing last wallet from a Mnemonic group is not allowed. You can remove the whole group'
         );
       }
+    });
+    if (!group) {
+      throw new Error('Group not found');
+    }
+    const isLastAddress = group.walletContainer.wallets.length === 1;
+    if (isMnemonicContainer(group.walletContainer) && isLastAddress) {
+      // I guess this is a safetyguard to prevent removing unbackedup mnemonic groups
+      throw new Error(
+        'Removing last wallet from a Mnemonic group is not allowed. You can remove the whole group'
+      );
+    }
+    if (isLastAddress) {
+      // remove whole group
+      draft.walletManager.groups.splice(pos, 1);
+    } else {
+      group.walletContainer.removeWallet(address);
+    }
+    const { currentAddress } = draft.walletManager;
+    const shouldChangeCurrentAddress =
+      currentAddress && normalizedAddress === normalizeAddress(currentAddress);
+    if (shouldChangeCurrentAddress) {
       if (isLastAddress) {
-        // remove whole group
-        draft.walletManager.groups.splice(pos, 1);
+        draft.walletManager.currentAddress =
+          draft.walletManager.groups[0]?.walletContainer.getFirstWallet()
+            .address || null;
       } else {
-        group.walletContainer.removeWallet(address);
+        draft.walletManager.currentAddress =
+          group.walletContainer.getFirstWallet().address;
       }
-      const { currentAddress } = draft.walletManager;
-      const shouldChangeCurrentAddress =
-        currentAddress &&
-        normalizedAddress === normalizeAddress(currentAddress);
-      if (shouldChangeCurrentAddress) {
-        if (isLastAddress) {
-          draft.walletManager.currentAddress =
-            draft.walletManager.groups[0]?.walletContainer.getFirstWallet()
-              .address || null;
-        } else {
-          draft.walletManager.currentAddress =
-            group.walletContainer.getFirstWallet().address;
-        }
-      }
+    }
+  }
+
+  static removeAddress(
+    record: WalletRecord,
+    { address, groupId }: { address: string; groupId: string | null }
+  ) {
+    return produce(record, (draft) => {
+      WalletRecordModel.mutateRemoveAddress(draft, { address, groupId });
     });
   }
 
@@ -580,15 +651,19 @@ export class WalletRecordModel {
     }
     const normalizedAddress = normalizeAddress(address);
     return produce(record, (draft) => {
+      let didRename = false;
       for (const group of draft.walletManager.groups) {
         for (const wallet of group.walletContainer.wallets) {
           if (normalizeAddress(wallet.address) === normalizedAddress) {
             wallet.name = name || null;
-            return;
+            didRename = true;
+            // NOTE: don't break loop as we expect multiple groups to hold same address
           }
         }
       }
-      throw new Error(`Wallet for ${address} not found`);
+      if (!didRename) {
+        throw new Error(`Wallet for ${address} not found`);
+      }
     });
   }
 

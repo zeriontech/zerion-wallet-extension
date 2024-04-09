@@ -11,6 +11,7 @@ import {
 } from 'src/shared/units/formatCurrencyValue';
 import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
+import ReadonlyIcon from 'jsx:src/ui/assets/visible.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { usePendingTransactions } from 'src/ui/transactions/usePendingTransactions';
@@ -45,6 +46,9 @@ import { OverviewDnaBanners } from 'src/ui/DNA/components/DnaBanners';
 import { updateAddressDnaInfo } from 'src/modules/dna-service/dna.client';
 import { WalletSourceIcon } from 'src/ui/components/WalletSourceIcon';
 import { useStore } from '@store-unit/react';
+import { TextLink } from 'src/ui/ui-kit/TextLink';
+import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
+import { isReadonlyContainer } from 'src/shared/types/validators';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -199,6 +203,33 @@ function RenderTimeMeasure() {
   return null;
 }
 
+function ReadonlyMode() {
+  return (
+    <div
+      style={{
+        backgroundColor: 'var(--neutral-100)',
+        borderRadius: 8,
+        padding: '8px 12px',
+      }}
+    >
+      <UIText kind="small/accent" color="var(--neutral-500)">
+        <HStack gap={8} justifyContent="space-between">
+          <HStack gap={8}>
+            <ReadonlyIcon />
+            <span>You’re in view-only mode</span>
+          </HStack>
+          <TextLink
+            to="/get-started/existing-select"
+            style={{ color: 'var(--primary)' }}
+          >
+            Import Wallet
+          </TextLink>
+        </HStack>
+      </UIText>
+    </div>
+  );
+}
+
 function OverviewComponent() {
   useBodyStyle(
     useMemo(() => ({ ['--background' as string]: 'var(--z-index-0)' }), [])
@@ -207,6 +238,12 @@ function OverviewComponent() {
   const { singleAddress, params, ready, singleAddressNormalized } =
     useAddressParams();
   useProfileName({ address: singleAddress, name: null });
+  const { data: walletGroup } = useQuery({
+    queryKey: ['getWalletGroupByAddress', singleAddress],
+    queryFn: () => getWalletGroupByAddress(singleAddress),
+  });
+  const isReadonlyGroup =
+    walletGroup && isReadonlyContainer(walletGroup.walletContainer);
   const [filterChain, setFilterChain] = useState<string | null>(null);
   const { value, isLoading: isLoadingPortfolio } = useAddressPortfolio(
     {
@@ -314,7 +351,10 @@ function OverviewComponent() {
               icon={
                 <WalletSourceIcon
                   address={singleAddress}
+                  groupId={null}
                   style={{ width: 24, height: 24 }}
+                  borderRadius={8}
+                  cutoutStroke={3}
                 />
               }
             />
@@ -365,12 +405,12 @@ function OverviewComponent() {
       </div>
       <Spacer height={16} />
       <div style={{ paddingInline: 'var(--column-padding-inline)' }}>
-        <ActionButtonsRow />
+        {isReadonlyGroup ? <ReadonlyMode /> : <ActionButtonsRow />}
       </div>
       <DevelopmentOnly>
         <RenderTimeMeasure />
       </DevelopmentOnly>
-      <Spacer height={24} />
+      <Spacer height={isReadonlyGroup ? 16 : 24} />
       <div style={{ paddingInline: 'var(--column-padding-inline)' }}>
         <OverviewDnaBanners address={singleAddressNormalized} />
       </div>

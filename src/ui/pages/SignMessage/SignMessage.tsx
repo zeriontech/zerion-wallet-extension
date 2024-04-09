@@ -28,6 +28,7 @@ import { isDeviceAccount } from 'src/shared/types/validators';
 import { useErrorBoundary } from 'src/ui/shared/useErrorBoundary';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
+import { WithReadonlyWarningDialog } from 'src/ui/components/SignTransactionButton/ReadonlyWarningDialog';
 import { HardwareSignMessage } from '../HardwareWalletConnection/HardwareSignMessage';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 
@@ -194,8 +195,8 @@ function SignMessageContent({
                 }}
               />
             ) : (
-              <Button
-                disabled={personalSignMutation.isLoading}
+              <WithReadonlyWarningDialog
+                address={wallet.address}
                 onClick={() => {
                   personalSignMutation.mutate({
                     params: [message],
@@ -203,9 +204,15 @@ function SignMessageContent({
                     clientScope,
                   });
                 }}
-              >
-                {personalSignMutation.isLoading ? 'Signing...' : 'Sign'}
-              </Button>
+                render={({ handleClick }) => (
+                  <Button
+                    disabled={personalSignMutation.isLoading}
+                    onClick={handleClick}
+                  >
+                    {personalSignMutation.isLoading ? 'Signing...' : 'Sign'}
+                  </Button>
+                )}
+              />
             )}
           </div>
         </VStack>

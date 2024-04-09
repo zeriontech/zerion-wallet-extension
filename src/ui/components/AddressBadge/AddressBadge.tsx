@@ -17,7 +17,7 @@ export function AddressBadge({
       alignItems="center"
       gap={4}
       style={{
-        backgroundColor: 'var(--neutral-200)',
+        backgroundColor: 'var(--neutral-100)',
         padding: '2px 4px',
         borderRadius: 4,
         display: 'inline-flex',
@@ -26,7 +26,7 @@ export function AddressBadge({
     >
       <WalletAvatar address={wallet.address} size={14} borderRadius={4} />
       <UIText
-        kind="small/regular"
+        kind="caption/regular"
         style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
       >
         <WalletDisplayName wallet={wallet} maxCharacters={16} padding={4} />
