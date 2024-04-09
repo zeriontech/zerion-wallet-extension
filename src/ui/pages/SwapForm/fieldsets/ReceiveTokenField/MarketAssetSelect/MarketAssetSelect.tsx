@@ -118,13 +118,11 @@ export function MarketAssetSelect({
   const items = [...popularPositions, ...marketPositions];
   const getGroupName = useCallback(
     (position: BareAddressPosition) => {
-      return query
-        ? null
-        : popularAssetCodes.has(position.asset.asset_code)
+      return popularAssetCodes.has(position.asset.asset_code)
         ? 'Popular'
         : 'Others';
     },
-    [popularAssetCodes, query]
+    [popularAssetCodes]
   );
 
   const currentItem = selectedItem || savedSelectedItem;
@@ -160,7 +158,7 @@ export function MarketAssetSelect({
       }}
       chain={chain}
       selectedItem={currentItem}
-      getGroupName={getGroupName}
+      getGroupName={query ? undefined : getGroupName}
       pagination={{
         fetchMore: fetchNextPage,
         hasMore: Boolean(hasNextPage),
