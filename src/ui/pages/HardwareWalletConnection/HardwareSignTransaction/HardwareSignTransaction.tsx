@@ -11,7 +11,7 @@ import type { SignTransactionResult } from 'src/ui/hardware-wallet/types';
 import LedgerIcon from 'jsx:src/ui/assets/ledger-icon.svg';
 import { LedgerIframe } from 'src/ui/hardware-wallet/LedgerIframe';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { getTransactionCount } from 'src/modules/ethereum/transactions/getTransactionCount';
+import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/uiGetBestKnownTransactionCount';
 import type { Chain } from 'src/modules/networks/Chain';
 import type { Networks } from 'src/modules/networks/Networks';
 import { networksStore } from 'src/modules/networks/networks-store.client';
@@ -45,7 +45,7 @@ async function prepareForSignByLedger({
 }) {
   const value = { ...transaction };
   if (value.nonce == null) {
-    const { value: nonce } = await getTransactionCount({
+    const { value: nonce } = await uiGetBestKnownTransactionCount({
       address,
       chain,
       networks,

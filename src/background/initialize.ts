@@ -4,7 +4,7 @@ import { initialize as initializeAnalytics } from 'src/shared/analytics/analytic
 import { initialize as initializeRemoteConfig } from 'src/modules/remote-config';
 import { initialize as initializeLiteweightChainSupport } from './requests/liteweight-chain-support';
 import { Account, AccountPublicRPC } from './account/Account';
-import { TransactionService } from './transactions/TransactionService';
+import { transactionService } from './transactions/TransactionService';
 import { globalPreferences } from './Wallet/GlobalPreferences';
 import { NotificationWindow } from './NotificationWindow/NotificationWindow';
 import { setUninstallURL } from './uninstall';
@@ -30,7 +30,6 @@ export async function initialize() {
   const account = new Account({ notificationWindow });
   await account.initialize();
   const accountPublicRPC = new AccountPublicRPC(account);
-  const transactionService = new TransactionService();
   const dnaService = new DnaService(account);
   dnaService.initialize();
   await transactionService.initialize();
