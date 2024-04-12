@@ -74,7 +74,7 @@ export function SuccessState({
       <Spacer height={32} />
       <animated.div style={trail[1]}>
         <UIText kind="headline/h1" style={{ textAlign: 'center' }}>
-          Transfering
+          Transferring
         </UIText>
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <UIText kind="small/accent" style={{ textAlign: 'center' }}>
