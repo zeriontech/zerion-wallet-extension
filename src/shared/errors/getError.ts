@@ -25,6 +25,10 @@ function fromResponse(response: Response) {
 }
 
 export function getError(value: Error | unknown): ExtendedError {
+  // TODO: maybe a better pattern would be to merge
+  // type guards and parsers together, where parsers would return null for
+  // unrecognized values. Therefore, this function would read as (not final):
+  // return fromMessageObject(value) || fromRpcError(value) || fromResponse(value) || fallback;
   return value instanceof Error
     ? value
     : isErrorMessageObject(value)
