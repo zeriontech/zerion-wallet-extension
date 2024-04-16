@@ -15,8 +15,8 @@ export function useEvmNativeAddressPosition({
   return useQuery({
     queryKey: ['eth_getBalance/nativeAddressEvmPosition', address, chain],
     queryFn: async () => {
-      const networks = await networksStore.load();
-      const chainId = networks.getNetworkByName(chain)?.external_id;
+      const networks = await networksStore.load([chain.toString()]);
+      const chainId = networks.getChainId(chain);
       return !address || !chainId
         ? null
         : fetchNativeEvmPosition({

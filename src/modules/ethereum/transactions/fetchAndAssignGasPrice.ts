@@ -43,7 +43,7 @@ async function fetchGasPriceForTransaction(
 ): Promise<ChainGasPrice> {
   const chainId = resolveChainId(transaction);
   const network = wrappedGetNetworkById(networks, chainId);
-  const chain = createChain(network.chain);
+  const chain = createChain(network.id);
   return fetchGasPrice(chain, networks);
 }
 

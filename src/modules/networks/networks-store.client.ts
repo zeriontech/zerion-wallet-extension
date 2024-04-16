@@ -4,7 +4,7 @@ import { NetworksStore } from './networks-store';
 export const networksStore = new NetworksStore(
   { networks: null },
   {
-    getEthereumChainSources: async () => {
+    getEthereumChainConfigs: async () => {
       return walletPort.request('getEthereumChainSources');
     },
   }

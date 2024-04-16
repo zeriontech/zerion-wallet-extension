@@ -12,7 +12,7 @@ export async function getNativeAsset({
   chain: Chain;
   currency: string;
 }): Promise<Asset | null> {
-  const networks = await networksStore.load();
+  const networks = await networksStore.load([chain.toString()]);
   const id = networks?.getNetworkByName(chain)?.native_asset?.id;
   if (!id) {
     return null;

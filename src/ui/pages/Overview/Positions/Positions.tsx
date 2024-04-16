@@ -3,7 +3,10 @@ import type {
   AddressPosition,
   AddressPositionDappInfo,
 } from 'defi-sdk';
-import { useAddressPositions } from 'defi-sdk';
+import {
+  useAddressPortfolioDecomposition,
+  useAddressPositions,
+} from 'defi-sdk';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   formatCurrencyToParts,
@@ -59,6 +62,7 @@ import { invariant } from 'src/shared/invariant';
 import { SurfaceItemAnchor } from 'src/ui/ui-kit/SurfaceList';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { useStore } from '@store-unit/react';
+import { getChainId } from 'src/modules/networks/helpers';
 import {
   TAB_SELECTOR_HEIGHT,
   TAB_TOP_PADDING,
@@ -206,8 +210,8 @@ function AddressPositionItem({
                 <NetworkIcon
                   size={16}
                   name={network?.name || null}
-                  chainId={network?.external_id || null}
-                  src={network?.icon_url || ''}
+                  chainId={network ? getChainId(network) : null}
+                  src={network?.icon_url}
                 />
               ) : null}
               {intersperce(
@@ -707,6 +711,7 @@ function RawChainPositions({
     filterChain !== NetworkSelectValue.All,
     'All networks filter should not show custom chain positions'
   );
+  const { networks } = useNetworks();
   const chainValue = filterChain || dappChain;
   invariant(
     chainValue,
@@ -726,7 +731,9 @@ function RawChainPositions({
   }
 
   if (isError) {
-    return renderErrorView(chainValue) as JSX.Element;
+    return renderErrorView(
+      networks?.getChainName(chain) || chainValue
+    ) as JSX.Element;
   }
   if (isLoading) {
     return renderLoadingView() as JSX.Element;
@@ -773,10 +780,31 @@ export function Positions({
   onChainChange: (value: string | null) => void;
 }) {
   const { ready, params, singleAddressNormalized } = useAddressParams();
+  const {
+    value: portfolioDecomposition,
+    isLoading: portfolioDecompositionIsLoading,
+  } = useAddressPortfolioDecomposition(
+    {
+      address: singleAddressNormalized,
+      currency: 'usd',
+    },
+    { enabled: ready }
+  );
+  const chainValue = filterChain || dappChain || NetworkSelectValue.All;
+  const chain = createChain(chainValue);
+  const positionChains = useMemo(() => {
+    const chainsSet = new Set(
+      Object.keys(portfolioDecomposition?.chains || {})
+    );
+    if (chainValue !== NetworkSelectValue.All) {
+      chainsSet.add(chainValue);
+    }
+    return Array.from(chainsSet);
+  }, [portfolioDecomposition, chainValue]);
   const offsetValuesState = useStore(offsetValues);
   // Cheap perceived performance hack: render expensive Positions component later so that initial UI render is faster
   const readyToRender = useRenderDelay(16);
-  const { networks } = useNetworks();
+  const { networks, isLoading } = useNetworks(positionChains);
   if (!networks || !ready) {
     return (
       <CenteredFillViewportView
@@ -788,13 +816,11 @@ export function Positions({
       </CenteredFillViewportView>
     );
   }
-  const chainValue = filterChain || dappChain || NetworkSelectValue.All;
   const moveGasPositionToFront = chainValue !== NetworkSelectValue.All;
-  const chain = createChain(chainValue);
   const isSupportedByBackend =
     chainValue === NetworkSelectValue.All
       ? true
-      : networks.isSupportedByBackend(createChain(chainValue));
+      : networks.supports('positions', createChain(chainValue));
 
   const emptyNetworkBalance = (
     <div
@@ -864,9 +890,12 @@ export function Positions({
       />
     );
   } else {
+    if (isLoading || portfolioDecompositionIsLoading) {
+      return renderLoadingViewForNetwork();
+    }
     const network = networks.getNetworkByName(chain);
-    if (!network || !network.external_id) {
-      throw new Error(`Custom network must have an external_id: ${chainValue}`);
+    if (!network?.id) {
+      return renderErrorViewForNetwork(chainValue);
     }
 
     return (

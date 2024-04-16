@@ -1,24 +1,28 @@
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api';
-import {
-  getBackendNetworkByChainId,
-  getBackendNetworkByLocalChain,
-} from 'src/modules/networks/getBackendNetwork';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { WalletOrigin } from 'src/shared/WalletOrigin';
+import { networksStore } from 'src/modules/networks/networks-store.background';
+import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import { emitter } from '../events';
 import type { Account } from '../account/Account';
+
+function registerChainAndAddressIfPossible(
+  chain: string,
+  address: string | null
+) {
+  if (address && !isCustomNetworkId(chain.toString())) {
+    ZerionAPI.registerChain({
+      chain: chain.toString(),
+      addresses: [normalizeAddress(address)],
+    });
+  }
+}
 
 export function initialize(account: Account) {
   // Backend needs this event to initialize chain listening for the address in case the chain is not fully supported
   emitter.on('chainChanged', async (chain) => {
-    const network = await getBackendNetworkByLocalChain(chain);
     const address = account.getCurrentWallet().readCurrentAddress();
-    if (network && address) {
-      ZerionAPI.registerChain({
-        chain: network.id,
-        addresses: [normalizeAddress(address)],
-      });
-    }
+    registerChainAndAddressIfPossible(chain.toString(), address);
   });
 
   // Backend needs this event to initialize chain listening for the address in case the chain is not fully supported
@@ -26,13 +30,12 @@ export function initialize(account: Account) {
     const chainId = await account
       .getCurrentWallet()
       .getChainIdForOrigin({ origin });
-    const network = await getBackendNetworkByChainId(chainId);
-    if (address && network) {
-      ZerionAPI.registerChain({
-        chain: network.id,
-        addresses: [normalizeAddress(address)],
-      });
+    if (!chainId) {
+      return;
     }
+    const networks = await networksStore.loadNetworksWithChainId(chainId);
+    const network = networks.getNetworkById(chainId);
+    registerChainAndAddressIfPossible(network.id, address);
   });
 
   // Backend needs this event to initialize address listening for chains without total support

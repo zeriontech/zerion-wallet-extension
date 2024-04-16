@@ -1,12 +1,12 @@
 import type { ethers } from 'ethers';
 import { createNanoEvents } from 'nanoevents';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { Chain } from 'src/modules/networks/Chain';
 import type {
   MessageContextParams,
   TransactionContextParams,
 } from 'src/shared/types/SignatureContextParams';
+import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import type { State as GlobalPreferencesState } from './Wallet/GlobalPreferences';
 import type { WalletOrigin } from './Wallet/model/WalletOrigin';
 import type { WalletContainer } from './Wallet/model/types';
@@ -51,7 +51,10 @@ export const emitter = createNanoEvents<{
     origin: WalletOrigin;
     groupId: string | null;
   }) => void;
-  addEthereumChain: (data: { values: [NetworkConfig]; origin: string }) => void;
+  addEthereumChain: (data: {
+    values: [AddEthereumChainParameter];
+    origin: string;
+  }) => void;
   globalPreferencesChange: (
     state: GlobalPreferencesState,
     prevState: GlobalPreferencesState

@@ -1,9 +1,7 @@
-import { ethers } from 'ethers';
+import React, { useId, useState } from 'react';
 import { Content } from 'react-area';
 import { produce } from 'immer';
 import merge from 'lodash/merge';
-import React, { useId, useState } from 'react';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Input } from 'src/ui/ui-kit/Input';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
@@ -17,13 +15,13 @@ import { Toggle } from 'src/ui/ui-kit/Toggle';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import type { Parsers } from 'src/ui/shared/form-data';
 import { collectData } from 'src/ui/shared/form-data';
-
-type InitialNetworkConfig = Omit<NetworkConfig, 'chain'> & {
-  chain: string | null;
-};
-function isCompleteNetwork(x: InitialNetworkConfig): x is NetworkConfig {
-  return x.chain != null && x.chain !== '';
-}
+import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
+import {
+  getCustomNetworkId,
+  isCustomNetworkId,
+} from 'src/modules/ethereum/chains/helpers';
+import { normalizeChainId } from 'src/shared/normalizeChainId';
+import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 
 export function Field({
   label,
@@ -104,19 +102,15 @@ function findInput(
 }
 
 const parsers: Parsers = {
-  external_id: (untypedValue) => {
+  chainId: (untypedValue) => {
     const value = untypedValue as string;
-    if (value.startsWith('0x')) {
-      return ethers.utils.hexValue(value);
-    } else {
-      return ethers.utils.hexValue(Number(value));
-    }
+    return normalizeChainId(value);
   },
   hidden: (untypedValue) => {
     const value = untypedValue as 'on' | null;
     return Boolean(value);
   },
-  'native_asset.decimals': (untypedValue) => {
+  'nativeCurrency.decimals': (untypedValue) => {
     const value = untypedValue as string;
     return Number(value);
   },
@@ -153,7 +147,8 @@ function NetworkHiddenFieldLine({
 
 const EMPTY_OBJECT = {};
 export function NetworkForm({
-  network,
+  chain,
+  chainConfig,
   submitText = 'Save',
   isSubmitting,
   onSubmit,
@@ -163,21 +158,22 @@ export function NetworkForm({
   restrictedChainIds,
   disabledFields,
 }: {
-  network: InitialNetworkConfig;
+  chain?: string | null;
+  chainConfig: AddEthereumChainParameter;
   isSubmitting: boolean;
   submitText?: string;
-  onSubmit: (result: NetworkConfig) => void;
+  onSubmit: (chain: string, result: AddEthereumChainParameter) => void;
   onCancel: () => void;
   onReset?: () => void;
   footerRenderArea?: string;
-  restrictedChainIds: Set<string>;
+  restrictedChainIds: Set<ChainId>;
   disabledFields: null | Set<string>;
 }) {
   const id = useId();
   const validators: Validators = {
-    external_id: (element) => {
-      const hexValue = parsers.external_id(element.value) as string;
-      if (restrictedChainIds.has(hexValue)) {
+    chainId: (element) => {
+      const value = parsers.chainId(element.value) as ChainId;
+      if (restrictedChainIds.has(value)) {
         return 'Network already exists';
       }
     },
@@ -218,122 +214,100 @@ export function NetworkForm({
             return;
           }
           const formObject = collectData(event.currentTarget, parsers);
-          const result = produce(network, (draft) => merge(draft, formObject));
-          if (!isCompleteNetwork(result)) {
-            onSubmit({ ...result, chain: result.external_id });
-          } else {
-            onSubmit(result);
-          }
+          const result = produce(chainConfig, (draft) =>
+            merge(draft, formObject)
+          );
+          onSubmit(
+            // custom network id should be generated from (probably) updated chainId
+            !chain || isCustomNetworkId(chain)
+              ? getCustomNetworkId(result.chainId)
+              : chain,
+            result
+          );
         }}
       >
         <VStack gap={8}>
           <Field
             label="Network Name"
-            name="name"
-            defaultValue={network.name}
-            disabled={disabledFields?.has('name')}
+            name="chainName"
+            defaultValue={chainConfig.chainName}
+            disabled={disabledFields?.has('chainName')}
             required
           />
-          {network.rpc_url_internal ? (
-            /**
-             * If network HAS `rpc_url_internal`, we introduce a `rpc_url_user` field
-             * as a mechanism to overwrite it,
-             * else - we use `rpc_url_public`
-             */
-            <Field
-              label="RPC URL"
-              name="rpc_url_user"
-              placeholder={network.rpc_url_internal}
-              type="url"
-              defaultValue={network.rpc_url_user || ''}
-              error={errors.rpc_url_user}
-              disabled={disabledFields?.has('rpc_url_user')}
-              // not required because rpc_url_internal is defined
-              required={false}
-            />
-          ) : network.rpc_url_user ? (
-            <Field
-              label="RPC URL"
-              name="rpc_url_user"
-              type="url"
-              defaultValue={network.rpc_url_user}
-              error={errors.rpc_url_user}
-              disabled={disabledFields?.has('rpc_url_user')}
-              required={true}
-            />
-          ) : (
-            <Field
-              label="RPC URL"
-              name="rpc_url_public[]"
-              type="url"
-              defaultValue={network.rpc_url_public?.[0] || ''}
-              error={errors['rpc_url_public[]']}
-              disabled={disabledFields?.has('rpc_url_public[]')}
-              required={true}
-            />
-          )}
           <Field
-            label={<span title={network.external_id}>Chain ID</span>}
-            name="external_id"
-            title={network.external_id}
+            label="RPC URL"
+            name="rpcUrls[]"
+            placeholder={chainConfig.rpcUrls[0]}
+            type="url"
+            defaultValue={chainConfig.rpcUrls[0] || ''}
+            error={errors['rpcUrls[]']}
+            disabled={disabledFields?.has('rpcUrls[]')}
+            required={true}
+          />
+          <Field
+            label={<span title={chainConfig.chainId}>Chain ID</span>}
+            name="chainId"
+            title={chainConfig.chainId}
             defaultValue={
-              network.external_id ? String(parseInt(network.external_id)) : ''
+              chainConfig.chainId ? String(parseInt(chainConfig.chainId)) : ''
             }
             pattern="^0x[\dabcdef]+|\d+"
-            error={errors.external_id}
+            error={errors.chainId}
             onInvalid={(event) =>
               event.currentTarget.setCustomValidity(
                 'Chain ID must be either a 0x-prefixed hex value or an integer'
               )
             }
             onInput={(event) => event.currentTarget.setCustomValidity('')}
-            disabled={disabledFields?.has('external_id')}
+            disabled={disabledFields?.has('chainId')}
             required
           />
           <Field
             label="Currency Symbol"
-            name="native_asset.symbol"
-            defaultValue={network.native_asset?.symbol || ''}
+            name="nativeCurrency.symbol"
+            defaultValue={chainConfig.nativeCurrency.symbol || ''}
             pattern=".{2,8}"
-            error={errors['native_asset.symbol']}
+            error={errors['nativeCurrency.symbol']}
             onInvalid={(event) =>
               event.currentTarget.setCustomValidity(
                 'At least 2 letters, maximum 8 letters'
               )
             }
             onInput={(event) => event.currentTarget.setCustomValidity('')}
-            disabled={disabledFields?.has('native_asset.symbol')}
+            disabled={disabledFields?.has('nativeCurrency.symbol')}
             required
           />
           <Field
             label="Decimals"
-            name="native_asset.decimals"
-            error={errors['native_asset.decimals']}
+            name="nativeCurrency.decimals"
+            error={errors['nativeCurrency.decimals']}
             placeholder="18"
             inputMode="decimal"
             pattern="\d+"
-            defaultValue={network.native_asset?.decimals || ''}
-            disabled={disabledFields?.has('native_asset.decimals')}
+            defaultValue={chainConfig.nativeCurrency.decimals || ''}
+            disabled={disabledFields?.has('nativeCurrency.decimals')}
             required={false}
           />
           <Field
             label="Block Explorer URL (optional)"
             type="url"
-            name="explorer_home_url"
+            name="blockExplorerUrls[]"
             data-parser-name="toLowerCase"
-            error={errors.explorer_home_url}
+            error={errors['blockExplorerUrls[]']}
             placeholder="https://..."
-            defaultValue={network.explorer_home_url || ''}
-            disabled={disabledFields?.has('explorer_home_url')}
+            defaultValue={chainConfig.blockExplorerUrls?.[0] || ''}
+            disabled={disabledFields?.has('blockExplorerUrls[]')}
             required={false}
           />
         </VStack>
-        <Spacer height={20} />
         {disabledFields?.has('hidden') ? null : (
-          <NetworkHiddenFieldLine
-            name="hidden"
-            defaultChecked={network.hidden}
-          />
+          <>
+            <Spacer height={20} />
+            <NetworkHiddenFieldLine
+              name="hidden"
+              defaultChecked={chainConfig.hidden}
+            />
+          </>
         )}
         {onReset ? (
           <>

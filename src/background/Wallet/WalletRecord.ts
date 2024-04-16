@@ -770,6 +770,7 @@ export class WalletRecordModel {
       mintDnaBannerDismissed: false,
       upgradeDnaBannerDismissed: false,
       backupReminderDismissedTime: 0,
+      enableTestnets: false,
     };
     if (!record) {
       return defaults;

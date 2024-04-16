@@ -9,7 +9,7 @@ import React, {
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import type { Store } from 'store-unit';
-import { client } from 'defi-sdk';
+import { client, useAddressPortfolioDecomposition } from 'defi-sdk';
 import { useSendForm } from '@zeriontech/transactions';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { networksStore } from 'src/modules/networks/networks-store.client';
@@ -41,7 +41,6 @@ import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { useNetworks } from 'src/modules/networks/useNetworks';
-import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { getRootDomNode } from 'src/ui/shared/getRootDomNode';
 import { usePreferences } from 'src/ui/features/preferences/usePreferences';
 import { StoreWatcher } from 'src/ui/shared/StoreWatcher';
@@ -51,7 +50,6 @@ import type { SendTxBtnHandle } from 'src/ui/components/SignTransactionButton';
 import { SignTransactionButton } from 'src/ui/components/SignTransactionButton';
 import { useSizeStore } from 'src/ui/Onboarding/useSizeStore';
 import { createSendAddressAction } from 'src/modules/ethereum/transactions/addressAction';
-import type { NetworkGroups } from 'src/ui/components/NetworkSelectDialog';
 import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import {
@@ -88,44 +86,8 @@ const rootNode = getRootDomNode();
 
 const ENABLE_NFT_TRANSFER = true;
 
-function NFTNetworkSelect({
-  value,
-  onChange,
-  dialogRootNode,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  dialogRootNode?: HTMLElement;
-}) {
-  const { networks } = useNetworks();
-  const { supportedNetworks } = useMemo(() => {
-    const allItems = networks?.getNetworks() || [];
-    const networksForSending = networks
-      ? allItems.filter((network) =>
-          networks.supports('sending', createChain(network.chain))
-        )
-      : [];
-    return { supportedNetworks: networksForSending };
-  }, [networks]);
-
-  const nftNetworkOptions: NetworkGroups = useMemo(() => {
-    return [
-      { key: 'trading-networks', name: 'Networks', items: supportedNetworks },
-    ];
-  }, [supportedNetworks]);
-
-  return (
-    <NetworkSelect
-      value={value}
-      onChange={onChange}
-      dialogRootNode={dialogRootNode}
-      groups={nftNetworkOptions}
-    />
-  );
-}
-
 export function SendForm() {
-  const { singleAddress: address } = useAddressParams();
+  const { singleAddress: address, ready } = useAddressParams();
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
@@ -147,12 +109,25 @@ export function SendForm() {
       : null,
   });
 
+  const { value: portfolioDecomposition } = useAddressPortfolioDecomposition(
+    {
+      address,
+      currency: 'usd',
+    },
+    { enabled: ready }
+  );
+  const addressChains = useMemo(
+    () => Object.keys(portfolioDecomposition?.chains || {}),
+    [portfolioDecomposition]
+  );
+  const { networks } = useNetworks(addressChains);
+
   const sendView = useSendForm({
     currencyCode: 'usd',
     DEFAULT_CONFIGURATION,
     address,
     positions: positions || undefined,
-    getNetworks: () => networksStore.load(),
+    getNetworks: () => networksStore.load(addressChains),
     client,
   });
   const { tokenItem, nftItem, store } = sendView;
@@ -297,8 +272,6 @@ export function SendForm() {
     },
   });
 
-  const { networks } = useNetworks();
-
   const confirmDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   const formId = useId();
@@ -306,10 +279,6 @@ export function SendForm() {
   const { innerHeight } = useSizeStore();
 
   const navigate = useNavigate();
-
-  if (!networks || !positions) {
-    return <ViewLoading kind="network" />;
-  }
 
   if (isSuccess) {
     invariant(transactionHash, 'Missing Form State View values');
@@ -386,7 +355,7 @@ export function SendForm() {
               </SegmentedControlRadio>
             </SegmentedControlGroup>
           ) : null}
-          <div>
+          <div style={{ display: 'flex' }}>
             {type === 'token' ? (
               <NetworkSelect
                 value={tokenChain ?? ''}
@@ -396,12 +365,18 @@ export function SendForm() {
                 dialogRootNode={rootNode}
               />
             ) : (
-              <NFTNetworkSelect
-                value={nftChain ?? ''}
+              <NetworkSelect
+                value={tokenChain ?? ''}
                 onChange={(value) => {
-                  sendView.handleChange('nftChain', value);
+                  sendView.handleChange('tokenChain', value);
                 }}
                 dialogRootNode={rootNode}
+                filterPredicate={(network) =>
+                  networks?.supports(
+                    'nft_positions',
+                    createChain(network.id)
+                  ) || false
+                }
               />
             )}
           </div>

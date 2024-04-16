@@ -14,15 +14,16 @@ export function ItemLink({
   children,
   style,
   className,
+  ...props
 }: {
   to: LinkProps['to'];
   children: React.ReactNode;
   onClick?: React.AnchorHTMLAttributes<HTMLAnchorElement>['onClick'];
-  style?: React.CSSProperties;
   className?: React.AnchorHTMLAttributes<HTMLAnchorElement>['className'];
-}) {
+} & React.AnchorHTMLAttributes<HTMLAnchorElement>) {
   return (
     <UnstyledLink
+      {...props}
       style={{ color: 'inherit', ...style }}
       to={to}
       onClick={onClick}
@@ -183,7 +184,7 @@ export const SurfaceList = React.forwardRef(
         }}
         {...props}
       >
-        <VStack gap={gap}>
+        <VStack gap={gap} style={{ height: style?.height }}>
           {items.map((item, index) => {
             const {
               style,

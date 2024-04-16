@@ -10,11 +10,12 @@ import {
   isJsonRpcRequest,
 } from '@walletconnect/jsonrpc-utils';
 import { networksStore } from 'src/modules/networks/networks-store.background';
+import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 
 export class HttpConnection extends EventEmitter {
-  private chainId: string;
+  private chainId: ChainId;
 
-  constructor({ chainId }: { chainId: string }) {
+  constructor({ chainId }: { chainId: ChainId }) {
     super();
     /** TODO: Should we save just the URL instead of chainId? */
     this.chainId = chainId;
@@ -28,7 +29,7 @@ export class HttpConnection extends EventEmitter {
       console.log('not a request:', request); // eslint-disable-line no-console
       return Promise.reject('not a request');
     }
-    const networks = await networksStore.load();
+    const networks = await networksStore.loadNetworksWithChainId(this.chainId);
 
     const chain = networks.getChainById(this.chainId);
     const url = networks.getRpcUrlPublic(chain);

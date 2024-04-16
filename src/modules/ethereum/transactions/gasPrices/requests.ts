@@ -130,7 +130,7 @@ export const gasChainPricesSubscription = new GasChainPricesSubscription();
 
 export async function fetchGasPrice(chain: Chain, networks: Networks) {
   try {
-    if (networks.isSupportedByBackend(chain)) {
+    if (networks.supports('sending', chain)) {
       const gasPrices = await gasChainPricesSubscription.get();
       const chainGasPrices = gasPrices[chain.toString()];
       if (chainGasPrices) {

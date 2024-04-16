@@ -1,6 +1,7 @@
 import type BigNumber from 'bignumber.js';
 import type { IncomingTransaction } from '../../types/IncomingTransaction';
 import { resolveChainId } from '../resolveChainId';
+import type { ChainId } from '../ChainId';
 import { estimateFee } from './eip1559/estimateFee';
 import { getEip1559Base } from './eip1559/getEip1559Base';
 import type { GasPriceObject } from './GasPriceObject';
@@ -27,7 +28,7 @@ export async function estimateNetworkFee({
   gasPrices: ChainGasPrice | null /** it is possible to estimate classic fee if gasPrices is null */;
   gasPrice: GasPriceObject | null;
   transaction: IncomingTransaction | null;
-  getNonce: (address: string, chainId: string) => Promise<number>;
+  getNonce: (address: string, chainId: ChainId) => Promise<number>;
 }): Promise<EstimatedFeeValue | null> {
   if (!gas || gas === '') {
     return null;

@@ -18,6 +18,8 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { noValueDash } from 'src/ui/shared/typography';
 import { Background } from 'src/ui/components/Background';
+import { getChainId } from 'src/modules/networks/helpers';
+import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { ValueCell } from '../Networks/shared/ValueCell';
 
 export function SwitchEthereumChain() {
@@ -44,8 +46,9 @@ export function SwitchEthereumChain() {
     throw new Error('origin get-parameter is required for this view');
   }
   const originName = new URL(origin).hostname;
-  const chainId = params.get('chainId');
-  invariant(chainId, 'This view requires a chainId get-param');
+  const rawChainId = params.get('chainId');
+  invariant(rawChainId, 'This view requires a chainId get-param');
+  const chainId = normalizeChainId(rawChainId);
 
   const chain = networks.getChainById(chainId);
   const network = networks.getNetworkByName(chain);
@@ -78,7 +81,7 @@ export function SwitchEthereumChain() {
           <VStack gap={4} style={{ justifyItems: 'center' }}>
             <NetworkIcon
               src={network.icon_url}
-              chainId={network.external_id || ''}
+              chainId={getChainId(network)}
               size={40}
               name={network.name || null}
             />
@@ -92,7 +95,7 @@ export function SwitchEthereumChain() {
               label="RPC URL"
               value={networks.getRpcUrlPublic(chain)}
             />
-            <ValueCell label="Chain ID" value={network.external_id} />
+            <ValueCell label="Chain ID" value={chainId} />
             <ValueCell
               label="Currency Symbol"
               value={network.native_asset?.symbol ?? noValueDash}

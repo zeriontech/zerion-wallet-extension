@@ -139,12 +139,20 @@ export function NonceLine({
   userNonce: string | null;
   onChange: null | ((nonce: string | null) => void);
 }) {
-  const { networks } = useNetworks();
+  const { networks, isLoading: networksAreLoading } = useNetworks([
+    chain.toString(),
+  ]);
   const { from } = transaction;
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['getTransactionCount', networks, from, chain],
+    queryKey: [
+      'getTransactionCount',
+      networks,
+      from,
+      chain,
+      networksAreLoading,
+    ],
     queryFn: async () => {
-      if (!networks) {
+      if (!networks || networksAreLoading) {
         return;
       }
       return uiGetBestKnownTransactionCount({

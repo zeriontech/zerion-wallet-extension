@@ -6,7 +6,7 @@ import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 
 export type ChainDistribution = Pick<
   PortfolioDecomposition,
-  'positions_chains_distribution' | 'total_value'
+  'positions_chains_distribution' | 'total_value' | 'chains'
 >;
 
 export function ChainValue({

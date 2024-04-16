@@ -17,7 +17,7 @@ export function useAddressBackendOrEvmPositions({
   const isSupportedByBackend = !chain // backend address positions are returned for all supported chains
     ? true
     : networks
-    ? networks.isSupportedByBackend(chain)
+    ? networks.supports('positions', chain)
     : null;
   const { value: positionsValue, isLoading } = useAddressPositions(
     { address, currency },
