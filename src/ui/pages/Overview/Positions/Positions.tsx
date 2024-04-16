@@ -62,6 +62,7 @@ import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOri
 import { SurfaceItemAnchor } from 'src/ui/ui-kit/SurfaceList';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { useStore } from '@store-unit/react';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import {
   TAB_SELECTOR_HEIGHT,
   TAB_TOP_PADDING,
@@ -139,6 +140,7 @@ function AddressPositionItem({
   hasPreviosNestedPosition?: boolean;
   showGasIcon?: boolean;
 }) {
+  const { currency } = useCurrency();
   const isNested = Boolean(position.parent_id);
   const { networks } = useNetworks();
   const network = networks?.getNetworkByName(createChain(position.chain));
@@ -251,10 +253,10 @@ function AddressPositionItem({
             </UIText>
           }
         />
-        {position.value != null ? (
+        {position.value != null && currency ? (
           <VStack gap={0} style={{ textAlign: 'right' }}>
             <UIText kind="body/regular">
-              {formatCurrencyValue(position.value, 'en', 'usd')}
+              {formatCurrencyValue(position.value, 'en', currency)}
             </UIText>
             {position.asset.price?.relative_change_24h ? (
               <UIText
@@ -414,6 +416,8 @@ function ProtocolHeading({
   value: number;
   relativeValue: number;
 }) {
+  const { currency } = useCurrency();
+
   return (
     <HStack gap={8} alignItems="center">
       {dappInfo.id === DEFAULT_PROTOCOL_ID ? (
@@ -429,7 +433,12 @@ function ProtocolHeading({
       <UIText kind="body/accent">
         {dappInfo.name || dappInfo.id}
         {' · '}
-        <NeutralDecimals parts={formatCurrencyToParts(value, 'en', 'usd')} />
+        {currency ? (
+          <NeutralDecimals
+            parts={formatCurrencyToParts(value, 'en', currency)}
+            currency={currency}
+          />
+        ) : null}
       </UIText>
       <UIText
         inline={true}
@@ -631,10 +640,15 @@ function MultiChainPositions({
   filterChain: string | null;
   onChainChange: (value: string | null) => void;
 } & Omit<React.ComponentProps<typeof PositionList>, 'items'>) {
-  const { value, isLoading } = useAddressPositions({
-    ...addressParams,
-    currency: 'usd',
-  });
+  const { currency } = useCurrency();
+
+  const { value, isLoading } = useAddressPositions(
+    {
+      ...addressParams,
+      currency: currency || '',
+    },
+    { enabled: Boolean(currency) }
+  );
 
   const chainValue = filterChain || dappChain || NetworkSelectValue.All;
 
@@ -663,13 +677,16 @@ function MultiChainPositions({
           filterChain={filterChain}
           onChange={onChainChange}
           value={
-            <NeutralDecimals
-              parts={formatCurrencyToParts(
-                getFullPositionsValue(items),
-                'en',
-                'usd'
-              )}
-            />
+            currency ? (
+              <NeutralDecimals
+                parts={formatCurrencyToParts(
+                  getFullPositionsValue(items),
+                  'en',
+                  currency
+                )}
+                currency={currency}
+              />
+            ) : null
           }
         />
       </div>
@@ -697,6 +714,7 @@ function RawChainPositions({
   filterChain: string | null;
   onChainChange: (value: string | null) => void;
 } & Omit<React.ComponentProps<typeof PositionList>, 'items'>) {
+  const { currency } = useCurrency();
   const addressParam =
     'address' in addressParams ? addressParams.address : address;
   invariant(
@@ -739,13 +757,16 @@ function RawChainPositions({
           filterChain={filterChain}
           onChange={onChainChange}
           value={
-            <NeutralDecimals
-              parts={formatCurrencyToParts(
-                getFullPositionsValue(addressPositions),
-                'en',
-                'usd'
-              )}
-            />
+            currency ? (
+              <NeutralDecimals
+                parts={formatCurrencyToParts(
+                  getFullPositionsValue(addressPositions),
+                  'en',
+                  currency
+                )}
+                currency={currency}
+              />
+            ) : null
           }
         />
       </div>

@@ -49,6 +49,7 @@ import { useStore } from '@store-unit/react';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
 import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
 import { isReadonlyContainer } from 'src/shared/types/validators';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -234,6 +235,7 @@ function OverviewComponent() {
   useBodyStyle(
     useMemo(() => ({ ['--background' as string]: 'var(--z-index-0)' }), [])
   );
+  const { currency } = useCurrency();
   const location = useLocation();
   const { singleAddress, params, ready, singleAddressNormalized } =
     useAddressParams();
@@ -248,11 +250,11 @@ function OverviewComponent() {
   const { value, isLoading: isLoadingPortfolio } = useAddressPortfolio(
     {
       ...params,
-      currency: 'usd',
+      currency: currency || '',
       portfolio_fields: 'all',
       use_portfolio_service: true,
     },
-    { enabled: ready }
+    { enabled: Boolean(ready && currency) }
   );
 
   const offsetValuesState = useStore(offsetValues);
@@ -361,15 +363,20 @@ function OverviewComponent() {
           ) : null}
           <VStack gap={0}>
             <UIText kind="headline/h1">
-              {value?.total_value != null ? (
+              {value?.total_value != null && currency ? (
                 <NeutralDecimals
-                  parts={formatCurrencyToParts(value.total_value, 'en', 'usd')}
+                  parts={formatCurrencyToParts(
+                    value.total_value,
+                    'en',
+                    currency
+                  )}
+                  currency={currency}
                 />
               ) : (
                 NBSP
               )}
             </UIText>
-            {value?.relative_change_24h ? (
+            {value?.relative_change_24h && currency ? (
               <PercentChange
                 value={value.relative_change_24h}
                 locale="en"
@@ -389,7 +396,7 @@ function OverviewComponent() {
                         ? `(${formatCurrencyValue(
                             Math.abs(value.absolute_change_24h),
                             'en',
-                            'usd'
+                            currency
                           )})`
                         : ''}{' '}
                       Today

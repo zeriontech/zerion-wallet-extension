@@ -45,6 +45,7 @@ interface PublicPreferences {
   recentAddresses?: string[];
   mintDnaBannerDismissed?: boolean;
   upgradeDnaBannerDismissed?: boolean;
+  currency?: string;
 }
 
 export interface Permission {

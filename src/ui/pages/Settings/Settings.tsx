@@ -9,7 +9,7 @@ import { ViewSuspense } from 'src/ui/components/ViewSuspense';
 import { accountPublicRPCPort } from 'src/ui/shared/channels';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Media } from 'src/ui/ui-kit/Media';
-import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
+import { SurfaceItemLabel, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { Toggle } from 'src/ui/ui-kit/Toggle';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -30,6 +30,9 @@ import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { SettingsDnaBanners } from 'src/ui/DNA/components/DnaBanners';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { BugReportButton } from 'src/ui/components/BugReportButton';
+import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
+import { CURRENCIES } from 'src/modules/currency/currencies';
+import { Radio } from 'src/ui/ui-kit/Radio';
 import { BackupFlowSettingsSection } from '../BackupWallet/BackupSettingsItem';
 import { Security } from '../Security';
 
@@ -194,52 +197,131 @@ function UserPreferences() {
     <PageColumn>
       <NavigationTitle title="Preferences" />
       <PageTop />
-      <VStack gap={8}>
-        <UIText kind="body/regular">Advanced Settings</UIText>
+      <VStack gap={24}>
         <SurfaceList
           items={[
             {
               key: 0,
+              to: '/settings/currency',
               component: (
-                <ToggleSettingLine
-                  text="Customizable Transaction Nonce"
-                  checked={preferences?.configurableNonce ?? false}
-                  onChange={(event) => {
-                    setPreferences({
-                      configurableNonce: event.target.checked,
-                    });
-                  }}
-                  detailText={
-                    <span>
-                      Set your own unique nonce to control transaction order
-                    </span>
-                  }
-                />
-              ),
-            },
-            {
-              key: 1,
-              component: (
-                <ToggleSettingLine
-                  text="Recognizable Connect Buttons"
-                  checked={
-                    globalPreferences?.recognizableConnectButtons || false
-                  }
-                  onChange={(event) => {
-                    setGlobalPreferences({
-                      recognizableConnectButtons: event.target.checked,
-                    });
-                  }}
-                  detailText={
-                    <span>
-                      When enabled, we add Zerion Wallet label to connect
-                      buttons in DApps so that they{apostrophe}re easier to spot
-                    </span>
-                  }
-                />
+                <AngleRightRow>
+                  <HStack
+                    gap={24}
+                    alignItems="center"
+                    justifyContent="space-between"
+                  >
+                    <UIText kind="body/accent">Currency</UIText>
+                    {preferences ? (
+                      <UIText kind="small/regular" color="var(--neutral-500)">
+                        {CURRENCIES[preferences.currency].code.toUpperCase()}
+                      </UIText>
+                    ) : (
+                      <CircleSpinner />
+                    )}
+                  </HStack>
+                </AngleRightRow>
               ),
             },
           ]}
+        />
+
+        <VStack gap={8}>
+          <UIText kind="body/regular">Advanced Settings</UIText>
+          <SurfaceList
+            items={[
+              {
+                key: 0,
+                component: (
+                  <ToggleSettingLine
+                    text="Customizable Transaction Nonce"
+                    checked={preferences?.configurableNonce ?? false}
+                    onChange={(event) => {
+                      setPreferences({
+                        configurableNonce: event.target.checked,
+                      });
+                    }}
+                    detailText={
+                      <span>
+                        Set your own unique nonce to control transaction order
+                      </span>
+                    }
+                  />
+                ),
+              },
+              {
+                key: 1,
+                component: (
+                  <ToggleSettingLine
+                    text="Recognizable Connect Buttons"
+                    checked={
+                      globalPreferences?.recognizableConnectButtons || false
+                    }
+                    onChange={(event) => {
+                      setGlobalPreferences({
+                        recognizableConnectButtons: event.target.checked,
+                      });
+                    }}
+                    detailText={
+                      <span>
+                        When enabled, we add Zerion Wallet label to connect
+                        buttons in DApps so that they{apostrophe}re easier to
+                        spot
+                      </span>
+                    }
+                  />
+                ),
+              },
+            ]}
+          />
+        </VStack>
+      </VStack>
+      <PageBottom />
+    </PageColumn>
+  );
+}
+
+function CurrencyPage() {
+  const { preferences, setPreferences } = usePreferences();
+  const value = preferences?.currency || 'usd';
+
+  return (
+    <PageColumn>
+      <NavigationTitle title="Auto-Lock Timer" />
+      <PageTop />
+      <VStack gap={8}>
+        <SurfaceList
+          items={Object.values(CURRENCIES).map(
+            ({ code, name, symbol }, index) => ({
+              key: index,
+              isInteractive: true,
+              pad: false,
+              component: (
+                <SurfaceItemLabel>
+                  <UIText
+                    kind="body/regular"
+                    color={value === code ? 'var(--primary)' : undefined}
+                  >
+                    <HStack
+                      gap={8}
+                      alignItems="center"
+                      justifyContent="space-between"
+                    >
+                      <HStack gap={8} alignItems="center">
+                        <UIText kind="body/accent">{symbol}</UIText>
+                        <UIText kind="body/accent">{name}</UIText>
+                      </HStack>
+                      <Radio
+                        name="preference"
+                        value={code}
+                        checked={value === code}
+                        onChange={() => setPreferences({ currency: code })}
+                      />
+                    </HStack>
+                  </UIText>
+                </SurfaceItemLabel>
+              ),
+            })
+          )}
         />
       </VStack>
       <PageBottom />
@@ -279,6 +361,14 @@ export function Settings() {
         element={
           <ViewSuspense>
             <Security />
+          </ViewSuspense>
+        }
+      />
+      <Route
+        path="/currency"
+        element={
+          <ViewSuspense>
+            <CurrencyPage />
           </ViewSuspense>
         }
       />
