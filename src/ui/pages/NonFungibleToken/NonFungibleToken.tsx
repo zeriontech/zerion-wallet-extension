@@ -18,6 +18,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { WithReadonlyWarningDialog } from 'src/ui/components/SignTransactionButton/ReadonlyWarningDialog';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { useAddressNftPosition } from './useAddressNftPosition';
 
@@ -32,14 +33,18 @@ export function NonFungibleToken() {
 
   // for optimistic update the dna's status after promotion
   const [promotedPrimary, setPromotedAsPrimary] = useState(false);
+  const { currency, ready } = useCurrency();
 
-  const { value: nft } = useAddressNftPosition({
-    chain: chain || '',
-    contract_address,
-    token_id,
-    currency: 'usd',
-    address: singleAddress,
-  });
+  const { value: nft } = useAddressNftPosition(
+    {
+      chain: chain || '',
+      contract_address,
+      token_id,
+      currency: currency || '',
+      address: singleAddress,
+    },
+    { enabled: ready }
+  );
 
   const url = useMemo(() => {
     if (!nft?.chain || !nft.contract_address || !nft.token_id) {

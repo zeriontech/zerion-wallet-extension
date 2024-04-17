@@ -24,6 +24,7 @@ import type { ChainDistribution } from 'src/ui/shared/requests/PortfolioValue/Ch
 import { ChainValue } from 'src/ui/shared/requests/PortfolioValue/ChainValue';
 import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
 import { DialogCloseButton } from 'src/ui/ui-kit/ModalDialogs/DialogTitle/DialogCloseButton';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { DelayedRender } from '../DelayedRender';
 import { NetworkIcon } from '../NetworkIcon';
 import { PageBottom } from '../PageBottom';
@@ -49,6 +50,8 @@ function NetworkList({
   chainDistribution: ChainDistribution | null;
   previousListLength?: number;
 }) {
+  const { currency, ready } = useCurrency();
+
   if (!networkList.length) {
     return (
       <EmptyView
@@ -138,10 +141,11 @@ function NetworkList({
                         : 'var(--neutral-500)'
                     }
                   >
-                    {isSupportedByBackend ? (
+                    {isSupportedByBackend && ready ? (
                       <ChainValue
                         chain={createChain(network.chain)}
                         chainDistribution={chainDistribution}
+                        currency={currency}
                       />
                     ) : null}
                   </UIText>

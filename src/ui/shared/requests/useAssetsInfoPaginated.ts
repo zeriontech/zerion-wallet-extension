@@ -6,7 +6,7 @@ import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 
 export function useAssetsInfoPaginatedQuery(
   params: Omit<Parameters<typeof client.assetsInfo>[0], 'limit' | 'offset'>,
-  { suspense }: { suspense: boolean }
+  { suspense, enabled }: { suspense: boolean; enabled: boolean }
 ) {
   const LIMIT = 30;
   const query = useInfiniteQuery({
@@ -40,6 +40,7 @@ export function useAssetsInfoPaginatedQuery(
       const offset = allPages.reduce((sum, items) => sum + items.length, 0);
       return { limit: LIMIT, offset };
     },
+    enabled,
   });
   return {
     items: query.data?.pages.flat(),

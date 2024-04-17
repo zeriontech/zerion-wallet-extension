@@ -17,6 +17,7 @@ import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { NBSP } from 'src/ui/shared/typography';
 import CheckIcon from 'jsx:src/ui/assets/check.svg';
 import { WalletSourceIcon } from 'src/ui/components/WalletSourceIcon';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import * as styles from './styles.module.css';
 
 export function WalletList({
@@ -28,6 +29,8 @@ export function WalletList({
   selectedAddress: string;
   onSelect(wallet: ExternallyOwnedAccount | BareWallet | DeviceAccount): void;
 }) {
+  const { currency, ready } = useCurrency();
+
   const items: Item[] = [];
   for (const group of walletGroups) {
     for (const wallet of group.walletContainer.wallets) {
@@ -81,13 +84,14 @@ export function WalletList({
                     address={wallet.address}
                     render={(entry) => (
                       <UIText kind="headline/h3">
-                        {entry.value ? (
+                        {entry.value && ready ? (
                           <NeutralDecimals
                             parts={formatCurrencyToParts(
                               entry.value?.total_value || 0,
                               'en',
-                              'usd'
+                              currency
                             )}
+                            currency={currency}
                           />
                         ) : (
                           NBSP

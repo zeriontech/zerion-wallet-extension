@@ -54,6 +54,7 @@ import { createSendAddressAction } from 'src/modules/ethereum/transactions/addre
 import type { NetworkGroups } from 'src/ui/components/NetworkSelectDialog';
 import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -126,6 +127,7 @@ function NFTNetworkSelect({
 
 export function SendForm() {
   const { singleAddress: address } = useAddressParams();
+  const { currency, ready } = useCurrency();
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
@@ -139,16 +141,20 @@ export function SendForm() {
     string | undefined
   >(undefined);
 
-  const { data: positions } = useAddressBackendOrEvmPositions({
-    address,
-    currency: 'usd',
-    chain: chainForAddressPositions
-      ? createChain(chainForAddressPositions)
-      : null,
-  });
+  const { data: positions } = useAddressBackendOrEvmPositions(
+    {
+      address,
+      currency: currency || '',
+      chain: chainForAddressPositions
+        ? createChain(chainForAddressPositions)
+        : null,
+    },
+    { enabled: ready }
+  );
 
   const sendView = useSendForm({
-    currencyCode: 'usd',
+    // TODO: make currency nullable in transaction-ui
+    currencyCode: currency || '',
     DEFAULT_CONFIGURATION,
     address,
     positions: positions || undefined,

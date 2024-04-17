@@ -39,6 +39,7 @@ import {
   isDeviceAccount,
 } from 'src/shared/types/validators';
 import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 
 function EditableWalletName({
   id,
@@ -164,6 +165,7 @@ function RemoveAddressConfirmationDialog({
 
 export function WalletAccount() {
   const { address } = useParams();
+  const { currency, ready } = useCurrency();
   const [params] = useSearchParams();
   const groupId = params.get('groupId');
   invariant(
@@ -235,13 +237,14 @@ export function WalletAccount() {
                   address={wallet.address}
                   render={(entry) => (
                     <UIText kind="headline/h2">
-                      {entry.value ? (
+                      {entry.value && ready ? (
                         <NeutralDecimals
                           parts={formatCurrencyToParts(
                             entry.value?.total_value || 0,
                             'en',
-                            'usd'
+                            currency
                           )}
+                          currency={currency}
                         />
                       ) : (
                         NBSP

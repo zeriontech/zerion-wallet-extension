@@ -7,6 +7,7 @@ import { Media } from 'src/ui/ui-kit/Media';
 import type { UITextProps } from 'src/ui/ui-kit/UIText';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { WalletDisplayName } from '../WalletDisplayName';
 import { WalletAvatar } from '../WalletAvatar';
 
@@ -31,6 +32,8 @@ function NameAndPortfolioComposition({
   detailTextKind = 'caption/regular',
   portfolio = true,
 }: CommonProps & { portfolio?: boolean }) {
+  const { currency, ready } = useCurrency();
+
   return (
     <Media
       image={
@@ -64,11 +67,11 @@ function NameAndPortfolioComposition({
             address={wallet.address}
             render={(entry) => (
               <UIText kind={detailTextKind}>
-                {entry.value
+                {entry.value && ready
                   ? formatCurrencyValue(
                       entry.value?.total_value || 0,
                       'en',
-                      'usd'
+                      currency
                     )
                   : NBSP}
               </UIText>

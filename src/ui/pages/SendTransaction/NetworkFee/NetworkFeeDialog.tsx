@@ -49,6 +49,7 @@ import {
 import { useEstimateGas } from 'src/modules/ethereum/transactions/useEstimateGas';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { apostrophe } from 'src/ui/shared/typography';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useTransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import { NetworkFeeIcon } from './NetworkFeeIcon';
 import { NETWORK_SPEED_TO_TITLE } from './constants';
@@ -58,12 +59,14 @@ const OPTIONS: NetworkFeeSpeed[] = ['fast', 'standard', 'custom'];
 function getCustomFeeDescription({
   fiat,
   gasPrice,
+  currency,
 }: {
   fiat?: BigNumber.Value;
   gasPrice: number | string;
+  currency: string;
 }) {
   return `${
-    fiat ? `${formatCurrencyValue(fiat, 'en', 'usd')} (` : ''
+    fiat ? `${formatCurrencyValue(fiat, 'en', currency)} (` : ''
   }${formatGasPrice(gasPrice)}${fiat ? ')' : ''}`;
 }
 
@@ -130,6 +133,7 @@ function CustomNetworkFeeForm({
   onSubmit(value: NetworkFeeConfiguration): void;
   transaction: IncomingTransaction;
 }) {
+  const { currency, ready } = useCurrency();
   const { eip1559, classic } = chainGasPrices.info;
   if (type === 'eip1559' && !eip1559) {
     throw new Error('eip1559 gas price is expected in chain configuration');
@@ -327,23 +331,27 @@ function CustomNetworkFeeForm({
           <VStack gap={8}>
             <HStack gap={24} justifyContent="space-between">
               <UIText kind="small/regular">Expected Fee</UIText>
-              <UIText kind="small/accent">
-                {getCustomFeeDescription({
-                  fiat: expectedFeeFiat,
-                  gasPrice: Math.min(
-                    eip1559.base_fee + (priorityFee || 0),
-                    maxFee
-                  ),
-                })}
-              </UIText>
+              {ready ? (
+                <UIText kind="small/accent">
+                  {getCustomFeeDescription({
+                    fiat: expectedFeeFiat,
+                    gasPrice: Math.min(
+                      eip1559.base_fee + (priorityFee || 0),
+                      maxFee
+                    ),
+                    currency,
+                  })}
+                </UIText>
+              ) : null}
             </HStack>
             <HStack gap={24} justifyContent="space-between">
               <UIText kind="small/regular">Max Fee</UIText>
-              {maxFee ? (
+              {maxFee && ready ? (
                 <UIText kind="small/accent">
                   {getCustomFeeDescription({
                     fiat: maxFeeFiat,
                     gasPrice: maxFee,
+                    currency,
                   })}
                 </UIText>
               ) : null}
@@ -366,11 +374,12 @@ function CustomNetworkFeeForm({
           />
           <HStack gap={24} justifyContent="space-between">
             <UIText kind="small/regular">Expected Fee</UIText>
-            {baseFee ? (
+            {baseFee && ready ? (
               <UIText kind="small/accent">
                 {getCustomFeeDescription({
                   fiat: baseFeeFiat,
                   gasPrice: baseFee,
+                  currency,
                 })}
               </UIText>
             ) : null}
@@ -421,6 +430,7 @@ function NetworkFeeButton({
   chainGasPrices?: ChainGasPrice | null;
   transaction: IncomingTransactionWithFrom;
 }) {
+  const { currency, ready } = useCurrency();
   const { networks } = useNetworks();
   const speedConfiguration = useMemo(() => {
     return {
@@ -487,13 +497,13 @@ function NetworkFeeButton({
         />
         {costsQuery.isLoading ? (
           <CircleSpinner />
-        ) : feeValueFiat ? (
+        ) : feeValueFiat && ready ? (
           <UIText
             kind="small/regular"
             color={selected ? 'var(--primary)' : 'var(--black)'}
           >
             {totalValueExceedsBalance ? 'Up to ' : null}~
-            {formatCurrencyValue(feeValueFiat, 'en', 'usd')}
+            {formatCurrencyValue(feeValueFiat, 'en', currency)}
           </UIText>
         ) : feeValueCommon && nativeAssetSymbol ? (
           <UIText

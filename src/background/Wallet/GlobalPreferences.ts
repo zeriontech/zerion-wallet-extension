@@ -26,6 +26,7 @@ export interface State {
   providerInjection?: ProviderInjection;
   autoLockTimeout?: number | 'none';
   walletNameFlags?: Record<string, WalletNameFlag[] | undefined>;
+  currency?: string;
 }
 
 function difference<T>(arr1: T[], arr2: T[]) {
@@ -63,6 +64,7 @@ export class GlobalPreferences extends PersistentStore<State> {
     providerInjection: {},
     walletNameFlags: {},
     autoLockTimeout: HALF_DAY,
+    currency: 'usd',
   };
 
   private async fetchDefaultWalletNameFlags() {

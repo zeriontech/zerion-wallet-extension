@@ -35,6 +35,7 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getWalletDisplayName } from 'src/ui/shared/getWalletDisplayName';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { WalletSourceIcon } from 'src/ui/components/WalletSourceIcon';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 
 type Item = {
   name: string | null;
@@ -107,6 +108,7 @@ const SuggestedItem = React.forwardRef(
     },
     ref: React.Ref<HTMLButtonElement>
   ) => {
+    const { currency, ready } = useCurrency();
     const title = getTitle(item);
     const matchingTitle = useMemo(() => {
       return (
@@ -170,13 +172,14 @@ const SuggestedItem = React.forwardRef(
             address={item.address}
             render={(entry) => (
               <UIText kind="body/accent">
-                {entry.value ? (
+                {entry.value && ready ? (
                   <NeutralDecimals
                     parts={formatCurrencyToParts(
                       entry.value?.total_value || 0,
                       'en',
-                      'usd'
+                      currency
                     )}
+                    currency={currency}
                   />
                 ) : (
                   NBSP

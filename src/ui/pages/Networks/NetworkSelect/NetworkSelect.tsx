@@ -17,6 +17,7 @@ import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { noValueDash } from 'src/ui/shared/typography';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 
 export function NetworkSelect({
   value,
@@ -32,10 +33,14 @@ export function NetworkSelect({
   groups?: NetworkGroups;
 }) {
   const { params } = useAddressParams();
-  const { value: portfolioDecomposition } = useAddressPortfolioDecomposition({
-    ...params,
-    currency: 'usd',
-  });
+  const { currency, ready } = useCurrency();
+  const { value: portfolioDecomposition } = useAddressPortfolioDecomposition(
+    {
+      ...params,
+      currency: currency || '',
+    },
+    { enabled: ready }
+  );
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   function handleDialogOpen() {

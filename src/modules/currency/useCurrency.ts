@@ -1,10 +1,14 @@
-import { usePreferences } from 'src/ui/features/preferences';
+import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 
-export function useCurrency() {
-  const { preferences, query } = usePreferences();
+type CurrencyResult =
+  | { currency: null; ready: false }
+  | { currency: string; ready: true };
 
-  const { isLoading } = query;
-  const currency = isLoading ? null : preferences?.currency || 'usd';
+export function useCurrency(): CurrencyResult {
+  const { globalPreferences } = useGlobalPreferences();
 
-  return { currency, isLoading };
+  const currency = globalPreferences?.currency;
+  return currency
+    ? { currency, ready: true }
+    : { currency: null, ready: false };
 }

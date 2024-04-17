@@ -24,6 +24,7 @@ import AllNetworksIcon from 'jsx:src/ui/assets/network.svg';
 import CloseIcon from 'jsx:src/ui/assets/close_solid.svg';
 import { Button } from 'src/ui/ui-kit/Button';
 import { useStore } from '@store-unit/react';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import {
   getCurrentTabsOffset,
   getGrownTabMaxHeight,
@@ -103,6 +104,8 @@ function useMinedAndPendingAddressActions({
     useErrorBoundary: true,
   });
 
+  const { currency, ready } = useCurrency();
+
   const {
     value,
     isFetching: actionsIsLoading,
@@ -111,7 +114,7 @@ function useMinedAndPendingAddressActions({
   } = useAddressActions(
     {
       ...params,
-      currency: 'usd',
+      currency: currency || '',
       actions_chains:
         chain && isSupportedByBackend ? [chain.toString()] : undefined,
       actions_search_query: searchQuery,
@@ -120,7 +123,7 @@ function useMinedAndPendingAddressActions({
       limit: 30,
       listenForUpdates: true,
       paginatedCacheMode: 'first-page',
-      enabled: isSupportedByBackend,
+      enabled: isSupportedByBackend && ready,
     }
   );
 

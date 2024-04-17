@@ -769,7 +769,6 @@ export class WalletRecordModel {
       recentAddresses: [],
       mintDnaBannerDismissed: false,
       upgradeDnaBannerDismissed: false,
-      currency: 'usd',
     };
     if (!record) {
       return defaults;

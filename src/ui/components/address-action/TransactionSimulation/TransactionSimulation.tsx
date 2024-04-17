@@ -12,6 +12,7 @@ import { interpretTransaction } from 'src/modules/ethereum/transactions/interpre
 import { walletPort } from 'src/ui/shared/channels';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { AddressActionDetails } from '../AddressActionDetails';
 import { InterpretationState } from '../../InterpretationState';
 
@@ -29,6 +30,7 @@ export function TransactionSimulation({
   onOpenAllowanceForm?: () => void;
 }) {
   const { networks } = useNetworks();
+  const { currency } = useCurrency();
   invariant(transaction.chainId, 'transaction must have a chainId value');
 
   const chain = networks?.getChainById(valueToHex(transaction.chainId));
@@ -78,13 +80,17 @@ export function TransactionSimulation({
   });
 
   const { data: interpretation, ...interpretQuery } = useQuery({
-    queryKey: ['interpretTransaction', transaction],
+    queryKey: ['interpretTransaction', transaction, currency],
     queryFn: () => {
+      if (!currency) {
+        return null;
+      }
       invariant(transaction.from, 'transaction must have a from value');
       return interpretTransaction({
         address: transaction.from,
         transaction,
         origin: 'https://app.zerion.io',
+        currency,
       });
     },
     // enabled: Boolean(incomingTxWithGasAndFee),

@@ -68,6 +68,7 @@ import { TextLink } from 'src/ui/ui-kit/TextLink';
 import { InterpretationState } from 'src/ui/components/InterpretationState';
 import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
 import { hasCriticalWarning } from 'src/ui/components/InterpretationState/InterpretationState';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -416,6 +417,7 @@ function SendTransactionContent({
   wallet: ExternallyOwnedAccount;
 }) {
   const [params] = useSearchParams();
+  const { currency } = useCurrency();
   const navigate = useNavigate();
   const { singleAddress } = useAddressParams();
   const incomingTransaction = useMemo(
@@ -480,13 +482,15 @@ function SendTransactionContent({
       incomingTxWithGasAndFee,
       singleAddress,
       origin,
+      currency,
     ],
     queryFn: () => {
-      return incomingTxWithGasAndFee
+      return incomingTxWithGasAndFee && currency
         ? interpretTransaction({
             address: singleAddress,
             transaction: incomingTxWithGasAndFee,
             origin,
+            currency,
           })
         : null;
     },

@@ -1,5 +1,6 @@
 import { useAddressPortfolio } from 'defi-sdk';
 import { useMemo } from 'react';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 
 export function PortfolioValue({
   address: addressStr,
@@ -9,11 +10,15 @@ export function PortfolioValue({
   render: (value: ReturnType<typeof useAddressPortfolio>) => JSX.Element;
 }) {
   const address = useMemo(() => addressStr.toLowerCase(), [addressStr]);
-  const query = useAddressPortfolio({
-    address,
-    currency: 'usd',
-    portfolio_fields: 'all',
-    use_portfolio_service: true,
-  });
+  const { currency, ready } = useCurrency();
+  const query = useAddressPortfolio(
+    {
+      address,
+      currency: currency || '',
+      portfolio_fields: 'all',
+      use_portfolio_service: true,
+    },
+    { enabled: ready }
+  );
   return render(query);
 }

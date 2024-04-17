@@ -6,6 +6,7 @@ import { getDecimals } from 'src/modules/networks/asset';
 import { useAddressPositions } from 'defi-sdk';
 import { isTruthy } from 'is-truthy-ts';
 import { useNetworks } from 'src/modules/networks/useNetworks';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useEvmNativeAddressPosition } from './useEvmNativeAddressPosition';
 import { useNativeAssetId } from './useNativeAsset';
 
@@ -19,14 +20,15 @@ function useNativeAddressPosition({
   enabled?: boolean;
 }) {
   const id = useNativeAssetId(chain);
+  const { currency, ready } = useCurrency();
 
   const { value, isLoading } = useAddressPositions(
     {
       address,
       assets: [id].filter(isTruthy),
-      currency: 'usd',
+      currency: currency || '',
     },
-    { enabled: enabled && Boolean(id) }
+    { enabled: enabled && Boolean(id) && ready }
   );
 
   return useMemo(() => {

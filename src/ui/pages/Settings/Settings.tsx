@@ -211,9 +211,11 @@ function UserPreferences() {
                     justifyContent="space-between"
                   >
                     <UIText kind="body/accent">Currency</UIText>
-                    {preferences ? (
+                    {globalPreferences ? (
                       <UIText kind="small/regular" color="var(--neutral-500)">
-                        {CURRENCIES[preferences.currency].code.toUpperCase()}
+                        {CURRENCIES[
+                          globalPreferences.currency
+                        ].code.toUpperCase()}
                       </UIText>
                     ) : (
                       <CircleSpinner />
@@ -281,8 +283,8 @@ function UserPreferences() {
 }
 
 function CurrencyPage() {
-  const { preferences, setPreferences } = usePreferences();
-  const value = preferences?.currency || 'usd';
+  const { globalPreferences, setGlobalPreferences } = useGlobalPreferences();
+  const value = globalPreferences?.currency || 'usd';
 
   return (
     <PageColumn>
@@ -314,7 +316,9 @@ function CurrencyPage() {
                         name="preference"
                         value={code}
                         checked={value === code}
-                        onChange={() => setPreferences({ currency: code })}
+                        onChange={() =>
+                          setGlobalPreferences({ currency: code })
+                        }
                       />
                     </HStack>
                   </UIText>

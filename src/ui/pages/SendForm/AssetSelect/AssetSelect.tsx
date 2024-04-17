@@ -38,10 +38,12 @@ import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { useCustomValidity } from 'src/ui/shared/forms/useCustomValidity';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { BareAddressPosition } from '../../SwapForm/BareAddressPosition';
 import * as styles from './styles.module.css';
 
 function ResultItem({ addressAsset }: { addressAsset: BareAddressPosition }) {
+  const { currency, ready } = useCurrency();
   const { asset } = addressAsset;
   const { price } = asset;
   const quantityCommon = baseToCommon(
@@ -53,7 +55,7 @@ function ResultItem({ addressAsset }: { addressAsset: BareAddressPosition }) {
   );
   const details = [
     `${formatTokenValue(quantityCommon)} ${asset.symbol}`,
-    price ? formatCurrencyValue(price.value, 'en', 'usd') : null,
+    price && ready ? formatCurrencyValue(price.value, 'en', currency) : null,
   ].filter(Boolean);
   return (
     <HStack gap={4} justifyContent="space-between" alignItems="center">
@@ -71,9 +73,13 @@ function ResultItem({ addressAsset }: { addressAsset: BareAddressPosition }) {
           </UIText>
         }
       />
-      {price ? (
+      {price && ready ? (
         <UIText kind="body/accent" color="var(--black)">
-          {formatCurrencyValue(quantityCommon.times(price.value), 'en', 'usd')}
+          {formatCurrencyValue(
+            quantityCommon.times(price.value),
+            'en',
+            currency
+          )}
         </UIText>
       ) : null}
     </HStack>

@@ -1,6 +1,7 @@
 import type { AddressPosition, Asset } from 'defi-sdk';
 import { client } from 'defi-sdk';
 import type { ResponseData as AssetsPricesReponseData } from 'defi-sdk/lib/domains/assetsPrices';
+import { globalPreferences } from 'src/background/Wallet/GlobalPreferences';
 import { backgroundCache } from 'src/modules/defi-sdk';
 import type { Chain } from 'src/modules/networks/Chain';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
@@ -76,10 +77,11 @@ export async function fetchAssetFromCacheOrAPI({
   id,
 }: CachedAssetQuery) {
   const requestAssetId = isNative ? id : normalizeNullableAddress(address);
+  const preferences = await globalPreferences.getPreferences();
   const assets = requestAssetId
     ? await fetchAssetsPrices({
         asset_codes: [requestAssetId || ''],
-        currency: 'usd',
+        currency: preferences.currency,
       })
     : null;
 

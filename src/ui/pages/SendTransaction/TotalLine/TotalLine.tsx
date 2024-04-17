@@ -3,6 +3,7 @@ import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { TransactionFee } from '../TransactionConfiguration/useTransactionFee';
 
 export function TotalLine({
@@ -10,14 +11,15 @@ export function TotalLine({
 }: {
   transactionFee: TransactionFee;
 }) {
+  const { currency, ready } = useCurrency();
   // TODO: refactor, nativeAsset might be null, but we may still know nativeAssetSymbol
   const { costs, nativeAsset } = transactionFee;
   const { totalValueFiat, totalValueCommon } = costs || {};
   let valueElement: JSX.Element | null = null;
-  if (totalValueFiat) {
+  if (totalValueFiat && ready) {
     valueElement = (
       <UIText kind="small/accent">
-        {formatCurrencyValue(totalValueFiat, 'en', 'usd')}
+        {formatCurrencyValue(totalValueFiat, 'en', currency)}
       </UIText>
     );
   } else if (totalValueCommon) {

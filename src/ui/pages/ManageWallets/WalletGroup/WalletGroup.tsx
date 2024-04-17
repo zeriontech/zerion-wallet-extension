@@ -40,6 +40,7 @@ import {
   isSignerContainer,
 } from 'src/shared/types/validators';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 
 const strings = {
   recoveryPhraseTitle: 'Recovery Phrase',
@@ -192,6 +193,7 @@ function RemoveGroupConfirmationDialog({
 
 export function WalletGroup() {
   const navigate = useNavigate();
+  const { currency, ready } = useCurrency();
   const { groupId } = useParams();
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   if (!groupId) {
@@ -309,13 +311,14 @@ export function WalletGroup() {
                           address={wallet.address}
                           render={(entry) => (
                             <UIText kind="headline/h2">
-                              {entry.value ? (
+                              {entry.value && ready ? (
                                 <NeutralDecimals
                                   parts={formatCurrencyToParts(
                                     entry.value.total_value || 0,
                                     'en',
-                                    'usd'
+                                    currency
                                   )}
+                                  currency={currency}
                                 />
                               ) : (
                                 NBSP

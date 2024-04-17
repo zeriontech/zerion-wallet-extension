@@ -1,5 +1,6 @@
 import type { AddressAction } from 'defi-sdk';
 import React from 'react';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { createChain } from 'src/modules/networks/Chain';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { Networks } from 'src/modules/networks/Networks';
@@ -20,6 +21,7 @@ export function FeeLine({
   networks: Networks;
 }) {
   const { fee, chain } = action.transaction;
+  const { currency, ready } = useCurrency();
 
   const feeEth = baseToCommon(
     fee?.quantity || 0,
@@ -30,7 +32,7 @@ export function FeeLine({
     createChain(chain || NetworkId.Ethereum)
   )?.native_asset;
 
-  if (!fee || !nativeAsset) {
+  if (!fee || !nativeAsset || !ready) {
     return null;
   }
 
@@ -53,7 +55,7 @@ export function FeeLine({
             }}
             address={address}
           />
-          <span>({formatCurrencyValue(feeCurrency, 'en', 'usd')})</span>
+          <span>({formatCurrencyValue(feeCurrency, 'en', currency)})</span>
         </HStack>
       </UIText>
     </HStack>

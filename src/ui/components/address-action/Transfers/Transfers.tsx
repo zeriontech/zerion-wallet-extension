@@ -23,6 +23,7 @@ import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { animated, useSpring } from '@react-spring/web';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { AssetLink } from '../../AssetLink';
 import { NFTLink } from '../../NFTLink';
 
@@ -39,6 +40,7 @@ function TransferItemFungible({
   chain: Chain;
   direction: Direction;
 }) {
+  const { currency, ready } = useCurrency();
   const commonQuantity = useMemo(
     () =>
       getCommonQuantity({
@@ -49,7 +51,7 @@ function TransferItemFungible({
     [chain, fungible, transfer.quantity]
   );
   const amountInUsd = useMemo(() => {
-    if (transfer.price == null) {
+    if (transfer.price == null || !ready) {
       return noValueDash;
     }
     const commonQuantity = getCommonQuantity({
@@ -60,9 +62,9 @@ function TransferItemFungible({
     return formatCurrencyValue(
       commonQuantity.times(transfer.price),
       'en',
-      'usd'
+      currency
     );
-  }, [chain, fungible, transfer]);
+  }, [chain, fungible, transfer, currency, ready]);
 
   return (
     <Media

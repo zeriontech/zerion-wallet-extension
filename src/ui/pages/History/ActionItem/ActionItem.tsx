@@ -35,6 +35,7 @@ import { AssetLink } from 'src/ui/components/AssetLink';
 import { DNA_MINT_CONTRACT_ADDRESS } from 'src/ui/DNA/shared/constants';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { isInteractiveElement } from 'src/ui/shared/isInteractiveElement';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { ActionDetailedView } from '../ActionDetailedView';
 import { isUnlimitedApproval } from '../isUnlimitedApproval';
 import { AccelerateTransactionDialog } from '../AccelerateTransactionDialog';
@@ -165,6 +166,7 @@ function ActionItemBackend({
   action: AddressAction;
   networks: Networks;
 }) {
+  const { currency, ready: currencyIsReady } = useCurrency();
   const { params, ready } = useAddressParams();
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
@@ -297,15 +299,21 @@ function ActionItemBackend({
           </UIText>
           {chain ? (
             <UIText kind="small/regular" color="var(--neutral-500)">
-              {incomingTransfers?.length && !outgoingTransfers?.length ? (
+              {incomingTransfers?.length &&
+              !outgoingTransfers?.length &&
+              currencyIsReady ? (
                 <TransactionCurrencyValue
                   transfers={incomingTransfers}
                   chain={chain}
+                  currency={currency}
                 />
-              ) : outgoingTransfers?.length && !incomingTransfers?.length ? (
+              ) : outgoingTransfers?.length &&
+                !incomingTransfers?.length &&
+                currencyIsReady ? (
                 <TransactionCurrencyValue
                   transfers={outgoingTransfers}
                   chain={chain}
+                  currency={currency}
                 />
               ) : outgoingTransfers?.length ? (
                 <HistoryItemValue

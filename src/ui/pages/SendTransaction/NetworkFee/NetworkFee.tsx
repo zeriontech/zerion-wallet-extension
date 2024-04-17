@@ -14,6 +14,7 @@ import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTML
 import type { Chain } from 'src/modules/networks/Chain';
 import type { IncomingTransactionWithFrom } from 'src/modules/ethereum/types/IncomingTransaction';
 import { useNetworks } from 'src/modules/networks/useNetworks';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { TransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import { NetworkFeeDialog } from './NetworkFeeDialog';
 import { NETWORK_SPEED_TO_TITLE } from './constants';
@@ -54,6 +55,7 @@ export function NetworkFee({
   }) => React.ReactNode;
 }) {
   const { networks } = useNetworks();
+  const { currency, ready } = useCurrency();
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const { time, feeEstimation, feeEstimationQuery, costs, costsQuery } =
     transactionFee;
@@ -74,11 +76,12 @@ export function NetworkFee({
   const disabled = isLoading || isOptimistic || !onChange;
 
   const feeValuePrefix = totalValueExceedsBalance ? 'Up to ' : '';
-  const feeValueFormatted = feeValueFiat
-    ? formatCurrencyValue(feeValueFiat, 'en', 'usd')
-    : feeValueCommon
-    ? formatTokenValue(feeValueCommon.toString(), nativeAssetSymbol)
-    : undefined;
+  const feeValueFormatted =
+    feeValueFiat && ready
+      ? formatCurrencyValue(feeValueFiat, 'en', currency)
+      : feeValueCommon
+      ? formatTokenValue(feeValueCommon.toString(), nativeAssetSymbol)
+      : undefined;
 
   const hintTitle = [
     getFeeTypeTitle(feeEstimation?.type),
