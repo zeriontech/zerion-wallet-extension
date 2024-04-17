@@ -25,9 +25,7 @@ export interface CurrencyConfig {
   symbol: string;
   customSymbol?: string; // TODO: deprecate this
   locale: string;
-  almostZero?: string;
   type: CurrencyType;
-  getIsAlmostZero?: (value: BigNumber.Value) => boolean;
   getFormatterConfig?: (
     value: BigNumber.Value
   ) => Partial<ResolvedNumberFormatOptions>;
@@ -50,7 +48,6 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
     name: 'US Dollar',
     code: 'usd',
     symbol: '$',
-    almostZero: '~$0.00',
     locale: 'en-US',
     type: CurrencyType.Fiat,
   },
@@ -69,12 +66,6 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
           : fourFractionalDigitsConfig),
       };
     }),
-    almostZero: '~Ξ0.00',
-    getIsAlmostZero: (value) => {
-      value = new BigNumber(value);
-      const abs = new BigNumber(value).abs();
-      return !(abs.gte(0.00001) || value.eq(0));
-    },
     type: CurrencyType.Crypto,
   },
   btc: {
@@ -83,13 +74,7 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
     symbol: '₿',
     customSymbol: '₿',
     modifyParts: setCustomSymbol('₿'),
-    almostZero: 'BTC ~0.00',
     locale: 'en-US',
-    getIsAlmostZero: (value) => {
-      value = new BigNumber(value);
-      const abs = new BigNumber(value).abs();
-      return !abs.isZero() && abs.isLessThan(0.000001);
-    },
     getFormatterConfig: memoize((value) => {
       return new BigNumber(value).isLessThan(1)
         ? sixFractionalDigitsConfig
@@ -101,7 +86,6 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
     name: 'Euro',
     code: 'eur',
     symbol: '€',
-    almostZero: '~0,00 €',
     locale: 'de-DE',
     type: CurrencyType.Fiat,
   },
@@ -109,7 +93,6 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
     name: 'British Pound',
     code: 'gbp',
     symbol: '£',
-    almostZero: '~£0.00',
     locale: 'en-GB',
     type: CurrencyType.Fiat,
   },
@@ -117,7 +100,6 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
     name: 'Chinese Yuan',
     code: 'cny',
     symbol: '¥',
-    almostZero: '~¥ 0.00',
     locale: 'zh-cn',
     type: CurrencyType.Fiat,
   },
@@ -125,7 +107,6 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
     name: 'Russian Ruble',
     code: 'rub',
     symbol: '₽',
-    almostZero: '~0,00 ₽',
     locale: 'ru',
     type: CurrencyType.Fiat,
     modifyParts: setCustomSymbol('₽'),
@@ -134,13 +115,7 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
     name: 'South Korean Won',
     code: 'krw',
     symbol: '₩',
-    almostZero: '~₩0',
     locale: 'ko',
-    getIsAlmostZero: (value) => {
-      value = new BigNumber(value);
-      const abs = new BigNumber(value).abs();
-      return !abs.isZero() && abs.isLessThan(0.5);
-    },
     getFormatterConfig: () => noDecimalsConfig,
     type: CurrencyType.Fiat,
   },
@@ -148,7 +123,6 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
     name: 'Australian Dollar',
     code: 'aud',
     symbol: 'A$',
-    almostZero: '~A$0.00',
     locale: 'en-US',
     type: CurrencyType.Fiat,
   },
@@ -156,7 +130,6 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
     name: 'Indian Rupee',
     code: 'inr',
     symbol: '₹',
-    almostZero: '~₹0.00',
     locale: 'en-US',
     type: CurrencyType.Fiat,
   },
@@ -164,7 +137,6 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
     name: 'Japanese Yen',
     code: 'jpy',
     symbol: '¥',
-    almostZero: '~JP¥0',
     locale: 'en-US',
     type: CurrencyType.Fiat,
   },
@@ -172,7 +144,6 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
     name: 'Turkish Lira',
     code: 'try',
     symbol: '₺',
-    almostZero: 'TRY ~0.00',
     locale: 'tr-TR',
     type: CurrencyType.Fiat,
     modifyParts: setCustomSymbol('₺'),
@@ -181,7 +152,6 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
     name: 'Canadian Dollar',
     code: 'cad',
     symbol: 'CA$',
-    almostZero: '~CA$0.00',
     locale: 'en-US',
     type: CurrencyType.Fiat,
   },
@@ -189,7 +159,6 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
     name: 'New Zealand Dollar',
     code: 'nzd',
     symbol: 'NZ$',
-    almostZero: '~NZ$0.00',
     locale: 'en-US',
     type: CurrencyType.Fiat,
   },
@@ -197,7 +166,6 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
     name: 'South African Rand',
     code: 'zar',
     symbol: 'R',
-    almostZero: 'ZAR ~0.00',
     locale: 'en-US',
     type: CurrencyType.Fiat,
     modifyParts: setCustomSymbol('R'),

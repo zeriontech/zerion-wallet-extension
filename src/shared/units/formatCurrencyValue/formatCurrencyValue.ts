@@ -35,15 +35,16 @@ export function formatCurrencyValue(
   const valueAsNumber =
     value instanceof BigNumber ? value.toNumber() : Number(value);
   const sign = valueAsNumber < 0 ? minus : '';
+  const absValue = Math.abs(valueAsNumber);
 
   if (currencyConfig && currencyConfig.modifyParts && formatter.formatToParts) {
-    const parts = formatter.formatToParts(Math.abs(valueAsNumber));
+    const parts = formatter.formatToParts(absValue);
     return `${sign}${currencyConfig
       .modifyParts(parts)
       .map((part) => part.value)
       .join('')}`;
   }
-  return `${sign}${formatter.format(Math.abs(valueAsNumber))}`;
+  return `${sign}${formatter.format(absValue)}`;
 }
 
 export function formatCurrencyToParts(
