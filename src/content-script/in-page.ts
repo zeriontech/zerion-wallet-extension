@@ -121,23 +121,28 @@ dappDetection.onChange(({ dappIsZerionAware }) => {
   }
 });
 
-Object.defineProperty(window, 'ethereum', {
-  configurable: false, // explicitly set to false to disallow redefining the property by other wallets
-  get() {
-    if (isPaused && competingProviders.hasOtherProviders()) {
-      return competingProviders.getFirstOtherProvider();
-    }
-    dappDetection.onAccessThroughWindow();
-    return proxiedProvider;
-  },
-  set(value: EthereumProvider) {
-    dappDetection.handleForeignProvider(value);
-    competingProviders.handleForeignProvider({
-      foreignProvider: value,
-      ourProvider: provider,
-    });
-  },
-});
+try {
+  Object.defineProperty(window, 'ethereum', {
+    configurable: false, // explicitly set to false to disallow redefining the property by other wallets
+    get() {
+      if (isPaused && competingProviders.hasOtherProviders()) {
+        return competingProviders.getFirstOtherProvider();
+      }
+      dappDetection.onAccessThroughWindow();
+      return proxiedProvider;
+    },
+    set(value: EthereumProvider) {
+      dappDetection.handleForeignProvider(value);
+      competingProviders.handleForeignProvider({
+        foreignProvider: value,
+        ourProvider: provider,
+      });
+    },
+  });
+} catch {
+  // eslint-disable-next-line no-console
+  console.warn('Global ethereum object was not defined');
+}
 
 if (dappsWithoutCorrectEIP1193Support.has(window.location.origin)) {
   provider.markAsMetamask();
