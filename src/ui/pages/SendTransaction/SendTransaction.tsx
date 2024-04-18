@@ -57,7 +57,7 @@ import { useEvent } from 'src/ui/shared/useEvent';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import {
   SignTransactionButton,
-  type SignerSenderHandle,
+  type SendTxBtnHandle,
 } from 'src/ui/components/SignTransactionButton';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
@@ -211,16 +211,16 @@ function TransactionDefaultView({
     }
   }
 
-  const signerSenderRef = useRef<SignerSenderHandle | null>(null);
+  const sendTxBtnRef = useRef<SendTxBtnHandle | null>(null);
 
   const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
     mutationFn: async () => {
-      invariant(signerSenderRef.current, 'SignTransactionButton not found');
+      invariant(sendTxBtnRef.current, 'SignTransactionButton not found');
       const tx = await configureTransactionToBeSigned(
         incomingTxWithGasAndFee || incomingTransaction
       );
       const feeValueCommon = feeValueCommonRef.current || null;
-      return signerSenderRef.current.sendTransaction({
+      return sendTxBtnRef.current.sendTransaction({
         transaction: tx,
         chain: chain.toString(),
         feeValueCommon,
@@ -388,9 +388,11 @@ function TransactionDefaultView({
             </Button>
             <SignTransactionButton
               wallet={wallet}
-              ref={signerSenderRef}
+              ref={sendTxBtnRef}
               onClick={() => sendTransaction()}
-              kind={interpretationHasCriticalWarning ? 'danger' : 'primary'}
+              buttonKind={
+                interpretationHasCriticalWarning ? 'danger' : 'primary'
+              }
               buttonTitle={
                 interpretationHasCriticalWarning ? 'Proceed Anyway' : undefined
               }

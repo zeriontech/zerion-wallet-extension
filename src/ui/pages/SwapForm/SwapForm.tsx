@@ -48,7 +48,7 @@ import { ViewLoadingSuspense } from 'src/ui/components/ViewLoading/ViewLoading';
 import { getPositionBalance } from 'src/ui/components/Positions/helpers';
 import { isPremiumMembership } from 'src/ui/shared/requests/premium/isPremiumMembership';
 import type { NetworkGroups } from 'src/ui/components/NetworkSelectDialog';
-import type { SignerSenderHandle } from 'src/ui/components/SignTransactionButton';
+import type { SendTxBtnHandle } from 'src/ui/components/SignTransactionButton';
 import { SignTransactionButton } from 'src/ui/components/SignTransactionButton';
 import { useSizeStore } from 'src/ui/Onboarding/useSizeStore';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -269,8 +269,8 @@ export function SwapForm() {
     keepPreviousData: false,
   });
 
-  const signerSenderRef = useRef<SignerSenderHandle | null>(null);
-  const approveSignerRef = useRef<SignerSenderHandle | null>(null);
+  const sendTxBtnRef = useRef<SendTxBtnHandle | null>(null);
+  const approveTxBtnRef = useRef<SendTxBtnHandle | null>(null);
 
   const {
     mutate: sendApproveTransaction,
@@ -284,11 +284,11 @@ export function SwapForm() {
       const feeValueCommon = feeValueCommonRef.current || null;
 
       invariant(chain, 'Chain must be defined to sign the tx');
-      invariant(approveSignerRef.current, 'SignTransactionButton not found');
+      invariant(approveTxBtnRef.current, 'SignTransactionButton not found');
       invariant(spendPosition, 'Spend position must be defined');
       invariant(quote, 'Cannot submit transaction without a quote');
 
-      const txResponse = await approveSignerRef.current.sendTransaction({
+      const txResponse = await approveTxBtnRef.current.sendTransaction({
         transaction,
         chain: chain.toString(),
         initiator: INTERNAL_ORIGIN,
@@ -344,10 +344,10 @@ export function SwapForm() {
         spendPosition && receivePosition,
         'Trade positions must be defined'
       );
-      invariant(signerSenderRef.current, 'SignTransactionButton not found');
+      invariant(sendTxBtnRef.current, 'SignTransactionButton not found');
       const spendValue = quote.input_amount_estimation;
       const receiveValue = quote.output_amount_estimation;
-      const txResponse = await signerSenderRef.current.sendTransaction({
+      const txResponse = await sendTxBtnRef.current.sendTransaction({
         transaction,
         chain: chain.toString(),
         initiator: INTERNAL_ORIGIN,
@@ -723,7 +723,7 @@ export function SwapForm() {
               </UIText>
               {wallet ? (
                 <SignTransactionButton
-                  ref={approveSignerRef}
+                  ref={approveTxBtnRef}
                   form={formId}
                   wallet={wallet}
                   disabled={
@@ -757,7 +757,7 @@ export function SwapForm() {
                   swapView={swapView}
                   render={(hint) => (
                     <SignTransactionButton
-                      ref={signerSenderRef}
+                      ref={sendTxBtnRef}
                       form={formId}
                       wallet={wallet}
                       style={{ marginTop: 'auto' }}

@@ -9,7 +9,7 @@ import type { TransactionContextParams } from 'src/shared/types/SignatureContext
 import { isDeviceAccount } from 'src/shared/types/validators';
 import {
   HardwareSignTransaction,
-  type SignHandle,
+  type SignTransactionHandle,
 } from 'src/ui/pages/HardwareWalletConnection/HardwareSignTransaction';
 import { walletPort } from 'src/ui/shared/channels';
 import { Button, type Kind as ButtonKind } from 'src/ui/ui-kit/Button';
@@ -19,7 +19,7 @@ type SendTxParams = TransactionContextParams & {
   transaction: IncomingTransaction;
 };
 
-export interface SignerSenderHandle {
+export interface SendTxBtnHandle {
   sendTransaction(
     params: SendTxParams
   ): Promise<ethers.providers.TransactionResponse>;
@@ -32,15 +32,16 @@ export const SignTransactionButton = React.forwardRef(
       children,
       buttonTitle,
       onClick,
+      buttonKind = 'primary',
       ...buttonProps
     }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
       wallet: ExternallyOwnedAccount;
-      kind?: ButtonKind;
       buttonTitle?: React.ReactNode;
+      buttonKind?: ButtonKind;
     },
-    ref: React.Ref<SignerSenderHandle>
+    ref: React.Ref<SendTxBtnHandle>
   ) {
-    const hardwareSignRef = useRef<SignHandle | null>(null);
+    const hardwareSignRef = useRef<SignTransactionHandle | null>(null);
     const { mutateAsync: sendTransaction, ...sendTxMutation } = useMutation({
       mutationFn: async ({ transaction, ...params }: SendTxParams) => {
         if (isDeviceAccount(wallet)) {
@@ -74,6 +75,7 @@ export const SignTransactionButton = React.forwardRef(
         isSending={sendTxMutation.isLoading}
         children={children}
         buttonTitle={buttonTitle}
+        buttonKind={buttonKind}
         onClick={onClick}
         {...buttonProps}
       />
@@ -85,6 +87,7 @@ export const SignTransactionButton = React.forwardRef(
           <Button
             disabled={sendTxMutation.isLoading}
             onClick={handleClick}
+            kind={buttonKind}
             {...buttonProps}
           >
             {children ||

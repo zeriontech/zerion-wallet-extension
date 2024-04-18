@@ -47,7 +47,7 @@ import { usePreferences } from 'src/ui/features/preferences/usePreferences';
 import { StoreWatcher } from 'src/ui/shared/StoreWatcher';
 import { ViewLoadingSuspense } from 'src/ui/components/ViewLoading/ViewLoading';
 import { useEvent } from 'src/ui/shared/useEvent';
-import type { SignerSenderHandle } from 'src/ui/components/SignTransactionButton';
+import type { SendTxBtnHandle } from 'src/ui/components/SignTransactionButton';
 import { SignTransactionButton } from 'src/ui/components/SignTransactionButton';
 import { useSizeStore } from 'src/ui/Onboarding/useSizeStore';
 import { createSendAddressAction } from 'src/modules/ethereum/transactions/addressAction';
@@ -244,7 +244,7 @@ export function SendForm() {
     }
   });
 
-  const signerSenderRef = useRef<SignerSenderHandle | null>(null);
+  const signTxBtnRef = useRef<SendTxBtnHandle | null>(null);
 
   const {
     mutate: sendTransaction,
@@ -262,9 +262,9 @@ export function SendForm() {
       const feeValueCommon = feeValueCommonRef.current || null;
 
       invariant(chain, 'Chain must be defined to sign the tx');
-      invariant(signerSenderRef.current, 'SignTransactionButton not found');
+      invariant(signTxBtnRef.current, 'SignTransactionButton not found');
 
-      const txResponse = await signerSenderRef.current.sendTransaction({
+      const txResponse = await signTxBtnRef.current.sendTransaction({
         transaction,
         chain: chain.toString(),
         initiator: INTERNAL_ORIGIN,
@@ -536,7 +536,7 @@ export function SendForm() {
           </UIText>
           {wallet ? (
             <SignTransactionButton
-              ref={signerSenderRef}
+              ref={signTxBtnRef}
               form={formId}
               wallet={wallet}
               disabled={isLoading}

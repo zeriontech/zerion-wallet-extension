@@ -1,2 +1,2 @@
 export { SignTransactionButton } from './SignTransactionButton';
-export type { SignerSenderHandle } from './SignTransactionButton';
+export type { SendTxBtnHandle } from './SignTransactionButton';

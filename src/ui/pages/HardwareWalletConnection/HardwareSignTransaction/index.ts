@@ -1,2 +1,2 @@
 export { HardwareSignTransaction } from './HardwareSignTransaction';
-export type { SignHandle } from './HardwareSignTransaction';
+export type { SignTransactionHandle } from './HardwareSignTransaction';

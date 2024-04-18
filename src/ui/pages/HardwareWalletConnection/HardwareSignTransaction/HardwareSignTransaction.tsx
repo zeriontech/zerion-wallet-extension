@@ -1,6 +1,6 @@
 import React, { useImperativeHandle, useRef } from 'react';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
-import { Button } from 'src/ui/ui-kit/Button';
+import { Button, type Kind as ButtonKind } from 'src/ui/ui-kit/Button';
 import { useMutation } from '@tanstack/react-query';
 import { invariant } from 'src/shared/invariant';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -24,7 +24,7 @@ interface SignTransactionParams {
   chain: Chain;
 }
 
-export interface SignHandle {
+export interface SignTransactionHandle {
   signTransaction: ({
     transaction,
     address,
@@ -66,13 +66,15 @@ export const HardwareSignTransaction = React.forwardRef(
       isSending,
       children,
       buttonTitle,
+      buttonKind = 'primary',
       ...buttonProps
     }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
       derivationPath: string;
       isSending: boolean;
       buttonTitle?: React.ReactNode;
+      buttonKind?: ButtonKind;
     },
-    ref: React.Ref<SignHandle>
+    ref: React.Ref<SignTransactionHandle>
   ) {
     const navigate = useNavigate();
     const location = useLocation();
@@ -156,7 +158,7 @@ export const HardwareSignTransaction = React.forwardRef(
           </Button>
         ) : (
           <Button
-            kind="primary"
+            kind={buttonKind}
             disabled={signMutation.isLoading || isSending}
             style={{
               paddingInline: 16, // fit longer button label
