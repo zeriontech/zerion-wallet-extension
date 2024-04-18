@@ -134,6 +134,7 @@ export function ViewError({
                 navigate('/');
               }
               onRetry?.();
+              window.location.reload();
             }}
             style={{ paddingInline: 8 }}
           >
