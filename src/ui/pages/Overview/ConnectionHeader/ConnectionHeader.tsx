@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import SettingsIcon from 'jsx:src/ui/assets/filters.svg';
+import GlobeIcon from 'jsx:src/ui/assets/globe.svg';
 import { invariant } from 'src/shared/invariant';
 import { PauseInjectionControl } from 'src/ui/components/PauseInjection';
 import { PausedHeader, usePausedData } from 'src/ui/components/PauseInjection';
@@ -138,7 +138,7 @@ export function ConnectionHeader() {
                 }}
                 disabled={!tabData}
               >
-                <SettingsIcon
+                <GlobeIcon
                   style={{
                     display: 'block',
                     width: 20,
