@@ -141,7 +141,7 @@ try {
   });
 } catch {
   // eslint-disable-next-line no-console
-  console.warn('Global ethereum object was not defined');
+  console.warn('Failed to set window.ethereum');
 }
 
 if (dappsWithoutCorrectEIP1193Support.has(window.location.origin)) {
