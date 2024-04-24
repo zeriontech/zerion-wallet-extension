@@ -67,6 +67,7 @@ import {
   getMinTabContentHeight,
 } from './getTabsOffset';
 import { ConnectionHeader } from './ConnectionHeader';
+import { BackupReminder } from './BackupReminder';
 
 interface ChangeInfo {
   isPositive: boolean;
@@ -319,6 +320,7 @@ function OverviewComponent() {
         }}
       >
         <ConnectionHeader />
+        <BackupReminder />
         <div style={{ backgroundColor: 'var(--white)' }}>
           <Spacer height={16} />
           <div
