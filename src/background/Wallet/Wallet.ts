@@ -67,7 +67,7 @@ import type {
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { Networks } from 'src/modules/networks/Networks';
 import { backgroundGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/backgroundGetBestKnownTransactionCount';
-import { getCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
+import { toCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import { normalizeTransactionChainId } from 'src/modules/ethereum/transactions/normalizeTransactionChainId';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
@@ -1148,7 +1148,7 @@ export class Wallet {
     created?: string;
   }>) {
     this.verifyInternalOrigin(context);
-    const chain = chainStr || getCustomNetworkId(values[0].chainId);
+    const chain = chainStr || toCustomNetworkId(values[0].chainId);
     const result = chainConfigStore.addEthereumChain(values[0], {
       id: chain,
       origin,

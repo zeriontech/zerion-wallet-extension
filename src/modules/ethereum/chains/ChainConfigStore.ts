@@ -11,7 +11,7 @@ import type { Wallet } from 'src/background/Wallet/Wallet';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { invariant } from 'src/shared/invariant';
 import type { AddEthereumChainParameter } from '../types/AddEthereumChainParameter';
-import { getCustomNetworkId, isCustomNetworkId } from './helpers';
+import { toCustomNetworkId, isCustomNetworkId } from './helpers';
 
 function maybeLocalChainId(id?: string | null) {
   return id?.length === 21; // nanoid() standard length
@@ -116,7 +116,7 @@ export class ChainConfigStore extends PersistentStore<ChainConfig> {
           );
           id = network.id;
         } catch {
-          id = getCustomNetworkId(chainId);
+          id = toCustomNetworkId(chainId);
         }
       }
       if (!existingIdSet.has(id)) {

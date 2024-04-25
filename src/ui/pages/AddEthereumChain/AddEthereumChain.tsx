@@ -5,8 +5,6 @@ import { RenderArea } from 'react-area';
 import { isTruthy } from 'is-truthy-ts';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import {
-  getChainId,
-  injectChainConfig,
   toAddEthereumChainParamer,
   toNetworkConfig,
 } from 'src/modules/networks/helpers';
@@ -31,6 +29,7 @@ import { Networks } from 'src/modules/networks/Networks';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
+import { injectChainConfig } from 'src/modules/networks/injectChainConfig';
 import { NetworkForm } from '../Networks/NetworkForm';
 import { NetworkCreateSuccess } from '../Networks/NetworkCreateSuccess';
 import { NetworkUpdateSuccess } from '../Networks/NetworkUpdateSuccess';
@@ -127,7 +126,7 @@ function AddOrUpdateChain({
       ? new Set(
           networks
             .getNetworks()
-            .map((n) => getChainId(n))
+            .map((n) => Networks.getChainId(n))
             .filter(isTruthy)
         )
       : null;

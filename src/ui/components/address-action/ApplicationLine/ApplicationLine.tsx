@@ -2,7 +2,7 @@ import React, { useLayoutEffect, useState } from 'react';
 import { animated, useTransition } from '@react-spring/web';
 import { capitalize } from 'capitalize-ts';
 import type { Chain } from 'src/modules/networks/Chain';
-import type { Networks } from 'src/modules/networks/Networks';
+import { Networks } from 'src/modules/networks/Networks';
 import { Media } from 'src/ui/ui-kit/Media';
 import ArrowLeftTop from 'jsx:src/ui/assets/arrow-left-top.svg';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -17,7 +17,6 @@ import { ShuffleText } from 'src/ui/components/ShuffleText';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
-import { getChainId } from 'src/modules/networks/helpers';
 
 const FadeOutAndIn = ({
   src,
@@ -97,7 +96,7 @@ function ApplicationImage({
             <NetworkIcon
               size={16}
               name={network?.name || null}
-              chainId={network ? getChainId(network) : null}
+              chainId={network ? Networks.getChainId(network) : null}
               src={network?.icon_url || ''}
             />
           </div>

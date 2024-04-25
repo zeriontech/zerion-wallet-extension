@@ -16,9 +16,8 @@ import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { noValueDash } from 'src/ui/shared/typography';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
-import { getChainId } from 'src/modules/networks/helpers';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import type { Networks } from 'src/modules/networks/Networks';
+import { Networks } from 'src/modules/networks/Networks';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 
 export function NetworkSelect({
@@ -112,7 +111,7 @@ export function NetworkSelect({
                 size={24}
                 src={network.icon_url}
                 name={network.name}
-                chainId={getChainId(network)}
+                chainId={Networks.getChainId(network)}
               />
             )}
             <span style={{ display: 'inline-flex', alignItems: 'center' }}>

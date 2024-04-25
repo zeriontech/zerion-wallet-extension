@@ -1,21 +1,15 @@
 import { invariant } from 'src/shared/invariant';
-import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { AddEthereumChainParameter } from '../ethereum/types/AddEthereumChainParameter';
-import { getCustomNetworkId } from '../ethereum/chains/helpers';
+import { toCustomNetworkId } from '../ethereum/chains/helpers';
 import type { NetworkConfig } from './NetworkConfig';
-
-export function getChainId(network: NetworkConfig) {
-  return network.standard === 'eip155'
-    ? normalizeChainId(network.specification.eip155.id)
-    : null;
-}
+import { Networks } from './Networks';
 
 export function toNetworkConfig(
   value: AddEthereumChainParameter
 ): NetworkConfig {
   invariant(value.rpcUrls, 'RPC URL should be defined in network config');
   invariant(value.chainId, 'chainId should be defined in network config');
-  const id = getCustomNetworkId(value.chainId);
+  const id = toCustomNetworkId(value.chainId);
   return {
     supports_sending: true,
     supports_trading: false,
@@ -55,37 +49,6 @@ export function toNetworkConfig(
   };
 }
 
-export function injectChainConfig(
-  networkConfig: NetworkConfig,
-  chainConfig?: AddEthereumChainParameter
-): NetworkConfig {
-  if (!chainConfig) {
-    return networkConfig;
-  }
-  return {
-    ...networkConfig,
-    name: chainConfig.chainName,
-    explorer_home_url:
-      chainConfig.blockExplorerUrls?.[0] ||
-      networkConfig.explorer_home_url ||
-      null,
-    icon_url: chainConfig.iconUrls?.[0] || networkConfig.icon_url || '',
-    rpc_url_public: chainConfig.rpcUrls,
-    rpc_url_user: chainConfig.rpcUrls[0],
-    native_asset: {
-      name: chainConfig.nativeCurrency?.name,
-      address: networkConfig.native_asset?.address || null,
-      decimals: chainConfig.nativeCurrency?.decimals,
-      symbol: chainConfig.nativeCurrency?.symbol,
-      id:
-        chainConfig.nativeCurrency?.symbol?.toLowerCase() === 'eth'
-          ? 'eth'
-          : null,
-    },
-    hidden: chainConfig.hidden ?? networkConfig.hidden,
-  };
-}
-
 export function toAddEthereumChainParamer(
   item: NetworkConfig
 ): AddEthereumChainParameter {
@@ -103,7 +66,7 @@ export function toAddEthereumChainParamer(
       name: item.native_asset?.name || '<unknown>',
     },
     // deprecated field is being used for chainConfigStore's migration
-    chainId: getChainId(item) || item.external_id || '',
+    chainId: Networks.getChainId(item) || item.external_id || '',
     chainName: item.name,
     blockExplorerUrls: item.explorer_address_url
       ? [item.explorer_address_url]

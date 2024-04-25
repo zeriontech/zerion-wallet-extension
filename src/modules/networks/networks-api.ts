@@ -3,7 +3,7 @@ import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 import { fetchChains, getNetworksBySearch } from '../ethereum/chains/requests';
 import type { NetworkConfig } from './NetworkConfig';
 import { networksFallbackInfo } from './networks-fallback';
-import { getChainId } from './helpers';
+import { Networks } from './Networks';
 
 const CHAIN_INFO_TIMEOUT = 12000;
 
@@ -16,7 +16,7 @@ export function getNetworks(ids?: string[]): Promise<NetworkConfig[]> {
   return Promise.race([
     fetchChains({ ids, include_testnets: Boolean(ids), supported_only: false }),
     ids
-      ? rejectAfterDelay(CHAIN_INFO_TIMEOUT, 'fetchNetworks')
+      ? rejectAfterDelay(CHAIN_INFO_TIMEOUT, `getNetworks(${ids.join()})`)
       : getNetworksFallback(),
   ]);
 }
@@ -24,8 +24,10 @@ export function getNetworks(ids?: string[]): Promise<NetworkConfig[]> {
 export async function getNetworkByChainId(chainId: string) {
   const possibleNetworks = await Promise.race([
     getNetworksBySearch({ query: Number(chainId).toString() }),
-    rejectAfterDelay(CHAIN_INFO_TIMEOUT, `getNetworksBySearch(${chainId})`),
+    rejectAfterDelay(CHAIN_INFO_TIMEOUT, `getNetworkByChainId(${chainId})`),
   ]);
-  const network = possibleNetworks.find((item) => getChainId(item) === chainId);
+  const network = possibleNetworks.find(
+    (item) => Networks.getChainId(item) === chainId
+  );
   return network || null;
 }

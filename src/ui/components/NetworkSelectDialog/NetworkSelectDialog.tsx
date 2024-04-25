@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { isTruthy } from 'is-truthy-ts';
 import { createChain } from 'src/modules/networks/Chain';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import type { Networks } from 'src/modules/networks/Networks';
+import { Networks } from 'src/modules/networks/Networks';
 import {
   useNetworks,
   useSearchNetworks,
@@ -25,7 +25,6 @@ import { DialogCloseButton } from 'src/ui/ui-kit/ModalDialogs/DialogTitle/Dialog
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import AllNetworksIcon from 'jsx:src/ui/assets/all-networks.svg';
 import { usePreferences } from 'src/ui/features/preferences/usePreferences';
-import { getChainId } from 'src/modules/networks/helpers';
 import { VirtualizedSurfaceList } from 'src/ui/ui-kit/SurfaceList/VirtualizedSurfaceList';
 import { DelayedRender } from '../DelayedRender';
 import { NetworkIcon } from '../NetworkIcon';
@@ -171,7 +170,7 @@ function NetworkList({
               <NetworkIcon
                 size={24}
                 src={network.icon_url}
-                chainId={getChainId(network)}
+                chainId={Networks.getChainId(network)}
                 name={network.name}
               />
             }

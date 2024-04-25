@@ -1,5 +1,6 @@
 import { client } from 'defi-sdk';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 
 export function fetchChains(
   payload: {
@@ -34,9 +35,12 @@ export function fetchChains(
 }
 
 export async function getNetworksBySearch({ query }: { query: string }) {
-  return fetchChains({
-    include_testnets: true,
-    supported_only: false,
-    search_query: query.trim().toLowerCase(),
-  });
+  return Promise.race([
+    fetchChains({
+      include_testnets: true,
+      supported_only: false,
+      search_query: query.trim().toLowerCase(),
+    }),
+    rejectAfterDelay(12000, `getNetworksBySearch(${query})`),
+  ]);
 }

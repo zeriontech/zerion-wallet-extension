@@ -10,7 +10,7 @@ import { createChain } from './Chain';
 import type { NetworkConfig } from './NetworkConfig';
 import { getAddress } from './asset';
 import { UnsupportedNetwork } from './errors';
-import { getChainId, injectChainConfig } from './helpers';
+import { injectChainConfig } from './injectChainConfig';
 
 type Collection<T> = { [key: string]: T };
 
@@ -62,6 +62,12 @@ export class Networks {
   private collectionByEvmId: { [key: ChainId]: NetworkConfig | undefined };
   private ethereumChainConfigs: EthereumChainConfig[];
 
+  static getChainId(network: NetworkConfig) {
+    return network.standard === 'eip155'
+      ? normalizeChainId(network.specification.eip155.id)
+      : null;
+  }
+
   constructor({
     networks,
     ethereumChainConfigs,
@@ -78,7 +84,7 @@ export class Networks {
     );
     this.collectionByEvmId = toCollection(
       this.networks,
-      (x) => getChainId(x),
+      (x) => Networks.getChainId(x),
       (x) => x
     );
   }
@@ -92,7 +98,7 @@ export class Networks {
     if (!item) {
       throw new Error(`Chain not found: ${chain}`);
     }
-    return getChainId(item);
+    return Networks.getChainId(item);
   }
 
   isSavedLocallyChain(chain: Chain) {

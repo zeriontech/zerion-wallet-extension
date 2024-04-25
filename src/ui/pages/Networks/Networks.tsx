@@ -20,7 +20,7 @@ import {
 import { isTruthy } from 'is-truthy-ts';
 import { createChain } from 'src/modules/networks/Chain';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import type { Networks as NetworksType } from 'src/modules/networks/Networks';
+import { Networks as NetworksModule } from 'src/modules/networks/Networks';
 import { networksStore } from 'src/modules/networks/networks-store.client';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { invariant } from 'src/shared/invariant';
@@ -58,11 +58,7 @@ import { LIST_ITEM_CLASS } from 'src/ui/components/NetworkSelectDialog/constants
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
-import {
-  getChainId,
-  toAddEthereumChainParamer,
-} from 'src/modules/networks/helpers';
-import { valueToHex } from 'src/shared/units/valueToHex';
+import { toAddEthereumChainParamer } from 'src/modules/networks/helpers';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useWalletAddresses } from './shared/useWalletAddresses';
 import { NetworkCreateSuccess } from './NetworkCreateSuccess';
@@ -114,7 +110,7 @@ function NetworkCreatePage() {
       ? new Set(
           networks
             .getNetworks()
-            .map((n) => getChainId(n))
+            .map((n) => NetworksModule.getChainId(n))
             .filter(isTruthy)
         )
       : null;
@@ -216,10 +212,10 @@ function NetworkPage() {
     const set = new Set(
       networks
         ?.getNetworks()
-        .map((n) => getChainId(n))
+        .map((n) => NetworksModule.getChainId(n))
         .filter(isTruthy)
     );
-    const chainId = network ? getChainId(network) : null;
+    const chainId = network ? NetworksModule.getChainId(network) : null;
     if (chainId) {
       set.delete(chainId);
     }
@@ -261,7 +257,10 @@ function NetworkPage() {
       <PageColumn>
         <NavigationTitle
           title={
-            network.name || network.id || valueToHex(getChainId(network) || 0)
+            network.name ||
+            network.id ||
+            NetworksModule.getChainId(network) ||
+            ''
           }
           elementEnd={
             isCustomNetwork ? (
@@ -322,7 +321,7 @@ function WalletNetworkList({
   networks,
   groups,
 }: {
-  networks: NetworksType;
+  networks: NetworksModule;
   groups: NetworkGroups;
 }) {
   return (
@@ -354,7 +353,7 @@ function NetworksView({
   autoFocusSearch,
   loading,
 }: {
-  networks: NetworksType | null;
+  networks: NetworksModule | null;
   chainDistribution: ChainDistribution | null;
   showTestnets: boolean;
   autoFocusSearch: boolean;

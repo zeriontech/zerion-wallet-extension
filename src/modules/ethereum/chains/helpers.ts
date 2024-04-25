@@ -1,9 +1,11 @@
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 
-export function getCustomNetworkId(chainId: string) {
-  return `zerion-extension-${normalizeChainId(chainId)}`;
+const CUSTOM_NETWORK_PREFIX = 'zerion-custom-network-';
+
+export function toCustomNetworkId(chainId: string) {
+  return `${CUSTOM_NETWORK_PREFIX}${normalizeChainId(chainId)}`;
 }
 
 export function isCustomNetworkId(networkId: string) {
-  return networkId.startsWith('zerion-extension-');
+  return networkId.startsWith(CUSTOM_NETWORK_PREFIX);
 }

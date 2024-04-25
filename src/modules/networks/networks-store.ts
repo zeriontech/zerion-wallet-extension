@@ -1,4 +1,3 @@
-import { getChainId } from 'src/modules/networks/helpers';
 import { Store } from 'store-unit';
 import type { EthereumChainConfig } from '../ethereum/chains/ChainConfigStore';
 import type { ChainId } from '../ethereum/transactions/ChainId';
@@ -116,7 +115,7 @@ export class NetworksStore extends Store<State> {
     const shouldUpdateNetworksInfo = [
       ...this.networkConfigs,
       ...this.customNetworkConfigs,
-    ].every((network) => getChainId(network) !== chainId);
+    ].every((network) => Networks.getChainId(network) !== chainId);
     const existingNetworks = this.getState().networks;
     if (!shouldUpdateNetworksInfo && existingNetworks) {
       return existingNetworks;

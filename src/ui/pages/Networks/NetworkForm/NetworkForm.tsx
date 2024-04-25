@@ -17,7 +17,7 @@ import type { Parsers } from 'src/ui/shared/form-data';
 import { collectData } from 'src/ui/shared/form-data';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import {
-  getCustomNetworkId,
+  toCustomNetworkId,
   isCustomNetworkId,
 } from 'src/modules/ethereum/chains/helpers';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
@@ -220,7 +220,7 @@ export function NetworkForm({
           onSubmit(
             // custom network id should be generated from (probably) updated chainId
             !chain || isCustomNetworkId(chain)
-              ? getCustomNetworkId(result.chainId)
+              ? toCustomNetworkId(result.chainId)
               : chain,
             result
           );

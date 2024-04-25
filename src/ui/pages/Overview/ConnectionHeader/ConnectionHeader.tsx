@@ -21,7 +21,7 @@ import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import { createChain } from 'src/modules/networks/Chain';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
-import { getChainId } from 'src/modules/networks/helpers';
+import { Networks } from 'src/modules/networks/Networks';
 import { ConnectedSiteDialog } from '../../ConnectedSites/ConnectedSite';
 import { NetworkSelect } from '../../Networks/NetworkSelect';
 import { isConnectableDapp } from '../../ConnectedSites/shared/isConnectableDapp';
@@ -227,7 +227,7 @@ export function ConnectionHeader() {
                                 size={24}
                                 src={network.icon_url}
                                 name={network.name}
-                                chainId={getChainId(network)}
+                                chainId={Networks.getChainId(network)}
                               />
                             ) : null}
                             <span

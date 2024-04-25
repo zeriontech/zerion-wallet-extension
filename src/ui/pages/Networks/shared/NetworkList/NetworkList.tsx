@@ -2,10 +2,8 @@ import React, { useMemo } from 'react';
 import { isTruthy } from 'is-truthy-ts';
 import { createChain } from 'src/modules/networks/Chain';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import type {
-  NetworkConfigMetaData,
-  Networks,
-} from 'src/modules/networks/Networks';
+import { Networks } from 'src/modules/networks/Networks';
+import type { NetworkConfigMetaData } from 'src/modules/networks/Networks';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { intersperce } from 'src/ui/shared/intersperce';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -16,7 +14,6 @@ import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import InvisibleIcon from 'jsx:src/ui/assets/invisible.svg';
 import { LIST_ITEM_CLASS } from 'src/ui/components/NetworkSelectDialog/constants';
 import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
-import { getChainId } from 'src/modules/networks/helpers';
 import { VirtualizedSurfaceList } from 'src/ui/ui-kit/SurfaceList/VirtualizedSurfaceList';
 
 function getOriginUrlFromMetaData(metadata: NetworkConfigMetaData) {
@@ -175,7 +172,7 @@ export function NetworkList({
                 <NetworkIcon
                   size={24}
                   src={network.icon_url}
-                  chainId={getChainId(network)}
+                  chainId={Networks.getChainId(network)}
                   name={network.name}
                 />
               }

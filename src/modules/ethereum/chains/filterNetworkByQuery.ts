@@ -1,6 +1,6 @@
-import { getChainId } from 'src/modules/networks/helpers';
 import { normalizedContains } from 'normalized-contains';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import { Networks } from 'src/modules/networks/Networks';
 
 function contains(str1?: string, str2?: string) {
   if (str1 == null || str2 == null) {
@@ -12,7 +12,7 @@ function contains(str1?: string, str2?: string) {
 export function filterNetworksByQuery(query: string) {
   return (item: NetworkConfig) =>
     contains(item.id, query) ||
-    contains(getChainId(item) || '', query) ||
+    contains(Networks.getChainId(item) || '', query) ||
     contains(item.name, query) ||
     contains(item.native_asset?.name, query) ||
     contains(item.native_asset?.symbol, query) ||
