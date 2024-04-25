@@ -153,7 +153,7 @@ function calculateTransactionCosts({
   networks: Networks;
   transaction: IncomingTransaction;
   nativeAsset: Asset | null;
-  nativeBalance: BigNumber;
+  nativeBalance: BigNumber | null;
   estimatedFeeValue: EstimatedFeeValue;
 }) {
   const txValue = new BigNumber((transaction.value ?? 0).toString());
@@ -170,8 +170,10 @@ function calculateTransactionCosts({
   }
 
   const price = nativeAsset?.price?.value;
-  const nativeBalanceBase = commonToBase(nativeBalance, decimals);
-  const isLowBalance = maxTotalValueBase.gt(nativeBalanceBase);
+  const nativeBalanceBase =
+    nativeBalance != null ? commonToBase(nativeBalance, decimals) : null;
+  const isLowBalance =
+    nativeBalanceBase != null ? maxTotalValueBase.gt(nativeBalanceBase) : true;
   const feeValueCommon = baseToCommon(estimatedFee, decimals);
   const feeValueFiat = price != null ? feeValueCommon.times(price) : null;
   const maxFeeValueCommon = baseToCommon(maxFee, decimals);
@@ -261,7 +263,7 @@ export function useTransactionFee({
 
   const costs = useMemo(
     () =>
-      networks && feeEstimation && nativeBalance
+      networks && feeEstimation
         ? calculateTransactionCosts({
             chain,
             transaction,
