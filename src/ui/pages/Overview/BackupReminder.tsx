@@ -42,9 +42,10 @@ export function BackupReminder() {
       ref={dialogRef}
       height="fit-content"
       onClosed={handleHide}
+      closeOnClickOutside={false}
     >
-      <VStack gap={24}>
-        <VStack gap={8}>
+      <VStack gap={32}>
+        <VStack gap={16}>
           <WarningIcon
             size={44}
             outlineStrokeWidth={7}
@@ -52,11 +53,13 @@ export function BackupReminder() {
             kind="notice"
             glow={true}
           />
-          <UIText kind="headline/h3">Secure your wallet</UIText>
-          <UIText kind="body/regular">
-            If this devide is lost or stolen, you'll lose access to your wallet
-            and funds
-          </UIText>
+          <VStack gap={8}>
+            <UIText kind="headline/h3">Secure your wallet</UIText>
+            <UIText kind="body/regular">
+              If this device is lost or stolen, you'll lose access to your
+              wallet and funds
+            </UIText>
+          </VStack>
         </VStack>
         <HStack
           gap={12}
@@ -66,19 +69,21 @@ export function BackupReminder() {
           <Button
             onClick={handleHide}
             kind="regular"
-            style={{ whiteSpace: 'nowrap' }}
+            style={{ whiteSpace: 'nowrap', paddingInline: 24 }}
             ref={buttonRef}
+            size={48}
           >
-            I'll take the risk
+            <UIText kind="body/accent">I'll take the risk</UIText>
           </Button>
           <Button
             onClick={handleHide}
             as={UnstyledLink}
             to="/settings"
             kind="primary"
-            style={{ whiteSpace: 'nowrap' }}
+            style={{ whiteSpace: 'nowrap', paddingInline: 24 }}
+            size={48}
           >
-            Backup (~1 min)
+            <UIText kind="body/accent">Backup (~1 min)</UIText>
           </Button>
         </HStack>
       </VStack>
