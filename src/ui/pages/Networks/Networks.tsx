@@ -82,7 +82,10 @@ async function saveChainConfig({
   const chainsMetadata = networks.getNetworksMetaData();
   const metadata = chainsMetadata[prevChain || chain];
   if (prevChain && prevChain !== chain) {
-    await walletPort.request('switchChainPermissions', { prevChain, chain });
+    await walletPort.request('updateChainForAffectedOrigins', {
+      prevChain,
+      chain,
+    });
     await walletPort.request('removeEthereumChain', { chain: prevChain });
   }
   return walletPort.request('addEthereumChain', {

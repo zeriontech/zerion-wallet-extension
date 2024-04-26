@@ -1149,6 +1149,9 @@ export class Wallet {
   }>) {
     this.verifyInternalOrigin(context);
     const chain = chainStr || toCustomNetworkId(values[0].chainId);
+    // NOTE: This is where we might want to call something like
+    // {await networksStore.loadNetworkConfigByChainId(values[0].chainId)}
+    // IF we wanted to refactor networkStore to not hold searched values
     const result = chainConfigStore.addEthereumChain(values[0], {
       id: chain,
       origin,
@@ -1173,7 +1176,7 @@ export class Wallet {
     this.verifyOverviewChain();
   }
 
-  async switchChainPermissions({
+  async updateChainForAffectedOrigins({
     context,
     params: { prevChain, chain = NetworkId.Ethereum },
   }: WalletMethodParams<{ prevChain: string; chain?: string }>) {
@@ -1192,7 +1195,10 @@ export class Wallet {
     context,
     params: { chain: chainStr },
   }: WalletMethodParams<{ chain: string }>) {
-    this.switchChainPermissions({ context, params: { prevChain: chainStr } });
+    this.updateChainForAffectedOrigins({
+      context,
+      params: { prevChain: chainStr },
+    });
     this.resetEthereumChain({ context, params: { chain: chainStr } });
   }
 

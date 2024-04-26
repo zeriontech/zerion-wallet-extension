@@ -105,7 +105,7 @@ export class ChainConfigStore extends PersistentStore<ChainConfig> {
     const existingIdSet = new Set(ethereumChainConfigs?.map(({ id }) => id));
     for (const { value, ...config } of ethereumChains) {
       const chainConfig = toAddEthereumChainParamer(value);
-      let id = !maybeLocalChainId(value.chain) ? value.chain : null;
+      let id = maybeLocalChainId(value.chain) ? null : value.chain;
       if (!id) {
         const chainId = value.external_id;
         try {
@@ -153,7 +153,7 @@ export class ChainConfigStore extends PersistentStore<ChainConfig> {
     for (const config of oldChainConfigs) {
       const prevChain = config.value.chain;
       if (!updatedChainIdSet.has(prevChain)) {
-        await wallet.switchChainPermissions({
+        await wallet.updateChainForAffectedOrigins({
           context: { origin: INTERNAL_ORIGIN },
           params: { prevChain },
         });
@@ -179,7 +179,7 @@ export class ChainConfigStore extends PersistentStore<ChainConfig> {
             `Unable to fetch network info by chainId: ${config.value.chainId}`
           );
           updatedEthereumChainConfigs.push({ ...config, id: network.id });
-          await wallet.switchChainPermissions({
+          await wallet.updateChainForAffectedOrigins({
             context: { origin: INTERNAL_ORIGIN },
             params: { prevChain: config.id, chain: network.id },
           });
