@@ -5,11 +5,10 @@ import type { NetworkConfigMetaData } from 'src/modules/networks/Networks';
 import { PersistentStore } from 'src/modules/persistent-store';
 import { upsert } from 'src/shared/upsert';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import { toAddEthereumChainParamer } from 'src/modules/networks/helpers';
+import { toAddEthereumChainParameter } from 'src/modules/networks/helpers';
 import { getNetworkByChainId } from 'src/modules/networks/networks-api';
 import type { Wallet } from 'src/background/Wallet/Wallet';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
-import { invariant } from 'src/shared/invariant';
 import type { AddEthereumChainParameter } from '../types/AddEthereumChainParameter';
 import { toCustomNetworkId, isCustomNetworkId } from './helpers';
 
@@ -38,7 +37,7 @@ function remove<T>(arr: T[], predicate: (item: T) => boolean) {
   }
 }
 
-export class ChainConfigStore extends PersistentStore<ChainConfig> {
+class ChainConfigStore extends PersistentStore<ChainConfig> {
   static initialState: ChainConfig = {
     ethereumChainConfigs: [],
     migratedChainConfigs: false,
@@ -104,16 +103,17 @@ export class ChainConfigStore extends PersistentStore<ChainConfig> {
     }
     const existingIdSet = new Set(ethereumChainConfigs?.map(({ id }) => id));
     for (const { value, ...config } of ethereumChains) {
-      const chainConfig = toAddEthereumChainParamer(value);
+      const chainConfig = toAddEthereumChainParameter(value);
       let id = maybeLocalChainId(value.chain) ? null : value.chain;
       if (!id) {
         const chainId = value.external_id;
         try {
           const network = await getNetworkByChainId(chainId);
-          invariant(
-            network,
-            `Unable to fetch network info by chainId: ${chainId}`
-          );
+          if (!network) {
+            throw new Error(
+              `Unable to fetch network info by chainId: ${chainId}`
+            );
+          }
           id = network.id;
         } catch {
           id = toCustomNetworkId(chainId);
@@ -174,10 +174,11 @@ export class ChainConfigStore extends PersistentStore<ChainConfig> {
         }
         try {
           const network = await getNetworkByChainId(config.value.chainId);
-          invariant(
-            network,
-            `Unable to fetch network info by chainId: ${config.value.chainId}`
-          );
+          if (!network) {
+            throw new Error(
+              `Unable to fetch network info by chainId: ${config.value.chainId}`
+            );
+          }
           updatedEthereumChainConfigs.push({ ...config, id: network.id });
           await wallet.updateChainForAffectedOrigins({
             context: { origin: INTERNAL_ORIGIN },

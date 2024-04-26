@@ -49,7 +49,7 @@ export function toNetworkConfig(
   };
 }
 
-export function toAddEthereumChainParamer(
+export function toAddEthereumChainParameter(
   item: NetworkConfig
 ): AddEthereumChainParameter {
   return {

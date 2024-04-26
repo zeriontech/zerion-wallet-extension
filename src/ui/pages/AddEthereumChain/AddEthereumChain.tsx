@@ -5,7 +5,7 @@ import { RenderArea } from 'react-area';
 import { isTruthy } from 'is-truthy-ts';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import {
-  toAddEthereumChainParamer,
+  toAddEthereumChainParameter,
   toNetworkConfig,
 } from 'src/modules/networks/helpers';
 import { invariant } from 'src/shared/invariant';
@@ -111,7 +111,7 @@ function AddOrUpdateChain({
       return {
         config,
         prevChainConfig: prevNetwork
-          ? toAddEthereumChainParamer(prevNetwork)
+          ? toAddEthereumChainParameter(prevNetwork)
           : null,
       };
     },

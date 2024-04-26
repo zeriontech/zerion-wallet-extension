@@ -58,7 +58,7 @@ import { LIST_ITEM_CLASS } from 'src/ui/components/NetworkSelectDialog/constants
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
-import { toAddEthereumChainParamer } from 'src/modules/networks/helpers';
+import { toAddEthereumChainParameter } from 'src/modules/networks/helpers';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useWalletAddresses } from './shared/useWalletAddresses';
 import { NetworkCreateSuccess } from './NetworkCreateSuccess';
@@ -291,7 +291,7 @@ function NetworkPage() {
         <PageTop />
         <NetworkForm
           chain={chainStr}
-          chainConfig={toAddEthereumChainParamer(network)}
+          chainConfig={toAddEthereumChainParameter(network)}
           onSubmit={(id, value) =>
             mutation.mutate({
               chain: id,

@@ -31,39 +31,32 @@ function getOriginUrlFromMetaData(metadata: NetworkConfigMetaData) {
   }
 }
 
-function getUpdatedFromMetadata(
-  metadata: NetworkConfigMetaData,
-  isCustom?: boolean
-) {
-  const { updated, created } = metadata;
-  if (!isCustom) {
-    return updated || null;
-  }
-  return updated === created || updated === 0 ? null : updated;
-}
-
 function NetworkDetail({
   metadataRecord,
   network,
 }: {
   metadataRecord: Record<string, NetworkConfigMetaData | undefined>;
   network: NetworkConfig;
-  networks: Networks;
 }) {
   const metadata = metadataRecord[network.id];
-  const { originUrl, created, updated } = useMemo(() => {
-    if (!network.id || !metadata) {
-      return {};
-    }
-    return {
-      originUrl: getOriginUrlFromMetaData(metadata),
-      created: metadata.created,
-      updated: getUpdatedFromMetadata(metadata, isCustomNetworkId(network.id)),
-    };
-  }, [metadata, network]);
+  const originUrl = useMemo(() => {
+    return metadata ? getOriginUrlFromMetaData(metadata) : null;
+  }, [metadata]);
+
   if (!network.id || !metadata) {
     return null;
   }
+
+  const { created, updated } = metadata;
+  const createdFormatted = new Intl.DateTimeFormat('en', {
+    dateStyle: 'medium',
+    timeStyle: 'medium',
+  }).format(created);
+  const updatedFormatted = new Intl.DateTimeFormat('en', {
+    dateStyle: 'medium',
+    timeStyle: 'medium',
+  }).format(updated);
+
   return (
     <UIText
       kind="caption/regular"
@@ -81,22 +74,15 @@ function NetworkDetail({
               {isCustomNetworkId(network.id) ? 'Added' : 'Set'} by{' '}
               <span style={{ color: 'var(--primary)' }}>{originUrl}</span>
             </span>
-          ) : created && !updated ? (
-            <span key={0}>
-              Created{' '}
-              {new Intl.DateTimeFormat('en', {
-                dateStyle: 'medium',
-                timeStyle: 'medium',
-              }).format(created)}
+          ) : created && created === updated ? (
+            <span key={0} title={createdFormatted}>
+              {isCustomNetworkId(network.id) ? 'Created' : 'Saved'}{' '}
+              {createdFormatted}
             </span>
           ) : null,
-          updated ? (
-            <span key={1}>
-              Edited{' '}
-              {new Intl.DateTimeFormat('en', {
-                dateStyle: 'medium',
-                timeStyle: 'medium',
-              }).format(updated)}
+          updated && updated !== created ? (
+            <span key={1} title={updatedFormatted}>
+              Edited {updatedFormatted}
             </span>
           ) : null,
         ],
@@ -187,7 +173,6 @@ export function NetworkList({
               vGap={0}
               detailText={
                 <NetworkDetail
-                  networks={networks}
                   network={network}
                   metadataRecord={metadataRecord}
                 />
