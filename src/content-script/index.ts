@@ -4,7 +4,7 @@ import {
   isJsonRpcPayload,
   isJsonRpcRequest,
   isJsonRpcResponse,
-} from '@json-rpc-tools/utils';
+} from '@walletconnect/jsonrpc-utils';
 import { BackgroundScriptUpdateHandler } from 'src/shared/core/BackgroundScriptUpdateHandler';
 import { PortMessageChannel } from 'src/shared/PortMessageChannel';
 

@@ -2,7 +2,7 @@ import type { NotificationWindow } from 'src/background/NotificationWindow/Notif
 import { isRpcRequest } from 'src/shared/custom-rpc';
 import { isObj } from 'src/shared/isObj';
 import { invariant } from 'src/shared/invariant';
-import type { ErrorResponse } from '@json-rpc-tools/utils';
+import type { ErrorResponse } from '@walletconnect/jsonrpc-utils';
 import type { PortMessageHandler } from '../PortRegistry';
 
 function assertType<T>(

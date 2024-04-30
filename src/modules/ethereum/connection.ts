@@ -3,8 +3,11 @@ import type {
   IJsonRpcConnection,
   JsonRpcPayload,
   JsonRpcResult,
-} from '@json-rpc-tools/utils';
-import { isJsonRpcError, isJsonRpcResponse } from '@json-rpc-tools/utils';
+} from '@walletconnect/jsonrpc-utils';
+import {
+  isJsonRpcError,
+  isJsonRpcResponse,
+} from '@walletconnect/jsonrpc-utils';
 
 export class Connection extends EventEmitter implements IJsonRpcConnection {
   public events = new EventEmitter();

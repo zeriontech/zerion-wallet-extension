@@ -4,8 +4,11 @@ import type {
   JsonRpcError,
   JsonRpcPayload,
   JsonRpcResult,
-} from '@json-rpc-tools/utils';
-import { formatJsonRpcError, isJsonRpcRequest } from '@json-rpc-tools/utils';
+} from '@walletconnect/jsonrpc-utils';
+import {
+  formatJsonRpcError,
+  isJsonRpcRequest,
+} from '@walletconnect/jsonrpc-utils';
 import { networksStore } from 'src/modules/networks/networks-store.background';
 
 export class HttpConnection extends EventEmitter {

@@ -5,14 +5,14 @@ import {
   isJsonRpcPayload,
   isJsonRpcError,
   isJsonRpcResult,
-  formatJsonRpcRequest,
-} from '@json-rpc-tools/utils';
+} from '@walletconnect/jsonrpc-utils';
 import type {
   JsonRpcError,
   JsonRpcResult,
   JsonRpcRequest,
-} from '@json-rpc-tools/utils';
+} from '@walletconnect/jsonrpc-utils';
 import { getError } from '../errors/getError';
+import { formatJsonRpcRequestPatched } from './formatJsonRpcRequestPatched';
 
 /**
  * fulfillRpcRequest always resolves with JsonRpcResult | JsonRpcError
@@ -51,7 +51,7 @@ export async function sendRpcRequest<T>(
   url: string,
   request: Partial<JsonRpcRequest> & Pick<JsonRpcRequest, 'method' | 'params'>
 ) {
-  const payload = formatJsonRpcRequest(
+  const payload = formatJsonRpcRequestPatched(
     request.method,
     request.params,
     request.id

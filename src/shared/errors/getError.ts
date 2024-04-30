@@ -1,5 +1,5 @@
-import type { JsonRpcError } from '@json-rpc-tools/utils';
-import { isJsonRpcError, isJsonRpcPayload } from '@json-rpc-tools/utils';
+import type { JsonRpcError } from '@walletconnect/jsonrpc-utils';
+import { isJsonRpcError, isJsonRpcPayload } from '@walletconnect/jsonrpc-utils';
 import type { ExtendedError } from './errors';
 
 function isErrorMessageObject(value: unknown): value is { message: string } {

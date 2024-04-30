@@ -3,7 +3,7 @@ import {
   formatJsonRpcError,
   isJsonRpcPayload,
   isJsonRpcRequest,
-} from '@json-rpc-tools/utils';
+} from '@walletconnect/jsonrpc-utils';
 import type { Wallet } from 'src/shared/types/Wallet';
 import {
   isRpcRequestWithContext,

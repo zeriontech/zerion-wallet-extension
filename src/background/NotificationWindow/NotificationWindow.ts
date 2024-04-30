@@ -1,5 +1,5 @@
 import { createNanoEvents } from 'nanoevents';
-import type { ErrorResponse } from '@json-rpc-tools/utils';
+import type { ErrorResponse } from '@walletconnect/jsonrpc-utils';
 import browser from 'webextension-polyfill';
 import type { RpcError, RpcResult } from 'src/shared/custom-rpc';
 import { UserRejected } from 'src/shared/errors/errors';

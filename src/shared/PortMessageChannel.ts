@@ -1,13 +1,16 @@
 import browser from 'webextension-polyfill';
 import {
-  formatJsonRpcRequest,
   isJsonRpcPayload,
   isJsonRpcResponse,
   isJsonRpcResult,
-} from '@json-rpc-tools/utils';
-import type { JsonRpcPayload, JsonRpcRequest } from '@json-rpc-tools/utils';
+} from '@walletconnect/jsonrpc-utils';
+import type {
+  JsonRpcPayload,
+  JsonRpcRequest,
+} from '@walletconnect/jsonrpc-utils';
 import { createNanoEvents } from 'nanoevents';
 import { invariant } from './invariant';
+import { formatJsonRpcRequestPatched } from './custom-rpc/formatJsonRpcRequestPatched';
 
 type Port = browser.Runtime.Port;
 export class PortMessageChannel {
@@ -60,7 +63,7 @@ export class PortMessageChannel {
     // NOTE: Should we assert this.port _after_ emitting the custom 'postMessage'?
     // Or not assert at all?
     invariant(this.port, `Port not initialized: (${this.name})`);
-    const payload = formatJsonRpcRequest(method, params, id);
+    const payload = formatJsonRpcRequestPatched(method, params, id);
     this.emitter.emit('postMessage', payload);
     this.port.postMessage(payload);
     return this.getPromise<Result>(payload.id);

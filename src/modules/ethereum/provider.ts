@@ -1,10 +1,11 @@
-import { JsonRpcProvider } from '@json-rpc-tools/provider';
+import { JsonRpcProvider } from '@walletconnect/jsonrpc-provider';
 import type {
   JsonRpcPayload,
   JsonRpcRequest,
   RequestArguments,
-} from '@json-rpc-tools/utils';
-import { formatJsonRpcRequest, isJsonRpcError } from '@json-rpc-tools/utils';
+} from '@walletconnect/jsonrpc-utils';
+import { isJsonRpcError } from '@walletconnect/jsonrpc-utils';
+import { formatJsonRpcRequestPatched } from 'src/shared/custom-rpc/formatJsonRpcRequestPatched';
 import { InvalidParams, MethodNotImplemented } from 'src/shared/errors/errors';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import type { Connection } from './connection';
@@ -19,10 +20,10 @@ function accountsEquals(arr1: string[], arr2: string[]) {
 
 async function fetchInitialState(connection: Connection) {
   return Promise.all([
-    connection.send<string>(formatJsonRpcRequest('eth_chainId', [])),
-    connection.send<string[]>(formatJsonRpcRequest('eth_accounts', [])),
+    connection.send<string>(formatJsonRpcRequestPatched('eth_chainId', [])),
+    connection.send<string[]>(formatJsonRpcRequestPatched('eth_accounts', [])),
     connection.send<WalletNameFlag[]>(
-      formatJsonRpcRequest('wallet_getWalletNameFlags', {
+      formatJsonRpcRequestPatched('wallet_getWalletNameFlags', {
         origin: window.location.origin,
       })
     ),
@@ -163,7 +164,7 @@ export class EthereumProvider extends JsonRpcProvider {
       ];
     }
     const promise = this._getRequestPromise(
-      formatJsonRpcRequest(request.method, params || [], request.id),
+      formatJsonRpcRequestPatched(request.method, params || [], request.id),
       context
     );
     if (request.method === 'eth_requestAccounts' && this.nonEip6963Request) {

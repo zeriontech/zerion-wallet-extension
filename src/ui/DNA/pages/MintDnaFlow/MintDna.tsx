@@ -9,7 +9,7 @@ import {
 } from '@react-spring/web';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useAddressPositions } from 'defi-sdk';
-import { payloadId } from '@json-rpc-tools/utils';
+import { payloadId } from '@walletconnect/jsonrpc-utils';
 import type BigNumber from 'bignumber.js';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';

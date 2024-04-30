@@ -2,7 +2,7 @@ import browser from 'webextension-polyfill';
 import type { Account } from 'src/background/account/Account';
 import { emitter } from 'src/background/events';
 import type { RuntimePort } from 'src/background/webapis/RuntimePort';
-import { payloadId } from '@json-rpc-tools/utils';
+import { payloadId } from '@walletconnect/jsonrpc-utils';
 import { getProviderInjectionChange } from 'src/background/Wallet/GlobalPreferences';
 import { getPortContext } from '../getPortContext';
 
