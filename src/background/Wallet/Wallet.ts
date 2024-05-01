@@ -204,8 +204,7 @@ export class Wallet {
     this.record = await this.walletStore.read(this.id, this.userCredentials);
     if (this.record) {
       this.emitter.emit('recordUpdated');
-      chainConfigStore.cleanupDeprecatedCustomChainPermissions(this);
-      chainConfigStore.checkChainsForUpdates(this);
+      chainConfigStore.updateChainInformation(this);
     }
   }
 
@@ -1138,16 +1137,59 @@ export class Wallet {
     return signature;
   }
 
+  async updateChainForAffectedOrigins({
+    prevChain,
+    chain = NetworkId.Ethereum,
+  }: {
+    prevChain: string;
+    chain?: string;
+  }) {
+    this.ensureRecord(this.record);
+    const affectedPermissions = Model.getPermissionsByChain(this.record, {
+      chain: createChain(prevChain),
+    });
+    affectedPermissions.forEach(({ origin }) => {
+      this.setChainForOrigin(createChain(chain), origin);
+    });
+    this.verifyOverviewChain();
+  }
+
+  async removeEthereumChain({
+    context,
+    params: { chain: chainStr },
+  }: WalletMethodParams<{ chain: string }>) {
+    this.updateChainForAffectedOrigins({ prevChain: chainStr });
+    this.resetEthereumChain({ context, params: { chain: chainStr } });
+  }
+
   async addEthereumChain({
     context,
-    params: { values, origin, chain: chainStr, created },
+    params: {
+      values,
+      origin,
+      chain: chainStr,
+      prevChain: prevChainStr,
+      created,
+    },
   }: WalletMethodParams<{
     values: [AddEthereumChainParameter];
     origin: string;
     chain?: string;
+    prevChain?: string;
     created?: string;
   }>) {
     this.verifyInternalOrigin(context);
+    if (prevChainStr && prevChainStr !== chainStr) {
+      await this.updateChainForAffectedOrigins({
+        prevChain: prevChainStr,
+        chain: chainStr,
+      });
+      await this.removeEthereumChain({
+        context,
+        params: { chain: prevChainStr },
+      });
+    }
+
     const chain = chainStr || toCustomNetworkId(values[0].chainId);
     // NOTE: This is where we might want to call something like
     // {await networksStore.loadNetworkConfigByChainId(values[0].chainId)}
@@ -1174,32 +1216,6 @@ export class Wallet {
     this.ensureRecord(this.record);
     chainConfigStore.removeEthereumChain(createChain(chainStr));
     this.verifyOverviewChain();
-  }
-
-  async updateChainForAffectedOrigins({
-    context,
-    params: { prevChain, chain = NetworkId.Ethereum },
-  }: WalletMethodParams<{ prevChain: string; chain?: string }>) {
-    this.verifyInternalOrigin(context);
-    this.ensureRecord(this.record);
-    const affectedPermissions = Model.getPermissionsByChain(this.record, {
-      chain: createChain(prevChain),
-    });
-    affectedPermissions.forEach(({ origin }) => {
-      this.setChainForOrigin(createChain(chain), origin);
-    });
-    this.verifyOverviewChain();
-  }
-
-  async removeEthereumChain({
-    context,
-    params: { chain: chainStr },
-  }: WalletMethodParams<{ chain: string }>) {
-    this.updateChainForAffectedOrigins({
-      context,
-      params: { prevChain: chainStr },
-    });
-    this.resetEthereumChain({ context, params: { chain: chainStr } });
   }
 
   private async verifyOverviewChain() {

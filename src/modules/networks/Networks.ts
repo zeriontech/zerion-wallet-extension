@@ -111,6 +111,10 @@ export class Networks {
     return this.networks;
   }
 
+  getNetworksCollection() {
+    return this.collection;
+  }
+
   getMainnets() {
     return this.networks.filter((item) => !item.is_testnet);
   }

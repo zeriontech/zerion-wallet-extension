@@ -44,13 +44,6 @@ export class NetworksStore extends Store<State> {
     this.getEthereumChainConfigs = getEthereumChainConfigs ?? null;
   }
 
-  private getKnownIdsSet() {
-    return new Set([
-      ...this.networkConfigs.map((config) => config.id),
-      ...this.customNetworkConfigs.map((config) => config.id),
-    ]);
-  }
-
   private async updateNetworks() {
     const savedChainConfigs = await this.getEthereumChainConfigs?.();
     const networks = new Networks({
@@ -71,9 +64,10 @@ export class NetworksStore extends Store<State> {
     chains?: string[];
     update?: boolean;
   }) {
-    const existingIdsSet = this.getKnownIdsSet();
+    const existingNetworksCollection =
+      this.getState().networks?.getNetworksCollection();
     const shouldUpdateNetworksInfo =
-      update || chains?.some((id) => !existingIdsSet.has(id));
+      update || chains?.some((id) => !existingNetworksCollection?.[id]);
     const existingNetworks = this.getState().networks;
     if (!shouldUpdateNetworksInfo && existingNetworks) {
       return existingNetworks;
@@ -140,20 +134,9 @@ export class NetworksStore extends Store<State> {
     if (!this.loaderPromises[key]) {
       this.loaderPromises[key] = this.fetchNetworks({ chains });
     }
-    return this.loaderPromises[key].then((networks) => {
+    return this.loaderPromises[key].catch((error) => {
       delete this.loaderPromises[key];
-      return networks;
-    });
-  }
-
-  async update() {
-    const key = 'update';
-    if (!this.loaderPromises[key]) {
-      this.loaderPromises[key] = this.fetchNetworks({ update: true });
-    }
-    return this.loaderPromises[key].then((networks) => {
-      delete this.loaderPromises[key];
-      return networks;
+      throw error;
     });
   }
 
@@ -162,9 +145,20 @@ export class NetworksStore extends Store<State> {
     if (!this.loaderPromises[key]) {
       this.loaderPromises[key] = this.fetchNetworkById(chainId);
     }
-    return this.loaderPromises[key].then((networks) => {
+    return this.loaderPromises[key].catch((error) => {
       delete this.loaderPromises[key];
-      return networks;
+      throw error;
+    });
+  }
+
+  async update() {
+    const key = 'update';
+    if (!this.loaderPromises[key]) {
+      this.loaderPromises[key] = this.fetchNetworks({ update: true });
+    }
+    return this.loaderPromises[key].finally(() => {
+      // Update promise should be removed to perform update next it is needed
+      delete this.loaderPromises[key];
     });
   }
 }

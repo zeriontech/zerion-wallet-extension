@@ -93,15 +93,6 @@ function AddOrUpdateChain({
     }) => {
       const chainsMetadata = networks?.getNetworksMetaData();
       const metadata = chainsMetadata?.[prevNetwork?.id || networkId];
-      if (prevNetwork && prevNetwork?.id !== networkId) {
-        await walletPort.request('updateChainForAffectedOrigins', {
-          prevChain: prevNetwork.id,
-          chain: networkId,
-        });
-        await walletPort.request('removeEthereumChain', {
-          chain: prevNetwork.id,
-        });
-      }
       const config = await walletPort.request('addEthereumChain', {
         values: [param],
         origin,

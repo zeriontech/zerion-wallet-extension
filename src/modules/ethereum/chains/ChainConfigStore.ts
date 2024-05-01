@@ -8,7 +8,6 @@ import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { toAddEthereumChainParameter } from 'src/modules/networks/helpers';
 import { getNetworkByChainId } from 'src/modules/networks/networks-api';
 import type { Wallet } from 'src/background/Wallet/Wallet';
-import { INTERNAL_ORIGIN } from 'src/background/constants';
 import type { AddEthereumChainParameter } from '../types/AddEthereumChainParameter';
 import { toCustomNetworkId, isCustomNetworkId } from './helpers';
 
@@ -139,7 +138,7 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
     await this.migrateOldConfigs();
   }
 
-  async cleanupDeprecatedCustomChainPermissions(wallet: Wallet) {
+  private async cleanupDeprecatedCustomChainPermissions(wallet: Wallet) {
     await this.ready();
     const {
       ethereumChains: oldChainConfigs,
@@ -153,16 +152,13 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
     for (const config of oldChainConfigs) {
       const prevChain = config.value.chain;
       if (!updatedChainIdSet.has(prevChain)) {
-        await wallet.updateChainForAffectedOrigins({
-          context: { origin: INTERNAL_ORIGIN },
-          params: { prevChain },
-        });
+        await wallet.updateChainForAffectedOrigins({ prevChain });
       }
     }
     this.setState((current) => ({ ...current, migratedPermissions: true }));
   }
 
-  async checkChainsForUpdates(wallet: Wallet) {
+  private async checkChainsForUpdates(wallet: Wallet) {
     await this.ready();
     const { ethereumChainConfigs } = this.getState();
     if (ethereumChainConfigs?.length) {
@@ -181,8 +177,8 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
           }
           updatedEthereumChainConfigs.push({ ...config, id: network.id });
           await wallet.updateChainForAffectedOrigins({
-            context: { origin: INTERNAL_ORIGIN },
-            params: { prevChain: config.id, chain: network.id },
+            prevChain: config.id,
+            chain: network.id,
           });
         } catch {
           updatedEthereumChainConfigs.push(config);
@@ -193,6 +189,13 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
         ethereumChainConfigs: updatedEthereumChainConfigs,
       }));
     }
+  }
+
+  async updateChainInformation(wallet: Wallet) {
+    return Promise.all([
+      this.cleanupDeprecatedCustomChainPermissions(wallet),
+      this.checkChainsForUpdates(wallet),
+    ]);
   }
 }
 

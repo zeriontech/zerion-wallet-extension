@@ -81,18 +81,12 @@ async function saveChainConfig({
   );
   const chainsMetadata = networks.getNetworksMetaData();
   const metadata = chainsMetadata[prevChain || chain];
-  if (prevChain && prevChain !== chain) {
-    await walletPort.request('updateChainForAffectedOrigins', {
-      prevChain,
-      chain,
-    });
-    await walletPort.request('removeEthereumChain', { chain: prevChain });
-  }
   return walletPort.request('addEthereumChain', {
     values: [chainConfig],
     origin: metadata?.origin ?? window.location.origin,
     created: metadata?.created ? metadata.created.toString() : undefined,
     chain,
+    prevChain,
   });
 }
 
