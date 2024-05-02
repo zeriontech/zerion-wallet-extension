@@ -405,7 +405,7 @@ function AddressNetworkList({
           autoFocus={true}
           boxHeight={40}
           type="search"
-          placeholder="Network name"
+          placeholder="Search"
           value={searchValue}
           onChange={(event) => {
             debouncedSetSearchParams(event.currentTarget.value);
