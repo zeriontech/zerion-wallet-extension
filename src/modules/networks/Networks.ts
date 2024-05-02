@@ -178,7 +178,7 @@ export class Networks {
   }
 
   getExplorerHomeUrlByName(chain: Chain) {
-    return this.collection[chain.toString()]?.explorer_home_url;
+    return this.getNetworkByName(chain)?.explorer_home_url;
   }
 
   private getExplorerTxUrl(network: NetworkConfig | undefined, hash: string) {
@@ -194,7 +194,7 @@ export class Networks {
   }
 
   getExplorerTxUrlByName(chain: Chain, hash: string) {
-    return this.getExplorerTxUrl(this.collection[chain.toString()], hash);
+    return this.getExplorerTxUrl(this.getNetworkByName(chain), hash);
   }
 
   getExplorerAddressUrlByName(chain: Chain, address: string) {
@@ -218,16 +218,16 @@ export class Networks {
     return network?.explorer_token_url?.replace('{ADDRESS}', address);
   }
 
-  getExplorerTokenUrlById(chainId: ChainId, address: string) {
-    return this.getExplorerTokenUrl(this.collection[chainId], address);
-  }
+  // getExplorerTokenUrlById(chainId: ChainId, address: string) {
+  //   return this.getExplorerTokenUrl(this.collection[chainId], address);
+  // }
 
   getExplorerTokenUrlByName(chain: Chain, address: string) {
-    return this.getExplorerTokenUrl(this.collection[chain.toString()], address);
+    return this.getExplorerTokenUrl(this.getNetworkByName(chain), address);
   }
 
   getExplorerNameByName(chain: Chain) {
-    return this.collection[chain.toString()]?.explorer_name;
+    return this.getNetworkByName(chain)?.explorer_name;
   }
 
   // TODO: this method is not used. Should we remove it?

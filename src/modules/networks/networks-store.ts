@@ -132,33 +132,32 @@ export class NetworksStore extends Store<State> {
   async load(chains?: string[]) {
     const key = JSON.stringify(chains || []);
     if (!this.loaderPromises[key]) {
-      this.loaderPromises[key] = this.fetchNetworks({ chains });
+      this.loaderPromises[key] = this.fetchNetworks({ chains }).finally(() => {
+        delete this.loaderPromises[key];
+      });
     }
-    return this.loaderPromises[key].catch((error) => {
-      delete this.loaderPromises[key];
-      throw error;
-    });
+    return this.loaderPromises[key];
   }
 
   async loadNetworksWithChainId(chainId: ChainId) {
     const key = `chainId-${chainId}`;
     if (!this.loaderPromises[key]) {
-      this.loaderPromises[key] = this.fetchNetworkById(chainId);
+      this.loaderPromises[key] = this.fetchNetworkById(chainId).finally(() => {
+        delete this.loaderPromises[key];
+      });
     }
-    return this.loaderPromises[key].catch((error) => {
-      delete this.loaderPromises[key];
-      throw error;
-    });
+    return this.loaderPromises[key];
   }
 
   async update() {
     const key = 'update';
     if (!this.loaderPromises[key]) {
-      this.loaderPromises[key] = this.fetchNetworks({ update: true });
+      this.loaderPromises[key] = this.fetchNetworks({ update: true }).finally(
+        () => {
+          delete this.loaderPromises[key];
+        }
+      );
     }
-    return this.loaderPromises[key].finally(() => {
-      // Update promise should be removed to perform update next it is needed
-      delete this.loaderPromises[key];
-    });
+    return this.loaderPromises[key];
   }
 }
