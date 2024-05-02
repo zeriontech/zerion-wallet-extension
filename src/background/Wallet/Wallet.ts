@@ -1032,11 +1032,11 @@ export class Wallet {
   }
 
   async registerTypedDataSign({
-    params: { address, rawTypedData, ...messageContextParams },
+    params: { address, typedData: rawTypedData, ...messageContextParams },
   }: WalletMethodParams<
     {
       address: string;
-      rawTypedData: TypedData | string;
+      typedData: TypedData | string;
     } & MessageContextParams
   >) {
     const typedData = prepareTypedData(rawTypedData);
@@ -1077,7 +1077,7 @@ export class Wallet {
     this.registerTypedDataSign({
       params: {
         address: signer.address,
-        rawTypedData,
+        typedData: rawTypedData,
         ...messageContextParams,
       },
     });

@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useImperativeHandle, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import LedgerIcon from 'jsx:src/ui/assets/ledger-icon.svg';
 import { LedgerIframe } from 'src/ui/hardware-wallet/LedgerIframe';
@@ -14,151 +14,145 @@ import { hardwareMessageHandler } from '../shared/messageHandler';
 
 type Props = {
   derivationPath: string;
-  onSign: (serialized: string) => void;
   isSigning: boolean;
-  onBeforeSign: () => void;
-  onSignError: (error: Error) => void;
-  kind?: ButtonKind;
   buttonTitle?: React.ReactNode;
-} & (
-  | { type: 'personalSign'; message: string }
-  | { type: 'signTypedData_v4'; message: string | TypedData }
-);
+  buttonKind?: ButtonKind;
+};
 
-export function HardwareSignMessage({
-  type,
-  message,
-  derivationPath,
-  onSign,
-  isSigning,
-  onBeforeSign,
-  onSignError,
-  kind = 'primary',
-  buttonTitle,
-}: Props) {
-  const navigate = useNavigate();
-  const location = useLocation();
+export interface SignMessageHandle {
+  personalSign: (message: string) => Promise<string>;
+  signTypedData_v4: (typedData: string | TypedData) => Promise<string>;
+}
 
-  const ref = useRef<HTMLIFrameElement | null>(null);
-
-  const handleError = useCallback(
-    (error: unknown) => {
-      const normalizedError = getError(error);
-      if (normalizedError.message === 'ConnectError') {
-        navigate(
-          `/connect-hardware-wallet?${new URLSearchParams({
-            strategy: 'connect',
-            next: `${location.pathname}${location.search}`,
-          })}`
-        );
-      } else {
-        onSignError(normalizedError);
-      }
-    },
-    [onSignError, location, navigate]
-  );
-
-  const { mutate: personalSign, ...personalSignMutation } = useMutation({
-    mutationFn: async () => {
-      invariant(
-        type === 'personalSign',
-        'personalSign method should be called from personalSign screen'
-      );
-      invariant(ref.current, 'Ledger iframe not found');
-      invariant(
-        ref.current.contentWindow,
-        'Iframe contentWindow is not available'
-      );
-      const result = await hardwareMessageHandler.request<string>(
-        {
-          id: nanoid(),
-          method: 'personalSign',
-          params: {
-            derivationPath,
-            message,
-          },
-        },
-        ref.current.contentWindow
-      );
-      onSign(result);
-    },
-    onMutate: () => onBeforeSign(),
-    onError: handleError,
-  });
-
-  const { mutate: signTypedData_v4, ...signTypedData_v4Mutation } = useMutation(
+export const HardwareSignMessage = React.forwardRef(
+  function HardwareSignMessage(
     {
-      mutationFn: async () => {
+      derivationPath,
+      isSigning,
+      buttonKind = 'primary',
+      children,
+      buttonTitle,
+      ...buttonProps
+    }: React.ButtonHTMLAttributes<HTMLButtonElement> & Props,
+    ref: React.Ref<SignMessageHandle>
+  ) {
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const iframeRef = useRef<HTMLIFrameElement | null>(null);
+
+    const handleError = useCallback(
+      (error: unknown) => {
+        const normalizedError = getError(error);
+        if (normalizedError.message === 'ConnectError') {
+          navigate(
+            `/connect-hardware-wallet?${new URLSearchParams({
+              strategy: 'connect',
+              next: `${location.pathname}${location.search}`,
+              replaceAfterRedirect: 'true',
+            })}`
+          );
+          return normalizedError;
+        } else {
+          return normalizedError;
+        }
+      },
+      [location, navigate]
+    );
+
+    const { mutateAsync: personalSign, ...personalSignMutation } = useMutation({
+      mutationFn: async (message: string) => {
+        invariant(iframeRef.current, 'Ledger iframe not found');
         invariant(
-          type === 'signTypedData_v4',
-          'signTypedData_v4 method should be called from signTypedData_v4 screen'
-        );
-        invariant(ref.current, 'Ledger iframe not found');
-        invariant(
-          ref.current.contentWindow,
+          iframeRef.current.contentWindow,
           'Iframe contentWindow is not available'
         );
-        const result = await hardwareMessageHandler.request<string>(
-          {
-            id: nanoid(),
-            method: 'signTypedData_v4',
-            params: {
-              derivationPath,
-              typedData: message,
+        try {
+          const result = await hardwareMessageHandler.request<string>(
+            {
+              id: nanoid(),
+              method: 'personalSign',
+              params: { derivationPath, message },
             },
-          },
-          ref.current.contentWindow
-        );
-        onSign(result);
+            iframeRef.current.contentWindow
+          );
+          return result;
+        } catch (error) {
+          const normalizedError = handleError(error);
+          throw normalizedError;
+        }
       },
-      onMutate: () => onBeforeSign(),
-      onError: handleError,
-    }
-  );
+    });
 
-  const isLoading =
-    type === 'personalSign'
-      ? personalSignMutation.isLoading
-      : signTypedData_v4Mutation.isLoading;
-
-  return (
-    <>
-      <LedgerIframe
-        ref={ref}
-        initialRoute="/signConnector"
-        style={{
-          position: 'absolute',
-          border: 'none',
-          backgroundColor: 'transparent',
-        }}
-        tabIndex={-1}
-        height={0}
-      />
-      {isLoading ? (
-        <Button
-          kind="loading-border"
-          disabled={true}
-          title="Follow instructions on your ledger device"
-        >
-          <TextPulse>Sign on Device</TextPulse>
-        </Button>
-      ) : (
-        <Button
-          kind={kind}
-          onClick={() =>
-            type === 'personalSign' ? personalSign() : signTypedData_v4()
+    const { mutateAsync: signTypedData_v4, ...signTypedData_v4Mutation } =
+      useMutation({
+        mutationFn: async (typedData: string | TypedData) => {
+          invariant(iframeRef.current, 'Ledger iframe not found');
+          invariant(
+            iframeRef.current.contentWindow,
+            'Iframe contentWindow is not available'
+          );
+          try {
+            const result = await hardwareMessageHandler.request<string>(
+              {
+                id: nanoid(),
+                method: 'signTypedData_v4',
+                params: { derivationPath, typedData },
+              },
+              iframeRef.current.contentWindow
+            );
+            return result;
+          } catch (error) {
+            const normalizedError = handleError(error);
+            throw normalizedError;
           }
-          disabled={isLoading || isSigning}
+        },
+        onError: handleError,
+      });
+
+    useImperativeHandle(ref, () => ({ personalSign, signTypedData_v4 }));
+
+    const isLoading =
+      personalSignMutation.isLoading || signTypedData_v4Mutation.isLoading;
+
+    return (
+      <>
+        <LedgerIframe
+          ref={iframeRef}
+          initialRoute="/signConnector"
           style={{
-            paddingInline: 16, // fit longer button label
+            position: 'absolute',
+            border: 'none',
+            backgroundColor: 'transparent',
           }}
-        >
-          <HStack gap={8} alignItems="center" justifyContent="center">
-            <LedgerIcon />
-            {isSigning ? 'Sending...' : buttonTitle || 'Sign with Ledger'}
-          </HStack>
-        </Button>
-      )}
-    </>
-  );
-}
+          tabIndex={-1}
+          height={0}
+        />
+        {isLoading ? (
+          <Button
+            kind="loading-border"
+            disabled={true}
+            title="Follow instructions on your ledger device"
+          >
+            <TextPulse>Sign on Device</TextPulse>
+          </Button>
+        ) : (
+          <Button
+            kind={buttonKind}
+            disabled={isLoading || isSigning}
+            style={{
+              paddingInline: 16, // fit longer button label
+            }}
+            {...buttonProps}
+          >
+            <HStack gap={8} alignItems="center" justifyContent="center">
+              <LedgerIcon />
+              {children ||
+                (isSigning ? 'Sending' : buttonTitle || 'Sign with Ledger')}
+            </HStack>
+          </Button>
+        )}
+      </>
+    );
+  }
+);
