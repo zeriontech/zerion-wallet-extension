@@ -101,6 +101,17 @@ function findInput(
   });
 }
 
+function hasChanges(form: HTMLFormElement) {
+  for (const element of form.elements) {
+    if (element instanceof HTMLInputElement) {
+      if (element.value !== element.defaultValue) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 const parsers: Parsers = {
   chainId: (untypedValue) => {
     const value = untypedValue as string;
@@ -204,7 +215,10 @@ export function NetworkForm({
         onChange={() => setErrors(EMPTY_OBJECT)}
         onSubmit={(event) => {
           event.preventDefault();
-
+          if (!hasChanges(event.currentTarget)) {
+            onCancel();
+            return;
+          }
           const { elements } = event.currentTarget;
           const errors = collectErrors(event.currentTarget, validators);
           setErrors(errors);

@@ -218,10 +218,6 @@ export class Networks {
     return network?.explorer_token_url?.replace('{ADDRESS}', address);
   }
 
-  // getExplorerTokenUrlById(chainId: ChainId, address: string) {
-  //   return this.getExplorerTokenUrl(this.collection[chainId], address);
-  // }
-
   getExplorerTokenUrlByName(chain: Chain, address: string) {
     return this.getExplorerTokenUrl(this.getNetworkByName(chain), address);
   }
