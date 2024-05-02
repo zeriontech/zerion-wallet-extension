@@ -1139,6 +1139,7 @@ export class Wallet {
 
   async updateChainForAffectedOrigins({
     prevChain,
+    // TODO: remove chain for origin in case new chain is not set
     chain = NetworkId.Ethereum,
   }: {
     prevChain: string;
