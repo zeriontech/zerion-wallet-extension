@@ -206,7 +206,13 @@ export function NetworkList({
         ['--surface-background-color' as string]: 'transparent',
       }}
       items={items}
-      estimateSize={(index) => (index === 0 && title ? 36 : 48)}
+      estimateSize={(index) =>
+        index === 0 && title
+          ? 36
+          : networks.isSavedLocallyChain(createChain(items[index].key))
+          ? 64
+          : 48
+      }
       overscan={5}
       stickyFirstElement={Boolean(title)}
     />

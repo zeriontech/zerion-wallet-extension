@@ -1,5 +1,6 @@
 import { isTruthy } from 'is-truthy-ts';
-import { createChain } from 'src/modules/networks/Chain';
+import { INTERNAL_ORIGIN } from 'src/background/constants';
+import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { ChainDistribution } from 'src/ui/shared/requests/PortfolioValue/ChainValue';
@@ -48,7 +49,9 @@ export function createGroups({
   const testnetList = networks.getTestNetworks().filter(filterPredicate);
   const mainNetworkPredicate = (network: NetworkConfig) =>
     chainDistribution?.chains[network.id] ||
-    networks.isSavedLocallyChain(createChain(network.id));
+    isCustomNetworkId(network.id) ||
+    (networks.getNetworksMetaData()[network.id]?.origin &&
+      networks.getNetworksMetaData()[network.id]?.origin !== INTERNAL_ORIGIN);
   return [
     {
       key: 'mainnets',
