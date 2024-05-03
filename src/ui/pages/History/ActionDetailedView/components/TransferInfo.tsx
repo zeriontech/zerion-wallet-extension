@@ -85,7 +85,11 @@ export function ApprovalInfo({
         }
         detailText={
           tokenQuantity ? (
-            <UIText kind="small/regular" color="var(--neutral-500)">
+            <UIText
+              kind="small/regular"
+              color="var(--neutral-500)"
+              style={{ overflowWrap: 'break-word' }}
+            >
               {isUnlimited
                 ? 'Unlimited'
                 : formatTokenValue(tokenQuantity, fungible.symbol)}
