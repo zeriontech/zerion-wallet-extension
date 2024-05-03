@@ -16,13 +16,11 @@ export class PersistentStore<T> extends Store<T> {
     this.isReady = false;
     this.readyPromise = this.restore();
     this.on('change', (state) => {
-      // TODO: FIX:
       // only write to disk after restore so that we're not making
       // a redundant write on each initialization
-      // if (this.isReady) {
-      //   browserStorage.set(this.key, state);
-      // }
-      browserStorage.set(this.key, state);
+      if (this.isReady) {
+        browserStorage.set(this.key, state);
+      }
     });
   }
 
@@ -33,10 +31,21 @@ export class PersistentStore<T> extends Store<T> {
     return super.getState();
   }
 
+  setState(...args: Parameters<Store<T>['setState']>) {
+    if (!this.isReady) {
+      if (process.env.NODE_ENV === 'development') {
+        throw new Error(
+          'You are trying to write to a PersistentStore before {ready}'
+        );
+      }
+    }
+    return super.setState(...args);
+  }
+
   async restore() {
     const saved = await browserStorage.get<T>(this.key);
     if (saved) {
-      this.setState(saved);
+      super.setState(saved);
     }
     this.isReady = true;
   }
