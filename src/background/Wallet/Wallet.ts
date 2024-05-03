@@ -204,7 +204,6 @@ export class Wallet {
     this.record = await this.walletStore.read(this.id, this.userCredentials);
     if (this.record) {
       this.emitter.emit('recordUpdated');
-      chainConfigStore.updateChainInformation(this);
     }
   }
 
@@ -887,8 +886,10 @@ export class Wallet {
   }: WalletMethodParams<{ origin: string }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
+    const fallbackChain = NetworkId.Ethereum;
     const chain = Model.getChainForOrigin(this.record, { origin });
-    return chain.toString();
+    const networks = await networksStore.load([chain.toString()]);
+    return networks.getNetworkByName(chain)?.id || fallbackChain;
   }
 
   /** @deprecated */
@@ -1137,29 +1138,19 @@ export class Wallet {
     return signature;
   }
 
-  async updateChainForAffectedOrigins({
-    prevChain,
-    // TODO: remove chain for origin in case new chain is not set
-    chain = NetworkId.Ethereum,
-  }: {
-    prevChain: string;
-    chain?: string;
-  }) {
-    this.ensureRecord(this.record);
-    const affectedPermissions = Model.getPermissionsByChain(this.record, {
-      chain: createChain(prevChain),
-    });
-    affectedPermissions.forEach(({ origin }) => {
-      this.setChainForOrigin(createChain(chain), origin);
-    });
-    this.verifyOverviewChain();
-  }
-
   async removeEthereumChain({
     context,
     params: { chain: chainStr },
   }: WalletMethodParams<{ chain: string }>) {
-    this.updateChainForAffectedOrigins({ prevChain: chainStr });
+    this.ensureRecord(this.record);
+    const affectedPermissions = Model.getPermissionsByChain(this.record, {
+      chain: createChain(chainStr),
+    });
+    affectedPermissions.forEach(({ origin }) => {
+      // TODO: remove chain for origin in case new chain is not set
+      this.setChainForOrigin(createChain(NetworkId.Ethereum), origin);
+    });
+    this.verifyOverviewChain();
     this.resetEthereumChain({ context, params: { chain: chainStr } });
   }
 
@@ -1180,23 +1171,13 @@ export class Wallet {
     created?: string;
   }>) {
     this.verifyInternalOrigin(context);
-    if (prevChainStr && prevChainStr !== chainStr) {
-      await this.updateChainForAffectedOrigins({
-        prevChain: prevChainStr,
-        chain: chainStr,
-      });
-      await this.removeEthereumChain({
-        context,
-        params: { chain: prevChainStr },
-      });
-    }
-
     const chain = chainStr || toCustomNetworkId(values[0].chainId);
     // NOTE: This is where we might want to call something like
     // {await networksStore.loadNetworkConfigByChainId(values[0].chainId)}
     // IF we wanted to refactor networkStore to not hold searched values
     const result = chainConfigStore.addEthereumChain(values[0], {
       id: chain,
+      prevId: prevChainStr,
       origin,
       created: created != null ? Number(created) : undefined,
     });

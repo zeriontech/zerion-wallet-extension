@@ -25,6 +25,7 @@ import {
   isSignerContainer,
 } from 'src/shared/types/validators';
 import { capitalize } from 'capitalize-ts';
+import { upgradeRecord } from 'src/shared/type-utils/versions';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
 import type {
   PendingWallet,
@@ -34,7 +35,6 @@ import type {
   WalletRecord,
 } from './model/types';
 import type { BareWallet } from './model/BareWallet';
-import { upgrade } from './model/versions';
 import {
   MnemonicWalletContainer,
   PrivateKeyWalletContainer,
@@ -44,6 +44,7 @@ import {
   ReadonlyAccountContainer,
   type ExternallyOwnedAccount,
 } from './model/AccountContainer';
+import { walletRecordUpgrades } from './model/versions';
 
 function generateGroupName(
   record: WalletRecord | null,
@@ -430,7 +431,7 @@ export class WalletRecordModel {
       encryptionKey,
       encryptedRecord
     )) as WalletRecord;
-    const entry = upgrade(persistedEntry);
+    const entry = upgradeRecord(persistedEntry, walletRecordUpgrades);
 
     entry.walletManager.groups = await Promise.all(
       entry.walletManager.groups.map(async (group) => {

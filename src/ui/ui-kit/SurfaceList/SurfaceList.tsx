@@ -104,6 +104,7 @@ export const ItemButton = React.forwardRef<
           className={s.decoration}
           style={{
             border: outlined ? '1px solid var(--primary)' : undefined,
+            paddingBlock: 7,
             ...decorationStyle,
           }}
         >

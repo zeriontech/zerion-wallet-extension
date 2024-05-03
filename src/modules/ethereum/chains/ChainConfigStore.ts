@@ -1,33 +1,14 @@
 import { produce } from 'immer';
 import { equal } from 'src/modules/fast-deep-equal';
 import type { Chain } from 'src/modules/networks/Chain';
-import type { NetworkConfigMetaData } from 'src/modules/networks/Networks';
 import { PersistentStore } from 'src/modules/persistent-store';
 import { upsert } from 'src/shared/upsert';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import { toAddEthereumChainParameter } from 'src/modules/networks/helpers';
 import { getNetworkByChainId } from 'src/modules/networks/networks-api';
-import type { Wallet } from 'src/background/Wallet/Wallet';
+import { upgradeRecord } from 'src/shared/type-utils/versions';
 import type { AddEthereumChainParameter } from '../types/AddEthereumChainParameter';
-import { toCustomNetworkId, isCustomNetworkId } from './helpers';
-
-function maybeLocalChainId(id?: string | null) {
-  return id?.length === 21; // nanoid() standard length
-}
-
-export interface EthereumChainConfig extends NetworkConfigMetaData {
-  value: AddEthereumChainParameter;
-  id: string;
-}
-
-interface ChainConfig {
-  ethereumChainConfigs?: EthereumChainConfig[];
-  migratedChainConfigs?: boolean;
-  // we should remove deprecated chainIds from origin permissions
-  migratedPermissions?: boolean;
-  /** @deprecated */
-  ethereumChains?: (NetworkConfigMetaData & { value: NetworkConfig })[];
-}
+import { isCustomNetworkId } from './helpers';
+import type { ChainConfig, EthereumChainConfig } from './types';
+import { upgrades } from './versions';
 
 function remove<T>(arr: T[], predicate: (item: T) => boolean) {
   const pos = arr.findIndex(predicate);
@@ -38,27 +19,49 @@ function remove<T>(arr: T[], predicate: (item: T) => boolean) {
 
 class ChainConfigStore extends PersistentStore<ChainConfig> {
   static initialState: ChainConfig = {
+    version: 2,
     ethereumChainConfigs: [],
-    migratedChainConfigs: false,
-    migratedPermissions: false,
   };
+
+  async restore() {
+    const saved = await PersistentStore.readSavedState<ChainConfig>(this.key);
+    if (saved) {
+      this.setState(upgradeRecord(saved, upgrades));
+    }
+    this.isReady = true;
+    this.checkChainsForUpdates();
+  }
+
+  readyPromise = this.restore();
 
   addEthereumChain(
     value: AddEthereumChainParameter,
-    { origin, id, created }: { origin: string; id: string; created?: number }
+    {
+      origin,
+      id,
+      created,
+      prevId: maybePrevId,
+    }: { origin: string; id: string; created?: number; prevId?: string }
   ): EthereumChainConfig {
+    const prevId = maybePrevId || id;
     const state = this.getState();
     const existingItems = new Map(
       state.ethereumChainConfigs?.map((config) => [config.id, config])
     );
-    const existingEntry = existingItems.get(id);
+    const existingEntry = existingItems.get(prevId);
+    const existingPreviousIds = existingEntry?.previousIds || [];
+    const previousIds =
+      prevId !== id && !existingPreviousIds.includes(prevId)
+        ? [...existingPreviousIds, prevId]
+        : existingPreviousIds;
     const now = Date.now();
-    const newEntry = {
+    const newEntry: EthereumChainConfig = {
       origin,
       created: created ?? (existingEntry ? existingEntry.created : now),
       updated: now,
       value,
       id,
+      previousIds,
     };
     if (
       existingEntry?.origin === newEntry.origin &&
@@ -70,7 +73,9 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
       if (!draft.ethereumChainConfigs) {
         draft.ethereumChainConfigs = [];
       }
-      upsert(draft.ethereumChainConfigs, newEntry, (x) => x.id);
+      upsert(draft.ethereumChainConfigs, newEntry, (x) =>
+        x.id === prevId ? id : x.id
+      );
     });
     this.setState(newState);
     return newEntry;
@@ -80,9 +85,6 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
     const chainStr = chain.toString();
     this.setState((state) =>
       produce(state, (draft) => {
-        if (draft.ethereumChains) {
-          remove(draft.ethereumChains, (x) => x.value.chain === chainStr);
-        }
         if (!draft.ethereumChainConfigs) {
           draft.ethereumChainConfigs = [];
         }
@@ -91,75 +93,7 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
     );
   }
 
-  private async migrateOldConfigs() {
-    const {
-      migratedChainConfigs,
-      ethereumChainConfigs = [],
-      ethereumChains,
-    } = this.getState();
-    if (migratedChainConfigs || !ethereumChains) {
-      return;
-    }
-    const existingIdSet = new Set(ethereumChainConfigs?.map(({ id }) => id));
-    for (const { value, ...config } of ethereumChains) {
-      const chainConfig = toAddEthereumChainParameter(value);
-      let id = maybeLocalChainId(value.chain) ? null : value.chain;
-      if (!id) {
-        const chainId = value.external_id;
-        try {
-          const network = await getNetworkByChainId(chainId);
-          if (!network) {
-            throw new Error(
-              `Unable to fetch network info by chainId: ${chainId}`
-            );
-          }
-          id = network.id;
-        } catch {
-          id = toCustomNetworkId(chainId);
-        }
-      }
-      if (!existingIdSet.has(id)) {
-        ethereumChainConfigs?.push({
-          ...config,
-          value: chainConfig,
-          id,
-        });
-      }
-    }
-    this.setState((current) => ({
-      ...current,
-      migratedChainConfigs: true,
-      ethereumChainConfigs,
-    }));
-  }
-
-  async ready() {
-    await super.ready();
-    await this.migrateOldConfigs();
-  }
-
-  private async cleanupDeprecatedCustomChainPermissions(wallet: Wallet) {
-    await this.ready();
-    const {
-      ethereumChains: oldChainConfigs,
-      ethereumChainConfigs: newChainConfigs,
-      migratedPermissions,
-    } = this.getState();
-    if (migratedPermissions || !oldChainConfigs) {
-      return;
-    }
-    const updatedChainIdSet = new Set(newChainConfigs?.map(({ id }) => id));
-    for (const config of oldChainConfigs) {
-      const prevChain = config.value.chain;
-      if (!updatedChainIdSet.has(prevChain)) {
-        await wallet.updateChainForAffectedOrigins({ prevChain });
-      }
-    }
-    this.setState((current) => ({ ...current, migratedPermissions: true }));
-  }
-
-  private async checkChainsForUpdates(wallet: Wallet) {
-    await this.ready();
+  private async checkChainsForUpdates() {
     const { ethereumChainConfigs } = this.getState();
     if (ethereumChainConfigs?.length) {
       const updatedEthereumChainConfigs: EthereumChainConfig[] = [];
@@ -176,10 +110,6 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
             );
           }
           updatedEthereumChainConfigs.push({ ...config, id: network.id });
-          await wallet.updateChainForAffectedOrigins({
-            prevChain: config.id,
-            chain: network.id,
-          });
         } catch {
           updatedEthereumChainConfigs.push(config);
         }
@@ -191,11 +121,8 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
     }
   }
 
-  async updateChainInformation(wallet: Wallet) {
-    return Promise.all([
-      this.cleanupDeprecatedCustomChainPermissions(wallet),
-      this.checkChainsForUpdates(wallet),
-    ]);
+  async ready(): Promise<void> {
+    return this.isReady ? Promise.resolve() : this.readyPromise;
   }
 }
 

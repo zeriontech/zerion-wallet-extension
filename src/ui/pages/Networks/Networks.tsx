@@ -60,6 +60,7 @@ import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import { toAddEthereumChainParameter } from 'src/modules/networks/helpers';
 import { usePreferences } from 'src/ui/features/preferences';
+import { BACKEND_NETWORK_ORIGIN } from 'src/modules/ethereum/chains/constants';
 import { useWalletAddresses } from './shared/useWalletAddresses';
 import { NetworkCreateSuccess } from './NetworkCreateSuccess';
 import { createEmptyChainConfig } from './shared/createEmptyChainConfig';
@@ -83,7 +84,11 @@ async function saveChainConfig({
   const metadata = chainsMetadata[prevChain || chain];
   return walletPort.request('addEthereumChain', {
     values: [chainConfig],
-    origin: metadata?.origin ?? window.location.origin,
+    origin:
+      metadata?.origin ??
+      (isCustomNetworkId(chain)
+        ? window.location.origin
+        : BACKEND_NETWORK_ORIGIN),
     created: metadata?.created ? metadata.created.toString() : undefined,
     chain,
     prevChain,

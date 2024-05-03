@@ -4,7 +4,7 @@ import * as browserStorage from 'src/background/webapis/storage';
 export class PersistentStore<T> extends Store<T> {
   protected key: string;
   protected isReady: boolean;
-  private readyPromise: Promise<void>;
+  protected readyPromise: Promise<void>;
 
   static async readSavedState<T>(key: string) {
     return browserStorage.get<T>(key);

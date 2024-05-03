@@ -1,4 +1,4 @@
-import type { EthereumChainConfig } from '../ethereum/chains/ChainConfigStore';
+import type { EthereumChainConfig } from '../ethereum/chains/types';
 import { NetworksStore } from './networks-store';
 
 export const ETHEREUM_CHAIN_SOURCES: EthereumChainConfig[] = [];

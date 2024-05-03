@@ -37,7 +37,7 @@ import type { NetworkGroups } from './createNetworkGroups';
 import { createGroups } from './createNetworkGroups';
 import { AddNetworkLink } from './AddNetworkLink';
 import { useSearchKeyboardNavigation } from './useSearchKeyboardNavigation';
-import { NetworksEmptyView } from './NetworksEmptyView';
+import { NetworksEmptyView, ShowTestnetsHint } from './NetworksEmptyView';
 
 function NetworkItem({
   index,
@@ -288,23 +288,31 @@ function SearchView({
 
   return (
     <>
-      <form
-        method="dialog"
-        onSubmit={(e) => {
-          e.stopPropagation();
-        }}
-      >
-        {networks ? (
-          <NetworkList
-            value={value}
-            networkList={items}
-            networks={networks}
-            chainDistribution={chainDistribution}
-          />
-        ) : null}
-      </form>
-      <Spacer height={8} />
-      <AddNetworkLink />
+      <div style={{ flexGrow: 1 }}>
+        <form
+          method="dialog"
+          onSubmit={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          {networks ? (
+            <NetworkList
+              value={value}
+              networkList={items}
+              networks={networks}
+              chainDistribution={chainDistribution}
+            />
+          ) : null}
+        </form>
+        <Spacer height={8} />
+        <AddNetworkLink />
+      </div>
+      {showTestnets ? null : (
+        <>
+          <Spacer height={8} />
+          <ShowTestnetsHint />
+        </>
+      )}
     </>
   );
 }

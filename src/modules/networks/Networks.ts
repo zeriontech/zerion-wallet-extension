@@ -2,7 +2,7 @@ import type { Asset } from 'defi-sdk';
 import { isTruthy } from 'is-truthy-ts';
 import { capitalize } from 'capitalize-ts';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
-import type { EthereumChainConfig } from 'src/modules/ethereum/chains/ChainConfigStore';
+import type { EthereumChainConfig } from 'src/modules/ethereum/chains/types';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { ChainId } from '../ethereum/transactions/ChainId';
 import type { Chain } from './Chain';
@@ -56,10 +56,21 @@ export interface NetworkConfigMetaData {
   origin: string;
 }
 
+function toAliasMap(ethereumChainConfigs: EthereumChainConfig[]) {
+  const result: Record<string, string> = {};
+  for (const { previousIds, id } of ethereumChainConfigs) {
+    for (const previousId of previousIds) {
+      result[previousId] = id;
+    }
+  }
+  return result;
+}
+
 export class Networks {
   private networks: NetworkConfig[];
   private collection: { [key: string]: NetworkConfig | undefined };
   private collectionByEvmId: { [key: ChainId]: NetworkConfig | undefined };
+  private networkIdAliases: Record<string, string>;
   private ethereumChainConfigs: EthereumChainConfig[];
 
   static getChainId(network: NetworkConfig) {
@@ -87,18 +98,23 @@ export class Networks {
       (x) => Networks.getChainId(x),
       (x) => x
     );
+    this.networkIdAliases = toAliasMap(this.ethereumChainConfigs);
   }
 
   static getName(network: NetworkConfig) {
     return network.name || capitalize(network.id);
   }
 
+  getNetworkByName(chain: Chain) {
+    return (
+      this.collection[chain.toString()] ||
+      this.collection[this.networkIdAliases[chain.toString()]]
+    );
+  }
+
   private toId(chain: Chain) {
-    const item = this.collection[chain.toString()];
-    if (!item) {
-      throw new Error(`Chain not found: ${chain}`);
-    }
-    return Networks.getChainId(item);
+    const item = this.getNetworkByName(chain);
+    return item ? Networks.getChainId(item) : null;
   }
 
   isSavedLocallyChain(chain: Chain) {
@@ -148,7 +164,7 @@ export class Networks {
   }
 
   getChainName(chain: Chain) {
-    return this.collection[chain.toString()]?.name || capitalize(String(chain));
+    return this.getNetworkByName(chain)?.name || capitalize(String(chain));
   }
 
   getNetworkById(chainId: ChainId) {
@@ -161,10 +177,6 @@ export class Networks {
 
   hasNetworkById(chainId: ChainId) {
     return Boolean(this.collectionByEvmId[chainId]);
-  }
-
-  getNetworkByName(chain: Chain) {
-    return this.collection[chain.toString()];
   }
 
   getChainById(chainId: ChainId): Chain {
@@ -198,10 +210,7 @@ export class Networks {
   }
 
   getExplorerAddressUrlByName(chain: Chain, address: string) {
-    return this.getExplorerAddressUrl(
-      this.collection[chain.toString()],
-      address
-    );
+    return this.getExplorerAddressUrl(this.getNetworkByName(chain), address);
   }
 
   private getExplorerAddressUrl(

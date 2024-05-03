@@ -9,23 +9,59 @@ import { UIContext } from 'src/ui/components/UIContext';
 import type { Item } from '../SurfaceList';
 import { SurfaceList } from '../SurfaceList';
 
-export function VirtualizedSurfaceList({
-  items,
-  overscan,
-  estimateSize,
-  style,
-  context = 'window',
-  stickyFirstElement,
-}: {
+interface Props {
   items: Item[];
   overscan?: number;
   estimateSize: (index: number) => number;
   style?: React.CSSProperties;
-  context?: 'window' | 'dialog';
   stickyFirstElement?: boolean;
-}) {
+}
+
+const getRangeExtractor = (
+  range: Range,
+  stickyFirstElement?: boolean
+): number[] => {
+  if (!stickyFirstElement) {
+    return defaultRangeExtractor(range);
+  }
+  const next = new Set([0, ...defaultRangeExtractor(range)]);
+  return [...next].sort((a, b) => a - b);
+};
+
+function getItemStyles({
+  isSticky,
+  offset,
+  height,
+  style,
+}: {
+  isSticky: boolean;
+  offset: number;
+  height: number;
+  style?: React.CSSProperties;
+}): React.CSSProperties {
+  return {
+    ...(isSticky
+      ? { position: 'sticky', zIndex: 1 }
+      : {
+          position: 'absolute',
+          transform: `translateY(${offset}px)`,
+        }),
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: `${height}px`,
+    ...style,
+  };
+}
+
+export function WindowVirtualizedSurfaceList({
+  items,
+  overscan,
+  estimateSize,
+  style,
+  stickyFirstElement,
+}: Props) {
   const listRef = React.useRef<HTMLDivElement | null>(null);
-  const { uiScrollRootElement } = useContext(UIContext);
 
   const windowVirtualizer = useWindowVirtualizer({
     count: items.length,
@@ -33,16 +69,45 @@ export function VirtualizedSurfaceList({
     overscan,
     scrollMargin: listRef.current?.offsetTop ?? 0,
     rangeExtractor: useCallback(
-      (range: Range) => {
-        if (!stickyFirstElement) {
-          return defaultRangeExtractor(range);
-        }
-        const next = new Set([0, ...defaultRangeExtractor(range)]);
-        return [...next].sort((a, b) => a - b);
-      },
+      (range: Range) => getRangeExtractor(range, stickyFirstElement),
       [stickyFirstElement]
     ),
   });
+
+  return (
+    <SurfaceList
+      ref={listRef}
+      style={{
+        height: windowVirtualizer.getTotalSize(),
+        position: 'relative',
+        ...style,
+      }}
+      items={windowVirtualizer.getVirtualItems().map((virtualItem, index) => {
+        const { style, ...item } = items[virtualItem.index];
+        return {
+          ...item,
+          key: virtualItem.key,
+          style: getItemStyles({
+            isSticky: Boolean(stickyFirstElement && index === 0),
+            offset: virtualItem.start - windowVirtualizer.options.scrollMargin,
+            height: virtualItem.size,
+            style,
+          }),
+        };
+      })}
+    />
+  );
+}
+
+export function DialogVirtualizedSurfaceList({
+  items,
+  overscan,
+  estimateSize,
+  style,
+  stickyFirstElement,
+}: Props) {
+  const listRef = React.useRef<HTMLDivElement | null>(null);
+  const { uiScrollRootElement } = useContext(UIContext);
 
   const dialogVirtualizer = useVirtualizer({
     count: items.length,
@@ -51,47 +116,45 @@ export function VirtualizedSurfaceList({
     scrollMargin: listRef.current?.offsetTop ?? 0,
     getScrollElement: () => uiScrollRootElement,
     rangeExtractor: useCallback(
-      (range: Range) => {
-        if (!stickyFirstElement) {
-          return defaultRangeExtractor(range);
-        }
-        const next = new Set([0, ...defaultRangeExtractor(range)]);
-        return [...next].sort((a, b) => a - b);
-      },
+      (range: Range) => getRangeExtractor(range, stickyFirstElement),
       [stickyFirstElement]
     ),
   });
-
-  const virtualizer =
-    context === 'window' ? windowVirtualizer : dialogVirtualizer;
 
   return (
     <SurfaceList
       ref={listRef}
       style={{
-        height: virtualizer.getTotalSize(),
+        height: dialogVirtualizer.getTotalSize(),
         position: 'relative',
         ...style,
       }}
-      items={virtualizer.getVirtualItems().map((virtualItem, index) => {
-        const { style: styleProp, ...item } = items[virtualItem.index];
-        const style: React.CSSProperties = {
-          ...(stickyFirstElement && index === 0
-            ? { position: 'sticky', zIndex: 1 }
-            : {
-                position: 'absolute',
-                transform: `translateY(${
-                  virtualItem.start - virtualizer.options.scrollMargin
-                }px)`,
-              }),
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: `${virtualItem.size}px`,
-          ...styleProp,
+      items={dialogVirtualizer.getVirtualItems().map((virtualItem, index) => {
+        const { style, ...item } = items[virtualItem.index];
+        return {
+          ...item,
+          key: virtualItem.key,
+          style: getItemStyles({
+            isSticky: Boolean(stickyFirstElement && index === 0),
+            offset: virtualItem.start - dialogVirtualizer.options.scrollMargin,
+            height: virtualItem.size,
+            style,
+          }),
         };
-        return { ...item, key: virtualItem.key, style };
       })}
     />
+  );
+}
+
+export function VirtualizedSurfaceList({
+  context = 'window',
+  ...props
+}: Props & {
+  context?: 'window' | 'dialog';
+}) {
+  return context === 'window' ? (
+    <WindowVirtualizedSurfaceList {...props} />
+  ) : (
+    <DialogVirtualizedSurfaceList {...props} />
   );
 }

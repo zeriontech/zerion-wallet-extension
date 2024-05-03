@@ -5,6 +5,20 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import NoResultsImg from 'src/ui/assets/no-results.png';
 
+export function ShowTestnetsHint() {
+  return (
+    <UIText
+      kind="caption/regular"
+      color="var(--neutral-500)"
+      style={{ textAlign: 'center', width: '100%' }}
+    >
+      Looking for testnets?
+      <br />
+      Enable test networks in Settings → Developer Tools
+    </UIText>
+  );
+}
+
 export function NetworksEmptyView({ showTestnets }: { showTestnets: boolean }) {
   return (
     <>
@@ -37,17 +51,7 @@ export function NetworksEmptyView({ showTestnets }: { showTestnets: boolean }) {
           Add Network
         </Button>
       </VStack>
-      {showTestnets ? null : (
-        <UIText
-          kind="caption/regular"
-          color="var(--neutral-500)"
-          style={{ textAlign: 'center', width: '100%' }}
-        >
-          Looking for testnets?
-          <br />
-          Enable test networks in Settings → Developer Tools
-        </UIText>
-      )}
+      {showTestnets ? null : <ShowTestnetsHint />}
     </>
   );
 }

@@ -1,6 +1,6 @@
 import { Store } from 'store-unit';
-import type { EthereumChainConfig } from '../ethereum/chains/ChainConfigStore';
 import type { ChainId } from '../ethereum/transactions/ChainId';
+import type { EthereumChainConfig } from '../ethereum/chains/types';
 import { Networks } from './Networks';
 import { getNetworkByChainId, getNetworks } from './networks-api';
 import type { NetworkConfig } from './NetworkConfig';
@@ -106,10 +106,9 @@ export class NetworksStore extends Store<State> {
   }
 
   private async fetchNetworkById(chainId: ChainId) {
-    const shouldUpdateNetworksInfo = [
-      ...this.networkConfigs,
-      ...this.customNetworkConfigs,
-    ].every((network) => Networks.getChainId(network) !== chainId);
+    const shouldUpdateNetworksInfo = this.getState()
+      .networks?.getNetworks()
+      .every((network) => Networks.getChainId(network) !== chainId);
     const existingNetworks = this.getState().networks;
     if (!shouldUpdateNetworksInfo && existingNetworks) {
       return existingNetworks;

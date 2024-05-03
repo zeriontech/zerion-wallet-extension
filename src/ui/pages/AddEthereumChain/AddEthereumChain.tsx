@@ -23,7 +23,7 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
-import type { EthereumChainConfig } from 'src/modules/ethereum/chains/ChainConfigStore';
+import type { EthereumChainConfig } from 'src/modules/ethereum/chains/types';
 import { networksStore } from 'src/modules/networks/networks-store.client';
 import { Networks } from 'src/modules/networks/Networks';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';

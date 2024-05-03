@@ -4,7 +4,11 @@ import { useLocation } from 'react-router-dom';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { useSearchNetworks } from 'src/modules/networks/useNetworks';
 import { filterNetworksByQuery } from 'src/modules/ethereum/chains/filterNetworkByQuery';
-import { NetworksEmptyView } from 'src/ui/components/NetworkSelectDialog/NetworksEmptyView';
+import {
+  NetworksEmptyView,
+  ShowTestnetsHint,
+} from 'src/ui/components/NetworkSelectDialog/NetworksEmptyView';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { NetworkList } from '../NetworkList';
 
 export function SearchResults({
@@ -30,12 +34,20 @@ export function SearchResults({
     return <NetworksEmptyView showTestnets={showTestnets} />;
   }
   return (
-    <NetworkList
-      networks={networks}
-      networkList={items}
-      getItemTo={(item) =>
-        `/networks/network/${item.id}?from=${encodeURIComponent(pathname)}`
-      }
-    />
+    <>
+      <NetworkList
+        networks={networks}
+        networkList={items}
+        getItemTo={(item) =>
+          `/networks/network/${item.id}?from=${encodeURIComponent(pathname)}`
+        }
+      />
+      {showTestnets ? null : (
+        <>
+          <Spacer height={8} />
+          <ShowTestnetsHint />
+        </>
+      )}
+    </>
   );
 }

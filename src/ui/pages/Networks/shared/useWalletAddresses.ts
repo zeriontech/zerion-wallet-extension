@@ -14,11 +14,11 @@ export function useWalletAddresses() {
       return null;
     }
     const result: string[] = [];
-    walletGroups.forEach((group) =>
-      group.walletContainer.wallets.forEach((wallet) =>
-        result.push(wallet.address)
-      )
-    );
+    for (const group of walletGroups) {
+      for (const wallet of group.walletContainer.wallets) {
+        result.push(wallet.address);
+      }
+    }
     return result;
   }, [walletGroups]);
 

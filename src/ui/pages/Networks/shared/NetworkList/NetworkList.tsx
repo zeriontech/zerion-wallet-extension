@@ -15,11 +15,12 @@ import InvisibleIcon from 'jsx:src/ui/assets/invisible.svg';
 import { LIST_ITEM_CLASS } from 'src/ui/components/NetworkSelectDialog/constants';
 import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import { VirtualizedSurfaceList } from 'src/ui/ui-kit/SurfaceList/VirtualizedSurfaceList';
+import { BACKEND_NETWORK_ORIGIN } from 'src/modules/ethereum/chains/constants';
 
 function getOriginUrlFromMetaData(metadata: NetworkConfigMetaData) {
   if (
     metadata.origin === globalThis.location.origin ||
-    metadata.origin === 'predefined'
+    metadata.origin === BACKEND_NETWORK_ORIGIN
   ) {
     return null;
   }
