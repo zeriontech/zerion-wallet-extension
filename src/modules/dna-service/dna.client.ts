@@ -7,5 +7,4 @@ export function initDnaApi() {
 
 export async function updateAddressDnaInfo(address: string) {
   await dnaServicePort.request('gm', { address });
-  await dnaServicePort.request('registerWallet', { address });
 }
