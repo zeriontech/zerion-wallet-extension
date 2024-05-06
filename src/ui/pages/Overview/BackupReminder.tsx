@@ -24,7 +24,7 @@ export function BackupReminder() {
       dialogRef.current &&
       count &&
       preferences &&
-      Date.now() - preferences.backupReminderCloseTime >= ONE_DAY
+      Date.now() - preferences.lastBackupReminderHideTime >= ONE_DAY
     ) {
       dialogRef.current.showModal();
       // hide initial outline on cancel button to provide correct look
@@ -33,7 +33,7 @@ export function BackupReminder() {
   }, [count, preferences]);
 
   const handleHide = useCallback(() => {
-    setPreferences({ backupReminderCloseTime: Date.now() });
+    setPreferences({ lastBackupReminderHideTime: Date.now() });
     dialogRef.current?.close();
   }, [setPreferences]);
 
