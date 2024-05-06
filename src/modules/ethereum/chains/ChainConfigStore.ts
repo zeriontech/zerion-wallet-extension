@@ -32,8 +32,6 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
     this.checkChainsForUpdates();
   }
 
-  readyPromise = this.restore();
-
   addEthereumChain(
     value: AddEthereumChainParameter,
     {
@@ -119,10 +117,6 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
         ethereumChainConfigs: updatedEthereumChainConfigs,
       }));
     }
-  }
-
-  async ready(): Promise<void> {
-    return this.isReady ? Promise.resolve() : this.readyPromise;
   }
 }
 
