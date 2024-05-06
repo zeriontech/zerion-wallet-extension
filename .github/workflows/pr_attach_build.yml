@@ -68,8 +68,9 @@ jobs:
         with:
           script: |
             const pr_number = "${{ steps.get-build-artifacts.outputs.pr_number }}";
+            const pr_name = "${{ github.head_ref || github.ref_name }}"
             const build_download_url = "${{ steps.get-build-artifacts.outputs.build_download_url }}";
-            const message = `:package: <a href='${build_download_url}'>build.zip</a>`;
+            const message = `:package: <a href='${build_download_url}'>${pr_name}.zip</a>`;
 
             const { data: comments } = await github.issues.listComments({
               owner: context.repo.owner,
