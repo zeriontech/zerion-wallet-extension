@@ -9,6 +9,7 @@ on:
       - Build pull request
     types:
       - completed
+  workflow_dispatch:
 
 jobs:
   attach_build_artifacts:
