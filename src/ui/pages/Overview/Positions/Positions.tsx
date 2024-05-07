@@ -267,14 +267,10 @@ function AddressPositionItem({
               >
                 {`${
                   position.asset.price.relative_change_24h > 0 ? '+' : minus
-                }${formatCurrencyValue(
-                  absoluteChange,
-                  'en',
-                  'usd'
-                )} (${formatPercent(
-                  position.asset.price.relative_change_24h,
+                }${formatPercent(
+                  Math.abs(position.asset.price.relative_change_24h),
                   'en'
-                )}%)`}
+                )}% (${formatCurrencyValue(absoluteChange, 'en', 'usd')})`}
               </UIText>
             ) : null}
           </VStack>
