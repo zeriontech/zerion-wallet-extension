@@ -113,6 +113,9 @@ export function SignInWithEthereum() {
     return null;
   }
 
+  const mustConfirmWithPassword =
+    !siweMessage?.isValid() && !isDeviceAccount(wallet);
+
   return (
     <Background backgroundKind="white">
       <NavigationTitle title={null} documentTitle="Sign In with Ethereum" />
@@ -213,6 +216,7 @@ export function SignInWithEthereum() {
               <VerifyUser
                 text="Verification is required in order to ignore the warning and proceed further"
                 onSuccess={() => personalSign()}
+                buttonTitle="Confirm"
               />
               <PageBottom />
             </>
@@ -234,55 +238,55 @@ export function SignInWithEthereum() {
               {txErrorToMessage(personalSignMutation.error)}
             </UIText>
           ) : null}
-          {params.has('step') === false || params.get('step') === 'data' ? (
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: !siweMessage?.isValid()
-                  ? 'none'
-                  : '1fr 1fr',
-                gap: 8,
-              }}
-            >
-              {/* Temporarily "proceed anyway" flow is only for SignerWallets, not Hardware Wallets */}
-              {!siweMessage?.isValid() && !isDeviceAccount(wallet) ? (
-                <>
-                  <Button ref={focusNode} onClick={handleReject}>
-                    Close
-                  </Button>
-                  <Button
-                    kind="ghost"
-                    onClick={() => updateSearchParam('step', 'verifyUser')}
-                  >
-                    <UIText kind="caption/accent" color="var(--neutral-500)">
-                      Proceed anyway
-                    </UIText>
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    type="button"
-                    kind="regular"
-                    onClick={handleReject}
-                    ref={focusNode}
-                  >
-                    Cancel
-                  </Button>
-                  <SignMessageButton
-                    ref={signMsgBtnRef}
-                    wallet={wallet}
-                    onClick={() => personalSign()}
-                    buttonTitle={
-                      personalSignMutation.isLoading
-                        ? `Signing In${ellipsis}`
-                        : 'Sign In'
-                    }
-                  />
-                </>
-              )}
+          {/* "Confirm with password" flow is only for SignerWallets, not Hardware Wallets */}
+          {(params.has('step') === false || params.get('step') === 'data') &&
+          mustConfirmWithPassword ? (
+            <div style={{ display: 'grid', gap: 8 }}>
+              <>
+                <Button ref={focusNode} onClick={handleReject}>
+                  Close
+                </Button>
+                <Button
+                  kind="ghost"
+                  onClick={() => updateSearchParam('step', 'verifyUser')}
+                >
+                  <UIText kind="caption/accent" color="var(--neutral-500)">
+                    Proceed anyway
+                  </UIText>
+                </Button>
+              </>
             </div>
           ) : null}
+          <div
+            style={{
+              // For "proceed anyway" flow we don't show these buttons,
+              // but <SignMessageButton /> MUST stay in DOM in order to work
+              display: mustConfirmWithPassword ? 'none' : 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: 8,
+            }}
+          >
+            <Button
+              type="button"
+              kind="regular"
+              onClick={handleReject}
+              ref={focusNode}
+            >
+              Cancel
+            </Button>
+            <SignMessageButton
+              ref={signMsgBtnRef}
+              wallet={wallet}
+              onClick={() => personalSign()}
+              buttonTitle={
+                personalSignMutation.isLoading
+                  ? `Signing In${ellipsis}`
+                  : !siweMessage?.isValid() && isDeviceAccount(wallet)
+                  ? 'Proceed anyway'
+                  : 'Sign In'
+              }
+            />
+          </div>
         </VStack>
       </PageColumn>
       <KeyboardShortcut combination="esc" onKeyDown={handleReject} />

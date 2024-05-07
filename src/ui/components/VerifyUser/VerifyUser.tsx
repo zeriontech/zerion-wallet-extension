@@ -11,10 +11,12 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 export function VerifyUser({
   text,
   style,
+  buttonTitle = 'Unlock',
   onSuccess,
 }: {
   text?: React.ReactNode;
   style?: React.CSSProperties;
+  buttonTitle?: React.ReactNode;
   onSuccess: () => void;
 }) {
   const { data: user, isLoading } = useQuery({
@@ -96,7 +98,7 @@ export function VerifyUser({
             ) : null}
           </VStack>
           <Button disabled={loginMutation.isLoading}>
-            {loginMutation.isLoading ? 'Checking...' : 'Unlock'}
+            {loginMutation.isLoading ? 'Checking...' : buttonTitle}
           </Button>
         </VStack>
       </form>
