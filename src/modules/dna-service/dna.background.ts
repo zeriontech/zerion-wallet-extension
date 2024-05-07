@@ -7,10 +7,8 @@ import { ethers } from 'ethers';
 import { version } from 'src/shared/packageVersion';
 import * as browserStorage from 'src/background/webapis/storage';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import type { Account } from 'src/background/account/Account';
 import { networksStore } from 'src/modules/networks/networks-store.background';
 import { emitter } from 'src/background/events';
-import { INTERNAL_ORIGIN } from 'src/background/constants';
 import type { DnaAction } from './types';
 
 const ACTION_QUEUE_KEY = 'actionDnaQueue-22-12-2021';
@@ -26,11 +24,9 @@ const dnaServiceEmitter = createNanoEvents<{
 const ONE_DAY = 1000 * 60 * 60 * 24;
 
 export class DnaService {
-  private account: Account;
   private sendingInProgress: boolean;
 
-  constructor(account: Account) {
-    this.account = account;
+  constructor() {
     this.sendingInProgress = false;
   }
 
@@ -121,33 +117,38 @@ export class DnaService {
     return this.registerAction(action);
   }
 
+  async getPromoteDnaSigningMessage({
+    params: { collectionName, tokenName },
+  }: {
+    params: {
+      collectionName: string;
+      tokenName: string;
+    };
+  }) {
+    const actionId = uuidv4();
+    const rawMessage = `Make ${collectionName} #${tokenName} primary\n\n${actionId}`;
+    const message = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(rawMessage));
+    return { message, actionId };
+  }
+
   async promoteDnaToken({
     params,
   }: {
-    params: { address: string; collectionName: string; tokenName: string };
+    params: {
+      address: string;
+      actionId: string;
+      tokenName: string;
+      signature: string;
+    };
   }) {
-    const actionId = uuidv4();
-    const rawSignatureMessage = `Make ${params.collectionName} #${params.tokenName} primary\n\n${actionId}`;
-    const signingMessage = ethers.utils.hexlify(
-      ethers.utils.toUtf8Bytes(rawSignatureMessage)
-    );
-    const signature = await this.account.getCurrentWallet().personalSign({
-      params: {
-        params: [signingMessage],
-        initiator: INTERNAL_ORIGIN,
-        clientScope: null,
-      },
-      context: { origin: INTERNAL_ORIGIN },
-    });
-
     return this.pushAction({
       address: normalizeAddress(params.address),
-      id: actionId,
+      id: params.actionId,
       payload: {
         promoteToken: {
           generation: 'OnePointO',
           id: params.tokenName,
-          signature,
+          signature: params.signature,
         },
       },
     });
