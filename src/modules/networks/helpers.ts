@@ -5,11 +5,12 @@ import type { NetworkConfig } from './NetworkConfig';
 import { Networks } from './Networks';
 
 export function toNetworkConfig(
-  value: AddEthereumChainParameter
+  value: AddEthereumChainParameter,
+  maybeId?: string
 ): NetworkConfig {
   invariant(value.rpcUrls, 'RPC URL should be defined in network config');
   invariant(value.chainId, 'chainId should be defined in network config');
-  const id = toCustomNetworkId(value.chainId);
+  const id = maybeId ?? toCustomNetworkId(value.chainId);
   return {
     supports_sending: true,
     supports_trading: false,

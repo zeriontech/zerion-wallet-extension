@@ -100,7 +100,7 @@ export class NetworksStore extends Store<State> {
     this.customNetworkConfigs =
       savedChainConfigs
         ?.filter((config) => !fulfilledNetworkIdSet.has(config.id))
-        .map((config) => toNetworkConfig(config.value)) || [];
+        .map((config) => toNetworkConfig(config.value, config.id)) || [];
 
     return this.updateNetworks();
   }
