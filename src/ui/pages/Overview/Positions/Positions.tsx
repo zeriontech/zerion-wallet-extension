@@ -45,7 +45,6 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
-import { useQuery } from '@tanstack/react-query';
 import { intersperce } from 'src/ui/shared/intersperce';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
@@ -53,12 +52,10 @@ import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { getCommonQuantity } from 'src/modules/networks/asset';
 import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import { minus } from 'src/ui/shared/typography';
-import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 import { useEvmAddressPositions } from 'src/ui/shared/requests/useEvmAddressPositions';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { EmptyView } from 'src/ui/components/EmptyView';
 import { invariant } from 'src/shared/invariant';
-import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOrigin';
 import { SurfaceItemAnchor } from 'src/ui/ui-kit/SurfaceList';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { useStore } from '@store-unit/react';
@@ -300,30 +297,22 @@ interface PreparedPositions {
 function usePreparedPositions({
   items: unfilteredItems,
   groupType,
+  moveGasPositionToFront,
+  dappChain,
 }: {
   items: AddressPosition[];
   groupType: PositionsGroupType;
+  moveGasPositionToFront: boolean;
+  dappChain: string | null;
 }): PreparedPositions {
-  const { data: tabData } = useQuery({
-    queryKey: ['activeTab/origin'],
-    queryFn: getActiveTabOrigin,
-    suspense: false,
-  });
-  const tabOrigin = tabData?.tabOrigin;
-  const { data: siteChain } = useQuery({
-    queryKey: ['requestChainForOrigin', tabOrigin],
-    queryFn: () => requestChainForOrigin(tabOrigin),
-    enabled: Boolean(tabOrigin),
-    suspense: false,
-  });
   const { networks } = useNetworks();
   const nativeAssetId = useMemo(() => {
-    if (!siteChain) {
+    if (!dappChain) {
       return null;
     }
-    const network = networks?.getNetworkByName(siteChain);
+    const network = networks?.getNetworkByName(createChain(dappChain));
     return network?.native_asset?.id || null;
-  }, [networks, siteChain]);
+  }, [networks, dappChain]);
 
   const items = useMemo(
     () =>
@@ -339,11 +328,11 @@ function usePreparedPositions({
         (item) =>
           !item.dapp &&
           item.type === 'asset' &&
-          item.chain === siteChain?.toString() &&
+          item.chain === dappChain?.toString() &&
           item.asset.id === nativeAssetId
       )?.id || null
     );
-  }, [siteChain, nativeAssetId, items]);
+  }, [dappChain, nativeAssetId, items]);
 
   const totalValue = useMemo(() => getFullPositionsValue(items), [items]);
   return useMemo(() => {
@@ -375,13 +364,15 @@ function usePreparedPositions({
         nameIndex[name] = sortPositionsByParentId(
           clearMissingParentIds(byName[name])
         );
-        const gasPositionIndex = nameIndex[name].findIndex(
-          (item) => item.id === gasPositionId
-        );
-        if (gasPositionIndex >= 0) {
-          const gasPosition = nameIndex[name][gasPositionIndex];
-          nameIndex[name].splice(gasPositionIndex, 1);
-          nameIndex[name].unshift(gasPosition);
+        if (moveGasPositionToFront) {
+          const gasPositionIndex = nameIndex[name].findIndex(
+            (item) => item.id === gasPositionId
+          );
+          if (gasPositionIndex >= 0) {
+            const gasPosition = nameIndex[name][gasPositionIndex];
+            nameIndex[name].splice(gasPositionIndex, 1);
+            nameIndex[name].unshift(gasPosition);
+          }
         }
       }
       dappIndex[dappId] = {
@@ -402,7 +393,7 @@ function usePreparedPositions({
       dappIds,
       dappIndex,
     };
-  }, [groupType, items, totalValue, gasPositionId]);
+  }, [groupType, items, gasPositionId, totalValue, moveGasPositionToFront]);
 }
 
 function ProtocolHeading({
@@ -450,9 +441,13 @@ function ProtocolHeading({
 function PositionList({
   items,
   address,
+  moveGasPositionToFront,
+  dappChain,
 }: {
   items: AddressPosition[];
   address: string | null;
+  moveGasPositionToFront: boolean;
+  dappChain: string | null;
 }) {
   const COLLAPSED_COUNT = 5;
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
@@ -471,7 +466,12 @@ function PositionList({
   );
 
   const groupType = PositionsGroupType.platform;
-  const preparedPositions = usePreparedPositions({ items, groupType });
+  const preparedPositions = usePreparedPositions({
+    items,
+    groupType,
+    moveGasPositionToFront,
+    dappChain,
+  });
   const offsetValuesState = useStore(offsetValues);
 
   return (
@@ -673,7 +673,11 @@ function MultiChainPositions({
           }
         />
       </div>
-      <PositionList items={items} {...positionListProps} />
+      <PositionList
+        items={items}
+        dappChain={dappChain}
+        {...positionListProps}
+      />
     </VStack>
   );
 }
@@ -752,6 +756,7 @@ function RawChainPositions({
       <PositionList
         address={address}
         items={addressPositions}
+        dappChain={dappChain}
         {...positionListProps}
       />
     </VStack>
@@ -784,6 +789,7 @@ export function Positions({
     );
   }
   const chainValue = filterChain || dappChain || NetworkSelectValue.All;
+  const moveGasPositionToFront = chainValue !== NetworkSelectValue.All;
   const chain = createChain(chainValue);
   const isSupportedByBackend =
     chainValue === NetworkSelectValue.All
@@ -851,6 +857,7 @@ export function Positions({
         address={singleAddressNormalized}
         dappChain={dappChain}
         filterChain={filterChain}
+        moveGasPositionToFront={moveGasPositionToFront}
         onChainChange={onChainChange}
         renderEmptyView={renderEmptyViewForNetwork}
         renderLoadingView={renderLoadingViewForNetwork}
@@ -869,6 +876,7 @@ export function Positions({
           address={singleAddressNormalized}
           dappChain={dappChain}
           filterChain={filterChain}
+          moveGasPositionToFront={moveGasPositionToFront}
           onChainChange={onChainChange}
           renderEmptyView={renderEmptyViewForNetwork}
           renderLoadingView={renderLoadingViewForNetwork}
