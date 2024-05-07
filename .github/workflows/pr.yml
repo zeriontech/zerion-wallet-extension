@@ -29,6 +29,10 @@ on:
         default: https://social.zerion.io/
         description: 'Zerion Social API'
         required: true
+      PR_NUMBER:
+        default: ''
+        description: 'Pull request to attach the build to, e.g. 468'
+        required: false
 
 jobs:
   build_pull_request:
@@ -64,7 +68,7 @@ jobs:
       - name: Save PR number
         if: ${{ success() }}
         env:
-          PR_NUMBER: ${{ github.event.number }}
+          PR_NUMBER: ${{ github.event.inputs.PR_NUMBER || github.event.number }}
         run: |
           mkdir -p ./pr
           echo $PR_NUMBER > ./pr/pr_number
