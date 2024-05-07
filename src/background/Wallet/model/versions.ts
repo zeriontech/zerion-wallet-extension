@@ -8,7 +8,7 @@ import type {
   WalletRecordVersion4,
 } from './types';
 
-export type PossibleEntry =
+type PossibleEntry =
   | WalletRecordVersion1
   | WalletRecordVersion2
   | WalletRecordVersion3

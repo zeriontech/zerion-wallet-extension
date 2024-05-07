@@ -1,7 +1,7 @@
-type VertionableEntity = { version: number };
+type VersionableEntity = { version: number };
 
 function ensureVersion<
-  PossibleEntry extends VertionableEntity,
+  PossibleEntry extends VersionableEntity,
   T extends PossibleEntry
 >(entry: PossibleEntry, version: number): asserts entry is T {
   // object without version assumed as version: 1
@@ -15,7 +15,7 @@ function ensureVersion<
   }
 }
 
-function getNextVersion<T extends Partial<VertionableEntity>>(
+function getNextVersion<T extends Partial<VersionableEntity>>(
   entry: T
 ): T['version'] {
   return (entry.version || 1) + 1;
@@ -29,7 +29,7 @@ type Dec<N extends number> = Arr<N> extends [unknown, ...infer U]
   ? U['length']
   : never;
 
-export type Upgrades<T extends VertionableEntity> = {
+export type Upgrades<T extends VersionableEntity> = {
   [Version in T['version'] as Dec<Version> extends T['version']
     ? Version
     : never]: (
@@ -37,7 +37,7 @@ export type Upgrades<T extends VertionableEntity> = {
   ) => Extract<T, { version: Version }>;
 };
 
-type FinalVersion<T extends VertionableEntity> = Extract<
+type FinalVersion<T extends VersionableEntity> = Extract<
   T,
   {
     version: keyof {
@@ -48,7 +48,7 @@ type FinalVersion<T extends VertionableEntity> = Extract<
   }
 >;
 
-export function upgradeRecord<PossibleEntry extends VertionableEntity>(
+export function upgradeRecord<PossibleEntry extends VersionableEntity>(
   entry: PossibleEntry,
   upgrades: Upgrades<PossibleEntry>
 ): FinalVersion<PossibleEntry> {
