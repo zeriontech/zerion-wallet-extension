@@ -1,5 +1,5 @@
 interface NetworkAsset {
-  id: string | null;
+  id: string;
   address: null | string;
   name: string;
   symbol: string;

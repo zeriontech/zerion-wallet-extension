@@ -8,7 +8,7 @@ type DeprecatedEthereumChainConfig = NetworkConfigMetaData & {
 
 export interface EthereumChainConfig extends NetworkConfigMetaData {
   value: AddEthereumChainParameter;
-  previousIds: string[];
+  previousIds: string[] | null;
   id: string;
 }
 

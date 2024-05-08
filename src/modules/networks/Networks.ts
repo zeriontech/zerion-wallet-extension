@@ -59,8 +59,10 @@ export interface NetworkConfigMetaData {
 function toAliasMap(ethereumChainConfigs: EthereumChainConfig[]) {
   const result: Record<string, string> = {};
   for (const { previousIds, id } of ethereumChainConfigs) {
-    for (const previousId of previousIds) {
-      result[previousId] = id;
+    if (previousIds) {
+      for (const previousId of previousIds) {
+        result[previousId] = id;
+      }
     }
   }
   return result;
@@ -231,7 +233,7 @@ export class Networks {
     return this.getExplorerTokenUrl(this.getNetworkByName(chain), address);
   }
 
-  getExplorerNameByName(chain: Chain) {
+  getExplorerNameByChainName(chain: Chain) {
     return this.getNetworkByName(chain)?.explorer_name;
   }
 

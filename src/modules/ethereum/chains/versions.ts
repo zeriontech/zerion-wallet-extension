@@ -21,7 +21,7 @@ export const upgrades: Upgrades<PossibleEntry> = {
         ...config,
         id,
         value: chainConfig,
-        previousIds: [value.chain],
+        previousIds: value.chain !== id ? [value.chain] : null,
       });
     }
     return {

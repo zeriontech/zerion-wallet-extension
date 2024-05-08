@@ -21,12 +21,11 @@ export function injectChainConfig(
     native_asset: {
       name: chainConfig.nativeCurrency?.name,
       address: networkConfig.native_asset?.address || null,
-      decimals: chainConfig.nativeCurrency?.decimals,
-      symbol: chainConfig.nativeCurrency?.symbol,
+      decimals: chainConfig.nativeCurrency.decimals,
+      symbol: chainConfig.nativeCurrency.symbol,
       id:
-        chainConfig.nativeCurrency?.symbol?.toLowerCase() === 'eth'
-          ? 'eth'
-          : null,
+        networkConfig.native_asset?.id ||
+        chainConfig.nativeCurrency.symbol.toLowerCase(),
     },
     hidden: chainConfig.hidden ?? networkConfig.hidden,
   };

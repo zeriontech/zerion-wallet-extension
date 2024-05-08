@@ -47,10 +47,10 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
       state.ethereumChainConfigs?.map((config) => [config.id, config])
     );
     const existingEntry = existingItems.get(prevId);
-    const existingPreviousIds = existingEntry?.previousIds || [];
+    const existingPreviousIds = existingEntry?.previousIds || null;
     const previousIds =
-      prevId !== id && !existingPreviousIds.includes(prevId)
-        ? [...existingPreviousIds, prevId]
+      prevId !== id && !existingPreviousIds?.includes(prevId)
+        ? [...(existingPreviousIds || []), prevId]
         : existingPreviousIds;
     const now = Date.now();
     const newEntry: EthereumChainConfig = {
