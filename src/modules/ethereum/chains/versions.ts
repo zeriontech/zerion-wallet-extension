@@ -14,9 +14,9 @@ export const upgrades: Upgrades<PossibleEntry> = {
     const ethereumChainConfigs: EthereumChainConfig[] = [];
     for (const { value, ...config } of entry.ethereumChains || []) {
       const chainConfig = toAddEthereumChainParameter(value);
-      const id = maybeLocalChainId(value.chain)
+      const id = maybeLocalChainId(value.id)
         ? toCustomNetworkId(value.external_id)
-        : value.chain;
+        : value.id;
       ethereumChainConfigs?.push({
         ...config,
         id,
