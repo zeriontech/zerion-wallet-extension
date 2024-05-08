@@ -149,6 +149,8 @@ class WalletPortMock {
       this.setPreference({
         preferences: args[0] as Partial<WalletRecord['publicPreferences']>,
       });
+    } else if (method === 'getWalletGroupByAddress') {
+      return mockRecord.walletManager.groups[0];
     } else {
       throw new Error(`Mock method not implemented: ${method}`);
     }

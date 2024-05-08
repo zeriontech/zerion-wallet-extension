@@ -1,4 +1,8 @@
 import type { EthereumChainConfig } from '../ethereum/chains/types';
+import type { ChainId } from '../ethereum/transactions/ChainId';
+import type { NetworkConfig } from './NetworkConfig';
+import { Networks } from './Networks';
+import { networksFallbackInfo } from './networks-fallback';
 import { NetworksStore } from './networks-store';
 
 export const ETHEREUM_CHAIN_SOURCES: EthereumChainConfig[] = [
@@ -82,7 +86,34 @@ export const ETHEREUM_CHAIN_SOURCES: EthereumChainConfig[] = [
   },
 ];
 
-export const networksStore = new NetworksStore(
-  { networks: null },
-  { getEthereumChainConfigs: () => Promise.resolve(ETHEREUM_CHAIN_SOURCES) }
+class NetworksStoreMock extends NetworksStore {
+  async load(_chainIds?: string[]) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return this.getState().networks!;
+  }
+
+  async update() {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return this.getState().networks!;
+  }
+
+  async loadNetworksWithChainId(_chainId: ChainId) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return this.getState().networks!;
+  }
+
+  async pushConfigs(..._extraNetworkConfigs: NetworkConfig[]) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return this.getState().networks!;
+  }
+}
+
+export const networksStore = new NetworksStoreMock(
+  {
+    networks: new Networks({
+      networks: networksFallbackInfo,
+      ethereumChainConfigs: ETHEREUM_CHAIN_SOURCES,
+    }),
+  },
+  { getEthereumChainConfigs: null }
 );

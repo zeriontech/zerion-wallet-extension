@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
-import { httpConnectionPort } from '../channels';
+import { httpConnectionPort } from 'src/ui/shared/channels';
 import { createAddressPosition } from './shared/createAddressPosition';
 
 export async function fetchNativeEvmPosition({

@@ -2,9 +2,9 @@ import { useCallback, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
 import { emitter } from 'src/ui/shared/events';
+import { networksStore } from 'src/modules/networks/networks-store.client';
 import { getNetworksBySearch } from '../ethereum/chains/requests';
 import type { ChainId } from '../ethereum/transactions/ChainId';
-import { networksStore } from './networks-store.client';
 
 export function useNetworks(chainIds?: string[]) {
   const { data: networks = null, ...query } = useQuery({
