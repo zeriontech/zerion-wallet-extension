@@ -21,6 +21,7 @@
     "src": "./src",
     "ui-lab:src/ui/shared/channels": "./src/ui/shared/channels.mock.ts",
     "ui-lab:src/modules/networks/networks-store.client": "./src/modules/networks/networks-store.client.mock.ts",
+    "ui-lab:src/background/constants": "./src/background/constants.mock.ts",
     "buffer-todo-set-to-false": false,
     "ui-lab:webextension-polyfill": "/src/ui-lab/webextension-polyfill.mock.ts"
   },
