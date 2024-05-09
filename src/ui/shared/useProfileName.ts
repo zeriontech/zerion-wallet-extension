@@ -14,13 +14,19 @@ function randomCoice<T>(arr: T[]): T {
 const testWalletSuffixes = ['⧗', '🤘️️️️️️', '♥️'];
 const testWalletSuffix = randomCoice(testWalletSuffixes);
 
+export enum WalletNameType {
+  address,
+  domain,
+  customName,
+}
+
 export function useProfileName(
   wallet: Pick<BareWallet, 'address' | 'name'>,
   {
     padding = 4,
     maxCharacters,
   }: { padding?: number; maxCharacters?: number } = {}
-) {
+): { type: WalletNameType; value: string } {
   const { isLoading: isDomainLoading, data: domain } = useQuery({
     queryKey: ['name-service/lookupAddressName', wallet.address],
     queryFn: useCallback(
@@ -40,12 +46,16 @@ export function useProfileName(
   const domainName = isDomainLoading ? null : domain;
 
   if (wallet.name) {
-    return getWalletDisplayName(wallet, { padding, maxCharacters });
+    return {
+      type: WalletNameType.customName,
+      value: getWalletDisplayName(wallet, { padding, maxCharacters }),
+    };
   }
   const value =
     domainName ?? getWalletDisplayName(wallet, { padding, maxCharacters });
+  const type = domainName ? WalletNameType.domain : WalletNameType.address;
   if (normalizeAddress(wallet.address) === testAddress) {
-    return `${value} ${testWalletSuffix}`;
+    return { type, value: `${value} ${testWalletSuffix}` };
   }
-  return value;
+  return { type, value };
 }

@@ -6,14 +6,19 @@ export function WalletDisplayName({
   wallet,
   padding,
   maxCharacters,
+  render,
 }: {
   wallet: ExternallyOwnedAccount;
   padding?: number;
   maxCharacters?: number;
+  render?: (data: ReturnType<typeof useProfileName>) => React.ReactNode;
 }) {
-  const displayName = useProfileName(wallet, {
+  const data = useProfileName(wallet, {
     padding,
     maxCharacters,
   });
-  return <span style={{ wordBreak: 'break-all' }}>{displayName}</span>;
+  if (render) {
+    return render(data);
+  }
+  return <span style={{ wordBreak: 'break-all' }}>{data.value}</span>;
 }

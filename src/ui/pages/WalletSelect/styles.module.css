@@ -2,9 +2,30 @@
   border: 2px solid var(--neutral-200);
 }
 
+/**
+ * Styles for {.showOnHover} are written to support two cases:
+ * when button is nested and when button is anchor-positioned
+ */
+.showOnHover {
+  opacity: 0;
+}
+
+.showOnHover:focus,
+.showOnHover:focus-within {
+  opacity: 1;
+}
+
 @media (hover: hover) {
   .wallet:hover {
     border: 2px solid var(--neutral-100);
     background-color: var(--neutral-100);
+  }
+
+  .showOnHover:hover,
+  .wallet:focus-within .showOnHover,
+  .wallet:focus-within ~ .showOnHover,
+  .wallet:hover .showOnHover,
+  .wallet:hover ~ .showOnHover {
+    opacity: 1;
   }
 }

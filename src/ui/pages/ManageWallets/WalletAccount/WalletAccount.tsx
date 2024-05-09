@@ -65,7 +65,7 @@ function EditableWalletName({
     500
   );
 
-  const displayName = useProfileName(wallet);
+  const { value: displayName } = useProfileName(wallet);
 
   return (
     <VStack gap={4}>
@@ -186,7 +186,8 @@ export function WalletAccount() {
     queryKey: ['getWalletGroupByAddress', address],
     queryFn: () => getWalletGroupByAddress(address),
   });
-  const displayName = useProfileName({ address, name: wallet?.name || null });
+  const walletName = wallet?.name || null;
+  const { value: displayName } = useProfileName({ address, name: walletName });
   const removeAddressMutation = useMutation({
     mutationFn: () => walletPort.request('removeAddress', { address, groupId }),
     useErrorBoundary: true,

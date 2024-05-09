@@ -100,6 +100,7 @@ export function WalletSelect() {
               setCurrentAddressMutation.mutate(wallet.address);
             }}
             selectedAddress={singleAddress}
+            showAddressValues={true}
           />
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <Button
