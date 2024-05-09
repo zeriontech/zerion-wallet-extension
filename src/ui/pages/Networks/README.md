@@ -13,7 +13,7 @@
 
 - HEX chain id is stored in `specification` object inside NetworkConfig
 - for chain configs coming from dApps, `id` is queried from backend for the chain with the same `chainId` or derived directly from `chainId`
-- for manually added networks, `id` is currently created equal to `chainId` and will be updated if `chainId` is updated.
+- for manually added networks, `id` is currently deterministically created from `chainId` and will be updated if `chainId` is updated.
 
 ### Creating/modifying a chain
 
