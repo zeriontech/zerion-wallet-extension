@@ -150,6 +150,7 @@ class WalletPortMock {
         preferences: args[0] as Partial<WalletRecord['publicPreferences']>,
       });
     } else if (method === 'getWalletGroupByAddress') {
+      // TODO: implement actual search here
       return mockRecord.walletManager.groups[0];
     } else {
       throw new Error(`Mock method not implemented: ${method}`);
