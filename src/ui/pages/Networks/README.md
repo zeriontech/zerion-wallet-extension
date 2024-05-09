@@ -12,7 +12,7 @@
 ### Chain, chainId and external_id
 
 - HEX chain id is stored in `specification` object inside NetworkConfig
-- for chain configs coming from dApps, `id` is get from backend for the chain with the same `chainId` or directly from `chainId`
+- for chain configs coming from dApps, `id` is queried from backend for the chain with the same `chainId` or derived directly from `chainId`
 - for manually added networks, `id` is currently created equal to `chainId` and will be updated if `chainId` is updated.
 
 ### Creating/modifying a chain
