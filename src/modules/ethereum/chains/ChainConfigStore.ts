@@ -60,7 +60,7 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
     const prevId = maybePrevId || id;
     const state = this.getState();
     const existingItems = new Map(
-      state.ethereumChainConfigs?.map((config) => [config.id, config])
+      state.ethereumChainConfigs.map((config) => [config.id, config])
     );
     const existingEntry = existingItems.get(prevId);
     const existingPreviousIds = existingEntry?.previousIds || null;
@@ -84,9 +84,6 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
       return existingEntry;
     }
     const newState = produce(state, (draft) => {
-      if (!draft.ethereumChainConfigs) {
-        draft.ethereumChainConfigs = [];
-      }
       upsert(draft.ethereumChainConfigs, newEntry, (x) =>
         x.id === prevId ? id : x.id
       );
@@ -99,9 +96,6 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
     const chainStr = chain.toString();
     this.setState((state) =>
       produce(state, (draft) => {
-        if (!draft.ethereumChainConfigs) {
-          draft.ethereumChainConfigs = [];
-        }
         remove(draft.ethereumChainConfigs, (x) => x.id === chainStr);
       })
     );
@@ -109,7 +103,7 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
 
   private async checkChainsForUpdates() {
     const { ethereumChainConfigs } = this.getState();
-    if (ethereumChainConfigs?.length) {
+    if (ethereumChainConfigs.length) {
       const updatedEthereumChainConfigs: EthereumChainConfig[] = [];
       for (const config of ethereumChainConfigs) {
         if (!isCustomNetworkId(config.id)) {
