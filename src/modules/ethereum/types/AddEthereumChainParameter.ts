@@ -10,5 +10,5 @@ export interface AddEthereumChainParameter {
   rpcUrls: string[];
   blockExplorerUrls?: string[];
   iconUrls?: string[]; // Currently ignored.
-  hidden?: boolean; // Not in standart
+  hidden?: boolean; // Not in standart, but this is a part of Network Form
 }

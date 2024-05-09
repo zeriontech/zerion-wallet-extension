@@ -1156,19 +1156,12 @@ export class Wallet {
 
   async addEthereumChain({
     context,
-    params: {
-      values,
-      origin,
-      chain: chainStr,
-      prevChain: prevChainStr,
-      created,
-    },
+    params: { values, origin, chain: chainStr, prevChain: prevChainStr },
   }: WalletMethodParams<{
     values: [AddEthereumChainParameter];
     origin: string;
-    chain?: string;
-    prevChain?: string;
-    created?: string;
+    chain: string | null;
+    prevChain: string | null;
   }>) {
     this.verifyInternalOrigin(context);
     const chain = chainStr || toCustomNetworkId(values[0].chainId);
@@ -1179,7 +1172,6 @@ export class Wallet {
       id: chain,
       prevId: prevChainStr,
       origin,
-      created: created != null ? Number(created) : undefined,
     });
 
     this.emitter.emit('chainChanged', createChain(chain), origin);

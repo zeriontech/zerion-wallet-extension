@@ -67,7 +67,7 @@ export function toAddEthereumChainParameter(
       name: item.native_asset?.name || '<unknown>',
     },
     // deprecated field is being used for chainConfigStore's migration
-    chainId: Networks.getChainId(item) || item.external_id || '',
+    chainId: Networks.getChainId(item) || item.external_id,
     chainName: item.name,
     blockExplorerUrls: item.explorer_address_url
       ? [item.explorer_address_url]

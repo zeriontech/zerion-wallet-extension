@@ -61,6 +61,7 @@ import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEt
 import { toAddEthereumChainParameter } from 'src/modules/networks/helpers';
 import { usePreferences } from 'src/ui/features/preferences';
 import { BACKEND_NETWORK_ORIGIN } from 'src/modules/ethereum/chains/constants';
+import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { useWalletAddresses } from './shared/useWalletAddresses';
 import { NetworkCreateSuccess } from './NetworkCreateSuccess';
 import { createEmptyChainConfig } from './shared/createEmptyChainConfig';
@@ -75,21 +76,11 @@ async function saveChainConfig({
 }: {
   chain: string;
   chainConfig: AddEthereumChainParameter;
-  prevChain?: string;
+  prevChain: string | null;
 }) {
-  const networks = await networksStore.load(
-    [chain, prevChain].filter(isTruthy)
-  );
-  const chainsMetadata = networks.getNetworksMetaData();
-  const metadata = chainsMetadata[prevChain || chain];
   return walletPort.request('addEthereumChain', {
     values: [chainConfig],
-    origin:
-      metadata?.origin ??
-      (isCustomNetworkId(chain)
-        ? window.location.origin
-        : BACKEND_NETWORK_ORIGIN),
-    created: metadata?.created ? metadata.created.toString() : undefined,
+    origin: isCustomNetworkId(chain) ? INTERNAL_ORIGIN : BACKEND_NETWORK_ORIGIN,
     chain,
     prevChain,
   });
@@ -144,7 +135,11 @@ function NetworkCreatePage() {
       <NetworkForm
         chainConfig={chainConfig}
         onSubmit={(chainStr, value) =>
-          mutation.mutate({ chain: chainStr, chainConfig: value })
+          mutation.mutate({
+            chain: chainStr,
+            chainConfig: value,
+            prevChain: null,
+          })
         }
         isSubmitting={mutation.isLoading}
         onCancel={goBack}

@@ -91,13 +91,11 @@ function AddOrUpdateChain({
       networkId: string;
       param: AddEthereumChainParameter;
     }) => {
-      const chainsMetadata = networks?.getNetworksMetaData();
-      const metadata = chainsMetadata?.[prevNetwork?.id || networkId];
       const config = await walletPort.request('addEthereumChain', {
         values: [param],
         origin,
         chain: networkId,
-        created: metadata?.created.toString() || undefined,
+        prevChain: null,
       });
       return {
         config,

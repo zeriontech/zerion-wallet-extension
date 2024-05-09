@@ -22,6 +22,7 @@ import {
 } from 'src/modules/ethereum/chains/helpers';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
+import { apostrophe } from 'src/ui/shared/typography';
 
 export function Field({
   label,
@@ -186,6 +187,12 @@ export function NetworkForm({
       const value = parsers.chainId(element.value) as ChainId;
       if (restrictedChainIds.has(value)) {
         return 'Network already exists';
+      }
+      try {
+        normalizeChainId(value);
+        normalizeChainId(Number(value));
+      } catch (error) {
+        return `Unsupported chainId${apostrophe}s format`;
       }
     },
   };

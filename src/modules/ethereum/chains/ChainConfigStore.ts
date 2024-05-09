@@ -5,16 +5,28 @@ import { PersistentStore } from 'src/modules/persistent-store';
 import { upsert } from 'src/shared/upsert';
 import { getNetworkByChainId } from 'src/modules/networks/networks-api';
 import { upgradeRecord } from 'src/shared/type-utils/versions';
+import { INTERNAL_ORIGIN } from 'src/background/constants';
 import type { AddEthereumChainParameter } from '../types/AddEthereumChainParameter';
 import { isCustomNetworkId } from './helpers';
 import type { ChainConfig, EthereumChainConfig } from './types';
 import { upgrades } from './versions';
+import { BACKEND_NETWORK_ORIGIN } from './constants';
 
 function remove<T>(arr: T[], predicate: (item: T) => boolean) {
   const pos = arr.findIndex(predicate);
   if (pos !== -1) {
     arr.splice(pos, 1);
   }
+}
+
+function updateChainOrigin(origin: string, prevOrigin: string | null) {
+  if (
+    !prevOrigin ||
+    (origin !== BACKEND_NETWORK_ORIGIN && origin !== INTERNAL_ORIGIN)
+  ) {
+    return origin;
+  }
+  return prevOrigin;
 }
 
 class ChainConfigStore extends PersistentStore<ChainConfig> {
@@ -37,9 +49,12 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
     {
       origin,
       id,
-      created,
       prevId: maybePrevId,
-    }: { origin: string; id: string; created?: number; prevId?: string }
+    }: {
+      origin: string;
+      id: string;
+      prevId: string | null;
+    }
   ): EthereumChainConfig {
     const prevId = maybePrevId || id;
     const state = this.getState();
@@ -54,8 +69,8 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
         : existingPreviousIds;
     const now = Date.now();
     const newEntry: EthereumChainConfig = {
-      origin,
-      created: created ?? (existingEntry ? existingEntry.created : now),
+      origin: updateChainOrigin(origin, existingEntry?.origin || null),
+      created: existingEntry?.created ?? now,
       updated: now,
       value,
       id,
