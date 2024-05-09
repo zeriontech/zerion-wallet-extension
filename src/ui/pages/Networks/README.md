@@ -18,7 +18,7 @@
 ### Creating/modifying a chain
 
 - When we modify existing "mainnet" item `A`, an `EthereumChainConfig` is created, which has the same `id` as `A`
-- [x] When a new `AddEthereumChainParameter` comes from dapp, an `EthereumChainConfig` is (should be) created with an `id` got from backend if we have information about the chain with the same `chainId` or generated from `chainId`.
+- [x] When a new `AddEthereumChainParameter` comes from dapp, an `EthereumChainConfig` is (should be) created with an `id` received from backend if we have information about the chain with the same `chainId` or generated from `chainId`.
 - [x] When an `AddEthereumChainParameter` comes which has a `chainId` matching any existing network, we should use the `id` from existing network and call `ChainConfigStore.addEthereumChain()`.
 
 ### Backend Updates
