@@ -46,7 +46,7 @@ function injectChainConfigs(
     chainConfigs.map((config) => [config.id, config.value])
   );
   return networkConfigs.map((network) =>
-    injectChainConfig(network, chainConfigById[network.id])
+    injectChainConfig(network, chainConfigById[network.id] || null)
   );
 }
 

@@ -6,7 +6,7 @@ import { Networks } from './Networks';
 
 export function toNetworkConfig(
   value: AddEthereumChainParameter,
-  maybeId?: string
+  maybeId: string | null
 ): NetworkConfig {
   invariant(value.rpcUrls, 'RPC URL should be defined in network config');
   invariant(value.chainId, 'chainId should be defined in network config');

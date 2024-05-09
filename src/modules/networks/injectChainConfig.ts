@@ -3,7 +3,7 @@ import type { NetworkConfig } from './NetworkConfig';
 
 export function injectChainConfig(
   networkConfig: NetworkConfig,
-  chainConfig?: AddEthereumChainParameter
+  chainConfig: AddEthereumChainParameter | null
 ): NetworkConfig {
   if (!chainConfig) {
     return networkConfig;
