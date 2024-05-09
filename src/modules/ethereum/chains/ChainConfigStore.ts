@@ -21,12 +21,13 @@ function remove<T>(arr: T[], predicate: (item: T) => boolean) {
 
 function updateChainOrigin(origin: string, prevOrigin: string | null) {
   if (
-    !prevOrigin ||
-    (origin !== BACKEND_NETWORK_ORIGIN && origin !== INTERNAL_ORIGIN)
+    prevOrigin &&
+    prevOrigin !== BACKEND_NETWORK_ORIGIN &&
+    prevOrigin !== INTERNAL_ORIGIN
   ) {
-    return origin;
+    return prevOrigin;
   }
-  return prevOrigin;
+  return origin;
 }
 
 class ChainConfigStore extends PersistentStore<ChainConfig> {
