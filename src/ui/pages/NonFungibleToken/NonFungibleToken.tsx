@@ -1,12 +1,12 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { Background } from 'src/ui/components/Background';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
-import { dnaServicePort } from 'src/ui/shared/channels';
+import { dnaServicePort, walletPort } from 'src/ui/shared/channels';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { Button } from 'src/ui/ui-kit/Button';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
@@ -17,13 +17,21 @@ import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { WithReadonlyWarningDialog } from 'src/ui/components/SignTransactionButton/ReadonlyWarningDialog';
+import type { SignMsgBtnHandle } from 'src/ui/components/SignMessageButton';
+import { SignMessageButton } from 'src/ui/components/SignMessageButton';
+import { invariant } from 'src/shared/invariant';
+import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { useAddressNftPosition } from './useAddressNftPosition';
 
 export function NonFungibleToken() {
   const { asset_code, chain } = useParams();
   const { singleAddress } = useAddressParams();
+  const { data: wallet } = useQuery({
+    queryKey: ['wallet/uiGetCurrentWallet'],
+    queryFn: () => walletPort.request('uiGetCurrentWallet'),
+    useErrorBoundary: true,
+  });
 
   const [contract_address, token_id] = useMemo(
     () => asset_code?.split(':') || [],
@@ -54,19 +62,30 @@ export function NonFungibleToken() {
     return urlObject.toString();
   }, [singleAddress, nft]);
 
-  const {
-    mutate: promoteToken,
-    isLoading,
-    ...promoteTokenMutation
-  } = useMutation({
+  const signMsgBtnRef = useRef<SignMsgBtnHandle | null>(null);
+
+  const { mutate: promoteToken, ...promoteTokenMutation } = useMutation({
     mutationFn: async () => {
       if (!nft?.collection.name) {
         return;
       }
+      const collectionName = nft.collection.name;
+      const tokenName = nft.token_id;
+      const { message, actionId } = await dnaServicePort.request(
+        'getPromoteDnaSigningMessage',
+        { collectionName, tokenName }
+      );
+      invariant(signMsgBtnRef.current, 'SignMessageButton not found');
+      const signature = await signMsgBtnRef.current.personalSign({
+        params: [message],
+        initiator: INTERNAL_ORIGIN,
+        clientScope: null,
+      });
       await dnaServicePort.request('promoteDnaToken', {
         address: singleAddress,
-        collectionName: nft.collection.name,
-        tokenName: nft.token_id,
+        actionId,
+        signature,
+        tokenName,
       });
       return;
     },
@@ -154,25 +173,28 @@ export function NonFungibleToken() {
                     {txErrorToMessage(promoteTokenMutation.error)}
                   </UIText>
                 ) : null}
-                <WithReadonlyWarningDialog
-                  address={singleAddress}
-                  onClick={() => promoteToken()}
-                  render={({ handleClick }) => (
-                    <Button
-                      disabled={isPrimary || isLoading}
-                      onClick={handleClick}
-                    >
+                {!wallet ? null : isPrimary ? (
+                  <Button disabled={true}>Active</Button>
+                ) : (
+                  <SignMessageButton
+                    ref={signMsgBtnRef}
+                    wallet={wallet}
+                    onClick={() => promoteToken()}
+                    buttonTitle={
                       <HStack
                         gap={8}
                         alignItems="center"
                         justifyContent="center"
                       >
-                        <div>{isPrimary ? 'Active' : 'Set as Active'}</div>
-                        {isLoading ? <CircleSpinner /> : null}
+                        <div>Set as Active</div>
+                        {promoteTokenMutation.isLoading ? (
+                          <CircleSpinner />
+                        ) : null}
                       </HStack>
-                    </Button>
-                  )}
-                />
+                    }
+                    disabled={promoteTokenMutation.isLoading}
+                  />
+                )}
               </VStack>
             ) : null}
           </VStack>

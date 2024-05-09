@@ -30,7 +30,7 @@ export async function initialize() {
   const account = new Account({ notificationWindow });
   await account.initialize();
   const accountPublicRPC = new AccountPublicRPC(account);
-  const dnaService = new DnaService(account);
+  const dnaService = new DnaService();
   dnaService.initialize();
   await transactionService.initialize();
   initializeRemoteConfig().then(() => {
