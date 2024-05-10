@@ -1,5 +1,8 @@
 import React, { useCallback, useLayoutEffect, useRef } from 'react';
-import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
+import {
+  BottomSheetDialog,
+  DialogAnimationPreset,
+} from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
@@ -38,6 +41,7 @@ function BackupReminderComponent({ onDismiss }: { onDismiss: () => void }) {
       height="fit-content"
       onClosed={handleHide}
       closeOnClickOutside={false}
+      animationPreset={DialogAnimationPreset.slideUpNoFadeIn}
     >
       <VStack gap={32}>
         <VStack gap={16}>
