@@ -4,6 +4,16 @@ import type { BaseDialogProps } from '../BaseDialog';
 import { BaseDialog } from '../BaseDialog';
 import * as s from './styles.module.css';
 
+export enum AnimationPreset {
+  slideUp,
+  slideUpNoFadeIn,
+}
+
+const animationStyles = {
+  [AnimationPreset.slideUp]: s.slideUp,
+  [AnimationPreset.slideUpNoFadeIn]: s.slideUpNoFadeIn,
+} as const;
+
 export const BottomSheetDialog = React.forwardRef(
   (
     {
@@ -11,16 +21,18 @@ export const BottomSheetDialog = React.forwardRef(
       style,
       className,
       containerStyle,
+      animationPreset = AnimationPreset.slideUp,
       ...props
     }: BaseDialogProps & {
       height?: React.CSSProperties['height'];
+      animationPreset?: AnimationPreset;
     },
     ref: React.Ref<HTMLDialogElement>
   ) => {
     return (
       <BaseDialog
         ref={ref}
-        className={cx(s.slideUp, s.dialog, className)}
+        className={cx(animationStyles[animationPreset], s.dialog, className)}
         style={{
           border: 'none',
           bottom: 0,

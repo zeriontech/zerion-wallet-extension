@@ -14,6 +14,20 @@
   animation: slideUp 150ms;
 }
 
+@keyframes slideUpNoFadeIn {
+  from {
+    transform: translateY(10px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.slideUpNoFadeIn {
+  will-change: transform;
+  animation: slideUpNoFadeIn 150ms;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -23,7 +37,20 @@
   }
 }
 
+@keyframes fadeInFrom80Percent {
+  from {
+    opacity: 0.8;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .dialog::backdrop {
   animation: fadeIn 150ms linear;
   background: rgba(0, 0, 0, 0.6);
+}
+
+.dialog.slideUpNoFadeIn::backdrop {
+  animation: fadeInFrom80Percent 150ms linear;
 }
