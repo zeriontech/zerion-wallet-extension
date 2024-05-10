@@ -15,9 +15,7 @@ import { apostrophe } from 'src/ui/shared/typography';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { useBackupTodosCount } from '../BackupWallet/useBackupTodosCount';
 
-const ONE_DAY =
-  // 2 mins for development mode
-  process.env.NODE_ENV === 'development' ? 1000 * 60 * 2 : 1000 * 60 * 60 * 24;
+const ONE_DAY = 1000 * 60 * 60 * 24;
 
 function BackupReminderComponent({ onDismiss }: { onDismiss: () => void }) {
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
