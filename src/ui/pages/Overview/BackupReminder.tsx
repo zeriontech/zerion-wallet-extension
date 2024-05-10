@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useRef } from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
 import {
   BottomSheetDialog,
   DialogAnimationPreset,
@@ -12,6 +12,7 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { usePreferences } from 'src/ui/features/preferences';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { apostrophe } from 'src/ui/shared/typography';
+import { useEvent } from 'src/ui/shared/useEvent';
 import { useBackupTodosCount } from '../BackupWallet/useBackupTodosCount';
 
 const ONE_DAY =
@@ -30,10 +31,10 @@ function BackupReminderComponent({ onDismiss }: { onDismiss: () => void }) {
     }
   }, []);
 
-  const handleHide = useCallback(() => {
+  const handleHide = useEvent(() => {
     onDismiss();
     dialogRef.current?.close();
-  }, [onDismiss]);
+  });
 
   return (
     <BottomSheetDialog
