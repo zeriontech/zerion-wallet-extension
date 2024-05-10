@@ -9,6 +9,11 @@
   }
 }
 
+.slideUp {
+  will-change: transform, opacity;
+  animation: slideUp 150ms;
+}
+
 @keyframes slideUpNoFadeIn {
   from {
     transform: translateY(10px);
@@ -18,13 +23,8 @@
   }
 }
 
-.slideUp {
-  will-change: transform, opacity;
-  animation: slideUp 150ms;
-}
-
 .slideUpNoFadeIn {
-  will-change: transform, opacity;
+  will-change: transform;
   animation: slideUpNoFadeIn 150ms;
 }
 
