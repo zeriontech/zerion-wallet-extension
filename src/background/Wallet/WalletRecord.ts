@@ -769,7 +769,7 @@ export class WalletRecordModel {
       recentAddresses: [],
       mintDnaBannerDismissed: false,
       upgradeDnaBannerDismissed: false,
-      lastBackupReminderHideTime: 0,
+      backupReminderDismissedTime: 0,
     };
     if (!record) {
       return defaults;

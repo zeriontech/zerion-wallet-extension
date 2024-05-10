@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useLayoutEffect, useRef } from 'react';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -8,34 +8,29 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { usePreferences } from 'src/ui/features/preferences';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import { apostrophe } from 'src/ui/shared/typography';
 import { useBackupTodosCount } from '../BackupWallet/useBackupTodosCount';
 
-// 2 mins break for testing purpose
-const ONE_DAY = 1000 * 60 * 2; // 1000 * 60 * 60 * 24;
+const ONE_DAY =
+  // 2 mins for development mode
+  process.env.NODE_ENV === 'development' ? 1000 * 60 * 2 : 1000 * 60 * 60 * 24;
 
-export function BackupReminder() {
-  const count = useBackupTodosCount();
+function BackupReminderComponent({ onDismiss }: { onDismiss: () => void }) {
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
-  const { preferences, setPreferences } = usePreferences();
 
-  useEffect(() => {
-    if (
-      dialogRef.current &&
-      count &&
-      preferences &&
-      Date.now() - preferences.lastBackupReminderHideTime >= ONE_DAY
-    ) {
+  useLayoutEffect(() => {
+    if (dialogRef.current) {
       dialogRef.current.showModal();
       // hide initial outline on cancel button to provide correct look
       buttonRef.current?.blur();
     }
-  }, [count, preferences]);
+  }, []);
 
   const handleHide = useCallback(() => {
-    setPreferences({ lastBackupReminderHideTime: Date.now() });
+    onDismiss();
     dialogRef.current?.close();
-  }, [setPreferences]);
+  }, [onDismiss]);
 
   return (
     <BottomSheetDialog
@@ -56,8 +51,8 @@ export function BackupReminder() {
           <VStack gap={8}>
             <UIText kind="headline/h3">Secure your wallet</UIText>
             <UIText kind="body/regular">
-              If this device is lost or stolen, you'll lose access to your
-              wallet and funds
+              If this device is lost or stolen, you{apostrophe}ll lose access to
+              your wallet and funds
             </UIText>
           </VStack>
         </VStack>
@@ -73,7 +68,7 @@ export function BackupReminder() {
             ref={buttonRef}
             size={48}
           >
-            <UIText kind="body/accent">I'll take the risk</UIText>
+            <UIText kind="body/accent">I{apostrophe}ll take the risk</UIText>
           </Button>
           <Button
             onClick={handleHide}
@@ -89,4 +84,22 @@ export function BackupReminder() {
       </VStack>
     </BottomSheetDialog>
   );
+}
+
+export function BackupReminder() {
+  const count = useBackupTodosCount();
+  const { preferences, setPreferences } = usePreferences();
+
+  const showDialog =
+    count &&
+    preferences &&
+    Date.now() - preferences.backupReminderDismissedTime >= ONE_DAY;
+
+  return showDialog ? (
+    <BackupReminderComponent
+      onDismiss={() =>
+        setPreferences({ backupReminderDismissedTime: Date.now() })
+      }
+    />
+  ) : null;
 }

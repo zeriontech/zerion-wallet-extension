@@ -45,7 +45,7 @@ interface PublicPreferences {
   recentAddresses?: string[];
   mintDnaBannerDismissed?: boolean;
   upgradeDnaBannerDismissed?: boolean;
-  lastBackupReminderHideTime?: number;
+  backupReminderDismissedTime?: number;
 }
 
 export interface Permission {
