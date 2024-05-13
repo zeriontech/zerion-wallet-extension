@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId, useRef } from 'react';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { DeviceAccount } from 'src/shared/types/Device';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
@@ -22,6 +22,180 @@ import { WalletNameType } from 'src/ui/shared/useProfileName';
 import { CopyButton } from 'src/ui/components/CopyButton';
 import * as styles from './styles.module.css';
 
+function WalletListItem({
+  wallet,
+  groupId,
+  showAddressValues,
+  useCssAnchors,
+  isSelected,
+  ...buttonProps
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  wallet: ExternallyOwnedAccount;
+  groupId: string;
+  showAddressValues: boolean;
+  useCssAnchors: boolean;
+  isSelected: boolean;
+}) {
+  const id = useId();
+  // colons are invalid for anchor-name CSS property
+  const anchorName = `--button-slot-${id.replaceAll(':', '')}`;
+  const COPY_BUTTON_SIZE = 20;
+  const copyButtonRef = useRef<HTMLButtonElement | null>(null);
+  const copyButton = (
+    <CopyButton
+      address={wallet.address}
+      onClick={(event) => {
+        if (!useCssAnchors) {
+          event.stopPropagation();
+        }
+      }}
+      buttonRef={copyButtonRef}
+      size={16}
+      btnStyle={{
+        padding: 0,
+        display: 'block',
+        ['--button-text' as string]:
+          'var(--copy-button-text-color, var(--neutral-500))',
+      }}
+      tooltipPosition="center-bottom"
+      style={{
+        verticalAlign: 'middle',
+        ...(useCssAnchors
+          ? {
+              position: 'absolute',
+              ['positionAnchor' as string]: anchorName,
+              ['insetArea' as string]: 'center',
+            }
+          : undefined),
+      }}
+    />
+  );
+  return (
+    <>
+      <UnstyledButton
+        className={styles.wallet}
+        style={{
+          padding: 12,
+          borderRadius: 20,
+          width: '100%',
+          marginBlock: 4,
+        }}
+        {...buttonProps}
+      >
+        <HStack gap={4} justifyContent="space-between" alignItems="center">
+          <Media
+            vGap={0}
+            image={
+              <IsConnectedToActiveTab
+                address={wallet.address}
+                render={({ data: isConnected }) => (
+                  <WalletAvatar
+                    address={wallet.address}
+                    size={40}
+                    active={Boolean(isConnected)}
+                    borderRadius={4}
+                    icon={
+                      <WalletSourceIcon
+                        address={wallet.address}
+                        groupId={groupId}
+                        style={{ width: 16, height: 16 }}
+                      />
+                    }
+                  />
+                )}
+              />
+            }
+            text={
+              <UIText kind="small/regular">
+                <WalletDisplayName
+                  wallet={wallet}
+                  render={(data) => (
+                    <>
+                      <span
+                        style={{
+                          wordBreak: 'break-all',
+                          verticalAlign: 'middle',
+                        }}
+                      >
+                        {data.value}
+                      </span>
+                      {showAddressValues &&
+                      data.type !== WalletNameType.address ? (
+                        <>
+                          <span
+                            className={styles.addressHint}
+                            style={{
+                              color: 'var(--neutral-500)',
+                              verticalAlign: 'middle',
+                            }}
+                            onClick={(event) => {
+                              /**
+                               * This is only a helper to invoke click of the CopyButton
+                               * when the address value is clicked. Therefore it's okay to
+                               * put onClick on the span here as screenreader and keyboard users
+                               * will be able to interact with the actual copy button.
+                               * The reason not to put text inside the CopyButton is that when using
+                               * CSS Anchors we cannot make the anchored element wrap to the new line
+                               * when there's not enough space for it in the slot.
+                               */
+                              if (copyButtonRef.current) {
+                                event.stopPropagation();
+                                copyButtonRef.current.click();
+                              }
+                            }}
+                          >
+                            {` · ${truncateAddress(wallet.address)}`}
+                          </span>
+                        </>
+                      ) : null}{' '}
+                      {useCssAnchors ? (
+                        <span
+                          // This is a "slot" where copyButton will visually appear
+                          style={{
+                            display: 'inline-block',
+                            width: COPY_BUTTON_SIZE,
+                            height: COPY_BUTTON_SIZE,
+                            ['anchor-name' as string]: anchorName,
+                            verticalAlign: 'bottom',
+                          }}
+                        ></span>
+                      ) : (
+                        copyButton
+                      )}
+                    </>
+                  )}
+                />
+              </UIText>
+            }
+            detailText={
+              <PortfolioValue
+                address={wallet.address}
+                render={(entry) => (
+                  <UIText kind="headline/h3">
+                    {entry.value ? (
+                      <NeutralDecimals
+                        parts={formatCurrencyToParts(
+                          entry.value?.total_value || 0,
+                          'en',
+                          'usd'
+                        )}
+                      />
+                    ) : (
+                      NBSP
+                    )}
+                  </UIText>
+                )}
+              />
+            }
+          />
+          {isSelected ? <CheckIcon style={{ width: 24, height: 24 }} /> : null}
+        </HStack>
+      </UnstyledButton>
+      {useCssAnchors ? copyButton : null}
+    </>
+  );
+}
+
 export function WalletList({
   walletGroups,
   selectedAddress,
@@ -42,139 +216,23 @@ export function WalletList({
   for (const group of walletGroups) {
     for (const wallet of group.walletContainer.wallets) {
       const key = `${group.id}-${wallet.address}`;
-      const COPY_BUTTON_SIZE = 20;
-      const copyButton = (
-        <CopyButton
-          address={wallet.address}
-          onClick={(event) => {
-            if (!supportsCssAnchor) {
-              event.stopPropagation();
-            }
-          }}
-          className={styles.showOnHover}
-          btnStyle={{ padding: 0, display: 'block' }}
-          tooltipPosition="center-bottom"
-          style={
-            supportsCssAnchor
-              ? {
-                  position: 'absolute',
-                  ['positionAnchor' as string]: `--button-slot-${key}`,
-                  ['insetArea' as string]: 'center',
-                }
-              : undefined
-          }
-        />
-      );
       items.push({
         key,
         isInteractive: true,
         pad: false,
         component: (
-          <>
-            <UnstyledButton
-              className={styles.wallet}
-              style={{
-                padding: 12,
-                borderRadius: 20,
-                width: '100%',
-                marginBlock: 4,
-              }}
-              onClick={() => {
-                onSelect(wallet);
-              }}
-            >
-              <HStack
-                gap={4}
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <Media
-                  vGap={0}
-                  image={
-                    <IsConnectedToActiveTab
-                      address={wallet.address}
-                      render={({ data: isConnected }) => (
-                        <WalletAvatar
-                          address={wallet.address}
-                          size={40}
-                          active={Boolean(isConnected)}
-                          borderRadius={4}
-                          icon={
-                            <WalletSourceIcon
-                              address={wallet.address}
-                              groupId={group.id}
-                              style={{ width: 16, height: 16 }}
-                            />
-                          }
-                        />
-                      )}
-                    />
-                  }
-                  text={
-                    <UIText kind="small/regular">
-                      <WalletDisplayName
-                        wallet={wallet}
-                        render={(data) => (
-                          <>
-                            <span style={{ wordBreak: 'break-all' }}>
-                              {data.value}
-                            </span>
-                            {showAddressValues &&
-                            data.type !== WalletNameType.address ? (
-                              <>
-                                <span style={{ color: 'var(--neutral-500)' }}>
-                                  {` · ${truncateAddress(wallet.address)}`}
-                                </span>
-                              </>
-                            ) : null}{' '}
-                            {supportsCssAnchor ? (
-                              <span
-                                // This is a "slot" where copyButton will visually appear
-                                style={{
-                                  display: 'inline-block',
-                                  width: COPY_BUTTON_SIZE,
-                                  height: COPY_BUTTON_SIZE,
-                                  ['anchorName' as string]: `--button-slot-${key}`,
-                                  verticalAlign: 'bottom',
-                                }}
-                              ></span>
-                            ) : (
-                              copyButton
-                            )}
-                          </>
-                        )}
-                      />
-                    </UIText>
-                  }
-                  detailText={
-                    <PortfolioValue
-                      address={wallet.address}
-                      render={(entry) => (
-                        <UIText kind="headline/h3">
-                          {entry.value ? (
-                            <NeutralDecimals
-                              parts={formatCurrencyToParts(
-                                entry.value?.total_value || 0,
-                                'en',
-                                'usd'
-                              )}
-                            />
-                          ) : (
-                            NBSP
-                          )}
-                        </UIText>
-                      )}
-                    />
-                  }
-                />
-                {wallet.address.toLowerCase() ===
-                selectedAddress.toLowerCase() ? (
-                  <CheckIcon style={{ width: 24, height: 24 }} />
-                ) : null}
-              </HStack>
-            </UnstyledButton>
-            {supportsCssAnchor ? copyButton : null}
-          </>
+          <WalletListItem
+            onClick={() => {
+              onSelect(wallet);
+            }}
+            wallet={wallet}
+            groupId={group.id}
+            useCssAnchors={supportsCssAnchor}
+            showAddressValues={showAddressValues}
+            isSelected={
+              wallet.address.toLowerCase() === selectedAddress.toLowerCase()
+            }
+          />
         ),
       });
     }

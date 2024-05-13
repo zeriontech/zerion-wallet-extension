@@ -11,6 +11,8 @@ interface Props {
   btnStyle?: React.CSSProperties;
   style?: React.CSSProperties;
   tooltipPosition?: 'right' | 'center-bottom';
+  size?: number;
+  buttonRef?: React.RefObject<HTMLButtonElement>;
   onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
@@ -24,6 +26,8 @@ export function CopyButton({
   btnStyle,
   style,
   tooltipPosition = 'right',
+  buttonRef,
+  size = ICON_SIZE,
 }: Props) {
   const { handleCopy, isSuccess } = useCopyToClipboard({ text: address });
   return (
@@ -40,6 +44,7 @@ export function CopyButton({
         kind="text-primary"
         size={36}
         title={title}
+        ref={buttonRef}
         onClick={(event) => {
           onClick?.(event);
           handleCopy();
@@ -54,15 +59,13 @@ export function CopyButton({
           <CheckIcon
             style={{
               display: 'block',
-              width: ICON_SIZE,
-              height: ICON_SIZE,
+              width: size,
+              height: size,
               color: 'var(--positive-500)',
             }}
           />
         ) : (
-          <CopyIcon
-            style={{ display: 'block', width: ICON_SIZE, height: ICON_SIZE }}
-          />
+          <CopyIcon style={{ display: 'block', width: size, height: size }} />
         )}
       </Button>
       {isSuccess ? (
