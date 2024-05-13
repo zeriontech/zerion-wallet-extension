@@ -4,7 +4,18 @@ import { WalletOrigin } from 'src/shared/WalletOrigin';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import WarningIcon from 'jsx:src/ui/assets/warning-icon-trimmed.svg';
-import { isHardwareContainer } from 'src/shared/types/validators';
+import {
+  isHardwareContainer,
+  isMnemonicContainer,
+} from 'src/shared/types/validators';
+
+export function needsBackup(group: WalletGroup) {
+  return (
+    isMnemonicContainer(group.walletContainer) &&
+    group.origin === WalletOrigin.extension &&
+    group.lastBackedUp == null
+  );
+}
 
 export function BackupInfoNote({ group }: { group: WalletGroup }) {
   const isHardwareGroup = isHardwareContainer(group.walletContainer);

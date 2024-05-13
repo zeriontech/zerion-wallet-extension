@@ -40,6 +40,8 @@ import {
   isSignerContainer,
 } from 'src/shared/types/validators';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
+import { openInTabView } from 'src/ui/shared/openInTabView';
+import { needsBackup } from 'src/ui/components/BackupInfoNote/BackupInfoNote';
 
 const strings = {
   recoveryPhraseTitle: 'Recovery Phrase',
@@ -255,6 +257,7 @@ export function WalletGroup() {
                 {
                   key: 1,
                   to: `/backup-wallet?groupId=${walletGroup.id}&backupKind=verify`,
+                  onClick: needsBackup(walletGroup) ? openInTabView : undefined,
                   component: (
                     <HStack
                       gap={4}
