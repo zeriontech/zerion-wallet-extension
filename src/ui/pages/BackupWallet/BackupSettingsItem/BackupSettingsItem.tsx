@@ -4,6 +4,7 @@ import { isMnemonicContainer } from 'src/shared/types/validators';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
+import { openInTabView } from 'src/ui/shared/openInTabView';
 import { useWalletGroups } from 'src/ui/shared/requests/useWalletGroups';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -75,6 +76,7 @@ export function BackupFlowSettingsSection() {
                       to={`/backup-wallet?groupId=${group.id}&backupKind=verify`}
                       size={32}
                       style={{ paddingLeft: 16, paddingRight: 16 }}
+                      onClick={openInTabView}
                     >
                       Back Up Now (~1 min)
                     </Button>
