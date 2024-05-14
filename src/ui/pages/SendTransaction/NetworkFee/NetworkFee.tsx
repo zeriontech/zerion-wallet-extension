@@ -71,7 +71,7 @@ export function NetworkFee({
     networks?.getNetworkByName(chain)?.native_asset?.symbol;
 
   const isOptimistic = feeEstimation?.type === 'optimistic';
-  const disabled = isLoading || isOptimistic || !onChange;
+  const disabled = isLoading || !onChange;
 
   const feeValuePrefix = totalValueExceedsBalance ? 'Up to ' : '';
   const feeValueFormatted = feeValueFiat

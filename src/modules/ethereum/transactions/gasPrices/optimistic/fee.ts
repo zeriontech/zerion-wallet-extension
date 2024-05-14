@@ -2,6 +2,7 @@ import { ethers } from 'ethers';
 import RLP from 'rlp';
 import type { ChainGasPrice } from '../requests';
 import { getGas } from '../../getGas';
+import type { GasPriceObject } from '../GasPriceObject';
 
 interface Transaction {
   data?: string;
@@ -42,12 +43,15 @@ export async function createOptimisticFee({
   gasPriceInfo,
   transaction,
   getNonce,
+  gasPriceObject,
 }: {
   gasPriceInfo: ChainGasPrice['info'];
   transaction: Transaction;
+  gasPriceObject: GasPriceObject | null;
   getNonce: () => Promise<number>;
 }): Promise<OptimisticFee | null> {
-  const { classic, eip1559, optimistic } = gasPriceInfo;
+  const { optimistic } = gasPriceInfo;
+
   if (!optimistic) {
     return null;
   }
@@ -61,8 +65,9 @@ export async function createOptimisticFee({
     return null;
   }
 
-  const { fast: eip1559GasPrice, base_fee } = eip1559 || {};
-  const { fast: classicGasPrice } = classic || {};
+  const eip1559GasPrice = gasPriceObject?.eip1559 || gasPriceInfo.eip1559?.fast;
+  const { base_fee } = gasPriceInfo.eip1559 || {};
+  const classicGasPrice = gasPriceObject?.classic || gasPriceInfo.classic?.fast;
 
   const nonce = await getNonce();
   const encoded_tx_data = eip1559GasPrice
