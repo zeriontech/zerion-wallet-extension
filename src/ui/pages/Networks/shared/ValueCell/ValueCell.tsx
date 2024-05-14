@@ -8,7 +8,9 @@ export function ValueCell({ label, value }: { label: string; value: string }) {
       <UIText kind="small/accent" color="var(--neutral-500)">
         {label}
       </UIText>
-      <UIText kind="body/accent">{value}</UIText>
+      <UIText kind="body/accent" style={{ overflowWrap: 'break-word' }}>
+        {value}
+      </UIText>
     </VStack>
   );
 }
