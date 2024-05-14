@@ -23,7 +23,7 @@ export enum WalletNameType {
 export function useProfileName(
   wallet: Pick<BareWallet, 'address' | 'name'>,
   {
-    padding = 4,
+    padding = 5,
     maxCharacters,
   }: { padding?: number; maxCharacters?: number } = {}
 ): { type: WalletNameType; value: string } {

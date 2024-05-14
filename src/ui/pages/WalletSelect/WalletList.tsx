@@ -144,7 +144,7 @@ function WalletListItem({
                               }
                             }}
                           >
-                            {` · ${truncateAddress(wallet.address)}`}
+                            {` · ${truncateAddress(wallet.address, 5)}`}
                           </span>
                         </>
                       ) : null}{' '}
