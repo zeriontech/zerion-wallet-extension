@@ -1,4 +1,3 @@
-import { ethers } from 'ethers';
 import { PersistentStore } from 'src/modules/persistent-store';
 import { produce } from 'immer';
 import type {
@@ -9,6 +8,7 @@ import { upsert } from 'src/shared/upsert';
 import { getPendingTransactions } from 'src/modules/ethereum/transactions/model';
 import { registerTransaction } from 'src/modules/defi-sdk/registerTransaction';
 import { isLocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { emitter } from '../events';
 import { createMockTxResponse } from './mocks';
 import type { PollingTx } from './TransactionPoller';
@@ -31,7 +31,7 @@ class TransactionsStore extends PersistentStore<StoredTransactions> {
 function toPollingObj(value: TransactionObject): PollingTx {
   return {
     hash: value.hash,
-    chainId: ethers.utils.hexValue(value.transaction.chainId),
+    chainId: normalizeChainId(value.transaction.chainId),
     nonce: value.transaction.nonce,
     from: value.transaction.from,
   };

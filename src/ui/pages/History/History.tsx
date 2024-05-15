@@ -24,6 +24,7 @@ import AllNetworksIcon from 'jsx:src/ui/assets/network.svg';
 import CloseIcon from 'jsx:src/ui/assets/close_solid.svg';
 import { Button } from 'src/ui/ui-kit/Button';
 import { useStore } from '@store-unit/react';
+import { Networks } from 'src/modules/networks/Networks';
 import {
   getCurrentTabsOffset,
   getGrownTabMaxHeight,
@@ -72,9 +73,9 @@ function useMinedAndPendingAddressActions({
   searchQuery?: string;
 }) {
   const { params } = useAddressParams();
-  const { networks } = useNetworks();
+  const { networks, loadNetworkByChainId } = useNetworks();
   const isSupportedByBackend = chain
-    ? networks?.isSupportedByBackend(chain)
+    ? networks?.supports('actions', chain)
     : true;
   const localActions = useLocalAddressTransactions(params);
 
@@ -86,7 +87,10 @@ function useMinedAndPendingAddressActions({
       }
       let items = await Promise.all(
         localActions.map((transactionObject) =>
-          pendingTransactionToAddressAction(transactionObject, networks)
+          pendingTransactionToAddressAction(
+            transactionObject,
+            loadNetworkByChainId
+          )
         )
       );
       if (chain) {
@@ -245,7 +249,7 @@ export function HistoryList() {
                     size={20}
                     src={filterNetwork.icon_url}
                     name={filterNetwork.name}
-                    chainId={filterNetwork.external_id}
+                    chainId={Networks.getChainId(filterNetwork)}
                   />
                 )}
               </Button>

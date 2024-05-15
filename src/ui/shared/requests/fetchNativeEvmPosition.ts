@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 import type { Networks } from 'src/modules/networks/Networks';
-import { httpConnectionPort } from '../channels';
+import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
+import { httpConnectionPort } from 'src/ui/shared/channels';
 import { createAddressPosition } from './shared/createAddressPosition';
 
 export async function fetchNativeEvmPosition({
@@ -9,7 +10,7 @@ export async function fetchNativeEvmPosition({
   networks,
 }: {
   address: string;
-  chainId: string;
+  chainId: ChainId;
   networks: Networks;
 }) {
   const balanceInHex = await httpConnectionPort.request('eth_getBalance', {

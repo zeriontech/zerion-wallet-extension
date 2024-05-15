@@ -3,6 +3,7 @@ import memoize from 'lodash/memoize';
 import { createNanoEvents } from 'nanoevents';
 import { networksStore } from 'src/modules/networks/networks-store.background';
 import { RequestCache } from 'src/modules/request-cache/request-cache';
+import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import { createMockReceipt, DEBUGGING_TX_HASH } from './mocks';
 
 class Interval {
@@ -52,7 +53,7 @@ class ReceiptGetter {
 
 export interface PollingTx {
   hash: string;
-  chainId: string;
+  chainId: ChainId;
   from: string;
   nonce: number;
 }
@@ -114,10 +115,10 @@ export class TransactionsPoller {
       return;
     }
     this.requestInProgress = true;
-    const networks = await networksStore.load();
 
     const promises = Array.from(this.hashes.values()).map(async (value) => {
       const { chainId, hash } = value;
+      const networks = await networksStore.loadNetworksWithChainId(chainId);
       const rpcUrl = networks.getRpcUrlInternal(networks.getChainById(chainId));
       return Promise.all([
         this.getTransactionCount(rpcUrl, value.from).then((count) =>

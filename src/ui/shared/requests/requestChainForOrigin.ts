@@ -1,5 +1,5 @@
 import { createChain } from 'src/modules/networks/Chain';
-import { walletPort } from '../channels';
+import { walletPort } from 'src/ui/shared/channels';
 
 export function requestChainForOrigin(tabOrigin?: string) {
   return tabOrigin

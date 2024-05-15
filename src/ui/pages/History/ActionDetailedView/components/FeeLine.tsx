@@ -45,14 +45,18 @@ export function FeeLine({
       <UIText kind="small/accent" style={{ justifySelf: 'end' }}>
         <HStack gap={4}>
           <span>{formatTokenValue(feeEth, '')}</span>
-          <AssetLink
-            asset={{
-              asset_code: nativeAsset.id,
-              name: nativeAsset.name,
-              symbol: nativeAsset.symbol,
-            }}
-            address={address}
-          />
+          {nativeAsset.id ? (
+            <AssetLink
+              asset={{
+                asset_code: nativeAsset.id,
+                name: nativeAsset.name,
+                symbol: nativeAsset.symbol,
+              }}
+              address={address}
+            />
+          ) : (
+            nativeAsset.symbol?.toUpperCase()
+          )}
           <span>({formatCurrencyValue(feeCurrency, 'en', 'usd')})</span>
         </HStack>
       </UIText>

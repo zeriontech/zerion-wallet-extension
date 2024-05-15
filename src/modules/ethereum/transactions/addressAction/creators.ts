@@ -9,6 +9,7 @@ import type { Networks } from 'src/modules/networks/Networks';
 import type { Chain } from 'src/modules/networks/Chain';
 import { ethers } from 'ethers';
 import { UnsupportedNetwork } from 'src/modules/networks/errors';
+import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type {
   IncomingTransaction,
   IncomingTransactionWithChainId,
@@ -19,6 +20,7 @@ import {
   describeTransaction,
   type TransactionAction,
 } from '../describeTransaction';
+import type { ChainId } from '../ChainId';
 import { ZERO_HASH, type LocalAddressAction } from './addressActionMain';
 
 export async function createActionContent(
@@ -111,12 +113,14 @@ function createActionLabel(
 
 export async function pendingTransactionToAddressAction(
   transactionObject: TransactionObject,
-  networks: Networks
+  loadNetworkByChainId: (chainId: ChainId) => Promise<Networks>
 ): Promise<LocalAddressAction> {
   const { transaction, hash, receipt, timestamp, dropped } = transactionObject;
   let chain: Chain | null;
+  const chainId = normalizeChainId(transaction.chainId);
+  const networks = await loadNetworkByChainId(chainId);
   try {
-    chain = networks.getChainById(ethers.utils.hexValue(transaction.chainId));
+    chain = networks.getChainById(chainId);
   } catch (error) {
     if (error instanceof UnsupportedNetwork) {
       chain = null;
@@ -175,9 +179,7 @@ export async function incomingTxToIncomingAddressAction(
   networks: Networks
 ): Promise<LocalAddressAction> {
   const { transaction, timestamp } = transactionObject;
-  const chain = networks.getChainById(
-    ethers.utils.hexValue(transaction.chainId)
-  );
+  const chain = networks.getChainById(normalizeChainId(transaction.chainId));
   const label = createActionLabel(transaction, transactionAction);
   const content = await createActionContent(transactionAction);
   return {

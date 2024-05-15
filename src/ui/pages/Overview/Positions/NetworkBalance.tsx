@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Content } from 'react-area';
+import { useStore } from '@store-unit/react';
+import { isTruthy } from 'is-truthy-ts';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import { createChain } from 'src/modules/networks/Chain';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
@@ -9,7 +11,6 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { useStore } from '@store-unit/react';
 import { NetworkSelect } from '../../Networks/NetworkSelect';
 import { getTabScrollContentHeight, offsetValues } from '../getTabsOffset';
 import * as styles from './styles.module.css';
@@ -25,12 +26,12 @@ export function NetworkBalance({
   dappChain: string | null;
   onChange(value: string | null): void;
 }) {
-  const { networks } = useNetworks();
+  const { networks, isLoading } = useNetworks([dappChain].filter(isTruthy));
   const [showWalletNameContent, setShowWalletNameContent] = useState(false);
   const offsetValuesState = useStore(offsetValues);
   const SCROLL_THRESHOLD = getTabScrollContentHeight(offsetValuesState) - 8;
 
-  const network = dappChain
+  const dappNetwork = dappChain
     ? networks?.getNetworkByName(createChain(dappChain))
     : null;
 
@@ -53,7 +54,11 @@ export function NetworkBalance({
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, []);
+  }, [SCROLL_THRESHOLD]);
+
+  if (isLoading) {
+    return null;
+  }
 
   return (
     <>
@@ -84,6 +89,7 @@ export function NetworkBalance({
         }}
       >
         <NetworkSelect
+          showAllNetworksOption={true}
           value={chain}
           onChange={(selectedValue) =>
             onChange(selectedValue === dappChain ? null : selectedValue)
@@ -167,7 +173,7 @@ export function NetworkBalance({
               textOverflow: 'ellipsis',
             }}
           >
-            {showAllNetworksHelperButton ? 'All Networks' : network?.name}
+            {showAllNetworksHelperButton ? 'All Networks' : dappNetwork?.name}
           </Button>
         ) : null}
       </HStack>

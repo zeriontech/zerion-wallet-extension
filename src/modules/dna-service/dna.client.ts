@@ -1,4 +1,4 @@
-import { dnaServicePort } from '../../ui/shared/channels';
+import { dnaServicePort } from 'src/ui/shared/channels';
 
 export function initDnaApi() {
   // dnaServicePort.request('developerOnly_resetActionQueue');

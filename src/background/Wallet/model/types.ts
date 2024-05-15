@@ -46,6 +46,7 @@ interface PublicPreferences {
   mintDnaBannerDismissed?: boolean;
   upgradeDnaBannerDismissed?: boolean;
   backupReminderDismissedTime?: number;
+  enableTestnets?: boolean;
 }
 
 export interface Permission {

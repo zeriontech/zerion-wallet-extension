@@ -1,15 +1,15 @@
 import React from 'react';
+import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import { Image } from 'src/ui/ui-kit/MediaFallback';
 import { UIText } from 'src/ui/ui-kit/UIText';
 
-interface BaseProps {
+interface Props {
   src?: string | null;
-  chainId: string | number | null;
+  chainId: ChainId | null;
   size?: number;
   style?: React.CSSProperties;
   name: string | null;
 }
-type Props = BaseProps & ({ src: string } | { chainId: string | number });
 
 function TextFallback({
   size,
@@ -19,7 +19,7 @@ function TextFallback({
 }: {
   size: number;
   name: string | null;
-  chainId: string | number | null;
+  chainId: ChainId | null;
   style?: React.CSSProperties;
 }) {
   const value = chainId

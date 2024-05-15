@@ -239,6 +239,21 @@ function UserPreferences() {
                 />
               ),
             },
+            {
+              key: 2,
+              component: (
+                <ToggleSettingLine
+                  text="Enable Testnets"
+                  checked={preferences?.enableTestnets || false}
+                  onChange={(event) => {
+                    setPreferences({
+                      enableTestnets: event.target.checked,
+                    });
+                  }}
+                  detailText="Enables viewing and interacting with test networks"
+                />
+              ),
+            },
           ]}
         />
       </VStack>

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
-import { walletPort } from './channels';
+import { walletPort } from 'src/ui/shared/channels';
 
 export function useScreenViewChange() {
   const { pathname } = useLocation();

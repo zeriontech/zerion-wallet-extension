@@ -1,11 +1,9 @@
-import React from 'react';
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
+import { isTruthy } from 'is-truthy-ts';
 import { createChain } from 'src/modules/networks/Chain';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import type {
-  NetworkConfigMetaData,
-  Networks,
-} from 'src/modules/networks/Networks';
+import { Networks } from 'src/modules/networks/Networks';
+import type { NetworkConfigMetaData } from 'src/modules/networks/Networks';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { intersperce } from 'src/ui/shared/intersperce';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -14,12 +12,15 @@ import { SurfaceItemLink, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import InvisibleIcon from 'jsx:src/ui/assets/invisible.svg';
-import { isTruthy } from 'is-truthy-ts';
+import { LIST_ITEM_CLASS } from 'src/ui/components/NetworkSelectDialog/constants';
+import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
+import { VirtualizedSurfaceList } from 'src/ui/ui-kit/SurfaceList/VirtualizedSurfaceList';
+import { BACKEND_NETWORK_ORIGIN } from 'src/modules/ethereum/chains/constants';
 
 function getOriginUrlFromMetaData(metadata: NetworkConfigMetaData) {
   if (
     metadata.origin === globalThis.location.origin ||
-    metadata.origin === 'predefined'
+    metadata.origin === BACKEND_NETWORK_ORIGIN
   ) {
     return null;
   }
@@ -31,37 +32,32 @@ function getOriginUrlFromMetaData(metadata: NetworkConfigMetaData) {
   }
 }
 
-function getUpdatedFromMetadata(metadata: NetworkConfigMetaData) {
-  const { updated, created } = metadata;
-  return updated === created || updated === 0 ? null : metadata.updated;
-}
-
 function NetworkDetail({
   metadataRecord,
   network,
-  networks,
 }: {
   metadataRecord: Record<string, NetworkConfigMetaData | undefined>;
   network: NetworkConfig;
-  networks: Networks;
 }) {
-  const chainId = network.external_id;
-  const chain = createChain(network.chain);
-  const metadata = metadataRecord[network.chain];
-  const { originUrl, updated, sourceType } = useMemo(() => {
-    if (!chainId || !metadata) {
-      return {};
-    }
-    return {
-      originUrl: getOriginUrlFromMetaData(metadata),
-      updated: getUpdatedFromMetadata(metadata),
-      sourceType: networks.getSourceType(chain),
-    };
-  }, [chainId, metadata, networks, chain]);
-  if (!chainId || !metadata) {
+  const metadata = metadataRecord[network.id];
+  const originUrl = useMemo(() => {
+    return metadata ? getOriginUrlFromMetaData(metadata) : null;
+  }, [metadata]);
+
+  if (!network.id || !metadata) {
     return null;
   }
-  const isCustom = sourceType === 'custom';
+
+  const { created, updated } = metadata;
+  const createdFormatted = new Intl.DateTimeFormat('en', {
+    dateStyle: 'medium',
+    timeStyle: 'medium',
+  }).format(created);
+  const updatedFormatted = new Intl.DateTimeFormat('en', {
+    dateStyle: 'medium',
+    timeStyle: 'medium',
+  }).format(updated);
+
   return (
     <UIText
       kind="caption/regular"
@@ -76,17 +72,18 @@ function NetworkDetail({
         [
           originUrl ? (
             <span key={0}>
-              Added by{' '}
+              {isCustomNetworkId(network.id) ? 'Added' : 'Set'} by{' '}
               <span style={{ color: 'var(--primary)' }}>{originUrl}</span>
             </span>
+          ) : created && created === updated ? (
+            <span key={0} title={createdFormatted}>
+              {isCustomNetworkId(network.id) ? 'Created' : 'Saved'}{' '}
+              {createdFormatted}
+            </span>
           ) : null,
-          updated && !isCustom ? (
-            <span key={1}>
-              Edited{' '}
-              {new Intl.DateTimeFormat('en', {
-                dateStyle: 'medium',
-                timeStyle: 'medium',
-              }).format(updated)}
+          updated && updated !== created ? (
+            <span key={1} title={updatedFormatted}>
+              Edited {updatedFormatted}
             </span>
           ) : null,
         ],
@@ -104,97 +101,129 @@ export function NetworkList({
   networkList,
   getItemTo,
   getItemIconEnd,
+  previousListLength = 0,
 }: {
-  title?: string;
+  title?: string | null;
   networks: Networks;
   networkList: NetworkConfig[];
   getItemTo?: (item: NetworkConfig) => string;
   getItemIconEnd?: (item: NetworkConfig) => React.ReactNode;
+  previousListLength?: number;
 }) {
   const metadataRecord = useMemo(
     () => networks.getNetworksMetaData(),
     [networks]
   );
-  return (
-    <SurfaceList
-      items={[
-        title
-          ? {
-              key: title,
-              pad: false,
-              style: { padding: 0 },
-              component: (
-                <UIText
-                  kind="small/accent"
-                  color="var(--neutral-500)"
-                  style={{ paddingBlock: 8 }}
-                >
-                  {title}
-                </UIText>
-              ),
-            }
-          : null,
-        ...networkList.map((network) => ({
-          key: network.external_id || network.chain,
-          pad: false,
-          isInteractive: true,
-          component: (
-            <SurfaceItemLink
-              to={getItemTo?.(network) ?? `/networks/network/${network.chain}`}
-              style={{ paddingInline: 0 }}
-            >
-              <HStack
-                gap={4}
-                justifyContent="space-between"
-                alignItems="center"
-                style={{ paddingBlock: 4 }}
-              >
-                <Media
-                  image={
-                    <NetworkIcon
-                      size={24}
-                      src={network.icon_url}
-                      chainId={network.external_id}
-                      name={network.name}
-                    />
-                  }
-                  text={
-                    <UIText
-                      kind="body/accent"
-                      color={network.hidden ? 'var(--neutral-700)' : undefined}
-                    >
-                      {networks.getChainName(createChain(network.name))}
-                    </UIText>
-                  }
-                  vGap={0}
-                  detailText={
-                    <NetworkDetail
-                      networks={networks}
-                      network={network}
-                      metadataRecord={metadataRecord}
-                    />
-                  }
-                />
 
-                <HStack gap={8} alignItems="center">
-                  {network.hidden ? (
-                    <InvisibleIcon
-                      style={{
-                        width: 20,
-                        height: 20,
-                        color: 'var(--neutral-400)',
-                      }}
-                    />
-                  ) : null}
-                  {getItemIconEnd?.(network) ?? (
-                    <ChevronRightIcon style={{ color: 'var(--neutral-400)' }} />
-                  )}
-                </HStack>
-              </HStack>
-            </SurfaceItemLink>
+  const items = [
+    title
+      ? {
+          key: title,
+          pad: false,
+          style: {
+            padding: 0,
+            top: 48,
+            position: 'sticky',
+            zIndex: 1,
+          } as const, // Just to calm down ts
+          component: (
+            <UIText
+              kind="small/accent"
+              color="var(--neutral-500)"
+              style={{ paddingBlock: 8, backgroundColor: 'var(--white)' }}
+            >
+              {title}
+            </UIText>
           ),
-        })),
-      ].filter(isTruthy)}
+        }
+      : null,
+    ...networkList.map((network, index) => ({
+      key: network.id,
+      pad: false,
+      isInteractive: true,
+      component: (
+        <SurfaceItemLink
+          to={getItemTo?.(network) ?? `/networks/network/${network.id}`}
+          style={{ paddingInline: 0 }}
+          data-class={LIST_ITEM_CLASS}
+          data-index={index + previousListLength}
+        >
+          <HStack
+            gap={4}
+            justifyContent="space-between"
+            alignItems="center"
+            style={{ paddingBlock: 4 }}
+          >
+            <Media
+              image={
+                <NetworkIcon
+                  size={24}
+                  src={network.icon_url}
+                  chainId={Networks.getChainId(network)}
+                  name={network.name}
+                />
+              }
+              text={
+                <UIText
+                  kind="body/accent"
+                  color={network.hidden ? 'var(--neutral-700)' : undefined}
+                >
+                  {networks.getChainName(createChain(network.name))}
+                </UIText>
+              }
+              vGap={0}
+              detailText={
+                <NetworkDetail
+                  network={network}
+                  metadataRecord={metadataRecord}
+                />
+              }
+            />
+
+            <HStack gap={8} alignItems="center">
+              {network.hidden ? (
+                <InvisibleIcon
+                  style={{
+                    width: 20,
+                    height: 20,
+                    color: 'var(--neutral-400)',
+                  }}
+                />
+              ) : null}
+              {getItemIconEnd?.(network) ?? (
+                <ChevronRightIcon style={{ color: 'var(--neutral-400)' }} />
+              )}
+            </HStack>
+          </HStack>
+        </SurfaceItemLink>
+      ),
+    })),
+  ].filter(isTruthy);
+
+  return items.length > 50 ? (
+    <VirtualizedSurfaceList
+      style={{
+        paddingBlock: 0,
+        ['--surface-background-color' as string]: 'transparent',
+      }}
+      items={items}
+      estimateSize={(index) =>
+        index === 0 && title
+          ? 36
+          : networks.isSavedLocallyChain(createChain(items[index].key))
+          ? 64
+          : 48
+      }
+      overscan={5}
+      stickyFirstElement={Boolean(title)}
+    />
+  ) : (
+    <SurfaceList
+      style={{
+        paddingBlock: 0,
+        ['--surface-background-color' as string]: 'transparent',
+      }}
+      items={items}
     />
   );
 }

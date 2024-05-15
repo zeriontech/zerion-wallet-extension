@@ -11,21 +11,19 @@
 
 ### Chain, chainId and external_id
 
-- `chain` is used as a slug-like unique `id`
-- `external_id` is a name for `chainId`
-- `evm_id` is an int representation of `external_id`, therefore is unnecessary
-- for chain configs coming from dApps, `chain` is generated using `nanoid()`
-- for manually added networks, `chain` is currently created equal to `external_id`. This is wrong, because `external_id` can be changed later by the user, but `chain` will remain untouched. If a user manually creates network A with external_id: `'a'`, then later updates external_id to `'b'`, then later creates network `AA`, sets its external_id to `'a'`, network `AA` will overwrite network `A`.
+- HEX chain id is stored in `specification` object inside NetworkConfig
+- for chain configs coming from dApps, `id` is queried from backend for the chain with the same `chainId` or derived directly from `chainId`
+- for manually added networks, `id` is currently deterministically created from `chainId` and will be updated if `chainId` is updated.
 
 ### Creating/modifying a chain
 
-- When we modify existing "mainnet" item `A`, an `EthereumChainConfig` is created, which has the same `chain` and `external_id` as `A`
-- [x] When a new `AddEthereumChainParameter` comes from dapp, an `EthereumChainConfig` is (should be) created with a generated nanoid() for `chain`
-- [x] When an `AddEthereumChainParameter` comes which has a `chainId` matching any existing network, we should use the `chain` from existing network and call `ChainConfigStore.addEthereumChain()`.
+- When we modify existing "mainnet" item `A`, an `EthereumChainConfig` is created, which has the same `id` as `A`
+- [x] When a new `AddEthereumChainParameter` comes from dapp, an `EthereumChainConfig` is (should be) created with an `id` received from backend if we have information about the chain with the same `chainId` or generated from `chainId`.
+- [x] When an `AddEthereumChainParameter` comes which has a `chainId` matching any existing network, we should use the `id` from existing network and call `ChainConfigStore.addEthereumChain()`.
 
 ### Backend Updates
 
-- [ ] User has manually created a network `A` with chainId: `'a'` and a generated `chain` value. Later our backend starts to support a network with chainId: `'a'`. Should we determine that and update the manually added network's value of `chain` to the new `chain` value that now comes from the backend? This would effectively "merge" the manual config with the backend one.
+- [ ] User has manually created a network `A` with chainId: `'a'` and a generated `id` value. Later our backend starts to support a network with chainId: `'a'`. We are going to merge updated config with locally saved. So saved data will remain the same, however extra data (like `'supports_...'` fields) will be updated.
 
 ### Edge cases
 

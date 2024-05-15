@@ -30,6 +30,7 @@ import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { EmptyView } from 'src/ui/components/EmptyView';
 import { NftTabDnaBanner } from 'src/ui/DNA/components/DnaBanners';
 import { useStore } from '@store-unit/react';
+import { Networks } from 'src/modules/networks/Networks';
 import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
 import { getGrownTabMaxHeight, offsetValues } from '../getTabsOffset';
 import { NetworkBalance } from '../Positions/NetworkBalance';
@@ -92,7 +93,7 @@ function NFTItem({
                   }}
                 >
                   <NetworkIcon
-                    chainId={network.external_id}
+                    chainId={Networks.getChainId(network)}
                     size={12}
                     name={network.name}
                     src={network.icon_url}
@@ -181,7 +182,7 @@ export function NonFungibleTokens({
   const isSupportedByBackend =
     chainValue === NetworkSelectValue.All
       ? true
-      : networks?.isSupportedByBackend(createChain(chainValue));
+      : networks?.supports('nft_positions', createChain(chainValue));
 
   const {
     value: items,
@@ -244,7 +245,9 @@ export function NonFungibleTokens({
         <VStack gap={4} style={{ padding: 20, textAlign: 'center' }}>
           <span style={{ fontSize: 20 }}>💔</span>
           <UIText kind="body/regular">
-            NFTs for {chainValue} are not supported yet
+            NFTs for{' '}
+            {networks?.getChainName(createChain(chainValue)) || chainValue} are
+            not supported yet
           </UIText>
         </VStack>
       </CenteredFillViewportView>

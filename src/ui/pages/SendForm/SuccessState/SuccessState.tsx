@@ -124,7 +124,7 @@ export function SuccessState({
               rel="noopener noreferrer"
               target="_blank"
             >
-              {networks.getExplorerNameById(networks.getChainId(chain))}
+              {networks.getExplorerNameByChainName(chain)}
             </TextAnchor>
             .
           </UIText>

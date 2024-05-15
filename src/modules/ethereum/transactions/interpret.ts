@@ -5,6 +5,7 @@ import type { TypedData } from '../message-signing/TypedData';
 import type { IncomingTransactionWithChainId } from '../types/IncomingTransaction';
 import type { InterpretResponse } from './types';
 import { getGas } from './getGas';
+import type { ChainId } from './ChainId';
 
 export function interpretTransaction({
   address,
@@ -70,7 +71,7 @@ export function interpretSignature({
   typedData,
 }: {
   address: string;
-  chainId?: string | number;
+  chainId?: ChainId | null;
   typedData: TypedData;
 }): Promise<InterpretResponse> {
   return Promise.race([

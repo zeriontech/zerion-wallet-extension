@@ -1,5 +1,10 @@
 import { useSelectorStore } from '@store-unit/react';
-import { client, useAddressMembership, useAddressPositions } from 'defi-sdk';
+import {
+  client,
+  useAddressMembership,
+  useAddressPortfolioDecomposition,
+  useAddressPositions,
+} from 'defi-sdk';
 import type { SwapFormState, SwapFormView } from '@zeriontech/transactions';
 import { useSwapForm } from '@zeriontech/transactions';
 import React, {
@@ -47,7 +52,6 @@ import { AnimatedAppear } from 'src/ui/components/AnimatedAppear';
 import { ViewLoadingSuspense } from 'src/ui/components/ViewLoading/ViewLoading';
 import { getPositionBalance } from 'src/ui/components/Positions/helpers';
 import { isPremiumMembership } from 'src/ui/shared/requests/premium/isPremiumMembership';
-import type { NetworkGroups } from 'src/ui/components/NetworkSelectDialog';
 import type { SendTxBtnHandle } from 'src/ui/components/SignTransactionButton';
 import { SignTransactionButton } from 'src/ui/components/SignTransactionButton';
 import { useSizeStore } from 'src/ui/Onboarding/useSizeStore';
@@ -129,7 +133,7 @@ function FormHint({
 
 export function SwapForm() {
   useBackgroundKind({ kind: 'white' });
-  const { singleAddress: address } = useAddressParams();
+  const { singleAddress: address, ready } = useAddressParams();
 
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
@@ -143,27 +147,32 @@ export function SwapForm() {
   });
   const positions = positionsValue?.positions ?? null;
 
-  const { networks } = useNetworks();
-  const { supportedNetworks, supportedChains } = useMemo(() => {
+  const { value: portfolioDecomposition } = useAddressPortfolioDecomposition(
+    {
+      address,
+      currency: 'usd',
+    },
+    { enabled: ready }
+  );
+  const addressChains = useMemo(
+    () => Object.keys(portfolioDecomposition?.chains || {}),
+    [portfolioDecomposition]
+  );
+
+  const { networks } = useNetworks(addressChains);
+  const { supportedChains } = useMemo(() => {
     const allItems = networks?.getNetworks() || [];
     const itemsForTrading = networks
       ? allItems.filter((network) =>
-          networks.supports('trading', createChain(network.chain))
+          networks.supports('trading', createChain(network.id))
         )
       : [];
     return {
-      supportedNetworks: itemsForTrading,
       supportedChains: itemsForTrading.map((network) =>
-        createChain(network.chain)
+        createChain(network.id)
       ),
     };
   }, [networks]);
-
-  const networkOptions: NetworkGroups = useMemo(() => {
-    return [
-      { key: 'trading-networks', name: 'Networks', items: supportedNetworks },
-    ];
-  }, [supportedNetworks]);
 
   const swapView = useSwapForm({
     currency: 'usd',
@@ -228,6 +237,10 @@ export function SwapForm() {
   const configureTransactionToBeSigned = useEvent((tx: IncomingTransaction) => {
     invariant(chain && networks, 'Not ready to prepare the transaction');
     const chainId = networks.getChainId(chain);
+    invariant(
+      chainId,
+      'chainId should exist for creating an approve transaction'
+    );
     const configuration = swapView.store.configuration.getState();
     const txToSign = applyConfiguration(tx, configuration, gasPrices);
     return { ...txToSign, from: address, chainId };
@@ -636,7 +649,9 @@ export function SwapForm() {
               swapView.handleChange('chainInput', value);
             }}
             dialogRootNode={rootNode}
-            groups={networkOptions}
+            filterPredicate={(network) =>
+              networks?.supports('trading', createChain(network.id)) || false
+            }
           />
           <VStack gap={4} style={{ position: 'relative' }}>
             <div style={{ position: 'relative' }}>

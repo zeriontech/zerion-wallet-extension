@@ -2,7 +2,6 @@ import { createPortal } from 'react-dom';
 import React, { useMemo, useRef } from 'react';
 import { useAddressPortfolioDecomposition } from 'defi-sdk';
 import { invariant } from 'src/shared/invariant';
-import type { NetworkGroups } from 'src/ui/components/NetworkSelectDialog';
 import { NetworkSelectDialog } from 'src/ui/components/NetworkSelectDialog';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
@@ -17,19 +16,29 @@ import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { noValueDash } from 'src/ui/shared/typography';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
+import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import { Networks } from 'src/modules/networks/Networks';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 
 export function NetworkSelect({
   value,
   onChange,
   renderButton,
   dialogRootNode,
-  groups,
+  filterPredicate,
+  showAllNetworksOption,
 }: {
   value: string;
   onChange: (value: string) => void;
-  renderButton?(params: { value: string; openDialog(): void }): React.ReactNode;
+  renderButton?(params: {
+    value: string;
+    openDialog(): void;
+    networks: Networks | null;
+    networksAreLoading: boolean;
+  }): React.ReactNode;
   dialogRootNode?: HTMLElement;
-  groups?: NetworkGroups;
+  filterPredicate?: (network: NetworkConfig) => boolean;
+  showAllNetworksOption?: boolean;
 }) {
   const { params } = useAddressParams();
   const { value: portfolioDecomposition } = useAddressPortfolioDecomposition({
@@ -46,7 +55,9 @@ export function NetworkSelect({
   }
 
   const chain = value === NetworkSelectValue.All ? null : createChain(value);
-  const { networks } = useNetworks();
+  const { networks, isLoading } = useNetworks(
+    chain ? [chain.toString()] : undefined
+  );
   const network = useMemo(
     () => (chain && networks ? networks.getNetworkByName(chain) : null),
     [chain, networks]
@@ -59,9 +70,10 @@ export function NetworkSelect({
       containerStyle={{ padding: 0 }}
       renderWhenOpen={() => (
         <NetworkSelectDialog
-          groups={groups}
+          filterPredicate={filterPredicate}
           value={value}
           chainDistribution={portfolioDecomposition}
+          showAllNetworksOption={showAllNetworksOption}
         />
       )}
     />
@@ -71,7 +83,14 @@ export function NetworkSelect({
       {dialogRootNode ? createPortal(dialog, dialogRootNode) : dialog}
 
       {renderButton ? (
-        renderButton({ value, openDialog: handleDialogOpen })
+        renderButton({
+          value,
+          openDialog: handleDialogOpen,
+          networks,
+          networksAreLoading: isLoading,
+        })
+      ) : isLoading ? (
+        <Spacer height={24} />
       ) : (
         <Button
           type="button"
@@ -92,7 +111,7 @@ export function NetworkSelect({
                 size={24}
                 src={network.icon_url}
                 name={network.name}
-                chainId={network.external_id}
+                chainId={Networks.getChainId(network)}
               />
             )}
             <span style={{ display: 'inline-flex', alignItems: 'center' }}>

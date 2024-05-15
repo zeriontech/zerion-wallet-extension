@@ -9,6 +9,7 @@ import * as browserStorage from 'src/background/webapis/storage';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { networksStore } from 'src/modules/networks/networks-store.background';
 import { emitter } from 'src/background/events';
+import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { DnaAction } from './types';
 
 const ACTION_QUEUE_KEY = 'actionDnaQueue-22-12-2021';
@@ -186,10 +187,9 @@ export class DnaService {
     hash: string;
     chainId: number;
   }) {
-    const networks = await networksStore.load();
-    const chain = networks
-      .getChainById(ethers.utils.hexValue(chainId))
-      .toString();
+    const hexedChainId = normalizeChainId(chainId);
+    const networks = await networksStore.loadNetworksWithChainId(hexedChainId);
+    const chain = networks.getChainById(hexedChainId).toString();
 
     const actionId = uuidv5(
       `sign(${chain}, ${hash})`,

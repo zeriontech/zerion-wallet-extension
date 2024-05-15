@@ -8,15 +8,15 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import { ValueCell } from '../shared/ValueCell';
 
 export function NetworkCreateSuccess({
-  network,
+  chainConfig,
   paddingTop = 64,
   onDone,
 }: {
-  network: NetworkConfig;
+  chainConfig: AddEthereumChainParameter;
   paddingTop?: number;
   onDone: () => void;
 }) {
@@ -48,7 +48,7 @@ export function NetworkCreateSuccess({
           overflow: 'hidden',
         }}
       >
-        {network.name || network.external_id}
+        {chainConfig.chainName || chainConfig.chainId}
       </UIText>
       <UIText kind="headline/h3" style={{ textAlign: 'center' }}>
         added successfully!
@@ -57,16 +57,16 @@ export function NetworkCreateSuccess({
       <VStack gap={8} style={{ textAlign: 'center' }}>
         <ValueCell
           label="RPC URL"
-          value={network.rpc_url_public?.[0] || noValueDash}
+          value={chainConfig.rpcUrls[0] || noValueDash}
         />
-        <ValueCell label="Chain ID" value={network.external_id} />
+        <ValueCell label="Chain ID" value={chainConfig.chainId} />
         <ValueCell
           label="Currency Symbol"
-          value={network.native_asset?.symbol ?? noValueDash}
+          value={chainConfig.nativeCurrency.symbol ?? noValueDash}
         />
         <ValueCell
           label="Block Explorer URL"
-          value={network.explorer_home_url || noValueDash}
+          value={chainConfig.blockExplorerUrls?.[0] || noValueDash}
         />
       </VStack>
       <PageBottom />

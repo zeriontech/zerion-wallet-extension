@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { animated } from '@react-spring/web';
 import { createChain } from 'src/modules/networks/Chain';
-import type { Networks } from 'src/modules/networks/Networks';
+import { Networks } from 'src/modules/networks/Networks';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
@@ -118,7 +118,7 @@ export function ExplorerInfo({
         <HStack gap={8} alignItems="center">
           <NetworkIcon
             src={network?.icon_url}
-            chainId={network?.external_id || ''}
+            chainId={Networks.getChainId(network)}
             size={24}
             name={network?.name || null}
           />

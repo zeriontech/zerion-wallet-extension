@@ -9,6 +9,7 @@ import {
   isRpcRequestWithContext,
   requestWithContextToRpcRequest,
 } from 'src/shared/custom-rpc';
+import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { getPortContext } from '../getPortContext';
 import { HttpConnection } from '../HttpConnection';
 import type { PortMessageHandler } from '../PortRegistry';
@@ -28,7 +29,9 @@ export function createHttpConnectionMessageHandler(
         wallet.publicEthereumController
           .eth_chainId({ context, id: msg.id })
           .then((chainId) => {
-            const httpConnection = new HttpConnection({ chainId });
+            const httpConnection = new HttpConnection({
+              chainId: normalizeChainId(chainId),
+            });
             return httpConnection.send(msg, context);
           })
           .then((result) => {
@@ -43,7 +46,7 @@ export function createHttpConnectionMessageHandler(
         } = msg;
         const request = requestWithContextToRpcRequest(msg);
         const httpConnection = new HttpConnection({
-          chainId: requestContext.chainId,
+          chainId: normalizeChainId(requestContext.chainId),
         });
         httpConnection
           .send(request, context)

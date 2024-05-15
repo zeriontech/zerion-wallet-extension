@@ -1,4 +1,3 @@
-import { ethers } from 'ethers';
 import omit from 'lodash/omit';
 import type { Account } from 'src/background/account/Account';
 import { emitter } from 'src/background/events';
@@ -6,6 +5,7 @@ import { networksStore } from 'src/modules/networks/networks-store.background';
 import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { getWalletNameFlagsChange } from 'src/background/Wallet/GlobalPreferences';
+import { normalizeChainId } from '../normalizeChainId';
 import {
   createParams as createBaseParams,
   sendToMetabase,
@@ -97,7 +97,7 @@ function trackAppEvents({ account }: { account: Account }) {
       const isInternalOrigin = globalThis.location.origin === origin;
       const initiatorName = isInternalOrigin ? 'Extension' : 'External Dapp';
       const networks = await networksStore.load();
-      const chainId = ethers.utils.hexValue(transaction.chainId);
+      const chainId = normalizeChainId(transaction.chainId);
       const chain = networks.getChainById(chainId)?.toString() || chainId;
       const addressActionAnalytics = addressActionToAnalytics({
         addressAction,
@@ -197,15 +197,16 @@ function trackAppEvents({ account }: { account: Account }) {
     handleSign({ type: 'messageSigned', ...rest });
   });
 
-  emitter.on('addEthereumChain', ({ values: [network], origin }) => {
+  // TODO: add networks-related analytics
+  emitter.on('addEthereumChain', ({ values: [chainConfig], origin }) => {
     const params = createParams({
       request_name: 'add_custom_evm',
       source: origin,
-      network_external_id: network.external_id,
-      network_rpc_url_internal: network.rpc_url_internal,
-      network_name: network.name,
-      network_native_asset_symbol: network.native_asset?.symbol || null,
-      network_explorer_home_url: network.explorer_home_url,
+      network_external_id: chainConfig.chainId,
+      network_rpc_url_internal: chainConfig.rpcUrls[0],
+      network_name: chainConfig.chainName,
+      network_native_asset_symbol: chainConfig.nativeCurrency.symbol,
+      network_explorer_home_url: chainConfig.blockExplorerUrls?.[0],
     });
     sendToMetabase('add_custom_evm', params);
   });

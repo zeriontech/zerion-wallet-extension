@@ -2,8 +2,8 @@ import { Store } from 'store-unit';
 import * as browserStorage from 'src/background/webapis/storage';
 
 export class PersistentStore<T> extends Store<T> {
-  private key: string;
-  private isReady: boolean;
+  protected key: string;
+  protected isReady: boolean;
   private readyPromise: Promise<void>;
 
   static async readSavedState<T>(key: string) {

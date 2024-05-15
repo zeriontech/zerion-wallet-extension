@@ -30,15 +30,15 @@ export function TokenNetworkSelect({
     return networks
       ?.getNetworks()
       .filter((network) =>
-        networks.supports('sending', createChain(network.chain))
+        networks.supports('sending', createChain(network.id))
       );
   }, [networks]);
 
   const availableSendTokenNetworks = useMemo(() => {
     return availableNetworks?.filter(
       (network) =>
-        network.chain === NetworkId.Ethereum ||
-        network.chain in
+        network.id === NetworkId.Ethereum ||
+        network.id in
           (portfolioDecomposition?.positions_chains_distribution || {})
     );
   }, [availableNetworks, portfolioDecomposition]);
@@ -46,8 +46,8 @@ export function TokenNetworkSelect({
   return (
     <select name={name} onChange={onChange} value={value}>
       {availableSendTokenNetworks.map((network) => (
-        <option key={network.id} value={network.chain}>
-          {networks.getChainName(createChain(network.chain))}
+        <option key={network.id} value={network.id}>
+          {networks.getChainName(createChain(network.id))}
         </option>
       ))}
     </select>

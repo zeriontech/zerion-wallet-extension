@@ -6,24 +6,28 @@ import React, {
   useState,
 } from 'react';
 import { RenderArea } from 'react-area';
+import { useAddressPortfolioDecomposition } from 'defi-sdk';
 import { useMutation } from '@tanstack/react-query';
 import {
+  NavigationType,
   Route,
   Routes,
-  useLocation,
   useNavigate,
+  useNavigationType,
   useParams,
   useSearchParams,
 } from 'react-router-dom';
+import { isTruthy } from 'is-truthy-ts';
 import { createChain } from 'src/modules/networks/Chain';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import type { Networks as NetworksType } from 'src/modules/networks/Networks';
+import { Networks as NetworksModule } from 'src/modules/networks/Networks';
 import { networksStore } from 'src/modules/networks/networks-store.client';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { invariant } from 'src/shared/invariant';
 import {
   Background,
   useBackgroundKind,
+  whiteBackgroundKind,
 } from 'src/ui/components/Background/Background';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -38,7 +42,6 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { ViewSuspense } from 'src/ui/components/ViewSuspense';
 import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
@@ -46,103 +49,50 @@ import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTML
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
-import { SurfaceItemLink, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
-import { NetworkForm } from './NetworkForm';
-import { NetworkList } from './shared/NetworkList';
-import { SearchResults } from './shared/SearchResults';
-import { LocationStateHelperStore } from './shared/LocationStateHelperStore';
-import { createEmptyNetwork } from './shared/createEmptyNetwork';
+import type { ChainDistribution } from 'src/ui/shared/requests/PortfolioValue/ChainValue';
+import type { NetworkGroups } from 'src/ui/components/NetworkSelectDialog/createNetworkGroups';
+import { createGroups } from 'src/ui/components/NetworkSelectDialog/createNetworkGroups';
+import { AddNetworkLink } from 'src/ui/components/NetworkSelectDialog/AddNetworkLink';
+import { useSearchKeyboardNavigation } from 'src/ui/components/NetworkSelectDialog/useSearchKeyboardNavigation';
+import { LIST_ITEM_CLASS } from 'src/ui/components/NetworkSelectDialog/constants';
+import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
+import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
+import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
+import { toAddEthereumChainParameter } from 'src/modules/networks/helpers';
+import { usePreferences } from 'src/ui/features/preferences';
+import { BACKEND_NETWORK_ORIGIN } from 'src/modules/ethereum/chains/constants';
+import { INTERNAL_ORIGIN } from 'src/background/constants';
+import { useWalletAddresses } from './shared/useWalletAddresses';
 import { NetworkCreateSuccess } from './NetworkCreateSuccess';
+import { createEmptyChainConfig } from './shared/createEmptyChainConfig';
+import { SearchResults } from './shared/SearchResults';
+import { NetworkList } from './shared/NetworkList';
+import { NetworkForm } from './NetworkForm';
 
-async function saveNetworkConfig(network: NetworkConfig) {
-  const networks = await networksStore.load();
-  const ethereumChainConfig = networks.findEthereumChainById(
-    network.external_id
-  );
+async function saveChainConfig({
+  chain,
+  chainConfig,
+  prevChain,
+}: {
+  chain: string;
+  chainConfig: AddEthereumChainParameter;
+  prevChain: string | null;
+}) {
   return walletPort.request('addEthereumChain', {
-    values: [network],
-    origin: ethereumChainConfig?.origin ?? window.location.origin,
+    values: [chainConfig],
+    origin: isCustomNetworkId(chain) ? INTERNAL_ORIGIN : BACKEND_NETWORK_ORIGIN,
+    chain,
+    prevChain,
   });
 }
 
-function NetworkCreateSearchPage() {
-  const { pathname } = useLocation();
-  const [params, setSearchParams] = useSearchParams();
-  const query = params.get('query') || '';
-  const [inputValue, setInputValue] = useState(query);
-  const debouncedSetQuery = useDebouncedCallback(
-    useCallback(
-      (value: string) =>
-        setSearchParams(value ? [['query', value]] : [], { replace: true }),
-      [setSearchParams]
-    ),
-    300
-  );
-  const { networks } = useNetworks();
-  return (
-    <Background backgroundKind="white">
-      <PageColumn
-        style={{
-          ['--surface-background-color' as string]: 'transparent',
-        }}
-      >
-        <NavigationTitle title="Add Network" />
-        <Spacer height={16} />
-        <SearchInput
-          autoFocus={true}
-          boxHeight={40}
-          type="search"
-          placeholder="Search"
-          value={inputValue}
-          onChange={(event) => {
-            setInputValue(event.currentTarget.value);
-            debouncedSetQuery(event.currentTarget.value);
-          }}
-        />
-        <Spacer height={16} />
-        {networks ? (
-          <SearchResults query={query} networks={networks} />
-        ) : (
-          <ViewLoading kind="network" />
-        )}
-        <PageBottom />
-      </PageColumn>
-      <PageStickyFooter>
-        <Spacer height={8} />
-        <Button
-          kind="primary"
-          as={UnstyledLink}
-          to={`/networks/create?${new URLSearchParams({ from: pathname })}`}
-        >
-          Add Network Manually
-        </Button>
-        <PageBottom />
-      </PageStickyFooter>
-    </Background>
-  );
-}
-
-function NetworkCreatePage({
-  onSuccess,
-}: {
-  onSuccess: (network: NetworkConfig) => void;
-}) {
-  const [params] = useSearchParams();
-  const isFromSearch = params.get('from') === '/networks/create/search';
-  const networkStringified = params.get('network');
-
-  const network = useMemo(
-    () =>
-      networkStringified
-        ? (JSON.parse(networkStringified) as NetworkConfig)
-        : createEmptyNetwork(),
-    [networkStringified]
-  );
+function NetworkCreatePage() {
+  const chainConfig = useMemo(createEmptyChainConfig, []);
   const navigate = useNavigate();
   const goBack = useCallback(() => navigate(-1), [navigate]);
   const mutation = useMutation({
-    mutationFn: saveNetworkConfig,
-    onSuccess(_result) {
+    mutationFn: saveChainConfig,
+    onSuccess() {
       networksStore.update();
     },
   });
@@ -150,7 +100,12 @@ function NetworkCreatePage({
   const { networks } = useNetworks();
   const restrictedChainIds = useMemo(() => {
     return networks
-      ? new Set(networks.getAllNetworks().map((n) => n.external_id))
+      ? new Set(
+          networks
+            .getNetworks()
+            .map((n) => NetworksModule.getChainId(n))
+            .filter(isTruthy)
+        )
       : null;
   }, [networks]);
   if (!restrictedChainIds) {
@@ -161,14 +116,13 @@ function NetworkCreatePage({
       <>
         <NavigationTitle
           title={null}
-          documentTitle={`Create Network: ${mutation.data.value.name}`}
+          documentTitle={`Create Network: ${mutation.data.value.chainName}`}
         />
         <NetworkCreateSuccess
           paddingTop={24}
-          network={mutation.data.value}
+          chainConfig={mutation.data.value}
           onDone={() => {
-            onSuccess(mutation.data.value);
-            navigate(isFromSearch ? -2 : -1);
+            goBack();
           }}
         />
       </>
@@ -179,10 +133,15 @@ function NetworkCreatePage({
       <NavigationTitle title="Create Network" />
       <PageTop />
       <NetworkForm
-        network={network}
-        onSubmit={(value) => mutation.mutate(value)}
+        chainConfig={chainConfig}
+        onSubmit={(chainStr, value) =>
+          mutation.mutate({
+            chain: chainStr,
+            chainConfig: value,
+            prevChain: null,
+          })
+        }
         isSubmitting={mutation.isLoading}
-        onReset={undefined}
         onCancel={goBack}
         restrictedChainIds={restrictedChainIds}
         disabledFields={null}
@@ -193,8 +152,8 @@ function NetworkCreatePage({
 }
 
 const FORBIDDEN_FIELDS = new Set([
-  'external_id',
-  'native_asset.decimals',
+  'chainId',
+  'nativeCurrency.decimals',
   'hidden',
 ]);
 
@@ -230,58 +189,54 @@ function RemoveNetworkConfirmationDialog({
   );
 }
 
-function NetworkPage({
-  onSuccess,
-}: {
-  onSuccess: (network: NetworkConfig) => void;
-}) {
+function NetworkPage() {
   const { chain: chainStr } = useParams();
   invariant(chainStr, 'chain parameter is required for this view');
-  const chain = createChain(chainStr);
   const navigate = useNavigate();
   const goBack = useCallback(() => navigate(-1), [navigate]);
   const { networks } = useNetworks();
-  const network = networks?.getNetworkByName(chain);
+  const network = networks?.getNetworkByName(createChain(chainStr));
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
-  const { isCustomNetwork, isPredefinedNetwork, isEditedPredefinedNetwork } =
-    useMemo(() => {
-      const customNetworks = networks?.getCustomNetworks();
-      const metadataRecord = networks?.getNetworksMetaData();
-      const metadata = metadataRecord?.[chainStr];
-      const isCustomNetwork = customNetworks?.some(
-        (item) => item.chain === chainStr
-      );
-      const sourceType = networks?.getSourceType(chain);
-      const isPredefined =
-        sourceType === 'mainnets' || sourceType === 'testnets';
-      const isEditedPredefinedNetwork =
-        isPredefined && metadata?.updated !== metadata?.created;
-      return {
-        isCustomNetwork,
-        isEditedPredefinedNetwork,
-        isPredefinedNetwork: isPredefined,
-      };
-    }, [networks, chain, chainStr]);
+  const { isCustomNetwork, isSavedNetwork } = useMemo(() => {
+    return {
+      isCustomNetwork: isCustomNetworkId(chainStr),
+      isSavedNetwork: networks?.isSavedLocallyChain(createChain(chainStr)),
+    };
+  }, [networks, chainStr]);
 
   const restrictedChainIds = useMemo(() => {
-    const set = new Set(networks?.getAllNetworks().map((n) => n.external_id));
-    if (network) {
-      set.delete(network?.external_id);
+    const set = new Set(
+      networks
+        ?.getNetworks()
+        .map((n) => NetworksModule.getChainId(n))
+        .filter(isTruthy)
+    );
+    const chainId = network ? NetworksModule.getChainId(network) : null;
+    if (chainId) {
+      set.delete(chainId);
     }
     return set;
   }, [network, networks]);
+
   const mutation = useMutation({
-    mutationFn: saveNetworkConfig,
-    onSuccess(result) {
+    mutationFn: saveChainConfig,
+    onSuccess() {
       networksStore.update();
-      onSuccess(result.value);
       navigate(-1);
     },
   });
   const removeMutation = useMutation({
     mutationFn: (network: NetworkConfig) =>
-      walletPort.request('removeEthereumChain', { chain: network.chain }),
+      walletPort.request('removeEthereumChain', { chain: network.id }),
+    onSuccess() {
+      networksStore.update();
+      navigate(-1);
+    },
+  });
+  const resetMutation = useMutation({
+    mutationFn: (network: NetworkConfig) =>
+      walletPort.request('resetEthereumChain', { chain: network.id }),
     onSuccess() {
       networksStore.update();
       navigate(-1);
@@ -298,9 +253,14 @@ function NetworkPage({
     <>
       <PageColumn>
         <NavigationTitle
-          title={network.name || network.external_id || network.chain}
+          title={
+            network.name ||
+            network.id ||
+            NetworksModule.getChainId(network) ||
+            ''
+          }
           elementEnd={
-            isCustomNetwork && !isPredefinedNetwork ? (
+            isCustomNetwork ? (
               <Button
                 kind="ghost"
                 title="Remove Network"
@@ -324,17 +284,24 @@ function NetworkPage({
         </BottomSheetDialog>
         <PageTop />
         <NetworkForm
-          network={network}
-          onSubmit={(value) => mutation.mutate(value)}
+          chain={chainStr}
+          chainConfig={toAddEthereumChainParameter(network)}
+          onSubmit={(id, value) =>
+            mutation.mutate({
+              chain: id,
+              chainConfig: value,
+              prevChain: network.id,
+            })
+          }
           isSubmitting={mutation.isLoading}
           onReset={
-            isEditedPredefinedNetwork
-              ? () => removeMutation.mutate(network)
+            isSavedNetwork && !isCustomNetwork
+              ? () => resetMutation.mutate(network)
               : undefined
           }
           onCancel={goBack}
           footerRenderArea={footerRenderArea}
-          disabledFields={isPredefinedNetwork ? FORBIDDEN_FIELDS : null}
+          disabledFields={isCustomNetwork ? null : FORBIDDEN_FIELDS}
           restrictedChainIds={restrictedChainIds}
         />
       </PageColumn>
@@ -347,80 +314,53 @@ function NetworkPage({
   );
 }
 
-function TabsView({ networks }: { networks: NetworksType }) {
-  const mainnetList = useMemo(() => networks.getMainnets(), [networks]);
-  const customList = useMemo(() => networks.getCustomNetworks(), [networks]);
-  const testnetList = useMemo(() => networks.getTestNetworks(), [networks]);
-
+function WalletNetworkList({
+  networks,
+  groups,
+}: {
+  networks: NetworksModule;
+  groups: NetworkGroups;
+}) {
   return (
-    <VStack gap={8}>
-      <NetworkList
-        title="Mainnets"
-        networks={networks}
-        networkList={mainnetList}
-      />
-
-      {customList.length ? (
-        <NetworkList
-          title="Manually Added"
-          networks={networks}
-          networkList={customList}
-        />
-      ) : null}
-
-      <NetworkList
-        title="Testnets"
-        networks={networks}
-        networkList={testnetList}
-      />
-      <div
-        style={{
-          height: 8,
-          width: '100%',
-          borderTop: '2px solid var(--neutral-200)',
-        }}
-      />
-      <SurfaceList
-        style={{ paddingBlock: 0 }}
-        items={[
-          {
-            key: 'Add network',
-            style: { padding: 0 },
-            pad: false,
-            component: (
-              <SurfaceItemLink
-                to="/networks/create/search"
-                // NOTE:
-                // Instead of passing paddingInline: 0 (and paddinBlock: 0 above),
-                // maybe this variation can be added as SurfaceList API,
-                // e.g. "decorationStyle": "mac-os-big-sur" | "full-bleed" | "full-bleed-rounded"
-                style={{ paddingInline: 0 }}
-              >
-                <HStack gap={8} alignItems="center" style={{ paddingBlock: 4 }}>
-                  <AddCircleIcon
-                    style={{ display: 'block', marginInline: 'auto' }}
-                  />
-                  <UIText kind="body/accent">Add Network</UIText>
-                </HStack>
-              </SurfaceItemLink>
-            ),
-          },
-        ]}
-      />
+    <>
+      <VStack gap={8}>
+        {groups.map((group, index) =>
+          group.items.length ? (
+            <NetworkList
+              key={group.key}
+              title={group.name}
+              networks={networks}
+              networkList={group.items}
+              previousListLength={groups[index - 1]?.items.length || 0}
+            />
+          ) : null
+        )}
+      </VStack>
+      <Spacer height={8} />
+      <AddNetworkLink />
       <PageBottom />
-    </VStack>
+    </>
   );
 }
 
 function NetworksView({
-  locationStore,
+  networks,
+  chainDistribution,
+  showTestnets,
+  autoFocusSearch,
+  loading,
 }: {
-  locationStore: LocationStateHelperStore;
+  networks: NetworksModule | null;
+  chainDistribution: ChainDistribution | null;
+  showTestnets: boolean;
+  autoFocusSearch: boolean;
+  loading: boolean;
 }) {
   const [params, setSearchParams] = useSearchParams();
+  const searchRef = useRef<HTMLInputElement | null>(null);
   const query = params.get('query');
-  const { itemCreateSuccess } = locationStore.getState();
   const [inputValue, setInputValue] = useState(query || '');
+  useBackgroundKind(whiteBackgroundKind);
   const debouncedSetSearchParams = useDebouncedCallback(
     useCallback(
       (value: string) =>
@@ -429,97 +369,129 @@ function NetworksView({
     ),
     300
   );
-  const { networks } = useNetworks();
-  const redirectTo = useMemo(() => {
-    if (!itemCreateSuccess || !networks) {
-      return null;
-    } else if (itemCreateSuccess) {
-      const sourceType = networks.getSourceType(itemCreateSuccess);
-      return sourceType === 'mainnets'
-        ? `/networks`
-        : `/networks/${sourceType}`;
+  const groups = useMemo(() => {
+    if (!networks) {
+      return [];
     }
-  }, [itemCreateSuccess, networks]);
-  const navigate = useNavigate();
-  useEffect(() => {
-    if (redirectTo) {
-      locationStore.setState({ itemCreateSuccess: null });
-      navigate(redirectTo, { replace: true });
-    }
-  }, [locationStore, navigate, redirectTo]);
+    return createGroups({
+      networks,
+      chainDistribution,
+      showTestnets,
+      sortMainNetworksType: 'alphabetical',
+    });
+  }, [networks, chainDistribution, showTestnets]);
+
+  const {
+    selectNext: selectNextNetwork,
+    selectPrev: selectPrevNetwork,
+    focusSearchInput,
+  } = useSearchKeyboardNavigation({
+    itemClassName: LIST_ITEM_CLASS,
+    searchRef,
+  });
+
   if (!networks) {
     return null;
   }
+  if (loading) {
+    return <ViewLoading />;
+  }
   return (
-    <Background backgroundKind="white">
-      <PageColumn
-        style={{ ['--surface-background-color' as string]: 'var(--white)' }}
-      >
-        <NavigationTitle
-          title="Networks"
-          elementEnd={
-            <Button
-              as={UnstyledLink}
-              to="/networks/create/search"
-              kind="ghost"
-              title="Add Network"
-              size={36}
-            >
-              <AddCircleIcon
-                style={{ display: 'block', marginInline: 'auto' }}
-              />
-            </Button>
-          }
-        />
-        <Spacer height={16} />
-        <SearchInput
-          boxHeight={40}
-          type="search"
-          placeholder="Search"
-          value={inputValue}
-          onChange={(event) => {
-            setInputValue(event.currentTarget.value);
-            debouncedSetSearchParams(event.currentTarget.value);
-          }}
-        />
-        <Spacer height={16} />
-        {query ? (
-          <ViewSuspense>
-            <SearchResults query={query} networks={networks} />
-          </ViewSuspense>
-        ) : (
-          <TabsView networks={networks} />
-        )}
-        <PageBottom />
-      </PageColumn>
-    </Background>
+    <>
+      <KeyboardShortcut combination="ctrl+f" onKeyDown={focusSearchInput} />
+      <KeyboardShortcut combination="cmd+f" onKeyDown={focusSearchInput} />
+      <KeyboardShortcut combination="ArrowUp" onKeyDown={selectPrevNetwork} />
+      <KeyboardShortcut combination="ArrowDown" onKeyDown={selectNextNetwork} />
+      <Background backgroundKind="white">
+        <PageColumn>
+          <NavigationTitle
+            title="Networks"
+            elementEnd={
+              <Button
+                as={UnstyledLink}
+                to="/networks/create"
+                kind="ghost"
+                title="Add Network"
+                size={36}
+                style={{ paddingInline: 6, justifySelf: 'center' }}
+              >
+                <AddCircleIcon style={{ display: 'block' }} />
+              </Button>
+            }
+          />
+          <Spacer height={16} />
+          <SearchInput
+            ref={searchRef}
+            autoFocus={autoFocusSearch}
+            boxHeight={40}
+            type="search"
+            placeholder="Search"
+            value={inputValue}
+            onChange={(event) => {
+              setInputValue(event.currentTarget.value);
+              debouncedSetSearchParams(event.currentTarget.value);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'ArrowDown') {
+                selectNextNetwork();
+              }
+            }}
+          />
+          <Spacer height={4} />
+          {query ? (
+            <SearchResults query={query} showTestnets={showTestnets} />
+          ) : (
+            <WalletNetworkList networks={networks} groups={groups} />
+          )}
+          <PageBottom />
+        </PageColumn>
+      </Background>
+    </>
   );
 }
 
 export function Networks() {
-  const [locationStore] = useState(
-    () => new LocationStateHelperStore({ itemCreateSuccess: null })
+  const { data: addresses } = useWalletAddresses();
+  const { preferences } = usePreferences();
+  const navigationType = useNavigationType();
+  const {
+    value: portfolioDecomposition,
+    isLoading: portfolioDecompositionIsLoading,
+  } = useAddressPortfolioDecomposition(
+    {
+      addresses: addresses || [],
+      currency: 'usd',
+    },
+    { enabled: Boolean(addresses?.length) }
   );
-  const handleMutationSuccess = (network: NetworkConfig) =>
-    locationStore.setState({
-      itemCreateSuccess: createChain(network.chain),
-    });
+  const chains = useMemo(
+    () => Object.keys(portfolioDecomposition?.chains || {}),
+    [portfolioDecomposition]
+  );
+  const { networks, isLoading } = useNetworks(chains);
+
+  useEffect(() => {
+    if (navigationType === NavigationType.Push) {
+      window.scrollTo(0, 0);
+    }
+  }, [navigationType]);
 
   return (
     <>
       <Routes>
-        <Route
-          path="/network/:chain"
-          element={<NetworkPage onSuccess={handleMutationSuccess} />}
-        />
-        <Route path="/create/search" element={<NetworkCreateSearchPage />} />
-        <Route
-          path="/create"
-          element={<NetworkCreatePage onSuccess={handleMutationSuccess} />}
-        />
+        <Route path="/network/:chain" element={<NetworkPage />} />
+        <Route path="/create" element={<NetworkCreatePage />} />
         <Route
           path="/*"
-          element={<NetworksView locationStore={locationStore} />}
+          element={
+            <NetworksView
+              loading={isLoading || portfolioDecompositionIsLoading}
+              networks={networks}
+              chainDistribution={portfolioDecomposition}
+              showTestnets={Boolean(preferences?.enableTestnets)}
+              autoFocusSearch={navigationType === NavigationType.Push}
+            />
+          }
         />
       </Routes>
     </>

@@ -10,7 +10,7 @@ export function queryGasPrices(chain: Chain) {
   return queryClient.fetchQuery({
     queryKey: [QUERY_NAME, chain],
     queryFn: async () => {
-      const networks = await networksStore.load();
+      const networks = await networksStore.load([chain.toString()]);
       return fetchGasPrice(chain, networks);
     },
   });
@@ -23,7 +23,7 @@ export function useGasPrices(chain: Chain | null) {
       if (!chain) {
         return null;
       }
-      const networks = await networksStore.load();
+      const networks = await networksStore.load([chain.toString()]);
       return fetchGasPrice(chain, networks);
     },
     useErrorBoundary: true,

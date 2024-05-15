@@ -1,350 +1,119 @@
-import type { EthereumChainSources } from './Networks';
+import type { EthereumChainConfig } from '../ethereum/chains/types';
+import type { ChainId } from '../ethereum/transactions/ChainId';
+import type { NetworkConfig } from './NetworkConfig';
+import { Networks } from './Networks';
+import { networksFallbackInfo } from './networks-fallback';
 import { NetworksStore } from './networks-store';
 
-const ETHEREUM_CHAIN_SOURCES: EthereumChainSources = {
-  predefined: {
-    ethereumChains: [
-      {
-        created: 0,
-        updated: 0,
-        origin: 'predefined',
-        value: {
-          id: '421613',
-          is_testnet: false,
-          chain: '421613',
-          external_id: '0x66eed',
-          name: 'Arbitrum Görli',
-          icon_url: 'https://chain-icons.s3.amazonaws.com/arbitrum.png',
-          explorer_token_url: null,
-          explorer_address_url: null,
-          explorer_tx_url: null,
-          explorer_home_url: null,
-          explorer_name: null,
-          rpc_url_internal: null,
-          rpc_url_public: ['https://goerli-rollup.arbitrum.io/rpc/'],
-          supports_trading: false,
-          supports_sending: false,
-          supports_bridge: false,
-          native_asset: {
-            id: '',
-            address: null,
-            name: 'Arbitrum Goerli Ether',
-            symbol: 'AGOR',
-            decimals: 18,
-          },
-          wrapped_native_asset: null,
-        },
-      },
-      {
-        created: 0,
-        updated: 0,
-        origin: 'predefined',
-        value: {
-          id: '5',
-          is_testnet: true,
-          chain: '5',
-          external_id: '0x5',
-          name: 'Ethereum Görli',
-          icon_url: 'https://chain-icons.s3.amazonaws.com/ethereum.png',
-          explorer_token_url: null,
-          explorer_address_url: null,
-          explorer_tx_url: null,
-          explorer_home_url: null,
-          explorer_name: null,
-          rpc_url_internal: null,
-          rpc_url_public: ['https://eth-goerli.g.alchemy.com/v2/demo'],
-          supports_trading: false,
-          supports_sending: false,
-          supports_bridge: false,
-          native_asset: {
-            id: '',
-            address: null,
-            name: 'Goerli Ether',
-            symbol: 'ETH',
-            decimals: 18,
-          },
-          wrapped_native_asset: null,
-        },
-      },
-      {
-        created: 0,
-        updated: 0,
-        origin: 'predefined',
-        value: {
-          id: '43113',
-          is_testnet: false,
-          chain: '43113',
-          external_id: '0xa869',
-          name: 'Avalanche Fuji',
-          icon_url: 'https://chain-icons.s3.amazonaws.com/avalanche.png',
-          explorer_token_url: null,
-          explorer_address_url: null,
-          explorer_tx_url: null,
-          explorer_home_url: null,
-          explorer_name: null,
-          rpc_url_internal: null,
-          rpc_url_public: ['https://api.avax-test.network/ext/bc/C/rpc'],
-          supports_trading: false,
-          supports_sending: false,
-          supports_bridge: false,
-          native_asset: {
-            id: '',
-            address: null,
-            name: 'Avalanche',
-            symbol: 'AVAX',
-            decimals: 18,
-          },
-          wrapped_native_asset: null,
-        },
-      },
-      {
-        created: 0,
-        updated: 0,
-        origin: 'predefined',
-        value: {
-          id: '11155111',
-          chain: '11155111',
-          is_testnet: true,
-          external_id: '0xaa36a7',
-          name: 'Ethereum Sepolia',
-          icon_url: 'https://chain-icons.s3.amazonaws.com/ethereum.png',
-          explorer_token_url: null,
-          explorer_address_url: null,
-          explorer_tx_url: null,
-          explorer_home_url: null,
-          explorer_name: null,
-          rpc_url_internal: null,
-          rpc_url_public: [
-            'https://rpc.sepolia.org',
-            'https://rpc2.sepolia.org',
-            'https://rpc-sepolia.rockx.com',
-          ],
-          supports_trading: false,
-          supports_sending: false,
-          supports_bridge: false,
-          native_asset: {
-            id: '',
-            address: null,
-            name: 'Sepolia Ether',
-            symbol: 'ETH',
-            decimals: 18,
-          },
-          wrapped_native_asset: null,
-        },
-      },
-      {
-        created: 0,
-        updated: 0,
-        origin: 'predefined',
-        value: {
-          id: '97',
-          chain: '97',
-          is_testnet: true,
-          external_id: '0x61',
-          name: 'Binance Smart Chain Testnet',
-          icon_url:
-            'https://chain-icons.s3.amazonaws.com/binance-smart-chain.png',
-          explorer_token_url: null,
-          explorer_address_url: null,
-          explorer_tx_url: null,
-          explorer_home_url: null,
-          explorer_name: null,
-          rpc_url_internal: null,
-          rpc_url_public: [
-            'https://data-seed-prebsc-1-s1.binance.org:8545',
-            'https://data-seed-prebsc-2-s1.binance.org:8545',
-            'https://data-seed-prebsc-1-s2.binance.org:8545',
-            'https://data-seed-prebsc-2-s2.binance.org:8545',
-            'https://data-seed-prebsc-1-s3.binance.org:8545',
-            'https://data-seed-prebsc-2-s3.binance.org:8545',
-          ],
-          supports_trading: false,
-          supports_sending: false,
-          supports_bridge: false,
-          native_asset: {
-            id: '',
-            address: null,
-            name: 'Binance Chain Native Token',
-            symbol: 'tBNB',
-            decimals: 18,
-          },
-          wrapped_native_asset: null,
-        },
-      },
-      {
-        created: 0,
-        updated: 0,
-        origin: 'predefined',
-        value: {
-          chain: '80001',
-          id: '80001',
-          is_testnet: true,
-          external_id: '0x13881',
-          name: 'Polygon Mumbai',
-          icon_url: 'https://chain-icons.s3.amazonaws.com/polygon.png',
-          explorer_token_url: null,
-          explorer_address_url: null,
-          explorer_tx_url: null,
-          explorer_home_url: null,
-          explorer_name: null,
-          rpc_url_internal: null,
-          rpc_url_public: [
-            'https://matic-mumbai.chainstacklabs.com',
-            'https://rpc-mumbai.maticvigil.com',
-            'https://matic-testnet-archive-rpc.bwarelabs.com',
-          ],
-          supports_trading: false,
-          supports_sending: false,
-          supports_bridge: false,
-          native_asset: {
-            id: '',
-            address: null,
-            name: 'MATIC',
-            symbol: 'MATIC',
-            decimals: 18,
-          },
-          wrapped_native_asset: null,
-        },
-      },
-      {
-        created: 0,
-        updated: 0,
-        origin: 'predefined',
-        value: {
-          chain: '420',
-          id: '420',
-          is_testnet: false,
-          external_id: '0x1a4',
-          name: 'Optimistic Görli',
-          icon_url: 'https://chain-icons.s3.amazonaws.com/optimism.png',
-          explorer_token_url: null,
-          explorer_address_url: null,
-          explorer_tx_url: null,
-          explorer_home_url: null,
-          explorer_name: null,
-          rpc_url_internal: null,
-          rpc_url_public: ['https://goerli.optimism.io/'],
-          supports_trading: false,
-          supports_sending: false,
-          supports_bridge: false,
-          native_asset: {
-            id: '',
-            address: null,
-            name: 'Goerli Ether',
-            symbol: 'ETH',
-            decimals: 18,
-          },
-          wrapped_native_asset: null,
-        },
-      },
-      {
-        created: 0,
-        updated: 0,
-        origin: 'predefined',
-        value: {
-          id: '4002',
-          chain: '4002',
-          is_testnet: true,
-          external_id: '0xfa2',
-          name: 'Fantom Testnet',
-          icon_url: 'https://chain-icons.s3.amazonaws.com/fantom.png',
-          explorer_token_url: null,
-          explorer_address_url: null,
-          explorer_tx_url: null,
-          explorer_home_url: null,
-          explorer_name: null,
-          rpc_url_internal: null,
-          rpc_url_public: ['https://rpc.testnet.fantom.network'],
-          supports_trading: false,
-          supports_sending: false,
-          supports_bridge: false,
-          native_asset: {
-            id: '',
-            address: null,
-            name: 'Fantom',
-            symbol: 'FTM',
-            decimals: 18,
-          },
-          wrapped_native_asset: null,
-        },
-      },
-    ],
-  },
-  custom: {
-    ethereumChains: [
-      {
-        created: 1690198405783,
-        origin: 'https://bridge.zora.energy',
-        updated: 1690198405783,
-        value: {
-          chain: 'eIxXzQbvAC8PcJi2O4Ya5',
-          id: 'eIxXzQbvAC8PcJi2O4Ya5',
-          is_testnet: false,
-          explorer_address_url: null,
-          explorer_home_url: 'https://explorer.zora.co',
-          explorer_name: null,
-          explorer_token_url: null,
-          explorer_tx_url: null,
-          external_id: '0x76adf1',
-          hidden: false,
-          icon_url: '',
-          name: 'ZORA',
-          native_asset: {
-            address: null,
-            decimals: 18,
-            id: 'eth',
-            name: 'Ether',
-            symbol: 'ETH',
-          },
-          rpc_url_internal: 'https://rpc.zora.co',
-          rpc_url_public: ['https://rpc.zora.co'],
-          rpc_url_user: '',
-          supports_bridge: false,
-          supports_sending: true,
-          supports_trading: false,
-          wrapped_native_asset: null,
-        },
-      },
-      {
-        created: 1690903462089,
-        origin: 'chrome-extension://dpbhodjegpggafohboikdkmejebpapnm',
-        updated: 1690903462089,
-        value: {
-          chain: '534353',
-          id: '534353',
-          is_testnet: true,
-          explorer_address_url:
-            'https://blockscout.scroll.io/address/{ADDRESS}',
-          explorer_home_url: 'https://blockscout.scroll.io',
-          explorer_name: 'Scroll Alpha Testnet Block Explorer',
-          explorer_token_url: 'https://blockscout.scroll.io/token/{ADDRESS}',
-          explorer_tx_url: 'https://blockscout.scroll.io/tx/{HASH}',
-          external_id: '0x82751',
-          hidden: false,
-          icon_url: 'https://chain-icons.s3.amazonaws.com/chainlist/534353',
-          name: 'Scroll Alpha Testnet',
-          native_asset: {
-            address: null,
-            decimals: 18,
-            id: '',
-            name: 'Ether',
-            symbol: 'ETH',
-          },
-          rpc_url_internal: null,
-          rpc_url_public: ['https://alpha-rpc.scroll.io/l2'],
-          supports_bridge: false,
-          supports_sending: false,
-          supports_trading: false,
-          wrapped_native_asset: null,
-        },
-      },
-    ],
-  },
-};
-
-export const networksStore = new NetworksStore(
-  { networks: null },
+export const ETHEREUM_CHAIN_SOURCES: EthereumChainConfig[] = [
   {
-    getEthereumChainSources: () => Promise.resolve(ETHEREUM_CHAIN_SOURCES),
+    created: 1711739146223,
+    id: 'degen',
+    origin: 'https://bridge.degen.tips',
+    previousIds: ['Ck3nlgufwtdxhadnDhyHj'],
+    updated: 1711739146223,
+    value: {
+      blockExplorerUrls: [],
+      chainId: '0x27bc86aa',
+      chainName: 'Degen',
+      hidden: false,
+      iconUrls: [''],
+      nativeCurrency: {
+        decimals: 18,
+        name: 'Degen',
+        symbol: 'DEGEN',
+      },
+      rpcUrls: ['https://rpc.degen.tips/http'],
+    },
+  },
+  {
+    created: 1715170014372,
+    id: 'arbitrum',
+    origin: 'chrome-extension://klghhnkeealcohjjanjjdaeeggmfmlpl',
+    previousIds: null,
+    updated: 1715170014372,
+    value: {
+      blockExplorerUrls: ['https://arbiscan.io/address/{ADDRESS}'],
+      chainId: '0xa4b1',
+      chainName: 'Arbitrum123',
+      iconUrls: ['https://chain-icons.s3.amazonaws.com/arbitrum.png'],
+      nativeCurrency: {
+        decimals: 18,
+        name: 'Ethereum',
+        symbol: 'ETH',
+      },
+      rpcUrls: ['https://rpc.zerion.io/v1/arbitrum'],
+    },
+  },
+  {
+    created: 1715170135504,
+    id: 'zerion-custom-network-0x1231231231',
+    origin: 'https://zerion-tech.atlassian.net',
+    previousIds: ['FlDuCHqCGIqflJdpAHAtX'],
+    updated: 1715170135504,
+    value: {
+      blockExplorerUrls: [],
+      chainId: '0x1231231231',
+      chainName: 'My Own Chain',
+      hidden: false,
+      iconUrls: [''],
+      nativeCurrency: {
+        decimals: 18,
+        name: 'ETH',
+        symbol: 'ETH',
+      },
+      rpcUrls: ['https://rpc.scroll.io'],
+    },
+  },
+  {
+    created: 1715170143534,
+    id: 'scroll',
+    origin: 'https://zerion-tech.atlassian.net',
+    previousIds: null,
+    updated: 1715170143534,
+    value: {
+      blockExplorerUrls: ['https://scrollscan.com/address/{ADDRESS}'],
+      chainId: '0x82750',
+      chainName: 'Scroll',
+      iconUrls: ['https://chain-icons.s3.amazonaws.com/scroll.png'],
+      nativeCurrency: {
+        decimals: 18,
+        name: 'Ethereum',
+        symbol: 'ETH',
+      },
+      rpcUrls: ['https://rpc.scroll.io'],
+    },
+  },
+];
+
+class NetworksStoreMock extends NetworksStore {
+  async load(_chainIds?: string[]) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return this.getState().networks!;
   }
+
+  async update() {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return this.getState().networks!;
+  }
+
+  async loadNetworksWithChainId(_chainId: ChainId) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return this.getState().networks!;
+  }
+
+  async pushConfigs(..._extraNetworkConfigs: NetworkConfig[]) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return this.getState().networks!;
+  }
+}
+
+export const networksStore = new NetworksStoreMock(
+  {
+    networks: new Networks({
+      networks: networksFallbackInfo,
+      ethereumChainConfigs: ETHEREUM_CHAIN_SOURCES,
+    }),
+  },
+  { getEthereumChainConfigs: null }
 );

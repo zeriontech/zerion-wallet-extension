@@ -1,7 +1,5 @@
-import type { Brand } from './type-utils/Brand';
+import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import { valueToHex } from './units/valueToHex';
-
-export type ChainId = Brand<string, 'chainIdAsHex'>;
 
 export function normalizeChainId(value: string | number): ChainId {
   return valueToHex(value) as ChainId;

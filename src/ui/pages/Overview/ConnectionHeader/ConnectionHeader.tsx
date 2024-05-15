@@ -19,9 +19,9 @@ import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOri
 import { noValueDash } from 'src/ui/shared/typography';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
-import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
+import { Networks } from 'src/modules/networks/Networks';
 import { ConnectedSiteDialog } from '../../ConnectedSites/ConnectedSite';
 import { NetworkSelect } from '../../Networks/NetworkSelect';
 import { isConnectableDapp } from '../../ConnectedSites/shared/isConnectableDapp';
@@ -30,7 +30,6 @@ import { offsetValues } from '../getTabsOffset';
 const COMPONENT_HEIGHT = 68;
 export function ConnectionHeader() {
   const { isPaused, globalPreferences } = usePausedData();
-  const { networks } = useNetworks();
   const showPausedHeader = isPaused && globalPreferences;
   const [showConnectionDialog, setShowConnectionDialog] = useState(false);
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -187,12 +186,21 @@ export function ConnectionHeader() {
                         origin: activeTabOrigin,
                       });
                     }}
-                    renderButton={({ openDialog, value }) => {
+                    renderButton={({
+                      openDialog,
+                      value,
+                      networks,
+                      networksAreLoading,
+                    }) => {
                       const chain = createChain(value);
                       const network =
                         chain && networks
                           ? networks.getNetworkByName(chain)
                           : null;
+
+                      if (networksAreLoading) {
+                        return null;
+                      }
 
                       return (
                         <Button
@@ -219,7 +227,7 @@ export function ConnectionHeader() {
                                 size={24}
                                 src={network.icon_url}
                                 name={network.name}
-                                chainId={network.external_id}
+                                chainId={Networks.getChainId(network)}
                               />
                             ) : null}
                             <span

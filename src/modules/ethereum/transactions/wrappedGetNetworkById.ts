@@ -1,7 +1,8 @@
 import { UnsupportedNetwork } from 'src/modules/networks/errors';
 import type { Networks } from 'src/modules/networks/Networks';
+import type { ChainId } from './ChainId';
 
-export function wrappedGetNetworkById(networks: Networks, chainId: string) {
+export function wrappedGetNetworkById(networks: Networks, chainId: ChainId) {
   try {
     return networks.getNetworkById(chainId);
   } catch (error) {

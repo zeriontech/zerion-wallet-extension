@@ -1,4 +1,5 @@
 import { normalizeAddress } from 'src/shared/normalizeAddress';
+import type { Upgrades } from 'src/shared/type-utils/versions';
 import type {
   WalletRecord,
   WalletRecordVersion1,
@@ -21,25 +22,13 @@ function mapObject<V, NewValue>(
   return Object.fromEntries(Object.entries<V>(object).map(callbackFn));
 }
 
-function assertVersion<T extends PossibleEntry>(
-  entry: PossibleEntry,
-  version: number
-): asserts entry is T {
-  if (entry.version !== version) {
-    throw new Error(
-      `Unexpected version provided. Expected: ${version}, received: ${entry.version}`
-    );
-  }
-}
-
 /**
  * Term "upgrade" taken from dexie:
  * https://dexie.org/docs/Dexie/Dexie.version()
  * https://dexie.org/docs/Version/Version.upgrade()
  */
-const upgrades: Record<string, (entry: PossibleEntry) => PossibleEntry> = {
-  2: (entry: PossibleEntry): WalletRecordVersion2 => {
-    assertVersion<WalletRecordVersion1>(entry, 1);
+export const walletRecordUpgrades: Upgrades<PossibleEntry> = {
+  2: (entry) => {
     return {
       ...entry,
       version: 2,
@@ -50,8 +39,7 @@ const upgrades: Record<string, (entry: PossibleEntry) => PossibleEntry> = {
       ]),
     };
   },
-  3: (entry: PossibleEntry): WalletRecordVersion3 => {
-    assertVersion<WalletRecordVersion2>(entry, 2);
+  3: (entry) => {
     return {
       version: 3,
       transactions: entry.transactions,
@@ -60,8 +48,7 @@ const upgrades: Record<string, (entry: PossibleEntry) => PossibleEntry> = {
       publicPreferences: entry.preferences,
     };
   },
-  4: (entry: PossibleEntry): WalletRecordVersion4 => {
-    assertVersion<WalletRecordVersion3>(entry, 3);
+  4: (entry) => {
     return {
       ...entry,
       version: 4,
@@ -71,8 +58,7 @@ const upgrades: Record<string, (entry: PossibleEntry) => PossibleEntry> = {
       },
     };
   },
-  5: (entry: PossibleEntry): WalletRecord => {
-    assertVersion<WalletRecordVersion4>(entry, 4);
+  5: (entry) => {
     return {
       ...entry,
       version: 5,
@@ -85,15 +71,3 @@ const upgrades: Record<string, (entry: PossibleEntry) => PossibleEntry> = {
     };
   },
 };
-
-const getNextVersion = (entry: PossibleEntry) => entry.version + 1;
-
-export function upgrade(entry: PossibleEntry): WalletRecord {
-  let result = entry;
-  let nextVersion = getNextVersion(result);
-  while (nextVersion in upgrades) {
-    result = upgrades[nextVersion](result);
-    nextVersion = getNextVersion(result);
-  }
-  return result as WalletRecord;
-}
