@@ -112,7 +112,7 @@ function hasChanges(form: HTMLFormElement) {
   return false;
 }
 
-const parsers: Parsers = {
+const parsers = {
   chainId: (untypedValue: unknown) => {
     const value = untypedValue as string;
     return normalizeChainId(value);
