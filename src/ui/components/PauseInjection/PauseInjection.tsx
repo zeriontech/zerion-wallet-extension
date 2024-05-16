@@ -52,7 +52,7 @@ function PauseInjectionDialog({
       interface FormDataWithSubmitter extends FormData {
         new (form?: HTMLFormElement, submitter?: HTMLElement | null): FormData;
       }
-      const data = naiveFormDataToObject(
+      const data = naiveFormDataToObject<{ duration: TurnOffDuration }>(
         new (FormData as FormDataWithSubmitter)(
           event.currentTarget as HTMLFormElement,
           event.submitter
@@ -61,7 +61,7 @@ function PauseInjectionDialog({
       );
       onSubmitRef.current({
         origin: data.origin as string,
-        duration: data.duration as TurnOffDuration,
+        duration: data.duration,
       });
     }
     /**

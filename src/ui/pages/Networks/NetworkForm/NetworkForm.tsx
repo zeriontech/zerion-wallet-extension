@@ -13,7 +13,6 @@ import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { Toggle } from 'src/ui/ui-kit/Toggle';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import type { Parsers } from 'src/ui/shared/form-data';
 import { collectData } from 'src/ui/shared/form-data';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import {
@@ -114,15 +113,15 @@ function hasChanges(form: HTMLFormElement) {
 }
 
 const parsers: Parsers = {
-  chainId: (untypedValue) => {
+  chainId: (untypedValue: unknown) => {
     const value = untypedValue as string;
     return normalizeChainId(value);
   },
-  hidden: (untypedValue) => {
+  hidden: (untypedValue: unknown) => {
     const value = untypedValue as 'on' | null;
     return Boolean(value);
   },
-  'nativeCurrency.decimals': (untypedValue) => {
+  'nativeCurrency.decimals': (untypedValue: unknown) => {
     const value = untypedValue as string;
     return Number(value);
   },

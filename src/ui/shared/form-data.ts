@@ -1,10 +1,10 @@
 import lodashSet from 'lodash/set';
 
-export function naiveFormDataToObject(
+export function naiveFormDataToObject<T>(
   formData: FormData,
-  modifier: (key: string, value: unknown) => unknown
+  modifier: (key: keyof T | string, value: unknown) => unknown
 ) {
-  const result: Record<string, unknown> = {};
+  const result: Partial<{ [K in keyof T]: T[K] } & Record<string, string>> = {};
   for (const key of new Set(formData.keys())) {
     if (key.endsWith('[]')) {
       const value = modifier(key, formData.getAll(key));
@@ -14,14 +14,14 @@ export function naiveFormDataToObject(
       lodashSet(result, key, value);
     }
   }
-  return result;
+  return result as { [K in keyof T]: T[K] } & Record<string, string>;
 }
 
-export type Parsers = Record<string, (untypedValue: unknown) => unknown>;
+export type Parsers<T> = { [K in keyof T]: (value: unknown) => T[K] };
 
-export function collectData(form: HTMLFormElement, parsers: Parsers) {
-  return naiveFormDataToObject(new FormData(form), (key, untypedValue) => {
-    if (parsers[key]) {
+export function collectData<T>(form: HTMLFormElement, parsers: Parsers<T>) {
+  return naiveFormDataToObject<T>(new FormData(form), (key, untypedValue) => {
+    if (parsers[key as keyof T]) {
       return parsers[key](untypedValue);
     } else {
       return untypedValue as string;
