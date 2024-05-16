@@ -183,7 +183,7 @@ export function NetworkForm({
   const id = useId();
   const validators: Validators = {
     chainId: (element) => {
-      const value = parsers.chainId(element.value) as ChainId;
+      const value = parsers.chainId(element.value);
       if (restrictedChainIds.has(value)) {
         return 'Network already exists';
       }
