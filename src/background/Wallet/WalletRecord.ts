@@ -724,15 +724,13 @@ export class WalletRecordModel {
   ) {
     return produce(record, (draft) => {
       draft.permissions = Object.fromEntries(
-        Object.entries(record.permissions).map(
-          ([origin, { chain: permissionChain, addresses }]) => {
-            if (permissionChain === chain.toString()) {
-              return [origin, { addresses }];
-            } else {
-              return [origin, { addresses, chain: permissionChain }];
-            }
+        Object.entries(record.permissions).map(([origin, permission]) => {
+          if (permission.chain === chain.toString()) {
+            return [origin, { addresses: permission.addresses }];
+          } else {
+            return [origin, permission];
           }
-        )
+        })
       );
     });
   }
