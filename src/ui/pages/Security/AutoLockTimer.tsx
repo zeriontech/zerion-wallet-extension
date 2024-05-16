@@ -1,5 +1,4 @@
 import { isTruthy } from 'is-truthy-ts';
-import { useNavigate } from 'react-router-dom';
 import React, { useEffect } from 'react';
 import cn from 'classnames';
 import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
@@ -19,6 +18,7 @@ import { useBackgroundKind } from 'src/ui/components/Background';
 import { collectData } from 'src/ui/shared/form-data';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
+import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
 import * as styles from './styles.module.css';
 
 const isDev = process.env.NODE_ENV === 'development';
@@ -53,13 +53,13 @@ export function AutoLockTimer() {
   const { globalPreferences, setGlobalPreferences, mutation } =
     useGlobalPreferences();
   useBackgroundKind({ kind: 'white' });
-  const navigate = useNavigate();
+  const goBack = useGoBack();
 
   useEffect(() => {
     if (mutation.isSuccess) {
-      navigate(-1);
+      goBack();
     }
-  }, [mutation.isSuccess, navigate]);
+  }, [mutation.isSuccess, goBack]);
 
   return (
     <PageColumn style={{ position: 'relative' }}>
