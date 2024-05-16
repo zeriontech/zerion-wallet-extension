@@ -718,24 +718,21 @@ export class WalletRecordModel {
     return createChain(chain || NetworkId.Ethereum);
   }
 
-  static getPermissionsByChain(
-    record: WalletRecord,
-    { chain }: { chain: Chain }
-  ) {
-    return Object.entries(record.permissions)
-      .filter(([, permission]) => permission.chain === chain.toString())
-      .map(([origin, permission]) => ({ origin, permission }));
-  }
-
   static removeChainFromPermissions(
     record: WalletRecord,
     { chain }: { chain: Chain }
   ) {
     return produce(record, (draft) => {
       draft.permissions = Object.fromEntries(
-        Object.entries(record.permissions)
-          .filter(([, permission]) => permission.chain === chain.toString())
-          .map(([origin, { addresses }]) => [origin, { addresses }])
+        Object.entries(record.permissions).map(
+          ([origin, { chain: permissionChain, addresses }]) => {
+            if (permissionChain === chain.toString()) {
+              return [origin, { addresses }];
+            } else {
+              return [origin, { addresses, chain: permissionChain }];
+            }
+          }
+        )
       );
     });
   }
