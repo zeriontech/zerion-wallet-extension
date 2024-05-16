@@ -1150,7 +1150,6 @@ export class Wallet {
       // TODO: remove chain for origin in case new chain is not set
       this.setChainForOrigin(createChain(NetworkId.Ethereum), origin);
     });
-    this.verifyOverviewChain();
     this.resetEthereumChain({ context, params: { chain: chainStr } });
   }
 
