@@ -287,11 +287,7 @@ export function NetworkForm({
             label="Currency Symbol"
             name="nativeCurrency.symbol"
             defaultValue={chainConfig.nativeCurrency.symbol || ''}
-            pattern=".{2,}"
             error={errors['nativeCurrency.symbol']}
-            onInvalid={(event) =>
-              event.currentTarget.setCustomValidity('At least 2 letters')
-            }
             onInput={(event) => event.currentTarget.setCustomValidity('')}
             disabled={disabledFields?.has('nativeCurrency.symbol')}
             required
