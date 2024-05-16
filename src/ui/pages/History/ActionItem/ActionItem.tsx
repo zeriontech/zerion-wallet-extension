@@ -6,7 +6,7 @@ import { Media } from 'src/ui/ui-kit/Media';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import FailedIcon from 'jsx:src/ui/assets/failed.svg';
 import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
-import { Networks } from 'src/modules/networks/Networks';
+import type { Networks } from 'src/modules/networks/Networks';
 import { createChain } from 'src/modules/networks/Chain';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -139,7 +139,6 @@ function ActionDetail({
       <NetworkIcon
         size={16}
         src={network?.icon_url}
-        chainId={network ? Networks.getChainId(network) : null}
         name={network?.name || null}
       />
       <UIText kind="small/regular" color="var(--neutral-500)">

@@ -1,7 +1,7 @@
 import React from 'react';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { Networks } from 'src/modules/networks/Networks';
+import type { Networks } from 'src/modules/networks/Networks';
 import type { Chain } from 'src/modules/networks/Chain';
 import { NetworkIcon } from '../NetworkIcon';
 
@@ -19,7 +19,6 @@ export function NetworkIndicator({
     <HStack gap={size < 28 ? 4 : 8} alignItems="center">
       <NetworkIcon
         src={network?.icon_url}
-        chainId={network ? Networks.getChainId(network) : null}
         size={size}
         name={network?.name || null}
       />

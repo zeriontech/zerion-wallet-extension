@@ -19,7 +19,6 @@ import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { noValueDash } from 'src/ui/shared/typography';
 import { Background } from 'src/ui/components/Background';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
-import { Networks } from 'src/modules/networks/Networks';
 import { ValueCell } from '../Networks/shared/ValueCell';
 
 export function SwitchEthereumChain() {
@@ -81,7 +80,6 @@ export function SwitchEthereumChain() {
           <VStack gap={4} style={{ justifyItems: 'center' }}>
             <NetworkIcon
               src={network.icon_url}
-              chainId={Networks.getChainId(network)}
               size={40}
               name={network.name || null}
             />
