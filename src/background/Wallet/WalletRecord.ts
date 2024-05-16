@@ -727,6 +727,19 @@ export class WalletRecordModel {
       .map(([origin, permission]) => ({ origin, permission }));
   }
 
+  static removeChainFromPermissions(
+    record: WalletRecord,
+    { chain }: { chain: Chain }
+  ) {
+    return produce(record, (draft) => {
+      draft.permissions = Object.fromEntries(
+        Object.entries(record.permissions)
+          .filter(([, permission]) => permission.chain === chain.toString())
+          .map(([origin, { addresses }]) => [origin, { addresses }])
+      );
+    });
+  }
+
   static removeAllOriginPermissions(record: WalletRecord): WalletRecord {
     return produce(record, (draft) => {
       draft.permissions = {};
