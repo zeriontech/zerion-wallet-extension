@@ -42,7 +42,9 @@ function SenderReceiver({
     suspense: false,
   });
 
-  const walletName = useProfileName(wallet || { address, name: null });
+  const { value: walletName } = useProfileName(
+    wallet || { address, name: null }
+  );
 
   const handleClick = useCallback(() => {
     handleCopy();

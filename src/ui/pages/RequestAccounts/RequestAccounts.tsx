@@ -51,6 +51,7 @@ function WalletSelectDialog({
       selectedAddress={value}
       walletGroups={walletGroups}
       onSelect={onSelect}
+      showAddressValues={true}
     />
   ) : (
     <FillView>

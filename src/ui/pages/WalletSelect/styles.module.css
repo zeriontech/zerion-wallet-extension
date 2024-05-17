@@ -3,8 +3,15 @@
 }
 
 @media (hover: hover) {
-  .wallet:hover {
-    border: 2px solid var(--neutral-100);
-    background-color: var(--neutral-100);
+  .wallet:has(.addressHint:hover) {
+    --copy-button-text-color: var(--black);
+  }
+}
+
+@supports (anchor-name: --name) {
+  @media (hover: hover) {
+    .wallet:has(.addressHint:hover) + * {
+      --copy-button-text-color: var(--black);
+    }
   }
 }

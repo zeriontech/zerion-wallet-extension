@@ -99,7 +99,7 @@ function ActionTitle({
 function AddressTruncated({ value }: { value: string }) {
   return (
     <span title={value} style={{ whiteSpace: 'nowrap' }}>
-      {truncateAddress(value, 4)}
+      {truncateAddress(value, 5)}
     </span>
   );
 }
