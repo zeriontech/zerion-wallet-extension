@@ -299,7 +299,7 @@ interface PreparedPositions {
 }
 
 function usePreparedPositions({
-  items: unfilteredItems,
+  items,
   groupType,
   moveGasPositionToFront,
   dappChain,
@@ -317,14 +317,6 @@ function usePreparedPositions({
     const network = networks?.getNetworkByName(createChain(dappChain));
     return network?.native_asset?.id || null;
   }, [networks, dappChain]);
-
-  const items = useMemo(
-    () =>
-      unfilteredItems.filter((item) =>
-        item.type === 'asset' ? item.is_displayable : true
-      ),
-    [unfilteredItems]
-  );
 
   const gasPositionId = useMemo(() => {
     return (
@@ -645,11 +637,15 @@ function MultiChainPositions({
   const positions = value?.positions;
   const items = useMemo(
     () =>
-      chainValue === NetworkSelectValue.All || !positions
-        ? positions
-        : positions.filter((position) => position.chain === chainValue),
+      positions?.filter(
+        (position) =>
+          (position.type === 'asset' ? position.is_displayable : true) &&
+          (chainValue === NetworkSelectValue.All ||
+            position.chain === chainValue)
+      ),
     [chainValue, positions]
   );
+
   const groupedPositions = groupPositionsByDapp(items);
 
   if (isLoading) {
