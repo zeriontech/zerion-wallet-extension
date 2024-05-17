@@ -141,8 +141,8 @@ export function WithConfetti({
           inset: 0,
           marginInline: 'auto',
           zIndex: -1,
-          width: 'var(--body-width)',
-          height: 'var(--body-height)',
+          width: 'var(--body-width, 100%)',
+          height: 'var(--body-height, 100vh)',
           ...style,
         }}
       ></canvas>

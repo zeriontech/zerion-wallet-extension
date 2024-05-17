@@ -1,9 +1,10 @@
 import React from 'react';
-import { WalletOrigin } from 'src/shared/WalletOrigin';
 import { isMnemonicContainer } from 'src/shared/types/validators';
+import { needsBackup } from 'src/ui/components/BackupInfoNote/BackupInfoNote';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
+import { openInTabView } from 'src/ui/shared/openInTabView';
 import { useWalletGroups } from 'src/ui/shared/requests/useWalletGroups';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -15,12 +16,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 
 export function BackupFlowSettingsSection() {
   const { data: walletGroups, isLoading } = useWalletGroups();
-  const notBackedUpGroups = walletGroups?.filter(
-    (group) =>
-      isMnemonicContainer(group.walletContainer) &&
-      group.origin === WalletOrigin.extension &&
-      group.lastBackedUp == null
-  );
+  const notBackedUpGroups = walletGroups?.filter((group) => needsBackup(group));
   if (isLoading || !notBackedUpGroups || !notBackedUpGroups.length) {
     return null;
   }
@@ -75,6 +71,7 @@ export function BackupFlowSettingsSection() {
                       to={`/backup-wallet?groupId=${group.id}&backupKind=verify`}
                       size={32}
                       style={{ paddingLeft: 16, paddingRight: 16 }}
+                      onClick={openInTabView}
                     >
                       Back Up Now (~1 min)
                     </Button>

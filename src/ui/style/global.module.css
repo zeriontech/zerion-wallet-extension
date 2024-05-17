@@ -56,7 +56,12 @@ body.isDialog {
 }
 
 body.isTab {
-  --body-height: auto;
+  /**
+   * prefer "initial" over "auto" to unset the custom-property value.
+   * This way the code that relies on var(--body-height, fallback) will be able to use the {fallback}
+   * Also "unset" seems to work, too. Not sure if it's better here than "initial"
+   */
+  --body-height: initial;
   --body-width: 450px;
   height: auto;
   min-height: 100vh;
@@ -65,8 +70,8 @@ body.isTab {
 }
 
 :global(body.isIframe) {
-  --body-height: auto;
-  --body-width: auto;
+  --body-height: initial;
+  --body-width: initial;
   display: block; /* display: grid for some reason creates unwanted x an y overscolls */
 }
 
