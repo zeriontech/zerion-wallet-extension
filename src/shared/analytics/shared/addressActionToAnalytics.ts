@@ -20,6 +20,8 @@ interface AnalyticsTransactionData {
   asset_address_received?: string[];
   zerion_fee_percentage?: number;
   zerion_fee_usd_amount?: number;
+  output_chain?: string;
+  transaction_zerion_fee_asset_id?: string;
 }
 
 interface AssetQuantity {
@@ -68,6 +70,10 @@ function getAssetName({ asset }: { asset: ActionAsset }) {
   return getFungibleAsset(asset)?.name;
 }
 
+function getAssetAddresses({ asset }: { asset: ActionAsset }) {
+  return getFungibleAsset(asset)?.asset_code;
+}
+
 function toMaybeArr<T>(
   arr: (T | null | undefined)[] | null | undefined
 ): T[] | undefined {
@@ -99,17 +105,27 @@ export function addressActionToAnalytics({
     asset_amount_received: toMaybeArr(incoming?.map(convertQuantity)),
     asset_name_sent: toMaybeArr(outgoing?.map(getAssetName)),
     asset_name_received: toMaybeArr(incoming?.map(getAssetName)),
+    asset_address_sent: toMaybeArr(outgoing?.map(getAssetAddresses)),
+    asset_address_received: toMaybeArr(incoming?.map(getAssetAddresses)),
   };
   if (quote) {
     const zerion_fee_percentage = quote.protocol_fee;
     const feeAmount = quote.protocol_fee_amount;
     const asset = incoming?.[0]?.asset;
+    const output_chain = quote.output_chain;
+    const transaction_zerion_fee_asset_id = getFungibleAsset(asset)?.id;
     const zerion_fee_usd_amount =
       feeAmount && asset
         ? assetQuantityToValue({ quantity: feeAmount, asset }, chain)
         : undefined;
 
-    return { ...value, zerion_fee_percentage, zerion_fee_usd_amount };
+    return {
+      ...value,
+      zerion_fee_percentage,
+      zerion_fee_usd_amount,
+      output_chain,
+      transaction_zerion_fee_asset_id,
+    };
   } else {
     return value;
   }
