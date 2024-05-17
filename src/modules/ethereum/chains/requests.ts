@@ -26,7 +26,9 @@ export function fetchChains(
         if (value) {
           resolve(value);
           if (!isStale) {
-            unsubscribe();
+            // TEMP: timeout fixes the "Cannot access 'unsubscribe' before initialization" error
+            // This should be fixed in defi-sdk
+            setTimeout(() => unsubscribe());
           }
         }
       },
