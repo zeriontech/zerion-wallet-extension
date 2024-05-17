@@ -36,13 +36,18 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
     ethereumChainConfigs: [],
   };
 
-  async restore() {
-    const saved = await PersistentStore.readSavedState<ChainConfig>(this.key);
-    if (saved) {
-      this.setState(upgradeRecord(saved, upgrades));
-    }
-    this.isReady = true;
-    this.checkChainsForUpdates();
+  constructor(initialState: ChainConfig, key: string) {
+    super(initialState, key, {
+      retrieve: async (key) => {
+        const saved = await PersistentStore.readSavedState<ChainConfig>(key);
+        if (saved) {
+          return upgradeRecord(saved, upgrades);
+        }
+      },
+    });
+    this.ready().then(() => {
+      this.checkChainsForUpdates();
+    });
   }
 
   addEthereumChain(
