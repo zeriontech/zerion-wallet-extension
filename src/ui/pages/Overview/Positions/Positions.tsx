@@ -639,9 +639,9 @@ function MultiChainPositions({
     () =>
       positions?.filter(
         (position) =>
+          (position.type === 'asset' ? position.is_displayable : true) &&
           (chainValue === NetworkSelectValue.All ||
-            position.chain === chainValue) &&
-          (position.type === 'asset' ? position.is_displayable : true)
+            position.chain === chainValue)
       ),
     [chainValue, positions]
   );
