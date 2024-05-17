@@ -801,7 +801,7 @@ export function Positions({
   // Cheap perceived performance hack: render expensive Positions component later so that initial UI render is faster
   const readyToRender = useRenderDelay(16);
   const { networks, isLoading } = useNetworks(positionChains);
-  if (!networks || !ready) {
+  if (!ready) {
     return (
       <CenteredFillViewportView
         maxHeight={getGrownTabMaxHeight(offsetValuesState)}
@@ -816,7 +816,7 @@ export function Positions({
   const isSupportedByBackend =
     chainValue === NetworkSelectValue.All
       ? true
-      : networks.supports('positions', createChain(chainValue));
+      : networks?.supports('positions', createChain(chainValue));
 
   const emptyNetworkBalance = (
     <div
@@ -889,6 +889,7 @@ export function Positions({
     if (isLoading || portfolioDecompositionIsLoading) {
       return renderLoadingViewForNetwork();
     }
+    invariant(networks, `Failed to load network info for ${chain}`);
     const network = networks.getNetworkByName(chain);
     if (!network?.id) {
       return renderErrorViewForNetwork(chainValue);
