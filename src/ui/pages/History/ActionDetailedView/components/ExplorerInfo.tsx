@@ -18,23 +18,14 @@ import type { AnyAddressAction } from 'src/modules/ethereum/transactions/address
 
 const ICON_SIZE = 20;
 
-function ExplorerLink({
-  action,
-  networks,
-}: {
-  action: AnyAddressAction;
-  networks: Networks;
-}) {
+function ExplorerLink({ url }: { url: string }) {
   const { style, trigger } = useTransformTrigger({ x: 2 });
 
-  const url = networks.getExplorerTxUrlByName(
-    createChain(action.transaction.chain),
-    action.transaction.hash
-  );
   const urlPrepared = useMemo(
     () => (url ? prepareForHref(url)?.toString() : undefined),
     [url]
   );
+
   return (
     <UnstyledAnchor
       href={urlPrepared}
@@ -106,6 +97,11 @@ export function ExplorerInfo({
     [networks, chain]
   );
 
+  const explorerUrl = networks.getExplorerTxUrlByName(
+    createChain(action.transaction.chain),
+    action.transaction.hash
+  );
+
   return (
     <HStack
       gap={16}
@@ -125,7 +121,7 @@ export function ExplorerInfo({
           <UIText kind="small/accent">{network?.name}</UIText>
         </HStack>
       ) : null}
-      <ExplorerLink action={action} networks={networks} />
+      {explorerUrl ? <ExplorerLink url={explorerUrl} /> : null}
       <HashButton hash={action.transaction.hash} />
     </HStack>
   );
