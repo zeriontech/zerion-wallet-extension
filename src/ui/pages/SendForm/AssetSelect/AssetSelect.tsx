@@ -52,9 +52,11 @@ function ResultItem({ addressAsset }: { addressAsset: BareAddressPosition }) {
     })
   );
   const details = [
-    `${formatTokenValue(quantityCommon)} ${asset.symbol}`,
+    `${formatTokenValue(quantityCommon)}`,
+    asset.symbol,
     price ? formatCurrencyValue(price.value, 'en', 'usd') : null,
   ].filter(Boolean);
+
   return (
     <HStack gap={4} justifyContent="space-between" alignItems="center">
       <Media
@@ -65,9 +67,26 @@ function ResultItem({ addressAsset }: { addressAsset: BareAddressPosition }) {
         vGap={0}
         detailText={
           <UIText kind="small/regular" color="var(--neutral-700)">
-            {details[0]}
-            {details.length > 1 ? ' · ' : null}
-            {details[1]}
+            <HStack
+              gap={4}
+              style={{
+                gridTemplateColumns:
+                  'minmax(min-content, max-content) auto 1fr',
+              }}
+            >
+              {details[0]}
+              <div
+                style={{
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                }}
+              >
+                {details[1]}
+              </div>
+              {details.length > 2 ? ' · ' : null}
+              {details[2]}
+            </HStack>
           </UIText>
         }
       />
@@ -522,7 +541,11 @@ function AssetSelectComponent({
           })}
           {...(isCombobox ? {} : getInputProps())}
         >
-          <HStack gap={8} alignItems="center">
+          <HStack
+            gap={8}
+            alignItems="center"
+            style={{ overflowWrap: 'anywhere' }}
+          >
             <TokenIcon
               size={20}
               src={selectedItem.asset.icon_url}
@@ -538,7 +561,7 @@ function AssetSelectComponent({
                   selectedItem.asset.symbol.length > 8 ? '0.8em' : undefined,
               }}
             >
-              {selectedItem.asset.symbol.toUpperCase()}
+              {selectedItem.asset.symbol}
               <DownIcon
                 width={24}
                 height={24}

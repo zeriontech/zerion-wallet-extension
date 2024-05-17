@@ -27,7 +27,7 @@ export function TokenIcon({ src, symbol, size = 32, style, title }: Props) {
         ...style,
       }}
     >
-      {symbol?.slice(0, 3).toLowerCase() || '?'}
+      {symbol?.slice(0, 3) || '???'}
     </UIText>
   );
   return src ? (
