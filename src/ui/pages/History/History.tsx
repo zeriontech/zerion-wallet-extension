@@ -105,6 +105,7 @@ function useMinedAndPendingAddressActions({
     },
     enabled: Boolean(networks),
     useErrorBoundary: true,
+    suspense: false,
   });
 
   const {
