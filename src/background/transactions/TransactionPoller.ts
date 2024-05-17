@@ -6,7 +6,7 @@ import { RequestCache } from 'src/modules/request-cache/request-cache';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import { createMockReceipt, DEBUGGING_TX_HASH } from './mocks';
 
-export class Interval {
+class Interval {
   private cb: () => void;
   private intervalId: NodeJS.Timer | null = null;
   constructor(cb: () => void) {

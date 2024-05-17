@@ -1,3 +1,5 @@
+import browser from 'webextension-polyfill';
+import { createNanoEvents } from 'nanoevents';
 import { PersistentStore } from 'src/modules/persistent-store';
 import { produce } from 'immer';
 import throttle from 'lodash/throttle';
@@ -17,7 +19,7 @@ import { getLatestNonceKnownByBackend } from 'src/modules/ethereum/transactions/
 import { emitter } from '../events';
 import { createMockTxResponse } from './mocks';
 import type { PollingTx } from './TransactionPoller';
-import { Interval, TransactionsPoller } from './TransactionPoller';
+import { TransactionsPoller } from './TransactionPoller';
 
 const ONE_DAY = 1000 * 60 * 60 * 24;
 const FOUR_MINUTES = 1000 * 60 * 4;
@@ -53,16 +55,41 @@ function toPollingObj(value: TransactionObject): PollingTx {
 export class TransactionService {
   private transactionsStore: TransactionsStore;
   private transactionsPoller: TransactionsPoller;
-  private purgeInterval: Interval;
+
+  static ALARM_NAME = 'TransactionService:performPurgeCheck';
+  static emitter = createNanoEvents<{ alarm: () => void }>();
+
+  static async scheduleAlarms() {
+    const alarm = await browser.alarms.get(TransactionService.ALARM_NAME);
+    // I think we should be able to safely create alarms with the same name
+    // unconditionally and not worry about duplication, but chrome docs
+    // have a recommendation to check if alarm already exists, so why not:
+    // https://developer.chrome.com/docs/extensions/reference/api/alarms#persistence
+    if (!alarm) {
+      browser.alarms.create(TransactionService.ALARM_NAME, {
+        periodInMinutes: ONE_DAY,
+      });
+    }
+  }
+
+  static handleAlarm(alarm: browser.Alarms.Alarm) {
+    if (alarm.name === TransactionService.ALARM_NAME) {
+      TransactionService.emitter.emit('alarm');
+    }
+  }
 
   constructor() {
     this.transactionsStore = new TransactionsStore([], 'transactions');
     this.transactionsPoller = new TransactionsPoller();
-    this.purgeInterval = new Interval(() => this.performPurgeCheck());
-  }
-
-  getTransactionsStore() {
-    return this.transactionsStore;
+    TransactionService.emitter.on('alarm', () => {
+      // Just wondering... When a chrome alarm goes off, does this mean that
+      // the whole background script runs from scratch? If it does, it means we
+      // instantiate TransactionService anyway, and when we do, we {performPurgeCheck()} anyway...
+      // So do we need a handler at all?
+      // But if we don't add a handler, might chrome be "smart" and not run the alarm?
+      // Documentation doesn't have answers for this.
+      this.performPurgeCheck();
+    });
   }
 
   async initialize() {
@@ -80,7 +107,7 @@ export class TransactionService {
     if (leading) {
       this.performPurgeCheck(); // make leading call
     }
-    this.purgeInterval.start(ONE_DAY);
+    TransactionService.scheduleAlarms();
   }
 
   private schedulePurgeCheck = throttle(
@@ -142,7 +169,7 @@ export class TransactionService {
           chain: network.id,
           // subtract one day to create a bigger search window
           // to account for possible client-time/server-time inconsistencies
-          since: timestamp - ONE_DAY,
+          actions_since: new Date(timestamp - ONE_DAY - 1).toISOString(),
         });
         if (knownNonce != null) {
           this.purgeEntries({ address, chainId, fromNonce: knownNonce });
@@ -155,6 +182,10 @@ export class TransactionService {
     if (item) {
       this.transactionsStore.upsertTransaction({ ...item, dropped: true });
     }
+  }
+
+  getTransactionsStore() {
+    return this.transactionsStore;
   }
 
   addListeners() {
