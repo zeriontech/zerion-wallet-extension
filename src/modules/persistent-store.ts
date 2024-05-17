@@ -1,25 +1,37 @@
 import { Store } from 'store-unit';
 import * as browserStorage from 'src/background/webapis/storage';
 
-export class PersistentStore<T> extends Store<T> {
-  protected key: string;
-  protected isReady: boolean;
-  private readyPromise: Promise<void>;
+type Options<S> = {
+  retrieve: (key: string) => Promise<S | undefined>;
+  save: (key: string, value: S) => Promise<void>;
+};
 
+export class PersistentStore<T> extends Store<T> {
   static async readSavedState<T>(key: string) {
     return browserStorage.get<T>(key);
   }
 
-  constructor(initialState: T, key: string) {
+  protected key: string;
+  protected isReady: boolean;
+  private readyPromise: Promise<void>;
+
+  public options: Options<T>;
+  public defaultOptions: Options<T> = {
+    retrieve: <S>(key: string) => PersistentStore.readSavedState<S>(key),
+    save: (key, value) => browserStorage.set(key, value),
+  };
+
+  constructor(initialState: T, key: string, options: Partial<Options<T>> = {}) {
     super(initialState);
     this.key = key;
+    this.options = { ...this.defaultOptions, ...options };
     this.isReady = false;
     this.readyPromise = this.restore();
     this.on('change', (state) => {
       // only write to disk after restore so that we're not making
       // a redundant write on each initialization
       if (this.isReady) {
-        browserStorage.set(this.key, state);
+        this.options.save(this.key, state);
       }
     });
   }
@@ -46,7 +58,7 @@ export class PersistentStore<T> extends Store<T> {
   }
 
   async restore() {
-    const saved = await browserStorage.get<T>(this.key);
+    const saved = await this.options.retrieve(this.key);
     if (saved) {
       super.setState(saved);
     }
