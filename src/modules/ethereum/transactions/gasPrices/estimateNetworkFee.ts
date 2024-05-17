@@ -38,7 +38,8 @@ export async function estimateNetworkFee({
   const optimisticFee =
     gasPrices?.info && transaction && address
       ? await createOptimisticFee({
-          gasPriceInfo: gasPrices?.info,
+          gasPriceInfo: gasPrices.info,
+          gasPriceObject: gasPrice,
           transaction: hexifyTxValues(transaction),
           getNonce: async () => (chainId ? getNonce(address, chainId) : 0),
         })
