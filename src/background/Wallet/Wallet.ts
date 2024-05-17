@@ -4,7 +4,6 @@ import type { Emitter } from 'nanoevents';
 import { createNanoEvents } from 'nanoevents';
 import { Store } from 'store-unit';
 import { isTruthy } from 'is-truthy-ts';
-import { encrypt, decrypt } from 'src/modules/crypto';
 import type {
   NotificationWindow,
   NotificationWindowProps,
@@ -183,10 +182,7 @@ export class Wallet {
     this.userCredentials = userCredentials;
     this.record = null;
 
-    this.walletStore.ready().then(() => {
-      this.syncWithWalletStore();
-    });
-    Object.assign(globalThis, { encrypt, decrypt });
+    this.syncWithWalletStore();
     this.publicEthereumController = new PublicController(this, {
       notificationWindow,
     });
@@ -197,10 +193,10 @@ export class Wallet {
   }
 
   private async syncWithWalletStore() {
+    await this.walletStore.ready();
     if (!this.userCredentials) {
       return;
     }
-    await this.walletStore.ready();
     this.record = await this.walletStore.read(this.id, this.userCredentials);
     if (this.record) {
       this.emitter.emit('recordUpdated');
@@ -263,7 +259,6 @@ export class Wallet {
     this.setExpirationForSeedPhraseEncryptionKey(
       isNewUser ? 1000 * 1800 : 1000 * 120
     );
-    await this.walletStore.ready();
     await this.syncWithWalletStore();
   }
 
