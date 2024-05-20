@@ -63,7 +63,18 @@ function ResultItem({ addressAsset }: { addressAsset: BareAddressPosition }) {
         image={
           <TokenIcon size={36} src={asset.icon_url} symbol={asset.symbol} />
         }
-        text={<UIText kind="body/accent">{asset.name}</UIText>}
+        text={
+          <UIText
+            kind="body/accent"
+            style={{
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+            }}
+          >
+            {asset.name}
+          </UIText>
+        }
         vGap={0}
         detailText={
           <UIText kind="small/regular" color="var(--neutral-700)">
