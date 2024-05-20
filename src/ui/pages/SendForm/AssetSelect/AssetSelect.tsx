@@ -83,6 +83,7 @@ function ResultItem({ addressAsset }: { addressAsset: BareAddressPosition }) {
               style={{
                 gridTemplateColumns:
                   'minmax(min-content, max-content) auto 1fr',
+                whiteSpace: 'nowrap',
               }}
             >
               {details[0]}
