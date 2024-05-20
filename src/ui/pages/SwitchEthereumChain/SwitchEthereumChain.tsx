@@ -78,11 +78,7 @@ export function SwitchEthereumChain() {
         <Spacer height={24} />
         <VStack gap={32} style={{ justifyItems: 'center' }}>
           <VStack gap={4} style={{ justifyItems: 'center' }}>
-            <NetworkIcon
-              src={network.icon_url}
-              size={40}
-              name={network.name || null}
-            />
+            <NetworkIcon src={network.icon_url} size={40} name={network.name} />
             <UIText kind="headline/h1">{networks.getChainName(chain)}</UIText>
           </VStack>
           <VStack

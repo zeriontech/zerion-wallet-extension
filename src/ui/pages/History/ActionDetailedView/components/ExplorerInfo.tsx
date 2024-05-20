@@ -116,12 +116,8 @@ export function ExplorerInfo({
     >
       {network ? (
         <HStack gap={8} alignItems="center">
-          <NetworkIcon
-            src={network?.icon_url}
-            size={24}
-            name={network?.name || null}
-          />
-          <UIText kind="small/accent">{network?.name}</UIText>
+          <NetworkIcon src={network.icon_url} size={24} name={network.name} />
+          <UIText kind="small/accent">{network.name}</UIText>
         </HStack>
       ) : null}
       <ExplorerLink action={action} networks={networks} />
