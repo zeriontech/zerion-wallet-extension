@@ -116,26 +116,29 @@ function setPatternValidity(event: React.ChangeEvent<HTMLInputElement>) {
 }
 
 function CustomNetworkFeeForm({
-  type,
   chain,
   value,
   chainGasPrices,
   onSubmit,
   transaction,
 }: {
-  type: 'eip1559' | 'classic';
   chain: Chain;
   value: NetworkFeeConfiguration;
   chainGasPrices: ChainGasPrice;
   onSubmit(value: NetworkFeeConfiguration): void;
   transaction: IncomingTransaction;
 }) {
-  const { eip1559, classic } = chainGasPrices.fast;
-  if (type === 'eip1559' && !eip1559) {
-    throw new Error('eip1559 gas price is expected in chain configuration');
-  }
-  if (type === 'classic' && !classic) {
-    throw new Error('classic gas price is expected in chain configuration');
+  const {
+    eip1559: maybeEIP1559,
+    classic: maybeClassic,
+    optimistic: maybeOptimistic,
+  } = chainGasPrices.fast;
+
+  const eip1559 = maybeEIP1559 ?? maybeOptimistic?.underlying.eip1559;
+  const classic = maybeClassic ?? maybeOptimistic?.underlying.classic;
+  const type = eip1559 ? 'eip1559' : classic ? 'classic' : null;
+  if (!type) {
+    throw new Error('No gas price configuration has been found for chain');
   }
 
   const [configuration, setConfiguration] = useState(value);
@@ -535,8 +538,6 @@ export const NetworkFeeDialog = React.forwardRef<
 
     const dialogHeight = view === 'default' ? '230px' : '90vh';
 
-    const gasPriceType = chainGasPrices?.fast.eip1559 ? 'eip1559' : 'classic';
-
     return (
       <BottomSheetDialog
         ref={ref}
@@ -639,7 +640,6 @@ export const NetworkFeeDialog = React.forwardRef<
             </div>
             {chainGasPrices ? (
               <CustomNetworkFeeForm
-                type={gasPriceType}
                 chain={chain}
                 value={value}
                 onSubmit={(value) => {
