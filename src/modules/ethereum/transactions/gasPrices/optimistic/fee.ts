@@ -61,8 +61,11 @@ export async function createOptimisticFee({
     return null;
   }
 
-  const eip1559GasPrice = gasPriceObject?.eip1559 || optimistic.underlying.eip1559;
-  const classicGasPrice = gasPriceObject?.classic || optimistic.underlying.classic;
+  const baseFee = optimistic.underlying.eip1559?.baseFee;
+  const eip1559GasPrice =
+    gasPriceObject?.eip1559 || optimistic.underlying.eip1559;
+  const classicGasPrice =
+    gasPriceObject?.classic || optimistic.underlying.classic;
 
   const nonce = await getNonce();
   const encoded_tx_data = eip1559GasPrice
@@ -99,8 +102,7 @@ export async function createOptimisticFee({
       (eip1559GasPrice
         ? Math.min(
             Number(eip1559GasPrice.maxFee),
-            Number(eip1559GasPrice.baseFee) +
-              Number(eip1559GasPrice.priorityFee)
+            Number(baseFee) + Number(eip1559GasPrice.priorityFee)
           )
         : Number(classicGasPrice)) *
         Number(gas) +
