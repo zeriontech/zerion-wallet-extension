@@ -6,8 +6,8 @@ describe('feeEstimation for optimism', () => {
     const result = await estimateNetworkFee(samples.optimistic.input1);
     expect(result).toEqual({
       type: 'optimistic',
-      estimatedFee: 133739379951065,
-      maxFee: 163163291969326,
+      estimatedFee: 33077529225575,
+      maxFee: 65204474524549,
     });
   });
 });

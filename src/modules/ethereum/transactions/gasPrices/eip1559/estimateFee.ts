@@ -7,6 +7,6 @@ export function estimateFee({
   gas: string | number;
   eip1559Base: EIP1559Base;
 }): number {
-  const pricePerUnit = eip1559Base.base_fee + (eip1559Base.priority_fee || 0);
+  const pricePerUnit = eip1559Base.baseFee + (eip1559Base.priorityFee || 0);
   return Number(gas) * pricePerUnit;
 }

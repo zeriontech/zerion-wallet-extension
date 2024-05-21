@@ -17,24 +17,49 @@ export const samples = {
       address: testAddress,
       gas: 538180,
       gasPrices: {
-        source: 'node',
-        datetime: '2023-06-15T15:00:55',
-        info: {
-          classic: {
-            slow: 29811089,
-            standard: 29811089,
-            fast: 29811089,
-            rapid: 29811089,
-          },
+        fast: {
+          classic: null,
+          eip1559: null,
           optimistic: {
-            l1: 19660610252,
-            fixed_overhead: 188,
-            dynamic_overhead: 684000,
+            underlying: {
+              classic: null,
+              eip1559: {
+                baseFee: 59568955,
+                maxFee: 120524451,
+                priorityFee: 1386541,
+              },
+              optimistic: null,
+              eta: null,
+            },
+            fixedOverhead: 1088,
+            dynamicOverhead: 31583262.435692314,
           },
+          eta: null,
+        },
+        average: {
+          classic: null,
+          eip1559: null,
+          optimistic: {
+            underlying: {
+              classic: null,
+              eip1559: {
+                baseFee: 59568955,
+                maxFee: 120137910,
+                priorityFee: 1000000,
+              },
+              optimistic: null,
+              eta: null,
+            },
+            fixedOverhead: 1088,
+            dynamicOverhead: 31583262.435692314,
+          },
+          eta: null,
         },
       },
       gasPrice: {
         classic: 29811089,
+        eip1559: null,
+        optimistic: null,
       },
       transaction: {
         gas: '0x83644',

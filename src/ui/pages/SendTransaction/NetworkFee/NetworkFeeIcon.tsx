@@ -11,7 +11,7 @@ function getNetworkSpeedSrc(speed: NetworkFeeSpeed, scale?: '2x') {
   if (speed === 'custom') {
     return scale === '2x' ? Custom2xSrc : CustomSrc;
   }
-  if (speed === 'standard') {
+  if (speed === 'average') {
     return scale === '2x' ? Standard2xSrc : StandardSrc;
   }
   if (speed === 'fast') {

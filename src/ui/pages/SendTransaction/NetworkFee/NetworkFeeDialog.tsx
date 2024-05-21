@@ -17,7 +17,7 @@ import ArrowLeftcon from 'jsx:src/ui/assets/arrow-left.svg';
 import type { Chain } from 'src/modules/networks/Chain';
 import { Media } from 'src/ui/ui-kit/Media';
 import { SurfaceItemButton, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
-import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/requests';
+import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { formatSeconds } from 'src/shared/units/formatSeconds';
@@ -53,7 +53,7 @@ import { useTransactionFee } from '../TransactionConfiguration/useTransactionFee
 import { NetworkFeeIcon } from './NetworkFeeIcon';
 import { NETWORK_SPEED_TO_TITLE } from './constants';
 
-const OPTIONS: NetworkFeeSpeed[] = ['fast', 'standard', 'custom'];
+const OPTIONS: NetworkFeeSpeed[] = ['fast', 'average', 'custom'];
 
 function getCustomFeeDescription({
   fiat,
@@ -87,8 +87,8 @@ function formDataToGasConfiguration(
       speed: 'custom',
       customClassicGasPrice: null,
       custom1559GasPrice: {
-        priority_fee: gweiToWei(priorityFee),
-        max_fee: gweiToWei(maxFee),
+        priorityFee: gweiToWei(priorityFee),
+        maxFee: gweiToWei(maxFee),
       },
       gasLimit,
     };
@@ -130,7 +130,7 @@ function CustomNetworkFeeForm({
   onSubmit(value: NetworkFeeConfiguration): void;
   transaction: IncomingTransaction;
 }) {
-  const { eip1559, classic } = chainGasPrices.info;
+  const { eip1559, classic } = chainGasPrices.fast;
   if (type === 'eip1559' && !eip1559) {
     throw new Error('eip1559 gas price is expected in chain configuration');
   }
@@ -146,11 +146,11 @@ function CustomNetworkFeeForm({
   );
 
   const formRef = useRef<HTMLFormElement | null>(null);
-  const defaultBaseFee = value.customClassicGasPrice ?? classic?.fast ?? 0;
+  const defaultBaseFee = value.customClassicGasPrice ?? classic ?? 0;
   const defaultPriorityFee =
-    value.custom1559GasPrice?.priority_fee ?? eip1559?.fast?.priority_fee ?? 0;
+    value.custom1559GasPrice?.priorityFee ?? eip1559?.priorityFee ?? 0;
   const defaultMaxFee =
-    value.custom1559GasPrice?.max_fee ?? eip1559?.fast?.max_fee ?? 0;
+    value.custom1559GasPrice?.maxFee ?? eip1559?.maxFee ?? 0;
 
   const defaultBaseFeeGWEI = weiToGwei(defaultBaseFee);
   const defaultPriorityFeeGWEI = weiToGwei(defaultPriorityFee);
@@ -162,8 +162,8 @@ function CustomNetworkFeeForm({
 
   const baseFee = configuration.customClassicGasPrice ?? defaultBaseFee;
   const priorityFee =
-    configuration.custom1559GasPrice?.priority_fee ?? defaultPriorityFee;
-  const maxFee = configuration.custom1559GasPrice?.max_fee ?? defaultMaxFee;
+    configuration.custom1559GasPrice?.priorityFee ?? defaultPriorityFee;
+  const maxFee = configuration.custom1559GasPrice?.maxFee ?? defaultMaxFee;
 
   const { expectedFeeFiat, maxFeeFiat, baseFeeFiat } = useMemo(() => {
     const gas = getGas(transaction);
@@ -179,7 +179,7 @@ function CustomNetworkFeeForm({
 
     return {
       expectedFeeFiat: getFiatValue(
-        Math.min((priorityFee || 0) + (eip1559?.base_fee || 0), maxFee)
+        Math.min((priorityFee || 0) + (eip1559?.baseFee || 0), maxFee)
       ),
       maxFeeFiat: getFiatValue(maxFee),
       baseFeeFiat: getFiatValue(baseFee),
@@ -219,7 +219,7 @@ function CustomNetworkFeeForm({
             <HStack gap={24} justifyContent="space-between">
               <UIText kind="small/regular">Base Fee</UIText>
               <UIText kind="small/accent">
-                {formatGasPrice(eip1559.base_fee)}
+                {formatGasPrice(eip1559.baseFee)}
               </UIText>
             </HStack>
             <div
@@ -331,7 +331,7 @@ function CustomNetworkFeeForm({
                 {getCustomFeeDescription({
                   fiat: expectedFeeFiat,
                   gasPrice: Math.min(
-                    eip1559.base_fee + (priorityFee || 0),
+                    eip1559.baseFee + (priorityFee || 0),
                     maxFee
                   ),
                 })}
@@ -387,11 +387,11 @@ function CustomNetworkFeeForm({
 
             form.reset();
             if (type === 'classic') {
-              setFormValue(form, 'baseFee', weiToGwei(classic?.fast || 0));
+              setFormValue(form, 'baseFee', weiToGwei(classic || 0));
             } else {
-              const priorityFee = weiToGwei(eip1559?.fast?.priority_fee || 0);
+              const priorityFee = weiToGwei(eip1559?.priorityFee || 0);
               setFormValue(form, 'priorityFee', priorityFee);
-              const maxFee = weiToGwei(eip1559?.fast?.max_fee || 0);
+              const maxFee = weiToGwei(eip1559?.maxFee || 0);
               setFormValue(form, 'maxFee', maxFee);
             }
             setFormValue(form, 'gasLimit', transactionGasLimit);
@@ -444,9 +444,7 @@ function NetworkFeeButton({
   } = costs || {};
 
   const seconds =
-    option !== 'custom'
-      ? chainGasPrices?.info.eip1559?.[option]?.estimation_seconds
-      : undefined;
+    option !== 'custom' ? chainGasPrices?.[option]?.eta : undefined;
 
   const selected = option === networkFeeConfiguration.speed;
   const nativeAssetSymbol =
@@ -537,7 +535,7 @@ export const NetworkFeeDialog = React.forwardRef<
 
     const dialogHeight = view === 'default' ? '230px' : '90vh';
 
-    const gasPriceType = chainGasPrices?.info.eip1559 ? 'eip1559' : 'classic';
+    const gasPriceType = chainGasPrices?.fast.eip1559 ? 'eip1559' : 'classic';
 
     return (
       <BottomSheetDialog

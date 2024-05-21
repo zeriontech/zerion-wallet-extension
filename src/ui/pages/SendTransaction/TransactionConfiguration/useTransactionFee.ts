@@ -13,10 +13,7 @@ import { useNativeAsset } from 'src/ui/shared/requests/useNativeAsset';
 import { useNativeBalance } from 'src/ui/shared/requests/useNativeBalance';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { Chain } from 'src/modules/networks/Chain';
-import type {
-  ChainGasPrice,
-  EIP1559GasPrices,
-} from 'src/modules/ethereum/transactions/gasPrices/requests';
+import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import type { GasPriceObject } from 'src/modules/ethereum/transactions/gasPrices/GasPriceObject';
 import type { EstimatedFeeValue } from 'src/modules/ethereum/transactions/gasPrices/estimateNetworkFee';
 import { getNetworkFeeEstimation } from 'src/modules/ethereum/transactions/gasPrices/feeEstimation';
@@ -31,14 +28,16 @@ function getGasPriceFromTransaction(
 ): GasPriceObject | null {
   const { gasPrice, maxFeePerGas, maxPriorityFeePerGas } = transaction;
   if (gasPrice) {
-    return { classic: Number(gasPrice) };
+    return { classic: Number(gasPrice), eip1559: null, optimistic: null };
   }
   if (maxPriorityFeePerGas && maxFeePerGas) {
     return {
       eip1559: {
-        priority_fee: Number(maxPriorityFeePerGas),
-        max_fee: Number(maxFeePerGas),
+        priorityFee: Number(maxPriorityFeePerGas),
+        maxFee: Number(maxFeePerGas),
       },
+      classic: null,
+      optimistic: null,
     };
   }
   return null;
@@ -61,16 +60,14 @@ function getGasPriceFromConfiguration({
     return {
       classic: configuration.customClassicGasPrice,
       eip1559: configuration.custom1559GasPrice,
+      optimistic: null,
     };
   }
   if (!chainGasPrices) {
     return null;
   }
   const speed = configuration.speed === 'custom' ? 'fast' : configuration.speed;
-  return {
-    classic: chainGasPrices.info.classic?.[speed],
-    eip1559: chainGasPrices.info.eip1559?.[speed],
-  };
+  return chainGasPrices[speed];
 }
 
 function useFeeEstimation(
@@ -112,12 +109,7 @@ function useFeeEstimation(
       const gasPrice =
         gasPriceFromConfiguration ||
         gasPriceFromTransaction ||
-        (chainGasPrices
-          ? {
-              classic: chainGasPrices.info.classic?.fast,
-              eip1559: chainGasPrices.info.eip1559?.fast,
-            }
-          : null);
+        (chainGasPrices ? chainGasPrices.fast : null);
       const feeEstimation = await getNetworkFeeEstimation({
         transaction,
         address: transaction.from || null,
@@ -195,30 +187,26 @@ function calculateTransactionCosts({
   };
 }
 
-const findMatchingEip1559 = (
-  eip1559GasPrices: EIP1559GasPrices,
-  eip1559: EIP1559
-) => {
+const findMatchingEip1559 = (gasPrices: ChainGasPrice, eip1559: EIP1559) => {
   const isMatch = (value1: EIP1559, value2: EIP1559) =>
-    value1.max_fee === value2.max_fee &&
-    value1.priority_fee === value2.priority_fee;
-  const { rapid, fast, standard, slow } = eip1559GasPrices;
-  return [rapid, fast, standard, slow]
+    value1.maxFee === value2.maxFee &&
+    value1.priorityFee === value2.priorityFee;
+  const { fast, average } = gasPrices;
+  return [fast, average]
     .filter(isTruthy)
-    .find((eip1559Info) => isMatch(eip1559Info, eip1559));
+    .find(
+      ({ eip1559: eip1559Info }) => eip1559Info && isMatch(eip1559Info, eip1559)
+    );
 };
 
 function getFeeTime(
   gasPrice: GasPriceObject | null,
   chainGasPrices: ChainGasPrice | null
 ) {
-  if (gasPrice?.eip1559 && chainGasPrices?.info.eip1559) {
+  if (gasPrice?.eip1559 && chainGasPrices?.fast.eip1559) {
     // backend API only has time estimation for eip1559 info
-    const eip1559Info = findMatchingEip1559(
-      chainGasPrices.info.eip1559,
-      gasPrice.eip1559
-    );
-    const seconds = eip1559Info?.estimation_seconds;
+    const eip1559Info = findMatchingEip1559(chainGasPrices, gasPrice.eip1559);
+    const seconds = eip1559Info?.eta;
     if (seconds) {
       return `~${formatSeconds(seconds)}`;
     }

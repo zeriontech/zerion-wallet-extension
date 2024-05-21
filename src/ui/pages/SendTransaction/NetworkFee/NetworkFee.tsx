@@ -1,7 +1,7 @@
 import { isTruthy } from 'is-truthy-ts';
 import React, { useRef } from 'react';
 import type { NetworkFeeConfiguration } from '@zeriontech/transactions';
-import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/requests';
+import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -18,7 +18,9 @@ import type { TransactionFee } from '../TransactionConfiguration/useTransactionF
 import { NetworkFeeDialog } from './NetworkFeeDialog';
 import { NETWORK_SPEED_TO_TITLE } from './constants';
 
-function getFeeTypeTitle(type: keyof ChainGasPrice['info'] | undefined) {
+function getFeeTypeTitle(
+  type: Exclude<keyof ChainGasPrice['fast'], 'eta'> | undefined
+) {
   if (!type) {
     return undefined;
   }
