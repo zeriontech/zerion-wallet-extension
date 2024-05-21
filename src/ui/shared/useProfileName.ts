@@ -1,9 +1,9 @@
-import { useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { lookupAddressName } from 'src/modules/name-service';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getWalletDisplayName } from './getWalletDisplayName';
+import { persistentQuery } from './requests/queryClientPersistence';
 
 const testAddress = process.env.TEST_WALLET_ADDRESS as string;
 
@@ -20,6 +20,8 @@ export enum WalletNameType {
   customName,
 }
 
+export const lookupAddressNameKey = 'name-service/lookupAddressName';
+
 export function useProfileName(
   wallet: Pick<BareWallet, 'address' | 'name'>,
   {
@@ -28,18 +30,15 @@ export function useProfileName(
   }: { padding?: number; maxCharacters?: number } = {}
 ): { type: WalletNameType; value: string } {
   const { isLoading: isDomainLoading, data: domain } = useQuery({
-    queryKey: ['name-service/lookupAddressName', wallet.address],
-    queryFn: useCallback(
-      () => lookupAddressName(wallet.address),
-      [wallet.address]
-    ),
+    queryKey: persistentQuery([lookupAddressNameKey, wallet.address]),
+    queryFn: async () => lookupAddressName(wallet.address),
     enabled: !wallet.name,
     suspense: false,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     retryOnMount: false,
     retry: 0,
-    staleTime: 2000,
+    staleTime: 40000,
     useErrorBoundary: false,
   });
 
