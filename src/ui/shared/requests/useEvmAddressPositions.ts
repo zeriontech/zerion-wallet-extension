@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import type { Networks } from 'src/modules/networks/Networks';
-import { networksStore } from 'src/modules/networks/networks-store.background';
+import { networksStore } from 'src/modules/networks/networks-store.client';
 import type { Chain } from 'src/modules/networks/Chain';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import { fetchNativeEvmPosition } from './fetchNativeEvmPosition';
