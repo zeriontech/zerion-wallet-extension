@@ -41,7 +41,8 @@ function useNativeAddressPosition({
       console.warn('multiple native positions');
     }
     return {
-      data: nativePositions[0],
+      // ternary expression to correctly type accessor as nullable
+      data: nativePositions.length ? nativePositions[0] : null,
       isLoading,
     };
   }, [chain, isLoading, value?.positions]);
@@ -50,9 +51,13 @@ function useNativeAddressPosition({
 export function useNativeBalance({
   address,
   chain,
+  suspense,
+  staleTime,
 }: {
   address: string;
   chain: Chain;
+  staleTime: number;
+  suspense?: boolean;
 }) {
   const { networks } = useNetworks();
   const isSupportedByBackend = networks
@@ -67,6 +72,8 @@ export function useNativeBalance({
     address,
     chain,
     enabled: isSupportedByBackend === false,
+    suspense,
+    staleTime,
   });
 
   const isLoading =
@@ -75,13 +82,13 @@ export function useNativeBalance({
     const position =
       nativeAddressPosition.data || evmNativeAddressPosition.data;
     if (!position?.quantity) {
-      return { data: null, isLoading };
+      return { data: { value: null, position }, isLoading };
     }
 
     const decimals = getDecimals({ asset: position.asset, chain });
-    const data = baseToCommon(new BigNumber(position.quantity), decimals);
+    const value = baseToCommon(new BigNumber(position.quantity), decimals);
     return {
-      data,
+      data: { valueCommon: value, position },
       isLoading,
     };
   }, [
