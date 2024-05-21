@@ -55,7 +55,7 @@ function NativeBalance({ address, chain }: { address: string; chain: Chain }) {
     return null;
   }
   const { valueCommon, position } = balance;
-  return <span>{formatTokenValue(valueCommon, position.asset.symbol)}</span>;
+  return <span>{formatTokenValue(valueCommon, position?.asset.symbol)}</span>;
 }
 
 function NetworkItem({

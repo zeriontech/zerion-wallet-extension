@@ -3,7 +3,7 @@ import type { Chain } from 'src/modules/networks/Chain';
 import { baseToCommon } from 'src/shared/units/convert';
 import BigNumber from 'bignumber.js';
 import { getDecimals } from 'src/modules/networks/asset';
-import { useAddressPositions } from 'defi-sdk';
+import { type AddressPosition, useAddressPositions } from 'defi-sdk';
 import { isTruthy } from 'is-truthy-ts';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { useEvmNativeAddressPosition } from './useEvmNativeAddressPosition';
@@ -58,7 +58,10 @@ export function useNativeBalance({
   chain: Chain;
   staleTime: number;
   suspense?: boolean;
-}) {
+}): {
+  isLoading: boolean;
+  data: { valueCommon: BigNumber | null; position: AddressPosition | null };
+} {
   const { networks } = useNetworks();
   const isSupportedByBackend = networks
     ? networks.supports('positions', chain)
@@ -82,7 +85,10 @@ export function useNativeBalance({
     const position =
       nativeAddressPosition.data || evmNativeAddressPosition.data;
     if (!position?.quantity) {
-      return { data: { value: null, position }, isLoading };
+      return {
+        data: { valueCommon: null, position: position || null },
+        isLoading,
+      };
     }
 
     const decimals = getDecimals({ asset: position.asset, chain });
