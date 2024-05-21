@@ -15,6 +15,7 @@ import { queryClient } from './shared/requests/queryClient';
 import { emitter } from './shared/events';
 import { maybeOpenOboarding } from './Onboarding/initialization';
 import { OnboardingInterrupt } from './Onboarding/errors';
+import { persistQueryClient } from './shared/requests/queryClientPersistence';
 
 applyDrawFix();
 if (process.env.NODE_ENV === 'development') {
@@ -56,15 +57,22 @@ function renderApp({ initialView, mode, inspect }: AppProps) {
   );
 }
 
+let isFirstLoad = true;
 async function initializeUI({
   initialView,
   inspect,
 }: Pick<AppProps, 'initialView' | 'inspect'> = {}) {
+  const innerIsFirstLoad = isFirstLoad;
+  isFirstLoad = false;
   try {
     await registerServiceWorker();
     initializeChannels();
     const { mode } = await maybeOpenOboarding();
-    queryClient.clear();
+    if (innerIsFirstLoad) {
+      await persistQueryClient(queryClient);
+    } else {
+      queryClient.clear();
+    }
     await configureUIClient();
     initializeClientAnalytics();
     renderApp({ initialView, mode, inspect });
