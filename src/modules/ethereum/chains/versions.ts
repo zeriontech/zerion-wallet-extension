@@ -6,7 +6,7 @@ import { toCustomNetworkId } from './helpers';
 type PossibleEntry = ChainConfigV1 | ChainConfig;
 
 function maybeLocalChainId(id?: string | null) {
-  return id?.length === 21; // nanoid() standard length
+  return !id || id.length === 21; // nanoid() standard length
 }
 
 export const upgrades: Upgrades<PossibleEntry> = {
