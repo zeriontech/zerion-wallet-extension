@@ -7,7 +7,8 @@ export function valueToHex(value: BigNumberish): string {
     return value as string;
   } else if (value === '') {
     return value;
-  } else if (typeof value === 'string') {
+  } else if (typeof value === 'string' || BigNumber.isBigNumber(value)) {
+    // cases: "123" and { "_hex": "0x06a11e3d", "_isBigNumber": true }
     return hexValue(BigNumber.from(value));
   } else {
     return hexValue(value);
