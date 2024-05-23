@@ -17,9 +17,14 @@ export interface ChainConfigV1 {
   ethereumChains: DeprecatedEthereumChainConfig[];
 }
 
-export interface ChainConfig {
+export interface ChainConfigV2 {
   version: 2;
   ethereumChainConfigs: EthereumChainConfig[];
   /** @deprecated */
   ethereumChains?: DeprecatedEthereumChainConfig[];
+}
+
+export interface ChainConfig extends Omit<ChainConfigV2, 'version'> {
+  version: 3;
+  /** This version fixes the bug with undefined ids for old custom networks */
 }
