@@ -70,7 +70,7 @@ function getAssetName({ asset }: { asset: ActionAsset }) {
   return getFungibleAsset(asset)?.name;
 }
 
-function getAssetAddresses({ asset }: { asset: ActionAsset }) {
+function getAssetAddress({ asset }: { asset: ActionAsset }) {
   return getFungibleAsset(asset)?.asset_code;
 }
 
@@ -105,8 +105,8 @@ export function addressActionToAnalytics({
     asset_amount_received: toMaybeArr(incoming?.map(convertQuantity)),
     asset_name_sent: toMaybeArr(outgoing?.map(getAssetName)),
     asset_name_received: toMaybeArr(incoming?.map(getAssetName)),
-    asset_address_sent: toMaybeArr(outgoing?.map(getAssetAddresses)),
-    asset_address_received: toMaybeArr(incoming?.map(getAssetAddresses)),
+    asset_address_sent: toMaybeArr(outgoing?.map(getAssetAddress)),
+    asset_address_received: toMaybeArr(incoming?.map(getAssetAddress)),
   };
   if (quote) {
     const zerion_fee_percentage = quote.protocol_fee;
