@@ -121,7 +121,7 @@ export class ContentScriptManager {
   }
 
   activate() {
-    // TODO: may be call this.removeExpiredRecords() here instead of outside
+    this.removeExpiredRecords();
     this.handleChange();
     globalPreferences.on('change', this.handleChange.bind(this));
     globalPreferences.on('change', this.setAndDiscardAlarms.bind(this));

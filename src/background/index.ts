@@ -123,7 +123,7 @@ initialize().then((values) => {
   // const httpConnection = new HttpConnection(() => account.getCurrentWallet());
   const memoryCacheRPC = new MemoryCacheRPC();
 
-  new ContentScriptManager().removeExpiredRecords().activate();
+  new ContentScriptManager().activate();
 
   portRegistry.addMessageHandler(
     createWalletMessageHandler(() => account.getCurrentWallet())
