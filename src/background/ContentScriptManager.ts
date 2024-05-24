@@ -1,6 +1,5 @@
 import browser from 'webextension-polyfill';
 import { createNanoEvents } from 'nanoevents';
-import { produce } from 'immer';
 import { isTruthy } from 'is-truthy-ts';
 import {
   globalPreferences,
@@ -79,22 +78,7 @@ export class ContentScriptManager {
   }
 
   removeExpiredRecords() {
-    const now = Date.now();
-    globalPreferences.setState((state) =>
-      produce(state, (draft) => {
-        if (draft.providerInjection) {
-          for (const key in draft.providerInjection) {
-            const value = draft.providerInjection[key];
-            if (value && value.expires != null && value.expires <= now) {
-              delete draft.providerInjection[key];
-            }
-          }
-          if (Object.keys(draft.providerInjection).length === 0) {
-            delete draft.providerInjection;
-          }
-        }
-      })
-    );
+    globalPreferences.removeExpiredProviderInjections();
     return this;
   }
 

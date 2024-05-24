@@ -1,4 +1,5 @@
 import throttle from 'lodash/throttle';
+import { produce } from 'immer';
 import { PersistentStore } from 'src/modules/persistent-store';
 import type { RemoteConfig } from 'src/modules/remote-config';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
@@ -138,6 +139,25 @@ export class GlobalPreferences extends PersistentStore<State> {
       }
       return valueWithoutDefaults;
     });
+  }
+
+  removeExpiredProviderInjections() {
+    const now = Date.now();
+    this.setState((state) =>
+      produce(state, (draft) => {
+        if (draft.providerInjection) {
+          for (const key in draft.providerInjection) {
+            const value = draft.providerInjection[key];
+            if (value && value.expires != null && value.expires <= now) {
+              delete draft.providerInjection[key];
+            }
+          }
+          if (Object.keys(draft.providerInjection).length === 0) {
+            delete draft.providerInjection;
+          }
+        }
+      })
+    );
   }
 }
 
