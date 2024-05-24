@@ -130,6 +130,9 @@ function trackAppEvents({ account }: { account: Account }) {
         'request_name',
         'hash',
         'wallet_address',
+        'asset_amount_sent',
+        'gas_price',
+        'network_fee',
       ]);
       mixpanelTrack(account, 'Transaction: Signed Transaction', mixpanelParams);
     }
