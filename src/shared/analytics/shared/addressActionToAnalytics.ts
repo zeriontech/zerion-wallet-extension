@@ -21,7 +21,6 @@ interface AnalyticsTransactionData {
   zerion_fee_percentage?: number;
   zerion_fee_usd_amount?: number;
   output_chain?: string;
-  transaction_zerion_fee_asset_id?: string;
 }
 
 interface AssetQuantity {
@@ -113,7 +112,6 @@ export function addressActionToAnalytics({
     const feeAmount = quote.protocol_fee_amount;
     const asset = incoming?.[0]?.asset;
     const output_chain = quote.output_chain;
-    const transaction_zerion_fee_asset_id = getFungibleAsset(asset)?.id;
     const zerion_fee_usd_amount =
       feeAmount && asset
         ? assetQuantityToValue({ quantity: feeAmount, asset }, chain)
@@ -124,7 +122,6 @@ export function addressActionToAnalytics({
       zerion_fee_percentage,
       zerion_fee_usd_amount,
       output_chain,
-      transaction_zerion_fee_asset_id,
     };
   } else {
     return value;
