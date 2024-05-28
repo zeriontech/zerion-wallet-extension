@@ -21,7 +21,7 @@ import PremiumIcon from 'jsx:src/ui/assets/premium.svg';
 import DarkModeLampIcon from 'jsx:src/ui/assets/dark-mode-lamp.svg';
 import NetworksIcon from 'jsx:src/ui/assets/network.svg';
 import SecurityIcon from 'jsx:src/ui/assets/security.svg';
-import ToolsIcon from 'jsx:src/ui/assets/hummer.svg';
+import ToolsIcon from 'jsx:src/ui/assets/hammer.svg';
 import { version } from 'src/shared/packageVersion';
 import { apostrophe, middot } from 'src/ui/shared/typography';
 import { AppearancePage } from 'src/ui/features/appearance/AppearancePage';
