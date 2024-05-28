@@ -67,6 +67,7 @@ export function useBackgroundKind({ kind }: Props) {
 }
 
 /** TODO: Deprecate <Background /> in favour of useBackgroundKind() */
+/** @deprecated */
 export function Background({
   children,
   backgroundColor,

@@ -1,0 +1,1 @@
+export { StickyBottomPanel } from './BottomPanel';

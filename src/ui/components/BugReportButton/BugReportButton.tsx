@@ -6,7 +6,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import BugIcon from 'jsx:src/ui/assets/bug.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
-import { SurfaceItemAnchor } from 'src/ui/ui-kit/SurfaceList';
+import { FrameListItemAnchor } from 'src/ui/ui-kit/FrameList';
 import { AngleRightRow } from '../AngleRightRow';
 import { PageColumn } from '../PageColumn';
 import { getBugButtonUrl } from './getBugReportURL';
@@ -111,7 +111,7 @@ export function BugReportButton() {
   }
 
   return (
-    <SurfaceItemAnchor
+    <FrameListItemAnchor
       href={bugReportURL}
       onClick={openInNewWindow}
       target="_blank"
@@ -123,6 +123,6 @@ export function BugReportButton() {
           <UIText kind="body/regular">Bug Report</UIText>
         </HStack>
       </AngleRightRow>
-    </SurfaceItemAnchor>
+    </FrameListItemAnchor>
   );
 }

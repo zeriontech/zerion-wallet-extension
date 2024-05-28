@@ -1,0 +1,12 @@
+.item {
+  --list-item-background-hover: var(--neutral-100);
+  background-color: var(--list-item-background);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+@media (hover: hover) {
+  .item:hover {
+    background-color: var(--list-item-background-hover);
+  }
+}
