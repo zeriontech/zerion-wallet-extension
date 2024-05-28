@@ -1,0 +1,158 @@
+.hstack,
+.vstack {
+  display: grid;
+}
+
+.hstack {
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(min-content, max-content);
+  align-items: center;
+  justify-content: initial;
+}
+
+.vstack {
+  grid-template-columns: minmax(0, auto);
+  align-items: start;
+}
+
+.notification {
+  position: absolute;
+  top: 64px;
+  right: 18px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  gap: 12px;
+  border-radius: 12px;
+  background: #fff;
+  color: #16161a;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transform: translateY(20px);
+  opacity: 0;
+  font-family: sans-serif;
+}
+
+.notification.show {
+  transform: translateY(0);
+  animation: slideUp 0.2s forwards;
+}
+
+.notification.fadeOut {
+  animation: fadeOut 0.2s forwards;
+}
+
+.zerionLogo {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background-image: url('data-url:./zerion-logo.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 40px 40px;
+}
+
+.networkIcon {
+  position: absolute;
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  left: 22px;
+  top: 22px;
+  border: 2px solid #ffffff;
+  border-radius: 6px;
+}
+
+.title,
+.message {
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.3px;
+}
+
+.title {
+  color: #16161a;
+}
+
+.message {
+  font-weight: 500;
+}
+
+.chainChanged {
+  width: 210px;
+}
+
+.chainChanged .message {
+  color: #81848e;
+}
+
+.switchChainError {
+  width: 256px;
+}
+
+.switchChainError .zerionLogo {
+  width: 32px;
+  height: 32px;
+}
+
+.switchChainError .title {
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 0.25px;
+}
+
+.switchChainError .message {
+  font-weight: 400;
+  letter-spacing: 0.2;
+  color: #16161a;
+}
+
+.switchChainError .chainId {
+  font-weight: 600;
+}
+
+.closeButton {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  left: -4px;
+  top: -4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  gap: 4px;
+  border: none;
+  border-radius: 50%;
+  color: #81848e;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.16);
+  background-color: #fff;
+  background-image: url('data-url:./close.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 12px 12px;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
