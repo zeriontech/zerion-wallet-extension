@@ -13,6 +13,7 @@ export function queryGasPrices(chain: Chain) {
       const networks = await networksStore.load([chain.toString()]);
       return fetchGasPrice(chain, networks);
     },
+    staleTime: 10000,
   });
 }
 
@@ -29,5 +30,6 @@ export function useGasPrices(chain: Chain | null) {
     useErrorBoundary: true,
     enabled: Boolean(chain),
     suspense: false,
+    staleTime: 10000,
   });
 }
