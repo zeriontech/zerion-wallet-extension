@@ -7,6 +7,7 @@ import {
 } from 'src/modules/defi-sdk/queries';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { Chain } from 'src/modules/networks/Chain';
+import type { BigNumberish } from 'ethers';
 import { ethers } from 'ethers';
 import { UnsupportedNetwork } from 'src/modules/networks/errors';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
@@ -171,7 +172,7 @@ export async function pendingTransactionToAddressAction(
 export async function incomingTxToIncomingAddressAction(
   transactionObject: {
     transaction: IncomingTransactionWithChainId & {
-      nonce?: number;
+      nonce?: BigNumberish;
       from: string;
     };
   } & Pick<TransactionObject, 'hash' | 'receipt' | 'timestamp' | 'dropped'>,
@@ -191,7 +192,7 @@ export async function incomingTxToIncomingAddressAction(
       chain: chain.toString(),
       status: 'pending',
       fee: null,
-      nonce: transaction.nonce ?? -1,
+      nonce: (transaction.nonce as number) ?? -1,
     },
     datetime: new Date(timestamp ?? Date.now()).toISOString(),
     label,

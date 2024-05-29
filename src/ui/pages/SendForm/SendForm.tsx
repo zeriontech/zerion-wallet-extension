@@ -462,6 +462,7 @@ export function SendForm() {
                       transaction={transaction}
                       from={address}
                       chain={chain}
+                      paymasterEligible={false}
                       onFeeValueCommonReady={handleFeeValueCommonReady}
                       configuration={configuration}
                       onConfigurationChange={(value) =>

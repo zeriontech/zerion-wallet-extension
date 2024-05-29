@@ -687,6 +687,7 @@ export function SwapForm() {
                   transaction={currentTransaction}
                   from={address}
                   chain={chain}
+                  paymasterEligible={false}
                   onFeeValueCommonReady={handleFeeValueCommonReady}
                   configuration={configuration}
                   onConfigurationChange={(value) =>

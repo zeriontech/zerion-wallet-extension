@@ -2,6 +2,17 @@ import { client } from 'defi-sdk';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 
+function patchResponse(networks: NetworkConfig[]) {
+  return networks;
+  // return networks.map((network) => {
+  //   if (network.id === 'zero-test') {
+  //     return { ...network, is_testnet: true, supports_positions: false };
+  //   } else {
+  //     return network;
+  //   }
+  // });
+}
+
 export function fetchChains(
   payload: {
     supported_only?: boolean;
@@ -24,7 +35,7 @@ export function fetchChains(
       },
       onData: ({ value, isStale }) => {
         if (value) {
-          resolve(value);
+          resolve(patchResponse(value));
           if (!isStale) {
             // TEMP: timeout fixes the "Cannot access 'unsubscribe' before initialization" error
             // This should be fixed in defi-sdk

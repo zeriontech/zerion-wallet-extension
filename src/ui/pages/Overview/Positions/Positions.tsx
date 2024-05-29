@@ -787,7 +787,8 @@ export function Positions({
     { enabled: ready }
   );
   const chainValue = filterChain || dappChain || NetworkSelectValue.All;
-  const chain = createChain(chainValue);
+  const chain =
+    chainValue === NetworkSelectValue.All ? null : createChain(chainValue);
   const positionChains = useMemo(() => {
     const chainsSet = new Set(
       Object.keys(portfolioDecomposition?.chains || {})
@@ -814,9 +815,9 @@ export function Positions({
   }
   const moveGasPositionToFront = chainValue !== NetworkSelectValue.All;
   const isSupportedByBackend =
-    chainValue === NetworkSelectValue.All
+    chainValue === NetworkSelectValue.All || !chain
       ? true
-      : networks?.supports('positions', createChain(chainValue));
+      : networks?.supports('positions', chain);
 
   const emptyNetworkBalance = (
     <div
@@ -890,7 +891,7 @@ export function Positions({
       return renderLoadingViewForNetwork();
     }
     invariant(networks, `Failed to load network info for ${chain}`);
-    const network = networks.getNetworkByName(chain);
+    const network = chain ? networks.getNetworkByName(chain) : null;
     if (!network?.id) {
       return renderErrorViewForNetwork(chainValue);
     }

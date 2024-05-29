@@ -1,5 +1,10 @@
-import type { UnsignedTransaction } from 'ethers';
+import type { BigNumberish, UnsignedTransaction } from 'ethers';
 import { ethers } from 'ethers';
+import {
+  EIP712Signer,
+  utils as zkSyncUtils,
+  Provider as ZksProvider,
+} from 'zksync-ethers';
 import type { Emitter } from 'nanoevents';
 import { createNanoEvents } from 'nanoevents';
 import { Store } from 'store-unit';
@@ -28,7 +33,10 @@ import {
   INTERNAL_ORIGIN_SYMBOL,
 } from 'src/background/constants';
 import { networksStore } from 'src/modules/networks/networks-store.background';
-import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
+import type {
+  IncomingTransactionAA,
+  IncomingTransactionWithChainId,
+} from 'src/modules/ethereum/types/IncomingTransaction';
 import { prepareTransaction } from 'src/modules/ethereum/transactions/prepareTransaction';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
@@ -69,6 +77,7 @@ import { backgroundGetBestKnownTransactionCount } from 'src/modules/ethereum/tra
 import { toCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import { normalizeTransactionChainId } from 'src/modules/ethereum/transactions/normalizeTransactionChainId';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
+import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -92,7 +101,38 @@ import {
   ReadonlyAccountContainer,
 } from './model/AccountContainer';
 
-async function prepareNonce<T extends { nonce?: number; from?: string }>(
+if (FEATURE_PAYMASTER_ENABLED) {
+  Object.assign(globalThis, { EIP712Signer, zkSyncUtils });
+}
+
+function createTypedData({
+  chainId,
+  message,
+}: {
+  chainId: ChainId;
+  message: Record<string, unknown>;
+}) {
+  const chainIdAsIntString = String(parseInt(chainId));
+  return {
+    types: {
+      Transaction: zkSyncUtils.EIP712_TYPES.Transaction,
+      EIP712Domain: [
+        { name: 'name', type: 'string' },
+        { name: 'version', type: 'string' },
+        { name: 'chainId', type: 'uint256' },
+      ],
+    },
+    domain: {
+      name: 'zkSync',
+      version: '2',
+      chainId: chainIdAsIntString,
+    },
+    primaryType: 'Transaction',
+    message,
+  };
+}
+
+async function prepareNonce<T extends { nonce?: BigNumberish; from?: string }>(
   transaction: T,
   networks: Networks,
   chain: string
@@ -899,10 +939,30 @@ export class Wallet {
     this.emitter.emit('chainChanged', chain, origin);
   }
 
+  /** A helper for interpretation in UI */
+  async uiGetEip712Transaction({
+    params: { transaction },
+    context,
+  }: WalletMethodParams<{ transaction: IncomingTransactionWithChainId }>) {
+    this.verifyInternalOrigin(context);
+
+    const { chainId } = transaction;
+    const prepared = prepareTransaction(transaction);
+    const typedData = createTypedData({
+      chainId: normalizeChainId(chainId),
+      message: EIP712Signer.getSignInput(prepared),
+    });
+    return typedData;
+  }
+
   private async getProvider(chainId: ChainId) {
     const networks = await networksStore.loadNetworksWithChainId(chainId);
     const nodeUrl = networks.getRpcUrlInternal(networks.getChainById(chainId));
-    return new ethers.providers.JsonRpcProvider(nodeUrl);
+    if (FEATURE_PAYMASTER_ENABLED) {
+      return new ZksProvider(nodeUrl);
+    } else {
+      return new ethers.providers.JsonRpcProvider(nodeUrl);
+    }
   }
 
   private async getSigner(chainId: ChainId) {
@@ -927,7 +987,7 @@ export class Wallet {
     context,
     ...transactionContextParams
   }: {
-    transaction: IncomingTransaction;
+    transaction: IncomingTransactionAA;
     context: Partial<ChannelContext> | undefined;
   } & TransactionContextParams): Promise<ethers.providers.TransactionResponse> {
     this.verifyInternalOrigin(context);
@@ -968,31 +1028,69 @@ export class Wallet {
     invariant(chainId, 'Must resolve chainId first');
 
     const networks = await networksStore.loadNetworksWithChainId(chainId);
-    const signer = await this.getSigner(chainId);
     const prepared = prepareTransaction(incomingTransaction);
     const txWithFee = await prepareGasAndNetworkFee(prepared, networks);
     const transaction = await prepareNonce(txWithFee, networks, chain);
 
-    try {
-      const transactionResponse = await signer.sendTransaction({
-        ...transaction,
-        type: transaction.type || undefined, // to exclude null
-      });
-      const safeTx = removeSignature(transactionResponse);
-      emitter.emit('transactionSent', {
-        transaction: safeTx,
-        ...transactionContextParams,
-      });
-      return safeTx;
-    } catch (error) {
-      throw getEthersError(error);
+    const paymasterEligible =
+      FEATURE_PAYMASTER_ENABLED &&
+      Boolean(transaction.customData?.paymasterParams);
+
+    if (paymasterEligible) {
+      console.log('paymasterEligible', { transaction });
+      try {
+        const { chainId } = transaction;
+        invariant(chainId, 'ChainId missing from TransactionRequest');
+        const typedData = createTypedData({
+          chainId: normalizeChainId(chainId),
+          message: EIP712Signer.getSignInput(transaction),
+        });
+        console.log('will sign typedData:', { typedData });
+        const signature = await this.signTypedData_v4({
+          context,
+          params: { typedData, ...transactionContextParams },
+        });
+        console.log('will serialize transaction + signature', {
+          transaction,
+          signature,
+        });
+        const rawTransaction = zkSyncUtils.serialize({
+          ...transaction,
+          customData: { ...transaction.customData, customSignature: signature },
+        });
+
+        console.log({ rawTransaction });
+        return await this.sendSignedTransaction({
+          context,
+          params: { serialized: rawTransaction, ...transactionContextParams },
+        });
+      } catch (error) {
+        console.log('paymaster tx error', error);
+        throw getEthersError(error);
+      }
+    } else {
+      try {
+        const signer = await this.getSigner(chainId);
+        const transactionResponse = await signer.sendTransaction({
+          ...transaction,
+          type: transaction.type || undefined, // to exclude null
+        });
+        const safeTx = removeSignature(transactionResponse);
+        emitter.emit('transactionSent', {
+          transaction: safeTx,
+          ...transactionContextParams,
+        });
+        return safeTx;
+      } catch (error) {
+        throw getEthersError(error);
+      }
     }
   }
 
   async signAndSendTransaction({
     params,
     context,
-  }: WalletMethodParams<[IncomingTransaction, TransactionContextParams]>) {
+  }: WalletMethodParams<[IncomingTransactionAA, TransactionContextParams]>) {
     this.verifyInternalOrigin(context);
     this.ensureStringOrigin(context);
     const [transaction, transactionContextParams] = params;

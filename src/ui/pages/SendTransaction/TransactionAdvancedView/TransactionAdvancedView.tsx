@@ -134,7 +134,10 @@ export function TransactionDetails({
           ) : (
             <TextLine label="to" value={noValueDash} />
           )}
-          <TextLine label="nonce" value={transaction.nonce} />
+          <TextLine
+            label="nonce"
+            value={transaction.nonce ? String(transaction.nonce) : null}
+          />
           <TextLine label="value" value={maybeHexValue(transaction.value)} />
           <TextLine label="chainId" value={transaction.chainId} />
           <TextLine label="gas" value={maybeHexValue(transaction.gas)} />
@@ -197,18 +200,16 @@ export function TransactionAdvancedView({
   networks,
   chain,
   transaction,
-  transactionStringified,
   interpretation,
 }: {
   networks: Networks;
   chain: Chain;
   transaction: IncomingTransaction;
-  transactionStringified: string;
   interpretation?: InterpretResponse | null;
 }) {
   const transactionFormatted = useMemo(
-    () => JSON.stringify(JSON.parse(transactionStringified), null, 2),
-    [transactionStringified]
+    () => JSON.stringify(transaction, null, 2),
+    [transaction]
   );
 
   const { handleCopy: handleCopyRawData, isSuccess: didCopyRawData } =

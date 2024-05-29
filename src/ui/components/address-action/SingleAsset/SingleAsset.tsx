@@ -151,7 +151,7 @@ export function SingleAsset({
   singleAsset: NonNullable<
     NonNullable<AddressAction['content']>['single_asset']
   >;
-  allowanceQuantityBase?: string;
+  allowanceQuantityBase: string | null;
   elementEnd?: React.ReactNode;
 }) {
   const fungibleAsset = getFungibleAsset(singleAsset.asset);

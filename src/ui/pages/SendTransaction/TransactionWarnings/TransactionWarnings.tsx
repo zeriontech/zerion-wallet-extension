@@ -14,12 +14,14 @@ export function TransactionWarnings({
   addressAction,
   chain,
   networkFeeConfiguration,
+  paymasterElibible,
 }: {
   address: string;
   transaction: IncomingTransaction;
   addressAction: AnyAddressAction;
   chain: Chain;
   networkFeeConfiguration: NetworkFeeConfiguration;
+  paymasterElibible: boolean;
 }) {
   return (
     <ZStack hideLowerElements={true}>
@@ -33,12 +35,14 @@ export function TransactionWarnings({
           />
         </>
       ) : null}
-      <InsufficientFundsWarning
-        address={address}
-        transaction={transaction}
-        chain={chain}
-        networkFeeConfiguration={networkFeeConfiguration}
-      />
+      {paymasterElibible ? null : (
+        <InsufficientFundsWarning
+          address={address}
+          transaction={transaction}
+          chain={chain}
+          networkFeeConfiguration={networkFeeConfiguration}
+        />
+      )}
     </ZStack>
   );
 }
