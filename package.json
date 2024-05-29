@@ -99,7 +99,7 @@
     "@walletconnect/jsonrpc-utils": "^1.0.8",
     "@zeriontech/components": "^1.0.1",
     "@zeriontech/hardware-wallet-connection": "^1.0.11",
-    "@zeriontech/transactions": "file:../transactions-ui/zeriontech-transactions-0.0.13.tgz",
+    "@zeriontech/transactions": "^0.0.14",
     "bignumber.js": "^9.1.1",
     "buffer": "^6.0.3",
     "canvas-confetti": "^1.6.0",
