@@ -5,7 +5,7 @@ export const DEFI_SDK_API_TOKEN = process.env.DEFI_SDK_API_TOKEN;
 export const DEFI_SDK_TRANSACTIONS_API_URL =
   process.env.DEFI_SDK_TRANSACTIONS_API_URL;
 export const SOCIAL_API_URL = process.env.SOCIAL_API_URL;
-export const BACKEND_ENV = 'staging'; // process.env.BACKEND_ENV;
+export const BACKEND_ENV = process.env.BACKEND_ENV;
 export const MIXPANEL_TOKEN_PUBLIC = process.env.MIXPANEL_TOKEN_PUBLIC;
 export const SLOW_MODE = false;
 export const FEATURE_PAYMASTER_ENABLED = process.env.FEATURE_PAYMASTER === 'on';
