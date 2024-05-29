@@ -338,9 +338,9 @@ function useLocalAddressAction({
   networks,
 }: {
   address: string;
-  transactionAction: TransactionAction | null;
-  transaction: IncomingTransactionWithChainId | null;
-  networks: Networks | null;
+  transactionAction: TransactionAction;
+  transaction: IncomingTransactionWithChainId;
+  networks: Networks;
 }) {
   return useQuery({
     queryKey: [
@@ -351,17 +351,13 @@ function useLocalAddressAction({
       from,
     ],
     queryFn: () => {
-      return transaction && networks && transactionAction
-        ? incomingTxToIncomingAddressAction(
-            { transaction: { ...transaction, from }, hash: '', timestamp: 0 },
-            transactionAction,
-            networks
-          )
-        : null;
+      return incomingTxToIncomingAddressAction(
+        { transaction: { ...transaction, from }, hash: '', timestamp: 0 },
+        transactionAction,
+        networks
+      );
     },
     keepPreviousData: true,
-    enabled:
-      Boolean(transaction) && Boolean(networks) && Boolean(transactionAction),
     useErrorBoundary: true,
     retry: false,
     refetchOnMount: false,
