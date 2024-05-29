@@ -252,7 +252,7 @@ async function assignPaymaster<T extends IncomingTransaction>(tx: T) {
   const moreGas = ethers.BigNumber.from(gas).add(20000);
   txCopy.gasLimit = moreGas;
   const gasPerPubdataByte = valueToHex(50000);
-  const { eligible, paymasterParams } = await getPaymasterParams(tx, {
+  const { eligible, paymasterParams } = await getPaymasterParams(txCopy, {
     gasPerPubdataByte,
   });
   if (eligible && paymasterParams) {
