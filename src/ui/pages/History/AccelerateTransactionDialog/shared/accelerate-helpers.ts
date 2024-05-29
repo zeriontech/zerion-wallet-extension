@@ -6,7 +6,7 @@ import {
   isLocalAddressAction,
   type AnyAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction';
-import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/requests';
+import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import type { TransactionObject } from 'src/modules/ethereum/transactions/types';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { valueToHex } from 'src/shared/units/valueToHex';
@@ -65,14 +65,13 @@ export function increaseGasPrices(
     return null;
   }
   return produce(chainGasPrices, (draft) => {
-    if (draft.info.classic) {
-      const { fast } = draft.info.classic;
-      draft.info.classic.fast = increase(fast, 1.1);
+    if (draft.fast.classic) {
+      draft.fast.classic = increase(draft.fast.classic, 1.1);
     }
-    if (draft.info.eip1559?.fast) {
-      const { max_fee, priority_fee } = draft.info.eip1559.fast;
-      draft.info.eip1559.fast.max_fee = increase(max_fee, 1.1);
-      draft.info.eip1559.fast.priority_fee = increase(priority_fee, 1.1);
+    if (draft.fast.eip1559) {
+      const { maxFee, priorityFee } = draft.fast.eip1559;
+      draft.fast.eip1559.maxFee = increase(maxFee, 1.1);
+      draft.fast.eip1559.priorityFee = increase(priorityFee, 1.1);
     }
   });
 }

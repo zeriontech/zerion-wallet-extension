@@ -7,12 +7,12 @@ import { getEip1559Base } from './eip1559/getEip1559Base';
 import type { GasPriceObject } from './GasPriceObject';
 import { hexifyTxValues } from './hexifyTxValues';
 import { createOptimisticFee } from './optimistic/fee';
-import type { ChainGasPrice } from './requests';
+import type { ChainGasPrice } from './types';
 
 export interface EstimatedFeeValue {
   estimatedFee: number | BigNumber;
   maxFee?: number | BigNumber;
-  type: keyof ChainGasPrice['info'];
+  type: Exclude<keyof ChainGasPrice['fast'], 'eta'>;
 }
 
 export async function estimateNetworkFee({
@@ -34,11 +34,11 @@ export async function estimateNetworkFee({
     return null;
   }
   const chainId = transaction ? resolveChainId(transaction) : null;
-  const shouldTryOptimistic = Boolean(gasPrices?.info.optimistic);
+  const shouldTryOptimistic = Boolean(gasPrices?.fast.optimistic);
   const optimisticFee =
-    gasPrices?.info && transaction && address
+    gasPrices?.fast && transaction && address
       ? await createOptimisticFee({
-          gasPriceInfo: gasPrices.info,
+          gasPriceInfo: gasPrices?.fast,
           gasPriceObject: gasPrice,
           transaction: hexifyTxValues(transaction),
           getNonce: async () => (chainId ? getNonce(address, chainId) : 0),
@@ -62,12 +62,12 @@ export async function estimateNetworkFee({
     return null;
   }
   const { eip1559, classic } = gasPrice;
-  if (eip1559 && gasPrices?.info.eip1559) {
+  if (eip1559 && gasPrices?.fast.eip1559) {
     const estimatedFee = estimateFee({
       gas,
-      eip1559Base: getEip1559Base(eip1559, gasPrices.info.eip1559),
+      eip1559Base: getEip1559Base(eip1559, gasPrices.fast.eip1559),
     });
-    const maxFee = Number(gas) * eip1559.max_fee;
+    const maxFee = Number(gas) * eip1559.maxFee;
     return { estimatedFee, maxFee, type: 'eip1559' };
   }
   if (classic) {

@@ -5,10 +5,10 @@ import type { Networks } from 'src/modules/networks/Networks';
 import { sendRpcRequest } from 'src/shared/custom-rpc/rpc-request';
 import { createChain } from 'src/modules/networks/Chain';
 import type { IncomingTransaction } from '../types/IncomingTransaction';
-import { assignChainGasPrice } from './gasPrices/assignGasPrice';
+import { assignGasPrice } from './gasPrices/assignGasPrice';
 import { hasNetworkFee } from './gasPrices/hasNetworkFee';
 import { getGas } from './getGas';
-import type { ChainGasPrice } from './gasPrices/requests';
+import type { ChainGasPrice } from './gasPrices/types';
 import { fetchGasPrice } from './gasPrices/requests';
 import { wrappedGetNetworkById } from './wrappedGetNetworkById';
 import { resolveChainId } from './resolveChainId';
@@ -73,7 +73,7 @@ export async function prepareGasAndNetworkFee<T extends IncomingTransaction>(
       draft.gasLimit = gas;
     }
     if (networkFeeInfo) {
-      assignChainGasPrice(draft, networkFeeInfo);
+      assignGasPrice(draft, networkFeeInfo.fast);
     }
   });
 }

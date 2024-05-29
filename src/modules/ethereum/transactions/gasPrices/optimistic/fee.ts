@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import RLP from 'rlp';
-import type { ChainGasPrice } from '../requests';
+import type { ChainGasPrice } from '../types';
 import { getGas } from '../../getGas';
 import type { GasPriceObject } from '../GasPriceObject';
 
@@ -45,36 +45,34 @@ export async function createOptimisticFee({
   getNonce,
   gasPriceObject,
 }: {
-  gasPriceInfo: ChainGasPrice['info'];
+  gasPriceInfo: ChainGasPrice['fast'];
   transaction: Transaction;
   gasPriceObject: GasPriceObject | null;
   getNonce: () => Promise<number>;
 }): Promise<OptimisticFee | null> {
   const { optimistic } = gasPriceInfo;
-
   if (!optimistic) {
     return null;
   }
-  const { l1, fixed_overhead, dynamic_overhead } = optimistic;
-  if (l1 == null || fixed_overhead == null || dynamic_overhead == null) {
-    return null;
-  }
+  const { fixedOverhead, dynamicOverhead } = optimistic;
   const gas = getGas(transaction) as string;
   const { to = '0x', value = '0x0', data = '0x' } = transaction;
   if (gas == null) {
     return null;
   }
 
-  const eip1559GasPrice = gasPriceObject?.eip1559 || gasPriceInfo.eip1559?.fast;
-  const { base_fee } = gasPriceInfo.eip1559 || {};
-  const classicGasPrice = gasPriceObject?.classic || gasPriceInfo.classic?.fast;
+  const baseFee = optimistic.underlying.eip1559?.baseFee;
+  const eip1559GasPrice =
+    gasPriceObject?.eip1559 || optimistic.underlying.eip1559;
+  const classicGasPrice =
+    gasPriceObject?.classic || optimistic.underlying.classic;
 
   const nonce = await getNonce();
   const encoded_tx_data = eip1559GasPrice
     ? rlpEncode([
         nonce,
-        eip1559GasPrice.priority_fee,
-        eip1559GasPrice.max_fee,
+        eip1559GasPrice.priorityFee,
+        eip1559GasPrice.maxFee,
         gas,
         to,
         value,
@@ -90,27 +88,24 @@ export async function createOptimisticFee({
   const non_zero_tx_bytes_number =
     bytesLength(encoded_tx_data) - zero_tx_bytes_number; // len is a number of bytes (!) in encoded tx.
 
-  const tx_data_gas =
-    zero_tx_bytes_number * 4 + non_zero_tx_bytes_number * 16 + 68 * 16;
-  const l1GasEstimation =
-    ((tx_data_gas + fixed_overhead) * dynamic_overhead) / 1000000;
+  const tx_data_gas = zero_tx_bytes_number * 4 + non_zero_tx_bytes_number * 16;
+  const l1GasEstimation = (tx_data_gas + fixedOverhead) * dynamicOverhead;
 
-  const l1_fee_est = Math.round(l1 * l1GasEstimation);
   return {
     maxFee:
       (eip1559GasPrice
-        ? Number(eip1559GasPrice.max_fee)
+        ? Number(eip1559GasPrice.maxFee)
         : Number(classicGasPrice)) *
         Number(gas) +
-      Math.round(l1_fee_est * 1.25), // Optimism guarantees that there should not be one-time jumps of l1 component of gas estimation more than 25%
+      Math.round(l1GasEstimation * 1.25), // Optimism guarantees that there should not be one-time jumps of l1 component of gas estimation more than 25%
     estimatedFee:
       (eip1559GasPrice
         ? Math.min(
-            Number(eip1559GasPrice.max_fee),
-            Number(base_fee) + Number(eip1559GasPrice.priority_fee)
+            Number(eip1559GasPrice.maxFee),
+            Number(baseFee) + Number(eip1559GasPrice.priorityFee)
           )
         : Number(classicGasPrice)) *
         Number(gas) +
-      l1_fee_est,
+      Math.round(l1GasEstimation),
   };
 }

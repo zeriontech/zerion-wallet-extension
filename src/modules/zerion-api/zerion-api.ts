@@ -18,6 +18,10 @@ import type {
   Payload as WalletsMetaPayload,
   Response as WalletsMetaResponse,
 } from './requests/wallets-meta';
+import type {
+  Payload as GetGasPricesPayload,
+  Response as GetGasPricesResponse,
+} from './requests/get-gas-prices';
 
 function getZpiHeaders() {
   return {
@@ -67,5 +71,14 @@ export class ZerionAPI {
         headers: getZpiHeaders(),
       })
       .json<WalletsMetaResponse>();
+  }
+
+  static getGasPrices(payload: GetGasPricesPayload) {
+    return ky
+      .get(new URL('chain/get-gas-prices/v1', ZERION_API_URL), {
+        searchParams: { chain: payload.chain.toString() },
+        headers: getZpiHeaders(),
+      })
+      .json<GetGasPricesResponse>();
   }
 }
