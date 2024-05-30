@@ -100,7 +100,8 @@ export class GlobalPreferences extends PersistentStore<State> {
 
   setPreferences(preferences: Partial<State>) {
     this.setState((state) => {
-      // Omit values which are the same as the default ones
+      // We don't want to persist default values in storage,
+      // so here we omit values which are the same as the default ones
       const valueWithoutDefaults = {
         ...this.defaults,
         ...state,
