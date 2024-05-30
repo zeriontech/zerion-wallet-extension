@@ -32,6 +32,7 @@ import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import {
   estimateGas,
+  hasGasEstimation,
   prepareGasAndNetworkFee,
 } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
@@ -51,7 +52,10 @@ import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { setURLSearchParams } from 'src/ui/shared/setURLSearchParams';
 import { AddressActionDetails } from 'src/ui/components/address-action/AddressActionDetails';
 import { PageBottom } from 'src/ui/components/PageBottom';
-import { interpretTransaction } from 'src/modules/ethereum/transactions/interpret';
+import {
+  interpretSignature,
+  interpretTransaction,
+} from 'src/modules/ethereum/transactions/interpret';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { TransactionAction } from 'src/modules/ethereum/transactions/describeTransaction';
 import { describeTransaction } from 'src/modules/ethereum/transactions/describeTransaction';
@@ -80,6 +84,7 @@ import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { valueToHex } from 'src/shared/units/valueToHex';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
+import { hasNetworkFee } from 'src/modules/ethereum/transactions/gasPrices/hasNetworkFee';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -230,6 +235,10 @@ async function configureTransactionToSign<T extends IncomingTransaction>(
     tx.gasLimit = gas;
   }
 
+  if (tx.value == null) {
+    tx.value = '0x0';
+  }
+
   if (tx.nonce == null) {
     const { value: nonce } = await uiGetBestKnownTransactionCount({
       address: tx.from || from,
@@ -249,7 +258,7 @@ async function assignPaymaster<T extends IncomingTransaction>(tx: T) {
   const txCopy = { ...tx };
   const gas = getGas(txCopy);
   invariant(gas, 'Tx param missing: {gas}');
-  const moreGas = ethers.BigNumber.from(gas).add(20000);
+  const moreGas = ethers.BigNumber.from(gas).add(20000).toHexString();
   txCopy.gasLimit = moreGas;
   const gasPerPubdataByte = valueToHex(50000);
   const { eligible, paymasterParams } = await getPaymasterParams(txCopy, {
@@ -393,9 +402,6 @@ function useInterpretTransaction({
   });
 }
 
-// TODO: send typedData for interpretation for {paymasterElibigle} tx
-// function useInterpretTypedData() {}
-
 enum View {
   default = 'default',
   customAllowance = 'customAllowance',
@@ -526,7 +532,7 @@ function TransactionDefaultView({
         </HStack>
       </VStack>
       <Spacer height={16} />
-      {populatedTransaction ? (
+      {populatedTransaction && hasGasEstimation(populatedTransaction) ? (
         <>
           <ErrorBoundary renderError={() => null}>
             <React.Suspense fallback={null}>
@@ -552,23 +558,25 @@ function TransactionDefaultView({
                 </UIText>
               )}
             >
-              <React.Suspense
-                fallback={
-                  <div style={{ display: 'flex', justifyContent: 'end' }}>
-                    <CircleSpinner />
-                  </div>
-                }
-              >
-                <TransactionConfiguration
-                  transaction={populatedTransaction}
-                  from={wallet.address}
-                  chain={chain}
-                  onFeeValueCommonReady={onFeeValueCommonReady}
-                  configuration={configuration}
-                  onConfigurationChange={onConfigurationChange}
-                  paymasterEligible={paymasterEligible}
-                />
-              </React.Suspense>
+              {hasNetworkFee(populatedTransaction) ? (
+                <React.Suspense
+                  fallback={
+                    <div style={{ display: 'flex', justifyContent: 'end' }}>
+                      tr conf suspense <CircleSpinner />
+                    </div>
+                  }
+                >
+                  <TransactionConfiguration
+                    transaction={populatedTransaction}
+                    from={wallet.address}
+                    chain={chain}
+                    onFeeValueCommonReady={onFeeValueCommonReady}
+                    configuration={configuration}
+                    onConfigurationChange={onConfigurationChange}
+                    paymasterEligible={paymasterEligible}
+                  />
+                </React.Suspense>
+              ) : null}
             </ErrorBoundary>
           </div>
         </>
@@ -619,25 +627,7 @@ function SendTransactionContent({
       networks,
     });
 
-  const { data: interpretation, ...interpretQuery } = useInterpretTransaction({
-    transaction: populatedTransaction,
-    address: singleAddress,
-    origin,
-  });
-
-  const interpretationHasCriticalWarning = hasCriticalWarning(
-    interpretation?.warnings
-  );
-
-  const requestedAllowanceQuantityBase =
-    interpretation?.action?.content?.single_asset?.quantity ||
-    localAddressAction?.content?.single_asset?.quantity;
-
   const [allowanceQuantityBase, setAllowanceQuantityBase] = useState('');
-
-  const interpretAddressAction = interpretation?.action;
-
-  const addressAction = interpretAddressAction || localAddressAction || null;
 
   const configureTransactionToBeSigned = useEvent(
     async (transaction: IncomingTransaction) =>
@@ -664,6 +654,69 @@ function SendTransactionContent({
   });
 
   const paymasterEligible = Boolean(eligibility?.data.eligible);
+
+  const txInterpretQuery = useInterpretTransaction({
+    transaction: populatedTransaction,
+    address: singleAddress,
+    origin,
+    enabled: FEATURE_PAYMASTER_ENABLED
+      ? eligibility?.data.eligible === false
+      : true,
+  });
+
+  const paymasterTxInterpretQuery = useQuery({
+    enabled: paymasterEligible,
+    suspense: false,
+    queryKey: [
+      'interpret/typedData',
+      populatedTransaction,
+      chainGasPrices,
+      configuration,
+      allowanceQuantityBase,
+      chain,
+      singleAddress,
+      networks,
+      transactionAction,
+    ],
+    queryFn: async () => {
+      const configuredTx = await configureTransactionToSign(
+        populatedTransaction,
+        {
+          chainGasPrices: chainGasPrices || null,
+          configuration,
+          allowanceQuantityBase,
+          chain,
+          from: singleAddress,
+          networks,
+          transactionAction,
+        }
+      );
+      const toSign = await assignPaymaster(configuredTx);
+      const typedData = await walletPort.request('uiGetEip712Transaction', {
+        transaction: toSign,
+      });
+      return interpretSignature({
+        address: toSign.from,
+        chainId: normalizeChainId(toSign.chainId),
+        typedData,
+      });
+    },
+  });
+
+  const interpretQuery = paymasterEligible
+    ? paymasterTxInterpretQuery
+    : txInterpretQuery;
+
+  const interpretationHasCriticalWarning = hasCriticalWarning(
+    interpretQuery.data?.warnings
+  );
+
+  const requestedAllowanceQuantityBase =
+    interpretQuery.data?.action?.content?.single_asset?.quantity ||
+    localAddressAction?.content?.single_asset?.quantity;
+  const interpretAddressAction = interpretQuery.data?.action;
+
+  const addressAction = interpretAddressAction || localAddressAction || null;
 
   const view = params.get('view') || View.default;
   const advancedDialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -753,7 +806,7 @@ function SendTransactionContent({
             allowanceQuantityBase={
               allowanceQuantityBase || requestedAllowanceQuantityBase || null
             }
-            interpretation={interpretation}
+            interpretation={interpretQuery.data}
             interpretQuery={interpretQuery}
             populatedTransaction={populatedTransaction}
             configuration={configuration}
@@ -772,7 +825,7 @@ function SendTransactionContent({
               <TransactionAdvancedView
                 networks={networks}
                 chain={chain}
-                interpretation={interpretation}
+                interpretation={interpretQuery.data}
                 // NOTE: Pass {populaterTransaction} or even "configured" transaction instead?
                 transaction={incomingTransaction}
               />

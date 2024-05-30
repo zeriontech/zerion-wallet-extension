@@ -92,7 +92,10 @@ export class ZerionAPI {
   static getGasPrices(payload: GetGasPricesPayload) {
     return ky
       .get(new URL('chain/get-gas-prices/v1', ZERION_API_URL), {
-        searchParams: { chain: payload.chain.toString() },
+        searchParams: {
+          chain: payload.chain.toString(),
+          backend_env: 'staging',
+        },
         headers: getZpiHeaders(),
       })
       .json<GetGasPricesResponse>();
