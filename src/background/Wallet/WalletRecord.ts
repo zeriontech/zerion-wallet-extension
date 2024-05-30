@@ -718,6 +718,15 @@ export class WalletRecordModel {
     return createChain(chain || NetworkId.Ethereum);
   }
 
+  static getPermissionsByChain(
+    record: WalletRecord,
+    { chain }: { chain: Chain }
+  ) {
+    return Object.entries(record.permissions)
+      .filter(([, permission]) => permission.chain === chain.toString())
+      .map(([origin, permission]) => ({ origin, permission }));
+  }
+
   static removeChainFromPermissions(
     record: WalletRecord,
     { chain }: { chain: Chain }

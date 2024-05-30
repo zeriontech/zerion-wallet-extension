@@ -1204,13 +1204,15 @@ export class Wallet {
   }: WalletMethodParams<{ chain: string }>) {
     this.ensureRecord(this.record);
 
-    this.record = Model.removeChainFromPermissions(this.record, {
-      chain: createChain(chainStr),
+    const chain = createChain(chainStr);
+    const affectedPermissions = Model.getPermissionsByChain(this.record, {
+      chain,
     });
     affectedPermissions.forEach(({ origin }) => {
-      // TODO: remove chain for origin in case new chain is not set
       this.setChainForOrigin(createChain(NetworkId.Ethereum), origin);
     });
+    this.record = Model.removeChainFromPermissions(this.record, { chain });
+
     this.verifyOverviewChain();
     this.resetEthereumChain({ context, params: { chain: chainStr } });
   }
