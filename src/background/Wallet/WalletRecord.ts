@@ -727,13 +727,16 @@ export class WalletRecordModel {
       .map(([origin, permission]) => ({ origin, permission }));
   }
 
-  static removeChainFromPermissions(
+  static removeChainWithoutAddressesFromPermissions(
     record: WalletRecord,
     { chain }: { chain: Chain }
   ) {
     return produce(record, (draft) => {
       for (const permission of Object.values(draft.permissions)) {
-        if (permission.chain === chain.toString()) {
+        if (
+          permission.addresses.length === 0 &&
+          permission.chain === chain.toString()
+        ) {
           delete permission.chain;
         }
       }
