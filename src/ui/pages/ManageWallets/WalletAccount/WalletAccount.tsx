@@ -329,7 +329,7 @@ export function WalletAccount() {
               },
             ]}
           />
-          {!removeAddressMutation.isLoading && removeAddressMutation.error ? (
+          {removeAddressMutation.isError ? (
             <UIText kind="caption/regular" color="var(--negative-500)">
               {getError(removeAddressMutation.error).message}
             </UIText>
