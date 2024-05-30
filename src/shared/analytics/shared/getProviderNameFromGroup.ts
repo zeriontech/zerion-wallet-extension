@@ -52,7 +52,7 @@ export function getProviderForMetabase(
       return 'Zerion Wallet';
     }
     case AccountProvider.readOnly: {
-      return 'Read Only';
+      return 'Read only'; // matching with ios event
     }
     default: {
       return capitalize(provider);
