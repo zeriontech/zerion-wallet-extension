@@ -229,7 +229,6 @@ async function configureTransactionToSign<T extends IncomingTransaction>(
       allowanceQuantityBase,
       spender: transactionAction.spenderAddress,
     });
-    tx.chainId = networks.getChainId(chain) ?? undefined;
     tx.from = from;
     const gas = await estimateGas(tx, networks);
     tx.gasLimit = gas;
