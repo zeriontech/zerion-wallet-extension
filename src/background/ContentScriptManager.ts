@@ -2,15 +2,11 @@ import browser from 'webextension-polyfill';
 import { createNanoEvents } from 'nanoevents';
 import { produce } from 'immer';
 import { isTruthy } from 'is-truthy-ts';
+import { difference } from 'src/shared/difference';
 import {
   globalPreferences,
   type GlobalPreferences,
 } from './Wallet/GlobalPreferences';
-
-function difference<T>(a: T[], b: T[]) {
-  const set = new Set(b);
-  return a.filter((value) => !set.has(value));
-}
 
 function setActiveIcon({ tabId }: { tabId?: number }) {
   if (process.env.NODE_ENV === 'development') {

@@ -4,6 +4,7 @@ import type { RemoteConfig } from 'src/modules/remote-config';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
 import { removeEmptyValues } from 'src/shared/removeEmptyValues';
 import { equal } from 'src/modules/fast-deep-equal';
+import { difference } from 'src/shared/difference';
 import type { WalletNameFlag } from './model/WalletNameFlag';
 
 const HALF_DAY = 1000 * 60 * 60 * 12;
@@ -26,11 +27,6 @@ export interface State {
   providerInjection?: ProviderInjection;
   autoLockTimeout?: number | 'none';
   walletNameFlags?: Record<string, WalletNameFlag[] | undefined>;
-}
-
-function difference<T>(arr1: T[], arr2: T[]) {
-  const set = new Set(arr2);
-  return arr1.filter((key) => !set.has(key));
 }
 
 export function getWalletNameFlagsChange(state: State, prevState: State) {
