@@ -815,9 +815,7 @@ export function Positions({
   }
   const moveGasPositionToFront = chainValue !== NetworkSelectValue.All;
   const isSupportedByBackend =
-    chainValue === NetworkSelectValue.All || !chain
-      ? true
-      : networks?.supports('positions', chain);
+    chain == null ? true : networks?.supports('positions', chain);
 
   const emptyNetworkBalance = (
     <div
