@@ -82,9 +82,11 @@ export function NetworkBalance({
         gap={4}
         alignItems="center"
         style={{
-          gridTemplateColumns: hasValue
-            ? 'minmax(130px, max-content) minmax(40px, max-content)'
-            : 'minmax(50px, max-content) minmax(40px, max-content)',
+          gridTemplateColumns: showHelperButton
+            ? hasValue
+              ? 'minmax(130px, max-content) minmax(40px, max-content)'
+              : 'minmax(50px, max-content) minmax(40px, max-content)'
+            : '1fr',
           width: '100%',
         }}
       >
@@ -114,9 +116,10 @@ export function NetworkBalance({
                   <HStack
                     gap={4}
                     alignItems="center"
+                    justifyContent="start"
                     style={{
                       gridTemplateColumns: hasValue
-                        ? 'minmax(40px, max-content) auto minmax(40px, max-content) auto'
+                        ? 'minmax(40px, max-content) auto auto auto'
                         : 'minmax(40px, max-content) auto',
                       whiteSpace: 'nowrap',
                     }}
@@ -132,18 +135,7 @@ export function NetworkBalance({
                         >
                           {filterNetwork ? filterNetwork.name : 'All Networks'}
                         </div>,
-                        hasValue ? (
-                          <div
-                            key={1}
-                            style={{
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              maxWidth: 100,
-                            }}
-                          >
-                            {totalValue}
-                          </div>
-                        ) : null,
+                        hasValue ? <div key={1}>{totalValue}</div> : null,
                       ],
                       (key) => (
                         <div key={key}>·</div>
