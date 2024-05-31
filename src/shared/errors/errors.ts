@@ -86,7 +86,7 @@ export class SwitchChainError extends ErrorWithEnumerableMessage {
   code = 4902;
 
   constructor(
-    message = 'Unrecognized chain ID: Try adding the chain using wallet_addEthereumChain first.'
+    message = 'Unrecognized chainId: Try adding the chain using wallet_addEthereumChain first.'
   ) {
     super(message);
   }
