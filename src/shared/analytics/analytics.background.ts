@@ -6,6 +6,11 @@ import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { getWalletNameFlagsChange } from 'src/background/Wallet/GlobalPreferences';
 import { normalizeChainId } from '../normalizeChainId';
+import { WalletOrigin } from '../WalletOrigin';
+import {
+  isMnemonicContainer,
+  isPrivateKeyContainer,
+} from '../types/validators';
 import {
   createParams as createBaseParams,
   sendToMetabase,
@@ -235,10 +240,25 @@ function trackAppEvents({ account }: { account: Account }) {
     });
   });
 
-  emitter.on('walletCreated', ({ walletContainer }) => {
+  emitter.on('walletCreated', ({ walletContainer, origin }) => {
     for (const wallet of walletContainer.wallets) {
+      const type =
+        origin === WalletOrigin.extension
+          ? 'created'
+          : isPrivateKeyContainer(walletContainer)
+          ? 'imported_private_key'
+          : isMnemonicContainer(walletContainer)
+          ? 'imported_seed_phrase'
+          : 'connected';
       const wallet_provider = getProvider(wallet.address);
 
+      const params = createParams({
+        request_name: 'add_wallet',
+        wallet_address: wallet.address.toLowerCase(),
+        wallet_provider,
+        type,
+      });
+      sendToMetabase('add_wallet', params);
       mixpanelTrack(account, 'Wallet: Wallet Added', { wallet_provider });
     }
   });
