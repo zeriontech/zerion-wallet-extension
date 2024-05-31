@@ -4,11 +4,11 @@ import { useLayoutEffect, useRef, useCallback } from 'react';
 type AnyFunction = (...args: any[]) => any;
 
 export function useEvent<T extends AnyFunction>(callback: T) {
-  const ref = useRef<T | null>(null);
+  const ref = useRef<T>(callback);
   useLayoutEffect(() => {
     ref.current = callback;
   });
   return useCallback<AnyFunction>((...args) => {
-    return ref.current?.(...args);
+    return ref.current(...args);
   }, []) as T;
 }

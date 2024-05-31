@@ -47,7 +47,7 @@ async function fetchGasPriceForTransaction(
   return fetchGasPrice(chain, networks);
 }
 
-function hasGasEstimation(transaction: IncomingTransaction) {
+export function hasGasEstimation(transaction: IncomingTransaction) {
   const gas = getGas(transaction);
   return gas && !ethers.BigNumber.from(gas).isZero();
 }

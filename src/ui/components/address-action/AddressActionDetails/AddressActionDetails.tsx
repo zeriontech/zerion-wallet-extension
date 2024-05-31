@@ -27,7 +27,7 @@ export function AddressActionDetails({
   wallet: ExternallyOwnedAccount;
   actionTransfers?: ActionTransfers;
   singleAsset?: NonNullable<AddressAction['content']>['single_asset'];
-  allowanceQuantityBase?: string;
+  allowanceQuantityBase: string | null;
   singleAssetElementEnd: React.ReactNode;
 }) {
   return (

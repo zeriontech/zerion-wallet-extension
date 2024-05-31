@@ -86,6 +86,7 @@ export function TransactionConfirmationView({
             configuration={configuration}
             onConfigurationChange={null}
             onFeeValueCommonReady={null}
+            paymasterEligible={false}
           />
         </React.Suspense>
         <Spacer height={20} />

@@ -116,7 +116,7 @@ export function TransactionSimulation({
         wallet={wallet}
         actionTransfers={actionTransfers}
         singleAsset={singleAsset}
-        allowanceQuantityBase={allowanceQuantityBase}
+        allowanceQuantityBase={allowanceQuantityBase || null}
         singleAssetElementEnd={
           allowanceQuantityBase && onOpenAllowanceForm ? (
             <UnstyledButton

@@ -275,7 +275,7 @@ function TypedDataDefaultView({
             actionTransfers={addressAction?.content?.transfers}
             wallet={wallet}
             singleAsset={addressAction?.content?.single_asset}
-            allowanceQuantityBase={allowanceQuantityBase || undefined}
+            allowanceQuantityBase={allowanceQuantityBase || null}
             singleAssetElementEnd={
               allowanceQuantityBase &&
               addressAction.type.value === 'approve' ? (

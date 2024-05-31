@@ -28,10 +28,26 @@ function getZpiHeaders() {
     'X-Request-Id': crypto.randomUUID(),
     'Zerion-Client-Type': platform,
     'Zerion-Client-Version': version,
+    'Content-Type': 'application/json',
   };
 }
 
 export class ZerionAPI {
+  static get<T>(url: string) {
+    return ky
+      .get(new URL(url, ZERION_API_URL), { headers: getZpiHeaders() })
+      .json<T>();
+  }
+
+  static post<T>(url: string, { body }: { body: BodyInit }) {
+    return ky
+      .post(new URL(url, ZERION_API_URL), {
+        body,
+        headers: getZpiHeaders(),
+      })
+      .json<T>();
+  }
+
   static securityCheckUrl(payload: SecurityCheckUrlPayload) {
     return ky
       .get(new URL('security/check-url/v1', ZERION_API_URL), {
@@ -76,7 +92,10 @@ export class ZerionAPI {
   static getGasPrices(payload: GetGasPricesPayload) {
     return ky
       .get(new URL('chain/get-gas-prices/v1', ZERION_API_URL), {
-        searchParams: { chain: payload.chain.toString() },
+        searchParams: {
+          chain: payload.chain.toString(),
+          backend_env: 'staging',
+        },
         headers: getZpiHeaders(),
       })
       .json<GetGasPricesResponse>();

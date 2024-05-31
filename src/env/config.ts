@@ -8,6 +8,7 @@ export const SOCIAL_API_URL = process.env.SOCIAL_API_URL;
 export const BACKEND_ENV = process.env.BACKEND_ENV;
 export const MIXPANEL_TOKEN_PUBLIC = process.env.MIXPANEL_TOKEN_PUBLIC;
 export const SLOW_MODE = false;
+export const FEATURE_PAYMASTER_ENABLED = process.env.FEATURE_PAYMASTER === 'on';
 
 if (!PROXY_URL) {
   throw new Error('PROXY_URL must be defined in ENV');
