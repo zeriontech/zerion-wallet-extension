@@ -392,6 +392,8 @@ function ActionItemLocal({
   const { chain: chainStr } = action.transaction;
 
   useEffect(() => {
+    // add missing network to the store
+    // this will trigger update of the whole list in History
     if (isHexString(chainStr)) {
       const chainId = normalizeChainId(chainStr);
       loadNetworkByChainId(chainId);
