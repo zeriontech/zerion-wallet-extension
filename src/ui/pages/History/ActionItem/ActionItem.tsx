@@ -1,6 +1,6 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { AddressAction } from 'defi-sdk';
-import { useQuery } from '@tanstack/react-query';
+import { isHexString } from '@ethersproject/bytes';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Media } from 'src/ui/ui-kit/Media';
@@ -394,28 +394,13 @@ function ActionItemLocal({
   }, []);
 
   const { chain: chainStr } = action.transaction;
-  const { data: explorerUrl } = useQuery({
-    queryKey: ['getLocalActionExplorerUrl', chainStr, action.transaction.hash],
-    queryFn: async () => {
-      const result = networks.getExplorerTxUrlByName(
-        createChain(chainStr),
-        action.transaction.hash
-      );
-      if (result) {
-        return result;
-      }
-      // we save chainId as a fallback for local actions
+
+  useEffect(() => {
+    if (isHexString(chainStr)) {
       const chainId = normalizeChainId(chainStr);
-      const updatedNetworks = await loadNetworkByChainId(chainId);
-      return (
-        updatedNetworks.getExplorerTxUrlById(
-          chainId,
-          action.transaction.hash
-        ) || null
-      );
-    },
-    suspense: false,
-  });
+      loadNetworkByChainId(chainId);
+    }
+  }, [chainStr, loadNetworkByChainId]);
 
   if (!ready) {
     return null;
@@ -424,6 +409,11 @@ function ActionItemLocal({
   const address = 'address' in params ? params.address : undefined;
 
   const isMintingDna = checkIsDnaMint(action);
+
+  const explorerUrl = networks.getExplorerTxUrlByName(
+    createChain(chainStr),
+    action.transaction.hash
+  );
 
   const isPending = action.transaction.status === 'pending';
 
