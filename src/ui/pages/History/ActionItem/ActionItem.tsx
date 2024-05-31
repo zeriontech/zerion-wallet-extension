@@ -387,7 +387,7 @@ function ActionItemLocal({
 
   const { chain: chainStr } = action.transaction;
   const { data: explorerUrl } = useQuery({
-    queryKey: ['getExplorerTxUrlByName', chainStr, action.transaction.hash],
+    queryKey: ['getLocalActionExplorerUrl', chainStr, action.transaction.hash],
     queryFn: async () => {
       const result = networks.getExplorerTxUrlByName(
         createChain(chainStr),
