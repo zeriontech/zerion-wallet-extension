@@ -386,31 +386,27 @@ function ActionItemLocal({
   }, []);
 
   const { chain: chainStr } = action.transaction;
-
   const { data: explorerUrl } = useQuery({
     queryKey: ['getExplorerTxUrlByName', chainStr, action.transaction.hash],
     queryFn: async () => {
-      const chain = chainStr ? createChain(chainStr) : null;
-      if (!chain) {
-        return null;
-      }
       const result = networks.getExplorerTxUrlByName(
-        chain,
+        createChain(chainStr),
         action.transaction.hash
       );
       if (result) {
         return result;
       }
-      const updatedNetworks = await loadNetworkByChainId(
-        normalizeChainId(chainStr)
-      );
+      // we save chainId as a fallback for local actions
+      const chainId = normalizeChainId(chainStr);
+      const updatedNetworks = await loadNetworkByChainId(chainId);
       return (
-        updatedNetworks.getExplorerTxUrlByName(
-          chain,
+        updatedNetworks.getExplorerTxUrlById(
+          chainId,
           action.transaction.hash
         ) || null
       );
     },
+    suspense: false,
   });
 
   if (!ready) {
