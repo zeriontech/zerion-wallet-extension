@@ -37,6 +37,8 @@ import { DNA_MINT_CONTRACT_ADDRESS } from 'src/ui/DNA/shared/constants';
 import { isInteractiveElement } from 'src/ui/shared/isInteractiveElement';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
+import { UNKNOWN_ACTION_TITLE } from 'src/modules/ethereum/transactions/addressAction/creators';
+import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { ActionDetailedView } from '../ActionDetailedView';
 import { isUnlimitedApproval } from '../isUnlimitedApproval';
 import { AccelerateTransactionDialog } from '../AccelerateTransactionDialog';
@@ -69,7 +71,9 @@ function ActionTitle({
   const titlePrefix = action.transaction.status === 'failed' ? 'Failed ' : '';
   const actionTitle = isMintingDna
     ? 'Mint DNA'
-    : `${titlePrefix}${action.type.display_value}`;
+    : action.type.display_value !== UNKNOWN_ACTION_TITLE
+    ? `${titlePrefix}${action.type.display_value}`
+    : null;
 
   const explorerUrlPrepared = useMemo(
     () => (explorerUrl ? prepareForHref(explorerUrl)?.toString() : undefined),
@@ -78,22 +82,26 @@ function ActionTitle({
 
   return (
     <UIText kind="body/accent">
-      {explorerUrl ? (
-        <TextAnchor
-          href={explorerUrlPrepared}
-          title={explorerUrlPrepared}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {actionTitle}
-        </TextAnchor>
+      {actionTitle ? (
+        explorerUrl ? (
+          <TextAnchor
+            href={explorerUrlPrepared}
+            title={explorerUrlPrepared}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {actionTitle}
+          </TextAnchor>
+        ) : (
+          actionTitle
+        )
       ) : (
-        actionTitle
+        <DelayedRender delay={1000}>[Missing network data]</DelayedRender>
       )}
     </UIText>
   );

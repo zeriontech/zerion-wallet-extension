@@ -25,6 +25,7 @@ import CloseIcon from 'jsx:src/ui/assets/close_solid.svg';
 import { Button } from 'src/ui/ui-kit/Button';
 import { useStore } from '@store-unit/react';
 import { Networks } from 'src/modules/networks/Networks';
+import { DelayedRender } from 'src/ui/components/DelayedRender';
 import {
   getCurrentTabsOffset,
   getGrownTabMaxHeight,
@@ -101,6 +102,7 @@ function useMinedAndPendingAddressActions({
       return items;
     },
     enabled: Boolean(networks),
+    suspense: false,
     useErrorBoundary: true,
   });
 
@@ -287,7 +289,9 @@ export function HistoryList() {
           {actionFilters}
         </div>
         {isLoading ? (
-          <ViewLoading kind="network" />
+          <DelayedRender delay={300}>
+            <ViewLoading kind="network" />
+          </DelayedRender>
         ) : (
           <EmptyView
             hasFilters={Boolean(searchQuery || filterChain)}

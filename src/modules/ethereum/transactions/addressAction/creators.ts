@@ -110,6 +110,8 @@ function createActionLabel(
   };
 }
 
+export const UNKNOWN_ACTION_TITLE = 'unknown';
+
 export async function pendingTransactionToAddressAction(
   transactionObject: TransactionObject,
   networks: Networks
@@ -159,7 +161,7 @@ export async function pendingTransactionToAddressAction(
           display_value: capitalize(action.type),
           value: action.type,
         }
-      : { display_value: '[Missing network data]', value: 'execute' },
+      : { display_value: UNKNOWN_ACTION_TITLE, value: 'execute' },
     content,
     local: true,
     relatedTransaction: transactionObject.relatedTransactionHash,
