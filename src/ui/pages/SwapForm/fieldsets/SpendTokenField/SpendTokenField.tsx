@@ -1,7 +1,6 @@
 import React, { useEffect, useId, useRef } from 'react';
 import type { SwapFormView } from '@zeriontech/transactions';
 import { useSelectorStore } from '@store-unit/react';
-import { invariant } from 'src/shared/invariant';
 import {
   getPositionBalance,
   getPositionPartialBalance,
@@ -85,10 +84,6 @@ export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
                   key={factor}
                   title={title}
                   onClick={() => {
-                    invariant(
-                      positionBalanceCommon,
-                      'Position quantity unknown'
-                    );
                     const value = getPositionPartialBalance(
                       spendPosition,
                       factor
