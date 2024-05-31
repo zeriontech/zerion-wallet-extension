@@ -78,6 +78,7 @@ import { toCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import { normalizeTransactionChainId } from 'src/modules/ethereum/transactions/normalizeTransactionChainId';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
+import { createTypedData } from 'src/modules/ethereum/account-abstraction/createTypedData';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -103,33 +104,6 @@ import {
 
 if (FEATURE_PAYMASTER_ENABLED) {
   Object.assign(globalThis, { EIP712Signer, zkSyncUtils });
-}
-
-function createTypedData({
-  chainId,
-  message,
-}: {
-  chainId: ChainId;
-  message: Record<string, unknown>;
-}) {
-  const chainIdAsIntString = String(parseInt(chainId));
-  return {
-    types: {
-      Transaction: zkSyncUtils.EIP712_TYPES.Transaction,
-      EIP712Domain: [
-        { name: 'name', type: 'string' },
-        { name: 'version', type: 'string' },
-        { name: 'chainId', type: 'uint256' },
-      ],
-    },
-    domain: {
-      name: 'zkSync',
-      version: '2',
-      chainId: chainIdAsIntString,
-    },
-    primaryType: 'Transaction',
-    message,
-  };
 }
 
 async function prepareNonce<T extends { nonce?: BigNumberish; from?: string }>(
@@ -946,12 +920,8 @@ export class Wallet {
   }: WalletMethodParams<{ transaction: IncomingTransactionWithChainId }>) {
     this.verifyInternalOrigin(context);
 
-    const { chainId } = transaction;
     const prepared = prepareTransaction(transaction);
-    const typedData = createTypedData({
-      chainId: normalizeChainId(chainId),
-      message: EIP712Signer.getSignInput(prepared),
-    });
+    const typedData = createTypedData(prepared);
     return typedData;
   }
 
@@ -1041,10 +1011,7 @@ export class Wallet {
       try {
         const { chainId } = transaction;
         invariant(chainId, 'ChainId missing from TransactionRequest');
-        const typedData = createTypedData({
-          chainId: normalizeChainId(chainId),
-          message: EIP712Signer.getSignInput(transaction),
-        });
+        const typedData = createTypedData(transaction);
         console.log('will sign typedData:', { typedData });
         const signature = await this.signTypedData_v4({
           context,

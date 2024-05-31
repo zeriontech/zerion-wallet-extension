@@ -461,11 +461,6 @@ function TransactionDefaultView({
         <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
           {addressAction.type.display_value}
         </UIText>
-        {paymasterEligible ? (
-          <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
-            SPONSORED
-          </UIText>
-        ) : null}
         <UIText kind="small/regular" color="var(--neutral-500)">
           {origin === INTERNAL_ORIGIN ? (
             'Zerion'
@@ -747,7 +742,9 @@ function SendTransactionContent({
       if (paymasterEligible) {
         tx = await assignPaymaster(tx);
       }
-      console.log('sending to wallet', { tx });
+      if (FEATURE_PAYMASTER_ENABLED) {
+        console.log('sending to wallet', { tx });
+      }
       const feeValueCommon = feeValueCommonRef.current || null;
       return sendTxBtnRef.current.sendTransaction({
         transaction: tx,
@@ -869,6 +866,8 @@ function SendTransactionContent({
               Cancel
             </Button>
             <SignTransactionButton
+              // TODO: set loading state when {sendTransactionMutation.isLoading}
+              // (important for paymaster flow)
               wallet={wallet}
               ref={sendTxBtnRef}
               onClick={() => sendTransaction()}
