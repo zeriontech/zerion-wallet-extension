@@ -8,7 +8,6 @@ import {
 import type { Networks } from 'src/modules/networks/Networks';
 import type { Chain } from 'src/modules/networks/Chain';
 import type { BigNumberish } from 'ethers';
-import { ethers } from 'ethers';
 import { UnsupportedNetwork } from 'src/modules/networks/errors';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type {
@@ -21,7 +20,6 @@ import {
   describeTransaction,
   type TransactionAction,
 } from '../describeTransaction';
-import type { ChainId } from '../ChainId';
 import { ZERO_HASH, type LocalAddressAction } from './addressActionMain';
 
 export async function createActionContent(
@@ -114,12 +112,11 @@ function createActionLabel(
 
 export async function pendingTransactionToAddressAction(
   transactionObject: TransactionObject,
-  loadNetworkByChainId: (chainId: ChainId) => Promise<Networks>
+  networks: Networks
 ): Promise<LocalAddressAction> {
   const { transaction, hash, receipt, timestamp, dropped } = transactionObject;
   let chain: Chain | null;
   const chainId = normalizeChainId(transaction.chainId);
-  const networks = await loadNetworkByChainId(chainId);
   try {
     chain = networks.getChainById(chainId);
   } catch (error) {
@@ -144,7 +141,7 @@ export async function pendingTransactionToAddressAction(
         ? chain.toString()
         : // It's okay to fallback to a stringified chainId because this is
           // only a representational object
-          ethers.utils.hexValue(transaction.chainId),
+          normalizeChainId(transaction.chainId),
       status: receipt
         ? receipt.status === 1
           ? 'confirmed'

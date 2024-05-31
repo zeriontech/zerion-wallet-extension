@@ -73,7 +73,7 @@ function useMinedAndPendingAddressActions({
   searchQuery?: string;
 }) {
   const { params } = useAddressParams();
-  const { networks, loadNetworkByChainId } = useNetworks();
+  const { networks } = useNetworks();
   const isSupportedByBackend = chain
     ? networks?.supports('actions', chain)
     : true;
@@ -87,10 +87,7 @@ function useMinedAndPendingAddressActions({
       }
       let items = await Promise.all(
         localActions.map((transactionObject) =>
-          pendingTransactionToAddressAction(
-            transactionObject,
-            loadNetworkByChainId
-          )
+          pendingTransactionToAddressAction(transactionObject, networks)
         )
       );
       if (chain) {

@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useRef } from 'react';
 import type { AddressAction } from 'defi-sdk';
+import { useQuery } from '@tanstack/react-query';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Media } from 'src/ui/ui-kit/Media';
@@ -34,6 +35,8 @@ import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { AssetLink } from 'src/ui/components/AssetLink';
 import { DNA_MINT_CONTRACT_ADDRESS } from 'src/ui/DNA/shared/constants';
 import { isInteractiveElement } from 'src/ui/shared/isInteractiveElement';
+import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
+import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { ActionDetailedView } from '../ActionDetailedView';
 import { isUnlimitedApproval } from '../isUnlimitedApproval';
 import { AccelerateTransactionDialog } from '../AccelerateTransactionDialog';
@@ -366,9 +369,11 @@ function ActionItemBackend({
 function ActionItemLocal({
   action,
   networks,
+  loadNetworkByChainId,
 }: {
   action: LocalAddressAction;
   networks: Networks;
+  loadNetworkByChainId: (chainId: ChainId) => Promise<Networks>;
 }) {
   const asset = getActionAsset(action);
 
@@ -380,6 +385,34 @@ function ActionItemLocal({
     dialogRef.current?.showModal();
   }, []);
 
+  const { chain: chainStr } = action.transaction;
+
+  const { data: explorerUrl } = useQuery({
+    queryKey: ['getExplorerTxUrlByName', chainStr, action.transaction.hash],
+    queryFn: async () => {
+      const chain = chainStr ? createChain(chainStr) : null;
+      if (!chain) {
+        return null;
+      }
+      const result = networks.getExplorerTxUrlByName(
+        chain,
+        action.transaction.hash
+      );
+      if (result) {
+        return result;
+      }
+      const updatedNetworks = await loadNetworkByChainId(
+        normalizeChainId(chainStr)
+      );
+      return (
+        updatedNetworks.getExplorerTxUrlByName(
+          chain,
+          action.transaction.hash
+        ) || null
+      );
+    },
+  });
+
   if (!ready) {
     return null;
   }
@@ -387,13 +420,6 @@ function ActionItemLocal({
   const address = 'address' in params ? params.address : undefined;
 
   const isMintingDna = checkIsDnaMint(action);
-
-  const { chain: chainStr } = action.transaction;
-  const chain = chainStr ? createChain(chainStr) : null;
-
-  const explorerUrl = chain
-    ? networks.getExplorerTxUrlByName(chain, action.transaction.hash)
-    : null;
 
   const isPending = action.transaction.status === 'pending';
 
@@ -489,13 +515,17 @@ export function ActionItem({
 }: {
   addressAction: AnyAddressAction;
 }) {
-  const { networks } = useNetworks();
+  const { networks, loadNetworkByChainId } = useNetworks();
 
   if (!networks || !addressAction) {
     return null;
   }
   return 'local' in addressAction && addressAction.local ? (
-    <ActionItemLocal action={addressAction} networks={networks} />
+    <ActionItemLocal
+      action={addressAction}
+      networks={networks}
+      loadNetworkByChainId={loadNetworkByChainId}
+    />
   ) : (
     <ActionItemBackend
       action={addressAction as AddressAction}
