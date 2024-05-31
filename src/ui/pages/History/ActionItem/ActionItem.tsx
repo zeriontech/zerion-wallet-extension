@@ -408,10 +408,10 @@ function ActionItemLocal({
 
   const isMintingDna = checkIsDnaMint(action);
 
-  const explorerUrl = networks.getExplorerTxUrlByName(
-    createChain(chainStr),
-    action.transaction.hash
-  );
+  const chain = chainStr ? createChain(chainStr) : null;
+  const explorerUrl = chain
+    ? networks.getExplorerTxUrlByName(chain, action.transaction.hash)
+    : null;
 
   const isPending = action.transaction.status === 'pending';
 
