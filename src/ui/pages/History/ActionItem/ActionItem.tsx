@@ -35,7 +35,6 @@ import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { AssetLink } from 'src/ui/components/AssetLink';
 import { DNA_MINT_CONTRACT_ADDRESS } from 'src/ui/DNA/shared/constants';
 import { isInteractiveElement } from 'src/ui/shared/isInteractiveElement';
-import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { UNKNOWN_ACTION_TITLE } from 'src/modules/ethereum/transactions/addressAction/creators';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
@@ -375,13 +374,12 @@ function ActionItemBackend({
 function ActionItemLocal({
   action,
   networks,
-  loadNetworkByChainId,
 }: {
   action: LocalAddressAction;
   networks: Networks;
-  loadNetworkByChainId: (chainId: ChainId) => Promise<Networks>;
 }) {
   const asset = getActionAsset(action);
+  const { loadNetworkByChainId } = useNetworks();
 
   const { params, ready } = useAddressParams();
 
@@ -507,17 +505,13 @@ export function ActionItem({
 }: {
   addressAction: AnyAddressAction;
 }) {
-  const { networks, loadNetworkByChainId } = useNetworks();
+  const { networks } = useNetworks();
 
   if (!networks || !addressAction) {
     return null;
   }
   return 'local' in addressAction && addressAction.local ? (
-    <ActionItemLocal
-      action={addressAction}
-      networks={networks}
-      loadNetworkByChainId={loadNetworkByChainId}
-    />
+    <ActionItemLocal action={addressAction} networks={networks} />
   ) : (
     <ActionItemBackend
       action={addressAction as AddressAction}
