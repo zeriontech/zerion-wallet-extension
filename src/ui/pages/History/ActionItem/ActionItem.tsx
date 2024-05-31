@@ -82,26 +82,24 @@ function ActionTitle({
 
   return (
     <UIText kind="body/accent">
-      {actionTitle ? (
-        explorerUrl ? (
-          <TextAnchor
-            href={explorerUrlPrepared}
-            title={explorerUrlPrepared}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {actionTitle}
-          </TextAnchor>
-        ) : (
-          actionTitle
-        )
-      ) : (
+      {!actionTitle ? (
         <DelayedRender delay={1000}>[Missing network data]</DelayedRender>
+      ) : explorerUrl ? (
+        <TextAnchor
+          href={explorerUrlPrepared}
+          title={explorerUrlPrepared}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {actionTitle}
+        </TextAnchor>
+      ) : (
+        actionTitle
       )}
     </UIText>
   );
