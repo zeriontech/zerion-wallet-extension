@@ -289,7 +289,7 @@ export function HistoryList() {
           {actionFilters}
         </div>
         {isLoading ? (
-          <DelayedRender delay={300}>
+          <DelayedRender delay={500}>
             <ViewLoading kind="network" />
           </DelayedRender>
         ) : (
