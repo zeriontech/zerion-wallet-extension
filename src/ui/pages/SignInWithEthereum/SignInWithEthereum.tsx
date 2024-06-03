@@ -4,7 +4,6 @@ import { useSearchParams } from 'react-router-dom';
 import { invariant } from 'src/shared/invariant';
 import { Background } from 'src/ui/components/Background';
 import { Badge } from 'src/ui/components/Badge';
-import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
@@ -289,7 +288,6 @@ export function SignInWithEthereum() {
           </div>
         </VStack>
       </PageColumn>
-      <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
     </Background>
   );
 }

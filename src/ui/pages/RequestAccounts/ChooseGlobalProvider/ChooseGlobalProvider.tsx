@@ -15,7 +15,6 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { invariant } from 'src/shared/invariant';
 import { windowPort } from 'src/ui/shared/channels';
-import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 
 const bgKind = { kind: 'white' } as const;
 export function ChooseGlobalProvider({
@@ -127,7 +126,6 @@ export function ChooseGlobalProviderGuard({
 
   return (
     <>
-      <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
       <ChooseGlobalProvider
         origin={origin}
         onConfirm={() => {
