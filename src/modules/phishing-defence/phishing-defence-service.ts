@@ -29,7 +29,7 @@ export class PhishingDefence {
         }
         const popupUrl = new URL(browser.runtime.getURL(rawPopupUrl));
         popupUrl.hash = `/phishing-warning?url=${origin}`;
-        popupUrl.searchParams.append('templateType', 'tab');
+        popupUrl.searchParams.append('windowContext', 'tab');
         browser.tabs.update(tab.id, {
           url: popupUrl.toString(),
         });

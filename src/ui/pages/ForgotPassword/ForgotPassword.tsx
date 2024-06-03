@@ -17,7 +17,7 @@ import { useEraseDataMutation } from 'src/ui/components/EraseData';
 import { EraseDataConfirmationDialog } from 'src/ui/components/EraseData';
 import { EraseDataInProgress } from 'src/ui/components/EraseData';
 import { maybeOpenOboarding } from 'src/ui/Onboarding/initialization';
-import { pageTemplateType } from 'src/ui/shared/getPageTemplateName';
+import { templateData } from 'src/ui/shared/getPageTemplateName';
 import { emitter } from 'src/ui/shared/events';
 import * as s from './styles.module.css';
 
@@ -25,7 +25,7 @@ export function ForgotPassword() {
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const eraseAllData = useEraseDataMutation({
     onSuccess: () => {
-      if (pageTemplateType === 'tab') {
+      if (templateData.windowContext === 'tab') {
         emitter.emit('reloadExtension');
       } else {
         maybeOpenOboarding();

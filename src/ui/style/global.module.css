@@ -75,11 +75,12 @@ body.isTab {
   display: block; /* display: grid for some reason creates unwanted x an y overscolls */
 }
 
-:root:has(body.fullScreen) {
+:root:has(body.pageLayout) {
   background-color: var(--background);
 }
 
-body.fullScreen {
+body.pageLayout {
+  --body-width: 100%;
   height: 100vh;
   width: 100%;
 }
@@ -88,11 +89,11 @@ body.fullScreen {
   display: none;
 }
 
-body:not(.fullScreen):not(.isTab):not(.isDialog) :global(.popup-only) {
+body:not(.pageLayout):not(.isTab):not(.isDialog) :global(.popup-only) {
   display: block;
 }
 
-body.isDialog:not(.fullScreen) {
+body.isDialog:not(.pageLayout) {
   max-width: 425px;
 }
 

@@ -17,7 +17,7 @@ function getPopupRoute(route: string, type: WindowType) {
     throw new Error('popupUrl not found');
   }
   const url = new URL(browser.runtime.getURL(popupUrl));
-  url.searchParams.append('templateType', type);
+  url.searchParams.append('windowContext', type);
   url.hash = route;
   return url.toString();
 }

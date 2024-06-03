@@ -25,10 +25,7 @@ import { Login } from '../pages/Login';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { accountPublicRPCPort, walletPort } from '../shared/channels';
 import { CreateAccount } from '../pages/CreateAccount';
-import {
-  isFullScreenMode,
-  pageTemplateType,
-} from '../shared/getPageTemplateName';
+import { templateData } from '../shared/getPageTemplateName';
 import { URLBar } from '../components/URLBar';
 import { SwitchEthereumChain } from '../pages/SwitchEthereumChain';
 import { DesignTheme } from '../components/DesignTheme';
@@ -166,7 +163,8 @@ function RequireAuth({ children }: { children: JSX.Element }) {
   return children;
 }
 
-function FullScreenViews() {
+function PageLayoutViews() {
+  // TODO: Should these be a part of <Views />?
   return (
     <Routes>
       <Route path="/mint-dna/*" element={<MintDnaFlow />} />
@@ -181,7 +179,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
     <RouteResolver>
       <ViewArea>
         <URLBar />
-        {pageTemplateType === 'popup' ? (
+        {templateData.windowContext === 'popup' ? (
           <RouteRestoration initialRoute={initialRoute} />
         ) : null}
         <Routes>
@@ -400,13 +398,13 @@ export interface AppProps {
 export function App({ initialView, mode, inspect }: AppProps) {
   const bodyClassList = useMemo(() => {
     const result = [];
-    if (pageTemplateType === 'dialog') {
+    if (templateData.windowContext === 'dialog') {
       result.push(styles.isDialog);
-    } else if (pageTemplateType === 'tab') {
+    } else if (templateData.windowContext === 'tab') {
       result.push(styles.isTab);
     }
-    if (mode === 'onboarding' || isFullScreenMode) {
-      result.push(styles.fullScreen);
+    if (mode === 'onboarding' || templateData.layout === 'page') {
+      result.push(styles.pageLayout);
     }
     return result;
   }, [mode]);
@@ -443,7 +441,7 @@ export function App({ initialView, mode, inspect }: AppProps) {
                 onKeyDown={() => {
                   // Helper for development and debugging :)
                   const url = new URL(window.location.href);
-                  url.searchParams.set('templateType', 'tab');
+                  url.searchParams.set('windowContext', 'tab');
                   window.open(url, '_blank');
                 }}
               />
@@ -452,8 +450,8 @@ export function App({ initialView, mode, inspect }: AppProps) {
                   {mode === 'onboarding' &&
                   initialView !== 'handshakeFailure' ? (
                     <Onboarding />
-                  ) : isFullScreenMode ? (
-                    <FullScreenViews />
+                  ) : templateData.layout === 'page' ? (
+                    <PageLayoutViews />
                   ) : (
                     <Views
                       initialRoute={
