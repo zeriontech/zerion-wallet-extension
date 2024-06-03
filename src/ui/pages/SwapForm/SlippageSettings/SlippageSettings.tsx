@@ -226,6 +226,7 @@ export function SlippageSettings({
           onClick={() => {
             setIsCustomValue(false);
             setPercentValue(SLIPPAGE_OPTIONS[1]);
+            setCustomValue('');
           }}
         >
           Reset
