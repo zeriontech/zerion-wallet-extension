@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { CustomConfiguration } from '@zeriontech/transactions';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { Input } from 'src/ui/ui-kit/Input';
@@ -95,6 +95,67 @@ function SlippageWarning({ percentValue }: { percentValue: string }) {
   );
 }
 
+function PercentWidth({ onValue }: { onValue(width: number): void }) {
+  const persentCharWidthRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    let interval: ReturnType<typeof setTimeout>;
+    if (persentCharWidthRef.current) {
+      onValue(persentCharWidthRef.current.clientWidth);
+    } else {
+      interval = setTimeout(
+        () => onValue(persentCharWidthRef.current?.clientWidth || 0),
+        100
+      );
+    }
+    return () => clearTimeout(interval);
+  }, [onValue]);
+
+  return (
+    <UIText
+      ref={persentCharWidthRef}
+      kind="body/accent"
+      style={{ visibility: 'hidden', position: 'absolute' }}
+    >
+      %
+    </UIText>
+  );
+}
+
+function CustomValueOverlay({
+  isOptimal,
+  customValue,
+}: {
+  isOptimal: boolean;
+  customValue: string;
+}) {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        inset: '0 0 0 0',
+        pointerEvents: 'none',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      {customValue ? (
+        <UIText
+          kind="body/accent"
+          color={isOptimal ? undefined : 'var(--notice-500)'}
+        >
+          {customValue}%
+        </UIText>
+      ) : (
+        <UIText kind="body/accent" color="var(--neutral-500)">
+          Custom
+        </UIText>
+      )}
+    </div>
+  );
+}
+
 export function SlippageSettings({
   configuration,
   onConfigurationChange,
@@ -156,41 +217,12 @@ export function SlippageSettings({
             </Radio>
           ))}
           <div style={{ position: 'relative' }}>
-            {/* hidden element to calculate `%` width for correct padding */}
-            <UIText
-              ref={(instance) => {
-                setPercentCharWidth(instance?.clientWidth || 0);
-              }}
-              kind="body/accent"
-              style={{ visibility: 'hidden', position: 'absolute' }}
-            >
-              %
-            </UIText>
-            {/* overflow text for instant formatting percent value */}
+            <PercentWidth onValue={setPercentCharWidth} />
             {persentCharWidth ? (
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: '0 0 0 0',
-                  pointerEvents: 'none',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                {customValue ? (
-                  <UIText
-                    kind="body/accent"
-                    color={isOptimal ? undefined : 'var(--notice-500)'}
-                  >
-                    {customValue}%
-                  </UIText>
-                ) : (
-                  <UIText kind="body/accent" color="var(--neutral-500)">
-                    Custom
-                  </UIText>
-                )}
-              </div>
+              <CustomValueOverlay
+                customValue={customValue}
+                isOptimal={isOptimal}
+              />
             ) : null}
             <Input
               name="customSlippage"
