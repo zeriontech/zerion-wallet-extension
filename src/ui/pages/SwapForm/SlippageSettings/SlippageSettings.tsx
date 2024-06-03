@@ -200,7 +200,7 @@ export function SlippageSettings({
                 fontWeight: 500,
                 border: isOptimal ? undefined : '1px solid var(--notice-500)',
                 color: isOptimal ? undefined : 'var(--notice-500)',
-                paddingRight: (persendCharWidth || 0) + 12, // input default padding,
+                paddingRight: (persendCharWidth || 0) + 12, // `%` width + input default padding,
               }}
               onChange={(event) => {
                 setPercentValue(event.currentTarget.value);
