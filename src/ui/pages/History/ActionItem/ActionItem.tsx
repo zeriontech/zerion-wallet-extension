@@ -1,5 +1,6 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { AddressAction } from 'defi-sdk';
+import { isHexString } from '@ethersproject/bytes';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Media } from 'src/ui/ui-kit/Media';
@@ -34,6 +35,9 @@ import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { AssetLink } from 'src/ui/components/AssetLink';
 import { DNA_MINT_CONTRACT_ADDRESS } from 'src/ui/DNA/shared/constants';
 import { isInteractiveElement } from 'src/ui/shared/isInteractiveElement';
+import { normalizeChainId } from 'src/shared/normalizeChainId';
+import { UNKNOWN_ACTION_TITLE } from 'src/modules/ethereum/transactions/addressAction/creators';
+import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { ActionDetailedView } from '../ActionDetailedView';
 import { isUnlimitedApproval } from '../isUnlimitedApproval';
 import { AccelerateTransactionDialog } from '../AccelerateTransactionDialog';
@@ -66,7 +70,9 @@ function ActionTitle({
   const titlePrefix = action.transaction.status === 'failed' ? 'Failed ' : '';
   const actionTitle = isMintingDna
     ? 'Mint DNA'
-    : `${titlePrefix}${action.type.display_value}`;
+    : action.type.display_value !== UNKNOWN_ACTION_TITLE
+    ? `${titlePrefix}${action.type.display_value}`
+    : null;
 
   const explorerUrlPrepared = useMemo(
     () => (explorerUrl ? prepareForHref(explorerUrl)?.toString() : undefined),
@@ -75,7 +81,9 @@ function ActionTitle({
 
   return (
     <UIText kind="body/accent">
-      {explorerUrl ? (
+      {!actionTitle ? (
+        <DelayedRender delay={1000}>[Missing network data]</DelayedRender>
+      ) : explorerUrl ? (
         <TextAnchor
           href={explorerUrlPrepared}
           title={explorerUrlPrepared}
@@ -371,6 +379,7 @@ function ActionItemLocal({
   networks: Networks;
 }) {
   const asset = getActionAsset(action);
+  const { loadNetworkByChainId } = useNetworks();
 
   const { params, ready } = useAddressParams();
 
@@ -380,6 +389,17 @@ function ActionItemLocal({
     dialogRef.current?.showModal();
   }, []);
 
+  const { chain: chainStr } = action.transaction;
+
+  useEffect(() => {
+    // add missing network to the store
+    // this will trigger update of the whole list in History
+    if (isHexString(chainStr)) {
+      const chainId = normalizeChainId(chainStr);
+      loadNetworkByChainId(chainId);
+    }
+  }, [chainStr, loadNetworkByChainId]);
+
   if (!ready) {
     return null;
   }
@@ -388,9 +408,7 @@ function ActionItemLocal({
 
   const isMintingDna = checkIsDnaMint(action);
 
-  const { chain: chainStr } = action.transaction;
   const chain = chainStr ? createChain(chainStr) : null;
-
   const explorerUrl = chain
     ? networks.getExplorerTxUrlByName(chain, action.transaction.hash)
     : null;

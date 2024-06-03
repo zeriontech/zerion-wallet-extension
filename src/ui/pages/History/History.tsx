@@ -25,6 +25,7 @@ import CloseIcon from 'jsx:src/ui/assets/close_solid.svg';
 import { Button } from 'src/ui/ui-kit/Button';
 import { useStore } from '@store-unit/react';
 import { Networks } from 'src/modules/networks/Networks';
+import { DelayedRender } from 'src/ui/components/DelayedRender';
 import {
   getCurrentTabsOffset,
   getGrownTabMaxHeight,
@@ -73,7 +74,7 @@ function useMinedAndPendingAddressActions({
   searchQuery?: string;
 }) {
   const { params } = useAddressParams();
-  const { networks, loadNetworkByChainId } = useNetworks();
+  const { networks } = useNetworks();
   const isSupportedByBackend = chain
     ? networks?.supports('actions', chain)
     : true;
@@ -87,10 +88,7 @@ function useMinedAndPendingAddressActions({
       }
       let items = await Promise.all(
         localActions.map((transactionObject) =>
-          pendingTransactionToAddressAction(
-            transactionObject,
-            loadNetworkByChainId
-          )
+          pendingTransactionToAddressAction(transactionObject, networks)
         )
       );
       if (chain) {
@@ -104,6 +102,7 @@ function useMinedAndPendingAddressActions({
       return items;
     },
     enabled: Boolean(networks),
+    suspense: false,
     useErrorBoundary: true,
   });
 
@@ -290,7 +289,9 @@ export function HistoryList() {
           {actionFilters}
         </div>
         {isLoading ? (
-          <ViewLoading kind="network" />
+          <DelayedRender>
+            <ViewLoading kind="network" />
+          </DelayedRender>
         ) : (
           <EmptyView
             hasFilters={Boolean(searchQuery || filterChain)}
