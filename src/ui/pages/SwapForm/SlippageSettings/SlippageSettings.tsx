@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import type { CustomConfiguration } from '@zeriontech/transactions';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { Input } from 'src/ui/ui-kit/Input';
@@ -113,8 +113,7 @@ export function SlippageSettings({
     isCustomValue ? percentValue : ''
   );
   const { isOptimal } = getSlippageWarning(percentValue);
-  const persentCharWidthRef = useRef<HTMLDivElement | null>(null);
-  const persendCharWidth = persentCharWidthRef.current?.clientWidth;
+  const [persentCharWidth, setPercentCharWidth] = useState(0);
 
   return (
     <form
@@ -146,6 +145,7 @@ export function SlippageSettings({
               onChange={() => {
                 setPercentValue(value);
                 setIsCustomValue(false);
+                setCustomValue('');
               }}
               onFocus={() => {
                 setIsCustomValue(false);
@@ -158,36 +158,40 @@ export function SlippageSettings({
           <div style={{ position: 'relative' }}>
             {/* hidden element to calculate `%` width for correct padding */}
             <UIText
-              ref={persentCharWidthRef}
+              ref={(instance) => {
+                setPercentCharWidth(instance?.clientWidth || 0);
+              }}
               kind="body/accent"
               style={{ visibility: 'hidden', position: 'absolute' }}
             >
               %
             </UIText>
             {/* overflow text for instant formatting percent value */}
-            <div
-              style={{
-                position: 'absolute',
-                inset: '0 0 0 0',
-                pointerEvents: 'none',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              {customValue ? (
-                <UIText
-                  kind="body/accent"
-                  color={isOptimal ? undefined : 'var(--notice-500)'}
-                >
-                  {customValue}%
-                </UIText>
-              ) : (
-                <UIText kind="body/accent" color="var(--neutral-500)">
-                  Custom
-                </UIText>
-              )}
-            </div>
+            {persentCharWidth ? (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: '0 0 0 0',
+                  pointerEvents: 'none',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                {customValue ? (
+                  <UIText
+                    kind="body/accent"
+                    color={isOptimal ? undefined : 'var(--notice-500)'}
+                  >
+                    {customValue}%
+                  </UIText>
+                ) : (
+                  <UIText kind="body/accent" color="var(--neutral-500)">
+                    Custom
+                  </UIText>
+                )}
+              </div>
+            ) : null}
             <Input
               name="customSlippage"
               value={isCustomValue ? percentValue : ''}
@@ -202,7 +206,7 @@ export function SlippageSettings({
                 fontWeight: 500,
                 border: isOptimal ? undefined : '1px solid var(--notice-500)',
                 color: isOptimal ? undefined : 'var(--notice-500)',
-                paddingRight: (persendCharWidth || 0) + 12, // `%` width + input default padding,
+                paddingRight: persentCharWidth + 12, // `%` width + input default padding,
               }}
               onChange={(event) => {
                 setPercentValue(event.currentTarget.value);
