@@ -170,9 +170,6 @@ export function SlippageSettings({
   const [isCustomValue, setIsCustomValue] = useState(
     () => !SLIPPAGE_OPTIONS.includes(percentValue)
   );
-  // const [customValue, setCustomValue] = useState(
-  //   isCustomValue ? percentValue : ''
-  // );
   const { isOptimal } = getSlippageWarning(percentValue);
   const [persentCharWidth, setPercentCharWidth] = useState(0);
 
@@ -206,7 +203,6 @@ export function SlippageSettings({
               onChange={() => {
                 setPercentValue(value);
                 setIsCustomValue(false);
-                // setCustomValue('');
               }}
               onFocus={() => {
                 setIsCustomValue(false);
@@ -242,7 +238,6 @@ export function SlippageSettings({
               }}
               onChange={(event) => {
                 setPercentValue(event.currentTarget.value);
-                // setCustomValue(event.currentTarget.value);
               }}
               pattern={FLOAT_INPUT_PATTERN}
               required={isCustomValue}
@@ -262,7 +257,6 @@ export function SlippageSettings({
           onClick={() => {
             setIsCustomValue(false);
             setPercentValue(SLIPPAGE_OPTIONS[1]);
-            // setCustomValue('');
           }}
         >
           Reset
