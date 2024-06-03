@@ -84,7 +84,7 @@ function SlippageWarning({ percentValue }: { percentValue: string }) {
           ) : isTooSmall ? (
             <span>
               Transaction may potentially fail due to the volatility of asset
-              prices. Slippage is too small.
+              prices.
             </span>
           ) : (
             <br />
