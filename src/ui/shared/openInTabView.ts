@@ -5,7 +5,7 @@ export function openInTabView(event: React.MouseEvent) {
   const attr = event.currentTarget.getAttributeNode('href');
   if (attr) {
     const url = new URL(attr.value, attr?.baseURI);
-    url.searchParams.append('templateType', 'tab');
+    url.searchParams.append('windowContext', 'tab');
     browser.tabs.create({ url: url.toString() });
   }
 }

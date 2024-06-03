@@ -11,13 +11,13 @@ export function openInNewWindow(
   });
 }
 
-export function openInFullScreen(
+export function openInPageTabView(
   event: React.MouseEvent<HTMLAnchorElement, MouseEvent>
 ) {
   event?.preventDefault();
   const url = new URL(event.currentTarget.href);
-  url.searchParams.set('templateType', 'tab');
-  url.searchParams.set('fullScreen', 'true');
+  url.searchParams.set('windowContext', 'tab');
+  url.searchParams.set('layout', 'page');
   browser.tabs.create({
     url: url.toString(),
   });
