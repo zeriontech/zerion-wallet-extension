@@ -106,9 +106,11 @@ export function SlippageSettings({
   const [percentValue, setPercentValue] = useState(() =>
     String(toPercents(slippage))
   );
-  const [customValue, setCustomValue] = useState('');
   const [isCustomValue, setIsCustomValue] = useState(
     () => !SLIPPAGE_OPTIONS.includes(percentValue)
+  );
+  const [customValue, setCustomValue] = useState(
+    isCustomValue ? percentValue : ''
   );
   const { isOptimal } = getSlippageWarning(percentValue);
   const persentCharWidthRef = useRef<HTMLDivElement | null>(null);
