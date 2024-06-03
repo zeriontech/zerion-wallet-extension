@@ -1,15 +1,14 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import type { CustomConfiguration } from '@zeriontech/transactions';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { Input } from 'src/ui/ui-kit/Input';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Surface } from 'src/ui/ui-kit/Surface';
-import { apostrophe } from 'src/ui/shared/typography';
 import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
 import { isNumeric } from 'src/shared/isNumeric';
+import { VStack } from 'src/ui/ui-kit/VStack';
 import * as styles from './styles.module.css';
 
 function Radio({
@@ -48,23 +47,31 @@ function fromPercents(value: number) {
   return value / 100;
 }
 
-const SLIPPAGE_OPTIONS = ['0.5', '1', '3'];
+const SLIPPAGE_OPTIONS = ['0.2', '0.5'];
+
+function getSlippageWarning(percentValue: string) {
+  const isTooLarge = isNumeric(percentValue) && Number(percentValue) > 1;
+  const isTooSmall = isNumeric(percentValue) && Number(percentValue) < 0.2;
+  return { isTooLarge, isTooSmall, isOptimal: !isTooLarge && !isTooSmall };
+}
 
 function SlippageWarning({ percentValue }: { percentValue: string }) {
-  const isTooLarge = isNumeric(percentValue) && Number(percentValue) > 1;
-  const isTooSmall = isNumeric(percentValue) && Number(percentValue) < 0.5;
+  const { isTooLarge, isTooSmall, isOptimal } =
+    getSlippageWarning(percentValue);
+
+  if (isOptimal) {
+    return null;
+  }
 
   return (
     <Surface
       style={{
-        visibility: isTooLarge || isTooSmall ? 'visible' : 'hidden',
-        minHeight: 64, // prevent some jumping caused by different messages
         backgroundColor: 'var(--notice-100)',
         padding: 12,
         paddingInlineEnd: 16,
       }}
     >
-      <HStack gap={12}>
+      <HStack gap={12} alignItems="center">
         <WarningIcon
           size={32}
           outlineStrokeWidth={5}
@@ -73,14 +80,11 @@ function SlippageWarning({ percentValue }: { percentValue: string }) {
         />
         <UIText kind="small/regular" color="var(--neutral-700)">
           {isTooLarge ? (
-            <span>
-              There{apostrophe}s a risk that another transaction could precede
-              yours, potentially affecting the final price.
-            </span>
+            <span>You may receive up to {percentValue}% less tokens</span>
           ) : isTooSmall ? (
             <span>
               Transaction may potentially fail due to the volatility of asset
-              prices.
+              prices. Slippage is too small.
             </span>
           ) : (
             <br />
@@ -102,11 +106,17 @@ export function SlippageSettings({
   const [percentValue, setPercentValue] = useState(() =>
     String(toPercents(slippage))
   );
+  const [customValue, setCustomValue] = useState('');
   const [isCustomValue, setIsCustomValue] = useState(
     () => !SLIPPAGE_OPTIONS.includes(percentValue)
   );
+  const { isOptimal } = getSlippageWarning(percentValue);
+  const persentCharWidthRef = useRef<HTMLDivElement | null>(null);
+  const persendCharWidth = persentCharWidthRef.current?.clientWidth;
+
   return (
     <form
+      style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}
       onSubmit={(event) => {
         event.preventDefault();
         if (event.currentTarget.checkValidity()) {
@@ -117,59 +127,110 @@ export function SlippageSettings({
         }
       }}
     >
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: `repeat(${SLIPPAGE_OPTIONS.length}, 1fr) 1fr`,
-          gap: 8,
-        }}
-      >
-        {SLIPPAGE_OPTIONS.map((value) => (
-          <Radio
-            name="slippage"
-            value={value}
-            checked={!isCustomValue && value === percentValue}
-            onChange={() => {
-              setPercentValue(value);
-              setIsCustomValue(false);
-            }}
-            onFocus={() => {
-              setIsCustomValue(false);
-            }}
-            required={!isCustomValue}
-          >
-            <UIText kind="body/accent">{`${value}%`}</UIText>
-          </Radio>
-        ))}
-        <Input
-          name="customSlippage"
-          value={isCustomValue ? percentValue : ''}
-          onFocus={() => {
-            if (!isCustomValue) {
-              setPercentValue('');
-            }
-            setIsCustomValue(true);
+      <VStack gap={16} style={{ alignContent: 'start', flexGrow: 1 }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${SLIPPAGE_OPTIONS.length}, 1fr) 1fr`,
+            gap: 8,
           }}
-          onChange={(event) => setPercentValue(event.currentTarget.value)}
-          pattern={FLOAT_INPUT_PATTERN}
-          required={isCustomValue}
-        />
-      </div>
-      <Spacer height={16} />
-      <SlippageWarning percentValue={percentValue} />
-      <Spacer height={32} />
+        >
+          {SLIPPAGE_OPTIONS.map((value) => (
+            <Radio
+              key={value}
+              name="slippage"
+              value={value}
+              checked={!isCustomValue && value === percentValue}
+              onChange={() => {
+                setPercentValue(value);
+                setIsCustomValue(false);
+              }}
+              onFocus={() => {
+                setIsCustomValue(false);
+              }}
+              required={!isCustomValue}
+            >
+              <UIText kind="body/accent">{`${value}%`}</UIText>
+            </Radio>
+          ))}
+          <div style={{ position: 'relative' }}>
+            {/* hidden element to calculate `%` width for correct padding */}
+            <UIText
+              ref={persentCharWidthRef}
+              kind="body/accent"
+              style={{ visibility: 'hidden', position: 'absolute' }}
+            >
+              %
+            </UIText>
+            {/* overflow text for instant formatting percent value */}
+            <div
+              style={{
+                position: 'absolute',
+                inset: '0 0 0 0',
+                pointerEvents: 'none',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              {customValue ? (
+                <UIText
+                  kind="body/accent"
+                  color={isOptimal ? undefined : 'var(--notice-500)'}
+                >
+                  {customValue}%
+                </UIText>
+              ) : (
+                <UIText kind="body/accent" color="var(--neutral-500)">
+                  Custom
+                </UIText>
+              )}
+            </div>
+            <Input
+              name="customSlippage"
+              value={isCustomValue ? percentValue : ''}
+              onFocus={() => {
+                if (!isCustomValue) {
+                  setPercentValue('');
+                }
+                setIsCustomValue(true);
+              }}
+              style={{
+                textAlign: 'center',
+                fontWeight: 500,
+                border: isOptimal ? undefined : '1px solid var(--notice-500)',
+                color: isOptimal ? undefined : 'var(--notice-500)',
+                paddingRight: (persendCharWidth || 0) + 12, // input default padding,
+              }}
+              onChange={(event) => {
+                setPercentValue(event.currentTarget.value);
+                setCustomValue(event.currentTarget.value);
+              }}
+              pattern={FLOAT_INPUT_PATTERN}
+              required={isCustomValue}
+            />
+          </div>
+        </div>
+        <SlippageWarning percentValue={percentValue} />
+        <UIText kind="body/regular" color="var(--neutral-500)">
+          Your transaction will fail if the price changes more than the
+          slippage.
+        </UIText>
+      </VStack>
       <div style={{ display: 'grid', gap: 8, gridTemplateColumns: '1fr 1fr' }}>
         <Button
           kind="neutral"
           type="button"
           onClick={() => {
             setIsCustomValue(false);
-            setPercentValue(SLIPPAGE_OPTIONS[0]);
+            setPercentValue(SLIPPAGE_OPTIONS[1]);
           }}
         >
           Reset
         </Button>
-        <Button kind="primary">Save</Button>
+        <Button kind="primary" style={{ paddingInline: 8 }}>
+          Save For This Trade
+        </Button>
       </div>
     </form>
   );
