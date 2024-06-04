@@ -1,6 +1,7 @@
 import { Store } from 'store-unit';
 import type { ChainId } from '../ethereum/transactions/ChainId';
 import type { EthereumChainConfig } from '../ethereum/chains/types';
+import { isCustomNetworkId } from '../ethereum/chains/helpers';
 import { Networks } from './Networks';
 import { getNetworkByChainId, getNetworks } from './networks-api';
 import type { NetworkConfig } from './NetworkConfig';
@@ -77,7 +78,7 @@ export class NetworksStore extends Store<State> {
     const savedIds = savedChainConfigs?.map((config) => config.id);
     const chainsToFetch = Array.from(
       new Set([...(savedIds || []), ...(chains || [])])
-    );
+    ).filter((id) => !isCustomNetworkId(id));
 
     const [extraNetworkConfigs, commonNetworkConfigs] =
       await Promise.allSettled([getNetworks(chainsToFetch), getNetworks()]);
