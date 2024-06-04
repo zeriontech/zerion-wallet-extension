@@ -59,7 +59,7 @@ export function InsufficientFundsWarning({
     <TransactionWarning
       title="Insufficient balance"
       message={`You don't have enough ${
-        networks?.getNetworkByName(chain)?.native_asset?.symbol.toUpperCase() ||
+        networks?.getNetworkByName(chain)?.native_asset?.symbol ||
         'native token'
       } to cover network fees`}
     />

@@ -28,7 +28,7 @@ export function AssetLink({
         outlineOffset: -1, // make focus ring visible despite overflow: hidden
       }}
     >
-      {title || asset.symbol?.toUpperCase() || asset.name}
+      {title || asset.symbol || asset.name}
     </TextAnchor>
   );
 }
