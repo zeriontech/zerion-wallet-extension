@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import type { CustomConfiguration } from '@zeriontech/transactions';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { Input } from 'src/ui/ui-kit/Input';
@@ -51,7 +51,7 @@ const SLIPPAGE_OPTIONS = ['0.2', '0.5'];
 const DEFAULT_SLIPPAGE_VALUE = SLIPPAGE_OPTIONS[1];
 
 function getSlippageWarning(percentValue: string) {
-  const isTooLarge = isNumeric(percentValue) && Number(percentValue) > 1;
+  const isTooLarge = isNumeric(percentValue) && Number(percentValue) >= 1;
   const isTooSmall = isNumeric(percentValue) && Number(percentValue) < 0.2;
   return { isTooLarge, isTooSmall, isOptimal: !isTooLarge && !isTooSmall };
 }
@@ -98,34 +98,6 @@ function SlippageWarning({ percentValue }: { percentValue: string }) {
 
 const INPUT_TEXT_KIND = 'body/accent';
 
-function PercentWidth({ onValue }: { onValue(width: number): void }) {
-  const [show, setShow] = useState(true);
-  const percentCharWidthRef = useRef<HTMLDivElement | null>(null);
-
-  useLayoutEffect(() => {
-    if (percentCharWidthRef.current) {
-      onValue(percentCharWidthRef.current.clientWidth);
-      setShow(false);
-    }
-  }, [onValue]);
-
-  if (!show) {
-    return null;
-  }
-
-  return (
-    <UIText
-      ref={percentCharWidthRef}
-      kind={INPUT_TEXT_KIND}
-      style={{ visibility: 'hidden', position: 'absolute' }}
-    >
-      %
-    </UIText>
-  );
-}
-
-const MAX_OVERLAY_TEXT_LENGTH = 8;
-
 function CustomValueOverlay({
   isOptimal,
   value,
@@ -133,15 +105,11 @@ function CustomValueOverlay({
   isOptimal: boolean;
   value: string | null;
 }) {
-  if ((value?.length || 0) > MAX_OVERLAY_TEXT_LENGTH) {
-    return null;
-  }
-
   return (
     <div
       style={{
         position: 'absolute',
-        inset: '0 0 0 0',
+        inset: '0 12px 0 12px',
         pointerEvents: 'none',
         display: 'flex',
         justifyContent: 'center',
@@ -152,8 +120,14 @@ function CustomValueOverlay({
         <UIText
           kind={INPUT_TEXT_KIND}
           color={isOptimal ? undefined : 'var(--notice-500)'}
+          style={{
+            textAlign: 'right',
+            maxWidth: '100%',
+            display: 'flex',
+            justifyContent: 'flex-end',
+          }}
         >
-          {value}%
+          <span style={{ color: 'transparent' }}>{value}</span>%
         </UIText>
       ) : (
         <UIText kind={INPUT_TEXT_KIND} color="var(--neutral-500)">
@@ -179,7 +153,6 @@ export function SlippageSettings({
     () => !SLIPPAGE_OPTIONS.includes(percentValue)
   );
   const { isOptimal } = getSlippageWarning(percentValue);
-  const [percentCharWidth, setPercentCharWidth] = useState(0);
 
   return (
     <form
@@ -221,13 +194,10 @@ export function SlippageSettings({
             </Radio>
           ))}
           <div style={{ position: 'relative' }}>
-            <PercentWidth onValue={setPercentCharWidth} />
-            {percentCharWidth ? (
-              <CustomValueOverlay
-                value={isCustomValue ? percentValue : null}
-                isOptimal={isOptimal}
-              />
-            ) : null}
+            <CustomValueOverlay
+              value={isCustomValue ? percentValue : null}
+              isOptimal={isOptimal}
+            />
             <Input
               name="customSlippage"
               value={isCustomValue ? percentValue : ''}
@@ -242,7 +212,7 @@ export function SlippageSettings({
                 fontWeight: 500,
                 border: isOptimal ? undefined : '1px solid var(--notice-500)',
                 color: isOptimal ? undefined : 'var(--notice-500)',
-                paddingRight: percentCharWidth + 12, // `%` width + input default padding,
+                paddingRight: 'calc(1em + 12px)', // `%` width + input default padding,
               }}
               onChange={(event) => {
                 setPercentValue(event.currentTarget.value);
