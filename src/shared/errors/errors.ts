@@ -85,7 +85,9 @@ export class OriginNotAllowed extends ErrorWithEnumerableMessage {
 export class SwitchChainError extends ErrorWithEnumerableMessage {
   code = 4902;
 
-  constructor(message = 'Chain not configured') {
+  constructor(
+    message = 'Unrecognized chainId: Try adding the chain using wallet_addEthereumChain first.'
+  ) {
     super(message);
   }
 }
