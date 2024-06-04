@@ -62,7 +62,6 @@ import { invariant } from 'src/shared/invariant';
 import { SurfaceItemAnchor } from 'src/ui/ui-kit/SurfaceList';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { useStore } from '@store-unit/react';
-import { Networks } from 'src/modules/networks/Networks';
 import {
   TAB_SELECTOR_HEIGHT,
   TAB_TOP_PADDING,
@@ -210,7 +209,6 @@ function AddressPositionItem({
                 <NetworkIcon
                   size={16}
                   name={network?.name || null}
-                  chainId={network ? Networks.getChainId(network) : null}
                   src={network?.icon_url}
                 />
               ) : null}

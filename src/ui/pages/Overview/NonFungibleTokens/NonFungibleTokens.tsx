@@ -30,7 +30,6 @@ import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { EmptyView } from 'src/ui/components/EmptyView';
 import { NftTabDnaBanner } from 'src/ui/DNA/components/DnaBanners';
 import { useStore } from '@store-unit/react';
-import { Networks } from 'src/modules/networks/Networks';
 import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
 import { getGrownTabMaxHeight, offsetValues } from '../getTabsOffset';
 import { NetworkBalance } from '../Positions/NetworkBalance';
@@ -93,7 +92,6 @@ function NFTItem({
                   }}
                 >
                   <NetworkIcon
-                    chainId={Networks.getChainId(network)}
                     size={12}
                     name={network.name}
                     src={network.icon_url}

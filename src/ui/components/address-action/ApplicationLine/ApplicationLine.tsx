@@ -2,7 +2,7 @@ import React, { useLayoutEffect, useState } from 'react';
 import { animated, useTransition } from '@react-spring/web';
 import { capitalize } from 'capitalize-ts';
 import type { Chain } from 'src/modules/networks/Chain';
-import { Networks } from 'src/modules/networks/Networks';
+import type { Networks } from 'src/modules/networks/Networks';
 import { Media } from 'src/ui/ui-kit/Media';
 import ArrowLeftTop from 'jsx:src/ui/assets/arrow-left-top.svg';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -96,7 +96,6 @@ function ApplicationImage({
             <NetworkIcon
               size={16}
               name={network?.name || null}
-              chainId={network ? Networks.getChainId(network) : null}
               src={network?.icon_url || ''}
             />
           </div>

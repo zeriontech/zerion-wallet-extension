@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { isTruthy } from 'is-truthy-ts';
 import { createChain } from 'src/modules/networks/Chain';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import { Networks } from 'src/modules/networks/Networks';
+import type { Networks } from 'src/modules/networks/Networks';
 import {
   useNetworks,
   useSearchNetworks,
@@ -170,7 +170,6 @@ function NetworkList({
               <NetworkIcon
                 size={24}
                 src={network.icon_url}
-                chainId={Networks.getChainId(network)}
                 name={network.name}
               />
             }
