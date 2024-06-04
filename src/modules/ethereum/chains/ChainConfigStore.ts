@@ -32,7 +32,7 @@ function updateChainOrigin(origin: string, prevOrigin: string | null) {
 
 class ChainConfigStore extends PersistentStore<ChainConfig> {
   static initialState: ChainConfig = {
-    version: 2,
+    version: 3,
     ethereumChainConfigs: [],
   };
 
