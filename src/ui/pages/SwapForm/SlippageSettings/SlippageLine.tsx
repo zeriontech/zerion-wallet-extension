@@ -21,7 +21,7 @@ export function SlippageLine({ swapView }: { swapView: SwapFormView }) {
     .times(price)
     .times(1 - slippage);
 
-  return slippage > HIGH_SLIPPAGE_THRESHOLD ? (
+  return slippage >= HIGH_SLIPPAGE_THRESHOLD ? (
     <VStack gap={8}>
       <HStack gap={8} justifyContent="space-between">
         <UIText kind="small/regular" color="var(--neutral-700)">

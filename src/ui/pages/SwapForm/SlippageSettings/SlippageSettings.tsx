@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import type { CustomConfiguration } from '@zeriontech/transactions';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { Input } from 'src/ui/ui-kit/Input';
@@ -48,6 +48,7 @@ function fromPercents(value: number) {
 }
 
 const SLIPPAGE_OPTIONS = ['0.2', '0.5'];
+const DEFAULT_SLIPPAGE_VALUE = SLIPPAGE_OPTIONS[1];
 
 function getSlippageWarning(percentValue: string) {
   const isTooLarge = isNumeric(percentValue) && Number(percentValue) > 1;
@@ -95,32 +96,35 @@ function SlippageWarning({ percentValue }: { percentValue: string }) {
   );
 }
 
-function PercentWidth({ onValue }: { onValue(width: number): void }) {
-  const persentCharWidthRef = useRef<HTMLDivElement | null>(null);
+const INPUT_TEXT_KIND = 'body/accent';
 
-  useEffect(() => {
-    let interval: ReturnType<typeof setTimeout>;
-    if (persentCharWidthRef.current) {
-      onValue(persentCharWidthRef.current.clientWidth);
-    } else {
-      interval = setTimeout(
-        () => onValue(persentCharWidthRef.current?.clientWidth || 0),
-        100
-      );
+function PercentWidth({ onValue }: { onValue(width: number): void }) {
+  const [show, setShow] = useState(true);
+  const percentCharWidthRef = useRef<HTMLDivElement | null>(null);
+
+  useLayoutEffect(() => {
+    if (percentCharWidthRef.current) {
+      onValue(percentCharWidthRef.current.clientWidth);
+      setShow(false);
     }
-    return () => clearTimeout(interval);
   }, [onValue]);
+
+  if (!show) {
+    return null;
+  }
 
   return (
     <UIText
-      ref={persentCharWidthRef}
-      kind="body/accent"
+      ref={percentCharWidthRef}
+      kind={INPUT_TEXT_KIND}
       style={{ visibility: 'hidden', position: 'absolute' }}
     >
       %
     </UIText>
   );
 }
+
+const MAX_OVERLAY_TEXT_LENGTH = 8;
 
 function CustomValueOverlay({
   isOptimal,
@@ -129,6 +133,10 @@ function CustomValueOverlay({
   isOptimal: boolean;
   value: string | null;
 }) {
+  if ((value?.length || 0) > MAX_OVERLAY_TEXT_LENGTH) {
+    return null;
+  }
+
   return (
     <div
       style={{
@@ -140,15 +148,15 @@ function CustomValueOverlay({
         alignItems: 'center',
       }}
     >
-      {value ? (
+      {value != null ? (
         <UIText
-          kind="body/accent"
+          kind={INPUT_TEXT_KIND}
           color={isOptimal ? undefined : 'var(--notice-500)'}
         >
           {value}%
         </UIText>
       ) : (
-        <UIText kind="body/accent" color="var(--neutral-500)">
+        <UIText kind={INPUT_TEXT_KIND} color="var(--neutral-500)">
           Custom
         </UIText>
       )}
@@ -171,7 +179,7 @@ export function SlippageSettings({
     () => !SLIPPAGE_OPTIONS.includes(percentValue)
   );
   const { isOptimal } = getSlippageWarning(percentValue);
-  const [persentCharWidth, setPercentCharWidth] = useState(0);
+  const [percentCharWidth, setPercentCharWidth] = useState(0);
 
   return (
     <form
@@ -209,12 +217,12 @@ export function SlippageSettings({
               }}
               required={!isCustomValue}
             >
-              <UIText kind="body/accent">{`${value}%`}</UIText>
+              <UIText kind={INPUT_TEXT_KIND}>{`${value}%`}</UIText>
             </Radio>
           ))}
           <div style={{ position: 'relative' }}>
             <PercentWidth onValue={setPercentCharWidth} />
-            {persentCharWidth ? (
+            {percentCharWidth ? (
               <CustomValueOverlay
                 value={isCustomValue ? percentValue : null}
                 isOptimal={isOptimal}
@@ -234,7 +242,7 @@ export function SlippageSettings({
                 fontWeight: 500,
                 border: isOptimal ? undefined : '1px solid var(--notice-500)',
                 color: isOptimal ? undefined : 'var(--notice-500)',
-                paddingRight: persentCharWidth + 12, // `%` width + input default padding,
+                paddingRight: percentCharWidth + 12, // `%` width + input default padding,
               }}
               onChange={(event) => {
                 setPercentValue(event.currentTarget.value);
@@ -256,7 +264,7 @@ export function SlippageSettings({
           type="button"
           onClick={() => {
             setIsCustomValue(false);
-            setPercentValue(SLIPPAGE_OPTIONS[1]);
+            setPercentValue(DEFAULT_SLIPPAGE_VALUE);
           }}
         >
           Reset
