@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import type { NFTAsset, Asset, Direction, ActionTransfer } from 'defi-sdk';
 import { minus } from 'src/ui/shared/typography';
-import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import type { Chain } from 'src/modules/networks/Chain';
 import { getCommonQuantity } from 'src/modules/networks/asset';
@@ -40,7 +39,6 @@ function HistoryTokenValue({
   address?: string;
   withLink: boolean;
 }) {
-  const tokenTitle = asset.symbol?.toUpperCase() || asset.name;
   const sign = getSign(value, direction);
   const commonQuantity = useMemo(
     () =>
@@ -51,7 +49,6 @@ function HistoryTokenValue({
       }),
     [chain, asset, value]
   );
-  const formatted = formatTokenValue(value);
 
   return (
     <HStack
@@ -63,7 +60,7 @@ function HistoryTokenValue({
         overflow: 'hidden',
         whiteSpace: 'nowrap',
       }}
-      title={`${sign}${formatted} ${tokenTitle}`}
+      title={commonQuantity.toFixed()}
     >
       <AssetQuantity sign={sign} commonQuantity={commonQuantity} />
       {withLink ? (
