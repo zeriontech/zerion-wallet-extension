@@ -304,12 +304,7 @@ function TypedDataDefaultView({
             interpretQuery={interpretQuery}
           />
           {interpretation?.input ? (
-            <Button
-              kind="regular"
-              onClick={onOpenAdvancedView}
-              size={36}
-              disabled={!interpretation?.input}
-            >
+            <Button kind="regular" onClick={onOpenAdvancedView} size={36}>
               Advanced View
             </Button>
           ) : null}
