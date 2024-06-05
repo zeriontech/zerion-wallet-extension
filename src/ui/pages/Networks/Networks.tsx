@@ -25,7 +25,6 @@ import { networksStore } from 'src/modules/networks/networks-store.client';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { invariant } from 'src/shared/invariant';
 import {
-  Background,
   useBackgroundKind,
   whiteBackgroundKind,
 } from 'src/ui/components/Background/Background';
@@ -356,11 +355,11 @@ function NetworksView({
   autoFocusSearch: boolean;
   loading: boolean;
 }) {
+  useBackgroundKind(whiteBackgroundKind);
   const [params, setSearchParams] = useSearchParams();
   const searchRef = useRef<HTMLInputElement | null>(null);
   const query = params.get('query');
   const [inputValue, setInputValue] = useState(query || '');
-  useBackgroundKind(whiteBackgroundKind);
   const debouncedSetSearchParams = useDebouncedCallback(
     useCallback(
       (value: string) =>
@@ -402,50 +401,48 @@ function NetworksView({
       <KeyboardShortcut combination="cmd+f" onKeyDown={focusSearchInput} />
       <KeyboardShortcut combination="ArrowUp" onKeyDown={selectPrevNetwork} />
       <KeyboardShortcut combination="ArrowDown" onKeyDown={selectNextNetwork} />
-      <Background backgroundKind="white">
-        <PageColumn>
-          <NavigationTitle
-            title="Networks"
-            elementEnd={
-              <Button
-                as={UnstyledLink}
-                to="/networks/create"
-                kind="ghost"
-                title="Add Network"
-                size={36}
-                style={{ paddingInline: 6, justifySelf: 'center' }}
-              >
-                <AddCircleIcon style={{ display: 'block' }} />
-              </Button>
+      <PageColumn>
+        <NavigationTitle
+          title="Networks"
+          elementEnd={
+            <Button
+              as={UnstyledLink}
+              to="/networks/create"
+              kind="ghost"
+              title="Add Network"
+              size={36}
+              style={{ paddingInline: 6, justifySelf: 'center' }}
+            >
+              <AddCircleIcon style={{ display: 'block' }} />
+            </Button>
+          }
+        />
+        <Spacer height={16} />
+        <SearchInput
+          ref={searchRef}
+          autoFocus={autoFocusSearch}
+          boxHeight={40}
+          type="search"
+          placeholder="Search"
+          value={inputValue}
+          onChange={(event) => {
+            setInputValue(event.currentTarget.value);
+            debouncedSetSearchParams(event.currentTarget.value);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === 'ArrowDown') {
+              selectNextNetwork();
             }
-          />
-          <Spacer height={16} />
-          <SearchInput
-            ref={searchRef}
-            autoFocus={autoFocusSearch}
-            boxHeight={40}
-            type="search"
-            placeholder="Search"
-            value={inputValue}
-            onChange={(event) => {
-              setInputValue(event.currentTarget.value);
-              debouncedSetSearchParams(event.currentTarget.value);
-            }}
-            onKeyDown={(event) => {
-              if (event.key === 'ArrowDown') {
-                selectNextNetwork();
-              }
-            }}
-          />
-          <Spacer height={4} />
-          {query ? (
-            <SearchResults query={query} showTestnets={showTestnets} />
-          ) : (
-            <WalletNetworkList networks={networks} groups={groups} />
-          )}
-          <PageBottom />
-        </PageColumn>
-      </Background>
+          }}
+        />
+        <Spacer height={4} />
+        {query ? (
+          <SearchResults query={query} showTestnets={showTestnets} />
+        ) : (
+          <WalletNetworkList networks={networks} groups={groups} />
+        )}
+        <PageBottom />
+      </PageColumn>
     </>
   );
 }

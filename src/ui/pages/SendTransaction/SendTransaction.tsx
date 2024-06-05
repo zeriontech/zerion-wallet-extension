@@ -25,7 +25,7 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { Background } from 'src/ui/components/Background';
+import { useBackgroundKind } from 'src/ui/components/Background';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import type { Chain } from 'src/modules/networks/Chain';
@@ -85,6 +85,7 @@ import { valueToHex } from 'src/shared/units/valueToHex';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
 import { hasNetworkFee } from 'src/modules/ethereum/transactions/gasPrices/hasNetworkFee';
+import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -602,6 +603,7 @@ function SendTransactionContent({
   chain: Chain;
   networks: Networks;
 }) {
+  useBackgroundKind(whiteBackgroundKind);
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { singleAddress } = useAddressParams();
@@ -782,7 +784,7 @@ function SendTransactionContent({
   };
 
   return (
-    <Background backgroundKind="white">
+    <>
       <NavigationTitle title={null} documentTitle="Send Transaction" />
       <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
       <PageColumn
@@ -882,7 +884,7 @@ function SendTransactionContent({
         </VStack>
         <PageBottom />
       </PageStickyFooter>
-    </Background>
+    </>
   );
 }
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
-import { Background } from 'src/ui/components/Background';
+import { useBackgroundKind } from 'src/ui/components/Background';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -21,6 +21,7 @@ import type { SignMsgBtnHandle } from 'src/ui/components/SignMessageButton';
 import { SignMessageButton } from 'src/ui/components/SignMessageButton';
 import { invariant } from 'src/shared/invariant';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
+import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { useAddressNftPosition } from './useAddressNftPosition';
 
@@ -98,8 +99,10 @@ export function NonFungibleToken() {
   const nftTags = useMemo(() => new Set(nft?.metadata.tags || []), [nft]);
   const isPrimary = promotedPrimary || nftTags.has('#primary');
 
+  useBackgroundKind(whiteBackgroundKind);
+
   return (
-    <Background backgroundKind="white">
+    <>
       <PageColumn style={{ paddingTop: 18 }}>
         <NavigationTitle
           title={
@@ -219,6 +222,6 @@ export function NonFungibleToken() {
           <PageBottom />
         </PageStickyFooter>
       ) : null}
-    </Background>
+    </>
   );
 }

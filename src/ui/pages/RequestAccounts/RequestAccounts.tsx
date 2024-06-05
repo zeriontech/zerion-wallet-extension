@@ -8,7 +8,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Button } from 'src/ui/ui-kit/Button';
-import { Background } from 'src/ui/components/Background';
+import { useBackgroundKind } from 'src/ui/components/Background';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { FillView } from 'src/ui/components/FillView';
@@ -35,6 +35,7 @@ import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { DeviceAccount } from 'src/shared/types/Device';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
+import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { WalletList } from '../WalletSelect/WalletList';
 
 function WalletSelectDialog({
@@ -154,8 +155,10 @@ function RequestAccountsView({
   const originName = new URL(origin).hostname;
   const iconSize = 32;
   const iconBorderRadius = 6;
+
+  useBackgroundKind(whiteBackgroundKind);
   return (
-    <Background backgroundKind="white">
+    <>
       <NavigationTitle title={null} documentTitle="Connect Wallet" />
       <CenteredDialog
         ref={dialogRef}
@@ -257,7 +260,7 @@ function RequestAccountsView({
           </Button>
         </div>
       </PageColumn>
-    </Background>
+    </>
   );
 }
 

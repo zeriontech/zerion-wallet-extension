@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
-import { Background } from 'src/ui/components/Background';
+import { useBackgroundKind } from 'src/ui/components/Background';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { prepareUserInputSeedOrPrivateKey } from 'src/ui/shared/prepareUserInputSeedOrPrivateKey';
@@ -21,6 +21,7 @@ import {
 } from 'src/shared/validation/wallet';
 import { WithPasswordSession } from 'src/ui/components/VerifyUser/WithPasswordSession';
 import { SecretInput } from 'src/ui/components/SecretInput';
+import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { PrivateKeyImportView } from './PrivateKeyImportView';
 import { MnemonicImportView } from './MnemonicImportView';
 import { MemoryLocationState } from './memoryLocationState';
@@ -138,56 +139,52 @@ function ImportWalletView({
 }: {
   locationStateStore: MemoryLocationState;
 }) {
+  useBackgroundKind(whiteBackgroundKind);
   const navigate = useNavigate();
 
   return (
-    <>
+    <PageColumn>
       <NavigationTitle title="Import Wallet" />
-
-      <Background backgroundKind="white">
-        <PageColumn>
-          <PageTop />
-          <UIText kind="headline/h2">
-            Enter Recovery Phrase{' '}
-            <span
-              style={{ verticalAlign: 'middle' }}
-              title="This is a 12 or 24-word phrase you got when you created your previous wallet"
-            >
-              <QuestionHintIcon style={{ color: 'var(--neutral-500)' }} />
-            </span>
-            <br />
-            or a Private Key{' '}
-            <span
-              style={{ verticalAlign: 'middle' }}
-              title="A private key is an access key to one address (account)"
-            >
-              <QuestionHintIcon style={{ color: 'var(--neutral-500)' }} />
-            </span>
-          </UIText>
-          <Spacer height={24}></Spacer>
-          <ImportForm
-            onSubmit={({ value, seedType }) => {
-              if (seedType === SeedType.privateKey) {
-                // NOTE:
-                // see locationStateStore for why and how it's used instead of location state
-                const pathname = '/get-started/import/private-key';
-                const to = `${pathname}?state=memory`;
-                locationStateStore.set(pathname, value);
-                navigate(to);
-              } else if (seedType === SeedType.mnemonic) {
-                // NOTE:
-                // see locationStateStore for why it's used instead of location state
-                const pathname = '/get-started/import/mnemonic';
-                const to = `${pathname}?state=memory`;
-                locationStateStore.set(pathname, value);
-                navigate(to);
-              }
-            }}
-          />
-          <PageBottom />
-        </PageColumn>
-      </Background>
-    </>
+      <PageTop />
+      <UIText kind="headline/h2">
+        Enter Recovery Phrase{' '}
+        <span
+          style={{ verticalAlign: 'middle' }}
+          title="This is a 12 or 24-word phrase you got when you created your previous wallet"
+        >
+          <QuestionHintIcon style={{ color: 'var(--neutral-500)' }} />
+        </span>
+        <br />
+        or a Private Key{' '}
+        <span
+          style={{ verticalAlign: 'middle' }}
+          title="A private key is an access key to one address (account)"
+        >
+          <QuestionHintIcon style={{ color: 'var(--neutral-500)' }} />
+        </span>
+      </UIText>
+      <Spacer height={24}></Spacer>
+      <ImportForm
+        onSubmit={({ value, seedType }) => {
+          if (seedType === SeedType.privateKey) {
+            // NOTE:
+            // see locationStateStore for why and how it's used instead of location state
+            const pathname = '/get-started/import/private-key';
+            const to = `${pathname}?state=memory`;
+            locationStateStore.set(pathname, value);
+            navigate(to);
+          } else if (seedType === SeedType.mnemonic) {
+            // NOTE:
+            // see locationStateStore for why it's used instead of location state
+            const pathname = '/get-started/import/mnemonic';
+            const to = `${pathname}?state=memory`;
+            locationStateStore.set(pathname, value);
+            navigate(to);
+          }
+        }}
+      />
+      <PageBottom />
+    </PageColumn>
   );
 }
 

@@ -29,7 +29,10 @@ import { invariant } from 'src/shared/invariant';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
-import { Background } from 'src/ui/components/Background/Background';
+import {
+  useBackgroundKind,
+  whiteBackgroundKind,
+} from 'src/ui/components/Background/Background';
 import { useRemovePermissionMutation } from '../shared/useRemovePermission';
 import { getConnectedSite } from '../shared/getConnectedSite';
 import { MetamaskMode } from './MetamaskMode';
@@ -114,6 +117,8 @@ function SiteLink({ title, href }: { title: string; href: string }) {
 }
 
 export function ConnectedSite() {
+  useBackgroundKind(whiteBackgroundKind);
+
   const { originName } = useParams();
   invariant(originName, 'originName parameter is required for this view');
   const { data: connectedSites, refetch } = useQuery({
@@ -156,113 +161,108 @@ export function ConnectedSite() {
       <BottomSheetDialog ref={removeActionDialogRef} style={{ height: '30vh' }}>
         <GenericPrompt message="The site will ask for permission next time" />
       </BottomSheetDialog>
-      <Background backgroundKind="white">
-        <NavigationTitle title={title} />
-        <PageColumn paddingInline={8}>
-          <VStack gap={24}>
-            <VStack gap={4}>
-              {connectedSiteOriginForHref ? (
-                <SiteLink
-                  title={title}
-                  href={connectedSiteOriginForHref.href}
+      <NavigationTitle title={title} />
+      <PageColumn paddingInline={8}>
+        <VStack gap={24}>
+          <VStack gap={4}>
+            {connectedSiteOriginForHref ? (
+              <SiteLink title={title} href={connectedSiteOriginForHref.href} />
+            ) : null}
+            <label
+              style={{
+                width: '100%',
+                padding: '12px 8px',
+                cursor: 'pointer',
+              }}
+            >
+              <MetamaskMode originName={originName} />
+            </label>
+          </VStack>
+          {connectedSite.wallets.length ? (
+            <VStack gap={8} style={{ paddingInline: 8 }}>
+              <UIText kind="small/regular" color="var(--neutral-500)">
+                Connected addresses
+              </UIText>
+              <SurfaceList
+                style={{
+                  padding: 0,
+                  paddingBlock: 0,
+                  backgroundColor: 'none',
+                }}
+                items={connectedSite.wallets.map((wallet) => {
+                  return {
+                    key: wallet.address,
+                    style: { padding: 0 },
+                    component: (
+                      <HStack
+                        gap={4}
+                        justifyContent="space-between"
+                        alignItems="center"
+                      >
+                        <Media
+                          image={
+                            <WalletAvatar
+                              address={wallet.address}
+                              active={false}
+                              size={32}
+                              borderRadius={4}
+                            />
+                          }
+                          text={
+                            <UIText
+                              kind="body/accent"
+                              style={{ wordBreak: 'break-all' }}
+                            >
+                              <WalletDisplayName wallet={wallet} />
+                            </UIText>
+                          }
+                          detailText={
+                            wallet.name ? (
+                              <UIText
+                                kind="caption/regular"
+                                color="var(--neutral-500)"
+                              >
+                                {truncateAddress(wallet.address)}
+                              </UIText>
+                            ) : null
+                          }
+                        />
+                        <Button
+                          kind="danger"
+                          size={36}
+                          style={{ padding: 8 }}
+                          aria-label="disconnect address"
+                          onClick={() => {
+                            if (removeActionDialogRef.current) {
+                              showConfirmDialog(
+                                removeActionDialogRef.current
+                              ).then(() => {
+                                removePermissionMutation.mutate({
+                                  origin: connectedSite.origin,
+                                  address: wallet.address,
+                                });
+                              });
+                            }
+                          }}
+                        >
+                          <DisconnectIcon />
+                        </Button>
+                      </HStack>
+                    ),
+                  };
+                })}
+              />
+              {connectedSite.wallets.length > 1 ? (
+                <RevokeAllButton
+                  origin={connectedSite.origin}
+                  onSuccess={handleAllRemoveSuccess}
                 />
               ) : null}
-              <label
-                style={{
-                  width: '100%',
-                  padding: '12px 8px',
-                  cursor: 'pointer',
-                }}
-              >
-                <MetamaskMode originName={originName} />
-              </label>
             </VStack>
-            {connectedSite.wallets.length ? (
-              <VStack gap={8} style={{ paddingInline: 8 }}>
-                <UIText kind="small/regular" color="var(--neutral-500)">
-                  Connected addresses
-                </UIText>
-                <SurfaceList
-                  style={{
-                    padding: 0,
-                    paddingBlock: 0,
-                    backgroundColor: 'none',
-                  }}
-                  items={connectedSite.wallets.map((wallet) => {
-                    return {
-                      key: wallet.address,
-                      style: { padding: 0 },
-                      component: (
-                        <HStack
-                          gap={4}
-                          justifyContent="space-between"
-                          alignItems="center"
-                        >
-                          <Media
-                            image={
-                              <WalletAvatar
-                                address={wallet.address}
-                                active={false}
-                                size={32}
-                                borderRadius={4}
-                              />
-                            }
-                            text={
-                              <UIText
-                                kind="body/accent"
-                                style={{ wordBreak: 'break-all' }}
-                              >
-                                <WalletDisplayName wallet={wallet} />
-                              </UIText>
-                            }
-                            detailText={
-                              wallet.name ? (
-                                <UIText
-                                  kind="caption/regular"
-                                  color="var(--neutral-500)"
-                                >
-                                  {truncateAddress(wallet.address)}
-                                </UIText>
-                              ) : null
-                            }
-                          />
-                          <Button
-                            kind="danger"
-                            size={36}
-                            style={{ padding: 8 }}
-                            aria-label="disconnect address"
-                            onClick={() => {
-                              if (removeActionDialogRef.current) {
-                                showConfirmDialog(
-                                  removeActionDialogRef.current
-                                ).then(() => {
-                                  removePermissionMutation.mutate({
-                                    origin: connectedSite.origin,
-                                    address: wallet.address,
-                                  });
-                                });
-                              }
-                            }}
-                          >
-                            <DisconnectIcon />
-                          </Button>
-                        </HStack>
-                      ),
-                    };
-                  })}
-                />
-                {connectedSite.wallets.length > 1 ? (
-                  <RevokeAllButton
-                    origin={connectedSite.origin}
-                    onSuccess={handleAllRemoveSuccess}
-                  />
-                ) : null}
-              </VStack>
-            ) : null}
-          </VStack>
-          <PageBottom />
-        </PageColumn>
-      </Background>
+          ) : null}
+        </VStack>
+        <PageBottom />
+      </PageColumn>
     </>
   );
 }

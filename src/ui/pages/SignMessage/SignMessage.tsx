@@ -9,7 +9,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Surface } from 'src/ui/ui-kit/Surface';
-import { Background } from 'src/ui/components/Background';
+import { useBackgroundKind } from 'src/ui/components/Background';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
 import { invariant } from 'src/shared/invariant';
@@ -26,6 +26,7 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import type { SignMsgBtnHandle } from 'src/ui/components/SignMessageButton';
 import { SignMessageButton } from 'src/ui/components/SignMessageButton';
+import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 
 function MessageRow({ message }: { message: string }) {
@@ -87,15 +88,18 @@ function SignMessageContent({
 
   const handleReject = () => windowPort.reject(windowId);
 
+  useBackgroundKind(whiteBackgroundKind);
+
   return (
-    <Background backgroundKind="white">
-      <NavigationTitle title={null} documentTitle="Sign Message" />
+    <>
       <PageColumn
         // different surface color on backgroundKind="neutral"
         style={{
           ['--surface-background-color' as string]: 'var(--neutral-100)',
         }}
       >
+        <NavigationTitle title={null} documentTitle="Sign Message" />
+        <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
         <PageTop />
         <div style={{ display: 'grid', placeItems: 'center' }}>
           <Spacer height={16} />
@@ -175,8 +179,7 @@ function SignMessageContent({
           </div>
         </VStack>
       </PageStickyFooter>
-      <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
-    </Background>
+    </>
   );
 }
 

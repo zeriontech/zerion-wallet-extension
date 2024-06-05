@@ -15,11 +15,13 @@ import AddIcon from 'jsx:src/ui/assets/plus.svg';
 import EditIcon from 'jsx:src/ui/assets/edit.svg';
 import { Button } from 'src/ui/ui-kit/Button';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { Background } from 'src/ui/components/Background';
+import { useBackgroundKind } from 'src/ui/components/Background';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { WalletList } from './WalletList';
 
 export function WalletSelect() {
+  useBackgroundKind(whiteBackgroundKind);
   const navigate = useNavigate();
   const { data: walletGroups, isLoading } = useQuery({
     queryKey: ['wallet/uiGetWalletGroups'],
@@ -84,39 +86,37 @@ export function WalletSelect() {
   }
 
   return (
-    <Background backgroundKind="white">
-      <PageColumn>
-        {title}
-        <Spacer height={10} />
-        <VStack
-          gap={2}
-          style={{
-            ['--surface-background-color' as string]: 'transparent',
+    <PageColumn>
+      {title}
+      <Spacer height={10} />
+      <VStack
+        gap={2}
+        style={{
+          ['--surface-background-color' as string]: 'transparent',
+        }}
+      >
+        <WalletList
+          walletGroups={walletGroups}
+          onSelect={(wallet) => {
+            setCurrentAddressMutation.mutate(wallet.address);
           }}
-        >
-          <WalletList
-            walletGroups={walletGroups}
-            onSelect={(wallet) => {
-              setCurrentAddressMutation.mutate(wallet.address);
-            }}
-            selectedAddress={singleAddress}
-            showAddressValues={true}
-          />
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <Button
-              kind="neutral"
-              size={36}
-              style={{ paddingInline: 12 }}
-              as={UnstyledLink}
-              to="/get-started"
-              title="Add Wallet"
-            >
-              Add Wallet
-            </Button>
-          </div>
-        </VStack>
-        <PageBottom />
-      </PageColumn>
-    </Background>
+          selectedAddress={singleAddress}
+          showAddressValues={true}
+        />
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <Button
+            kind="neutral"
+            size={36}
+            style={{ paddingInline: 12 }}
+            as={UnstyledLink}
+            to="/get-started"
+            title="Add Wallet"
+          >
+            Add Wallet
+          </Button>
+        </div>
+      </VStack>
+      <PageBottom />
+    </PageColumn>
   );
 }
