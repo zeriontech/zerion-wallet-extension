@@ -236,9 +236,7 @@ function NetworkPage() {
   });
   const resetMutation = useMutation({
     mutationFn: (network: NetworkConfig) =>
-      walletPort.request('removeEthereumChainConfig', {
-        chain: network.id,
-      }),
+      walletPort.request('resetEthereumChain', { chain: network.id }),
     onSuccess() {
       networksStore.update();
       navigate(-1);

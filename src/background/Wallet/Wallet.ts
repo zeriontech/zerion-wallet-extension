@@ -1150,10 +1150,7 @@ export class Wallet {
       // TODO: remove chain for origin in case new chain is not set
       this.setChainForOrigin(createChain(NetworkId.Ethereum), origin);
     });
-    this.removeEthereumChainConfig({
-      context,
-      params: { chain: chainStr },
-    });
+    this.resetEthereumChain({ context, params: { chain: chainStr } });
   }
 
   async addEthereumChain({
@@ -1184,7 +1181,7 @@ export class Wallet {
     return result;
   }
 
-  async removeEthereumChainConfig({
+  async resetEthereumChain({
     context,
     params: { chain: chainStr },
   }: WalletMethodParams<{ chain: string }>) {
