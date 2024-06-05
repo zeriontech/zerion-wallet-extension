@@ -22,7 +22,8 @@ class UserLifecycleStore extends PersistentStore<State> {
   ) {
     super(initialState, key);
 
-    emitter.on('screenView', () => {
+    emitter.on('screenView', async () => {
+      await this.ready();
       this.setState((state) => {
         if (state.installedEvent == null) {
           return state;
@@ -35,7 +36,8 @@ class UserLifecycleStore extends PersistentStore<State> {
     });
   }
 
-  handleRuntimeInstalledEvent() {
+  async handleRuntimeInstalledEvent() {
+    await this.ready();
     this.setState((state) => ({ ...state, installedEvent: Date.now() }));
   }
 }
