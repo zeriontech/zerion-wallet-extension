@@ -788,7 +788,7 @@ function SendTransactionContent({
       <NavigationTitle title={null} documentTitle="Send Transaction" />
       <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
       <PageColumn
-        // different surface color on backgroundKind="white"
+        // different surface color on useBackgroundKind({ kind: 'white' })
         style={{
           ['--surface-background-color' as string]: 'var(--neutral-100)',
         }}

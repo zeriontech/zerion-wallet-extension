@@ -93,7 +93,7 @@ function SignMessageContent({
   return (
     <>
       <PageColumn
-        // different surface color on backgroundKind="neutral"
+        // different surface color on useBackgroundKind({ kind: 'neutral' })
         style={{
           ['--surface-background-color' as string]: 'var(--neutral-100)',
         }}
