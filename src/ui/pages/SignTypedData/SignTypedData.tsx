@@ -290,19 +290,22 @@ function TypedDataDefaultView({
               ) : null
             }
           />
-        ) : interpretQuery.isFetched ? (
+        ) : (
           <TypedDataRow ref={setTypedDataRow} data={typedDataFormatted} />
-        ) : null}
+        )}
         <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
           <InterpretationState
             interpretation={interpretation}
             interpretQuery={interpretQuery}
           />
-          {typedDataFormatted ? (
-            <Button kind="regular" onClick={onOpenAdvancedView} size={36}>
-              Advanced View
-            </Button>
-          ) : null}
+          <Button
+            kind="regular"
+            onClick={onOpenAdvancedView}
+            size={36}
+            disabled={!interpretation?.input}
+          >
+            Advanced View
+          </Button>
         </HStack>
       </VStack>
       <Spacer height={16} />
