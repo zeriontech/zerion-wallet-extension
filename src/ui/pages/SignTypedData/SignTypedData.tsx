@@ -293,19 +293,26 @@ function TypedDataDefaultView({
         ) : (
           <TypedDataRow ref={setTypedDataRow} data={typedDataFormatted} />
         )}
-        <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
+        <HStack
+          gap={8}
+          style={{
+            gridTemplateColumns: interpretation?.input ? '1fr 1fr' : '1fr',
+          }}
+        >
           <InterpretationState
             interpretation={interpretation}
             interpretQuery={interpretQuery}
           />
-          <Button
-            kind="regular"
-            onClick={onOpenAdvancedView}
-            size={36}
-            disabled={!interpretation?.input}
-          >
-            Advanced View
-          </Button>
+          {interpretation?.input ? (
+            <Button
+              kind="regular"
+              onClick={onOpenAdvancedView}
+              size={36}
+              disabled={!interpretation?.input}
+            >
+              Advanced View
+            </Button>
+          ) : null}
         </HStack>
       </VStack>
       <Spacer height={16} />
