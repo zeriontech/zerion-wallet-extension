@@ -366,9 +366,9 @@ export function SendForm() {
               />
             ) : (
               <NetworkSelect
-                value={tokenChain ?? ''}
+                value={nftChain ?? ''}
                 onChange={(value) => {
-                  sendView.handleChange('tokenChain', value);
+                  sendView.handleChange('nftChain', value);
                 }}
                 dialogRootNode={rootNode}
                 filterPredicate={(network) =>
