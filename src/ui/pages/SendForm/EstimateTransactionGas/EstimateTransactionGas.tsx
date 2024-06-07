@@ -18,16 +18,10 @@ export function EstimateTransactionGas({
   }) => React.ReactNode;
 }) {
   const { tokenItem, nftItem, store } = sendFormView;
-  const { type, from, to, tokenValue, tokenChain, nftAmount, nftChain } =
-    useSelectorStore(store, [
-      'type',
-      'from',
-      'to',
-      'tokenValue',
-      'tokenChain',
-      'nftAmount',
-      'nftChain',
-    ]);
+  const { type, from, to, tokenValue, sendChain, nftAmount } = useSelectorStore(
+    store,
+    ['type', 'from', 'to', 'tokenValue', 'sendChain', 'nftAmount']
+  );
 
   const asset = tokenItem?.asset;
   const { data: transactionData } = useQuery({
@@ -38,21 +32,20 @@ export function EstimateTransactionGas({
       type,
       to,
       from,
-      tokenChain,
+      sendChain,
       tokenValue,
       asset,
-      nftChain,
       nftAmount,
       nftItem,
     ],
     queryFn: async () => {
       if (type === 'token') {
         invariant(
-          tokenChain && asset && tokenValue && to && from,
+          sendChain && asset && tokenValue && to && from,
           'Missing sendForm/createSendTransaction params'
         );
         return store.createSendTransaction({
-          tokenChain,
+          chain: sendChain,
           asset,
           tokenValue,
           to,
@@ -60,13 +53,13 @@ export function EstimateTransactionGas({
         });
       } else if (type === 'nft') {
         invariant(
-          nftChain && nftItem && nftAmount && to && from,
+          sendChain && nftItem && nftAmount && to && from,
           'Missing sendForm/createSendTransaction nft params'
         );
         return store.createSendNFTTransaction({
           from,
           to,
-          nftChain,
+          chain: sendChain,
           nftAmount,
           nftItem,
         });
@@ -74,8 +67,8 @@ export function EstimateTransactionGas({
     },
     enabled: Boolean(
       type === 'token'
-        ? from && to && tokenChain && asset && tokenValue
-        : from && to && nftChain && nftAmount && nftItem
+        ? from && to && sendChain && asset && tokenValue
+        : from && to && sendChain && nftAmount && nftItem
     ),
   });
 

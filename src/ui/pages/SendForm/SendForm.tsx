@@ -131,34 +131,20 @@ export function SendForm() {
     client,
   });
   const { tokenItem, nftItem, store } = sendView;
-  const { type, tokenChain, nftChain } = useSelectorStore(store, [
-    'type',
-    'tokenChain',
-    'nftChain',
-  ]);
-
-  useEffect(() => {
-    // TODO: update useSendForm to calculate default nft chain (using NFT Portfolio Decomposition)
-    store.setDefault('nftChain', 'ethereum');
-  }, [store]);
+  const { type, sendChain } = useSelectorStore(store, ['type', 'sendChain']);
 
   useEffect(() => {
     store.on('change', () => {
-      // The easiest way support custom networks is to track the tokenChain value change
+      // The easiest way support custom networks is to track the sendChain value change
       // and pass positions based on it to `useSendForm` hook. The way the hook is agnostic about custom chain.
       // Other solutions are possible:
       // 1. Querying all custom networks for balance and mixing the results into backend addressPositions
       // 2. Updating useSendForm hook to introduce a notion of "special" chains that need to query for positions separately
-      setChainForPositions(store.getState().tokenChain);
+      setChainForPositions(store.getState().sendChain);
     });
   }, [store]);
 
-  const chain =
-    type === 'token' && tokenChain
-      ? createChain(tokenChain)
-      : type === 'nft' && nftChain
-      ? createChain(nftChain)
-      : null;
+  const chain = sendChain ? createChain(sendChain) : null;
 
   const snapshotRef = useRef<SendFormSnapshot | null>(null);
   const onBeforeSubmit = () => {
@@ -176,18 +162,17 @@ export function SendForm() {
 
   const configureTransactionToBeSigned = useEvent(async () => {
     const asset = tokenItem?.asset;
-    const { type, to, tokenChain, tokenValue, nftChain, nftAmount } =
-      store.getState();
+    const { type, to, sendChain, tokenValue, nftAmount } = store.getState();
     if (type === 'token') {
       invariant(
-        address && to && asset && tokenChain && tokenValue,
+        address && to && asset && sendChain && tokenValue,
         'Send Form parameters missing'
       );
       const result = await sendView.store.createSendTransaction({
         from: address,
         to,
         asset,
-        tokenChain,
+        chain: sendChain,
         tokenValue,
       });
       result.transaction = applyConfiguration(
@@ -198,13 +183,13 @@ export function SendForm() {
       return result;
     } else if (type === 'nft') {
       invariant(
-        nftChain && nftItem && nftAmount && to,
+        sendChain && nftItem && nftAmount && to,
         'Missing sendForm/createSendNFTTransaction params'
       );
       const result = await store.createSendNFTTransaction({
         from: address,
         to,
-        nftChain,
+        chain: sendChain,
         nftAmount,
         nftItem,
       });
@@ -358,17 +343,17 @@ export function SendForm() {
           <div style={{ display: 'flex' }}>
             {type === 'token' ? (
               <NetworkSelect
-                value={tokenChain ?? ''}
+                value={sendChain ?? ''}
                 onChange={(value) => {
-                  sendView.handleChange('tokenChain', value);
+                  sendView.handleChange('sendChain', value);
                 }}
                 dialogRootNode={rootNode}
               />
             ) : (
               <NetworkSelect
-                value={nftChain ?? ''}
+                value={sendChain ?? ''}
                 onChange={(value) => {
-                  sendView.handleChange('nftChain', value);
+                  sendView.handleChange('sendChain', value);
                 }}
                 dialogRootNode={rootNode}
                 filterPredicate={(network) =>
