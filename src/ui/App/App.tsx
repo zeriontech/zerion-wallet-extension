@@ -71,6 +71,7 @@ import { SwapForm } from '../pages/SwapForm';
 import { MintDnaFlow } from '../DNA/pages/MintDnaFlow';
 import { UpgradeDnaFlow } from '../DNA/pages/UpgradeDnaFlow';
 import { ChooseGlobalProviderGuard } from '../pages/RequestAccounts/ChooseGlobalProvider/ChooseGlobalProvider';
+import { openTabView } from '../shared/openInTabView';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -414,8 +415,7 @@ function GlobalKeyboardShortcuts() {
         onKeyDown={() => {
           // Helper for development and debugging :)
           const url = new URL(window.location.href);
-          url.searchParams.set('windowContext', 'tab');
-          window.open(url, '_blank');
+          openTabView(url);
         }}
       />
     </>
