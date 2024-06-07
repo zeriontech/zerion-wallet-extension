@@ -20,6 +20,7 @@ import {
 import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { wait } from 'src/shared/wait';
+import { usePreferences } from 'src/ui/features/preferences';
 import { WithReadonlyWarningDialog } from './ReadonlyWarningDialog';
 
 type SendTxParams = TransactionContextParams & {
@@ -46,10 +47,11 @@ export const SignTransactionButton = React.forwardRef(
       wallet: ExternallyOwnedAccount;
       buttonTitle?: React.ReactNode;
       buttonKind?: ButtonKind;
-      holdToSign: boolean | null;
+      holdToSign: boolean;
     },
     ref: React.Ref<SendTxBtnHandle>
   ) {
+    const { preferences } = usePreferences();
     const hardwareSignRef = useRef<SignTransactionHandle | null>(null);
     const { mutateAsync: sendTransactionInner, ...sendTxMutationInner } =
       useMutation({
@@ -105,8 +107,12 @@ export const SignTransactionButton = React.forwardRef(
       <WithReadonlyWarningDialog
         address={wallet.address}
         onClick={onClick}
-        render={({ handleClick }) =>
-          holdToSign ? (
+        render={({ handleClick }) => {
+          if (!preferences) {
+            return null;
+          }
+
+          return holdToSign && preferences.enableHoldToSignButton ? (
             <HoldableButton
               text={`Hold to ${title}`}
               successText={
@@ -139,8 +145,8 @@ export const SignTransactionButton = React.forwardRef(
             >
               {children || (sendTxMutation.isLoading ? 'Sending...' : title)}
             </Button>
-          )
-        }
+          );
+        }}
       />
     );
   }

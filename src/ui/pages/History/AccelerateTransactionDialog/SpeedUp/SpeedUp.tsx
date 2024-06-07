@@ -20,7 +20,6 @@ import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAcc
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { invariant } from 'src/shared/invariant';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
-import { usePreferences } from 'src/ui/features/preferences';
 import { NetworkFee } from '../../../SendTransaction/NetworkFee';
 import { useTransactionFee } from '../../../SendTransaction/TransactionConfiguration/useTransactionFee';
 import {
@@ -45,7 +44,6 @@ export function SpeedUp({
   onDismiss: () => void;
   onSuccess: () => void;
 }) {
-  const { preferences } = usePreferences();
   const { address } = wallet;
   const { transaction: originalTransaction } = addressAction;
   const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
@@ -201,14 +199,12 @@ export function SpeedUp({
             >
               Back
             </Button>
-            {preferences ? (
-              <SignTransactionButton
-                wallet={wallet}
-                ref={signTxBtnRef}
-                onClick={() => sendTransaction()}
-                holdToSign={preferences.enableHoldToSignButton}
-              />
-            ) : null}
+            <SignTransactionButton
+              wallet={wallet}
+              ref={signTxBtnRef}
+              onClick={() => sendTransaction()}
+              holdToSign={true}
+            />
           </div>
         </VStack>
       </VStack>

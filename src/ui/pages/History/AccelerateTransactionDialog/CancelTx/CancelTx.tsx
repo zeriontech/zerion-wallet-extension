@@ -31,7 +31,6 @@ import type {
 } from 'src/modules/ethereum/types/IncomingTransaction';
 import { getError } from 'src/shared/errors/getError';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
-import { usePreferences } from 'src/ui/features/preferences';
 import { NetworkFee } from '../../../SendTransaction/NetworkFee';
 import { useTransactionFee } from '../../../SendTransaction/TransactionConfiguration/useTransactionFee';
 import {
@@ -57,7 +56,6 @@ function CancelTxContent({
   onDismiss: () => void;
   onSuccess: () => void;
 }) {
-  const { preferences } = usePreferences();
   const { address } = wallet;
   const { transaction: originalTransaction } = addressAction;
   const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
@@ -207,14 +205,12 @@ function CancelTxContent({
             >
               Back
             </Button>
-            {preferences ? (
-              <SignTransactionButton
-                wallet={wallet}
-                ref={signTxBtnRef}
-                onClick={() => sendTransaction()}
-                holdToSign={preferences.enableHoldToSignButton}
-              />
-            ) : null}
+            <SignTransactionButton
+              wallet={wallet}
+              ref={signTxBtnRef}
+              onClick={() => sendTransaction()}
+              holdToSign={true}
+            />
           </div>
         </VStack>
       </VStack>
