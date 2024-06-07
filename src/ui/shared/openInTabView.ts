@@ -1,8 +1,12 @@
 import browser from 'webextension-polyfill';
 
-export function openTabView(url: URL) {
+export async function openTabView(url: URL) {
   url.searchParams.append('windowContext', 'tab');
-  browser.tabs.create({ url: url.toString() });
+  const [activeTab] = await browser.tabs.query({
+    active: true,
+    lastFocusedWindow: true,
+  });
+  browser.tabs.create({ url: url.toString(), index: activeTab?.index + 1 });
 }
 
 export function openInTabView(event: React.MouseEvent) {
