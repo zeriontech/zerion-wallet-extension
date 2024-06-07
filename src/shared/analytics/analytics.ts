@@ -17,7 +17,8 @@ type MetabaseEvent =
   | 'metamask_mode'
   | 'loader_screen_view'
   | 'eip_6963_support'
-  | 'add_wallet';
+  | 'add_wallet'
+  | 'change_permissions';
 
 type BaseParams<E = MetabaseEvent> = { request_name: E };
 

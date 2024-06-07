@@ -54,6 +54,7 @@ import { InterpretationState } from 'src/ui/components/InterpretationState';
 import { hasCriticalWarning } from 'src/ui/components/InterpretationState/InterpretationState';
 import type { SignMsgBtnHandle } from 'src/ui/components/SignMessageButton';
 import { SignMessageButton } from 'src/ui/components/SignMessageButton';
+import { usePreferences } from 'src/ui/features/preferences';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
@@ -135,6 +136,7 @@ function TypedDataDefaultView({
   onOpenAdvancedView: () => void;
 }) {
   const [params] = useSearchParams();
+  const { preferences } = usePreferences();
 
   const addressAction = interpretation?.action;
   const recipientAddress = addressAction?.label?.display_value.wallet_address;
@@ -336,34 +338,42 @@ function TypedDataDefaultView({
               >
                 Cancel
               </Button>
-
-              <SignMessageButton
-                wallet={wallet}
-                ref={signMsgBtnRef}
-                onClick={() => {
-                  if (!seenSigningData) {
-                    scrollSigningData();
-                  } else {
-                    signTypedData_v4();
+              {preferences ? (
+                <SignMessageButton
+                  wallet={wallet}
+                  ref={signMsgBtnRef}
+                  onClick={() => {
+                    if (!seenSigningData) {
+                      scrollSigningData();
+                    } else {
+                      signTypedData_v4();
+                    }
+                  }}
+                  buttonKind={
+                    interpretationHasCriticalWarning ? 'danger' : 'primary'
                   }
-                }}
-                buttonKind={
-                  interpretationHasCriticalWarning ? 'danger' : 'primary'
-                }
-                buttonTitle={
-                  interpretationHasCriticalWarning
-                    ? 'Proceed Anyway'
-                    : undefined
-                }
-                children={
-                  seenSigningData ? null : (
-                    <HStack gap={8} alignItems="center" justifyContent="center">
-                      <span>Scroll</span>
-                      <ArrowDownIcon style={{ width: 24, height: 24 }} />
-                    </HStack>
-                  )
-                }
-              />
+                  buttonTitle={
+                    interpretationHasCriticalWarning
+                      ? 'Proceed Anyway'
+                      : undefined
+                  }
+                  children={
+                    seenSigningData ? null : (
+                      <HStack
+                        gap={8}
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <span>Scroll</span>
+                        <ArrowDownIcon style={{ width: 24, height: 24 }} />
+                      </HStack>
+                    )
+                  }
+                  holdToSign={
+                    preferences.enableHoldToSignButton && seenSigningData
+                  }
+                />
+              ) : null}
             </div>
           </VStack>
         </div>

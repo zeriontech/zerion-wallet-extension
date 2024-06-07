@@ -1,0 +1,111 @@
+.button {
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  transition: transform 300ms ease-in-out;
+}
+
+.hiddenButton {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+.content {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transition: transform 300ms ease-in-out, opacity 300ms;
+  white-space: nowrap;
+}
+
+.hold {
+  transform: scale(0.97);
+}
+
+.text,
+.submitting .submittingText,
+.success .successText,
+.error .errorText {
+  opacity: 1;
+  transform: translate(-50%, -50%);
+}
+
+.submittingText,
+.successText,
+.errorText {
+  opacity: 0;
+  transform: translate(-50%, 50%);
+}
+
+.submitting .text,
+.success .text,
+.error .text,
+.success .submittingText,
+.error .submittingText {
+  opacity: 0;
+  transform: translate(-50%, -150%);
+}
+
+.background {
+  position: absolute;
+  inset: 0 0 0 0;
+}
+
+.holdBackground {
+  transform: translateX(-100%);
+  transition: 150ms ease-in;
+}
+
+.hold .holdBackground,
+.submitting .holdBackground,
+.success .holdBackground,
+.error .holdBackground {
+  transform: translateX(0%);
+  transition-duration: var(--hold-duration);
+}
+
+.successBackground,
+.errorBackground {
+  transform: translateX(-100%);
+  transition-duration: 300ms;
+}
+
+.success .successBackground,
+.error .errorBackhround {
+  transform: translateX(0%);
+}
+
+@keyframes appear {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.holdHintContainer {
+  position: fixed;
+  bottom: 84px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: var(--over-layout-index);
+}
+
+.holdHint {
+  padding: 12px 24px;
+  border-radius: 100px;
+  background-color: rgba(55, 55, 55, 0.5);
+  animation: appear 200ms both ease-out;
+}

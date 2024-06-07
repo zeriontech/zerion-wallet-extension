@@ -47,6 +47,7 @@ interface PublicPreferences {
   upgradeDnaBannerDismissed?: boolean;
   backupReminderDismissedTime?: number;
   enableTestnets?: boolean;
+  enableHoldToSignButton?: boolean | null;
 }
 
 export interface Permission {
