@@ -259,7 +259,7 @@ function trackAppEvents({ account }: { account: Account }) {
         type,
       });
       sendToMetabase('add_wallet', params);
-      mixpanelTrack(account, 'Wallet: Wallet Added', { wallet_provider });
+      mixpanelTrack(account, 'Wallet: Wallet Added', { wallet_provider, type });
     }
   });
 

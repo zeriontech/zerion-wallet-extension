@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { networksStore } from 'src/modules/networks/networks-store.background';
+import { networksStore } from 'src/modules/networks/networks-store.client';
 import type { Chain } from 'src/modules/networks/Chain';
 import { fetchNativeEvmPosition } from './fetchNativeEvmPosition';
 
