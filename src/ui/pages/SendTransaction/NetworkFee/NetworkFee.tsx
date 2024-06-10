@@ -72,7 +72,6 @@ export function NetworkFee({
   const nativeAssetSymbol =
     networks?.getNetworkByName(chain)?.native_asset?.symbol;
 
-  const isOptimistic = feeEstimation?.type === 'optimistic';
   const disabled = isLoading || !onChange;
 
   const feeValuePrefix = totalValueExceedsBalance ? 'Up to ' : '';
@@ -143,7 +142,7 @@ export function NetworkFee({
               className={disabled ? undefined : helperStyles.hoverUnderline}
               style={{
                 color: disabled ? 'var(--black)' : 'var(--primary)',
-                cursor: isOptimistic || !onChange ? 'auto' : undefined,
+                cursor: !onChange ? 'auto' : undefined,
               }}
               onClick={() => {
                 dialogRef.current?.showModal();
