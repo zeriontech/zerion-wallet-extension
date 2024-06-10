@@ -18,7 +18,7 @@ function useNativeAddressPosition({
   chain: Chain;
   enabled?: boolean;
 }): {
-  data: AddressPosition | undefined;
+  data: AddressPosition | null;
   isLoading: boolean;
   isSuccess: boolean;
 } {
@@ -42,7 +42,8 @@ function useNativeAddressPosition({
       console.warn('multiple native positions');
     }
     return {
-      data: nativePositions[0],
+      // ternary expression to correctly type accessor as nullable
+      data: nativePositions.length ? nativePositions[0] : null,
       isLoading,
       isSuccess: Boolean(value?.positions),
     };
@@ -52,10 +53,17 @@ function useNativeAddressPosition({
 export function useNativeBalance({
   address,
   chain,
+  suspense,
+  staleTime,
 }: {
   address: string;
   chain: Chain;
-}) {
+  staleTime: number;
+  suspense?: boolean;
+}): {
+  isLoading: boolean;
+  data: { valueCommon: BigNumber | null; position: AddressPosition | null };
+} {
   const { networks } = useNetworks();
   const isSupportedByBackend = networks
     ? networks.supports('positions', chain)
@@ -69,6 +77,8 @@ export function useNativeBalance({
     address,
     chain,
     enabled: isSupportedByBackend === false,
+    suspense,
+    staleTime,
   });
 
   const isLoading =
@@ -79,17 +89,23 @@ export function useNativeBalance({
   return useMemo(() => {
     if (!position?.quantity) {
       if (isSuccess) {
-        return { data: new BigNumber(0), isLoading };
+        return {
+          data: { valueCommon: new BigNumber(0), position: position || null },
+          isLoading,
+        };
       } else {
-        return { data: null, isLoading };
+        return {
+          data: { valueCommon: null, position: position || null },
+          isLoading,
+        };
       }
     }
 
     const decimals = getDecimals({ asset: position.asset, chain });
-    const data = baseToCommon(new BigNumber(position.quantity), decimals);
+    const value = baseToCommon(new BigNumber(position.quantity), decimals);
     return {
-      data,
+      data: { valueCommon: value, position },
       isLoading,
     };
-  }, [position?.quantity, position?.asset, chain, isLoading, isSuccess]);
+  }, [position, chain, isLoading, isSuccess]);
 }
