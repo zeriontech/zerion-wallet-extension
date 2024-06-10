@@ -1,1 +1,1 @@
-export { Background, useBackgroundKind } from './Background';
+export { useBackgroundKind } from './Background';

@@ -2,7 +2,7 @@ import React, { useMemo, useRef } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { invariant } from 'src/shared/invariant';
-import { Background } from 'src/ui/components/Background';
+import { useBackgroundKind } from 'src/ui/components/Background';
 import { Badge } from 'src/ui/components/Badge';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -32,6 +32,7 @@ import { isDeviceAccount } from 'src/shared/types/validators';
 import type { SignMsgBtnHandle } from 'src/ui/components/SignMessageButton';
 import { SignMessageButton } from 'src/ui/components/SignMessageButton';
 import { ellipsis } from 'src/ui/shared/typography';
+import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { SpeechBubble } from './SpeechBubble/SpeechBubble';
 import { useFetchUTCTime } from './useFetchUTCTime';
@@ -39,6 +40,8 @@ import { SiweError } from './SiweError';
 import { DataVerificationFailed } from './DataVerificationFailed';
 
 export function SignInWithEthereum() {
+  useBackgroundKind(whiteBackgroundKind);
+
   const [params, setSearchParams] = useSearchParams();
   const updateSearchParam = (
     key: string,
@@ -117,179 +120,177 @@ export function SignInWithEthereum() {
     !siweMessage?.isValid() && !isDeviceAccount(wallet);
 
   return (
-    <Background backgroundKind="white">
+    <PageColumn>
       <NavigationTitle title={null} documentTitle="Sign In with Ethereum" />
-      <PageColumn>
-        <>
-          {params.has('step') === false ? (
-            <>
-              <PageTop />
-              <Badge
-                icon={<SignInIcon style={{ color: 'var(--neutral-500)' }} />}
-                text="Signing In"
-              />
-              <Spacer height={16} />
-              <VStack gap={8}>
-                <UIText kind="small/accent" color="var(--neutral-500)">
-                  To application
-                </UIText>
-                <HStack gap={8} alignItems="center">
-                  <SiteFaviconImg
-                    size={32}
-                    style={{ borderRadius: 6 }}
-                    url={origin}
-                    alt={`Logo for ${origin}`}
-                  />
-                  <UIText kind="headline/h2">{new URL(origin).hostname}</UIText>
-                </HStack>
-              </VStack>
-              <Spacer height={16} />
-              {siweMessage?.statement && (
-                <>
-                  <SpeechBubble text={siweMessage.statement} />
-                  <Spacer height={16} />
-                </>
-              )}
-              <VStack gap={8}>
-                <UIText kind="small/accent" color="var(--neutral-500)">
-                  With wallet
-                </UIText>
-                <HStack
-                  gap={8}
-                  alignItems="center"
-                  justifyContent="space-between"
-                >
-                  <HStack gap={8} alignItems="center">
-                    <WalletAvatar
-                      address={wallet.address}
-                      size={32}
-                      borderRadius={6}
-                    />
-                    <UIText kind="headline/h2">
-                      <WalletDisplayName wallet={wallet} />
-                    </UIText>
-                  </HStack>
-                </HStack>
-                <Address
-                  address={normalizeAddress(wallet.address)}
-                  infixColor="var(--neutral-500)"
+      <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
+      <>
+        {params.has('step') === false ? (
+          <>
+            <PageTop />
+            <Badge
+              icon={<SignInIcon style={{ color: 'var(--neutral-500)' }} />}
+              text="Signing In"
+            />
+            <Spacer height={16} />
+            <VStack gap={8}>
+              <UIText kind="small/accent" color="var(--neutral-500)">
+                To application
+              </UIText>
+              <HStack gap={8} alignItems="center">
+                <SiteFaviconImg
+                  size={32}
+                  style={{ borderRadius: 6 }}
+                  url={origin}
+                  alt={`Logo for ${origin}`}
                 />
-              </VStack>
-              <Spacer height={16} />
-              <Button
-                kind="neutral"
-                onClick={() => updateSearchParam('step', 'data')}
+                <UIText kind="headline/h2">{new URL(origin).hostname}</UIText>
+              </HStack>
+            </VStack>
+            <Spacer height={16} />
+            {siweMessage?.statement && (
+              <>
+                <SpeechBubble text={siweMessage.statement} />
+                <Spacer height={16} />
+              </>
+            )}
+            <VStack gap={8}>
+              <UIText kind="small/accent" color="var(--neutral-500)">
+                With wallet
+              </UIText>
+              <HStack
+                gap={8}
+                alignItems="center"
+                justifyContent="space-between"
               >
-                Advanced View
+                <HStack gap={8} alignItems="center">
+                  <WalletAvatar
+                    address={wallet.address}
+                    size={32}
+                    borderRadius={6}
+                  />
+                  <UIText kind="headline/h2">
+                    <WalletDisplayName wallet={wallet} />
+                  </UIText>
+                </HStack>
+              </HStack>
+              <Address
+                address={normalizeAddress(wallet.address)}
+                infixColor="var(--neutral-500)"
+              />
+            </VStack>
+            <Spacer height={16} />
+            <Button
+              kind="neutral"
+              onClick={() => updateSearchParam('step', 'data')}
+            >
+              Advanced View
+            </Button>
+            <Spacer height={16} />
+            <SiweError
+              siwe={siweMessage}
+              onReadMore={() => updateSearchParam('step', 'errors')}
+            />
+          </>
+        ) : null}
+        {params.get('step') === 'data' ? (
+          <>
+            <NavigationBar title="Data to Sign" />
+            <PageTop />
+            <Surface
+              padding={16}
+              style={{
+                border: '1px solid var(--neutral-300)',
+                overflow: 'auto',
+                wordBreak: 'break-word',
+              }}
+            >
+              <UIText kind="small/regular" style={{ whiteSpace: 'pre-wrap' }}>
+                {messageUtf8}
+              </UIText>
+            </Surface>
+          </>
+        ) : null}
+        {params.get('step') === 'errors' && siweMessage ? (
+          <DataVerificationFailed siwe={siweMessage} />
+        ) : null}
+        {params.get('step') === 'verifyUser' ? (
+          <>
+            <PageTop />
+            <VerifyUser
+              text="Verification is required in order to ignore the warning and proceed further"
+              onSuccess={() => personalSign()}
+              buttonTitle="Confirm"
+            />
+            <PageBottom />
+          </>
+        ) : null}
+      </>
+      <Spacer height={16} />
+      <PhishingDefenceStatus origin={origin} type="dapp" />
+      <VStack
+        gap={8}
+        style={{
+          textAlign: 'center',
+          marginTop: 'auto',
+          paddingBottom: 32,
+          paddingTop: 8,
+        }}
+      >
+        {personalSignMutation.isError ? (
+          <UIText kind="caption/regular" color="var(--negative-500)">
+            {txErrorToMessage(personalSignMutation.error)}
+          </UIText>
+        ) : null}
+        {/* "Confirm with password" flow is only for SignerWallets, not Hardware Wallets */}
+        {(params.has('step') === false || params.get('step') === 'data') &&
+        mustConfirmWithPassword ? (
+          <div style={{ display: 'grid', gap: 8 }}>
+            <>
+              <Button ref={focusNode} onClick={handleReject}>
+                Close
               </Button>
-              <Spacer height={16} />
-              <SiweError
-                siwe={siweMessage}
-                onReadMore={() => updateSearchParam('step', 'errors')}
-              />
-            </>
-          ) : null}
-          {params.get('step') === 'data' ? (
-            <>
-              <NavigationBar title="Data to Sign" />
-              <PageTop />
-              <Surface
-                padding={16}
-                style={{
-                  border: '1px solid var(--neutral-300)',
-                  overflow: 'auto',
-                  wordBreak: 'break-word',
-                }}
+              <Button
+                kind="ghost"
+                onClick={() => updateSearchParam('step', 'verifyUser')}
               >
-                <UIText kind="small/regular" style={{ whiteSpace: 'pre-wrap' }}>
-                  {messageUtf8}
+                <UIText kind="caption/accent" color="var(--neutral-500)">
+                  Proceed anyway
                 </UIText>
-              </Surface>
+              </Button>
             </>
-          ) : null}
-          {params.get('step') === 'errors' && siweMessage ? (
-            <DataVerificationFailed siwe={siweMessage} />
-          ) : null}
-          {params.get('step') === 'verifyUser' ? (
-            <>
-              <PageTop />
-              <VerifyUser
-                text="Verification is required in order to ignore the warning and proceed further"
-                onSuccess={() => personalSign()}
-                buttonTitle="Confirm"
-              />
-              <PageBottom />
-            </>
-          ) : null}
-        </>
-        <Spacer height={16} />
-        <PhishingDefenceStatus origin={origin} type="dapp" />
-        <VStack
-          gap={8}
+          </div>
+        ) : null}
+        <div
           style={{
-            textAlign: 'center',
-            marginTop: 'auto',
-            paddingBottom: 32,
-            paddingTop: 8,
+            // For "proceed anyway" flow we don't show these buttons,
+            // but <SignMessageButton /> MUST stay in DOM in order to work
+            display: mustConfirmWithPassword ? 'none' : 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: 8,
           }}
         >
-          {personalSignMutation.isError ? (
-            <UIText kind="caption/regular" color="var(--negative-500)">
-              {txErrorToMessage(personalSignMutation.error)}
-            </UIText>
-          ) : null}
-          {/* "Confirm with password" flow is only for SignerWallets, not Hardware Wallets */}
-          {(params.has('step') === false || params.get('step') === 'data') &&
-          mustConfirmWithPassword ? (
-            <div style={{ display: 'grid', gap: 8 }}>
-              <>
-                <Button ref={focusNode} onClick={handleReject}>
-                  Close
-                </Button>
-                <Button
-                  kind="ghost"
-                  onClick={() => updateSearchParam('step', 'verifyUser')}
-                >
-                  <UIText kind="caption/accent" color="var(--neutral-500)">
-                    Proceed anyway
-                  </UIText>
-                </Button>
-              </>
-            </div>
-          ) : null}
-          <div
-            style={{
-              // For "proceed anyway" flow we don't show these buttons,
-              // but <SignMessageButton /> MUST stay in DOM in order to work
-              display: mustConfirmWithPassword ? 'none' : 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: 8,
-            }}
+          <Button
+            type="button"
+            kind="regular"
+            onClick={handleReject}
+            ref={focusNode}
           >
-            <Button
-              type="button"
-              kind="regular"
-              onClick={handleReject}
-              ref={focusNode}
-            >
-              Cancel
-            </Button>
-            <SignMessageButton
-              ref={signMsgBtnRef}
-              wallet={wallet}
-              onClick={() => personalSign()}
-              buttonTitle={
-                personalSignMutation.isLoading
-                  ? `Signing In${ellipsis}`
-                  : !siweMessage?.isValid() && isDeviceAccount(wallet)
-                  ? 'Proceed anyway'
-                  : 'Sign In'
-              }
-            />
-          </div>
-        </VStack>
-      </PageColumn>
-      <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
-    </Background>
+            Cancel
+          </Button>
+          <SignMessageButton
+            ref={signMsgBtnRef}
+            wallet={wallet}
+            onClick={() => personalSign()}
+            buttonTitle={
+              personalSignMutation.isLoading
+                ? `Signing In${ellipsis}`
+                : !siweMessage?.isValid() && isDeviceAccount(wallet)
+                ? 'Proceed anyway'
+                : 'Sign In'
+            }
+          />
+        </div>
+      </VStack>
+    </PageColumn>
   );
 }

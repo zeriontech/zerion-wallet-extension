@@ -3,7 +3,6 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { SeedType } from 'src/shared/SeedType';
 import { invariant } from 'src/shared/invariant';
-import { Background } from 'src/ui/components/Background';
 import { FillView } from 'src/ui/components/FillView';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -27,7 +26,11 @@ import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { SecretInput } from 'src/ui/components/SecretInput';
-import { useBodyStyle } from 'src/ui/components/Background/Background';
+import {
+  useBackgroundKind,
+  useBodyStyle,
+  whiteBackgroundKind,
+} from 'src/ui/components/Background/Background';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { metaAppState } from 'src/ui/shared/meta-app-state';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
@@ -275,6 +278,7 @@ function VerifyBackup({
   seedType: SeedType;
   onSuccess: () => void;
 }) {
+  useBackgroundKind(whiteBackgroundKind);
   const verifyMutation = useMutation({
     mutationFn: async (value: string) => {
       if (seedType === SeedType.mnemonic) {
@@ -312,53 +316,49 @@ function VerifyBackup({
     autoFocusRef.current?.focus();
   }, []);
   return (
-    <Background backgroundKind="white">
-      <PageColumn>
-        <PageTop />
-        <UIText kind="body/regular">
-          This process is aimed to ensure you’ve saved your recovery phrase
-          correctly
-        </UIText>
-        <Spacer height={24} />
-        <form
-          style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}
-          onSubmit={(event) => {
-            event.preventDefault();
-            const value = new FormData(event.currentTarget).get(
-              'seedOrPrivateKey'
-            );
-            verifyMutation.mutate(
-              prepareUserInputSeedOrPrivateKey(value as string)
-            );
-          }}
-        >
-          <VStack gap={12}>
-            <SecretInput
-              showRevealElement={false}
-              ref={autoFocusRef}
-              label={
-                <UIText kind="small/accent">
-                  Validate Your Recovery Phrase
+    <PageColumn>
+      <PageTop />
+      <UIText kind="body/regular">
+        This process is aimed to ensure you’ve saved your recovery phrase
+        correctly
+      </UIText>
+      <Spacer height={24} />
+      <form
+        style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}
+        onSubmit={(event) => {
+          event.preventDefault();
+          const value = new FormData(event.currentTarget).get(
+            'seedOrPrivateKey'
+          );
+          verifyMutation.mutate(
+            prepareUserInputSeedOrPrivateKey(value as string)
+          );
+        }}
+      >
+        <VStack gap={12}>
+          <SecretInput
+            showRevealElement={false}
+            ref={autoFocusRef}
+            label={
+              <UIText kind="small/accent">Validate Your Recovery Phrase</UIText>
+            }
+            name="seedOrPrivateKey"
+            required={true}
+            hint={
+              verifyMutation.error ? (
+                <UIText kind="caption/regular" color="var(--negative-500)">
+                  {(verifyMutation.error as Error).message || 'unknown error'}
                 </UIText>
-              }
-              name="seedOrPrivateKey"
-              required={true}
-              hint={
-                verifyMutation.error ? (
-                  <UIText kind="caption/regular" color="var(--negative-500)">
-                    {(verifyMutation.error as Error).message || 'unknown error'}
-                  </UIText>
-                ) : null
-              }
-            />
-          </VStack>
-          <Button autoFocus={true} style={{ marginTop: 'auto' }}>
-            Verify
-          </Button>
-          <PageBottom />
-        </form>
-      </PageColumn>
-    </Background>
+              ) : null
+            }
+          />
+        </VStack>
+        <Button autoFocus={true} style={{ marginTop: 'auto' }}>
+          Verify
+        </Button>
+        <PageBottom />
+      </form>
+    </PageColumn>
   );
 }
 
@@ -427,6 +427,7 @@ function VerifySuccess({ seedType }: { seedType: SeedType }) {
 }
 
 export function BackupWallet() {
+  useBackgroundKind(whiteBackgroundKind);
   const [params, setSearchParams] = useSearchParams();
   const updateSearchParam = (
     key: string,
@@ -495,21 +496,17 @@ export function BackupWallet() {
       )}
       {isVerifyUserStep ? (
         <PageColumn>
-          <Background backgroundKind="white">
-            <NavigationTitle title="Backup Wallet" />
-            <PageTop />
-            <VerifyUser
-              text={`Verification is required to show your ${
-                seedType === SeedType.mnemonic
-                  ? 'recovery phrase'
-                  : 'secret key'
-              }`}
-              onSuccess={() =>
-                updateSearchParam('step', 'revealSecret', { replace: true })
-              }
-            />
-            <PageBottom />
-          </Background>
+          <NavigationTitle title="Backup Wallet" />
+          <PageTop />
+          <VerifyUser
+            text={`Verification is required to show your ${
+              seedType === SeedType.mnemonic ? 'recovery phrase' : 'secret key'
+            }`}
+            onSuccess={() =>
+              updateSearchParam('step', 'revealSecret', { replace: true })
+            }
+          />
+          <PageBottom />
         </PageColumn>
       ) : null}
       {params.get('step') === 'revealSecret' ? (

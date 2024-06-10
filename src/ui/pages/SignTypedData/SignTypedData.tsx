@@ -14,7 +14,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Surface } from 'src/ui/ui-kit/Surface';
-import { Background } from 'src/ui/components/Background';
+import { useBackgroundKind } from 'src/ui/components/Background';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { invariant } from 'src/shared/invariant';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
@@ -55,6 +55,7 @@ import { InterpretationState } from 'src/ui/components/InterpretationState';
 import { hasCriticalWarning } from 'src/ui/components/InterpretationState/InterpretationState';
 import type { SignMsgBtnHandle } from 'src/ui/components/SignMessageButton';
 import { SignMessageButton } from 'src/ui/components/SignMessageButton';
+import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
@@ -384,6 +385,8 @@ function SignTypedDataContent({
   typedDataRaw: string;
   wallet: ExternallyOwnedAccount;
 }) {
+  useBackgroundKind(whiteBackgroundKind);
+
   const [params] = useSearchParams();
 
   const view = params.get('view') || View.default;
@@ -463,15 +466,15 @@ function SignTypedDataContent({
   }
 
   return (
-    <Background backgroundKind="white">
-      <NavigationTitle title={null} documentTitle="Sign Typed Data" />
-      <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
+    <>
       <PageColumn
-        // different surface color on backgroundKind="white"
+        // different surface color on useBackgroundKind({ kind: 'white' })
         style={{
           ['--surface-background-color' as string]: 'var(--neutral-100)',
         }}
       >
+        <NavigationTitle title={null} documentTitle="Sign Typed Data" />
+        <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
         {view === View.default ? (
           <TypedDataDefaultView
             origin={origin}
@@ -522,7 +525,7 @@ function SignTypedDataContent({
         <RenderArea name="sign-transaction-footer" />
         <PageBottom />
       </PageStickyFooter>
-    </Background>
+    </>
   );
 }
 

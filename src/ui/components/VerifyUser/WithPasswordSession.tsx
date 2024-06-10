@@ -2,17 +2,19 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { SessionExpired } from 'src/shared/errors/errors';
 import { accountPublicRPCPort } from 'src/ui/shared/channels';
-import { Background } from '../Background';
+import { useBackgroundKind } from '../Background';
 import { NavigationTitle } from '../NavigationTitle';
 import { PageColumn } from '../PageColumn';
 import { PageTop } from '../PageTop';
 import { PageBottom } from '../PageBottom';
+import { whiteBackgroundKind } from '../Background/Background';
 import { VerifyUser } from './VerifyUser';
 
 export function WithPasswordSession({
   text,
   children,
 }: React.PropsWithChildren<{ text?: React.ReactNode }>) {
+  useBackgroundKind(whiteBackgroundKind);
   const { data, isLoading } = useQuery({
     queryKey: ['passwordSessionData'],
     queryFn: async () => {
@@ -38,18 +40,16 @@ export function WithPasswordSession({
   }
   if (!hasActivePasswordSession && !verified) {
     return (
-      <Background backgroundKind="white">
-        <PageColumn>
-          <NavigationTitle title="Enter password" />
-          <PageTop />
-          <VerifyUser
-            style={{ justifySelf: 'stretch' }}
-            text={text}
-            onSuccess={() => setVerified(true)}
-          />
-          <PageBottom />
-        </PageColumn>
-      </Background>
+      <PageColumn>
+        <NavigationTitle title="Enter password" />
+        <PageTop />
+        <VerifyUser
+          style={{ justifySelf: 'stretch' }}
+          text={text}
+          onSuccess={() => setVerified(true)}
+        />
+        <PageBottom />
+      </PageColumn>
     );
   } else {
     return children as JSX.Element;

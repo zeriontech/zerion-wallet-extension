@@ -17,11 +17,14 @@ import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { noValueDash } from 'src/ui/shared/typography';
-import { Background } from 'src/ui/components/Background';
+import { useBackgroundKind } from 'src/ui/components/Background';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
+import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { ValueCell } from '../Networks/shared/ValueCell';
 
 export function SwitchEthereumChain() {
+  useBackgroundKind(whiteBackgroundKind);
+
   const [params] = useSearchParams();
   const { networks } = useNetworks();
   const {
@@ -54,7 +57,7 @@ export function SwitchEthereumChain() {
   invariant(network, 'Network config does not exists');
 
   return (
-    <Background backgroundKind="white">
+    <>
       <PageColumn>
         <NavigationTitle title={null} documentTitle="Switch network" />
         <PageTop />
@@ -133,6 +136,6 @@ export function SwitchEthereumChain() {
         </div>
         <PageBottom />
       </PageStickyFooter>
-    </Background>
+    </>
   );
 }

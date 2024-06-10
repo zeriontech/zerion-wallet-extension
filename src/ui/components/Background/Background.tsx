@@ -53,6 +53,7 @@ const bgClassNames = {
 type Props = { kind: 'neutral' | 'white' | 'transparent' };
 
 export const whiteBackgroundKind: Props = { kind: 'white' };
+export const neutralBackgroundKind: Props = { kind: 'neutral' };
 
 export function useBackgroundKind({ kind }: Props) {
   const { uiScrollRootElement } = useContext(UIContext);
@@ -64,40 +65,4 @@ export function useBackgroundKind({ kind }: Props) {
       uiScrollRootElement.classList.remove(className);
     };
   }, [kind, uiScrollRootElement.classList]);
-}
-
-/** TODO: Deprecate <Background /> in favour of useBackgroundKind() */
-/** @deprecated */
-export function Background({
-  children,
-  backgroundColor,
-  backgroundKind,
-}: React.HTMLAttributes<HTMLDivElement> & {
-  backgroundColor?: React.CSSProperties['backgroundColor'];
-  backgroundKind?: 'neutral' | 'white' | 'transparent';
-}) {
-  const { uiScrollRootElement } = useContext(UIContext);
-  useEffect(() => {
-    if (!backgroundKind) {
-      return;
-    }
-    const className = bgClassNames[backgroundKind];
-    uiScrollRootElement.classList.add(className);
-    return () => {
-      uiScrollRootElement.classList.remove(className);
-    };
-  }, [backgroundKind, uiScrollRootElement.classList]);
-  useEffect(() => {
-    if (!backgroundColor) {
-      return;
-    }
-    const previousValue =
-      uiScrollRootElement.style.getPropertyValue('--background');
-    uiScrollRootElement.style.backgroundColor = backgroundColor;
-    return () => {
-      uiScrollRootElement.style.backgroundColor = previousValue;
-    };
-  }, [backgroundColor, uiScrollRootElement.style]);
-
-  return children as JSX.Element;
 }
