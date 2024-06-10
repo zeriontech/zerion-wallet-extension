@@ -258,8 +258,7 @@ export async function mixpanelTrack(
   const userId = account.getUser()?.id;
   mixpanelApi.track(event, {
     ...values,
-    // pass userId params cause identify function can still be in progress
-    ...(userId ? { user_id: userId, $user_id: userId } : null),
+    ...(userId ? { user_id: userId } : null),
   });
 }
 
