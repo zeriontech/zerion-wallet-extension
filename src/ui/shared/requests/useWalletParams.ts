@@ -10,7 +10,7 @@ export function useWalletParams(
     }
     const params = new URLSearchParams({
       addWallet: wallet.address,
-      addWalletProvider: 'zerion-extension',
+      addWalletProvider: 'io.zerion.wallet',
     });
     if (wallet.name) {
       params.append('addWalletName', wallet.name);
