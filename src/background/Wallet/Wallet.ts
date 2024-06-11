@@ -1407,7 +1407,7 @@ class PublicController {
     const currentAddress = this.wallet.readCurrentAddress();
     if (currentAddress && this.wallet.allowedOrigin(context, currentAddress)) {
       const { origin } = context;
-      emitter.emit('requestAccounts', {
+      emitter.emit('requestAccountsResolved', {
         origin,
         address: currentAddress,
         explicitly: false,
@@ -1452,7 +1452,7 @@ class PublicController {
             context: INTERNAL_SYMBOL_CONTEXT,
           });
           const accounts = await this.eth_accounts({ context, id });
-          emitter.emit('requestAccounts', {
+          emitter.emit('requestAccountsResolved', {
             origin,
             address,
             explicitly: true,

@@ -42,7 +42,7 @@ export const emitter = createNanoEvents<{
   userActivity: () => void;
   connectToSiteEvent: (info: { origin: string }) => void;
   sessionExpired: () => void;
-  requestAccounts: (data: {
+  requestAccountsResolved: (data: {
     origin: string;
     address: string;
     explicitly: boolean;
