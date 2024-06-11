@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
+import { type AddressPosition, useAddressPositions } from 'defi-sdk';
 import type { Chain } from 'src/modules/networks/Chain';
 import { baseToCommon } from 'src/shared/units/convert';
 import BigNumber from 'bignumber.js';
 import { getDecimals } from 'src/modules/networks/asset';
-import { useAddressPositions } from 'defi-sdk';
 import { isTruthy } from 'is-truthy-ts';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { useEvmNativeAddressPosition } from './useEvmNativeAddressPosition';
@@ -17,15 +17,15 @@ function useNativeAddressPosition({
   address: string;
   chain: Chain;
   enabled?: boolean;
-}) {
+}): {
+  data: AddressPosition | undefined;
+  isLoading: boolean;
+  isSuccess: boolean;
+} {
   const id = useNativeAssetId(chain);
 
   const { value, isLoading } = useAddressPositions(
-    {
-      address,
-      assets: [id].filter(isTruthy),
-      currency: 'usd',
-    },
+    { address, assets: [id].filter(isTruthy), currency: 'usd' },
     { enabled: enabled && Boolean(id) }
   );
 
@@ -38,11 +38,13 @@ function useNativeAddressPosition({
           !item.protocol
       ) ?? [];
     if (nativePositions.length > 1) {
+      // eslint-disable-next-line no-console
       console.warn('multiple native positions');
     }
     return {
       data: nativePositions[0],
       isLoading,
+      isSuccess: Boolean(value?.positions),
     };
   }, [chain, isLoading, value?.positions]);
 }
@@ -71,11 +73,16 @@ export function useNativeBalance({
 
   const isLoading =
     nativeAddressPosition.isLoading || evmNativeAddressPosition.isLoading;
+  const isSuccess =
+    nativeAddressPosition.isSuccess || evmNativeAddressPosition.isSuccess;
+  const position = nativeAddressPosition.data || evmNativeAddressPosition.data;
   return useMemo(() => {
-    const position =
-      nativeAddressPosition.data || evmNativeAddressPosition.data;
     if (!position?.quantity) {
-      return { data: null, isLoading };
+      if (isSuccess) {
+        return { data: new BigNumber(0), isLoading };
+      } else {
+        return { data: null, isLoading };
+      }
     }
 
     const decimals = getDecimals({ asset: position.asset, chain });
@@ -84,10 +91,5 @@ export function useNativeBalance({
       data,
       isLoading,
     };
-  }, [
-    nativeAddressPosition.data,
-    evmNativeAddressPosition.data,
-    chain,
-    isLoading,
-  ]);
+  }, [position?.quantity, position?.asset, chain, isLoading, isSuccess]);
 }
