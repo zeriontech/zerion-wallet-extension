@@ -252,21 +252,13 @@ function trackAppEvents({ account }: { account: Account }) {
           : 'connected';
       const wallet_provider = getProvider(wallet.address);
 
-      const params = omit(
-        createParams({
-          request_name: 'add_wallet',
-          wallet_address: wallet.address.toLowerCase(),
-          wallet_provider,
-          type,
-        }),
-        ['userId']
-      );
-      sendToMetabase(
-        'add_wallet',
-        // omit returns Partial type which is incorrect here
-        params as typeof params & { request_name: 'add_wallet' }
-      );
-      // mixpanelTrack will add userId anyway
+      const params = createBaseParams({
+        request_name: 'add_wallet',
+        wallet_address: wallet.address.toLowerCase(),
+        wallet_provider,
+        type,
+      });
+      sendToMetabase('add_wallet', params);
       mixpanelTrack(account, 'Wallet: Wallet Added', { wallet_provider, type });
     }
   });
