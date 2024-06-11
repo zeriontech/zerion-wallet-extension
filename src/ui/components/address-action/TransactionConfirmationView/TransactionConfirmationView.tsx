@@ -19,6 +19,7 @@ import { TransactionSimulation } from '../TransactionSimulation';
 export function TransactionConfirmationView({
   title,
   wallet,
+  showApplicationLine,
   transaction,
   chain,
   configuration,
@@ -27,6 +28,7 @@ export function TransactionConfirmationView({
 }: {
   title: React.ReactNode;
   wallet: ExternallyOwnedAccount;
+  showApplicationLine: boolean;
   transaction: IncomingTransactionWithChainId;
   chain: Chain;
   configuration: CustomConfiguration;
@@ -65,6 +67,7 @@ export function TransactionConfirmationView({
         style={{ display: 'flex', flexDirection: 'column' }}
       >
         <TransactionSimulation
+          showApplicationLine={showApplicationLine}
           localAllowanceQuantityBase={localAllowanceQuantityBase}
           onOpenAllowanceForm={onOpenAllowanceForm}
           address={wallet.address}

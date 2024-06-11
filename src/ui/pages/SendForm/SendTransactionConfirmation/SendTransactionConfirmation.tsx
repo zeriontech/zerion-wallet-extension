@@ -47,6 +47,7 @@ export function SendTransactionConfirmation({
     <TransactionConfirmationView
       title="Send"
       wallet={wallet}
+      showApplicationLine={false}
       chain={chain}
       transaction={transaction as IncomingTransactionWithChainId}
       configuration={sendView.store.configuration.getState()}

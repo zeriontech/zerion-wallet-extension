@@ -18,6 +18,7 @@ export function AddressActionDetails({
   actionTransfers,
   singleAsset,
   allowanceQuantityBase,
+  showApplicationLine,
   singleAssetElementEnd,
 }: {
   recipientAddress?: string;
@@ -28,6 +29,7 @@ export function AddressActionDetails({
   actionTransfers?: ActionTransfers;
   singleAsset?: NonNullable<AddressAction['content']>['single_asset'];
   allowanceQuantityBase: string | null;
+  showApplicationLine: boolean;
   singleAssetElementEnd: React.ReactNode;
 }) {
   return (
@@ -39,7 +41,7 @@ export function AddressActionDetails({
           networks={networks}
         />
       ) : null}
-      {addressAction?.label && addressAction?.label.type !== 'to' ? (
+      {showApplicationLine && addressAction?.label ? (
         <ApplicationLine
           action={addressAction}
           chain={chain}

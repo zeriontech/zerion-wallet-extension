@@ -276,6 +276,7 @@ function TypedDataDefaultView({
             wallet={wallet}
             singleAsset={addressAction?.content?.single_asset}
             allowanceQuantityBase={allowanceQuantityBase || null}
+            showApplicationLine={true}
             singleAssetElementEnd={
               allowanceQuantityBase &&
               addressAction.type.value === 'approve' ? (
