@@ -22,6 +22,8 @@ import { SignMessageButton } from 'src/ui/components/SignMessageButton';
 import { invariant } from 'src/shared/invariant';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import ArrowLeftTop from 'jsx:src/ui/assets/arrow-left-top.svg';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { useAddressNftPosition } from './useAddressNftPosition';
 
@@ -51,17 +53,21 @@ export function NonFungibleToken() {
     address: singleAddress,
   });
 
-  const url = useMemo(() => {
+  const links = useMemo(() => {
     if (!nft?.chain || !nft.contract_address || !nft.token_id) {
       return null;
     }
-    const urlObject = new URL(
+    const webAppUrlObject = new URL(
       `https://app.zerion.io/nfts/${nft.chain}/${nft.contract_address}:${nft.token_id}`
     );
     if (singleAddress) {
-      urlObject.searchParams.append('address', singleAddress);
+      webAppUrlObject.searchParams.append('address', singleAddress);
     }
-    return urlObject.toString();
+    return {
+      webAppLink: webAppUrlObject.toString(),
+      // TODO: fix chain params after merge fix for nft chain selector
+      sendFormLink: `/send-form?type=nft&nftContractAddress=${nft.contract_address}&nftId=${nft.token_id}&nftChain=${nft.chain}&tokenChain=${nft.chain}`,
+    };
   }, [singleAddress, nft]);
 
   const signMsgBtnRef = useRef<SignMsgBtnHandle | null>(null);
@@ -203,21 +209,38 @@ export function NonFungibleToken() {
         ) : null}
         <Spacer height={24} />
       </PageColumn>
-      {url ? (
+      {links ? (
         <PageStickyFooter
           lineColor="var(--neutral-300)"
           style={{ backgroundColor: 'var(--white)' }}
         >
           <Spacer height={24} />
-          <Button
-            as={UnstyledAnchor}
-            href={url}
-            target="_blank"
-            kind="regular"
-            style={{ width: '100%' }}
+          <HStack
+            gap={8}
+            alignItems="center"
+            style={{ gridTemplateColumns: '1fr 1fr' }}
           >
-            Open in Zerion Web
-          </Button>
+            <Button
+              as={UnstyledAnchor}
+              href={links.webAppLink}
+              target="_blank"
+              kind="regular"
+              style={{ width: '100%' }}
+            >
+              <HStack gap={8} alignItems="center">
+                <span>Zerion Web</span>
+                <ArrowLeftTop />
+              </HStack>
+            </Button>
+            <Button
+              as={UnstyledLink}
+              to={links.sendFormLink}
+              kind="primary"
+              style={{ width: '100%' }}
+            >
+              Send NFT
+            </Button>
+          </HStack>
           <PageBottom />
         </PageStickyFooter>
       ) : null}
