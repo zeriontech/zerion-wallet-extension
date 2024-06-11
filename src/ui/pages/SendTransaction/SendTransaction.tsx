@@ -387,6 +387,7 @@ function TransactionDefaultView({
           actionTransfers={actionTransfers}
           singleAsset={singleAsset}
           allowanceQuantityBase={allowanceQuantityBase}
+          showApplicationLine={true}
           singleAssetElementEnd={
             allowanceQuantityBase && addressAction.type.value === 'approve' ? (
               <UIText

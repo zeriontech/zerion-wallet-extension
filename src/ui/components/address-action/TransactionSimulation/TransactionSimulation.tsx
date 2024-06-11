@@ -28,6 +28,7 @@ export function TransactionSimulation({
   transaction,
   paymasterEligible,
   localAllowanceQuantityBase,
+  showApplicationLine,
   onOpenAllowanceForm,
 }: {
   vGap?: number;
@@ -35,6 +36,7 @@ export function TransactionSimulation({
   transaction: IncomingTransactionWithChainId;
   paymasterEligible: boolean;
   localAllowanceQuantityBase?: string;
+  showApplicationLine: boolean;
   onOpenAllowanceForm?: () => void;
 }) {
   const { networks } = useNetworks();
@@ -167,6 +169,7 @@ export function TransactionSimulation({
         actionTransfers={actionTransfers}
         singleAsset={singleAsset}
         allowanceQuantityBase={allowanceQuantityBase || null}
+        showApplicationLine={showApplicationLine}
         singleAssetElementEnd={
           allowanceQuantityBase && onOpenAllowanceForm ? (
             <UnstyledButton
