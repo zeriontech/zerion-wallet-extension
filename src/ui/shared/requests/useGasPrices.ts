@@ -17,7 +17,7 @@ export function queryGasPrices(chain: Chain) {
   });
 }
 
-export function useGasPrices(chain: Chain | null) {
+export function useGasPrices(chain: Chain | null, { suspense = false } = {}) {
   return useQuery({
     queryKey: [QUERY_NAME, chain],
     queryFn: async () => {
@@ -29,7 +29,7 @@ export function useGasPrices(chain: Chain | null) {
     },
     useErrorBoundary: true,
     enabled: Boolean(chain),
-    suspense: false,
+    suspense,
     staleTime: 10000,
   });
 }
