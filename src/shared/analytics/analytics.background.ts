@@ -252,7 +252,7 @@ function trackAppEvents({ account }: { account: Account }) {
           : 'connected';
       const wallet_provider = getProvider(wallet.address);
 
-      const params = createParams({
+      const params = createBaseParams({
         request_name: 'add_wallet',
         wallet_address: wallet.address.toLowerCase(),
         wallet_provider,
