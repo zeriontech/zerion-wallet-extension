@@ -18,7 +18,9 @@ function useInsufficientFundsWarning({
   chain: Chain;
   networkFeeConfiguration: NetworkFeeConfiguration;
 }) {
-  const { data: chainGasPrices = null } = useGasPrices(chain);
+  const { data: chainGasPrices = null } = useGasPrices(chain, {
+    suspense: true,
+  });
   const transactionFee = useTransactionFee({
     address,
     transaction,

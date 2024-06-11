@@ -165,7 +165,7 @@ function calculateTransactionCosts({
   const nativeBalanceBase =
     nativeBalance != null ? commonToBase(nativeBalance, decimals) : null;
   const isLowBalance =
-    nativeBalanceBase != null ? maxTotalValueBase.gt(nativeBalanceBase) : true;
+    nativeBalanceBase != null ? maxTotalValueBase.gt(nativeBalanceBase) : false;
   const feeValueCommon = baseToCommon(estimatedFee, decimals);
   const feeValueFiat = price != null ? feeValueCommon.times(price) : null;
   const maxFeeValueCommon = baseToCommon(maxFee, decimals);
