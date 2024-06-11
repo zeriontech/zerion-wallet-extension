@@ -238,15 +238,18 @@ async function configureTransactionToSign<T extends IncomingTransaction>(
     tx.value = '0x0';
   }
 
-  if (tx.nonce == null) {
-    const { value: nonce } = await uiGetBestKnownTransactionCount({
-      address: tx.from || from,
-      chain,
-      networks,
-      defaultBlock: 'pending',
-    });
-    tx = { ...tx, nonce };
-  }
+  // NOTE:
+  // Before uncommenting we must handle "isLoading" state of sendTransaction useMutation
+  // call: unless we pass disabled to SignTransactionButton, it can be double clicked during nonce query
+  // if (tx.nonce == null) {
+  //   const { value: nonce } = await uiGetBestKnownTransactionCount({
+  //     address: tx.from || from,
+  //     chain,
+  //     networks,
+  //     defaultBlock: 'pending',
+  //   });
+  //   tx = { ...tx, nonce };
+  // }
 
   tx = applyConfiguration(tx, configuration, chainGasPrices);
 
