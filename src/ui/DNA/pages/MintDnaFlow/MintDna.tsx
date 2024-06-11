@@ -32,6 +32,7 @@ import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { invariant } from 'src/shared/invariant';
 import { SidePanel } from 'src/ui/Onboarding/FAQ/SidePanel';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import * as helpersStyles from '../../shared/styles.module.css';
 import { Step } from '../../shared/Step';
 import { DNA_MINT_CONTRACT_ADDRESS } from '../../shared/constants';
@@ -63,12 +64,13 @@ function useDnaMintTransaction(address: string) {
     onFeeValueCommonReady: null,
   });
   const feeValueFiat = costs?.totalValueFiat;
+  const { currency } = useCurrency();
 
   const { value, isLoading: positionsAreLoading } = useAddressPositions(
     {
       address,
       assets: ['eth'],
-      currency: 'usd',
+      currency,
     },
     { enabled: Boolean(address) }
   );
@@ -101,6 +103,8 @@ function MintDnaContent({
   loading: boolean;
   waitingForConfirmation: boolean;
 }) {
+  const { currency } = useCurrency();
+
   return (
     <VStack gap={32} style={{ justifyItems: 'center' }}>
       <VStack gap={12} style={{ justifyItems: 'center' }}>
@@ -124,7 +128,7 @@ function MintDnaContent({
             <HStack gap={8} alignItems="center">
               <UIText kind="caption/regular">Network Fee</UIText>
               <UIText kind="caption/accent">
-                {formatCurrencyValue(feeValueFiat, 'en', 'usd')}
+                {formatCurrencyValue(feeValueFiat, 'en', currency)}
               </UIText>
             </HStack>
           ) : null}

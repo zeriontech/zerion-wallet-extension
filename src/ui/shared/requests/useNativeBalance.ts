@@ -6,6 +6,7 @@ import BigNumber from 'bignumber.js';
 import { getDecimals } from 'src/modules/networks/asset';
 import { isTruthy } from 'is-truthy-ts';
 import { useNetworks } from 'src/modules/networks/useNetworks';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useEvmNativeAddressPosition } from './useEvmNativeAddressPosition';
 import { useNativeAssetId } from './useNativeAsset';
 
@@ -23,9 +24,10 @@ function useNativeAddressPosition({
   isSuccess: boolean;
 } {
   const id = useNativeAssetId(chain);
+  const { currency } = useCurrency();
 
   const { value, isLoading } = useAddressPositions(
-    { address, assets: [id].filter(isTruthy), currency: 'usd' },
+    { address, assets: [id].filter(isTruthy), currency },
     { enabled: enabled && Boolean(id) }
   );
 

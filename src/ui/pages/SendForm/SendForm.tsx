@@ -60,6 +60,7 @@ import { fetchAndAssignPaymaster } from 'src/modules/ethereum/account-abstractio
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { DisableTestnetShortcuts } from 'src/ui/features/testnet-mode/DisableTestnetShortcuts';
 import { isDeviceAccount } from 'src/shared/types/validators';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -96,6 +97,7 @@ const ENABLE_NFT_TRANSFER = true;
 
 function SendFormComponent() {
   const { singleAddress: address, ready } = useAddressParams();
+  const { currency } = useCurrency();
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
@@ -113,14 +115,14 @@ function SendFormComponent() {
 
   const { data: positions } = useAddressBackendOrEvmPositions({
     address,
-    currency: 'usd',
+    currency,
     chain: chainForAddressPositions
       ? createChain(chainForAddressPositions)
       : null,
   });
 
   const { value: portfolioDecomposition } = useAddressPortfolioDecomposition(
-    { address, currency: 'usd' },
+    { address, currency },
     { enabled: ready }
   );
   const addressChains = useMemo(
@@ -132,7 +134,7 @@ function SendFormComponent() {
   const client = useDefiSdkClient();
 
   const sendView = useSendForm({
-    currencyCode: 'usd',
+    currencyCode: currency,
     DEFAULT_CONFIGURATION,
     address,
     positions: positions || undefined,

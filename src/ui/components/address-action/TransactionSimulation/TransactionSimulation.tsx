@@ -21,6 +21,7 @@ import { fetchAndAssignPaymaster } from 'src/modules/ethereum/account-abstractio
 import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
 import type { EligibilityQuery } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
 import { shouldInterpretTransaction } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { AddressActionDetails } from '../AddressActionDetails';
 import { InterpretationState } from '../../InterpretationState';
 
@@ -44,6 +45,7 @@ export function TransactionSimulation({
   onOpenAllowanceForm?: () => void;
 }) {
   const { networks } = useNetworks();
+  const { currency } = useCurrency();
   invariant(transaction.chainId, 'transaction must have a chainId value');
   const chain = networks?.getChainById(normalizeChainId(transaction.chainId));
 
@@ -71,6 +73,7 @@ export function TransactionSimulation({
       transactionAction,
       networks,
       address,
+      currency,
       client,
     ],
     queryKeyHashFn: (queryKey) => {
@@ -87,6 +90,7 @@ export function TransactionSimulation({
             },
             transactionAction,
             networks,
+            currency,
             client
           )
         : null;
@@ -103,7 +107,7 @@ export function TransactionSimulation({
     enabled: FEATURE_PAYMASTER_ENABLED
       ? shouldInterpretTransaction({ network, eligibilityQuery })
       : true,
-    queryKey: ['interpretTransaction', transaction, client],
+    queryKey: ['interpretTransaction', transaction, currency, client],
     queryKeyHashFn: (queryKey) => {
       const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
       return hashQueryKey(key);
@@ -114,6 +118,7 @@ export function TransactionSimulation({
         address: transaction.from,
         transaction,
         origin: 'https://app.zerion.io',
+        currency,
         client,
       });
     },
@@ -126,7 +131,7 @@ export function TransactionSimulation({
   const paymasterTxInterpretQuery = useQuery({
     enabled: paymasterEligible,
     suspense: false,
-    queryKey: ['interpret/typedData', client, transaction],
+    queryKey: ['interpret/typedData', client, currency, transaction],
     queryKeyHashFn: (queryKey) => {
       const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
       return hashQueryKey(key);
@@ -142,6 +147,7 @@ export function TransactionSimulation({
         chainId: normalizeChainId(toSign.chainId),
         typedData,
         client,
+        currency,
       });
     },
   });

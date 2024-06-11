@@ -10,6 +10,7 @@ type NativeAssetQuery = {
   chain: Chain;
   id: string | null;
   address: string | null;
+  currency: string;
 };
 
 type NonNativeAssetQuery = {
@@ -17,6 +18,7 @@ type NonNativeAssetQuery = {
   chain: Chain;
   id?: undefined;
   address: string | null;
+  currency: string;
 };
 
 export type CachedAssetQuery = NativeAssetQuery | NonNativeAssetQuery;

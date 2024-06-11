@@ -22,10 +22,12 @@ import {
   QUICK_AMOUNTS,
   QuickAmountButton,
 } from 'src/ui/shared/forms/QuickAmounts';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { AssetSelect } from '../../AssetSelect';
 
 function FiatInputValue({ sendView }: { sendView: SendFormView }) {
   const { tokenItem } = sendView;
+  const { currency } = useCurrency();
   const { type, tokenValue: inputValue } = useSelectorStore(sendView.store, [
     'type',
     'tokenValue',
@@ -46,7 +48,7 @@ function FiatInputValue({ sendView }: { sendView: SendFormView }) {
 
   return (
     <UIText kind="small/regular" color="var(--neutral-600)">
-      {formatCurrencyValue(fiatValue, 'en', 'usd')}
+      {formatCurrencyValue(fiatValue, 'en', currency)}
     </UIText>
   );
 }

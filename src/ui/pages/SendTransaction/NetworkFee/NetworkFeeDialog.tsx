@@ -49,6 +49,7 @@ import {
 import { useEstimateGas } from 'src/modules/ethereum/transactions/useEstimateGas';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { apostrophe } from 'src/ui/shared/typography';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useTransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import { NetworkFeeIcon } from './NetworkFeeIcon';
 import { NETWORK_SPEED_TO_TITLE } from './constants';
@@ -58,12 +59,14 @@ const OPTIONS: NetworkFeeSpeed[] = ['fast', 'average', 'custom'];
 function getCustomFeeDescription({
   fiat,
   gasPrice,
+  currency,
 }: {
   fiat?: BigNumber.Value;
   gasPrice: number | string;
+  currency: string;
 }) {
   return `${
-    fiat ? `${formatCurrencyValue(fiat, 'en', 'usd')} (` : ''
+    fiat ? `${formatCurrencyValue(fiat, 'en', currency)} (` : ''
   }${formatGasPrice(gasPrice)}${fiat ? ')' : ''}`;
 }
 
@@ -141,6 +144,7 @@ function CustomNetworkFeeForm({
     throw new Error('No gas price configuration has been found for chain');
   }
 
+  const { currency } = useCurrency();
   const [configuration, setConfiguration] = useState(value);
 
   const { value: nativeAsset } = useNativeAsset(chain);
@@ -337,6 +341,7 @@ function CustomNetworkFeeForm({
                     eip1559.baseFee + (priorityFee || 0),
                     maxFee
                   ),
+                  currency,
                 })}
               </UIText>
             </HStack>
@@ -347,6 +352,7 @@ function CustomNetworkFeeForm({
                   {getCustomFeeDescription({
                     fiat: maxFeeFiat,
                     gasPrice: maxFee,
+                    currency,
                   })}
                 </UIText>
               ) : null}
@@ -374,6 +380,7 @@ function CustomNetworkFeeForm({
                 {getCustomFeeDescription({
                   fiat: baseFeeFiat,
                   gasPrice: baseFee,
+                  currency,
                 })}
               </UIText>
             ) : null}
@@ -424,6 +431,7 @@ function NetworkFeeButton({
   chainGasPrices?: ChainGasPrice | null;
   transaction: IncomingTransactionWithFrom;
 }) {
+  const { currency } = useCurrency();
   const { networks } = useNetworks();
   const speedConfiguration = useMemo(() => {
     return {
@@ -494,7 +502,7 @@ function NetworkFeeButton({
             color={selected ? 'var(--primary)' : 'var(--black)'}
           >
             {totalValueExceedsBalance ? 'Up to ' : null}~
-            {formatCurrencyValue(feeValueFiat, 'en', 'usd')}
+            {formatCurrencyValue(feeValueFiat, 'en', currency)}
           </UIText>
         ) : feeValueCommon && nativeAssetSymbol ? (
           <UIText

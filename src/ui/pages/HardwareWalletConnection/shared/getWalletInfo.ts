@@ -6,8 +6,11 @@ export interface WalletInfo {
   name: null | string;
 }
 
-export async function getWalletInfo(address: string): Promise<WalletInfo> {
+export async function getWalletInfo(
+  address: string,
+  currency: string
+): Promise<WalletInfo> {
   const name = await lookupAddressName(address);
-  const portfolio = await getAddressPortfolio({ address });
+  const portfolio = await getAddressPortfolio({ address, currency });
   return { portfolio: portfolio.total_value, name };
 }

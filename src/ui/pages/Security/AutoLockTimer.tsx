@@ -1,25 +1,18 @@
 import { isTruthy } from 'is-truthy-ts';
 import React, { useEffect } from 'react';
-import cn from 'classnames';
 import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
-import { Button } from 'src/ui/ui-kit/Button';
 import { Frame } from 'src/ui/ui-kit/Frame';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { FrameListItem } from 'src/ui/ui-kit/FrameList';
-import { StickyBottomPanel } from 'src/ui/ui-kit/BottomPanel';
+import { FrameListItemButton } from 'src/ui/ui-kit/FrameList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import CheckIcon from 'jsx:src/ui/assets/check.svg';
 import { useBackgroundKind } from 'src/ui/components/Background';
-import { collectData } from 'src/ui/shared/form-data';
-import { Spacer } from 'src/ui/ui-kit/Spacer';
-import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
-import * as styles from './styles.module.css';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -64,71 +57,36 @@ export function AutoLockTimer() {
   return (
     <PageColumn style={{ position: 'relative' }}>
       <NavigationTitle title="Auto-Lock Timer" />
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          const { autoLockTimeout } = collectData(e.currentTarget, {
-            autoLockTimeout: (value) =>
-              value !== 'none' ? Number(value) : value,
-          });
-          setGlobalPreferences({ autoLockTimeout });
-        }}
-        style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}
-      >
-        <PageTop />
-        <Frame>
-          <VStack gap={0}>
-            {AUTO_LOCK_TIMER_OPTIONS.map((preference) => (
-              <label key={preference.value}>
-                <input
-                  type="radio"
-                  name="autoLockTimeout"
-                  value={preference.value}
-                  defaultChecked={
-                    preference.value === globalPreferences?.autoLockTimeout
-                  }
-                  className={cn(helperStyles.visuallyHiddenInput, styles.input)}
-                />
-                <FrameListItem className={styles.listItem}>
-                  <HStack
-                    gap={8}
-                    alignItems="center"
-                    justifyContent="space-between"
-                  >
-                    <UIText kind="body/accent">{preference.title}</UIText>
-                    <CheckIcon
-                      className={styles.checkIcon}
-                      style={{
-                        color: 'var(--primary)',
-                        width: 24,
-                        height: 24,
-                      }}
-                    />
-                  </HStack>
-                </FrameListItem>
-              </label>
-            ))}
-          </VStack>
-        </Frame>
-        <Spacer height={16} />
-        <StickyBottomPanel containerStyle={{ marginTop: 'auto' }}>
-          <HStack
-            gap={16}
-            style={{ padding: 16, gridTemplateColumns: '1fr 1fr' }}
-          >
-            <Button
-              kind="regular"
-              type="button"
-              onClick={() => {
-                setGlobalPreferences({ autoLockTimeout: TWELVE_HOURS });
-              }}
+      <PageTop />
+      <Frame>
+        <VStack gap={0}>
+          {AUTO_LOCK_TIMER_OPTIONS.map((preference) => (
+            <FrameListItemButton
+              key={preference.value}
+              onClick={() =>
+                setGlobalPreferences({ autoLockTimeout: preference.value })
+              }
             >
-              Reset
-            </Button>
-            <Button kind="primary">Save</Button>
-          </HStack>
-        </StickyBottomPanel>
-      </form>
+              <HStack
+                gap={8}
+                alignItems="center"
+                justifyContent="space-between"
+              >
+                <UIText kind="body/accent">{preference.title}</UIText>
+                {preference.value === globalPreferences?.autoLockTimeout ? (
+                  <CheckIcon
+                    style={{
+                      color: 'var(--primary)',
+                      width: 24,
+                      height: 24,
+                    }}
+                  />
+                ) : null}
+              </HStack>
+            </FrameListItemButton>
+          ))}
+        </VStack>
+      </Frame>
     </PageColumn>
   );
 }

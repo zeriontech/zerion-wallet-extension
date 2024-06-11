@@ -30,6 +30,7 @@ import { VirtualizedSurfaceList } from 'src/ui/ui-kit/SurfaceList/VirtualizedSur
 import { useNativeBalance } from 'src/ui/shared/requests/useNativeBalance';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { DelayedRender } from '../DelayedRender';
 import { NetworkIcon } from '../NetworkIcon';
 import { PageBottom } from '../PageBottom';
@@ -79,6 +80,8 @@ function NetworkItem({
     value === NetworkSelectValue.All ||
     value in (chainDistribution?.chains || {});
   const chain = value === NetworkSelectValue.All ? null : createChain(value);
+  const { currency } = useCurrency();
+
   return (
     <SurfaceItemButton
       data-class={LIST_ITEM_CLASS}
@@ -114,6 +117,7 @@ function NetworkItem({
             <ChainValue
               chain={chain || NetworkSelectValue.All}
               chainDistribution={chainDistribution}
+              currency={currency}
             />
           ) : address && chain ? (
             <NativeBalance address={address} chain={chain} />
