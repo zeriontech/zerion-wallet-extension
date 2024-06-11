@@ -26,7 +26,10 @@ export function initialize(account: Account) {
   });
 
   // Backend needs this event to initialize chain listening for the address in case the chain is not fully supported
-  emitter.on('dappConnection', async ({ origin, address }) => {
+  emitter.on('requestAccounts', async ({ origin, address, explicitly }) => {
+    if (!explicitly) {
+      return;
+    }
     const chainId = await account
       .getCurrentWallet()
       .getChainIdForOrigin({ origin });

@@ -47,7 +47,10 @@ function trackAppEvents({ account }: { account: Account }) {
     const getUserId = () => account.getUser()?.id;
     return createBaseParams({ ...params, userId: getUserId() });
   };
-  emitter.on('dappConnection', ({ origin, address }) => {
+  emitter.on('requestAccounts', ({ origin, address, explicitly }) => {
+    if (!explicitly) {
+      return;
+    }
     // We don't need user_id here
     const params = createBaseParams({
       request_name: 'dapp_connection',
