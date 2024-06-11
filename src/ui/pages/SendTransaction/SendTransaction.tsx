@@ -216,7 +216,7 @@ async function configureTransactionToSign<T extends IncomingTransaction>(
     chainGasPrices: ChainGasPrice | null;
   }
 ): Promise<PartiallyRequired<T, 'chainId' | 'from'>> {
-  let tx = transaction as T | IncomingTransaction;
+  let tx = { ...transaction } as T | IncomingTransaction;
 
   const chainId = transaction.chainId || networks.getChainId(chain);
   invariant(chainId, 'Could not resolve chainId for tx to sign');
