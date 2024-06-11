@@ -1,6 +1,9 @@
 import React, { useMemo } from 'react';
 import type { CustomConfiguration } from '@zeriontech/transactions';
-import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
+import type {
+  IncomingTransaction,
+  IncomingTransactionWithFrom,
+} from 'src/modules/ethereum/types/IncomingTransaction';
 import type { Chain } from 'src/modules/networks/Chain';
 import { usePreferences } from 'src/ui/features/preferences';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -9,11 +12,52 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { NetworkFee } from '../NetworkFee';
 import { NonceLine } from '../NonceLine';
-import { TotalLine } from '../TotalLine';
 import { useTransactionFee } from './useTransactionFee';
 
-const DISPLAY_TOTAL = false;
+function NetworkFeeLine({
+  transaction,
+  chain,
+  onFeeValueCommonReady,
+  configuration,
+  onConfigurationChange,
+  keepPreviousData = false,
+}: {
+  transaction: IncomingTransactionWithFrom;
+  chain: Chain;
+  onFeeValueCommonReady: null | ((value: string) => void);
+  configuration: CustomConfiguration;
+  onConfigurationChange: null | ((value: CustomConfiguration) => void);
+  keepPreviousData?: boolean;
+}) {
+  const { data: chainGasPrices = null } = useGasPrices(chain, {
+    suspense: true,
+  });
+  const transactionFee = useTransactionFee({
+    address: transaction.from,
+    transaction,
+    chain,
+    onFeeValueCommonReady,
+    networkFeeConfiguration: configuration.networkFee,
+    keepPreviousData,
+    chainGasPrices,
+  });
 
+  return (
+    <NetworkFee
+      transaction={transaction}
+      transactionFee={transactionFee}
+      chain={chain}
+      chainGasPrices={chainGasPrices}
+      networkFeeConfiguration={configuration.networkFee}
+      onChange={
+        onConfigurationChange
+          ? (networkFee) =>
+              onConfigurationChange({ ...configuration, networkFee })
+          : null
+      }
+    />
+  );
+}
 export function TransactionConfiguration({
   transaction: incomingTransaction,
   from,
@@ -38,16 +82,6 @@ export function TransactionConfiguration({
     () => ({ ...incomingTransaction, from }),
     [from, incomingTransaction]
   );
-  const { data: chainGasPrices = null } = useGasPrices(chain);
-  const transactionFee = useTransactionFee({
-    address: from,
-    transaction: transactionWithFrom,
-    chain,
-    onFeeValueCommonReady,
-    networkFeeConfiguration: configuration.networkFee,
-    keepPreviousData,
-    chainGasPrices,
-  });
   return (
     <VStack gap={8}>
       {paymasterEligible ? (
@@ -67,18 +101,13 @@ export function TransactionConfiguration({
           </UIText>
         </HStack>
       ) : (
-        <NetworkFee
+        <NetworkFeeLine
+          configuration={configuration}
+          onConfigurationChange={onConfigurationChange}
           transaction={transactionWithFrom}
-          transactionFee={transactionFee}
           chain={chain}
-          chainGasPrices={chainGasPrices}
-          networkFeeConfiguration={configuration.networkFee}
-          onChange={
-            onConfigurationChange
-              ? (networkFee) =>
-                  onConfigurationChange({ ...configuration, networkFee })
-              : null
-          }
+          keepPreviousData={keepPreviousData}
+          onFeeValueCommonReady={onFeeValueCommonReady}
         />
       )}
       {preferences?.configurableNonce ? (
@@ -93,7 +122,6 @@ export function TransactionConfiguration({
           }
         />
       ) : null}
-      {DISPLAY_TOTAL ? <TotalLine transactionFee={transactionFee} /> : null}
     </VStack>
   );
 }

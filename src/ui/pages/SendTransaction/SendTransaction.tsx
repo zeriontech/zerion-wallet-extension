@@ -558,7 +558,7 @@ function TransactionDefaultView({
                 <React.Suspense
                   fallback={
                     <div style={{ display: 'flex', justifyContent: 'end' }}>
-                      tr conf suspense <CircleSpinner />
+                      <CircleSpinner />
                     </div>
                   }
                 >
