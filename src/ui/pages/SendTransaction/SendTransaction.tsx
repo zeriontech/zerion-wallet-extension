@@ -78,7 +78,6 @@ import { InterpretationState } from 'src/ui/components/InterpretationState';
 import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
 import { hasCriticalWarning } from 'src/ui/components/InterpretationState/InterpretationState';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
-import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/uiGetBestKnownTransactionCount';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api';
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { valueToHex } from 'src/shared/units/valueToHex';
