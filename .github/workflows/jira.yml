@@ -1,0 +1,10 @@
+name: Jira Issue Transition
+on:
+  pull_request:
+    types: [opened, synchronize]
+  workflow_dispatch:
+jobs:
+  transition_issue:
+    steps:
+        - name: Checkout repository
+        uses: atlassian/gajira-transition@v3
