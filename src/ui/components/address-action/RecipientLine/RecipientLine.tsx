@@ -35,7 +35,6 @@ export function RecipientLine({
           <div
             style={{
               position: 'relative',
-
               width: 36,
               height: 36,
             }}
