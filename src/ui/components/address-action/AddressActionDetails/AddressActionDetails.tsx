@@ -38,6 +38,7 @@ export function AddressActionDetails({
         <RecipientLine
           recipientAddress={recipientAddress}
           chain={chain}
+          showNetworkIcon={!showApplicationLine}
           networks={networks}
         />
       ) : null}
