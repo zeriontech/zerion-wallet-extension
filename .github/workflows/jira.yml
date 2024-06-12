@@ -1,10 +1,35 @@
 name: Jira Issue Transition
+run-name: ${{ github.actor }} is testing out automatic JIRA transitions 🚀
 on:
   pull_request:
     types: [opened, synchronize]
   workflow_dispatch:
 jobs:
   transition_issue:
-    steps:
-        - name: Checkout repository
+    steps: 
+      - name: Login
+        uses: atlassian/gajira-login@v3.0.0
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+      - name: Create ticket if it is a refactoring
+        #if: the label refactoring is added
+        uses: atlassian/gajira-create@v3
+        with:
+          project: WLT
+          issuetype: "Ticket"
+          summary: "${{ github.event.repository.name }} Refactoring to review"
+          description: "${github.event.pull_request.body}\n\n_Created in GitHub by ${{ github.actor }}._"
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+      - name: Put ticket back in progress
+        #if the PR requested change 
         uses: atlassian/gajira-transition@v3
+        with: 
+          issue: issue: ${{ steps.search.outputs.issue }}
+          transition: "In Progress"
+  
+        
