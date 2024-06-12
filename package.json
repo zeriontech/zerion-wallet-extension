@@ -1,6 +1,6 @@
 {
   "name": "zerion-wallet",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "description": "A web3 wallet extension",
   "scripts": {
     "prestart": "node scripts/verifyDotEnv.cjs",
