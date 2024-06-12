@@ -94,7 +94,6 @@ export class ZerionAPI {
       .get(new URL('chain/get-gas-prices/v1', ZERION_API_URL), {
         searchParams: {
           chain: payload.chain.toString(),
-          backend_env: 'staging',
         },
         headers: getZpiHeaders(),
       })
