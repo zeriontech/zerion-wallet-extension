@@ -9,6 +9,7 @@ import {
   Navigate,
 } from 'react-router-dom';
 import dayjs from 'dayjs';
+import { DefiSdkClientProvider as DefiSdkClientContextProvider } from 'defi-sdk';
 import * as styles from 'src/ui/style/global.module.css';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { GetStarted } from 'src/ui/pages/GetStarted';
@@ -21,6 +22,7 @@ import { SignMessage } from 'src/ui/pages/SignMessage';
 import { SignTypedData } from 'src/ui/pages/SignTypedData';
 import { useStore } from '@store-unit/react';
 import { runtimeStore } from 'src/shared/core/runtime-store';
+import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { Login } from '../pages/Login';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import {
@@ -62,6 +64,7 @@ import { NonFungibleToken } from '../pages/NonFungibleToken';
 import { Onboarding } from '../Onboarding';
 import { AddEthereumChain } from '../pages/AddEthereumChain';
 import { SignInWithEthereum } from '../pages/SignInWithEthereum';
+import { TestnetModeGuard } from '../pages/TestnetModeGuard';
 import { useBodyStyle } from '../components/Background/Background';
 import { PhishingWarningPage } from '../components/PhishingDefence/PhishingWarningPage';
 import { HardwareWalletConnection } from '../pages/HardwareWalletConnection';
@@ -71,10 +74,17 @@ import { SwapForm } from '../pages/SwapForm';
 import { MintDnaFlow } from '../DNA/pages/MintDnaFlow';
 import { UpgradeDnaFlow } from '../DNA/pages/UpgradeDnaFlow';
 import { ChooseGlobalProviderGuard } from '../pages/RequestAccounts/ChooseGlobalProvider/ChooseGlobalProvider';
+import { usePreferences } from '../features/preferences';
 import { openTabView } from '../shared/openInTabView';
+import { TestModeDecoration } from '../features/testnet-mode/TestModeDecoration';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
+
+function DefiSdkClientProvider({ children }: React.PropsWithChildren) {
+  const client = useDefiSdkClient();
+  return <DefiSdkClientContextProvider client={client} children={children} />;
+}
 
 const useAuthState = () => {
   const { data, isFetching } = useQuery({
@@ -168,9 +178,11 @@ function PageLayoutViews() {
 
 function Views({ initialRoute }: { initialRoute?: string }) {
   useScreenViewChange();
+  const { preferences } = usePreferences();
   return (
     <RouteResolver>
       <ViewArea>
+        {preferences?.testnetMode ? <TestModeDecoration /> : null}
         <URLBar />
         {templateData.windowContext === 'popup' ? (
           <RouteRestoration initialRoute={initialRoute} />
@@ -267,6 +279,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
               </RequireAuth>
             }
           />
+          <Route path="/testnetModeGuard" element={<TestnetModeGuard />} />
           <Route
             path="/siwe/*"
             element={
@@ -291,7 +304,6 @@ function Views({ initialRoute }: { initialRoute?: string }) {
               </RequireAuth>
             }
           />
-          {/* TODO: Should this page be removed? */}
           <Route
             path="/switchEthereumChain"
             element={
@@ -467,13 +479,15 @@ export function App({ initialView, mode, inspect }: AppProps) {
                   ) : templateData.layout === 'page' ? (
                     <PageLayoutViews />
                   ) : (
-                    <Views
-                      initialRoute={
-                        initialView === 'handshakeFailure'
-                          ? '/handshake-failure'
-                          : undefined
-                      }
-                    />
+                    <DefiSdkClientProvider>
+                      <Views
+                        initialRoute={
+                          initialView === 'handshakeFailure'
+                            ? '/handshake-failure'
+                            : undefined
+                        }
+                      />
+                    </DefiSdkClientProvider>
                   )}
                 </ViewSuspense>
               </VersionUpgrade>

@@ -16,6 +16,7 @@ import { emitter } from './shared/events';
 import { maybeOpenOboarding } from './Onboarding/initialization';
 import { OnboardingInterrupt } from './Onboarding/errors';
 import { persistQueryClient } from './shared/requests/queryClientPersistence';
+import { getPreferences } from './features/preferences/usePreferences';
 
 applyDrawFix();
 if (process.env.NODE_ENV === 'development') {
@@ -73,6 +74,7 @@ async function initializeUI({
     } else {
       queryClient.clear();
     }
+    await getPreferences(); // seed queryClient. TODO before merge: do we need this?
     await configureUIClient();
     initializeClientAnalytics();
     renderApp({ initialView, mode, inspect });

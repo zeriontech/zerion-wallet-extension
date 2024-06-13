@@ -1,0 +1,1 @@
+export { TestModeDecoration } from './TestModeDecoration';

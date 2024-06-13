@@ -22,6 +22,7 @@ export function TransactionConfirmationView({
   transaction,
   chain,
   configuration,
+  paymasterEligible,
   localAllowanceQuantityBase,
   onOpenAllowanceForm,
 }: {
@@ -30,6 +31,7 @@ export function TransactionConfirmationView({
   transaction: IncomingTransactionWithChainId;
   chain: Chain;
   configuration: CustomConfiguration;
+  paymasterEligible: boolean;
   localAllowanceQuantityBase?: string;
   onOpenAllowanceForm?: () => void;
 }) {
@@ -69,6 +71,7 @@ export function TransactionConfirmationView({
           onOpenAllowanceForm={onOpenAllowanceForm}
           address={wallet.address}
           transaction={transaction}
+          paymasterEligible={paymasterEligible}
         />
         <Spacer height={20} />
 
@@ -86,7 +89,7 @@ export function TransactionConfirmationView({
             configuration={configuration}
             onConfigurationChange={null}
             onFeeValueCommonReady={null}
-            paymasterEligible={false}
+            paymasterEligible={paymasterEligible}
           />
         </React.Suspense>
         <Spacer height={20} />

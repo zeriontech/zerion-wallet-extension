@@ -412,7 +412,7 @@ export function AddressInput({
             : null,
           ...items.slice(0, recentAddressesLength).map((item, index) => {
             return {
-              key: `recent-${item.address}`,
+              key: `recent-${item.address}-${item.groupId}`,
               style: { padding: 0 },
               pad: false,
               component: (
@@ -442,7 +442,7 @@ export function AddressInput({
           ...items.slice(recentAddressesLength).map((item, internalIndex) => {
             const index = internalIndex + recentAddressesLength;
             return {
-              key: `saved-${item.address}`,
+              key: `saved-${item.address}-${item.groupId}`,
               style: { padding: 0 },
               pad: false,
               component: (

@@ -1,29 +1,26 @@
 import type { ethers } from 'ethers';
-import { client } from 'defi-sdk';
-import { normalizeChainId } from 'src/shared/normalizeChainId';
-import { networksStore } from '../networks/networks-store.background';
 import { isCustomNetworkId } from '../ethereum/chains/helpers';
+import { getDefiSdkClient } from './background';
 
 const namespace = 'transaction';
 const scope = 'register';
 
 export async function registerTransaction(
-  transaction: ethers.providers.TransactionResponse
+  transaction: ethers.providers.TransactionResponse,
+  chain: string,
+  mode: 'default' | 'testnet'
 ) {
-  const chainId = normalizeChainId(transaction.chainId);
-  const networks = await networksStore.loadNetworksWithChainId(chainId);
-  const network = networks.getNetworkById(chainId);
-
-  if (isCustomNetworkId(network.id)) {
+  if (isCustomNetworkId(chain)) {
     return;
   }
+  const client = getDefiSdkClient({ on: mode === 'testnet' });
 
   client.subscribe<object, typeof namespace, typeof scope>({
     method: 'get',
     namespace,
     body: {
       scope: [scope],
-      payload: { hash: transaction.hash, chain: network.id },
+      payload: { hash: transaction.hash, chain },
     },
     onMessage: () => null,
   });

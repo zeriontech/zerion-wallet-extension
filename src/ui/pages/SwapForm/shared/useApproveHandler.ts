@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { estimateGas } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import { resolveChainId } from 'src/modules/ethereum/transactions/resolveChainId';
 import type { Chain } from 'src/modules/networks/Chain';
-import { networksStore } from 'src/modules/networks/networks-store.client';
+import { mainNetworksStore as networksStore } from 'src/modules/networks/networks-store.client';
 import { invariant } from 'src/shared/invariant';
 import { valueToHex } from 'src/shared/units/valueToHex';
 import { walletPort } from 'src/ui/shared/channels';
@@ -89,7 +89,7 @@ export function useApproveHandler({
       });
       const tx = { ...approveTx, from: address };
       const chainId = resolveChainId(tx);
-      const networks = await networksStore.loadNetworksWithChainId(chainId);
+      const networks = await networksStore.loadNetworksByChainId(chainId);
       const gas = await estimateGas(tx, networks);
       const gasAsHex = valueToHex(gas);
       return { ...tx, gas: gasAsHex, gasLimit: gasAsHex };

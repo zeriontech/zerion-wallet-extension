@@ -1,5 +1,4 @@
-import { client } from 'defi-sdk';
-import type { AddressAction } from 'defi-sdk';
+import type { AddressAction, Client } from 'defi-sdk';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 
 export async function getLatestNonceKnownByBackend(params: {
@@ -29,8 +28,9 @@ export async function getLatestNonceKnownByBackend(params: {
    * Pass this to backend to optimize search. It will not look further than the provided date
    */
   actions_since?: string;
+  client: Client;
 }): Promise<number | null> {
-  const { address, chain, hash, actions_since } = params;
+  const { address, chain, hash, actions_since, client } = params;
   const payload: Record<string, unknown> = {
     address,
     currency: 'usd',

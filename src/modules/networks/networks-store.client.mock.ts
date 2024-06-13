@@ -1,3 +1,4 @@
+import { client } from 'defi-sdk';
 import type { EthereumChainConfig } from '../ethereum/chains/types';
 import type { ChainId } from '../ethereum/transactions/ChainId';
 import type { NetworkConfig } from './NetworkConfig';
@@ -87,7 +88,7 @@ export const ETHEREUM_CHAIN_SOURCES: EthereumChainConfig[] = [
 ];
 
 class NetworksStoreMock extends NetworksStore {
-  async load(_chainIds?: string[]) {
+  async load() {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.getState().networks!;
   }
@@ -97,7 +98,7 @@ class NetworksStoreMock extends NetworksStore {
     return this.getState().networks!;
   }
 
-  async loadNetworksWithChainId(_chainId: ChainId) {
+  async loadNetworksByChainId(_chainId: ChainId) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.getState().networks!;
   }
@@ -115,5 +116,5 @@ export const networksStore = new NetworksStoreMock(
       ethereumChainConfigs: ETHEREUM_CHAIN_SOURCES,
     }),
   },
-  { getEthereumChainConfigs: null }
+  { getEthereumChainConfigs: null, client, testnetMode: false }
 );

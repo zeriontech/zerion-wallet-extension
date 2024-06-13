@@ -41,7 +41,8 @@ body {
   --body-width: 425px;
   --body-height: 600px;
   width: var(--body-width);
-  height: var(--body-height);
+  /** TODO: check that using min-height instead of height doesn't break popup dimensions in supported browsers */
+  min-height: var(--body-height);
   margin-inline: auto;
 }
 
@@ -74,6 +75,7 @@ body.isTab {
   --body-height: initial;
   --body-width: initial;
   display: block; /* display: grid for some reason creates unwanted x an y overscolls */
+  height: var(--body-height);
 }
 
 :root:has(body.pageLayout) {
@@ -83,6 +85,7 @@ body.isTab {
 body.pageLayout {
   --body-width: 100%;
   height: 100vh;
+  min-height: auto;
   width: 100%;
   border: none;
 }

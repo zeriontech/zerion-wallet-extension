@@ -14,10 +14,12 @@ export function SendTransactionConfirmation({
   sendView,
   getTransaction,
   chain,
+  paymasterEligible,
 }: {
   sendView: SendFormView;
   getTransaction: () => Promise<Partial<IncomingTransactionWithChainId>>;
   chain: Chain;
+  paymasterEligible: boolean;
 }) {
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
@@ -26,6 +28,7 @@ export function SendTransactionConfirmation({
   });
 
   const { data: transaction } = useQuery({
+    suspense: false, // "true" makes confirmation dialog flicker
     queryKey: QUERY_KEY,
     queryFn: getTransaction,
     useErrorBoundary: true,
@@ -50,6 +53,7 @@ export function SendTransactionConfirmation({
       chain={chain}
       transaction={transaction as IncomingTransactionWithChainId}
       configuration={sendView.store.configuration.getState()}
+      paymasterEligible={paymasterEligible}
     />
   );
 }

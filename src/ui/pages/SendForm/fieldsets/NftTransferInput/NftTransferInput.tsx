@@ -35,6 +35,7 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Media } from 'src/ui/ui-kit/Media';
 import { Button } from 'src/ui/ui-kit/Button';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
+import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import * as styles from './styles.module.css';
 
 function parseNftId(id: string) {
@@ -77,7 +78,7 @@ function NFTList({
       currency: 'usd',
       sorted_by: 'floor_price_high',
     },
-    { limit: 30, paginatedCacheMode: 'first-page' }
+    { limit: 30, paginatedCacheMode: 'first-page', client: useDefiSdkClient() }
   );
 
   if (isLoading && !items?.length) {

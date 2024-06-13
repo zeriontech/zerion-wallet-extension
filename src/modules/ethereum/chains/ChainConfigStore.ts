@@ -1,4 +1,5 @@
 import { produce } from 'immer';
+import type { Client } from 'defi-sdk';
 import { equal } from 'src/modules/fast-deep-equal';
 import type { Chain } from 'src/modules/networks/Chain';
 import { PersistentStore } from 'src/modules/persistent-store';
@@ -35,6 +36,8 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
     version: 3,
     ethereumChainConfigs: [],
   };
+
+  private defiSdkClient: Client | null = null;
 
   constructor(initialState: ChainConfig, key: string) {
     super(initialState, key, {
@@ -106,17 +109,27 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
     );
   }
 
+  setDefiSdkClient(client: Client) {
+    const prevClient = this.defiSdkClient;
+    this.defiSdkClient = client;
+    if (prevClient !== this.defiSdkClient) {
+      this.checkChainsForUpdates();
+    }
+  }
+
   private async checkChainsForUpdates() {
     const { ethereumChainConfigs } = this.getState();
     if (ethereumChainConfigs.length) {
       const updatedEthereumChainConfigs: EthereumChainConfig[] = [];
       for (const config of ethereumChainConfigs) {
-        if (!isCustomNetworkId(config.id)) {
+        if (!this.defiSdkClient || !isCustomNetworkId(config.id)) {
           updatedEthereumChainConfigs.push(config);
           continue;
         }
         try {
-          const network = await getNetworkByChainId(config.value.chainId);
+          const { chainId } = config.value;
+          const client = this.defiSdkClient;
+          const network = await getNetworkByChainId(chainId, client);
           if (!network) {
             throw new Error(
               `Unable to fetch network info by chainId: ${config.value.chainId}`

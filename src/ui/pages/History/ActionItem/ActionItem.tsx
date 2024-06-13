@@ -159,9 +159,11 @@ function ActionDetail({
 function ActionItemBackend({
   action,
   networks,
+  testnetMode,
 }: {
   action: AddressAction;
   networks: Networks;
+  testnetMode: boolean;
 }) {
   const { params, ready } = useAddressParams();
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -281,7 +283,7 @@ function ActionItemBackend({
                 direction="in"
                 chain={chain}
                 address={address}
-                withLink={true}
+                withLink={!testnetMode}
               />
             ) : outgoingTransfers?.length && chain ? (
               <HistoryItemValue
@@ -289,7 +291,7 @@ function ActionItemBackend({
                 direction="out"
                 chain={chain}
                 address={address}
-                withLink={true}
+                withLink={!testnetMode}
               />
             ) : null}
           </UIText>
@@ -485,8 +487,10 @@ function ActionItemLocal({
 
 export function ActionItem({
   addressAction,
+  testnetMode,
 }: {
   addressAction: AnyAddressAction;
+  testnetMode: boolean;
 }) {
   const { networks } = useNetworks();
 
@@ -499,6 +503,7 @@ export function ActionItem({
     <ActionItemBackend
       action={addressAction as AddressAction}
       networks={networks}
+      testnetMode={testnetMode}
     />
   );
 }

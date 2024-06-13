@@ -62,6 +62,8 @@ import { invariant } from 'src/shared/invariant';
 import { SurfaceItemAnchor } from 'src/ui/ui-kit/SurfaceList';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { useStore } from '@store-unit/react';
+import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
+import { usePreferences } from 'src/ui/features/preferences';
 import {
   TAB_SELECTOR_HEIGHT,
   TAB_TOP_PADDING,
@@ -458,6 +460,7 @@ function PositionList({
       }),
     []
   );
+  const { preferences } = usePreferences();
 
   const groupType = PositionsGroupType.platform;
   const preparedPositions = usePreparedPositions({
@@ -504,12 +507,26 @@ function PositionList({
           }
           let namePositionCounter = 0;
           for (const position of nameIndex[name]) {
+            const showAsLink = !preferences?.testnetMode?.on;
+            const itemContent = (
+              <AddressPositionItem
+                position={position}
+                groupType={groupType}
+                hasPreviosNestedPosition={
+                  namePositionCounter > 0 &&
+                  Boolean(nameIndex[name][namePositionCounter - 1].parent_id)
+                }
+                showGasIcon={preparedPositions.gasPositionId === position.id}
+              />
+            );
             items.push({
               key: position.id,
               separatorLeadingInset: position.parent_id ? 26 : 0,
-              pad: false,
-              style: { padding: 0 },
-              component: (
+              pad: !showAsLink,
+              style: showAsLink ? { padding: 0 } : undefined,
+              // NODE: Don't link to web in testnet mode
+              // TODO: remove this conditional when we have Asset Page in extension
+              component: showAsLink ? (
                 <SurfaceItemAnchor
                   href={`https://app.zerion.io/tokens/${
                     position.asset.symbol
@@ -519,20 +536,10 @@ function PositionList({
                   target="_blank"
                   decorationStyle={{ borderRadius: 16 }}
                 >
-                  <AddressPositionItem
-                    position={position}
-                    groupType={groupType}
-                    hasPreviosNestedPosition={
-                      namePositionCounter > 0 &&
-                      Boolean(
-                        nameIndex[name][namePositionCounter - 1].parent_id
-                      )
-                    }
-                    showGasIcon={
-                      preparedPositions.gasPositionId === position.id
-                    }
-                  />
+                  {itemContent}
                 </SurfaceItemAnchor>
+              ) : (
+                itemContent
               ),
             });
             namePositionCounter++;
@@ -625,10 +632,10 @@ function MultiChainPositions({
   filterChain: string | null;
   onChainChange: (value: string | null) => void;
 } & Omit<React.ComponentProps<typeof PositionList>, 'items'>) {
-  const { value, isLoading } = useAddressPositions({
-    ...addressParams,
-    currency: 'usd',
-  });
+  const { value, isLoading } = useAddressPositions(
+    { ...addressParams, currency: 'usd' },
+    { client: useDefiSdkClient() }
+  );
 
   const chainValue = filterChain || dappChain || NetworkSelectValue.All;
 
@@ -782,7 +789,7 @@ export function Positions({
       address: singleAddressNormalized,
       currency: 'usd',
     },
-    { enabled: ready }
+    { enabled: ready, client: useDefiSdkClient() }
   );
   const chainValue = filterChain || dappChain || NetworkSelectValue.All;
   const chain =
@@ -805,7 +812,7 @@ export function Positions({
       <CenteredFillViewportView
         maxHeight={getGrownTabMaxHeight(offsetValuesState)}
       >
-        <DelayedRender delay={2000}>
+        <DelayedRender delay={500}>
           <ViewLoading kind="network" />
         </DelayedRender>
       </CenteredFillViewportView>

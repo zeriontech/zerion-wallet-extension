@@ -7,9 +7,7 @@ import { ethers } from 'ethers';
 import { version } from 'src/shared/packageVersion';
 import * as browserStorage from 'src/background/webapis/storage';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import { networksStore } from 'src/modules/networks/networks-store.background';
 import { emitter } from 'src/background/events';
-import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { DnaAction } from './types';
 
 const ACTION_QUEUE_KEY = 'actionDnaQueue-22-12-2021';
@@ -181,16 +179,12 @@ export class DnaService {
   async registerTransaction({
     address,
     hash,
-    chainId,
+    chain,
   }: {
     address: string;
     hash: string;
-    chainId: number;
+    chain: string;
   }) {
-    const hexedChainId = normalizeChainId(chainId);
-    const networks = await networksStore.loadNetworksWithChainId(hexedChainId);
-    const chain = networks.getChainById(hexedChainId).toString();
-
     const actionId = uuidv5(
       `sign(${chain}, ${hash})`,
       'ddf8b936-fec5-48b3-a258-a73dcd897f0a'
@@ -265,7 +259,7 @@ export class DnaService {
       this.registerTransaction({
         address: data.transaction.from,
         hash: data.transaction.hash,
-        chainId: data.transaction.chainId,
+        chain: data.chain,
       });
     });
   }

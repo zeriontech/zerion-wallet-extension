@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Content } from 'react-area';
 import { useStore } from '@store-unit/react';
 import { isTruthy } from 'is-truthy-ts';
@@ -11,6 +11,10 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
+import { usePreferences } from 'src/ui/features/preferences';
+import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import { NBSP } from 'src/ui/shared/typography';
 import { NetworkSelect } from '../../Networks/NetworkSelect';
 import { getTabScrollContentHeight, offsetValues } from '../getTabsOffset';
 import * as styles from './styles.module.css';
@@ -28,7 +32,9 @@ export function NetworkBalance({
 }) {
   const { networks, isLoading } = useNetworks([dappChain].filter(isTruthy));
   const [showWalletNameContent, setShowWalletNameContent] = useState(false);
+  const { preferences } = usePreferences();
   const offsetValuesState = useStore(offsetValues);
+
   const SCROLL_THRESHOLD = getTabScrollContentHeight(offsetValuesState) - 8;
 
   const dappNetwork = dappChain
@@ -56,8 +62,23 @@ export function NetworkBalance({
     };
   }, [SCROLL_THRESHOLD]);
 
+  const testnetMode = preferences?.testnetMode?.on;
+  const networksPredicate = useMemo(() => {
+    return testnetMode
+      ? (network: NetworkConfig) =>
+          network.is_testnet || isCustomNetworkId(network.id)
+      : undefined;
+  }, [testnetMode]);
+
+  const textKind = 'headline/h3';
+  const allNetworksString = 'All Networks';
+
   if (isLoading) {
-    return null;
+    return (
+      <UIText kind={textKind} style={{ width: '100%' }}>
+        {NBSP}
+      </UIText>
+    );
   }
 
   return (
@@ -65,7 +86,7 @@ export function NetworkBalance({
       {hasValue && showWalletNameContent ? (
         <Content name="wallet-name-end">
           <UIText
-            kind="headline/h3"
+            kind={textKind}
             style={{
               paddingLeft: 8,
               maxWidth: '120px',
@@ -91,6 +112,7 @@ export function NetworkBalance({
         }}
       >
         <NetworkSelect
+          filterPredicate={networksPredicate}
           showAllNetworksOption={true}
           value={chain}
           onChange={(selectedValue) =>
@@ -100,7 +122,7 @@ export function NetworkBalance({
             const filterNetwork =
               value === NetworkSelectValue.All
                 ? null
-                : networks?.getNetworkByName(createChain(value));
+                : networks?.getNetworkByName(createChain(value))?.name || value;
 
             return (
               <UnstyledButton
@@ -112,7 +134,7 @@ export function NetworkBalance({
                   ['--parent-hovered-content-color' as string]: 'var(--black)',
                 }}
               >
-                <UIText kind="headline/h3" style={{ width: '100%' }}>
+                <UIText kind={textKind} style={{ width: '100%' }}>
                   <HStack
                     gap={4}
                     alignItems="center"
@@ -133,7 +155,7 @@ export function NetworkBalance({
                             textOverflow: 'ellipsis',
                           }}
                         >
-                          {filterNetwork ? filterNetwork.name : 'All Networks'}
+                          {filterNetwork || allNetworksString}
                         </div>,
                         hasValue ? <div key={1}>{totalValue}</div> : null,
                       ],
@@ -165,7 +187,9 @@ export function NetworkBalance({
               textOverflow: 'ellipsis',
             }}
           >
-            {showAllNetworksHelperButton ? 'All Networks' : dappNetwork?.name}
+            {showAllNetworksHelperButton
+              ? allNetworksString
+              : dappNetwork?.name}
           </Button>
         ) : null}
       </HStack>

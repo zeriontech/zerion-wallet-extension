@@ -1,7 +1,6 @@
 import { ethers } from 'ethers';
 import memoize from 'lodash/memoize';
 import { createNanoEvents } from 'nanoevents';
-import { networksStore } from 'src/modules/networks/networks-store.background';
 import { RequestCache } from 'src/modules/request-cache/request-cache';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import { createMockReceipt, DEBUGGING_TX_HASH } from './mocks';
@@ -58,12 +57,17 @@ export interface PollingTx {
   nonce: number;
 }
 
+interface Options {
+  getRpcUrlByChainId: (chainId: ChainId) => Promise<string | null>;
+}
+
 export class TransactionsPoller {
   private interval: Interval;
   private hashes: Map<string, PollingTx> = new Map();
   private requestInProgress = false;
   private receiptGetter = new ReceiptGetter();
   private requestCache = new RequestCache();
+  private options: Options | null = null;
 
   emitter = createNanoEvents<{
     mined: (receipt: ethers.providers.TransactionReceipt) => void;
@@ -72,6 +76,10 @@ export class TransactionsPoller {
 
   constructor() {
     this.interval = new Interval(this.makeRequest.bind(this));
+  }
+
+  setOptions(options: Options) {
+    this.options = options;
   }
 
   private async getTransactionCount(url: string, from: string) {
@@ -111,15 +119,23 @@ export class TransactionsPoller {
   }
 
   private async makeRequest() {
+    if (!this.options) {
+      // eslint-disable-next-line no-console
+      console.warn('Options are not initialized. Cannot make request');
+      return;
+    }
     if (this.requestInProgress) {
       return;
     }
     this.requestInProgress = true;
+    const { getRpcUrlByChainId } = this.options;
 
     const promises = Array.from(this.hashes.values()).map(async (value) => {
       const { chainId, hash } = value;
-      const networks = await networksStore.loadNetworksWithChainId(chainId);
-      const rpcUrl = networks.getRpcUrlInternal(networks.getChainById(chainId));
+      const rpcUrl = await getRpcUrlByChainId(chainId);
+      if (!rpcUrl) {
+        return null;
+      }
       return Promise.all([
         this.getTransactionCount(rpcUrl, value.from).then((count) =>
           this.handleTransactionCount(count, value)

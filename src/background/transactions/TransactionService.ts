@@ -16,7 +16,11 @@ import { getNetworkByChainId } from 'src/modules/networks/networks-api';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getLatestNonceKnownByBackend } from 'src/modules/ethereum/transactions/getLatestNonceKnownByBackend';
+import type { Wallet } from 'src/shared/types/Wallet';
+import { invariant } from 'src/shared/invariant';
+import { getDefiSdkClient } from 'src/modules/defi-sdk/background';
 import { emitter } from '../events';
+import { INTERNAL_SYMBOL_CONTEXT } from '../Wallet/Wallet';
 import { createMockTxResponse } from './mocks';
 import type { PollingTx } from './TransactionPoller';
 import { TransactionsPoller } from './TransactionPoller';
@@ -53,9 +57,14 @@ function toPollingObj(value: TransactionObject): PollingTx {
   };
 }
 
+interface Options {
+  getWallet: () => Wallet;
+}
+
 export class TransactionService {
   private transactionsStore: TransactionsStore;
   private transactionsPoller: TransactionsPoller;
+  options: Options | null = null;
 
   static ALARM_NAME = 'TransactionService:performPurgeCheck';
   static emitter = createNanoEvents<{ alarm: () => void }>();
@@ -93,10 +102,18 @@ export class TransactionService {
     });
   }
 
-  async initialize() {
+  async initialize(options: Options) {
+    this.options = options;
     await this.transactionsStore.ready();
     const transactions = this.transactionsStore.getState();
     const pending = getPendingTransactions(transactions);
+    this.transactionsPoller.setOptions({
+      getRpcUrlByChainId: (chainId: ChainId) => {
+        invariant(this.options, "Options aren't expected to become null");
+        const wallet = this.options.getWallet();
+        return wallet.getRpcUrlByChainId({ chainId, type: 'internal' });
+      },
+    });
     this.transactionsPoller.add(pending.map(toPollingObj));
     this.addListeners();
     if (transactions.length) {
@@ -159,10 +176,18 @@ export class TransactionService {
       map.set(key, { hash: item.hash, timestamp: item.timestamp });
     }
 
+    const wallet = this.options?.getWallet();
+    const preferences = await wallet?.getPreferences({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
+    const client = getDefiSdkClient({
+      on: Boolean(preferences?.testnetMode?.on),
+    });
+
     for (const [key, { hash, timestamp }] of map.entries()) {
       const [address, chainIdStr] = key.split(':');
       const chainId = chainIdStr as ChainId;
-      const network = await getNetworkByChainId(chainId);
+      const network = await getNetworkByChainId(chainId, client);
       if (network?.supports_actions) {
         const knownNonce = await getLatestNonceKnownByBackend({
           address,
@@ -171,6 +196,7 @@ export class TransactionService {
           // subtract one day to create a bigger search window
           // to account for possible client-time/server-time inconsistencies
           actions_since: new Date(timestamp - ONE_DAY_IN_MS - 1).toISOString(),
+          client,
         });
         if (knownNonce != null) {
           this.purgeEntries({ address, chainId, fromNonce: knownNonce });
@@ -218,8 +244,8 @@ export class TransactionService {
       }
     );
 
-    emitter.on('transactionSent', ({ transaction }) => {
-      registerTransaction(transaction);
+    emitter.on('transactionSent', async ({ transaction, chain, mode }) => {
+      registerTransaction(transaction, chain, mode);
     });
 
     this.transactionsPoller.emitter.on('mined', (receipt) => {
@@ -252,6 +278,7 @@ function testAddTransaction() {
     addressAction: null,
     clientScope: 'Local Testing',
     chain: 'ethereum',
+    mode: 'default',
   });
 }
 

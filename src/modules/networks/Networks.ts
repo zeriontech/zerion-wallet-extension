@@ -199,7 +199,7 @@ export class Networks {
     if (network?.explorer_tx_url) {
       return network.explorer_tx_url?.replace('{HASH}', hash);
     } else if (network?.explorer_home_url) {
-      return new URL(`/tx/${hash}`, network?.explorer_home_url).toString();
+      return new URL(`/tx/${hash}`, network.explorer_home_url).toString();
     }
   }
 
@@ -304,19 +304,23 @@ export class Networks {
     return Networks.getNetworkRpcUrlInternal(network);
   }
 
-  getRpcUrlPublic(chain: Chain) {
-    const network = this.getNetworkByName(chain);
-    if (!network) {
-      throw new Error(`Cannot find network: ${chain}`);
-    }
+  static getRpcUrlPublic(network: NetworkConfig) {
     const url =
       network.rpc_url_user ||
       network.rpc_url_public?.[0] ||
       network.rpc_url_internal;
     if (!url) {
-      throw new Error(`Network url missing: ${chain}`);
+      throw new Error(`Network url missing: ${network.id}`);
     }
     return url;
+  }
+
+  getRpcUrlPublic(chain: Chain) {
+    const network = this.getNetworkByName(chain);
+    if (!network) {
+      throw new Error(`Cannot find network: ${chain}`);
+    }
+    return Networks.getRpcUrlPublic(network);
   }
 
   hasMatchingConfig(config: AddEthereumChainParameter) {

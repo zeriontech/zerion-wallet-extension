@@ -21,7 +21,7 @@ import { isTruthy } from 'is-truthy-ts';
 import { createChain } from 'src/modules/networks/Chain';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { Networks as NetworksModule } from 'src/modules/networks/Networks';
-import { networksStore } from 'src/modules/networks/networks-store.client';
+import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { invariant } from 'src/shared/invariant';
 import {
@@ -69,6 +69,11 @@ import { SearchResults } from './shared/SearchResults';
 import { NetworkList } from './shared/NetworkList';
 import { NetworkForm } from './NetworkForm';
 
+async function updateNetworks() {
+  const networksStore = await getNetworksStore();
+  networksStore.update();
+}
+
 async function saveChainConfig({
   chain,
   chainConfig,
@@ -93,7 +98,7 @@ function NetworkCreatePage() {
   const mutation = useMutation({
     mutationFn: saveChainConfig,
     onSuccess() {
-      networksStore.update();
+      updateNetworks();
     },
   });
   useBackgroundKind({ kind: 'white' });
@@ -222,7 +227,7 @@ function NetworkPage() {
   const mutation = useMutation({
     mutationFn: saveChainConfig,
     onSuccess() {
-      networksStore.update();
+      updateNetworks();
       navigate(-1);
     },
   });
@@ -230,7 +235,7 @@ function NetworkPage() {
     mutationFn: (network: NetworkConfig) =>
       walletPort.request('removeEthereumChain', { chain: network.id }),
     onSuccess() {
-      networksStore.update();
+      updateNetworks();
       navigate(-1);
     },
   });
@@ -238,7 +243,7 @@ function NetworkPage() {
     mutationFn: (network: NetworkConfig) =>
       walletPort.request('resetEthereumChain', { chain: network.id }),
     onSuccess() {
-      networksStore.update();
+      updateNetworks();
       navigate(-1);
     },
   });
@@ -488,7 +493,7 @@ export function Networks() {
               loading={isLoading || portfolioDecompositionIsLoading}
               networks={networks}
               chainDistribution={portfolioDecomposition}
-              showTestnets={Boolean(preferences?.enableTestnets)}
+              showTestnets={Boolean(preferences?.testnetMode?.on)}
               autoFocusSearch={navigationType === NavigationType.Push}
             />
           }

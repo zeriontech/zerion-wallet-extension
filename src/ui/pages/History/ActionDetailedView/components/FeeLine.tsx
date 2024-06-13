@@ -30,7 +30,8 @@ export function FeeLine({
     createChain(chain || NetworkId.Ethereum)
   )?.native_asset;
 
-  if (!fee || !nativeAsset) {
+  const noFeeData = !sponsored && !fee;
+  if (noFeeData || !nativeAsset) {
     return null;
   }
 

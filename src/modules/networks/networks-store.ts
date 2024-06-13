@@ -1,4 +1,5 @@
 import { Store } from 'store-unit';
+import { type Client } from 'defi-sdk';
 import type { ChainId } from '../ethereum/transactions/ChainId';
 import type { EthereumChainConfig } from '../ethereum/chains/types';
 import { isCustomNetworkId } from '../ethereum/chains/helpers';
@@ -32,17 +33,29 @@ export class NetworksStore extends Store<State> {
   private getEthereumChainConfigs:
     | null
     | (() => Promise<EthereumChainConfig[] | undefined>);
+  client: Client;
+  testnetMode: boolean;
 
   constructor(
     state: State,
     {
       getEthereumChainConfigs,
+      client,
+      testnetMode,
     }: {
       getEthereumChainConfigs?: NetworksStore['getEthereumChainConfigs'];
-    } = {}
+      client: Client;
+      testnetMode: boolean;
+    }
   ) {
     super(state);
     this.getEthereumChainConfigs = getEthereumChainConfigs ?? null;
+    this.client = client;
+    this.testnetMode = testnetMode;
+  }
+
+  toString() {
+    return this.client.url;
   }
 
   private async updateNetworks() {
@@ -61,9 +74,11 @@ export class NetworksStore extends Store<State> {
   private async fetchNetworks({
     chains,
     update,
+    testnetMode,
   }: {
     chains?: string[];
     update?: boolean;
+    testnetMode: boolean;
   }) {
     const existingNetworksCollection =
       this.getState().networks?.getNetworksCollection();
@@ -81,7 +96,22 @@ export class NetworksStore extends Store<State> {
     ).filter((id) => !isCustomNetworkId(id));
 
     const [extraNetworkConfigs, commonNetworkConfigs] =
-      await Promise.allSettled([getNetworks(chainsToFetch), getNetworks()]);
+      await Promise.allSettled([
+        getNetworks({
+          ids: chainsToFetch,
+          client: this.client,
+          include_testnets: true,
+          supported_only: false,
+        }),
+        update
+          ? Promise.resolve([])
+          : getNetworks({
+              ids: null,
+              client: this.client,
+              include_testnets: testnetMode,
+              supported_only: testnetMode,
+            }),
+      ]);
     const updatedNetworkConfigs = mergeNetworkConfigs(
       commonNetworkConfigs.status === 'fulfilled'
         ? commonNetworkConfigs.value
@@ -114,7 +144,7 @@ export class NetworksStore extends Store<State> {
     if (!shouldUpdateNetworksInfo && existingNetworks) {
       return existingNetworks;
     }
-    const network = await getNetworkByChainId(chainId);
+    const network = await getNetworkByChainId(chainId, this.client);
     if (network) {
       this.networkConfigs = mergeNetworkConfigs(this.networkConfigs, [network]);
     }
@@ -129,17 +159,24 @@ export class NetworksStore extends Store<State> {
     return this.updateNetworks();
   }
 
-  async load(chains?: string[]) {
+  async load({ chains }: { chains?: string[] } = {}) {
     const key = JSON.stringify(chains || []);
     if (!this.loaderPromises[key]) {
-      this.loaderPromises[key] = this.fetchNetworks({ chains }).finally(() => {
+      this.loaderPromises[key] = this.fetchNetworks({
+        chains,
+        /**
+         * NOTE: due to fetchNetworks implementation, {testnetMode} param is important only when
+         * {chains} param is undefined. {testnetMode} param helps to fill networkStore initially for testnetMode
+         */
+        testnetMode: this.testnetMode,
+      }).finally(() => {
         delete this.loaderPromises[key];
       });
     }
     return this.loaderPromises[key];
   }
 
-  async loadNetworksWithChainId(chainId: ChainId) {
+  async loadNetworksByChainId(chainId: ChainId) {
     const key = `chainId-${chainId}`;
     if (!this.loaderPromises[key]) {
       this.loaderPromises[key] = this.fetchNetworkById(chainId).finally(() => {
@@ -152,11 +189,13 @@ export class NetworksStore extends Store<State> {
   async update() {
     const key = 'update';
     if (!this.loaderPromises[key]) {
-      this.loaderPromises[key] = this.fetchNetworks({ update: true }).finally(
-        () => {
-          delete this.loaderPromises[key];
-        }
-      );
+      this.loaderPromises[key] = this.fetchNetworks({
+        update: true,
+        /** testnetMode value does not matter when update: true ¯\_(ツ)_/¯ */
+        testnetMode: this.testnetMode,
+      }).finally(() => {
+        delete this.loaderPromises[key];
+      });
     }
     return this.loaderPromises[key];
   }

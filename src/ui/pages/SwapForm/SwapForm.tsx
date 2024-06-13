@@ -58,7 +58,7 @@ import { useSizeStore } from 'src/ui/Onboarding/useSizeStore';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { isNumeric } from 'src/shared/isNumeric';
 import {
   createApproveAddressAction,
@@ -67,6 +67,7 @@ import {
 import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
 import { AllowanceForm } from 'src/ui/components/AllowanceForm';
 import BigNumber from 'bignumber.js';
+import { usePreferences } from 'src/ui/features/preferences';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -131,7 +132,7 @@ function FormHint({
   return render(message);
 }
 
-export function SwapForm() {
+export function SwapFormComponent() {
   useBackgroundKind({ kind: 'white' });
   const { singleAddress: address, ready } = useAddressParams();
 
@@ -558,6 +559,7 @@ export function SwapForm() {
                 onOpenAllowanceForm={() =>
                   allowanceDialogRef.current?.showModal()
                 }
+                paymasterEligible={false}
               />
             </ViewLoadingSuspense>
           );
@@ -809,4 +811,12 @@ export function SwapForm() {
       <PageBottom />
     </PageColumn>
   );
+}
+
+export function SwapForm() {
+  const { preferences } = usePreferences();
+  if (preferences?.testnetMode?.on) {
+    return <Navigate to="/" />;
+  }
+  return <SwapFormComponent />;
 }

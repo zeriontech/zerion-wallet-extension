@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import type { AddressAction } from 'defi-sdk';
-import { useAddressActions } from 'defi-sdk';
-import { useQuery } from '@tanstack/react-query';
+import { Client, useAddressActions } from 'defi-sdk';
+import { hashQueryKey, useQuery } from '@tanstack/react-query';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import { NetworkSelect } from 'src/ui/pages/Networks/NetworkSelect';
@@ -24,6 +24,7 @@ import AllNetworksIcon from 'jsx:src/ui/assets/network.svg';
 import CloseIcon from 'jsx:src/ui/assets/close_solid.svg';
 import { Button } from 'src/ui/ui-kit/Button';
 import { useStore } from '@store-unit/react';
+import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import {
   getCurrentTabsOffset,
   getGrownTabMaxHeight,
@@ -77,18 +78,22 @@ function useMinedAndPendingAddressActions({
     ? networks?.supports('actions', chain)
     : true;
   const localActions = useLocalAddressTransactions(params);
+  const client = useDefiSdkClient();
 
   const { data: localAddressActions, ...localActionsQuery } = useQuery({
-    queryKey: ['pages/history', localActions, chain, networks, searchQuery],
+    // NOTE: for some reason, eslint doesn't warn about missing client. Report to GH?
+    queryKey: ['pages/history', localActions, chain, searchQuery, client],
+    queryKeyHashFn: (queryKey) => {
+      const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
+      return hashQueryKey(key);
+    },
     queryFn: async () => {
-      if (!networks) {
-        return null;
-      }
       let items = await Promise.all(
         localActions.map((transactionObject) =>
           pendingTransactionToAddressAction(
             transactionObject,
-            loadNetworkByChainId
+            loadNetworkByChainId,
+            client
           )
         )
       );
@@ -102,7 +107,6 @@ function useMinedAndPendingAddressActions({
       }
       return items;
     },
-    enabled: Boolean(networks),
     useErrorBoundary: true,
   });
 
