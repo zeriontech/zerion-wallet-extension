@@ -751,12 +751,7 @@ export class WalletRecordModel {
         existingPermissions.length = 0;
       }
       if (existingPermissions.length === 0) {
-        if (!permission.chain || permission.chain === NetworkId.Ethereum) {
-          // remove whole record for `origin` completely
-          delete draft.permissions[origin];
-        } else {
-          draft.permissions[origin].addresses = [];
-        }
+        delete draft.permissions[origin];
       }
     });
   }
