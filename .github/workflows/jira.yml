@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 jobs:
   transition_issue:
+    runs-on: ubuntu-latest
     steps: 
       - name: Login
         uses: atlassian/gajira-login@v3.0.0
@@ -25,11 +26,31 @@ jobs:
           JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
           JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+      - name: Retrieve Issue Key from Title
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+      - name: Retrieve Issue Key from Branch Name
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          BRANCH_NAME=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}" \
+            | jq -r '.head.ref')
+          echo "branch_name=$BRANCH_NAME" >> "$GITHUB_ENV"
+          
+      - name: Check Substring
+        run: |
+          if echo "${{ env.branch_name }}" | grep -q "dev-branch"; then
+            SECOND_PART=$(echo "${{env.branch_name}}" | cut -d'-' -f4-)
+            echo "issue_key=$SECOND_PART" >> "$GITHUB_ENV"
+          else
+            SECOND_PART=$(echo "${{env.branch_name}}" | cut -d'-' -f2-)
+            echo "issue_key=$SECOND_PART" >> "$GITHUB_ENV"
+          fi
       - name: Put ticket back in progress
         #if the PR requested change 
         uses: atlassian/gajira-transition@v3
         with: 
-          issue: issue: ${{ steps.search.outputs.issue }}
+          issue: ${{ env.issue_key }}
           transition: "In Progress"
   
         
