@@ -1054,6 +1054,29 @@ export class Wallet {
     }
   }
 
+  async testZksyncFlow(transaction) {
+    const { chainId } = transaction;
+    invariant(chainId, 'ChainId missing from TransactionRequest');
+    const typedData = createTypedData(transaction);
+    const signature = await this.signTypedData_v4({
+      context: { origin: INTERNAL_ORIGIN_SYMBOL },
+      params: { typedData },
+    });
+    const rawTransaction = zkSyncUtils.serialize({
+      ...transaction,
+      customData: { ...transaction.customData, customSignature: signature },
+    });
+
+    console.assert(
+      signature ===
+        '0x4ea526453115c6b74285f05b19e73c4b6e55a1d57badb8fd8210d38a58ecfbea3d4c789e7135c19a00e59cdbda89c501e0683275c4ff9720cc660e76287856e11b'
+    );
+    console.assert(
+      rawTransaction ===
+        '0x71f901ae2380840bebc2008302fe43948c56a34129dcf0711fe57e47fdcb733fce40a29f8502540be400808406a11e3d80808406a11e3d9442b9df65b219b3dd36ff330a4dd8f327a6ada99082c350c0b8414ea526453115c6b74285f05b19e73c4b6e55a1d57badb8fd8210d38a58ecfbea3d4c789e7135c19a00e59cdbda89c501e0683275c4ff9720cc660e76287856e11bf9011c9435938c70af13d0c3bbb4e852a9ab10b20797aed5b901048c5a3445000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000036615cf349d7f6344891b1e7ca7c72883f5dc04900000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000041f6644267e7856d25298585d6d2260a328c5024e314f0be3cc5b645195385912a5ca13ca8b85564d1ca1537ce07a64e739a133e05ae14da488b32066b77abb2471c00000000000000000000000000000000000000000000000000000000000000'
+    );
+  }
+
   async signAndSendTransaction({
     params,
     context,

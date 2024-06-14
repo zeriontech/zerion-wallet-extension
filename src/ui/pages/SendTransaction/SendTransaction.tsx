@@ -84,6 +84,7 @@ import { valueToHex } from 'src/shared/units/valueToHex';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
 import { hasNetworkFee } from 'src/modules/ethereum/transactions/gasPrices/hasNetworkFee';
+import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/uiGetBestKnownTransactionCount';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -240,15 +241,15 @@ async function configureTransactionToSign<T extends IncomingTransaction>(
   // NOTE:
   // Before uncommenting we must handle "isLoading" state of sendTransaction useMutation
   // call: unless we pass disabled to SignTransactionButton, it can be double clicked during nonce query
-  // if (tx.nonce == null) {
-  //   const { value: nonce } = await uiGetBestKnownTransactionCount({
-  //     address: tx.from || from,
-  //     chain,
-  //     networks,
-  //     defaultBlock: 'pending',
-  //   });
-  //   tx = { ...tx, nonce };
-  // }
+  if (tx.nonce == null) {
+    const { value: nonce } = await uiGetBestKnownTransactionCount({
+      address: tx.from || from,
+      chain,
+      networks,
+      defaultBlock: 'pending',
+    });
+    tx = { ...tx, nonce };
+  }
 
   tx = applyConfiguration(tx, configuration, chainGasPrices);
 
@@ -643,11 +644,14 @@ function SendTransactionContent({
     staleTime: 120000,
     queryKey: ['paymaster/check-eligibility', incomingTransaction],
     queryFn: async () => {
+      console.log('paymaster/check-eligibility query');
       const tx = await configureTransactionToBeSigned(incomingTransaction);
+      console.log({ tx });
       return checkPaymasterEligibility(tx);
     },
     enabled: FEATURE_PAYMASTER_ENABLED,
   });
+  console.log({ FEATURE_PAYMASTER_ENABLED, eligibility });
 
   const paymasterEligible = Boolean(eligibility?.data.eligible);
 
