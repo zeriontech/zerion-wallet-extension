@@ -82,7 +82,6 @@ export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
               {QUICK_AMOUNTS.map(({ factor, title }) => (
                 <QuickAmountButton
                   key={factor}
-                  title={title}
                   onClick={() => {
                     const value = getPositionPartialBalance(
                       spendPosition,
@@ -95,9 +94,12 @@ export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
                       inputRef.current.dispatchEvent(
                         new Event('customInputValueChange', { bubbles: true })
                       );
+                      inputRef.current?.focus();
                     }
                   }}
-                />
+                >
+                  {title}
+                </QuickAmountButton>
               ))}
             </HStack>
           ) : null

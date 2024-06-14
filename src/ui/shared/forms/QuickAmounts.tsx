@@ -9,16 +9,15 @@ export const QUICK_AMOUNTS: { title: string; factor: number }[] = [
 ];
 
 export function QuickAmountButton({
-  title,
+  children,
   onClick,
-}: {
-  title: string;
+}: React.PropsWithChildren<{
   onClick(): void;
-}) {
+}>) {
   return (
     <UnstyledButton type="button" onClick={onClick}>
       <UIText kind="small/regular" color="var(--primary)">
-        {title}
+        {children}
       </UIText>
     </UnstyledButton>
   );

@@ -70,11 +70,7 @@ export const FormFieldset = React.forwardRef<
             <UIText kind="small/regular" as="label" ref={labelRef}>
               {title}
             </UIText>
-            {endTitle ? (
-              <UIText kind="small/regular" as="label" ref={labelRef}>
-                {endTitle}
-              </UIText>
-            ) : null}
+            {endTitle ? <UIText kind="small/regular">{endTitle}</UIText> : null}
           </HStack>
           <HStack
             gap={8}

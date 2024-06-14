@@ -88,7 +88,6 @@ export function TokenTransferInput({ sendView }: { sendView: SendFormView }) {
               {QUICK_AMOUNTS.map(({ factor, title }) => (
                 <QuickAmountButton
                   key={factor}
-                  title={title}
                   onClick={() => {
                     const value = getPositionPartialBalance(
                       tokenItem,
@@ -96,8 +95,11 @@ export function TokenTransferInput({ sendView }: { sendView: SendFormView }) {
                     ).toFixed();
                     sendView.handleChange('tokenValue', value);
                     tokenValueInputRef.current?.setValue(value);
+                    inputRef.current?.focus();
                   }}
-                />
+                >
+                  {title}
+                </QuickAmountButton>
               ))}
             </HStack>
           ) : null
