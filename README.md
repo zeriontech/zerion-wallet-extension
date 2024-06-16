@@ -4,11 +4,12 @@
 
 Your crypto wallet for everything onchain.
 
-Built for a better Web3 browsing experience in a multichain world with advanced onchain security. Over 550K self-custodial humans trust Zerion each month to explore every layer of web3.
+Built for a better Web3 browsing experience in a multichain world with advanced onchain security. Over 550K self-custodial humans trust Zerion each month to explore every layer of Web3.
 
 ## Security Audits
 
-Leading security firms have Independently audited the Zerion Extension: [Cure-53](https://cure53.de/), [Secfault](https://secfault-security.com/), [Slowmist](https://www.slowmist.com/), and [Zokyo](https://www.zokyo.io/). [Learn more](https://zerion.io/security) about Zerion's commitment to security and user safety.
+Leading security firms have independently audited the Zerion Extension: [Cure-53](https://cure53.de), [Secfault](https://secfault-security.com), [Slowmist](https://www.slowmist.com), and [Zokyo](https://www.zokyo.io). [Learn more](https://zerion.io/security) about Zerion's commitment to security and user safety.
+
 
 ## Install
 
@@ -24,7 +25,7 @@ You can also download the latest build of the Zerion Extension from [here](https
 
 ### 1. Set up Node
 
-This project requires Node.js version >=16. If you don't have Node.js installed, download and install it from the [official website](https://nodejs.org/). After installation, you can verify the Node version using the following command:
+This project requires Node.js version >=16. If you don't have Node.js installed, download and install it from the [official website](https://nodejs.org). After installation, you can verify the Node version using the following command:
 
 ```shell
 node --version
@@ -59,7 +60,7 @@ This command will build the extension in development mode. The output files are 
 ### 5. Import Extension
 
 1. **Enable Developer Mode in Chrome**: Go to `chrome://extensions` and enable Developer mode.
-2. **Import the Extension**: Click on 'Load unpacked' and select the build folder (`./dist` from the previous step).
+2. **Import the Extension**: Click on 'Load unpacked' and select the `./dist` folder from the previous step.
 
 ## License
 
@@ -67,4 +68,4 @@ This command will build the extension in development mode. The output files are 
 
 ## Contact Us
 
-Got questions, feedback, or need help? Chat with us here: https://help.zerion.io
+Got questions, feedback, or need help? Chat with us here: [help.zerion.io](https://help.zerion.io)
