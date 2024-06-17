@@ -3,7 +3,7 @@ import React, { useId, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { Chain } from 'src/modules/networks/Chain';
-import { networksStore } from 'src/modules/networks/networks-store.background';
+import { networksStore } from 'src/modules/networks/networks-store.client';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
