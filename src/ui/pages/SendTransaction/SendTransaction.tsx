@@ -17,7 +17,6 @@ import type {
   IncomingTransactionWithChainId,
 } from 'src/modules/ethereum/types/IncomingTransaction';
 import { useNetworks } from 'src/modules/networks/useNetworks';
-import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { walletPort, windowPort } from 'src/ui/shared/channels';
@@ -786,7 +785,6 @@ function SendTransactionContent({
   return (
     <Background backgroundKind="white">
       <NavigationTitle title={null} documentTitle="Send Transaction" />
-      <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
       <PageColumn
         // different surface color on backgroundKind="white"
         style={{

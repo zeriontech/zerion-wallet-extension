@@ -23,7 +23,11 @@ import { useStore } from '@store-unit/react';
 import { runtimeStore } from 'src/shared/core/runtime-store';
 import { Login } from '../pages/Login';
 import { ErrorBoundary } from '../components/ErrorBoundary';
-import { accountPublicRPCPort, walletPort } from '../shared/channels';
+import {
+  accountPublicRPCPort,
+  walletPort,
+  windowPort,
+} from '../shared/channels';
 import { CreateAccount } from '../pages/CreateAccount';
 import { templateData } from '../shared/getPageTemplateName';
 import { URLBar } from '../components/URLBar';
@@ -67,6 +71,7 @@ import { SwapForm } from '../pages/SwapForm';
 import { MintDnaFlow } from '../DNA/pages/MintDnaFlow';
 import { UpgradeDnaFlow } from '../DNA/pages/UpgradeDnaFlow';
 import { ChooseGlobalProviderGuard } from '../pages/RequestAccounts/ChooseGlobalProvider/ChooseGlobalProvider';
+import { openTabView } from '../shared/openInTabView';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -389,6 +394,34 @@ dayjs.extend(relativeTime);
 registerPersistentRoute('/send-form');
 registerPersistentRoute('/swap-form');
 
+function GlobalKeyboardShortcuts() {
+  return (
+    <>
+      {templateData.windowContext === 'dialog' ? (
+        <KeyboardShortcut
+          combination="esc"
+          onKeyDown={() => {
+            const searchParams = new URLSearchParams(window.location.hash);
+            const windowId = searchParams.get('windowId');
+            if (windowId) {
+              windowPort.reject(windowId);
+            }
+          }}
+        />
+      ) : null}
+
+      <KeyboardShortcut
+        combination="ctrl+alt+0"
+        onKeyDown={() => {
+          // Helper for development and debugging :)
+          const url = new URL(window.location.href);
+          openTabView(url);
+        }}
+      />
+    </>
+  );
+}
+
 export interface AppProps {
   mode: 'onboarding' | 'wallet';
   initialView?: 'handshakeFailure';
@@ -436,15 +469,7 @@ export function App({ initialView, mode, inspect }: AppProps) {
                   {inspect.message}
                 </UIText>
               ) : null}
-              <KeyboardShortcut
-                combination="ctrl+alt+0"
-                onKeyDown={() => {
-                  // Helper for development and debugging :)
-                  const url = new URL(window.location.href);
-                  url.searchParams.set('windowContext', 'tab');
-                  window.open(url, '_blank');
-                }}
-              />
+              <GlobalKeyboardShortcuts />
               <VersionUpgrade>
                 <ViewSuspense logDelays={true}>
                   {mode === 'onboarding' &&

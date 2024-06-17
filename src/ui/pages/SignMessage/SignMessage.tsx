@@ -17,7 +17,6 @@ import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
-import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { PhishingDefenceStatus } from 'src/ui/components/PhishingDefence/PhishingDefenceStatus';
@@ -175,7 +174,6 @@ function SignMessageContent({
           </div>
         </VStack>
       </PageStickyFooter>
-      <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
     </Background>
   );
 }

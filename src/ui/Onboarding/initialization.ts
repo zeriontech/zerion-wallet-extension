@@ -16,5 +16,13 @@ export async function maybeOpenOboarding() {
   }
   const mode =
     hasOnboardingUrl || (!isPopup && !userHasWallets) ? 'onboarding' : 'wallet';
+  if (mode === 'onboarding' && !isPopup) {
+    // TODO: setting "context=onboarding" is duplicated here and in {openOnboarding(url)}
+    const searchParams = new URLSearchParams(window.location.search);
+    if (!searchParams.has('context')) {
+      searchParams.append('context', 'onboarding');
+      window.location.search = searchParams.toString();
+    }
+  }
   return { mode } as const;
 }

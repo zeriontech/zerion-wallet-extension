@@ -18,7 +18,6 @@ import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { invariant } from 'src/shared/invariant';
 import { focusNode } from 'src/ui/shared/focusNode';
-import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import CheckmarkAllowedIcon from 'jsx:src/ui/assets/checkmark-allowed.svg';
 import CheckmarkDeniedIcon from 'jsx:src/ui/assets/checkmark-denied.svg';
@@ -311,7 +310,6 @@ export function RequestAccounts() {
   }
   return (
     <>
-      <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
       <RequestAccountsView
         wallet={wallet}
         walletGroups={walletGroupsQuery.data}

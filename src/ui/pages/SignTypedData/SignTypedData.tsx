@@ -21,7 +21,6 @@ import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
-import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import ArrowDownIcon from 'jsx:src/ui/assets/arrow-down.svg';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
@@ -465,7 +464,6 @@ function SignTypedDataContent({
   return (
     <Background backgroundKind="white">
       <NavigationTitle title={null} documentTitle="Sign Typed Data" />
-      <KeyboardShortcut combination="esc" onKeyDown={handleReject} />
       <PageColumn
         // different surface color on backgroundKind="white"
         style={{
