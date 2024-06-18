@@ -37,6 +37,10 @@ import {
   isSignerContainer,
 } from 'src/shared/types/validators';
 import { isSessionExpiredError } from 'src/ui/Onboarding/shared/isSessionExpiredError';
+import {
+  decodeMasked,
+  encodeForMasking,
+} from 'src/shared/wallet/encode-locally';
 import { WithConfetti } from '../GetStarted/components/DecorativeMessage/DecorativeMessage';
 import { DecorativeMessage } from '../GetStarted/components/DecorativeMessage';
 import { clipboardWarning } from './clipboardWarning';
@@ -143,15 +147,15 @@ function RevealSecret({
   onSubmit: ({ didCopy }: { didCopy: boolean }) => void;
   onSessionExpired(): void;
 }) {
-  const {
-    data: secretValue,
-    isLoading,
-    error,
-  } = useSecretValue({
+  const { data, isLoading, error } = useSecretValue({
     groupId,
     address,
     seedType,
   });
+  const secretValue =
+    data?.seedType === SeedType.mnemonic
+      ? decodeMasked(data.value)
+      : data?.value;
   const { handleCopy, isSuccess: isCopySuccess } = useCopyToClipboard({
     text: secretValue || '',
   });
@@ -280,7 +284,7 @@ function VerifyBackup({
       if (seedType === SeedType.mnemonic) {
         const isCorrect = await walletPort.request('verifyRecoveryPhrase', {
           groupId,
-          value,
+          value: encodeForMasking(value),
         });
         if (!isCorrect) {
           throw new Error('Wrong phrase');

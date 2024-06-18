@@ -1,9 +1,11 @@
 import { ethers } from 'ethers';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { getAccountPath } from 'src/shared/wallet/derivation-paths';
+import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
+import { decodeMasked } from 'src/shared/wallet/encode-locally';
 
 export interface Params {
-  phrase: string;
+  phrase: LocallyEncoded;
   n: number;
 }
 
@@ -26,7 +28,7 @@ function getFirstNMnemonicWallets({ phrase, n }: Params) {
   // NOTE:
   // ethers.utils.HDNode is _much_ faster at generating wallets
   // than ethers.Wallet
-  const hd = ethers.utils.HDNode.fromMnemonic(phrase);
+  const hd = ethers.utils.HDNode.fromMnemonic(decodeMasked(phrase));
   for (let i = 0; i < n; i++) {
     const path = getAccountPath(i);
     const wallet = hd.derivePath(path);

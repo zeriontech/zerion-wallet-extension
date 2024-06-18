@@ -79,6 +79,7 @@ import { normalizeTransactionChainId } from 'src/modules/ethereum/transactions/n
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
 import { createTypedData } from 'src/modules/ethereum/account-abstraction/createTypedData';
+import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -398,7 +399,7 @@ export class Wallet {
   async verifyRecoveryPhrase({
     params: { groupId, value },
     context,
-  }: WalletMethodParams<{ groupId: string; value: string }>) {
+  }: WalletMethodParams<{ groupId: string; value: LocallyEncoded }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
     this.ensureActiveSession(this.userCredentials);
