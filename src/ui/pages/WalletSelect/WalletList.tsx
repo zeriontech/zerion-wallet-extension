@@ -155,7 +155,7 @@ function WalletListItem({
                             display: 'inline-block',
                             width: COPY_BUTTON_SIZE,
                             height: COPY_BUTTON_SIZE,
-                            ['anchor-name' as string]: anchorName,
+                            ['anchorName' as string]: anchorName,
                             verticalAlign: 'bottom',
                           }}
                         ></span>
