@@ -47,7 +47,6 @@ function trackAppEvents({ account }: { account: Account }) {
     const getUserId = () => account.getUser()?.id;
     return createBaseParams({ ...params, userId: getUserId() });
   };
-  /** {explicitly: true} means that user confirmed connection in a dialog. {false} means that we resolve a previously approved addess value */
   emitter.on('requestAccountsResolved', ({ origin, address, explicitly }) => {
     if (!explicitly) {
       return;
