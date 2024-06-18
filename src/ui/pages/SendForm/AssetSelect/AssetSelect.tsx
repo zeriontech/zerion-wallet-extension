@@ -551,15 +551,11 @@ function AssetSelectComponent({
             tabIndex: 0,
             type: 'button',
             className: styles.select,
-            style: { display: 'block' },
+            style: { display: 'block', overflowWrap: 'break-word' },
           })}
           {...(isCombobox ? {} : getInputProps())}
         >
-          <HStack
-            gap={8}
-            alignItems="center"
-            style={{ overflowWrap: 'anywhere' }}
-          >
+          <HStack gap={8} alignItems="center">
             <TokenIcon
               size={20}
               src={selectedItem.asset.icon_url}
