@@ -25,6 +25,8 @@ import {
 } from 'src/shared/types/validators';
 import { capitalize } from 'capitalize-ts';
 import { upgradeRecord } from 'src/shared/type-utils/versions';
+import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
+import { encodeForMasking } from 'src/shared/wallet/encode-locally';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
 import { emitter } from '../events';
 import type {
@@ -467,7 +469,7 @@ export class WalletRecordModel {
       groupId,
       credentials,
     }: { groupId: string; credentials: SessionCredentials }
-  ) {
+  ): Promise<{ phrase: LocallyEncoded; path: string }> {
     const group = record.walletManager.groups.find(
       (group) => group.id === groupId
     );
@@ -483,20 +485,23 @@ export class WalletRecordModel {
     }
     const isNotEncrypted = !isEncryptedMnemonic(encryptedMnemonic.phrase);
     if (isNotEncrypted) {
-      return encryptedMnemonic;
+      return {
+        ...encryptedMnemonic,
+        phrase: encodeForMasking(encryptedMnemonic.phrase),
+      };
     }
 
     const phrase = await decryptMnemonic(encryptedMnemonic.phrase, credentials);
     return {
       ...encryptedMnemonic,
-      phrase,
+      phrase: encodeForMasking(phrase),
     };
   }
 
   static async getPendingRecoveryPhrase(
     pendingWallet: PendingWallet,
     credentials: SessionCredentials
-  ) {
+  ): Promise<LocallyEncoded> {
     const walletContainer = pendingWallet.walletContainer;
     if (!walletContainer || !isMnemonicContainer(walletContainer)) {
       throw new Error('Pending wallet is not a Mnemonic Container');
@@ -505,7 +510,8 @@ export class WalletRecordModel {
     if (!encryptedPhrase) {
       throw new Error('Pending wallet does not have a seed phrase');
     }
-    return decryptMnemonic(encryptedPhrase, credentials);
+    const phrase = await decryptMnemonic(encryptedPhrase, credentials);
+    return encodeForMasking(phrase);
   }
 
   static async getPrivateKey(

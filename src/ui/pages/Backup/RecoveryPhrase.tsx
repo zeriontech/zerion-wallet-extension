@@ -18,6 +18,7 @@ import * as helperStyles from 'src/ui/features/onboarding/shared/helperStyles.mo
 import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 import { BlurredToggle } from 'src/ui/components/BlurredToggle';
 import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
+import { decodeMasked } from 'src/shared/wallet/encode-locally';
 import {
   usePendingRecoveryPhrase,
   useRecoveryPhrase,
@@ -47,13 +48,15 @@ export function RecoveryPhrase({
   });
 
   const {
-    data: recoveryPhrase,
+    data: encoded,
     isLoading,
     isError,
     error,
   } = isPendingWallet
     ? pendingRecoveryPhraseQuery
     : existingRecoveryPhraseQuery;
+
+  const recoveryPhrase = encoded ? decodeMasked(encoded) : null;
 
   useEffect(() => {
     if (isError && isSessionExpiredError(error)) {

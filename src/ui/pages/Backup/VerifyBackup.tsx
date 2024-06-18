@@ -13,6 +13,7 @@ import { useMnemonicInput } from 'src/ui/shared/useMnemonicInput';
 import * as helperStyles from 'src/ui/features/onboarding/shared/helperStyles.module.css';
 import { invariant } from 'src/shared/invariant';
 import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
+import { decodeMasked } from 'src/shared/wallet/encode-locally';
 import {
   usePendingRecoveryPhrase,
   useRecoveryPhrase,
@@ -52,7 +53,7 @@ export function VerifyBackup({
   });
 
   const {
-    data: recoveryPhrase,
+    data: recoveryPhraseMasked,
     isLoading,
     isError,
     error,
@@ -68,8 +69,9 @@ export function VerifyBackup({
 
   const verifyRecoveryPhrase = useCallback(
     (value: string) => {
-      invariant(recoveryPhrase, 'recoveryPhrase is missing');
+      invariant(recoveryPhraseMasked, 'recoveryPhrase is missing');
       setValidationError(false);
+      const recoveryPhrase = decodeMasked(recoveryPhraseMasked);
       if (recoveryPhrase.toLowerCase() === value.toLowerCase()) {
         zeroizeAfterSubmission();
         onSuccess();
@@ -77,7 +79,7 @@ export function VerifyBackup({
         setValidationError(true);
       }
     },
-    [recoveryPhrase, onSuccess]
+    [recoveryPhraseMasked, onSuccess]
   );
 
   const errorStyle = useMemo<React.CSSProperties>(

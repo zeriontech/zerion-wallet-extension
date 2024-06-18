@@ -21,6 +21,7 @@ import {
 } from 'src/shared/validation/wallet';
 import { WithPasswordSession } from 'src/ui/components/VerifyUser/WithPasswordSession';
 import { SecretInput } from 'src/ui/components/SecretInput';
+import { encodeForMasking } from 'src/shared/wallet/encode-locally';
 import { PrivateKeyImportView } from './PrivateKeyImportView';
 import { MnemonicImportView } from './MnemonicImportView';
 import { MemoryLocationState } from './memoryLocationState';
@@ -172,14 +173,14 @@ function ImportWalletView({
                 // see locationStateStore for why and how it's used instead of location state
                 const pathname = '/get-started/import/private-key';
                 const to = `${pathname}?state=memory`;
-                locationStateStore.set(pathname, value);
+                locationStateStore.set(pathname, encodeForMasking(value));
                 navigate(to);
               } else if (seedType === SeedType.mnemonic) {
                 // NOTE:
                 // see locationStateStore for why it's used instead of location state
                 const pathname = '/get-started/import/mnemonic';
                 const to = `${pathname}?state=memory`;
-                locationStateStore.set(pathname, value);
+                locationStateStore.set(pathname, encodeForMasking(value));
                 navigate(to);
               }
             }}

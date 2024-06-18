@@ -85,6 +85,7 @@ import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
 import { createTypedData } from 'src/modules/ethereum/account-abstraction/createTypedData';
 import { getDefiSdkClient } from 'src/modules/defi-sdk/background';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -435,7 +436,7 @@ export class Wallet {
   async verifyRecoveryPhrase({
     params: { groupId, value },
     context,
-  }: WalletMethodParams<{ groupId: string; value: string }>) {
+  }: WalletMethodParams<{ groupId: string; value: LocallyEncoded }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
     this.ensureActiveSession(this.userCredentials);

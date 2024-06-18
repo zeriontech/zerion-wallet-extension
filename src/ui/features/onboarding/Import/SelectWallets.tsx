@@ -15,6 +15,7 @@ import { wait } from 'src/shared/wait';
 import { useAllExistingMnemonicAddresses } from 'src/ui/shared/requests/useAllExistingAddresses';
 import { useAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
 import { useStaleTime } from 'src/ui/pages/GetStarted/ImportWallet/MnemonicImportView/useStaleTime';
+import { encodeForMasking } from 'src/shared/wallet/encode-locally';
 import * as helperStyles from '../shared/helperStyles.module.css';
 import { SelectWalletsFAQ } from '../FAQ';
 
@@ -33,7 +34,8 @@ export function SelectWallets({
     queryKey: ['getFirstNMnemonicWallets', mnemonic, count],
     queryFn: async () => {
       await wait(1000);
-      return getFirstNMnemonicWallets({ phrase: mnemonic, n: count });
+      const phrase = encodeForMasking(mnemonic);
+      return getFirstNMnemonicWallets({ phrase, n: count });
     },
     useErrorBoundary: true,
     suspense: false,
