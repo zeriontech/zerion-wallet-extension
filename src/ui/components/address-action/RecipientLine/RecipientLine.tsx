@@ -32,13 +32,7 @@ export function RecipientLine({
     <Surface style={{ borderRadius: 8, padding: '10px 12px' }}>
       <Media
         image={
-          <div
-            style={{
-              position: 'relative',
-              width: 36,
-              height: 36,
-            }}
-          >
+          <div style={{ position: 'relative' }}>
             <BlockieImg address={checksumAddress} size={36} borderRadius={6} />
             {showNetworkIcon ? (
               <div style={{ position: 'absolute', bottom: 0, right: 0 }}>

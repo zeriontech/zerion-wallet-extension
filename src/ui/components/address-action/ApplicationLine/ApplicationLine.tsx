@@ -1,8 +1,8 @@
 import { animated, useTransition } from '@react-spring/web';
 import { capitalize } from 'capitalize-ts';
-import { ethers } from 'ethers';
-import ArrowLeftTop from 'jsx:src/ui/assets/arrow-left-top.svg';
 import React, { useLayoutEffect, useState } from 'react';
+import ArrowLeftTop from 'jsx:src/ui/assets/arrow-left-top.svg';
+import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { Chain } from 'src/modules/networks/Chain';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
@@ -117,7 +117,7 @@ function getApplicationAddress(action: Pick<AnyAddressAction, 'label'>) {
   }
 
   try {
-    return ethers.utils.getAddress(action.label?.value);
+    return toChecksumAddress(action.label.value);
   } catch {
     return null;
   }
