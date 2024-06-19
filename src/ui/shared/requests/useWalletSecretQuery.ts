@@ -11,22 +11,18 @@ async function getSecretValue({
   address?: string | null;
   groupId?: string | null;
   seedType: SeedType;
-}): Promise<
-  | { seedType: SeedType.privateKey; value: string }
-  | { seedType: SeedType.mnemonic; value: LocallyEncoded }
-> {
+}): Promise<LocallyEncoded> {
   if (seedType === SeedType.privateKey) {
     if (!address) {
       throw new Error('Address param is required for privateKey seedType');
     }
-    const value = await walletPort.request('getPrivateKey', { address });
-    return { value, seedType };
+    return walletPort.request('getPrivateKey', { address });
   } else if (seedType === SeedType.mnemonic) {
     if (!groupId) {
       throw new Error('GroupId param is required for mnemonic seedType');
     }
     const mnemonic = await walletPort.request('getRecoveryPhrase', { groupId });
-    return { value: mnemonic.phrase, seedType };
+    return mnemonic.phrase;
   } else {
     throw new Error('Unexpected seedType');
   }

@@ -1,6 +1,7 @@
-import type { Brand } from '../type-utils/Brand';
+import { type Opaque } from '../type-utils/Opaque';
+import { opaqueType, unwrapOpaqueType } from '../type-utils/Opaque';
 
-export type LocallyEncoded = Brand<string, 'LocallyEncoded'>;
+export type LocallyEncoded = Opaque<string, 'LocallyEncoded'>;
 
 const NONSECRET_KEY_FOR_INTERNAL_USE = '2024-06-18';
 
@@ -20,12 +21,12 @@ export function encodeForMasking(value: string) {
       value.charCodeAt(i) ^ key.charCodeAt(i % key.length)
     );
   }
-  return btoa(encoded) as LocallyEncoded;
+  return opaqueType<LocallyEncoded>(btoa(encoded));
 }
 
 export function decodeMasked(encoded: LocallyEncoded) {
   const key = NONSECRET_KEY_FOR_INTERNAL_USE;
-  const decoded = atob(encoded);
+  const decoded = atob(unwrapOpaqueType(encoded));
   let data = '';
   for (let i = 0; i < decoded.length; i++) {
     data += String.fromCharCode(

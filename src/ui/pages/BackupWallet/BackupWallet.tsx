@@ -37,6 +37,7 @@ import {
   isSignerContainer,
 } from 'src/shared/types/validators';
 import { isSessionExpiredError } from 'src/ui/Onboarding/shared/isSessionExpiredError';
+import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import {
   decodeMasked,
   encodeForMasking,
@@ -152,10 +153,7 @@ function RevealSecret({
     address,
     seedType,
   });
-  const secretValue =
-    data?.seedType === SeedType.mnemonic
-      ? decodeMasked(data.value)
-      : data?.value;
+  const secretValue = data ? decodeMasked(data) : null;
   const { handleCopy, isSuccess: isCopySuccess } = useCopyToClipboard({
     text: secretValue || '',
   });
@@ -280,11 +278,11 @@ function VerifyBackup({
   onSuccess: () => void;
 }) {
   const verifyMutation = useMutation({
-    mutationFn: async (value: string) => {
+    mutationFn: async (value: LocallyEncoded) => {
       if (seedType === SeedType.mnemonic) {
         const isCorrect = await walletPort.request('verifyRecoveryPhrase', {
           groupId,
-          value: encodeForMasking(value),
+          value,
         });
         if (!isCorrect) {
           throw new Error('Wrong phrase');
@@ -330,10 +328,9 @@ function VerifyBackup({
             event.preventDefault();
             const value = new FormData(event.currentTarget).get(
               'seedOrPrivateKey'
-            );
-            verifyMutation.mutate(
-              prepareUserInputSeedOrPrivateKey(value as string)
-            );
+            ) as string;
+            const normalized = prepareUserInputSeedOrPrivateKey(value);
+            verifyMutation.mutate(encodeForMasking(normalized));
           }}
         >
           <VStack gap={12}>

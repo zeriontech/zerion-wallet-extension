@@ -532,7 +532,7 @@ export class WalletRecordModel {
     if (!wallet) {
       throw new Error('Wallet with given address not found');
     }
-    return wallet.privateKey;
+    return encodeForMasking(wallet.privateKey);
   }
 
   static setCurrentAddress(

@@ -79,7 +79,10 @@ import { normalizeTransactionChainId } from 'src/modules/ethereum/transactions/n
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
 import { createTypedData } from 'src/modules/ethereum/account-abstraction/createTypedData';
-import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
+import {
+  decodeMasked,
+  type LocallyEncoded,
+} from 'src/shared/wallet/encode-locally';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -306,8 +309,12 @@ export class Wallet {
     return maskWallet(walletContainer.getFirstWallet());
   }
 
-  async uiImportPrivateKey({ params: privateKey }: WalletMethodParams<string>) {
-    const walletContainer = new PrivateKeyWalletContainer([{ privateKey }]);
+  async uiImportPrivateKey({
+    params: privateKey,
+  }: WalletMethodParams<LocallyEncoded>) {
+    const walletContainer = new PrivateKeyWalletContainer([
+      { privateKey: decodeMasked(privateKey) },
+    ]);
     this.pendingWallet = {
       origin: WalletOrigin.imported,
       groupId: null,
@@ -423,7 +430,7 @@ export class Wallet {
   async verifyPrivateKey({
     params: { address, value },
     context,
-  }: WalletMethodParams<{ address: string; value: string }>) {
+  }: WalletMethodParams<{ address: string; value: LocallyEncoded }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
     this.ensureActiveSession(this.userCredentials); // require anyway

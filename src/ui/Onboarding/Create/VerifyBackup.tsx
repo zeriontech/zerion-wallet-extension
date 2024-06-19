@@ -44,7 +44,7 @@ export function VerifyBackup({ onSuccess }: { onSuccess(): void }) {
 
   const handleVerify = useCallback(() => {
     setValidationError(false);
-    if (mnemonic === value.join(' ')) {
+    if (mnemonic === value.join(' ').toLowerCase()) {
       zeroizeAfterSubmission();
       onSuccess();
     } else {
