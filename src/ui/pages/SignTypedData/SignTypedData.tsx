@@ -29,7 +29,6 @@ import {
   toTypedData,
 } from 'src/modules/ethereum/message-signing/prepareTypedData';
 import type { Chain } from 'src/modules/networks/Chain';
-import { useNetworks } from 'src/modules/networks/useNetworks';
 import { setURLSearchParams } from 'src/ui/shared/setURLSearchParams';
 import { AddressActionDetails } from 'src/ui/components/address-action/AddressActionDetails';
 import { focusNode } from 'src/ui/shared/focusNode';
@@ -54,6 +53,7 @@ import { InterpretationState } from 'src/ui/components/InterpretationState';
 import { hasCriticalWarning } from 'src/ui/components/InterpretationState/InterpretationState';
 import type { SignMsgBtnHandle } from 'src/ui/components/SignMessageButton';
 import { SignMessageButton } from 'src/ui/components/SignMessageButton';
+import { networksStore } from 'src/modules/networks/networks-store.background';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
@@ -377,11 +377,13 @@ function SignTypedDataContent({
   clientScope,
   typedDataRaw,
   wallet,
+  chain,
 }: {
   origin: string;
   clientScope: string | null;
   typedDataRaw: string;
   wallet: ExternallyOwnedAccount;
+  chain: Chain;
 }) {
   const [params] = useSearchParams();
 
@@ -395,7 +397,14 @@ function SignTypedDataContent({
   invariant(windowId, 'windowId get-parameter is required');
 
   const navigate = useNavigate();
-  const { networks } = useNetworks();
+  const { data: networks } = useQuery({
+    queryKey: ['networks', chain],
+    queryFn: () => {
+      invariant(chain, 'Currenct chain for origin is not determinde');
+      return networksStore.load([chain.toString()]);
+    },
+    enabled: Boolean(chain),
+  });
 
   const [allowanceQuantityBase, setAllowanceQuantityBase] = useState('');
 
@@ -420,13 +429,6 @@ function SignTypedDataContent({
     navigate(-1);
   };
 
-  const { data: chain, ...chainQuery } = useQuery({
-    queryKey: ['requestChainForOrigin', origin],
-    queryFn: () => requestChainForOrigin(origin),
-    useErrorBoundary: true,
-    suspense: true,
-  });
-
   const { data: interpretation, ...interpretQuery } = useQuery({
     queryKey: [
       'interpretSignature',
@@ -436,14 +438,14 @@ function SignTypedDataContent({
       typedData,
     ],
     queryFn: () =>
-      chain && networks
+      networks
         ? interpretSignature({
             address: wallet.address,
             chainId: networks.getChainId(chain),
             typedData,
           })
         : null,
-    enabled: !chainQuery.isLoading && Boolean(networks),
+    enabled: Boolean(networks),
     suspense: false,
     retry: 1,
     refetchOnMount: false,
@@ -531,11 +533,17 @@ export function SignTypedData() {
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
     useErrorBoundary: true,
   });
-  if (isLoading || !wallet) {
-    return null;
-  }
   const origin = params.get('origin');
   invariant(origin, 'origin get-parameter is required for this view');
+  const { data: chain } = useQuery({
+    queryKey: ['requestChainForOrigin', origin],
+    queryFn: () => requestChainForOrigin(origin),
+    useErrorBoundary: true,
+    suspense: true,
+  });
+  if (isLoading || !wallet || !chain) {
+    return null;
+  }
   const clientScope = params.get('clientScope');
 
   const typedDataRaw = params.get('typedDataRaw');
@@ -550,6 +558,7 @@ export function SignTypedData() {
       origin={origin}
       clientScope={clientScope}
       wallet={wallet}
+      chain={chain}
     />
   );
 }
