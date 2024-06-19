@@ -395,7 +395,6 @@ function SignTypedDataContent({
   invariant(windowId, 'windowId get-parameter is required');
 
   const navigate = useNavigate();
-  const { networks } = useNetworks();
 
   const [allowanceQuantityBase, setAllowanceQuantityBase] = useState('');
 
@@ -426,6 +425,8 @@ function SignTypedDataContent({
     useErrorBoundary: true,
     suspense: true,
   });
+
+  const { networks } = useNetworks(chain ? [chain.toString()] : undefined);
 
   const { data: interpretation, ...interpretQuery } = useQuery({
     queryKey: [
