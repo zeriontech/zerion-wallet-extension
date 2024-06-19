@@ -27,6 +27,7 @@ export interface State {
   providerInjection?: ProviderInjection;
   autoLockTimeout?: number | 'none';
   walletNameFlags?: Record<string, WalletNameFlag[] | undefined>;
+  enableNewTabOverride?: boolean | null;
 }
 
 export function getWalletNameFlagsChange(state: State, prevState: State) {
@@ -59,6 +60,7 @@ export class GlobalPreferences extends PersistentStore<State> {
     providerInjection: {},
     walletNameFlags: {},
     autoLockTimeout: HALF_DAY,
+    enableNewTabOverride: null,
   };
 
   private async fetchDefaultWalletNameFlags() {

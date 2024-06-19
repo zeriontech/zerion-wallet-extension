@@ -1,0 +1,1 @@
+export { NewTab } from './NewTab';

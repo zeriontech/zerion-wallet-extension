@@ -67,6 +67,8 @@ import { SwapForm } from '../pages/SwapForm';
 import { MintDnaFlow } from '../DNA/pages/MintDnaFlow';
 import { UpgradeDnaFlow } from '../DNA/pages/UpgradeDnaFlow';
 import { ChooseGlobalProviderGuard } from '../pages/RequestAccounts/ChooseGlobalProvider/ChooseGlobalProvider';
+import type { AppMode } from '../Onboarding/initialization';
+import { NewTab } from '../NewTab';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -390,7 +392,7 @@ registerPersistentRoute('/send-form');
 registerPersistentRoute('/swap-form');
 
 export interface AppProps {
-  mode: 'onboarding' | 'wallet';
+  mode: AppMode;
   initialView?: 'handshakeFailure';
   inspect?: { message: string };
 }
@@ -447,8 +449,10 @@ export function App({ initialView, mode, inspect }: AppProps) {
               />
               <VersionUpgrade>
                 <ViewSuspense logDelays={true}>
-                  {mode === 'onboarding' &&
-                  initialView !== 'handshakeFailure' ? (
+                  {mode === 'newtab' ? (
+                    <NewTab />
+                  ) : mode === 'onboarding' &&
+                    initialView !== 'handshakeFailure' ? (
                     <Onboarding />
                   ) : templateData.layout === 'page' ? (
                     <PageLayoutViews />

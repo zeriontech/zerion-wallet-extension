@@ -5,6 +5,7 @@ import { configureBackgroundClient } from 'src/modules/defi-sdk/background';
 import { SessionCacheService } from 'src/background/resource/sessionCacheService';
 import { openOnboarding } from 'src/shared/openOnboarding';
 import { userLifecycleStore } from 'src/shared/analytics/shared/UserLifecycle';
+import { openNewTabOverride } from 'src/shared/openNewTabOverride';
 import { initialize } from './initialize';
 import { PortRegistry } from './messaging/PortRegistry';
 import { createWalletMessageHandler } from './messaging/port-message-handlers/createWalletMessageHandler';
@@ -18,6 +19,7 @@ import type { RuntimePort } from './webapis/RuntimePort';
 import { emitter } from './events';
 import * as userActivity from './user-activity';
 import { ContentScriptManager } from './ContentScriptManager';
+import { globalPreferences } from './Wallet/GlobalPreferences';
 
 Object.assign(globalThis, { ethers });
 
@@ -202,4 +204,34 @@ browser.runtime.onInstalled.addListener(({ reason }) => {
     const url = new URL(browser.runtime.getURL(popupUrl));
     openOnboarding(url);
   }
+});
+
+function overrideTabListener(
+  tabId: number,
+  _changes: unknown,
+  tab: browser.Tabs.Tab
+) {
+  if (tab.url?.endsWith('://newtab/')) {
+    const popupUrl = browser.runtime.getManifest().action?.default_popup;
+    if (!popupUrl) {
+      throw new Error('popupUrl not found');
+    }
+    const url = new URL(browser.runtime.getURL(popupUrl));
+    openNewTabOverride(tabId, url);
+  }
+}
+
+function overrideNewTab(override: boolean) {
+  if (override) {
+    browser.tabs.onUpdated.addListener(overrideTabListener);
+  } else {
+    browser.tabs.onUpdated.removeListener(overrideTabListener);
+  }
+}
+
+globalPreferences.getPreferences().then((preferences) => {
+  overrideNewTab(Boolean(preferences.enableNewTabOverride));
+});
+globalPreferences.on('change', (state) => {
+  overrideNewTab(Boolean(state.enableNewTabOverride));
 });
