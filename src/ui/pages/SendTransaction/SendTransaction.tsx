@@ -877,7 +877,7 @@ function SendTransactionContent({
               buttonTitle={
                 interpretationHasCriticalWarning ? 'Proceed Anyway' : undefined
               }
-              holdToSign={true}
+              holdToSignAllowed={true}
             />
           </div>
         </VStack>

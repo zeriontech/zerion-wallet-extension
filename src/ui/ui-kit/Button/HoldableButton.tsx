@@ -9,7 +9,7 @@ import {
 import React from 'react';
 import cn from 'classnames';
 import { UIText } from '../UIText';
-import { borderRaduis, kinds, type Kind, type Size } from './Button';
+import { borderRadius, kinds, type Kind, type Size } from './Button';
 import * as buttonStyles from './styles.module.css';
 import * as styles from './holdableStyles.module.css';
 
@@ -164,7 +164,7 @@ const ButtonElement = <As extends ElementType = 'button'>(
           {
             border: 'none',
             textDecoration: 'none',
-            borderRadius: borderRaduis[size],
+            borderRadius: borderRadius[size],
             height: size,
             color: undefined,
             ['--button-background-hover' as string]:

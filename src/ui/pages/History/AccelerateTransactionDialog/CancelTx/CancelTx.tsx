@@ -209,7 +209,7 @@ function CancelTxContent({
               wallet={wallet}
               ref={signTxBtnRef}
               onClick={() => sendTransaction()}
-              holdToSign={true}
+              holdToSignAllowed={true}
             />
           </div>
         </VStack>

@@ -516,7 +516,7 @@ export function SendForm() {
               form={formId}
               wallet={wallet}
               disabled={isLoading}
-              holdToSign={false}
+              holdToSignAllowed={false}
             />
           ) : null}
         </VStack>
