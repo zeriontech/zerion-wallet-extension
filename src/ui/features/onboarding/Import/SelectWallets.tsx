@@ -3,7 +3,7 @@ import { Content } from 'react-area';
 import { useQuery } from '@tanstack/react-query';
 import groupBy from 'lodash/groupBy';
 import { invariant } from 'src/shared/invariant';
-import type { BareWallet } from 'src/shared/types/BareWallet';
+import type { MaskedBareWallet } from 'src/shared/types/BareWallet';
 import { getFirstNMnemonicWallets } from 'src/ui/pages/GetStarted/ImportWallet/MnemonicImportView/getFirstNMnemonicWallets';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -24,7 +24,7 @@ export function SelectWallets({
   onSelect,
 }: {
   mnemonic: string | null;
-  onSelect(wallets: BareWallet[]): void;
+  onSelect(wallets: MaskedBareWallet[]): void;
 }) {
   const [count] = useState(100);
   invariant(mnemonic, 'Seed phrase is empty');
@@ -55,7 +55,7 @@ export function SelectWallets({
   );
   const { active, rest } = grouped as Record<
     'active' | 'rest',
-    BareWallet[] | undefined
+    MaskedBareWallet[] | undefined
   >;
 
   const [values, setValue] = useState<Set<string>>(() => new Set());

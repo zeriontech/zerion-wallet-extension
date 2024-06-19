@@ -23,6 +23,8 @@ import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { NBSP } from 'src/ui/shared/typography';
 import { getWalletDisplayName } from 'src/ui/shared/getWalletDisplayName';
+import { opaqueType } from 'src/shared/type-utils/Opaque';
+import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import type { DeviceConnection } from '../types';
 
 type ControllerRequest = Omit<RpcRequest, 'id'>;
@@ -159,10 +161,12 @@ function AddressSelectList({
     items.map((item) => ({
       address: item.account.address,
       name: null,
-      privateKey: '<ledger-private-key>',
+      // we're not gonna read this prop and only need to match type
+      privateKey: opaqueType<LocallyEncoded>('<ledger-private-key>'),
       mnemonic: {
         path: item.derivationPath,
-        phrase: '<ledger-mnemonic>',
+        // we're not gonna read this prop and only need to match type
+        phrase: opaqueType<LocallyEncoded>('<ledger-mnemonic>'),
       },
     }))
   );

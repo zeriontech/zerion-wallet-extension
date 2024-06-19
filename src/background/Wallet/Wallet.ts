@@ -94,7 +94,7 @@ import { isSessionCredentials } from '../account/Credentials';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import type { PendingWallet, WalletRecord } from './model/types';
-import type { BareWallet } from './model/BareWallet';
+import type { MaskedBareWallet } from './model/BareWallet';
 import {
   MnemonicWalletContainer,
   PrivateKeyWalletContainer,
@@ -360,10 +360,12 @@ export class Wallet {
 
   async uiImportSeedPhrase({
     params: mnemonics,
-  }: WalletMethodParams<NonNullable<BareWallet['mnemonic']>[]>) {
+  }: WalletMethodParams<NonNullable<MaskedBareWallet['mnemonic']>[]>) {
     this.ensureActiveSession(this.userCredentials);
     const walletContainer = await MnemonicWalletContainer.create({
-      wallets: mnemonics.map((mnemonic) => ({ mnemonic })),
+      wallets: mnemonics.map((mnemonic) => ({
+        mnemonic: { ...mnemonic, phrase: decodeMasked(mnemonic.phrase) },
+      })),
       credentials: this.userCredentials,
     });
     this.pendingWallet = {
