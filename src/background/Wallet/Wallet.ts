@@ -79,10 +79,8 @@ import { normalizeTransactionChainId } from 'src/modules/ethereum/transactions/n
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
 import { createTypedData } from 'src/modules/ethereum/account-abstraction/createTypedData';
-import {
-  decodeMasked,
-  type LocallyEncoded,
-} from 'src/shared/wallet/encode-locally';
+import { type LocallyEncoded } from 'src/shared/wallet/encode-locally';
+import { decodeMasked } from 'src/shared/wallet/encode-locally';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -90,7 +88,7 @@ import { isSessionCredentials } from '../account/Credentials';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import type { PendingWallet, WalletRecord } from './model/types';
-import type { BareWallet } from './model/BareWallet';
+import type { MaskedBareWallet } from './model/BareWallet';
 import {
   MnemonicWalletContainer,
   PrivateKeyWalletContainer,
@@ -325,10 +323,12 @@ export class Wallet {
 
   async uiImportSeedPhrase({
     params: mnemonics,
-  }: WalletMethodParams<NonNullable<BareWallet['mnemonic']>[]>) {
+  }: WalletMethodParams<NonNullable<MaskedBareWallet['mnemonic']>[]>) {
     this.ensureActiveSession(this.userCredentials);
     const walletContainer = await MnemonicWalletContainer.create({
-      wallets: mnemonics.map((mnemonic) => ({ mnemonic })),
+      wallets: mnemonics.map((mnemonic) => ({
+        mnemonic: { ...mnemonic, phrase: decodeMasked(mnemonic.phrase) },
+      })),
       credentials: this.userCredentials,
     });
     this.pendingWallet = {

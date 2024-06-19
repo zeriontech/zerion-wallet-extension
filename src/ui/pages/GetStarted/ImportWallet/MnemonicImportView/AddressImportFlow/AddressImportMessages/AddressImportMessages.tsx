@@ -11,7 +11,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import CheckmarkCheckedIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { Media } from 'src/ui/ui-kit/Media';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
-import type { BareWallet } from 'src/shared/types/BareWallet';
+import type { MaskedBareWallet } from 'src/shared/types/BareWallet';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
 import { DecorativeMessage } from 'src/ui/pages/GetStarted/components/DecorativeMessage';
@@ -36,7 +36,7 @@ export function OnMount({
   return children as JSX.Element;
 }
 
-function AddressImportMessagesView({ values }: { values: BareWallet[] }) {
+function AddressImportMessagesView({ values }: { values: MaskedBareWallet[] }) {
   const [ready, setReady] = useState(false);
   const [messages, setMessages] = useState(() => new Set<React.ReactNode>());
   const addMessage = (message: React.ReactNode) =>
@@ -48,7 +48,9 @@ function AddressImportMessagesView({ values }: { values: BareWallet[] }) {
     isSuccess,
     ...finalizeMutation
   } = useMutation({
-    mutationFn: async (mnemonics: NonNullable<BareWallet['mnemonic']>[]) => {
+    mutationFn: async (
+      mnemonics: NonNullable<MaskedBareWallet['mnemonic']>[]
+    ) => {
       return idempotentRequest.request(JSON.stringify(mnemonics), async () => {
         const data = await walletPort.request('uiImportSeedPhrase', mnemonics);
         await accountPublicRPCPort.request('saveUserAndWallet');
@@ -206,7 +208,11 @@ function AddressImportMessagesView({ values }: { values: BareWallet[] }) {
   );
 }
 
-export function AddressImportMessages({ values }: { values: BareWallet[] }) {
+export function AddressImportMessages({
+  values,
+}: {
+  values: MaskedBareWallet[];
+}) {
   return (
     <ErrorBoundary
       renderError={(error) => {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import type { BareWallet } from 'src/shared/types/BareWallet';
+import type { MaskedBareWallet } from 'src/shared/types/BareWallet';
 import type { Item } from 'src/ui/ui-kit/SurfaceList';
 import { SurfaceItemButton, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -15,7 +15,7 @@ import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 
 interface Props {
-  wallets: BareWallet[];
+  wallets: MaskedBareWallet[];
   existingAddressesSet?: Set<string>;
   listTitle: React.ReactNode;
   renderDetail: null | ((index: number) => React.ReactNode);
