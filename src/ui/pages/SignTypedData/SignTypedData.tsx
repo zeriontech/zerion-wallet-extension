@@ -427,7 +427,7 @@ function SignTypedDataContent({
   });
 
   const { networks } = useNetworks(chain ? [chain.toString()] : undefined);
-  const chainId = (chain && networks?.getChainId(chain)) ?? null;
+  const chainId = chain && networks ? networks.getChainId(chain) : null;
 
   const { data: interpretation, ...interpretQuery } = useQuery({
     queryKey: ['interpretSignature', wallet.address, chainId, typedData],
