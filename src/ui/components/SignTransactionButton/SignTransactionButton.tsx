@@ -41,13 +41,13 @@ export const SignTransactionButton = React.forwardRef(
       buttonTitle,
       onClick,
       buttonKind = 'primary',
-      holdToSign,
+      holdToSignAllowed,
       ...buttonProps
     }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
       wallet: ExternallyOwnedAccount;
       buttonTitle?: React.ReactNode;
       buttonKind?: ButtonKind;
-      holdToSign: boolean;
+      holdToSignAllowed: boolean;
     },
     ref: React.Ref<SendTxBtnHandle>
   ) {
@@ -78,6 +78,8 @@ export const SignTransactionButton = React.forwardRef(
           }
         },
       });
+
+    const holdToSign = holdToSignAllowed && preferences?.enableHoldToSignButton;
 
     const { mutateAsync: sendTransaction, ...sendTxMutation } = useMutation({
       mutationFn: async (params: SendTxParams) => {
@@ -112,7 +114,7 @@ export const SignTransactionButton = React.forwardRef(
             return null;
           }
 
-          return holdToSign && preferences.enableHoldToSignButton ? (
+          return holdToSign ? (
             <HoldableButton
               text={`Hold to ${title}`}
               successText={

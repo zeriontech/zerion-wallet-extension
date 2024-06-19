@@ -19,7 +19,7 @@ export type Kind =
   | 'text-primary';
 export type Size = 60 | 56 | 48 | 44 | 40 | 36 | 32 | 28;
 
-export const borderRaduis: Record<Size, number> = {
+export const borderRadius: Record<Size, number> = {
   '28': 8,
   '32': 8,
   '36': 12,
@@ -77,7 +77,7 @@ const ButtonElement = <As extends ElementType = 'button'>(
         {
           border: 'none',
           textDecoration: 'none',
-          borderRadius: borderRaduis[size],
+          borderRadius: borderRadius[size],
           height: size,
           color: undefined,
         },
