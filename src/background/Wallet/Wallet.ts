@@ -86,6 +86,7 @@ import { createTypedData } from 'src/modules/ethereum/account-abstraction/create
 import { getDefiSdkClient } from 'src/modules/defi-sdk/background';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
+import { decodeMasked } from 'src/shared/wallet/encode-locally';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -343,8 +344,12 @@ export class Wallet {
     return maskWallet(walletContainer.getFirstWallet());
   }
 
-  async uiImportPrivateKey({ params: privateKey }: WalletMethodParams<string>) {
-    const walletContainer = new PrivateKeyWalletContainer([{ privateKey }]);
+  async uiImportPrivateKey({
+    params: privateKey,
+  }: WalletMethodParams<LocallyEncoded>) {
+    const walletContainer = new PrivateKeyWalletContainer([
+      { privateKey: decodeMasked(privateKey) },
+    ]);
     this.pendingWallet = {
       origin: WalletOrigin.imported,
       groupId: null,
@@ -460,7 +465,7 @@ export class Wallet {
   async verifyPrivateKey({
     params: { address, value },
     context,
-  }: WalletMethodParams<{ address: string; value: string }>) {
+  }: WalletMethodParams<{ address: string; value: LocallyEncoded }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
     this.ensureActiveSession(this.userCredentials); // require anyway
