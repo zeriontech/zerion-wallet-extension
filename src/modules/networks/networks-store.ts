@@ -1,7 +1,7 @@
 import { Store } from 'store-unit';
 import type { ChainId } from '../ethereum/transactions/ChainId';
-import type { EthereumChainConfig } from '../ethereum/chains/types';
 import { isCustomNetworkId } from '../ethereum/chains/helpers';
+import type { ChainConfig } from '../ethereum/chains/types';
 import { Networks } from './Networks';
 import { getNetworkByChainId, getNetworks } from './networks-api';
 import type { NetworkConfig } from './NetworkConfig';
@@ -29,30 +29,31 @@ export class NetworksStore extends Store<State> {
   private networkConfigs: NetworkConfig[] = [];
   private customNetworkConfigs: NetworkConfig[] = [];
   private loaderPromises: Record<string, Promise<Networks>> = {};
-  private getEthereumChainConfigs:
-    | null
-    | (() => Promise<EthereumChainConfig[] | undefined>);
+  private getChainSources: null | (() => Promise<ChainConfig | undefined>);
 
   constructor(
     state: State,
     {
-      getEthereumChainConfigs,
+      getChainSources,
     }: {
-      getEthereumChainConfigs?: NetworksStore['getEthereumChainConfigs'];
+      getChainSources?: NetworksStore['getChainSources'];
     } = {}
   ) {
     super(state);
-    this.getEthereumChainConfigs = getEthereumChainConfigs ?? null;
+    this.getChainSources = getChainSources ?? null;
   }
 
   private async updateNetworks() {
-    const savedChainConfigs = await this.getEthereumChainConfigs?.();
+    const chainConfigs = await this.getChainSources?.();
+    const savedChainConfigs = chainConfigs?.ethereumChainConfigs;
+    const visitedChains = chainConfigs?.visitedChains;
     const networks = new Networks({
       networks: mergeNetworkConfigs(
         this.networkConfigs,
         this.customNetworkConfigs
       ),
       ethereumChainConfigs: savedChainConfigs || [],
+      visitedChains: visitedChains || [],
     });
     this.setState({ networks });
     return networks;
@@ -74,11 +75,19 @@ export class NetworksStore extends Store<State> {
       return existingNetworks;
     }
 
-    const savedChainConfigs = await this.getEthereumChainConfigs?.();
+    const chainConfigs = await this.getChainSources?.();
+    const savedChainConfigs = chainConfigs?.ethereumChainConfigs;
+    const visitedChains = chainConfigs?.visitedChains;
     const savedIds = savedChainConfigs?.map((config) => config.id);
     const chainsToFetch = Array.from(
-      new Set([...(savedIds || []), ...(chains || [])])
-    ).filter((id) => !isCustomNetworkId(id));
+      new Set(
+        [
+          ...(savedIds || []),
+          ...(chains || []),
+          ...(visitedChains || []),
+        ].filter((id) => !isCustomNetworkId(id))
+      )
+    );
 
     const [extraNetworkConfigs, commonNetworkConfigs] =
       await Promise.allSettled([getNetworks(chainsToFetch), getNetworks()]);

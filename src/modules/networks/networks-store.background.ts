@@ -4,9 +4,9 @@ import { NetworksStore } from './networks-store';
 export const networksStore = new NetworksStore(
   { networks: null },
   {
-    getEthereumChainConfigs: async () => {
+    getChainSources: async () => {
       await chainConfigStore.ready();
-      return chainConfigStore.getState().ethereumChainConfigs;
+      return chainConfigStore.getState();
     },
   }
 );

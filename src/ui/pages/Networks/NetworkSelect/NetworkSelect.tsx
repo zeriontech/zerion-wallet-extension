@@ -19,6 +19,8 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { Networks } from 'src/modules/networks/Networks';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { walletPort } from 'src/ui/shared/channels';
+import { networksStore } from 'src/modules/networks/networks-store.client';
 
 export function NetworkSelect({
   value,
@@ -49,9 +51,13 @@ export function NetworkSelect({
 
   function handleDialogOpen() {
     invariant(dialogRef.current, 'Dialog element not found');
-    showConfirmDialog(dialogRef.current).then((chain) =>
-      onChange(chain === 'all' ? NetworkSelectValue.All : chain)
-    );
+    showConfirmDialog(dialogRef.current).then(async (chain) => {
+      if (chain !== 'all') {
+        await walletPort.request('addVisitedEthereumChain', { chain });
+        networksStore.update();
+      }
+      onChange(chain === 'all' ? NetworkSelectValue.All : chain);
+    });
   }
 
   const chain = value === NetworkSelectValue.All ? null : createChain(value);
