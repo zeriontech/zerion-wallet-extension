@@ -1,3 +1,4 @@
+import { unwrapOpaqueType } from '../type-utils/Opaque';
 import { encodeForMasking, decodeMasked } from './encode-locally';
 
 describe.only('encode-locally.ts', () => {
@@ -8,7 +9,18 @@ describe.only('encode-locally.ts', () => {
 
   test('maskedValue is not equal to input value', () => {
     const value = 'something';
-    expect(encodeForMasking(value)).not.toBe(value);
+    const encoded = encodeForMasking(value);
+    expect(encoded).not.toBe(value);
+  });
+
+  test('maskedValue and value are not substrings of each other', () => {
+    const values = ['one two three', '000000', '#$%@#$=='];
+    values.forEach((value) => {
+      const encoded = encodeForMasking(value);
+      const encodedString = unwrapOpaqueType(encoded);
+      expect(value.includes(encodedString)).toBe(false);
+      expect(encodedString.includes(value)).toBe(false);
+    });
   });
 
   test('encodeForMasking longer text', () => {
