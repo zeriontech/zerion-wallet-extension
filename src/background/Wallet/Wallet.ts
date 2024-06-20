@@ -5,6 +5,7 @@ import {
   utils as zkSyncUtils,
   Provider as ZksProvider,
 } from 'zksync-ethers';
+import type { TransactionRequest } from '@ethersproject/abstract-provider';
 import type { Emitter } from 'nanoevents';
 import { createNanoEvents } from 'nanoevents';
 import { Store } from 'store-unit';
@@ -1054,19 +1055,20 @@ export class Wallet {
     }
   }
 
-  async testZksyncFlow(transaction) {
+  async testZksyncFlow(transaction: TransactionRequest) {
     const { chainId } = transaction;
     invariant(chainId, 'ChainId missing from TransactionRequest');
     const typedData = createTypedData(transaction);
     const signature = await this.signTypedData_v4({
       context: { origin: INTERNAL_ORIGIN_SYMBOL },
-      params: { typedData },
+      params: { typedData, initiator: INTERNAL_ORIGIN, clientScope: null },
     });
     const rawTransaction = zkSyncUtils.serialize({
       ...transaction,
       customData: { ...transaction.customData, customSignature: signature },
     });
 
+    console.log({ signature, rawTransaction });
     console.assert(
       signature ===
         '0x4ea526453115c6b74285f05b19e73c4b6e55a1d57badb8fd8210d38a58ecfbea3d4c789e7135c19a00e59cdbda89c501e0683275c4ff9720cc660e76287856e11b'
