@@ -41,24 +41,36 @@ export function FeeLine({
       justifyContent="space-between"
       style={{ gridTemplateColumns: 'auto 1fr' }}
     >
-      <UIText kind="small/regular">Fee</UIText>
+      <UIText kind="small/regular">Network Fee</UIText>
       <UIText kind="small/accent" style={{ justifySelf: 'end' }}>
-        <HStack gap={4}>
-          <span>{formatTokenValue(feeEth, '')}</span>
-          {nativeAsset.id ? (
-            <AssetLink
-              asset={{
-                asset_code: nativeAsset.id,
-                name: nativeAsset.name,
-                symbol: nativeAsset.symbol,
-              }}
-              address={address}
-            />
-          ) : (
-            nativeAsset.symbol?.toUpperCase()
-          )}
-          <span>({formatCurrencyValue(feeCurrency, 'en', 'usd')})</span>
-        </HStack>
+        {fee.quantity == '0' ? (
+          <div
+            style={{
+              background: 'linear-gradient(90deg, #6C6CF9 0%, #FF7583 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            Free
+          </div>
+        ) : (
+          <HStack gap={4}>
+            <span>{formatTokenValue(feeEth, '')}</span>
+            {nativeAsset.id ? (
+              <AssetLink
+                asset={{
+                  asset_code: nativeAsset.id,
+                  name: nativeAsset.name,
+                  symbol: nativeAsset.symbol,
+                }}
+                address={address}
+              />
+            ) : (
+              nativeAsset.symbol?.toUpperCase()
+            )}
+            <span>({formatCurrencyValue(feeCurrency, 'en', 'usd')})</span>
+          </HStack>
+        )}
       </UIText>
     </HStack>
   );
