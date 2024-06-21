@@ -250,15 +250,13 @@ function trackAppEvents({ account }: { account: Account }) {
     });
   });
 
-  emitter.on('preferencesChange', (state, prevState) => {
-    if (state.enableHoldToSignButton !== prevState.enableHoldToSignButton) {
-      const params = createBaseParams({
-        request_name: 'hold_to_sign_prerefence',
-        active: Boolean(state.enableHoldToSignButton),
-      });
-      const mixpanelParams = omit(params, ['request_name']);
-      mixpanelTrack(account, 'Experiments: Hold Sign Button', mixpanelParams);
-    }
+  emitter.on('holdToSignPreferenceChange', (active) => {
+    const params = createBaseParams({
+      request_name: 'hold_to_sign_prerefence',
+      active,
+    });
+    const mixpanelParams = omit(params, ['request_name']);
+    mixpanelTrack(account, 'Experiments: Hold Sign Button', mixpanelParams);
   });
 
   emitter.on('walletCreated', ({ walletContainer, origin }) => {

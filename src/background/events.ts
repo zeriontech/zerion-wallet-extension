@@ -9,7 +9,7 @@ import type {
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import type { State as GlobalPreferencesState } from './Wallet/GlobalPreferences';
 import type { WalletOrigin } from './Wallet/model/WalletOrigin';
-import type { WalletContainer, WalletRecord } from './Wallet/model/types';
+import type { WalletContainer } from './Wallet/model/types';
 
 type TransactionResponse = ethers.providers.TransactionResponse;
 
@@ -59,9 +59,6 @@ export const emitter = createNanoEvents<{
     state: GlobalPreferencesState,
     prevState: GlobalPreferencesState
   ) => void;
-  preferencesChange: (
-    state: WalletRecord['publicPreferences'],
-    prevState: WalletRecord['publicPreferences']
-  ) => void;
+  holdToSignPreferenceChange: (active: boolean) => void;
   eip6963SupportDetected: (data: { origin: string }) => void;
 }>();

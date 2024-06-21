@@ -786,13 +786,14 @@ export class WalletRecordModel {
     record: WalletRecord,
     { preferences }: { preferences: Partial<WalletRecord['publicPreferences']> }
   ) {
+    if (preferences.enableHoldToSignButton != null) {
+      emitter.emit(
+        'holdToSignPreferenceChange',
+        preferences.enableHoldToSignButton
+      );
+    }
     return produce(record, (draft) => {
       Object.assign(draft.publicPreferences, preferences);
-      emitter.emit(
-        'preferencesChange',
-        draft.publicPreferences,
-        record.publicPreferences
-      );
     });
   }
 
