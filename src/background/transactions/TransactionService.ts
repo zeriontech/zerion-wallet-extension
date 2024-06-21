@@ -21,8 +21,9 @@ import { createMockTxResponse } from './mocks';
 import type { PollingTx } from './TransactionPoller';
 import { TransactionsPoller } from './TransactionPoller';
 
-const ONE_DAY = 1000 * 60 * 60 * 24;
-const FOUR_MINUTES = 1000 * 60 * 4;
+const FOUR_MINUTES_IN_MS = 1000 * 60 * 4;
+const ONE_DAY_IN_MS = 1000 * 60 * 60 * 24;
+const ONE_DAY_IN_MINUTES = 1 * 60 * 24;
 
 class TransactionsStore extends PersistentStore<StoredTransactions> {
   upsertTransaction(value: TransactionObject) {
@@ -67,7 +68,7 @@ export class TransactionService {
     // https://developer.chrome.com/docs/extensions/reference/api/alarms#persistence
     if (!alarm) {
       browser.alarms.create(TransactionService.ALARM_NAME, {
-        periodInMinutes: ONE_DAY,
+        periodInMinutes: ONE_DAY_IN_MINUTES,
       });
     }
   }
@@ -114,7 +115,7 @@ export class TransactionService {
     () => {
       this.performPurgeCheck();
     },
-    FOUR_MINUTES,
+    FOUR_MINUTES_IN_MS,
     { leading: false } // Invoke no sooner and no more frequent than FOUR_MINUTES
   );
 
@@ -169,7 +170,7 @@ export class TransactionService {
           chain: network.id,
           // subtract one day to create a bigger search window
           // to account for possible client-time/server-time inconsistencies
-          actions_since: new Date(timestamp - ONE_DAY - 1).toISOString(),
+          actions_since: new Date(timestamp - ONE_DAY_IN_MS - 1).toISOString(),
         });
         if (knownNonce != null) {
           this.purgeEntries({ address, chainId, fromNonce: knownNonce });
