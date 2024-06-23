@@ -84,6 +84,7 @@ import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/
 import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
 import { hasNetworkFee } from 'src/modules/ethereum/transactions/gasPrices/hasNetworkFee';
 import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/uiGetBestKnownTransactionCount';
+import { RenderArea } from 'react-area';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -847,20 +848,17 @@ function SendTransactionContent({
               {txErrorToMessage(sendTransactionMutation.error)}
             </UIText>
           ) : null}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: interpretationHasCriticalWarning
-                ? '1fr'
-                : '1fr 1fr',
-              gap: 8,
-            }}
-          >
-            <Button
-              ref={focusNode}
-              kind={interpretationHasCriticalWarning ? 'primary' : 'regular'}
-              type="button"
-              onClick={handleReject}
+          {view === View.customAllowance ? (
+            <RenderArea name="sign-transaction-footer" />
+          ) : (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: interpretationHasCriticalWarning
+                  ? '1fr'
+                  : '1fr 1fr',
+                gap: 8,
+              }}
             >
               Cancel
             </Button>
