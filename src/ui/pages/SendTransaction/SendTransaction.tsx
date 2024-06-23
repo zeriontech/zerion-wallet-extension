@@ -85,6 +85,7 @@ import { fetchAndAssignPaymaster } from 'src/modules/ethereum/account-abstractio
 import { isDeviceAccount } from 'src/shared/types/validators';
 import { shouldInterpretTransaction } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { RenderArea } from 'react-area';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -764,20 +765,17 @@ function SendTransactionContent({
               {txErrorToMessage(sendTransactionMutation.error)}
             </UIText>
           ) : null}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: interpretationHasCriticalWarning
-                ? '1fr'
-                : '1fr 1fr',
-              gap: 8,
-            }}
-          >
-            <Button
-              ref={focusNode}
-              kind={interpretationHasCriticalWarning ? 'primary' : 'regular'}
-              type="button"
-              onClick={handleReject}
+          {view === View.customAllowance ? (
+            <RenderArea name="sign-transaction-footer" />
+          ) : (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: interpretationHasCriticalWarning
+                  ? '1fr'
+                  : '1fr 1fr',
+                gap: 8,
+              }}
             >
               Cancel
             </Button>
