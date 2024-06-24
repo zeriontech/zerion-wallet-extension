@@ -15,7 +15,6 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import { GetStarted } from 'src/ui/pages/GetStarted';
 import { Intro } from 'src/ui/pages/Intro';
 import { Overview } from 'src/ui/pages/Overview';
-import { RouteResolver } from 'src/ui/pages/RouteResolver';
 import { RequestAccounts } from 'src/ui/pages/RequestAccounts';
 import { SendTransaction } from 'src/ui/pages/SendTransaction';
 import { SignMessage } from 'src/ui/pages/SignMessage';
@@ -230,7 +229,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             path="/nft/:chain/:asset_code"
             element={
               <RequireAuth>
-                <NonFungibleToken />
+                <RequestAccounts />
               </RequireAuth>
             }
           />
@@ -267,10 +266,10 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             }
           />
           <Route
-            path="/reveal-private-key/*"
+            path="/backup-wallet/*"
             element={
               <RequireAuth>
-                <RevealPrivateKey />
+                <BackupWallet />
               </RequireAuth>
             }
           />
@@ -292,7 +291,6 @@ function Views({ initialRoute }: { initialRoute?: string }) {
               </RequireAuth>
             }
           />
-          <Route path="/testnetModeGuard" element={<TestnetModeGuard />} />
           <Route
             path="/siwe/*"
             element={
@@ -317,6 +315,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
               </RequireAuth>
             }
           />
+          {/* TODO: Should this page be removed? */}
           <Route
             path="/switchEthereumChain"
             element={
