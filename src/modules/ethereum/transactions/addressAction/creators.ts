@@ -154,6 +154,7 @@ export async function pendingTransactionToAddressAction(
         : 'pending',
       fee: null,
       nonce: transaction.nonce || 0,
+      sponsored: false,
     },
     datetime: new Date(timestamp ?? Date.now()).toISOString(),
     label,

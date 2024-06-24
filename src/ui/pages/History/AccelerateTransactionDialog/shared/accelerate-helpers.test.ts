@@ -41,6 +41,7 @@ const cancelTxSample = {
     chain: 'polygon',
     status: 'pending',
     fee: null,
+    sponsored: false,
   },
   datetime: '2023-12-17T17:24:16.396Z',
   label: {

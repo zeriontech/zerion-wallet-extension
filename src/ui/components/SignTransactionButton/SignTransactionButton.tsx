@@ -33,11 +33,14 @@ export const SignTransactionButton = React.forwardRef(
       buttonTitle,
       onClick,
       buttonKind = 'primary',
+      isLoading: isLoadingProp,
+      disabled: disabledAttr,
       ...buttonProps
     }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
       wallet: ExternallyOwnedAccount;
       buttonTitle?: React.ReactNode;
       buttonKind?: ButtonKind;
+      isLoading?: boolean;
     },
     ref: React.Ref<SendTxBtnHandle>
   ) {
@@ -68,15 +71,20 @@ export const SignTransactionButton = React.forwardRef(
     });
     useImperativeHandle(ref, () => ({ sendTransaction }));
 
+    const isLoading = isLoadingProp || sendTxMutation.isLoading;
+    const isSending = sendTxMutation.isLoading;
+    const disabled = isLoading || disabledAttr;
+
     return isDeviceAccount(wallet) ? (
       <HardwareSignTransaction
         ref={hardwareSignRef}
         derivationPath={wallet.derivationPath}
-        isSending={sendTxMutation.isLoading}
+        isSending={isSending}
         children={children}
-        buttonTitle={buttonTitle}
+        buttonTitle={isLoadingProp ? 'Preparing...' : buttonTitle}
         buttonKind={buttonKind}
         onClick={onClick}
+        disabled={disabledAttr}
         {...buttonProps}
       />
     ) : (
@@ -85,15 +93,12 @@ export const SignTransactionButton = React.forwardRef(
         onClick={onClick}
         render={({ handleClick }) => (
           <Button
-            disabled={sendTxMutation.isLoading}
+            disabled={disabled}
             onClick={handleClick}
             kind={buttonKind}
             {...buttonProps}
           >
-            {children ||
-              (sendTxMutation.isLoading
-                ? 'Sending...'
-                : buttonTitle || 'Confirm')}
+            {children || (isLoading ? 'Sending...' : buttonTitle || 'Confirm')}
           </Button>
         )}
       />
