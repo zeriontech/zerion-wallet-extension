@@ -47,11 +47,11 @@ function FiatInputValue({ sendView }: { sendView: SendFormView }) {
 
 export function TokenTransferInput({ sendView }: { sendView: SendFormView }) {
   const { tokenItem } = sendView;
-  const { tokenValue, tokenChain } = useSelectorStore(sendView.store, [
+  const { tokenValue, sendChain } = useSelectorStore(sendView.store, [
     'tokenValue',
-    'tokenChain',
+    'sendChain',
   ]);
-  const chain = tokenChain ? createChain(tokenChain) : null;
+  const chain = sendChain ? createChain(sendChain) : null;
 
   const positionBalanceCommon = tokenItem
     ? getPositionBalance(tokenItem)

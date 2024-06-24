@@ -37,9 +37,8 @@ export function SuccessState({
 }) {
   const { networks } = useNetworks();
   const { tokenItem, nftItem, state } = sendFormSnapshot;
-  const { type, tokenChain, nftChain, to, tokenValue } = state;
-  const currentChain = type === 'token' ? tokenChain : nftChain;
-  invariant(to && currentChain, 'Required Form values are missing');
+  const { type, sendChain, to, tokenValue } = state;
+  invariant(to && sendChain, 'Required Form values are missing');
   const trail = useTrail(3, {
     config: { tension: 400 },
     from: {
@@ -54,7 +53,7 @@ export function SuccessState({
   if (!networks) {
     return <ViewLoading />;
   }
-  const chain = createChain(currentChain);
+  const chain = createChain(sendChain);
   const chainName = networks.getChainName(chain);
   return (
     <PageColumn>

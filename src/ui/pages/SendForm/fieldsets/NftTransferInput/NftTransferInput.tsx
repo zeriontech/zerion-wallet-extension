@@ -325,11 +325,11 @@ export function NftTransferInput({
   address: string;
 }) {
   const { nftItem } = sendView;
-  const { nftAmount, nftChain } = useSelectorStore(sendView.store, [
+  const { nftAmount, sendChain } = useSelectorStore(sendView.store, [
     'nftAmount',
-    'nftChain',
+    'sendChain',
   ]);
-  const chain = nftChain ? createChain(nftChain) : null; // TODO: update useSendForm to calculate default nft chain (using NFT Portfolio Decomposition)
+  const chain = sendChain ? createChain(sendChain) : null;
 
   const currentItem = nftItem;
   const itemBalance = currentItem?.amount;
@@ -349,7 +349,7 @@ export function NftTransferInput({
       : '',
   });
 
-  const assetExistsOnChain = currentItem && currentItem.chain === nftChain;
+  const assetExistsOnChain = currentItem && currentItem.chain === sendChain;
   // This is a helper input that serves only to provide native form validation
   const readonlyInputRef = useRef<HTMLInputElement | null>(null);
   useCustomValidity({
