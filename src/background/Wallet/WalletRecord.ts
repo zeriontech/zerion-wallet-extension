@@ -27,6 +27,7 @@ import {
 import { capitalize } from 'capitalize-ts';
 import { upgradeRecord } from 'src/shared/type-utils/versions';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
+import { emitter } from '../events';
 import type {
   PendingWallet,
   WalletContainer,
@@ -772,6 +773,7 @@ export class WalletRecordModel {
       upgradeDnaBannerDismissed: false,
       backupReminderDismissedTime: 0,
       enableTestnets: false,
+      enableHoldToSignButton: null,
     };
     if (!record) {
       return defaults;
@@ -784,6 +786,12 @@ export class WalletRecordModel {
     record: WalletRecord,
     { preferences }: { preferences: Partial<WalletRecord['publicPreferences']> }
   ) {
+    if (preferences.enableHoldToSignButton != null) {
+      emitter.emit(
+        'holdToSignPreferenceChange',
+        preferences.enableHoldToSignButton
+      );
+    }
     return produce(record, (draft) => {
       Object.assign(draft.publicPreferences, preferences);
     });
