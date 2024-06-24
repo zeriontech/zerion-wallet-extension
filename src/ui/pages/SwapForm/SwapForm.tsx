@@ -16,7 +16,6 @@ import React, {
   useState,
 } from 'react';
 import SettingsIcon from 'jsx:src/ui/assets/settings-sliders.svg';
-import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
@@ -505,19 +504,7 @@ export function SwapFormComponent() {
             <DialogTitle
               alignTitle="start"
               closeKind="icon"
-              title={
-                <HStack gap={4} alignItems="center">
-                  <UIText kind="headline/h3">Slippage</UIText>
-                  <div
-                    style={{ cursor: 'help' }}
-                    title="Your transaction will revert if the price changes unfavourably by more than this percentage"
-                  >
-                    <QuestionHintIcon
-                      style={{ display: 'block', color: 'var(--neutral-500)' }}
-                    />
-                  </div>
-                </HStack>
-              }
+              title={<UIText kind="headline/h3">Slippage</UIText>}
             />
             <Spacer height={24} />
             <StoreWatcher
