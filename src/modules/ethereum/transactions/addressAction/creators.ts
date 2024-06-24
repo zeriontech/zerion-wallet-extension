@@ -8,7 +8,7 @@ import {
 import type { Networks } from 'src/modules/networks/Networks';
 import type { Chain } from 'src/modules/networks/Chain';
 import type { BigNumberish } from 'ethers';
-import { ethers } from 'ethers';
+import { valueToHex } from 'src/shared/units/valueToHex';
 import { UnsupportedNetwork } from 'src/modules/networks/errors';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type {
@@ -144,7 +144,7 @@ export async function pendingTransactionToAddressAction(
         ? chain.toString()
         : // It's okay to fallback to a stringified chainId because this is
           // only a representational object
-          ethers.utils.hexValue(transaction.chainId),
+          valueToHex(transaction.chainId),
       status: receipt
         ? receipt.status === 1
           ? 'confirmed'
