@@ -777,24 +777,33 @@ function SendTransactionContent({
                 gap: 8,
               }}
             >
-              Cancel
-            </Button>
-            <SignTransactionButton
-              // TODO: set loading state when {sendTransactionMutation.isLoading}
-              // (important for paymaster flow)
-              wallet={wallet}
-              ref={sendTxBtnRef}
-              onClick={() => sendTransaction()}
-              isLoading={sendTransactionMutation.isLoading}
-              disabled={sendTransactionMutation.isLoading}
-              buttonKind={
-                interpretationHasCriticalWarning ? 'danger' : 'primary'
-              }
-              buttonTitle={
-                interpretationHasCriticalWarning ? 'Proceed Anyway' : undefined
-              }
-            />
-          </div>
+              <Button
+                ref={focusNode}
+                kind={interpretationHasCriticalWarning ? 'primary' : 'regular'}
+                type="button"
+                onClick={handleReject}
+              >
+                Cancel
+              </Button>
+              <SignTransactionButton
+                // TODO: set loading state when {sendTransactionMutation.isLoading}
+                // (important for paymaster flow)
+                wallet={wallet}
+                ref={sendTxBtnRef}
+                onClick={() => sendTransaction()}
+                isLoading={sendTransactionMutation.isLoading}
+                disabled={sendTransactionMutation.isLoading}
+                buttonKind={
+                  interpretationHasCriticalWarning ? 'danger' : 'primary'
+                }
+                buttonTitle={
+                  interpretationHasCriticalWarning
+                    ? 'Proceed Anyway'
+                    : undefined
+                }
+              />
+            </div>
+          )}
         </VStack>
         <PageBottom />
       </PageStickyFooter>
