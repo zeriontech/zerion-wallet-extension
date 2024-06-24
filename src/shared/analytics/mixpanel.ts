@@ -38,8 +38,7 @@ function omitNullParams<T extends Record<string, unknown>>(
   params: T
 ): Partial<T> {
   return produce(params, (draft) => {
-    const keys = Object.keys(draft);
-    for (const key of keys) {
+    for (const key in draft) {
       if (draft[key] == null) {
         delete draft[key];
       }
@@ -155,9 +154,9 @@ class MixpanelApi {
       url.searchParams.append('verbose', '1');
     }
     url.searchParams.append('ip', '1');
-    const payload = omitNullParams({
+    const payload = {
       event,
-      properties: {
+      properties: omitNullParams({
         ...this.baseProperties,
         time: Date.now() / 1000,
         $insert_id: crypto.randomUUID(),
@@ -172,8 +171,8 @@ class MixpanelApi {
               user_id: this.userId,
             }
           : null),
-      },
-    });
+      }),
+    };
 
     logToConsole(Loglevel.info, 'group', `Mixpanel track: ${payload.event}`);
     logTable(Loglevel.info, payload.properties, ['index']);
