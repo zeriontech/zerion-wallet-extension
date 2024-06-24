@@ -62,6 +62,7 @@ import { toAddEthereumChainParameter } from 'src/modules/networks/helpers';
 import { usePreferences } from 'src/ui/features/preferences';
 import { BACKEND_NETWORK_ORIGIN } from 'src/modules/ethereum/chains/constants';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useWalletAddresses } from './shared/useWalletAddresses';
 import { NetworkCreateSuccess } from './NetworkCreateSuccess';
 import { createEmptyChainConfig } from './shared/createEmptyChainConfig';
@@ -453,6 +454,7 @@ function NetworksView({
 export function Networks() {
   const { data: addresses } = useWalletAddresses();
   const { preferences } = usePreferences();
+  const { currency } = useCurrency();
   const navigationType = useNavigationType();
   const {
     value: portfolioDecomposition,
@@ -460,7 +462,7 @@ export function Networks() {
   } = useAddressPortfolioDecomposition(
     {
       addresses: addresses || [],
-      currency: 'usd',
+      currency,
     },
     { enabled: Boolean(addresses?.length) }
   );

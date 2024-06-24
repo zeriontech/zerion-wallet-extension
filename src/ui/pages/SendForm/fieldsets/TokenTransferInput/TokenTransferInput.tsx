@@ -16,10 +16,12 @@ import { isNumeric } from 'src/shared/isNumeric';
 import BigNumber from 'bignumber.js';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { AssetSelect } from '../../AssetSelect';
 
 function FiatInputValue({ sendView }: { sendView: SendFormView }) {
   const { tokenItem } = sendView;
+  const { currency } = useCurrency();
   const { type, tokenValue: inputValue } = useSelectorStore(sendView.store, [
     'type',
     'tokenValue',
@@ -40,7 +42,7 @@ function FiatInputValue({ sendView }: { sendView: SendFormView }) {
 
   return (
     <UIText kind="small/regular" color="var(--neutral-600)">
-      {formatCurrencyValue(fiatValue, 'en', 'usd')}
+      {formatCurrencyValue(fiatValue, 'en', currency)}
     </UIText>
   );
 }

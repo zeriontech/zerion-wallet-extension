@@ -42,6 +42,7 @@ import {
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { openInTabView } from 'src/ui/shared/openInTabView';
 import { needsBackup } from 'src/ui/components/BackupInfoNote/BackupInfoNote';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 
 const strings = {
   recoveryPhraseTitle: 'Recovery Phrase',
@@ -194,6 +195,7 @@ function RemoveGroupConfirmationDialog({
 
 export function WalletGroup() {
   const navigate = useNavigate();
+  const { currency } = useCurrency();
   const { groupId } = useParams();
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   if (!groupId) {
@@ -317,7 +319,7 @@ export function WalletGroup() {
                                   parts={formatCurrencyToParts(
                                     entry.value.total_value || 0,
                                     'en',
-                                    'usd'
+                                    currency
                                   )}
                                 />
                               ) : (

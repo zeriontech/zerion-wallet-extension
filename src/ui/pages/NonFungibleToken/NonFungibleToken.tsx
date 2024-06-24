@@ -21,6 +21,7 @@ import type { SignMsgBtnHandle } from 'src/ui/components/SignMessageButton';
 import { SignMessageButton } from 'src/ui/components/SignMessageButton';
 import { invariant } from 'src/shared/invariant';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { useAddressNftPosition } from './useAddressNftPosition';
 
@@ -40,12 +41,13 @@ export function NonFungibleToken() {
 
   // for optimistic update the dna's status after promotion
   const [promotedPrimary, setPromotedAsPrimary] = useState(false);
+  const { currency } = useCurrency();
 
   const { value: nft } = useAddressNftPosition({
     chain: chain || '',
     contract_address,
     token_id,
-    currency: 'usd',
+    currency,
     address: singleAddress,
   });
 

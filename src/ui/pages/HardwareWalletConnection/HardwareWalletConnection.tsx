@@ -21,6 +21,7 @@ import { NavigationBackButton } from 'src/ui/components/NavigationBackButton';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import FullTextLogo from 'jsx:src/ui/assets/zerion-full-logo.svg';
 import { PrivacyFooter } from 'src/ui/components/PrivacyFooter';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { isAllowedMessage } from './shared/isAllowedMessage';
 import { ImportSuccess } from './ImportSuccess';
 import { getWalletInfo } from './shared/getWalletInfo';
@@ -114,6 +115,7 @@ export function HardwareWalletConnectionStart({
 
   const requestId = useId();
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const { currency } = useCurrency();
 
   useEffect(() => {
     async function handler(event: MessageEvent) {
@@ -136,7 +138,8 @@ export function HardwareWalletConnectionStart({
           }
         } else if (method === 'wallet-info') {
           const result = await getWalletInfo(
-            (params as { address: string }).address
+            (params as { address: string }).address,
+            currency
           );
           if (iframeRef.current && iframeRef.current.contentWindow) {
             iframeRef.current.contentWindow.postMessage({ id, result }, '*');
@@ -146,7 +149,7 @@ export function HardwareWalletConnectionStart({
     }
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
-  }, [finalize, onImport, navigate, requestId, searchParams]);
+  }, [finalize, onImport, navigate, requestId, searchParams, currency]);
   return (
     <LedgerIframe
       ref={iframeRef}

@@ -10,7 +10,7 @@ export async function getAddressesPortfolio(addresses: string[]) {
     const { unsubscribe } = client.addressPortfolio(
       {
         addresses,
-        currency: 'usd',
+        currency: 'usd', // keep currency const for analytics purpose
         portfolio_fields: 'all',
         use_portfolio_service: true,
         nft_price_type: 'not_included',

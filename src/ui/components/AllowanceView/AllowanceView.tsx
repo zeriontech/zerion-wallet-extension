@@ -7,6 +7,7 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { invariant } from 'src/shared/invariant';
 import type { Chain } from 'src/modules/networks/Chain';
 import { getCommonQuantity } from 'src/modules/networks/asset';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { NavigationBar } from '../NavigationBar';
 import { AllowanceForm } from '../AllowanceForm';
 
@@ -25,6 +26,7 @@ export function AllowanceView({
   requestedAllowanceQuantityBase?: string;
   onChange: (value: string) => void;
 }) {
+  const { currency } = useCurrency();
   invariant(
     requestedAllowanceQuantityBase,
     'requestedAllowanceQuantityBase is required to set custom allowance'
@@ -35,7 +37,7 @@ export function AllowanceView({
       {
         address,
         assets: asset ? [asset?.asset_code] : [],
-        currency: 'usd',
+        currency,
       },
       { enabled: Boolean(asset) }
     );

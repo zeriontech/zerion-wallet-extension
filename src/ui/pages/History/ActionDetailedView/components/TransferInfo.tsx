@@ -21,6 +21,7 @@ import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { AssetLink } from 'src/ui/components/AssetLink';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { isUnlimitedApproval } from '../../isUnlimitedApproval';
 
 type Direction = 'incoming' | 'outgoing';
@@ -112,6 +113,7 @@ function FungibleTransfer({
   direction: Direction;
   chain: Chain;
 }) {
+  const { currency } = useCurrency();
   const fungible = getFungibleAsset(transfer.asset);
   invariant(fungible, 'Transfer with fungible asset should contain one');
   const balance = useMemo(
@@ -165,7 +167,11 @@ function FungibleTransfer({
       detailText={
         <UIText kind="small/regular" color="var(--neutral-500)">
           {almostEqual}
-          {formatCurrencyValue(balance.times(transfer.price || 0), 'en', 'usd')}
+          {formatCurrencyValue(
+            balance.times(transfer.price || 0),
+            'en',
+            currency
+          )}
         </UIText>
       }
     />

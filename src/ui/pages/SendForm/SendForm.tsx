@@ -52,6 +52,7 @@ import { useSizeStore } from 'src/ui/Onboarding/useSizeStore';
 import { createSendAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -88,6 +89,7 @@ const ENABLE_NFT_TRANSFER = true;
 
 export function SendForm() {
   const { singleAddress: address, ready } = useAddressParams();
+  const { currency } = useCurrency();
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
@@ -103,7 +105,7 @@ export function SendForm() {
 
   const { data: positions } = useAddressBackendOrEvmPositions({
     address,
-    currency: 'usd',
+    currency,
     chain: chainForAddressPositions
       ? createChain(chainForAddressPositions)
       : null,
@@ -112,7 +114,7 @@ export function SendForm() {
   const { value: portfolioDecomposition } = useAddressPortfolioDecomposition(
     {
       address,
-      currency: 'usd',
+      currency,
     },
     { enabled: ready }
   );
@@ -123,7 +125,7 @@ export function SendForm() {
   const { networks } = useNetworks(addressChains);
 
   const sendView = useSendForm({
-    currencyCode: 'usd',
+    currencyCode: currency,
     DEFAULT_CONFIGURATION,
     address,
     positions: positions || undefined,

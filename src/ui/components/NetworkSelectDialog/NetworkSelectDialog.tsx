@@ -26,6 +26,7 @@ import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import AllNetworksIcon from 'jsx:src/ui/assets/all-networks.svg';
 import { usePreferences } from 'src/ui/features/preferences/usePreferences';
 import { VirtualizedSurfaceList } from 'src/ui/ui-kit/SurfaceList/VirtualizedSurfaceList';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { DelayedRender } from '../DelayedRender';
 import { NetworkIcon } from '../NetworkIcon';
 import { PageBottom } from '../PageBottom';
@@ -54,6 +55,8 @@ function NetworkItem({
   icon: React.ReactElement;
   chainDistribution: ChainDistribution | null;
 }) {
+  const { currency } = useCurrency();
+
   return (
     <SurfaceItemButton
       data-class={LIST_ITEM_CLASS}
@@ -92,6 +95,7 @@ function NetworkItem({
                 value === NetworkSelectValue.All ? value : createChain(value)
               }
               chainDistribution={chainDistribution}
+              currency={currency}
             />
           ) : null}
         </UIText>

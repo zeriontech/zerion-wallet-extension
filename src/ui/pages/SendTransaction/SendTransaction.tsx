@@ -83,6 +83,7 @@ import { valueToHex } from 'src/shared/units/valueToHex';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
 import { hasNetworkFee } from 'src/modules/ethereum/transactions/gasPrices/hasNetworkFee';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -351,6 +352,7 @@ function useLocalAddressAction({
   transaction: IncomingTransactionWithChainId;
   networks: Networks;
 }) {
+  const { currency } = useCurrency();
   return useQuery({
     queryKey: [
       'incomingTxToIncomingAddressAction',
@@ -358,12 +360,14 @@ function useLocalAddressAction({
       transactionAction,
       networks,
       from,
+      currency,
     ],
     queryFn: () => {
       return incomingTxToIncomingAddressAction(
         { transaction: { ...transaction, from }, hash: '', timestamp: 0 },
         transactionAction,
-        networks
+        networks,
+        currency
       );
     },
     keepPreviousData: true,
@@ -386,13 +390,15 @@ function useInterpretTransaction({
   origin: string;
   enabled?: boolean;
 }) {
+  const { currency } = useCurrency();
   return useQuery({
-    queryKey: ['interpretTransaction', transaction, address, origin],
+    queryKey: ['interpretTransaction', transaction, address, origin, currency],
     queryFn: () =>
       interpretTransaction({
         address,
         transaction,
         origin,
+        currency,
       }),
     enabled,
     keepPreviousData: true,
@@ -604,6 +610,7 @@ function SendTransactionContent({
   networks: Networks;
 }) {
   const [params] = useSearchParams();
+  const { currency } = useCurrency();
   const navigate = useNavigate();
   const { singleAddress } = useAddressParams();
   const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
@@ -672,6 +679,7 @@ function SendTransactionContent({
       singleAddress,
       networks,
       transactionAction,
+      currency,
     ],
     queryFn: async () => {
       const configuredTx = await configureTransactionToSign(
@@ -694,6 +702,7 @@ function SendTransactionContent({
         address: toSign.from,
         chainId: normalizeChainId(toSign.chainId),
         typedData,
+        currency,
       });
     },
   });

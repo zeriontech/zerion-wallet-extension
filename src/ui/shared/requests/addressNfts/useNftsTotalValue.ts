@@ -1,6 +1,7 @@
 import type { AddressParams } from 'defi-sdk';
 import { createDomainHook } from 'defi-sdk';
 import { useMemo } from 'react';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 
 interface NFTPortfolioDecomposition {
   floor_price: Record<string, number>;
@@ -24,9 +25,10 @@ export const useAddressNFTDistribution = createDomainHook<
 });
 
 export function useNftsTotalValue(addressParams: AddressParams) {
+  const { currency } = useCurrency();
   const data = useAddressNFTDistribution({
     ...addressParams,
-    currency: 'usd',
+    currency,
   });
 
   const nftsTotalValue = useMemo(() => {

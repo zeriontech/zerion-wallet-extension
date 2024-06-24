@@ -24,6 +24,7 @@ import AllNetworksIcon from 'jsx:src/ui/assets/network.svg';
 import CloseIcon from 'jsx:src/ui/assets/close_solid.svg';
 import { Button } from 'src/ui/ui-kit/Button';
 import { useStore } from '@store-unit/react';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import {
   getCurrentTabsOffset,
   getGrownTabMaxHeight,
@@ -77,9 +78,17 @@ function useMinedAndPendingAddressActions({
     ? networks?.supports('actions', chain)
     : true;
   const localActions = useLocalAddressTransactions(params);
+  const { currency } = useCurrency();
 
   const { data: localAddressActions, ...localActionsQuery } = useQuery({
-    queryKey: ['pages/history', localActions, chain, networks, searchQuery],
+    queryKey: [
+      'pages/history',
+      localActions,
+      chain,
+      networks,
+      searchQuery,
+      currency,
+    ],
     queryFn: async () => {
       if (!networks) {
         return null;
@@ -88,7 +97,8 @@ function useMinedAndPendingAddressActions({
         localActions.map((transactionObject) =>
           pendingTransactionToAddressAction(
             transactionObject,
-            loadNetworkByChainId
+            loadNetworkByChainId,
+            currency
           )
         )
       );
@@ -114,7 +124,7 @@ function useMinedAndPendingAddressActions({
   } = useAddressActions(
     {
       ...params,
-      currency: 'usd',
+      currency,
       actions_chains:
         chain && isSupportedByBackend ? [chain.toString()] : undefined,
       actions_search_query: searchQuery,

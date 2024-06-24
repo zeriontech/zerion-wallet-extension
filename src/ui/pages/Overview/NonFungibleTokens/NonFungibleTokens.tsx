@@ -30,6 +30,7 @@ import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { EmptyView } from 'src/ui/components/EmptyView';
 import { NftTabDnaBanner } from 'src/ui/DNA/components/DnaBanners';
 import { useStore } from '@store-unit/react';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
 import { getGrownTabMaxHeight, offsetValues } from '../getTabsOffset';
 import { NetworkBalance } from '../Positions/NetworkBalance';
@@ -44,6 +45,7 @@ function NFTItem({
   showCollection?: boolean;
   someHavePrice?: boolean;
 }) {
+  const { currency } = useCurrency();
   const isPrimary = useMemo(() => {
     return item.metadata.tags?.includes('#primary');
   }, [item]);
@@ -129,7 +131,7 @@ function NFTItem({
           {price ? (
             <UIText kind="small/accent">
               <NeutralDecimals
-                parts={formatCurrencyToParts(price, 'en', 'usd')}
+                parts={formatCurrencyToParts(price, 'en', currency)}
               />
             </UIText>
           ) : someHavePrice ? (
@@ -168,10 +170,11 @@ export function NonFungibleTokens({
   filterChain: string | null;
   onChainChange: (value: string | null) => void;
 }) {
+  const { currency } = useCurrency();
   const { ready, params, singleAddressNormalized } = useAddressParams();
   const { value: nftDistribution } = useAddressNFTDistribution({
     ...params,
-    currency: 'usd',
+    currency,
   });
   const { value: nftTotalValue } = useNftsTotalValue(params);
   const { networks } = useNetworks();
@@ -194,7 +197,7 @@ export function NonFungibleTokens({
         isSupportedByBackend && chainValue !== NetworkSelectValue.All
           ? [chainValue]
           : undefined,
-      currency: 'usd',
+      currency,
       sorted_by: 'floor_price_high',
     },
     {
@@ -306,7 +309,7 @@ export function NonFungibleTokens({
           value={
             nftChainValue != null ? (
               <NeutralDecimals
-                parts={formatCurrencyToParts(nftChainValue, 'en', 'usd')}
+                parts={formatCurrencyToParts(nftChainValue, 'en', currency)}
               />
             ) : null
           }

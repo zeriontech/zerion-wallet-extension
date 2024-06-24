@@ -11,10 +11,12 @@ export function interpretTransaction({
   address,
   transaction,
   origin,
+  currency,
 }: {
   address: string;
   transaction: IncomingTransactionWithChainId;
   origin: string;
+  currency: string;
 }): Promise<InterpretResponse> {
   const gas = getGas(transaction);
   return Promise.race([
@@ -34,7 +36,7 @@ export function interpretTransaction({
           payload: {
             address,
             chain_id: transaction.chainId,
-            currency: 'usd',
+            currency,
             transaction: {
               from: transaction.from,
               to: transaction.to,
@@ -69,10 +71,12 @@ export function interpretSignature({
   address,
   chainId,
   typedData,
+  currency,
 }: {
   address: string;
   chainId?: ChainId | null;
   typedData: TypedData;
+  currency: string;
 }): Promise<InterpretResponse> {
   return Promise.race([
     rejectAfterDelay(10000, 'interpret signature'),
@@ -91,7 +95,7 @@ export function interpretSignature({
           payload: {
             address,
             chain_id: chainId,
-            currency: 'usd',
+            currency,
             typed_data: typedData,
           },
         },

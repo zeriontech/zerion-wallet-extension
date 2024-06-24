@@ -25,6 +25,7 @@ import { isUnlimitedApproval } from 'src/ui/pages/History/isUnlimitedApproval';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
 import { focusNode } from 'src/ui/shared/focusNode';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 
 export function AllowanceForm({
   asset,
@@ -45,6 +46,7 @@ export function AllowanceForm({
   onSubmit(newValue: string): void;
   footerRenderArea?: string;
 }) {
+  const { currency } = useCurrency();
   const isRequestedAllowanceUnlimited = isUnlimitedApproval(
     requestedAllowanceQuantityBase
   );
@@ -302,7 +304,7 @@ export function AllowanceForm({
                   }}
                 >
                   {almostEqual}
-                  {formatCurrencyValue(allowanceQuantityUsd, 'en', 'usd')}
+                  {formatCurrencyValue(allowanceQuantityUsd, 'en', currency)}
                 </UIText>
               )}
             </HStack>

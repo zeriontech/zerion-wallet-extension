@@ -12,9 +12,11 @@ export type ChainDistribution = Pick<
 export function ChainValue({
   chainDistribution,
   chain,
+  currency,
 }: {
   chain: Chain | NetworkSelectValue.All;
   chainDistribution: ChainDistribution | null;
+  currency: string;
 }) {
   const value =
     chain === NetworkSelectValue.All
@@ -24,6 +26,6 @@ export function ChainValue({
   return formatCurrencyValue(
     value || 0,
     'en',
-    'usd'
+    currency
   ) as React.ReactNode as JSX.Element;
 }

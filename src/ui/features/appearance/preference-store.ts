@@ -9,8 +9,12 @@ export enum ThemePreference {
 
 export interface State {
   mode: ThemePreference;
+  currency: string;
 }
 
-const initialState = retrieve() || { mode: ThemePreference.system };
+const initialState = { mode: ThemePreference.system, currency: 'usd' };
 
-export const preferenceStore = new Store<State>(initialState);
+export const preferenceStore = new Store<State>({
+  ...initialState,
+  ...retrieve(),
+});

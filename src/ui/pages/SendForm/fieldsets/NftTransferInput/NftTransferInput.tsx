@@ -35,6 +35,7 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Media } from 'src/ui/ui-kit/Media';
 import { Button } from 'src/ui/ui-kit/Button';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import * as styles from './styles.module.css';
 
 function parseNftId(id: string) {
@@ -65,6 +66,7 @@ function NFTList({
   onChange: (item: AddressNFT) => void;
 }) {
   const currentValueId = value ? createNftId(value) : null;
+  const { currency } = useCurrency();
   const {
     value: items,
     isLoading,
@@ -74,7 +76,7 @@ function NFTList({
     {
       address,
       chains: [chain.toString()],
-      currency: 'usd',
+      currency,
       sorted_by: 'floor_price_high',
     },
     { limit: 30, paginatedCacheMode: 'first-page' }

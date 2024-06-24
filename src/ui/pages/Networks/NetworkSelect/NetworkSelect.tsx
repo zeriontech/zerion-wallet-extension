@@ -19,6 +19,7 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { Networks } from 'src/modules/networks/Networks';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 
 export function NetworkSelect({
   value,
@@ -41,9 +42,10 @@ export function NetworkSelect({
   showAllNetworksOption?: boolean;
 }) {
   const { params } = useAddressParams();
+  const { currency } = useCurrency();
   const { value: portfolioDecomposition } = useAddressPortfolioDecomposition({
     ...params,
-    currency: 'usd',
+    currency,
   });
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
 

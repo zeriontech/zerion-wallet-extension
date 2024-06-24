@@ -6,6 +6,7 @@ import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { isNumeric } from 'src/shared/isNumeric';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { exceedsPriceImpactThreshold } from '../../shared/price-impact';
 
 export function FiatInputValue({
@@ -15,6 +16,7 @@ export function FiatInputValue({
   swapView: SwapFormView;
   name: 'spendInput' | 'receiveInput';
 }) {
+  const { currency } = useCurrency();
   const { receiveAsset, spendAsset } = swapView;
   const { primaryInput, spendInput, receiveInput } = useSelectorStore(
     swapView.store,
@@ -71,7 +73,7 @@ export function FiatInputValue({
       }
     >
       {isPrimaryInput ? null : '≈'}
-      {formatCurrencyValue(fiatValue, 'en', 'usd')}{' '}
+      {formatCurrencyValue(fiatValue, 'en', currency)}{' '}
       {formattedDiff ? `(${formattedDiff})` : null}
     </UIText>
   );

@@ -54,6 +54,7 @@ import { InterpretationState } from 'src/ui/components/InterpretationState';
 import { hasCriticalWarning } from 'src/ui/components/InterpretationState/InterpretationState';
 import type { SignMsgBtnHandle } from 'src/ui/components/SignMessageButton';
 import { SignMessageButton } from 'src/ui/components/SignMessageButton';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
@@ -384,6 +385,7 @@ function SignTypedDataContent({
   wallet: ExternallyOwnedAccount;
 }) {
   const [params] = useSearchParams();
+  const { currency } = useCurrency();
 
   const view = params.get('view') || View.default;
   const advancedDialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -434,6 +436,7 @@ function SignTypedDataContent({
       chain,
       networks,
       typedData,
+      currency,
     ],
     queryFn: () =>
       chain && networks
@@ -441,6 +444,7 @@ function SignTypedDataContent({
             address: wallet.address,
             chainId: networks.getChainId(chain),
             typedData,
+            currency,
           })
         : null,
     enabled: !chainQuery.isLoading && Boolean(networks),
