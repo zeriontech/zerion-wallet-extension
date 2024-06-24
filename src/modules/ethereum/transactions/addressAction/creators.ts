@@ -193,6 +193,7 @@ export async function incomingTxToIncomingAddressAction(
       chain: chain.toString(),
       status: 'pending',
       fee: null,
+      sponsored: false,
       // nonce can be "BigNumberish" due to
       // ethers types: {import("@ethersproject/abstract-provider").TransactionRequest}
       // Converting bignumber to number cannot be safe, but can nonce be really > MAX_SAFE_INTEGER?
