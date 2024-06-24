@@ -24,7 +24,6 @@ function titleFromPathname(pathname: string) {
 
 const URLBarBlacklist = new Set([
   '/',
-  '/intro',
   '/overview',
   '/overview/nfts',
   '/overview/history',

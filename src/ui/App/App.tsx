@@ -12,7 +12,6 @@ import dayjs from 'dayjs';
 import * as styles from 'src/ui/style/global.module.css';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { GetStarted } from 'src/ui/pages/GetStarted';
-import { Intro } from 'src/ui/pages/Intro';
 import { Overview } from 'src/ui/pages/Overview';
 import { RouteResolver } from 'src/ui/pages/RouteResolver';
 import { RequestAccounts } from 'src/ui/pages/RequestAccounts';
@@ -201,7 +200,6 @@ function Views({ initialRoute }: { initialRoute?: string }) {
               />
             }
           />
-          <Route path="/intro" element={<Intro />} />
           <Route path="/create-account" element={<CreateAccount />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

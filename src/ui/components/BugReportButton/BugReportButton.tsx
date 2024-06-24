@@ -15,7 +15,7 @@ import * as s from './styles.module.css';
 export const BUTTON_HEIGHT =
   process.env.FEATURE_FOOTER_BUG_BUTTON === 'on' ? 29 : 0;
 
-const urlBlacklist = new Set(['/', '/intro', '/get-started']);
+const urlBlacklist = new Set(['/', '/get-started']);
 
 function BottomFixed({ children }: React.PropsWithChildren) {
   useLayoutEffect(() => {
