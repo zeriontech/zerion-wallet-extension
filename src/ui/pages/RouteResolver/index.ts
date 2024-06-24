@@ -1,1 +1,0 @@
-export { RouteResolver } from './RouteResolver';
