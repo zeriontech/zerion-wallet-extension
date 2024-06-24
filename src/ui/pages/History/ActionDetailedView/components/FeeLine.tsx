@@ -19,7 +19,7 @@ export function FeeLine({
   address?: string;
   networks: Networks;
 }) {
-  const { fee, chain } = action.transaction;
+  const { fee, chain, sponsored } = action.transaction;
 
   const feeEth = baseToCommon(
     fee?.quantity || 0,
@@ -43,7 +43,7 @@ export function FeeLine({
     >
       <UIText kind="small/regular">Network Fee</UIText>
       <UIText kind="small/accent" style={{ justifySelf: 'end' }}>
-        {fee.quantity == '0' ? (
+        {sponsored ? (
           <div
             style={{
               background: 'linear-gradient(90deg, #6C6CF9 0%, #FF7583 100%)',

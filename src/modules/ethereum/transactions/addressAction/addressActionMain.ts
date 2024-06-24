@@ -34,7 +34,10 @@ export function isLocalAddressAction(
 export const ZERO_HASH =
   '0x0000000000000000000000000000000000000000000000000000000000000000';
 
-const toActionTx = (tx: IncomingTransaction, chain: Chain) =>
+const toActionTx = (
+  tx: IncomingTransaction,
+  chain: Chain
+): AddressAction['transaction'] =>
   ({
     ...tx,
     chain: chain.toString(),
@@ -42,6 +45,7 @@ const toActionTx = (tx: IncomingTransaction, chain: Chain) =>
     fee: null,
     status: 'pending',
     nonce: -1,
+    sponsored: false,
   } as const);
 
 function isAsset(x: Asset | NFT): x is Asset {

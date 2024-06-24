@@ -107,7 +107,7 @@
     "capitalize-ts": "^1.0.0",
     "classnames": "^2.3.2",
     "dayjs": "^1.11.9",
-    "defi-sdk": "^0.1.0-alpha.76",
+    "defi-sdk": "^0.1.2",
     "downshift": "^7.6.0",
     "ethers": "^5.7.2",
     "events": "^3.3.0",

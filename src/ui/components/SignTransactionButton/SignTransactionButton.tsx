@@ -34,6 +34,7 @@ export const SignTransactionButton = React.forwardRef(
       onClick,
       buttonKind = 'primary',
       isLoading: isLoadingProp,
+      disabled: disabledAttr,
       ...buttonProps
     }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
       wallet: ExternallyOwnedAccount;
@@ -72,6 +73,7 @@ export const SignTransactionButton = React.forwardRef(
 
     const isLoading = isLoadingProp || sendTxMutation.isLoading;
     const isSending = sendTxMutation.isLoading;
+    const disabled = isLoading || disabledAttr;
 
     return isDeviceAccount(wallet) ? (
       <HardwareSignTransaction
@@ -82,6 +84,7 @@ export const SignTransactionButton = React.forwardRef(
         buttonTitle={isLoadingProp ? 'Preparing...' : buttonTitle}
         buttonKind={buttonKind}
         onClick={onClick}
+        disabled={disabledAttr}
         {...buttonProps}
       />
     ) : (
@@ -90,7 +93,7 @@ export const SignTransactionButton = React.forwardRef(
         onClick={onClick}
         render={({ handleClick }) => (
           <Button
-            disabled={isLoading}
+            disabled={disabled}
             onClick={handleClick}
             kind={buttonKind}
             {...buttonProps}
