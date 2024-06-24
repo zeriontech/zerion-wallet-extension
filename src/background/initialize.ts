@@ -3,6 +3,7 @@ import { DnaService } from 'src/modules/dna-service/dna.background';
 import { initialize as initializeAnalytics } from 'src/shared/analytics/analytics.background';
 import { initialize as initializeRemoteConfig } from 'src/modules/remote-config';
 import { initialize as initializeLiteweightChainSupport } from './requests/liteweight-chain-support';
+import { initialize as initializeInDappNotifications } from './in-dapp-notifications';
 import { Account, AccountPublicRPC } from './account/Account';
 import { transactionService } from './transactions/TransactionService';
 import { globalPreferences } from './Wallet/GlobalPreferences';
@@ -39,6 +40,7 @@ export async function initialize() {
   });
   initializeAnalytics({ account });
   initializeLiteweightChainSupport(account);
+  initializeInDappNotifications();
 
   Object.assign(globalThis, {
     account,
