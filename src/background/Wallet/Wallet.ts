@@ -1406,7 +1406,11 @@ class PublicController {
     const currentAddress = this.wallet.readCurrentAddress();
     if (currentAddress && this.wallet.allowedOrigin(context, currentAddress)) {
       const { origin } = context;
-      emitter.emit('dappConnection', { origin, address: currentAddress });
+      emitter.emit('requestAccountsResolved', {
+        origin,
+        address: currentAddress,
+        explicitly: false,
+      });
       // Some dapps expect lowercase to be returned, otherwise they crash the moment after connection
       const result = [currentAddress.toLowerCase()];
       if (debugValue && process.env.NODE_ENV === 'development') {
@@ -1447,7 +1451,11 @@ class PublicController {
             context: INTERNAL_SYMBOL_CONTEXT,
           });
           const accounts = await this.eth_accounts({ context, id });
-          emitter.emit('dappConnection', { origin, address });
+          emitter.emit('requestAccountsResolved', {
+            origin,
+            address,
+            explicitly: true,
+          });
           resolve(accounts.map((item) => item.toLowerCase()));
         },
         onDismiss: () => {

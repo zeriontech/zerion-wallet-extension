@@ -26,17 +26,23 @@ export function initialize(account: Account) {
   });
 
   // Backend needs this event to initialize chain listening for the address in case the chain is not fully supported
-  emitter.on('dappConnection', async ({ origin, address }) => {
-    const chainId = await account
-      .getCurrentWallet()
-      .getChainIdForOrigin({ origin });
-    if (!chainId) {
-      return;
+  emitter.on(
+    'requestAccountsResolved',
+    async ({ origin, address, explicitly }) => {
+      if (!explicitly) {
+        return;
+      }
+      const chainId = await account
+        .getCurrentWallet()
+        .getChainIdForOrigin({ origin });
+      if (!chainId) {
+        return;
+      }
+      const networks = await networksStore.loadNetworksWithChainId(chainId);
+      const network = networks.getNetworkById(chainId);
+      registerChainAndAddressIfPossible(network.id, address);
     }
-    const networks = await networksStore.loadNetworksWithChainId(chainId);
-    const network = networks.getNetworkById(chainId);
-    registerChainAndAddressIfPossible(network.id, address);
-  });
+  );
 
   // Backend needs this event to initialize address listening for chains without total support
   emitter.on('walletCreated', async ({ walletContainer, origin }) => {
