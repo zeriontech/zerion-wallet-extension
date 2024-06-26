@@ -165,6 +165,7 @@ export function NetworkForm({
   onSubmit,
   onCancel,
   onReset,
+  onRemoveFromVisited,
   footerRenderArea,
   restrictedChainIds,
   disabledFields,
@@ -176,6 +177,7 @@ export function NetworkForm({
   onSubmit: (chain: string, result: AddEthereumChainParameter) => void;
   onCancel: () => void;
   onReset?: () => void;
+  onRemoveFromVisited?: () => void;
   footerRenderArea?: string;
   restrictedChainIds: Set<ChainId>;
   disabledFields: null | Set<string>;
@@ -333,6 +335,18 @@ export function NetworkForm({
               onClick={onReset}
             >
               <UIText kind="small/accent">Reset to Default</UIText>
+            </UnstyledButton>
+          </>
+        ) : onRemoveFromVisited ? (
+          <>
+            <Spacer height={24} />
+            <UnstyledButton
+              type="button"
+              style={{ width: '100%', color: 'var(--primary)' }}
+              className={helperStyles.hoverUnderline}
+              onClick={onRemoveFromVisited}
+            >
+              <UIText kind="small/accent">Remove from the list</UIText>
             </UnstyledButton>
           </>
         ) : null}

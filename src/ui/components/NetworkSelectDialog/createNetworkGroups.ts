@@ -1,6 +1,4 @@
 import { isTruthy } from 'is-truthy-ts';
-import { INTERNAL_ORIGIN } from 'src/background/constants';
-import { BACKEND_NETWORK_ORIGIN } from 'src/modules/ethereum/chains/constants';
 import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { Networks } from 'src/modules/networks/Networks';
@@ -19,8 +17,8 @@ function compareNetworks(
   b: NetworkConfig,
   chainDistribution: ChainDistribution | null
 ) {
-  const aString = a.name.toString();
-  const bString = b.name.toString();
+  const aString = a.name.toString().toLowerCase();
+  const bString = b.name.toString().toLowerCase();
   const aValue =
     chainDistribution?.positions_chains_distribution[a.id.toString()];
   const bValue =
@@ -45,17 +43,12 @@ export function createGroups({
   filterPredicate?: (network: NetworkConfig) => boolean;
   sortMainNetworksType?: 'alphabetical' | 'by_distribution';
 }): NetworkGroups {
-  const mainnetList = networks.getMainnets().filter(filterPredicate);
-  const allNetworks = networks.getNetworks().filter(filterPredicate);
+  const mainnetList = networks.getUserNetworks().filter(filterPredicate);
+  const allNetworks = networks.getUserNetworks().filter(filterPredicate);
   const testnetList = networks.getTestNetworks().filter(filterPredicate);
   const mainNetworkPredicate = (network: NetworkConfig) => {
-    const origin = networks.getNetworksMetaData()[network.id]?.origin;
     return (
-      chainDistribution?.chains[network.id] ||
-      isCustomNetworkId(network.id) ||
-      (origin &&
-        origin !== INTERNAL_ORIGIN &&
-        origin !== BACKEND_NETWORK_ORIGIN)
+      chainDistribution?.chains[network.id] || isCustomNetworkId(network.id)
     );
   };
   return [
@@ -77,15 +70,17 @@ export function createGroups({
     {
       key: 'other',
       name: 'Other Networks',
-      items: mainnetList.filter((network) => !mainNetworkPredicate(network)),
+      items: mainnetList
+        .filter((network) => !mainNetworkPredicate(network))
+        .sort((a, b) => compareNetworks(a, b, null)),
     },
     showTestnets
       ? {
           key: 'testnets',
           name: 'Test Networks',
-          items: testnetList.filter(
-            (network) => !mainNetworkPredicate(network)
-          ),
+          items: testnetList
+            .filter((network) => !mainNetworkPredicate(network))
+            .sort((a, b) => compareNetworks(a, b, null)),
         }
       : null,
   ].filter(isTruthy);

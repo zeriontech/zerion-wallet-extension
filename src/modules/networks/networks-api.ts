@@ -14,7 +14,7 @@ async function getNetworksFallback() {
 
 export function getNetworks(ids?: string[]): Promise<NetworkConfig[]> {
   return Promise.race([
-    fetchChains({ ids, include_testnets: Boolean(ids), supported_only: false }),
+    fetchChains({ ids, include_testnets: Boolean(ids), supported_only: !ids }),
     ids
       ? rejectAfterDelay(CHAIN_INFO_TIMEOUT, `getNetworks(${ids.join()})`)
       : getNetworksFallback(),
