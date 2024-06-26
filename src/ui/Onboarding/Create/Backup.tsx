@@ -16,6 +16,7 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { clipboardWarning } from 'src/ui/pages/BackupWallet/clipboardWarning';
 import { SeedType } from 'src/shared/SeedType';
+import { decodeMasked } from 'src/shared/wallet/encode-locally';
 import { useSizeStore } from '../useSizeStore';
 import * as helperStyles from '../shared/helperStyles.module.css';
 import { isSessionExpiredError } from '../shared/isSessionExpiredError';
@@ -30,7 +31,9 @@ export function Backup({
 }) {
   const { isNarrowView } = useSizeStore();
   const navigate = useNavigate();
-  const { data: mnemonic, error, isLoading } = usePendingRecoveryPhrase();
+  const { data: encoded, error, isLoading } = usePendingRecoveryPhrase();
+
+  const mnemonic = encoded ? decodeMasked(encoded) : null;
 
   useEffect(() => {
     if (isSessionExpiredError(error)) {

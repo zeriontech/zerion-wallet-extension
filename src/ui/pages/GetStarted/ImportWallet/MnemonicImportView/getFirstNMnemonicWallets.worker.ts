@@ -1,21 +1,29 @@
 import { ethers } from 'ethers';
-import type { BareWallet } from 'src/shared/types/BareWallet';
+import type { MaskedBareWallet } from 'src/shared/types/BareWallet';
 import { getAccountPath } from 'src/shared/wallet/derivation-paths';
+import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
+import {
+  decodeMasked,
+  encodeForMasking,
+} from 'src/shared/wallet/encode-locally';
 
 export interface Params {
-  phrase: string;
+  phrase: LocallyEncoded;
   n: number;
 }
 
-export type Result = BareWallet[];
+export type Result = MaskedBareWallet[];
 
-function fromHDNode(hdNode: ethers.utils.HDNode): BareWallet {
+function fromHDNode(hdNode: ethers.utils.HDNode): MaskedBareWallet {
   if (!hdNode.mnemonic) {
     throw new Error('Expected an HDNode with a mnemonic');
   }
   return {
-    mnemonic: hdNode.mnemonic,
-    privateKey: hdNode.privateKey,
+    mnemonic: {
+      ...hdNode.mnemonic,
+      phrase: encodeForMasking(hdNode.mnemonic.phrase),
+    },
+    privateKey: encodeForMasking(hdNode.privateKey),
     address: hdNode.address,
     name: null,
   };
@@ -26,7 +34,7 @@ function getFirstNMnemonicWallets({ phrase, n }: Params) {
   // NOTE:
   // ethers.utils.HDNode is _much_ faster at generating wallets
   // than ethers.Wallet
-  const hd = ethers.utils.HDNode.fromMnemonic(phrase);
+  const hd = ethers.utils.HDNode.fromMnemonic(decodeMasked(phrase));
   for (let i = 0; i < n; i++) {
     const path = getAccountPath(i);
     const wallet = hd.derivePath(path);

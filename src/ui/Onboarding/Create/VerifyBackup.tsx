@@ -9,6 +9,7 @@ import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { Input } from 'src/ui/ui-kit/Input';
 import { clipboardWarning } from 'src/ui/pages/BackupWallet/clipboardWarning';
+import { decodeMasked } from 'src/shared/wallet/encode-locally';
 import { useSizeStore } from '../useSizeStore';
 import { useMnemonicInput } from '../shared/useMnemonicInput';
 import * as helperStyles from '../shared/helperStyles.module.css';
@@ -31,7 +32,9 @@ export function VerifyBackup({ onSuccess }: { onSuccess(): void }) {
     type: isTechnicalHint ? 'text' : undefined,
   });
 
-  const { data: mnemonic, isLoading, error } = usePendingRecoveryPhrase();
+  const { data: encoded, isLoading, error } = usePendingRecoveryPhrase();
+
+  const mnemonic = encoded ? decodeMasked(encoded) : null;
 
   useEffect(() => {
     if (isSessionExpiredError(error)) {
@@ -41,7 +44,7 @@ export function VerifyBackup({ onSuccess }: { onSuccess(): void }) {
 
   const handleVerify = useCallback(() => {
     setValidationError(false);
-    if (mnemonic === value.join(' ')) {
+    if (mnemonic === value.join(' ').toLowerCase()) {
       zeroizeAfterSubmission();
       onSuccess();
     } else {

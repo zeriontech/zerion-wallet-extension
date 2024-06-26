@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { SeedType } from 'src/shared/SeedType';
+import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import { walletPort } from 'src/ui/shared/channels';
 
 async function getSecretValue({
@@ -10,7 +11,7 @@ async function getSecretValue({
   address?: string | null;
   groupId?: string | null;
   seedType: SeedType;
-}) {
+}): Promise<LocallyEncoded> {
   if (seedType === SeedType.privateKey) {
     if (!address) {
       throw new Error('Address param is required for privateKey seedType');

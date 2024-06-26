@@ -37,6 +37,11 @@ import {
   isSignerContainer,
 } from 'src/shared/types/validators';
 import { isSessionExpiredError } from 'src/ui/Onboarding/shared/isSessionExpiredError';
+import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
+import {
+  decodeMasked,
+  encodeForMasking,
+} from 'src/shared/wallet/encode-locally';
 import { WithConfetti } from '../GetStarted/components/DecorativeMessage/DecorativeMessage';
 import { DecorativeMessage } from '../GetStarted/components/DecorativeMessage';
 import { clipboardWarning } from './clipboardWarning';
@@ -143,15 +148,12 @@ function RevealSecret({
   onSubmit: ({ didCopy }: { didCopy: boolean }) => void;
   onSessionExpired(): void;
 }) {
-  const {
-    data: secretValue,
-    isLoading,
-    error,
-  } = useSecretValue({
+  const { data, isLoading, error } = useSecretValue({
     groupId,
     address,
     seedType,
   });
+  const secretValue = data ? decodeMasked(data) : null;
   const { handleCopy, isSuccess: isCopySuccess } = useCopyToClipboard({
     text: secretValue || '',
   });
@@ -276,7 +278,7 @@ function VerifyBackup({
   onSuccess: () => void;
 }) {
   const verifyMutation = useMutation({
-    mutationFn: async (value: string) => {
+    mutationFn: async (value: LocallyEncoded) => {
       if (seedType === SeedType.mnemonic) {
         const isCorrect = await walletPort.request('verifyRecoveryPhrase', {
           groupId,
@@ -326,10 +328,9 @@ function VerifyBackup({
             event.preventDefault();
             const value = new FormData(event.currentTarget).get(
               'seedOrPrivateKey'
-            );
-            verifyMutation.mutate(
-              prepareUserInputSeedOrPrivateKey(value as string)
-            );
+            ) as string;
+            const normalized = prepareUserInputSeedOrPrivateKey(value);
+            verifyMutation.mutate(encodeForMasking(normalized));
           }}
         >
           <VStack gap={12}>

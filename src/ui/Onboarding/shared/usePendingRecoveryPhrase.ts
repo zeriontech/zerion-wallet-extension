@@ -7,6 +7,7 @@ export function usePendingRecoveryPhrase() {
     queryFn: () => {
       return walletPort.request('getPendingRecoveryPhrase');
     },
+    cacheTime: 0 /** sensitive value, prevent from being cached */,
     suspense: false,
     retry: 0,
     refetchOnMount: false,
