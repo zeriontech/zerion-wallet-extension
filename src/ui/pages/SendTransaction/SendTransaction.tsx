@@ -82,6 +82,7 @@ import { normalizeTransactionChainId } from 'src/modules/ethereum/transactions/n
 import { usePreferences } from 'src/ui/features/preferences';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { fetchAndAssignPaymaster } from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
+import { isDeviceAccount } from 'src/shared/types/validators';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -520,6 +521,9 @@ function SendTransactionContent({
       })
   );
 
+  const isDeviceWallet = isDeviceAccount(wallet);
+  const USE_PAYMASTER_FEATURE = FEATURE_PAYMASTER_ENABLED && !isDeviceWallet;
+
   const { data: eligibility } = useQuery({
     suspense: false,
     staleTime: 120000,
@@ -528,7 +532,7 @@ function SendTransactionContent({
       const tx = await configureTransactionToBeSigned(incomingTransaction);
       return ZerionAPI.checkPaymasterEligibility(tx);
     },
-    enabled: FEATURE_PAYMASTER_ENABLED,
+    enabled: USE_PAYMASTER_FEATURE,
   });
 
   const paymasterEligible = Boolean(eligibility?.data.eligible);
@@ -540,7 +544,7 @@ function SendTransactionContent({
     address: singleAddress,
     origin,
     client,
-    enabled: FEATURE_PAYMASTER_ENABLED
+    enabled: USE_PAYMASTER_FEATURE
       ? eligibility?.data.eligible === false
       : true,
   });
@@ -635,7 +639,7 @@ function SendTransactionContent({
       if (paymasterEligible) {
         tx = await fetchAndAssignPaymaster(tx);
       }
-      if (FEATURE_PAYMASTER_ENABLED) {
+      if (USE_PAYMASTER_FEATURE) {
         console.log('sending to wallet', { tx });
       }
       const feeValueCommon = feeValueCommonRef.current || null;

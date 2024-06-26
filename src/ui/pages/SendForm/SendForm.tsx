@@ -59,6 +59,7 @@ import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transaction
 import { fetchAndAssignPaymaster } from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { DisableTestnetShortcuts } from 'src/ui/features/testnet-mode/DisableTestnetShortcuts';
+import { isDeviceAccount } from 'src/shared/types/validators';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -100,6 +101,8 @@ function SendFormComponent() {
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
     useErrorBoundary: true,
   });
+  const isDeviceWallet = wallet && isDeviceAccount(wallet);
+  const USE_PAYMASTER_FEATURE = FEATURE_PAYMASTER_ENABLED && !isDeviceWallet;
 
   useBackgroundKind({ kind: 'white' });
 
@@ -237,7 +240,7 @@ function SendFormComponent() {
         value: '0x0',
       };
     }
-    if (FEATURE_PAYMASTER_ENABLED && result.transaction.nonce == null) {
+    if (USE_PAYMASTER_FEATURE && result.transaction.nonce == null) {
       const { transaction } = result;
       const chainStr = tokenChain || nftChain;
       invariant(chainStr, 'chain value missing');
@@ -260,7 +263,7 @@ function SendFormComponent() {
   const network = chain ? networks?.getNetworkByName(chain) : null;
   const { data: eligibility } = useQuery({
     enabled: Boolean(
-      FEATURE_PAYMASTER_ENABLED &&
+      USE_PAYMASTER_FEATURE &&
         network?.supports_sponsored_transactions &&
         chainId &&
         chain &&
