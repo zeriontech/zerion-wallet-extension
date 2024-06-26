@@ -612,6 +612,11 @@ export class WalletRecordModel {
         'Removing last wallet from a Mnemonic group is not allowed. You can remove the whole group'
       );
     }
+    if (isHardwareContainer(group.walletContainer) && isLastAddress) {
+      throw new Error(
+        'Removing last wallet from a Hardware group is not allowed. You can remove the whole group'
+      );
+    }
     if (isLastAddress) {
       // remove whole group
       draft.walletManager.groups.splice(pos, 1);

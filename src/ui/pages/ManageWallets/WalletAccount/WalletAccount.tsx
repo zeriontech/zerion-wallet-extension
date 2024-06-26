@@ -39,6 +39,7 @@ import {
   isDeviceAccount,
 } from 'src/shared/types/validators';
 import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
+import { getError } from 'src/shared/errors/getError';
 
 function EditableWalletName({
   id,
@@ -190,7 +191,7 @@ export function WalletAccount() {
   const { value: displayName } = useProfileName({ address, name: walletName });
   const removeAddressMutation = useMutation({
     mutationFn: () => walletPort.request('removeAddress', { address, groupId }),
-    useErrorBoundary: true,
+    useErrorBoundary: false,
     onSuccess() {
       refetchWallet();
       navigate(-1);
@@ -328,6 +329,11 @@ export function WalletAccount() {
               },
             ]}
           />
+          {removeAddressMutation.isError ? (
+            <UIText kind="caption/regular" color="var(--negative-500)">
+              {getError(removeAddressMutation.error).message}
+            </UIText>
+          ) : null}
           <UIText kind="caption/regular" color="var(--neutral-500)">
             You can always import it again using your recovery phrase or private
             key

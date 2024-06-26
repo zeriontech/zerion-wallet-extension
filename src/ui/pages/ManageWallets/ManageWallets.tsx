@@ -12,7 +12,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { AddressBadge } from 'src/ui/components/AddressBadge';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
@@ -182,6 +182,10 @@ function WalletGroups() {
 
   if (isLoading) {
     return null;
+  }
+
+  if (!walletGroups?.length) {
+    return <Navigate to="/get-started?intro" replace={true} />;
   }
 
   return (
