@@ -18,6 +18,7 @@ import type { RuntimePort } from './webapis/RuntimePort';
 import { emitter } from './events';
 import * as userActivity from './user-activity';
 import { ContentScriptManager } from './ContentScriptManager';
+import { TransactionService } from './transactions/TransactionService';
 
 Object.assign(globalThis, { ethers });
 
@@ -114,6 +115,7 @@ userActivity.scheduleAlarms();
 // https://developer.chrome.com/docs/extensions/mv3/migrating_to_service_workers/#alarms
 browser.alarms.onAlarm.addListener(userActivity.handleAlarm);
 browser.alarms.onAlarm.addListener(ContentScriptManager.handleAlarm);
+browser.alarms.onAlarm.addListener(TransactionService.handleAlarm);
 
 console.time('bg initialize'); // eslint-disable-line no-console
 initialize().then((values) => {

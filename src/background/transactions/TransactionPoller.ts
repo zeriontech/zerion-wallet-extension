@@ -13,11 +13,11 @@ class Interval {
     this.cb = cb;
     this.intervalId = null;
   }
-  start() {
+  start(ms = 3000) {
     if (this.intervalId) {
       return;
     }
-    this.intervalId = setInterval(this.cb, 3000);
+    this.intervalId = setInterval(this.cb, ms);
   }
   stop() {
     if (!this.intervalId) {
