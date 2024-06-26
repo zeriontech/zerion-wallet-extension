@@ -43,11 +43,13 @@ interface AddChainResult {
 function AddOrUpdateChain({
   origin,
   addEthereumChainParameterStringified,
+  onKeepCurrent,
   onReject,
   onSuccess,
 }: {
   origin: string;
   addEthereumChainParameterStringified: string;
+  onKeepCurrent: () => void;
   onReject: () => void;
   onSuccess: (value: AddChainResult) => void;
 }) {
@@ -162,7 +164,7 @@ function AddOrUpdateChain({
             prevNetwork={prevNetwork}
             rpcUrlHelpHref={`/addEthereumChain/what-is-rpc-url?${params}`}
             isSubmitting={addEthereumChainMutation.isLoading}
-            onCancel={onReject}
+            onKeepCurrent={onKeepCurrent}
             onSubmit={(networkId, result) => {
               addEthereumChainMutation.mutate({
                 networkId,
@@ -243,6 +245,7 @@ function AddEthereumChainContent({
         addEthereumChainParameterStringified
       }
       origin={origin}
+      onKeepCurrent={onDone}
       onReject={onReject}
       onSuccess={(result) => setResult(result)}
     />
@@ -260,6 +263,7 @@ export function AddEthereumChain() {
     addEthereumChainParameter,
     'addEtheretumChainParameter get-parameter is required for this view'
   );
+
   const handleReject = useCallback(
     () => windowPort.reject(windowId),
     [windowId]

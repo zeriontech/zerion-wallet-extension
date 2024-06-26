@@ -24,7 +24,7 @@ export function RpcUrlForm({
   prevNetwork,
   isSubmitting,
   onSubmit,
-  onCancel,
+  onKeepCurrent,
   rpcUrlHelpHref,
 }: {
   network: NetworkConfig;
@@ -32,7 +32,7 @@ export function RpcUrlForm({
   rpcUrlHelpHref: string;
   isSubmitting: boolean;
   onSubmit: (chain: string, result: AddEthereumChainParameter) => void;
-  onCancel: () => void;
+  onKeepCurrent: () => void;
 }) {
   const { networks } = useNetworks();
 
@@ -122,11 +122,11 @@ export function RpcUrlForm({
             gap: 8,
           }}
         >
-          <Button type="button" kind="regular" onClick={onCancel}>
-            Cancel
+          <Button type="button" kind="regular" onClick={onKeepCurrent}>
+            Keep Current
           </Button>
           <Button form={id} disabled={isSubmitting} kind="primary">
-            {isSubmitting ? 'Loading...' : 'Update'}
+            {isSubmitting ? 'Loading...' : 'Accept'}
           </Button>
         </div>
       </Content>
