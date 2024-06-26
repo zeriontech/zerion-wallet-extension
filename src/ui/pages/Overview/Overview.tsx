@@ -31,10 +31,7 @@ import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { CopyButton } from 'src/ui/components/CopyButton';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import {
-  DelayedRender,
-  useRenderDelay,
-} from 'src/ui/components/DelayedRender/DelayedRender';
+import { DelayedRender } from 'src/ui/components/DelayedRender/DelayedRender';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { useProfileName } from 'src/ui/shared/useProfileName';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
@@ -125,17 +122,12 @@ function CurrentAccountControls() {
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
   });
-  const visible = useRenderDelay(16);
   if (!ready || !wallet) {
     return null;
   }
   const addressToCopy = wallet.address || singleAddress;
   return (
-    <HStack
-      gap={0}
-      alignItems="center"
-      style={{ visibility: visible ? 'visible' : 'hidden' }}
-    >
+    <HStack gap={0} alignItems="center">
       <Button
         kind="text-primary"
         size={40}

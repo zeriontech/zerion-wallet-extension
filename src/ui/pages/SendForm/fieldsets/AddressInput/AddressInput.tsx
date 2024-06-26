@@ -8,6 +8,8 @@ import React, {
 import { useQuery } from '@tanstack/react-query';
 import { isTruthy } from 'is-truthy-ts';
 import { useCombobox } from 'downshift';
+import { queryClient } from 'src/ui/shared/requests/queryClient';
+import { persistentQuery } from 'src/ui/shared/requests/queryClientPersistence';
 import { FormFieldset } from 'src/ui/ui-kit/FormFieldset';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
@@ -26,10 +28,6 @@ import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { NBSP } from 'src/ui/shared/typography';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
-import {
-  EmptyResult,
-  requestWithCache,
-} from 'src/ui/shared/requests/requestWithCache';
 import { usePreferences } from 'src/ui/features/preferences/usePreferences';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getWalletDisplayName } from 'src/ui/shared/getWalletDisplayName';
@@ -59,25 +57,24 @@ function matches(query: string | null, item: Item, domainInfo?: string[]) {
   );
 }
 
+function queryClientLookupAddressNames(address: string) {
+  return queryClient.fetchQuery({
+    queryKey: persistentQuery(['name-service/lookupAddressNames', address]),
+    queryFn: () => lookupAddressNames(address),
+    staleTime: 60000,
+  });
+}
+
 function useDomainNames(items: Item[]): Record<string, string[]> {
   const [result, setResult] = useState<Record<string, string[]>>({});
   useEffect(() => {
     let mounted = true;
     items.forEach((item) => {
       const address = item.address;
-      requestWithCache(
-        `lookupAddressNames ${address}`,
-        lookupAddressNames(address).then((result) => {
-          if (!result.filter(Boolean).length) {
-            throw new EmptyResult();
-          }
-          return result;
-        })
-      ).then((domains) => {
-        if (!domains || !mounted) {
-          return;
+      queryClientLookupAddressNames(address).then((domains) => {
+        if (domains.length && mounted) {
+          setResult((current) => ({ ...current, [address]: domains }));
         }
-        setResult((current) => ({ ...current, [address]: domains }));
       });
     });
     return () => {

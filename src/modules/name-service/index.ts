@@ -1,7 +1,3 @@
-import {
-  EmptyResult,
-  requestWithCache,
-} from 'src/ui/shared/requests/requestWithCache';
 import { ZerionAPI } from '../zerion-api/zerion-api';
 import type { Identity } from '../zerion-api/requests/wallets-meta';
 
@@ -32,15 +28,7 @@ export async function lookupAddressNames(address: string): Promise<string[]> {
 export async function lookupAddressName(
   address: string
 ): Promise<string | null> {
-  const names = await requestWithCache(
-    `lookupAddressName ${address}`,
-    lookupAddressNames(address).then((result) => {
-      if (!result.filter(Boolean).length) {
-        throw new EmptyResult();
-      }
-      return result;
-    })
-  );
+  const names = await lookupAddressNames(address);
   return names && names.length > 0 ? names[0] : null;
 }
 

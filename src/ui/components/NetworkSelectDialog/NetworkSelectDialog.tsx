@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { isTruthy } from 'is-truthy-ts';
+import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { Networks } from 'src/modules/networks/Networks';
@@ -26,6 +27,9 @@ import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import AllNetworksIcon from 'jsx:src/ui/assets/all-networks.svg';
 import { usePreferences } from 'src/ui/features/preferences/usePreferences';
 import { VirtualizedSurfaceList } from 'src/ui/ui-kit/SurfaceList/VirtualizedSurfaceList';
+import { useNativeBalance } from 'src/ui/shared/requests/useNativeBalance';
+import { formatTokenValue } from 'src/shared/units/formatTokenValue';
+import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { DelayedRender } from '../DelayedRender';
 import { NetworkIcon } from '../NetworkIcon';
 import { PageBottom } from '../PageBottom';
@@ -39,6 +43,21 @@ import { AddNetworkLink } from './AddNetworkLink';
 import { useSearchKeyboardNavigation } from './useSearchKeyboardNavigation';
 import { NetworksEmptyView, ShowTestnetsHint } from './NetworksEmptyView';
 
+function NativeBalance({ address, chain }: { address: string; chain: Chain }) {
+  const TEN_MINUTES = 1000 * 60 * 10;
+  const { data: balance } = useNativeBalance({
+    address,
+    chain,
+    suspense: false,
+    staleTime: TEN_MINUTES,
+  });
+  if (balance?.valueCommon == null) {
+    return null;
+  }
+  const { valueCommon, position } = balance;
+  return <span>{formatTokenValue(valueCommon, position?.asset.symbol)}</span>;
+}
+
 function NetworkItem({
   index,
   name,
@@ -46,6 +65,7 @@ function NetworkItem({
   selected,
   icon,
   chainDistribution,
+  address,
 }: {
   index: number;
   name: string;
@@ -53,7 +73,12 @@ function NetworkItem({
   selected: boolean;
   icon: React.ReactElement;
   chainDistribution: ChainDistribution | null;
+  address?: string;
 }) {
+  const preferChainDistribution =
+    value === NetworkSelectValue.All ||
+    value in (chainDistribution?.chains || {});
+  const chain = value === NetworkSelectValue.All ? null : createChain(value);
   return (
     <SurfaceItemButton
       data-class={LIST_ITEM_CLASS}
@@ -85,14 +110,13 @@ function NetworkItem({
           kind="small/regular"
           color={selected ? 'var(--primary)' : 'var(--neutral-500)'}
         >
-          {value === NetworkSelectValue.All ||
-          value in (chainDistribution?.chains || {}) ? (
+          {preferChainDistribution ? (
             <ChainValue
-              chain={
-                value === NetworkSelectValue.All ? value : createChain(value)
-              }
+              chain={chain || NetworkSelectValue.All}
               chainDistribution={chainDistribution}
             />
+          ) : address && chain ? (
+            <NativeBalance address={address} chain={chain} />
           ) : null}
         </UIText>
       </HStack>
@@ -117,6 +141,7 @@ function NetworkList({
   previousListLength?: number;
   showAllNetworksOption?: boolean;
 }) {
+  const { singleAddress } = useAddressParams();
   const items = [
     title
       ? {
@@ -157,6 +182,7 @@ function NetworkList({
         }
       : null,
     ...networkList.map((network, index) => {
+      const chain = createChain(network.id);
       return {
         key: network.id,
         isInteractive: true,
@@ -164,7 +190,7 @@ function NetworkList({
         component: (
           <NetworkItem
             index={previousListLength + index + (showAllNetworksOption ? 1 : 0)}
-            name={networks.getChainName(createChain(network.id))}
+            name={networks.getChainName(chain)}
             value={network.id}
             icon={
               <NetworkIcon
@@ -175,6 +201,7 @@ function NetworkList({
             }
             chainDistribution={chainDistribution}
             selected={network.id === value}
+            address={singleAddress}
           />
         ),
       };

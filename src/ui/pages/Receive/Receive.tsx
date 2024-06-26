@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Background } from 'src/ui/components/Background';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -9,6 +9,8 @@ import { invariant } from 'src/shared/invariant';
 import { useQuery } from '@tanstack/react-query';
 import { lookupAddressName } from 'src/modules/name-service';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
+import { lookupAddressNameKey } from 'src/ui/shared/useProfileName';
+import { persistentQuery } from 'src/ui/shared/requests/queryClientPersistence';
 import { AddressDetails } from './AddressDetails';
 
 export function Receive() {
@@ -17,8 +19,8 @@ export function Receive() {
   invariant(address, 'address param is required');
 
   const { data: domain } = useQuery({
-    queryKey: ['name-service/lookupAddressName', address],
-    queryFn: useCallback(() => lookupAddressName(address), [address]),
+    queryKey: persistentQuery([lookupAddressNameKey, address]),
+    queryFn: () => lookupAddressName(address),
     suspense: false,
   });
 

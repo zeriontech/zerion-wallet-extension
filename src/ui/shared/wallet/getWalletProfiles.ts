@@ -1,12 +1,9 @@
 import ky from 'ky';
 import { useQuery } from '@tanstack/react-query';
 import { SOCIAL_API_URL } from 'src/env/config';
-import {
-  EmptyResult,
-  requestWithCache,
-} from 'src/ui/shared/requests/requestWithCache';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { WalletMeta } from 'src/modules/zerion-api/requests/wallets-meta';
+import { persistentQuery } from '../requests/queryClientPersistence';
 
 // TODO: move to ZPI endpoint
 const endpoints = {
@@ -31,28 +28,16 @@ async function getWalletProfile(address: string) {
 }
 
 async function fetchWalletNFT(
-  address: string,
-  options?: { updateCache?: boolean }
+  address: string
 ): Promise<WalletProfile['nft'] | null> {
-  const profile = await requestWithCache(
-    `fetchWalletNFT ${normalizeAddress(address)}`,
-    (() => {
-      return getWalletProfile(address).then((result) => {
-        if (!Object.keys(result || {}).length) {
-          throw new EmptyResult();
-        }
-        return result;
-      });
-    })(),
-    options?.updateCache ? { cacheTime: 0 } : undefined
-  );
+  const profile = await getWalletProfile(address);
   return profile?.nft || null;
 }
 
 export function useProfileNft(address: string) {
   const normalizedAddress = normalizeAddress(address);
   return useQuery({
-    queryKey: ['fetchWalletNFT', normalizedAddress],
+    queryKey: persistentQuery(['fetchWalletNFT', normalizedAddress]),
     queryFn: async () => {
       const result = await fetchWalletNFT(normalizedAddress);
       return result;
