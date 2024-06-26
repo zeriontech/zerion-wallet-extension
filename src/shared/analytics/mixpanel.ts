@@ -1,3 +1,4 @@
+import { produce } from 'immer';
 import ky from 'ky';
 import type { Options } from 'ky';
 import type { Account } from 'src/background/account/Account';
@@ -31,6 +32,18 @@ class DeviceIdStore extends PersistentStore<string | undefined> {
     invariant(value, 'value must be generated upon initialization');
     return value;
   }
+}
+
+function omitNullParams<T extends Record<string, unknown>>(
+  params: T
+): Partial<T> {
+  return produce(params, (draft) => {
+    for (const key in draft) {
+      if (draft[key] == null) {
+        delete draft[key];
+      }
+    }
+  });
 }
 
 const deviceIdStore = new DeviceIdStore();
@@ -143,7 +156,7 @@ class MixpanelApi {
     url.searchParams.append('ip', '1');
     const payload = {
       event,
-      properties: {
+      properties: omitNullParams({
         ...this.baseProperties,
         time: Date.now() / 1000,
         $insert_id: crypto.randomUUID(),
@@ -158,7 +171,7 @@ class MixpanelApi {
               user_id: this.userId,
             }
           : null),
-      },
+      }),
     };
 
     logToConsole(Loglevel.info, 'group', `Mixpanel track: ${payload.event}`);
@@ -179,13 +192,13 @@ class MixpanelApi {
       console.warn('Must not call engage() method without a user id');
       return;
     }
-    const payload = {
+    const payload = omitNullParams({
       $device_id: this.deviceId,
       $distinct_id: this.userId,
       $user_id: this.userId,
       token: this.token,
       $set: userProfileProperties,
-    };
+    });
 
     logToConsole(Loglevel.info, 'group', 'Mixpanel engage');
     logTable(Loglevel.info, payload, ['index']);
