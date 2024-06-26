@@ -31,11 +31,12 @@ type Address = string;
  */
 interface PublicPreferences {
   /**
-   * DEPRECATED
+   * @deprecated
    * Whether to show DApp Network Switch in Header
    * Defaults to `true`
    */
   showNetworkSwitchShortcut?: boolean;
+  /** @deprecated */
   overviewChain?: string;
   /**
    * Allow to configure nonce before signing transactions
@@ -46,7 +47,16 @@ interface PublicPreferences {
   mintDnaBannerDismissed?: boolean;
   upgradeDnaBannerDismissed?: boolean;
   backupReminderDismissedTime?: number;
+  /** @deprecated */
   enableTestnets?: boolean;
+  /**
+   * {testnetMode} has three states:
+   * {null} means completely "off"
+   * { on: boolean } means that UI can enable a keyboard shortcut for quick toggle
+   * { on: true } means we're in testnet mode
+   * { on: false } means we're in prod mode, but user can switch quickly using the shortcut
+   */
+  testnetMode?: null | { on: boolean };
 }
 
 export interface Permission {

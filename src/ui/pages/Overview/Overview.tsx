@@ -46,6 +46,7 @@ import { useStore } from '@store-unit/react';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
 import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
 import { isReadonlyContainer } from 'src/shared/types/validators';
+import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -245,7 +246,7 @@ function OverviewComponent() {
       portfolio_fields: 'all',
       use_portfolio_service: true,
     },
-    { enabled: ready }
+    { enabled: ready, client: useDefiSdkClient() }
   );
 
   const offsetValuesState = useStore(offsetValues);

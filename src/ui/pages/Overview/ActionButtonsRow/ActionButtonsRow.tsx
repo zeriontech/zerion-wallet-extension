@@ -14,6 +14,7 @@ import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
+import { WithMainnetOnlyWarningDialog } from 'src/ui/features/testnet-mode/MainnetOnlyWarningDialog';
 import * as s from './styles.module.css';
 
 function ActionButton<As extends ElementType = 'a'>({
@@ -139,26 +140,32 @@ export function ActionButtonsRow() {
       </li>
       <li>
         {process.env.FEATURE_SEND_FORM === 'on' ? (
-          <Button
-            aria-label="Swap"
-            size={48}
-            as={UnstyledLink}
-            to="/swap-form"
-            style={{
-              borderRadius: 24,
-              width: '100%',
-              ['--button-background' as string]: 'var(--black)',
-              ['--button-text' as string]: 'var(--white)',
-              ['--button-background-hover' as string]: 'var(--neutral-800)',
-            }}
-          >
-            <HStack gap={6} alignItems="center">
-              <div style={{ display: 'flex' }}>
-                <SwapIcon />
-              </div>
-              <UIText kind="small/accent">Swap</UIText>
-            </HStack>
-          </Button>
+          <WithMainnetOnlyWarningDialog<'a'>
+            message="Testnets are not supported in Swap"
+            render={({ handleClick }) => (
+              <Button
+                aria-label="Swap"
+                size={48}
+                as={UnstyledLink}
+                onClick={handleClick}
+                to="/swap-form"
+                style={{
+                  borderRadius: 24,
+                  width: '100%',
+                  ['--button-background' as string]: 'var(--black)',
+                  ['--button-text' as string]: 'var(--white)',
+                  ['--button-background-hover' as string]: 'var(--neutral-800)',
+                }}
+              >
+                <HStack gap={6} alignItems="center">
+                  <div style={{ display: 'flex' }}>
+                    <SwapIcon />
+                  </div>
+                  <UIText kind="small/accent">Swap</UIText>
+                </HStack>
+              </Button>
+            )}
+          />
         ) : (
           <Button
             aria-label="Swap"

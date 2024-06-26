@@ -31,7 +31,10 @@ export const emitter = createNanoEvents<{
   chainsUpdated: () => void;
   chainChanged: (chain: Chain) => void;
   transactionSent: (
-    data: { transaction: TransactionResponse } & TransactionContextParams
+    data: {
+      transaction: TransactionResponse;
+      mode: 'default' | 'testnet';
+    } & TransactionContextParams
   ) => void;
   typedDataSigned: (
     data: { typedData: TypedData; address: string } & MessageContextParams

@@ -1,7 +1,12 @@
 import ky from 'ky';
 import { version } from 'src/shared/packageVersion';
-import { ZERION_API_URL } from 'src/env/config';
+import { ZERION_API_URL, ZERION_TESTNET_API_URL } from 'src/env/config';
 import { platform } from 'src/shared/analytics/platform';
+import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
+import { invariant } from 'src/shared/invariant';
+import { normalizeChainId } from 'src/shared/normalizeChainId';
+import { valueToHex } from 'src/shared/units/valueToHex';
+import type { IncomingTransaction } from '../ethereum/types/IncomingTransaction';
 import type {
   Payload as SecurityCheckUrlPayload,
   Response as SecurityCheckUrlResponse,
@@ -22,6 +27,12 @@ import type {
   Payload as GetGasPricesPayload,
   Response as GetGasPricesResponse,
 } from './requests/get-gas-prices';
+
+export type NetworksSource = 'mainnet' | 'testnet';
+
+interface BackendSourceParams {
+  source: NetworksSource;
+}
 
 function getZpiHeaders() {
   return {
@@ -89,14 +100,42 @@ export class ZerionAPI {
       .json<WalletsMetaResponse>();
   }
 
-  static getGasPrices(payload: GetGasPricesPayload) {
+  static getGasPrices({
+    chain,
+    source,
+  }: GetGasPricesPayload & BackendSourceParams) {
+    const apiUrl =
+      source === 'testnet' ? ZERION_TESTNET_API_URL : ZERION_API_URL;
     return ky
-      .get(new URL('chain/get-gas-prices/v1', ZERION_API_URL), {
+      .get(new URL('chain/get-gas-prices/v1', apiUrl), {
         searchParams: {
-          chain: payload.chain.toString(),
+          chain: chain.toString(),
         },
         headers: getZpiHeaders(),
       })
       .json<GetGasPricesResponse>();
+  }
+
+  static checkPaymasterEligibility(
+    tx: PartiallyRequired<
+      Pick<IncomingTransaction, 'chainId' | 'from' | 'nonce'>,
+      'chainId' | 'from'
+    >
+  ) {
+    const { nonce, chainId, from } = tx;
+    invariant(nonce != null, 'Nonce is required to check eligibility');
+    const params = new URLSearchParams({
+      from,
+      chainId: normalizeChainId(chainId),
+      nonce: valueToHex(nonce),
+      backend_env: 'zero',
+    });
+    interface PaymasterCheckEligibilityResponse {
+      data: { eligible: boolean; eta: null | number };
+      errors?: null | { title: string; detail: string }[];
+    }
+    return ZerionAPI.get<PaymasterCheckEligibilityResponse>(
+      `/paymaster/check-eligibility/v1?${params}`
+    );
   }
 }

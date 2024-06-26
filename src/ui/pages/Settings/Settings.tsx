@@ -259,8 +259,6 @@ function DeveloperTools() {
               </span>
             }
           />
-        </Frame>
-        <Frame>
           <ToggleSettingLine
             text="Recognizable Connect Buttons"
             checked={globalPreferences?.recognizableConnectButtons || false}
@@ -279,11 +277,11 @@ function DeveloperTools() {
         </Frame>
         <Frame>
           <ToggleSettingLine
-            text="Enable Testnets"
-            checked={preferences?.enableTestnets || false}
+            text="Testnet Mode"
+            checked={Boolean(preferences?.testnetMode)}
             onChange={(event) => {
               setPreferences({
-                enableTestnets: event.target.checked,
+                testnetMode: event.target.checked ? { on: true } : null,
               });
             }}
             detailText="Enables viewing and interacting with test networks"

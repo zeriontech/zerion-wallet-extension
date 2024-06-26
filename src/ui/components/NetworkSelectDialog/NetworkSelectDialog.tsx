@@ -509,7 +509,7 @@ export function NetworkSelectDialog({
         networks={networks}
         chainDistribution={chainDistribution}
         showAllNetworksOption={showAllNetworksOption}
-        showTestnets={Boolean(preferences?.enableTestnets)}
+        showTestnets={Boolean(preferences?.testnetMode?.on)}
       />
     </div>
   );

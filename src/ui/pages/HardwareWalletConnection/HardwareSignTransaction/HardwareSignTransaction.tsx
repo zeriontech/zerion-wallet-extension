@@ -14,7 +14,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/uiGetBestKnownTransactionCount';
 import type { Chain } from 'src/modules/networks/Chain';
 import type { Networks } from 'src/modules/networks/Networks';
-import { networksStore } from 'src/modules/networks/networks-store.client';
+import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 import { TextPulse } from 'src/ui/components/TextPulse';
 import { hardwareMessageHandler } from '../shared/messageHandler';
 
@@ -89,7 +89,10 @@ export const HardwareSignTransaction = React.forwardRef(
         address,
         chain,
       }: SignTransactionParams): Promise<string> => {
-        const networks = await networksStore.load([chain.toString()]);
+        const networksStore = await getNetworksStore();
+        const networks = await networksStore.load({
+          chains: [chain.toString()],
+        });
         const txForLedger = await prepareForSignByLedger({
           transaction,
           address,

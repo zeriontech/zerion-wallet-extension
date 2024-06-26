@@ -37,6 +37,7 @@ const URLBarBlacklist = new Set([
   '/signTypedData',
   '/siwe',
   '/requestAccounts',
+  '/testnetModeGuard',
   '/phishing-warning',
 ]);
 

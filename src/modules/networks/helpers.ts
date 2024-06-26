@@ -19,6 +19,7 @@ export function toNetworkConfig(
     supports_actions: false,
     supports_nft_positions: false,
     supports_positions: false,
+    supports_sponsored_transactions: false,
     name: value.chainName,
     external_id: value.chainId,
     id,
@@ -69,9 +70,7 @@ export function toAddEthereumChainParameter(
     // deprecated field is being used for chainConfigStore's migration
     chainId: Networks.getChainId(item) || item.external_id,
     chainName: item.name,
-    blockExplorerUrls: item.explorer_address_url
-      ? [item.explorer_address_url]
-      : [],
+    blockExplorerUrls: item.explorer_tx_url ? [item.explorer_tx_url] : [],
     iconUrls: [item.icon_url],
     hidden: item.hidden,
   };

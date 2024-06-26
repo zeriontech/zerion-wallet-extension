@@ -1,11 +1,9 @@
 import omit from 'lodash/omit';
 import type { Account } from 'src/background/account/Account';
 import { emitter } from 'src/background/events';
-import { networksStore } from 'src/modules/networks/networks-store.background';
 import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { getWalletNameFlagsChange } from 'src/background/Wallet/GlobalPreferences';
-import { normalizeChainId } from '../normalizeChainId';
 import { WalletOrigin } from '../WalletOrigin';
 import {
   isMnemonicContainer,
@@ -99,14 +97,12 @@ function trackAppEvents({ account }: { account: Account }) {
       addressAction,
       quote,
       clientScope,
+      chain,
     }) => {
       const initiatorURL = new URL(initiator);
       const { origin, pathname } = initiatorURL;
       const isInternalOrigin = globalThis.location.origin === origin;
       const initiatorName = isInternalOrigin ? 'Extension' : 'External Dapp';
-      const networks = await networksStore.load();
-      const chainId = normalizeChainId(transaction.chainId);
-      const chain = networks.getChainById(chainId)?.toString() || chainId;
       const addressActionAnalytics = addressActionToAnalytics({
         addressAction,
         quote,

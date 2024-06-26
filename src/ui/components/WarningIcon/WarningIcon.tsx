@@ -12,6 +12,11 @@ const colors = {
     glowColor: 'var(--negative-300)',
     innerGlowColor: 'var(--negative-200)',
   },
+  neutral: {
+    color: 'var(--black)',
+    glowColor: 'var(--neutral-400)',
+    innerGlowColor: 'var(--neutral-200)',
+  },
 } as const;
 
 export function WarningIcon({
@@ -21,7 +26,7 @@ export function WarningIcon({
   size = 22,
   style,
 }: {
-  kind?: 'notice' | 'negative';
+  kind?: keyof typeof colors;
   glow?: boolean;
   outlineStrokeWidth?: number;
   borderWidth?: string;

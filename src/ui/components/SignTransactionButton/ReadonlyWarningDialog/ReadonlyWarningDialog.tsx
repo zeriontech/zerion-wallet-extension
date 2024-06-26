@@ -12,7 +12,7 @@ import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupBy
 import { isReadonlyContainer } from 'src/shared/types/validators';
 import { invariant } from 'src/shared/invariant';
 
-export const ReadonlyWarningDialog = React.forwardRef<
+const ReadonlyWarningDialog = React.forwardRef<
   HTMLDialogElementInterface,
   object // later can describe Props
 >((_props, ref) => {

@@ -1,6 +1,6 @@
 import browser from 'webextension-polyfill';
 import { ethers } from 'ethers';
-import { networksStore } from 'src/modules/networks/networks-store.background';
+import { mainNetworksStore } from 'src/modules/networks/networks-store.background';
 import { configureBackgroundClient } from 'src/modules/defi-sdk/background';
 import { SessionCacheService } from 'src/background/resource/sessionCacheService';
 import { openOnboarding } from 'src/shared/openOnboarding';
@@ -42,7 +42,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 configureBackgroundClient();
-networksStore.load();
+mainNetworksStore.load();
 
 function isOnboardingContext(port: RuntimePort) {
   if (!port.sender?.url) {

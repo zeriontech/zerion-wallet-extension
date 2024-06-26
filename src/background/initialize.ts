@@ -32,7 +32,9 @@ export async function initialize() {
   const accountPublicRPC = new AccountPublicRPC(account);
   const dnaService = new DnaService();
   dnaService.initialize();
-  await transactionService.initialize();
+  await transactionService.initialize({
+    getWallet: () => account.getCurrentWallet(),
+  });
   initializeRemoteConfig().then(() => {
     globalPreferences.initialize();
     setUninstallURL();

@@ -10,6 +10,7 @@ import {
   requestWithContextToRpcRequest,
 } from 'src/shared/custom-rpc';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
+import { invariant } from 'src/shared/invariant';
 import { getPortContext } from '../getPortContext';
 import { HttpConnection } from '../HttpConnection';
 import type { PortMessageHandler } from '../PortRegistry';
@@ -28,11 +29,14 @@ export function createHttpConnectionMessageHandler(
         const wallet = getWallet();
         wallet.publicEthereumController
           .eth_chainId({ context, id: msg.id })
-          .then((chainId) => {
-            const httpConnection = new HttpConnection({
-              chainId: normalizeChainId(chainId),
-            });
-            return httpConnection.send(msg, context);
+          .then((chainIdStr) => {
+            const chainId = normalizeChainId(chainIdStr);
+            return wallet.getRpcUrlByChainId({ chainId, type: 'public' });
+          })
+          .then((url) => {
+            invariant(url, `HttpConnection: No RpcUrl for ${context.origin}`);
+            const httpConnection = new HttpConnection({ url });
+            return httpConnection.send(msg);
           })
           .then((result) => {
             port.postMessage(result);
@@ -45,11 +49,15 @@ export function createHttpConnectionMessageHandler(
           params: { context: requestContext },
         } = msg;
         const request = requestWithContextToRpcRequest(msg);
-        const httpConnection = new HttpConnection({
-          chainId: normalizeChainId(requestContext.chainId),
-        });
-        httpConnection
-          .send(request, context)
+        const chainId = normalizeChainId(requestContext.chainId);
+        const wallet = getWallet();
+        wallet
+          .getRpcUrlByChainId({ chainId, type: 'public' })
+          .then((url) => {
+            invariant(url, `HttpConnection: No RpcUrl for ${context.origin}`);
+            const httpConnection = new HttpConnection({ url });
+            return httpConnection.send(request);
+          })
           .catch((error) => formatJsonRpcError(request.id, error.message))
           .then((result) => {
             port.postMessage(result);

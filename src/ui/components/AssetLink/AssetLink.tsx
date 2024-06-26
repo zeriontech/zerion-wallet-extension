@@ -1,5 +1,6 @@
 import type { Asset } from 'defi-sdk';
 import React from 'react';
+import { usePreferences } from 'src/ui/features/preferences';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 
@@ -12,6 +13,11 @@ export function AssetLink({
   title?: string;
   address?: string;
 }) {
+  const { preferences } = usePreferences();
+  const content = title || asset.symbol || asset.name;
+  if (preferences?.testnetMode?.on) {
+    return content;
+  }
   return (
     <TextAnchor
       href={`https://app.zerion.io/explore/asset/${asset.symbol}-${asset.asset_code}?address=${address}`}
@@ -28,7 +34,7 @@ export function AssetLink({
         outlineOffset: -1, // make focus ring visible despite overflow: hidden
       }}
     >
-      {title || asset.symbol || asset.name}
+      {content}
     </TextAnchor>
   );
 }
