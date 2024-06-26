@@ -400,7 +400,6 @@ function SignTypedDataContent({
   invariant(windowId, 'windowId get-parameter is required');
 
   const navigate = useNavigate();
-  const { networks } = useNetworks();
 
   const [allowanceQuantityBase, setAllowanceQuantityBase] = useState('');
 
@@ -425,30 +424,27 @@ function SignTypedDataContent({
     navigate(-1);
   };
 
-  const { data: chain, ...chainQuery } = useQuery({
+  const { data: chain } = useQuery({
     queryKey: ['requestChainForOrigin', origin],
     queryFn: () => requestChainForOrigin(origin),
     useErrorBoundary: true,
     suspense: true,
   });
 
+  const { networks } = useNetworks(chain ? [chain.toString()] : undefined);
+  const chainId = chain && networks ? networks.getChainId(chain) : null;
+
   const { data: interpretation, ...interpretQuery } = useQuery({
-    queryKey: [
-      'interpretSignature',
-      wallet.address,
-      chain,
-      networks,
-      typedData,
-    ],
+    queryKey: ['interpretSignature', wallet.address, chainId, typedData],
     queryFn: () =>
-      chain && networks
+      chainId
         ? interpretSignature({
             address: wallet.address,
-            chainId: networks.getChainId(chain),
+            chainId,
             typedData,
           })
         : null,
-    enabled: !chainQuery.isLoading && Boolean(networks),
+    enabled: Boolean(chainId),
     suspense: false,
     retry: 1,
     refetchOnMount: false,
