@@ -32,14 +32,17 @@ export function AddressActionDetails({
   showApplicationLine: boolean;
   singleAssetElementEnd: React.ReactNode;
 }) {
-  const showNetworkIcon = !(showApplicationLine && addressAction?.label);
+  const applicationLineVisible = Boolean(
+    showApplicationLine && addressAction?.label
+  );
+
   return (
     <>
       {recipientAddress && addressAction?.type.value === 'send' ? (
         <RecipientLine
           recipientAddress={recipientAddress}
           chain={chain}
-          showNetworkIcon={showNetworkIcon}
+          showNetworkIcon={!applicationLineVisible}
           networks={networks}
         />
       ) : null}
