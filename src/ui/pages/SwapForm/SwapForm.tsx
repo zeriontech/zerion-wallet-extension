@@ -552,6 +552,7 @@ export function SwapFormComponent() {
                     : 'Trade'
                 }
                 wallet={wallet}
+                showApplicationLine={true}
                 chain={chain}
                 transaction={configureTransactionToBeSigned(currentTransaction)}
                 configuration={swapView.store.configuration.getState()}
