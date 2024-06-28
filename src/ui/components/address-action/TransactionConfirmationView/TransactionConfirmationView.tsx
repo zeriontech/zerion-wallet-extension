@@ -12,6 +12,7 @@ import { TransactionConfiguration } from 'src/ui/pages/SendTransaction/Transacti
 import { UIText } from 'src/ui/ui-kit/UIText';
 import LedgerIcon from 'jsx:src/ui/assets/ledger-icon.svg';
 import { isDeviceAccount } from 'src/shared/types/validators';
+import type { EligibilityQuery } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
 import { WalletAvatar } from '../../WalletAvatar';
 import { WalletDisplayName } from '../../WalletDisplayName';
 import { TransactionSimulation } from '../TransactionSimulation';
@@ -35,10 +36,7 @@ export function TransactionConfirmationView({
   chain: Chain;
   configuration: CustomConfiguration;
   paymasterEligible: boolean;
-  eligibilityQuery: {
-    data?: { eligible: boolean };
-    isError: boolean;
-  };
+  eligibilityQuery: EligibilityQuery;
   localAllowanceQuantityBase?: string;
   onOpenAllowanceForm?: () => void;
 }) {

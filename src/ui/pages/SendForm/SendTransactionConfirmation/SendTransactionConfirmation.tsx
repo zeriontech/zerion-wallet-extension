@@ -7,6 +7,7 @@ import type { IncomingTransactionWithChainId } from 'src/modules/ethereum/types/
 import type { Chain } from 'src/modules/networks/Chain';
 import { invariant } from 'src/shared/invariant';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
+import type { EligibilityQuery } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
 
 const QUERY_KEY = ['configureSendTransaction'];
 
@@ -21,10 +22,7 @@ export function SendTransactionConfirmation({
   getTransaction: () => Promise<Partial<IncomingTransactionWithChainId>>;
   chain: Chain;
   paymasterEligible: boolean;
-  eligibilityQuery: {
-    data?: { eligible: boolean };
-    isError: boolean;
-  };
+  eligibilityQuery: EligibilityQuery;
 }) {
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],

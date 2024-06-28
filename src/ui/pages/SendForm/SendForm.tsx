@@ -261,7 +261,7 @@ function SendFormComponent() {
 
   const chainId = chain ? networks?.getChainId(chain) : null;
   const network = chain ? networks?.getNetworkByName(chain) : null;
-  const { data: eligibility, ...eligibilityQuery } = useQuery({
+  const eligibilityQuery = useQuery({
     enabled: Boolean(
       USE_PAYMASTER_FEATURE &&
         network?.supports_sponsored_transactions &&
@@ -297,7 +297,7 @@ function SendFormComponent() {
       return ZerionAPI.checkPaymasterEligibility({ from, chainId, nonce });
     },
   });
-  const paymasterEligible = Boolean(eligibility?.data.eligible);
+  const paymasterEligible = Boolean(eligibilityQuery?.data?.data.eligible);
 
   const {
     mutate: sendTransaction,

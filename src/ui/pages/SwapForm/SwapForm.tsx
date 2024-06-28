@@ -561,7 +561,10 @@ export function SwapFormComponent() {
                   allowanceDialogRef.current?.showModal()
                 }
                 paymasterEligible={false}
-                eligibilityQuery={{ data: { eligible: false }, isError: false }}
+                eligibilityQuery={{
+                  data: { data: { eligible: false } },
+                  isError: false,
+                }}
               />
             </ViewLoadingSuspense>
           );
