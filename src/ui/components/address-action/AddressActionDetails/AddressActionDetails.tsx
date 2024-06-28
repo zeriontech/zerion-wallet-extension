@@ -32,12 +32,18 @@ export function AddressActionDetails({
   showApplicationLine: boolean;
   singleAssetElementEnd: React.ReactNode;
 }) {
+  const showRecipientLine =
+    recipientAddress && addressAction?.type.value === 'send';
+
   const applicationLineVisible =
-    showApplicationLine && addressAction?.label && !recipientAddress;
+    showApplicationLine &&
+    addressAction?.label &&
+    !recipientAddress &&
+    !showRecipientLine;
 
   return (
     <>
-      {recipientAddress && addressAction?.type.value === 'send' ? (
+      {showRecipientLine ? (
         <RecipientLine
           recipientAddress={recipientAddress}
           chain={chain}
