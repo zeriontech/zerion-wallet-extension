@@ -68,7 +68,7 @@ export function BackupFlowSettingsSection() {
                   <div>
                     <Button
                       as={UnstyledLink}
-                      to={`/backup-wallet?groupId=${group.id}&backupKind=verify`}
+                      to={`/onboarding/backup?groupId=${group.id}`}
                       size={32}
                       style={{ paddingLeft: 16, paddingRight: 16 }}
                       onClick={openInTabView}

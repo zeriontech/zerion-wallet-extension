@@ -9,6 +9,7 @@ import { Create } from './Create';
 import { Hardware } from './Hardware';
 import { PageLayout } from './shared/PageLayout/PageLayout';
 import { SessionExpired } from './shared/SessionExpired';
+import { Backup } from './Backup';
 
 function EmptyRoute() {
   return null;
@@ -42,6 +43,14 @@ export function Onboarding() {
         element={
           <PageLayout>
             <Create />
+          </PageLayout>
+        }
+      />
+      <Route
+        path="/onboarding/backup/*"
+        element={
+          <PageLayout>
+            <Backup />
           </PageLayout>
         }
       />

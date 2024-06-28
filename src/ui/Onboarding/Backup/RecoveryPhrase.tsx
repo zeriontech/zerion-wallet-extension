@@ -21,7 +21,7 @@ import * as helperStyles from '../shared/helperStyles.module.css';
 import { isSessionExpiredError } from '../shared/isSessionExpiredError';
 import { usePendingRecoveryPhrase } from '../shared/usePendingRecoveryPhrase';
 
-export function Backup({
+export function RecoveryPhrase({
   onNextStep,
   onSkip,
 }: {

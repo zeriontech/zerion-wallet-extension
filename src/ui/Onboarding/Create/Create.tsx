@@ -1,66 +1,49 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { RenderArea } from 'react-area';
+import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
+import { VStack } from 'src/ui/ui-kit/VStack';
+import { UIText } from 'src/ui/ui-kit/UIText';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { PrivacyFooter } from 'src/ui/components/PrivacyFooter';
+import { wait } from 'src/shared/wait';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
-import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
-import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
-import { invariant } from 'src/shared/invariant';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
+import { useSizeStore } from '../useSizeStore';
+import { Password } from '../Password';
+import { Stack } from '../Stack';
+import { assertPasswordStep } from '../Password/passwordSearchParams';
+import * as helperStyles from '../shared/helperStyles.module.css';
 import { isSessionExpiredError } from '../shared/isSessionExpiredError';
 import { useOnboardingSession } from '../shared/useOnboardingSession';
-import { Cards } from './Cards';
-import { CreatePassword } from './CreatePassword';
-import { Backup } from './Backup';
-import { VerifyBackup } from './VerifyBackup';
-
-class LostPendingWalletError extends Error {}
 
 export function Create() {
+  const { isNarrowView } = useSizeStore();
+  const [params] = useSearchParams();
+  const [showError, setShowError] = useState(false);
+  const step = params.get('step') || 'create';
   const navigate = useNavigate();
+  assertPasswordStep(step);
 
-  const { mutate: handleSkipFlow } = useMutation({
-    mutationFn: async () => {
-      const wallet = await walletPort.request('getPendingWallet');
-      if (!wallet) {
-        throw new LostPendingWalletError();
+  const { mutate: handleSubmit, isLoading } = useMutation({
+    mutationFn: async ({ password }: { password: string | null }) => {
+      await wait(2000);
+      if (password) {
+        await accountPublicRPCPort.request('createUser', { password });
       }
-      await accountPublicRPCPort.request('saveUserAndWallet');
-      await setCurrentAddress({ address: wallet.address });
+      await walletPort.request('uiGenerateMnemonic');
     },
     onSuccess: () => {
       zeroizeAfterSubmission();
-      navigate('/onboarding/success');
+      navigate('/onboarding/backup');
     },
     onError: (e) => {
-      if (isSessionExpiredError(e) || e instanceof LostPendingWalletError) {
+      if (isSessionExpiredError(e)) {
         navigate('/onboarding/session-expired', { replace: true });
       }
+      setShowError(true);
     },
-    useErrorBoundary: true,
-  });
-
-  const { mutate: handleCompleteFlow } = useMutation({
-    mutationFn: async () => {
-      const wallet = await walletPort.request('getPendingWallet');
-      if (!wallet) {
-        throw new LostPendingWalletError();
-      }
-      await accountPublicRPCPort.request('saveUserAndWallet');
-      await setCurrentAddress({ address: wallet.address });
-      const group = await getWalletGroupByAddress(wallet.address);
-      invariant(group?.id, 'Saved wallet should belong to a group');
-      await walletPort.request('updateLastBackedUp', { groupId: group.id });
-    },
-    onSuccess: () => {
-      zeroizeAfterSubmission();
-      navigate('/onboarding/success');
-    },
-    onError: (e) => {
-      if (isSessionExpiredError(e) || e instanceof LostPendingWalletError) {
-        navigate('/onboarding/session-expired', { replace: true });
-      }
-    },
-    useErrorBoundary: true,
   });
 
   const { sessionDataIsLoading } = useOnboardingSession('session-expired');
@@ -70,40 +53,47 @@ export function Create() {
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to={'password'} replace={true} />} />
-      <Route
-        path="/password"
-        element={
-          <CreatePassword
-            onCreate={() => navigate('info')}
-            onExit={() => navigate('/onboarding')}
+    <VStack gap={isNarrowView ? 16 : 56}>
+      <div className={helperStyles.container}>
+        {isLoading ? (
+          <div className={helperStyles.loadingOverlay}>
+            <UIText kind="headline/hero" className={helperStyles.loadingTitle}>
+              Creating Wallet
+            </UIText>
+          </div>
+        ) : null}
+        <UnstyledButton
+          onClick={() => navigate('/onboarding')}
+          aria-label="Go Back"
+          className={helperStyles.backButton}
+        >
+          <ArrowLeftIcon style={{ width: 20, height: 20 }} />
+        </UnstyledButton>
+        <Stack
+          gap={isNarrowView ? 0 : 60}
+          direction={isNarrowView ? 'vertical' : 'horizontal'}
+          style={{
+            gridTemplateColumns:
+              isNarrowView || showError ? undefined : '380px auto',
+            justifyContent: 'center',
+          }}
+        >
+          <Password
+            title="Create Your Password"
+            step={step}
+            onSubmit={(password) => handleSubmit({ password })}
           />
-        }
-      />
-      <Route
-        path="/info"
-        element={
-          <Cards
-            onExit={() => navigate('/onboarding')}
-            onContinue={() => navigate('backup')}
-            onSkip={() => handleSkipFlow()}
-          />
-        }
-      />
-      <Route
-        path="/backup"
-        element={
-          <Backup
-            onNextStep={() => navigate('verify')}
-            onSkip={() => handleSkipFlow()}
-          />
-        }
-      />
-      <Route
-        path="/verify"
-        element={<VerifyBackup onSuccess={handleCompleteFlow} />}
-      />
-    </Routes>
+          {isNarrowView || showError ? null : (
+            <RenderArea name="onboarding-faq" />
+          )}
+        </Stack>
+      </div>
+      {isNarrowView && !showError ? (
+        <div className={helperStyles.faqContainer}>
+          <RenderArea name="onboarding-faq" />
+        </div>
+      ) : null}
+      <PrivacyFooter />
+    </VStack>
   );
 }

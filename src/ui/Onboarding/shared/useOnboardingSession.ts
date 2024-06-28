@@ -32,6 +32,5 @@ export function useOnboardingSession(
 
   return {
     sessionDataIsLoading: isLoading,
-    hasExistingUser: Boolean(existingUser),
   };
 }

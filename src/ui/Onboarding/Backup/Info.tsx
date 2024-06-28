@@ -111,7 +111,7 @@ function ExitCreateWalletFlowDialog() {
   );
 }
 
-export function Cards({
+export function Info({
   onContinue,
   onSkip,
   onExit,
