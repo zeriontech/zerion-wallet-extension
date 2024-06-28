@@ -14,7 +14,7 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import { Input } from 'src/ui/ui-kit/Input';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
-import { useSizeStore } from '../useSizeStore';
+import { useSizeStore } from 'src/ui/shared/useSizeStore';
 import { SecretKeyFAQ } from '../FAQ';
 
 export function ImportKey({

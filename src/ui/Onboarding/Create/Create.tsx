@@ -10,12 +10,12 @@ import { PrivacyFooter } from 'src/ui/components/PrivacyFooter';
 import { wait } from 'src/shared/wait';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
-import { useSizeStore } from '../useSizeStore';
+import { useSizeStore } from 'src/ui/shared/useSizeStore';
+import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 import { Password } from '../Password';
 import { Stack } from '../Stack';
 import { assertPasswordStep } from '../Password/passwordSearchParams';
 import * as helperStyles from '../shared/helperStyles.module.css';
-import { isSessionExpiredError } from '../shared/isSessionExpiredError';
 import { useOnboardingSession } from '../shared/useOnboardingSession';
 
 export function Create() {

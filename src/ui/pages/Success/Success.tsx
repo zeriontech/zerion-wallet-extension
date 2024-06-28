@@ -1,18 +1,18 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import cn from 'classnames';
+import { useSpring, animated } from '@react-spring/web';
 import confetti from 'canvas-confetti';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import ZerionIcon from 'jsx:../assets/zerion.svg';
-import PinIcon from 'jsx:../assets/pin.svg';
-import JigsawIcon from 'jsx:../assets/jigsaw.svg';
+import ZerionIcon from 'jsx:./assets/zerion.svg';
+import PinIcon from 'jsx:./assets/pin.svg';
+import JigsawIcon from 'jsx:./assets/jigsaw.svg';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { useSpring, animated } from '@react-spring/web';
-import coinImgSrc from '../assets/zer_coin.png';
-import sparkImgSrc from '../assets/zer_spark.png';
-import starImgSrc from '../assets/zer_star.png';
-import { useSizeStore } from '../useSizeStore';
+import { useSizeStore } from 'src/ui/shared/useSizeStore';
+import coinImgSrc from './assets/zer_coin.png';
+import sparkImgSrc from './assets/zer_spark.png';
+import starImgSrc from './assets/zer_star.png';
 import * as styles from './styles.module.css';
 
 export function Success() {

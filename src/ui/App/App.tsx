@@ -40,7 +40,6 @@ import { ViewError } from '../components/ViewError';
 import { ViewArea } from '../components/ViewArea';
 import { Settings } from '../pages/Settings';
 import { Networks } from '../pages/Networks';
-import { BackupWallet } from '../pages/BackupWallet';
 import { ManageWallets } from '../pages/ManageWallets';
 import { WalletSelect } from '../pages/WalletSelect';
 import { NotFoundPage } from '../components/NotFoundPage';
@@ -77,6 +76,8 @@ import { ChooseGlobalProviderGuard } from '../pages/RequestAccounts/ChooseGlobal
 import { usePreferences } from '../features/preferences';
 import { openTabView } from '../shared/openInTabView';
 import { TestModeDecoration } from '../features/testnet-mode/TestModeDecoration';
+import { Backup } from '../pages/Backup';
+import { PageLayout } from '../components/PageLayout';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -172,6 +173,17 @@ function PageLayoutViews() {
     <Routes>
       <Route path="/mint-dna/*" element={<MintDnaFlow />} />
       <Route path="/upgrade-dna/*" element={<UpgradeDnaFlow />} />
+
+      <Route
+        path="/backup-wallet/*"
+        element={
+          <RequireAuth>
+            <PageLayout>
+              <Backup />
+            </PageLayout>
+          </RequireAuth>
+        }
+      />
     </Routes>
   );
 }
@@ -253,14 +265,6 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             element={
               <RequireAuth>
                 <Networks />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/backup-wallet/*"
-            element={
-              <RequireAuth>
-                <BackupWallet />
               </RequireAuth>
             }
           />

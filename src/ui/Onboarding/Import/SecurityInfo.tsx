@@ -8,7 +8,7 @@ import EyeIcon from 'jsx:src/ui/assets/eye.svg';
 import PersonIcon from 'jsx:src/ui/assets/person.svg';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
-import { useSizeStore } from '../useSizeStore';
+import { useSizeStore } from 'src/ui/shared/useSizeStore';
 import { Stack } from '../Stack';
 import * as styles from './styles.module.css';
 

@@ -9,11 +9,11 @@ import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { Input } from 'src/ui/ui-kit/Input';
 import { clipboardWarning } from 'src/ui/pages/BackupWallet/clipboardWarning';
-import { useSizeStore } from '../useSizeStore';
-import { useMnemonicInput } from '../shared/useMnemonicInput';
-import * as helperStyles from '../shared/helperStyles.module.css';
-import { isSessionExpiredError } from '../shared/isSessionExpiredError';
-import { usePendingRecoveryPhrase } from '../shared/usePendingRecoveryPhrase';
+import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
+import { usePendingRecoveryPhrase } from 'src/ui/shared/usePendingRecoveryPhrase';
+import { useSizeStore } from 'src/ui/shared/useSizeStore';
+import { useMnemonicInput } from 'src/ui/shared/useMnemonicInput';
+import * as helperStyles from 'src/ui/Onboarding/shared/helperStyles.module.css';
 
 const INPUT_NUMBER = 12;
 const ARRAY_OF_NUMBERS = Array.from({ length: INPUT_NUMBER }, (_, i) => i);

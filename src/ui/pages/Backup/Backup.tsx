@@ -5,14 +5,14 @@ import {
   Route,
   Routes,
   useNavigate,
-  useSearchParams,
+  // useSearchParams,
 } from 'react-router-dom';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
 import { invariant } from 'src/shared/invariant';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
-import { isSessionExpiredError } from '../shared/isSessionExpiredError';
+import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 import { Info } from './Info';
 import { RecoveryPhrase } from './RecoveryPhrase';
 import { VerifyBackup } from './VerifyBackup';
@@ -22,10 +22,11 @@ class LostPendingWalletError extends Error {}
 export function Backup() {
   const navigate = useNavigate();
 
-  const [params] = useSearchParams();
-  const groupId = params.get('groupId');
-  const context = params.get('context');
+  // const [params] = useSearchParams();
+  // const groupId = params.get('groupId');
+  // const context = params.get('context');
 
+  // Skip flow is only relevant for onboarding
   const { mutate: handleSkipFlow } = useMutation({
     mutationFn: async () => {
       // const wallet = walletPort.request('uiGetWalletGroup', { groupId });

@@ -11,11 +11,12 @@ import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog'
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { PrivacyFooter } from 'src/ui/components/PrivacyFooter';
-import CardImg1 from '../assets/create_card_1.png';
-import CardImg2 from '../assets/create_card_2.png';
-import CardImg3 from '../assets/create_card_3.png';
-import { useSizeStore } from '../useSizeStore';
-import * as helperStyles from '../shared/helperStyles.module.css';
+import { useSearchParams } from 'react-router-dom';
+import { useSizeStore } from 'src/ui/shared/useSizeStore';
+import * as helperStyles from 'src/ui/Onboarding/shared/helperStyles.module.css';
+import CardImg1 from './assets/create_card_1.png';
+import CardImg2 from './assets/create_card_2.png';
+import CardImg3 from './assets/create_card_3.png';
 import * as styles from './styles.module.css';
 
 const MAX_CARD_INDEX = 2;
@@ -121,6 +122,7 @@ export function Info({
   onExit(): void;
 }) {
   const { isNarrowView } = useSizeStore();
+  const [params] = useSearchParams();
   const [activeCard, setActiveCard] = useState(0);
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
@@ -131,6 +133,10 @@ export function Info({
       onContinue();
     }
   }, [activeCard, onContinue]);
+
+  // This flag is necessary because we only want to display the
+  // close icon and the "Do it Later" option in the onboarding context.
+  const isOnboardingContext = params.get('context') === 'onboarding';
 
   return (
     <>
@@ -146,18 +152,20 @@ export function Info({
           className={cn(helperStyles.container, helperStyles.appear)}
           style={{ justifyContent: 'center', paddingBottom: 48 }}
         >
-          <UnstyledButton
-            aria-label="Exit creating wallet"
-            className={helperStyles.backButton}
-            onClick={() => {
-              if (!dialogRef.current) {
-                return;
-              }
-              showConfirmDialog(dialogRef.current).then(onExit);
-            }}
-          >
-            <CloseIcon style={{ width: 20, height: 20 }} />
-          </UnstyledButton>
+          {isOnboardingContext ? (
+            <UnstyledButton
+              aria-label="Exit creating wallet"
+              className={helperStyles.backButton}
+              onClick={() => {
+                if (!dialogRef.current) {
+                  return;
+                }
+                showConfirmDialog(dialogRef.current).then(onExit);
+              }}
+            >
+              <CloseIcon style={{ width: 20, height: 20 }} />
+            </UnstyledButton>
+          ) : null}
           <VStack gap={40}>
             <UIText kind="headline/h2">
               Wallet is Ready.
@@ -207,7 +215,7 @@ export function Info({
                 <Button onClick={handleClick} autoFocus={true}>
                   {activeCard === MAX_CARD_INDEX ? 'Back up now' : 'Continue'}
                 </Button>
-                {activeCard === MAX_CARD_INDEX ? (
+                {isOnboardingContext && activeCard === MAX_CARD_INDEX ? (
                   <Button kind="ghost" onClick={onSkip}>
                     Do it Later
                   </Button>

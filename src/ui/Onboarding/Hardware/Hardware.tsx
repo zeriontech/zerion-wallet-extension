@@ -15,14 +15,14 @@ import type { LedgerAccountImport } from 'src/ui/hardware-wallet/types';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
+import { PageLayout } from 'src/ui/components/PageLayout';
+import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
+import { useSizeStore } from 'src/ui/shared/useSizeStore';
 import { assertPasswordStep } from '../Password/passwordSearchParams';
-import { PageLayout } from '../shared/PageLayout/PageLayout';
-import { useSizeStore } from '../useSizeStore';
 import { Stack } from '../Stack';
 import { Password } from '../Password';
 import * as styles from '../shared/helperStyles.module.css';
 import { useOnboardingSession } from '../shared/useOnboardingSession';
-import { isSessionExpiredError } from '../shared/isSessionExpiredError';
 import { ViewParam, assertViewParam } from './hardwareSearchParams';
 
 export function Hardware() {

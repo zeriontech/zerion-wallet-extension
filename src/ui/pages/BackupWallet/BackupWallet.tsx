@@ -36,7 +36,7 @@ import {
   isPrivateKeyContainer,
   isSignerContainer,
 } from 'src/shared/types/validators';
-import { isSessionExpiredError } from 'src/ui/Onboarding/shared/isSessionExpiredError';
+import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 import { WithConfetti } from '../GetStarted/components/DecorativeMessage/DecorativeMessage';
 import { DecorativeMessage } from '../GetStarted/components/DecorativeMessage';
 import { clipboardWarning } from './clipboardWarning';

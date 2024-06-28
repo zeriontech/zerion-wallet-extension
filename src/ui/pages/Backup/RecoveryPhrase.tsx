@@ -16,10 +16,10 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { clipboardWarning } from 'src/ui/pages/BackupWallet/clipboardWarning';
 import { SeedType } from 'src/shared/SeedType';
-import { useSizeStore } from '../useSizeStore';
-import * as helperStyles from '../shared/helperStyles.module.css';
-import { isSessionExpiredError } from '../shared/isSessionExpiredError';
-import { usePendingRecoveryPhrase } from '../shared/usePendingRecoveryPhrase';
+import { useSizeStore } from 'src/ui/shared/useSizeStore';
+import * as helperStyles from 'src/ui/Onboarding/shared/helperStyles.module.css';
+import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
+import { usePendingRecoveryPhrase } from 'src/ui/shared/usePendingRecoveryPhrase';
 
 export function RecoveryPhrase({
   onNextStep,
@@ -30,6 +30,9 @@ export function RecoveryPhrase({
 }) {
   const { isNarrowView } = useSizeStore();
   const navigate = useNavigate();
+
+  // TODO: Don't usePendingRecoveryPhrase when not in onboarding context
+
   const { data: mnemonic, error, isLoading } = usePendingRecoveryPhrase();
 
   useEffect(() => {

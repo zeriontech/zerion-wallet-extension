@@ -1,6 +1,6 @@
 import React from 'react';
-import { HStack } from '../ui-kit/HStack';
-import { VStack } from '../ui-kit/VStack';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import { VStack } from 'src/ui/ui-kit/VStack';
 
 export const Stack = React.forwardRef<
   HTMLDivElement,

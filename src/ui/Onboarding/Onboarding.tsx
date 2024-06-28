@@ -1,15 +1,15 @@
 import React, { useMemo } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { useScreenViewChange } from '../shared/useScreenViewChange';
-import { useBodyStyle } from '../components/Background/Background';
+import { PageLayout } from 'src/ui/components/PageLayout';
+import { useBodyStyle } from 'src/ui/components/Background/Background';
+import { useScreenViewChange } from 'src/ui/shared/useScreenViewChange';
+import { Backup } from 'src/ui/pages/Backup';
+import { Success } from 'src/ui/pages/Success';
 import { Welcome } from './Welcome';
 import { Import } from './Import';
-import { Success } from './Success';
 import { Create } from './Create';
 import { Hardware } from './Hardware';
-import { PageLayout } from './shared/PageLayout/PageLayout';
 import { SessionExpired } from './shared/SessionExpired';
-import { Backup } from './Backup';
 
 function EmptyRoute() {
   return null;
