@@ -176,13 +176,16 @@ function PageLayoutViews() {
   );
 }
 
+function MaybeTestModeDecoration() {
+  const { preferences } = usePreferences();
+  return preferences?.testnetMode ? <TestModeDecoration /> : null;
+}
+
 function Views({ initialRoute }: { initialRoute?: string }) {
   useScreenViewChange();
-  const { preferences } = usePreferences();
   return (
     <RouteResolver>
       <ViewArea>
-        {preferences?.testnetMode ? <TestModeDecoration /> : null}
         <URLBar />
         {templateData.windowContext === 'popup' ? (
           <RouteRestoration initialRoute={initialRoute} />
@@ -449,6 +452,10 @@ export function App({ initialView, mode, inspect }: AppProps) {
     useMemo(() => ({ opacity: connected ? '' : '0.6' }), [connected])
   );
 
+  const isOnboardingTemplate =
+    mode === 'onboarding' && initialView !== 'handshakeFailure';
+  const isPageTemplate = templateData.layout === 'page';
+
   return (
     <AreaProvider>
       <UIContext.Provider value={defaultUIContextValue}>
@@ -472,11 +479,14 @@ export function App({ initialView, mode, inspect }: AppProps) {
               ) : null}
               <GlobalKeyboardShortcuts />
               <VersionUpgrade>
+                {!isOnboardingTemplate && !isPageTemplate ? (
+                  // Render above <ViewSuspense /> so that it doesn't flicker
+                  <MaybeTestModeDecoration />
+                ) : null}
                 <ViewSuspense logDelays={true}>
-                  {mode === 'onboarding' &&
-                  initialView !== 'handshakeFailure' ? (
+                  {isOnboardingTemplate ? (
                     <Onboarding />
-                  ) : templateData.layout === 'page' ? (
+                  ) : isPageTemplate ? (
                     <PageLayoutViews />
                   ) : (
                     <DefiSdkClientProvider>

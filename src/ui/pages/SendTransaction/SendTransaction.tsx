@@ -524,7 +524,10 @@ function SendTransactionContent({
   const isDeviceWallet = isDeviceAccount(wallet);
   const USE_PAYMASTER_FEATURE = FEATURE_PAYMASTER_ENABLED && !isDeviceWallet;
 
+  const network = networks.getNetworkByName(chain);
+
   const { data: eligibility } = useQuery({
+    enabled: USE_PAYMASTER_FEATURE && network?.supports_sponsored_transactions,
     suspense: false,
     staleTime: 120000,
     queryKey: ['paymaster/check-eligibility', incomingTransaction],
@@ -532,7 +535,6 @@ function SendTransactionContent({
       const tx = await configureTransactionToBeSigned(incomingTransaction);
       return ZerionAPI.checkPaymasterEligibility(tx);
     },
-    enabled: USE_PAYMASTER_FEATURE,
   });
 
   const paymasterEligible = Boolean(eligibility?.data.eligible);
