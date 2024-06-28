@@ -1,0 +1,1 @@
+export { RevealPrivateKey } from './RevealPrivateKey';

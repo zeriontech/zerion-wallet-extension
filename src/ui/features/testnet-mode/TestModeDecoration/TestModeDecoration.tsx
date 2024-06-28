@@ -1,7 +1,7 @@
 import { useId, useMemo } from 'react';
 import { useStore } from '@store-unit/react';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
-import { templateData } from 'src/ui/shared/getPageTemplateName';
+import { windowContext } from 'src/ui/shared/WindowContext';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import React from 'react';
 import { HStack } from 'src/ui/ui-kit/HStack/HStack';
@@ -15,9 +15,8 @@ export function TestModeDecoration() {
   const on = preferences?.testnetMode?.on;
   const checkboxId = useId();
   const { shortcutsDisabled } = useStore(testnetModeStore);
-  const isDialog = templateData.windowContext === 'dialog';
 
-  const shouldRenderSomething = !isDialog || on;
+  const shouldRenderSomething = !windowContext.isDialog() || on;
   useBodyStyle(
     useMemo(
       () => (shouldRenderSomething ? { paddingBottom: '36px' } : {}),
@@ -29,7 +28,9 @@ export function TestModeDecoration() {
   }
   return (
     <>
-      {preferences?.testnetMode && !shortcutsDisabled && !isDialog ? (
+      {preferences?.testnetMode &&
+      !shortcutsDisabled &&
+      !windowContext.isDialog() ? (
         <KeyboardShortcut
           combination="t"
           onKeyDown={() => {
@@ -84,9 +85,9 @@ export function TestModeDecoration() {
               as="label"
               htmlFor={checkboxId}
             >
-              {!isDialog ? 'Testnet Mode' : 'Testnets'}
+              {!windowContext.isDialog() ? 'Testnet Mode' : 'Testnets'}
             </UIText>
-            {!isDialog ? (
+            {!windowContext.isDialog() ? (
               <Toggle
                 id={checkboxId}
                 checked={Boolean(on)}

@@ -1,9 +1,10 @@
 import browser from 'webextension-polyfill';
+import { setAppMode, setWindowType } from 'src/ui/shared/WindowParam';
+import { getPopupUrl } from 'src/ui/shared/getPopupUrl';
 
-export function openOnboarding(popupUrl: URL) {
-  popupUrl.searchParams.append('windowContext', 'tab');
-  popupUrl.searchParams.append('context', 'onboarding');
-  browser.tabs.create({
-    url: popupUrl.toString(),
-  });
+export function openOnboarding() {
+  const popupUrl = getPopupUrl();
+  setWindowType(popupUrl.searchParams, 'tab');
+  setAppMode(popupUrl.searchParams, 'onboarding');
+  browser.tabs.create({ url: popupUrl.toString() });
 }

@@ -48,7 +48,7 @@ import { ViewLoadingSuspense } from 'src/ui/components/ViewLoading/ViewLoading';
 import { useEvent } from 'src/ui/shared/useEvent';
 import type { SendTxBtnHandle } from 'src/ui/components/SignTransactionButton';
 import { SignTransactionButton } from 'src/ui/components/SignTransactionButton';
-import { useSizeStore } from 'src/ui/Onboarding/useSizeStore';
+import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { createSendAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
@@ -363,7 +363,7 @@ function SendFormComponent() {
 
   const formId = useId();
 
-  const { innerHeight } = useSizeStore();
+  const { innerHeight } = useWindowSizeStore();
 
   const navigate = useNavigate();
 

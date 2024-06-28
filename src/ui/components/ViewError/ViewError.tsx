@@ -12,7 +12,7 @@ import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
-import { templateData } from 'src/ui/shared/getPageTemplateName';
+import { windowContext } from 'src/ui/shared/WindowContext';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { emitter } from 'src/ui/shared/events';
 import { resetPersistedRoutes } from 'src/ui/App/RouteRestoration';
@@ -128,16 +128,14 @@ export function ViewError({
             kind="regular"
             onClick={async () => {
               await resetPersistedRoutes();
-              if (templateData.windowContext !== 'dialog') {
+              if (!windowContext.isDialog()) {
                 navigate('/');
               }
               window.location.reload();
             }}
             style={{ paddingInline: 8 }}
           >
-            {templateData.windowContext === 'dialog'
-              ? 'Try Again'
-              : 'Back to Home'}
+            {windowContext.isDialog() ? 'Try Again' : 'Back to Home'}
           </Button>
           <Button
             as={UnstyledAnchor}

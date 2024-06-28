@@ -31,7 +31,6 @@ import {
   windowPort,
 } from '../shared/channels';
 import { CreateAccount } from '../pages/CreateAccount';
-import { templateData } from '../shared/getPageTemplateName';
 import { URLBar } from '../components/URLBar';
 import { SwitchEthereumChain } from '../pages/SwitchEthereumChain';
 import { DesignTheme } from '../components/DesignTheme';
@@ -40,7 +39,6 @@ import { ViewError } from '../components/ViewError';
 import { ViewArea } from '../components/ViewArea';
 import { Settings } from '../pages/Settings';
 import { Networks } from '../pages/Networks';
-import { BackupWallet } from '../pages/BackupWallet';
 import { ManageWallets } from '../pages/ManageWallets';
 import { WalletSelect } from '../pages/WalletSelect';
 import { NotFoundPage } from '../components/NotFoundPage';
@@ -61,7 +59,6 @@ import { initialize as initializeApperance } from '../features/appearance';
 import { HandshakeFailure } from '../components/HandshakeFailure';
 import { useScreenViewChange } from '../shared/useScreenViewChange';
 import { NonFungibleToken } from '../pages/NonFungibleToken';
-import { Onboarding } from '../Onboarding';
 import { AddEthereumChain } from '../pages/AddEthereumChain';
 import { SignInWithEthereum } from '../pages/SignInWithEthereum';
 import { TestnetModeGuard } from '../pages/TestnetModeGuard';
@@ -75,8 +72,13 @@ import { MintDnaFlow } from '../DNA/pages/MintDnaFlow';
 import { UpgradeDnaFlow } from '../DNA/pages/UpgradeDnaFlow';
 import { ChooseGlobalProviderGuard } from '../pages/RequestAccounts/ChooseGlobalProvider/ChooseGlobalProvider';
 import { usePreferences } from '../features/preferences';
-import { openTabView } from '../shared/openInTabView';
+import { openUrl } from '../shared/openUrl';
 import { TestModeDecoration } from '../features/testnet-mode/TestModeDecoration';
+import { Backup } from '../pages/Backup';
+import { PageLayout } from '../components/PageLayout';
+import { Onboarding } from '../features/onboarding';
+import { RevealPrivateKey } from '../pages/RevealPrivateKey';
+import { windowContext } from '../shared/WindowContext';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -172,6 +174,17 @@ function PageLayoutViews() {
     <Routes>
       <Route path="/mint-dna/*" element={<MintDnaFlow />} />
       <Route path="/upgrade-dna/*" element={<UpgradeDnaFlow />} />
+
+      <Route
+        path="/backup/*"
+        element={
+          <RequireAuth>
+            <PageLayout>
+              <Backup />
+            </PageLayout>
+          </RequireAuth>
+        }
+      />
     </Routes>
   );
 }
@@ -187,7 +200,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
     <RouteResolver>
       <ViewArea>
         <URLBar />
-        {templateData.windowContext === 'popup' ? (
+        {windowContext.isPopup() ? (
           <RouteRestoration initialRoute={initialRoute} />
         ) : null}
         <Routes>
@@ -257,10 +270,10 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             }
           />
           <Route
-            path="/backup-wallet/*"
+            path="/reveal-private-key/*"
             element={
               <RequireAuth>
-                <BackupWallet />
+                <RevealPrivateKey />
               </RequireAuth>
             }
           />
@@ -401,7 +414,7 @@ registerPersistentRoute('/swap-form');
 function GlobalKeyboardShortcuts() {
   return (
     <>
-      {templateData.windowContext === 'dialog' ? (
+      {windowContext.isDialog() ? (
         <KeyboardShortcut
           combination="esc"
           onKeyDown={() => {
@@ -419,7 +432,7 @@ function GlobalKeyboardShortcuts() {
         onKeyDown={() => {
           // Helper for development and debugging :)
           const url = new URL(window.location.href);
-          openTabView(url);
+          openUrl(url, { windowType: 'tab' });
         }}
       />
     </>
@@ -427,24 +440,23 @@ function GlobalKeyboardShortcuts() {
 }
 
 export interface AppProps {
-  mode: 'onboarding' | 'wallet';
   initialView?: 'handshakeFailure';
   inspect?: { message: string };
 }
 
-export function App({ initialView, mode, inspect }: AppProps) {
+export function App({ initialView, inspect }: AppProps) {
   const bodyClassList = useMemo(() => {
     const result = [];
-    if (templateData.windowContext === 'dialog') {
+    if (windowContext.isDialog()) {
       result.push(styles.isDialog);
-    } else if (templateData.windowContext === 'tab') {
+    } else if (windowContext.isTab()) {
       result.push(styles.isTab);
     }
-    if (mode === 'onboarding' || templateData.layout === 'page') {
+    if (windowContext.isOnboardingMode() || windowContext.hasPageLayout()) {
       result.push(styles.pageLayout);
     }
     return result;
-  }, [mode]);
+  }, []);
 
   const { connected } = useStore(runtimeStore);
 
@@ -452,9 +464,8 @@ export function App({ initialView, mode, inspect }: AppProps) {
     useMemo(() => ({ opacity: connected ? '' : '0.6' }), [connected])
   );
 
-  const isOnboardingTemplate =
-    mode === 'onboarding' && initialView !== 'handshakeFailure';
-  const isPageTemplate = templateData.layout === 'page';
+  const isOnboardingView =
+    windowContext.isOnboardingMode() && initialView !== 'handshakeFailure';
 
   return (
     <AreaProvider>
@@ -479,14 +490,14 @@ export function App({ initialView, mode, inspect }: AppProps) {
               ) : null}
               <GlobalKeyboardShortcuts />
               <VersionUpgrade>
-                {!isOnboardingTemplate && !isPageTemplate ? (
+                {!isOnboardingView && !windowContext.hasPageLayout() ? (
                   // Render above <ViewSuspense /> so that it doesn't flicker
                   <MaybeTestModeDecoration />
                 ) : null}
                 <ViewSuspense logDelays={true}>
-                  {isOnboardingTemplate ? (
+                  {isOnboardingView ? (
                     <Onboarding />
-                  ) : isPageTemplate ? (
+                  ) : windowContext.hasPageLayout() ? (
                     <PageLayoutViews />
                   ) : (
                     <DefiSdkClientProvider>

@@ -13,7 +13,7 @@ import { usePreferences } from 'src/ui/features/preferences';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { apostrophe } from 'src/ui/shared/typography';
 import { useEvent } from 'src/ui/shared/useEvent';
-import { useBackupTodosCount } from '../BackupWallet/useBackupTodosCount';
+import { useBackupTodosCount } from 'src/ui/shared/requests/useBackupTodosCount';
 
 const ONE_DAY = 1000 * 60 * 60 * 24;
 

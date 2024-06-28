@@ -8,7 +8,7 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import LockIcon from 'jsx:src/ui/assets/lock.svg';
+import LockIcon from 'jsx:src/ui/assets/lock-outline.svg';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { Toggle } from 'src/ui/ui-kit/Toggle';

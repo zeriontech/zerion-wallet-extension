@@ -13,10 +13,10 @@ import type { AppProps } from './App/App';
 import { initialize as initializeChannels } from './shared/channels';
 import { queryClient } from './shared/requests/queryClient';
 import { emitter } from './shared/events';
-import { maybeOpenOboarding } from './Onboarding/initialization';
-import { OnboardingInterrupt } from './Onboarding/errors';
 import { persistQueryClient } from './shared/requests/queryClientPersistence';
 import { getPreferences } from './features/preferences/usePreferences';
+import { OnboardingInterrupt } from './features/onboarding/errors';
+import { maybeOpenOnboarding } from './features/onboarding/initialization';
 
 applyDrawFix();
 if (process.env.NODE_ENV === 'development') {
@@ -41,7 +41,7 @@ async function registerServiceWorker() {
 
 let reactRoot: Root | null = null;
 
-function renderApp({ initialView, mode, inspect }: AppProps) {
+function renderApp({ initialView, inspect }: AppProps) {
   const root = document.getElementById('root');
   if (!root) {
     throw new Error('#root element not found');
@@ -53,7 +53,7 @@ function renderApp({ initialView, mode, inspect }: AppProps) {
   reactRoot = createRoot(root);
   reactRoot.render(
     <React.StrictMode>
-      <App initialView={initialView} mode={mode} inspect={inspect} />
+      <App initialView={initialView} inspect={inspect} />
     </React.StrictMode>
   );
 }
@@ -68,7 +68,7 @@ async function initializeUI({
   try {
     await registerServiceWorker();
     initializeChannels();
-    const { mode } = await maybeOpenOboarding();
+    await maybeOpenOnboarding();
     if (innerIsFirstLoad) {
       await persistQueryClient(queryClient);
     } else {
@@ -77,7 +77,7 @@ async function initializeUI({
     await getPreferences(); // seed queryClient. TODO before merge: do we need this?
     await configureUIClient();
     initializeClientAnalytics();
-    renderApp({ initialView, mode, inspect });
+    renderApp({ initialView, inspect });
   } catch (error) {
     if (error instanceof OnboardingInterrupt) {
       // do nothing
