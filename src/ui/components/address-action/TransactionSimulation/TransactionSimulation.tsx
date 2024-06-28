@@ -19,6 +19,8 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { fetchAndAssignPaymaster } from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
 import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
+import type { EligibilityQuery } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
+import { shouldInterpretTransaction } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
 import { AddressActionDetails } from '../AddressActionDetails';
 import { InterpretationState } from '../../InterpretationState';
 
@@ -27,6 +29,7 @@ export function TransactionSimulation({
   address,
   transaction,
   paymasterEligible,
+  eligibilityQuery,
   localAllowanceQuantityBase,
   showApplicationLine,
   onOpenAllowanceForm,
@@ -35,6 +38,7 @@ export function TransactionSimulation({
   address: string;
   transaction: IncomingTransactionWithChainId;
   paymasterEligible: boolean;
+  eligibilityQuery: EligibilityQuery;
   localAllowanceQuantityBase?: string;
   showApplicationLine: boolean;
   onOpenAllowanceForm?: () => void;
@@ -94,8 +98,11 @@ export function TransactionSimulation({
     useErrorBoundary: true,
   });
 
+  const network = chain ? networks?.getNetworkByName(chain) || null : null;
   const txInterpretQuery = useQuery({
-    enabled: FEATURE_PAYMASTER_ENABLED ? paymasterEligible === false : true,
+    enabled: FEATURE_PAYMASTER_ENABLED
+      ? shouldInterpretTransaction({ network, eligibilityQuery })
+      : true,
     queryKey: ['interpretTransaction', transaction, client],
     queryKeyHashFn: (queryKey) => {
       const key = queryKey.map((x) => (x instanceof Client ? x.url : x));

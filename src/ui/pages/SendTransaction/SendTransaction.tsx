@@ -83,6 +83,7 @@ import { usePreferences } from 'src/ui/features/preferences';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { fetchAndAssignPaymaster } from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
 import { isDeviceAccount } from 'src/shared/types/validators';
+import { shouldInterpretTransaction } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -525,9 +526,9 @@ function SendTransactionContent({
   const isDeviceWallet = isDeviceAccount(wallet);
   const USE_PAYMASTER_FEATURE = FEATURE_PAYMASTER_ENABLED && !isDeviceWallet;
 
-  const network = networks.getNetworkByName(chain);
+  const network = networks.getNetworkByName(chain) || null;
 
-  const { data: eligibility } = useQuery({
+  const eligibilityQuery = useQuery({
     enabled: USE_PAYMASTER_FEATURE && network?.supports_sponsored_transactions,
     suspense: false,
     staleTime: 120000,
@@ -538,7 +539,7 @@ function SendTransactionContent({
     },
   });
 
-  const paymasterEligible = Boolean(eligibility?.data.eligible);
+  const paymasterEligible = Boolean(eligibilityQuery.data?.data.eligible);
 
   const client = useDefiSdkClient();
 
@@ -548,7 +549,7 @@ function SendTransactionContent({
     origin,
     client,
     enabled: USE_PAYMASTER_FEATURE
-      ? eligibility?.data.eligible === false
+      ? shouldInterpretTransaction({ network, eligibilityQuery })
       : true,
   });
 
