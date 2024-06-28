@@ -36,10 +36,7 @@ export function AddressActionDetails({
     recipientAddress && addressAction?.type.value === 'send';
 
   const applicationLineVisible =
-    showApplicationLine &&
-    addressAction?.label &&
-    !recipientAddress &&
-    !showRecipientLine;
+    showApplicationLine && addressAction?.label && !showRecipientLine;
 
   return (
     <>
