@@ -27,6 +27,7 @@ export function TransactionSimulation({
   address,
   transaction,
   paymasterEligible,
+  eligibilityQuery,
   localAllowanceQuantityBase,
   showApplicationLine,
   onOpenAllowanceForm,
@@ -35,6 +36,10 @@ export function TransactionSimulation({
   address: string;
   transaction: IncomingTransactionWithChainId;
   paymasterEligible: boolean;
+  eligibilityQuery: {
+    data?: { eligible: boolean };
+    isError: boolean;
+  };
   localAllowanceQuantityBase?: string;
   showApplicationLine: boolean;
   onOpenAllowanceForm?: () => void;
@@ -94,8 +99,13 @@ export function TransactionSimulation({
     useErrorBoundary: true,
   });
 
+  const network = chain ? networks?.getNetworkByName(chain) : null;
   const txInterpretQuery = useQuery({
-    enabled: FEATURE_PAYMASTER_ENABLED ? paymasterEligible === false : true,
+    enabled: FEATURE_PAYMASTER_ENABLED
+      ? network?.supports_sponsored_transactions
+        ? eligibilityQuery.data?.eligible === false || eligibilityQuery.isError
+        : true
+      : true,
     queryKey: ['interpretTransaction', transaction, client],
     queryKeyHashFn: (queryKey) => {
       const key = queryKey.map((x) => (x instanceof Client ? x.url : x));

@@ -527,7 +527,7 @@ function SendTransactionContent({
 
   const network = networks.getNetworkByName(chain);
 
-  const { data: eligibility } = useQuery({
+  const { data: eligibility, ...eligibilityQuery } = useQuery({
     enabled: USE_PAYMASTER_FEATURE && network?.supports_sponsored_transactions,
     suspense: false,
     staleTime: 120000,
@@ -548,7 +548,9 @@ function SendTransactionContent({
     origin,
     client,
     enabled: USE_PAYMASTER_FEATURE
-      ? eligibility?.data.eligible === false
+      ? network?.supports_sponsored_transactions
+        ? eligibility?.data.eligible === false || eligibilityQuery.isError
+        : true
       : true,
   });
 

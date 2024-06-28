@@ -24,6 +24,7 @@ export function TransactionConfirmationView({
   chain,
   configuration,
   paymasterEligible,
+  eligibilityQuery,
   localAllowanceQuantityBase,
   onOpenAllowanceForm,
 }: {
@@ -34,6 +35,10 @@ export function TransactionConfirmationView({
   chain: Chain;
   configuration: CustomConfiguration;
   paymasterEligible: boolean;
+  eligibilityQuery: {
+    data?: { eligible: boolean };
+    isError: boolean;
+  };
   localAllowanceQuantityBase?: string;
   onOpenAllowanceForm?: () => void;
 }) {
@@ -75,6 +80,7 @@ export function TransactionConfirmationView({
           address={wallet.address}
           transaction={transaction}
           paymasterEligible={paymasterEligible}
+          eligibilityQuery={eligibilityQuery}
         />
         <Spacer height={20} />
 

@@ -261,7 +261,7 @@ function SendFormComponent() {
 
   const chainId = chain ? networks?.getChainId(chain) : null;
   const network = chain ? networks?.getNetworkByName(chain) : null;
-  const { data: eligibility } = useQuery({
+  const { data: eligibility, ...eligibilityQuery } = useQuery({
     enabled: Boolean(
       USE_PAYMASTER_FEATURE &&
         network?.supports_sponsored_transactions &&
@@ -594,6 +594,7 @@ function SendFormComponent() {
                     chain={chain}
                     sendView={sendView}
                     paymasterEligible={paymasterEligible}
+                    eligibilityQuery={eligibilityQuery}
                   />
                 </ViewLoadingSuspense>
               </>
