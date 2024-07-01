@@ -72,6 +72,19 @@ export function CenteredFillViewportView({
     };
   }, [handleScroll]);
 
+  useEffect(() => {
+    const observer = new ResizeObserver(() => {
+      handleScroll();
+    });
+    const root = document.getElementById('root');
+    if (root) {
+      observer.observe(root);
+    }
+    return () => {
+      observer.disconnect();
+    };
+  }, [handleScroll]);
+
   useLayoutEffect(() => {
     handleScroll();
   }, [handleScroll]);
