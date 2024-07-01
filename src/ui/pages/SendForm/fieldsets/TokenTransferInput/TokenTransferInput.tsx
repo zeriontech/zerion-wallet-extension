@@ -1,9 +1,10 @@
 import React, { useId, useRef } from 'react';
 import type { SendFormView } from '@zeriontech/transactions';
 import { useSelectorStore } from '@store-unit/react';
-import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { invariant } from 'src/shared/invariant';
-import { getPositionBalance } from 'src/ui/components/Positions/helpers';
+import {
+  getPositionBalance,
+  getPositionPartialBalance,
+} from 'src/ui/components/Positions/helpers';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import type { InputHandle } from 'src/ui/ui-kit/Input/DebouncedInput';
 import { DebouncedInput } from 'src/ui/ui-kit/Input/DebouncedInput';
@@ -16,6 +17,11 @@ import { isNumeric } from 'src/shared/isNumeric';
 import BigNumber from 'bignumber.js';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import {
+  QUICK_AMOUNTS,
+  QuickAmountButton,
+} from 'src/ui/shared/forms/QuickAmounts';
 import { AssetSelect } from '../../AssetSelect';
 
 function FiatInputValue({ sendView }: { sendView: SendFormView }) {
@@ -76,6 +82,28 @@ export function TokenTransferInput({ sendView }: { sendView: SendFormView }) {
     <>
       <FormFieldset
         title="Asset"
+        endTitle={
+          tokenItem && positionBalanceCommon ? (
+            <HStack gap={16} alignItems="center">
+              {QUICK_AMOUNTS.map(({ factor, title }) => (
+                <QuickAmountButton
+                  key={factor}
+                  onClick={() => {
+                    const value = getPositionPartialBalance(
+                      tokenItem,
+                      factor
+                    ).toFixed();
+                    sendView.handleChange('tokenValue', value);
+                    tokenValueInputRef.current?.setValue(value);
+                    inputRef.current?.focus();
+                  }}
+                >
+                  {title}
+                </QuickAmountButton>
+              ))}
+            </HStack>
+          ) : null
+        }
         inputSelector={`#${CSS.escape(inputId)}`}
         startInput={
           <div>
@@ -142,27 +170,11 @@ export function TokenTransferInput({ sendView }: { sendView: SendFormView }) {
           />
         }
         startDescription={
-          <div>
-            <span style={{ color: 'var(--neutral-600)' }}>Balance:</span>{' '}
-            <UnstyledButton
-              type="button"
-              style={{
-                color: exceedsBalance
-                  ? 'var(--negative-500)'
-                  : 'var(--primary)',
-              }}
-              disabled={positionBalanceCommon == null}
-              onClick={() => {
-                invariant(positionBalanceCommon, 'Position quantity unknown');
-                const value = positionBalanceCommon.toFixed();
-                sendView.handleChange('tokenValue', value);
-                tokenValueInputRef.current?.setValue(value);
-              }}
-            >
-              {positionBalanceCommon
-                ? formatTokenValue(positionBalanceCommon)
-                : 'n/a'}
-            </UnstyledButton>
+          <div style={{ color: 'var(--neutral-600)' }}>
+            Balance:{' '}
+            {positionBalanceCommon
+              ? formatTokenValue(positionBalanceCommon)
+              : 'n/a'}
           </div>
         }
         endDescription={<FiatInputValue sendView={sendView} />}
