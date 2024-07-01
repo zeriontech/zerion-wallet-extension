@@ -47,10 +47,12 @@ export function NetworkIcon({ src, name, size = 32, style }: Props) {
         src={src}
         alt=""
         style={{ width: '100%', display: 'block', ...style }}
-        renderError={() => <TextFallback name={name} size={size} />}
+        renderError={() => (
+          <TextFallback name={name} size={size} style={style} />
+        )}
       />
     </div>
   ) : (
-    <TextFallback name={name} size={size} />
+    <TextFallback name={name} size={size} style={style} />
   );
 }
