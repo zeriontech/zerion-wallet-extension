@@ -10,7 +10,7 @@
 }
 
 .container {
-  background-image: url('./assets/success_background.png');
+  background-image: url('~src/ui/assets/success_background.png');
   background-size: cover;
   display: flex;
   align-items: center;

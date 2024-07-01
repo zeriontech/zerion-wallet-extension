@@ -13,7 +13,7 @@ import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { PrivacyFooter } from 'src/ui/components/PrivacyFooter';
 import { useSearchParams } from 'react-router-dom';
 import { useSizeStore } from 'src/ui/shared/useSizeStore';
-import * as helperStyles from 'src/ui/Onboarding/shared/helperStyles.module.css';
+import * as helperStyles from 'src/ui/features/Onboarding/shared/helperStyles.module.css';
 import CardImg1 from './assets/create_card_1.png';
 import CardImg2 from './assets/create_card_2.png';
 import CardImg3 from './assets/create_card_3.png';

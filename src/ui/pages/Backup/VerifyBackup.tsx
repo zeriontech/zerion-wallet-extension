@@ -13,7 +13,7 @@ import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 import { usePendingRecoveryPhrase } from 'src/ui/shared/usePendingRecoveryPhrase';
 import { useSizeStore } from 'src/ui/shared/useSizeStore';
 import { useMnemonicInput } from 'src/ui/shared/useMnemonicInput';
-import * as helperStyles from 'src/ui/Onboarding/shared/helperStyles.module.css';
+import * as helperStyles from 'src/ui/features/Onboarding/shared/helperStyles.module.css';
 
 const INPUT_NUMBER = 12;
 const ARRAY_OF_NUMBERS = Array.from({ length: INPUT_NUMBER }, (_, i) => i);

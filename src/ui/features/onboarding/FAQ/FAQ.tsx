@@ -8,15 +8,15 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { apostrophe } from 'src/ui/shared/typography';
 import { useSizeStore } from 'src/ui/shared/useSizeStore';
+import lockIconSrc from 'jsx:src/ui/assets/lock.png';
+import { SidePanel } from 'src/ui/components/SidePanel';
 import keyIconSrc from '../assets/key.png';
 import dialogIconSrc from '../assets/dialog.png';
-import lockIconSrc from '../assets/lock.png';
 import metamaskIconSrc from '../assets/metamask.png';
 import metamaskInstructionSrc from '../assets/metamask_instruction.png';
 import walletIconSrc from '../assets/wallet2.png';
 import { Stack } from '../Stack';
 import * as styles from './styles.module.css';
-import { SidePanel } from './SidePanel';
 
 export function SecretKeyFAQ() {
   const { isNarrowView } = useSizeStore();

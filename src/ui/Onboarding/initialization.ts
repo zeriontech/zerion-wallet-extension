@@ -1,7 +1,7 @@
 import { getCurrentUser } from 'src/shared/getCurrentUser';
 import { openOnboarding } from 'src/shared/openOnboarding';
-import { templateData } from '../shared/getPageTemplateName';
-import { OnboardingInterrupt } from './errors';
+import { templateData } from 'src/ui/shared/getPageTemplateName';
+import { OnboardingInterrupt } from 'src/ui/onboarding/errors';
 
 export async function maybeOpenOboarding() {
   const isPopup = templateData.windowContext === 'popup';

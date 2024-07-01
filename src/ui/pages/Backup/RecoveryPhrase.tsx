@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { PrivacyFooter } from 'src/ui/components/PrivacyFooter';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
@@ -17,7 +17,7 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { clipboardWarning } from 'src/ui/pages/BackupWallet/clipboardWarning';
 import { SeedType } from 'src/shared/SeedType';
 import { useSizeStore } from 'src/ui/shared/useSizeStore';
-import * as helperStyles from 'src/ui/Onboarding/shared/helperStyles.module.css';
+import * as helperStyles from 'src/ui/features/Onboarding/shared/helperStyles.module.css';
 import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 import { usePendingRecoveryPhrase } from 'src/ui/shared/usePendingRecoveryPhrase';
 
@@ -32,6 +32,9 @@ export function RecoveryPhrase({
   const navigate = useNavigate();
 
   // TODO: Don't usePendingRecoveryPhrase when not in onboarding context
+
+  const [params] = useSearchParams();
+  const isOnboardingContext = params.get('context') === 'onboarding';
 
   const { data: mnemonic, error, isLoading } = usePendingRecoveryPhrase();
 
@@ -71,8 +74,8 @@ export function RecoveryPhrase({
           <UIText kind="headline/h2">Let’s Back Up Your Wallet!</UIText>
           <Spacer height={8} />
           <UIText kind="body/regular">
-            Save these 12 words in a password manager or write them down and
-            store in a secure location
+            Save these {mnemonic ? mnemonic.split(/\s+/).length : ''} words in a
+            password manager or write them down and store in a secure location
           </UIText>
           <Spacer height={40} />
           {isLoading ? (

@@ -4,7 +4,7 @@ import { PageLayout } from 'src/ui/components/PageLayout';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { useScreenViewChange } from 'src/ui/shared/useScreenViewChange';
 import { Backup } from 'src/ui/pages/Backup';
-import { Success } from 'src/ui/pages/Success';
+import { Success } from './Success';
 import { Welcome } from './Welcome';
 import { Import } from './Import';
 import { Create } from './Create';

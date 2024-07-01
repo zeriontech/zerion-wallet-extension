@@ -5,7 +5,7 @@ import {
   Route,
   Routes,
   useNavigate,
-  // useSearchParams,
+  useSearchParams,
 } from 'react-router-dom';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
@@ -22,9 +22,8 @@ class LostPendingWalletError extends Error {}
 export function Backup() {
   const navigate = useNavigate();
 
-  // const [params] = useSearchParams();
-  // const groupId = params.get('groupId');
-  // const context = params.get('context');
+  const [params] = useSearchParams();
+  const isOnboardingContext = params.get('context') === 'onboarding';
 
   // Skip flow is only relevant for onboarding
   const { mutate: handleSkipFlow } = useMutation({
@@ -80,9 +79,9 @@ export function Backup() {
         path="/info"
         element={
           <Info
-            onExit={() => navigate('/onboarding')}
             onContinue={() => navigate('recovery-phrase')}
             onSkip={() => handleSkipFlow()}
+            onExit={() => navigate('/onboarding')}
           />
         }
       />

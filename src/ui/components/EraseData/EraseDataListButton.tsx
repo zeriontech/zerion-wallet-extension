@@ -6,7 +6,7 @@ import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog'
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import type { UITextProps } from 'src/ui/ui-kit/UIText';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { maybeOpenOboarding } from 'src/ui/Onboarding/initialization';
+import { maybeOpenOboarding } from 'src/ui/onboarding/initialization';
 import { templateData } from 'src/ui/shared/getPageTemplateName';
 import { emitter } from 'src/ui/shared/events';
 import { EraseDataConfirmationDialog } from './EraseDataConfirmationDialog';

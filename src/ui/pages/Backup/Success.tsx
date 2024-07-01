@@ -1,18 +1,13 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import cn from 'classnames';
-import { useSpring, animated } from '@react-spring/web';
 import confetti from 'canvas-confetti';
-import { UIText } from 'src/ui/ui-kit/UIText';
-import { VStack } from 'src/ui/ui-kit/VStack';
-import ZerionIcon from 'jsx:./assets/zerion.svg';
-import PinIcon from 'jsx:./assets/pin.svg';
-import JigsawIcon from 'jsx:./assets/jigsaw.svg';
-import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { useSizeStore } from 'src/ui/shared/useSizeStore';
-import coinImgSrc from './assets/zer_coin.png';
-import sparkImgSrc from './assets/zer_spark.png';
-import starImgSrc from './assets/zer_star.png';
+import { UIText } from 'src/ui/ui-kit/UIText';
+import { VStack } from 'src/ui/ui-kit/VStack';
+import coinImgSrc from 'src/ui/assets/zer_coin.png';
+import sparkImgSrc from 'src/ui/assets/zer_spark.png';
+import starImgSrc from 'src/ui/assets/zer_star.png';
 import * as styles from './styles.module.css';
 
 export function Success() {
@@ -94,19 +89,6 @@ export function Success() {
     };
   }, [fireConfetti]);
 
-  const pinnerStyle = useSpring({
-    config: { mass: 1, tension: 150, friction: 8 },
-    delay: 1000,
-    from: {
-      opacity: 0,
-      x: 30,
-    },
-    to: {
-      opacity: 1,
-      x: 0,
-    },
-  });
-
   return (
     <>
       <canvas
@@ -131,7 +113,7 @@ export function Success() {
             <UIText kind="headline/h3" color="var(--always-white)">
               Zerion makes exploring web3 feel better than ever.
               {isNarrowView ? ' ' : <br />}
-              You can close this tab to get started.
+              You can close this tab now.
             </UIText>
           </VStack>
           {isNarrowView ? null : (
@@ -160,39 +142,6 @@ export function Success() {
             </>
           )}
         </div>
-        <animated.div className={styles.pinner} style={pinnerStyle}>
-          <VStack gap={0}>
-            <ZerionIcon
-              style={{ width: 16, height: 16, color: 'var(--black)' }}
-            />
-            <Spacer height={16} />
-            <UIText kind="headline/h3">Pin Zerion extension</UIText>
-            <Spacer height={24} />
-            <UIText kind="body/regular">
-              Click
-              <JigsawIcon
-                style={{
-                  display: 'inline',
-                  height: 17,
-                  width: 17,
-                  margin: '0 8px',
-                }}
-              />
-              in your browser
-              <br />
-              and click the
-              <PinIcon
-                style={{
-                  display: 'inline',
-                  height: 17,
-                  width: 12,
-                  margin: '0 8px',
-                }}
-              />
-              button
-            </UIText>
-          </VStack>
-        </animated.div>
       </VStack>
     </>
   );

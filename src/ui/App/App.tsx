@@ -60,7 +60,6 @@ import { initialize as initializeApperance } from '../features/appearance';
 import { HandshakeFailure } from '../components/HandshakeFailure';
 import { useScreenViewChange } from '../shared/useScreenViewChange';
 import { NonFungibleToken } from '../pages/NonFungibleToken';
-import { Onboarding } from '../Onboarding';
 import { AddEthereumChain } from '../pages/AddEthereumChain';
 import { SignInWithEthereum } from '../pages/SignInWithEthereum';
 import { TestnetModeGuard } from '../pages/TestnetModeGuard';
@@ -78,6 +77,7 @@ import { openTabView } from '../shared/openInTabView';
 import { TestModeDecoration } from '../features/testnet-mode/TestModeDecoration';
 import { Backup } from '../pages/Backup';
 import { PageLayout } from '../components/PageLayout';
+import { Onboarding } from '../features/onboarding';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
