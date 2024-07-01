@@ -4,6 +4,7 @@ import { getError } from 'src/shared/errors/getError';
 export class ErrorBoundary extends React.Component<
   React.PropsWithChildren<{
     forceIsErrorForTesting?: boolean;
+    retryKey?: number;
     renderError: (
       error?: (Error & { code?: number }) | null
     ) => React.ReactNode;
@@ -13,6 +14,12 @@ export class ErrorBoundary extends React.Component<
 
   static getDerivedStateFromError(error: unknown) {
     return { hasError: true, error: getError(error) };
+  }
+
+  componentDidUpdate(prevProps: Readonly<{ retryKey?: number | undefined }>) {
+    if (prevProps.retryKey !== this.props.retryKey) {
+      this.setState({ hasError: false, error: null });
+    }
   }
 
   render() {
