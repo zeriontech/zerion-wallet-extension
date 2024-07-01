@@ -31,6 +31,16 @@ function updateChainOrigin(origin: string, prevOrigin: string | null) {
   return origin;
 }
 
+function updatePreviousIds(
+  id: string,
+  previousId: string,
+  previousIds: string[] | null
+) {
+  return previousId !== id && !previousIds?.includes(previousId)
+    ? [...(previousIds || []), previousId]
+    : previousIds;
+}
+
 class ChainConfigStore extends PersistentStore<ChainConfig> {
   static initialState: ChainConfig = {
     version: 3,
@@ -72,10 +82,7 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
     );
     const existingEntry = existingItems.get(prevId);
     const existingPreviousIds = existingEntry?.previousIds || null;
-    const previousIds =
-      prevId !== id && !existingPreviousIds?.includes(prevId)
-        ? [...(existingPreviousIds || []), prevId]
-        : existingPreviousIds;
+    const previousIds = updatePreviousIds(id, prevId, existingPreviousIds);
     const now = Date.now();
     const newEntry: EthereumChainConfig = {
       origin: updateChainOrigin(origin, existingEntry?.origin || null),
@@ -135,7 +142,15 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
               `Unable to fetch network info by chainId: ${config.value.chainId}`
             );
           }
-          updatedEthereumChainConfigs.push({ ...config, id: network.id });
+          updatedEthereumChainConfigs.push({
+            ...config,
+            id: network.id,
+            previousIds: updatePreviousIds(
+              network.id,
+              config.id,
+              config.previousIds
+            ),
+          });
         } catch {
           updatedEthereumChainConfigs.push(config);
         }
