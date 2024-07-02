@@ -11,7 +11,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { useSizeStore } from 'src/ui/shared/useSizeStore';
 import { PrivacyFooter } from 'src/ui/components/PrivacyFooter';
 import { Stack } from 'src/ui/ui-kit/Stack';
-import * as helperStyles from 'src/ui/features/Onboarding/shared/helperStyles.module.css';
+import * as helperStyles from 'src/ui/features/onboarding/shared/helperStyles.module.css';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { useNavigate } from 'react-router-dom';
 import * as styles from './styles.module.css';

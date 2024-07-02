@@ -12,7 +12,7 @@ import { clipboardWarning } from 'src/ui/pages/BackupWallet/clipboardWarning';
 import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 import { useSizeStore } from 'src/ui/shared/useSizeStore';
 import { useMnemonicInput } from 'src/ui/shared/useMnemonicInput';
-import * as helperStyles from 'src/ui/features/Onboarding/shared/helperStyles.module.css';
+import * as helperStyles from 'src/ui/features/onboarding/shared/helperStyles.module.css';
 import { invariant } from 'src/shared/invariant';
 import { useMutation } from '@tanstack/react-query';
 import { walletPort } from 'src/ui/shared/channels';

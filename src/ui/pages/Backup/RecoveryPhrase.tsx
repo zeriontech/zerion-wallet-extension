@@ -17,7 +17,7 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { clipboardWarning } from 'src/ui/pages/BackupWallet/clipboardWarning';
 import { SeedType } from 'src/shared/SeedType';
 import { useSizeStore } from 'src/ui/shared/useSizeStore';
-import * as helperStyles from 'src/ui/features/Onboarding/shared/helperStyles.module.css';
+import * as helperStyles from 'src/ui/features/onboarding/shared/helperStyles.module.css';
 import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 import { invariant } from 'src/shared/invariant';
 import { useRecoveryPhrase } from './useRecoveryPhrase';
