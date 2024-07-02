@@ -1,0 +1,139 @@
+import React from 'react';
+import { useMutation } from '@tanstack/react-query';
+import {
+  Navigate,
+  Route,
+  Routes,
+  useNavigate,
+  useSearchParams,
+} from 'react-router-dom';
+import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
+import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
+import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
+import { invariant } from 'src/shared/invariant';
+import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
+import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
+import { SessionExpired } from 'src/shared/errors/errors';
+import { Info } from './Info';
+import { RecoveryPhrase } from './RecoveryPhrase';
+import { VerifyBackup } from './VerifyBackup';
+import { VerifyUser } from './VerifyUser';
+import { Success } from './Success';
+
+export function Backup() {
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const groupId = params.get('groupId');
+  const isOnboarding = params.get('context') === 'onboarding';
+
+  const searchParams =
+    !isOnboarding && groupId ? `?${new URLSearchParams({ groupId })}` : '';
+
+  const { mutate: handleSkipFlow } = useMutation({
+    mutationFn: async () => {
+      const wallet = await walletPort.request('getPendingWallet');
+      if (!wallet) {
+        throw new SessionExpired();
+      }
+      await accountPublicRPCPort.request('saveUserAndWallet');
+      await setCurrentAddress({ address: wallet.address });
+    },
+    onSuccess: () => {
+      zeroizeAfterSubmission();
+      navigate('/onboarding/success');
+    },
+    onError: (e) => {
+      if (isSessionExpiredError(e)) {
+        navigate('/onboarding/session-expired', { replace: true });
+      }
+    },
+    useErrorBoundary: true,
+  });
+
+  const { mutate: handleCompleteFlow } = useMutation({
+    mutationFn: async () => {
+      if (isOnboarding) {
+        const wallet = await walletPort.request('getPendingWallet');
+        if (!wallet) {
+          throw new SessionExpired();
+        }
+        await accountPublicRPCPort.request('saveUserAndWallet');
+        await setCurrentAddress({ address: wallet.address });
+        const group = await getWalletGroupByAddress(wallet.address);
+        invariant(group?.id, 'Saved wallet should belong to a group');
+        await walletPort.request('updateLastBackedUp', { groupId: group.id });
+      } else {
+        invariant(groupId, 'groupId param is required');
+        await walletPort.request('updateLastBackedUp', { groupId });
+      }
+    },
+    onSuccess: () => {
+      zeroizeAfterSubmission();
+      if (isOnboarding) {
+        navigate('/onboarding/success');
+      } else {
+        navigate('success');
+      }
+    },
+    onError: (e) => {
+      if (isSessionExpiredError(e)) {
+        if (isOnboarding) {
+          navigate('/onboarding/session-expired', { replace: true });
+        } else {
+          navigate('verify-user', { replace: true });
+        }
+      }
+    },
+    useErrorBoundary: true,
+  });
+
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <Navigate
+            to={{ pathname: 'info', search: searchParams }}
+            replace={true}
+          />
+        }
+      />
+      <Route
+        path="/info"
+        element={
+          <Info
+            onContinue={() =>
+              isOnboarding
+                ? navigate('recovery-phrase')
+                : navigate('verify-user')
+            }
+            onSkip={() => handleSkipFlow()}
+            onExit={() => navigate('/onboarding')}
+          />
+        }
+      />
+      <Route
+        path="/verify-user"
+        element={
+          <VerifyUser
+            onSuccess={() => navigate(`recovery-phrase${searchParams}`)}
+          />
+        }
+      />
+      <Route
+        path="/recovery-phrase"
+        element={
+          <RecoveryPhrase
+            onNextStep={() => navigate(`verify-backup${searchParams}`)}
+            onSkip={() => handleSkipFlow()}
+          />
+        }
+      />
+      <Route
+        path="/verify-backup"
+        element={<VerifyBackup onSuccess={handleCompleteFlow} />}
+      />
+      <Route path="/success" element={<Success />} />
+    </Routes>
+  );
+}

@@ -13,7 +13,7 @@ import { Toggle } from 'src/ui/ui-kit/Toggle';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import WalletIcon from 'jsx:src/ui/assets/wallet.svg';
-import LockIcon from 'jsx:src/ui/assets/lock.svg';
+import LockIcon from 'jsx:src/ui/assets/lock-outline.svg';
 import GlobeIcon from 'jsx:src/ui/assets/globe.svg';
 import QuestionIcon from 'jsx:src/ui/assets/question-hint.svg';
 import BulbIcon from 'jsx:src/ui/assets/bulb.svg';

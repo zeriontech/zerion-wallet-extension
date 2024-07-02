@@ -13,10 +13,10 @@ import type { AppProps } from './App/App';
 import { initialize as initializeChannels } from './shared/channels';
 import { queryClient } from './shared/requests/queryClient';
 import { emitter } from './shared/events';
-import { maybeOpenOboarding } from './Onboarding/initialization';
-import { OnboardingInterrupt } from './Onboarding/errors';
 import { persistQueryClient } from './shared/requests/queryClientPersistence';
 import { getPreferences } from './features/preferences/usePreferences';
+import { OnboardingInterrupt } from './features/onboarding/errors';
+import { maybeOpenOboarding } from './features/onboarding/initialization';
 
 applyDrawFix();
 if (process.env.NODE_ENV === 'development') {

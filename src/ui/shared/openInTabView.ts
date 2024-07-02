@@ -1,7 +1,7 @@
 import browser from 'webextension-polyfill';
 
 export async function openTabView(url: URL) {
-  url.searchParams.append('windowContext', 'tab');
+  url.searchParams.set('windowContext', 'tab');
   const [activeTab] = await browser.tabs.query({
     active: true,
     lastFocusedWindow: true,

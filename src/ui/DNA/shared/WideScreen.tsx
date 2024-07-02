@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSizeStore } from 'src/ui/Onboarding/useSizeStore';
+import { useSizeStore } from 'src/ui/shared/useSizeStore';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';

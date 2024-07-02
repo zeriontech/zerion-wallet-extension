@@ -54,7 +54,7 @@ import { getPositionBalance } from 'src/ui/components/Positions/helpers';
 import { isPremiumMembership } from 'src/ui/shared/requests/premium/isPremiumMembership';
 import type { SendTxBtnHandle } from 'src/ui/components/SignTransactionButton';
 import { SignTransactionButton } from 'src/ui/components/SignTransactionButton';
-import { useSizeStore } from 'src/ui/Onboarding/useSizeStore';
+import { useSizeStore } from 'src/ui/shared/useSizeStore';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
