@@ -14,9 +14,9 @@ import { PrivacyFooter } from 'src/ui/components/PrivacyFooter';
 import { useSearchParams } from 'react-router-dom';
 import { useSizeStore } from 'src/ui/shared/useSizeStore';
 import * as helperStyles from 'src/ui/features/onboarding/shared/helperStyles.module.css';
-import CardImg1 from './assets/create_card_1.png';
-import CardImg2 from './assets/create_card_2.png';
-import CardImg3 from './assets/create_card_3.png';
+import CardImg1 from './create_card_1.png';
+import CardImg2 from './create_card_2.png';
+import CardImg3 from './create_card_3.png';
 import * as styles from './styles.module.css';
 
 const MAX_CARD_INDEX = 2;
