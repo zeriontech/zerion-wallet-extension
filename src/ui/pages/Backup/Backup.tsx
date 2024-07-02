@@ -13,21 +13,27 @@ import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupBy
 import { invariant } from 'src/shared/invariant';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
+import { SessionExpired } from 'src/shared/errors/errors';
 import { Info } from './Info';
 import { RecoveryPhrase } from './RecoveryPhrase';
 import { VerifyBackup } from './VerifyBackup';
 import { VerifyUser } from './VerifyUser';
-
-class LostPendingWalletError extends Error {}
+import { Success } from './Success';
 
 export function Backup() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const groupId = params.get('groupId');
+  const isOnboarding = params.get('context') === 'onboarding';
+
+  const searchParams =
+    !isOnboarding && groupId ? `?${new URLSearchParams({ groupId })}` : '';
 
   const { mutate: handleSkipFlow } = useMutation({
     mutationFn: async () => {
       const wallet = await walletPort.request('getPendingWallet');
       if (!wallet) {
-        throw new LostPendingWalletError();
+        throw new SessionExpired();
       }
       await accountPublicRPCPort.request('saveUserAndWallet');
       await setCurrentAddress({ address: wallet.address });
@@ -37,7 +43,7 @@ export function Backup() {
       navigate('/onboarding/success');
     },
     onError: (e) => {
-      if (isSessionExpiredError(e) || e instanceof LostPendingWalletError) {
+      if (isSessionExpiredError(e)) {
         navigate('/onboarding/session-expired', { replace: true });
       }
     },
@@ -46,34 +52,40 @@ export function Backup() {
 
   const { mutate: handleCompleteFlow } = useMutation({
     mutationFn: async () => {
-      // const wallet = walletPort.request('uiGetWalletGroup', { groupId });
-      const wallet = await walletPort.request('getPendingWallet');
-      if (!wallet) {
-        throw new LostPendingWalletError();
+      if (isOnboarding) {
+        const wallet = await walletPort.request('getPendingWallet');
+        if (!wallet) {
+          throw new SessionExpired();
+        }
+        await accountPublicRPCPort.request('saveUserAndWallet');
+        await setCurrentAddress({ address: wallet.address });
+        const group = await getWalletGroupByAddress(wallet.address);
+        invariant(group?.id, 'Saved wallet should belong to a group');
+        await walletPort.request('updateLastBackedUp', { groupId: group.id });
+      } else {
+        invariant(groupId, 'groupId param is required');
+        await walletPort.request('updateLastBackedUp', { groupId });
       }
-      await accountPublicRPCPort.request('saveUserAndWallet');
-      await setCurrentAddress({ address: wallet.address });
-      const group = await getWalletGroupByAddress(wallet.address);
-      invariant(group?.id, 'Saved wallet should belong to a group');
-      await walletPort.request('updateLastBackedUp', { groupId: group.id });
     },
     onSuccess: () => {
       zeroizeAfterSubmission();
-      navigate('/onboarding/success');
+      if (isOnboarding) {
+        navigate('/onboarding/success');
+      } else {
+        navigate('success');
+      }
     },
     onError: (e) => {
-      if (isSessionExpiredError(e) || e instanceof LostPendingWalletError) {
-        navigate('/onboarding/session-expired', { replace: true });
+      if (isSessionExpiredError(e)) {
+        if (isOnboarding) {
+          navigate('/onboarding/session-expired', { replace: true });
+        } else {
+          navigate('verify-user', { replace: true });
+        }
       }
     },
     useErrorBoundary: true,
   });
-
-  const [params] = useSearchParams();
-  const groupId = params.get('groupId');
-  const isOnboarding = params.get('context') === 'onboarding';
-  const searchParams =
-    !isOnboarding && groupId ? `?${new URLSearchParams({ groupId })}` : '';
 
   return (
     <Routes>
@@ -90,10 +102,10 @@ export function Backup() {
         path="/info"
         element={
           <Info
-            onContinue={
+            onContinue={() =>
               isOnboarding
-                ? () => navigate('recovery-phrase')
-                : () => navigate(`verify-user${searchParams}`)
+                ? navigate('recovery-phrase')
+                : navigate('verify-user')
             }
             onSkip={() => handleSkipFlow()}
             onExit={() => navigate('/onboarding')}
@@ -112,15 +124,16 @@ export function Backup() {
         path="/recovery-phrase"
         element={
           <RecoveryPhrase
-            onNextStep={() => navigate(`verify${searchParams}`)}
+            onNextStep={() => navigate(`verify-backup${searchParams}`)}
             onSkip={() => handleSkipFlow()}
           />
         }
       />
       <Route
-        path="/verify"
+        path="/verify-backup"
         element={<VerifyBackup onSuccess={handleCompleteFlow} />}
       />
+      <Route path="/success" element={<Success />} />
     </Routes>
   );
 }

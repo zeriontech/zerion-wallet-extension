@@ -41,9 +41,13 @@ export function RecoveryPhrase({
 
   useEffect(() => {
     if (isSessionExpiredError(error)) {
-      navigate('/onboarding/session-expired', { replace: true });
+      if (isOnboarding) {
+        navigate('/onboarding/session-expired', { replace: true });
+      } else {
+        navigate('verify-user', { replace: true });
+      }
     }
-  }, [navigate, error]);
+  }, [navigate, isOnboarding, error]);
 
   const { handleCopy, isSuccess: isCopySuccess } = useCopyToClipboard({
     text: recoveryPhrase || '',

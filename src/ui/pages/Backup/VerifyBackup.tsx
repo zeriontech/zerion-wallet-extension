@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { PrivacyFooter } from 'src/ui/components/PrivacyFooter';
@@ -14,6 +14,8 @@ import { useSizeStore } from 'src/ui/shared/useSizeStore';
 import { useMnemonicInput } from 'src/ui/shared/useMnemonicInput';
 import * as helperStyles from 'src/ui/features/Onboarding/shared/helperStyles.module.css';
 import { invariant } from 'src/shared/invariant';
+import { useMutation } from '@tanstack/react-query';
+import { walletPort } from 'src/ui/shared/channels';
 import { useRecoveryPhrase } from './useRecoveryPhrase';
 
 const INPUT_NUMBER = 12;
@@ -23,7 +25,6 @@ export function VerifyBackup({ onSuccess }: { onSuccess(): void }) {
   const navigate = useNavigate();
   const { isNarrowView } = useSizeStore();
   const [value, setValue] = useState(() => ARRAY_OF_NUMBERS.map(() => ''));
-  const [validationError, setValidationError] = useState(false);
   const isTechnicalHint = clipboardWarning.isWarningMessage(value.join(' '));
 
   const { getInputProps } = useMnemonicInput({
@@ -35,25 +36,43 @@ export function VerifyBackup({ onSuccess }: { onSuccess(): void }) {
   const [params] = useSearchParams();
   const isOnboarding = params.get('context') === 'onboarding';
   const groupId = params.get('groupId');
-  invariant(isOnboarding || groupId, 'groupId param is required');
 
   const { data: recoveryPhrase, isLoading, error } = useRecoveryPhrase(groupId);
 
   useEffect(() => {
     if (isSessionExpiredError(error)) {
-      navigate('/onboarding/session-expired', { replace: true });
+      if (isOnboarding) {
+        navigate('/onboarding/session-expired', { replace: true });
+      } else {
+        navigate('verify-user', { replace: true });
+      }
     }
-  }, [navigate, error]);
+  }, [navigate, isOnboarding, error]);
 
-  const handleVerify = useCallback(() => {
-    setValidationError(false);
-    if (recoveryPhrase === value.join(' ')) {
+  const verifyMutation = useMutation({
+    mutationFn: async (value: string) => {
+      if (isOnboarding) {
+        if (recoveryPhrase !== value) {
+          throw new Error('Incorrect seed phrase');
+        }
+        return true;
+      } else {
+        invariant(groupId, 'groupId param is required');
+        const isCorrect = await walletPort.request('verifyRecoveryPhrase', {
+          groupId,
+          value,
+        });
+        if (!isCorrect) {
+          throw new Error('Incorrect seed phrase');
+        }
+        return true;
+      }
+    },
+    onSuccess: async () => {
       zeroizeAfterSubmission();
       onSuccess();
-    } else {
-      setValidationError(true);
-    }
-  }, [recoveryPhrase, value, onSuccess]);
+    },
+  });
 
   const errorStyle = useMemo<React.CSSProperties>(
     () =>
@@ -97,7 +116,7 @@ export function VerifyBackup({ onSuccess }: { onSuccess(): void }) {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              handleVerify();
+              verifyMutation.mutate(value.join(' '));
             }}
           >
             <VStack gap={40} style={{ position: 'relative' }}>
@@ -133,13 +152,13 @@ export function VerifyBackup({ onSuccess }: { onSuccess(): void }) {
               >
                 Verify
               </Button>
-              {validationError ? (
+              {verifyMutation.error ? (
                 <UIText
                   kind="caption/regular"
                   color="var(--negative-500)"
                   style={errorStyle}
                 >
-                  Incorrect seed phrase
+                  {(verifyMutation.error as Error).message || 'unknown error'}
                 </UIText>
               ) : isTechnicalHint ? (
                 <UIText kind="caption/regular" color="var(--notice-500)">
