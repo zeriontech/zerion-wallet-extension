@@ -10,12 +10,12 @@ import { apostrophe } from 'src/ui/shared/typography';
 import { useSizeStore } from 'src/ui/shared/useSizeStore';
 import lockIconSrc from 'jsx:src/ui/assets/lock.png';
 import { SidePanel } from 'src/ui/components/SidePanel';
+import { Stack } from 'src/ui/ui-kit/Stack';
 import keyIconSrc from '../assets/key.png';
 import dialogIconSrc from '../assets/dialog.png';
 import metamaskIconSrc from '../assets/metamask.png';
 import metamaskInstructionSrc from '../assets/metamask_instruction.png';
 import walletIconSrc from '../assets/wallet2.png';
-import { Stack } from '../Stack';
 import * as styles from './styles.module.css';
 
 export function SecretKeyFAQ() {

@@ -9,7 +9,7 @@ import ImportIcon from 'jsx:../assets/option_secondary_import.svg';
 import HardWareIcon from 'jsx:../assets/option_secondary_hardware.svg';
 import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
 import { useSizeStore } from 'src/ui/shared/useSizeStore';
-import { Stack } from '../Stack';
+import { Stack } from 'src/ui/ui-kit/Stack';
 import CreateImg from '../assets/option_create.png';
 import ImportImg from '../assets/option_import.png';
 import HardwareImg from '../assets/option_hardware.png';

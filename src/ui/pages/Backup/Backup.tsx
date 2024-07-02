@@ -22,13 +22,8 @@ class LostPendingWalletError extends Error {}
 export function Backup() {
   const navigate = useNavigate();
 
-  const [params] = useSearchParams();
-  const isOnboardingContext = params.get('context') === 'onboarding';
-
-  // Skip flow is only relevant for onboarding
   const { mutate: handleSkipFlow } = useMutation({
     mutationFn: async () => {
-      // const wallet = walletPort.request('uiGetWalletGroup', { groupId });
       const wallet = await walletPort.request('getPendingWallet');
       if (!wallet) {
         throw new LostPendingWalletError();
@@ -50,6 +45,7 @@ export function Backup() {
 
   const { mutate: handleCompleteFlow } = useMutation({
     mutationFn: async () => {
+      // const wallet = walletPort.request('uiGetWalletGroup', { groupId });
       const wallet = await walletPort.request('getPendingWallet');
       if (!wallet) {
         throw new LostPendingWalletError();
@@ -72,14 +68,26 @@ export function Backup() {
     useErrorBoundary: true,
   });
 
+  const [params] = useSearchParams();
+  const groupId = params.get('groupId');
+  const searchParams = groupId ? `?${new URLSearchParams({ groupId })}` : '';
+
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="info" replace={true} />} />
+      <Route
+        path="/"
+        element={
+          <Navigate
+            to={{ pathname: 'info', search: searchParams }}
+            replace={true}
+          />
+        }
+      />
       <Route
         path="/info"
         element={
           <Info
-            onContinue={() => navigate('recovery-phrase')}
+            onContinue={() => navigate(`recovery-phrase${searchParams}`)}
             onSkip={() => handleSkipFlow()}
             onExit={() => navigate('/onboarding')}
           />
@@ -89,7 +97,7 @@ export function Backup() {
         path="/recovery-phrase"
         element={
           <RecoveryPhrase
-            onNextStep={() => navigate('verify')}
+            onNextStep={() => navigate(`verify${searchParams}`)}
             onSkip={() => handleSkipFlow()}
           />
         }

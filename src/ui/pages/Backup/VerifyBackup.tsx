@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { PrivacyFooter } from 'src/ui/components/PrivacyFooter';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -10,10 +10,11 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { Input } from 'src/ui/ui-kit/Input';
 import { clipboardWarning } from 'src/ui/pages/BackupWallet/clipboardWarning';
 import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
-import { usePendingRecoveryPhrase } from 'src/ui/shared/usePendingRecoveryPhrase';
 import { useSizeStore } from 'src/ui/shared/useSizeStore';
 import { useMnemonicInput } from 'src/ui/shared/useMnemonicInput';
 import * as helperStyles from 'src/ui/features/Onboarding/shared/helperStyles.module.css';
+import { invariant } from 'src/shared/invariant';
+import { useRecoveryPhrase } from './useRecoveryPhrase';
 
 const INPUT_NUMBER = 12;
 const ARRAY_OF_NUMBERS = Array.from({ length: INPUT_NUMBER }, (_, i) => i);
@@ -31,7 +32,12 @@ export function VerifyBackup({ onSuccess }: { onSuccess(): void }) {
     type: isTechnicalHint ? 'text' : undefined,
   });
 
-  const { data: mnemonic, isLoading, error } = usePendingRecoveryPhrase();
+  const [params] = useSearchParams();
+  const isOnboarding = params.get('context') === 'onboarding';
+  const groupId = params.get('groupId');
+  invariant(isOnboarding || groupId, 'groupId param is required');
+
+  const { data: recoveryPhrase, isLoading, error } = useRecoveryPhrase(groupId);
 
   useEffect(() => {
     if (isSessionExpiredError(error)) {
@@ -41,13 +47,13 @@ export function VerifyBackup({ onSuccess }: { onSuccess(): void }) {
 
   const handleVerify = useCallback(() => {
     setValidationError(false);
-    if (mnemonic === value.join(' ')) {
+    if (recoveryPhrase === value.join(' ')) {
       zeroizeAfterSubmission();
       onSuccess();
     } else {
       setValidationError(true);
     }
-  }, [mnemonic, value, onSuccess]);
+  }, [recoveryPhrase, value, onSuccess]);
 
   const errorStyle = useMemo<React.CSSProperties>(
     () =>

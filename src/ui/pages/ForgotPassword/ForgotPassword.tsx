@@ -16,7 +16,7 @@ import { focusNode } from 'src/ui/shared/focusNode';
 import { useEraseDataMutation } from 'src/ui/components/EraseData';
 import { EraseDataConfirmationDialog } from 'src/ui/components/EraseData';
 import { EraseDataInProgress } from 'src/ui/components/EraseData';
-import { maybeOpenOboarding } from 'src/ui/onboarding/initialization';
+import { maybeOpenOboarding } from 'src/ui/features/onboarding/initialization';
 import { templateData } from 'src/ui/shared/getPageTemplateName';
 import { emitter } from 'src/ui/shared/events';
 import * as s from './styles.module.css';

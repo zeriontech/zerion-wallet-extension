@@ -134,9 +134,7 @@ export function Info({
     }
   }, [activeCard, onContinue]);
 
-  // This flag is necessary because we only want to display the
-  // close icon and the "Do it Later" option in the onboarding context.
-  const isOnboardingContext = params.get('context') === 'onboarding';
+  const isOnboarding = params.get('context') === 'onboarding';
 
   return (
     <>
@@ -152,7 +150,7 @@ export function Info({
           className={cn(helperStyles.container, helperStyles.appear)}
           style={{ justifyContent: 'center', paddingBottom: 48 }}
         >
-          {isOnboardingContext ? (
+          {isOnboarding ? (
             <UnstyledButton
               aria-label="Exit creating wallet"
               className={helperStyles.backButton}
@@ -215,7 +213,7 @@ export function Info({
                 <Button onClick={handleClick} autoFocus={true}>
                   {activeCard === MAX_CARD_INDEX ? 'Back up now' : 'Continue'}
                 </Button>
-                {isOnboardingContext && activeCard === MAX_CARD_INDEX ? (
+                {isOnboarding && activeCard === MAX_CARD_INDEX ? (
                   <Button kind="ghost" onClick={onSkip}>
                     Do it Later
                   </Button>

@@ -15,8 +15,8 @@ import { queryClient } from './shared/requests/queryClient';
 import { emitter } from './shared/events';
 import { persistQueryClient } from './shared/requests/queryClientPersistence';
 import { getPreferences } from './features/preferences/usePreferences';
-import { maybeOpenOboarding } from './onboarding/initialization';
-import { OnboardingInterrupt } from './onboarding/errors';
+import { OnboardingInterrupt } from './features/onboarding/errors';
+import { maybeOpenOboarding } from './features/onboarding/initialization';
 
 applyDrawFix();
 if (process.env.NODE_ENV === 'development') {

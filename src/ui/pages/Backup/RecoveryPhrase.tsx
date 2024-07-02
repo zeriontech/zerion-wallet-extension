@@ -19,7 +19,8 @@ import { SeedType } from 'src/shared/SeedType';
 import { useSizeStore } from 'src/ui/shared/useSizeStore';
 import * as helperStyles from 'src/ui/features/Onboarding/shared/helperStyles.module.css';
 import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
-import { usePendingRecoveryPhrase } from 'src/ui/shared/usePendingRecoveryPhrase';
+import { invariant } from 'src/shared/invariant';
+import { useRecoveryPhrase } from './useRecoveryPhrase';
 
 export function RecoveryPhrase({
   onNextStep,
@@ -31,12 +32,12 @@ export function RecoveryPhrase({
   const { isNarrowView } = useSizeStore();
   const navigate = useNavigate();
 
-  // TODO: Don't usePendingRecoveryPhrase when not in onboarding context
-
   const [params] = useSearchParams();
-  const isOnboardingContext = params.get('context') === 'onboarding';
+  const isOnboarding = params.get('context') === 'onboarding';
+  const groupId = params.get('groupId');
+  invariant(isOnboarding || groupId, 'groupId param is required');
 
-  const { data: mnemonic, error, isLoading } = usePendingRecoveryPhrase();
+  const { data: recoveryPhrase, error, isLoading } = useRecoveryPhrase(groupId);
 
   useEffect(() => {
     if (isSessionExpiredError(error)) {
@@ -45,7 +46,7 @@ export function RecoveryPhrase({
   }, [navigate, error]);
 
   const { handleCopy, isSuccess: isCopySuccess } = useCopyToClipboard({
-    text: mnemonic || '',
+    text: recoveryPhrase || '',
   });
 
   const { handleCopy: emptyClipboard } = useCopyToClipboard({
@@ -74,8 +75,9 @@ export function RecoveryPhrase({
           <UIText kind="headline/h2">Let’s Back Up Your Wallet!</UIText>
           <Spacer height={8} />
           <UIText kind="body/regular">
-            Save these {mnemonic ? mnemonic.split(/\s+/).length : ''} words in a
-            password manager or write them down and store in a secure location
+            Save these{' '}
+            {recoveryPhrase ? recoveryPhrase.split(/\s+/).length : ''} words in
+            a password manager or write them down and store in a secure location
           </UIText>
           <Spacer height={40} />
           {isLoading ? (
@@ -108,7 +110,7 @@ export function RecoveryPhrase({
                     paddingRight: 12,
                   }}
                 >
-                  {mnemonic}
+                  {recoveryPhrase}
                 </UIText>
               </BlurredToggle>
             </Surface>
@@ -147,9 +149,11 @@ export function RecoveryPhrase({
                 >
                   Verify Backup
                 </Button>
-                <Button kind="ghost" onClick={onSkip}>
-                  Do it Later
-                </Button>
+                {isOnboarding ? (
+                  <Button kind="ghost" onClick={onSkip}>
+                    Do it Later
+                  </Button>
+                ) : null}
               </VStack>
             </>
           )}

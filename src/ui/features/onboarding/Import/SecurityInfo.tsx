@@ -9,7 +9,7 @@ import PersonIcon from 'jsx:src/ui/assets/person.svg';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
 import { useSizeStore } from 'src/ui/shared/useSizeStore';
-import { Stack } from '../Stack';
+import { Stack } from 'src/ui/ui-kit/Stack';
 import * as styles from './styles.module.css';
 
 export function SecurityInfo() {

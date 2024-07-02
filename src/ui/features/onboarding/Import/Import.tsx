@@ -30,7 +30,7 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
 import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 import { useSizeStore } from 'src/ui/shared/useSizeStore';
-import { Stack } from '../Stack';
+import { Stack } from 'src/ui/ui-kit/Stack';
 import keyIconSrc from '../assets/key.png';
 import dialogIconSrc from '../assets/dialog.png';
 import { Password } from '../Password';

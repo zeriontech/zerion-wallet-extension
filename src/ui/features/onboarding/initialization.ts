@@ -1,7 +1,7 @@
 import { getCurrentUser } from 'src/shared/getCurrentUser';
 import { openOnboarding } from 'src/shared/openOnboarding';
 import { templateData } from 'src/ui/shared/getPageTemplateName';
-import { OnboardingInterrupt } from 'src/ui/onboarding/errors';
+import { OnboardingInterrupt } from './errors';
 
 export async function maybeOpenOboarding() {
   const isPopup = templateData.windowContext === 'popup';
@@ -10,7 +10,7 @@ export async function maybeOpenOboarding() {
   const currentUser = await getCurrentUser();
   const userHasWallets = Boolean(currentUser);
   if (isPopup && !userHasWallets) {
-    const url = new URL('../popup.html', import.meta.url);
+    const url = new URL('../../popup.html', import.meta.url);
     openOnboarding(url);
     throw new OnboardingInterrupt();
   }
