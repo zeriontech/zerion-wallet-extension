@@ -1,6 +1,7 @@
-import React, { useId } from 'react';
+import React, { useCallback, useId } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import type { PublicUser } from 'src/shared/types/User';
+import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
 import { accountPublicRPCPort } from 'src/ui/shared/channels';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -11,10 +12,17 @@ import { useSizeStore } from 'src/ui/shared/useSizeStore';
 import { PrivacyFooter } from 'src/ui/components/PrivacyFooter';
 import { Stack } from 'src/ui/ui-kit/Stack';
 import * as helperStyles from 'src/ui/features/Onboarding/shared/helperStyles.module.css';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { useNavigate } from 'react-router-dom';
 import * as styles from './styles.module.css';
 
 export function VerifyUser({ onSuccess }: { onSuccess: () => void }) {
   const { isNarrowView } = useSizeStore();
+
+  const navigate = useNavigate();
+  const handleBackClick = useCallback(() => {
+    navigate(-1);
+  }, [navigate]);
 
   const { data: user, isLoading } = useQuery({
     queryKey: ['account/getExistingUser'],
@@ -53,10 +61,17 @@ export function VerifyUser({ onSuccess }: { onSuccess: () => void }) {
         </div>
       )}
       <VStack gap={8}>
-        <UIText kind="small/regular">Why do I need a password?</UIText>
         <UIText kind="small/regular" color="var(--neutral-600)">
-          This password will unlock your Zerion wallet extension when you want
-          to connect to a dApp or sign a transaction.
+          For security, it's crucial to write down the recovery phrase and store
+          it securely.
+        </UIText>
+        <UIText kind="small/regular" color="var(--neutral-600)">
+          Your recovery phrase is the only way to access your accounts and
+          assets, even if you forget your passcode.
+        </UIText>
+        <UIText kind="small/regular" color="var(--neutral-600)">
+          Never share your recovery phrase or passcode with anyone, including
+          Zerion team members.
         </UIText>
       </VStack>
     </VStack>
@@ -65,6 +80,13 @@ export function VerifyUser({ onSuccess }: { onSuccess: () => void }) {
   return (
     <VStack gap={isNarrowView ? 16 : 56}>
       <div className={helperStyles.container}>
+        <UnstyledButton
+          onClick={handleBackClick}
+          aria-label="Go Back"
+          className={helperStyles.backButton}
+        >
+          <ArrowLeftIcon style={{ width: 20, height: 20 }} />
+        </UnstyledButton>
         <Stack
           gap={isNarrowView ? 0 : 60}
           direction={isNarrowView ? 'vertical' : 'horizontal'}
@@ -80,14 +102,7 @@ export function VerifyUser({ onSuccess }: { onSuccess: () => void }) {
                 This password is required to reveal your recovery phrase.
               </UIText>
             </VStack>
-
             <form
-              style={{
-                justifySelf: 'stretch',
-                flexGrow: 1,
-                display: 'flex',
-                flexDirection: 'column',
-              }}
               onSubmit={(event) => {
                 event.preventDefault();
                 const password = new FormData(event.currentTarget).get(
@@ -102,11 +117,8 @@ export function VerifyUser({ onSuccess }: { onSuccess: () => void }) {
                 loginMutation.mutate({ user, password });
               }}
             >
-              <VStack
-                gap={16}
-                style={{ flexGrow: 1, gridTemplateRows: '1fr auto' }}
-              >
-                <VStack gap={4}>
+              <VStack gap={32}>
+                <VStack gap={24}>
                   <Input
                     id={inputId}
                     autoFocus={true}
@@ -122,9 +134,9 @@ export function VerifyUser({ onSuccess }: { onSuccess: () => void }) {
                     </UIText>
                   ) : null}
                 </VStack>
-                <Button disabled={loginMutation.isLoading}>
+                <Button kind="primary" disabled={loginMutation.isLoading}>
                   {loginMutation.isLoading
-                    ? 'Checking...'
+                    ? 'Checking password...'
                     : 'Reveal Recovery Phrase'}
                 </Button>
               </VStack>

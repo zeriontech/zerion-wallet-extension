@@ -299,7 +299,7 @@ function TypeSelector() {
           <UnstyledButton
             onClick={() => navigate(-1)}
             aria-label="Go Back"
-            className={helperStyles.backButton}
+            className={styles.backButton}
           >
             <ArrowLeftIcon style={{ width: 20, height: 20 }} />
           </UnstyledButton>

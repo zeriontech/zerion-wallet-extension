@@ -16,6 +16,7 @@ import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 import { Info } from './Info';
 import { RecoveryPhrase } from './RecoveryPhrase';
 import { VerifyBackup } from './VerifyBackup';
+import { VerifyUser } from './VerifyUser';
 
 class LostPendingWalletError extends Error {}
 
@@ -70,7 +71,9 @@ export function Backup() {
 
   const [params] = useSearchParams();
   const groupId = params.get('groupId');
-  const searchParams = groupId ? `?${new URLSearchParams({ groupId })}` : '';
+  const isOnboarding = params.get('context') === 'onboarding';
+  const searchParams =
+    !isOnboarding && groupId ? `?${new URLSearchParams({ groupId })}` : '';
 
   return (
     <Routes>
@@ -87,9 +90,21 @@ export function Backup() {
         path="/info"
         element={
           <Info
-            onContinue={() => navigate(`recovery-phrase${searchParams}`)}
+            onContinue={
+              isOnboarding
+                ? () => navigate('recovery-phrase')
+                : () => navigate(`verify-user${searchParams}`)
+            }
             onSkip={() => handleSkipFlow()}
             onExit={() => navigate('/onboarding')}
+          />
+        }
+      />
+      <Route
+        path="/verify-user"
+        element={
+          <VerifyUser
+            onSuccess={() => navigate(`recovery-phrase${searchParams}`)}
           />
         }
       />
