@@ -188,27 +188,35 @@ function TypedDataDefaultView({
   const footerContentRef = useRef<HTMLDivElement | null>(null);
   const [seenSigningData, setSeenSigningData] = useState(true);
   const typedDataRowRef = useRef<HTMLDivElement | null>(null);
-  const onTypedDataRowRefSet = useCallback((node: HTMLDivElement | null) => {
-    if (!node || !footerContentRef?.current) {
-      return;
-    }
-    const footerHeight = footerContentRef.current.getBoundingClientRect().top;
-    const rootMargin =
-      window.innerHeight + BUG_REPORT_BUTTON_HEIGHT - footerHeight;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setSeenSigningData(true);
-          observer.disconnect();
-        } else {
-          setSeenSigningData(false);
-        }
-      },
-      { rootMargin: `-${rootMargin}px` }
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
+  const onTypedDataRowRefSet = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (
+        !node ||
+        !footerContentRef?.current ||
+        interpretQuery.isInitialLoading ||
+        addressAction
+      ) {
+        return;
+      }
+      const footerHeight = footerContentRef.current.getBoundingClientRect().top;
+      const rootMargin =
+        window.innerHeight + BUG_REPORT_BUTTON_HEIGHT - footerHeight;
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setSeenSigningData(true);
+            observer.disconnect();
+          } else {
+            setSeenSigningData(false);
+          }
+        },
+        { rootMargin: `-${rootMargin}px` }
+      );
+      observer.observe(node);
+      return () => observer.disconnect();
+    },
+    [interpretQuery.isInitialLoading, addressAction]
+  );
 
   const disposables = useRef<Array<() => void>>([]);
   useEffect(() => {
