@@ -230,6 +230,10 @@ function TypedDataDefaultView({
     interpretation?.warnings
   );
 
+  const showRawTypedData = !addressAction;
+
+  const shouldScrollBeforeSigning = !seenSigningData && showRawTypedData;
+
   return (
     <>
       <PageTop />
@@ -290,9 +294,10 @@ function TypedDataDefaultView({
               ) : null
             }
           />
-        ) : (
+        ) : null}
+        {showRawTypedData ? (
           <TypedDataRow ref={setTypedDataRow} data={typedDataFormatted} />
-        )}
+        ) : null}
         <HStack
           gap={8}
           style={{
@@ -347,7 +352,7 @@ function TypedDataDefaultView({
                 wallet={wallet}
                 ref={signMsgBtnRef}
                 onClick={() => {
-                  if (!seenSigningData) {
+                  if (shouldScrollBeforeSigning) {
                     scrollSigningData();
                   } else {
                     signTypedData_v4();
@@ -362,12 +367,12 @@ function TypedDataDefaultView({
                     : undefined
                 }
                 children={
-                  seenSigningData ? null : (
+                  shouldScrollBeforeSigning ? (
                     <HStack gap={8} alignItems="center" justifyContent="center">
                       <span>Scroll</span>
                       <ArrowDownIcon style={{ width: 24, height: 24 }} />
                     </HStack>
-                  )
+                  ) : null
                 }
               />
             </div>
