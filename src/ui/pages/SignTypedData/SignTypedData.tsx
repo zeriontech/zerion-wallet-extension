@@ -190,6 +190,8 @@ function TypedDataDefaultView({
   const typedDataRowRef = useRef<HTMLDivElement | null>(null);
   const onTypedDataRowRefSet = useCallback(
     (node: HTMLDivElement | null) => {
+      // Don't show the scroll button until
+      // interpretation is fetched or if the simulation is successful
       if (
         !node ||
         !footerContentRef?.current ||
