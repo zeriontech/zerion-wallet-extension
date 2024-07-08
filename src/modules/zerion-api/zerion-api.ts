@@ -22,6 +22,10 @@ import type {
   Payload as GetGasPricesPayload,
   Response as GetGasPricesResponse,
 } from './requests/get-gas-prices';
+import type {
+  Payload as ExploreSectionsPayload,
+  Response as ExportSectionsResponse,
+} from './requests/explore-info';
 
 function getZpiHeaders() {
   return {
@@ -99,5 +103,17 @@ export class ZerionAPI {
         headers: getZpiHeaders(),
       })
       .json<GetGasPricesResponse>();
+  }
+
+  static getExploreSections(payload: ExploreSectionsPayload) {
+    return ky
+      .get(new URL('explore/get-sections/v1', ZERION_API_URL), {
+        searchParams: {
+          addresses: payload.addresses.join(','),
+          currency: payload.currency,
+        },
+        headers: getZpiHeaders(),
+      })
+      .json<ExportSectionsResponse>();
   }
 }
