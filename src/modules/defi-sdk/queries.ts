@@ -73,13 +73,13 @@ async function fetchAssetsPrices(
 }
 
 export async function fetchAssetFromCacheOrAPI(
-  { address, isNative, chain, id }: CachedAssetQuery,
+  { address, isNative, chain, id, currency }: CachedAssetQuery,
   client: Client
 ) {
   const requestAssetId = isNative ? id : normalizeNullableAddress(address);
   const assets = requestAssetId
     ? await fetchAssetsPrices(
-        { asset_codes: [requestAssetId || ''], currency: 'usd' },
+        { asset_codes: [requestAssetId || ''], currency },
         client
       )
     : null;
