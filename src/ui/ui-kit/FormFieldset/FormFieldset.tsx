@@ -8,6 +8,7 @@ import * as styles from './styles.module.css';
 interface FormFieldsetProps
   extends Omit<React.FieldsetHTMLAttributes<HTMLFieldSetElement>, 'title'> {
   title: React.ReactNode;
+  endTitle?: React.ReactNode;
   startInput: React.ReactNode;
   endInput?: React.ReactNode;
   startDescription?: React.ReactNode;
@@ -27,6 +28,7 @@ export const FormFieldset = React.forwardRef<
   (
     {
       title,
+      endTitle,
       startInput,
       endInput,
       startDescription,
@@ -64,9 +66,12 @@ export const FormFieldset = React.forwardRef<
         }}
       >
         <VStack gap={4} style={{ width: '100%' }}>
-          <UIText kind="small/regular" as="label" ref={labelRef}>
-            {title}
-          </UIText>
+          <HStack gap={8} justifyContent="space-between" alignItems="center">
+            <UIText kind="small/regular" as="label" ref={labelRef}>
+              {title}
+            </UIText>
+            {endTitle ? <UIText kind="small/regular">{endTitle}</UIText> : null}
+          </HStack>
           <HStack
             gap={8}
             justifyContent="space-between"
