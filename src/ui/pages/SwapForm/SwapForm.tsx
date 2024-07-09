@@ -68,6 +68,7 @@ import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
 import { AllowanceForm } from 'src/ui/components/AllowanceForm';
 import BigNumber from 'bignumber.js';
 import { usePreferences } from 'src/ui/features/preferences';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -135,6 +136,7 @@ function FormHint({
 export function SwapFormComponent() {
   useBackgroundKind({ kind: 'white' });
   const { singleAddress: address, ready } = useAddressParams();
+  const { currency } = useCurrency();
 
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
@@ -144,14 +146,14 @@ export function SwapFormComponent() {
 
   const { value: positionsValue } = useAddressPositions({
     address,
-    currency: 'usd',
+    currency,
   });
   const positions = positionsValue?.positions ?? null;
 
   const { value: portfolioDecomposition } = useAddressPortfolioDecomposition(
     {
       address,
-      currency: 'usd',
+      currency,
     },
     { enabled: ready }
   );
@@ -176,11 +178,11 @@ export function SwapFormComponent() {
   }, [networks]);
 
   const swapView = useSwapForm({
-    currency: 'usd',
+    currency,
     client,
     positions,
     asset_code: null,
-    getNativeAsset: ({ chain }) => getNativeAsset({ chain, currency: 'usd' }),
+    getNativeAsset: ({ chain }) => getNativeAsset({ chain, currency }),
     supportedChains,
     DEFAULT_CONFIGURATION,
   });

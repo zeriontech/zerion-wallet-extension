@@ -37,7 +37,10 @@ export function AppearancePage() {
             <FrameListItemButton
               key={preference}
               onClick={() => {
-                preferenceStore.setState({ mode: preference });
+                preferenceStore.setState((current) => ({
+                  ...current,
+                  mode: preference,
+                }));
               }}
             >
               <HStack

@@ -1,5 +1,6 @@
 import type { AddressAction } from 'defi-sdk';
 import React from 'react';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { createChain } from 'src/modules/networks/Chain';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { Networks } from 'src/modules/networks/Networks';
@@ -20,6 +21,7 @@ export function FeeLine({
   networks: Networks;
 }) {
   const { fee, chain, sponsored } = action.transaction;
+  const { currency } = useCurrency();
 
   const feeEth = baseToCommon(
     fee?.quantity || 0,
@@ -69,7 +71,7 @@ export function FeeLine({
             ) : (
               nativeAsset.symbol?.toUpperCase()
             )}
-            <span>({formatCurrencyValue(feeCurrency, 'en', 'usd')})</span>
+            <span>({formatCurrencyValue(feeCurrency, 'en', currency)})</span>
           </HStack>
         )}
       </UIText>

@@ -64,6 +64,7 @@ import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { useStore } from '@store-unit/react';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { usePreferences } from 'src/ui/features/preferences';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import {
   TAB_SELECTOR_HEIGHT,
   TAB_TOP_PADDING,
@@ -141,6 +142,7 @@ function AddressPositionItem({
   hasPreviosNestedPosition?: boolean;
   showGasIcon?: boolean;
 }) {
+  const { currency } = useCurrency();
   const isNested = Boolean(position.parent_id);
   const { networks } = useNetworks();
   const network = networks?.getNetworkByName(createChain(position.chain));
@@ -255,7 +257,7 @@ function AddressPositionItem({
         {position.value != null ? (
           <VStack gap={0} style={{ textAlign: 'right' }}>
             <UIText kind="body/regular">
-              {formatCurrencyValue(position.value, 'en', 'usd')}
+              {formatCurrencyValue(position.value, 'en', currency)}
             </UIText>
             {position.asset.price?.relative_change_24h ? (
               <UIText
@@ -271,7 +273,7 @@ function AddressPositionItem({
                 }${formatPercent(
                   Math.abs(position.asset.price.relative_change_24h),
                   'en'
-                )}% (${formatCurrencyValue(absoluteChange, 'en', 'usd')})`}
+                )}% (${formatCurrencyValue(absoluteChange, 'en', currency)})`}
               </UIText>
             ) : null}
           </VStack>
@@ -401,6 +403,8 @@ function ProtocolHeading({
   value: number;
   relativeValue: number;
 }) {
+  const { currency } = useCurrency();
+
   return (
     <HStack gap={8} alignItems="center">
       {dappInfo.id === DEFAULT_PROTOCOL_ID ? (
@@ -416,7 +420,7 @@ function ProtocolHeading({
       <UIText kind="body/accent">
         {dappInfo.name || dappInfo.id}
         {' · '}
-        <NeutralDecimals parts={formatCurrencyToParts(value, 'en', 'usd')} />
+        <NeutralDecimals parts={formatCurrencyToParts(value, 'en', currency)} />
       </UIText>
       <UIText
         inline={true}
@@ -632,8 +636,9 @@ function MultiChainPositions({
   filterChain: string | null;
   onChainChange: (value: string | null) => void;
 } & Omit<React.ComponentProps<typeof PositionList>, 'items'>) {
+  const { currency } = useCurrency();
   const { value, isLoading } = useAddressPositions(
-    { ...addressParams, currency: 'usd' },
+    { ...addressParams, currency },
     { client: useDefiSdkClient() }
   );
 
@@ -672,7 +677,7 @@ function MultiChainPositions({
               parts={formatCurrencyToParts(
                 getFullPositionsValue(items),
                 'en',
-                'usd'
+                currency
               )}
             />
           }
@@ -706,6 +711,7 @@ function RawChainPositions({
   filterChain: string | null;
   onChainChange: (value: string | null) => void;
 } & Omit<React.ComponentProps<typeof PositionList>, 'items'>) {
+  const { currency } = useCurrency();
   const addressParam =
     'address' in addressParams ? addressParams.address : address;
   invariant(
@@ -755,7 +761,7 @@ function RawChainPositions({
               parts={formatCurrencyToParts(
                 getFullPositionsValue(addressPositions),
                 'en',
-                'usd'
+                currency
               )}
             />
           }
@@ -780,6 +786,7 @@ export function Positions({
   filterChain: string | null;
   onChainChange: (value: string | null) => void;
 }) {
+  const { currency } = useCurrency();
   const { ready, params, singleAddressNormalized } = useAddressParams();
   const {
     value: portfolioDecomposition,
@@ -787,7 +794,7 @@ export function Positions({
   } = useAddressPortfolioDecomposition(
     {
       address: singleAddressNormalized,
-      currency: 'usd',
+      currency,
     },
     { enabled: ready, client: useDefiSdkClient() }
   );

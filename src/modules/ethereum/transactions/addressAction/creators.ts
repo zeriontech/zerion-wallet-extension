@@ -26,7 +26,8 @@ import { ZERO_HASH, type LocalAddressAction } from './addressActionMain';
 
 export async function createActionContent(
   action: TransactionAction,
-  client: Client
+  currency: string,
+  client: Client,
 ): Promise<AddressAction['content'] | null> {
   switch (action.type) {
     case 'execute':
@@ -40,11 +41,13 @@ export async function createActionContent(
             chain: action.chain,
             id: action.assetId,
             address: action.assetAddress,
+            currency,
           }
         : {
             isNative: false,
             chain: action.chain,
             address: action.assetAddress,
+            currency,
           };
       const asset = await fetchAssetFromCacheOrAPI(query, client);
       return asset && action.amount
@@ -63,7 +66,7 @@ export async function createActionContent(
     }
     case 'approve': {
       const asset = await fetchAssetFromCacheOrAPI(
-        { isNative: false, chain: action.chain, address: action.assetAddress },
+        { isNative: false, chain: action.chain, address: action.assetAddress, currency },
         client
       );
       return asset
@@ -115,6 +118,7 @@ function createActionLabel(
 export async function pendingTransactionToAddressAction(
   transactionObject: TransactionObject,
   loadNetworkByChainId: (chainId: ChainId) => Promise<Networks>,
+  currency: string,
   client: Client
 ): Promise<LocalAddressAction> {
   const { transaction, hash, receipt, timestamp, dropped } = transactionObject;
@@ -134,7 +138,7 @@ export async function pendingTransactionToAddressAction(
     ? describeTransaction(transaction, { networks, chain })
     : null;
   const label = action ? createActionLabel(transaction, action) : null;
-  const content = action ? await createActionContent(action, client) : null;
+  const content = action ? await createActionContent(action, currency, client) : null;
   return {
     id: hash,
     address: transaction.from,
@@ -180,12 +184,13 @@ export async function incomingTxToIncomingAddressAction(
   } & Pick<TransactionObject, 'hash' | 'receipt' | 'timestamp' | 'dropped'>,
   transactionAction: TransactionAction,
   networks: Networks,
+  currency: string,
   client: Client
 ): Promise<LocalAddressAction> {
   const { transaction, timestamp } = transactionObject;
   const chain = networks.getChainById(normalizeChainId(transaction.chainId));
   const label = createActionLabel(transaction, transactionAction);
-  const content = await createActionContent(transactionAction, client);
+  const content = await createActionContent(transactionAction, currency, client);
   return {
     id: nanoid(),
     local: true,

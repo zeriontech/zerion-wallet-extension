@@ -16,10 +16,13 @@ import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { NBSP } from 'src/ui/shared/typography';
 import { useAllExistingMnemonicAddresses } from 'src/ui/shared/requests/useAllExistingAddresses';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { AddressImportMessages } from './AddressImportMessages';
 import { WalletList } from './WalletList';
 
 export function PortfolioValueDetail({ address }: { address: string }) {
+  const { currency } = useCurrency();
+
   return (
     <UIText kind="headline/h2">
       <PortfolioValue
@@ -27,7 +30,7 @@ export function PortfolioValueDetail({ address }: { address: string }) {
         render={({ value }) =>
           value ? (
             <NeutralDecimals
-              parts={formatCurrencyToParts(value.total_value, 'en', 'usd')}
+              parts={formatCurrencyToParts(value.total_value, 'en', currency)}
             />
           ) : (
             <span>{NBSP}</span>

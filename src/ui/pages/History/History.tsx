@@ -25,6 +25,7 @@ import CloseIcon from 'jsx:src/ui/assets/close_solid.svg';
 import { Button } from 'src/ui/ui-kit/Button';
 import { useStore } from '@store-unit/react';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import {
   getCurrentTabsOffset,
   getGrownTabMaxHeight,
@@ -79,6 +80,7 @@ function useMinedAndPendingAddressActions({
     : true;
   const localActions = useLocalAddressTransactions(params);
   const client = useDefiSdkClient();
+  const { currency } = useCurrency();
 
   const { data: localAddressActions, ...localActionsQuery } = useQuery({
     // NOTE: for some reason, eslint doesn't warn about missing client. Report to GH?
@@ -93,7 +95,8 @@ function useMinedAndPendingAddressActions({
           pendingTransactionToAddressAction(
             transactionObject,
             loadNetworkByChainId,
-            client
+            currency,
+            client,
           )
         )
       );
@@ -118,7 +121,7 @@ function useMinedAndPendingAddressActions({
   } = useAddressActions(
     {
       ...params,
-      currency: 'usd',
+      currency,
       actions_chains:
         chain && isSupportedByBackend ? [chain.toString()] : undefined,
       actions_search_query: searchQuery,

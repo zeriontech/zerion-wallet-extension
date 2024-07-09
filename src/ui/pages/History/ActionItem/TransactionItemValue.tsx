@@ -164,9 +164,11 @@ export function HistoryItemValue({
 export function TransactionCurrencyValue({
   transfers,
   chain,
+  currency,
 }: {
   transfers?: ActionTransfer[];
   chain: Chain;
+  currency: string;
 }) {
   if (transfers?.length !== 1) {
     return null;
@@ -185,7 +187,7 @@ export function TransactionCurrencyValue({
   const value = formatCurrencyValue(
     commonQuantity.times(transfer.price || 0),
     'en',
-    'usd'
+    currency
   );
   return <>{value}</>;
 }

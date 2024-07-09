@@ -1,5 +1,6 @@
 import { type Asset, useAssetsPrices } from 'defi-sdk';
 import { isTruthy } from 'is-truthy-ts';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { Chain } from 'src/modules/networks/Chain';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 import { useNetworks } from 'src/modules/networks/useNetworks';
@@ -46,10 +47,11 @@ export function useNativeAssetId(chain: Chain) {
 
 export function useNativeAsset(chain: Chain) {
   const id = useNativeAssetId(chain);
+  const { currency } = useCurrency();
   const entry = useAssetsPrices(
     {
       asset_codes: [id].filter(isTruthy),
-      currency: 'usd',
+      currency,
     },
     { enabled: Boolean(id) }
   );

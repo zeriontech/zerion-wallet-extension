@@ -84,6 +84,7 @@ import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { fetchAndAssignPaymaster } from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
 import { isDeviceAccount } from 'src/shared/types/validators';
 import { shouldInterpretTransaction } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -223,6 +224,7 @@ function useLocalAddressAction({
   networks: Networks;
 }) {
   const client = useDefiSdkClient();
+  const { currency } = useCurrency();
   return useQuery({
     queryKey: [
       'incomingTxToIncomingAddressAction',
@@ -231,6 +233,7 @@ function useLocalAddressAction({
       networks,
       from,
       client,
+      currency,
     ],
     queryKeyHashFn: (queryKey) => {
       const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
@@ -241,6 +244,7 @@ function useLocalAddressAction({
         { transaction: { ...transaction, from }, hash: '', timestamp: 0 },
         transactionAction,
         networks,
+        currency,
         client
       );
     },
@@ -266,8 +270,16 @@ function useInterpretTransaction({
   client: Client;
   enabled?: boolean;
 }) {
+  const { currency } = useCurrency();
   return useQuery({
-    queryKey: ['interpretTransaction', transaction, address, origin, client],
+    queryKey: [
+      'interpretTransaction',
+      transaction,
+      address,
+      origin,
+      currency,
+      client,
+    ],
     queryKeyHashFn: (queryKey) => {
       const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
       return hashQueryKey(key);
@@ -278,6 +290,7 @@ function useInterpretTransaction({
         transaction,
         origin,
         client,
+        currency,
       }),
     enabled,
     keepPreviousData: true,
@@ -490,6 +503,7 @@ function SendTransactionContent({
   networks: Networks;
 }) {
   const [params] = useSearchParams();
+  const { currency } = useCurrency();
   const navigate = useNavigate();
   const { singleAddress } = useAddressParams();
   const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
@@ -567,6 +581,7 @@ function SendTransactionContent({
       networks,
       transactionAction,
       client,
+      currency,
     ],
     queryKeyHashFn: (queryKey) => {
       const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
@@ -594,6 +609,7 @@ function SendTransactionContent({
         chainId: normalizeChainId(toSign.chainId),
         typedData,
         client,
+        currency,
       });
     },
   });

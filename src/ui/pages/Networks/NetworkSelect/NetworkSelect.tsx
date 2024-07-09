@@ -20,6 +20,7 @@ import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { Networks } from 'src/modules/networks/Networks';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 
 export function NetworkSelect({
   value,
@@ -42,8 +43,9 @@ export function NetworkSelect({
   showAllNetworksOption?: boolean;
 }) {
   const { params } = useAddressParams();
+  const { currency } = useCurrency();
   const { value: portfolioDecomposition } = useAddressPortfolioDecomposition(
-    { ...params, currency: 'usd' },
+    { ...params, currency },
     { client: useDefiSdkClient() }
   );
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
