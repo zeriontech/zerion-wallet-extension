@@ -2,6 +2,7 @@ import type {
   AddressParams,
   AddressPosition,
   AddressPositionDappInfo,
+  PortfolioDecomposition,
 } from 'defi-sdk';
 import {
   useAddressPortfolioDecomposition,
@@ -627,6 +628,7 @@ function MultiChainPositions({
   onChainChange,
   renderEmptyView,
   renderLoadingView,
+  portfolioDecomposition,
   ...positionListProps
 }: {
   addressParams: AddressParams;
@@ -635,6 +637,7 @@ function MultiChainPositions({
   dappChain: string | null;
   filterChain: string | null;
   onChainChange: (value: string | null) => void;
+  portfolioDecomposition: PortfolioDecomposition | null;
 } & Omit<React.ComponentProps<typeof PositionList>, 'items'>) {
   const { currency } = useCurrency();
   const { value, isLoading } = useAddressPositions(
@@ -665,6 +668,11 @@ function MultiChainPositions({
     return renderEmptyView() as JSX.Element;
   }
 
+  const chainTotalValue =
+    chainValue === NetworkSelectValue.All
+      ? portfolioDecomposition?.total_value
+      : portfolioDecomposition?.positions_chains_distribution[chainValue];
+
   return (
     <VStack gap={Object.keys(groupedPositions).length > 1 ? 16 : 8}>
       <div style={{ paddingInline: 16 }}>
@@ -673,13 +681,11 @@ function MultiChainPositions({
           filterChain={filterChain}
           onChange={onChainChange}
           value={
-            <NeutralDecimals
-              parts={formatCurrencyToParts(
-                getFullPositionsValue(items),
-                'en',
-                currency
-              )}
-            />
+            chainTotalValue ? (
+              <NeutralDecimals
+                parts={formatCurrencyToParts(chainTotalValue, 'en', currency)}
+              />
+            ) : null
           }
         />
       </div>
@@ -894,6 +900,7 @@ export function Positions({
         onChainChange={onChainChange}
         renderEmptyView={renderEmptyViewForNetwork}
         renderLoadingView={renderLoadingViewForNetwork}
+        portfolioDecomposition={portfolioDecomposition}
       />
     );
   } else {

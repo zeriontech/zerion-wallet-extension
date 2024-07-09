@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
-import { useAddressPortfolio } from 'defi-sdk';
+import { useAddressPortfolioDecomposition } from 'defi-sdk';
 import { RenderArea } from 'react-area';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -241,15 +241,14 @@ function OverviewComponent() {
   const isReadonlyGroup =
     walletGroup && isReadonlyContainer(walletGroup.walletContainer);
   const [filterChain, setFilterChain] = useState<string | null>(null);
-  const { value, isLoading: isLoadingPortfolio } = useAddressPortfolio(
-    {
-      ...params,
-      currency,
-      portfolio_fields: 'all',
-      use_portfolio_service: true,
-    },
-    { enabled: ready, client: useDefiSdkClient() }
-  );
+  const { value, isLoading: isLoadingPortfolio } =
+    useAddressPortfolioDecomposition(
+      {
+        ...params,
+        currency,
+      },
+      { enabled: ready, client: useDefiSdkClient() }
+    );
 
   const offsetValuesState = useStore(offsetValues);
 
@@ -370,9 +369,9 @@ function OverviewComponent() {
                 NBSP
               )}
             </UIText>
-            {value?.relative_change_24h ? (
+            {value?.change_24h.relative ? (
               <PercentChange
-                value={value.relative_change_24h}
+                value={value.change_24h.relative}
                 locale="en"
                 render={(change) => {
                   const sign = change.isPositive ? '+' : '';
@@ -386,9 +385,9 @@ function OverviewComponent() {
                       }
                     >
                       {`${sign}${change.formatted}`}{' '}
-                      {value?.absolute_change_24h
+                      {value?.change_24h.absolute
                         ? `(${formatCurrencyValue(
-                            Math.abs(value.absolute_change_24h),
+                            Math.abs(value.change_24h.absolute),
                             'en',
                             currency
                           )})`
