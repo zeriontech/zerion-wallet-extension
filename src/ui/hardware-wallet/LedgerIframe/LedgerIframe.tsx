@@ -2,6 +2,7 @@ import React from 'react';
 import { useStore } from '@store-unit/react';
 import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import { themeStore } from 'src/ui/features/appearance';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 
 export const LedgerIframe = React.forwardRef(function LedgerIframeComponent(
   {
@@ -16,6 +17,7 @@ export const LedgerIframe = React.forwardRef(function LedgerIframeComponent(
   ref: React.ForwardedRef<HTMLIFrameElement>
 ) {
   const themeState = useStore(themeStore);
+  const { currency } = useCurrency();
   const ready = useRenderDelay(100);
   return (
     <iframe
@@ -31,7 +33,7 @@ export const LedgerIframe = React.forwardRef(function LedgerIframeComponent(
       allow="usb"
       src={`ui/hardware-wallet/ledger.html?theme-state=${encodeURIComponent(
         JSON.stringify(themeState)
-      )}#${initialRoute}?${appSearchParams}`}
+      )}&currency=${currency}#${initialRoute}?${appSearchParams}`}
       style={{
         border: 'none',
         backgroundColor: 'transparent',
