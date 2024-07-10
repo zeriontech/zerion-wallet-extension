@@ -23,10 +23,17 @@ import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { NBSP } from 'src/ui/shared/typography';
 import { getWalletDisplayName } from 'src/ui/shared/getWalletDisplayName';
-import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { DeviceConnection } from '../types';
 
 type ControllerRequest = Omit<RpcRequest, 'id'>;
+
+// We don't have access to preference-store inside iframe and can't use useCurrency hook
+function getIframeCurrency() {
+  const pageUrl = new URL(window.location.href);
+  const currencyStateParam = pageUrl.searchParams.get('currency');
+  invariant(currencyStateParam, 'currency param is requred');
+  return currencyStateParam;
+}
 
 function WalletMediaPresentation({
   wallet,
@@ -35,7 +42,8 @@ function WalletMediaPresentation({
   wallet: ExternallyOwnedAccount;
   walletInfo?: WalletInfo;
 }) {
-  const { currency } = useCurrency();
+  const currency = useMemo(getIframeCurrency, []);
+
   return (
     <Media
       image={
