@@ -1,4 +1,4 @@
-import React, { useCallback, useId } from 'react';
+import React, { useId } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import type { PublicUser } from 'src/shared/types/User';
 import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
@@ -13,16 +13,13 @@ import { PrivacyFooter } from 'src/ui/components/PrivacyFooter';
 import { Stack } from 'src/ui/ui-kit/Stack';
 import * as helperStyles from 'src/ui/features/onboarding/shared/helperStyles.module.css';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { useNavigate } from 'react-router-dom';
+import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
 import * as styles from './styles.module.css';
 
 export function VerifyUser({ onSuccess }: { onSuccess: () => void }) {
   const { isNarrowView } = useWindowSizeStore();
 
-  const navigate = useNavigate();
-  const handleBackClick = useCallback(() => {
-    navigate(-1);
-  }, [navigate]);
+  const goBack = useGoBack();
 
   const { data: user, isLoading } = useQuery({
     queryKey: ['account/getExistingUser'],
@@ -81,7 +78,7 @@ export function VerifyUser({ onSuccess }: { onSuccess: () => void }) {
     <VStack gap={isNarrowView ? 16 : 56}>
       <div className={helperStyles.container}>
         <UnstyledButton
-          onClick={handleBackClick}
+          onClick={goBack}
           aria-label="Go Back"
           className={helperStyles.backButton}
         >

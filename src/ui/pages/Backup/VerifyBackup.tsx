@@ -13,35 +13,14 @@ import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { useMnemonicInput } from 'src/ui/shared/useMnemonicInput';
 import * as helperStyles from 'src/ui/features/onboarding/shared/helperStyles.module.css';
 import { useMutation } from '@tanstack/react-query';
-import { walletPort } from 'src/ui/shared/channels';
 import { invariant } from 'src/shared/invariant';
+import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
 import { useRecoveryPhrase } from './useRecoveryPhrase';
-import type { BackupContext } from './useBackupContext';
 import { useBackupContext } from './useBackupContext';
 import { clipboardWarning } from './clipboardWarning';
 
 const INPUT_NUMBER = 12;
 const ARRAY_OF_NUMBERS = Array.from({ length: INPUT_NUMBER }, (_, i) => i);
-
-async function verifyRecoveryPhrase(
-  context: BackupContext,
-  expected: string,
-  actual: string
-) {
-  if (context.appMode === 'onboarding') {
-    if (expected !== actual) {
-      throw new Error('Incorrect seed phrase');
-    }
-  } else {
-    const isCorrect = await walletPort.request('verifyRecoveryPhrase', {
-      groupId: context.groupId,
-      value: actual,
-    });
-    if (!isCorrect) {
-      throw new Error('Incorrect seed phrase');
-    }
-  }
-}
 
 export function VerifyBackup({ onSuccess }: { onSuccess(): void }) {
   const navigate = useNavigate();
@@ -77,7 +56,9 @@ export function VerifyBackup({ onSuccess }: { onSuccess(): void }) {
   const verifyMutation = useMutation({
     mutationFn: async (value: string) => {
       invariant(recoveryPhrase, 'recoveryPhrase is missing');
-      return verifyRecoveryPhrase(backupContext, recoveryPhrase, value);
+      if (recoveryPhrase !== value) {
+        throw new Error('Incorrect seed phrase');
+      }
     },
     onSuccess: async () => {
       zeroizeAfterSubmission();
@@ -99,6 +80,8 @@ export function VerifyBackup({ onSuccess }: { onSuccess(): void }) {
     [isNarrowView]
   );
 
+  const goBack = useGoBack();
+
   return (
     <VStack gap={isNarrowView ? 16 : 56}>
       <div
@@ -108,7 +91,7 @@ export function VerifyBackup({ onSuccess }: { onSuccess(): void }) {
         <UnstyledButton
           aria-label="Exit creating wallet"
           className={helperStyles.backButton}
-          onClick={() => navigate(-1)}
+          onClick={goBack}
         >
           <ArrowLeftIcon style={{ width: 20, height: 20 }} />
         </UnstyledButton>

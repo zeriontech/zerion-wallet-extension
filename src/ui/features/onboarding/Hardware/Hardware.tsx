@@ -19,6 +19,7 @@ import { PageLayout } from 'src/ui/components/PageLayout';
 import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { Stack } from 'src/ui/ui-kit/Stack';
+import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
 import { assertPasswordStep } from '../Password/passwordSearchParams';
 import { Password } from '../Password';
 import * as styles from '../shared/helperStyles.module.css';
@@ -27,6 +28,7 @@ import { ViewParam, assertViewParam } from './hardwareSearchParams';
 
 export function Hardware() {
   const navigate = useNavigate();
+  const goBack = useGoBack();
   const { isNarrowView } = useWindowSizeStore();
   const [params, setSearchParams] = useSearchParams();
   const [ledgerParams, setLedgerParams] = useState<LedgerAccountImport | null>(
@@ -112,7 +114,7 @@ export function Hardware() {
             </div>
           ) : null}
           <UnstyledButton
-            onClick={() => navigate(-1)}
+            onClick={goBack}
             aria-label="Go Back"
             className={styles.backButton}
           >

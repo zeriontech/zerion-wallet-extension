@@ -31,6 +31,7 @@ import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
 import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { Stack } from 'src/ui/ui-kit/Stack';
+import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
 import keyIconSrc from '../assets/key.png';
 import dialogIconSrc from '../assets/dialog.png';
 import { Password } from '../Password';
@@ -70,9 +71,7 @@ function ImportWallet() {
     window.scrollTo(0, 0);
   }, []);
 
-  const handleBackClick = useCallback(() => {
-    navigate(-1);
-  }, [navigate]);
+  const goBack = useGoBack();
 
   const [wallets, setWallets] = useState<BareWallet[] | null>(null);
   const [mnemonic, setMnemonic] = useState<string | null>(null);
@@ -174,7 +173,7 @@ function ImportWallet() {
           </div>
         ) : null}
         <UnstyledButton
-          onClick={handleBackClick}
+          onClick={goBack}
           aria-label="Go Back"
           className={helperStyles.backButton}
         >
@@ -287,7 +286,7 @@ function TypeLink({
 
 function TypeSelector() {
   const { isNarrowView } = useWindowSizeStore();
-  const navigate = useNavigate();
+  const goBack = useGoBack();
 
   return (
     <VStack gap={isNarrowView ? 16 : 56}>
@@ -297,7 +296,7 @@ function TypeSelector() {
       >
         <div style={{ paddingBottom: 80, paddingInline: 88 }}>
           <UnstyledButton
-            onClick={() => navigate(-1)}
+            onClick={goBack}
             aria-label="Go Back"
             className={helperStyles.backButton}
           >

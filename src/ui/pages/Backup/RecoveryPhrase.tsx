@@ -18,6 +18,7 @@ import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import * as helperStyles from 'src/ui/features/onboarding/shared/helperStyles.module.css';
 import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 import { BlurredToggle } from 'src/ui/components/BlurredToggle';
+import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
 import { useRecoveryPhrase } from './useRecoveryPhrase';
 import { useBackupContext } from './useBackupContext';
 import { clipboardWarning } from './clipboardWarning';
@@ -63,6 +64,8 @@ export function RecoveryPhrase({
     text: clipboardWarning.getMessage(SeedType.mnemonic),
   });
 
+  const goBack = useGoBack();
+
   return (
     <VStack gap={isNarrowView ? 16 : 56}>
       <div
@@ -72,7 +75,7 @@ export function RecoveryPhrase({
         <UnstyledButton
           aria-label="Exit creating wallet"
           className={helperStyles.backButton}
-          onClick={() => navigate(-1)}
+          onClick={goBack}
         >
           <ArrowLeftIcon style={{ width: 20, height: 20 }} />
         </UnstyledButton>

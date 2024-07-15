@@ -21,12 +21,13 @@ import { focusNode } from 'src/ui/shared/focusNode';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { StrengthChecks } from 'src/ui/pages/CreateAccount/StrengthChecks';
 import { CheckmarkBadge } from 'src/ui/pages/CreateAccount/StrengthChecks/StrengthChecks';
+import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
 import { ViewParam } from '../Import/ImportSearchParams';
 import { PasswordFAQ } from '../FAQ';
 import { PasswordStep } from './passwordSearchParams';
 
 function WeakPasswordWarning() {
-  const navigate = useNavigate();
+  const goBack = useGoBack();
   return (
     <VStack gap={24}>
       <VStack gap={8}>
@@ -70,10 +71,7 @@ function WeakPasswordWarning() {
           ref={focusNode}
           kind="primary"
           as={UnstyledLink}
-          onClick={(event) => {
-            event.preventDefault();
-            navigate(-1);
-          }}
+          onClick={goBack}
           to={`?view=${ViewParam.password}&step=${PasswordStep.create}`}
           style={{ paddingInline: 20 }}
         >
