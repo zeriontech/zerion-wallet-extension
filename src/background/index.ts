@@ -5,7 +5,7 @@ import { configureBackgroundClient } from 'src/modules/defi-sdk/background';
 import { SessionCacheService } from 'src/background/resource/sessionCacheService';
 import { openOnboarding } from 'src/shared/openOnboarding';
 import { userLifecycleStore } from 'src/shared/analytics/shared/UserLifecycle';
-import { WindowParam } from 'src/ui/shared/WindowParam';
+import { UrlContextParam } from 'src/ui/shared/UrlContext';
 import { initialize } from './initialize';
 import { PortRegistry } from './messaging/PortRegistry';
 import { createWalletMessageHandler } from './messaging/port-message-handlers/createWalletMessageHandler';
@@ -50,7 +50,9 @@ function isOnboardingMode(port: RuntimePort) {
     return false;
   }
   const portSenderUrl = new URL(port.sender.url);
-  return portSenderUrl.searchParams.get(WindowParam.appMode) === 'onboarding';
+  return (
+    portSenderUrl.searchParams.get(UrlContextParam.appMode) === 'onboarding'
+  );
 }
 
 function verifyPort(port: RuntimePort) {

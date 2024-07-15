@@ -12,7 +12,7 @@ import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
-import { windowContext } from 'src/ui/shared/WindowContext';
+import { windowContext } from 'src/ui/shared/UrlContext';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { emitter } from 'src/ui/shared/events';
 import { resetPersistedRoutes } from 'src/ui/App/RouteRestoration';

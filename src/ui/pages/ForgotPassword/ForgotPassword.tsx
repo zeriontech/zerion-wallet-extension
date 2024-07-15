@@ -17,7 +17,7 @@ import { useEraseDataMutation } from 'src/ui/components/EraseData';
 import { EraseDataConfirmationDialog } from 'src/ui/components/EraseData';
 import { EraseDataInProgress } from 'src/ui/components/EraseData';
 import { maybeOpenOnboarding } from 'src/ui/features/onboarding/initialization';
-import { windowContext } from 'src/ui/shared/WindowContext';
+import { windowContext } from 'src/ui/shared/UrlContext';
 import { emitter } from 'src/ui/shared/events';
 import * as s from './styles.module.css';
 

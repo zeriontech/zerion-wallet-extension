@@ -78,7 +78,7 @@ import { Backup } from '../pages/Backup';
 import { PageLayout } from '../components/PageLayout';
 import { Onboarding } from '../features/onboarding';
 import { RevealPrivateKey } from '../pages/RevealPrivateKey';
-import { windowContext } from '../shared/WindowContext';
+import { appContext, windowContext } from '../shared/UrlContext';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -452,7 +452,7 @@ export function App({ initialView, inspect }: AppProps) {
     } else if (windowContext.isTab()) {
       result.push(styles.isTab);
     }
-    if (windowContext.isOnboardingMode() || windowContext.hasPageLayout()) {
+    if (appContext.isOnboardingMode() || windowContext.hasPageLayout()) {
       result.push(styles.pageLayout);
     }
     return result;
@@ -465,7 +465,7 @@ export function App({ initialView, inspect }: AppProps) {
   );
 
   const isOnboardingView =
-    windowContext.isOnboardingMode() && initialView !== 'handshakeFailure';
+    appContext.isOnboardingMode() && initialView !== 'handshakeFailure';
 
   return (
     <AreaProvider>

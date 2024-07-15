@@ -1,6 +1,6 @@
 import { invariant } from 'src/shared/invariant';
 import { useSearchParams } from 'react-router-dom';
-import { windowContext } from 'src/ui/shared/WindowContext';
+import { appContext } from 'src/ui/shared/UrlContext';
 
 export type BackupContext =
   | {
@@ -24,7 +24,7 @@ function useUrlParams(): URLSearchParams {
 export function useBackupContext(): BackupContext {
   const params = useUrlParams();
 
-  if (windowContext.isOnboardingMode()) {
+  if (appContext.isOnboardingMode()) {
     return { appMode: 'onboarding' };
   } else {
     const groupId = params.get('groupId');

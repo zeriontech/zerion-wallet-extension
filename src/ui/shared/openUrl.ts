@@ -1,6 +1,5 @@
 import browser from 'webextension-polyfill';
-import type { WindowContextParams } from './WindowContext';
-import { setWindowLayout, setWindowType } from './WindowParam';
+import { urlContext, type UrlContextParams } from './UrlContext';
 
 async function getNextToActiveTabIndex() {
   const [activeTab] = await browser.tabs.query({
@@ -10,25 +9,19 @@ async function getNextToActiveTabIndex() {
   return activeTab?.index + 1;
 }
 
-export async function openUrl(url: URL, context?: WindowContextParams) {
-  if (context?.windowType) {
-    setWindowType(url.searchParams, context.windowType);
-  }
-  if (context?.windowLayout) {
-    setWindowLayout(url.searchParams, context.windowLayout);
+export async function openUrl(url: URL, params?: UrlContextParams) {
+  if (params) {
+    urlContext.set(url.searchParams, params);
   }
   const index = await getNextToActiveTabIndex();
   browser.tabs.create({ url: url.toString(), index });
 }
 
-export function openHref(
-  event: React.MouseEvent,
-  context?: WindowContextParams
-) {
+export function openHref(event: React.MouseEvent, params?: UrlContextParams) {
   event.preventDefault();
   const attr = event.currentTarget.getAttributeNode('href');
   if (attr) {
     const url = new URL(attr.value, attr.baseURI);
-    openUrl(url, context);
+    openUrl(url, params);
   }
 }

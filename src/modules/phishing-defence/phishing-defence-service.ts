@@ -1,7 +1,7 @@
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import browser from 'webextension-polyfill';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
-import { setWindowType } from 'src/ui/shared/WindowParam';
+import { urlContext } from 'src/ui/shared/UrlContext';
 import { ZerionAPI } from '../zerion-api/zerion-api';
 
 export type DappSecurityStatus =
@@ -30,7 +30,7 @@ export class PhishingDefence {
         }
         const popupUrl = new URL(browser.runtime.getURL(rawPopupUrl));
         popupUrl.hash = `/phishing-warning?url=${origin}`;
-        setWindowType(popupUrl.searchParams, 'tab');
+        urlContext.set(popupUrl.searchParams, { windowType: 'tab' });
         browser.tabs.update(tab.id, { url: popupUrl.toString() });
       }
     }

@@ -1,7 +1,7 @@
 import { useId, useMemo } from 'react';
 import { useStore } from '@store-unit/react';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
-import { windowContext } from 'src/ui/shared/WindowContext';
+import { windowContext } from 'src/ui/shared/UrlContext';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import React from 'react';
 import { HStack } from 'src/ui/ui-kit/HStack/HStack';

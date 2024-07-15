@@ -1,7 +1,10 @@
 import { getCurrentUser } from 'src/shared/getCurrentUser';
 import { openOnboarding } from 'src/shared/openOnboarding';
-import { windowContext } from 'src/ui/shared/WindowContext';
-import { WindowParam, setAppMode } from 'src/ui/shared/WindowParam';
+import {
+  UrlContextParam,
+  urlContext,
+  windowContext,
+} from 'src/ui/shared/UrlContext';
 import { OnboardingInterrupt } from './errors';
 
 async function getAppMode() {
@@ -24,8 +27,8 @@ export async function maybeOpenOnboarding() {
   if (appMode === 'onboarding' && !windowContext.isPopup()) {
     // TODO: setting "appMode=onboarding" is duplicated here and in {openOnboarding}
     const searchParams = new URLSearchParams(window.location.search);
-    if (!searchParams.has(WindowParam.appMode)) {
-      setAppMode(searchParams, 'onboarding');
+    if (!searchParams.has(UrlContextParam.appMode)) {
+      urlContext.set(searchParams, { appMode: 'onboarding' });
       window.location.search = searchParams.toString();
     }
   }
