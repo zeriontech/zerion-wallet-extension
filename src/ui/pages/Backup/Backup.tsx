@@ -13,8 +13,8 @@ import { RecoveryPhrase } from './RecoveryPhrase';
 import { VerifyBackup } from './VerifyBackup';
 import { VerifyUser } from './VerifyUser';
 import { Success } from './Success';
+import type { BackupContext } from './useBackupContext';
 import { useBackupContext } from './useBackupContext';
-import type { BackupContext } from './types';
 
 async function completeBackup(backupContext: BackupContext) {
   if (backupContext.appMode === 'onboarding') {

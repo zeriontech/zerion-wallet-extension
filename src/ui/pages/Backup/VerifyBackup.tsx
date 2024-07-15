@@ -16,8 +16,8 @@ import { useMutation } from '@tanstack/react-query';
 import { walletPort } from 'src/ui/shared/channels';
 import { invariant } from 'src/shared/invariant';
 import { useRecoveryPhrase } from './useRecoveryPhrase';
+import type { BackupContext } from './useBackupContext';
 import { useBackupContext } from './useBackupContext';
-import type { BackupContext } from './types';
 import { clipboardWarning } from './clipboardWarning';
 
 const INPUT_NUMBER = 12;

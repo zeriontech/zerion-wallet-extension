@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { walletPort } from 'src/ui/shared/channels';
-import type { BackupContext } from './types';
+import type { BackupContext } from './useBackupContext';
 
 async function getRecoveryPhrase(context: BackupContext) {
   if (context.appMode === 'wallet') {

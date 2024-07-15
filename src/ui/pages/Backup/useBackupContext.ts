@@ -1,7 +1,15 @@
 import { invariant } from 'src/shared/invariant';
 import { useSearchParams } from 'react-router-dom';
 import { windowContext } from 'src/ui/shared/WindowContext';
-import type { BackupContext } from './types';
+
+export type BackupContext =
+  | {
+      appMode: 'onboarding';
+    }
+  | {
+      appMode: 'wallet';
+      groupId: string;
+    };
 
 /**
  * Combines URL search parameters from the window's location and react-router's search params.
