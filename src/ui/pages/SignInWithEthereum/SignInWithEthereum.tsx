@@ -1,6 +1,5 @@
 import React, { useMemo, useRef } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
 import { invariant } from 'src/shared/invariant';
 import { Background } from 'src/ui/components/Background';
 import { Badge } from 'src/ui/components/Badge';
@@ -31,6 +30,7 @@ import { isDeviceAccount } from 'src/shared/types/validators';
 import type { SignMsgBtnHandle } from 'src/ui/components/SignMessageButton';
 import { SignMessageButton } from 'src/ui/components/SignMessageButton';
 import { ellipsis } from 'src/ui/shared/typography';
+import { useUpdateSearchParam } from 'src/ui/shared/useUpdateSearchParam';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { SpeechBubble } from './SpeechBubble/SpeechBubble';
 import { useFetchUTCTime } from './useFetchUTCTime';
@@ -38,16 +38,7 @@ import { SiweError } from './SiweError';
 import { DataVerificationFailed } from './DataVerificationFailed';
 
 export function SignInWithEthereum() {
-  const [params, setSearchParams] = useSearchParams();
-  const updateSearchParam = (
-    key: string,
-    value: string,
-    navigateOptions?: Parameters<typeof setSearchParams>[1]
-  ) => {
-    const newParams = new URLSearchParams(params);
-    newParams.set(key, value);
-    setSearchParams(newParams, navigateOptions);
-  };
+  const [params, updateSearchParam] = useUpdateSearchParam();
 
   const clientScope = params.get('clientScope') || 'External Dapp';
   const origin = params.get('origin');

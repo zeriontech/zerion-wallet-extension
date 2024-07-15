@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { invariant } from 'src/shared/invariant';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -23,6 +23,7 @@ import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { BlurredToggle } from 'src/ui/components/BlurredToggle';
 import { useWalletGroup } from 'src/ui/shared/requests/useWalletGroups';
+import { useUpdateSearchParam } from 'src/ui/shared/useUpdateSearchParam';
 import { usePrivateKey } from './usePrivateKey';
 
 function Reveal({
@@ -115,21 +116,11 @@ function Reveal({
 export function RevealPrivateKey() {
   useBackgroundKind(whiteBackgroundKind);
 
-  const [params, setSearchParams] = useSearchParams();
+  const [params, updateSearchParam] = useUpdateSearchParam();
   const groupId = params.get('groupId');
   const address = params.get('address');
   invariant(groupId, 'groupId param is required for RevealPrivateKey view');
   invariant(address, 'address param is required for RevealPrivateKey view');
-
-  const updateSearchParam = (
-    key: string,
-    value: string,
-    navigateOptions?: Parameters<typeof setSearchParams>[1]
-  ) => {
-    const newParams = new URLSearchParams(params);
-    newParams.set(key, value);
-    setSearchParams(newParams, navigateOptions);
-  };
 
   const navigate = useNavigate();
 
