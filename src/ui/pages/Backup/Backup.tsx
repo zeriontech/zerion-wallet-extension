@@ -75,7 +75,7 @@ export function Backup() {
       if (backupContext.appMode === 'onboarding') {
         navigate('/onboarding/success');
       } else {
-        navigate(`success${searchParams}`);
+        navigate(`/backup/success${searchParams}`);
       }
     },
     onError: (e) => {
@@ -83,7 +83,7 @@ export function Backup() {
         if (backupContext.appMode === 'onboarding') {
           navigate('/onboarding/session-expired', { replace: true });
         } else {
-          navigate(`verify-user${searchParams}`, { replace: true });
+          navigate(`/backup/verify-user${searchParams}`, { replace: true });
         }
       }
     },
@@ -108,7 +108,7 @@ export function Backup() {
             onContinue={() =>
               backupContext.appMode === 'onboarding'
                 ? navigate('recovery-phrase')
-                : navigate(`verify-user${searchParams}`)
+                : navigate(`/backup/verify-user${searchParams}`)
             }
             onSkip={() => handleSkipFlow()}
             onExit={() => navigate('/onboarding')}

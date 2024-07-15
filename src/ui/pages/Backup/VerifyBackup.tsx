@@ -67,7 +67,7 @@ export function VerifyBackup({ onSuccess }: { onSuccess(): void }) {
       if (backupContext.appMode === 'onboarding') {
         navigate('/onboarding/session-expired', { replace: true });
       } else {
-        navigate(`verify-user?groupId=${backupContext.groupId}`, {
+        navigate(`/backup/verify-user?groupId=${backupContext.groupId}`, {
           replace: true,
         });
       }
