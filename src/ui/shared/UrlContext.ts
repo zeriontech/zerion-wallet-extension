@@ -20,7 +20,7 @@ export interface UrlContextParams {
 }
 
 class UrlContext {
-  protected params: UrlContextParams;
+  private params: UrlContextParams;
 
   constructor(params: UrlContextParams) {
     this.params = params;
@@ -43,7 +43,7 @@ class UrlContext {
 }
 
 export class WindowContext {
-  protected params: UrlContextParams;
+  private params: UrlContextParams;
 
   constructor(params: UrlContextParams) {
     this.params = params;
@@ -71,7 +71,7 @@ export class WindowContext {
 }
 
 export class AppContext {
-  protected params: UrlContextParams;
+  private params: UrlContextParams;
 
   constructor(params: UrlContextParams) {
     this.params = params;
