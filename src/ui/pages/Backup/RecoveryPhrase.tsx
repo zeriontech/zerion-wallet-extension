@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { PrivacyFooter } from 'src/ui/components/PrivacyFooter';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
@@ -24,14 +23,15 @@ import { useBackupContext } from './useBackupContext';
 import { clipboardWarning } from './clipboardWarning';
 
 export function RecoveryPhrase({
+  onSessionExpired,
   onNextStep,
   onSkip,
 }: {
+  onSessionExpired(): void;
   onNextStep(): void;
   onSkip(): void;
 }) {
   const { isNarrowView } = useWindowSizeStore();
-  const navigate = useNavigate();
   const backupContext = useBackupContext();
   const {
     data: recoveryPhrase,
@@ -41,15 +41,9 @@ export function RecoveryPhrase({
 
   useEffect(() => {
     if (isSessionExpiredError(error)) {
-      if (backupContext.appMode === 'onboarding') {
-        navigate('/onboarding/session-expired', { replace: true });
-      } else {
-        navigate(`/backup/verify-user?groupId=${backupContext.groupId}`, {
-          replace: true,
-        });
-      }
+      onSessionExpired();
     }
-  }, [navigate, backupContext, error]);
+  }, [onSessionExpired, error]);
 
   const { handleCopy, isSuccess: isCopySuccess } = useCopyToClipboard({
     text: recoveryPhrase || '',

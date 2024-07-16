@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
@@ -38,12 +38,35 @@ export function Backup() {
   const navigate = useNavigate();
   const backupContext = useBackupContext();
 
-  const searchParams =
-    backupContext.appMode === 'wallet'
-      ? `?${new URLSearchParams({ groupId: backupContext.groupId })}`
-      : '';
+  const handleSessionExpired = useCallback(() => {
+    if (backupContext.appMode === 'onboarding') {
+      navigate('/onboarding/session-expired', { replace: true });
+    } else {
+      navigate(`/backup/verify-user?groupId=${backupContext.groupId}`, {
+        replace: true,
+      });
+    }
+  }, [backupContext, navigate]);
 
-  const { mutate: handleSkipFlow } = useMutation({
+  const handleSuccess = useCallback(() => {
+    zeroizeAfterSubmission();
+    if (backupContext.appMode === 'onboarding') {
+      navigate('/onboarding/success');
+    } else {
+      navigate(`/backup/success?groupId=${backupContext.groupId}`);
+    }
+  }, [backupContext, navigate]);
+
+  const handleError = useCallback(
+    (error: unknown) => {
+      if (isSessionExpiredError(error)) {
+        navigate('/onboarding/session-expired', { replace: true });
+      }
+    },
+    [navigate]
+  );
+
+  const { mutate: handleSkipBackup } = useMutation({
     mutationFn: async () => {
       invariant(
         backupContext.appMode === 'onboarding',
@@ -56,39 +79,22 @@ export function Backup() {
       await accountPublicRPCPort.request('saveUserAndWallet');
       await setCurrentAddress({ address: wallet.address });
     },
-    onSuccess: () => {
-      zeroizeAfterSubmission();
-      navigate('/onboarding/success');
-    },
-    onError: (e) => {
-      if (isSessionExpiredError(e)) {
-        navigate('/onboarding/session-expired', { replace: true });
-      }
-    },
+    onSuccess: handleSuccess,
+    onError: handleError,
     useErrorBoundary: true,
   });
 
-  const { mutate: handleCompleteFlow } = useMutation({
+  const { mutate: handleCompleteBackup } = useMutation({
     mutationFn: () => completeBackup(backupContext),
-    onSuccess: () => {
-      zeroizeAfterSubmission();
-      if (backupContext.appMode === 'onboarding') {
-        navigate('/onboarding/success');
-      } else {
-        navigate(`/backup/success${searchParams}`);
-      }
-    },
-    onError: (e) => {
-      if (isSessionExpiredError(e)) {
-        if (backupContext.appMode === 'onboarding') {
-          navigate('/onboarding/session-expired', { replace: true });
-        } else {
-          navigate(`/backup/verify-user${searchParams}`, { replace: true });
-        }
-      }
-    },
+    onSuccess: handleSuccess,
+    onError: handleError,
     useErrorBoundary: true,
   });
+
+  const searchParams =
+    backupContext.appMode === 'wallet'
+      ? `?${new URLSearchParams({ groupId: backupContext.groupId })}`
+      : '';
 
   return (
     <Routes>
@@ -110,7 +116,7 @@ export function Backup() {
                 ? navigate('recovery-phrase')
                 : navigate(`/backup/verify-user${searchParams}`)
             }
-            onSkip={() => handleSkipFlow()}
+            onSkip={handleSkipBackup}
             onExit={() => navigate('/onboarding')}
           />
         }
@@ -127,14 +133,20 @@ export function Backup() {
         path="/recovery-phrase"
         element={
           <RecoveryPhrase
+            onSessionExpired={handleSessionExpired}
             onNextStep={() => navigate(`verify-backup${searchParams}`)}
-            onSkip={() => handleSkipFlow()}
+            onSkip={handleSkipBackup}
           />
         }
       />
       <Route
         path="/verify-backup"
-        element={<VerifyBackup onSuccess={handleCompleteFlow} />}
+        element={
+          <VerifyBackup
+            onSessionExpired={handleSessionExpired}
+            onSuccess={handleCompleteBackup}
+          />
+        }
       />
       <Route path="/success" element={<Success />} />
     </Routes>

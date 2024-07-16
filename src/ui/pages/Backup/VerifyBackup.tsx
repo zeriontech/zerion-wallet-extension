@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { PrivacyFooter } from 'src/ui/components/PrivacyFooter';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -22,8 +21,13 @@ import { clipboardWarning } from './clipboardWarning';
 const INPUT_NUMBER = 12;
 const ARRAY_OF_NUMBERS = Array.from({ length: INPUT_NUMBER }, (_, i) => i);
 
-export function VerifyBackup({ onSuccess }: { onSuccess(): void }) {
-  const navigate = useNavigate();
+export function VerifyBackup({
+  onSessionExpired,
+  onSuccess,
+}: {
+  onSessionExpired(): void;
+  onSuccess(): void;
+}) {
   const { isNarrowView } = useWindowSizeStore();
   const [value, setValue] = useState(() => ARRAY_OF_NUMBERS.map(() => ''));
   const isTechnicalHint = clipboardWarning.isWarningMessage(value.join(' '));
@@ -43,15 +47,9 @@ export function VerifyBackup({ onSuccess }: { onSuccess(): void }) {
 
   useEffect(() => {
     if (isSessionExpiredError(error)) {
-      if (backupContext.appMode === 'onboarding') {
-        navigate('/onboarding/session-expired', { replace: true });
-      } else {
-        navigate(`/backup/verify-user?groupId=${backupContext.groupId}`, {
-          replace: true,
-        });
-      }
+      onSessionExpired();
     }
-  }, [navigate, backupContext, error]);
+  }, [onSessionExpired, error]);
 
   const verifyMutation = useMutation({
     mutationFn: async (value: string) => {
