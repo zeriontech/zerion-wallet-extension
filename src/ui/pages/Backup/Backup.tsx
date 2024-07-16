@@ -60,10 +60,10 @@ export function Backup() {
   const handleError = useCallback(
     (error: unknown) => {
       if (isSessionExpiredError(error)) {
-        navigate('/onboarding/session-expired', { replace: true });
+        handleSessionExpired();
       }
     },
-    [navigate]
+    [handleSessionExpired]
   );
 
   const { mutate: handleSkipBackup } = useMutation({
