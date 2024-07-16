@@ -48,23 +48,20 @@ export function Backup() {
     }
   }, [backupContext, navigate]);
 
-  const handleSuccess = useCallback(() => {
+  const handleSuccess = () => {
     zeroizeAfterSubmission();
     if (backupContext.appMode === 'onboarding') {
       navigate('/onboarding/success');
     } else {
       navigate(`/backup/success?groupId=${backupContext.groupId}`);
     }
-  }, [backupContext, navigate]);
+  };
 
-  const handleError = useCallback(
-    (error: unknown) => {
-      if (isSessionExpiredError(error)) {
-        handleSessionExpired();
-      }
-    },
-    [handleSessionExpired]
-  );
+  const handleError = (error: unknown) => {
+    if (isSessionExpiredError(error)) {
+      handleSessionExpired();
+    }
+  };
 
   const { mutate: handleSkipBackup } = useMutation({
     mutationFn: async () => {
