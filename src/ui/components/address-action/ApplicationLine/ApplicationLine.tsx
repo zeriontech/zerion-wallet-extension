@@ -79,7 +79,7 @@ function ApplicationImage({
             // safari doesn't emit img onError for empty string src
             src={src || 'no-image'}
             alt=""
-            style={{ width: '100%', display: 'block' }}
+            style={{ width: '100%', display: 'block', borderRadius: 8 }}
             renderError={() => (
               <BlockieImg
                 address={
@@ -88,7 +88,7 @@ function ApplicationImage({
                   ''
                 }
                 size={36}
-                borderRadius={6}
+                borderRadius={8}
               />
             )}
           />
@@ -98,6 +98,7 @@ function ApplicationImage({
               size={16}
               name={network?.name || null}
               src={network?.icon_url || ''}
+              style={{ borderRadius: 4 }}
             />
           </div>
         </div>
