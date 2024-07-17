@@ -8,7 +8,7 @@ export enum UrlContextParam {
   appMode = 'appMode',
 }
 
-function getUrlContextParam<T>(param: UrlContextParam, defaultValue?: T) {
+function getSearchParam<T>(param: UrlContextParam, defaultValue: T) {
   const url = new URL(window.location.href);
   return (url.searchParams.get(param) as T) || defaultValue;
 }
@@ -20,78 +20,63 @@ export interface UrlContextParams {
 }
 
 class UrlContext {
-  private params: UrlContextParams;
-
-  constructor(params: UrlContextParams) {
-    this.params = params;
-  }
-
   set(searchParams: URLSearchParams, params: UrlContextParams) {
     if (params.windowLayout) {
       searchParams.set(UrlContextParam.windowLayout, params.windowLayout);
-      this.params.windowLayout = params.windowLayout;
     }
     if (params.windowType) {
       searchParams.set(UrlContextParam.windowType, params.windowType);
-      this.params.windowType = params.windowType;
     }
     if (params.appMode) {
       searchParams.set(UrlContextParam.appMode, params.appMode);
-      this.params.appMode = params.appMode;
     }
   }
 }
 
 export class WindowContext {
-  private params: UrlContextParams;
+  getWindowType() {
+    return getSearchParam(UrlContextParam.windowType, 'popup');
+  }
 
-  constructor(params: UrlContextParams) {
-    this.params = params;
+  getWindowLayout() {
+    return getSearchParam(UrlContextParam.windowLayout, 'column');
   }
 
   isPopup() {
-    return this.params.windowType === 'popup';
+    return this.getWindowType() === 'popup';
   }
 
   isDialog() {
-    return this.params.windowType === 'dialog';
+    return this.getWindowType() === 'dialog';
   }
 
   isTab() {
-    return this.params.windowType === 'tab';
+    return this.getWindowType() === 'tab';
   }
 
   hasPageLayout() {
-    return this.params.windowLayout === 'page';
+    return this.getWindowLayout() === 'page';
   }
 
   hasColumnLayout() {
-    return this.params.windowLayout === 'column';
+    return this.getWindowLayout() === 'column';
   }
 }
 
 export class AppContext {
-  private params: UrlContextParams;
-
-  constructor(params: UrlContextParams) {
-    this.params = params;
+  getAppMode() {
+    return getSearchParam(UrlContextParam.appMode, 'wallet');
   }
 
   isOnboardingMode() {
-    return this.params.appMode === 'onboarding';
+    return this.getAppMode() === 'onboarding';
   }
 
   isWalletMode() {
-    return this.params.appMode === 'wallet';
+    return this.getAppMode() === 'wallet';
   }
 }
 
-const params: UrlContextParams = {
-  appMode: getUrlContextParam(UrlContextParam.appMode, 'wallet'),
-  windowType: getUrlContextParam(UrlContextParam.windowType, 'popup'),
-  windowLayout: getUrlContextParam(UrlContextParam.windowLayout, 'column'),
-};
-
-export const urlContext = new UrlContext(params);
-export const appContext = new AppContext(params);
-export const windowContext = new WindowContext(params);
+export const urlContext = new UrlContext();
+export const appContext = new AppContext();
+export const windowContext = new WindowContext();
