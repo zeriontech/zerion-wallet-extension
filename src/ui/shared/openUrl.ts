@@ -7,7 +7,7 @@ async function getNextToActiveTabIndex() {
     active: true,
     lastFocusedWindow: true,
   });
-  return activeTab?.index + 1;
+  return (activeTab?.index ?? -1) + 1;
 }
 
 export async function openUrl(url: URL, params?: Partial<UrlContext>) {
