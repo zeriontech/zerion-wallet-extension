@@ -4,7 +4,7 @@ import { nanoid } from 'nanoid';
 import { getPopupUrl } from 'src/ui/shared/getPopupUrl';
 import { urlContext, type WindowType } from 'src/ui/shared/UrlContext';
 
-function getPopupRoute(route: string, windowType: WindowType) {
+function makePopupRoute(route: string, windowType: WindowType) {
   const popupUrl = getPopupUrl();
   urlContext.set(popupUrl.searchParams, { windowType });
   popupUrl.hash = route;
@@ -67,7 +67,7 @@ export async function createBrowserWindow({
 
   const { id: windowId } = await browser.windows.create({
     focused: true,
-    url: getPopupRoute(`${initialRoute}?${params.toString()}`, type),
+    url: makePopupRoute(`${initialRoute}?${params.toString()}`, type),
     type: type === 'dialog' ? 'popup' : 'normal',
     width,
     height: heightValue,
