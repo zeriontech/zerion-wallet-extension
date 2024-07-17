@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { invariant } from 'src/shared/invariant';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -23,7 +23,7 @@ import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { BlurredToggle } from 'src/ui/components/BlurredToggle';
 import { useWalletGroup } from 'src/ui/shared/requests/useWalletGroups';
-import { useUpdateSearchParam } from 'src/ui/shared/useUpdateSearchParam';
+import { updateSearchParam } from 'src/ui/shared/updateSearchParam';
 import { usePrivateKey } from './usePrivateKey';
 
 function Reveal({
@@ -116,7 +116,8 @@ function Reveal({
 export function RevealPrivateKey() {
   useBackgroundKind(whiteBackgroundKind);
 
-  const [params, updateSearchParam] = useUpdateSearchParam();
+  const [params, setSearchParams] = useSearchParams();
+
   const groupId = params.get('groupId');
   const address = params.get('address');
   invariant(groupId, 'groupId param is required for RevealPrivateKey view');
@@ -139,7 +140,9 @@ export function RevealPrivateKey() {
           <VerifyUser
             text={'Verification is required to show your secret key'}
             onSuccess={() =>
-              updateSearchParam('step', 'revealSecret', { replace: true })
+              setSearchParams(updateSearchParam('step', 'revealSecret'), {
+                replace: true,
+              })
             }
           />
           <PageBottom />
@@ -150,7 +153,9 @@ export function RevealPrivateKey() {
           groupId={groupId}
           address={address}
           onSessionExpired={() => {
-            updateSearchParam('step', 'verifyUser', { replace: true });
+            setSearchParams(updateSearchParam('step', 'verifyUser'), {
+              replace: true,
+            });
           }}
           onSubmit={() => {
             navigate('/');

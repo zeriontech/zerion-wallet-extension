@@ -30,7 +30,8 @@ import { isDeviceAccount } from 'src/shared/types/validators';
 import type { SignMsgBtnHandle } from 'src/ui/components/SignMessageButton';
 import { SignMessageButton } from 'src/ui/components/SignMessageButton';
 import { ellipsis } from 'src/ui/shared/typography';
-import { useUpdateSearchParam } from 'src/ui/shared/useUpdateSearchParam';
+import { useSearchParams } from 'react-router-dom';
+import { updateSearchParam } from 'src/ui/shared/updateSearchParam';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { SpeechBubble } from './SpeechBubble/SpeechBubble';
 import { useFetchUTCTime } from './useFetchUTCTime';
@@ -38,7 +39,7 @@ import { SiweError } from './SiweError';
 import { DataVerificationFailed } from './DataVerificationFailed';
 
 export function SignInWithEthereum() {
-  const [params, updateSearchParam] = useUpdateSearchParam();
+  const [params, setSearchParams] = useSearchParams();
 
   const clientScope = params.get('clientScope') || 'External Dapp';
   const origin = params.get('origin');
@@ -175,7 +176,9 @@ export function SignInWithEthereum() {
               <Spacer height={16} />
               <SiweError
                 siwe={siweMessage}
-                onReadMore={() => updateSearchParam('step', 'errors')}
+                onReadMore={() =>
+                  setSearchParams(updateSearchParam('step', 'errors'))
+                }
               />
             </>
           ) : null}
