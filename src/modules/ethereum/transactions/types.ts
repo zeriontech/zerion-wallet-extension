@@ -1,6 +1,8 @@
 import type { AddressAction } from 'defi-sdk';
 import type { ethers } from 'ethers';
 
+type AddressActionStoredV1 = AddressAction;
+
 export interface TransactionObject {
   hash: string;
   timestamp: number;
@@ -9,6 +11,7 @@ export interface TransactionObject {
   receipt?: ethers.providers.TransactionReceipt;
   dropped?: boolean;
   relatedTransactionHash?: string; // hash of related transaction (cancelled or sped-up)
+  addressAction?: AddressActionStoredV1;
 }
 
 export type StoredTransactions = Array<TransactionObject>;

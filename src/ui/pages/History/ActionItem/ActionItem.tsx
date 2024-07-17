@@ -22,6 +22,7 @@ import type {
 import {
   getActionAddress,
   getActionAsset,
+  isLocalAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction';
 import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
@@ -501,7 +502,7 @@ export function ActionItem({
   if (!networks || !addressAction) {
     return null;
   }
-  return 'local' in addressAction && addressAction.local ? (
+  return isLocalAddressAction(addressAction) ? (
     <ActionItemLocal action={addressAction} networks={networks} />
   ) : (
     <ActionItemBackend
