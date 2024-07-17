@@ -78,7 +78,7 @@ import { Backup } from '../pages/Backup';
 import { PageLayout } from '../components/PageLayout';
 import { Onboarding } from '../features/onboarding';
 import { RevealPrivateKey } from '../pages/RevealPrivateKey';
-import { appContext, windowContext } from '../shared/UrlContext';
+import { urlContext } from '../shared/UrlContext';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -196,13 +196,13 @@ function MaybeTestModeDecoration() {
 
 function Views({ initialRoute }: { initialRoute?: string }) {
   useScreenViewChange();
+
+  const isPopup = urlContext.windowType === 'popup';
   return (
     <RouteResolver>
       <ViewArea>
         <URLBar />
-        {windowContext.isPopup() ? (
-          <RouteRestoration initialRoute={initialRoute} />
-        ) : null}
+        {isPopup ? <RouteRestoration initialRoute={initialRoute} /> : null}
         <Routes>
           {initialRoute ? (
             <Route path="/" element={<Navigate to={initialRoute} />} />
@@ -412,9 +412,10 @@ registerPersistentRoute('/send-form');
 registerPersistentRoute('/swap-form');
 
 function GlobalKeyboardShortcuts() {
+  const isDialog = urlContext.windowType === 'dialog';
   return (
     <>
-      {windowContext.isDialog() ? (
+      {isDialog ? (
         <KeyboardShortcut
           combination="esc"
           onKeyDown={() => {
@@ -445,18 +446,25 @@ export interface AppProps {
 }
 
 export function App({ initialView, inspect }: AppProps) {
+  const isOnboardingMode = urlContext.appMode === 'onboarding';
+  const hasPageLayout = urlContext.windowLayout === 'page';
+
   const bodyClassList = useMemo(() => {
     const result = [];
-    if (windowContext.isDialog()) {
+
+    const isDialog = urlContext.windowType === 'dialog';
+    const isTab = urlContext.windowType === 'tab';
+
+    if (isDialog) {
       result.push(styles.isDialog);
-    } else if (windowContext.isTab()) {
+    } else if (isTab) {
       result.push(styles.isTab);
     }
-    if (appContext.isOnboardingMode() || windowContext.hasPageLayout()) {
+    if (isOnboardingMode || hasPageLayout) {
       result.push(styles.pageLayout);
     }
     return result;
-  }, []);
+  }, [isOnboardingMode, hasPageLayout]);
 
   const { connected } = useStore(runtimeStore);
 
@@ -465,7 +473,7 @@ export function App({ initialView, inspect }: AppProps) {
   );
 
   const isOnboardingView =
-    appContext.isOnboardingMode() && initialView !== 'handshakeFailure';
+    isOnboardingMode && initialView !== 'handshakeFailure';
 
   return (
     <AreaProvider>
@@ -490,14 +498,14 @@ export function App({ initialView, inspect }: AppProps) {
               ) : null}
               <GlobalKeyboardShortcuts />
               <VersionUpgrade>
-                {!isOnboardingView && !windowContext.hasPageLayout() ? (
+                {!isOnboardingView && !hasPageLayout ? (
                   // Render above <ViewSuspense /> so that it doesn't flicker
                   <MaybeTestModeDecoration />
                 ) : null}
                 <ViewSuspense logDelays={true}>
                   {isOnboardingView ? (
                     <Onboarding />
-                  ) : windowContext.hasPageLayout() ? (
+                  ) : hasPageLayout ? (
                     <PageLayoutViews />
                   ) : (
                     <DefiSdkClientProvider>

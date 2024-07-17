@@ -17,15 +17,15 @@ import { useEraseDataMutation } from 'src/ui/components/EraseData';
 import { EraseDataConfirmationDialog } from 'src/ui/components/EraseData';
 import { EraseDataInProgress } from 'src/ui/components/EraseData';
 import { maybeOpenOnboarding } from 'src/ui/features/onboarding/initialization';
-import { windowContext } from 'src/ui/shared/UrlContext';
 import { emitter } from 'src/ui/shared/events';
+import { urlContext } from 'src/ui/shared/UrlContext';
 import * as s from './styles.module.css';
 
 export function ForgotPassword() {
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const eraseAllData = useEraseDataMutation({
     onSuccess: () => {
-      if (windowContext.isTab()) {
+      if (urlContext.windowType === 'tab') {
         emitter.emit('reloadExtension');
       } else {
         maybeOpenOnboarding();

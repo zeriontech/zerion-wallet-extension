@@ -2,11 +2,13 @@ import type { Windows } from 'webextension-polyfill';
 import browser from 'webextension-polyfill';
 import { nanoid } from 'nanoid';
 import { getPopupUrl } from 'src/ui/shared/getPopupUrl';
-import { urlContext, type WindowType } from 'src/ui/shared/UrlContext';
+import { setUrlContext } from 'src/ui/shared/setUrlContext';
+
+type WindowType = 'tab' | 'dialog';
 
 function makePopupRoute(route: string, windowType: WindowType) {
   const popupUrl = getPopupUrl();
-  urlContext.set(popupUrl.searchParams, { windowType });
+  setUrlContext(popupUrl.searchParams, { windowType });
   popupUrl.hash = route;
   return popupUrl.toString();
 }

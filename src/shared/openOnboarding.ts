@@ -1,10 +1,10 @@
 import browser from 'webextension-polyfill';
 import { getPopupUrl } from 'src/ui/shared/getPopupUrl';
-import { urlContext } from 'src/ui/shared/UrlContext';
+import { setUrlContext } from 'src/ui/shared/setUrlContext';
 
 export function openOnboarding() {
   const popupUrl = getPopupUrl();
-  urlContext.set(popupUrl.searchParams, {
+  setUrlContext(popupUrl.searchParams, {
     appMode: 'onboarding',
     windowType: 'tab',
   });

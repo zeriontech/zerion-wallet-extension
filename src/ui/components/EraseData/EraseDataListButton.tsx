@@ -8,7 +8,7 @@ import type { UITextProps } from 'src/ui/ui-kit/UIText';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { maybeOpenOnboarding } from 'src/ui/features/onboarding/initialization';
 import { emitter } from 'src/ui/shared/events';
-import { windowContext } from 'src/ui/shared/UrlContext';
+import { urlContext } from 'src/ui/shared/UrlContext';
 import { EraseDataConfirmationDialog } from './EraseDataConfirmationDialog';
 import { EraseDataInProgress } from './EraseDataInProgress';
 import { useEraseDataMutation } from './useEraseDataMutation';
@@ -21,7 +21,8 @@ export function EraseDataListButton({
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const eraseAllData = useEraseDataMutation({
     onSuccess: () => {
-      if (windowContext.isTab()) {
+      const isTab = urlContext.windowType === 'tab';
+      if (isTab) {
         emitter.emit('reloadExtension');
       } else {
         maybeOpenOnboarding();
