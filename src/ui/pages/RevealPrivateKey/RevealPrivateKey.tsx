@@ -34,7 +34,7 @@ function Reveal({
   groupId: string;
   address: string;
   onSubmit: () => void;
-  onSessionExpired(): void;
+  onSessionExpired: () => void;
 }) {
   const { data: privateKey, isLoading, error } = usePrivateKey(address);
   const { handleCopy, isSuccess: isCopySuccess } = useCopyToClipboard({
