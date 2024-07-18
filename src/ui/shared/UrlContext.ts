@@ -14,13 +14,15 @@ export interface UrlContext {
   windowLayout: WindowLayout;
 }
 
-function getSearchParam<T>(param: UrlContextParam, defaultValue: T) {
-  const url = new URL(window.location.href);
-  return (url.searchParams.get(param) as T) || defaultValue;
+function getUrlContext(): UrlContext {
+  const params = new URL(window.location.href).searchParams;
+  return {
+    appMode: (params.get(UrlContextParam.appMode) as AppMode) || 'wallet',
+    windowType:
+      (params.get(UrlContextParam.windowType) as WindowType) || 'popup',
+    windowLayout:
+      (params.get(UrlContextParam.windowLayout) as WindowLayout) || 'column',
+  };
 }
 
-export const urlContext: UrlContext = {
-  appMode: getSearchParam(UrlContextParam.appMode, 'wallet'),
-  windowType: getSearchParam(UrlContextParam.windowType, 'popup'),
-  windowLayout: getSearchParam(UrlContextParam.windowLayout, 'column'),
-};
+export const urlContext = getUrlContext();
