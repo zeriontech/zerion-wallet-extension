@@ -29,10 +29,7 @@ export function UpgradeBanner({
           href={`#/upgrade-dna?address=${address}`}
           target="_blank"
           onClick={(event) =>
-            openHref(event, {
-              windowType: 'tab',
-              windowLayout: 'page',
-            })
+            openHref(event, { windowType: 'tab', windowLayout: 'page' })
           }
           className={styles.button}
         >
