@@ -19,7 +19,7 @@ function getSearchParam<T>(param: UrlContextParam, defaultValue: T) {
   return (url.searchParams.get(param) as T) || defaultValue;
 }
 
-export const urlContext = {
+export const urlContext: UrlContext = {
   appMode: getSearchParam(UrlContextParam.appMode, 'wallet'),
   windowType: getSearchParam(UrlContextParam.windowType, 'popup'),
   windowLayout: getSearchParam(UrlContextParam.windowLayout, 'column'),
