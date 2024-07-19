@@ -1,6 +1,6 @@
 import browser from 'webextension-polyfill';
-import { getPopupUrl } from 'src/ui/shared/getPopupUrl';
-import { setUrlContext } from 'src/ui/shared/setUrlContext';
+import { getPopupUrl } from 'src/shared/getPopupUrl';
+import { setUrlContext } from './setUrlContext';
 
 export function openOnboarding() {
   const popupUrl = getPopupUrl();

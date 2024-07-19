@@ -1,8 +1,8 @@
 import type { Windows } from 'webextension-polyfill';
 import browser from 'webextension-polyfill';
 import { nanoid } from 'nanoid';
-import { getPopupUrl } from 'src/ui/shared/getPopupUrl';
-import { setUrlContext } from 'src/ui/shared/setUrlContext';
+import { getPopupUrl } from 'src/shared/getPopupUrl';
+import { setUrlContext } from 'src/shared/setUrlContext';
 
 type WindowType = 'tab' | 'dialog';
 

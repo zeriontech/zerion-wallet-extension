@@ -18,7 +18,7 @@ import { EraseDataConfirmationDialog } from 'src/ui/components/EraseData';
 import { EraseDataInProgress } from 'src/ui/components/EraseData';
 import { maybeOpenOnboarding } from 'src/ui/features/onboarding/initialization';
 import { emitter } from 'src/ui/shared/events';
-import { urlContext } from 'src/ui/shared/UrlContext';
+import { urlContext } from 'src/shared/UrlContext';
 import * as s from './styles.module.css';
 
 export function ForgotPassword() {

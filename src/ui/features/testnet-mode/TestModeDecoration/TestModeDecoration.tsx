@@ -6,7 +6,7 @@ import React from 'react';
 import { HStack } from 'src/ui/ui-kit/HStack/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Toggle } from 'src/ui/ui-kit/Toggle';
-import { urlContext } from 'src/ui/shared/UrlContext';
+import { urlContext } from 'src/shared/UrlContext';
 import { usePreferences } from '../../preferences';
 import { testnetModeStore } from '../store';
 

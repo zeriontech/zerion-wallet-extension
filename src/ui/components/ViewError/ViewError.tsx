@@ -15,7 +15,7 @@ import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { emitter } from 'src/ui/shared/events';
 import { resetPersistedRoutes } from 'src/ui/App/RouteRestoration';
-import { urlContext } from 'src/ui/shared/UrlContext';
+import { urlContext } from 'src/shared/UrlContext';
 import { WarningIcon } from '../WarningIcon';
 import { getBugButtonUrl } from '../BugReportButton/getBugReportURL';
 import { PageStickyFooter } from '../PageStickyFooter';

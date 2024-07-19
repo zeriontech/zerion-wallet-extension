@@ -76,7 +76,7 @@ import { openUrl } from '../shared/openUrl';
 import { TestModeDecoration } from '../features/testnet-mode/TestModeDecoration';
 import { Onboarding } from '../features/onboarding';
 import { RevealPrivateKey } from '../pages/RevealPrivateKey';
-import { urlContext } from '../shared/UrlContext';
+import { urlContext } from '../../shared/UrlContext';
 import { BackupPage } from '../pages/Backup/Backup';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 

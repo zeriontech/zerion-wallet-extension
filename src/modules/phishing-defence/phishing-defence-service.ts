@@ -1,7 +1,7 @@
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import browser from 'webextension-polyfill';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
-import { setUrlContext } from 'src/ui/shared/setUrlContext';
+import { setUrlContext } from 'src/shared/setUrlContext';
 import { ZerionAPI } from '../zerion-api/zerion-api';
 
 export type DappSecurityStatus =

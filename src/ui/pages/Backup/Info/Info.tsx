@@ -13,7 +13,7 @@ import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { PrivacyFooter } from 'src/ui/components/PrivacyFooter';
 import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import * as helperStyles from 'src/ui/features/onboarding/shared/helperStyles.module.css';
-import { urlContext } from 'src/ui/shared/UrlContext';
+import { urlContext } from 'src/shared/UrlContext';
 import CardImg1 from './create_card_1.png';
 import CardImg2 from './create_card_2.png';
 import CardImg3 from './create_card_3.png';

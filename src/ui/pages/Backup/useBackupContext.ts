@@ -1,6 +1,6 @@
 import { invariant } from 'src/shared/invariant';
 import { useSearchParams } from 'react-router-dom';
-import { urlContext } from 'src/ui/shared/UrlContext';
+import { urlContext } from 'src/shared/UrlContext';
 
 export type BackupContext =
   | {
