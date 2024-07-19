@@ -32,7 +32,7 @@ import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { invariant } from 'src/shared/invariant';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { useCurrency } from 'src/modules/currency/useCurrency';
-import { SidePanel } from 'src/ui/components/SidePanel';
+import { SidePanel } from 'src/ui/features/onboarding/shared/SidePanel';
 import * as helpersStyles from '../../shared/styles.module.css';
 import { Step } from '../../shared/Step';
 import { DNA_MINT_CONTRACT_ADDRESS } from '../../shared/constants';

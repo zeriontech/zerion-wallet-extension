@@ -15,7 +15,6 @@ import type { LedgerAccountImport } from 'src/ui/hardware-wallet/types';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
-import { PageLayout } from 'src/ui/components/PageLayout';
 import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { Stack } from 'src/ui/ui-kit/Stack';
@@ -24,6 +23,7 @@ import { assertPasswordStep } from '../Password/passwordSearchParams';
 import { Password } from '../Password';
 import * as styles from '../shared/helperStyles.module.css';
 import { useOnboardingSession } from '../shared/useOnboardingSession';
+import { PageLayout } from '../shared/PageLayout';
 import { ViewParam, assertViewParam } from './hardwareSearchParams';
 
 export function Hardware() {

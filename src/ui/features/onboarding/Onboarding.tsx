@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { PageLayout } from 'src/ui/components/PageLayout';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { useScreenViewChange } from 'src/ui/shared/useScreenViewChange';
 import { Backup } from 'src/ui/pages/Backup';
@@ -10,6 +9,7 @@ import { Import } from './Import';
 import { Create } from './Create';
 import { Hardware } from './Hardware';
 import { SessionExpired } from './shared/SessionExpired';
+import { PageLayout } from './shared/PageLayout';
 
 function EmptyRoute() {
   return null;

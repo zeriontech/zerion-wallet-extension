@@ -8,7 +8,7 @@ import { invariant } from 'src/shared/invariant';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 import { SessionExpired } from 'src/shared/errors/errors';
-import { PageLayout } from 'src/ui/components/PageLayout';
+import { PageLayout } from 'src/ui/features/onboarding/shared/PageLayout';
 import { Info } from './Info';
 import { RecoveryPhrase } from './RecoveryPhrase';
 import { VerifyBackup } from './VerifyBackup';
