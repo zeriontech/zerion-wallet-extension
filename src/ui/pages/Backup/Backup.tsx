@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
+import { Route, Routes, useNavigate } from 'react-router-dom';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
@@ -98,15 +98,6 @@ export function Backup() {
     <Routes>
       <Route
         path="/"
-        element={
-          <Navigate
-            to={{ pathname: 'info', search: searchParams }}
-            replace={true}
-          />
-        }
-      />
-      <Route
-        path="/info"
         element={
           <Info
             onContinue={() =>

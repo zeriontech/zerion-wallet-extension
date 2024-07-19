@@ -11,10 +11,6 @@ import { Hardware } from './Hardware';
 import { SessionExpired } from './shared/SessionExpired';
 import { PageLayout } from './shared/PageLayout';
 
-function EmptyRoute() {
-  return null;
-}
-
 export function Onboarding() {
   const navigate = useNavigate();
   useScreenViewChange();
@@ -79,7 +75,6 @@ export function Onboarding() {
           </PageLayout>
         }
       />
-      <Route path="/overview" element={<EmptyRoute />} />
       <Route path="*" element={<Navigate to="/onboarding" replace={true} />} />
     </Routes>
   );
