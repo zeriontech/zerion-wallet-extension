@@ -28,11 +28,11 @@ export function SessionExpired({ onSubmit }: { onSubmit(): void }) {
             Session expired
           </UIText>
           <UIText kind="body/regular" color="var(--neutral-600)">
-            Try create another wallet
+            Try creating another wallet
           </UIText>
         </VStack>
         <Button kind="primary" onClick={onSubmit}>
-          Return to home page
+          Restart
         </Button>
       </VStack>
     </div>

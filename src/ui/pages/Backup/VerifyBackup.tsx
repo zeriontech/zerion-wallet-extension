@@ -101,8 +101,7 @@ export function VerifyBackup({
               Verify Your Recovery Phrase
             </UIText>
             <UIText kind="body/regular">
-              This process is aimed to ensure you’ve saved your recovery phrase
-              correctly
+              This step ensures you’ve saved your recovery phrase correctly
             </UIText>
           </VStack>
           <form
