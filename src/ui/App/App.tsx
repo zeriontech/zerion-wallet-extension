@@ -74,11 +74,10 @@ import { ChooseGlobalProviderGuard } from '../pages/RequestAccounts/ChooseGlobal
 import { usePreferences } from '../features/preferences';
 import { openUrl } from '../shared/openUrl';
 import { TestModeDecoration } from '../features/testnet-mode/TestModeDecoration';
-import { Backup } from '../pages/Backup';
-import { PageLayout } from '../components/PageLayout';
 import { Onboarding } from '../features/onboarding';
 import { RevealPrivateKey } from '../pages/RevealPrivateKey';
 import { urlContext } from '../shared/UrlContext';
+import { BackupPage } from '../pages/Backup/Backup';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -179,9 +178,7 @@ function PageLayoutViews() {
         path="/backup/*"
         element={
           <RequireAuth>
-            <PageLayout>
-              <Backup />
-            </PageLayout>
+            <BackupPage />
           </RequireAuth>
         }
       />

@@ -71,7 +71,10 @@ function WeakPasswordWarning() {
           ref={focusNode}
           kind="primary"
           as={UnstyledLink}
-          onClick={goBack}
+          onClick={(event) => {
+            event.preventDefault();
+            goBack();
+          }}
           to={`?view=${ViewParam.password}&step=${PasswordStep.create}`}
           style={{ paddingInline: 20 }}
         >

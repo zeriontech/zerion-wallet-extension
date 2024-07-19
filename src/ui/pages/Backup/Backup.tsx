@@ -8,6 +8,7 @@ import { invariant } from 'src/shared/invariant';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 import { SessionExpired } from 'src/shared/errors/errors';
+import { PageLayout } from 'src/ui/components/PageLayout';
 import { Info } from './Info';
 import { RecoveryPhrase } from './RecoveryPhrase';
 import { VerifyBackup } from './VerifyBackup';
@@ -147,5 +148,13 @@ export function Backup() {
       />
       <Route path="/success" element={<Success />} />
     </Routes>
+  );
+}
+
+export function BackupPage() {
+  return (
+    <PageLayout>
+      <Backup />
+    </PageLayout>
   );
 }
