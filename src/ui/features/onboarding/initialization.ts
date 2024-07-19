@@ -4,9 +4,8 @@ import { UrlContextParam, urlContext } from 'src/ui/shared/UrlContext';
 import { setUrlContext } from 'src/ui/shared/setUrlContext';
 import { OnboardingInterrupt } from './errors';
 
-async function getAppMode() {
+function getAppMode({ hasExistingUser }: { hasExistingUser: boolean }) {
   const hasOnboardingUrl = document.location.hash.startsWith('#/onboarding');
-  const hasExistingUser = Boolean(await getCurrentUser());
   const isPopup = urlContext.windowType === 'popup';
   return hasOnboardingUrl || (!isPopup && !hasExistingUser)
     ? 'onboarding'
@@ -22,7 +21,7 @@ export async function maybeOpenOnboarding() {
     throw new OnboardingInterrupt();
   }
 
-  const appMode = await getAppMode();
+  const appMode = getAppMode({ hasExistingUser });
   if (appMode === 'onboarding' && !isPopup) {
     // TODO: setting "appMode=onboarding" is duplicated here and in {openOnboarding}
     const searchParams = new URLSearchParams(window.location.search);
