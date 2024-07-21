@@ -143,7 +143,7 @@ export function VerifyBackup({
               >
                 Verify
               </Button>
-              {verifyMutation.error ? (
+              {verifyMutation.isError ? (
                 <UIText
                   kind="caption/regular"
                   color="var(--negative-500)"
