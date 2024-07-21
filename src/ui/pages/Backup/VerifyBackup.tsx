@@ -15,16 +15,17 @@ import { useMutation } from '@tanstack/react-query';
 import { invariant } from 'src/shared/invariant';
 import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
 import { useRecoveryPhrase } from './useRecoveryPhrase';
-import { useBackupContext } from './useBackupContext';
 import { clipboardWarning } from './clipboardWarning';
 
 const INPUT_NUMBER = 12;
 const ARRAY_OF_NUMBERS = Array.from({ length: INPUT_NUMBER }, (_, i) => i);
 
 export function VerifyBackup({
+  groupId,
   onSessionExpired,
   onSuccess,
 }: {
+  groupId?: string;
   onSessionExpired(): void;
   onSuccess(): void;
 }) {
@@ -38,12 +39,11 @@ export function VerifyBackup({
     type: isTechnicalHint ? 'text' : undefined,
   });
 
-  const backupContext = useBackupContext();
   const {
     data: recoveryPhrase,
     isLoading,
     error,
-  } = useRecoveryPhrase(backupContext);
+  } = useRecoveryPhrase({ groupId });
 
   useEffect(() => {
     if (isSessionExpiredError(error)) {

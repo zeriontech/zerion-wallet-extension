@@ -1,114 +1,40 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Route, Routes, useNavigate } from 'react-router-dom';
-import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
-import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
-import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
+import type { NavigateOptions } from 'react-router-dom';
+import { Route, Routes, useNavigate, useSearchParams } from 'react-router-dom';
 import { invariant } from 'src/shared/invariant';
-import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
-import { SessionExpired } from 'src/shared/errors/errors';
 import { PageLayout } from 'src/ui/features/onboarding/shared/PageLayout';
+import { walletPort } from 'src/ui/shared/channels';
 import { Info } from './Info';
 import { RecoveryPhrase } from './RecoveryPhrase';
 import { VerifyBackup } from './VerifyBackup';
 import { VerifyUser } from './VerifyUser';
 import { Success } from './Success';
-import type { BackupContext } from './useBackupContext';
-import { useBackupContext } from './useBackupContext';
 
-async function completeBackup(backupContext: BackupContext) {
-  if (backupContext.appMode === 'onboarding') {
-    const wallet = await walletPort.request('getPendingWallet');
-    if (!wallet) {
-      throw new SessionExpired();
-    }
-    await accountPublicRPCPort.request('saveUserAndWallet');
-    await setCurrentAddress({ address: wallet.address });
-    const group = await getWalletGroupByAddress(wallet.address);
-    invariant(group?.id, 'Saved wallet should belong to a group');
-    await walletPort.request('updateLastBackedUp', { groupId: group.id });
-  } else {
-    await walletPort.request('updateLastBackedUp', {
-      groupId: backupContext.groupId,
-    });
-  }
-}
-
-export function Backup() {
+export function BackupComponent({
+  groupId,
+  onStart,
+  onExit,
+  onSkip,
+  onSuccess,
+  onSessionExpired,
+}: {
+  groupId?: string;
+  onStart: () => void;
+  onExit?: () => void;
+  onSkip?: () => void;
+  onSuccess: () => void;
+  onSessionExpired: () => void;
+}) {
   const navigate = useNavigate();
-  const backupContext = useBackupContext();
-
-  const handleSessionExpired = useCallback(() => {
-    if (backupContext.appMode === 'onboarding') {
-      navigate('/onboarding/session-expired', { replace: true });
-    } else {
-      navigate(`/backup/verify-user?groupId=${backupContext.groupId}`, {
-        replace: true,
-      });
-    }
-  }, [backupContext, navigate]);
-
-  const handleSuccess = () => {
-    zeroizeAfterSubmission();
-    if (backupContext.appMode === 'onboarding') {
-      navigate('/onboarding/success');
-    } else {
-      navigate(`/backup/success?groupId=${backupContext.groupId}`);
-    }
-  };
-
-  const handleError = (error: unknown) => {
-    if (isSessionExpiredError(error)) {
-      handleSessionExpired();
-    }
-  };
-
-  const { mutate: handleSkipBackup } = useMutation({
-    mutationFn: async () => {
-      invariant(
-        backupContext.appMode === 'onboarding',
-        'Must be in onboarding appMode'
-      );
-      const wallet = await walletPort.request('getPendingWallet');
-      if (!wallet) {
-        throw new SessionExpired();
-      }
-      await accountPublicRPCPort.request('saveUserAndWallet');
-      await setCurrentAddress({ address: wallet.address });
-    },
-    onSuccess: handleSuccess,
-    onError: handleError,
-    useErrorBoundary: true,
-  });
-
-  const { mutate: handleCompleteBackup } = useMutation({
-    mutationFn: () => completeBackup(backupContext),
-    onSuccess: handleSuccess,
-    onError: handleError,
-    useErrorBoundary: true,
-  });
-
-  const searchParams =
-    backupContext.appMode === 'wallet'
-      ? `?${new URLSearchParams({ groupId: backupContext.groupId })}`
-      : '';
+  const searchParams = groupId ? `?${new URLSearchParams({ groupId })}` : '';
 
   return (
     <Routes>
       <Route
         path="/"
-        element={
-          <Info
-            onContinue={() =>
-              backupContext.appMode === 'onboarding'
-                ? navigate('recovery-phrase')
-                : navigate(`/backup/verify-user${searchParams}`)
-            }
-            onSkip={handleSkipBackup}
-            onExit={() => navigate('/onboarding')}
-          />
-        }
+        element={<Info onContinue={onStart} onSkip={onSkip} onExit={onExit} />}
       />
       <Route
         path="/verify-user"
@@ -122,9 +48,10 @@ export function Backup() {
         path="/recovery-phrase"
         element={
           <RecoveryPhrase
-            onSessionExpired={handleSessionExpired}
+            groupId={groupId}
             onNextStep={() => navigate(`verify-backup${searchParams}`)}
-            onSkip={handleSkipBackup}
+            onSkip={onSkip}
+            onSessionExpired={onSessionExpired}
           />
         }
       />
@@ -132,8 +59,9 @@ export function Backup() {
         path="/verify-backup"
         element={
           <VerifyBackup
-            onSessionExpired={handleSessionExpired}
-            onSuccess={handleCompleteBackup}
+            groupId={groupId}
+            onSessionExpired={onSessionExpired}
+            onSuccess={onSuccess}
           />
         }
       />
@@ -143,9 +71,34 @@ export function Backup() {
 }
 
 export function BackupPage() {
+  const [params] = useSearchParams();
+  const groupId = params.get('groupId');
+  invariant(groupId, 'groupId param is required for BackupPage');
+
+  const navigate = useNavigate();
+
+  const goToVerifyUser = (options?: NavigateOptions) =>
+    navigate(`/backup/verify-user?groupId=${groupId}`, options);
+
+  const { mutate: handleSuccess } = useMutation({
+    mutationFn: () => walletPort.request('updateLastBackedUp', { groupId }),
+    onSuccess: () => navigate(`/backup/success?groupId=${groupId}`),
+    onError: (error: unknown) => {
+      if (isSessionExpiredError(error)) {
+        goToVerifyUser({ replace: true });
+      }
+    },
+    useErrorBoundary: true,
+  });
+
   return (
     <PageLayout>
-      <Backup />
+      <BackupComponent
+        groupId={groupId}
+        onStart={goToVerifyUser}
+        onSuccess={handleSuccess}
+        onSessionExpired={() => goToVerifyUser({ replace: true })}
+      />
     </PageLayout>
   );
 }

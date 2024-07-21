@@ -444,7 +444,7 @@ export interface AppProps {
 
 export function App({ initialView, inspect }: AppProps) {
   const isOnboardingMode = urlContext.appMode === 'onboarding';
-  const hasPageLayout = urlContext.windowLayout === 'page';
+  const isPageLayout = urlContext.windowLayout === 'page';
 
   const bodyClassList = useMemo(() => {
     const result = [];
@@ -457,11 +457,11 @@ export function App({ initialView, inspect }: AppProps) {
     } else if (isTab) {
       result.push(styles.isTab);
     }
-    if (isOnboardingMode || hasPageLayout) {
+    if (isOnboardingMode || isPageLayout) {
       result.push(styles.pageLayout);
     }
     return result;
-  }, [isOnboardingMode, hasPageLayout]);
+  }, [isOnboardingMode, isPageLayout]);
 
   const { connected } = useStore(runtimeStore);
 
@@ -495,14 +495,14 @@ export function App({ initialView, inspect }: AppProps) {
               ) : null}
               <GlobalKeyboardShortcuts />
               <VersionUpgrade>
-                {!isOnboardingView && !hasPageLayout ? (
+                {!isOnboardingView && !isPageLayout ? (
                   // Render above <ViewSuspense /> so that it doesn't flicker
                   <MaybeTestModeDecoration />
                 ) : null}
                 <ViewSuspense logDelays={true}>
                   {isOnboardingView ? (
                     <Onboarding />
-                  ) : hasPageLayout ? (
+                  ) : isPageLayout ? (
                     <PageLayoutViews />
                   ) : (
                     <DefiSdkClientProvider>

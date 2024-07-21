@@ -1,1 +1,1 @@
-export { Backup } from './Backup';
+export { BackupPage, BackupComponent } from './Backup';

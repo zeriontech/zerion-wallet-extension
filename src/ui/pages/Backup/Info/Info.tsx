@@ -133,9 +133,9 @@ export function Info({
   onSkip,
   onExit,
 }: {
-  onContinue(): void;
-  onSkip(): void;
-  onExit(): void;
+  onContinue: () => void;
+  onSkip?: () => void;
+  onExit?: () => void;
 }) {
   const { isNarrowView } = useWindowSizeStore();
   const [activeCard, setActiveCard] = useState(0);
@@ -148,8 +148,6 @@ export function Info({
       onContinue();
     }
   }, [activeCard, onContinue]);
-
-  const canSkipBackup = urlContext.appMode === 'onboarding';
 
   return (
     <>
@@ -165,7 +163,7 @@ export function Info({
           className={cn(helperStyles.container, helperStyles.appear)}
           style={{ justifyContent: 'center', paddingBottom: 48 }}
         >
-          {canSkipBackup ? (
+          {onExit ? (
             <UnstyledButton
               aria-label="Exit creating wallet"
               className={helperStyles.backButton}
@@ -224,7 +222,7 @@ export function Info({
                 <Button onClick={handleClick} autoFocus={true}>
                   {activeCard === MAX_CARD_INDEX ? 'Back up now' : 'Continue'}
                 </Button>
-                {canSkipBackup && activeCard === MAX_CARD_INDEX ? (
+                {onSkip && activeCard === MAX_CARD_INDEX ? (
                   <Button kind="ghost" onClick={onSkip}>
                     Do it Later
                   </Button>

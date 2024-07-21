@@ -19,25 +19,26 @@ import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 import { BlurredToggle } from 'src/ui/components/BlurredToggle';
 import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
 import { useRecoveryPhrase } from './useRecoveryPhrase';
-import { useBackupContext } from './useBackupContext';
 import { clipboardWarning } from './clipboardWarning';
 
 export function RecoveryPhrase({
-  onSessionExpired,
+  groupId,
   onNextStep,
   onSkip,
+  onSessionExpired,
 }: {
-  onSessionExpired(): void;
-  onNextStep(): void;
-  onSkip(): void;
+  groupId?: string;
+  onNextStep: () => void;
+  onSkip?: () => void;
+  onSessionExpired: () => void;
 }) {
   const { isNarrowView } = useWindowSizeStore();
-  const backupContext = useBackupContext();
+
   const {
     data: recoveryPhrase,
     error,
     isLoading,
-  } = useRecoveryPhrase(backupContext);
+  } = useRecoveryPhrase({ groupId });
 
   useEffect(() => {
     if (isSessionExpiredError(error)) {
@@ -151,7 +152,7 @@ export function RecoveryPhrase({
                 >
                   Verify Backup
                 </Button>
-                {backupContext.appMode === 'onboarding' ? (
+                {onSkip ? (
                   <Button kind="ghost" onClick={onSkip}>
                     Do it Later
                   </Button>

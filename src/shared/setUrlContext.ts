@@ -1,5 +1,5 @@
-import type { UrlContext } from './UrlContext';
-import { UrlContextParam } from './UrlContext';
+import type { UrlContext } from './types/UrlContext';
+import { UrlContextParam } from './types/UrlContext';
 
 export function setUrlContext(
   searchParams: URLSearchParams,

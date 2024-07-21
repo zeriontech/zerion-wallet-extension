@@ -1,18 +1,10 @@
-type AppMode = 'onboarding' | 'wallet';
-type WindowLayout = 'column' | 'page';
-type WindowType = 'popup' | 'tab' | 'dialog';
-
-export enum UrlContextParam {
-  windowType = 'windowType',
-  windowLayout = 'windowLayout',
-  appMode = 'appMode',
-}
-
-export interface UrlContext {
-  appMode: AppMode;
-  windowType: WindowType;
-  windowLayout: WindowLayout;
-}
+import type {
+  AppMode,
+  UrlContext,
+  WindowLayout,
+  WindowType,
+} from './types/UrlContext';
+import { UrlContextParam } from './types/UrlContext';
 
 function getUrlContext(): UrlContext {
   const params = new URL(window.location.href).searchParams;

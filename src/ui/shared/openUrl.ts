@@ -1,6 +1,6 @@
 import browser from 'webextension-polyfill';
+import type { UrlContext } from 'src/shared/types/UrlContext';
 import { setUrlContext } from '../../shared/setUrlContext';
-import type { UrlContext } from '../../shared/UrlContext';
 
 async function getNextToActiveTabIndex() {
   const [activeTab] = await browser.tabs.query({

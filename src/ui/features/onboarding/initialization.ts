@@ -1,7 +1,8 @@
 import { getCurrentUser } from 'src/shared/getCurrentUser';
 import { openOnboarding } from 'src/shared/openOnboarding';
-import { UrlContextParam, urlContext } from 'src/shared/UrlContext';
 import { setUrlContext } from 'src/shared/setUrlContext';
+import { urlContext } from 'src/shared/UrlContext';
+import { UrlContextParam } from 'src/shared/types/UrlContext';
 import { OnboardingInterrupt } from './errors';
 
 function getAppMode({ hasExistingUser }: { hasExistingUser: boolean }) {

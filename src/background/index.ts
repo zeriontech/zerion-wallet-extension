@@ -5,7 +5,7 @@ import { configureBackgroundClient } from 'src/modules/defi-sdk/background';
 import { SessionCacheService } from 'src/background/resource/sessionCacheService';
 import { openOnboarding } from 'src/shared/openOnboarding';
 import { userLifecycleStore } from 'src/shared/analytics/shared/UserLifecycle';
-import { UrlContextParam } from 'src/shared/UrlContext';
+import { UrlContextParam } from 'src/shared/types/UrlContext';
 import { initialize } from './initialize';
 import { PortRegistry } from './messaging/PortRegistry';
 import { createWalletMessageHandler } from './messaging/port-message-handlers/createWalletMessageHandler';

@@ -1,8 +1,7 @@
 import React, { useMemo } from 'react';
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { useScreenViewChange } from 'src/ui/shared/useScreenViewChange';
-import { Backup } from 'src/ui/pages/Backup';
 import { Success } from './Success';
 import { Welcome } from './Welcome';
 import { Import } from './Import';
@@ -10,6 +9,7 @@ import { Create } from './Create';
 import { Hardware } from './Hardware';
 import { SessionExpired } from './shared/SessionExpired';
 import { PageLayout } from './shared/PageLayout';
+import { Backup } from './Backup';
 
 export function Onboarding() {
   const navigate = useNavigate();
@@ -25,9 +25,8 @@ export function Onboarding() {
 
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/onboarding" replace={true} />} />
       <Route
-        path="/onboarding"
+        path="/"
         element={
           <PageLayout>
             <Welcome />
@@ -71,11 +70,10 @@ export function Onboarding() {
         path="/onboarding/session-expired"
         element={
           <PageLayout>
-            <SessionExpired onSubmit={() => navigate('/onboarding')} />
+            <SessionExpired onRestart={() => navigate('/onboarding')} />
           </PageLayout>
         }
       />
-      <Route path="*" element={<Navigate to="/onboarding" replace={true} />} />
     </Routes>
   );
 }

@@ -5,7 +5,7 @@ import { Button } from 'src/ui/ui-kit/Button';
 import SessionExpiredImg from '../assets/session-expired.png';
 import * as helperStyles from '../shared/helperStyles.module.css';
 
-export function SessionExpired({ onSubmit }: { onSubmit(): void }) {
+export function SessionExpired({ onRestart }: { onRestart: () => void }) {
   return (
     <div className={helperStyles.container}>
       <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -31,7 +31,7 @@ export function SessionExpired({ onSubmit }: { onSubmit(): void }) {
             Try creating another wallet
           </UIText>
         </VStack>
-        <Button kind="primary" onClick={onSubmit}>
+        <Button kind="primary" onClick={onRestart}>
           Restart
         </Button>
       </VStack>
