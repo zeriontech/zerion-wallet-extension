@@ -669,7 +669,8 @@ export function SwapFormComponent() {
       </form>
       <Spacer height={16} />
       <VStack gap={8}>
-        <div
+        <VStack
+          gap={4}
           style={{
             borderRadius: 12,
             border: '2px solid var(--neutral-200)',
@@ -705,7 +706,7 @@ export function SwapFormComponent() {
               />
             </React.Suspense>
           ) : null}
-        </div>
+        </VStack>
         {quote ? <ProtocolFeeLine quote={quote} /> : null}
       </VStack>
       <VStack gap={16} style={{ marginTop: 'auto' }}>
