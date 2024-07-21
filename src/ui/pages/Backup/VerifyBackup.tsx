@@ -14,6 +14,7 @@ import * as helperStyles from 'src/ui/features/onboarding/shared/helperStyles.mo
 import { useMutation } from '@tanstack/react-query';
 import { invariant } from 'src/shared/invariant';
 import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
+import { getError } from 'src/shared/errors/getError';
 import { useRecoveryPhrase } from './useRecoveryPhrase';
 import { clipboardWarning } from './clipboardWarning';
 
