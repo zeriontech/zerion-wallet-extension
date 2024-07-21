@@ -669,36 +669,44 @@ export function SwapFormComponent() {
       </form>
       <Spacer height={16} />
       <VStack gap={8}>
-        <RateLine swapView={swapView} quotesData={quotesData} />
-        <SlippageLine swapView={swapView} />
-        {currentTransaction && chain && currentTransaction.gas ? (
-          <React.Suspense
-            fallback={
-              <div style={{ display: 'flex', justifyContent: 'end' }}>
-                <CircleSpinner />
-              </div>
-            }
-          >
-            <StoreWatcher
-              store={swapView.store.configuration}
-              render={(configuration) => (
-                <TransactionConfiguration
-                  keepPreviousData={true}
-                  transaction={currentTransaction}
-                  from={address}
-                  chain={chain}
-                  paymasterEligible={false}
-                  onFeeValueCommonReady={handleFeeValueCommonReady}
-                  configuration={configuration}
-                  onConfigurationChange={(value) =>
-                    swapView.store.configuration.setState(value)
-                  }
-                />
-              )}
-            />
-            {quote ? <ProtocolFeeLine quote={quote} /> : null}
-          </React.Suspense>
-        ) : null}
+        <div
+          style={{
+            borderRadius: 12,
+            border: '2px solid var(--neutral-200)',
+            padding: '12px 16px',
+          }}
+        >
+          <RateLine swapView={swapView} quotesData={quotesData} />
+          <SlippageLine swapView={swapView} />
+          {currentTransaction && chain && currentTransaction.gas ? (
+            <React.Suspense
+              fallback={
+                <div style={{ display: 'flex', justifyContent: 'end' }}>
+                  <CircleSpinner />
+                </div>
+              }
+            >
+              <StoreWatcher
+                store={swapView.store.configuration}
+                render={(configuration) => (
+                  <TransactionConfiguration
+                    keepPreviousData={true}
+                    transaction={currentTransaction}
+                    from={address}
+                    chain={chain}
+                    paymasterEligible={false}
+                    onFeeValueCommonReady={handleFeeValueCommonReady}
+                    configuration={configuration}
+                    onConfigurationChange={(value) =>
+                      swapView.store.configuration.setState(value)
+                    }
+                  />
+                )}
+              />
+            </React.Suspense>
+          ) : null}
+        </div>
+        {quote ? <ProtocolFeeLine quote={quote} /> : null}
       </VStack>
       <VStack gap={16} style={{ marginTop: 'auto' }}>
         <AnimatedAppear display={showApproveHintLine}>
