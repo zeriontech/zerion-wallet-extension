@@ -4,6 +4,7 @@ import { setUrlContext } from './setUrlContext';
 
 export function openOnboarding() {
   const popupUrl = getPopupUrl();
+  popupUrl.hash = '/onboarding';
   setUrlContext(popupUrl.searchParams, {
     appMode: 'onboarding',
     windowType: 'tab',

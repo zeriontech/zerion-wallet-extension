@@ -13,6 +13,7 @@ import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 import { Stack } from 'src/ui/ui-kit/Stack';
+import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
 import { Password } from '../Password';
 import { assertPasswordStep } from '../Password/passwordSearchParams';
 import * as helperStyles from '../shared/helperStyles.module.css';
@@ -23,8 +24,10 @@ export function Create() {
   const [params] = useSearchParams();
   const [showError, setShowError] = useState(false);
   const step = params.get('step') || 'create';
-  const navigate = useNavigate();
   assertPasswordStep(step);
+
+  const navigate = useNavigate();
+  const goBack = useGoBack();
 
   const { mutate: handleSubmit, isLoading } = useMutation({
     mutationFn: async ({ password }: { password: string | null }) => {
@@ -65,7 +68,7 @@ export function Create() {
           </div>
         ) : null}
         <UnstyledButton
-          onClick={() => navigate('/onboarding')}
+          onClick={goBack}
           aria-label="Go Back"
           className={helperStyles.backButton}
         >
