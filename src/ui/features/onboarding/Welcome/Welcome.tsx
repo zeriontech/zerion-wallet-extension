@@ -202,7 +202,7 @@ function Banner() {
 
 export function Welcome() {
   const { isNarrowView } = useWindowSizeStore();
-  useOnboardingSession('overview');
+  useOnboardingSession({ navigateOnExistingUser: 'success' });
 
   return (
     <VStack gap={isNarrowView ? 24 : 40}>

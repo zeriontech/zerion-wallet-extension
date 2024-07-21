@@ -4,9 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from 'src/shared/getCurrentUser';
 import { emitter } from 'src/ui/shared/events';
 
-export function useOnboardingSession(
-  navigateOnAccountCreated: 'session-expired' | 'overview'
-) {
+export function useOnboardingSession({
+  navigateOnExistingUser,
+}: {
+  navigateOnExistingUser: 'session-expired' | 'success';
+}) {
   const navigate = useNavigate();
 
   const { data: existingUser, isLoading } = useQuery({
@@ -16,19 +18,19 @@ export function useOnboardingSession(
       return result || null;
     },
     suspense: false,
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
     if (existingUser) {
-      if (navigateOnAccountCreated === 'session-expired') {
+      if (navigateOnExistingUser === 'session-expired') {
         navigate('/onboarding/session-expired', { replace: true });
       } else {
-        navigate('/overview');
+        navigate('/onboarding/success');
         emitter.emit('reloadExtension');
       }
     }
-  }, [existingUser, navigate, navigateOnAccountCreated]);
+  }, [existingUser, navigate, navigateOnExistingUser]);
 
   return {
     sessionDataIsLoading: isLoading,

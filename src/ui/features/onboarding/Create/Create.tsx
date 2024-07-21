@@ -46,7 +46,9 @@ export function Create() {
     },
   });
 
-  const { sessionDataIsLoading } = useOnboardingSession('session-expired');
+  const { sessionDataIsLoading } = useOnboardingSession({
+    navigateOnExistingUser: 'session-expired',
+  });
 
   if (sessionDataIsLoading) {
     return null;

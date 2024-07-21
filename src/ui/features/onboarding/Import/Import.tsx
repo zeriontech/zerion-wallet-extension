@@ -144,7 +144,9 @@ function ImportWallet() {
     [wallets, createUserAndWallet, showErrorBoundary]
   );
 
-  const { sessionDataIsLoading } = useOnboardingSession('session-expired');
+  const { sessionDataIsLoading } = useOnboardingSession({
+    navigateOnExistingUser: 'session-expired',
+  });
 
   if (sessionDataIsLoading) {
     return null;
