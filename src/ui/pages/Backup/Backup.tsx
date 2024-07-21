@@ -34,7 +34,7 @@ export function BackupComponent({
     <Routes>
       <Route
         path="/"
-        element={<Info onContinue={onStart} onSkip={onSkip} onExit={onExit} />}
+        element={<Info onStart={onStart} onExit={onExit} onSkip={onSkip} />}
       />
       <Route
         path="/verify-user"

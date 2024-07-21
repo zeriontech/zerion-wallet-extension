@@ -129,11 +129,11 @@ function InfoHeadline() {
 }
 
 export function Info({
-  onContinue,
+  onStart,
   onSkip,
   onExit,
 }: {
-  onContinue: () => void;
+  onStart: () => void;
   onSkip?: () => void;
   onExit?: () => void;
 }) {
@@ -145,9 +145,9 @@ export function Info({
     if (activeCard < MAX_CARD_INDEX) {
       setActiveCard(activeCard + 1);
     } else {
-      onContinue();
+      onStart();
     }
-  }, [activeCard, onContinue]);
+  }, [activeCard, onStart]);
 
   return (
     <>
