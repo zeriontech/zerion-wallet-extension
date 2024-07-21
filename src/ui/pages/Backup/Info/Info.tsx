@@ -14,6 +14,7 @@ import { PrivacyFooter } from 'src/ui/components/PrivacyFooter';
 import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import * as helperStyles from 'src/ui/features/onboarding/shared/helperStyles.module.css';
 import { urlContext } from 'src/shared/UrlContext';
+import { apostrophe } from 'src/ui/shared/typography';
 import CardImg1 from './create_card_1.png';
 import CardImg2 from './create_card_2.png';
 import CardImg3 from './create_card_3.png';
@@ -191,7 +192,7 @@ export function Info({
                       className={styles.cardImg}
                     />
                   }
-                  text="For security, it's crucial to write down the recovery phrase and store it securely."
+                  text={`For security, it${apostrophe}s crucial to write down the recovery phrase and store it securely.`}
                 />
                 <Card
                   index={1}

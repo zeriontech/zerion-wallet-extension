@@ -14,6 +14,7 @@ import { Stack } from 'src/ui/ui-kit/Stack';
 import * as helperStyles from 'src/ui/features/onboarding/shared/helperStyles.module.css';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
+import { apostrophe } from 'src/ui/shared/typography';
 import * as styles from './styles.module.css';
 
 export function VerifyUser({ onSuccess }: { onSuccess: () => void }) {
@@ -59,8 +60,8 @@ export function VerifyUser({ onSuccess }: { onSuccess: () => void }) {
       )}
       <VStack gap={8}>
         <UIText kind="small/regular" color="var(--neutral-600)">
-          For security, it's crucial to write down the recovery phrase and store
-          it securely.
+          For security, it{apostrophe}s crucial to write down the recovery
+          phrase and store it securely.
         </UIText>
         <UIText kind="small/regular" color="var(--neutral-600)">
           Your recovery phrase is the only way to access your accounts and
