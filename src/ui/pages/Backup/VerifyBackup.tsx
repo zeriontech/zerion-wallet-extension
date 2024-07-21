@@ -149,7 +149,7 @@ export function VerifyBackup({
                   color="var(--negative-500)"
                   style={errorStyle}
                 >
-                  {(verifyMutation.error as Error).message || 'unknown error'}
+                  {getError(verifyMutation.error).message}
                 </UIText>
               ) : isTechnicalHint ? (
                 <UIText kind="caption/regular" color="var(--notice-500)">
