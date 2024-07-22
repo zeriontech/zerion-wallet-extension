@@ -19,7 +19,7 @@ import { assertPasswordStep } from '../Password/passwordSearchParams';
 import * as helperStyles from '../shared/helperStyles.module.css';
 import { useOnboardingSession } from '../shared/useOnboardingSession';
 
-export function Create() {
+export function CreateUser() {
   const { isNarrowView } = useWindowSizeStore();
   const [params] = useSearchParams();
   const [showError, setShowError] = useState(false);

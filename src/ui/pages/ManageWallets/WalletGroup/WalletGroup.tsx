@@ -43,7 +43,7 @@ import {
   isSignerContainer,
 } from 'src/shared/types/validators';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
-import { openHref } from 'src/ui/shared/openUrl';
+import { openHrefInTabView } from 'src/ui/shared/openUrl';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 
 const strings = {
@@ -252,16 +252,8 @@ export function WalletGroup() {
               items={[
                 {
                   key: 1,
-                  to: isMnemonicGroup
-                    ? `/backup?groupId=${walletGroup.id}`
-                    : undefined,
-                  onClick: isMnemonicGroup
-                    ? (event) =>
-                        openHref(event, {
-                          windowType: 'tab',
-                          windowLayout: 'page',
-                        })
-                    : undefined,
+                  to: `/backup?groupId=${walletGroup.id}`,
+                  onClick: openHrefInTabView,
                   component: (
                     <HStack
                       gap={4}

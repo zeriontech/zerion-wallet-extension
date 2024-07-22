@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { invariant } from 'src/shared/invariant';
 import { walletPort } from 'src/ui/shared/channels';
 
 export function useRecoveryPhrase({ groupId }: { groupId?: string }) {
@@ -7,7 +6,6 @@ export function useRecoveryPhrase({ groupId }: { groupId?: string }) {
     queryKey: ['getRecoveryPhrase', groupId],
     queryFn: async () => {
       if (groupId) {
-        invariant(groupId, 'groupId param is required for wallet appMode');
         const mnemonic = await walletPort.request('getRecoveryPhrase', {
           groupId,
         });

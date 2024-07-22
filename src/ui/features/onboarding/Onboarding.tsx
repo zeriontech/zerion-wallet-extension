@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Success } from './Success';
 import { Welcome } from './Welcome';
 import { Import } from './Import';
-import { Create } from './Create';
+import { CreateUser } from './CreateUser';
 import { Hardware } from './Hardware';
 import { SessionExpired } from './shared/SessionExpired';
 import { PageLayout } from './shared/PageLayout';
@@ -53,7 +53,7 @@ export function Onboarding() {
         path="/onboarding/create/*"
         element={
           <PageLayout>
-            <Create />
+            <CreateUser />
           </PageLayout>
         }
       />
