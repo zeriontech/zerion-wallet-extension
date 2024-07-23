@@ -24,6 +24,11 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import { walletPort } from 'src/ui/shared/channels';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 
+async function updateNetworks() {
+  const networksStore = await getNetworksStore();
+  return networksStore.update();
+}
+
 export function NetworkSelect({
   value,
   onChange,
@@ -58,8 +63,7 @@ export function NetworkSelect({
       if (chain !== 'all') {
         walletPort.request('uiChainSelected', { chain });
         await walletPort.request('addVisitedEthereumChain', { chain });
-        const networksStore = await getNetworksStore();
-        networksStore.update();
+        await updateNetworks();
       }
       onChange(chain === 'all' ? NetworkSelectValue.All : chain);
     });
