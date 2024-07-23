@@ -10,7 +10,7 @@ import type { Chain } from './Chain';
 export const mainNetworksStore = new NetworksStore(
   { networks: null },
   {
-    getChainSources: async () => {
+    getSavedNetworkData: async () => {
       await chainConfigStore.ready();
       return chainConfigStore.getState();
     },
@@ -22,7 +22,7 @@ export const mainNetworksStore = new NetworksStore(
 export const testenvNetworksStore = new NetworksStore(
   { networks: null },
   {
-    getChainSources: async () => {
+    getSavedNetworkData: async () => {
       await chainConfigStore.ready();
       return chainConfigStore.getState();
     },

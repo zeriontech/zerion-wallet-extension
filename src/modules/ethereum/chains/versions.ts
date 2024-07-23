@@ -4,16 +4,11 @@ import type {
   ChainConfig,
   ChainConfigV1,
   ChainConfigV2,
-  ChainConfigV3,
   EthereumChainConfig,
 } from './types';
 import { toCustomNetworkId } from './helpers';
 
-type PossibleEntry =
-  | ChainConfigV1
-  | ChainConfigV2
-  | ChainConfigV3
-  | ChainConfig;
+type PossibleEntry = ChainConfigV1 | ChainConfigV2 | ChainConfig;
 
 function maybeLocalChainId(id?: string | null) {
   return !id || id.length === 21; // nanoid() standard length
@@ -50,13 +45,6 @@ export const upgrades: Upgrades<PossibleEntry> = {
         }
         return { ...config, id: toCustomNetworkId(config.value.chainId) };
       }),
-    };
-  },
-  4: (entry) => {
-    return {
-      ...entry,
-      version: 4,
-      visitedChains: [],
     };
   },
 };

@@ -2,7 +2,7 @@ import { Store } from 'store-unit';
 import { type Client } from 'defi-sdk';
 import type { ChainId } from '../ethereum/transactions/ChainId';
 import { isCustomNetworkId } from '../ethereum/chains/helpers';
-import type { ChainConfig } from '../ethereum/chains/types';
+import type { EthereumChainConfig } from '../ethereum/chains/types';
 import { Networks } from './Networks';
 import { getNetworkByChainId, getNetworks } from './networks-api';
 import type { NetworkConfig } from './NetworkConfig';
@@ -26,28 +26,35 @@ function mergeNetworkConfigs(
   ];
 }
 
+type ChainConfigSource = {
+  ethereumChainConfigs: EthereumChainConfig[];
+  visitedChains?: string[];
+};
+
 export class NetworksStore extends Store<State> {
   private networkConfigs: NetworkConfig[] = [];
   private customNetworkConfigs: NetworkConfig[] = [];
   private loaderPromises: Record<string, Promise<Networks>> = {};
   client: Client;
   testnetMode: boolean;
-  private getChainSources: null | (() => Promise<ChainConfig | undefined>);
+  private getSavedNetworkData:
+    | null
+    | (() => Promise<ChainConfigSource | undefined>);
 
   constructor(
     state: State,
     {
-      getChainSources,
+      getSavedNetworkData,
       client,
       testnetMode,
     }: {
-      getChainSources?: NetworksStore['getChainSources'];
+      getSavedNetworkData?: NetworksStore['getSavedNetworkData'];
       client: Client;
       testnetMode: boolean;
     }
   ) {
     super(state);
-    this.getChainSources = getChainSources ?? null;
+    this.getSavedNetworkData = getSavedNetworkData ?? null;
     this.client = client;
     this.testnetMode = testnetMode;
   }
@@ -57,7 +64,7 @@ export class NetworksStore extends Store<State> {
   }
 
   private async updateNetworks() {
-    const chainConfigs = await this.getChainSources?.();
+    const chainConfigs = await this.getSavedNetworkData?.();
     const savedChainConfigs = chainConfigs?.ethereumChainConfigs;
     const visitedChains = chainConfigs?.visitedChains;
     const networks = new Networks({
@@ -73,7 +80,7 @@ export class NetworksStore extends Store<State> {
   }
 
   private async fetchNetworks({
-    chains,
+    chains = [],
     update,
     testnetMode,
   }: {
@@ -84,23 +91,21 @@ export class NetworksStore extends Store<State> {
     const existingNetworksCollection =
       this.getState().networks?.getNetworksCollection();
     const shouldUpdateNetworksInfo =
-      update || chains?.some((id) => !existingNetworksCollection?.[id]);
+      update || chains.some((id) => !existingNetworksCollection?.[id]);
     const existingNetworks = this.getState().networks;
     if (!shouldUpdateNetworksInfo && existingNetworks) {
       return existingNetworks;
     }
 
-    const chainConfigs = await this.getChainSources?.();
+    const chainConfigs = await this.getSavedNetworkData?.();
     const savedChainConfigs = chainConfigs?.ethereumChainConfigs;
-    const visitedChains = chainConfigs?.visitedChains;
-    const savedIds = savedChainConfigs?.map((config) => config.id);
+    const visitedChains = chainConfigs?.visitedChains || [];
+    const savedIds = savedChainConfigs?.map((config) => config.id) || [];
     const chainsToFetch = Array.from(
       new Set(
-        [
-          ...(savedIds || []),
-          ...(chains || []),
-          ...(visitedChains || []),
-        ].filter((id) => !isCustomNetworkId(id))
+        [...savedIds, ...chains, ...visitedChains].filter(
+          (id) => !isCustomNetworkId(id)
+        )
       )
     );
 

@@ -1329,7 +1329,7 @@ export class Wallet {
     chainConfigStore.removeVisitedChain(createChain(chainStr));
   }
 
-  async getEthereumChainSources({ context }: PublicMethodParams) {
+  async getSavedNetworkData({ context }: PublicMethodParams) {
     this.verifyInternalOrigin(context);
     await chainConfigStore.ready();
     return chainConfigStore.getState();

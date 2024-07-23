@@ -43,20 +43,19 @@ export function createGroups({
   filterPredicate?: (network: NetworkConfig) => boolean;
   sortMainNetworksType?: 'alphabetical' | 'by_distribution';
 }): NetworkGroups {
-  const mainnetList = networks.getUserNetworks().filter(filterPredicate);
   const allNetworks = networks.getUserNetworks().filter(filterPredicate);
   const testnetList = networks.getTestNetworks().filter(filterPredicate);
-  const mainNetworkPredicate = (network: NetworkConfig) => {
+  const otherNetworkPredicate = (network: NetworkConfig) => {
     return (
-      chainDistribution?.chains[network.id] || isCustomNetworkId(network.id)
+      !chainDistribution?.chains[network.id] && !isCustomNetworkId(network.id)
     );
   };
   return [
     {
-      key: 'mainnets',
+      key: 'main',
       name: null,
       items: allNetworks
-        .filter(mainNetworkPredicate)
+        .filter((network) => !otherNetworkPredicate(network))
         .sort((a, b) =>
           compareNetworks(
             a,
@@ -70,8 +69,8 @@ export function createGroups({
     {
       key: 'other',
       name: 'Other Networks',
-      items: mainnetList
-        .filter((network) => !mainNetworkPredicate(network))
+      items: allNetworks
+        .filter(otherNetworkPredicate)
         .sort((a, b) => compareNetworks(a, b, null)),
     },
     showTestnets
@@ -79,7 +78,7 @@ export function createGroups({
           key: 'testnets',
           name: 'Test Networks',
           items: testnetList
-            .filter((network) => !mainNetworkPredicate(network))
+            .filter(otherNetworkPredicate)
             .sort((a, b) => compareNetworks(a, b, null)),
         }
       : null,

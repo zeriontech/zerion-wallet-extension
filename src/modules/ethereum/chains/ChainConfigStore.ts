@@ -33,7 +33,7 @@ function updateChainOrigin(origin: string, prevOrigin: string | null) {
 
 class ChainConfigStore extends PersistentStore<ChainConfig> {
   static initialState: ChainConfig = {
-    version: 4,
+    version: 3,
     ethereumChainConfigs: [],
     visitedChains: [],
   };
@@ -62,6 +62,9 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
     }
     this.setState((state) =>
       produce(state, (draft) => {
+        if (!draft.visitedChains) {
+          draft.visitedChains = [];
+        }
         upsert(draft.visitedChains, chainStr, (x) => x);
       })
     );
@@ -71,6 +74,9 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
     const chainStr = chain.toString();
     this.setState((state) =>
       produce(state, (draft) => {
+        if (!draft.visitedChains) {
+          draft.visitedChains = [];
+        }
         remove(draft.visitedChains, (x) => x === chainStr);
       })
     );
@@ -128,12 +134,10 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
     this.setState((state) =>
       produce(state, (draft) => {
         remove(draft.ethereumChainConfigs, (x) => x.id === chainStr);
-        // known networks should be kept in the `other networks` list after removing the config
-        if (!isCustomNetworkId(chainStr)) {
-          upsert(draft.visitedChains, chainStr, (x) => x);
-        }
       })
     );
+    // known networks should be kept in the `other networks` list after removing the config
+    this.addVisitedChain(chain);
   }
 
   setDefiSdkClient(client: Client) {

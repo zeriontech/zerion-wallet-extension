@@ -7,8 +7,8 @@ import { NetworksStore } from './networks-store';
 export const mainNetworksStore = new NetworksStore(
   { networks: null },
   {
-    getChainSources: async () => {
-      return walletPort.request('getEthereumChainSources');
+    getSavedNetworkData: async () => {
+      return walletPort.request('getSavedNetworkData');
     },
     client,
     testnetMode: false,
@@ -18,8 +18,8 @@ export const mainNetworksStore = new NetworksStore(
 export const testenvNetworksStore = new NetworksStore(
   { networks: null },
   {
-    getChainSources: async () => {
-      return walletPort.request('getEthereumChainSources');
+    getSavedNetworkData: async () => {
+      return walletPort.request('getSavedNetworkData');
     },
     client: configureUITestClient(),
     testnetMode: true,
