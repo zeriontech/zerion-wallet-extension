@@ -22,6 +22,7 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { walletPort } from 'src/ui/shared/channels';
+import { networksStore } from 'src/modules/networks/networks-store.client';
 
 export function NetworkSelect({
   value,
@@ -53,9 +54,11 @@ export function NetworkSelect({
 
   function handleDialogOpen() {
     invariant(dialogRef.current, 'Dialog element not found');
-    showConfirmDialog(dialogRef.current).then((chain) => {
+    showConfirmDialog(dialogRef.current).then(async (chain) => {
       if (chain !== 'all') {
         walletPort.request('uiChainSelected', { chain });
+        await walletPort.request('addVisitedEthereumChain', { chain });
+        networksStore.update();
       }
       onChange(chain === 'all' ? NetworkSelectValue.All : chain);
     });

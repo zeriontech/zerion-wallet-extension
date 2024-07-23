@@ -33,8 +33,9 @@ function updateChainOrigin(origin: string, prevOrigin: string | null) {
 
 class ChainConfigStore extends PersistentStore<ChainConfig> {
   static initialState: ChainConfig = {
-    version: 3,
+    version: 4,
     ethereumChainConfigs: [],
+    visitedChains: [],
   };
 
   private defiSdkClient: Client | null = null;
@@ -51,6 +52,28 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
     this.ready().then(() => {
       this.checkChainsForUpdates();
     });
+  }
+
+  addVisitedChain(chain: Chain) {
+    const chainStr = chain.toString();
+    // we don't need to save custom ids in this list cause they are fully dependent on ethereumChainConfigs
+    if (isCustomNetworkId(chainStr)) {
+      return;
+    }
+    this.setState((state) =>
+      produce(state, (draft) => {
+        upsert(draft.visitedChains, chainStr, (x) => x);
+      })
+    );
+  }
+
+  removeVisitedChain(chain: Chain) {
+    const chainStr = chain.toString();
+    this.setState((state) =>
+      produce(state, (draft) => {
+        remove(draft.visitedChains, (x) => x === chainStr);
+      })
+    );
   }
 
   addEthereumChain(
@@ -105,6 +128,10 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
     this.setState((state) =>
       produce(state, (draft) => {
         remove(draft.ethereumChainConfigs, (x) => x.id === chainStr);
+        // known networks should be kept in the `other networks` list after removing the config
+        if (!isCustomNetworkId(chainStr)) {
+          upsert(draft.visitedChains, chainStr, (x) => x);
+        }
       })
     );
   }

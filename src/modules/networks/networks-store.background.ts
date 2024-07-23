@@ -10,9 +10,9 @@ import type { Chain } from './Chain';
 export const mainNetworksStore = new NetworksStore(
   { networks: null },
   {
-    getEthereumChainConfigs: async () => {
+    getChainSources: async () => {
       await chainConfigStore.ready();
-      return chainConfigStore.getState().ethereumChainConfigs;
+      return chainConfigStore.getState();
     },
     client,
     testnetMode: false,

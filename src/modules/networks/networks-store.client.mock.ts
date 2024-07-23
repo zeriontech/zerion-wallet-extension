@@ -114,7 +114,8 @@ export const networksStore = new NetworksStoreMock(
     networks: new Networks({
       networks: networksFallbackInfo,
       ethereumChainConfigs: ETHEREUM_CHAIN_SOURCES,
+      visitedChains: [],
     }),
   },
-  { getEthereumChainConfigs: null, client, testnetMode: false }
+  { getChainSources: null, client, testnetMode: false }
 );
