@@ -22,7 +22,7 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { walletPort } from 'src/ui/shared/channels';
-import { networksStore } from 'src/modules/networks/networks-store.client';
+import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 
 export function NetworkSelect({
   value,
@@ -58,6 +58,7 @@ export function NetworkSelect({
       if (chain !== 'all') {
         walletPort.request('uiChainSelected', { chain });
         await walletPort.request('addVisitedEthereumChain', { chain });
+        const networksStore = await getNetworksStore();
         networksStore.update();
       }
       onChange(chain === 'all' ? NetworkSelectValue.All : chain);

@@ -38,12 +38,22 @@ export class NetworksStore extends Store<State> {
     state: State,
     {
       getChainSources,
+      client,
+      testnetMode,
     }: {
       getChainSources?: NetworksStore['getChainSources'];
-    } = {}
+      client: Client;
+      testnetMode: boolean;
+    }
   ) {
     super(state);
     this.getChainSources = getChainSources ?? null;
+    this.client = client;
+    this.testnetMode = testnetMode;
+  }
+
+  toString() {
+    return this.client.url;
   }
 
   private async updateNetworks() {

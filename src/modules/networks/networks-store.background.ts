@@ -22,9 +22,9 @@ export const mainNetworksStore = new NetworksStore(
 export const testenvNetworksStore = new NetworksStore(
   { networks: null },
   {
-    getEthereumChainConfigs: async () => {
+    getChainSources: async () => {
       await chainConfigStore.ready();
-      return chainConfigStore.getState().ethereumChainConfigs;
+      return chainConfigStore.getState();
     },
     client: configureBackgroundTestClient(),
     testnetMode: true,

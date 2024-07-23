@@ -18,7 +18,7 @@ export const mainNetworksStore = new NetworksStore(
 export const testenvNetworksStore = new NetworksStore(
   { networks: null },
   {
-    getEthereumChainConfigs: async () => {
+    getChainSources: async () => {
       return walletPort.request('getEthereumChainSources');
     },
     client: configureUITestClient(),
