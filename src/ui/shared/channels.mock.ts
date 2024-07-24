@@ -140,7 +140,10 @@ class WalletPortMock {
       );
       return;
     } else if (method === 'getOtherNetworkData') {
-      return ETHEREUM_CHAIN_SOURCES;
+      return {
+        ethereumChainConfigs: ETHEREUM_CHAIN_SOURCES,
+        visitedChains: null,
+      };
     } else if (method === 'getGlobalPreferences') {
       return mockedGlobalPreferences;
     } else if (method === 'getPreferences') {
