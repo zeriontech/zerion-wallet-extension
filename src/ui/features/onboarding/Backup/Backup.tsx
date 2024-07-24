@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { invariant } from 'src/shared/invariant';
@@ -47,15 +47,19 @@ export function Backup() {
     useErrorBoundary: true,
   });
 
+  const handleSessionExpired = useCallback(
+    () => navigate('/onboarding/session-expired', { replace: true }),
+    [navigate]
+  );
+
   return (
     <BackupComponent
+      groupId={null}
       onStart={() => navigate('/onboarding/backup/recovery-phrase')}
       onExit={() => navigate('/onboarding')}
       onSkip={handleSkip}
       onSuccess={handleSuccess}
-      onSessionExpired={() =>
-        navigate('/onboarding/session-expired', { replace: true })
-      }
+      onSessionExpired={handleSessionExpired}
     />
   );
 }

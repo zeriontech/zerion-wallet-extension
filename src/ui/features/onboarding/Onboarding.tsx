@@ -2,8 +2,6 @@ import React, { useMemo } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { useScreenViewChange } from 'src/ui/shared/useScreenViewChange';
-import { getCurrentUser } from 'src/shared/getCurrentUser';
-import { useQuery } from '@tanstack/react-query';
 import { Success } from './Success';
 import { Welcome } from './Welcome';
 import { Import } from './Import';
@@ -24,20 +22,6 @@ export function Onboarding() {
       []
     )
   );
-
-  const { data: existingUser, isLoading } = useQuery({
-    queryKey: ['getCurrentUser'],
-    queryFn: async () => {
-      const result = await getCurrentUser();
-      return result || null;
-    },
-    suspense: false,
-    refetchOnWindowFocus: false,
-  });
-
-  if (isLoading) {
-    return null;
-  }
 
   return (
     <Routes>
@@ -86,11 +70,7 @@ export function Onboarding() {
         path="/onboarding/session-expired"
         element={
           <PageLayout>
-            <SessionExpired
-              onRestart={
-                existingUser ? () => navigate('/onboarding') : undefined
-              }
-            />
+            <SessionExpired onRestart={() => navigate('/onboarding')} />
           </PageLayout>
         }
       />

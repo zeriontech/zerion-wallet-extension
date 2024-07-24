@@ -18,7 +18,10 @@ import * as helperStyles from 'src/ui/features/onboarding/shared/helperStyles.mo
 import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 import { BlurredToggle } from 'src/ui/components/BlurredToggle';
 import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
-import { useRecoveryPhrase } from './useRecoveryPhrase';
+import {
+  usePendingRecoveryPhrase,
+  useRecoveryPhrase,
+} from './useRecoveryPhrase';
 import { clipboardWarning } from './clipboardWarning';
 
 export function RecoveryPhrase({
@@ -27,18 +30,29 @@ export function RecoveryPhrase({
   onSkip,
   onSessionExpired,
 }: {
-  groupId?: string;
+  groupId: string | null;
   onNextStep: () => void;
   onSkip?: () => void;
   onSessionExpired: () => void;
 }) {
   const { isNarrowView } = useWindowSizeStore();
 
+  const isPendingWallet = !groupId;
+  const existingRecoveryPhraseQuery = useRecoveryPhrase({
+    groupId,
+    enabled: !isPendingWallet,
+  });
+  const pendingRecoveryPhraseQuery = usePendingRecoveryPhrase({
+    enabled: isPendingWallet,
+  });
+
   const {
     data: recoveryPhrase,
-    error,
     isLoading,
-  } = useRecoveryPhrase({ groupId });
+    error,
+  } = isPendingWallet
+    ? pendingRecoveryPhraseQuery
+    : existingRecoveryPhraseQuery;
 
   useEffect(() => {
     if (isSessionExpiredError(error)) {

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { PrivacyFooter } from 'src/ui/components/PrivacyFooter';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -11,11 +11,12 @@ import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { useMnemonicInput } from 'src/ui/shared/useMnemonicInput';
 import * as helperStyles from 'src/ui/features/onboarding/shared/helperStyles.module.css';
-import { useMutation } from '@tanstack/react-query';
 import { invariant } from 'src/shared/invariant';
 import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
-import { getError } from 'src/shared/errors/getError';
-import { useRecoveryPhrase } from './useRecoveryPhrase';
+import {
+  usePendingRecoveryPhrase,
+  useRecoveryPhrase,
+} from './useRecoveryPhrase';
 import { clipboardWarning } from './clipboardWarning';
 
 const INPUT_NUMBER = 12;
@@ -26,12 +27,13 @@ export function VerifyBackup({
   onSessionExpired,
   onSuccess,
 }: {
-  groupId?: string;
+  groupId: string | null;
   onSessionExpired(): void;
   onSuccess(): void;
 }) {
   const { isNarrowView } = useWindowSizeStore();
   const [value, setValue] = useState(() => ARRAY_OF_NUMBERS.map(() => ''));
+  const [validationError, setValidationError] = useState(false);
   const isTechnicalHint = clipboardWarning.isWarningMessage(value.join(' '));
 
   const { getInputProps } = useMnemonicInput({
@@ -40,11 +42,22 @@ export function VerifyBackup({
     type: isTechnicalHint ? 'text' : undefined,
   });
 
+  const isPendingWallet = !groupId;
+  const existingRecoveryPhraseQuery = useRecoveryPhrase({
+    groupId,
+    enabled: !isPendingWallet,
+  });
+  const pendingRecoveryPhraseQuery = usePendingRecoveryPhrase({
+    enabled: isPendingWallet,
+  });
+
   const {
     data: recoveryPhrase,
     isLoading,
     error,
-  } = useRecoveryPhrase({ groupId });
+  } = isPendingWallet
+    ? pendingRecoveryPhraseQuery
+    : existingRecoveryPhraseQuery;
 
   useEffect(() => {
     if (isSessionExpiredError(error)) {
@@ -52,18 +65,19 @@ export function VerifyBackup({
     }
   }, [onSessionExpired, error]);
 
-  const verifyMutation = useMutation({
-    mutationFn: async (value: string) => {
+  const verifyRecoveryPhrase = useCallback(
+    (value: string) => {
       invariant(recoveryPhrase, 'recoveryPhrase is missing');
-      if (recoveryPhrase !== value) {
-        throw new Error('Incorrect seed phrase');
+      setValidationError(false);
+      if (recoveryPhrase.toLowerCase() === value.toLowerCase()) {
+        zeroizeAfterSubmission();
+        onSuccess();
+      } else {
+        setValidationError(true);
       }
     },
-    onSuccess: async () => {
-      zeroizeAfterSubmission();
-      onSuccess();
-    },
-  });
+    [recoveryPhrase, onSuccess]
+  );
 
   const errorStyle = useMemo<React.CSSProperties>(
     () =>
@@ -108,7 +122,7 @@ export function VerifyBackup({
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              verifyMutation.mutate(value.join(' '));
+              verifyRecoveryPhrase(value.join(' '));
             }}
           >
             <VStack gap={40} style={{ position: 'relative' }}>
@@ -144,13 +158,13 @@ export function VerifyBackup({
               >
                 Verify
               </Button>
-              {verifyMutation.isError ? (
+              {validationError ? (
                 <UIText
                   kind="caption/regular"
                   color="var(--negative-500)"
                   style={errorStyle}
                 >
-                  {getError(verifyMutation.error).message}
+                  Incorrect seed phrase
                 </UIText>
               ) : isTechnicalHint ? (
                 <UIText kind="caption/regular" color="var(--notice-500)">

@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import type { NavigateOptions } from 'react-router-dom';
 import { Route, Routes, useNavigate, useSearchParams } from 'react-router-dom';
 import { invariant } from 'src/shared/invariant';
 import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
@@ -20,7 +19,7 @@ export function BackupComponent({
   onSuccess,
   onSessionExpired,
 }: {
-  groupId?: string;
+  groupId: string | null;
   onStart: () => void;
   onExit?: () => void;
   onSkip?: () => void;
@@ -77,15 +76,17 @@ export function BackupPage() {
 
   const navigate = useNavigate();
 
-  const goToVerifyUser = (options?: NavigateOptions) =>
-    navigate(`/backup/verify-user?groupId=${groupId}`, options);
+  const goToVerifyUser = useCallback(
+    () => navigate(`/backup/verify-user?groupId=${groupId}`, { replace: true }),
+    [navigate, groupId]
+  );
 
   const { mutate: handleSuccess } = useMutation({
     mutationFn: () => walletPort.request('updateLastBackedUp', { groupId }),
     onSuccess: () => navigate(`/backup/success?groupId=${groupId}`),
     onError: (error: unknown) => {
       if (isSessionExpiredError(error)) {
-        goToVerifyUser({ replace: true });
+        goToVerifyUser();
       }
     },
     useErrorBoundary: true,
@@ -97,7 +98,7 @@ export function BackupPage() {
         groupId={groupId}
         onStart={goToVerifyUser}
         onSuccess={handleSuccess}
-        onSessionExpired={() => goToVerifyUser({ replace: true })}
+        onSessionExpired={goToVerifyUser}
       />
     </PageLayout>
   );
