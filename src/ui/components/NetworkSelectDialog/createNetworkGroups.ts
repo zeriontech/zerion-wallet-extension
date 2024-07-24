@@ -43,7 +43,8 @@ export function createGroups({
   sortMainNetworksType?: 'alphabetical' | 'by_distribution';
 }): NetworkGroups {
   const allNetworks = networks
-    .getDefaultNetworks({ testnetMode })
+    .getDefaultNetworks()
+    .filter((item) => Boolean(item.is_testnet === testnetMode))
     .filter(filterPredicate);
   const otherNetworkPredicate = (network: NetworkConfig) => {
     return (

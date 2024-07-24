@@ -145,14 +145,13 @@ export class Networks {
     return this.networks.filter((item) => !item.is_testnet);
   }
 
-  getDefaultNetworks({ testnetMode }: { testnetMode: boolean }) {
+  getDefaultNetworks() {
     return this.networks.filter((item) => {
       const chain = createChain(item.id);
       return (
-        testnetMode === Boolean(item.is_testnet) &&
-        (this.supports('positions', chain) ||
-          this.isSavedLocallyChain(chain) ||
-          this.isVisitedChain(chain))
+        this.supports('positions', chain) ||
+        this.isSavedLocallyChain(chain) ||
+        this.isVisitedChain(chain)
       );
     });
   }
