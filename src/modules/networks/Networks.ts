@@ -145,7 +145,7 @@ export class Networks {
     return this.networks.filter((item) => !item.is_testnet);
   }
 
-  getDefaultNetworks(testnetMode: boolean) {
+  getDefaultNetworks({ testnetMode }: { testnetMode: boolean }) {
     return this.networks.filter((item) => {
       const chain = createChain(item.id);
       return (
