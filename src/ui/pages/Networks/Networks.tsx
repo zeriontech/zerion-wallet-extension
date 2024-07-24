@@ -241,27 +241,21 @@ function NetworkPage() {
       await saveChainConfig(params);
       await updateNetworks();
     },
-    onSuccess() {
-      goBack();
-    },
+    onSuccess: goBack,
   });
   const removeMutation = useMutation({
     mutationFn: async (network: NetworkConfig) => {
       await walletPort.request('removeEthereumChain', { chain: network.id });
       await updateNetworks();
     },
-    onSuccess() {
-      goBack();
-    },
+    onSuccess: goBack,
   });
   const resetMutation = useMutation({
     mutationFn: async (network: NetworkConfig) => {
       await walletPort.request('resetEthereumChain', { chain: network.id });
       await updateNetworks();
     },
-    onSuccess() {
-      goBack();
-    },
+    onSuccess: goBack,
   });
   const removeFromVisitedMutation = useMutation({
     mutationFn: async (network: NetworkConfig) => {
@@ -270,9 +264,7 @@ function NetworkPage() {
       });
       await updateNetworks();
     },
-    onSuccess() {
-      goBack();
-    },
+    onSuccess: goBack,
   });
   useBackgroundKind({ kind: 'white' });
   if (!networks && !network) {
