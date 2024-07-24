@@ -44,7 +44,7 @@ export function createGroups({
 }): NetworkGroups {
   const allNetworks = networks
     .getDefaultNetworks()
-    .filter((item) => Boolean(item.is_testnet === testnetMode))
+    .filter((item) => Boolean(item.is_testnet) === testnetMode)
     .filter(filterPredicate);
   const otherNetworkPredicate = (network: NetworkConfig) => {
     return (
