@@ -139,7 +139,7 @@ class WalletPortMock {
         new Chain(args[0].chain as string)
       );
       return;
-    } else if (method === 'getSavedNetworkData') {
+    } else if (method === 'getOtherNetworkData') {
       return ETHEREUM_CHAIN_SOURCES;
     } else if (method === 'getGlobalPreferences') {
       return mockedGlobalPreferences;

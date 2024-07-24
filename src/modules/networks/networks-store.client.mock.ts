@@ -117,5 +117,5 @@ export const networksStore = new NetworksStoreMock(
       visitedChains: [],
     }),
   },
-  { getSavedNetworkData: null, client, testnetMode: false }
+  { getOtherNetworkData: null, client, testnetMode: false }
 );

@@ -26,9 +26,9 @@ function mergeNetworkConfigs(
   ];
 }
 
-type ChainConfigSource = {
+type OtherNetworkData = {
   ethereumChainConfigs: EthereumChainConfig[];
-  visitedChains?: string[];
+  visitedChains: string[] | null;
 };
 
 export class NetworksStore extends Store<State> {
@@ -37,24 +37,24 @@ export class NetworksStore extends Store<State> {
   private loaderPromises: Record<string, Promise<Networks>> = {};
   client: Client;
   testnetMode: boolean;
-  private getSavedNetworkData:
+  private getOtherNetworkData:
     | null
-    | (() => Promise<ChainConfigSource | undefined>);
+    | (() => Promise<OtherNetworkData | undefined>);
 
   constructor(
     state: State,
     {
-      getSavedNetworkData,
+      getOtherNetworkData,
       client,
       testnetMode,
     }: {
-      getSavedNetworkData?: NetworksStore['getSavedNetworkData'];
+      getOtherNetworkData?: NetworksStore['getOtherNetworkData'];
       client: Client;
       testnetMode: boolean;
     }
   ) {
     super(state);
-    this.getSavedNetworkData = getSavedNetworkData ?? null;
+    this.getOtherNetworkData = getOtherNetworkData ?? null;
     this.client = client;
     this.testnetMode = testnetMode;
   }
@@ -64,7 +64,7 @@ export class NetworksStore extends Store<State> {
   }
 
   private async updateNetworks() {
-    const chainConfigs = await this.getSavedNetworkData?.();
+    const chainConfigs = await this.getOtherNetworkData?.();
     const savedChainConfigs = chainConfigs?.ethereumChainConfigs;
     const visitedChains = chainConfigs?.visitedChains;
     const networks = new Networks({
@@ -97,7 +97,7 @@ export class NetworksStore extends Store<State> {
       return existingNetworks;
     }
 
-    const chainConfigs = await this.getSavedNetworkData?.();
+    const chainConfigs = await this.getOtherNetworkData?.();
     const savedChainConfigs = chainConfigs?.ethereumChainConfigs;
     const visitedChains = chainConfigs?.visitedChains || [];
     const savedIds = savedChainConfigs?.map((config) => config.id) || [];

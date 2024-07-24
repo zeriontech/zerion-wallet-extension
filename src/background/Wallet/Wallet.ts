@@ -1329,10 +1329,12 @@ export class Wallet {
     chainConfigStore.removeVisitedChain(createChain(chainStr));
   }
 
-  async getSavedNetworkData({ context }: PublicMethodParams) {
+  async getOtherNetworkData({ context }: PublicMethodParams) {
     this.verifyInternalOrigin(context);
     await chainConfigStore.ready();
-    return chainConfigStore.getState();
+    const { ethereumChainConfigs, visitedChains = null } =
+      chainConfigStore.getState();
+    return { ethereumChainConfigs, visitedChains };
   }
 
   async getPendingTransactions({ context }: PublicMethodParams) {

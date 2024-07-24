@@ -7,8 +7,8 @@ import { NetworksStore } from './networks-store';
 export const mainNetworksStore = new NetworksStore(
   { networks: null },
   {
-    getSavedNetworkData: async () => {
-      return walletPort.request('getSavedNetworkData');
+    getOtherNetworkData: async () => {
+      return walletPort.request('getOtherNetworkData');
     },
     client,
     testnetMode: false,
@@ -18,8 +18,8 @@ export const mainNetworksStore = new NetworksStore(
 export const testenvNetworksStore = new NetworksStore(
   { networks: null },
   {
-    getSavedNetworkData: async () => {
-      return walletPort.request('getSavedNetworkData');
+    getOtherNetworkData: async () => {
+      return walletPort.request('getOtherNetworkData');
     },
     client: configureUITestClient(),
     testnetMode: true,
