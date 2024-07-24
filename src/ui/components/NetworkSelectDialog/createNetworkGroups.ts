@@ -1,4 +1,3 @@
-import { isTruthy } from 'is-truthy-ts';
 import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { Networks } from 'src/modules/networks/Networks';
@@ -33,18 +32,19 @@ function compareNetworks(
 export function createGroups({
   networks,
   chainDistribution,
-  showTestnets,
+  testnetMode,
   filterPredicate = () => true,
   sortMainNetworksType = 'by_distribution',
 }: {
   networks: Networks;
   chainDistribution: ChainDistribution | null;
-  showTestnets: boolean;
+  testnetMode: boolean;
   filterPredicate?: (network: NetworkConfig) => boolean;
   sortMainNetworksType?: 'alphabetical' | 'by_distribution';
 }): NetworkGroups {
-  const allNetworks = networks.getUserNetworks().filter(filterPredicate);
-  const testnetList = networks.getTestNetworks().filter(filterPredicate);
+  const allNetworks = networks
+    .getUserNetworks(testnetMode)
+    .filter(filterPredicate);
   const otherNetworkPredicate = (network: NetworkConfig) => {
     return (
       !chainDistribution?.chains[network.id] && !isCustomNetworkId(network.id)
@@ -73,14 +73,5 @@ export function createGroups({
         .filter(otherNetworkPredicate)
         .sort((a, b) => compareNetworks(a, b, null)),
     },
-    showTestnets
-      ? {
-          key: 'testnets',
-          name: 'Test Networks',
-          items: testnetList
-            .filter(otherNetworkPredicate)
-            .sort((a, b) => compareNetworks(a, b, null)),
-        }
-      : null,
-  ].filter(isTruthy);
+  ];
 }

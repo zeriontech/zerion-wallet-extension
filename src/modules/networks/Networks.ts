@@ -145,24 +145,14 @@ export class Networks {
     return this.networks.filter((item) => !item.is_testnet);
   }
 
-  getUserNetworks() {
+  getUserNetworks(testnetMode: boolean) {
     return this.networks.filter((item) => {
       const chain = createChain(item.id);
       return (
-        !item.is_testnet &&
+        testnetMode === Boolean(item.is_testnet) &&
         (this.supports('positions', chain) ||
           this.isSavedLocallyChain(chain) ||
           this.isVisitedChain(chain))
-      );
-    });
-  }
-
-  getTestNetworks() {
-    return this.networks.filter((item) => {
-      const chain = createChain(item.id);
-      return (
-        item.is_testnet &&
-        (this.isSavedLocallyChain(chain) || this.isVisitedChain(chain))
       );
     });
   }

@@ -374,13 +374,13 @@ function WalletNetworkList({
 function NetworksView({
   networks,
   chainDistribution,
-  showTestnets,
+  testnetMode,
   autoFocusSearch,
   loading,
 }: {
   networks: NetworksModule | null;
   chainDistribution: ChainDistribution | null;
-  showTestnets: boolean;
+  testnetMode: boolean;
   autoFocusSearch: boolean;
   loading: boolean;
 }) {
@@ -404,10 +404,10 @@ function NetworksView({
     return createGroups({
       networks,
       chainDistribution,
-      showTestnets,
+      testnetMode,
       sortMainNetworksType: 'alphabetical',
     });
-  }, [networks, chainDistribution, showTestnets]);
+  }, [networks, chainDistribution, testnetMode]);
 
   const {
     selectNext: selectNextNetwork,
@@ -467,7 +467,7 @@ function NetworksView({
           />
           <Spacer height={4} />
           {query ? (
-            <SearchResults query={query} showTestnets={showTestnets} />
+            <SearchResults query={query} testnetMode={testnetMode} />
           ) : (
             <WalletNetworkList networks={networks} groups={groups} />
           )}
@@ -517,7 +517,7 @@ export function Networks() {
               loading={isLoading || portfolioDecompositionIsLoading}
               networks={networks}
               chainDistribution={portfolioDecomposition}
-              showTestnets={Boolean(preferences?.testnetMode?.on)}
+              testnetMode={Boolean(preferences?.testnetMode?.on)}
               autoFocusSearch={navigationType === NavigationType.Push}
             />
           }

@@ -126,6 +126,7 @@ export class NetworksStore extends Store<State> {
               supported_only: testnetMode,
             }),
       ]);
+
     const updatedNetworkConfigs = mergeNetworkConfigs(
       commonNetworkConfigs.status === 'fulfilled'
         ? commonNetworkConfigs.value
