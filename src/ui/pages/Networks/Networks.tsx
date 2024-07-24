@@ -75,15 +75,17 @@ async function updateNetworks() {
   networksStore.update();
 }
 
+type SaveChainConfigParams = {
+  chain: string;
+  chainConfig: AddEthereumChainParameter;
+  prevChain: string | null;
+};
+
 async function saveChainConfig({
   chain,
   chainConfig,
   prevChain,
-}: {
-  chain: string;
-  chainConfig: AddEthereumChainParameter;
-  prevChain: string | null;
-}) {
+}: SaveChainConfigParams) {
   return walletPort.request('addEthereumChain', {
     values: [chainConfig],
     origin: isCustomNetworkId(chain) ? INTERNAL_ORIGIN : BACKEND_NETWORK_ORIGIN,
@@ -96,10 +98,11 @@ function NetworkCreatePage() {
   const chainConfig = useMemo(createEmptyChainConfig, []);
   const navigate = useNavigate();
   const goBack = useCallback(() => navigate(-1), [navigate]);
-  const mutation = useMutation({
-    mutationFn: saveChainConfig,
-    onSuccess() {
-      updateNetworks();
+  const saveMutation = useMutation({
+    mutationFn: async (params: SaveChainConfigParams) => {
+      const result = await saveChainConfig(params);
+      await updateNetworks();
+      return result;
     },
   });
   useBackgroundKind({ kind: 'white' });
@@ -117,16 +120,16 @@ function NetworkCreatePage() {
   if (!restrictedChainIds) {
     return <ViewLoading kind="network" />;
   }
-  if (mutation.isSuccess) {
+  if (saveMutation.isSuccess) {
     return (
       <>
         <NavigationTitle
           title={null}
-          documentTitle={`Create Network: ${mutation.data.value.chainName}`}
+          documentTitle={`Create Network: ${saveMutation.data.value.chainName}`}
         />
         <NetworkCreateSuccess
           paddingTop={24}
-          chainConfig={mutation.data.value}
+          chainConfig={saveMutation.data.value}
           onDone={() => {
             goBack();
           }}
@@ -141,13 +144,13 @@ function NetworkCreatePage() {
       <NetworkForm
         chainConfig={chainConfig}
         onSubmit={(chainStr, value) =>
-          mutation.mutate({
+          saveMutation.mutate({
             chain: chainStr,
             chainConfig: value,
             prevChain: null,
           })
         }
-        isSubmitting={mutation.isLoading}
+        isSubmitting={saveMutation.isLoading}
         onCancel={goBack}
         restrictedChainIds={restrictedChainIds}
         disabledFields={null}
@@ -233,34 +236,41 @@ function NetworkPage() {
     return set;
   }, [network, networks]);
 
-  const mutation = useMutation({
-    mutationFn: saveChainConfig,
+  const saveMutation = useMutation({
+    mutationFn: async (params: SaveChainConfigParams) => {
+      await saveChainConfig(params);
+      await updateNetworks();
+    },
     onSuccess() {
-      updateNetworks();
       goBack();
     },
   });
   const removeMutation = useMutation({
-    mutationFn: (network: NetworkConfig) =>
-      walletPort.request('removeEthereumChain', { chain: network.id }),
+    mutationFn: async (network: NetworkConfig) => {
+      await walletPort.request('removeEthereumChain', { chain: network.id });
+      await updateNetworks();
+    },
     onSuccess() {
-      updateNetworks();
       goBack();
     },
   });
   const resetMutation = useMutation({
-    mutationFn: (network: NetworkConfig) =>
-      walletPort.request('resetEthereumChain', { chain: network.id }),
+    mutationFn: async (network: NetworkConfig) => {
+      await walletPort.request('resetEthereumChain', { chain: network.id });
+      await updateNetworks();
+    },
     onSuccess() {
-      updateNetworks();
       goBack();
     },
   });
   const removeFromVisitedMutation = useMutation({
-    mutationFn: (network: NetworkConfig) =>
-      walletPort.request('removeVisitedEthereumChain', { chain: network.id }),
+    mutationFn: async (network: NetworkConfig) => {
+      await walletPort.request('removeVisitedEthereumChain', {
+        chain: network.id,
+      });
+      await updateNetworks();
+    },
     onSuccess() {
-      updateNetworks();
       goBack();
     },
   });
@@ -309,13 +319,13 @@ function NetworkPage() {
           chain={chainStr}
           chainConfig={toAddEthereumChainParameter(network)}
           onSubmit={(id, value) =>
-            mutation.mutate({
+            saveMutation.mutate({
               chain: id,
               chainConfig: value,
               prevChain: network.id,
             })
           }
-          isSubmitting={mutation.isLoading}
+          isSubmitting={saveMutation.isLoading}
           onReset={
             isSavedNetwork && !isCustomNetwork
               ? () => resetMutation.mutate(network)
