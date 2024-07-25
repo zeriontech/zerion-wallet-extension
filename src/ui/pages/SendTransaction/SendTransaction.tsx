@@ -86,6 +86,7 @@ import { isDeviceAccount } from 'src/shared/types/validators';
 import { shouldInterpretTransaction } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { RenderArea } from 'react-area';
+import { wait } from 'src/shared/wait';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -507,6 +508,7 @@ function SendTransactionContent({
   const { currency } = useCurrency();
   const navigate = useNavigate();
   const { singleAddress } = useAddressParams();
+  const { preferences } = usePreferences();
   const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
   const { data: chainGasPrices } = useGasPrices(chain);
 
@@ -642,7 +644,12 @@ function SendTransactionContent({
   }, []);
 
   const next = params.get('next');
-  function handleSentTransaction(tx: ethers.providers.TransactionResponse) {
+  async function handleSentTransaction(
+    tx: ethers.providers.TransactionResponse
+  ) {
+    if (preferences?.enableHoldToSignButton) {
+      await wait(500);
+    }
     const windowId = params.get('windowId');
     invariant(windowId, 'windowId get-parameter is required');
     windowPort.confirm(windowId, tx.hash);
@@ -785,24 +792,26 @@ function SendTransactionContent({
               >
                 Cancel
               </Button>
-              <SignTransactionButton
-                // TODO: set loading state when {sendTransactionMutation.isLoading}
-                // (important for paymaster flow)
-                wallet={wallet}
-                ref={sendTxBtnRef}
-                onClick={() => sendTransaction()}
-                isLoading={sendTransactionMutation.isLoading}
-                disabled={sendTransactionMutation.isLoading}
-                buttonKind={
-                  interpretationHasCriticalWarning ? 'danger' : 'primary'
-                }
-                buttonTitle={
-                  interpretationHasCriticalWarning
-                    ? 'Proceed Anyway'
-                    : undefined
-                }
-                holdToSignAllowed={true}
-              />
+              {preferences ? (
+                <SignTransactionButton
+                  // TODO: set loading state when {sendTransactionMutation.isLoading}
+                  // (important for paymaster flow)
+                  wallet={wallet}
+                  ref={sendTxBtnRef}
+                  onClick={() => sendTransaction()}
+                  isLoading={sendTransactionMutation.isLoading}
+                  disabled={sendTransactionMutation.isLoading}
+                  buttonKind={
+                    interpretationHasCriticalWarning ? 'danger' : 'primary'
+                  }
+                  buttonTitle={
+                    interpretationHasCriticalWarning
+                      ? 'Proceed Anyway'
+                      : undefined
+                  }
+                  holdToSign={Boolean(preferences.enableHoldToSignButton)}
+                />
+              ) : null}
             </div>
           )}
         </VStack>

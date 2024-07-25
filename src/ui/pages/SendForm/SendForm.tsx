@@ -616,7 +616,7 @@ function SendFormComponent() {
               form={formId}
               wallet={wallet}
               disabled={isLoading}
-              holdToSignAllowed={false}
+              holdToSign={false}
             />
           ) : null}
         </VStack>

@@ -19,8 +19,6 @@ import {
 } from 'src/ui/ui-kit/Button';
 import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { wait } from 'src/shared/wait';
-import { usePreferences } from 'src/ui/features/preferences';
 import { WithReadonlyWarningDialog } from './ReadonlyWarningDialog';
 
 type SendTxParams = TransactionContextParams & {
@@ -43,61 +41,62 @@ export const SignTransactionButton = React.forwardRef(
       buttonKind = 'primary',
       isLoading: isLoadingProp,
       disabled: disabledAttr,
-      holdToSignAllowed,
+      holdToSign,
       ...buttonProps
     }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
       wallet: ExternallyOwnedAccount;
       buttonTitle?: React.ReactNode;
       buttonKind?: ButtonKind;
       isLoading?: boolean;
-      holdToSignAllowed: boolean;
+      holdToSign: boolean;
     },
     ref: React.Ref<SendTxBtnHandle>
   ) {
-    const { preferences } = usePreferences();
-    const holdToSign = holdToSignAllowed && preferences?.enableHoldToSignButton;
     const hardwareSignRef = useRef<SignTransactionHandle | null>(null);
-    const { mutateAsync: sendTransactionInner, ...sendTxMutationInner } =
-      useMutation({
-        mutationFn: async ({ transaction, ...params }: SendTxParams) => {
-          if (isDeviceAccount(wallet)) {
-            invariant(
-              hardwareSignRef.current,
-              'HardwareSignTransaction must be mounted'
-            );
-            const signedTx = await hardwareSignRef.current.signTransaction({
-              transaction,
-              chain: createChain(params.chain),
-              address: wallet.address,
-            });
-            return walletPort.request('sendSignedTransaction', {
-              serialized: signedTx,
-              ...params,
-            });
-          } else {
-            return await walletPort.request('signAndSendTransaction', [
-              transaction,
-              params,
-            ]);
-          }
-        },
-      });
-
     const { mutateAsync: sendTransaction, ...sendTxMutation } = useMutation({
-      mutationFn: async (params: SendTxParams) => {
-        const result = await sendTransactionInner(params);
-        if (!isDeviceAccount(wallet) && holdToSign) {
-          await wait(500);
+      mutationFn: async ({ transaction, ...params }: SendTxParams) => {
+        if (isDeviceAccount(wallet)) {
+          invariant(
+            hardwareSignRef.current,
+            'HardwareSignTransaction must be mounted'
+          );
+          const signedTx = await hardwareSignRef.current.signTransaction({
+            transaction,
+            chain: createChain(params.chain),
+            address: wallet.address,
+          });
+          return walletPort.request('sendSignedTransaction', {
+            serialized: signedTx,
+            ...params,
+          });
+        } else {
+          return await walletPort.request('signAndSendTransaction', [
+            transaction,
+            params,
+          ]);
         }
-        return result;
       },
     });
+
     useImperativeHandle(ref, () => ({ sendTransaction }));
 
     const isLoading = isLoadingProp || sendTxMutation.isLoading;
     const isSending = sendTxMutation.isLoading;
-    const disabled = isLoading || disabledAttr;
+    const disabled = isLoading || sendTxMutation.isSuccess || disabledAttr;
     const title = buttonTitle || 'Confirm';
+
+    const successTitle = (
+      <HStack gap={4} alignItems="center">
+        <CheckIcon
+          style={{
+            width: 20,
+            height: 20,
+            color: 'var(--positive-500)',
+          }}
+        />
+        <span>Sent</span>
+      </HStack>
+    );
 
     return isDeviceAccount(wallet) ? (
       <HardwareSignTransaction
@@ -105,10 +104,16 @@ export const SignTransactionButton = React.forwardRef(
         derivationPath={wallet.derivationPath}
         isSending={isSending}
         children={children}
-        buttonTitle={isLoadingProp ? 'Preparing...' : buttonTitle}
+        buttonTitle={
+          sendTxMutation.isSuccess
+            ? successTitle
+            : isLoadingProp
+            ? 'Preparing...'
+            : buttonTitle
+        }
         buttonKind={buttonKind}
         onClick={onClick}
-        disabled={disabledAttr}
+        disabled={disabled}
         {...buttonProps}
       />
     ) : (
@@ -116,29 +121,15 @@ export const SignTransactionButton = React.forwardRef(
         address={wallet.address}
         onClick={onClick}
         render={({ handleClick }) => {
-          if (!preferences) {
-            return null;
-          }
           return holdToSign ? (
             <HoldableButton
               text={`Hold to ${title}`}
-              successText={
-                <HStack gap={4} alignItems="center">
-                  <CheckIcon
-                    style={{
-                      width: 20,
-                      height: 20,
-                      color: 'var(--positive-500)',
-                    }}
-                  />
-                  <span>Sent</span>
-                </HStack>
-              }
+              successText={successTitle}
               submittingText="Sending..."
               onClick={handleClick}
-              success={sendTxMutationInner.isSuccess}
-              submitting={sendTxMutationInner.isLoading}
-              error={sendTxMutationInner.isError}
+              success={sendTxMutation.isSuccess}
+              submitting={sendTxMutation.isLoading}
+              error={sendTxMutation.isError}
               disabled={disabled}
               kind={buttonKind}
               {...buttonProps}

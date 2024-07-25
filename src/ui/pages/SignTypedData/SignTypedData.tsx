@@ -56,6 +56,7 @@ import type { SignMsgBtnHandle } from 'src/ui/components/SignMessageButton';
 import { SignMessageButton } from 'src/ui/components/SignMessageButton';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { usePreferences } from 'src/ui/features/preferences';
+import { wait } from 'src/shared/wait';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
@@ -184,7 +185,12 @@ function TypedDataDefaultView({
       // a global onError handler (src/ui/shared/requests/queryClient.ts)
       // TODO: refactor to just emit error directly from the mutationFn
       onMutate: () => '_signTypedData',
-      onSuccess: onSignSuccess,
+      onSuccess: async (signature) => {
+        if (preferences?.enableHoldToSignButton) {
+          await wait(500);
+        }
+        onSignSuccess(signature);
+      },
     }
   );
 
