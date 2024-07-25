@@ -63,10 +63,16 @@ export function NonFungibleToken() {
     if (singleAddress) {
       webAppUrlObject.searchParams.append('address', singleAddress);
     }
+    const sendFormParams = new URLSearchParams({
+      type: 'nft',
+      nftContractAddress: nft.contract_address,
+      nftId: nft.token_id,
+      tokenChain: nft.chain,
+      // nftChain: nft.chain, // nftChain is synced with tokenChain
+    });
     return {
       webAppLink: webAppUrlObject.toString(),
-      // TODO: fix chain params after merge fix for nft chain selector
-      sendFormLink: `/send-form?type=nft&nftContractAddress=${nft.contract_address}&nftId=${nft.token_id}&nftChain=${nft.chain}&tokenChain=${nft.chain}`,
+      sendFormLink: `/send-form?${sendFormParams.toString()}`,
     };
   }, [singleAddress, nft]);
 
