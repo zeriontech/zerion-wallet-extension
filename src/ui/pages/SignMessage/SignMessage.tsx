@@ -25,6 +25,7 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import type { SignMsgBtnHandle } from 'src/ui/components/SignMessageButton';
 import { SignMessageButton } from 'src/ui/components/SignMessageButton';
+import { usePreferences } from 'src/ui/features/preferences';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 
 function MessageRow({ message }: { message: string }) {
@@ -58,6 +59,7 @@ function SignMessageContent({
 }) {
   const [params] = useSearchParams();
   const windowId = params.get('windowId');
+  const { preferences } = usePreferences();
   invariant(windowId, 'windowId get-parameter is required');
   const handleSignSuccess = (signature: string) =>
     windowPort.confirm(windowId, signature);
@@ -166,11 +168,14 @@ function SignMessageContent({
             >
               Cancel
             </Button>
-            <SignMessageButton
-              ref={signMsgBtnRef}
-              wallet={wallet}
-              onClick={() => personalSign()}
-            />
+            {preferences ? (
+              <SignMessageButton
+                ref={signMsgBtnRef}
+                wallet={wallet}
+                onClick={() => personalSign()}
+                holdToSign={preferences?.enableHoldToSignButton}
+              />
+            ) : null}
           </div>
         </VStack>
       </PageStickyFooter>

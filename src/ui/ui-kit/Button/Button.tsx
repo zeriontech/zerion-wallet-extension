@@ -17,9 +17,9 @@ export type Kind =
   | 'warning'
   | 'loading-border'
   | 'text-primary';
-type Size = 60 | 56 | 48 | 44 | 40 | 36 | 32 | 28;
+export type Size = 60 | 56 | 48 | 44 | 40 | 36 | 32 | 28;
 
-const borderRaduis: Record<Size, number> = {
+export const borderRadius: Record<Size, number> = {
   '28': 8,
   '32': 8,
   '36': 12,
@@ -30,19 +30,20 @@ const borderRaduis: Record<Size, number> = {
   '60': 20,
 };
 
-const kinds: { [kind in Kind]: (size: number) => React.CSSProperties } = {
-  primary: () => ({ paddingInline: 48 }),
-  danger: () => ({}),
-  warning: () => ({}),
-  regular: () => ({}),
-  neutral: () => ({}),
-  ghost: (size) => {
-    const padding = size <= 44 ? 4 : 8;
-    return { paddingLeft: padding, paddingRight: padding };
-  },
-  'text-primary': () => ({ height: 'auto', borderRadius: 0 }),
-  'loading-border': () => ({ border: '2px solid transparent' }),
-};
+export const kinds: { [kind in Kind]: (size: number) => React.CSSProperties } =
+  {
+    primary: () => ({ paddingInline: 48 }),
+    danger: () => ({}),
+    warning: () => ({}),
+    regular: () => ({}),
+    neutral: () => ({}),
+    ghost: (size) => {
+      const padding = size <= 44 ? 4 : 8;
+      return { paddingLeft: padding, paddingRight: padding };
+    },
+    'text-primary': () => ({ height: 'auto', borderRadius: 0 }),
+    'loading-border': () => ({ border: '2px solid transparent' }),
+  };
 
 interface Props {
   kind?: Kind;
@@ -76,7 +77,7 @@ const ButtonElement = <As extends ElementType = 'button'>(
         {
           border: 'none',
           textDecoration: 'none',
-          borderRadius: borderRaduis[size],
+          borderRadius: borderRadius[size],
           height: size,
           color: undefined,
         },

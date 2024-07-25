@@ -801,6 +801,7 @@ function SendTransactionContent({
                     ? 'Proceed Anyway'
                     : undefined
                 }
+                holdToSignAllowed={true}
               />
             </div>
           )}

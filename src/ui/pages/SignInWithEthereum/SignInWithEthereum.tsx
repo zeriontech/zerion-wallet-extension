@@ -32,6 +32,7 @@ import { SignMessageButton } from 'src/ui/components/SignMessageButton';
 import { ellipsis } from 'src/ui/shared/typography';
 import { useSearchParams } from 'react-router-dom';
 import { updateSearchParam } from 'src/ui/shared/updateSearchParam';
+import { usePreferences } from 'src/ui/features/preferences';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { SpeechBubble } from './SpeechBubble/SpeechBubble';
 import { useFetchUTCTime } from './useFetchUTCTime';
@@ -40,6 +41,7 @@ import { DataVerificationFailed } from './DataVerificationFailed';
 
 export function SignInWithEthereum() {
   const [params, setSearchParams] = useSearchParams();
+  const { preferences } = usePreferences();
 
   const clientScope = params.get('clientScope') || 'External Dapp';
   const origin = params.get('origin');
@@ -267,18 +269,21 @@ export function SignInWithEthereum() {
             >
               Cancel
             </Button>
-            <SignMessageButton
-              ref={signMsgBtnRef}
-              wallet={wallet}
-              onClick={() => personalSign()}
-              buttonTitle={
-                personalSignMutation.isLoading
-                  ? `Signing In${ellipsis}`
-                  : !siweMessage?.isValid() && isDeviceAccount(wallet)
-                  ? 'Proceed anyway'
-                  : 'Sign In'
-              }
-            />
+            {preferences ? (
+              <SignMessageButton
+                ref={signMsgBtnRef}
+                wallet={wallet}
+                onClick={() => personalSign()}
+                buttonTitle={
+                  personalSignMutation.isLoading
+                    ? `Signing In${ellipsis}`
+                    : !siweMessage?.isValid() && isDeviceAccount(wallet)
+                    ? 'Proceed anyway'
+                    : 'Sign In'
+                }
+                holdToSign={preferences.enableHoldToSignButton}
+              />
+            ) : null}
           </div>
         </VStack>
       </PageColumn>
