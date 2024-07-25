@@ -57,6 +57,7 @@ interface PublicPreferences {
    * { on: false } means we're in prod mode, but user can switch quickly using the shortcut
    */
   testnetMode?: null | { on: boolean };
+  enableHoldToSignButton?: boolean | null;
 }
 
 export interface Permission {

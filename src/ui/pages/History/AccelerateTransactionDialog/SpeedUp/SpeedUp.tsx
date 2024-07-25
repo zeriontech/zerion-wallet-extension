@@ -203,6 +203,7 @@ export function SpeedUp({
               wallet={wallet}
               ref={signTxBtnRef}
               onClick={() => sendTransaction()}
+              holdToSignAllowed={true}
             />
           </div>
         </VStack>

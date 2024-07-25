@@ -5,7 +5,7 @@ import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAcc
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { focusNode } from 'src/ui/shared/focusNode';
-import { Button } from 'src/ui/ui-kit/Button';
+import { Button, HoldableButton } from 'src/ui/ui-kit/Button';
 import type { Chain } from 'src/modules/networks/Chain';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { TransactionConfiguration } from 'src/ui/pages/SendTransaction/TransactionConfiguration';
@@ -13,6 +13,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import LedgerIcon from 'jsx:src/ui/assets/ledger-icon.svg';
 import { isDeviceAccount } from 'src/shared/types/validators';
 import type { EligibilityQuery } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
+import { usePreferences } from 'src/ui/features/preferences';
 import { WalletAvatar } from '../../WalletAvatar';
 import { WalletDisplayName } from '../../WalletDisplayName';
 import { TransactionSimulation } from '../TransactionSimulation';
@@ -40,6 +41,12 @@ export function TransactionConfirmationView({
   localAllowanceQuantityBase?: string;
   onOpenAllowanceForm?: () => void;
 }) {
+  const { preferences, query } = usePreferences();
+
+  if (query.isLoading) {
+    return null;
+  }
+
   return (
     <div
       style={{
@@ -111,16 +118,32 @@ export function TransactionConfirmationView({
           <Button value="cancel" kind="regular" ref={focusNode}>
             Cancel
           </Button>
-          <Button
-            kind="primary"
-            value="confirm"
-            style={{ whiteSpace: 'nowrap' }}
-          >
-            <HStack gap={8} alignItems="center" justifyContent="center">
-              {isDeviceAccount(wallet) ? <LedgerIcon /> : null}
+          {isDeviceAccount(wallet) ? (
+            <Button
+              kind="primary"
+              value="confirm"
+              style={{ whiteSpace: 'nowrap' }}
+            >
+              <HStack gap={8} alignItems="center" justifyContent="center">
+                <LedgerIcon />
+                Sign and Send
+              </HStack>
+            </Button>
+          ) : preferences?.enableHoldToSignButton ? (
+            <HoldableButton
+              text="Hold to Sign"
+              submittingText="Signing..."
+              value="confirm"
+            />
+          ) : (
+            <Button
+              kind="primary"
+              value="confirm"
+              style={{ whiteSpace: 'nowrap' }}
+            >
               Sign and Send
-            </HStack>
-          </Button>
+            </Button>
+          )}
         </HStack>
       </form>
     </div>

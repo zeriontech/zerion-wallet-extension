@@ -18,6 +18,7 @@ import GlobeIcon from 'jsx:src/ui/assets/globe.svg';
 import QuestionIcon from 'jsx:src/ui/assets/question-hint.svg';
 import BulbIcon from 'jsx:src/ui/assets/bulb.svg';
 import PremiumIcon from 'jsx:src/ui/assets/premium.svg';
+import ExperimentsIcon from 'jsx:src/ui/assets/experimental.svg';
 import DarkModeLampIcon from 'jsx:src/ui/assets/dark-mode-lamp.svg';
 import NetworksIcon from 'jsx:src/ui/assets/network.svg';
 import SecurityIcon from 'jsx:src/ui/assets/security.svg';
@@ -118,6 +119,14 @@ function SettingsMain() {
                 <HStack gap={8} alignItems="center">
                   <SettingsIcon />
                   <UIText kind="body/regular">Preferences</UIText>
+                </HStack>
+              </AngleRightRow>
+            </FrameListItemLink>
+            <FrameListItemLink to="/settings/experiments">
+              <AngleRightRow>
+                <HStack gap={8} alignItems="center">
+                  <ExperimentsIcon />
+                  <UIText kind="body/regular">Experiments</UIText>
                 </HStack>
               </AngleRightRow>
             </FrameListItemLink>
@@ -303,6 +312,35 @@ function DeveloperTools() {
   );
 }
 
+function Experiments() {
+  const { preferences, setPreferences } = usePreferences();
+  useBackgroundKind({ kind: 'white' });
+
+  return (
+    <PageColumn>
+      <NavigationTitle title="Experiments" />
+      <PageTop />
+      <Frame>
+        <ToggleSettingLine
+          text="Hold to Sign"
+          checked={preferences?.enableHoldToSignButton || false}
+          onChange={(event) => {
+            setPreferences({
+              enableHoldToSignButton: event.target.checked,
+            });
+          }}
+          detailText={
+            <span>
+              Sign transactions with a long click to avoid accidental signing
+            </span>
+          }
+        />
+      </Frame>
+      <PageBottom />
+    </PageColumn>
+  );
+}
+
 export function Settings() {
   return (
     <Routes>
@@ -343,6 +381,14 @@ export function Settings() {
         element={
           <ViewSuspense>
             <PreferencesPage />
+          </ViewSuspense>
+        }
+      />
+      <Route
+        path="/experiments/*"
+        element={
+          <ViewSuspense>
+            <Experiments />
           </ViewSuspense>
         }
       />

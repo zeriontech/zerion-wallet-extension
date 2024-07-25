@@ -756,6 +756,7 @@ export function SwapFormComponent() {
                     approveMutation.isLoading ||
                     approveTxStatus === 'pending'
                   }
+                  holdToSignAllowed={false}
                 >
                   Approve {spendPosition?.asset.symbol ?? null}
                 </SignTransactionButton>
@@ -791,6 +792,7 @@ export function SwapFormComponent() {
                         quotesData.isLoading ||
                         Boolean((quote && !swapTransaction) || quotesData.error)
                       }
+                      holdToSignAllowed={false}
                     >
                       <span
                         style={{
