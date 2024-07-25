@@ -118,7 +118,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
           color: 'var(--positive-500)',
         }}
       />
-      <span>Sent</span>
+      <span>Signed</span>
     </HStack>
   );
 
