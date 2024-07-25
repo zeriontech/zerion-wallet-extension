@@ -33,6 +33,7 @@ import { ellipsis } from 'src/ui/shared/typography';
 import { useSearchParams } from 'react-router-dom';
 import { updateSearchParam } from 'src/ui/shared/updateSearchParam';
 import { usePreferences } from 'src/ui/features/preferences';
+import { wait } from 'src/shared/wait';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { SpeechBubble } from './SpeechBubble/SpeechBubble';
 import { useFetchUTCTime } from './useFetchUTCTime';
@@ -94,7 +95,12 @@ export function SignInWithEthereum() {
     // a global onError handler (src/ui/shared/requests/queryClient.ts)
     // TODO: refactor to just emit error directly from the mutationFn
     onMutate: () => 'signMessage',
-    onSuccess: handleSignSuccess,
+    onSuccess: async (signature) => {
+      if (preferences?.enableHoldToSignButton) {
+        await wait(500);
+      }
+      handleSignSuccess(signature);
+    },
   });
 
   const handleReject = () => windowPort.reject(windowId);
