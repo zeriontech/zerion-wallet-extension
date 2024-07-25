@@ -2,6 +2,7 @@ import React, {
   useCallback,
   useEffect,
   useId,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -153,10 +154,10 @@ function SendFormComponent() {
 
   const { nonce: userNonce } = useSelectorStore(store.configuration, ['nonce']);
 
-  useEffect(() => {
-    // TODO: update useSendForm to calculate default nft chain (using NFT Portfolio Decomposition)
-    store.setDefault('nftChain', 'ethereum');
-  }, [store]);
+  // we sync tokenChain and nftChain in the interface + nftChain should not be presented in the URL for now
+  useLayoutEffect(() => {
+    store.setDefault('nftChain', tokenChain);
+  }, [store, tokenChain]);
 
   useEffect(() => {
     store.on('change', () => {
