@@ -82,6 +82,9 @@ export const SignTransactionButton = React.forwardRef(
 
     const isLoading = isLoadingProp || sendTxMutation.isLoading;
     const isSending = sendTxMutation.isLoading;
+
+    // there is a small delay after using a holdable button
+    // button should be disabled after successful sign to prevent a duplicating call
     const disabled = isLoading || sendTxMutation.isSuccess || disabledAttr;
     const title = buttonTitle || 'Confirm';
 

@@ -104,9 +104,9 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
   const isError =
     personalSignMutation.isError || signTypedData_v4Mutation.isError;
 
-  // we have small delay after using holdable button
+  // there is a small delay after using a holdable button
+  // button should be disabled after successful sign to prevent a duplicating call
   const disabled = isLoading || isSuccess;
-
   const title = buttonTitle || 'Sign';
 
   return isDeviceAccount(wallet) ? (
