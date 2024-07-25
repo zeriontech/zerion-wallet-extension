@@ -49,16 +49,17 @@ export function RecoveryPhrase({
   const {
     data: recoveryPhrase,
     isLoading,
+    isError,
     error,
   } = isPendingWallet
     ? pendingRecoveryPhraseQuery
     : existingRecoveryPhraseQuery;
 
   useEffect(() => {
-    if (isSessionExpiredError(error)) {
+    if (isError && isSessionExpiredError(error)) {
       onSessionExpired();
     }
-  }, [onSessionExpired, error]);
+  }, [isError, error, onSessionExpired]);
 
   const { handleCopy, isSuccess: isCopySuccess } = useCopyToClipboard({
     text: recoveryPhrase || '',

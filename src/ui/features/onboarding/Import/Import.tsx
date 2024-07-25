@@ -122,8 +122,8 @@ function ImportWallet() {
       zeroizeAfterSubmission();
       navigate('/onboarding/success');
     },
-    onError: (e) => {
-      if (isSessionExpiredError(e)) {
+    onError: (error) => {
+      if (isSessionExpiredError(error)) {
         navigate('/onboarding/session-expired', { replace: true });
       }
       setShowError(true);

@@ -36,24 +36,34 @@ function Reveal({
   onSubmit: () => void;
   onSessionExpired: () => void;
 }) {
-  const { data: privateKey, isLoading, error } = usePrivateKey(address);
+  const {
+    data: privateKey,
+    isLoading,
+    isError,
+    error,
+  } = usePrivateKey(address);
+
   const { handleCopy, isSuccess: isCopySuccess } = useCopyToClipboard({
     text: privateKey || '',
   });
+
   useEffect(() => {
-    if (isSessionExpiredError(error)) {
+    if (isError && isSessionExpiredError(error)) {
       onSessionExpired();
     }
-  }, [error, onSessionExpired]);
+  }, [isError, error, onSessionExpired]);
+
   if (isLoading) {
     return <ViewLoading />;
   }
+
   if (!privateKey) {
-    if (isSessionExpiredError(error)) {
+    if (isError && isSessionExpiredError(error)) {
       return null;
     }
     throw new Error('Could not get private key');
   }
+
   return (
     <PageColumn>
       <PageTop />
