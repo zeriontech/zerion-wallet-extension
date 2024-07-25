@@ -85,19 +85,6 @@ export const SignTransactionButton = React.forwardRef(
     const disabled = isLoading || sendTxMutation.isSuccess || disabledAttr;
     const title = buttonTitle || 'Confirm';
 
-    const successTitle = (
-      <HStack gap={4} alignItems="center">
-        <CheckIcon
-          style={{
-            width: 20,
-            height: 20,
-            color: 'var(--positive-500)',
-          }}
-        />
-        <span>Sent</span>
-      </HStack>
-    );
-
     return isDeviceAccount(wallet) ? (
       <HardwareSignTransaction
         ref={hardwareSignRef}
@@ -106,7 +93,7 @@ export const SignTransactionButton = React.forwardRef(
         children={children}
         buttonTitle={
           sendTxMutation.isSuccess
-            ? successTitle
+            ? 'Sent'
             : isLoadingProp
             ? 'Preparing...'
             : buttonTitle
@@ -124,7 +111,18 @@ export const SignTransactionButton = React.forwardRef(
           return holdToSign ? (
             <HoldableButton
               text={`Hold to ${title}`}
-              successText={successTitle}
+              successText={
+                <HStack gap={4} alignItems="center">
+                  <CheckIcon
+                    style={{
+                      width: 20,
+                      height: 20,
+                      color: 'var(--positive-500)',
+                    }}
+                  />
+                  <span>Sent</span>
+                </HStack>
+              }
               submittingText="Sending..."
               onClick={handleClick}
               success={sendTxMutation.isSuccess}
