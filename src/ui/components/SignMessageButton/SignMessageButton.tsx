@@ -109,26 +109,13 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
 
   const title = buttonTitle || 'Sign';
 
-  const successTitle = (
-    <HStack gap={4} alignItems="center">
-      <CheckIcon
-        style={{
-          width: 20,
-          height: 20,
-          color: 'var(--positive-500)',
-        }}
-      />
-      <span>Signed</span>
-    </HStack>
-  );
-
   return isDeviceAccount(wallet) ? (
     <HardwareSignMessage
       ref={hardwareSignRef}
       derivationPath={wallet.derivationPath}
       isSigning={isLoading}
       children={children}
-      buttonTitle={isSuccess ? successTitle : buttonTitle}
+      buttonTitle={isSuccess ? 'Signed' : buttonTitle}
       buttonKind={buttonKind}
       onClick={onClick}
       disabled={disabled}
@@ -142,7 +129,18 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
         holdToSign ? (
           <HoldableButton
             text={`Hold to ${title}`}
-            successText={successTitle}
+            successText={
+              <HStack gap={4} alignItems="center">
+                <CheckIcon
+                  style={{
+                    width: 20,
+                    height: 20,
+                    color: 'var(--positive-500)',
+                  }}
+                />
+                <span>Signed</span>
+              </HStack>
+            }
             submittingText="Sending..."
             onClick={handleClick}
             success={isSuccess}
