@@ -145,7 +145,7 @@ export function RevealPrivateKey() {
     <>
       {params.has('step') == false ? (
         <PageColumn>
-          <NavigationTitle title="Private key export" />
+          <NavigationTitle title="Private Key Export" />
           <PageTop />
           <VerifyUser
             text={'Verification is required to show your private key'}
