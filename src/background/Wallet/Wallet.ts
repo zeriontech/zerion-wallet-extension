@@ -883,7 +883,7 @@ export class Wallet {
     this.setChainForOrigin(createChain(chain), origin);
   }
 
-  async registerChainForLiteSupport({
+  async uiChainSelected({
     params: { chain },
     context,
   }: WalletMethodParams<{ chain: string }>) {

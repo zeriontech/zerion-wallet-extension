@@ -55,7 +55,7 @@ export function NetworkSelect({
     invariant(dialogRef.current, 'Dialog element not found');
     showConfirmDialog(dialogRef.current).then((chain) => {
       if (chain !== 'all') {
-        walletPort.request('registerChainForLiteSupport', { chain });
+        walletPort.request('uiChainSelected', { chain });
       }
       onChange(chain === 'all' ? NetworkSelectValue.All : chain);
     });
