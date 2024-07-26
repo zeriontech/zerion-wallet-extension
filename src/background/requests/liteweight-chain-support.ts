@@ -3,6 +3,7 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { WalletOrigin } from 'src/shared/WalletOrigin';
 import { fetchNetworkByChainId } from 'src/modules/networks/networks-store.background';
 import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
+import type { Chain } from 'src/modules/networks/Chain';
 import { emitter } from '../events';
 import type { Account } from '../account/Account';
 import { INTERNAL_SYMBOL_CONTEXT } from '../Wallet/Wallet';
@@ -20,17 +21,13 @@ function registerChainAndAddressIfPossible(
 }
 
 export function initialize(account: Account) {
+  function registerChain(chain: Chain) {
+    const address = account.getCurrentWallet().readCurrentAddress();
+    registerChainAndAddressIfPossible(chain.toString(), address);
+  }
   // Backend needs these events to initialize chain listening for the address in case the chain is not fully supported
-  emitter.on('chainChanged', async (chain) => {
-    const address = account.getCurrentWallet().readCurrentAddress();
-    registerChainAndAddressIfPossible(chain.toString(), address);
-  });
-  emitter.on('registerChain', async (chain) => {
-    const address = account.getCurrentWallet().readCurrentAddress();
-    registerChainAndAddressIfPossible(chain.toString(), address);
-  });
-
-  // Backend needs this event to initialize chain listening for the address in case the chain is not fully supported
+  emitter.on('chainChanged', registerChain);
+  emitter.on('registerChain', registerChain);
   emitter.on(
     'requestAccountsResolved',
     async ({ origin, address, explicitly }) => {
