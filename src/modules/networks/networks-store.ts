@@ -123,7 +123,7 @@ export class NetworksStore extends Store<State> {
               ids: null,
               client: this.client,
               include_testnets: testnetMode,
-              supported_only: testnetMode,
+              supported_only: true,
             }),
       ]);
 
