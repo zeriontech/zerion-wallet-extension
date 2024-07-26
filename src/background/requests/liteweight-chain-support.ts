@@ -20,8 +20,12 @@ function registerChainAndAddressIfPossible(
 }
 
 export function initialize(account: Account) {
-  // Backend needs this event to initialize chain listening for the address in case the chain is not fully supported
+  // Backend needs these events to initialize chain listening for the address in case the chain is not fully supported
   emitter.on('chainChanged', async (chain) => {
+    const address = account.getCurrentWallet().readCurrentAddress();
+    registerChainAndAddressIfPossible(chain.toString(), address);
+  });
+  emitter.on('registerChain', async (chain) => {
     const address = account.getCurrentWallet().readCurrentAddress();
     registerChainAndAddressIfPossible(chain.toString(), address);
   });
