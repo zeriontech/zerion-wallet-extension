@@ -30,7 +30,7 @@ export const emitter = createNanoEvents<{
   accountsChanged: () => void;
   chainsUpdated: () => void;
   chainChanged: (chain: Chain) => void;
-  registerChain: (chain: Chain) => void;
+  'ui:chainSelected': (chain: Chain) => void;
   transactionSent: (
     data: {
       transaction: TransactionResponse;

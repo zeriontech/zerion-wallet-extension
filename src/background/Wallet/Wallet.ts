@@ -888,7 +888,7 @@ export class Wallet {
     context,
   }: WalletMethodParams<{ chain: string }>) {
     this.verifyInternalOrigin(context);
-    emitter.emit('registerChain', createChain(chain));
+    emitter.emit('ui:chainSelected', createChain(chain));
   }
 
   /** @deprecated */

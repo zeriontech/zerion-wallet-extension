@@ -27,7 +27,7 @@ export function initialize(account: Account) {
   }
   // Backend needs these events to initialize chain listening for the address in case the chain is not fully supported
   emitter.on('chainChanged', registerChain);
-  emitter.on('registerChain', registerChain);
+  emitter.on('ui:chainSelected', registerChain);
   emitter.on(
     'requestAccountsResolved',
     async ({ origin, address, explicitly }) => {
