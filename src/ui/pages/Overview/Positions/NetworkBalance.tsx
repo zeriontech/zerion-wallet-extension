@@ -5,10 +5,14 @@ import { isTruthy } from 'is-truthy-ts';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import { createChain } from 'src/modules/networks/Chain';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
-import { useNetworks } from 'src/modules/networks/useNetworks';
+import {
+  useMainnetNetwork,
+  useNetworks,
+} from 'src/modules/networks/useNetworks';
 import { intersperce } from 'src/ui/shared/intersperce';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import type { Kind as UITextKind } from 'src/ui/ui-kit/UIText';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
@@ -18,6 +22,92 @@ import { NBSP } from 'src/ui/shared/typography';
 import { NetworkSelect } from '../../Networks/NetworkSelect';
 import { getTabScrollContentHeight, offsetValues } from '../getTabsOffset';
 import * as styles from './styles.module.css';
+
+const allNetworksString = 'All Networks';
+
+function DisclosureButton({
+  value,
+  openDialog,
+  textKind,
+  valueDetail,
+}: {
+  value: string;
+  openDialog: () => void;
+  textKind: UITextKind;
+  valueDetail: React.ReactNode | null;
+}) {
+  const { networks, isLoading } = useNetworks();
+  const { preferences } = usePreferences();
+  const selectedNetwork =
+    value === NetworkSelectValue.All
+      ? null
+      : networks?.getNetworkByName(createChain(value));
+
+  const { data: mainnetNetwork } = useMainnetNetwork({
+    chain: value,
+    enabled:
+      preferences?.testnetMode?.on &&
+      !isLoading &&
+      !selectedNetwork &&
+      value !== NetworkSelectValue.All,
+  });
+
+  const network = selectedNetwork || mainnetNetwork;
+
+  const selectedNetworkName =
+    value === NetworkSelectValue.All
+      ? allNetworksString
+      : network?.name || value;
+
+  return (
+    <UnstyledButton
+      onClick={openDialog}
+      className="parent-hover"
+      style={{
+        width: '100%',
+        ['--parent-content-color' as string]: 'var(--neutral-500)',
+        ['--parent-hovered-content-color' as string]: 'var(--black)',
+      }}
+    >
+      <UIText kind={textKind} style={{ width: '100%' }}>
+        <HStack
+          gap={4}
+          alignItems="center"
+          justifyContent="start"
+          style={{
+            gridTemplateColumns:
+              valueDetail != null
+                ? 'minmax(40px, max-content) auto auto auto'
+                : 'minmax(40px, max-content) auto',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {intersperce(
+            [
+              <div
+                key={0}
+                style={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {selectedNetworkName}
+              </div>,
+              valueDetail != null ? <div key={1}>{valueDetail}</div> : null,
+            ],
+            (key) => (
+              <div key={key}>·</div>
+            )
+          )}
+          <ArrowDownIcon
+            className="content-hover"
+            style={{ width: 24, height: 24 }}
+          />
+        </HStack>
+      </UIText>
+    </UnstyledButton>
+  );
+}
 
 export function NetworkBalance({
   value: totalValue,
@@ -71,7 +161,6 @@ export function NetworkBalance({
   }, [testnetMode]);
 
   const textKind = 'headline/h3';
-  const allNetworksString = 'All Networks';
 
   if (isLoading) {
     return (
@@ -118,60 +207,14 @@ export function NetworkBalance({
           onChange={(selectedValue) =>
             onChange(selectedValue === dappChain ? null : selectedValue)
           }
-          renderButton={({ value, openDialog }) => {
-            const filterNetwork =
-              value === NetworkSelectValue.All
-                ? null
-                : networks?.getNetworkByName(createChain(value))?.name || value;
-
-            return (
-              <UnstyledButton
-                onClick={openDialog}
-                className="parent-hover"
-                style={{
-                  width: '100%',
-                  ['--parent-content-color' as string]: 'var(--neutral-500)',
-                  ['--parent-hovered-content-color' as string]: 'var(--black)',
-                }}
-              >
-                <UIText kind={textKind} style={{ width: '100%' }}>
-                  <HStack
-                    gap={4}
-                    alignItems="center"
-                    justifyContent="start"
-                    style={{
-                      gridTemplateColumns: hasValue
-                        ? 'minmax(40px, max-content) auto auto auto'
-                        : 'minmax(40px, max-content) auto',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {intersperce(
-                      [
-                        <div
-                          key={0}
-                          style={{
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                          }}
-                        >
-                          {filterNetwork || allNetworksString}
-                        </div>,
-                        hasValue ? <div key={1}>{totalValue}</div> : null,
-                      ],
-                      (key) => (
-                        <div key={key}>·</div>
-                      )
-                    )}
-                    <ArrowDownIcon
-                      className="content-hover"
-                      style={{ width: 24, height: 24 }}
-                    />
-                  </HStack>
-                </UIText>
-              </UnstyledButton>
-            );
-          }}
+          renderButton={({ value, openDialog }) => (
+            <DisclosureButton
+              value={value}
+              openDialog={openDialog}
+              valueDetail={totalValue}
+              textKind={textKind}
+            />
+          )}
         />
 
         {showHelperButton ? (
