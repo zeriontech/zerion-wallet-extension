@@ -919,9 +919,13 @@ export class Wallet {
     this.ensureRecord(this.record);
     const fallbackChain = NetworkId.Ethereum;
     const chain = Model.getChainForOrigin(this.record, { origin });
-    const networksStore = getNetworksStore(Model.getPreferences(this.record));
-    const networks = await networksStore.load({ chains: [chain.toString()] });
-    return networks.getNetworkByName(chain)?.id || fallbackChain;
+    const preferences = Model.getPreferences(this.record);
+    const network = await fetchNetworkById({
+      networkId: chain,
+      preferences,
+      apiEnv: 'testnet-first',
+    });
+    return network?.id || fallbackChain;
   }
 
   /** @deprecated */
