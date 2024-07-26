@@ -26,6 +26,7 @@ import {
   useNetworks,
 } from 'src/modules/networks/useNetworks';
 import { usePreferences } from 'src/ui/features/preferences';
+import { capitalize } from 'capitalize-ts';
 import { ConnectedSiteDialog } from '../../ConnectedSites/ConnectedSite';
 import { NetworkSelect } from '../../Networks/NetworkSelect';
 import { isConnectableDapp } from '../../ConnectedSites/shared/isConnectableDapp';
@@ -88,7 +89,7 @@ function NetworksDisclosureButton({
               textOverflow: 'ellipsis',
             }}
           >
-            {chain ? networks?.getChainName(chain) : noValueDash}
+            {network?.name || capitalize(String(chain))}
           </span>
           <ArrowDownIcon
             className="content-hover"
