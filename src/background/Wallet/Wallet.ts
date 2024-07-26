@@ -883,6 +883,14 @@ export class Wallet {
     this.setChainForOrigin(createChain(chain), origin);
   }
 
+  async uiChainSelected({
+    params: { chain },
+    context,
+  }: WalletMethodParams<{ chain: string }>) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('ui:chainSelected', createChain(chain));
+  }
+
   /** @deprecated */
   getChainId() {
     throw new Error(

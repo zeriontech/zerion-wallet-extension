@@ -21,6 +21,7 @@ import type { Networks } from 'src/modules/networks/Networks';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { walletPort } from 'src/ui/shared/channels';
 
 export function NetworkSelect({
   value,
@@ -52,9 +53,12 @@ export function NetworkSelect({
 
   function handleDialogOpen() {
     invariant(dialogRef.current, 'Dialog element not found');
-    showConfirmDialog(dialogRef.current).then((chain) =>
-      onChange(chain === 'all' ? NetworkSelectValue.All : chain)
-    );
+    showConfirmDialog(dialogRef.current).then((chain) => {
+      if (chain !== 'all') {
+        walletPort.request('uiChainSelected', { chain });
+      }
+      onChange(chain === 'all' ? NetworkSelectValue.All : chain);
+    });
   }
 
   const chain = value === NetworkSelectValue.All ? null : createChain(value);
