@@ -1,11 +1,13 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import cn from 'classnames';
+import confetti from 'canvas-confetti';
 import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import coinImgSrc from 'src/ui/assets/zer_coin.png';
 import sparkImgSrc from 'src/ui/assets/zer_spark.png';
 import starImgSrc from 'src/ui/assets/zer_star.png';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import * as styles from './styles.module.css';
 
 export function Success() {
@@ -31,8 +33,75 @@ export function Success() {
     return () => document.removeEventListener('mousemove', handleMove);
   }, []);
 
+  const confettiRef = useRef<HTMLCanvasElement | null>(null);
+  const fireConfetti = useCallback(() => {
+    function fire(confettiInstance: confetti.CreateTypes) {
+      confettiInstance({
+        disableForReducedMotion: true,
+        particleCount: 100,
+        startVelocity: 30,
+        angle: 180 - Math.random() * 90,
+        spread: 50,
+        origin: { x: 0.7 + Math.random() * 0.2, y: 0.5 + Math.random() * 0.2 },
+        gravity: 1,
+        decay: 0.9,
+      });
+      confettiInstance({
+        disableForReducedMotion: true,
+        particleCount: 70,
+        startVelocity: 25,
+        angle: Math.random() * 180,
+        spread: 50,
+        origin: { x: 0.4 + Math.random() * 0.2, y: 0.7 + Math.random() * 0.2 },
+        gravity: 1,
+        decay: 0.9,
+      });
+      confettiInstance({
+        disableForReducedMotion: true,
+        particleCount: 130,
+        startVelocity: 35,
+        angle: 90 + Math.random() * 90,
+        spread: 50,
+        origin: { x: Math.random() * 0.2, y: 0.2 + Math.random() * 0.2 },
+        gravity: 1,
+        decay: 0.9,
+      });
+    }
+
+    if (!confettiRef.current) {
+      return;
+    }
+
+    const customConfetti = confetti.create(confettiRef.current, {
+      useWorker: true,
+      resize: true,
+    });
+
+    fire(customConfetti);
+  }, []);
+
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      fireConfetti();
+    }, 500);
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [fireConfetti]);
+
   return (
     <>
+      <canvas
+        ref={confettiRef}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 2,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+        }}
+      ></canvas>
       <VStack gap={24}>
         <div className={styles.container}>
           <VStack gap={24}>
@@ -49,15 +118,27 @@ export function Success() {
           </VStack>
           {isNarrowView ? null : (
             <>
-              <div className={cn(styles.decoration, styles.coinDecoration)}>
+              <UnstyledButton
+                className={cn(styles.decoration, styles.coinDecoration)}
+                ref={coinRef}
+                onClick={fireConfetti}
+              >
                 <img src={coinImgSrc} width={120} height={120} />
-              </div>
-              <div className={cn(styles.decoration, styles.starDecoration)}>
+              </UnstyledButton>
+              <UnstyledButton
+                className={cn(styles.decoration, styles.starDecoration)}
+                ref={starRef}
+                onClick={fireConfetti}
+              >
                 <img src={starImgSrc} width={80} height={80} />
-              </div>
-              <div className={cn(styles.decoration, styles.sparkDecoration)}>
+              </UnstyledButton>
+              <UnstyledButton
+                className={cn(styles.decoration, styles.sparkDecoration)}
+                ref={sparkRef}
+                onClick={fireConfetti}
+              >
                 <img src={sparkImgSrc} width={60} height={60} />
-              </div>
+              </UnstyledButton>
             </>
           )}
         </div>
