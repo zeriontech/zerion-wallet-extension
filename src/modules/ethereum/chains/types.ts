@@ -20,6 +20,7 @@ export interface ChainConfigV1 {
 export interface ChainConfigV2 {
   version: 2;
   ethereumChainConfigs: EthereumChainConfig[];
+  visitedChains?: string[];
   /** @deprecated */
   ethereumChains?: DeprecatedEthereumChainConfig[];
 }

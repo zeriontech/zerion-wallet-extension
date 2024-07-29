@@ -293,27 +293,27 @@ function SearchView({
   value,
   query,
   chainDistribution,
-  showTestnets,
+  testnetMode,
   filterPredicate,
 }: {
   value: string;
   query: string;
   chainDistribution: ChainDistribution | null;
-  showTestnets: boolean;
+  testnetMode: boolean;
   filterPredicate: (network: NetworkConfig) => boolean;
 }) {
   const { networks, isLoading } = useSearchNetworks({ query });
   const items = useMemo(() => {
-    const allNetworks = showTestnets
+    const allNetworks = testnetMode
       ? networks?.getNetworks().filter(filterPredicate)
       : networks?.getMainnets().filter(filterPredicate);
     return allNetworks?.filter(filterNetworksByQuery(query));
-  }, [filterPredicate, query, networks, showTestnets]);
+  }, [filterPredicate, query, networks, testnetMode]);
   if (isLoading) {
     return <ViewLoading kind="network" />;
   }
   if (!items?.length) {
-    return <NetworksEmptyView showTestnets={showTestnets} />;
+    return <NetworksEmptyView testnetMode={testnetMode} />;
   }
 
   return (
@@ -337,7 +337,7 @@ function SearchView({
         <Spacer height={8} />
         <AddNetworkLink />
       </div>
-      {showTestnets ? null : (
+      {testnetMode ? null : (
         <>
           <Spacer height={8} />
           <ShowTestnetsHint />
@@ -352,14 +352,14 @@ function AddressNetworkList({
   networks,
   chainDistribution,
   filterPredicate,
-  showTestnets,
+  testnetMode,
   showAllNetworksOption,
 }: {
   value: string;
   networks: Networks;
   chainDistribution: ChainDistribution | null;
   filterPredicate: (network: NetworkConfig) => boolean;
-  showTestnets: boolean;
+  testnetMode: boolean;
   showAllNetworksOption?: boolean;
 }) {
   const searchRef = useRef<HTMLInputElement | null>(null);
@@ -374,11 +374,11 @@ function AddressNetworkList({
     return createGroups({
       networks,
       chainDistribution,
-      showTestnets,
+      testnetMode,
       filterPredicate,
       sortMainNetworksType: 'by_distribution',
     });
-  }, [filterPredicate, networks, chainDistribution, showTestnets]);
+  }, [filterPredicate, networks, chainDistribution, testnetMode]);
 
   const {
     selectNext: selectNextNetwork,
@@ -457,7 +457,7 @@ function AddressNetworkList({
             query={query}
             filterPredicate={filterPredicate}
             chainDistribution={chainDistribution}
-            showTestnets={showTestnets}
+            testnetMode={testnetMode}
           />
         ) : (
           <SectionView
@@ -513,7 +513,7 @@ export function NetworkSelectDialog({
         networks={networks}
         chainDistribution={chainDistribution}
         showAllNetworksOption={showAllNetworksOption}
-        showTestnets={Boolean(preferences?.testnetMode?.on)}
+        testnetMode={Boolean(preferences?.testnetMode?.on)}
       />
     </div>
   );

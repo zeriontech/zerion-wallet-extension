@@ -75,15 +75,17 @@ async function updateNetworks() {
   networksStore.update();
 }
 
+type SaveChainConfigParams = {
+  chain: string;
+  chainConfig: AddEthereumChainParameter;
+  prevChain: string | null;
+};
+
 async function saveChainConfig({
   chain,
   chainConfig,
   prevChain,
-}: {
-  chain: string;
-  chainConfig: AddEthereumChainParameter;
-  prevChain: string | null;
-}) {
+}: SaveChainConfigParams) {
   return walletPort.request('addEthereumChain', {
     values: [chainConfig],
     origin: isCustomNetworkId(chain) ? INTERNAL_ORIGIN : BACKEND_NETWORK_ORIGIN,
@@ -96,10 +98,11 @@ function NetworkCreatePage() {
   const chainConfig = useMemo(createEmptyChainConfig, []);
   const navigate = useNavigate();
   const goBack = useCallback(() => navigate(-1), [navigate]);
-  const mutation = useMutation({
-    mutationFn: saveChainConfig,
-    onSuccess() {
-      updateNetworks();
+  const saveMutation = useMutation({
+    mutationFn: async (params: SaveChainConfigParams) => {
+      const result = await saveChainConfig(params);
+      await updateNetworks();
+      return result;
     },
   });
   useBackgroundKind({ kind: 'white' });
@@ -117,16 +120,16 @@ function NetworkCreatePage() {
   if (!restrictedChainIds) {
     return <ViewLoading kind="network" />;
   }
-  if (mutation.isSuccess) {
+  if (saveMutation.isSuccess) {
     return (
       <>
         <NavigationTitle
           title={null}
-          documentTitle={`Create Network: ${mutation.data.value.chainName}`}
+          documentTitle={`Create Network: ${saveMutation.data.value.chainName}`}
         />
         <NetworkCreateSuccess
           paddingTop={24}
-          chainConfig={mutation.data.value}
+          chainConfig={saveMutation.data.value}
           onDone={() => {
             goBack();
           }}
@@ -141,13 +144,13 @@ function NetworkCreatePage() {
       <NetworkForm
         chainConfig={chainConfig}
         onSubmit={(chainStr, value) =>
-          mutation.mutate({
+          saveMutation.mutate({
             chain: chainStr,
             chainConfig: value,
             prevChain: null,
           })
         }
-        isSubmitting={mutation.isLoading}
+        isSubmitting={saveMutation.isLoading}
         onCancel={goBack}
         restrictedChainIds={restrictedChainIds}
         disabledFields={null}
@@ -204,10 +207,18 @@ function NetworkPage() {
   const network = networks?.getNetworkByName(createChain(chainStr));
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
-  const { isCustomNetwork, isSavedNetwork } = useMemo(() => {
+  const {
+    isCustomNetwork,
+    isSavedNetwork,
+    isVisitedNetwork,
+    isSupportsPositions,
+  } = useMemo(() => {
+    const chain = createChain(chainStr);
     return {
       isCustomNetwork: isCustomNetworkId(chainStr),
-      isSavedNetwork: networks?.isSavedLocallyChain(createChain(chainStr)),
+      isSavedNetwork: networks?.isSavedLocallyChain(chain),
+      isVisitedNetwork: networks?.isVisitedChain(chain),
+      isSupportsPositions: networks?.supports('positions', chain),
     };
   }, [networks, chainStr]);
 
@@ -225,28 +236,35 @@ function NetworkPage() {
     return set;
   }, [network, networks]);
 
-  const mutation = useMutation({
-    mutationFn: saveChainConfig,
-    onSuccess() {
-      updateNetworks();
-      navigate(-1);
+  const saveMutation = useMutation({
+    mutationFn: async (params: SaveChainConfigParams) => {
+      await saveChainConfig(params);
+      await updateNetworks();
     },
+    onSuccess: goBack,
   });
   const removeMutation = useMutation({
-    mutationFn: (network: NetworkConfig) =>
-      walletPort.request('removeEthereumChain', { chain: network.id }),
-    onSuccess() {
-      updateNetworks();
-      navigate(-1);
+    mutationFn: async (network: NetworkConfig) => {
+      await walletPort.request('removeEthereumChain', { chain: network.id });
+      await updateNetworks();
     },
+    onSuccess: goBack,
   });
   const resetMutation = useMutation({
-    mutationFn: (network: NetworkConfig) =>
-      walletPort.request('resetEthereumChain', { chain: network.id }),
-    onSuccess() {
-      updateNetworks();
-      navigate(-1);
+    mutationFn: async (network: NetworkConfig) => {
+      await walletPort.request('resetEthereumChain', { chain: network.id });
+      await updateNetworks();
     },
+    onSuccess: goBack,
+  });
+  const removeFromVisitedMutation = useMutation({
+    mutationFn: async (network: NetworkConfig) => {
+      await walletPort.request('removeVisitedEthereumChain', {
+        chain: network.id,
+      });
+      await updateNetworks();
+    },
+    onSuccess: goBack,
   });
   useBackgroundKind({ kind: 'white' });
   if (!networks && !network) {
@@ -293,16 +311,22 @@ function NetworkPage() {
           chain={chainStr}
           chainConfig={toAddEthereumChainParameter(network)}
           onSubmit={(id, value) =>
-            mutation.mutate({
+            saveMutation.mutate({
               chain: id,
               chainConfig: value,
               prevChain: network.id,
             })
           }
-          isSubmitting={mutation.isLoading}
+          isSubmitting={saveMutation.isLoading}
           onReset={
             isSavedNetwork && !isCustomNetwork
               ? () => resetMutation.mutate(network)
+              : undefined
+          }
+          onRemoveFromVisited={
+            // we show networks with supported positions based on the balance
+            isVisitedNetwork && !isSupportsPositions
+              ? () => removeFromVisitedMutation.mutate(network)
               : undefined
           }
           onCancel={goBack}
@@ -352,13 +376,13 @@ function WalletNetworkList({
 function NetworksView({
   networks,
   chainDistribution,
-  showTestnets,
+  testnetMode,
   autoFocusSearch,
   loading,
 }: {
   networks: NetworksModule | null;
   chainDistribution: ChainDistribution | null;
-  showTestnets: boolean;
+  testnetMode: boolean;
   autoFocusSearch: boolean;
   loading: boolean;
 }) {
@@ -382,10 +406,10 @@ function NetworksView({
     return createGroups({
       networks,
       chainDistribution,
-      showTestnets,
+      testnetMode,
       sortMainNetworksType: 'alphabetical',
     });
-  }, [networks, chainDistribution, showTestnets]);
+  }, [networks, chainDistribution, testnetMode]);
 
   const {
     selectNext: selectNextNetwork,
@@ -445,7 +469,7 @@ function NetworksView({
           />
           <Spacer height={4} />
           {query ? (
-            <SearchResults query={query} showTestnets={showTestnets} />
+            <SearchResults query={query} testnetMode={testnetMode} />
           ) : (
             <WalletNetworkList networks={networks} groups={groups} />
           )}
@@ -495,7 +519,7 @@ export function Networks() {
               loading={isLoading || portfolioDecompositionIsLoading}
               networks={networks}
               chainDistribution={portfolioDecomposition}
-              showTestnets={Boolean(preferences?.testnetMode?.on)}
+              testnetMode={Boolean(preferences?.testnetMode?.on)}
               autoFocusSearch={navigationType === NavigationType.Push}
             />
           }

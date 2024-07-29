@@ -10,9 +10,11 @@ import type { Chain } from './Chain';
 export const mainNetworksStore = new NetworksStore(
   { networks: null },
   {
-    getEthereumChainConfigs: async () => {
+    getOtherNetworkData: async () => {
       await chainConfigStore.ready();
-      return chainConfigStore.getState().ethereumChainConfigs;
+      const { ethereumChainConfigs, visitedChains = null } =
+        chainConfigStore.getState();
+      return { ethereumChainConfigs, visitedChains };
     },
     client,
     testnetMode: false,
@@ -22,9 +24,11 @@ export const mainNetworksStore = new NetworksStore(
 export const testenvNetworksStore = new NetworksStore(
   { networks: null },
   {
-    getEthereumChainConfigs: async () => {
+    getOtherNetworkData: async () => {
       await chainConfigStore.ready();
-      return chainConfigStore.getState().ethereumChainConfigs;
+      const { ethereumChainConfigs, visitedChains = null } =
+        chainConfigStore.getState();
+      return { ethereumChainConfigs, visitedChains };
     },
     client: configureBackgroundTestClient(),
     testnetMode: true,

@@ -14,12 +14,12 @@ export function ShowTestnetsHint() {
     >
       Looking for testnets?
       <br />
-      Enable test networks in Settings → Developer Tools
+      Enable Testnet Mode in Settings → Developer Tools
     </UIText>
   );
 }
 
-export function NetworksEmptyView({ showTestnets }: { showTestnets: boolean }) {
+export function NetworksEmptyView({ testnetMode }: { testnetMode: boolean }) {
   return (
     <>
       <VStack
@@ -51,7 +51,7 @@ export function NetworksEmptyView({ showTestnets }: { showTestnets: boolean }) {
           Add Network
         </Button>
       </VStack>
-      {showTestnets ? null : <ShowTestnetsHint />}
+      {testnetMode ? null : <ShowTestnetsHint />}
     </>
   );
 }

@@ -74,6 +74,7 @@ export class Networks {
   private collectionByEvmId: { [key: ChainId]: NetworkConfig | undefined };
   private networkIdAliases: Record<string, string>;
   private ethereumChainConfigs: EthereumChainConfig[];
+  private visitedChains: Set<string>;
 
   static getChainId(network: NetworkConfig) {
     return network.standard === 'eip155'
@@ -84,9 +85,11 @@ export class Networks {
   constructor({
     networks,
     ethereumChainConfigs,
+    visitedChains,
   }: {
     networks: NetworkConfig[];
     ethereumChainConfigs: EthereumChainConfig[];
+    visitedChains: string[];
   }) {
     this.ethereumChainConfigs = ethereumChainConfigs;
     this.networks = injectChainConfigs(networks, ethereumChainConfigs);
@@ -101,6 +104,7 @@ export class Networks {
       (x) => x
     );
     this.networkIdAliases = toAliasMap(this.ethereumChainConfigs);
+    this.visitedChains = new Set(visitedChains);
   }
 
   static getName(network: NetworkConfig) {
@@ -125,6 +129,10 @@ export class Networks {
     );
   }
 
+  isVisitedChain(chain: Chain) {
+    return this.visitedChains.has(chain.toString());
+  }
+
   getNetworks() {
     return this.networks;
   }
@@ -137,6 +145,17 @@ export class Networks {
     return this.networks.filter((item) => !item.is_testnet);
   }
 
+  getDefaultNetworks() {
+    return this.networks.filter((item) => {
+      const chain = createChain(item.id);
+      return (
+        this.supports('positions', chain) ||
+        this.isSavedLocallyChain(chain) ||
+        this.isVisitedChain(chain)
+      );
+    });
+  }
+
   getNetworksMetaData(): Record<string, NetworkConfigMetaData | undefined> {
     return Object.fromEntries(
       this.ethereumChainConfigs.map((chainConfig) => [
@@ -144,10 +163,6 @@ export class Networks {
         chainConfig,
       ])
     );
-  }
-
-  getTestNetworks() {
-    return this.networks.filter((item) => item.is_testnet);
   }
 
   findEthereumChainById(chainId: ChainId) {

@@ -13,25 +13,25 @@ import { NetworkList } from '../NetworkList';
 
 export function SearchResults({
   query,
-  showTestnets,
+  testnetMode,
 }: {
   query: string;
-  showTestnets: boolean;
+  testnetMode: boolean;
 }) {
   const { pathname } = useLocation();
   const { networks, isLoading } = useSearchNetworks({ query });
   const items = useMemo(() => {
-    const allNetworks = showTestnets
+    const allNetworks = testnetMode
       ? networks?.getNetworks()
       : networks?.getMainnets();
     return allNetworks?.filter(filterNetworksByQuery(query));
-  }, [query, networks, showTestnets]);
+  }, [query, networks, testnetMode]);
 
   if (isLoading || !networks) {
     return <ViewLoading kind="network" />;
   }
   if (!items?.length) {
-    return <NetworksEmptyView showTestnets={showTestnets} />;
+    return <NetworksEmptyView testnetMode={testnetMode} />;
   }
   return (
     <>
@@ -42,7 +42,7 @@ export function SearchResults({
           `/networks/network/${item.id}?from=${encodeURIComponent(pathname)}`
         }
       />
-      {showTestnets ? null : (
+      {testnetMode ? null : (
         <>
           <Spacer height={8} />
           <ShowTestnetsHint />

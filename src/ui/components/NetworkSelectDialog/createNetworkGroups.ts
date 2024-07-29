@@ -1,6 +1,3 @@
-import { isTruthy } from 'is-truthy-ts';
-import { INTERNAL_ORIGIN } from 'src/background/constants';
-import { BACKEND_NETWORK_ORIGIN } from 'src/modules/ethereum/chains/constants';
 import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { Networks } from 'src/modules/networks/Networks';
@@ -19,8 +16,8 @@ function compareNetworks(
   b: NetworkConfig,
   chainDistribution: ChainDistribution | null
 ) {
-  const aString = a.name.toString();
-  const bString = b.name.toString();
+  const aString = a.name.toString().toLowerCase();
+  const bString = b.name.toString().toLowerCase();
   const aValue =
     chainDistribution?.positions_chains_distribution[a.id.toString()];
   const bValue =
@@ -35,35 +32,31 @@ function compareNetworks(
 export function createGroups({
   networks,
   chainDistribution,
-  showTestnets,
+  testnetMode,
   filterPredicate = () => true,
   sortMainNetworksType = 'by_distribution',
 }: {
   networks: Networks;
   chainDistribution: ChainDistribution | null;
-  showTestnets: boolean;
+  testnetMode: boolean;
   filterPredicate?: (network: NetworkConfig) => boolean;
   sortMainNetworksType?: 'alphabetical' | 'by_distribution';
 }): NetworkGroups {
-  const mainnetList = networks.getMainnets().filter(filterPredicate);
-  const allNetworks = networks.getNetworks().filter(filterPredicate);
-  const testnetList = networks.getTestNetworks().filter(filterPredicate);
-  const mainNetworkPredicate = (network: NetworkConfig) => {
-    const origin = networks.getNetworksMetaData()[network.id]?.origin;
+  const allNetworks = networks
+    .getDefaultNetworks()
+    .filter((item) => Boolean(item.is_testnet) === testnetMode)
+    .filter(filterPredicate);
+  const otherNetworkPredicate = (network: NetworkConfig) => {
     return (
-      chainDistribution?.chains[network.id] ||
-      isCustomNetworkId(network.id) ||
-      (origin &&
-        origin !== INTERNAL_ORIGIN &&
-        origin !== BACKEND_NETWORK_ORIGIN)
+      !chainDistribution?.chains[network.id] || isCustomNetworkId(network.id)
     );
   };
   return [
     {
-      key: 'mainnets',
+      key: 'main',
       name: null,
       items: allNetworks
-        .filter(mainNetworkPredicate)
+        .filter((network) => !otherNetworkPredicate(network))
         .sort((a, b) =>
           compareNetworks(
             a,
@@ -77,16 +70,9 @@ export function createGroups({
     {
       key: 'other',
       name: 'Other Networks',
-      items: mainnetList.filter((network) => !mainNetworkPredicate(network)),
+      items: allNetworks
+        .filter(otherNetworkPredicate)
+        .sort((a, b) => compareNetworks(a, b, null)),
     },
-    showTestnets
-      ? {
-          key: 'testnets',
-          name: 'Test Networks',
-          items: testnetList.filter(
-            (network) => !mainNetworkPredicate(network)
-          ),
-        }
-      : null,
-  ].filter(isTruthy);
+  ];
 }
