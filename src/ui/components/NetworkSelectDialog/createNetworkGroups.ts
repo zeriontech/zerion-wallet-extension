@@ -48,7 +48,7 @@ export function createGroups({
     .filter(filterPredicate);
   const otherNetworkPredicate = (network: NetworkConfig) => {
     return (
-      !chainDistribution?.chains[network.id] && !isCustomNetworkId(network.id)
+      !chainDistribution?.chains[network.id] || isCustomNetworkId(network.id)
     );
   };
   return [
