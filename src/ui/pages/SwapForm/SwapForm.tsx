@@ -671,11 +671,15 @@ export function SwapFormComponent() {
       <VStack gap={8}>
         <VStack
           gap={4}
-          style={{
-            borderRadius: 12,
-            border: '2px solid var(--neutral-200)',
-            padding: '12px 16px',
-          }}
+          style={
+            quotesData.quote || quotesData.isLoading || quotesData.error
+              ? {
+                  borderRadius: 12,
+                  border: '2px solid var(--neutral-200)',
+                  padding: '12px 16px',
+                }
+              : {}
+          }
         >
           <RateLine swapView={swapView} quotesData={quotesData} />
           <SlippageLine swapView={swapView} />
