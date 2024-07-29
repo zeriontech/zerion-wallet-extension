@@ -61,7 +61,8 @@ export function NetworkSelect({
     invariant(dialogRef.current, 'Dialog element not found');
     showConfirmDialog(dialogRef.current).then(async (chain) => {
       if (chain !== 'all') {
-        walletPort.request('uiChainSelected', { chain });
+        // TODO: should we combine these calls?
+        await walletPort.request('uiChainSelected', { chain });
         await walletPort.request('addVisitedEthereumChain', { chain });
         await updateNetworks();
       }
