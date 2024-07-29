@@ -13,8 +13,12 @@ export function ProtocolFeeLine({ quote }: { quote: Quote }) {
   return (
     <UIText kind="caption/regular" color="var(--neutral-600)">
       <HStack gap={4} alignItems="center">
-        Quote includes {`${formatPercent(quote.protocol_fee, 'en')}%`} Zerion
-        fee
+        {quote.protocol_fee > 0
+          ? `Quote includes ${formatPercent(
+              quote.protocol_fee,
+              'en'
+            )}% Zerion fee`
+          : `No Zerion fees`}
         <UnstyledAnchor
           title="Applies to all Multichain transactions. Zerion Premium DNA holders get discounts. Click to learn more."
           href={ZERION_FEES_ARTICLE}
