@@ -16,7 +16,6 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { walletPort } from 'src/ui/shared/channels';
 import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOrigin';
-import { noValueDash } from 'src/ui/shared/typography';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import { createChain } from 'src/modules/networks/Chain';
