@@ -7,6 +7,7 @@ import {
 } from '@walletconnect/jsonrpc-utils';
 import { BackgroundScriptUpdateHandler } from 'src/shared/core/BackgroundScriptUpdateHandler';
 import { PortMessageChannel } from 'src/shared/PortMessageChannel';
+import { initializeInDappNotifications } from './in-dapp-notifications';
 
 const id = nanoid();
 
@@ -75,6 +76,8 @@ broadcastChannel.addEventListener('message', async (event) => {
     console.log('not a JsonRpcRequest'); // eslint-disable-line no-console
   }
 });
+
+initializeInDappNotifications();
 
 // Insert script with id for provider _after_ creating a BroadcastChannel
 const script = document.createElement('script');

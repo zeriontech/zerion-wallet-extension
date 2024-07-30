@@ -157,6 +157,7 @@ interface WalletEvents {
   recordUpdated: () => void;
   currentAddressChange: (addresses: string[]) => void;
   chainChanged: (chain: Chain, origin: string) => void;
+  switchChainError: (chainId: ChainId, origin: string) => void;
   permissionsUpdated: () => void;
 }
 
@@ -879,8 +880,10 @@ export class Wallet {
     context,
   }: WalletMethodParams<{ chain: string; origin: string }>) {
     this.verifyInternalOrigin(context);
-    this.ensureRecord(this.record);
-    this.setChainForOrigin(createChain(chain), origin);
+    this.setChainForOrigin({
+      chain: createChain(chain),
+      origin,
+    });
   }
 
   async uiChainSelected({
@@ -937,7 +940,7 @@ export class Wallet {
     throw new Error('setChainId is deprecated. Use setChainForOrigin instead');
   }
 
-  setChainForOrigin(chain: Chain, origin: string) {
+  setChainForOrigin({ chain, origin }: { chain: Chain; origin: string }) {
     this.ensureRecord(this.record);
     this.record = Model.setChainForOrigin(this.record, { chain, origin });
     this.updateWalletStore(this.record);
@@ -1268,7 +1271,10 @@ export class Wallet {
     });
     affectedPermissions.forEach(({ origin }) => {
       // TODO: remove chain for origin in case new chain is not set
-      this.setChainForOrigin(createChain(NetworkId.Ethereum), origin);
+      this.setChainForOrigin({
+        chain: createChain(NetworkId.Ethereum),
+        origin,
+      });
     });
     this.resetEthereumChain({ context, params: { chain: chainStr } });
   }
@@ -1877,7 +1883,7 @@ class PublicController {
           route: '/switchEthereumChain',
           search: `?origin=${origin}&chainId=${chainId}`,
           onResolve: () => {
-            this.wallet.setChainForOrigin(chain, origin);
+            this.wallet.setChainForOrigin({ chain, origin });
             this.wallet.addVisitedEthereumChainInternal(chain);
             setTimeout(() => resolve(null));
           },
@@ -1897,13 +1903,14 @@ class PublicController {
     try {
       const chain = networks.getChainById(chainId);
       // Switch immediately and return success
-      this.wallet.setChainForOrigin(chain, origin);
+      this.wallet.setChainForOrigin({ chain, origin });
       this.wallet.addVisitedEthereumChainInternal(chain);
       // return null in next tick to give provider enough time to change chainId property
       return new Promise((resolve) => {
         setTimeout(() => resolve(null));
       });
-    } catch (e) {
+    } catch (error) {
+      emitter.emit('switchChainError', chainId, origin, error);
       throw new SwitchChainError(`Chain not configured: ${chainIdParameter}`);
     }
   }
