@@ -1883,7 +1883,7 @@ class PublicController {
           route: '/switchEthereumChain',
           search: `?origin=${origin}&chainId=${chainId}`,
           onResolve: () => {
-            this.wallet.setChainForOrigin(chain, origin);
+            this.wallet.setChainForOrigin({ chain, origin });
             this.wallet.addVisitedEthereumChainInternal(chain);
             setTimeout(() => resolve(null));
           },
@@ -1903,7 +1903,7 @@ class PublicController {
     try {
       const chain = networks.getChainById(chainId);
       // Switch immediately and return success
-      this.wallet.setChainForOrigin(chain, origin);
+      this.wallet.setChainForOrigin({ chain, origin });
       this.wallet.addVisitedEthereumChainInternal(chain);
       // return null in next tick to give provider enough time to change chainId property
       return new Promise((resolve) => {
