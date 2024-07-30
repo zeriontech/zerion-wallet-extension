@@ -12,6 +12,7 @@ import { invariant } from 'src/shared/invariant';
 import { getNetworksBySearch } from '../ethereum/chains/requests';
 import type { ChainId } from '../ethereum/transactions/ChainId';
 import { NetworksStore } from './networks-store';
+import { createChain } from './Chain';
 
 function useNetworksStore() {
   const { preferences } = usePreferences();
@@ -67,6 +68,33 @@ export function useNetworks(chains?: string[]) {
       [networksStore]
     ),
   };
+}
+
+/**
+ * This hook a meant to be used for a special case:
+ * When testnetmode is enabled, UI may need to display information for a mainnet network
+ */
+export function useMainnetNetwork({
+  chain: chainStr,
+  enabled = true,
+}: {
+  chain: string;
+  enabled?: boolean;
+}) {
+  return useQuery({
+    enabled,
+    queryKey: ['getMainnetworkItem', chainStr],
+    queryFn: async () => {
+      await mainNetworksStore.load({ chains: [chainStr] });
+      const network = mainNetworksStore
+        .getState()
+        .networks?.getNetworkByName(createChain(chainStr));
+      return network;
+    },
+    staleTime: 1000 * 60 * 5,
+    suspense: false,
+    useErrorBoundary: false,
+  });
 }
 
 export function useSearchNetworks({ query = '' }: { query?: string }) {
