@@ -678,7 +678,7 @@ export function SwapFormComponent() {
                   border: '2px solid var(--neutral-200)',
                   padding: '12px 16px',
                 }
-              : {}
+              : undefined
           }
         >
           <RateLine swapView={swapView} quotesData={quotesData} />
