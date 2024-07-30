@@ -445,6 +445,7 @@ export interface AppProps {
 export function App({ initialView, inspect }: AppProps) {
   const isOnboardingMode = urlContext.appMode === 'onboarding';
   const isPageLayout = urlContext.windowLayout === 'page';
+  const isColumnLayout = urlContext.windowLayout === 'column';
 
   const bodyClassList = useMemo(() => {
     const result = [];
@@ -460,8 +461,11 @@ export function App({ initialView, inspect }: AppProps) {
     if (isOnboardingMode || isPageLayout) {
       result.push(styles.pageLayout);
     }
+    if (isColumnLayout) {
+      result.push(styles.columnLayout);
+    }
     return result;
-  }, [isOnboardingMode, isPageLayout]);
+  }, [isColumnLayout, isOnboardingMode, isPageLayout]);
 
   const { connected } = useStore(runtimeStore);
 
