@@ -15,7 +15,6 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
-import { openInTabView } from 'src/ui/shared/openInTabView';
 import { useWalletGroups } from 'src/ui/shared/requests/useWalletGroups';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -28,6 +27,7 @@ import {
   useBackgroundKind,
   whiteBackgroundKind,
 } from 'src/ui/components/Background/Background';
+import { openHref } from 'src/ui/shared/openUrl';
 import { AddReadonlyAddress } from './AddReadonlyAddress';
 import { GenerateWallet } from './GenerateWallet';
 import { ImportWallet } from './ImportWallet';
@@ -214,7 +214,7 @@ function ExistingWalletOptions() {
             </HStack>
           </AngleRightRow>
         </TemporaryListItem>
-        <TemporaryListItem to={importLedgerHref} onClick={openInTabView}>
+        <TemporaryListItem to={importLedgerHref} onClick={openHref}>
           <AngleRightRow>
             <HStack gap={8} alignItems="center">
               <SpaceZone>

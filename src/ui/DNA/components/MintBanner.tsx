@@ -2,7 +2,7 @@ import React from 'react';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
-import { openInPageTabView } from 'src/ui/shared/openInNewWindow';
+import { openHrefInTabView } from 'src/ui/shared/openUrl';
 import { DnaBanner } from '../shared/DnaBanner';
 import * as styles from './styles.module.css';
 
@@ -32,7 +32,7 @@ export function MintBanner({
         <UnstyledAnchor
           href={`#/mint-dna?address=${address}`}
           target="_blank"
-          onClick={openInPageTabView}
+          onClick={openHrefInTabView}
           className={styles.button}
         >
           <UIText kind="small/accent">Continue</UIText>

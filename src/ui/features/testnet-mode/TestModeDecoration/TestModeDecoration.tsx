@@ -1,12 +1,12 @@
 import { useId, useMemo } from 'react';
 import { useStore } from '@store-unit/react';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
-import { templateData } from 'src/ui/shared/getPageTemplateName';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import React from 'react';
 import { HStack } from 'src/ui/ui-kit/HStack/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Toggle } from 'src/ui/ui-kit/Toggle';
+import { urlContext } from 'src/shared/UrlContext';
 import { usePreferences } from '../../preferences';
 import { testnetModeStore } from '../store';
 
@@ -15,8 +15,8 @@ export function TestModeDecoration() {
   const on = preferences?.testnetMode?.on;
   const checkboxId = useId();
   const { shortcutsDisabled } = useStore(testnetModeStore);
-  const isDialog = templateData.windowContext === 'dialog';
 
+  const isDialog = urlContext.windowType === 'dialog';
   const shouldRenderSomething = !isDialog || on;
   useBodyStyle(
     useMemo(

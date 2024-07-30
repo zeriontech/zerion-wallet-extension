@@ -1,25 +1,16 @@
 import type { Windows } from 'webextension-polyfill';
 import browser from 'webextension-polyfill';
 import { nanoid } from 'nanoid';
+import { getPopupUrl } from 'src/shared/getPopupUrl';
+import { setUrlContext } from 'src/shared/setUrlContext';
 
 type WindowType = 'tab' | 'dialog';
 
-function getPopupRoute(route: string, type: WindowType) {
-  /**
-   * Normally, we'd get the path to popup.html like this:
-   * new URL(`../../ui/popup.html`, import.meta.url)
-   * But parcel is being too smart, and because we're in
-   * the service worker context here, it bundles the entry for sw context as well,
-   * which makes the popup UI crash
-   */
-  const popupUrl = browser.runtime.getManifest().action?.default_popup;
-  if (!popupUrl) {
-    throw new Error('popupUrl not found');
-  }
-  const url = new URL(browser.runtime.getURL(popupUrl));
-  url.searchParams.append('windowContext', type);
-  url.hash = route;
-  return url.toString();
+function makePopupRoute(route: string, windowType: WindowType) {
+  const popupUrl = getPopupUrl();
+  setUrlContext(popupUrl.searchParams, { windowType });
+  popupUrl.hash = route;
+  return popupUrl.toString();
 }
 
 const IS_WINDOWS = /windows/i.test(navigator.userAgent);
@@ -78,7 +69,7 @@ export async function createBrowserWindow({
 
   const { id: windowId } = await browser.windows.create({
     focused: true,
-    url: getPopupRoute(`${initialRoute}?${params.toString()}`, type),
+    url: makePopupRoute(`${initialRoute}?${params.toString()}`, type),
     type: type === 'dialog' ? 'popup' : 'normal',
     width,
     height: heightValue,

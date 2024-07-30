@@ -1,6 +1,6 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { PageLayout } from 'src/ui/Onboarding/shared/PageLayout/PageLayout';
+import { PageLayout } from 'src/ui/features/onboarding/shared/PageLayout';
 import { WideScreen } from '../../shared/WideScreen';
 import { MintDna } from './MintDna';
 import { Success } from './Success';

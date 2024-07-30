@@ -287,10 +287,9 @@ export function WalletAccount() {
               items={[
                 {
                   key: 0,
-                  to: `/backup-wallet?${new URLSearchParams({
+                  to: `/reveal-private-key?${new URLSearchParams({
                     groupId,
                     address: wallet.address,
-                    backupKind: 'reveal',
                   })}`,
                   component: (
                     <HStack

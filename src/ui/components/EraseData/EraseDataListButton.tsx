@@ -6,9 +6,9 @@ import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog'
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import type { UITextProps } from 'src/ui/ui-kit/UIText';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { maybeOpenOboarding } from 'src/ui/Onboarding/initialization';
-import { templateData } from 'src/ui/shared/getPageTemplateName';
+import { maybeOpenOnboarding } from 'src/ui/features/onboarding/initialization';
 import { emitter } from 'src/ui/shared/events';
+import { urlContext } from 'src/shared/UrlContext';
 import { EraseDataConfirmationDialog } from './EraseDataConfirmationDialog';
 import { EraseDataInProgress } from './EraseDataInProgress';
 import { useEraseDataMutation } from './useEraseDataMutation';
@@ -21,10 +21,11 @@ export function EraseDataListButton({
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const eraseAllData = useEraseDataMutation({
     onSuccess: () => {
-      if (templateData.windowContext === 'tab') {
+      const isTab = urlContext.windowType === 'tab';
+      if (isTab) {
         emitter.emit('reloadExtension');
       } else {
-        maybeOpenOboarding();
+        maybeOpenOnboarding();
       }
     },
   });

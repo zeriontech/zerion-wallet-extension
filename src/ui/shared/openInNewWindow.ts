@@ -10,15 +10,3 @@ export function openInNewWindow(
     height: 800,
   });
 }
-
-export function openInPageTabView(
-  event: React.MouseEvent<HTMLAnchorElement, MouseEvent>
-) {
-  event?.preventDefault();
-  const url = new URL(event.currentTarget.href);
-  url.searchParams.set('windowContext', 'tab');
-  url.searchParams.set('layout', 'page');
-  browser.tabs.create({
-    url: url.toString(),
-  });
-}

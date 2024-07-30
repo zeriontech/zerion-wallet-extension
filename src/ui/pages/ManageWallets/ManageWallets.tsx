@@ -25,7 +25,7 @@ import {
   getContainerType,
   isHardwareContainer,
 } from 'src/shared/types/validators';
-import { openInTabView } from 'src/ui/shared/openInTabView';
+import { openHref } from 'src/ui/shared/openUrl';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { WalletAccount as WalletAccountPage } from './WalletAccount';
 import { WalletGroup as WalletGroupPage } from './WalletGroup';
@@ -254,7 +254,7 @@ function WalletGroups() {
                 {
                   key: 2,
                   to: '/connect-hardware-wallet',
-                  onClick: openInTabView,
+                  onClick: openHref,
                   component: (
                     <UIText kind="body/accent" color="var(--primary)">
                       Connect Ledger

@@ -5,6 +5,7 @@ import { configureBackgroundClient } from 'src/modules/defi-sdk/background';
 import { SessionCacheService } from 'src/background/resource/sessionCacheService';
 import { openOnboarding } from 'src/shared/openOnboarding';
 import { userLifecycleStore } from 'src/shared/analytics/shared/UserLifecycle';
+import { UrlContextParam } from 'src/shared/types/UrlContext';
 import { initialize } from './initialize';
 import { PortRegistry } from './messaging/PortRegistry';
 import { createWalletMessageHandler } from './messaging/port-message-handlers/createWalletMessageHandler';
@@ -44,12 +45,14 @@ if (process.env.NODE_ENV === 'development') {
 configureBackgroundClient();
 mainNetworksStore.load();
 
-function isOnboardingContext(port: RuntimePort) {
+function isOnboardingMode(port: RuntimePort) {
   if (!port.sender?.url) {
     return false;
   }
   const portSenderUrl = new URL(port.sender.url);
-  return portSenderUrl.searchParams.get('context') === 'onboarding';
+  return (
+    portSenderUrl.searchParams.get(UrlContextParam.appMode) === 'onboarding'
+  );
 }
 
 function verifyPort(port: RuntimePort) {
@@ -177,7 +180,7 @@ initialize().then((values) => {
   portRegistry.addListener('disconnect', (port: RuntimePort) => {
     if (
       port.name === `${browser.runtime.id}/wallet` &&
-      !isOnboardingContext(port)
+      !isOnboardingMode(port)
     ) {
       // Means extension UI is closed
       account.expirePasswordSession();
@@ -197,11 +200,6 @@ initialize().then((values) => {
 browser.runtime.onInstalled.addListener(({ reason }) => {
   if (reason === 'install') {
     userLifecycleStore.handleRuntimeInstalledEvent();
-    const popupUrl = browser.runtime.getManifest().action?.default_popup;
-    if (!popupUrl) {
-      throw new Error('popupUrl not found');
-    }
-    const url = new URL(browser.runtime.getURL(popupUrl));
-    openOnboarding(url);
+    openOnboarding();
   }
 });

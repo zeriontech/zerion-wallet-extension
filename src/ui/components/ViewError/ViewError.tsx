@@ -12,10 +12,10 @@ import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
-import { templateData } from 'src/ui/shared/getPageTemplateName';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { emitter } from 'src/ui/shared/events';
 import { resetPersistedRoutes } from 'src/ui/App/RouteRestoration';
+import { urlContext } from 'src/shared/UrlContext';
 import { WarningIcon } from '../WarningIcon';
 import { getBugButtonUrl } from '../BugReportButton/getBugReportURL';
 import { PageStickyFooter } from '../PageStickyFooter';
@@ -37,6 +37,7 @@ export function ViewError({
 }) {
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
+  const isDialog = urlContext.windowType === 'dialog';
   const bugReportURL = useMemo(
     () => getBugButtonUrl(pathname, search),
     [pathname, search]
@@ -128,16 +129,14 @@ export function ViewError({
             kind="regular"
             onClick={async () => {
               await resetPersistedRoutes();
-              if (templateData.windowContext !== 'dialog') {
+              if (!isDialog) {
                 navigate('/');
               }
               window.location.reload();
             }}
             style={{ paddingInline: 8 }}
           >
-            {templateData.windowContext === 'dialog'
-              ? 'Try Again'
-              : 'Back to Home'}
+            {isDialog ? 'Try Again' : 'Back to Home'}
           </Button>
           <Button
             as={UnstyledAnchor}

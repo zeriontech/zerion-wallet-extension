@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSizeStore } from 'src/ui/Onboarding/useSizeStore';
+import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
@@ -49,7 +49,7 @@ function WideScreenProtector() {
 }
 
 export function WideScreen({ children }: React.PropsWithChildren) {
-  const { innerWidth } = useSizeStore();
+  const { innerWidth } = useWindowSizeStore();
 
   return (
     <ZStack>

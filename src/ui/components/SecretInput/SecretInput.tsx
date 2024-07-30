@@ -7,7 +7,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import VisibleIcon from 'jsx:src/ui/assets/visible.svg';
 import InvisibleIcon from 'jsx:src/ui/assets/invisible.svg';
 import { Surface } from 'src/ui/ui-kit/Surface';
-import { clipboardWarning } from 'src/ui/pages/BackupWallet/clipboardWarning';
+import { clipboardWarning } from 'src/ui/pages/Backup/clipboardWarning';
 
 export const SecretInput = React.forwardRef(
   (

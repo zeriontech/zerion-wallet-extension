@@ -1,5 +1,5 @@
 import React, { useCallback, useId, useRef, useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { isTruthy } from 'is-truthy-ts';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
@@ -21,7 +21,10 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Button } from 'src/ui/ui-kit/Button';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
-import { useWalletGroups } from 'src/ui/shared/requests/useWalletGroups';
+import {
+  useWalletGroup,
+  useWalletGroups,
+} from 'src/ui/shared/requests/useWalletGroups';
 import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
@@ -40,8 +43,7 @@ import {
   isSignerContainer,
 } from 'src/shared/types/validators';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
-import { openInTabView } from 'src/ui/shared/openInTabView';
-import { needsBackup } from 'src/ui/components/BackupInfoNote/BackupInfoNote';
+import { openHrefInTabView } from 'src/ui/shared/openUrl';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 
 const strings = {
@@ -58,14 +60,6 @@ const strings = {
       ? 'You can always add it back to your watch list'
       : 'You can add it again on the Manage Wallets page',
 };
-
-function useWalletGroup({ groupId }: { groupId: string }) {
-  return useQuery({
-    queryKey: [`wallet/uiGetWalletGroup/${groupId}`],
-    queryFn: () => walletPort.request('uiGetWalletGroup', { groupId }),
-    useErrorBoundary: true,
-  });
-}
 
 function EditableWalletGroupName({
   id,
@@ -258,8 +252,8 @@ export function WalletGroup() {
               items={[
                 {
                   key: 1,
-                  to: `/backup-wallet?groupId=${walletGroup.id}&backupKind=verify`,
-                  onClick: needsBackup(walletGroup) ? openInTabView : undefined,
+                  to: `/backup?groupId=${walletGroup.id}`,
+                  onClick: openHrefInTabView,
                   component: (
                     <HStack
                       gap={4}
