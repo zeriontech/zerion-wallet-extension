@@ -3,6 +3,7 @@ import browser from 'webextension-polyfill';
 import { nanoid } from 'nanoid';
 import { getPopupUrl } from 'src/shared/getPopupUrl';
 import { setUrlContext } from 'src/shared/setUrlContext';
+import { getError } from 'src/shared/errors/getError';
 
 type WindowType = 'tab' | 'dialog';
 
@@ -24,15 +25,11 @@ export interface WindowProps {
   route: string;
   type: WindowType;
   search?: string;
-  top?: number;
-  left?: number;
   width?: number;
   height?: number | 'max';
 }
 
 export async function createBrowserWindow({
-  top,
-  left,
   width = DEFAULT_WINDOW_SIZE.width,
   height = DEFAULT_WINDOW_SIZE.height,
   route: initialRoute,
@@ -52,8 +49,8 @@ export async function createBrowserWindow({
   } as Windows.GetInfo);
 
   const position = {
-    top: Math.max(top ?? currentWindowTop + BROWSER_HEADER, 0),
-    left: Math.max(left ?? currentWindowLeft + currentWindowWidth - width, 0),
+    top: currentWindowTop + BROWSER_HEADER,
+    left: currentWindowLeft + currentWindowWidth - width,
   };
 
   let heightValue = DEFAULT_WINDOW_SIZE.height;
@@ -67,18 +64,36 @@ export async function createBrowserWindow({
     heightValue = height;
   }
 
-  const { id: windowId } = await browser.windows.create({
-    focused: true,
-    url: makePopupRoute(`${initialRoute}?${params.toString()}`, type),
-    type: type === 'dialog' ? 'popup' : 'normal',
-    width,
-    height: heightValue,
-    ...position,
-  });
+  let window: { id?: number } | undefined;
+  try {
+    window = await browser.windows.create({
+      focused: true,
+      url: makePopupRoute(`${initialRoute}?${params.toString()}`, type),
+      type: type === 'dialog' ? 'popup' : 'normal',
+      width,
+      height: heightValue,
+      ...position,
+    });
+  } catch (e) {
+    const error = getError(e);
+    if (error.message.includes('Invalid value for bound')) {
+      window = await browser.windows.create({
+        focused: true,
+        url: makePopupRoute(`${initialRoute}?${params.toString()}`, type),
+        type: type === 'dialog' ? 'popup' : 'normal',
+        width,
+        height: heightValue,
+        top: 0,
+        left: 0,
+      });
+    } else {
+      throw e;
+    }
+  }
 
-  if (!windowId) {
+  if (!window?.id) {
     throw new Error('Window ID not received from the window API.');
   }
 
-  return { id, windowId };
+  return { id, windowId: window.id };
 }

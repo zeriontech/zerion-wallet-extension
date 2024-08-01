@@ -216,8 +216,6 @@ export class NotificationWindow extends PersistentStore<PendingState> {
     onResolve,
     width,
     height,
-    left,
-    top,
   }: NotificationWindowProps<T>) {
     const unlisten = this.events.on(
       'settle',
@@ -246,8 +244,6 @@ export class NotificationWindow extends PersistentStore<PendingState> {
     }
 
     const { id, windowId } = await createBrowserWindow({
-      top,
-      left,
       width,
       height,
       route,
