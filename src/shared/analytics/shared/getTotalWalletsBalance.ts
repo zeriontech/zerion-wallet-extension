@@ -1,7 +1,13 @@
 import type { Portfolio } from 'defi-sdk';
 import { client } from 'defi-sdk';
 
-export async function getAddressesPortfolio(addresses: string[]) {
+export async function getAddressesPortfolio({
+  addresses,
+  currency,
+}: {
+  addresses: string[];
+  currency: string;
+}) {
   return new Promise<Portfolio>((resolve, reject) => {
     const rejectTimerId = setTimeout(
       () => reject(new Error(`Request timed out: getAddressesPortfolio`)),
@@ -10,7 +16,7 @@ export async function getAddressesPortfolio(addresses: string[]) {
     const { unsubscribe } = client.addressPortfolio(
       {
         addresses,
-        currency: 'usd', // keep currency const for analytics purpose
+        currency,
         portfolio_fields: 'all',
         use_portfolio_service: true,
         nft_price_type: 'not_included',

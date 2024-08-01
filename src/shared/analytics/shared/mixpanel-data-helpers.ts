@@ -29,7 +29,7 @@ async function getFundedWalletsCount(addresses: string[]) {
 
 async function getPortfolioStats(addresses: string[]) {
   return Promise.allSettled([
-    getAddressesPortfolio(addresses),
+    getAddressesPortfolio({ addresses, currency: 'usd' }),
     getFundedWalletsCount(addresses),
   ]).then(([result1, result2]) => {
     return {
