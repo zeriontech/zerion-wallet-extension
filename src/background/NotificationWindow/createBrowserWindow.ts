@@ -63,12 +63,13 @@ export async function createBrowserWindow({
   } else {
     heightValue = height;
   }
+  const url = makePopupRoute(`${initialRoute}?${params.toString()}`, type);
 
   let window: { id?: number } | undefined;
   try {
     window = await browser.windows.create({
       focused: true,
-      url: makePopupRoute(`${initialRoute}?${params.toString()}`, type),
+      url,
       type: type === 'dialog' ? 'popup' : 'normal',
       width,
       height: heightValue,
@@ -79,7 +80,7 @@ export async function createBrowserWindow({
     if (error.message.includes('Invalid value for bound')) {
       window = await browser.windows.create({
         focused: true,
-        url: makePopupRoute(`${initialRoute}?${params.toString()}`, type),
+        url,
         type: type === 'dialog' ? 'popup' : 'normal',
         width,
         height: heightValue,
