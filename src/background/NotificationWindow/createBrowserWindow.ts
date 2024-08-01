@@ -65,7 +65,7 @@ export async function createBrowserWindow({
   }
   const url = makePopupRoute(`${initialRoute}?${params.toString()}`, type);
 
-  let window: { id?: number } | undefined;
+  let window: Windows.Window | undefined;
   try {
     window = await browser.windows.create({
       focused: true,
