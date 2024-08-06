@@ -19,12 +19,13 @@ import { Background } from 'src/ui/components/Background';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { isReadonlyContainer } from 'src/shared/types/validators';
-import { getAddressesPortfolio } from 'src/shared/analytics/shared/getTotalWalletsBalance';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import PortfolioIcon from 'jsx:src/ui/assets/portfolio.svg';
 import { Media } from 'src/ui/ui-kit/Media';
+import { useAddressPortfolio } from 'defi-sdk';
+import { ellipsis } from 'src/ui/shared/typography';
 import { WalletList } from './WalletList';
 import * as styles from './styles.module.css';
 
@@ -39,15 +40,12 @@ function PortfolioRow({ walletGroups }: { walletGroups: WalletGroup[] }) {
       );
   }, [walletGroups]);
 
-  const { data: portfolio, isLoading } = useQuery({
-    queryKey: ['getAddressesPortfolio', addresses, currency],
-    queryFn: () => getAddressesPortfolio({ addresses, currency }),
-    useErrorBoundary: true,
+  const { value: portfolio, isLoading } = useAddressPortfolio({
+    addresses,
+    currency,
+    portfolio_fields: 'all',
+    use_portfolio_service: true,
   });
-
-  if (isLoading || !portfolio) {
-    return null;
-  }
 
   return (
     <div className={styles.portfolio}>
@@ -58,13 +56,17 @@ function PortfolioRow({ walletGroups }: { walletGroups: WalletGroup[] }) {
           text={<UIText kind="small/regular">Portfolio</UIText>}
           detailText={
             <UIText kind="headline/h3">
-              <NeutralDecimals
-                parts={formatCurrencyToParts(
-                  portfolio.total_value || 0,
-                  'en',
-                  currency
-                )}
-              />
+              {isLoading || !portfolio ? (
+                ellipsis
+              ) : (
+                <NeutralDecimals
+                  parts={formatCurrencyToParts(
+                    portfolio.total_value || 0,
+                    'en',
+                    currency
+                  )}
+                />
+              )}
             </UIText>
           }
         />
