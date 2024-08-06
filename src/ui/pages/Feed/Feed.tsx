@@ -480,7 +480,7 @@ export function Feed() {
         maxHeight={getGrownTabMaxHeight(offsetValuesState)}
       >
         <div style={{ position: 'absolute', left: 0 }}>{feedFilters}</div>
-        {fetching ? <ViewLoading /> : <EmptyView text="No perks yet" />}
+        {fetching ? <ViewLoading /> : <EmptyView>No perks yet</EmptyView>}
       </CenteredFillViewportView>
     );
   }

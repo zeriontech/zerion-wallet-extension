@@ -26,6 +26,7 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { useStore } from '@store-unit/react';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { EmptyView } from 'src/ui/components/EmptyView';
 import {
   getCurrentTabsOffset,
   getGrownTabMaxHeight,
@@ -96,7 +97,7 @@ function useMinedAndPendingAddressActions({
             transactionObject,
             loadNetworkByChainId,
             currency,
-            client,
+            client
           )
         )
       );
@@ -161,7 +162,7 @@ function useMinedAndPendingAddressActions({
   ]);
 }
 
-function EmptyView({
+function HistoryEmptyView({
   hasFilters,
   onReset,
 }: {
@@ -169,24 +170,20 @@ function EmptyView({
   onReset(): void;
 }) {
   return (
-    <VStack gap={6} style={{ textAlign: 'center' }}>
-      <UIText kind="headline/hero">🥺</UIText>
-      <UIText kind="small/accent" color="var(--neutral-500)">
-        <VStack gap={4}>
-          <div>No transactions</div>
-          {hasFilters ? (
-            <UnstyledButton
-              onClick={onReset}
-              style={{ color: 'var(--primary)' }}
-              className={helperStyles.hoverUnderline}
-            >
-              Reset all filters
-            </UnstyledButton>
-          ) : null}
-        </VStack>
-      </UIText>
-      <Spacer height={10} />
-    </VStack>
+    <EmptyView>
+      <VStack gap={4}>
+        <div>No transactions</div>
+        {hasFilters ? (
+          <UnstyledButton
+            onClick={onReset}
+            style={{ color: 'var(--primary)' }}
+            className={helperStyles.hoverUnderline}
+          >
+            Reset all filters
+          </UnstyledButton>
+        ) : null}
+      </VStack>
+    </EmptyView>
   );
 }
 
@@ -297,7 +294,7 @@ export function HistoryList() {
         {isLoading ? (
           <ViewLoading kind="network" />
         ) : (
-          <EmptyView
+          <HistoryEmptyView
             hasFilters={Boolean(searchQuery || filterChain)}
             onReset={() => {
               setSearchQuery(undefined);
