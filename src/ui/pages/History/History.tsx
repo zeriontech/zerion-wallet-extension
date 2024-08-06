@@ -4,34 +4,28 @@ import { Client, useAddressActions } from 'defi-sdk';
 import { hashQueryKey, useQuery } from '@tanstack/react-query';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
-import { NetworkSelect } from 'src/ui/pages/Networks/NetworkSelect';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
-import { HStack } from 'src/ui/ui-kit/HStack';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
-import { UIText } from 'src/ui/ui-kit/UIText';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { pendingTransactionToAddressAction } from 'src/modules/ethereum/transactions/addressAction/creators';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
-import { NetworkIcon } from 'src/ui/components/NetworkIcon';
-import AllNetworksIcon from 'jsx:src/ui/assets/network.svg';
-import CloseIcon from 'jsx:src/ui/assets/close_solid.svg';
-import { Button } from 'src/ui/ui-kit/Button';
 import { useStore } from '@store-unit/react';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { EmptyView } from 'src/ui/components/EmptyView';
+import { NetworkBalance } from 'src/ui/pages/Overview/Positions/NetworkBalance';
 import {
   getCurrentTabsOffset,
   getGrownTabMaxHeight,
   offsetValues,
-} from '../Overview/getTabsOffset';
+} from 'src/ui/pages/Overview/getTabsOffset';
 import { ActionsList } from './ActionsList';
 import { ActionSearch } from './ActionSearch';
 import { isMatchForAllWords } from './matchSearcQuery';
@@ -188,15 +182,13 @@ function HistoryEmptyView({
 }
 
 export function HistoryList() {
-  const { networks } = useNetworks();
   const offsetValuesState = useStore(offsetValues);
   const [filterChain, setFilterChain] = useState<string | null>(null);
+
   const chain =
     filterChain && filterChain !== NetworkSelectValue.All
       ? createChain(filterChain)
       : null;
-
-  const chainValue = filterChain || NetworkSelectValue.All;
 
   const [searchQuery, setSearchQuery] = useState<string | undefined>();
   const {
@@ -206,21 +198,15 @@ export function HistoryList() {
     hasMore,
   } = useMinedAndPendingAddressActions({ chain, searchQuery });
 
-  const filterNetwork =
-    chainValue === NetworkSelectValue.All
-      ? null
-      : networks?.getNetworkByName(createChain(chainValue));
-
   const actionFilters = (
-    <VStack gap={8}>
-      <HStack
-        gap={8}
-        alignItems="center"
-        style={{
-          paddingInline: 16,
-          gridTemplateColumns: '1fr auto',
-        }}
-      >
+    <div style={{ paddingInline: 16 }}>
+      <VStack gap={8}>
+        <NetworkBalance
+          dappChain={null}
+          filterChain={filterChain}
+          onChange={setFilterChain}
+          value={null}
+        />
         <ActionSearch
           value={searchQuery}
           onChange={setSearchQuery}
@@ -231,56 +217,8 @@ export function HistoryList() {
             });
           }}
         />
-        <NetworkSelect
-          value={chainValue}
-          onChange={setFilterChain}
-          renderButton={({ value, openDialog }) => {
-            return (
-              <Button
-                kind="ghost"
-                size={36}
-                onClick={openDialog}
-                style={{ padding: 8 }}
-              >
-                {!filterNetwork || value === NetworkSelectValue.All ? (
-                  <AllNetworksIcon
-                    style={{ width: 20, height: 20 }}
-                    role="presentation"
-                  />
-                ) : (
-                  <NetworkIcon
-                    size={20}
-                    src={filterNetwork.icon_url}
-                    name={filterNetwork.name}
-                  />
-                )}
-              </Button>
-            );
-          }}
-        />
-      </HStack>
-      {filterNetwork ? (
-        <div style={{ paddingInline: 16 }}>
-          <Button
-            kind="regular"
-            size={32}
-            style={{
-              borderWidth: 2,
-              borderColor: 'var(--neutral-200)',
-              paddingInline: '12px 8px',
-            }}
-            onClick={() => setFilterChain(null)}
-          >
-            <HStack gap={4} alignItems="center">
-              <UIText kind="small/accent">{filterNetwork.name}</UIText>
-              <CloseIcon
-                style={{ width: 16, height: 16, color: 'var(--black)' }}
-              />
-            </HStack>
-          </Button>
-        </div>
-      ) : null}
-    </VStack>
+      </VStack>
+    </div>
   );
 
   if (!transactions?.length) {
