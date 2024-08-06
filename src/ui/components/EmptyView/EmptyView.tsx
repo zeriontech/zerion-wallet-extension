@@ -5,17 +5,17 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 
 export function EmptyView({
   emoji = '🥺',
-  text,
+  children,
 }: {
   emoji?: React.ReactNode;
-  text: React.ReactNode;
+  children: React.ReactNode;
 }) {
   return (
     <FillView>
       <VStack gap={6} style={{ textAlign: 'center' }}>
         <UIText kind="headline/hero">{emoji}</UIText>
         <UIText kind="small/accent" color="var(--neutral-500)">
-          {text}
+          {children}
         </UIText>
       </VStack>
     </FillView>

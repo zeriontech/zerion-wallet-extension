@@ -290,7 +290,7 @@ export function NonFungibleTokens({
                 }}
               />
               <div style={{ width: '100%', paddingTop: 164 }}>
-                <EmptyView text="No NFTs yet" />
+                <EmptyView>No NFTs yet</EmptyView>
               </div>
             </>
           )}
