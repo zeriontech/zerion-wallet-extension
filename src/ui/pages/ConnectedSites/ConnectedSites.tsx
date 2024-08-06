@@ -23,9 +23,9 @@ import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { EmptyView } from 'src/ui/components/EmptyView';
 import { PageTop } from 'src/ui/components/PageTop';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { FillView } from 'src/ui/components/FillView';
 import { ConnectedSite } from './ConnectedSite';
 
 function RevokeAllPermissionsComponent({
@@ -178,30 +178,45 @@ export function ConnectedSitesSearch({
   );
 }
 
-function ConnectedSitesEmptyView({
+function EmptyView({
+  hasConnectedSites,
   hasFilters,
   onReset,
 }: {
+  hasConnectedSites: boolean;
   hasFilters: boolean;
   onReset(): void;
 }) {
   return (
-    <EmptyView
-      text={
-        <VStack gap={4}>
-          <div>No connected DApps found</div>
-          {hasFilters ? (
-            <UnstyledButton
-              onClick={onReset}
-              style={{ color: 'var(--primary)' }}
-              className={helperStyles.hoverUnderline}
-            >
-              Reset all filters
-            </UnstyledButton>
-          ) : null}
+    <FillView>
+      {hasConnectedSites ? (
+        <VStack gap={6} style={{ textAlign: 'center' }}>
+          <UIText kind="headline/hero">🥺</UIText>
+          <UIText kind="small/accent" color="var(--neutral-500)">
+            <VStack gap={4}>
+              <div>No connected DApps found</div>
+              {hasFilters ? (
+                <UnstyledButton
+                  onClick={onReset}
+                  style={{ color: 'var(--primary)' }}
+                  className={helperStyles.hoverUnderline}
+                >
+                  Reset all filters
+                </UnstyledButton>
+              ) : null}
+            </VStack>
+          </UIText>
         </VStack>
-      }
-    />
+      ) : (
+        <UIText
+          kind="body/regular"
+          color="var(--neutral-500)"
+          style={{ padding: 20, textAlign: 'center' }}
+        >
+          You will see a list of connected DApps here
+        </UIText>
+      )}
+    </FillView>
   );
 }
 
@@ -217,7 +232,7 @@ function ConnectedSitesMain() {
     suspense: true,
   });
   const [searchQuery, setSearchQuery] = useState<string | undefined>();
-  const connectedSites = useMemo(() => {
+  const filteredConnectedSites = useMemo(() => {
     if (!searchQuery) {
       return allConnectedSites;
     }
@@ -230,15 +245,20 @@ function ConnectedSitesMain() {
   return (
     <PageColumn>
       <PageTop />
-      <ConnectedSitesSearch value={searchQuery} onChange={setSearchQuery} />
-      <Spacer height={24} />
-      {isLoading ? null : connectedSites?.length ? (
+      {allConnectedSites?.length ? (
+        <>
+          <ConnectedSitesSearch value={searchQuery} onChange={setSearchQuery} />
+          <Spacer height={24} />
+        </>
+      ) : null}
+      {isLoading ? null : filteredConnectedSites?.length ? (
         <ConnectedSitesList
-          items={connectedSites}
+          items={filteredConnectedSites}
           onRevokeAll={() => connectedSitesQuery.refetch()}
         />
       ) : (
-        <ConnectedSitesEmptyView
+        <EmptyView
+          hasConnectedSites={Boolean(allConnectedSites?.length)}
           hasFilters={Boolean(searchQuery)}
           onReset={() => setSearchQuery(undefined)}
         />
