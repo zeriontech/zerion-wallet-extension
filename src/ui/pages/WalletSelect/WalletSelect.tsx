@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { FillView } from 'src/ui/components/FillView';
@@ -17,7 +17,63 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Background } from 'src/ui/components/Background';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
+import type { WalletGroup } from 'src/shared/types/WalletGroup';
+import { isReadonlyContainer } from 'src/shared/types/validators';
+import { useCurrency } from 'src/modules/currency/useCurrency';
+import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
+import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
+import PortfolioIcon from 'jsx:src/ui/assets/portfolio.svg';
+import { Media } from 'src/ui/ui-kit/Media';
+import { useAddressPortfolio } from 'defi-sdk';
+import { ellipsis } from 'src/ui/shared/typography';
 import { WalletList } from './WalletList';
+import * as styles from './styles.module.css';
+
+function PortfolioRow({ walletGroups }: { walletGroups: WalletGroup[] }) {
+  const { currency } = useCurrency();
+
+  const addresses = useMemo(() => {
+    return walletGroups
+      .filter((group) => !isReadonlyContainer(group.walletContainer))
+      .flatMap((group) =>
+        group.walletContainer.wallets.map((wallet) => wallet.address)
+      );
+  }, [walletGroups]);
+
+  const { value: portfolio, isLoading } = useAddressPortfolio({
+    addresses,
+    currency,
+    portfolio_fields: 'all',
+    use_portfolio_service: true,
+  });
+
+  return (
+    <div className={styles.portfolio}>
+      <HStack gap={4} justifyContent="space-between" alignItems="center">
+        <Media
+          vGap={0}
+          image={<PortfolioIcon />}
+          text={<UIText kind="small/regular">Portfolio</UIText>}
+          detailText={
+            <UIText kind="headline/h3">
+              {isLoading || !portfolio ? (
+                ellipsis
+              ) : (
+                <NeutralDecimals
+                  parts={formatCurrencyToParts(
+                    portfolio.total_value || 0,
+                    'en',
+                    currency
+                  )}
+                />
+              )}
+            </UIText>
+          }
+        />
+      </HStack>
+    </div>
+  );
+}
 
 export function WalletSelect() {
   const navigate = useNavigate();
@@ -88,6 +144,9 @@ export function WalletSelect() {
       <PageColumn>
         {title}
         <Spacer height={10} />
+        {walletGroups.length > 1 ? (
+          <PortfolioRow walletGroups={walletGroups} />
+        ) : null}
         <VStack
           gap={2}
           style={{
