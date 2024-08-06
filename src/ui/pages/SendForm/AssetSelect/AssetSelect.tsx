@@ -39,10 +39,18 @@ import { ZStack } from 'src/ui/ui-kit/ZStack';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { useCustomValidity } from 'src/ui/shared/forms/useCustomValidity';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import GasIcon from 'jsx:src/ui/assets/gas.svg';
+import { useNetworks } from 'src/modules/networks/useNetworks';
 import type { BareAddressPosition } from '../../SwapForm/BareAddressPosition';
 import * as styles from './styles.module.css';
 
-function ResultItem({ addressAsset }: { addressAsset: BareAddressPosition }) {
+function ResultItem({
+  addressAsset,
+  isGasAsset,
+}: {
+  addressAsset: BareAddressPosition;
+  isGasAsset: boolean;
+}) {
   const { currency } = useCurrency();
   const { asset } = addressAsset;
   const { price } = asset;
@@ -66,16 +74,31 @@ function ResultItem({ addressAsset }: { addressAsset: BareAddressPosition }) {
           <TokenIcon size={36} src={asset.icon_url} symbol={asset.symbol} />
         }
         text={
-          <UIText
-            kind="body/accent"
+          <HStack
+            gap={4}
+            alignItems="center"
             style={{
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
+              gridTemplateColumns: isGasAsset ? '1fr auto' : '1fr',
+              justifySelf: 'start',
             }}
+            title={asset.name}
           >
-            {asset.name}
-          </UIText>
+            <UIText
+              kind="body/accent"
+              style={{
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+              }}
+            >
+              {asset.name}
+            </UIText>
+            {isGasAsset ? (
+              <div title="Token is used to cover gas fees">
+                <GasIcon style={{ display: 'block', width: 20, height: 20 }} />
+              </div>
+            ) : null}
+          </HStack>
         }
         vGap={0}
         detailText={
@@ -162,9 +185,17 @@ const isButtonOptionItem = (
     : false;
 };
 
-const Option = React.memo(({ item }: { item: BareAddressPosition }) => {
-  return <ResultItem addressAsset={item} />;
-});
+const Option = React.memo(
+  ({
+    item,
+    isGasAsset,
+  }: {
+    item: BareAddressPosition;
+    isGasAsset: boolean;
+  }) => {
+    return <ResultItem addressAsset={item} isGasAsset={isGasAsset} />;
+  }
+);
 
 function matches(inputValue: string | null, { asset }: BareAddressPosition) {
   if (!inputValue) {
@@ -430,6 +461,12 @@ function AssetSelectComponent({
       chain,
     });
 
+  const { networks } = useNetworks();
+  const gasAssetId = useMemo(() => {
+    const network = chain ? networks?.getNetworkByName(chain) : null;
+    return network?.native_asset?.id;
+  }, [networks, chain]);
+
   const listItems: Item[] = virtualList.getVirtualItems().map((row) => {
     const optionItem = optionItems[row.index];
     if (optionItem.type === ItemType.group) {
@@ -492,7 +529,7 @@ function AssetSelectComponent({
               },
             })}
           >
-            <Option item={item} />
+            <Option item={item} isGasAsset={item.asset.id === gasAssetId} />
           </SurfaceItemButton>
         ),
       };
