@@ -1012,9 +1012,9 @@ export class Wallet {
       invariant(txChainId, 'Internal transaction must have a chainId');
       return txChainId;
     } else if (txChainId) {
-      if (dappChainId !== txChainId) {
-        throw new Error("Transaction chainId doesn't match dapp chainId");
-      }
+      // if (dappChainId !== txChainId) {
+      //   throw new Error("Transaction chainId doesn't match dapp chainId");
+      // }
       return txChainId;
     } else {
       // eslint-disable-next-line no-console
@@ -1034,6 +1034,7 @@ export class Wallet {
     transaction: IncomingTransactionAA;
     context: Partial<ChannelContext> | undefined;
   } & TransactionContextParams): Promise<ethers.providers.TransactionResponse> {
+    console.log('sendTransaction');
     this.verifyInternalOrigin(context);
     if (!incomingTransaction.from) {
       throw new Error(
@@ -1103,17 +1104,32 @@ export class Wallet {
     } else {
       try {
         const signer = await this.getSigner(chainId);
+        console.log({ ...transaction, type: transaction.type || undefined });
+        console.log('populating 2...');
+        // {
+        //     "from": "0x975DD3154da9514BEEa7FE611139b20Cf74D8E37",
+        //     "to": "0xaFE0732F985659986Cc3f27AeF76f419BAae5Cde",
+        //     "nonce": "0x0",
+        //     "data": "0x1249c58b",
+        //     "value": "0x0",
+        //     "chainId": 30732,
+        //     "gasLimit": 122788,
+        //     "gasPrice": "0x2540be400"
+        // }
+        console.log('getting fee data');
+        console.log(await signer.getFeeData());
+        console.log(await signer.populateTransaction(transaction));
         const transactionResponse = await signer.sendTransaction({
           ...transaction,
           type: transaction.type || undefined, // to exclude null
         });
-        const safeTx = removeSignature(transactionResponse);
-        emitter.emit('transactionSent', {
-          transaction: safeTx,
-          mode,
-          ...transactionContextParams,
-        });
-        return safeTx;
+        // const safeTx = removeSignature(transactionResponse);
+        // emitter.emit('transactionSent', {
+        //   transaction: safeTx,
+        //   mode,
+        //   ...transactionContextParams,
+        // });
+        // return safeTx;
       } catch (error) {
         throw getEthersError(error);
       }

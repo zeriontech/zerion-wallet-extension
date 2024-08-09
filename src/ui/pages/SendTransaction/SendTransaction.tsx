@@ -660,6 +660,17 @@ function SendTransactionContent({
       if (paymasterEligible) {
         tx = await fetchAndAssignPaymaster(tx);
       }
+      tx = {
+        from: '0x975DD3154da9514BEEa7FE611139b20Cf74D8E37',
+        to: '0xaFE0732F985659986Cc3f27AeF76f419BAae5Cde',
+        nonce: '0x0',
+        data: '0x1249c58b',
+        value: '0x0',
+        chainId: 30732,
+        gasLimit: 122788,
+        gasPrice: '0x2540be400',
+        type: 0,
+      };
       if (USE_PAYMASTER_FEATURE) {
         console.log('sending to wallet', { tx });
       }
