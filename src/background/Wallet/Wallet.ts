@@ -131,6 +131,36 @@ async function prepareNonce<T extends { nonce?: BigNumberish; from?: string }>(
   }
 }
 
+function prepareTransactionType<
+  T extends {
+    type?: number;
+    maxFeePerGas?: BigNumberish;
+    maxPriorityFeePerGas?: BigNumberish;
+    gasPrice?: BigNumberish;
+  }
+>(transaction: T) {
+  if (transaction.type != null) {
+    return transaction;
+  }
+  if (
+    transaction.maxFeePerGas != null &&
+    transaction.maxPriorityFeePerGas != null
+  ) {
+    return {
+      ...transaction,
+      type: 2,
+    };
+  }
+  if (transaction.gasPrice != null) {
+    return {
+      ...transaction,
+      type: 0,
+    };
+  }
+  // we weren't able to populate transaction's type
+  return transaction;
+}
+
 export const INTERNAL_SYMBOL_CONTEXT = { origin: INTERNAL_ORIGIN_SYMBOL };
 
 type PublicMethodParams<T = undefined> = T extends undefined
@@ -967,6 +997,7 @@ export class Wallet {
     const networksStore = getNetworksStore(Model.getPreferences(this.record));
     const networks = await networksStore.loadNetworksByChainId(chainId);
     const nodeUrl = networks.getRpcUrlInternal(networks.getChainById(chainId));
+    console.log({ nodeUrl });
     if (FEATURE_PAYMASTER_ENABLED) {
       return new ZksProvider(nodeUrl);
     } else {
@@ -985,7 +1016,7 @@ export class Wallet {
     if (!currentWallet) {
       throw new Error('Signer wallet for this address is not found');
     }
-
+    console.log({ currentWallet });
     return toEthersWallet(currentWallet);
   }
 
@@ -1066,7 +1097,11 @@ export class Wallet {
     const txWithFee = await prepareGasAndNetworkFee(prepared, networks, {
       source: mode === 'testnet' ? 'testnet' : 'mainnet',
     });
-    const transaction = await prepareNonce(txWithFee, networks, chain);
+    // todo: remove after update to ethers v6
+    // ethers v5 throw error from getFeeData method for some chains with too big totalDifficulty param
+    // can be reproduced with https://chainlist.org/chain/30732
+    const txWithFeeAndType = await prepareTransactionType(txWithFee);
+    const transaction = await prepareNonce(txWithFeeAndType, networks, chain);
 
     const paymasterEligible =
       FEATURE_PAYMASTER_ENABLED &&
@@ -1102,37 +1137,36 @@ export class Wallet {
         throw getEthersError(error);
       }
     } else {
-      try {
-        const signer = await this.getSigner(chainId);
-        console.log({ ...transaction, type: transaction.type || undefined });
-        console.log('populating 2...');
-        // {
-        //     "from": "0x975DD3154da9514BEEa7FE611139b20Cf74D8E37",
-        //     "to": "0xaFE0732F985659986Cc3f27AeF76f419BAae5Cde",
-        //     "nonce": "0x0",
-        //     "data": "0x1249c58b",
-        //     "value": "0x0",
-        //     "chainId": 30732,
-        //     "gasLimit": 122788,
-        //     "gasPrice": "0x2540be400"
-        // }
-        console.log('getting fee data');
-        console.log(await signer.getFeeData());
-        console.log(await signer.populateTransaction(transaction));
-        const transactionResponse = await signer.sendTransaction({
-          ...transaction,
-          type: transaction.type || undefined, // to exclude null
-        });
-        // const safeTx = removeSignature(transactionResponse);
-        // emitter.emit('transactionSent', {
-        //   transaction: safeTx,
-        //   mode,
-        //   ...transactionContextParams,
-        // });
-        // return safeTx;
-      } catch (error) {
-        throw getEthersError(error);
-      }
+      // try {
+      const signer = await this.getSigner(chainId);
+      console.log({ ...transaction, type: transaction.type || undefined });
+      console.log('populating 2...');
+      // {
+      //     "from": "0x975DD3154da9514BEEa7FE611139b20Cf74D8E37",
+      //     "to": "0xaFE0732F985659986Cc3f27AeF76f419BAae5Cde",
+      //     "nonce": "0x0",
+      //     "data": "0x1249c58b",
+      //     "value": "0x0",
+      //     "chainId": 30732,
+      //     "gasLimit": 122788,
+      //     "gasPrice": "0x2540be400"
+      // }
+      console.log('getting fee data');
+      console.log(await signer.populateTransaction(transaction));
+      const transactionResponse = await signer.sendTransaction({
+        ...transaction,
+        type: transaction.type || undefined, // to exclude null
+      });
+      // const safeTx = removeSignature(transactionResponse);
+      // emitter.emit('transactionSent', {
+      //   transaction: safeTx,
+      //   mode,
+      //   ...transactionContextParams,
+      // });
+      // return safeTx;
+      // } catch (error) {
+      //   throw getEthersError(error);
+      // }
     }
   }
 

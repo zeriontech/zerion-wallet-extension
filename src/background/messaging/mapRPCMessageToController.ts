@@ -56,6 +56,7 @@ export function mapRPCMessageToController<T>(
           return formatJsonRpcResultForPort(id, result);
         },
         (error: Error | DOMException | ErrorResponse) => {
+          throw error;
           return formatJsonRpcWalletError(
             id,
             error instanceof DOMException
