@@ -451,7 +451,7 @@ export class WalletRecordModel {
           const { wallets } = group.walletContainer;
           group.walletContainer = new ReadonlyAccountContainer(wallets);
         } else {
-          throw new Error(`Unexpected Account Container`);
+          throw new Error('Unexpected Account Container');
         }
         return group;
       })

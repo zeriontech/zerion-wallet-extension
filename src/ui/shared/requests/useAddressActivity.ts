@@ -23,7 +23,7 @@ export async function getAddressActivity(
 ) {
   return new Promise<Response | null>((resolve, reject) => {
     const rejectTimerId = setTimeout(
-      () => reject(new Error(`Request timed out: getAddressActivity`)),
+      () => reject(new Error('Request timed out: getAddressActivity')),
       10000
     );
     client.cachedSubscribe<Response, typeof namespace, typeof scope>({

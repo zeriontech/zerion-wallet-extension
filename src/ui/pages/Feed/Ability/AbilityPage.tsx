@@ -120,7 +120,7 @@ export function AbilityPage() {
             ['--button-background' as string]: 'var(--white)',
           }}
           onClick={() => navigate(getBackOrHome() as number)}
-          title={`Press "backspace" to navigate back`}
+          title={'Press "backspace" to navigate back'}
         />
       </Content>
       <Content name="navigation-bar-end">

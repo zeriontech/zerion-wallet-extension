@@ -241,7 +241,7 @@ export const SurfaceList = React.forwardRef(
                 // not sure if this looks good yet. Seems too thick
                 // className={noSeparator ? s.noSeparator : undefined}
                 style={{
-                  padding: isInteractiveItem ? undefined : `0 16px`,
+                  padding: isInteractiveItem ? undefined : '0 16px',
                   ...style,
                 }}
               >
