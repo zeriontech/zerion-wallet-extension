@@ -20,6 +20,8 @@ import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAcc
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { invariant } from 'src/shared/invariant';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
+import { usePreferences } from 'src/ui/features/preferences';
+import { wait } from 'src/shared/wait';
 import { NetworkFee } from '../../../SendTransaction/NetworkFee';
 import { useTransactionFee } from '../../../SendTransaction/TransactionConfiguration/useTransactionFee';
 import {
@@ -45,6 +47,7 @@ export function SpeedUp({
   onSuccess: () => void;
 }) {
   const { address } = wallet;
+  const { preferences } = usePreferences();
   const { transaction: originalTransaction } = addressAction;
   const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
   const transaction = useMemo(() => {
@@ -109,7 +112,12 @@ export function SpeedUp({
     // a global onError handler (src/ui/shared/requests/queryClient.ts)
     // TODO: refactor to just emit error directly from the mutationFn
     onMutate: () => 'sendTransaction',
-    onSuccess,
+    onSuccess: async () => {
+      if (preferences?.enableHoldToSignButton) {
+        await wait(500);
+      }
+      onSuccess();
+    },
   });
   return (
     <>
@@ -199,11 +207,14 @@ export function SpeedUp({
             >
               Back
             </Button>
-            <SignTransactionButton
-              wallet={wallet}
-              ref={signTxBtnRef}
-              onClick={() => sendTransaction()}
-            />
+            {preferences ? (
+              <SignTransactionButton
+                wallet={wallet}
+                ref={signTxBtnRef}
+                onClick={() => sendTransaction()}
+                holdToSign={preferences.enableHoldToSignButton}
+              />
+            ) : null}
           </div>
         </VStack>
       </VStack>

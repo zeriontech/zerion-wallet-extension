@@ -25,6 +25,8 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import type { SignMsgBtnHandle } from 'src/ui/components/SignMessageButton';
 import { SignMessageButton } from 'src/ui/components/SignMessageButton';
+import { usePreferences } from 'src/ui/features/preferences';
+import { wait } from 'src/shared/wait';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 
 function MessageRow({ message }: { message: string }) {
@@ -58,6 +60,7 @@ function SignMessageContent({
 }) {
   const [params] = useSearchParams();
   const windowId = params.get('windowId');
+  const { preferences } = usePreferences();
   invariant(windowId, 'windowId get-parameter is required');
   const handleSignSuccess = (signature: string) =>
     windowPort.confirm(windowId, signature);
@@ -79,7 +82,13 @@ function SignMessageContent({
     // a global onError handler (src/ui/shared/requests/queryClient.ts)
     // TODO: refactor to just emit error directly from the mutationFn
     onMutate: () => 'signMessage',
-    onSuccess: handleSignSuccess,
+    onSuccess: async (signature) => {
+      if (preferences?.enableHoldToSignButton) {
+        // small delay to show success state to the user before closing the popup
+        await wait(500);
+      }
+      handleSignSuccess(signature);
+    },
   });
 
   const originForHref = useMemo(() => prepareForHref(origin), [origin]);
@@ -166,11 +175,14 @@ function SignMessageContent({
             >
               Cancel
             </Button>
-            <SignMessageButton
-              ref={signMsgBtnRef}
-              wallet={wallet}
-              onClick={() => personalSign()}
-            />
+            {preferences ? (
+              <SignMessageButton
+                ref={signMsgBtnRef}
+                wallet={wallet}
+                onClick={() => personalSign()}
+                holdToSign={preferences.enableHoldToSignButton}
+              />
+            ) : null}
           </div>
         </VStack>
       </PageStickyFooter>

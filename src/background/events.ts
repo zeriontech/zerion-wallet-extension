@@ -70,5 +70,6 @@ export const emitter = createNanoEvents<{
     state: GlobalPreferencesState,
     prevState: GlobalPreferencesState
   ) => void;
+  holdToSignPreferenceChange: (active: boolean) => void;
   eip6963SupportDetected: (data: { origin: string }) => void;
 }>();

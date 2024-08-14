@@ -7,8 +7,14 @@ import { isDeviceAccount } from 'src/shared/types/validators';
 import type { SignMessageHandle } from 'src/ui/pages/HardwareWalletConnection/HardwareSignMessage';
 import { HardwareSignMessage } from 'src/ui/pages/HardwareWalletConnection/HardwareSignMessage';
 import { walletPort } from 'src/ui/shared/channels';
-import { Button, type Kind as ButtonKind } from 'src/ui/ui-kit/Button';
+import {
+  Button,
+  HoldableButton,
+  type Kind as ButtonKind,
+} from 'src/ui/ui-kit/Button';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { WithReadonlyWarningDialog } from '../SignTransactionButton/ReadonlyWarningDialog';
 
 type PersonalSignParams = MessageContextParams & {
@@ -31,11 +37,13 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
     buttonTitle,
     buttonKind = 'primary',
     onClick,
+    holdToSign,
     ...buttonProps
   }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
     wallet: ExternallyOwnedAccount;
     buttonTitle?: React.ReactNode;
     buttonKind?: ButtonKind;
+    holdToSign: boolean | null;
   },
   ref: React.Ref<SignMsgBtnHandle>
 ) {
@@ -91,6 +99,15 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
 
   const isLoading =
     personalSignMutation.isLoading || signTypedData_v4Mutation.isLoading;
+  const isSuccess =
+    personalSignMutation.isSuccess || signTypedData_v4Mutation.isSuccess;
+  const isError =
+    personalSignMutation.isError || signTypedData_v4Mutation.isError;
+
+  // there is a small delay after using a holdable button
+  // button should be disabled after successful sign to prevent a duplicating call
+  const disabled = isLoading || Boolean(holdToSign && isSuccess);
+  const title = buttonTitle || 'Sign';
 
   return isDeviceAccount(wallet) ? (
     <HardwareSignMessage
@@ -98,25 +115,52 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
       derivationPath={wallet.derivationPath}
       isSigning={isLoading}
       children={children}
-      buttonTitle={buttonTitle}
+      buttonTitle={isSuccess ? 'Signed' : buttonTitle}
       buttonKind={buttonKind}
       onClick={onClick}
+      disabled={disabled}
       {...buttonProps}
     />
   ) : (
     <WithReadonlyWarningDialog
       address={wallet.address}
       onClick={onClick}
-      render={({ handleClick }) => (
-        <Button
-          disabled={isLoading}
-          onClick={handleClick}
-          kind={buttonKind}
-          {...buttonProps}
-        >
-          {children || (isLoading ? 'Signing...' : buttonTitle || 'Sign')}
-        </Button>
-      )}
+      render={({ handleClick }) =>
+        holdToSign ? (
+          <HoldableButton
+            text={`Hold to ${title}`}
+            successText={
+              <HStack gap={4} alignItems="center">
+                <CheckIcon
+                  style={{
+                    width: 20,
+                    height: 20,
+                    color: 'var(--positive-500)',
+                  }}
+                />
+                <span>Signed</span>
+              </HStack>
+            }
+            submittingText="Sending..."
+            onClick={handleClick}
+            success={isSuccess}
+            submitting={isLoading}
+            disabled={disabled}
+            error={isError}
+            kind={buttonKind}
+            {...buttonProps}
+          />
+        ) : (
+          <Button
+            disabled={disabled}
+            onClick={handleClick}
+            kind={buttonKind}
+            {...buttonProps}
+          >
+            {children || (isLoading ? 'Signing...' : title)}
+          </Button>
+        )
+      }
     />
   );
 });

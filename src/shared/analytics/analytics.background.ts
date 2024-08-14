@@ -107,6 +107,10 @@ function trackAppEvents({ account }: { account: Account }) {
         addressAction,
         quote,
       });
+      const preferences = await account
+        .getCurrentWallet()
+        .getPreferences({ context: INTERNAL_SYMBOL_CONTEXT });
+
       const params = createBaseParams({
         request_name: 'signed_transaction',
         screen_name: origin === initiator ? 'Transaction Request' : pathname,
@@ -127,6 +131,7 @@ function trackAppEvents({ account }: { account: Account }) {
         network_fee: null, // TODO
         network_fee_value: feeValueCommon,
         contract_type: quote?.contract_metadata?.name ?? null,
+        hold_sign_button: Boolean(preferences.enableHoldToSignButton),
         ...addressActionAnalytics,
       });
       sendToMetabase('signed_transaction', params);
@@ -139,7 +144,7 @@ function trackAppEvents({ account }: { account: Account }) {
     }
   );
 
-  function handleSign({
+  async function handleSign({
     type,
     initiator,
     address,
@@ -172,6 +177,10 @@ function trackAppEvents({ account }: { account: Account }) {
       messageSigned: 'personal_sign',
     } as const;
 
+    const preferences = await account
+      .getCurrentWallet()
+      .getPreferences({ context: INTERNAL_SYMBOL_CONTEXT });
+
     const params = createBaseParams({
       request_name: 'signed_message',
       /* @deprecated */
@@ -184,6 +193,7 @@ function trackAppEvents({ account }: { account: Account }) {
       address,
       wallet_provider: getProvider(address),
       dapp_domain: isInternalOrigin ? null : origin,
+      hold_sign_button: Boolean(preferences.enableHoldToSignButton),
     });
     sendToMetabase('signed_message', params);
     const mixpanelParams = omit(params, [
@@ -237,6 +247,15 @@ function trackAppEvents({ account }: { account: Account }) {
         sendToMetabase('metamask_mode', params);
       });
     });
+  });
+
+  emitter.on('holdToSignPreferenceChange', (active) => {
+    const params = createBaseParams({
+      request_name: 'hold_to_sign_prerefence',
+      active,
+    });
+    const mixpanelParams = omit(params, ['request_name']);
+    mixpanelTrack(account, 'Experiments: Hold Sign Button', mixpanelParams);
   });
 
   emitter.on('walletCreated', ({ walletContainer, origin }) => {

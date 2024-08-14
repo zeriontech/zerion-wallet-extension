@@ -12,7 +12,13 @@ import {
   type SignTransactionHandle,
 } from 'src/ui/pages/HardwareWalletConnection/HardwareSignTransaction';
 import { walletPort } from 'src/ui/shared/channels';
-import { Button, type Kind as ButtonKind } from 'src/ui/ui-kit/Button';
+import {
+  Button,
+  HoldableButton,
+  type Kind as ButtonKind,
+} from 'src/ui/ui-kit/Button';
+import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
+import { HStack } from 'src/ui/ui-kit/HStack';
 import { WithReadonlyWarningDialog } from './ReadonlyWarningDialog';
 
 type SendTxParams = TransactionContextParams & {
@@ -35,12 +41,14 @@ export const SignTransactionButton = React.forwardRef(
       buttonKind = 'primary',
       isLoading: isLoadingProp,
       disabled: disabledAttr,
+      holdToSign,
       ...buttonProps
     }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
       wallet: ExternallyOwnedAccount;
       buttonTitle?: React.ReactNode;
       buttonKind?: ButtonKind;
       isLoading?: boolean;
+      holdToSign: boolean | null;
     },
     ref: React.Ref<SendTxBtnHandle>
   ) {
@@ -69,11 +77,17 @@ export const SignTransactionButton = React.forwardRef(
         }
       },
     });
+
     useImperativeHandle(ref, () => ({ sendTransaction }));
 
     const isLoading = isLoadingProp || sendTxMutation.isLoading;
     const isSending = sendTxMutation.isLoading;
-    const disabled = isLoading || disabledAttr;
+
+    // there is a small delay after using a holdable button
+    // button should be disabled after successful sign to prevent a duplicating call
+    const disabled =
+      isLoading || (holdToSign && sendTxMutation.isSuccess) || disabledAttr;
+    const title = buttonTitle || 'Confirm';
 
     return isDeviceAccount(wallet) ? (
       <HardwareSignTransaction
@@ -81,26 +95,59 @@ export const SignTransactionButton = React.forwardRef(
         derivationPath={wallet.derivationPath}
         isSending={isSending}
         children={children}
-        buttonTitle={isLoadingProp ? 'Preparing...' : buttonTitle}
+        buttonTitle={
+          sendTxMutation.isSuccess
+            ? 'Sent'
+            : isLoadingProp
+            ? 'Preparing...'
+            : buttonTitle
+        }
         buttonKind={buttonKind}
         onClick={onClick}
-        disabled={disabledAttr}
+        disabled={disabled}
         {...buttonProps}
       />
     ) : (
       <WithReadonlyWarningDialog
         address={wallet.address}
         onClick={onClick}
-        render={({ handleClick }) => (
-          <Button
-            disabled={disabled}
-            onClick={handleClick}
-            kind={buttonKind}
-            {...buttonProps}
-          >
-            {children || (isLoading ? 'Sending...' : buttonTitle || 'Confirm')}
-          </Button>
-        )}
+        render={({ handleClick }) => {
+          return holdToSign ? (
+            <HoldableButton
+              text={`Hold to ${title}`}
+              successText={
+                <HStack gap={4} alignItems="center">
+                  <CheckIcon
+                    style={{
+                      width: 20,
+                      height: 20,
+                      color: 'var(--positive-500)',
+                    }}
+                  />
+                  <span>Sent</span>
+                </HStack>
+              }
+              submittingText="Sending..."
+              onClick={handleClick}
+              success={sendTxMutation.isSuccess}
+              submitting={sendTxMutation.isLoading}
+              error={sendTxMutation.isError}
+              disabled={disabled}
+              kind={buttonKind}
+              {...buttonProps}
+            />
+          ) : (
+            <Button
+              disabled={disabled}
+              onClick={handleClick}
+              kind={buttonKind}
+              {...buttonProps}
+            >
+              {children ||
+                (isLoading ? 'Sending...' : buttonTitle || 'Confirm')}
+            </Button>
+          );
+        }}
       />
     );
   }

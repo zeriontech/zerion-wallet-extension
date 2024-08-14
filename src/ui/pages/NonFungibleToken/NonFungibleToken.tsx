@@ -207,6 +207,7 @@ export function NonFungibleToken() {
                       </HStack>
                     }
                     disabled={promoteTokenMutation.isLoading}
+                    holdToSign={false}
                   />
                 )}
               </VStack>

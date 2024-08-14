@@ -55,6 +55,8 @@ import { hasCriticalWarning } from 'src/ui/components/InterpretationState/Interp
 import type { SignMsgBtnHandle } from 'src/ui/components/SignMessageButton';
 import { SignMessageButton } from 'src/ui/components/SignMessageButton';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { usePreferences } from 'src/ui/features/preferences';
+import { wait } from 'src/shared/wait';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
@@ -136,6 +138,7 @@ function TypedDataDefaultView({
   onOpenAdvancedView: () => void;
 }) {
   const [params] = useSearchParams();
+  const { preferences } = usePreferences();
 
   const addressAction = interpretation?.action;
   const recipientAddress = addressAction?.label?.display_value.wallet_address;
@@ -182,7 +185,12 @@ function TypedDataDefaultView({
       // a global onError handler (src/ui/shared/requests/queryClient.ts)
       // TODO: refactor to just emit error directly from the mutationFn
       onMutate: () => '_signTypedData',
-      onSuccess: onSignSuccess,
+      onSuccess: async (signature) => {
+        if (preferences?.enableHoldToSignButton) {
+          await wait(500);
+        }
+        onSignSuccess(signature);
+      },
     }
   );
 
@@ -348,34 +356,42 @@ function TypedDataDefaultView({
               >
                 Cancel
               </Button>
-
-              <SignMessageButton
-                wallet={wallet}
-                ref={signMsgBtnRef}
-                onClick={() => {
-                  if (shouldScrollBeforeSigning) {
-                    scrollSigningData();
-                  } else {
-                    signTypedData_v4();
+              {preferences ? (
+                <SignMessageButton
+                  wallet={wallet}
+                  ref={signMsgBtnRef}
+                  onClick={() => {
+                    if (shouldScrollBeforeSigning) {
+                      scrollSigningData();
+                    } else {
+                      signTypedData_v4();
+                    }
+                  }}
+                  buttonKind={
+                    interpretationHasCriticalWarning ? 'danger' : 'primary'
                   }
-                }}
-                buttonKind={
-                  interpretationHasCriticalWarning ? 'danger' : 'primary'
-                }
-                buttonTitle={
-                  interpretationHasCriticalWarning
-                    ? 'Proceed Anyway'
-                    : undefined
-                }
-                children={
-                  shouldScrollBeforeSigning ? (
-                    <HStack gap={8} alignItems="center" justifyContent="center">
-                      <span>Scroll</span>
-                      <ArrowDownIcon style={{ width: 24, height: 24 }} />
-                    </HStack>
-                  ) : null
-                }
-              />
+                  buttonTitle={
+                    interpretationHasCriticalWarning
+                      ? 'Proceed Anyway'
+                      : undefined
+                  }
+                  children={
+                    shouldScrollBeforeSigning ? (
+                      <HStack
+                        gap={8}
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <span>Scroll</span>
+                        <ArrowDownIcon style={{ width: 24, height: 24 }} />
+                      </HStack>
+                    ) : null
+                  }
+                  holdToSign={
+                    preferences.enableHoldToSignButton && seenSigningData
+                  }
+                />
+              ) : null}
             </div>
           </VStack>
         </div>
