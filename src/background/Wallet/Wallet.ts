@@ -131,6 +131,36 @@ async function prepareNonce<T extends { nonce?: BigNumberish; from?: string }>(
   }
 }
 
+function prepareTransactionType<
+  T extends {
+    type?: number;
+    maxFeePerGas?: BigNumberish;
+    maxPriorityFeePerGas?: BigNumberish;
+    gasPrice?: BigNumberish;
+  }
+>(transaction: T) {
+  if (transaction.type != null) {
+    return transaction;
+  }
+  if (
+    transaction.maxFeePerGas != null &&
+    transaction.maxPriorityFeePerGas != null
+  ) {
+    return {
+      ...transaction,
+      type: 2,
+    };
+  }
+  if (transaction.gasPrice != null) {
+    return {
+      ...transaction,
+      type: 0,
+    };
+  }
+  // we weren't able to populate transaction's type
+  return transaction;
+}
+
 export const INTERNAL_SYMBOL_CONTEXT = { origin: INTERNAL_ORIGIN_SYMBOL };
 
 type PublicMethodParams<T = undefined> = T extends undefined
@@ -1065,7 +1095,11 @@ export class Wallet {
     const txWithFee = await prepareGasAndNetworkFee(prepared, networks, {
       source: mode === 'testnet' ? 'testnet' : 'mainnet',
     });
-    const transaction = await prepareNonce(txWithFee, networks, chain);
+    // todo: remove after update to ethers v6
+    // ethers v5 throw error from getFeeData method for some chains with too big totalDifficulty param
+    // can be reproduced with https://chainlist.org/chain/30732
+    const txWithFeeAndType = await prepareTransactionType(txWithFee);
+    const transaction = await prepareNonce(txWithFeeAndType, networks, chain);
 
     const paymasterEligible =
       FEATURE_PAYMASTER_ENABLED &&
