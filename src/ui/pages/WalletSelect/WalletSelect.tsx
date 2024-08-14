@@ -24,8 +24,9 @@ import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import PortfolioIcon from 'jsx:src/ui/assets/portfolio.svg';
 import { Media } from 'src/ui/ui-kit/Media';
-import { useAddressPortfolio } from 'defi-sdk';
+import { useAddressPortfolioDecomposition } from 'defi-sdk';
 import { ellipsis } from 'src/ui/shared/typography';
+import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { WalletList } from './WalletList';
 import * as styles from './styles.module.css';
 
@@ -40,12 +41,13 @@ function PortfolioRow({ walletGroups }: { walletGroups: WalletGroup[] }) {
       );
   }, [walletGroups]);
 
-  const { value: portfolio, isLoading } = useAddressPortfolio({
-    addresses,
-    currency,
-    portfolio_fields: 'all',
-    use_portfolio_service: true,
-  });
+  const { value: portflio, isLoading } = useAddressPortfolioDecomposition(
+    {
+      addresses,
+      currency,
+    },
+    { enabled: true, client: useDefiSdkClient() }
+  );
 
   return (
     <div className={styles.portfolio}>
@@ -56,12 +58,12 @@ function PortfolioRow({ walletGroups }: { walletGroups: WalletGroup[] }) {
           text={<UIText kind="small/regular">Portfolio</UIText>}
           detailText={
             <UIText kind="headline/h3">
-              {isLoading || !portfolio ? (
+              {isLoading || !portflio ? (
                 ellipsis
               ) : (
                 <NeutralDecimals
                   parts={formatCurrencyToParts(
-                    portfolio.total_value || 0,
+                    portflio.total_value || 0,
                     'en',
                     currency
                   )}
@@ -82,6 +84,15 @@ export function WalletSelect() {
     queryFn: () => walletPort.request('uiGetWalletGroups'),
     useErrorBoundary: true,
   });
+
+  const ownedAddressesCount = useMemo(
+    () =>
+      (walletGroups || [])
+        .filter((group) => !isReadonlyContainer(group.walletContainer))
+        .reduce((sum, group) => sum + group.walletContainer.wallets.length, 0),
+    [walletGroups]
+  );
+
   const { singleAddress, refetch } = useAddressParams();
   const setCurrentAddressMutation = useMutation({
     mutationFn: (address: string) => setCurrentAddress({ address }),
@@ -126,6 +137,7 @@ export function WalletSelect() {
       }
     />
   );
+
   if (!walletGroups?.length) {
     return (
       <PageColumn>
@@ -144,7 +156,7 @@ export function WalletSelect() {
       <PageColumn>
         {title}
         <Spacer height={10} />
-        {walletGroups.length > 1 ? (
+        {ownedAddressesCount > 1 ? (
           <PortfolioRow walletGroups={walletGroups} />
         ) : null}
         <VStack
