@@ -29,7 +29,7 @@ function ConnectedSitesPageLink() {
       kind="neutral"
       size={48}
       as={UnstyledLink}
-      to={`/connected-sites`}
+      to="/connected-sites"
       onMouseEnter={hoverTrigger}
       className="parent-hover"
       style={{

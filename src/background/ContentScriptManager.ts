@@ -13,7 +13,7 @@ function setActiveIcon({ tabId }: { tabId?: number }) {
     browser.action.setIcon({
       tabId,
       path: new URL(
-        `../images/logo-icon-dev-128.png`,
+        '../images/logo-icon-dev-128.png',
         import.meta.url
       ).toString(),
     });
@@ -21,10 +21,10 @@ function setActiveIcon({ tabId }: { tabId?: number }) {
     browser.action.setIcon({
       tabId,
       path: {
-        16: new URL(`../images/logo-icon-16.png`, import.meta.url).toString(),
-        32: new URL(`../images/logo-icon-32.png`, import.meta.url).toString(),
-        48: new URL(`../images/logo-icon-48.png`, import.meta.url).toString(),
-        128: new URL(`../images/logo-icon-128.png`, import.meta.url).toString(),
+        16: new URL('../images/logo-icon-16.png', import.meta.url).toString(),
+        32: new URL('../images/logo-icon-32.png', import.meta.url).toString(),
+        48: new URL('../images/logo-icon-48.png', import.meta.url).toString(),
+        128: new URL('../images/logo-icon-128.png', import.meta.url).toString(),
       },
     });
   }
@@ -36,19 +36,19 @@ function setPausedIcon({ tabId }: { tabId?: number }) {
     tabId,
     path: {
       16: new URL(
-        `../images/logo-icon-16-disabled.png`,
+        '../images/logo-icon-16-disabled.png',
         import.meta.url
       ).toString(),
       32: new URL(
-        `../images/logo-icon-32-disabled.png`,
+        '../images/logo-icon-32-disabled.png',
         import.meta.url
       ).toString(),
       48: new URL(
-        `../images/logo-icon-48-disabled.png`,
+        '../images/logo-icon-48-disabled.png',
         import.meta.url
       ).toString(),
       128: new URL(
-        `../images/logo-icon-128-disabled.png`,
+        '../images/logo-icon-128-disabled.png',
         import.meta.url
       ).toString(),
     },

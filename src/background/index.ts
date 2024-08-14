@@ -36,7 +36,7 @@ globalThis.addEventListener('activate', (_event) => {
 
 if (process.env.NODE_ENV === 'development') {
   // Set different icon for development
-  const icon = new URL(`../images/logo-icon-dev-128.png`, import.meta.url);
+  const icon = new URL('../images/logo-icon-dev-128.png', import.meta.url);
   browser.action.setIcon({
     path: icon.toString(),
   });

@@ -71,9 +71,10 @@ export class SiweMessage {
   private static readonly VERSION = '\\n+Version: (?<version>[0-9]+)?';
   private static readonly CHAIN_ID = '(\\n+Chain ID: (?<chainId>[0-9]+))?';
   private static readonly NONCE = '(\\n+Nonce: (?<nonce>[a-zA-Z0-9]{8,}))?';
-  private static readonly ISSUED_AT = `(\\n+Issued At: (?<issuedAt>(.*)))?`;
-  private static readonly EXPIRATION_TIME = `(\\n+Expiration Time: (?<expirationTime>(.*)))?`;
-  private static readonly NOT_BEFORE = `(\\n+Not Before: (?<notBefore>(.*)))?`;
+  private static readonly ISSUED_AT = '(\\n+Issued At: (?<issuedAt>(.*)))?';
+  private static readonly EXPIRATION_TIME =
+    '(\\n+Expiration Time: (?<expirationTime>(.*)))?';
+  private static readonly NOT_BEFORE = '(\\n+Not Before: (?<notBefore>(.*)))?';
 
   private static readonly REQUEST_ID =
     "(\\n+Request ID: (?<requestId>[-._~!$&'()*+,;=:@%a-zA-Z0-9]*))?";
