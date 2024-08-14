@@ -97,6 +97,7 @@ export function SignInWithEthereum() {
     onMutate: () => 'signMessage',
     onSuccess: async (signature) => {
       if (preferences?.enableHoldToSignButton) {
+        // small delay to show success state to the user before closing the popup
         await wait(500);
       }
       handleSignSuccess(signature);

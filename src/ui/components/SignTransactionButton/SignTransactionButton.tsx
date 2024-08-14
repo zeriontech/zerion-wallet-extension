@@ -48,7 +48,7 @@ export const SignTransactionButton = React.forwardRef(
       buttonTitle?: React.ReactNode;
       buttonKind?: ButtonKind;
       isLoading?: boolean;
-      holdToSign: boolean;
+      holdToSign: boolean | null;
     },
     ref: React.Ref<SendTxBtnHandle>
   ) {
@@ -85,7 +85,8 @@ export const SignTransactionButton = React.forwardRef(
 
     // there is a small delay after using a holdable button
     // button should be disabled after successful sign to prevent a duplicating call
-    const disabled = isLoading || sendTxMutation.isSuccess || disabledAttr;
+    const disabled =
+      isLoading || (holdToSign && sendTxMutation.isSuccess) || disabledAttr;
     const title = buttonTitle || 'Confirm';
 
     return isDeviceAccount(wallet) ? (

@@ -155,9 +155,11 @@ const ButtonElement = <As extends ElementType = 'button'>(
         }}
         onMouseUp={handleMouseUp}
         onKeyDown={(e) => {
-          e.preventDefault();
-          if (e.key === 'Enter' && innerState === 'idle') {
-            handleMouseDown();
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            if (innerState === 'idle') {
+              handleMouseDown();
+            }
           }
         }}
         onKeyUp={handleMouseUp}

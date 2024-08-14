@@ -106,7 +106,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
 
   // there is a small delay after using a holdable button
   // button should be disabled after successful sign to prevent a duplicating call
-  const disabled = isLoading || isSuccess;
+  const disabled = isLoading || Boolean(holdToSign && isSuccess);
   const title = buttonTitle || 'Sign';
 
   return isDeviceAccount(wallet) ? (

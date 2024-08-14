@@ -212,7 +212,7 @@ export function SpeedUp({
                 wallet={wallet}
                 ref={signTxBtnRef}
                 onClick={() => sendTransaction()}
-                holdToSign={Boolean(preferences.enableHoldToSignButton)}
+                holdToSign={preferences.enableHoldToSignButton}
               />
             ) : null}
           </div>

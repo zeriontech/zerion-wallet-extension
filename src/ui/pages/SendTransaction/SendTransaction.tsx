@@ -648,6 +648,7 @@ function SendTransactionContent({
     tx: ethers.providers.TransactionResponse
   ) {
     if (preferences?.enableHoldToSignButton) {
+      // small delay to show success state to the user before closing the popup
       await wait(500);
     }
     const windowId = params.get('windowId');
@@ -809,7 +810,7 @@ function SendTransactionContent({
                       ? 'Proceed Anyway'
                       : undefined
                   }
-                  holdToSign={Boolean(preferences.enableHoldToSignButton)}
+                  holdToSign={preferences.enableHoldToSignButton}
                 />
               ) : null}
             </div>
