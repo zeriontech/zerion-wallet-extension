@@ -131,6 +131,8 @@ async function prepareNonce<T extends { nonce?: BigNumberish; from?: string }>(
   }
 }
 
+// NOTE: this is a temporary helper to avoid ethers v5 error when populating transactions for some chains
+// TODO: remove after update to ethers v6
 function prepareTransactionType<
   T extends {
     type?: number;
@@ -1095,7 +1097,7 @@ export class Wallet {
     const txWithFee = await prepareGasAndNetworkFee(prepared, networks, {
       source: mode === 'testnet' ? 'testnet' : 'mainnet',
     });
-    // todo: remove after update to ethers v6
+    // TODO: remove `prepareTransactionType` helper after update to ethers v6
     // ethers v5 throws error inside `getFeeData` for some chains with too big totalDifficulty param
     // can be reproduced with https://chainlist.org/chain/30732
     const txWithFeeAndType = await prepareTransactionType(txWithFee);
