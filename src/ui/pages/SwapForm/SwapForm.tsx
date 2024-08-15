@@ -16,7 +16,6 @@ import React, {
   useState,
 } from 'react';
 import SettingsIcon from 'jsx:src/ui/assets/settings-sliders.svg';
-import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
@@ -93,6 +92,7 @@ import {
 import { ProtocolFeeLine } from './shared/ProtocolFeeLine';
 import { SlippageSettings } from './SlippageSettings';
 import { getQuotesErrorMessage } from './Quotes/getQuotesErrorMessage';
+import { SlippageLine } from './SlippageSettings/SlippageLine';
 
 const rootNode = getRootDomNode();
 
@@ -497,24 +497,14 @@ export function SwapFormComponent() {
       />
       <BottomSheetDialog
         ref={slippageDialogRef}
-        height="min-content"
+        height="360px"
+        containerStyle={{ display: 'flex', flexDirection: 'column' }}
         renderWhenOpen={() => (
           <>
             <DialogTitle
               alignTitle="start"
-              title={
-                <HStack gap={4} alignItems="center">
-                  <UIText kind="headline/h3">Slippage</UIText>
-                  <div
-                    style={{ cursor: 'help' }}
-                    title="Your transaction will revert if the price changes unfavourably by more than this percentage"
-                  >
-                    <QuestionHintIcon
-                      style={{ display: 'block', color: 'var(--neutral-500)' }}
-                    />
-                  </div>
-                </HStack>
-              }
+              closeKind="icon"
+              title={<UIText kind="headline/h3">Slippage</UIText>}
             />
             <Spacer height={24} />
             <StoreWatcher
@@ -680,6 +670,7 @@ export function SwapFormComponent() {
       <Spacer height={16} />
       <VStack gap={8}>
         <RateLine swapView={swapView} quotesData={quotesData} />
+        <SlippageLine swapView={swapView} />
         {currentTransaction && chain && currentTransaction.gas ? (
           <React.Suspense
             fallback={
