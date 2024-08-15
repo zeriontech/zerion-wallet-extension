@@ -2,6 +2,7 @@ import { useSelectorStore } from '@store-unit/react';
 import type { SwapFormView } from '@zeriontech/transactions';
 import BigNumber from 'bignumber.js';
 import React from 'react';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -11,6 +12,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 const HIGH_SLIPPAGE_THRESHOLD = 0.01; // 1%
 
 export function SlippageLine({ swapView }: { swapView: SwapFormView }) {
+  const { currency } = useCurrency();
   const { receiveInput } = useSelectorStore(swapView.store, ['receiveInput']);
   const { slippage } = useSelectorStore(swapView.store.configuration, [
     'slippage',
@@ -37,7 +39,7 @@ export function SlippageLine({ swapView }: { swapView: SwapFormView }) {
             Minimum Received
           </UIText>
           <UIText kind="small/accent">
-            {formatCurrencyValue(fiatValue, 'en', 'usd')}
+            {formatCurrencyValue(fiatValue, 'en', currency)}
           </UIText>
         </HStack>
       ) : null}

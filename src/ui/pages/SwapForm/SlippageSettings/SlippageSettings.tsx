@@ -152,6 +152,7 @@ export function SlippageSettings({
   const [isCustomValue, setIsCustomValue] = useState(
     () => !SLIPPAGE_OPTIONS.includes(percentValue)
   );
+  const [isCustomValueFocused, setIsCustomValueFocused] = useState(false);
   const { isOptimal } = getSlippageWarning(percentValue);
 
   return (
@@ -195,17 +196,25 @@ export function SlippageSettings({
           ))}
           <div style={{ position: 'relative' }}>
             <CustomValueOverlay
-              value={isCustomValue ? percentValue : null}
+              value={
+                isCustomValue
+                  ? percentValue || (isCustomValueFocused ? '' : null)
+                  : null
+              }
               isOptimal={isOptimal}
             />
             <Input
               name="customSlippage"
               value={isCustomValue ? percentValue : ''}
               onFocus={() => {
+                setIsCustomValueFocused(true);
                 if (!isCustomValue) {
                   setPercentValue('');
                 }
                 setIsCustomValue(true);
+              }}
+              onBlur={() => {
+                setIsCustomValueFocused(false);
               }}
               style={{
                 textAlign: 'center',
