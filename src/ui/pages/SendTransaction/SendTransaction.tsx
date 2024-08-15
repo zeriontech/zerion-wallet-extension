@@ -567,11 +567,11 @@ function SendTransactionContent({
     client,
     enabled: USE_PAYMASTER_FEATURE
       ? shouldInterpretTransaction({ network, eligibilityQuery })
-      : true,
+      : Boolean(network?.supports_simulations),
   });
 
   const paymasterTxInterpretQuery = useQuery({
-    enabled: paymasterEligible,
+    enabled: Boolean(network?.supports_simulations) && paymasterEligible,
     suspense: false,
     queryKey: [
       'interpret/typedData',

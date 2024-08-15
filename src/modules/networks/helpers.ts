@@ -20,6 +20,7 @@ export function toNetworkConfig(
     supports_nft_positions: false,
     supports_positions: false,
     supports_sponsored_transactions: false,
+    supports_simulations: false,
     name: value.chainName,
     external_id: value.chainId,
     id,
@@ -52,7 +53,19 @@ export function toNetworkConfig(
 }
 
 export function toAddEthereumChainParameter(
-  item: NetworkConfig
+  item: Pick<
+    NetworkConfig,
+    | 'rpc_url_user'
+    | 'rpc_url_internal'
+    | 'rpc_url_public'
+    | 'native_asset'
+    | 'name'
+    | 'icon_url'
+    | 'external_id'
+    | 'explorer_tx_url'
+    | 'hidden'
+  > &
+    Partial<Pick<NetworkConfig, 'specification' | 'standard'>>
 ): AddEthereumChainParameter {
   return {
     rpcUrls: item.rpc_url_user

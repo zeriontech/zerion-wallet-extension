@@ -36,6 +36,7 @@ export type NetworkConfig = NetworkSpecification & {
   supports_nft_positions: boolean;
   supports_positions: boolean;
   supports_sponsored_transactions: boolean;
+  supports_simulations: boolean;
   native_asset: NetworkAsset | null;
   wrapped_native_asset: NetworkAsset | null;
   /**

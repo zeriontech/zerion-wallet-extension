@@ -49,6 +49,7 @@ export const networksFallbackInfo: NetworkConfig[] = [
     supports_positions: true,
     supports_nft_positions: true,
     supports_sponsored_transactions: false,
+    supports_simulations: true,
   },
   {
     base_asset_id: '0xb8c77482e45f1f44de1745f52c74426c631bdd52',
@@ -124,6 +125,7 @@ export const networksFallbackInfo: NetworkConfig[] = [
     supports_positions: true,
     supports_nft_positions: true,
     supports_sponsored_transactions: false,
+    supports_simulations: true,
   },
   {
     base_asset_id: 'eth',
@@ -173,6 +175,7 @@ export const networksFallbackInfo: NetworkConfig[] = [
     supports_positions: true,
     supports_nft_positions: true,
     supports_sponsored_transactions: false,
+    supports_simulations: true,
   },
   {
     base_asset_id: 'eth',
@@ -222,6 +225,7 @@ export const networksFallbackInfo: NetworkConfig[] = [
     supports_positions: true,
     supports_nft_positions: true,
     supports_sponsored_transactions: false,
+    supports_simulations: true,
   },
   {
     base_asset_id: '43e05303-bf43-48df-be45-352d7567ff39',
@@ -271,6 +275,7 @@ export const networksFallbackInfo: NetworkConfig[] = [
     supports_positions: true,
     supports_nft_positions: true,
     supports_sponsored_transactions: false,
+    supports_simulations: true,
   },
   {
     base_asset_id: '0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0',
@@ -334,6 +339,7 @@ export const networksFallbackInfo: NetworkConfig[] = [
     supports_positions: true,
     supports_nft_positions: true,
     supports_sponsored_transactions: false,
+    supports_simulations: true,
   },
   {
     base_asset_id: 'eth',
@@ -383,6 +389,7 @@ export const networksFallbackInfo: NetworkConfig[] = [
     supports_positions: true,
     supports_nft_positions: true,
     supports_sponsored_transactions: false,
+    supports_simulations: true,
   },
   {
     base_asset_id: 'eth',
@@ -432,6 +439,7 @@ export const networksFallbackInfo: NetworkConfig[] = [
     supports_positions: true,
     supports_nft_positions: true,
     supports_sponsored_transactions: false,
+    supports_simulations: true,
   },
   {
     base_asset_id: 'b99ea659-0ab1-4832-bf44-3bf1cc1acac7',
@@ -491,6 +499,7 @@ export const networksFallbackInfo: NetworkConfig[] = [
     supports_positions: true,
     supports_nft_positions: true,
     supports_sponsored_transactions: false,
+    supports_simulations: true,
   },
   {
     base_asset_id: '0x471ece3750da237f93b8e339c536989b8978a438',
@@ -534,6 +543,7 @@ export const networksFallbackInfo: NetworkConfig[] = [
     supports_positions: true,
     supports_nft_positions: true,
     supports_sponsored_transactions: false,
+    supports_simulations: true,
   },
   {
     base_asset_id: '0x4e15361fd6b4bb609fa63c81a2be19d873717870',
@@ -583,6 +593,7 @@ export const networksFallbackInfo: NetworkConfig[] = [
     supports_positions: true,
     supports_nft_positions: false,
     supports_sponsored_transactions: false,
+    supports_simulations: true,
   },
   {
     base_asset_id: 'eth',
@@ -635,6 +646,7 @@ export const networksFallbackInfo: NetworkConfig[] = [
     supports_positions: true,
     supports_nft_positions: false,
     supports_sponsored_transactions: false,
+    supports_simulations: true,
   },
   {
     base_asset_id: 'eth',
@@ -684,6 +696,7 @@ export const networksFallbackInfo: NetworkConfig[] = [
     supports_positions: true,
     supports_nft_positions: false,
     supports_sponsored_transactions: false,
+    supports_simulations: true,
   },
   {
     base_asset_id: 'eth',
@@ -733,6 +746,7 @@ export const networksFallbackInfo: NetworkConfig[] = [
     supports_positions: true,
     supports_nft_positions: false,
     supports_sponsored_transactions: false,
+    supports_simulations: true,
   },
   {
     base_asset_id: 'eth',
@@ -795,6 +809,7 @@ export const networksFallbackInfo: NetworkConfig[] = [
     supports_positions: true,
     supports_nft_positions: true,
     supports_sponsored_transactions: false,
+    supports_simulations: true,
   },
   {
     base_asset_id: 'eth',
@@ -844,6 +859,7 @@ export const networksFallbackInfo: NetworkConfig[] = [
     supports_positions: true,
     supports_nft_positions: true,
     supports_sponsored_transactions: false,
+    supports_simulations: true,
   },
   {
     base_asset_id: 'eth',
@@ -893,5 +909,6 @@ export const networksFallbackInfo: NetworkConfig[] = [
     supports_positions: true,
     supports_nft_positions: true,
     supports_sponsored_transactions: false,
+    supports_simulations: true,
   },
 ];

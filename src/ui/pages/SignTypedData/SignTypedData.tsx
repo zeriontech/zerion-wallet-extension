@@ -457,6 +457,7 @@ function SignTypedDataContent({
 
   const { networks } = useNetworks(chain ? [chain.toString()] : undefined);
   const chainId = chain && networks ? networks.getChainId(chain) : null;
+  const network = chain && networks ? networks.getNetworkByName(chain) : null;
 
   const { data: interpretation, ...interpretQuery } = useQuery({
     queryKey: [
@@ -475,7 +476,7 @@ function SignTypedDataContent({
             currency,
           })
         : null,
-    enabled: Boolean(chainId),
+    enabled: Boolean(chainId && network?.supports_simulations),
     suspense: false,
     retry: 1,
     refetchOnMount: false,
