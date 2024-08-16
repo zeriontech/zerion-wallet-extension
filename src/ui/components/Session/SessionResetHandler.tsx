@@ -18,10 +18,13 @@ export function SessionResetHandler() {
         }
       }
     }
-    walletPort.port?.onMessage.addListener(messageHandler);
-    return () => {
-      walletPort.port?.onMessage.removeListener(messageHandler);
-    };
+    const { port } = walletPort;
+    if (port) {
+      port.onMessage.addListener(messageHandler);
+      return () => {
+        port.onMessage.removeListener(messageHandler);
+      };
+    }
   }, [navigate]);
   return null;
 }
