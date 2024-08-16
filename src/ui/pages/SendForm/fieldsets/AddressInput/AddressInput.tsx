@@ -291,10 +291,6 @@ export function AddressInput({
     getItemId: (index) =>
       items[index] ? `${items[index]?.groupType}-${items[index]?.address}` : '',
     itemToString: (item) => (item ? getTitle(item) : ''),
-    onInputValueChange: ({ inputValue }) => {
-      setShowAllItems(false);
-      onChange(inputValue ?? '');
-    },
     onSelectedItemChange: ({ selectedItem }) => {
       if (!selectedItem) {
         return;
@@ -357,9 +353,15 @@ export function AddressInput({
             </UnstyledButton>
             <UIText kind="headline/h3">
               <UnstyledInput
-                autoFocus={autoFocus}
                 {...getInputProps({
                   ...inputProps,
+                  // use onChange instead of onInputValueChange for controlled inputs
+                  // https://github.com/downshift-js/downshift/issues/1108#issuecomment-674180157
+                  onChange: (e) => {
+                    setShowAllItems(false);
+                    onChange(e.currentTarget.value ?? '');
+                  },
+                  autoFocus,
                   placeholder: 'Address, domain or identity',
                   style: { width: '100%' },
                 })}
