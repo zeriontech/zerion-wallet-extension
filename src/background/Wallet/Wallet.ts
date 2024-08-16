@@ -1100,7 +1100,7 @@ export class Wallet {
     // TODO: remove `prepareTransactionType` helper after update to ethers v6
     // ethers v5 throws error inside `getFeeData` for some chains with too big totalDifficulty param
     // can be reproduced with https://chainlist.org/chain/30732
-    const txWithFeeAndType = await prepareTransactionType(txWithFee);
+    const txWithFeeAndType = prepareTransactionType(txWithFee);
     const transaction = await prepareNonce(txWithFeeAndType, networks, chain);
 
     const paymasterEligible =
