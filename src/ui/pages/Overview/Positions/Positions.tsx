@@ -860,7 +860,7 @@ export function Positions({
     >
       {emptyNetworkBalance}
       <DelayedRender delay={50}>
-        <EmptyView text="No assets yet" />
+        <EmptyView>No assets yet</EmptyView>
       </DelayedRender>
     </CenteredFillViewportView>
   );

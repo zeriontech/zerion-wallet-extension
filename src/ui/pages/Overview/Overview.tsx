@@ -534,7 +534,11 @@ function OverviewComponent() {
                 <ViewSuspense logDelays={true} fallback={tabFallback}>
                   <NavigationTitle title={null} documentTitle="History" />
                   <Spacer height={TAB_TOP_PADDING} />
-                  <HistoryList />
+                  <HistoryList
+                    dappChain={dappChain || null}
+                    filterChain={filterChain}
+                    onChainChange={setFilterChain}
+                  />
                 </ViewSuspense>
               }
             />
