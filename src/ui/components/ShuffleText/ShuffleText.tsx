@@ -17,7 +17,7 @@ function shuffleText(
 ): ShuffleController {
   let currentText: string = targetElement.innerText;
   let currentTime = 0;
-  let transitionTimerId: NodeJS.Timer | undefined;
+  let transitionTimerId: NodeJS.Timeout | undefined;
 
   const updateText = (): void => {
     let newText = '';
