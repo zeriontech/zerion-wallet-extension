@@ -7,7 +7,7 @@ import { createMockReceipt, DEBUGGING_TX_HASH } from './mocks';
 
 class Interval {
   private cb: () => void;
-  private intervalId: NodeJS.Timer | null = null;
+  private intervalId: NodeJS.Timeout | null = null;
   constructor(cb: () => void) {
     this.cb = cb;
     this.intervalId = null;
