@@ -70,7 +70,9 @@ async function initializeUI({
   try {
     await registerServiceWorker();
     initializeChannels();
+
     await maybeOpenOnboarding();
+
     if (innerIsFirstLoad) {
       await persistQueryClient(queryClient);
     } else {
