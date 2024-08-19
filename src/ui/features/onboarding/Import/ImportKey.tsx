@@ -83,7 +83,7 @@ export function ImportKey({
               disabled={isLoading}
             >
               <HStack gap={8} alignItems="center" justifyContent="center">
-                <span>Import wallet</span>
+                <span>Import Wallet</span>
                 {isLoading ? <CircleSpinner /> : null}
               </HStack>
             </Button>

@@ -212,7 +212,6 @@ initialize().then((values) => {
 browser.runtime.onInstalled.addListener(({ reason, previousVersion }) => {
   runtimeStore.handleInstalledEvent({ reason, previousVersion });
   if (reason === 'install') {
-    userLifecycleStore.handleRuntimeInstalledEvent();
     openOnboarding();
   }
 });
