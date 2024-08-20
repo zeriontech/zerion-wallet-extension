@@ -98,13 +98,16 @@ export function useMainnetNetwork({
 }
 
 export function useSearchNetworks({ query = '' }: { query?: string }) {
+  const { preferences } = usePreferences();
   const { data: queryData, ...queryResult } = useQuery({
-    queryKey: ['getNetworksBySearch', query],
+    enabled: Boolean(preferences),
+    queryKey: ['getNetworksBySearch', query, preferences?.testnetMode?.on],
     queryFn: async () => {
       const networksStore = await getNetworksStore();
       const data = await getNetworksBySearch({
         query: query.trim().toLowerCase(),
         client: networksStore.client,
+        includeTestnets: Boolean(preferences?.testnetMode?.on),
       });
       networksStore.pushConfigs(...data);
       emitter.emit('networksSearchResponse', query, data.length);

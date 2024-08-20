@@ -41,7 +41,7 @@ export function TestnetModeGuard() {
           <UIText kind="headline/h3">Switching to {network.name}?</UIText>
           <UIText kind="body/regular">
             Testnet mode is currently active. Would you like to disable it and
-            interact with Ehereum instead?
+            interact with {network.name} instead?
           </UIText>
         </VStack>
 

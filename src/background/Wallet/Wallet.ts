@@ -1455,24 +1455,25 @@ export class Wallet {
   private async checkTestnetMode(
     chainId: ChainId
   ): Promise<
-    | { violation: true; network: NetworkConfig; mode: 'testnet' }
+    | { violation: true; network: NetworkConfig; mode: 'testnet' | 'default' }
     | { violation: false; network: null; mode: 'testnet' | 'default' }
   > {
     const preferences = await this.getPreferences({
       context: INTERNAL_SYMBOL_CONTEXT,
     });
-    if (!preferences.testnetMode?.on) {
-      return { violation: false, network: null, mode: 'default' };
-    }
     const network = await fetchNetworkByChainId({
       preferences,
       chainId,
       apiEnv: 'testnet-first',
     });
-    if (network && !network.is_testnet) {
-      return { violation: true, network, mode: 'testnet' };
+    const mode = preferences.testnetMode?.on ? 'testnet' : 'default';
+    if (!network) {
+      return { violation: false, network: null, mode };
+    }
+    if (Boolean(network.is_testnet) === Boolean(preferences.testnetMode?.on)) {
+      return { violation: false, network: null, mode };
     } else {
-      return { violation: false, network: null, mode: 'testnet' };
+      return { violation: true, network, mode };
     }
   }
 
@@ -1489,8 +1490,9 @@ export class Wallet {
   }
 
   async ensureTestnetModeForChainId(chainId: ChainId) {
-    const { violation, network } = await this.checkTestnetMode(chainId);
-    if (violation) {
+    const { violation, network, mode } = await this.checkTestnetMode(chainId);
+    if (violation && mode === 'testnet') {
+      // Warn user that we're switching to mainnet from testmode
       return new Promise<void>((resolve, reject) => {
         this.notificationWindow.open({
           route: '/testnetModeGuard',
@@ -1508,6 +1510,12 @@ export class Wallet {
           },
         });
       });
+    } else if (violation && mode === 'default') {
+      // Enable testmode automatically without user confirmation
+      await this.setPreferences({
+        context: INTERNAL_SYMBOL_CONTEXT,
+        params: { preferences: { testnetMode: { on: true } } },
+      });
     }
   }
 
@@ -1518,9 +1526,6 @@ export class Wallet {
     transaction: UnsignedTransaction;
     initiator: string;
   }) {
-    if (!Model.getPreferences(this.record).testnetMode?.on) {
-      return null;
-    }
     const chainId = await this.resolveChainIdForTx({
       transaction,
       initiator,
@@ -1538,7 +1543,7 @@ export class Wallet {
     const network = await fetchNetworkByChainId({
       preferences: Model.getPreferences(this.record),
       chainId,
-      apiEnv: 'current',
+      apiEnv: 'testnet-first',
     });
     if (network) {
       if (type === 'internal') {

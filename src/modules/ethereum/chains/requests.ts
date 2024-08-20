@@ -40,14 +40,16 @@ export function fetchChains(
 export async function getNetworksBySearch({
   query,
   client,
+  includeTestnets,
 }: {
   query: string;
   client: Client;
+  includeTestnets: boolean;
 }) {
   return Promise.race([
     fetchChains(
       {
-        include_testnets: true,
+        include_testnets: includeTestnets,
         supported_only: false,
         search_query: query.trim().toLowerCase(),
       },

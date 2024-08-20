@@ -134,12 +134,19 @@ body.isDialog:not(.pageLayout) {
   }
 }
 
+:global(.underline) {
+  text-decoration: underline;
+}
+
 @media (hover: hover) {
   :global(.hover\:color-primary):hover {
     color: var(--primary);
   }
   :global(.hover\:underline):hover {
     text-decoration: underline;
+  }
+  :global(.hover\:no-underline):hover {
+    text-decoration: none;
   }
 }
 

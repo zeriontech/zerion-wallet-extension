@@ -41,7 +41,11 @@ export function getNetworks({
 
 export async function getNetworkByChainId(chainId: string, client: Client) {
   const possibleNetworks = await Promise.race([
-    getNetworksBySearch({ query: Number(chainId).toString(), client }),
+    getNetworksBySearch({
+      query: Number(chainId).toString(),
+      client,
+      includeTestnets: true,
+    }),
     rejectAfterDelay(CHAIN_INFO_TIMEOUT, `getNetworkByChainId(${chainId})`),
   ]);
   const network = possibleNetworks.find(

@@ -15,7 +15,6 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import type { Kind as UITextKind } from 'src/ui/ui-kit/UIText';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import { usePreferences } from 'src/ui/features/preferences';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { NBSP } from 'src/ui/shared/typography';
@@ -155,8 +154,7 @@ export function NetworkBalance({
   const testnetMode = preferences?.testnetMode?.on;
   const networksPredicate = useMemo(() => {
     return testnetMode
-      ? (network: NetworkConfig) =>
-          network.is_testnet || isCustomNetworkId(network.id)
+      ? (network: NetworkConfig) => Boolean(network.is_testnet)
       : undefined;
   }, [testnetMode]);
 
