@@ -147,7 +147,7 @@ export function TestModeDecoration() {
                     setPreferences({ testnetMode: null });
                   }}
                 >
-                  Disable it now completely
+                  Disable it now completely.
                 </UnstyledButton>
               </UIText>
             </BottomSheetDialog>
