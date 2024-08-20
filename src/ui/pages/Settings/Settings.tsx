@@ -305,7 +305,7 @@ function DeveloperTools() {
             }}
             detailText={
               <div>
-                Enables viewing and interacting with test networks <br />
+                Enables viewing and interacting with test networks. <br />
                 When enabled, use{' '}
                 <kbd
                   style={{
@@ -317,7 +317,7 @@ function DeveloperTools() {
                 >
                   T
                 </kbd>{' '}
-                shortcut to switch quickly between mode
+                shortcut to switch quickly between modes.
               </div>
             }
           />
