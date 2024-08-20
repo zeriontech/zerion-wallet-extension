@@ -45,7 +45,7 @@ function DisclosureButton({
   const { data: mainnetNetwork } = useMainnetNetwork({
     chain: value,
     enabled:
-      preferences?.testnetMode?.on &&
+      Boolean(preferences?.testnetMode?.on) &&
       !isLoading &&
       !selectedNetwork &&
       value !== NetworkSelectValue.All,

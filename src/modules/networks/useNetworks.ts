@@ -78,13 +78,17 @@ export function useMainnetNetwork({
   chain: chainStr,
   enabled = true,
 }: {
-  chain: string;
+  chain: string | null;
   enabled?: boolean;
 }) {
   return useQuery({
     enabled,
     queryKey: ['getMainnetworkItem', chainStr],
     queryFn: async () => {
+      invariant(
+        chainStr,
+        'Do not enable this query when "chain" is unavailable'
+      );
       await mainNetworksStore.load({ chains: [chainStr] });
       const network = mainNetworksStore
         .getState()

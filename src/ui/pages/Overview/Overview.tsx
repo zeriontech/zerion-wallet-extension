@@ -52,7 +52,10 @@ import { isReadonlyContainer } from 'src/shared/types/validators';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { EmptyView2 } from 'src/ui/components/EmptyView';
-import { useNetworks } from 'src/modules/networks/useNetworks';
+import {
+  useMainnetNetwork,
+  useNetworks,
+} from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
 import { usePreferences } from 'src/ui/features/preferences';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
@@ -131,8 +134,21 @@ function TestnetworkGuard({
 }>) {
   const { preferences } = usePreferences();
   const dappChain = dappChainStr ? createChain(dappChainStr) : null;
-  const { networks } = useNetworks(dappChainStr ? [dappChainStr] : undefined);
-  const network = dappChain ? networks?.getNetworkByName(dappChain) : null;
+  const { networks, isLoading } = useNetworks(
+    dappChainStr ? [dappChainStr] : undefined
+  );
+  const currentNetwork = dappChain
+    ? networks?.getNetworkByName(dappChain)
+    : null;
+  const { data: mainnetNetwork } = useMainnetNetwork({
+    chain: dappChainStr || null,
+    enabled:
+      Boolean(preferences?.testnetMode?.on) &&
+      !isLoading &&
+      !currentNetwork &&
+      Boolean(dappChainStr),
+  });
+  const network = currentNetwork || mainnetNetwork;
   const testnetModeEnabled = Boolean(preferences?.testnetMode?.on);
   if (
     dappChainStr &&
