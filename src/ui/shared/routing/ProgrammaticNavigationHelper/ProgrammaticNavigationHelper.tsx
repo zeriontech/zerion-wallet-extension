@@ -6,7 +6,7 @@ export function ProgrammaticNavigationHelper() {
   const navigate = useNavigate();
   useEffect(() => {
     return emitter.on('navigationRequest', ({ pathname }) => {
-      navigate(pathname);
+      navigate({ pathname });
     });
   }, [navigate]);
   return null;

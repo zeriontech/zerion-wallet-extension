@@ -47,5 +47,6 @@ export async function openSidePanel({
   await chrome.sidePanel.setOptions({
     path: url.toString(),
     enabled: true,
+    tabId: effectiveOpenOptions.tabId,
   });
 }
