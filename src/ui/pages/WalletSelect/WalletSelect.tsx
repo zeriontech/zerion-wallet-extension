@@ -42,10 +42,7 @@ function PortfolioRow({ walletGroups }: { walletGroups: WalletGroup[] }) {
   }, [walletGroups]);
 
   const { value: portflio, isLoading } = useAddressPortfolioDecomposition(
-    {
-      addresses,
-      currency,
-    },
+    { addresses, currency },
     { enabled: true, client: useDefiSdkClient() }
   );
 
