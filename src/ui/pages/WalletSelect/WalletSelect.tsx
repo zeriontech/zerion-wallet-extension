@@ -51,7 +51,7 @@ function PortfolioRow({ walletGroups }: { walletGroups: WalletGroup[] }) {
       <HStack gap={4} justifyContent="space-between" alignItems="center">
         <Media
           vGap={0}
-          image={<PortfolioIcon />}
+          image={<PortfolioIcon className={styles.portfolioIcon} />}
           text={<UIText kind="small/regular">Portfolio</UIText>}
           detailText={
             <UIText kind="headline/h3">

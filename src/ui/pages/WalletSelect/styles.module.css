@@ -11,6 +11,10 @@
   margin-block: 4;
 }
 
+.portfolioIcon {
+  color: var(--neutral-200);
+}
+
 @media (hover: hover) {
   .wallet:has(.addressHint:hover) {
     --copy-button-text-color: var(--black);
