@@ -1,19 +1,19 @@
 import type { PortMessageChannel } from 'src/shared/PortMessageChannel';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SomeMethod = (...args: any) => Promise<any>;
+type AsyncMethod = (...args: any) => Promise<any>;
 
 export type RPCPort<Implementation> = Omit<PortMessageChannel, 'request'> & {
   request<
     T extends string,
     Method = T extends keyof Implementation
-      ? Implementation[T] extends SomeMethod
+      ? Implementation[T] extends AsyncMethod
         ? Implementation[T]
         : never
       : never
   >(
-    method: Method extends SomeMethod ? T : never,
-    ...params: Method extends SomeMethod
+    method: Method extends AsyncMethod ? T : never,
+    ...params: Method extends AsyncMethod
       ? Omit<Parameters<Method>[0], 'context'> extends {
           params: unknown;
         }
@@ -23,5 +23,5 @@ export type RPCPort<Implementation> = Omit<PortMessageChannel, 'request'> & {
           ]
         : [params?: undefined, id?: number]
       : [never]
-  ): Method extends SomeMethod ? ReturnType<Method> : never;
+  ): Method extends AsyncMethod ? ReturnType<Method> : never;
 };

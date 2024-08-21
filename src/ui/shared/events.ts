@@ -14,6 +14,7 @@ export const emitter = createNanoEvents<{
   errorScreenView: (data: { message: string; location: string }) => void;
   loaderScreenView: (data: { location: string; duration: number }) => void;
   reloadExtension: () => void;
+  navigationRequest: (params: { pathname: string }) => void;
 }>();
 
 emitter.on('mutationError', (error, _variables, context) => {
