@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Route, Routes } from 'react-router-dom';
 import { PageBottom } from 'src/ui/components/PageBottom';
@@ -19,13 +19,14 @@ import type { ConnectedSiteItem } from 'src/ui/shared/requests/getPermissionsWit
 import { getPermissionsWithWallets } from 'src/ui/shared/requests/getPermissionsWithWallets';
 import { ViewSuspense } from 'src/ui/components/ViewSuspense';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
-import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { PageTop } from 'src/ui/components/PageTop';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { FillView } from 'src/ui/components/FillView';
+import type { InputHandle } from 'src/ui/ui-kit/Input/DebouncedInput';
+import { DebouncedInput } from 'src/ui/ui-kit/Input/DebouncedInput';
 import { ConnectedSite } from './ConnectedSite';
 
 function RevokeAllPermissionsComponent({
@@ -148,32 +149,32 @@ function ConnectedSitesList({
   );
 }
 
-export function ConnectedSitesSearch({
+function ConnectedSitesSearch({
   value,
   onChange,
+  inputRef,
 }: {
   value?: string;
   onChange(value: string): void;
+  inputRef: React.MutableRefObject<InputHandle | null>;
 }) {
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const debouncedHandleChange = useDebouncedCallback(onChange, 300);
-
-  useLayoutEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.value = value || '';
-    }
-  }, [value]);
-
   return (
-    <SearchInput
+    <DebouncedInput
       ref={inputRef}
-      boxHeight={40}
-      type="search"
-      placeholder="Search"
-      defaultValue={value}
-      onChange={(event) => {
-        debouncedHandleChange(event.currentTarget.value);
-      }}
+      value={value || ''}
+      delay={300}
+      onChange={onChange}
+      render={({ value, handleChange }) => (
+        <SearchInput
+          boxHeight={40}
+          type="search"
+          placeholder="Search"
+          value={value}
+          onChange={(event) => {
+            handleChange(event.currentTarget.value);
+          }}
+        />
+      )}
     />
   );
 }
@@ -232,6 +233,8 @@ function ConnectedSitesMain() {
     suspense: true,
   });
   const [searchQuery, setSearchQuery] = useState<string | undefined>();
+  const searchInputRef = useRef<InputHandle | null>(null);
+
   const filteredConnectedSites = useMemo(() => {
     if (!searchQuery) {
       return allConnectedSites;
@@ -247,7 +250,11 @@ function ConnectedSitesMain() {
       <PageTop />
       {allConnectedSites?.length ? (
         <>
-          <ConnectedSitesSearch value={searchQuery} onChange={setSearchQuery} />
+          <ConnectedSitesSearch
+            inputRef={searchInputRef}
+            value={searchQuery}
+            onChange={setSearchQuery}
+          />
           <Spacer height={24} />
         </>
       ) : null}
@@ -260,7 +267,12 @@ function ConnectedSitesMain() {
         <EmptyView
           hasConnectedSites={Boolean(allConnectedSites?.length)}
           hasFilters={Boolean(searchQuery)}
-          onReset={() => setSearchQuery(undefined)}
+          onReset={() => {
+            if (searchInputRef.current) {
+              searchInputRef.current.setValue('');
+            }
+            setSearchQuery(undefined);
+          }}
         />
       )}
       <PageBottom />
