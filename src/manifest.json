@@ -11,6 +11,7 @@
     "48": "images/logo-icon-48.png",
     "128": "images/logo-icon-128.png"
   },
+  "author": "https://zerion.io/",
   "action": {
     "default_icon": {
       "16": "images/logo-icon-16.png",
@@ -21,7 +22,9 @@
     "default_title": "Zerion",
     "default_popup": "ui/popup.html"
   },
-  "author": "https://zerion.io/",
+  "side_panel": {
+    "default_path": "ui/sidepanel.html"
+  },
   "background": {
     "service_worker": "background/index.ts",
     "type": "module"
@@ -44,6 +47,7 @@
     "activeTab",
     "alarms",
     "scripting",
+    "sidePanel",
     "storage",
     "unlimitedStorage"
   ],

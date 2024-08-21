@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="initial-scale=1, user-scalable=no" />
+
+    <!-- Prevent showing translate prompt when popup.html is used as a dialog -->
+    <meta name="google" value="notranslate" />
+
+    <style>
+      ::-webkit-scrollbar {
+        /* display: none; */
+        visibility: hidden;
+        width: 0px;
+      }
+    </style>
+    <!-- Preloading fonts helps avoid FOIT and some jumps -->
+    <link
+      rel="preload"
+      href="./style/fonts/AeonikPro-Regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="./style/fonts/AeonikPro-Medium.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    
+    <!-- Preload protocol images for better animations in Forms -->
+    <link rel="preload" as="image" href="https://protocol-icons.s3.amazonaws.com/1inch.png">
+    <link rel="preload" as="image" href="https://protocol-icons.s3.amazonaws.com/uniswap-exchange.png">
+    <link rel="preload" as="image" href="https://protocol-icons.s3.amazonaws.com/uniswap-exchangev3.png">
+    <link rel="preload" as="image" href="https://protocol-icons.s3.amazonaws.com/paraswap.png">
+
+    <!-- DNA Mint Flow -->
+    <link rel="preload" as="image" href="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/dna-banner.png"/>
+    <link rel="preload" as="image" href="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/dna-6.png" />
+    <link rel="preload" as="image" href="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/dna-5.png" />
+    <link rel="preload" as="image" href="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/dna-4.png" />
+    <link rel="preload" as="image" href="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/dna-3.png" />
+    <link rel="preload" as="image" href="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/dna-2.png" />
+    <link rel="preload" as="image" href="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/dna-1.png" />
+    <link rel="preload" as="image" href="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/minting-4.png" />
+    <link rel="preload" as="image" href="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/minting-3.png" />
+    <link rel="preload" as="image" href="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/minting-2.png" />
+    <link rel="preload" as="image" href="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/minting-1.png" />
+
+    <!-- DNA Update Flow -->
+    <link rel="preload" as="image" href="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/be-invested.png" />
+    <link rel="preload" as="image" href="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/dont-be-maxi.png" />
+    <link rel="preload" as="image" href="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/its-all-on-chain.png" />
+    <link rel="preload" as="image" href="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/seek-alpha.png" />
+    <link rel="preload" as="image" href="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/self-custodial.png" />
+
+    <title>Zerion</title>
+    <script type="module" src="./index.tsx"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

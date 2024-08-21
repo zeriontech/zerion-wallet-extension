@@ -78,6 +78,7 @@ import { Onboarding } from '../features/onboarding';
 import { RevealPrivateKey } from '../pages/RevealPrivateKey';
 import { urlContext } from '../../shared/UrlContext';
 import { BackupPage } from '../pages/Backup/Backup';
+import { ProgrammaticNavigationHelper } from '../shared/routing/ProgrammaticNavigationHelper';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -481,6 +482,7 @@ export function App({ initialView, inspect }: AppProps) {
             <ErrorBoundary renderError={(error) => <ViewError error={error} />}>
               <InactivityDetector />
               <SessionResetHandler />
+              <ProgrammaticNavigationHelper />
               <ThemeDecoration />
               {inspect && !isProd ? (
                 <UIText

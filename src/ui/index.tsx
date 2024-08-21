@@ -7,6 +7,7 @@ import { BackgroundScriptUpdateHandler } from 'src/shared/core/BackgroundScriptU
 import { initializeClientAnalytics } from 'src/shared/analytics/analytics.client';
 import { HandshakeFailed } from 'src/shared/errors/errors';
 import { runtimeStore } from 'src/shared/core/runtime-store';
+import { initializeSidepanelEvents } from 'src/shared/sidepanel/sidepanel-messaging.ui';
 import { applyDrawFix } from './shared/applyDrawFix';
 import { App } from './App';
 import type { AppProps } from './App/App';
@@ -19,6 +20,7 @@ import { OnboardingInterrupt } from './features/onboarding/errors';
 import { maybeOpenOnboarding } from './features/onboarding/initialization';
 
 applyDrawFix();
+initializeSidepanelEvents();
 if (process.env.NODE_ENV === 'development') {
   console.time('UI render'); // eslint-disable-line no-console
   console.time('UI render effect'); // eslint-disable-line no-console

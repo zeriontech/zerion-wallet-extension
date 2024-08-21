@@ -1,10 +1,14 @@
 import { createNanoEvents } from 'nanoevents';
+import { nanoid } from 'nanoid';
 import type { ErrorResponse } from '@walletconnect/jsonrpc-utils';
 import browser from 'webextension-polyfill';
 import type { RpcError, RpcResult } from 'src/shared/custom-rpc';
 import { UserRejected } from 'src/shared/errors/errors';
 import { PersistentStore } from 'src/modules/persistent-store';
 import { produce } from 'immer';
+import { isSidepanelOpen } from 'src/shared/sidepanel/sidepanel-messaging.background';
+import { getSidepanelUrl } from 'src/shared/getPopupUrl';
+import { emitter as globalEmitter } from '../events';
 import type { WindowProps } from './createBrowserWindow';
 import { createBrowserWindow } from './createBrowserWindow';
 
@@ -38,6 +42,7 @@ type PendingState = Record<string, { windowId: number; id: string }>;
 
 export type NotificationWindowProps<T> = Omit<WindowProps, 'type'> & {
   type?: WindowProps['type'];
+  // tabId?: number;
   requestId: string;
   onDismiss: (error?: ErrorResponse) => void;
   onResolve: (data: T) => void;
@@ -107,6 +112,12 @@ export class NotificationWindow extends PersistentStore<PendingState> {
       browser.windows.remove(windowId);
       this.idsMap.delete(id);
       this.requestIds.delete(id);
+    } else if (windowId === 0) {
+      // For sidepanel, we maybe do not need to close it.
+      // Currently we only show Dapp Request in sidepanel if it already was open,
+      // so it doesn't need to be closed after. But if this pattern changes,
+      // this is the place to close it
+      // console.log('maybe close sidepanel');
     }
   }
 
@@ -158,6 +169,19 @@ export class NotificationWindow extends PersistentStore<PendingState> {
           error: new UserRejected('Window Closed'),
         });
         this.closeWindow(windowId);
+      }
+    });
+    globalEmitter.on('uiClosed', ({ url }) => {
+      if (!url) {
+        return;
+      }
+      const id = new URLSearchParams(new URL(url).hash).get('windowId');
+      if (id) {
+        this.events.emit('settle', {
+          status: 'rejected',
+          id,
+          error: new UserRejected('Sidepanel Closed'),
+        });
       }
     });
   }
@@ -212,6 +236,7 @@ export class NotificationWindow extends PersistentStore<PendingState> {
     route,
     type = 'dialog',
     search,
+    // tabId,
     onDismiss,
     onResolve,
     width,
@@ -243,17 +268,57 @@ export class NotificationWindow extends PersistentStore<PendingState> {
       return pendingWindows[requestId].id;
     }
 
-    const { id, windowId } = await createBrowserWindow({
-      width,
-      height,
-      route,
-      type,
-      search,
-    });
-    this.events.emit('open', { requestId, windowId, id });
-    this.requestIds.set(id, requestId);
-    this.idsMap.set(id, windowId);
-    return id;
+    const sidepanelIsOpen = await isSidepanelOpen();
+    if (sidepanelIsOpen) {
+      const sidepanelPath = getSidepanelUrl();
+      const searchParams = new URLSearchParams(search);
+      const id = nanoid();
+      sidepanelPath.searchParams.append('windowId', id);
+      searchParams.append('windowId', id);
+      sidepanelPath.hash = `${route}?${searchParams}`;
+      const tabs = await browser.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+      chrome.sidePanel.setOptions({
+        path: sidepanelPath.toString(),
+        tabId: tabs[0]?.id,
+      });
+      const windowId = 0; // special number for sidepanel?
+      this.events.emit('open', { requestId, windowId, id });
+      this.idsMap.set(id, windowId);
+      this.requestIds.set(id, requestId);
+      return id;
+    } else {
+      const { id, windowId } = await createBrowserWindow({
+        width,
+        height,
+        route,
+        type,
+        search,
+      });
+      this.events.emit('open', { requestId, windowId, id });
+      this.requestIds.set(id, requestId);
+      this.idsMap.set(id, windowId);
+      return id;
+    }
+    // =======
+    //     if (type === 'sidepanel') {
+    //       invariant(tabId, 'tabId is required to open a sidepanel');
+    //       const { id } = await openSidePanel({
+    //         pathname: route,
+    //         searchParams: new URLSearchParams(search),
+    //         openOptions: { tabId },
+    //       });
+    //       const windowId = 0;
+    //       this.events.emit('open', { requestId, windowId, id });
+    //       this.idsMap.set(id, windowId);
+    //       this.requestIds.set(id, requestId);
+    //       return id;
+    //     } else {
+    //       // open dialog
+    //     }
+    // >>>>>>> 99fc15e6 ([wip])
   }
 
   /** @deprecated */
