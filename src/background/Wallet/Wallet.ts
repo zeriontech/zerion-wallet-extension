@@ -467,7 +467,7 @@ export class Wallet {
     return privateKey === value;
   }
 
-  async uiGetCurrentWallet({ context }: WalletMethodParams) {
+  getCurrentWalletSync({ context }: WalletMethodParams) {
     this.verifyInternalOrigin(context);
     if (!this.id) {
       return null;
@@ -482,6 +482,11 @@ export class Wallet {
       return wallet ? maskWallet(wallet) : null;
     }
     return null;
+  }
+
+  async uiGetCurrentWallet({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    return this.getCurrentWalletSync({ context });
   }
 
   async uiGetWalletByAddress({
@@ -1720,7 +1725,17 @@ class PublicController {
     ]
   >) {
     const currentAddress = this.wallet.ensureCurrentAddress();
-    const currentWallet = await this.wallet.uiGetCurrentWallet({
+    // NOTE: I switched to syncronous method in an attempt to
+    // synchronously open sidepanel in response to dapp request
+    // because Browser only allows to open sidepanel synchronously after
+    // a user action. But currently I abandoned the idea of opening sidepanel
+    // for dapp requests. Instead, we use sidepanel if it is already opened
+    // So this sync method is not necessary.
+    // NOTE:
+    // There is another possible workaround to opening sidepanel but keeping these methods
+    // syncronous. We can syncronously open sidepanel with some loading UI,
+    // and then later update it with the desired view by calling `.setOptions()` API.
+    const currentWallet = this.wallet.getCurrentWalletSync({
       context: INTERNAL_SYMBOL_CONTEXT,
     });
     // TODO: should we check transaction.from instead of currentAddress?

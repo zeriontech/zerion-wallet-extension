@@ -12,6 +12,7 @@ import {
 import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import ReadonlyIcon from 'jsx:src/ui/assets/visible.svg';
+import SidepanelIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { usePendingTransactions } from 'src/ui/transactions/usePendingTransactions';
@@ -59,6 +60,7 @@ import {
 import { createChain } from 'src/modules/networks/Chain';
 import { usePreferences } from 'src/ui/features/preferences';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { openSidePanel } from 'src/shared/sidepanel/sidepanel-apis';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -428,7 +430,26 @@ function OverviewComponent() {
             }}
           >
             <CurrentAccountControls />
-            <SettingsLinkIcon />
+            <HStack gap={0}>
+              <SettingsLinkIcon />
+              <Button
+                kind="ghost"
+                size={36}
+                style={{ paddingInline: 8 }}
+                onClick={() => {
+                  openSidePanel({
+                    pathname: '/',
+                    searchParams: null,
+                  });
+                  window.close();
+                }}
+              >
+                <SidepanelIcon
+                  // this is a temporary icon for Proof of Concept stage
+                  style={{ display: 'block', width: 20, height: 20 }}
+                />
+              </Button>
+            </HStack>
           </div>
           <Spacer height={16} />
         </div>

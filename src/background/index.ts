@@ -184,6 +184,7 @@ initialize().then((values) => {
     ) {
       // Means extension UI is closed
       account.expirePasswordSession();
+      emitter.emit('uiClosed', { url: port.sender?.url || null });
     }
   });
 
