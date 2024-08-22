@@ -42,7 +42,7 @@ function HistoryTokenValue({
   const sign = getSign(value, direction);
   const commonQuantity = useMemo(
     () =>
-      value === ''
+      value !== ''
         ? getCommonQuantity({
             asset,
             chain,
