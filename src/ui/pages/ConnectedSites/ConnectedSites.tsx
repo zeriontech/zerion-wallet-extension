@@ -235,7 +235,7 @@ function ConnectedSitesMain() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const searchInputRef = useRef<InputHandle | null>(null);
 
-  const filteredConnectedSites = useMemo(() => {
+  const itemsToDisplay = useMemo(() => {
     if (!searchQuery) {
       return allConnectedSites;
     }
@@ -258,9 +258,9 @@ function ConnectedSitesMain() {
           <Spacer height={24} />
         </>
       ) : null}
-      {isLoading ? null : filteredConnectedSites?.length ? (
+      {isLoading ? null : itemsToDisplay?.length ? (
         <ConnectedSitesList
-          items={filteredConnectedSites}
+          items={itemsToDisplay}
           onRevokeAll={() => connectedSitesQuery.refetch()}
         />
       ) : (
