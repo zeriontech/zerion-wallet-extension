@@ -78,13 +78,17 @@ export function useMainnetNetwork({
   chain: chainStr,
   enabled = true,
 }: {
-  chain: string;
+  chain: string | null;
   enabled?: boolean;
 }) {
   return useQuery({
     enabled,
     queryKey: ['getMainnetworkItem', chainStr],
     queryFn: async () => {
+      invariant(
+        chainStr,
+        'Do not enable this query when "chain" is unavailable'
+      );
       await mainNetworksStore.load({ chains: [chainStr] });
       const network = mainNetworksStore
         .getState()
@@ -98,13 +102,16 @@ export function useMainnetNetwork({
 }
 
 export function useSearchNetworks({ query = '' }: { query?: string }) {
+  const { preferences } = usePreferences();
   const { data: queryData, ...queryResult } = useQuery({
-    queryKey: ['getNetworksBySearch', query],
+    enabled: Boolean(preferences),
+    queryKey: ['getNetworksBySearch', query, preferences?.testnetMode?.on],
     queryFn: async () => {
       const networksStore = await getNetworksStore();
       const data = await getNetworksBySearch({
         query: query.trim().toLowerCase(),
         client: networksStore.client,
+        includeTestnets: Boolean(preferences?.testnetMode?.on),
       });
       networksStore.pushConfigs(...data);
       emitter.emit('networksSearchResponse', query, data.length);

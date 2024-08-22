@@ -303,7 +303,23 @@ function DeveloperTools() {
                 testnetMode: event.target.checked ? { on: true } : null,
               });
             }}
-            detailText="Enables viewing and interacting with test networks"
+            detailText={
+              <div>
+                Enables viewing and interacting with test networks. <br />
+                When enabled, use{' '}
+                <kbd
+                  style={{
+                    padding: '2px 4px',
+                    background: 'var(--neutral-200)',
+                    borderRadius: 4,
+                    color: 'var(--black)',
+                  }}
+                >
+                  T
+                </kbd>{' '}
+                shortcut to switch quickly between modes.
+              </div>
+            }
           />
         </Frame>
       </VStack>

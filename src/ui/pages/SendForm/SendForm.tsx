@@ -53,7 +53,6 @@ import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { createSendAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
-import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api';
 import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
 import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/uiGetBestKnownTransactionCount';
@@ -452,11 +451,8 @@ function SendFormComponent() {
                 }}
                 dialogRootNode={rootNode}
                 filterPredicate={(network) => {
-                  if (preferences?.testnetMode?.on) {
-                    return network.is_testnet || isCustomNetworkId(network.id);
-                  } else {
-                    return true;
-                  }
+                  const isTestMode = Boolean(preferences?.testnetMode?.on);
+                  return isTestMode === Boolean(network.is_testnet);
                 }}
               />
             ) : (

@@ -34,7 +34,10 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { DelayedRender } from 'src/ui/components/DelayedRender/DelayedRender';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { useProfileName } from 'src/ui/shared/useProfileName';
-import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
+import {
+  CenteredFillViewportView,
+  FillView,
+} from 'src/ui/components/FillView/FillView';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 import { useIsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
@@ -48,6 +51,14 @@ import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupBy
 import { isReadonlyContainer } from 'src/shared/types/validators';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { EmptyView2 } from 'src/ui/components/EmptyView';
+import {
+  useMainnetNetwork,
+  useNetworks,
+} from 'src/modules/networks/useNetworks';
+import { createChain } from 'src/modules/networks/Chain';
+import { usePreferences } from 'src/ui/features/preferences';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -101,6 +112,52 @@ function PendingTransactionsIndicator() {
       </svg>
     );
   }
+}
+
+/**
+ * Product requirement:
+ * if we're in default mode (not testnet), but the current dapp chain
+ * is a testnet, we want to hide positions and history to supposedy avoid
+ * confusion for the user
+ */
+function TestnetworkGuard({
+  dappChain: dappChainStr,
+  renderGuard,
+  children,
+}: React.PropsWithChildren<{
+  dappChain: string | null;
+  renderGuard: ({
+    testnetModeEnabled,
+  }: {
+    testnetModeEnabled: boolean;
+  }) => React.ReactNode;
+}>) {
+  const { preferences } = usePreferences();
+  const dappChain = dappChainStr ? createChain(dappChainStr) : null;
+  const { networks, isLoading } = useNetworks(
+    dappChainStr ? [dappChainStr] : undefined
+  );
+  const currentNetwork = dappChain
+    ? networks?.getNetworkByName(dappChain)
+    : null;
+  const { data: mainnetNetwork } = useMainnetNetwork({
+    chain: dappChainStr || null,
+    enabled:
+      Boolean(preferences?.testnetMode?.on) &&
+      !isLoading &&
+      !currentNetwork &&
+      Boolean(dappChainStr),
+  });
+  const network = currentNetwork || mainnetNetwork;
+  const testnetModeEnabled = Boolean(preferences?.testnetMode?.on);
+  if (
+    dappChainStr &&
+    network &&
+    testnetModeEnabled !== Boolean(network.is_testnet)
+  ) {
+    return renderGuard({ testnetModeEnabled });
+  }
+  return children;
 }
 
 function PercentChange({
@@ -294,6 +351,50 @@ function OverviewComponent() {
       <DelayedRender delay={2000}>
         <ViewLoading kind="network" />
       </DelayedRender>
+    </CenteredFillViewportView>
+  );
+
+  const { preferences, setPreferences } = usePreferences();
+  const isTestnetMode = Boolean(preferences?.testnetMode?.on);
+  useEffect(() => {
+    // reset filter chain when switching between modes
+    // so that we do not show unsupported network data
+    setFilterChain(null);
+  }, [isTestnetMode]);
+  const testnetGuardView = (
+    <CenteredFillViewportView
+      adjustForNavigationBar={true}
+      maxHeight={getMinTabContentHeight(offsetValuesState)}
+    >
+      <FillView>
+        <EmptyView2
+          title="Wrong Environment"
+          message={
+            <div>
+              {preferences?.testnetMode?.on ? (
+                <UnstyledButton
+                  className="underline hover:no-underline"
+                  onClick={() => {
+                    setPreferences({ testnetMode: null });
+                  }}
+                >
+                  Turn off Testnet Mode
+                </UnstyledButton>
+              ) : (
+                <UnstyledButton
+                  className="underline hover:no-underline"
+                  onClick={() => {
+                    setPreferences({ testnetMode: { on: true } });
+                  }}
+                >
+                  Turn on Testnet Mode
+                </UnstyledButton>
+              )}{' '}
+              or change your network
+            </div>
+          }
+        />
+      </FillView>
     </CenteredFillViewportView>
   );
 
@@ -506,11 +607,16 @@ function OverviewComponent() {
                       backgroundColor: 'var(--white)',
                     }}
                   />
-                  <Positions
+                  <TestnetworkGuard
                     dappChain={dappChain || null}
-                    filterChain={filterChain}
-                    onChainChange={setFilterChain}
-                  />
+                    renderGuard={() => testnetGuardView}
+                  >
+                    <Positions
+                      dappChain={dappChain || null}
+                      filterChain={filterChain}
+                      onChainChange={setFilterChain}
+                    />
+                  </TestnetworkGuard>
                 </ViewSuspense>
               }
             />
@@ -520,11 +626,16 @@ function OverviewComponent() {
                 <ViewSuspense logDelays={true} fallback={tabFallback}>
                   <NavigationTitle title={null} documentTitle="NFTs" />
                   <Spacer height={TAB_TOP_PADDING} />
-                  <NonFungibleTokens
+                  <TestnetworkGuard
                     dappChain={dappChain || null}
-                    filterChain={filterChain}
-                    onChainChange={setFilterChain}
-                  />
+                    renderGuard={() => testnetGuardView}
+                  >
+                    <NonFungibleTokens
+                      dappChain={dappChain || null}
+                      filterChain={filterChain}
+                      onChainChange={setFilterChain}
+                    />
+                  </TestnetworkGuard>
                 </ViewSuspense>
               }
             />
@@ -534,11 +645,16 @@ function OverviewComponent() {
                 <ViewSuspense logDelays={true} fallback={tabFallback}>
                   <NavigationTitle title={null} documentTitle="History" />
                   <Spacer height={TAB_TOP_PADDING} />
-                  <HistoryList
+                  <TestnetworkGuard
                     dappChain={dappChain || null}
-                    filterChain={filterChain}
-                    onChainChange={setFilterChain}
-                  />
+                    renderGuard={() => testnetGuardView}
+                  >
+                    <HistoryList
+                      dappChain={dappChain || null}
+                      filterChain={filterChain}
+                      onChainChange={setFilterChain}
+                    />
+                  </TestnetworkGuard>
                 </ViewSuspense>
               }
             />

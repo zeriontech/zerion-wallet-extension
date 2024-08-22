@@ -46,7 +46,8 @@ function NetworksDisclosureButton({
 
   const { data: mainnetNetwork } = useMainnetNetwork({
     chain: value,
-    enabled: preferences?.testnetMode?.on && !isLoading && !selectedNetwork,
+    enabled:
+      Boolean(preferences?.testnetMode?.on) && !isLoading && !selectedNetwork,
   });
   const chain = createChain(value);
   const network = selectedNetwork || mainnetNetwork;
