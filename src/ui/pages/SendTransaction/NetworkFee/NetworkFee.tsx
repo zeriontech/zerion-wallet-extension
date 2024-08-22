@@ -130,9 +130,7 @@ export function NetworkFee({
         {label !== undefined ? (
           label
         ) : (
-          <UIText kind="small/regular" color="var(--neutral-700)">
-            Network Fee
-          </UIText>
+          <UIText kind="small/regular">Network Fee</UIText>
         )}
         {isLoading ? (
           <CircleSpinner />
