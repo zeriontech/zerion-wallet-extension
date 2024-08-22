@@ -7,7 +7,7 @@ async function getNextToActiveTabIndex(): Promise<number | undefined> {
     active: true,
     lastFocusedWindow: true,
   });
-  return activeTab?.index;
+  return activeTab ? activeTab.index + 1 : undefined;
 }
 
 export async function openUrl(url: URL, params?: Partial<UrlContext>) {
