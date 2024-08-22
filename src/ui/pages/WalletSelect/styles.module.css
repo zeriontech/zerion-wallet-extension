@@ -1,5 +1,18 @@
-.wallet {
+.wallet,
+.portfolio {
   border: 2px solid var(--neutral-200);
+}
+
+.portfolio {
+  background-color: var(--neutral-200);
+  padding: 12;
+  border-radius: 20;
+  width: '100%';
+  margin-block: 4;
+}
+
+.portfolioIcon {
+  color: var(--neutral-200);
 }
 
 @media (hover: hover) {
