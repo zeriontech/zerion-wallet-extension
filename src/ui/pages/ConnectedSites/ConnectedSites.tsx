@@ -71,9 +71,11 @@ function RevokeAllPermissionsComponent({
 }
 
 function ConnectedSitesList({
+  showRevokeAll,
   items,
   onRevokeAll,
 }: {
+  showRevokeAll: boolean;
   items: ConnectedSiteItem[];
   onRevokeAll: () => void;
 }) {
@@ -144,7 +146,9 @@ function ConnectedSitesList({
           };
         })}
       />
-      <RevokeAllPermissionsComponent onRevokeAll={onRevokeAll} />
+      {showRevokeAll ? (
+        <RevokeAllPermissionsComponent onRevokeAll={onRevokeAll} />
+      ) : null}
     </VStack>
   );
 }
@@ -260,6 +264,7 @@ function ConnectedSitesMain() {
       ) : null}
       {isLoading ? null : itemsToDisplay?.length ? (
         <ConnectedSitesList
+          showRevokeAll={!searchQuery}
           items={itemsToDisplay}
           onRevokeAll={() => connectedSitesQuery.refetch()}
         />
