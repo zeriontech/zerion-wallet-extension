@@ -93,17 +93,26 @@ function ApplicationImage({
             )}
           />
 
-          <div style={{ position: 'absolute', bottom: 0, right: 0 }}>
+          <div
+            style={{
+              position: 'absolute',
+              bottom: -2,
+              right: -2,
+            }}
+          >
             <NetworkIcon
-              size={16}
+              size={20}
               name={network?.name || null}
               src={network?.icon_url || ''}
-              style={{ borderRadius: 4 }}
+              style={{
+                borderRadius: 8,
+                border: '2px solid var(--surface-background-color)',
+              }}
             />
           </div>
         </div>
       )}
-    ></FadeOutAndIn>
+    />
   );
 }
 
