@@ -89,7 +89,7 @@ export function useMainnetNetwork({
       const network = mainNetworksStore
         .getState()
         .networks?.getNetworkByName(createChain(chainStr));
-      return network;
+      return network ?? null;
     },
     staleTime: 1000 * 60 * 5,
     suspense: false,
