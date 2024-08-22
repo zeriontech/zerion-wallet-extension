@@ -106,7 +106,7 @@ export function TransactionSimulation({
   const txInterpretQuery = useQuery({
     enabled: FEATURE_PAYMASTER_ENABLED
       ? shouldInterpretTransaction({ network, eligibilityQuery })
-      : true,
+      : Boolean(network?.supports_simulations),
     queryKey: ['interpretTransaction', transaction, currency, client],
     queryKeyHashFn: (queryKey) => {
       const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
@@ -129,7 +129,7 @@ export function TransactionSimulation({
   });
 
   const paymasterTxInterpretQuery = useQuery({
-    enabled: paymasterEligible,
+    enabled: Boolean(network?.supports_simulations) && paymasterEligible,
     suspense: false,
     queryKey: ['interpret/typedData', client, currency, transaction],
     queryKeyHashFn: (queryKey) => {
