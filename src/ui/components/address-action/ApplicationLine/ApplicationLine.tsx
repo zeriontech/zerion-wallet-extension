@@ -106,7 +106,7 @@ function ApplicationImage({
               src={network?.icon_url || ''}
               style={{
                 borderRadius: 8,
-                border: '2px solid var(--neutral-100)',
+                border: '2px solid var(--surface-background-color)',
               }}
             />
           </div>
