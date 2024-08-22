@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef } from 'react';
+import React, { useLayoutEffect, useMemo, useRef } from 'react';
 import {
   BottomSheetDialog,
   DialogAnimationPreset,
@@ -38,7 +38,10 @@ function BackupReminderComponent({ onDismiss }: { onDismiss: () => void }) {
   });
 
   const { data: walletGroups, isLoading } = useWalletGroups();
-  const notBackedUpGroups = walletGroups?.filter((group) => needsBackup(group));
+  const notBackedUpGroups = useMemo(
+    () => walletGroups?.filter((group) => needsBackup(group)),
+    [walletGroups]
+  );
 
   if (isLoading || !notBackedUpGroups || !notBackedUpGroups.length) {
     return null;
