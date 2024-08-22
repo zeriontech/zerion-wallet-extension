@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef } from 'react';
+import React, { useLayoutEffect, useMemo, useRef } from 'react';
 import {
   BottomSheetDialog,
   DialogAnimationPreset,
@@ -14,6 +14,9 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { apostrophe } from 'src/ui/shared/typography';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { useBackupTodosCount } from 'src/ui/shared/requests/useBackupTodosCount';
+import { openHrefInTabView } from 'src/ui/shared/openUrl';
+import { useWalletGroups } from 'src/ui/shared/requests/useWalletGroups';
+import { needsBackup } from 'src/ui/components/BackupInfoNote/BackupInfoNote';
 
 const ONE_DAY = 1000 * 60 * 60 * 24;
 
@@ -33,6 +36,16 @@ function BackupReminderComponent({ onDismiss }: { onDismiss: () => void }) {
     onDismiss();
     dialogRef.current?.close();
   });
+
+  const { data: walletGroups, isLoading } = useWalletGroups();
+  const notBackedUpGroups = useMemo(
+    () => walletGroups?.filter((group) => needsBackup(group)),
+    [walletGroups]
+  );
+
+  if (isLoading || !notBackedUpGroups || !notBackedUpGroups.length) {
+    return null;
+  }
 
   return (
     <BottomSheetDialog
@@ -74,9 +87,18 @@ function BackupReminderComponent({ onDismiss }: { onDismiss: () => void }) {
             <UIText kind="body/accent">I{apostrophe}ll take the risk</UIText>
           </Button>
           <Button
-            onClick={handleHide}
+            onClick={(event) => {
+              handleHide();
+              if (notBackedUpGroups.length === 1) {
+                openHrefInTabView(event);
+              }
+            }}
             as={UnstyledLink}
-            to="/settings"
+            to={
+              notBackedUpGroups.length === 1
+                ? `/backup?groupId=${notBackedUpGroups[0].id}`
+                : '/settings'
+            }
             kind="primary"
             style={{ whiteSpace: 'nowrap', paddingInline: 24 }}
             size={48}
