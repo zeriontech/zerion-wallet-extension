@@ -42,11 +42,13 @@ function HistoryTokenValue({
   const sign = getSign(value, direction);
   const commonQuantity = useMemo(
     () =>
-      getCommonQuantity({
-        asset,
-        chain,
-        baseQuantity: value,
-      }),
+      value === ''
+        ? getCommonQuantity({
+            asset,
+            chain,
+            baseQuantity: value,
+          })
+        : null,
     [chain, asset, value]
   );
 
@@ -60,9 +62,11 @@ function HistoryTokenValue({
         overflow: 'hidden',
         whiteSpace: 'nowrap',
       }}
-      title={commonQuantity.toFixed()}
+      title={commonQuantity?.toFixed()}
     >
-      <AssetQuantity sign={sign} commonQuantity={commonQuantity} />
+      {commonQuantity ? (
+        <AssetQuantity sign={sign} commonQuantity={commonQuantity} />
+      ) : null}
       {withLink ? (
         <AssetLink asset={asset} address={address} />
       ) : (
