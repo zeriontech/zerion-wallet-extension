@@ -154,14 +154,14 @@ function ConnectedSitesSearch({
   onChange,
   inputRef,
 }: {
-  value?: string;
+  value: string;
   onChange(value: string): void;
   inputRef: React.MutableRefObject<InputHandle | null>;
 }) {
   return (
     <DebouncedInput
       ref={inputRef}
-      value={value || ''}
+      value={value}
       delay={300}
       onChange={onChange}
       render={({ value, handleChange }) => (
@@ -232,7 +232,7 @@ function ConnectedSitesMain() {
     useErrorBoundary: true,
     suspense: true,
   });
-  const [searchQuery, setSearchQuery] = useState<string | undefined>();
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const searchInputRef = useRef<InputHandle | null>(null);
 
   const filteredConnectedSites = useMemo(() => {
@@ -271,7 +271,7 @@ function ConnectedSitesMain() {
             if (searchInputRef.current) {
               searchInputRef.current.setValue('');
             }
-            setSearchQuery(undefined);
+            setSearchQuery('');
           }}
         />
       )}
