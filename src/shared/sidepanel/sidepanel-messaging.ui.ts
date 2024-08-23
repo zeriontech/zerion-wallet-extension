@@ -6,7 +6,7 @@ import { urlContext } from '../UrlContext';
  * Extract type for returned value to reuse
  * between ui and background scripts
  */
-export function initializeSidepanelEvents() {
+export function initializeSidepanelMessaging() {
   browser.runtime.onMessage.addListener(async (request) => {
     if (request.payload === 'is-sidepanel-open') {
       const isSidepanel = urlContext.windowType === 'sidepanel';

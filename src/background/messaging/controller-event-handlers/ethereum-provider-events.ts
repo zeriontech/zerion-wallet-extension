@@ -38,7 +38,11 @@ export class EthereumEventsBroadcaster implements Listener {
   private getClientPorts() {
     const ports = this.getActivePorts();
     return ports.filter(
-      (port) => port.name === `${browser.runtime.id}/ethereum`
+      (port) =>
+        port.name === `${browser.runtime.id}/ethereum` ||
+        // "/wallet" is our own UI and we need to notify changes to it
+        // when it's opened as a sidepanel
+        port.name === `${browser.runtime.id}/wallet`
     );
   }
 

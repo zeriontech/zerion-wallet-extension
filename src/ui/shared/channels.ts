@@ -6,11 +6,13 @@ import type { MemoryCacheRPC } from 'src/shared/types/MemoryCacheRPC';
 import { UserRejected } from 'src/shared/errors/errors';
 import type { RpcRequestWithContext } from 'src/shared/custom-rpc';
 import { urlContext } from 'src/shared/UrlContext';
+import { isObj } from 'src/shared/isObj';
 import type { DnaService } from '../../modules/dna-service/dna.background';
 import { initDnaApi } from '../../modules/dna-service/dna.client';
 import type { SessionCacheService } from '../../background/resource/sessionCacheService';
 import type { RPCPort } from './channels.types';
 import { navigateProgrammatically } from './routing/helpers';
+import { emitter } from './events';
 
 export const walletPort = new PortMessageChannel({
   name: `${browser.runtime.id}/wallet`,
@@ -85,4 +87,10 @@ export function initialize() {
   dnaServicePort.initialize();
   sessionCacheService.initialize();
   initDnaApi();
+
+  walletPort.emitter.on('message', (msg) => {
+    if (isObj(msg) && msg.type === 'ethereumEvent') {
+      emitter.emit('ethereumEvent');
+    }
+  });
 }

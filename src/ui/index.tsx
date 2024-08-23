@@ -7,7 +7,7 @@ import { BackgroundScriptUpdateHandler } from 'src/shared/core/BackgroundScriptU
 import { initializeClientAnalytics } from 'src/shared/analytics/analytics.client';
 import { HandshakeFailed } from 'src/shared/errors/errors';
 import { runtimeStore } from 'src/shared/core/runtime-store';
-import { initializeSidepanelEvents } from 'src/shared/sidepanel/sidepanel-messaging.ui';
+import { initializeSidepanelEvents } from 'src/shared/sidepanel/initialize';
 import { applyDrawFix } from './shared/applyDrawFix';
 import { App } from './App';
 import type { AppProps } from './App/App';
