@@ -453,11 +453,14 @@ export function App({ initialView, inspect }: AppProps) {
 
     const isDialog = urlContext.windowType === 'dialog';
     const isTab = urlContext.windowType === 'tab';
+    const isSidepanel = urlContext.windowType === 'sidepanel';
 
     if (isDialog) {
       result.push(styles.isDialog);
     } else if (isTab) {
       result.push(styles.isTab);
+    } else if (isSidepanel) {
+      result.push(styles.isSidepanel);
     }
     if (isOnboardingMode || isPageLayout) {
       result.push(styles.pageLayout);
