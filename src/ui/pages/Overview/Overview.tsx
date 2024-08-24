@@ -11,7 +11,7 @@ import {
 import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import ReadonlyIcon from 'jsx:src/ui/assets/visible.svg';
-import SidepanelIcon from 'jsx:src/ui/assets/chevron-right.svg';
+import SidepanelIcon from 'jsx:src/ui/assets/sidepanel.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { usePendingTransactions } from 'src/ui/transactions/usePendingTransactions';
@@ -462,6 +462,7 @@ function OverviewComponent() {
             <HStack gap={0}>
               <SettingsLinkIcon />
               <Button
+                title="Open Sidepanel"
                 kind="ghost"
                 size={36}
                 style={{ paddingInline: 8 }}
