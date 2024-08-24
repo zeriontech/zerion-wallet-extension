@@ -79,11 +79,15 @@ export function TestModeDecoration() {
         <div
           // this wrapper is a helper because the inner element's
           // borderImageSlice trick doesn't work with border-radius.
-          style={{
-            borderBottomLeftRadius: 'var(--sidepanel-border-radius)',
-            borderBottomRightRadius: 'var(--sidepanel-border-radius)',
-            overflow: 'hidden',
-          }}
+          style={
+            on
+              ? {
+                  borderBottomLeftRadius: 'var(--sidepanel-border-radius)',
+                  borderBottomRightRadius: 'var(--sidepanel-border-radius)',
+                  overflow: 'hidden',
+                }
+              : undefined
+          }
         >
           <div
             style={{
