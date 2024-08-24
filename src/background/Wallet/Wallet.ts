@@ -1097,11 +1097,7 @@ export class Wallet {
     const txWithFee = await prepareGasAndNetworkFee(prepared, networks, {
       source: mode === 'testnet' ? 'testnet' : 'mainnet',
     });
-    // TODO: remove `prepareTransactionType` helper after update to ethers v6
-    // ethers v5 throws error inside `getFeeData` for some chains with too big totalDifficulty param
-    // can be reproduced with https://chainlist.org/chain/30732
-    const txWithFeeAndType = prepareTransactionType(txWithFee);
-    const transaction = await prepareNonce(txWithFeeAndType, networks, chain);
+    const transaction = await prepareNonce(txWithFee, networks, chain);
 
     const paymasterEligible =
       FEATURE_PAYMASTER_ENABLED &&
@@ -1138,10 +1134,15 @@ export class Wallet {
       }
     } else {
       try {
+        // TODO: remove `prepareTransactionType` helper after update to ethers v6
+        // ethers v5 throws error inside `getFeeData` for some chains with too big totalDifficulty param
+        // can be reproduced with https://chainlist.org/chain/30732
+        const txWithType = prepareTransactionType(transaction);
+
         const signer = await this.getSigner(chainId);
         const transactionResponse = await signer.sendTransaction({
-          ...transaction,
-          type: transaction.type || undefined, // to exclude null
+          ...txWithType,
+          type: txWithType.type || undefined, // to exclude null
         });
         const safeTx = removeSignature(transactionResponse);
         emitter.emit('transactionSent', {
