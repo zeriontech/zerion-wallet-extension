@@ -68,7 +68,11 @@ async function initializeUI({
   try {
     await registerServiceWorker();
     initializeChannels();
-    await maybeOpenOnboarding();
+
+    if (process.env.NODE_ENV !== 'test') {
+      await maybeOpenOnboarding();
+    }
+
     if (innerIsFirstLoad) {
       await persistQueryClient(queryClient);
     } else {

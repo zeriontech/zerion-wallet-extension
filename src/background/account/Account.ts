@@ -77,7 +77,7 @@ export class Account extends EventEmitter<AccountEvents> {
     }
   }
 
-  static async createUser(password: string): Promise<User> {
+  static createUser(password: string): User {
     const validity = validate({ password });
     if (!validity.valid) {
       throw new Error(validity.message);

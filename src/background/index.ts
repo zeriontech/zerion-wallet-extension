@@ -20,6 +20,8 @@ import { emitter } from './events';
 import * as userActivity from './user-activity';
 import { ContentScriptManager } from './ContentScriptManager';
 import { TransactionService } from './transactions/TransactionService';
+import { Account } from './account/Account';
+import { INTERNAL_SYMBOL_CONTEXT } from './Wallet/Wallet';
 
 Object.assign(globalThis, { ethers });
 
@@ -195,10 +197,26 @@ initialize().then((values) => {
   });
 
   emitter.on('sessionExpired', () => account.logout());
+
+  if (process.env.NODE_ENV === 'test') {
+    const wallet = account.getCurrentWallet();
+    const password = 'testtest';
+    const user = Account.createUser(password);
+    account.setUser(user, { password }, { isNewUser: true }).then(() => {
+      wallet.uiGenerateMnemonic().then((pendingWallet) => {
+        account.saveUserAndWallet().then(() => {
+          wallet.setCurrentAddress({
+            params: { address: pendingWallet.address },
+            context: INTERNAL_SYMBOL_CONTEXT,
+          });
+        });
+      });
+    });
+  }
 });
 
 browser.runtime.onInstalled.addListener(({ reason }) => {
-  if (reason === 'install') {
+  if (reason === 'install' && process.env.NODE_ENV !== 'test') {
     userLifecycleStore.handleRuntimeInstalledEvent();
     openOnboarding();
   }
