@@ -10,6 +10,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { urlContext } from 'src/shared/UrlContext';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { openSidePanel } from '../sidepanel-apis';
 
 function closeIfNotInTab() {
@@ -84,7 +85,11 @@ function SidepanelOptionsButtonComponent() {
           <VStack gap={0}>
             {data?.openPanelOnActionClick ? (
               <FrameListItemButton
-                style={{ textAlign: 'start' }}
+                style={{
+                  ['--list-item-background-hover-dark' as string]:
+                    'var(--neutral-200)',
+                  textAlign: 'start',
+                }}
                 onClick={async () => {
                   openSidePanel({
                     pathname: '/',
@@ -101,7 +106,11 @@ function SidepanelOptionsButtonComponent() {
               </FrameListItemButton>
             ) : (
               <FrameListItemButton
-                style={{ textAlign: 'start' }}
+                style={{
+                  ['--list-item-background-hover-dark' as string]:
+                    'var(--neutral-200)',
+                  textAlign: 'start',
+                }}
                 onClick={async () => {
                   await chrome.sidePanel.setPanelBehavior({
                     openPanelOnActionClick: false,
@@ -141,7 +150,11 @@ function SidepanelOptionsButtonComponent() {
               </FrameListItemButton>
             )}
             <FrameListItemButton
-              style={{ textAlign: 'start' }}
+              style={{
+                ['--list-item-background-hover-dark' as string]:
+                  'var(--neutral-200)',
+                textAlign: 'start',
+              }}
               onClick={async () => {
                 await chrome.sidePanel.setPanelBehavior({
                   openPanelOnActionClick: true,
@@ -170,6 +183,7 @@ function SidepanelOptionsButtonComponent() {
               </HStack>
             </FrameListItemButton>
           </VStack>
+          <Spacer height={4} />
           <UIText
             kind="small/regular"
             color="var(--neutral-500)"
