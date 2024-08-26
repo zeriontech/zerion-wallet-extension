@@ -11,7 +11,6 @@ import {
 import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import ReadonlyIcon from 'jsx:src/ui/assets/visible.svg';
-import SidepanelIcon from 'jsx:src/ui/assets/sidepanel.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { usePendingTransactions } from 'src/ui/transactions/usePendingTransactions';
@@ -64,7 +63,7 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
-import { openSidePanel } from 'src/shared/sidepanel/sidepanel-apis';
+import { SidepanelOptionsButton } from 'src/shared/sidepanel/SidepanelOptionsButton';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -461,24 +460,7 @@ function OverviewComponent() {
             <CurrentAccountControls />
             <HStack gap={0}>
               <SettingsLinkIcon />
-              <Button
-                title="Open Sidepanel"
-                kind="ghost"
-                size={36}
-                style={{ paddingInline: 8 }}
-                onClick={() => {
-                  openSidePanel({
-                    pathname: '/',
-                    searchParams: null,
-                  });
-                  window.close();
-                }}
-              >
-                <SidepanelIcon
-                  // this is a temporary icon for Proof of Concept stage
-                  style={{ display: 'block', width: 20, height: 20 }}
-                />
-              </Button>
+              <SidepanelOptionsButton />
             </HStack>
           </div>
           <Spacer height={16} />
