@@ -67,7 +67,7 @@
     "@types/socket.io-client": "^1.4.36",
     "@types/uuid": "^9.0.2",
     "@types/w3c-web-usb": "^1.0.10",
-    "@types/webextension-polyfill": "^0.10.7",
+    "@types/webextension-polyfill": "^0.10.1",
     "@typescript-eslint/eslint-plugin": "^5.61.0",
     "@typescript-eslint/parser": "^5.61.0",
     "confusing-browser-globals": "^1.0.11",
