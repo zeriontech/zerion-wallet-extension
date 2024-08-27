@@ -6,6 +6,7 @@ import { SessionCacheService } from 'src/background/resource/sessionCacheService
 import { openOnboarding } from 'src/shared/openOnboarding';
 import { userLifecycleStore } from 'src/shared/analytics/shared/UserLifecycle';
 import { UrlContextParam } from 'src/shared/types/UrlContext';
+import { initializeSidepanelCommands } from 'src/shared/sidepanel/sidepanel-commands.background';
 import { initialize } from './initialize';
 import { PortRegistry } from './messaging/PortRegistry';
 import { createWalletMessageHandler } from './messaging/port-message-handlers/createWalletMessageHandler';
@@ -22,6 +23,8 @@ import { ContentScriptManager } from './ContentScriptManager';
 import { TransactionService } from './transactions/TransactionService';
 
 Object.assign(globalThis, { ethers });
+
+initializeSidepanelCommands();
 
 globalThis.addEventListener('install', (_event) => {
   /** Seems to be recommended when clients always expect a service worker */

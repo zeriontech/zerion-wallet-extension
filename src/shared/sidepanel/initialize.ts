@@ -1,7 +1,7 @@
 import browser from 'webextension-polyfill';
 import { emitter } from 'src/ui/shared/events';
 import { urlContext } from '../UrlContext';
-import { initializeSidepanelMessaging } from './sidepanel-messaging.ui';
+import { initializeSidepanelMessaging } from './sidepanel-messaging.client';
 
 async function handleActiveTabChange() {
   const tabs = await browser.tabs.query({ active: true, currentWindow: true });
