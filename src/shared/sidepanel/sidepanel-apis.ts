@@ -2,7 +2,7 @@ import browser from 'webextension-polyfill';
 import { getSidepanelUrl } from '../getPopupUrl';
 import { invariant } from '../invariant';
 
-async function getActiveTab() {
+export async function getActiveTab() {
   const tabs = await browser.tabs.query({ active: true, currentWindow: true });
   return tabs.length ? tabs[0] : null;
 }

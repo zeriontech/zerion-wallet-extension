@@ -2,7 +2,7 @@ import { isObj } from '../isObj';
 
 interface IsOpenRequest {
   method: 'is-sidepanel-open';
-  params: null;
+  params: { windowId: number | null };
 }
 
 interface CloseSidepanelRequest {
