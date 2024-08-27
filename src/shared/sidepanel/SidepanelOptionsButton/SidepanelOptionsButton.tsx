@@ -1,5 +1,7 @@
+import browser from 'webextension-polyfill';
 import React, { useMemo } from 'react';
 import { useId } from 'react';
+import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import { useQuery } from '@tanstack/react-query';
 import SidepanelIcon from 'jsx:src/ui/assets/sidepanel.svg';
 import CheckIcon from 'jsx:src/ui/assets/check.svg';
@@ -12,6 +14,37 @@ import { urlContext } from 'src/shared/UrlContext';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { openSidePanel } from '../sidepanel-apis';
+import { isSidepanelSupported } from '../sidepanel-support';
+
+let os: browser.Runtime.PlatformOs | null = null;
+async function readOs() {
+  const info = await browser.runtime.getPlatformInfo();
+  os = info.os;
+}
+readOs();
+
+function presentationalShortcut(value: string) {
+  // ⌘⌥⇧⌃
+  let result = value;
+  result = result.replace('Shift', '⇧');
+  if (os === 'mac') {
+    result = result.replaceAll('+', '');
+    result = result.replace('Ctrl', '⌘');
+  }
+  return result;
+}
+
+function getExtensionShortcuts() {
+  const { commands } = browser.runtime.getManifest();
+  return {
+    executeAction: presentationalShortcut(
+      commands?._execute_action?.suggested_key?.default ?? ''
+    ),
+    sidepanelOpenCustom: presentationalShortcut(
+      commands?.sidepanel_open_custom?.suggested_key?.default ?? ''
+    ),
+  };
+}
 
 function closeIfNotInTab() {
   if (urlContext.windowType !== 'tab') {
@@ -28,6 +61,7 @@ function SidepanelOptionsButtonComponent() {
     },
     staleTime: Infinity,
   });
+  const extensionShortcuts = useMemo(() => getExtensionShortcuts(), []);
 
   return (
     <div style={{ position: 'relative' }}>
@@ -145,6 +179,13 @@ function SidepanelOptionsButtonComponent() {
                     <CheckIcon
                       style={{ width: 20, height: 20, color: 'var(--primary)' }}
                     />
+                  ) : urlContext.windowType !== 'sidepanel' ? (
+                    <UIText
+                      kind="small/regular"
+                      style={{ color: 'var(--neutral-500' }}
+                    >
+                      {extensionShortcuts.sidepanelOpenCustom}
+                    </UIText>
                   ) : null}
                 </HStack>
               </FrameListItemButton>
@@ -183,25 +224,72 @@ function SidepanelOptionsButtonComponent() {
               </HStack>
             </FrameListItemButton>
           </VStack>
-          <Spacer height={4} />
-          <UIText
-            kind="small/regular"
-            color="var(--neutral-500)"
-            style={{ paddingLeft: 12 }}
-          >
-            Use{' '}
-            <kbd
-              style={{
-                backgroundColor: 'var(--neutral-200)',
-                padding: '1px 3px',
-                borderRadius: 4,
-                border: '1px solid var(--neutral-300)',
-              }}
+          <Spacer height={2} />
+          <div
+            style={{
+              marginInline: 12,
+              height: 1,
+              backgroundColor: 'var(--neutral-200)',
+            }}
+          />
+          <Spacer height={8} />
+          <VStack gap={4}>
+            <UIText
+              kind="small/regular"
+              color="var(--neutral-500)"
+              style={{ paddingLeft: 12 }}
             >
-              Ctrl+Shift+E
-            </kbd>{' '}
-            to open extension in a preferred way (popup or sidepanel)
-          </UIText>
+              <HStack
+                gap={4}
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                <kbd
+                  style={{
+                    fontFamily: 'inherit',
+                    backgroundColor: 'var(--neutral-200)',
+                    padding: '1px 3px',
+                    borderRadius: 4,
+                    border: '1px solid var(--neutral-300)',
+                  }}
+                >
+                  {getExtensionShortcuts().sidepanelOpenCustom}
+                </kbd>
+                <span>Sidepanel</span>
+              </HStack>
+            </UIText>
+            <UIText
+              kind="small/regular"
+              color="var(--neutral-500)"
+              style={{ paddingLeft: 12 }}
+            >
+              <HStack
+                gap={4}
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                <kbd
+                  style={{
+                    fontFamily: 'inherit',
+                    backgroundColor: 'var(--neutral-200)',
+                    padding: '1px 3px',
+                    borderRadius: 4,
+                    border: '1px solid var(--neutral-300)',
+                  }}
+                >
+                  {getExtensionShortcuts().executeAction}
+                </kbd>
+                <HStack gap={4} alignItems="center">
+                  Current Action{' '}
+                  <span title="Currently preferred action: popup or sidepanel">
+                    <QuestionHintIcon
+                      style={{ width: 20, height: 20, display: 'block' }}
+                    />
+                  </span>
+                </HStack>
+              </HStack>
+            </UIText>
+          </VStack>
         </Frame>
       </div>
     </div>
@@ -214,7 +302,7 @@ export function SidepanelOptionsButton() {
     // NOTE: this is a recommended way to check popover support from MDN: https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/popoverTargetElement#toggle_popover_action_with_an_auto_popover
     // eslint-disable-next-line no-prototype-builtins
     const supportsPopover = HTMLElement.prototype.hasOwnProperty('popover');
-    const supportsSidepanel = window.chrome && 'sidePanel' in chrome;
+    const supportsSidepanel = isSidepanelSupported();
     return supportsCssAnchor && supportsPopover && supportsSidepanel;
   }, []);
   if (!requiredApisSupported) {
