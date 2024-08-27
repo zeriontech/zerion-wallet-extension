@@ -1769,15 +1769,15 @@ class PublicController {
     ]
   >) {
     const currentAddress = this.wallet.ensureCurrentAddress();
-    // NOTE: I switched to syncronous method in an attempt to
-    // synchronously open sidepanel in response to dapp request
-    // because Browser only allows to open sidepanel synchronously after
+    // NOTE: I switched to synchronous method in an attempt to
+    // synchronously open sidepanel in response to a dapp request
+    // because browser only allows to open sidepanel synchronously after
     // a user action. But currently I abandoned the idea of opening sidepanel
     // for dapp requests. Instead, we use sidepanel if it is already opened
     // So this sync method is not necessary.
     // NOTE:
     // There is another possible workaround to opening sidepanel but keeping these methods
-    // syncronous. We can syncronously open sidepanel with some loading UI,
+    // asyncronous. We can synchronously open sidepanel with some loading UI,
     // and then later update it with the desired view by calling `.setOptions()` API.
     const currentWallet = this.wallet.getCurrentWalletSync({
       context: INTERNAL_SYMBOL_CONTEXT,
