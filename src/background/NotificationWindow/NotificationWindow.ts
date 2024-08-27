@@ -268,7 +268,10 @@ export class NotificationWindow extends PersistentStore<PendingState> {
       return pendingWindows[requestId].id;
     }
 
-    const sidepanelIsOpen = await isSidepanelOpen();
+    const currentWindow = await browser.windows.getCurrent();
+    const sidepanelIsOpen = await isSidepanelOpen({
+      windowId: currentWindow.id ?? null,
+    });
     if (sidepanelIsOpen) {
       const sidepanelPath = getSidepanelUrl();
       const searchParams = new URLSearchParams(search);

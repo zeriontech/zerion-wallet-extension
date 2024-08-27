@@ -6,13 +6,17 @@ import type { SidepanelMessageRequest } from './types';
  * Sidepanel can be opened in one browser window and not in the other
  * TODO: create helper to check if sidepanel is opened for the window that has active tab
  */
-export async function isSidepanelOpen() {
+export async function isSidepanelOpen({
+  windowId,
+}: {
+  windowId: number | null;
+}) {
   try {
     const response = await browser.runtime.sendMessage({
-      payload: { method: 'is-sidepanel-open', params: null },
+      payload: { method: 'is-sidepanel-open', params: { windowId } },
     } satisfies SidepanelMessageRequest);
     return response.sidepanelStatus === 'open';
-  } catch {
+  } catch (error) {
     return false;
   }
 }
