@@ -305,23 +305,6 @@ export class NotificationWindow extends PersistentStore<PendingState> {
       this.idsMap.set(id, windowId);
       return id;
     }
-    // =======
-    //     if (type === 'sidepanel') {
-    //       invariant(tabId, 'tabId is required to open a sidepanel');
-    //       const { id } = await openSidePanel({
-    //         pathname: route,
-    //         searchParams: new URLSearchParams(search),
-    //         openOptions: { tabId },
-    //       });
-    //       const windowId = 0;
-    //       this.events.emit('open', { requestId, windowId, id });
-    //       this.idsMap.set(id, windowId);
-    //       this.requestIds.set(id, requestId);
-    //       return id;
-    //     } else {
-    //       // open dialog
-    //     }
-    // >>>>>>> 99fc15e6 ([wip])
   }
 
   /** @deprecated */

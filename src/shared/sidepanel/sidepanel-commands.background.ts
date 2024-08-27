@@ -15,7 +15,7 @@ export function initializeSidepanelCommands() {
       try {
         /**
          * What we try to do here is close sidepanel if it's open and open it if it's closed.
-         * But because we are only allowed to open it synchronously, we cannot to an async call
+         * But because we are only allowed to open it synchronously, we cannot do an async call
          * to check if it is currently open or not.
          * So the trick is to always call "close" first: if sidepanel is closed, there's noone to receive
          * the request, so it's ok. But if it is open, it will receive the request asyncronously, and therefore
@@ -46,7 +46,7 @@ export function initializeSidepanelCommands() {
           // last remembered path was a Dapp Dialog (SendTransaction, RequestAccounts, etc...)
           // That's why we want to make sure we open at overview.
           // But if the last remembered path was something else, like an NFTs tab, it would be
-          // helpful to restore it, but we deliverately break this because NOT restoring dapp dialog is
+          // helpful to restore it, but we deliberately break this because NOT restoring dapp dialog is
           // more important.
           tabId: activeTab?.id,
         });
