@@ -115,6 +115,7 @@
     "is-truthy-ts": "^1.0.1",
     "ky": "^0.33.3",
     "lodash": "^4.17.21",
+    "lottie-web": "^5.12.2",
     "memoize-one": "^6.0.0",
     "nanoevents": "^8.0.0",
     "nanoid": "^4.0.2",
