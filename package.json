@@ -50,6 +50,9 @@
   "engines": {
     "node": ">=20.10.0"
   },
+  "optionalDependencies": {
+    "@parcel/watcher": "^2.4.0"
+  },
   "devDependencies": {
     "@parcel/config-webextension": "^2.9.3",
     "@parcel/optimizer-data-url": "^2.9.3",
