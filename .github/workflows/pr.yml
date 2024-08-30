@@ -77,7 +77,7 @@ jobs:
           FEATURE_FOOTER_BUG_BUTTON: off
           MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_DEV }}
         run: |
-          npm install
+          npm ci
           npm run build:production
 
       - name: Save PR number
