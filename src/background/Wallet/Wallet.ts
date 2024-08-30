@@ -89,6 +89,7 @@ import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
 import { isSessionCredentials } from '../account/Credentials';
+import { lastUsedAddress } from '../user-activity';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import type { PendingWallet, WalletRecord } from './model/types';
@@ -223,8 +224,12 @@ export class Wallet {
         emitter.emit('globalPreferencesChange', state, prevState);
       })
     );
+    // todo: group into "syncWithExternalStores" or "updateExternalStores"?
     this.disposer.add(
       this.walletStore.on('change', this.updateChainConfigStore.bind(this))
+    );
+    this.disposer.add(
+      this.walletStore.on('change', this.updateLastAddress.bind(this))
     );
     this.notificationWindow = notificationWindow;
     this.userCredentials = userCredentials;
@@ -248,6 +253,7 @@ export class Wallet {
     }
     this.record = await this.walletStore.read(this.id, this.userCredentials);
     this.updateChainConfigStore();
+    this.updateLastAddress();
     if (this.record) {
       this.emitter.emit('recordUpdated');
     }
@@ -797,6 +803,29 @@ export class Wallet {
     const on = Boolean(preferences.testnetMode?.on);
     const client = getDefiSdkClient({ on });
     chainConfigStore.setDefiSdkClient(client);
+  }
+
+  private updateLastAddress() {
+    const currentAddress = this.readCurrentAddress();
+    if (this.id && currentAddress) {
+      lastUsedAddress.setState({
+        address: currentAddress,
+        walletModelId: this.id,
+      });
+    }
+  }
+
+  async getLastUsedAddress({
+    context,
+    params: { userId },
+  }: WalletMethodParams<{ userId: string }>) {
+    this.verifyInternalOrigin(context);
+    const state = lastUsedAddress.getState();
+    if (state && state?.walletModelId === userId) {
+      return state.address;
+    } else {
+      return null;
+    }
   }
 
   async getGlobalPreferences({ context }: WalletMethodParams) {

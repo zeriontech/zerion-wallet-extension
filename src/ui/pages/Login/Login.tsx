@@ -1,4 +1,13 @@
-import React, { useId, useMemo } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useId,
+  useImperativeHandle,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import type { PublicUser } from 'src/shared/types/User';
@@ -12,10 +21,175 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import * as s from 'src/ui/style/helpers.module.css';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { Input } from 'src/ui/ui-kit/Input';
-import { HStack } from 'src/ui/ui-kit/HStack';
 import ZerionLogo from 'jsx:src/ui/assets/zerion-squircle.svg';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
+import type { AnimationItem } from 'lottie-web';
+import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
+import { WalletAvatar } from 'src/ui/components/WalletAvatar';
+import { ZStack } from 'src/ui/ui-kit/ZStack';
+import { walletPort } from 'src/ui/shared/channels';
+import { invariant } from 'src/shared/invariant';
+import { DelayedRender } from 'src/ui/components/DelayedRender';
+
+async function loadLottieWeb() {
+  const lottieModule = await import('lottie-web');
+  return lottieModule as unknown as (typeof lottieModule)['default'];
+}
+
+class LottieModule {
+  animationItem: AnimationItem | null = null;
+  options: { onAnimationReady?: () => void };
+  private disposables: Array<() => void> = [];
+
+  async prepareResources() {
+    const [lottieWeb, animationData] = await Promise.all([
+      await loadLottieWeb(),
+      await import('./login-animation-lottie-v3.json'),
+    ]);
+    return { lottieWeb, animationData };
+  }
+
+  constructor({ onAnimationReady }: { onAnimationReady?: () => void }) {
+    this.options = { onAnimationReady };
+  }
+
+  async startAnimation(
+    container: Element,
+    { autoplay, signal }: { autoplay: boolean; signal: AbortSignal }
+  ) {
+    const { lottieWeb, animationData } = await this.prepareResources();
+    if (signal.aborted) {
+      return;
+    }
+    const item = lottieWeb.loadAnimation({
+      container,
+      animationData,
+      loop: false,
+      autoplay,
+      renderer: 'svg',
+    });
+    function loopOnCompleted() {
+      const FRAME_NUMBER_TO_START_LOOP = 39;
+      item.goToAndPlay(FRAME_NUMBER_TO_START_LOOP, true);
+    }
+    item.addEventListener('complete', loopOnCompleted);
+    this.disposables.push(() =>
+      item.removeEventListener('complete', loopOnCompleted)
+    );
+    this.options.onAnimationReady?.();
+    this.animationItem = item;
+  }
+
+  destroy() {
+    this.disposables.forEach((dispose) => dispose());
+    this.animationItem?.destroy();
+    this.animationItem = null;
+  }
+}
+
+interface LottieComponentHandle {
+  startAnimation: () => void;
+}
+
+const LayersLottieAnimation = React.forwardRef(function LayersLottieAnimation(
+  {
+    onAnimationReady,
+  }: {
+    onAnimationReady?: () => void;
+  },
+  ref: React.Ref<LottieComponentHandle>
+) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const lottieModuleRef = useRef<LottieModule | null>(null);
+
+  const onAnimationStartRef = useRef(onAnimationReady);
+  useLayoutEffect(() => {
+    onAnimationStartRef.current = onAnimationReady;
+  });
+
+  useImperativeHandle(ref, () => ({
+    startAnimation() {
+      lottieModuleRef.current?.animationItem?.play();
+    },
+  }));
+
+  useEffect(() => {
+    if (!containerRef.current) {
+      return;
+    }
+    const lottieModule = new LottieModule({
+      onAnimationReady: () => onAnimationStartRef.current?.(),
+    });
+    lottieModuleRef.current = lottieModule;
+    const abortController = new AbortController();
+    const { signal } = abortController;
+    lottieModule.startAnimation(containerRef.current, {
+      autoplay: false,
+      signal,
+    });
+    return () => {
+      lottieModuleRef.current = null;
+      abortController.abort();
+      lottieModule.destroy();
+    };
+  }, []);
+
+  return <div ref={containerRef} />;
+});
+
+function LoginPageAnimation({ address }: { address: string | null }) {
+  const [lottieIsReady, setLottieIsReady] = useState(false);
+  const [avatarImageReady, setAvatarImageReady] = useState(false);
+  const [lottieStarted, setLottieStarted] = useState(false);
+  const handleAvatarImageReady = useCallback(
+    () => setAvatarImageReady(true),
+    []
+  );
+  const lottieComponentRef = useRef<LottieComponentHandle | null>(null);
+  const hasAddressValue = Boolean(address);
+  useEffect(() => {
+    if (lottieIsReady && (!hasAddressValue || avatarImageReady)) {
+      lottieComponentRef.current?.startAnimation();
+      setLottieStarted(true);
+    }
+  }, [lottieIsReady, avatarImageReady, hasAddressValue]);
+  return (
+    <div style={{ position: 'relative' }}>
+      <div style={{ position: 'absolute' }}>
+        <DelayedRender>
+          {/* Expensive component, delay rendering so that initial view render is fast */}
+          <LayersLottieAnimation
+            ref={lottieComponentRef}
+            onAnimationReady={() => setLottieIsReady(true)}
+          />
+        </DelayedRender>
+      </div>
+      <Spacer height={130} />
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <ZStack style={{ placeItems: 'center' }}>
+          <ZerionLogo style={{ width: 54, height: 54 }} />
+          {address ? (
+            <div
+              style={{
+                opacity: lottieStarted ? 1 : 0,
+                transform: lottieStarted ? 'scale(1)' : 'scale(0.8)',
+                transition: 'opacity 400ms, transform 400ms',
+              }}
+            >
+              <WalletAvatar
+                address={address}
+                size={64}
+                borderRadius={12}
+                onReady={handleAvatarImageReady}
+              />
+            </div>
+          ) : null}
+        </ZStack>
+      </div>
+    </div>
+  );
+}
 
 export function Login() {
   const [params] = useSearchParams();
@@ -34,6 +208,16 @@ export function Login() {
   const formId = useId();
   const inputId = useId();
 
+  const userId = user?.id;
+
+  const { data: lastUsedAddress } = useQuery({
+    enabled: Boolean(userId),
+    queryKey: ['wallet/getLastUsedAddress', userId],
+    queryFn: async () => {
+      invariant(userId, "user['id'] is required");
+      return walletPort.request('getLastUsedAddress', { userId });
+    },
+  });
   const loginMutation = useMutation({
     mutationFn: async ({
       user,
@@ -44,8 +228,11 @@ export function Login() {
     }) => {
       return accountPublicRPCPort.request('login', { user, password });
     },
-    onSuccess() {
+    onSuccess: async () => {
       zeroizeAfterSubmission();
+      // There's a rare weird bug when logging in reloads login page instead of redirecting to overview.
+      // Maybe this will fix it? If not, then remove this delay
+      await new Promise((r) => setTimeout(r, 100));
       navigate(params.get('next') || '/', {
         // If user clicks "back" when we redirect them,
         // we should take them to overview, not back to the login view
@@ -66,15 +253,13 @@ export function Login() {
   }
   return (
     <PageColumn>
-      <Spacer height={56} />
-      <HStack
-        gap={16}
-        alignItems="center"
-        style={{ placeSelf: 'center', alignSelf: 'center' }}
+      <PageFullBleedColumn
+        paddingInline={false}
+        style={{ position: 'relative' }}
       >
-        <ZerionLogo style={{ width: 54, height: 54 }} />
-      </HStack>
-      <Spacer height={86} />
+        <LoginPageAnimation address={lastUsedAddress || null} />
+      </PageFullBleedColumn>
+      <Spacer height={74} />
       <form
         id={formId}
         onSubmit={(event) => {
@@ -98,7 +283,7 @@ export function Login() {
             kind="headline/h1"
             style={{ textAlign: 'center' }}
           >
-            Enter Password
+            Welcome Back!
           </UIText>
           <VStack gap={4}>
             <Input
@@ -106,7 +291,7 @@ export function Login() {
               autoFocus={true}
               type="password"
               name="password"
-              placeholder="password"
+              placeholder="Password"
               required={true}
             />
             {loginMutation.error ? (
@@ -115,25 +300,21 @@ export function Login() {
               </UIText>
             ) : null}
           </VStack>
-          <UIText
-            as={UnstyledLink}
-            to="/forgot-password"
-            kind="body/accent"
-            color="var(--neutral-500)"
-            style={{ textAlign: 'center' }}
-          >
-            <span className={s.hoverUnderline}>Forgot password?</span>
-          </UIText>
+          <Button form={formId} disabled={loginMutation.isLoading}>
+            {loginMutation.isLoading ? 'Checking...' : 'Unlock'}
+          </Button>
         </VStack>
       </form>
       <Spacer height={24} />
-      <Button
-        style={{ marginTop: 'auto' }}
-        form={formId}
-        disabled={loginMutation.isLoading}
+      <UIText
+        as={UnstyledLink}
+        to="/forgot-password"
+        kind="body/accent"
+        color="var(--neutral-500)"
+        style={{ textAlign: 'center', marginTop: 'auto' }}
       >
-        {loginMutation.isLoading ? 'Checking...' : 'Unlock'}
-      </Button>
+        <span className={s.hoverUnderline}>Need Help?</span>
+      </UIText>
       <PageBottom />
     </PageColumn>
   );

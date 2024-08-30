@@ -1,5 +1,6 @@
 import browser from 'webextension-polyfill';
 import * as browserStorage from 'src/background/webapis/storage';
+import { PersistentStore } from 'src/modules/persistent-store';
 import { emitter } from './events';
 import { globalPreferences } from './Wallet/GlobalPreferences';
 
@@ -45,3 +46,10 @@ export async function handleAlarm(alarm: browser.Alarms.Alarm) {
     }
   }
 }
+
+// TODO: use LocallyEncrypted value for {{ address: LocallyEncrypted } | undefined}
+type State = { address: string; walletModelId: string } | null; // Record< | undefined>;
+class LastUsedAddress extends PersistentStore<State> {}
+
+const STORAGE_KEY = 'last-selected-address';
+export const lastUsedAddress = new LastUsedAddress(null, STORAGE_KEY);
