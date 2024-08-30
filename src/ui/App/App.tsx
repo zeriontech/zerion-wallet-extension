@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { AreaProvider } from 'react-area';
+import lottie from 'lottie-web';
 import { QueryClientProvider, useQuery } from '@tanstack/react-query';
 import {
   HashRouter as Router,
@@ -81,6 +82,8 @@ import { BackupPage } from '../pages/Backup/Backup';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
+
+Object.assign(window, { lottie });
 
 function DefiSdkClientProvider({ children }: React.PropsWithChildren) {
   const client = useDefiSdkClient();
