@@ -45,7 +45,7 @@ class LottieModule {
   async prepareResources() {
     const [lottieWeb, animationData] = await Promise.all([
       await loadLottieWeb(),
-      await import('./login-animation-lottie-v3.json'),
+      await import('./login-animation-lottie.json'),
     ]);
     return { lottieWeb, animationData };
   }
@@ -140,20 +140,20 @@ const LayersLottieAnimation = React.forwardRef(function LayersLottieAnimation(
 
 function LoginPageAnimation({ address }: { address: string | null }) {
   const [lottieIsReady, setLottieIsReady] = useState(false);
-  const [avatarImageReady, setAvatarImageReady] = useState(false);
+  const [avatarImageIsReady, setAvatarImageIsReady] = useState(false);
   const [lottieStarted, setLottieStarted] = useState(false);
   const handleAvatarImageReady = useCallback(
-    () => setAvatarImageReady(true),
+    () => setAvatarImageIsReady(true),
     []
   );
   const lottieComponentRef = useRef<LottieComponentHandle | null>(null);
   const hasAddressValue = Boolean(address);
   useEffect(() => {
-    if (lottieIsReady && (!hasAddressValue || avatarImageReady)) {
+    if (lottieIsReady && (!hasAddressValue || avatarImageIsReady)) {
       lottieComponentRef.current?.startAnimation();
       setLottieStarted(true);
     }
-  }, [lottieIsReady, avatarImageReady, hasAddressValue]);
+  }, [lottieIsReady, avatarImageIsReady, hasAddressValue]);
   return (
     <div style={{ position: 'relative' }}>
       <div style={{ position: 'absolute' }}>
@@ -174,7 +174,15 @@ function LoginPageAnimation({ address }: { address: string | null }) {
               style={{
                 opacity: lottieStarted ? 1 : 0,
                 transform: lottieStarted ? 'scale(1)' : 'scale(0.8)',
-                transition: 'opacity 400ms, transform 400ms',
+                // Looks line "linear" easing is supported in target browsers:
+                // https://caniuse.com/mdn-css_types_easing-function_linear-function
+                // Configure spring transition:
+                // https://www.kvin.me/css-springs
+                ['--spring-easing' as string]:
+                  'linear(0, 0.0018, 0.007 1.16%, 0.0332, 0.0753, 0.1297 5.52%, 0.2489 8.13%, 0.6447 15.97%, 0.7592, 0.8569 21.19%, 0.9284 23.52%, 0.9917 26.13%, 1.0335 28.45%, 1.066 31.06%, 1.082, 1.0911 35.13%, 1.0948, 1.0927 39.77%, 1.0874, 1.0798 43.84%, 1.0346 53.42%, 1.0162 58.06%, 1.0018, 0.9939 68.52%, 0.9914 72.58%, 0.9912 77.51%, 0.9996 99.87%)',
+                ['--spring-duration' as string]: '0.8300s',
+                transition:
+                  'opacity 400ms, transform var(--spring-duration) var(--spring-easing)',
               }}
             >
               <WalletAvatar
