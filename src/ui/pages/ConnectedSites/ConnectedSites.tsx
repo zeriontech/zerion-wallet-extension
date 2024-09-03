@@ -54,7 +54,7 @@ function RevokeAllPermissionsComponent({
               <UIText kind="body/regular" color="var(--negative-500)">
                 {removeAllOriginsMutation.isLoading
                   ? 'Loading...'
-                  : 'Revoke All'}
+                  : 'Disconnect All'}
               </UIText>
             ),
           },
