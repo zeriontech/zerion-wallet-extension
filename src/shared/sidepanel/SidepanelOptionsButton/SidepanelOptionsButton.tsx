@@ -73,6 +73,15 @@ function SidepanelOptionsButtonComponent() {
         kind="ghost"
         size={36}
         style={{ paddingInline: 8, ['anchorName' as string]: '--popover-1' }}
+        onClick={() => {
+          if (urlContext.windowType !== 'sidepanel') {
+            openSidePanel({
+              pathname: '/',
+              searchParams: null,
+            });
+            window.close();
+          }
+        }}
         onKeyDown={(event) => {
           const popoverEl = event.currentTarget
             .nextElementSibling as HTMLDivElement;
@@ -88,7 +97,10 @@ function SidepanelOptionsButtonComponent() {
             display: 'block',
             width: 20,
             height: 20,
-            color: data?.openPanelOnActionClick ? 'var(--primary)' : undefined,
+            color:
+              urlContext.windowType === 'sidepanel'
+                ? 'var(--primary)'
+                : undefined,
           }}
         />
       </Button>
@@ -255,7 +267,7 @@ function SidepanelOptionsButtonComponent() {
                 >
                   {getExtensionShortcuts().sidepanelOpenCustom}
                 </kbd>
-                <span>Sidepanel</span>
+                <span>Open Sidepanel</span>
               </HStack>
             </UIText>
             <UIText
@@ -280,10 +292,15 @@ function SidepanelOptionsButtonComponent() {
                   {getExtensionShortcuts().executeAction}
                 </kbd>
                 <HStack gap={4} alignItems="center">
-                  Current Action{' '}
-                  <span title="Currently preferred action: popup or sidepanel">
+                  Open Extension{' '}
+                  <span title="Popup or Sidepanel: depends on your current preference">
                     <QuestionHintIcon
-                      style={{ width: 20, height: 20, display: 'block' }}
+                      style={{
+                        cursor: 'help',
+                        width: 20,
+                        height: 20,
+                        display: 'block',
+                      }}
                     />
                   </span>
                 </HStack>
