@@ -99,10 +99,9 @@ export const LayersAnimationLottie = React.forwardRef(
       lottieModule.prepareResources();
       lottieModuleRef.current = lottieModule;
       const abortController = new AbortController();
-      const { signal } = abortController;
       lottieModule.startAnimation(containerRef.current, {
         autoplay: false,
-        signal,
+        signal: abortController.signal,
       });
       return () => {
         lottieModuleRef.current = null;

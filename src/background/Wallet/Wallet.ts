@@ -89,7 +89,7 @@ import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
 import { isSessionCredentials } from '../account/Credentials';
-import { lastUsedAddress } from '../user-activity';
+import { lastUsedAddressStore } from '../user-activity';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import type { PendingWallet, WalletRecord } from './model/types';
@@ -224,12 +224,8 @@ export class Wallet {
         emitter.emit('globalPreferencesChange', state, prevState);
       })
     );
-    // todo: group into "syncWithExternalStores" or "updateExternalStores"?
     this.disposer.add(
-      this.walletStore.on('change', this.updateChainConfigStore.bind(this))
-    );
-    this.disposer.add(
-      this.walletStore.on('change', this.updateLastAddress.bind(this))
+      this.walletStore.on('change', this.notifyExternalStores.bind(this))
     );
     this.notificationWindow = notificationWindow;
     this.userCredentials = userCredentials;
@@ -252,8 +248,7 @@ export class Wallet {
       return;
     }
     this.record = await this.walletStore.read(this.id, this.userCredentials);
-    this.updateChainConfigStore();
-    this.updateLastAddress();
+    this.notifyExternalStores();
     if (this.record) {
       this.emitter.emit('recordUpdated');
     }
@@ -797,7 +792,7 @@ export class Wallet {
   }
 
   /** bound to instance */
-  private async updateChainConfigStore() {
+  private async notifyChainConfigStore() {
     const preferences = await this.getPreferences({
       context: INTERNAL_SYMBOL_CONTEXT,
     });
@@ -806,14 +801,20 @@ export class Wallet {
     chainConfigStore.setDefiSdkClient(client);
   }
 
-  private updateLastAddress() {
+  private notifyLastUsedAddressStore() {
     const currentAddress = this.readCurrentAddress();
     if (this.id && currentAddress) {
-      lastUsedAddress.setState({
+      lastUsedAddressStore.setState({
         address: currentAddress,
         walletModelId: this.id,
       });
     }
+  }
+
+  private async notifyExternalStores() {
+    // TODO: should we inline the contents of these methods here?
+    this.notifyChainConfigStore();
+    this.notifyLastUsedAddressStore();
   }
 
   async getLastUsedAddress({
@@ -821,7 +822,7 @@ export class Wallet {
     params: { userId },
   }: WalletMethodParams<{ userId: string }>) {
     this.verifyInternalOrigin(context);
-    const state = lastUsedAddress.getState();
+    const state = lastUsedAddressStore.getState();
     if (state && state?.walletModelId === userId) {
       return state.address;
     } else {

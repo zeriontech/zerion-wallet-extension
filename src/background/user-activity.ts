@@ -49,7 +49,7 @@ export async function handleAlarm(alarm: browser.Alarms.Alarm) {
 
 // TODO: use LocallyEncrypted value for {{ address: LocallyEncrypted } | undefined}
 type State = { address: string; walletModelId: string } | null; // Record< | undefined>;
-class LastUsedAddress extends PersistentStore<State> {}
+class LastUsedAddressStore extends PersistentStore<State> {}
 
-const STORAGE_KEY = 'last-selected-address';
-export const lastUsedAddress = new LastUsedAddress(null, STORAGE_KEY);
+const STORAGE_KEY = 'last-used-address';
+export const lastUsedAddressStore = new LastUsedAddressStore(null, STORAGE_KEY);
