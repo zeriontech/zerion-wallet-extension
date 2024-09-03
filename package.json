@@ -50,10 +50,6 @@
   "engines": {
     "node": ">=20.10.0"
   },
-  "optionalDependencies": {
-    "@parcel/watcher": "^2.4.0",
-    "lightningcss-linux-x64-gnu": "^1.26.0"
-  },
   "devDependencies": {
     "@parcel/config-webextension": "^2.9.3",
     "@parcel/optimizer-data-url": "^2.9.3",
@@ -119,7 +115,7 @@
     "is-truthy-ts": "^1.0.1",
     "ky": "^0.33.3",
     "lodash": "^4.17.21",
-    "lottie-web": "^5.12.1",
+    "lottie-web": "^5.12.2",
     "memoize-one": "^6.0.0",
     "nanoevents": "^8.0.0",
     "nanoid": "^4.0.2",
