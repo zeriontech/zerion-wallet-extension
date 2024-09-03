@@ -2,8 +2,6 @@ import React, {
   useCallback,
   useEffect,
   useId,
-  useImperativeHandle,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -24,119 +22,14 @@ import { Input } from 'src/ui/ui-kit/Input';
 import ZerionLogo from 'jsx:src/ui/assets/zerion-squircle.svg';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
-import type { AnimationItem } from 'lottie-web';
 import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { walletPort } from 'src/ui/shared/channels';
 import { invariant } from 'src/shared/invariant';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
-
-async function loadLottieWeb() {
-  const lottieModule = await import('lottie-web');
-  return lottieModule as unknown as (typeof lottieModule)['default'];
-}
-
-class LottieModule {
-  animationItem: AnimationItem | null = null;
-  options: { onAnimationReady?: () => void };
-  private disposables: Array<() => void> = [];
-
-  async prepareResources() {
-    const [lottieWeb, animationData] = await Promise.all([
-      await loadLottieWeb(),
-      await import('./login-animation-lottie.json'),
-    ]);
-    return { lottieWeb, animationData };
-  }
-
-  constructor({ onAnimationReady }: { onAnimationReady?: () => void }) {
-    this.options = { onAnimationReady };
-  }
-
-  async startAnimation(
-    container: Element,
-    { autoplay, signal }: { autoplay: boolean; signal: AbortSignal }
-  ) {
-    const { lottieWeb, animationData } = await this.prepareResources();
-    if (signal.aborted) {
-      return;
-    }
-    const item = lottieWeb.loadAnimation({
-      container,
-      animationData,
-      loop: false,
-      autoplay,
-      renderer: 'svg',
-    });
-    function loopOnCompleted() {
-      const FRAME_NUMBER_TO_START_LOOP = 39;
-      item.goToAndPlay(FRAME_NUMBER_TO_START_LOOP, true);
-    }
-    item.addEventListener('complete', loopOnCompleted);
-    this.disposables.push(() =>
-      item.removeEventListener('complete', loopOnCompleted)
-    );
-    this.options.onAnimationReady?.();
-    this.animationItem = item;
-  }
-
-  destroy() {
-    this.disposables.forEach((dispose) => dispose());
-    this.animationItem?.destroy();
-    this.animationItem = null;
-  }
-}
-
-interface LottieComponentHandle {
-  startAnimation: () => void;
-}
-
-const LayersLottieAnimation = React.forwardRef(function LayersLottieAnimation(
-  {
-    onAnimationReady,
-  }: {
-    onAnimationReady?: () => void;
-  },
-  ref: React.Ref<LottieComponentHandle>
-) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const lottieModuleRef = useRef<LottieModule | null>(null);
-
-  const onAnimationStartRef = useRef(onAnimationReady);
-  useLayoutEffect(() => {
-    onAnimationStartRef.current = onAnimationReady;
-  });
-
-  useImperativeHandle(ref, () => ({
-    startAnimation() {
-      lottieModuleRef.current?.animationItem?.play();
-    },
-  }));
-
-  useEffect(() => {
-    if (!containerRef.current) {
-      return;
-    }
-    const lottieModule = new LottieModule({
-      onAnimationReady: () => onAnimationStartRef.current?.(),
-    });
-    lottieModuleRef.current = lottieModule;
-    const abortController = new AbortController();
-    const { signal } = abortController;
-    lottieModule.startAnimation(containerRef.current, {
-      autoplay: false,
-      signal,
-    });
-    return () => {
-      lottieModuleRef.current = null;
-      abortController.abort();
-      lottieModule.destroy();
-    };
-  }, []);
-
-  return <div ref={containerRef} />;
-});
+import { LayersAnimationLottie } from './LayersAnimationLottie';
+import { type LottieComponentHandle } from './LayersAnimationLottie';
 
 function LoginPageAnimation({ address }: { address: string | null }) {
   const [lottieIsReady, setLottieIsReady] = useState(false);
@@ -159,7 +52,7 @@ function LoginPageAnimation({ address }: { address: string | null }) {
       <div style={{ position: 'absolute' }}>
         <DelayedRender>
           {/* Expensive component, delay rendering so that initial view render is fast */}
-          <LayersLottieAnimation
+          <LayersAnimationLottie
             ref={lottieComponentRef}
             onAnimationReady={() => setLottieIsReady(true)}
           />
