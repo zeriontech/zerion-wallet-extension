@@ -204,7 +204,7 @@ function AddressPositionItem({
             <UIText
               kind="small/regular"
               style={{
-                color: 'var(--neutral-500)',
+                color: 'var(--neutral-700)',
                 display: 'flex',
                 gap: 4,
                 alignItems: 'center',
@@ -407,35 +407,36 @@ function ProtocolHeading({
   const { currency } = useCurrency();
 
   return (
-    <HStack gap={8} alignItems="center">
-      {dappInfo.id === DEFAULT_PROTOCOL_ID ? (
-        <WalletIcon />
-      ) : (
-        <TokenIcon
-          src={dappInfo.icon_url}
-          symbol={dappInfo.name || dappInfo.id}
-          size={24}
-          style={{ borderRadius: 6 }}
-        />
-      )}
-      <UIText kind="body/accent">
-        {dappInfo.name || dappInfo.id}
-        {' · '}
+    <VStack gap={8}>
+      <HStack gap={8} alignItems="center">
+        {dappInfo.id === DEFAULT_PROTOCOL_ID ? (
+          <WalletIcon />
+        ) : (
+          <TokenIcon
+            src={dappInfo.icon_url}
+            symbol={dappInfo.name || dappInfo.id}
+            size={24}
+            style={{ borderRadius: 6 }}
+          />
+        )}
+        <UIText kind="body/accent">{dappInfo.name || dappInfo.id}</UIText>
+        <UIText
+          inline={true}
+          kind="caption/accent"
+          style={{
+            paddingBlock: 4,
+            paddingInline: 6,
+            backgroundColor: 'var(--neutral-200)',
+            borderRadius: 8,
+          }}
+        >
+          {`${formatPercent(relativeValue, 'en')}%`}
+        </UIText>
+      </HStack>
+      <UIText kind="headline/h2">
         <NeutralDecimals parts={formatCurrencyToParts(value, 'en', currency)} />
       </UIText>
-      <UIText
-        inline={true}
-        kind="caption/accent"
-        style={{
-          paddingBlock: 4,
-          paddingInline: 6,
-          backgroundColor: 'var(--neutral-200)',
-          borderRadius: 8,
-        }}
-      >
-        {`${formatPercent(relativeValue, 'en')}%`}
-      </UIText>
-    </HStack>
+    </VStack>
   );
 }
 
@@ -478,7 +479,7 @@ function PositionList({
 
   return (
     <VStack gap={16}>
-      {preparedPositions.dappIds.map((dappId) => {
+      {preparedPositions.dappIds.map((dappId, dappIndex) => {
         const items: Item[] = [];
         const {
           totalValue,
@@ -602,18 +603,29 @@ function PositionList({
                 />
               </div>
             ) : null}
-            {dappInfo.url ? (
-              <DappLink
-                dappInfo={dappInfo}
-                style={{ marginInline: 16, marginBlock: 4 }}
-              />
-            ) : null}
             <SurfaceList
               style={{ position: 'relative', paddingBlock: 0, zIndex: 0 }}
               // estimateSize={(index) => (index === 0 ? 52 : 60 + 1)}
               // overscan={5} // the library detects window edge incorrectly, increasing overscan just visually hides the problem
               items={items}
             />
+            {dappInfo.url ? (
+              <DappLink
+                dappInfo={dappInfo}
+                style={{ marginInline: 16, marginBlock: 4 }}
+              />
+            ) : null}
+            {dappIndex !== preparedPositions.dappIds.length - 1 ? (
+              <div
+                style={{
+                  height: 1,
+                  width: '100%',
+                  backgroundColor: 'var(--neutral-200)',
+                  marginTop: 16,
+                  marginBottom: 8,
+                }}
+              />
+            ) : null}
           </VStack>
         );
       })}

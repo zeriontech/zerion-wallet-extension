@@ -1,15 +1,3 @@
-.link {
-  display: block;
-  border: 2px solid var(--neutral-200);
-  color: var(--neutral-700);
-  padding: 8px 16px;
-  border-radius: 16px;
-}
-
-.icon {
-  color: var(--neutral-500);
-}
-
 @keyframes appear {
   from {
     opacity: 0;
@@ -33,7 +21,6 @@
 @media (hover: hover) {
   .link:hover {
     color: var(--black);
-    border: 2px solid var(--neutral-100);
     background-color: var(--neutral-100);
   }
 }
