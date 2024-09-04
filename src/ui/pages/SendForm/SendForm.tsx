@@ -263,6 +263,8 @@ function SendFormComponent() {
 
   const chainId = chain ? networks?.getChainId(chain) : null;
   const network = chain ? networks?.getNetworkByName(chain) : null;
+  const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
+
   const eligibilityQuery = useQuery({
     enabled: Boolean(
       USE_PAYMASTER_FEATURE &&
@@ -280,6 +282,7 @@ function SendFormComponent() {
       networks,
       userNonce,
       address,
+      source,
     ],
     queryFn: async () => {
       invariant(chainId, 'chainId not set');
@@ -296,7 +299,8 @@ function SendFormComponent() {
         nonce = value;
       }
       const from = address;
-      return ZerionAPI.checkPaymasterEligibility({ from, chainId, nonce });
+      const params = { from, chainId, nonce };
+      return ZerionAPI.checkPaymasterEligibility(params, { source });
     },
   });
   const paymasterEligible = Boolean(eligibilityQuery?.data?.data.eligible);
@@ -319,7 +323,7 @@ function SendFormComponent() {
       } = await configureTransactionToBeSigned();
       let transaction = tx;
       if (paymasterEligible) {
-        transaction = await fetchAndAssignPaymaster(transaction);
+        transaction = await fetchAndAssignPaymaster(transaction, { source });
       }
       const feeValueCommon = feeValueCommonRef.current || null;
 

@@ -45,7 +45,7 @@ export async function fetchGasPrice({
   source: 'testnet' | 'mainnet';
 }) {
   try {
-    const response = await ZerionAPI.getGasPrices({ chain, source });
+    const response = await ZerionAPI.getGasPrices({ chain }, { source });
     const chainGasPrices = response.data;
     if (chainGasPrices) {
       return chainGasPrices;

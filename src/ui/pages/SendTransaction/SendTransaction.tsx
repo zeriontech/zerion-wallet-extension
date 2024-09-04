@@ -544,15 +544,16 @@ function SendTransactionContent({
   const USE_PAYMASTER_FEATURE = FEATURE_PAYMASTER_ENABLED && !isDeviceWallet;
 
   const network = networks.getNetworkByName(chain) || null;
+  const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
 
   const eligibilityQuery = useQuery({
     enabled: USE_PAYMASTER_FEATURE && network?.supports_sponsored_transactions,
     suspense: false,
     staleTime: 120000,
-    queryKey: ['paymaster/check-eligibility', incomingTransaction],
+    queryKey: ['paymaster/check-eligibility', incomingTransaction, source],
     queryFn: async () => {
       const tx = await configureTransactionToBeSigned(incomingTransaction);
-      return ZerionAPI.checkPaymasterEligibility(tx);
+      return ZerionAPI.checkPaymasterEligibility(tx, { source });
     },
   });
 
@@ -585,6 +586,7 @@ function SendTransactionContent({
       transactionAction,
       client,
       currency,
+      source,
     ],
     queryKeyHashFn: (queryKey) => {
       const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
@@ -603,7 +605,7 @@ function SendTransactionContent({
           transactionAction,
         }
       );
-      const toSign = await fetchAndAssignPaymaster(configuredTx);
+      const toSign = await fetchAndAssignPaymaster(configuredTx, { source });
       const typedData = await walletPort.request('uiGetEip712Transaction', {
         transaction: toSign,
       });
@@ -666,7 +668,7 @@ function SendTransactionContent({
       invariant(sendTxBtnRef.current, 'SignTransactionButton not found');
       let tx = await configureTransactionToBeSigned(populatedTransaction);
       if (paymasterEligible) {
-        tx = await fetchAndAssignPaymaster(tx);
+        tx = await fetchAndAssignPaymaster(tx, { source });
       }
       if (USE_PAYMASTER_FEATURE) {
         console.log('sending to wallet', { tx });

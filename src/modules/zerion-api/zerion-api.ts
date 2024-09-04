@@ -43,20 +43,23 @@ function getZpiHeaders() {
   };
 }
 
+type UrlInput = { endpoint: string } | { url: string | URL };
+
+const resolveUrl = (input: UrlInput): string | URL => {
+  return 'endpoint' in input
+    ? new URL(input.endpoint, ZERION_API_URL)
+    : input.url;
+};
+
 export class ZerionAPI {
-  static get<T>(url: string) {
-    return ky
-      .get(new URL(url, ZERION_API_URL), { headers: getZpiHeaders() })
-      .json<T>();
+  static get<T>(params: UrlInput) {
+    const url = resolveUrl(params);
+    return ky.get(url, { headers: getZpiHeaders() }).json<T>();
   }
 
-  static post<T>(url: string, { body }: { body: BodyInit }) {
-    return ky
-      .post(new URL(url, ZERION_API_URL), {
-        body,
-        headers: getZpiHeaders(),
-      })
-      .json<T>();
+  static post<T>({ body, ...input }: UrlInput & { body: BodyInit }) {
+    const url = resolveUrl(input);
+    return ky.post(url, { body, headers: getZpiHeaders() }).json<T>();
   }
 
   static securityCheckUrl(payload: SecurityCheckUrlPayload) {
@@ -100,27 +103,22 @@ export class ZerionAPI {
       .json<WalletsMetaResponse>();
   }
 
-  static getGasPrices({
-    chain,
-    source,
-  }: GetGasPricesPayload & BackendSourceParams) {
-    const apiUrl =
-      source === 'testnet' ? ZERION_TESTNET_API_URL : ZERION_API_URL;
-    return ky
-      .get(new URL('chain/get-gas-prices/v1', apiUrl), {
-        searchParams: {
-          chain: chain.toString(),
-        },
-        headers: getZpiHeaders(),
-      })
-      .json<GetGasPricesResponse>();
+  static getGasPrices(
+    { chain }: GetGasPricesPayload,
+    { source }: BackendSourceParams
+  ) {
+    const base = source === 'testnet' ? ZERION_TESTNET_API_URL : ZERION_API_URL;
+    const url = new URL('chain/get-gas-prices/v1', base);
+    url.searchParams.set('chain', chain.toString());
+    return ZerionAPI.get<GetGasPricesResponse>({ url });
   }
 
   static checkPaymasterEligibility(
     tx: PartiallyRequired<
       Pick<IncomingTransaction, 'chainId' | 'from' | 'nonce'>,
       'chainId' | 'from'
-    >
+    >,
+    { source }: BackendSourceParams
   ) {
     const { nonce, chainId, from } = tx;
     invariant(nonce != null, 'Nonce is required to check eligibility');
@@ -134,8 +132,44 @@ export class ZerionAPI {
       data: { eligible: boolean; eta: null | number };
       errors?: null | { title: string; detail: string }[];
     }
-    return ZerionAPI.get<PaymasterCheckEligibilityResponse>(
-      `/paymaster/check-eligibility/v1?${params}`
-    );
+    const base = source === 'testnet' ? ZERION_TESTNET_API_URL : ZERION_API_URL;
+    const url = new URL(`/paymaster/check-eligibility/v1?${params}`, base);
+    return ZerionAPI.get<PaymasterCheckEligibilityResponse>({ url });
+  }
+
+  static async getPaymasterParams(
+    request: {
+      from: string;
+      to: string;
+      nonce: string;
+      chainId: string;
+      gas: string;
+      gasPerPubdataByte: string;
+      maxFee: string;
+      maxPriorityFee: string;
+      value: string;
+      data: string;
+    },
+    { source }: BackendSourceParams
+  ) {
+    interface PaymasterParamsResponse {
+      data: {
+        eligible: boolean;
+        paymasterParams: {
+          paymaster: string;
+          paymasterInput: string;
+        };
+        chargesData: {
+          amount: number;
+          deadline: string;
+          eta: null;
+        };
+      };
+      errors?: null | { title: string; detail: string }[];
+    }
+    const base = source === 'testnet' ? ZERION_TESTNET_API_URL : ZERION_API_URL;
+    const params = new URLSearchParams(request);
+    const url = new URL(`/paymaster/get-params/v1?${params}`, base);
+    return ZerionAPI.get<PaymasterParamsResponse>({ url });
   }
 }
