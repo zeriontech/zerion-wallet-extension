@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { Route, Routes, useLocation, useSearchParams } from 'react-router-dom';
 import { useAddressPortfolioDecomposition } from 'defi-sdk';
 import { RenderArea } from 'react-area';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -59,6 +59,7 @@ import {
 import { createChain } from 'src/modules/networks/Chain';
 import { usePreferences } from 'src/ui/features/preferences';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { useEvent } from 'src/ui/shared/useEvent';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -297,7 +298,12 @@ function OverviewComponent() {
   });
   const isReadonlyGroup =
     walletGroup && isReadonlyContainer(walletGroup.walletContainer);
-  const [filterChain, setFilterChain] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filterChain = searchParams.get('chain') || null;
+  const setFilterChain = useEvent((value: string | null) => {
+    // setSearchParams is not a stable reference: https://github.com/remix-run/react-router/issues/9304
+    setSearchParams(value ? [['chain', value]] : '');
+  });
   const { value, isLoading: isLoadingPortfolio } =
     useAddressPortfolioDecomposition(
       {
@@ -356,11 +362,15 @@ function OverviewComponent() {
 
   const { preferences, setPreferences } = usePreferences();
   const isTestnetMode = Boolean(preferences?.testnetMode?.on);
+  const isTestnetModeOnFirstRender = useRef<boolean | null>(isTestnetMode);
   useEffect(() => {
     // reset filter chain when switching between modes
     // so that we do not show unsupported network data
-    setFilterChain(null);
-  }, [isTestnetMode]);
+    if (isTestnetModeOnFirstRender.current !== isTestnetMode) {
+      isTestnetModeOnFirstRender.current = null; // make it never equal current value
+      setFilterChain(null);
+    }
+  }, [isTestnetMode, setFilterChain]);
   const testnetGuardView = (
     <CenteredFillViewportView
       adjustForNavigationBar={true}
@@ -397,6 +407,24 @@ function OverviewComponent() {
       </FillView>
     </CenteredFillViewportView>
   );
+
+  /**
+   * Creates href such that "chain" search-param is preserved between
+   * tabs, but clicking on current tab resets searchParams
+   */
+  const createTo = (to: string, { end = false } = {}) => {
+    if (!filterChain) {
+      return to;
+    }
+    const isActiveRoute = end
+      ? location.pathname === to
+      : location.pathname.startsWith(to);
+    if (isActiveRoute) {
+      return to;
+    } else {
+      return `${to}?chain=${filterChain}`;
+    }
+  };
 
   return (
     <PageColumn
@@ -551,26 +579,26 @@ function OverviewComponent() {
               }}
             />
             <SegmentedControlLink
-              to="/overview"
+              to={createTo('/overview', { end: true })}
               end={true}
               onClick={() => handleTabChange('/overview')}
             >
               Tokens
             </SegmentedControlLink>
             <SegmentedControlLink
-              to="/overview/nfts"
+              to={createTo('/overview/nfts')}
               onClick={() => handleTabChange('/overview/nfts')}
             >
               NFTs
             </SegmentedControlLink>
             <SegmentedControlLink
-              to="/overview/history"
+              to={createTo('/overview/history')}
               onClick={() => handleTabChange('/overview/history')}
             >
               History <PendingTransactionsIndicator />
             </SegmentedControlLink>
             <SegmentedControlLink
-              to="/overview/feed"
+              to={createTo('/overview/feed')}
               onClick={() => handleTabChange('/overview/feed')}
             >
               Perks
