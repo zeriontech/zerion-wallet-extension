@@ -183,7 +183,7 @@ function ActionItemBackend({
   }
 
   const address = 'address' in params ? params.address : undefined;
-  const approveOrRevokeTransfer = action.content?.single_asset;
+  const singleTransfer = action.content?.single_asset;
   const incomingTransfers = action.content?.transfers?.incoming;
   const outgoingTransfers = action.content?.transfers?.outgoing;
 
