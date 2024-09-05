@@ -72,6 +72,7 @@ export function CopyButton({
         <div
           style={{
             pointerEvents: 'none',
+            zIndex: 1,
             backgroundColor: 'var(--black)',
             color: 'var(--white)',
             boxShadow: 'var(--elevation-200)',

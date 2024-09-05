@@ -1,6 +1,7 @@
 import browser from 'webextension-polyfill';
 import type { ComponentPropsWithoutRef, ElementType } from 'react';
 import React from 'react';
+import classNames from 'classnames';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import SwapIcon from 'jsx:src/ui/assets/actions/swap.svg';
 import SendIcon from 'jsx:src/ui/assets/actions/send.svg';
@@ -21,14 +22,16 @@ function ActionButton<As extends ElementType = 'a'>({
   as,
   icon,
   title,
+  className,
   ...props
 }: {
+  className?: string;
   icon: React.ReactNode;
   title: React.AnchorHTMLAttributes<HTMLAnchorElement>['title'];
 } & { as?: As } & ComponentPropsWithoutRef<As>) {
   const Element = as || UnstyledAnchor;
   return (
-    <Element {...props} className={s.actionButton}>
+    <Element {...props} className={classNames(s.actionButton, className)}>
       <div className={s.icon} title={title}>
         {icon}
       </div>
@@ -81,117 +84,104 @@ export function ActionButtonsRow() {
   };
 
   return (
-    <ul
-      style={{
-        display: 'grid',
-        gap: 8,
-        gridTemplateColumns: 'repeat(4, 48px) 1fr',
-        padding: 0,
-        margin: 0,
-        listStyle: 'none',
-      }}
-    >
-      <li>
-        {process.env.FEATURE_SEND_FORM === 'on' ? (
+    <div className={s.containerRoot}>
+      <ul
+        className={s.list}
+        style={{
+          padding: 0,
+          margin: 0,
+          listStyle: 'none',
+        }}
+      >
+        <li>
+          {process.env.FEATURE_SEND_FORM === 'on' ? (
+            <ActionButton
+              title="Send"
+              as={UnstyledLink}
+              icon={<SendIcon />}
+              to="/send-form"
+            />
+          ) : (
+            <ActionButton
+              title="Send"
+              icon={<SendIcon />}
+              href={`${ZERION_ORIGIN}/send?${addWalletParams}`}
+              onClick={performAction}
+              target="_blank"
+              rel="noopener noreferrer"
+            />
+          )}
+        </li>
+        <li>
           <ActionButton
-            title="Send"
+            title="Receive"
             as={UnstyledLink}
-            icon={<SendIcon />}
-            to="/send-form"
+            icon={<ReceiveIcon />}
+            to={`/receive?address=${wallet.address}`}
           />
-        ) : (
+        </li>
+        <li>
           <ActionButton
-            title="Send"
-            icon={<SendIcon />}
-            href={`${ZERION_ORIGIN}/send?${addWalletParams}`}
+            title="Bridge"
+            icon={<BridgeIcon />}
+            href={`${ZERION_ORIGIN}/bridge?${addWalletParams}`}
             onClick={performAction}
             target="_blank"
             rel="noopener noreferrer"
           />
-        )}
-      </li>
-      <li>
-        <ActionButton
-          title="Receive"
-          as={UnstyledLink}
-          icon={<ReceiveIcon />}
-          to={`/receive?address=${wallet.address}`}
-        />
-      </li>
-      <li>
-        <ActionButton
-          title="Bridge"
-          icon={<BridgeIcon />}
-          href={`${ZERION_ORIGIN}/bridge?${addWalletParams}`}
-          onClick={performAction}
-          target="_blank"
-          rel="noopener noreferrer"
-        />
-      </li>
-      <li>
-        <ActionButton
-          title="Buy"
-          icon={<BuyIcon />}
-          href={`${ZERION_ORIGIN}/deposit?${addWalletParams}`}
-          onClick={performAction}
-          target="_blank"
-          rel="noopener noreferrer"
-        />
-      </li>
-      <li>
-        {process.env.FEATURE_SEND_FORM === 'on' ? (
+        </li>
+        <li>
+          <ActionButton
+            title="Buy"
+            icon={<BuyIcon />}
+            href={`${ZERION_ORIGIN}/deposit?${addWalletParams}`}
+            onClick={performAction}
+            target="_blank"
+            rel="noopener noreferrer"
+          />
+        </li>
+        <li>
           <WithMainnetOnlyWarningDialog<'a'>
             message="Testnets are not supported in Swap"
             render={({ handleClick }) => (
-              <Button
-                aria-label="Swap"
-                size={48}
-                as={UnstyledLink}
-                onClick={handleClick}
-                to="/swap-form"
-                style={{
-                  borderRadius: 24,
-                  width: '100%',
-                  ['--button-background' as string]: 'var(--black)',
-                  ['--button-text' as string]: 'var(--white)',
-                  ['--button-background-hover' as string]: 'var(--neutral-800)',
-                }}
-              >
-                <HStack gap={6} alignItems="center">
-                  <div style={{ display: 'flex' }}>
-                    <SwapIcon />
-                  </div>
-                  <UIText kind="small/accent">Swap</UIText>
-                </HStack>
-              </Button>
+              <>
+                <ActionButton
+                  className={classNames(s.showWhenSmall, s.actionButtonPrimary)}
+                  title="Swap"
+                  as={UnstyledLink}
+                  icon={<SwapIcon />}
+                  to="/swap-form"
+                  onClick={handleClick}
+                />
+                <div className={s.hideWhenSmall}>
+                  <Button
+                    aria-label="Swap"
+                    size={48}
+                    as={UnstyledLink}
+                    onClick={handleClick}
+                    to="/swap-form"
+                    style={{
+                      borderRadius: 24,
+                      width: '100%',
+                      ['--button-background' as string]: 'var(--black)',
+                      ['--button-text' as string]: 'var(--white)',
+                      ['--button-background-hover' as string]:
+                        'var(--neutral-800)',
+                    }}
+                  >
+                    <HStack gap={6} alignItems="center">
+                      <div style={{ display: 'flex' }}>
+                        <SwapIcon />
+                      </div>
+                      <UIText kind="small/accent">Swap</UIText>
+                    </HStack>
+                  </Button>
+                </div>
+              </>
             )}
           />
-        ) : (
-          <Button
-            aria-label="Swap"
-            size={48}
-            as={UnstyledAnchor}
-            href={`${ZERION_ORIGIN}/swap?${addWalletParams}`}
-            onClick={performAction}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              borderRadius: 24,
-              width: '100%',
-              ['--button-background' as string]: 'var(--black)',
-              ['--button-text' as string]: 'var(--white)',
-              ['--button-background-hover' as string]: 'var(--neutral-800)',
-            }}
-          >
-            <HStack gap={6} alignItems="center">
-              <div style={{ display: 'flex' }}>
-                <SwapIcon />
-              </div>
-              <UIText kind="small/accent">Swap</UIText>
-            </HStack>
-          </Button>
-        )}
-      </li>
-    </ul>
+        </li>
+      </ul>
+    </div>
   );
 }
