@@ -419,7 +419,13 @@ function ProtocolHeading({
             style={{ borderRadius: 6 }}
           />
         )}
-        <UIText kind="body/accent">{dappInfo.name || dappInfo.id}</UIText>
+        <UIText kind="body/accent">
+          {dappInfo.name || dappInfo.id}
+          {' · '}
+          <NeutralDecimals
+            parts={formatCurrencyToParts(value, 'en', currency)}
+          />
+        </UIText>
         <UIText
           inline={true}
           kind="caption/accent"
@@ -433,9 +439,6 @@ function ProtocolHeading({
           {`${formatPercent(relativeValue, 'en')}%`}
         </UIText>
       </HStack>
-      <UIText kind="headline/h2">
-        <NeutralDecimals parts={formatCurrencyToParts(value, 'en', currency)} />
-      </UIText>
     </VStack>
   );
 }
@@ -603,18 +606,18 @@ function PositionList({
                 />
               </div>
             ) : null}
-            <SurfaceList
-              style={{ position: 'relative', paddingBlock: 0, zIndex: 0 }}
-              // estimateSize={(index) => (index === 0 ? 52 : 60 + 1)}
-              // overscan={5} // the library detects window edge incorrectly, increasing overscan just visually hides the problem
-              items={items}
-            />
             {dappInfo.url ? (
               <DappLink
                 dappInfo={dappInfo}
                 style={{ marginInline: 16, marginBlock: 4 }}
               />
             ) : null}
+            <SurfaceList
+              style={{ position: 'relative', paddingBlock: 0, zIndex: 0 }}
+              // estimateSize={(index) => (index === 0 ? 52 : 60 + 1)}
+              // overscan={5} // the library detects window edge incorrectly, increasing overscan just visually hides the problem
+              items={items}
+            />
             {dappIndex !== preparedPositions.dappIds.length - 1 ? (
               <div
                 style={{
