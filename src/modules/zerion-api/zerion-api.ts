@@ -63,44 +63,34 @@ export class ZerionAPI {
   }
 
   static securityCheckUrl(payload: SecurityCheckUrlPayload) {
-    return ky
-      .get(new URL('security/check-url/v1', ZERION_API_URL), {
-        searchParams: { url: payload.url },
-        headers: getZpiHeaders(),
-      })
-      .json<SecurityCheckUrlResponse>();
+    const params = new URLSearchParams({ url: payload.url });
+    return this.get<SecurityCheckUrlResponse>({
+      endpoint: `security/check-url/v1?${params}`,
+    });
   }
 
   static registerChain(payload: RegisterChainPayload) {
-    return ky
-      .post(new URL('wallet/connect-chain/v1', ZERION_API_URL), {
-        body: JSON.stringify({
-          chain: payload.chain,
-          addresses: payload.addresses,
-        }),
-        headers: getZpiHeaders(),
-      })
-      .json<RegisterChainResponse>();
+    return this.post<RegisterChainResponse>({
+      endpoint: 'wallet/connect-chain/v1',
+      body: JSON.stringify({
+        chain: payload.chain,
+        addresses: payload.addresses,
+      }),
+    });
   }
 
   static registerAddresses(payload: RegisterAddressesPayload) {
-    return ky
-      .post(new URL('wallet/import/v1', ZERION_API_URL), {
-        body: JSON.stringify({
-          addresses: payload.addresses,
-        }),
-        headers: getZpiHeaders(),
-      })
-      .json<RegisterAddressesResponse>();
+    return this.post<RegisterAddressesResponse>({
+      endpoint: 'wallet/import/v1',
+      body: JSON.stringify({ addresses: payload.addresses }),
+    });
   }
 
-  static getWalletsMeta(payload: WalletsMetaPayload) {
-    return ky
-      .get(new URL('wallet/get-meta/v1', ZERION_API_URL), {
-        searchParams: { identifiers: payload.identifiers.join(',') },
-        headers: getZpiHeaders(),
-      })
-      .json<WalletsMetaResponse>();
+  static getWalletsMeta({ identifiers }: WalletsMetaPayload) {
+    const params = new URLSearchParams({ identifiers: identifiers.join(',') });
+    return this.get<WalletsMetaResponse>({
+      endpoint: `wallet/get-meta/v1?${params}`,
+    });
   }
 
   static getGasPrices(
