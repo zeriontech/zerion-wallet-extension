@@ -610,7 +610,7 @@ function PositionList({
               {dappInfo.url ? (
                 <DappLink
                   dappInfo={dappInfo}
-                  style={{ marginInline: 16, marginBlock: 16 }}
+                  style={{ marginInline: 16, marginBlock: 12 }}
                 />
               ) : null}
               <SurfaceList
