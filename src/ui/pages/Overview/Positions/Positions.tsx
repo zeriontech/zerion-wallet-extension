@@ -625,7 +625,7 @@ function PositionList({
                 style={{
                   height: 2,
                   backgroundColor: 'var(--neutral-200)',
-                  margin: '14px 16px 0 16px',
+                  margin: '-2px 16px 0 16px',
                 }}
               />
             ) : null}
