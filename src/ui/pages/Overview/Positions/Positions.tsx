@@ -397,49 +397,38 @@ function usePreparedPositions({
 
 function ProtocolHeading({
   dappInfo,
-  value,
   relativeValue,
 }: {
   dappInfo: AddressPositionDappInfo;
   value: number;
   relativeValue: number;
 }) {
-  const { currency } = useCurrency();
-
   return (
-    <VStack gap={8}>
-      <HStack gap={8} alignItems="center">
-        {dappInfo.id === DEFAULT_PROTOCOL_ID ? (
-          <WalletIcon />
-        ) : (
-          <TokenIcon
-            src={dappInfo.icon_url}
-            symbol={dappInfo.name || dappInfo.id}
-            size={24}
-            style={{ borderRadius: 6 }}
-          />
-        )}
-        <UIText kind="body/accent">
-          {dappInfo.name || dappInfo.id}
-          {' · '}
-          <NeutralDecimals
-            parts={formatCurrencyToParts(value, 'en', currency)}
-          />
-        </UIText>
-        <UIText
-          inline={true}
-          kind="caption/accent"
-          style={{
-            paddingBlock: 4,
-            paddingInline: 6,
-            backgroundColor: 'var(--neutral-200)',
-            borderRadius: 8,
-          }}
-        >
-          {`${formatPercent(relativeValue, 'en')}%`}
-        </UIText>
-      </HStack>
-    </VStack>
+    <HStack gap={8} alignItems="center">
+      {dappInfo.id === DEFAULT_PROTOCOL_ID ? (
+        <WalletIcon />
+      ) : (
+        <TokenIcon
+          src={dappInfo.icon_url}
+          symbol={dappInfo.name || dappInfo.id}
+          size={24}
+          style={{ borderRadius: 6 }}
+        />
+      )}
+      <UIText kind="body/accent">{dappInfo.name || dappInfo.id}</UIText>
+      <UIText
+        inline={true}
+        kind="caption/accent"
+        style={{
+          paddingBlock: 4,
+          paddingInline: 6,
+          backgroundColor: 'var(--neutral-200)',
+          borderRadius: 8,
+        }}
+      >
+        {`${formatPercent(relativeValue, 'en')}%`}
+      </UIText>
+    </HStack>
   );
 }
 
@@ -479,6 +468,7 @@ function PositionList({
     dappChain,
   });
   const offsetValuesState = useStore(offsetValues);
+  const { currency } = useCurrency();
 
   return (
     <VStack gap={16}>
@@ -505,11 +495,11 @@ function PositionList({
               pad: false,
               component: (
                 <UIText
-                  kind="caption/accent"
-                  color="var(--neutral-700)"
+                  kind="small/regular"
+                  color="var(--black)"
                   style={{ paddingBlock: 4 }}
                 >
-                  {name.toUpperCase()}
+                  {name}
                 </UIText>
               ),
             });
@@ -584,52 +574,62 @@ function PositionList({
         };
 
         return (
-          <VStack gap={4} key={dappId}>
-            {preparedPositions.dappIds.length > 1 ? (
-              <div
-                style={{
-                  paddingInline: 16,
-                  paddingBottom: 4,
-                  position: 'sticky',
-                  top:
-                    getStickyOffset(offsetValuesState) +
-                    TAB_SELECTOR_HEIGHT +
-                    TAB_TOP_PADDING,
-                  zIndex: 1,
-                  backgroundColor: 'var(--white)',
-                }}
-              >
-                <ProtocolHeading
+          <>
+            <VStack gap={4} key={dappId}>
+              {preparedPositions.dappIds.length > 1 ? (
+                <>
+                  <div
+                    style={{
+                      paddingBottom: 4,
+                      paddingInline: 16,
+                      position: 'sticky',
+                      top:
+                        getStickyOffset(offsetValuesState) +
+                        TAB_SELECTOR_HEIGHT +
+                        TAB_TOP_PADDING,
+                      zIndex: 1,
+                      backgroundColor: 'var(--white)',
+                    }}
+                  >
+                    <ProtocolHeading
+                      dappInfo={dappInfo}
+                      value={totalValue}
+                      relativeValue={relativeValue}
+                    />
+                  </div>
+                  <UIText
+                    style={{ paddingTop: 4, paddingInline: 16 }}
+                    kind="headline/h2"
+                  >
+                    <NeutralDecimals
+                      parts={formatCurrencyToParts(totalValue, 'en', currency)}
+                    />
+                  </UIText>
+                </>
+              ) : null}
+              {dappInfo.url ? (
+                <DappLink
                   dappInfo={dappInfo}
-                  value={totalValue}
-                  relativeValue={relativeValue}
+                  style={{ marginInline: 16, marginBlock: 16 }}
                 />
-              </div>
-            ) : null}
-            {dappInfo.url ? (
-              <DappLink
-                dappInfo={dappInfo}
-                style={{ marginInline: 16, marginBlock: 4 }}
+              ) : null}
+              <SurfaceList
+                style={{ position: 'relative', paddingBlock: 0, zIndex: 0 }}
+                // estimateSize={(index) => (index === 0 ? 52 : 60 + 1)}
+                // overscan={5} // the library detects window edge incorrectly, increasing overscan just visually hides the problem
+                items={items}
               />
-            ) : null}
-            <SurfaceList
-              style={{ position: 'relative', paddingBlock: 0, zIndex: 0 }}
-              // estimateSize={(index) => (index === 0 ? 52 : 60 + 1)}
-              // overscan={5} // the library detects window edge incorrectly, increasing overscan just visually hides the problem
-              items={items}
-            />
+            </VStack>
             {dappIndex !== preparedPositions.dappIds.length - 1 ? (
               <div
                 style={{
-                  height: 1,
-                  width: '100%',
+                  height: 2,
                   backgroundColor: 'var(--neutral-200)',
-                  marginTop: 16,
-                  marginBottom: 8,
+                  margin: '14px 16px 0 16px',
                 }}
               />
             ) : null}
-          </VStack>
+          </>
         );
       })}
     </VStack>
