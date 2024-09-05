@@ -420,7 +420,6 @@ function ProtocolHeading({
         inline={true}
         kind="caption/accent"
         style={{
-          paddingBlock: 4,
           paddingInline: 6,
           backgroundColor: 'var(--neutral-200)',
           borderRadius: 8,
@@ -574,7 +573,7 @@ function PositionList({
         };
 
         return (
-          <VStack gap={4} key={dappId}>
+          <VStack gap={0} key={dappId}>
             {preparedPositions.dappIds.length > 1 ? (
               <>
                 <div
@@ -597,7 +596,7 @@ function PositionList({
                   />
                 </div>
                 <UIText
-                  style={{ paddingTop: 4, paddingInline: 16 }}
+                  style={{ margin: '4px 0 16px 0', paddingInline: 16 }}
                   kind="headline/h2"
                 >
                   <NeutralDecimals
@@ -609,11 +608,11 @@ function PositionList({
             {dappInfo.url ? (
               <DappLink
                 dappInfo={dappInfo}
-                style={{ marginInline: 16, marginBlock: 12 }}
+                style={{ marginInline: 16, marginBottom: 12 }}
               />
             ) : null}
             <SurfaceList
-              style={{ position: 'relative', paddingBlock: 0, zIndex: 0 }}
+              style={{ position: 'relative', zIndex: 0 }}
               // estimateSize={(index) => (index === 0 ? 52 : 60 + 1)}
               // overscan={5} // the library detects window edge incorrectly, increasing overscan just visually hides the problem
               items={items}
