@@ -177,7 +177,7 @@ export function TransactionItemIcon({ action }: { action: AddressAction }) {
   const incomingTransfers = action.content?.transfers?.incoming;
   const outgoingTransfers = action.content?.transfers?.outgoing;
 
-  if (action.type.value === 'approve') {
+  if (action.type.value === 'approve' || action.type.value === 'revoke') {
     return (
       <HistoryAssetIcon
         asset={approveTransfers?.asset}
