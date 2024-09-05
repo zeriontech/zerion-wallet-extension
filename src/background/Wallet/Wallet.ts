@@ -507,10 +507,11 @@ export class Wallet {
       throw new Error('Cannot save pending wallet: userCredentials are null');
     }
     this.record = Model.createOrUpdateRecord(this.record, this.pendingWallet);
-    emitter.emit('walletCreated', this.pendingWallet);
+    const pendingWallet = this.pendingWallet;
     this.pendingWallet = null;
     this.removeSeedPhraseEncryptionKey();
     this.updateWalletStore(this.record);
+    emitter.emit('walletCreated', pendingWallet);
   }
 
   async acceptOrigin({
