@@ -281,6 +281,7 @@ function ActionItemBackend({
               />
             ) : incomingTransfers?.length && chain ? (
               <HistoryItemValue
+                actionType={action.type.value}
                 transfers={incomingTransfers}
                 direction="in"
                 chain={chain}
@@ -289,6 +290,7 @@ function ActionItemBackend({
               />
             ) : outgoingTransfers?.length && chain ? (
               <HistoryItemValue
+                actionType={action.type.value}
                 transfers={outgoingTransfers}
                 direction="out"
                 chain={chain}
@@ -313,6 +315,7 @@ function ActionItemBackend({
                 />
               ) : outgoingTransfers?.length ? (
                 <HistoryItemValue
+                  actionType={action.type.value}
                   transfers={outgoingTransfers}
                   direction="out"
                   chain={chain}
@@ -325,6 +328,7 @@ function ActionItemBackend({
                 'Unlimited'
               ) : action.content?.single_asset?.asset ? (
                 <HistoryItemValue
+                  actionType={action.type.value}
                   transfers={[action.content.single_asset]}
                   direction="self"
                   chain={chain}
