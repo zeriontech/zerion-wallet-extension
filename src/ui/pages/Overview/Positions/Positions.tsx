@@ -574,62 +574,60 @@ function PositionList({
         };
 
         return (
-          <>
-            <VStack gap={4} key={dappId}>
-              {preparedPositions.dappIds.length > 1 ? (
-                <>
-                  <div
-                    style={{
-                      paddingBottom: 4,
-                      paddingInline: 16,
-                      position: 'sticky',
-                      top:
-                        getStickyOffset(offsetValuesState) +
-                        TAB_SELECTOR_HEIGHT +
-                        TAB_TOP_PADDING,
-                      zIndex: 1,
-                      backgroundColor: 'var(--white)',
-                    }}
-                  >
-                    <ProtocolHeading
-                      dappInfo={dappInfo}
-                      value={totalValue}
-                      relativeValue={relativeValue}
-                    />
-                  </div>
-                  <UIText
-                    style={{ paddingTop: 4, paddingInline: 16 }}
-                    kind="headline/h2"
-                  >
-                    <NeutralDecimals
-                      parts={formatCurrencyToParts(totalValue, 'en', currency)}
-                    />
-                  </UIText>
-                </>
-              ) : null}
-              {dappInfo.url ? (
-                <DappLink
-                  dappInfo={dappInfo}
-                  style={{ marginInline: 16, marginBlock: 12 }}
-                />
-              ) : null}
-              <SurfaceList
-                style={{ position: 'relative', paddingBlock: 0, zIndex: 0 }}
-                // estimateSize={(index) => (index === 0 ? 52 : 60 + 1)}
-                // overscan={5} // the library detects window edge incorrectly, increasing overscan just visually hides the problem
-                items={items}
+          <VStack gap={4} key={dappId}>
+            {preparedPositions.dappIds.length > 1 ? (
+              <>
+                <div
+                  style={{
+                    paddingBottom: 4,
+                    paddingInline: 16,
+                    position: 'sticky',
+                    top:
+                      getStickyOffset(offsetValuesState) +
+                      TAB_SELECTOR_HEIGHT +
+                      TAB_TOP_PADDING,
+                    zIndex: 1,
+                    backgroundColor: 'var(--white)',
+                  }}
+                >
+                  <ProtocolHeading
+                    dappInfo={dappInfo}
+                    value={totalValue}
+                    relativeValue={relativeValue}
+                  />
+                </div>
+                <UIText
+                  style={{ paddingTop: 4, paddingInline: 16 }}
+                  kind="headline/h2"
+                >
+                  <NeutralDecimals
+                    parts={formatCurrencyToParts(totalValue, 'en', currency)}
+                  />
+                </UIText>
+              </>
+            ) : null}
+            {dappInfo.url ? (
+              <DappLink
+                dappInfo={dappInfo}
+                style={{ marginInline: 16, marginBlock: 12 }}
               />
-            </VStack>
+            ) : null}
+            <SurfaceList
+              style={{ position: 'relative', paddingBlock: 0, zIndex: 0 }}
+              // estimateSize={(index) => (index === 0 ? 52 : 60 + 1)}
+              // overscan={5} // the library detects window edge incorrectly, increasing overscan just visually hides the problem
+              items={items}
+            />
             {dappIndex !== preparedPositions.dappIds.length - 1 ? (
               <div
                 style={{
                   height: 2,
                   backgroundColor: 'var(--neutral-200)',
-                  margin: '-2px 16px 0 16px',
+                  margin: '12px 16px 0 16px',
                 }}
               />
             ) : null}
-          </>
+          </VStack>
         );
       })}
     </VStack>
