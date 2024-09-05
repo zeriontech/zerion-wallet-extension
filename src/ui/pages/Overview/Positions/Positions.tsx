@@ -66,6 +66,7 @@ import { useStore } from '@store-unit/react';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 import {
   TAB_SELECTOR_HEIGHT,
   TAB_TOP_PADDING,
@@ -470,7 +471,7 @@ function PositionList({
   const { currency } = useCurrency();
 
   return (
-    <VStack gap={16}>
+    <VStack gap={24}>
       {preparedPositions.dappIds.map((dappId, dappIndex) => {
         const items: Item[] = [];
         const {
@@ -481,6 +482,7 @@ function PositionList({
           items: protocolItems,
         } = preparedPositions.dappIndex[dappId];
         let dappPositionCounter = 0;
+        let subHeadingIndex = 0;
         // do not hide if only one item is left
         const stopAt =
           protocolItems.length - COLLAPSED_COUNT > 1
@@ -496,12 +498,16 @@ function PositionList({
                 <UIText
                   kind="small/regular"
                   color="var(--black)"
-                  style={{ paddingBlock: 4 }}
+                  style={{
+                    paddingTop: subHeadingIndex > 0 ? 8 : 4,
+                    paddingBottom: 4,
+                  }}
                 >
                   {name}
                 </UIText>
               ),
             });
+            subHeadingIndex += 1;
           }
           let namePositionCounter = 0;
           for (const position of nameIndex[name]) {
@@ -595,10 +601,8 @@ function PositionList({
                     relativeValue={relativeValue}
                   />
                 </div>
-                <UIText
-                  style={{ margin: '4px 0 16px 0', paddingInline: 16 }}
-                  kind="headline/h2"
-                >
+                <Spacer height={4} />
+                <UIText style={{ paddingInline: 16 }} kind="headline/h2">
                   <NeutralDecimals
                     parts={formatCurrencyToParts(totalValue, 'en', currency)}
                   />
@@ -606,11 +610,14 @@ function PositionList({
               </>
             ) : null}
             {dappInfo.url ? (
-              <DappLink
-                dappInfo={dappInfo}
-                style={{ marginInline: 16, marginBottom: 12 }}
-              />
-            ) : null}
+              <>
+                <Spacer height={16} />
+                <DappLink dappInfo={dappInfo} style={{ marginInline: 16 }} />
+                <Spacer height={16} />
+              </>
+            ) : (
+              <Spacer height={8} />
+            )}
             <SurfaceList
               style={{ position: 'relative', zIndex: 0 }}
               // estimateSize={(index) => (index === 0 ? 52 : 60 + 1)}
@@ -618,13 +625,16 @@ function PositionList({
               items={items}
             />
             {dappIndex !== preparedPositions.dappIds.length - 1 ? (
-              <div
-                style={{
-                  height: 2,
-                  backgroundColor: 'var(--neutral-200)',
-                  margin: '12px 16px 0 16px',
-                }}
-              />
+              <>
+                <Spacer height={14} />
+                <div
+                  style={{
+                    height: 2,
+                    marginInline: 16,
+                    backgroundColor: 'var(--neutral-200)',
+                  }}
+                />
+              </>
             ) : null}
           </VStack>
         );
