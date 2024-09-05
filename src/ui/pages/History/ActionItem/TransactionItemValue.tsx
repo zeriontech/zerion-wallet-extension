@@ -65,8 +65,9 @@ function HistoryTokenValue({
       gap={4}
       alignItems="center"
       style={{
-        gridTemplateColumns:
-          'minmax(min-content, max-content) minmax(20px, max-content)',
+        gridTemplateColumns: commonQuantity
+          ? 'minmax(min-content, max-content) minmax(20px, max-content)'
+          : 'minmax(min-content, max-content)',
         overflow: 'hidden',
         whiteSpace: 'nowrap',
       }}

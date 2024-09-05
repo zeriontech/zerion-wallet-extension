@@ -183,14 +183,16 @@ function ActionItemBackend({
   }
 
   const address = 'address' in params ? params.address : undefined;
-  const approveTransfers = action.content?.single_asset;
+  const approveOrRevokeTransfer = action.content?.single_asset;
   const incomingTransfers = action.content?.transfers?.incoming;
   const outgoingTransfers = action.content?.transfers?.outgoing;
 
   const shouldUsePositiveColor =
     incomingTransfers?.length === 1 &&
     Boolean(getFungibleAsset(incomingTransfers[0].asset));
-  const maybeApprovedAsset = getFungibleAsset(approveTransfers?.asset);
+  const maybeApprovedOrRevokedAsset = getFungibleAsset(
+    approveOrRevokeTransfer?.asset
+  );
   const chain = action.transaction.chain
     ? createChain(action.transaction.chain)
     : null;
@@ -270,12 +272,14 @@ function ActionItemBackend({
               maxWidth: '100%',
             }}
           >
-            {action.type.value === 'approve' && maybeApprovedAsset ? (
+            {(action.type.value === 'approve' ||
+              action.type.value === 'revoke') &&
+            maybeApprovedOrRevokedAsset ? (
               <AssetLink
-                asset={maybeApprovedAsset}
+                asset={maybeApprovedOrRevokedAsset}
                 title={
-                  maybeApprovedAsset.name ||
-                  maybeApprovedAsset.symbol?.toUpperCase()
+                  maybeApprovedOrRevokedAsset.name ||
+                  maybeApprovedOrRevokedAsset.symbol?.toUpperCase()
                 }
                 address={address}
               />
