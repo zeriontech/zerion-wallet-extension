@@ -213,12 +213,14 @@ function CancelTxContent({
             >
               Back
             </Button>
-            <SignTransactionButton
-              wallet={wallet}
-              ref={signTxBtnRef}
-              onClick={() => sendTransaction()}
-              holdToSign={true}
-            />
+            {preferences ? (
+              <SignTransactionButton
+                wallet={wallet}
+                ref={signTxBtnRef}
+                onClick={() => sendTransaction()}
+                holdToSign={preferences.enableHoldToSignButton}
+              />
+            ) : null}
           </div>
         </VStack>
       </VStack>
