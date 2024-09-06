@@ -66,6 +66,7 @@ import { useStore } from '@store-unit/react';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 import {
   TAB_SELECTOR_HEIGHT,
   TAB_TOP_PADDING,
@@ -204,7 +205,7 @@ function AddressPositionItem({
             <UIText
               kind="small/regular"
               style={{
-                color: 'var(--neutral-500)',
+                color: 'var(--neutral-700)',
                 display: 'flex',
                 gap: 4,
                 alignItems: 'center',
@@ -397,15 +398,12 @@ function usePreparedPositions({
 
 function ProtocolHeading({
   dappInfo,
-  value,
   relativeValue,
 }: {
   dappInfo: AddressPositionDappInfo;
   value: number;
   relativeValue: number;
 }) {
-  const { currency } = useCurrency();
-
   return (
     <HStack gap={8} alignItems="center">
       {dappInfo.id === DEFAULT_PROTOCOL_ID ? (
@@ -418,16 +416,11 @@ function ProtocolHeading({
           style={{ borderRadius: 6 }}
         />
       )}
-      <UIText kind="body/accent">
-        {dappInfo.name || dappInfo.id}
-        {' · '}
-        <NeutralDecimals parts={formatCurrencyToParts(value, 'en', currency)} />
-      </UIText>
+      <UIText kind="body/accent">{dappInfo.name || dappInfo.id}</UIText>
       <UIText
         inline={true}
         kind="caption/accent"
         style={{
-          paddingBlock: 4,
           paddingInline: 6,
           backgroundColor: 'var(--neutral-200)',
           borderRadius: 8,
@@ -475,10 +468,11 @@ function PositionList({
     dappChain,
   });
   const offsetValuesState = useStore(offsetValues);
+  const { currency } = useCurrency();
 
   return (
-    <VStack gap={16}>
-      {preparedPositions.dappIds.map((dappId) => {
+    <VStack gap={24}>
+      {preparedPositions.dappIds.map((dappId, dappIndex) => {
         const items: Item[] = [];
         const {
           totalValue,
@@ -488,6 +482,7 @@ function PositionList({
           items: protocolItems,
         } = preparedPositions.dappIndex[dappId];
         let dappPositionCounter = 0;
+        let subHeadingIndex = 0;
         // do not hide if only one item is left
         const stopAt =
           protocolItems.length - COLLAPSED_COUNT > 1
@@ -501,14 +496,18 @@ function PositionList({
               pad: false,
               component: (
                 <UIText
-                  kind="caption/accent"
-                  color="var(--neutral-700)"
-                  style={{ paddingBlock: 4 }}
+                  kind="small/regular"
+                  color="var(--black)"
+                  style={{
+                    paddingTop: subHeadingIndex > 0 ? 8 : 4,
+                    paddingBottom: 4,
+                  }}
                 >
-                  {name.toUpperCase()}
+                  {name}
                 </UIText>
               ),
             });
+            subHeadingIndex += 1;
           }
           let namePositionCounter = 0;
           for (const position of nameIndex[name]) {
@@ -580,40 +579,63 @@ function PositionList({
         };
 
         return (
-          <VStack gap={4} key={dappId}>
+          <VStack gap={0} key={dappId}>
             {preparedPositions.dappIds.length > 1 ? (
-              <div
-                style={{
-                  paddingInline: 16,
-                  paddingBottom: 4,
-                  position: 'sticky',
-                  top:
-                    getStickyOffset(offsetValuesState) +
-                    TAB_SELECTOR_HEIGHT +
-                    TAB_TOP_PADDING,
-                  zIndex: 1,
-                  backgroundColor: 'var(--white)',
-                }}
-              >
-                <ProtocolHeading
-                  dappInfo={dappInfo}
-                  value={totalValue}
-                  relativeValue={relativeValue}
-                />
-              </div>
+              <>
+                <div
+                  style={{
+                    paddingBottom: 4,
+                    paddingInline: 16,
+                    position: 'sticky',
+                    top:
+                      getStickyOffset(offsetValuesState) +
+                      TAB_SELECTOR_HEIGHT +
+                      TAB_TOP_PADDING,
+                    zIndex: 1,
+                    backgroundColor: 'var(--white)',
+                  }}
+                >
+                  <ProtocolHeading
+                    dappInfo={dappInfo}
+                    value={totalValue}
+                    relativeValue={relativeValue}
+                  />
+                </div>
+                <Spacer height={4} />
+                <UIText style={{ paddingInline: 16 }} kind="headline/h2">
+                  <NeutralDecimals
+                    parts={formatCurrencyToParts(totalValue, 'en', currency)}
+                  />
+                </UIText>
+              </>
             ) : null}
             {dappInfo.url ? (
-              <DappLink
-                dappInfo={dappInfo}
-                style={{ marginInline: 16, marginBlock: 4 }}
-              />
-            ) : null}
+              <>
+                <Spacer height={16} />
+                <DappLink dappInfo={dappInfo} style={{ marginInline: 16 }} />
+                <Spacer height={16} />
+              </>
+            ) : (
+              <Spacer height={8} />
+            )}
             <SurfaceList
-              style={{ position: 'relative', paddingBlock: 0, zIndex: 0 }}
+              style={{ position: 'relative', zIndex: 0 }}
               // estimateSize={(index) => (index === 0 ? 52 : 60 + 1)}
               // overscan={5} // the library detects window edge incorrectly, increasing overscan just visually hides the problem
               items={items}
             />
+            {dappIndex !== preparedPositions.dappIds.length - 1 ? (
+              <>
+                <Spacer height={14} />
+                <div
+                  style={{
+                    height: 2,
+                    marginInline: 16,
+                    backgroundColor: 'var(--neutral-200)',
+                  }}
+                />
+              </>
+            ) : null}
           </VStack>
         );
       })}

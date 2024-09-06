@@ -1,13 +1,11 @@
 import React, { useMemo } from 'react';
 import type { AddressPositionDappInfo } from 'defi-sdk';
-import cn from 'classnames';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import ArrowLeftTop from 'jsx:src/ui/assets/arrow-left-top.svg';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
-import * as styles from './styles.module.css';
+import { Button } from 'src/ui/ui-kit/Button';
 
 export function DappLink({
   dappInfo,
@@ -24,26 +22,19 @@ export function DappLink({
   }
 
   return (
-    <UnstyledAnchor
-      className={cn(styles.link, 'parent-hover')}
+    <Button
+      as={UnstyledAnchor}
       href={url.href}
+      size={36}
+      kind="neutral"
       target="_blank"
       rel="noopener noreferrer"
-      style={{
-        ['--parent-content-color' as string]: 'var(--neutral-500)',
-        ['--parent-hovered-content-color' as string]: 'var(--black)',
-        ...style,
-      }}
+      style={style}
     >
       <HStack gap={24} justifyContent="space-between" alignItems="center">
-        <VStack gap={0}>
-          <UIText kind="small/accent">Manage Positions</UIText>
-          <UIText kind="caption/regular" color="var(--neutral-500)">
-            {url.hostname}
-          </UIText>
-        </VStack>
+        <UIText kind="small/accent">Manage Positions</UIText>
         <ArrowLeftTop className="content-hover" />
       </HStack>
-    </UnstyledAnchor>
+    </Button>
   );
 }
