@@ -1,4 +1,4 @@
-export type AppMode = 'onboarding' | 'wallet';
+export type AppMode = 'onboarding' | 'wallet' | 'newTab';
 export type WindowLayout = 'column' | 'page';
 export type WindowType = 'popup' | 'tab' | 'dialog';
 

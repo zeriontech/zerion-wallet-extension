@@ -27,6 +27,10 @@ import type {
   Payload as GetGasPricesPayload,
   Response as GetGasPricesResponse,
 } from './requests/get-gas-prices';
+import type {
+  Payload as ExploreSectionsPayload,
+  Response as ExportSectionsResponse,
+} from './requests/explore-info';
 
 export type NetworksSource = 'mainnet' | 'testnet';
 
@@ -137,5 +141,17 @@ export class ZerionAPI {
     return ZerionAPI.get<PaymasterCheckEligibilityResponse>(
       `/paymaster/check-eligibility/v1?${params}`
     );
+  }
+
+  static getExploreSections(payload: ExploreSectionsPayload) {
+    return ky
+      .get(new URL('explore/get-sections/v1', ZERION_API_URL), {
+        searchParams: {
+          addresses: payload.addresses.join(','),
+          currency: payload.currency,
+        },
+        headers: getZpiHeaders(),
+      })
+      .json<ExportSectionsResponse>();
   }
 }

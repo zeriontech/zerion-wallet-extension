@@ -6,6 +6,7 @@ import { SessionCacheService } from 'src/background/resource/sessionCacheService
 import { openOnboarding } from 'src/shared/openOnboarding';
 import { userLifecycleStore } from 'src/shared/analytics/shared/UserLifecycle';
 import { UrlContextParam } from 'src/shared/types/UrlContext';
+import { openNewTabOverride } from 'src/shared/openNewTabOverride';
 import { initialize } from './initialize';
 import { PortRegistry } from './messaging/PortRegistry';
 import { createWalletMessageHandler } from './messaging/port-message-handlers/createWalletMessageHandler';
@@ -20,6 +21,7 @@ import { emitter } from './events';
 import * as userActivity from './user-activity';
 import { ContentScriptManager } from './ContentScriptManager';
 import { TransactionService } from './transactions/TransactionService';
+import { globalPreferences } from './Wallet/GlobalPreferences';
 
 Object.assign(globalThis, { ethers });
 
@@ -202,4 +204,29 @@ browser.runtime.onInstalled.addListener(({ reason }) => {
     userLifecycleStore.handleRuntimeInstalledEvent();
     openOnboarding();
   }
+});
+
+function overrideTabListener(
+  tabId: number,
+  _changes: unknown,
+  tab: browser.Tabs.Tab
+) {
+  if (tab.url?.endsWith('://newtab/')) {
+    openNewTabOverride(tabId);
+  }
+}
+
+function overrideNewTab(override: boolean) {
+  if (override) {
+    browser.tabs.onUpdated.addListener(overrideTabListener);
+  } else {
+    browser.tabs.onUpdated.removeListener(overrideTabListener);
+  }
+}
+
+globalPreferences.getPreferences().then((preferences) => {
+  overrideNewTab(Boolean(preferences.enableNewTabOverride));
+});
+globalPreferences.on('change', (state) => {
+  overrideNewTab(Boolean(state.enableNewTabOverride));
 });

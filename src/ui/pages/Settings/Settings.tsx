@@ -330,28 +330,45 @@ function DeveloperTools() {
 
 function Experiments() {
   const { preferences, setPreferences } = usePreferences();
+  const { globalPreferences, setGlobalPreferences } = useGlobalPreferences();
   useBackgroundKind({ kind: 'white' });
 
   return (
     <PageColumn>
       <NavigationTitle title="Experiments" />
       <PageTop />
-      <Frame>
-        <ToggleSettingLine
-          text="Hold to Sign"
-          checked={preferences?.enableHoldToSignButton || false}
-          onChange={(event) => {
-            setPreferences({
-              enableHoldToSignButton: event.target.checked,
-            });
-          }}
-          detailText={
-            <span>
-              Sign transactions with a long click to avoid accidental signing
-            </span>
-          }
-        />
-      </Frame>
+      <VStack gap={8}>
+        <Frame>
+          <ToggleSettingLine
+            text="Hold to Sign"
+            checked={preferences?.enableHoldToSignButton || false}
+            onChange={(event) => {
+              setPreferences({
+                enableHoldToSignButton: event.target.checked,
+              });
+            }}
+            detailText={
+              <span>
+                Sign transactions with a long click to avoid accidental signing
+              </span>
+            }
+          />
+        </Frame>
+        <Frame>
+          <ToggleSettingLine
+            text="New Tab Override"
+            checked={globalPreferences?.enableNewTabOverride || false}
+            onChange={(event) => {
+              setGlobalPreferences({
+                enableNewTabOverride: event.target.checked,
+              });
+            }}
+            detailText={
+              <span>Turn new tab into the portal to Web3 universe</span>
+            }
+          />
+        </Frame>
+      </VStack>
       <PageBottom />
     </PageColumn>
   );
