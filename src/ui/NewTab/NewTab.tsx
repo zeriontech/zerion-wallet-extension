@@ -15,6 +15,7 @@ import type {
   PopularWallets as PopularWalletsType,
   TopTokens as TopTokensType,
 } from 'src/modules/zerion-api/requests/explore-info';
+import { isNumeric } from 'src/shared/isNumeric';
 import { UIText } from '../ui-kit/UIText';
 import { useWalletAddresses } from '../pages/Networks/shared/useWalletAddresses';
 import { VerifyUser } from '../components/VerifyUser';
@@ -412,9 +413,13 @@ function Explore({ addresses }: { addresses: string[] }) {
                   Portfolio
                 </UIText>
                 <UIText kind="headline/h1">
-                  <NeutralDecimals
-                    parts={formatCurrencyToParts(totalValue, 'en', 'usd')}
-                  />
+                  {isNumeric(totalValue) ? (
+                    <NeutralDecimals
+                      parts={formatCurrencyToParts(totalValue, 'en', 'usd')}
+                    />
+                  ) : (
+                    noValueDash
+                  )}
                 </UIText>
                 {changeValue ? (
                   <UIText
