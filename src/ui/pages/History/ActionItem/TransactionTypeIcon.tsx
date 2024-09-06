@@ -173,14 +173,14 @@ function TransferIcon({
 }
 
 export function TransactionItemIcon({ action }: { action: AddressAction }) {
-  const approveTransfers = action.content?.single_asset;
+  const singleTransfer = action.content?.single_asset;
   const incomingTransfers = action.content?.transfers?.incoming;
   const outgoingTransfers = action.content?.transfers?.outgoing;
 
-  if (approveTransfers) {
+  if (singleTransfer) {
     return (
       <HistoryAssetIcon
-        asset={approveTransfers?.asset}
+        asset={singleTransfer?.asset}
         type={action.type.value}
         size={TRANSACTION_ICON_SIZE}
       />
