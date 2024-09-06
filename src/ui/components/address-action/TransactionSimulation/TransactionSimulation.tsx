@@ -22,6 +22,7 @@ import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
 import type { EligibilityQuery } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
 import { shouldInterpretTransaction } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { usePreferences } from 'src/ui/features/preferences';
 import { AddressActionDetails } from '../AddressActionDetails';
 import { InterpretationState } from '../../InterpretationState';
 
@@ -128,17 +129,19 @@ export function TransactionSimulation({
     retry: 1,
   });
 
+  const { preferences } = usePreferences();
+  const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
   const paymasterTxInterpretQuery = useQuery({
     enabled: Boolean(network?.supports_simulations) && paymasterEligible,
     suspense: false,
-    queryKey: ['interpret/typedData', client, currency, transaction],
+    queryKey: ['interpret/typedData', client, currency, transaction, source],
     queryKeyHashFn: (queryKey) => {
       const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
       return hashQueryKey(key);
     },
     queryFn: async () => {
       invariant(transaction.from, 'transaction must have a from value');
-      const toSign = await fetchAndAssignPaymaster(transaction);
+      const toSign = await fetchAndAssignPaymaster(transaction, { source });
       const typedData = await walletPort.request('uiGetEip712Transaction', {
         transaction: toSign,
       });

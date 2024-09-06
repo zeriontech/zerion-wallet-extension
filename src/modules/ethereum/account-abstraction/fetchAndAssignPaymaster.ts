@@ -57,36 +57,13 @@ function assertTransactionProps(
 
 async function getPaymasterParams(
   incomingTransaction: IncomingTransaction,
-  { gasPerPubdataByte }: { gasPerPubdataByte: string }
+  {
+    gasPerPubdataByte,
+    source,
+  }: { gasPerPubdataByte: string; source: 'testnet' | 'mainnet' }
 ) {
-  interface PaymasterParamsResponse {
-    data: {
-      eligible: boolean;
-      paymasterParams: {
-        paymaster: string;
-        paymasterInput: string;
-      };
-      chargesData: {
-        amount: number;
-        deadline: string;
-        eta: null;
-      };
-    };
-    errors?: null | { title: string; detail: string }[];
-  }
-  type Request = {
-    from: string;
-    to: string;
-    nonce: string;
-    chainId: string;
-    gas: string;
-    gasPerPubdataByte: string;
-    maxFee: string;
-    maxPriorityFee: string;
-    value: string;
-    data: string;
-  };
   const transaction = assertTransactionProps(incomingTransaction);
+  type Request = Parameters<(typeof ZerionAPI)['getPaymasterParams']>[0];
   const params: Request = {
     from: transaction.from,
     to: transaction.to,
@@ -99,17 +76,13 @@ async function getPaymasterParams(
     maxPriorityFee: valueToHex(transaction.maxPriorityFeePerGas),
     value: valueToHex(transaction.value),
   };
-  const { data } = await ZerionAPI.get<PaymasterParamsResponse>(
-    `/paymaster/get-params/v1?${new URLSearchParams({
-      ...params,
-      backend_env: 'zero',
-    })}`
-  );
+  const { data } = await ZerionAPI.getPaymasterParams(params, { source });
   return data;
 }
 
 export async function fetchAndAssignPaymaster<T extends IncomingTransaction>(
-  tx: T
+  tx: T,
+  { source }: { source: 'testnet' | 'mainnet' }
 ) {
   const txCopy = { ...tx };
   const gas = getGas(txCopy);
@@ -119,6 +92,7 @@ export async function fetchAndAssignPaymaster<T extends IncomingTransaction>(
   const gasPerPubdataByte = valueToHex(50000);
   const { eligible, paymasterParams } = await getPaymasterParams(txCopy, {
     gasPerPubdataByte,
+    source,
   });
   if (eligible && paymasterParams) {
     txCopy.customData = { paymasterParams, gasPerPubdata: gasPerPubdataByte };
