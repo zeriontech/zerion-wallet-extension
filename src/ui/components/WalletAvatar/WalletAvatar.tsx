@@ -8,12 +8,15 @@ export function WalletAvatar({
   size,
   borderRadius = 6,
   icon,
+  onReady,
 }: {
   active?: boolean;
   address: string;
   size: number;
   borderRadius?: number;
+  // TODO: should these be nullable instead of optional?
   icon?: React.ReactNode;
+  onReady?(): void;
 }) {
   const { data: nft, isLoading } = useProfileNft(address);
 
@@ -33,6 +36,7 @@ export function WalletAvatar({
         size={size}
         nft={nft}
         borderRadius={borderRadius}
+        onReady={onReady}
       />
       {icon}
     </div>
