@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Route, Routes } from 'react-router-dom';
 import { PageBottom } from 'src/ui/components/PageBottom';
@@ -8,8 +8,6 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
-import { FillView } from 'src/ui/components/FillView';
-import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { AddressBadge } from 'src/ui/components/AddressBadge';
 import { Media } from 'src/ui/ui-kit/Media';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -21,6 +19,14 @@ import type { ConnectedSiteItem } from 'src/ui/shared/requests/getPermissionsWit
 import { getPermissionsWithWallets } from 'src/ui/shared/requests/getPermissionsWithWallets';
 import { ViewSuspense } from 'src/ui/components/ViewSuspense';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
+import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
+import * as helperStyles from 'src/ui/style/helpers.module.css';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { PageTop } from 'src/ui/components/PageTop';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { FillView } from 'src/ui/components/FillView';
+import type { InputHandle } from 'src/ui/ui-kit/Input/DebouncedInput';
+import { DebouncedInput } from 'src/ui/ui-kit/Input/DebouncedInput';
 import { ConnectedSite } from './ConnectedSite';
 
 function RevokeAllPermissionsComponent({
@@ -65,9 +71,11 @@ function RevokeAllPermissionsComponent({
 }
 
 function ConnectedSitesList({
+  showRevokeAll,
   items,
   onRevokeAll,
 }: {
+  showRevokeAll: boolean;
   items: ConnectedSiteItem[];
   onRevokeAll: () => void;
 }) {
@@ -138,43 +146,139 @@ function ConnectedSitesList({
           };
         })}
       />
-      <RevokeAllPermissionsComponent onRevokeAll={onRevokeAll} />
+      {showRevokeAll ? (
+        <RevokeAllPermissionsComponent onRevokeAll={onRevokeAll} />
+      ) : null}
     </VStack>
   );
 }
 
+function ConnectedSitesSearch({
+  value,
+  onChange,
+  inputRef,
+}: {
+  value: string;
+  onChange(value: string): void;
+  inputRef: React.MutableRefObject<InputHandle | null>;
+}) {
+  return (
+    <DebouncedInput
+      ref={inputRef}
+      value={value}
+      delay={300}
+      onChange={onChange}
+      render={({ value, handleChange }) => (
+        <SearchInput
+          boxHeight={40}
+          type="search"
+          placeholder="Search"
+          value={value}
+          onChange={(event) => {
+            handleChange(event.currentTarget.value);
+          }}
+        />
+      )}
+    />
+  );
+}
+
+function EmptyView({
+  hasConnectedSites,
+  hasFilters,
+  onReset,
+}: {
+  hasConnectedSites: boolean;
+  hasFilters: boolean;
+  onReset(): void;
+}) {
+  return (
+    <FillView>
+      {hasConnectedSites ? (
+        <VStack gap={6} style={{ textAlign: 'center' }}>
+          <UIText kind="headline/hero">🥺</UIText>
+          <UIText kind="small/accent" color="var(--neutral-500)">
+            <VStack gap={4}>
+              <div>No connected DApps found</div>
+              {hasFilters ? (
+                <UnstyledButton
+                  onClick={onReset}
+                  style={{ color: 'var(--primary)' }}
+                  className={helperStyles.hoverUnderline}
+                >
+                  Reset all filters
+                </UnstyledButton>
+              ) : null}
+            </VStack>
+          </UIText>
+        </VStack>
+      ) : (
+        <UIText
+          kind="body/regular"
+          color="var(--neutral-500)"
+          style={{ padding: 20, textAlign: 'center' }}
+        >
+          You will see a list of connected DApps here
+        </UIText>
+      )}
+    </FillView>
+  );
+}
+
 function ConnectedSitesMain() {
-  const { data: connectedSites, ...connectedSitesQuery } = useQuery({
+  const {
+    data: allConnectedSites,
+    isLoading,
+    ...connectedSitesQuery
+  } = useQuery({
     queryKey: ['getPermissionsWithWallets'],
     queryFn: getPermissionsWithWallets,
     useErrorBoundary: true,
     suspense: true,
   });
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const searchInputRef = useRef<InputHandle | null>(null);
 
-  if (connectedSitesQuery.isLoading) {
-    return <p>Loading qweasd...</p>;
-  }
+  const itemsToDisplay = useMemo(() => {
+    if (!searchQuery) {
+      return allConnectedSites;
+    }
+    const query = searchQuery.trim();
+    return allConnectedSites?.filter((site) =>
+      site.origin.toLowerCase().includes(query)
+    );
+  }, [allConnectedSites, searchQuery]);
 
   return (
     <PageColumn>
-      {connectedSites?.length ? (
+      <PageTop />
+      {allConnectedSites?.length ? (
         <>
-          <Spacer height={16} />
-          <ConnectedSitesList
-            items={connectedSites}
-            onRevokeAll={() => connectedSitesQuery.refetch()}
+          <ConnectedSitesSearch
+            inputRef={searchInputRef}
+            value={searchQuery}
+            onChange={setSearchQuery}
           />
+          <Spacer height={24} />
         </>
+      ) : null}
+      {isLoading ? null : itemsToDisplay?.length ? (
+        <ConnectedSitesList
+          showRevokeAll={!searchQuery}
+          items={itemsToDisplay}
+          onRevokeAll={() => connectedSitesQuery.refetch()}
+        />
       ) : (
-        <FillView>
-          <UIText
-            kind="body/regular"
-            color="var(--neutral-500)"
-            style={{ padding: 20, textAlign: 'center' }}
-          >
-            You will see a list of connected DApps here
-          </UIText>
-        </FillView>
+        <EmptyView
+          hasConnectedSites={Boolean(allConnectedSites?.length)}
+          hasFilters={Boolean(searchQuery)}
+          onReset={() => {
+            if (searchInputRef.current) {
+              searchInputRef.current.setValue('');
+            }
+            setSearchQuery('');
+          }}
+        />
       )}
       <PageBottom />
     </PageColumn>
