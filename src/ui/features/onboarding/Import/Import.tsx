@@ -17,7 +17,7 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import type { BareWallet } from 'src/shared/types/BareWallet';
+import type { BareWallet, MaskedBareWallet } from 'src/shared/types/BareWallet';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
@@ -73,10 +73,10 @@ function ImportWallet() {
 
   const goBack = useGoBack();
 
-  const [wallets, setWallets] = useState<BareWallet[] | null>(null);
+  const [wallets, setWallets] = useState<MaskedBareWallet[] | null>(null);
   const [mnemonic, setMnemonic] = useState<string | null>(null);
   const handleWallets = useCallback(
-    (wallets: BareWallet[]) => {
+    (wallets: MaskedBareWallet[]) => {
       setWallets(wallets);
       setSearchParams(`view=${ViewParam.password}`);
     },
@@ -89,7 +89,7 @@ function ImportWallet() {
       wallets,
     }: {
       password: string | null;
-      wallets: BareWallet[];
+      wallets: MaskedBareWallet[];
     }) => {
       setShowError(false);
       return Promise.race([
@@ -211,7 +211,7 @@ function ImportWallet() {
               type === 'private-key' ? (
                 <ImportKey
                   onWalletCreate={(wallet) =>
-                    handleWallets([wallet as BareWallet])
+                    handleWallets([wallet as MaskedBareWallet])
                   }
                 />
               ) : type === 'mnemonic' ? (

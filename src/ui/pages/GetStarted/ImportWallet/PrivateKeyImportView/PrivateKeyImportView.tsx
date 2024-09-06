@@ -12,6 +12,9 @@ import { isValidPrivateKey } from 'src/shared/validation/wallet';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { getError } from 'src/shared/errors/getError';
 import { IdempotentRequest } from 'src/ui/shared/IdempotentRequest';
+import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
+import { decodeMasked } from 'src/shared/wallet/encode-locally';
+import { unwrapOpaqueType } from 'src/shared/type-utils/Opaque';
 import {
   DecorativeMessage,
   DecorativeMessageDone,
@@ -84,10 +87,10 @@ export function PrivateKeyImportView({
   }
   const navigate = useNavigate();
   const { data, mutate, isIdle, isError, ...importWallet } = useMutation({
-    mutationFn: async (input: string) => {
+    mutationFn: async (input: LocallyEncoded) => {
       await new Promise((r) => setTimeout(r, 1000));
-      if (isValidPrivateKey(input)) {
-        return idempotentRequest.request(input, async () => {
+      if (isValidPrivateKey(decodeMasked(input))) {
+        return idempotentRequest.request(unwrapOpaqueType(input), async () => {
           const wallet = await walletPort.request('uiImportPrivateKey', input);
           await accountPublicRPCPort.request('saveUserAndWallet');
           await setCurrentAddress({ address: wallet.address });

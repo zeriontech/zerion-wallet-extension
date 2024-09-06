@@ -15,6 +15,7 @@ import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import { Input } from 'src/ui/ui-kit/Input';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
+import { encodeForMasking } from 'src/shared/wallet/encode-locally';
 import { SecretKeyFAQ } from '../FAQ';
 
 export function ImportKey({
@@ -34,7 +35,8 @@ export function ImportKey({
       if (!validity.valid) {
         return;
       }
-      return walletPort.request('uiImportPrivateKey', secretKey);
+      const encoded = encodeForMasking(secretKey);
+      return walletPort.request('uiImportPrivateKey', encoded);
     },
     onSuccess: (wallet) => {
       if (wallet) {

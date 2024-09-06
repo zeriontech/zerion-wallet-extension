@@ -24,6 +24,7 @@ import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { BlurredToggle } from 'src/ui/components/BlurredToggle';
 import { useWalletGroup } from 'src/ui/shared/requests/useWalletGroups';
 import { updateSearchParam } from 'src/ui/shared/updateSearchParam';
+import { decodeMasked } from 'src/shared/wallet/encode-locally';
 import { usePrivateKey } from './usePrivateKey';
 
 function Reveal({
@@ -37,12 +38,13 @@ function Reveal({
   onSessionExpired: () => void;
 }) {
   const {
-    data: privateKey,
+    data: privateKeyMasked,
     isLoading,
     isError,
     error,
   } = usePrivateKey(address);
 
+  const privateKey = privateKeyMasked ? decodeMasked(privateKeyMasked) : null;
   const { handleCopy, isSuccess: isCopySuccess } = useCopyToClipboard({
     text: privateKey || '',
   });

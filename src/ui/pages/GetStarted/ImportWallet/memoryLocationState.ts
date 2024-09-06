@@ -13,12 +13,13 @@
  */
 import { useStore } from '@store-unit/react';
 import { useLocation, useSearchParams } from 'react-router-dom';
+import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import { Store } from 'store-unit';
 
-type State = Record<string, { value: string } | undefined>;
+type State = Record<string, { value: LocallyEncoded } | undefined>;
 
 export class MemoryLocationState extends Store<State> {
-  set(key: string, value: string) {
+  set(key: string, value: LocallyEncoded) {
     this.setState((state) => ({ ...state, [key]: { value } }));
   }
 }

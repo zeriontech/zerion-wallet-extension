@@ -85,6 +85,8 @@ import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
 import { createTypedData } from 'src/modules/ethereum/account-abstraction/createTypedData';
 import { getDefiSdkClient } from 'src/modules/defi-sdk/background';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
+import { decodeMasked } from 'src/shared/wallet/encode-locally';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -93,7 +95,7 @@ import { lastUsedAddressStore } from '../user-activity';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import type { PendingWallet, WalletRecord } from './model/types';
-import type { BareWallet } from './model/BareWallet';
+import type { MaskedBareWallet } from './model/BareWallet';
 import {
   MnemonicWalletContainer,
   PrivateKeyWalletContainer,
@@ -343,8 +345,12 @@ export class Wallet {
     return maskWallet(walletContainer.getFirstWallet());
   }
 
-  async uiImportPrivateKey({ params: privateKey }: WalletMethodParams<string>) {
-    const walletContainer = new PrivateKeyWalletContainer([{ privateKey }]);
+  async uiImportPrivateKey({
+    params: privateKey,
+  }: WalletMethodParams<LocallyEncoded>) {
+    const walletContainer = new PrivateKeyWalletContainer([
+      { privateKey: decodeMasked(privateKey) },
+    ]);
     this.pendingWallet = {
       origin: WalletOrigin.imported,
       groupId: null,
@@ -355,10 +361,12 @@ export class Wallet {
 
   async uiImportSeedPhrase({
     params: mnemonics,
-  }: WalletMethodParams<NonNullable<BareWallet['mnemonic']>[]>) {
+  }: WalletMethodParams<NonNullable<MaskedBareWallet['mnemonic']>[]>) {
     this.ensureActiveSession(this.userCredentials);
     const walletContainer = await MnemonicWalletContainer.create({
-      wallets: mnemonics.map((mnemonic) => ({ mnemonic })),
+      wallets: mnemonics.map((mnemonic) => ({
+        mnemonic: { ...mnemonic, phrase: decodeMasked(mnemonic.phrase) },
+      })),
       credentials: this.userCredentials,
     });
     this.pendingWallet = {
@@ -436,7 +444,7 @@ export class Wallet {
   async verifyRecoveryPhrase({
     params: { groupId, value },
     context,
-  }: WalletMethodParams<{ groupId: string; value: string }>) {
+  }: WalletMethodParams<{ groupId: string; value: LocallyEncoded }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
     this.ensureActiveSession(this.userCredentials);
@@ -460,7 +468,7 @@ export class Wallet {
   async verifyPrivateKey({
     params: { address, value },
     context,
-  }: WalletMethodParams<{ address: string; value: string }>) {
+  }: WalletMethodParams<{ address: string; value: LocallyEncoded }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
     this.ensureActiveSession(this.userCredentials); // require anyway

@@ -3,7 +3,7 @@ import { Content } from 'react-area';
 import { useQuery } from '@tanstack/react-query';
 import groupBy from 'lodash/groupBy';
 import { invariant } from 'src/shared/invariant';
-import type { BareWallet } from 'src/shared/types/BareWallet';
+import type { MaskedBareWallet } from 'src/shared/types/BareWallet';
 import { getFirstNMnemonicWallets } from 'src/ui/pages/GetStarted/ImportWallet/MnemonicImportView/getFirstNMnemonicWallets';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -15,6 +15,7 @@ import { wait } from 'src/shared/wait';
 import { useAllExistingMnemonicAddresses } from 'src/ui/shared/requests/useAllExistingAddresses';
 import { useAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
 import { useStaleTime } from 'src/ui/pages/GetStarted/ImportWallet/MnemonicImportView/useStaleTime';
+import { encodeForMasking } from 'src/shared/wallet/encode-locally';
 import * as helperStyles from '../shared/helperStyles.module.css';
 import { SelectWalletsFAQ } from '../FAQ';
 
@@ -23,7 +24,7 @@ export function SelectWallets({
   onSelect,
 }: {
   mnemonic: string | null;
-  onSelect(wallets: BareWallet[]): void;
+  onSelect(wallets: MaskedBareWallet[]): void;
 }) {
   const [count] = useState(100);
   invariant(mnemonic, 'Seed phrase is empty');
@@ -33,7 +34,8 @@ export function SelectWallets({
     queryKey: ['getFirstNMnemonicWallets', mnemonic, count],
     queryFn: async () => {
       await wait(1000);
-      return getFirstNMnemonicWallets({ phrase: mnemonic, n: count });
+      const phrase = encodeForMasking(mnemonic);
+      return getFirstNMnemonicWallets({ phrase, n: count });
     },
     useErrorBoundary: true,
     suspense: false,
@@ -53,7 +55,7 @@ export function SelectWallets({
   );
   const { active, rest } = grouped as Record<
     'active' | 'rest',
-    BareWallet[] | undefined
+    MaskedBareWallet[] | undefined
   >;
 
   const [values, setValue] = useState<Set<string>>(() => new Set());

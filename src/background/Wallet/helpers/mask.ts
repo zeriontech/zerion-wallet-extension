@@ -9,7 +9,10 @@ function maskMnemonic(
   return mnemonic ? { phrase: '<phrase>', path: mnemonic.path } : null;
 }
 
-export function maskWallet(wallet: ExternallyOwnedAccount | BareWallet) {
+/** TODO: rename to "removeSensitiveValues"? or something better? */
+export function maskWallet<T extends ExternallyOwnedAccount | BareWallet>(
+  wallet: T
+) {
   return produce(wallet, (draft) => {
     if ('privateKey' in draft) {
       draft.privateKey = '<privateKey>';
