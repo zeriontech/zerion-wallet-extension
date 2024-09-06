@@ -1,4 +1,4 @@
-import type { ActionAsset, ActionTransfer } from 'defi-sdk';
+import type { ActionAsset, ActionTransfer, ActionType } from 'defi-sdk';
 import React, { useMemo } from 'react';
 import {
   getFungibleAsset,
@@ -28,18 +28,17 @@ type Direction = 'incoming' | 'outgoing';
 const ICON_SIZE = 36;
 
 export function ApprovalInfo({
-  approvalInfo,
+  singleTransfer,
+  actionType,
   address,
   chain,
 }: {
-  approvalInfo: {
-    asset: ActionAsset;
-    quantity: string;
-  };
+  singleTransfer: { asset: ActionAsset; quantity: string };
+  actionType: ActionType;
   address?: string;
   chain: Chain;
 }) {
-  const fungible = getFungibleAsset(approvalInfo.asset);
+  const fungible = getFungibleAsset(singleTransfer.asset);
 
   const tokenQuantity = useMemo(
     () =>
@@ -47,17 +46,17 @@ export function ApprovalInfo({
         ? getCommonQuantity({
             asset: fungible,
             chain,
-            baseQuantity: approvalInfo.quantity,
+            baseQuantity: singleTransfer.quantity,
           })
         : null,
-    [approvalInfo, fungible, chain]
+    [singleTransfer, fungible, chain]
   );
 
   if (!fungible) {
     return null;
   }
 
-  const isUnlimited = isUnlimitedApproval(approvalInfo.quantity);
+  const isUnlimited = isUnlimitedApproval(singleTransfer.quantity);
 
   return (
     <Surface padding={12}>
@@ -85,7 +84,15 @@ export function ApprovalInfo({
           </UIText>
         }
         detailText={
-          tokenQuantity ? (
+          actionType === 'revoke' && singleTransfer.quantity === '0' ? (
+            <UIText
+              kind="small/regular"
+              color="var(--neutral-500)"
+              style={{ overflowWrap: 'break-word' }}
+            >
+              {fungible.symbol || null}
+            </UIText>
+          ) : tokenQuantity ? (
             <UIText
               kind="small/regular"
               color="var(--neutral-500)"

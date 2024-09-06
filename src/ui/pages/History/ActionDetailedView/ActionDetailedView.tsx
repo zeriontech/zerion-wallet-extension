@@ -89,7 +89,8 @@ export function ActionDetailedView({
           ) : null}
           {action.content?.single_asset ? (
             <ApprovalInfo
-              approvalInfo={action.content.single_asset}
+              actionType={action.type.value}
+              singleTransfer={action.content.single_asset}
               address={address}
               chain={chain}
             />

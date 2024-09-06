@@ -15,6 +15,7 @@ import DeploymentIcon from 'jsx:src/ui/assets/actionTypes/deployment.svg';
 import DepositIcon from 'jsx:src/ui/assets/actionTypes/deposit.svg';
 import MintIcon from 'jsx:src/ui/assets/actionTypes/mint.svg';
 import ReceiveIcon from 'jsx:src/ui/assets/actionTypes/receive.svg';
+import RevokeIcon from 'jsx:src/ui/assets/actionTypes/revoke.svg';
 import RepayIcon from 'jsx:src/ui/assets/actionTypes/repay.svg';
 import SendIcon from 'jsx:src/ui/assets/actionTypes/send.svg';
 import StakeIcon from 'jsx:src/ui/assets/actionTypes/stake.svg';
@@ -85,6 +86,9 @@ export function TransactionTypeIcon({
   }
   if (type === 'receive') {
     return <ReceiveIcon style={style} />;
+  }
+  if (type === 'revoke') {
+    return <RevokeIcon style={style} />;
   }
   if (type === 'repay') {
     return <RepayIcon style={style} />;
@@ -169,14 +173,14 @@ function TransferIcon({
 }
 
 export function TransactionItemIcon({ action }: { action: AddressAction }) {
-  const approveTransfers = action.content?.single_asset;
+  const singleTransfer = action.content?.single_asset;
   const incomingTransfers = action.content?.transfers?.incoming;
   const outgoingTransfers = action.content?.transfers?.outgoing;
 
-  if (action.type.value === 'approve') {
+  if (singleTransfer) {
     return (
       <HistoryAssetIcon
-        asset={approveTransfers?.asset}
+        asset={singleTransfer?.asset}
         type={action.type.value}
         size={TRANSACTION_ICON_SIZE}
       />

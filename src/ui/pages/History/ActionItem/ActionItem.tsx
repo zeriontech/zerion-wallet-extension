@@ -183,14 +183,14 @@ function ActionItemBackend({
   }
 
   const address = 'address' in params ? params.address : undefined;
-  const approveTransfers = action.content?.single_asset;
+  const singleTransfer = action.content?.single_asset;
   const incomingTransfers = action.content?.transfers?.incoming;
   const outgoingTransfers = action.content?.transfers?.outgoing;
 
   const shouldUsePositiveColor =
     incomingTransfers?.length === 1 &&
     Boolean(getFungibleAsset(incomingTransfers[0].asset));
-  const maybeApprovedAsset = getFungibleAsset(approveTransfers?.asset);
+  const maybeSingleAsset = getFungibleAsset(singleTransfer?.asset);
   const chain = action.transaction.chain
     ? createChain(action.transaction.chain)
     : null;
@@ -270,17 +270,18 @@ function ActionItemBackend({
               maxWidth: '100%',
             }}
           >
-            {action.type.value === 'approve' && maybeApprovedAsset ? (
+            {maybeSingleAsset ? (
               <AssetLink
-                asset={maybeApprovedAsset}
+                asset={maybeSingleAsset}
                 title={
-                  maybeApprovedAsset.name ||
-                  maybeApprovedAsset.symbol?.toUpperCase()
+                  maybeSingleAsset.name ||
+                  maybeSingleAsset.symbol?.toUpperCase()
                 }
                 address={address}
               />
             ) : incomingTransfers?.length && chain ? (
               <HistoryItemValue
+                actionType={action.type.value}
                 transfers={incomingTransfers}
                 direction="in"
                 chain={chain}
@@ -289,6 +290,7 @@ function ActionItemBackend({
               />
             ) : outgoingTransfers?.length && chain ? (
               <HistoryItemValue
+                actionType={action.type.value}
                 transfers={outgoingTransfers}
                 direction="out"
                 chain={chain}
@@ -313,6 +315,7 @@ function ActionItemBackend({
                 />
               ) : outgoingTransfers?.length ? (
                 <HistoryItemValue
+                  actionType={action.type.value}
                   transfers={outgoingTransfers}
                   direction="out"
                   chain={chain}
@@ -325,6 +328,7 @@ function ActionItemBackend({
                 'Unlimited'
               ) : action.content?.single_asset?.asset ? (
                 <HistoryItemValue
+                  actionType={action.type.value}
                   transfers={[action.content.single_asset]}
                   direction="self"
                   chain={chain}

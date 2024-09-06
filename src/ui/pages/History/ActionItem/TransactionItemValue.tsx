@@ -1,5 +1,11 @@
 import React, { useMemo } from 'react';
-import type { NFTAsset, Asset, Direction, ActionTransfer } from 'defi-sdk';
+import type {
+  NFTAsset,
+  Asset,
+  Direction,
+  ActionTransfer,
+  ActionType,
+} from 'defi-sdk';
 import { minus } from 'src/ui/shared/typography';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import type { Chain } from 'src/modules/networks/Chain';
@@ -25,6 +31,7 @@ function getSign(
 }
 
 function HistoryTokenValue({
+  actionType,
   value,
   asset,
   chain,
@@ -32,6 +39,7 @@ function HistoryTokenValue({
   address,
   withLink,
 }: {
+  actionType: ActionType;
   value: number | string;
   asset: Asset;
   chain: Chain;
@@ -42,12 +50,14 @@ function HistoryTokenValue({
   const sign = getSign(value, direction);
   const commonQuantity = useMemo(
     () =>
-      getCommonQuantity({
-        asset,
-        chain,
-        baseQuantity: value,
-      }),
-    [chain, asset, value]
+      value === '0' && actionType === 'revoke'
+        ? null
+        : getCommonQuantity({
+            asset,
+            chain,
+            baseQuantity: value,
+          }),
+    [chain, actionType, asset, value]
   );
 
   return (
@@ -55,14 +65,17 @@ function HistoryTokenValue({
       gap={4}
       alignItems="center"
       style={{
-        gridTemplateColumns:
-          'minmax(min-content, max-content) minmax(20px, max-content)',
+        gridTemplateColumns: commonQuantity
+          ? 'minmax(min-content, max-content) minmax(20px, max-content)'
+          : 'minmax(min-content, max-content)',
         overflow: 'hidden',
         whiteSpace: 'nowrap',
       }}
-      title={commonQuantity.toFixed()}
+      title={commonQuantity?.toFixed()}
     >
-      <AssetQuantity sign={sign} commonQuantity={commonQuantity} />
+      {commonQuantity ? (
+        <AssetQuantity sign={sign} commonQuantity={commonQuantity} />
+      ) : null}
       {withLink ? (
         <AssetLink asset={asset} address={address} />
       ) : (
@@ -111,12 +124,14 @@ export function HistoryNFTValue({
 }
 
 export function HistoryItemValue({
+  actionType,
   transfers,
   direction,
   chain,
   address,
   withLink,
 }: {
+  actionType: ActionType;
   transfers?: Pick<ActionTransfer, 'asset' | 'quantity'>[];
   direction: Direction;
   chain: Chain;
@@ -151,6 +166,7 @@ export function HistoryItemValue({
     />
   ) : fungibleAsset ? (
     <HistoryTokenValue
+      actionType={actionType}
       address={address}
       asset={fungibleAsset}
       chain={chain}
