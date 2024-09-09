@@ -4,7 +4,7 @@ import omit from 'lodash/omit';
 import type { Networks } from 'src/modules/networks/Networks';
 import { sendRpcRequest } from 'src/shared/custom-rpc/rpc-request';
 import { createChain } from 'src/modules/networks/Chain';
-import type { NetworksSource } from 'src/modules/zerion-api/zerion-api';
+import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import type { IncomingTransaction } from '../types/IncomingTransaction';
 import { assignGasPrice } from './gasPrices/assignGasPrice';
 import { hasNetworkFee } from './gasPrices/hasNetworkFee';
