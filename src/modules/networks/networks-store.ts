@@ -32,6 +32,7 @@ type OtherNetworkData = {
 };
 
 export class NetworksStore extends Store<State> {
+  private isReady = false;
   private networkConfigs: NetworkConfig[] = [];
   private customNetworkConfigs: NetworkConfig[] = [];
   private loaderPromises: Record<string, Promise<Networks>> = {};
@@ -152,6 +153,9 @@ export class NetworksStore extends Store<State> {
   }
 
   private async fetchNetworkById(chainId: ChainId) {
+    if (!this.isReady) {
+      await this.load();
+    }
     const shouldUpdateNetworksInfo = this.getState()
       .networks?.getNetworks()
       .every((network) => Networks.getChainId(network) !== chainId);
@@ -186,6 +190,7 @@ export class NetworksStore extends Store<State> {
         testnetMode: this.testnetMode,
       }).finally(() => {
         delete this.loaderPromises[key];
+        this.isReady = true;
       });
     }
     return this.loaderPromises[key];
