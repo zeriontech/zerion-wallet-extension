@@ -149,7 +149,6 @@ export class NetworksStore extends Store<State> {
         ?.filter((config) => !fulfilledNetworkIdSet.has(config.id))
         .map((config) => toNetworkConfig(config.value, config.id)) || [];
 
-    this.isReady = true;
     return this.updateNetworks();
   }
 
@@ -191,6 +190,7 @@ export class NetworksStore extends Store<State> {
         testnetMode: this.testnetMode,
       }).finally(() => {
         delete this.loaderPromises[key];
+        this.isReady = true;
       });
     }
     return this.loaderPromises[key];
