@@ -109,7 +109,7 @@ function ScreenCover() {
         color="var(--neutral-500)"
         style={{ textAlign: 'center' }}
       >
-        Choose your wallet setup options
+        Choose an option to set up your wallet
       </UIText>
     </FillView>
   );
