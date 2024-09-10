@@ -10,12 +10,11 @@ import { InvalidParams, MethodNotImplemented } from 'src/shared/errors/errors';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import type { Connection } from './connection';
 
-function accountsEquals(arr1: string[], arr2: string[]) {
-  // it's okay to perform search like this because `accounts`
-  // always has at most one element
-  return (
-    arr1.length === arr2.length && arr1.every((item) => arr2.includes(item))
-  );
+function accountsEquals(arr1: string[], arr2: string[]): boolean {
+  if (arr1.length !== arr2.length) return false;
+
+  const set2 = new Set(arr2);
+  return arr1.every((item) => set2.has(item));
 }
 
 async function fetchInitialState(connection: Connection) {
