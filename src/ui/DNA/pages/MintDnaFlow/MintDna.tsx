@@ -8,7 +8,6 @@ import {
   useTrail,
 } from '@react-spring/web';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useAddressPositions } from 'defi-sdk';
 import { payloadId } from '@walletconnect/jsonrpc-utils';
 import type BigNumber from 'bignumber.js';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -33,6 +32,8 @@ import { invariant } from 'src/shared/invariant';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { SidePanel } from 'src/ui/features/onboarding/shared/SidePanel';
+import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
+import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
 import * as helpersStyles from '../../shared/styles.module.css';
 import { Step } from '../../shared/Step';
 import { DNA_MINT_CONTRACT_ADDRESS } from '../../shared/constants';
@@ -66,20 +67,17 @@ function useDnaMintTransaction(address: string) {
   const feeValueFiat = costs?.totalValueFiat;
   const { currency } = useCurrency();
 
-  const { value, isLoading: positionsAreLoading } = useAddressPositions(
-    {
-      address,
-      assets: ['eth'],
-      currency,
-    },
+  const { data, isLoading: positionsAreLoading } = useHttpAddressPositions(
+    { addresses: [address], assetIds: ['eth'], currency },
+    { source: useHttpClientSource() },
     { enabled: Boolean(address) }
   );
 
   const ethPosition = useMemo(() => {
-    return value?.positions?.find(
+    return data?.data?.find(
       (item) => item.chain === NetworkId.Ethereum && item.type === 'asset'
     );
-  }, [value]);
+  }, [data]);
 
   const hasEnoughEth =
     Number(ethPosition?.value || 0) > Number(feeValueFiat || 0);

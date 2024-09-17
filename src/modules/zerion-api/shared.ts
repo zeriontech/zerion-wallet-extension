@@ -2,6 +2,7 @@ import ky from 'ky';
 import { platform } from 'src/shared/analytics/platform';
 import { version } from 'src/shared/packageVersion';
 import { ZERION_API_URL, ZERION_TESTNET_API_URL } from 'src/env/config';
+import { invariant } from 'src/shared/invariant';
 
 export type NetworksSource = 'mainnet' | 'testnet';
 
@@ -9,37 +10,52 @@ export interface BackendSourceParams {
   source: NetworksSource;
 }
 
-function createZpiHeaders() {
+type UrlInput =
+  | ({ endpoint: string } & Partial<BackendSourceParams>)
+  | { url: string | URL };
+
+type GetOptions = UrlInput;
+type PostOptions = UrlInput & { body: BodyInit };
+
+export type Options = {
+  headers?: Record<string, string | undefined>;
+};
+
+export type ClientOptions = Options & BackendSourceParams;
+
+export const CLIENT_DEFAULTS: ClientOptions = { source: 'mainnet' };
+
+function createHeaders(options: Options) {
   return {
     'X-Request-Id': crypto.randomUUID(),
     'Zerion-Client-Type': platform,
     'Zerion-Client-Version': version,
     'Content-Type': 'application/json',
+    ...options.headers,
   };
 }
 
-type UrlInput =
-  | ({ endpoint: string } & Partial<BackendSourceParams>)
-  | { url: string | URL };
-
 const resolveUrl = (input: UrlInput): string | URL => {
-  if ('endpoint' in input) {
+  if ('url' in input) {
+    invariant(input.url, 'url param must be a string');
+    return input.url;
+  } else {
     const { endpoint, source = 'mainnet' } = input;
+    invariant(endpoint, 'endpoint param must be a string');
     const base = source === 'testnet' ? ZERION_TESTNET_API_URL : ZERION_API_URL;
     return new URL(endpoint, base);
-  } else {
-    return input.url;
   }
 };
 
 export class ZerionHttpClient {
-  static get<T>(params: UrlInput) {
-    const url = resolveUrl(params);
-    return ky.get(url, { headers: createZpiHeaders() }).json<T>();
+  static get<T>(options: GetOptions & Options) {
+    const url = resolveUrl(options);
+    return ky.get(url, { headers: createHeaders(options) }).json<T>();
   }
 
-  static post<T>({ body, ...input }: UrlInput & { body: BodyInit }) {
-    const url = resolveUrl(input);
-    return ky.post(url, { body, headers: createZpiHeaders() }).json<T>();
+  static post<T>(options: PostOptions & Options) {
+    const url = resolveUrl(options);
+    const { body } = options;
+    return ky.post(url, { body, headers: createHeaders(options) }).json<T>();
   }
 }

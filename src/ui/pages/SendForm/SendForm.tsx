@@ -10,7 +10,6 @@ import React, {
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import type { Store } from 'store-unit';
-import { useAddressPortfolioDecomposition } from 'defi-sdk';
 import { useSendForm } from '@zeriontech/transactions';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
@@ -61,6 +60,8 @@ import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { DisableTestnetShortcuts } from 'src/ui/features/testnet-mode/DisableTestnetShortcuts';
 import { isDeviceAccount } from 'src/shared/types/validators';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
+import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -121,10 +122,13 @@ function SendFormComponent() {
       : null,
   });
 
-  const { value: portfolioDecomposition } = useAddressPortfolioDecomposition(
-    { address, currency },
-    { enabled: ready }
+  const { data } = useWalletPortfolio(
+    { addresses: [address], currency },
+    { source: useHttpClientSource() },
+    { enabled: ready, suspense: true }
   );
+  const portfolioDecomposition = data?.data;
+
   const addressChains = useMemo(
     () => Object.keys(portfolioDecomposition?.chains || {}),
     [portfolioDecomposition]

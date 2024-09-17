@@ -1,6 +1,7 @@
+import type { ClientOptions } from '../shared';
 import { ZerionHttpClient } from '../shared';
 
-interface Payload {
+interface Params {
   addresses: string[];
   chain: string;
 }
@@ -10,12 +11,11 @@ interface Response {
   errors?: { title: string; detail: string }[];
 }
 
-export function registerChain(payload: Payload) {
+export function registerChain(payload: Params, options?: ClientOptions) {
+  const { chain, addresses } = payload;
   return ZerionHttpClient.post<Response>({
     endpoint: 'wallet/connect-chain/v1',
-    body: JSON.stringify({
-      chain: payload.chain,
-      addresses: payload.addresses,
-    }),
+    body: JSON.stringify({ chain, addresses }),
+    ...options,
   });
 }

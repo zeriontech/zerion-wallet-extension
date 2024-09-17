@@ -1,13 +1,4 @@
-import type {
-  AddressParams,
-  AddressPosition,
-  AddressPositionDappInfo,
-  PortfolioDecomposition,
-} from 'defi-sdk';
-import {
-  useAddressPortfolioDecomposition,
-  useAddressPositions,
-} from 'defi-sdk';
+import type { AddressPosition, AddressPositionDappInfo } from 'defi-sdk';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   formatCurrencyToParts,
@@ -63,10 +54,13 @@ import { invariant } from 'src/shared/invariant';
 import { SurfaceItemAnchor } from 'src/ui/ui-kit/SurfaceList';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { useStore } from '@store-unit/react';
-import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
+import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
+import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
+import type { WalletPortfolio } from 'src/modules/zerion-api/requests/wallet-get-portfolio';
 import {
   TAB_SELECTOR_HEIGHT,
   TAB_TOP_PADDING,
@@ -644,7 +638,7 @@ function PositionList({
 }
 
 function MultiChainPositions({
-  addressParams,
+  address,
   filterChain,
   dappChain,
   onChainChange,
@@ -653,23 +647,23 @@ function MultiChainPositions({
   portfolioDecomposition,
   ...positionListProps
 }: {
-  addressParams: AddressParams;
+  address: string;
   renderEmptyView: () => React.ReactNode;
   renderLoadingView: () => React.ReactNode;
   dappChain: string | null;
   filterChain: string | null;
   onChainChange: (value: string | null) => void;
-  portfolioDecomposition: PortfolioDecomposition | null;
+  portfolioDecomposition: WalletPortfolio | null;
 } & Omit<React.ComponentProps<typeof PositionList>, 'items'>) {
   const { currency } = useCurrency();
-  const { value, isLoading } = useAddressPositions(
-    { ...addressParams, currency },
-    { client: useDefiSdkClient() }
+  const { data, isLoading } = useHttpAddressPositions(
+    { addresses: [address], currency },
+    { source: useHttpClientSource() }
   );
+  const positions = data?.data;
 
   const chainValue = filterChain || dappChain || NetworkSelectValue.All;
 
-  const positions = value?.positions;
   const items = useMemo(
     () =>
       positions?.filter(
@@ -692,8 +686,8 @@ function MultiChainPositions({
 
   const chainTotalValue =
     chainValue === NetworkSelectValue.All
-      ? portfolioDecomposition?.total_value
-      : portfolioDecomposition?.positions_chains_distribution[chainValue];
+      ? portfolioDecomposition?.totalValue
+      : portfolioDecomposition?.positionsChainsDistribution[chainValue];
 
   return (
     <VStack gap={Object.keys(groupedPositions).length > 1 ? 16 : 8}>
@@ -714,6 +708,7 @@ function MultiChainPositions({
       <PositionList
         items={items}
         dappChain={dappChain}
+        address={address}
         {...positionListProps}
       />
     </VStack>
@@ -721,7 +716,6 @@ function MultiChainPositions({
 }
 
 function RawChainPositions({
-  addressParams,
   address,
   renderEmptyView,
   renderLoadingView,
@@ -731,7 +725,6 @@ function RawChainPositions({
   onChainChange,
   ...positionListProps
 }: {
-  addressParams: AddressParams;
   renderEmptyView: () => React.ReactNode;
   renderLoadingView: () => React.ReactNode;
   renderErrorView: (chainName: string) => React.ReactNode;
@@ -740,8 +733,6 @@ function RawChainPositions({
   onChainChange: (value: string | null) => void;
 } & Omit<React.ComponentProps<typeof PositionList>, 'items'>) {
   const { currency } = useCurrency();
-  const addressParam =
-    'address' in addressParams ? addressParams.address : address;
   invariant(
     filterChain !== NetworkSelectValue.All,
     'All networks filter should not show custom chain positions'
@@ -757,14 +748,7 @@ function RawChainPositions({
     data: addressPositions,
     isLoading,
     isError,
-  } = useEvmAddressPositions({
-    address: addressParam,
-    chain,
-  });
-  if (!addressParam) {
-    return <div>Can't display this view for multiple addresss mode.</div>;
-  }
-
+  } = useEvmAddressPositions({ address, chain });
   if (isError) {
     return renderErrorView(
       networks?.getChainName(chain) || chainValue
@@ -816,28 +800,22 @@ export function Positions({
 }) {
   const { currency } = useCurrency();
   const { ready, params, singleAddressNormalized } = useAddressParams();
-  const {
-    value: portfolioDecomposition,
-    isLoading: portfolioDecompositionIsLoading,
-  } = useAddressPortfolioDecomposition(
-    {
-      address: singleAddressNormalized,
-      currency,
-    },
-    { enabled: ready, client: useDefiSdkClient() }
+  const { data, ...portfolioQuery } = useWalletPortfolio(
+    { addresses: [params.address], currency },
+    { source: useHttpClientSource() },
+    { enabled: ready }
   );
+  const walletPortfolio = data?.data;
   const chainValue = filterChain || dappChain || NetworkSelectValue.All;
   const chain =
     chainValue === NetworkSelectValue.All ? null : createChain(chainValue);
   const positionChains = useMemo(() => {
-    const chainsSet = new Set(
-      Object.keys(portfolioDecomposition?.chains || {})
-    );
+    const chainsSet = new Set(Object.keys(walletPortfolio?.chains || {}));
     if (chainValue !== NetworkSelectValue.All) {
       chainsSet.add(chainValue);
     }
     return Array.from(chainsSet);
-  }, [portfolioDecomposition, chainValue]);
+  }, [walletPortfolio, chainValue]);
   const offsetValuesState = useStore(offsetValues);
   // Cheap perceived performance hack: render expensive Positions component later so that initial UI render is faster
   const readyToRender = useRenderDelay(16);
@@ -914,7 +892,6 @@ export function Positions({
   if (isSupportedByBackend) {
     return (
       <MultiChainPositions
-        addressParams={params}
         address={singleAddressNormalized}
         dappChain={dappChain}
         filterChain={filterChain}
@@ -922,11 +899,11 @@ export function Positions({
         onChainChange={onChainChange}
         renderEmptyView={renderEmptyViewForNetwork}
         renderLoadingView={renderLoadingViewForNetwork}
-        portfolioDecomposition={portfolioDecomposition}
+        portfolioDecomposition={walletPortfolio || null}
       />
     );
   } else {
-    if (isLoading || portfolioDecompositionIsLoading) {
+    if (isLoading || portfolioQuery.isLoading) {
       return renderLoadingViewForNetwork();
     }
     invariant(networks, `Failed to load network info for ${chain}`);
@@ -938,7 +915,6 @@ export function Positions({
     return (
       <ErrorBoundary renderError={() => renderErrorViewForNetwork(chainValue)}>
         <RawChainPositions
-          addressParams={params}
           address={singleAddressNormalized}
           dappChain={dappChain}
           filterChain={filterChain}

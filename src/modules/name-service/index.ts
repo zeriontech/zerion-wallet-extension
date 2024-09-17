@@ -1,5 +1,5 @@
 import { ZerionAPI } from '../zerion-api/zerion-api';
-import type { Identity } from '../zerion-api/requests/wallets-meta';
+import type { Identity } from '../zerion-api/requests/wallet-get-meta';
 
 const DOMAIN_PRIORITY: Record<Identity['provider'], number> = {
   ens: 0,

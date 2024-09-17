@@ -1,10 +1,5 @@
 import { useSelectorStore } from '@store-unit/react';
-import {
-  client,
-  useAddressMembership,
-  useAddressPortfolioDecomposition,
-  useAddressPositions,
-} from 'defi-sdk';
+import { client, useAddressMembership, useAddressPositions } from 'defi-sdk';
 import type { SwapFormState, SwapFormView } from '@zeriontech/transactions';
 import { useSwapForm } from '@zeriontech/transactions';
 import React, {
@@ -68,6 +63,8 @@ import { AllowanceForm } from 'src/ui/components/AllowanceForm';
 import BigNumber from 'bignumber.js';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
+import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -150,13 +147,12 @@ export function SwapFormComponent() {
   });
   const positions = positionsValue?.positions ?? null;
 
-  const { value: portfolioDecomposition } = useAddressPortfolioDecomposition(
-    {
-      address,
-      currency,
-    },
+  const { data } = useWalletPortfolio(
+    { addresses: [address], currency },
+    { source: useHttpClientSource() },
     { enabled: ready }
   );
+  const portfolioDecomposition = data?.data;
   const addressChains = useMemo(
     () => Object.keys(portfolioDecomposition?.chains || {}),
     [portfolioDecomposition]

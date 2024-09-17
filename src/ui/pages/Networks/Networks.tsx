@@ -6,7 +6,6 @@ import React, {
   useState,
 } from 'react';
 import { RenderArea } from 'react-area';
-import { useAddressPortfolioDecomposition } from 'defi-sdk';
 import { useMutation } from '@tanstack/react-query';
 import {
   NavigationType,
@@ -63,6 +62,8 @@ import { usePreferences } from 'src/ui/features/preferences';
 import { BACKEND_NETWORK_ORIGIN } from 'src/modules/ethereum/chains/constants';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
+import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useWalletAddresses } from './shared/useWalletAddresses';
 import { NetworkCreateSuccess } from './NetworkCreateSuccess';
 import { createEmptyChainConfig } from './shared/createEmptyChainConfig';
@@ -485,19 +486,15 @@ export function Networks() {
   const { preferences } = usePreferences();
   const { currency } = useCurrency();
   const navigationType = useNavigationType();
-  const {
-    value: portfolioDecomposition,
-    isLoading: portfolioDecompositionIsLoading,
-  } = useAddressPortfolioDecomposition(
-    {
-      addresses: addresses || [],
-      currency,
-    },
+  const { data, isLoading: walletPortfolioIsLoading } = useWalletPortfolio(
+    { addresses: addresses || [], currency },
+    { source: useHttpClientSource() },
     { enabled: Boolean(addresses?.length) }
   );
+  const walletPortfolio = data?.data;
   const chains = useMemo(
-    () => Object.keys(portfolioDecomposition?.chains || {}),
-    [portfolioDecomposition]
+    () => Object.keys(walletPortfolio?.chains || {}),
+    [walletPortfolio]
   );
   const { networks, isLoading } = useNetworks(chains);
 
@@ -516,9 +513,9 @@ export function Networks() {
           path="/*"
           element={
             <NetworksView
-              loading={isLoading || portfolioDecompositionIsLoading}
+              loading={isLoading || walletPortfolioIsLoading}
               networks={networks}
-              chainDistribution={portfolioDecomposition}
+              chainDistribution={walletPortfolio ?? null}
               testnetMode={Boolean(preferences?.testnetMode?.on)}
               autoFocusSearch={navigationType === NavigationType.Push}
             />

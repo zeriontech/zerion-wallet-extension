@@ -1,6 +1,7 @@
+import type { ClientOptions } from '../shared';
 import { ZerionHttpClient } from '../shared';
 
-interface Payload {
+interface Params {
   addresses: string[];
 }
 
@@ -9,9 +10,10 @@ interface Response {
   errors?: { title: string; detail: string }[];
 }
 
-export function registerAddresses(payload: Payload) {
+export function registerAddresses(payload: Params, options?: ClientOptions) {
   return ZerionHttpClient.post<Response>({
     endpoint: 'wallet/import/v1',
     body: JSON.stringify({ addresses: payload.addresses }),
+    ...options,
   });
 }

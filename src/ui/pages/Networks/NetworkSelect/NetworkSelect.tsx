@@ -1,6 +1,5 @@
 import { createPortal } from 'react-dom';
 import React, { useMemo, useRef } from 'react';
-import { useAddressPortfolioDecomposition } from 'defi-sdk';
 import { invariant } from 'src/shared/invariant';
 import { NetworkSelectDialog } from 'src/ui/components/NetworkSelectDialog';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
@@ -19,10 +18,11 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { Networks } from 'src/modules/networks/Networks';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
-import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { walletPort } from 'src/ui/shared/channels';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
+import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
+import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 
 async function updateNetworks() {
   const networksStore = await getNetworksStore();
@@ -51,10 +51,11 @@ export function NetworkSelect({
 }) {
   const { params } = useAddressParams();
   const { currency } = useCurrency();
-  const { value: portfolioDecomposition } = useAddressPortfolioDecomposition(
-    { ...params, currency },
-    { client: useDefiSdkClient() }
+  const { data } = useWalletPortfolio(
+    { addresses: [params.address], currency },
+    { source: useHttpClientSource() }
   );
+  const walletPortfolio = data?.data;
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   function handleDialogOpen() {
@@ -88,7 +89,7 @@ export function NetworkSelect({
         <NetworkSelectDialog
           filterPredicate={filterPredicate}
           value={value}
-          chainDistribution={portfolioDecomposition}
+          chainDistribution={walletPortfolio ?? null}
           showAllNetworksOption={showAllNetworksOption}
         />
       )}

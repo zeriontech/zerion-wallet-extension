@@ -4,7 +4,7 @@ import { invariant } from 'src/shared/invariant';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { valueToHex } from 'src/shared/units/valueToHex';
 import { ZerionHttpClient } from '../shared';
-import type { BackendSourceParams } from '../shared';
+import type { ClientOptions } from '../shared';
 
 type PaymasterEligibilityPayload = PartiallyRequired<
   Pick<IncomingTransaction, 'chainId' | 'from' | 'nonce'>,
@@ -18,7 +18,7 @@ interface PaymasterEligibilityResponse {
 
 export function checkPaymasterEligibility(
   tx: PaymasterEligibilityPayload,
-  { source }: BackendSourceParams
+  options?: ClientOptions
 ) {
   const { nonce, chainId, from } = tx;
   invariant(nonce != null, 'Nonce is required to check eligibility');
@@ -31,7 +31,7 @@ export function checkPaymasterEligibility(
   const endpoint = `paymaster/check-eligibility/v1?${params}`;
   return ZerionHttpClient.get<PaymasterEligibilityResponse>({
     endpoint,
-    source,
+    ...options,
   });
 }
 
@@ -48,7 +48,7 @@ export function getPaymasterParams(
     value: string;
     data: string;
   },
-  { source }: BackendSourceParams
+  options?: ClientOptions
 ) {
   interface PaymasterParamsResponse {
     data: {
@@ -67,5 +67,8 @@ export function getPaymasterParams(
   }
   const params = new URLSearchParams(request);
   const endpoint = `/paymaster/get-params/v1?${params}`;
-  return ZerionHttpClient.get<PaymasterParamsResponse>({ endpoint, source });
+  return ZerionHttpClient.get<PaymasterParamsResponse>({
+    endpoint,
+    ...options,
+  });
 }

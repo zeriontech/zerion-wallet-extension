@@ -19,9 +19,9 @@ function compareNetworks(
   const aString = a.name.toString().toLowerCase();
   const bString = b.name.toString().toLowerCase();
   const aValue =
-    chainDistribution?.positions_chains_distribution[a.id.toString()];
+    chainDistribution?.positionsChainsDistribution[a.id.toString()];
   const bValue =
-    chainDistribution?.positions_chains_distribution[b.id.toString()];
+    chainDistribution?.positionsChainsDistribution[b.id.toString()];
 
   if (aValue && bValue) return bValue - aValue;
   if (aValue && !bValue) return -1;
