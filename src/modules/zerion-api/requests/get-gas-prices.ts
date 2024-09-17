@@ -14,6 +14,6 @@ interface Response {
 
 export function getGasPrices({ chain }: Params, options?: ClientOptions) {
   const params = new URLSearchParams({ chain: chain.toString() });
-  const endpoint = `chain/get-gas-prices/v1${params}`;
+  const endpoint = `chain/get-gas-prices/v1?${params}`;
   return ZerionHttpClient.get<Response>({ endpoint, ...options });
 }
