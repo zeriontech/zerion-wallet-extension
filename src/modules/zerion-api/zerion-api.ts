@@ -9,6 +9,8 @@ import {
 } from './requests/paymaster-transactions';
 import { walletGetPositions } from './requests/wallet-get-positions';
 import { walletGetPortfolio } from './requests/wallet-get-portfolio';
+import { checkReferral } from './requests/check-referral';
+import { referWallet } from './requests/refer-wallet';
 
 export const ZerionAPI = {
   getGasPrices,
@@ -20,4 +22,6 @@ export const ZerionAPI = {
   getPaymasterParams,
   walletGetPositions,
   walletGetPortfolio,
+  checkReferral,
+  referWallet,
 };
