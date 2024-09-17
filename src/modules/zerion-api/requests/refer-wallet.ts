@@ -1,6 +1,6 @@
 import { ZerionHttpClient } from '../shared';
 
-interface Payload {
+interface Params {
   address: string;
 }
 
@@ -9,9 +9,9 @@ interface Response {
   errors?: { title: string; detail: string }[];
 }
 
-export function referWallet(payload: Payload) {
+export function referWallet(params: Params) {
   return ZerionHttpClient.post<Response>({
     endpoint: 'wallet/refer/v1',
-    body: JSON.stringify({ address: payload.address }),
+    body: JSON.stringify({ address: params.address }),
   });
 }
