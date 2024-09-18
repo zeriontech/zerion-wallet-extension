@@ -8,6 +8,7 @@ import { version } from 'src/shared/packageVersion';
 import * as browserStorage from 'src/background/webapis/storage';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { emitter } from 'src/background/events';
+import { isReadonlyContainer } from 'src/shared/types/validators';
 import type { DnaAction } from './types';
 
 const ACTION_QUEUE_KEY = 'actionDnaQueue-22-12-2021';
@@ -54,7 +55,7 @@ export class DnaService {
     });
   }
 
-  async popAction() {
+  private async popAction() {
     const currentQueue = await browserStorage.get<DnaActionWithTimestamp[]>(
       ACTION_QUEUE_KEY
     );
@@ -63,7 +64,7 @@ export class DnaService {
     this.tryRegisterAction();
   }
 
-  async takeFirstRecentAction() {
+  private async takeFirstRecentAction() {
     const currentQueue = await browserStorage.get<DnaActionWithTimestamp[]>(
       ACTION_QUEUE_KEY
     );
@@ -82,11 +83,10 @@ export class DnaService {
     return omit(currentQueue[0], 'timestamp');
   }
 
-  async registerAction(action: DnaAction) {
-    this.sendingInProgress = true;
+  private async registerAction(action: DnaAction) {
     return new Promise<{ success: boolean }>((resolve) => {
       ky.post(`${DNA_API_ENDPOINT}/actions`, {
-        // random stuff for backend scheme validation
+        // random header for backend scheme validation
         headers: { 'Z-Proof': uuidv4() },
         body: JSON.stringify(action),
       })
@@ -249,6 +249,9 @@ export class DnaService {
 
   initialize() {
     emitter.on('walletCreated', async ({ walletContainer, origin }) => {
+      if (isReadonlyContainer(walletContainer)) {
+        return;
+      }
       for (const wallet of walletContainer.wallets) {
         await this.registerWallet({
           params: { address: wallet.address, origin },
