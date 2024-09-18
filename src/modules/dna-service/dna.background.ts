@@ -84,6 +84,7 @@ export class DnaService {
   }
 
   private async registerAction(action: DnaAction) {
+    this.sendingInProgress = true;
     return new Promise<{ success: boolean }>((resolve) => {
       ky.post(`${DNA_API_ENDPOINT}/actions`, {
         // random header for backend scheme validation
