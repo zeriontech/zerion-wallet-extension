@@ -78,6 +78,7 @@ import { Onboarding } from '../features/onboarding';
 import { RevealPrivateKey } from '../pages/RevealPrivateKey';
 import { urlContext } from '../../shared/UrlContext';
 import { BackupPage } from '../pages/Backup/Backup';
+import { NewTab } from '../NewTab';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -445,6 +446,7 @@ export interface AppProps {
 export function App({ initialView, inspect }: AppProps) {
   const isOnboardingMode = urlContext.appMode === 'onboarding';
   const isPageLayout = urlContext.windowLayout === 'page';
+  const isNewTabView = urlContext.appMode === 'newTab';
 
   const bodyClassList = useMemo(() => {
     const result = [];
@@ -495,12 +497,14 @@ export function App({ initialView, inspect }: AppProps) {
               ) : null}
               <GlobalKeyboardShortcuts />
               <VersionUpgrade>
-                {!isOnboardingView && !isPageLayout ? (
+                {!isOnboardingView && !isPageLayout && !isNewTabView ? (
                   // Render above <ViewSuspense /> so that it doesn't flicker
                   <MaybeTestModeDecoration />
                 ) : null}
                 <ViewSuspense logDelays={true}>
-                  {isOnboardingView ? (
+                  {isNewTabView ? (
+                    <NewTab />
+                  ) : isOnboardingView ? (
                     <Onboarding />
                   ) : isPageLayout ? (
                     <PageLayoutViews />

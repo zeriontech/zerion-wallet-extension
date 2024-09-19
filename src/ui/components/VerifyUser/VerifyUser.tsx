@@ -55,7 +55,7 @@ export function VerifyUser({
         gridTemplateRows: 'auto 1fr',
       }}
     >
-      <VStack gap={4}>
+      <VStack gap={4} style={{ justifyItems: 'center' }}>
         <UIText kind="headline/h1">Enter Password</UIText>
         <UIText kind="body/regular">{text}</UIText>
       </VStack>
