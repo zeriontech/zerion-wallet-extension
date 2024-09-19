@@ -1,5 +1,5 @@
 import { useSelectorStore } from '@store-unit/react';
-import { client, useAddressMembership, useAddressPositions } from 'defi-sdk';
+import { client, useAddressMembership } from 'defi-sdk';
 import type { SwapFormState, SwapFormView } from '@zeriontech/transactions';
 import { useSwapForm } from '@zeriontech/transactions';
 import React, {
@@ -65,6 +65,7 @@ import { usePreferences } from 'src/ui/features/preferences';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
+import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -141,18 +142,18 @@ export function SwapFormComponent() {
     useErrorBoundary: true,
   });
 
-  const { value: positionsValue } = useAddressPositions({
-    address,
-    currency,
-  });
-  const positions = positionsValue?.positions ?? null;
+  const { data: positionsResponse } = useHttpAddressPositions(
+    { addresses: [address], currency },
+    { source: useHttpClientSource() }
+  );
+  const positions = positionsResponse?.data ?? null;
 
-  const { data } = useWalletPortfolio(
+  const { data: portfolioResponse } = useWalletPortfolio(
     { addresses: [address], currency },
     { source: useHttpClientSource() },
     { enabled: ready }
   );
-  const portfolioDecomposition = data?.data;
+  const portfolioDecomposition = portfolioResponse?.data;
   const addressChains = useMemo(
     () => Object.keys(portfolioDecomposition?.chains || {}),
     [portfolioDecomposition]

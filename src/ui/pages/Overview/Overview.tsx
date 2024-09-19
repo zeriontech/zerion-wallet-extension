@@ -307,7 +307,7 @@ function OverviewComponent() {
   const { data, isLoading: isLoadingPortfolio } = useWalletPortfolio(
     { addresses: [params.address], currency },
     { source: useHttpClientSource() },
-    { enabled: ready }
+    { enabled: ready, refetchInterval: 40000 }
   );
   const walletPortfolio = data?.data;
 

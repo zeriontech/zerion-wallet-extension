@@ -658,7 +658,8 @@ function MultiChainPositions({
   const { currency } = useCurrency();
   const { data, isLoading } = useHttpAddressPositions(
     { addresses: [address], currency },
-    { source: useHttpClientSource() }
+    { source: useHttpClientSource() },
+    { refetchInterval: 40000 }
   );
   const positions = data?.data;
 

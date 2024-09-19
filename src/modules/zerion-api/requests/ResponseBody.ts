@@ -1,1 +1,4 @@
-export type ResponseBody<T> = { data: T | null; errors?: { title: string } };
+export type ResponseBody<T> = {
+  data: T | null;
+  errors?: { title: string; detail: string }[];
+};
