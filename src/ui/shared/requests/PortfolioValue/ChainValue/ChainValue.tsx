@@ -1,12 +1,12 @@
 import type React from 'react';
-import type { PortfolioDecomposition } from 'defi-sdk';
 import type { Chain } from 'src/modules/networks/Chain';
+import type { WalletPortfolio } from 'src/modules/zerion-api/requests/wallet-get-portfolio';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 
 export type ChainDistribution = Pick<
-  PortfolioDecomposition,
-  'positions_chains_distribution' | 'total_value' | 'chains'
+  WalletPortfolio,
+  'positionsChainsDistribution' | 'totalValue' | 'chains'
 >;
 
 export function ChainValue({
@@ -20,8 +20,8 @@ export function ChainValue({
 }) {
   const value =
     chain === NetworkSelectValue.All
-      ? chainDistribution?.total_value
-      : chainDistribution?.positions_chains_distribution[chain.toString()];
+      ? chainDistribution?.totalValue
+      : chainDistribution?.positionsChainsDistribution[chain.toString()];
 
   return formatCurrencyValue(
     value || 0,

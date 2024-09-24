@@ -24,9 +24,9 @@ import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import PortfolioIcon from 'jsx:src/ui/assets/portfolio.svg';
 import { Media } from 'src/ui/ui-kit/Media';
-import { useAddressPortfolioDecomposition } from 'defi-sdk';
 import { ellipsis } from 'src/ui/shared/typography';
-import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
+import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
+import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { WalletList } from './WalletList';
 import * as styles from './styles.module.css';
 
@@ -41,10 +41,11 @@ function PortfolioRow({ walletGroups }: { walletGroups: WalletGroup[] }) {
       );
   }, [walletGroups]);
 
-  const { value: portflio, isLoading } = useAddressPortfolioDecomposition(
+  const { data, isLoading } = useWalletPortfolio(
     { addresses, currency },
-    { enabled: true, client: useDefiSdkClient() }
+    { source: useHttpClientSource() }
   );
+  const walletPortfolio = data?.data;
 
   return (
     <div className={styles.portfolio}>
@@ -55,12 +56,12 @@ function PortfolioRow({ walletGroups }: { walletGroups: WalletGroup[] }) {
           text={<UIText kind="small/regular">Portfolio</UIText>}
           detailText={
             <UIText kind="headline/h3">
-              {isLoading || !portflio ? (
+              {isLoading || !walletPortfolio ? (
                 ellipsis
               ) : (
                 <NeutralDecimals
                   parts={formatCurrencyToParts(
-                    portflio.total_value || 0,
+                    walletPortfolio.totalValue || 0,
                     'en',
                     currency
                   )}

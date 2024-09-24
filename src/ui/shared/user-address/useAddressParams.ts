@@ -1,11 +1,10 @@
-import type { AddressParams } from 'defi-sdk';
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { walletPort } from 'src/ui/shared/channels';
 
 interface Result {
-  params: AddressParams;
+  params: { address: string };
   singleAddressNormalized: string;
   singleAddress: string;
   maybeSingleAddress: string | null;

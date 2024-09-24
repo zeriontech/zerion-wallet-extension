@@ -65,11 +65,11 @@ function NameAndPortfolioComposition({
         portfolio ? (
           <PortfolioValue
             address={wallet.address}
-            render={(entry) => (
+            render={(query) => (
               <UIText kind={detailTextKind}>
-                {entry.value
+                {query.data
                   ? formatCurrencyValue(
-                      entry.value?.total_value || 0,
+                      query.data.data?.totalValue || 0,
                       'en',
                       currency
                     )

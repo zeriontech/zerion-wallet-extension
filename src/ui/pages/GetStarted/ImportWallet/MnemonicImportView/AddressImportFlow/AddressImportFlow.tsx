@@ -27,15 +27,18 @@ export function PortfolioValueDetail({ address }: { address: string }) {
     <UIText kind="headline/h2">
       <PortfolioValue
         address={address}
-        render={({ value }) =>
-          value ? (
-            <NeutralDecimals
-              parts={formatCurrencyToParts(value.total_value, 'en', currency)}
-            />
-          ) : (
-            <span>{NBSP}</span>
-          )
-        }
+        render={({ data }) => {
+          if (data) {
+            const value = data.data?.totalValue ?? 0;
+            return (
+              <NeutralDecimals
+                parts={formatCurrencyToParts(value, 'en', currency)}
+              />
+            );
+          } else {
+            return <span>{NBSP}</span>;
+          }
+        }}
       />
     </UIText>
   );

@@ -1,8 +1,6 @@
 import type { AddressMembership } from 'defi-sdk';
-
-export interface Payload {
-  identifiers: string[];
-}
+import type { ClientOptions } from '../shared';
+import { CLIENT_DEFAULTS, ZerionHttpClient } from '../shared';
 
 export interface Identity {
   provider: 'ens' | 'lens' | 'ud' | 'unspecified';
@@ -34,7 +32,20 @@ export interface WalletMeta {
   membership: AddressMembership;
 }
 
-export interface Response {
+interface Params {
+  identifiers: string[];
+}
+
+interface Response {
   data: WalletMeta[] | null;
   errors?: { title: string; detail: string }[];
+}
+
+export function getWalletsMeta(
+  { identifiers }: Params,
+  options: ClientOptions = CLIENT_DEFAULTS
+) {
+  const params = new URLSearchParams({ identifiers: identifiers.join(',') });
+  const endpoint = `wallet/get-meta/v1?${params}`;
+  return ZerionHttpClient.get<Response>({ endpoint, ...options });
 }
