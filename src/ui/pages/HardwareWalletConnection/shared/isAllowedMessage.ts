@@ -4,7 +4,7 @@ export function isAllowedMessage(
 ) {
   // NOTE:
   // Checking the origin of a sandboxed iframe:
-  // https://web.dev/sandboxed-iframes/#safely-sandboxing-eval
+  // https://web.dev/sandboxed-iframes/#safely_sandboxing_eval
   return (
     event.origin === 'null' &&
     event.source === targetIframeElement.contentWindow

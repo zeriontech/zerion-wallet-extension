@@ -13,7 +13,11 @@ import JigsawIcon from 'jsx:./assets/jigsaw.svg';
 import coinImgSrc from 'src/ui/assets/zer_coin.png';
 import sparkImgSrc from 'src/ui/assets/zer_spark.png';
 import starImgSrc from 'src/ui/assets/zer_star.png';
+import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import * as styles from './styles.module.css';
+import { WebAppMessageHandler } from './WebAppMessageHandler';
+
+const DEBUG_INVITEE_FLOW = true;
 
 export function Success() {
   const { isNarrowView } = useWindowSizeStore();
@@ -107,8 +111,20 @@ export function Success() {
     },
   });
 
+  const {
+    data: referralProgramEnabled,
+    isLoading: isLoadingRemoteConfigValue,
+  } = useRemoteConfigValue('extension_referral_program');
+
+  if (isLoadingRemoteConfigValue) {
+    return null;
+  }
+
   return (
     <>
+      {referralProgramEnabled || DEBUG_INVITEE_FLOW ? (
+        <WebAppMessageHandler path="/get-referral-code" />
+      ) : null}
       <canvas
         ref={confettiRef}
         style={{
