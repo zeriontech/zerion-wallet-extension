@@ -52,7 +52,7 @@ import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { createSendAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
-import { ZerionAPI } from 'src/modules/zerion-api/zerion-api';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
 import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/uiGetBestKnownTransactionCount';
 import { fetchAndAssignPaymaster } from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
@@ -327,7 +327,10 @@ function SendFormComponent() {
       } = await configureTransactionToBeSigned();
       let transaction = tx;
       if (paymasterEligible) {
-        transaction = await fetchAndAssignPaymaster(transaction, { source });
+        transaction = await fetchAndAssignPaymaster(transaction, {
+          source,
+          apiClient: ZerionAPI,
+        });
       }
       const feeValueCommon = feeValueCommonRef.current || null;
 

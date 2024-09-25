@@ -6,6 +6,7 @@ import {
   getPreferences,
   usePreferences,
 } from 'src/ui/features/preferences/usePreferences';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import { queryClient } from './queryClient';
 
 const QUERY_NAME = 'defi-sdk/gasPrices';
@@ -18,7 +19,7 @@ export async function queryGasPrices(chain: Chain) {
     queryFn: async () => {
       const networksStore = await getNetworksStore();
       const networks = await networksStore.load({ chains: [chain.toString()] });
-      return fetchGasPrice({ chain, networks, source });
+      return fetchGasPrice({ chain, networks, source, apiClient: ZerionAPI });
     },
     staleTime: 10000,
   });
@@ -35,7 +36,7 @@ export function useGasPrices(chain: Chain | null, { suspense = false } = {}) {
       }
       const networksStore = await getNetworksStore();
       const networks = await networksStore.load({ chains: [chain.toString()] });
-      return fetchGasPrice({ chain, networks, source });
+      return fetchGasPrice({ chain, networks, source, apiClient: ZerionAPI });
     },
     useErrorBoundary: true,
     enabled: Boolean(chain),

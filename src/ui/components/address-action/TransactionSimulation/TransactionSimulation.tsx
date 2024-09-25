@@ -23,6 +23,7 @@ import type { EligibilityQuery } from 'src/modules/ethereum/account-abstraction/
 import { shouldInterpretTransaction } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { usePreferences } from 'src/ui/features/preferences';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import { AddressActionDetails } from '../AddressActionDetails';
 import { InterpretationState } from '../../InterpretationState';
 
@@ -141,7 +142,10 @@ export function TransactionSimulation({
     },
     queryFn: async () => {
       invariant(transaction.from, 'transaction must have a from value');
-      const toSign = await fetchAndAssignPaymaster(transaction, { source });
+      const toSign = await fetchAndAssignPaymaster(transaction, {
+        source,
+        apiClient: ZerionAPI,
+      });
       const typedData = await walletPort.request('uiGetEip712Transaction', {
         transaction: toSign,
       });

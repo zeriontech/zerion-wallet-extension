@@ -72,7 +72,7 @@ import type { InterpretResponse } from 'src/modules/ethereum/transactions/types'
 import { hasCriticalWarning } from 'src/ui/components/InterpretationState/InterpretationState';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { NetworksSource } from 'src/modules/zerion-api/shared';
-import { ZerionAPI } from 'src/modules/zerion-api/zerion-api';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
 import { hasNetworkFee } from 'src/modules/ethereum/transactions/gasPrices/hasNetworkFee';
@@ -179,7 +179,10 @@ async function resolveGasAndFee(
   const chainId = resolveChainId(transaction);
   const networksStore = await getNetworksStore();
   const networks = await networksStore.loadNetworksByChainId(chainId);
-  return await prepareGasAndNetworkFee(transaction, networks, { source });
+  return await prepareGasAndNetworkFee(transaction, networks, {
+    source,
+    apiClient: ZerionAPI,
+  });
 }
 
 function usePreparedTx(transaction: IncomingTransaction, origin: string) {
@@ -605,7 +608,10 @@ function SendTransactionContent({
           transactionAction,
         }
       );
-      const toSign = await fetchAndAssignPaymaster(configuredTx, { source });
+      const toSign = await fetchAndAssignPaymaster(configuredTx, {
+        source,
+        apiClient: ZerionAPI,
+      });
       const typedData = await walletPort.request('uiGetEip712Transaction', {
         transaction: toSign,
       });
@@ -668,7 +674,10 @@ function SendTransactionContent({
       invariant(sendTxBtnRef.current, 'SignTransactionButton not found');
       let tx = await configureTransactionToBeSigned(populatedTransaction);
       if (paymasterEligible) {
-        tx = await fetchAndAssignPaymaster(tx, { source });
+        tx = await fetchAndAssignPaymaster(tx, {
+          source,
+          apiClient: ZerionAPI,
+        });
       }
       if (USE_PAYMASTER_FEATURE) {
         console.log('sending to wallet', { tx });

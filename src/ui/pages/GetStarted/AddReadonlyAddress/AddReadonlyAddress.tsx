@@ -18,7 +18,7 @@ import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { useNavigate } from 'react-router-dom';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { DebouncedInput } from 'src/ui/ui-kit/Input/DebouncedInput';
-import { ZerionAPI } from 'src/modules/zerion-api/zerion-api';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import { useCustomValidity } from 'src/ui/shared/forms/useCustomValidity';
 import {
   isEthereumAddress as checkIsEthereumAddress,

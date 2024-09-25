@@ -1,7 +1,7 @@
 import type { ClientOptions } from '../shared';
 import { CLIENT_DEFAULTS, ZerionHttpClient } from '../shared';
+import type { ZerionApiContext } from '../zerion-api-bare';
 import type { ResponseBody } from './ResponseBody';
-import { getAddressProviderHeader } from './shared';
 
 export interface Params {
   addresses: string[];
@@ -42,11 +42,12 @@ export interface WalletPortfolio {
 type Response = ResponseBody<WalletPortfolio>;
 
 export async function walletGetPortfolio(
+  this: ZerionApiContext,
   params: Params,
   options: ClientOptions = CLIENT_DEFAULTS
 ) {
   const firstAddress = params.addresses[0];
-  const provider = await getAddressProviderHeader(firstAddress);
+  const provider = await this.getAddressProviderHeader(firstAddress);
   const endpoint = 'wallet/get-portfolio/v1';
   return ZerionHttpClient.post<Response>({
     endpoint,

@@ -1,4 +1,4 @@
-import { ZerionAPI } from 'src/modules/zerion-api/zerion-api';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { WalletOrigin } from 'src/shared/WalletOrigin';
 import { fetchNetworkByChainId } from 'src/modules/networks/networks-store.background';
