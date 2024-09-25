@@ -1539,7 +1539,7 @@ export class Wallet {
     return result;
   }
 
-  async ensureTestnetModeForChainId(chainId: ChainId) {
+  async ensureTestnetModeForChainId(chainId: ChainId, tabId: number | null) {
     const { violation, network, mode } = await this.checkTestnetMode(chainId);
     if (violation && mode === 'testnet') {
       // Warn user that we're switching to mainnet from testmode
@@ -1548,6 +1548,7 @@ export class Wallet {
           route: '/testnetModeGuard',
           search: `?targetNetwork=${JSON.stringify(network)}`,
           requestId: `${INTERNAL_ORIGIN}:${nanoid()}`,
+          tabId,
           onResolve: async () => {
             await this.setPreferences({
               context: INTERNAL_SYMBOL_CONTEXT,
@@ -1572,15 +1573,17 @@ export class Wallet {
   async ensureTestnetModeForTx({
     transaction,
     initiator,
+    tabId,
   }: {
     transaction: UnsignedTransaction;
     initiator: string;
+    tabId: number | null;
   }) {
     const chainId = await this.resolveChainIdForTx({
       transaction,
       initiator,
     });
-    await this.ensureTestnetModeForChainId(chainId);
+    await this.ensureTestnetModeForChainId(chainId, tabId);
   }
 
   async getRpcUrlByChainId({
@@ -1639,6 +1642,10 @@ class PublicController {
     origin: string,
     props: NotificationWindowProps<T>
   ) {
+    if (debugValue && process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
+      console.log('PublicController: safeOpenDialogWindow', debugValue);
+    }
     const id = await this.notificationWindow.open(props);
     phishingDefenceService
       .checkDapp(origin)
@@ -1700,6 +1707,7 @@ class PublicController {
           params?.[0]?.nonEip6963Request ? 'yes' : 'no'
         )}`,
         requestId: `${origin}:${id}`,
+        tabId: context.tabId || null,
         onResolve: async ({
           address,
           origin: resolvedOrigin,
@@ -1800,6 +1808,7 @@ class PublicController {
     await this.wallet.ensureTestnetModeForTx({
       transaction,
       initiator: context.origin,
+      tabId: context.tabId || null,
     });
 
     return new Promise((resolve, reject) => {
@@ -1808,6 +1817,7 @@ class PublicController {
         route: '/sendTransaction',
         height: isDeviceWallet ? 800 : undefined,
         search: `?${searchParams}`,
+        tabId: context.tabId || null,
         onResolve: (hash) => {
           resolve(hash);
         },
@@ -1849,6 +1859,7 @@ class PublicController {
           typedDataRaw: stringifiedData,
           method: 'eth_signTypedData_v4',
         })}`,
+        tabId: context.tabId || null,
         onResolve: (signature) => {
           resolve(signature);
         },
@@ -1940,6 +1951,7 @@ class PublicController {
         route,
         height: isDeviceWallet ? 800 : undefined,
         search: `?${searchParams}`,
+        tabId: context.tabId || null,
         onResolve: (signature) => {
           resolve(signature);
         },
@@ -1970,7 +1982,8 @@ class PublicController {
     );
     const chainId = normalizeChainId(chainIdParameter);
 
-    await this.wallet.ensureTestnetModeForChainId(chainId);
+    const tabId = context.tabId || null;
+    await this.wallet.ensureTestnetModeForChainId(chainId, tabId);
 
     const preferences = await this.wallet.getPreferences({
       context: INTERNAL_SYMBOL_CONTEXT,
@@ -1987,6 +2000,7 @@ class PublicController {
           requestId: `${context.origin}:${id}`,
           route: '/switchEthereumChain',
           search: `?origin=${origin}&chainId=${chainId}`,
+          tabId: context.tabId || null,
           onResolve: () => {
             this.wallet.setChainForOrigin({ chain, origin });
             this.wallet.addVisitedEthereumChainInternal(chain);
@@ -2098,7 +2112,8 @@ class PublicController {
     const { origin } = context;
     const { chainId: chainIdParameter } = params[0];
     const chainId = normalizeChainId(chainIdParameter);
-    await this.wallet.ensureTestnetModeForChainId(chainId);
+    const tabId = context.tabId || null;
+    await this.wallet.ensureTestnetModeForChainId(chainId, tabId);
     const normalizedParams = { ...params[0], chainId };
     const preferences = await this.wallet.getPreferences({
       context: INTERNAL_SYMBOL_CONTEXT,
@@ -2116,6 +2131,7 @@ class PublicController {
             origin,
             addEthereumChainParameter: JSON.stringify(normalizedParams),
           })}`,
+          tabId: context.tabId || null,
           onResolve: () => {
             resolve(null); // null indicates success as per spec
           },
