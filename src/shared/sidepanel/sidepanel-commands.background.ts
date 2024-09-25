@@ -3,7 +3,6 @@ import { getSidepanelUrl } from '../getPopupUrl';
 import { closeSidepanel } from './sidepanel-messaging.background';
 import { browserState } from './BrowserState';
 import { isSidepanelSupported } from './sidepanel-support';
-import { getActiveTab } from './sidepanel-apis';
 
 export function initializeSidepanelCommands() {
   if (!isSidepanelSupported()) {
@@ -37,18 +36,9 @@ export function initializeSidepanelCommands() {
        * https://issues.chromium.org/issues/40929586#comment4
        */
       chrome.sidePanel.open({ windowId: currentWindowId }, async () => {
-        const activeTab = await getActiveTab();
         chrome.sidePanel.setOptions({
           path: url.toString(),
           enabled: true,
-          // NOTE: If we don't pass tabId, sidepanel might NOT open at the path that we provide.
-          // Instead, it will open at the last rememembered path. This is undesired in case
-          // last remembered path was a Dapp Dialog (SendTransaction, RequestAccounts, etc...)
-          // That's why we want to make sure we open at overview.
-          // But if the last remembered path was something else, like an NFTs tab, it would be
-          // helpful to restore it, but we deliberately break this because NOT restoring dapp dialog is
-          // more important.
-          tabId: activeTab?.id,
         });
       });
     }

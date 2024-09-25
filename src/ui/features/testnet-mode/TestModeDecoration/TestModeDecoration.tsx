@@ -104,6 +104,8 @@ export function TestModeDecoration() {
                 ? 'linear-gradient(45deg, cyan, #003aff, #ff00e4, #00ffbc)'
                 : undefined,
               borderImageSlice: on ? 1 : undefined,
+              borderBottomLeftRadius: 'var(--sidepanel-border-radius)',
+              borderBottomRightRadius: 'var(--sidepanel-border-radius)',
             }}
           >
             <ZStack>
