@@ -12,7 +12,11 @@ import { walletGetPortfolio } from './requests/wallet-get-portfolio';
 import { checkReferral } from './requests/check-referral';
 import { referWallet } from './requests/refer-wallet';
 
-export const ZerionAPI = {
+export interface ZerionApiContext {
+  getAddressProviderHeader(address: string): Promise<string>;
+}
+
+export const ZerionApiBare = {
   getGasPrices,
   securityCheckUrl,
   registerChain,
@@ -25,3 +29,5 @@ export const ZerionAPI = {
   checkReferral,
   referWallet,
 };
+
+export type ZerionApiClient = typeof ZerionApiBare;

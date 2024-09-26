@@ -7,8 +7,8 @@ import type {
 import type { Chain } from 'src/modules/networks/Chain';
 import type { ClientOptions } from '../shared';
 import { ZerionHttpClient } from '../shared';
+import type { ZerionApiContext } from '../zerion-api-bare';
 import type { ResponseBody } from './ResponseBody';
-import { getAddressProviderHeader } from './shared';
 
 interface Price {
   value: number;
@@ -70,11 +70,12 @@ export interface Params {
 type WalletGetPositionsResponse = ResponseBody<WalletPosition[]>;
 
 export async function walletGetPositions(
+  this: ZerionApiContext,
   params: Params,
   options: ClientOptions
 ) {
   const firstAddress = params.addresses[0];
-  const provider = await getAddressProviderHeader(firstAddress);
+  const provider = await this.getAddressProviderHeader(firstAddress);
   const endpoint = 'wallet/get-positions/v1';
   return ZerionHttpClient.post<WalletGetPositionsResponse>({
     endpoint,

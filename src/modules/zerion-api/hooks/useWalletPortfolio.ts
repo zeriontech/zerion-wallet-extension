@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { persistentQuery } from 'src/ui/shared/requests/queryClientPersistence';
-import { ZerionAPI } from '../zerion-api';
+import { ZerionAPI } from '../zerion-api.client';
 import type { Params } from '../requests/wallet-get-portfolio';
 import type { BackendSourceParams } from '../shared';
 

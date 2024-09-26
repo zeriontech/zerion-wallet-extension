@@ -87,6 +87,7 @@ import { getDefiSdkClient } from 'src/modules/defi-sdk/background';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import { decodeMasked } from 'src/shared/wallet/encode-locally';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -1135,6 +1136,7 @@ export class Wallet {
     const prepared = prepareTransaction(incomingTransaction);
     const txWithFee = await prepareGasAndNetworkFee(prepared, networks, {
       source: mode === 'testnet' ? 'testnet' : 'mainnet',
+      apiClient: ZerionAPI,
     });
     const transaction = await prepareNonce(txWithFee, networks, chain);
 

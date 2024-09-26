@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import { invariant } from 'src/shared/invariant';
 import { valueToHex } from 'src/shared/units/valueToHex';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
-import { ZerionAPI } from 'src/modules/zerion-api/zerion-api';
+import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
 import { getGas } from '../transactions/getGas';
 import type { IncomingTransaction } from '../types/IncomingTransaction';
 
@@ -60,10 +60,15 @@ async function getPaymasterParams(
   {
     gasPerPubdataByte,
     source,
-  }: { gasPerPubdataByte: string; source: 'testnet' | 'mainnet' }
+    apiClient,
+  }: {
+    gasPerPubdataByte: string;
+    source: 'testnet' | 'mainnet';
+    apiClient: ZerionApiClient;
+  }
 ) {
   const transaction = assertTransactionProps(incomingTransaction);
-  type Request = Parameters<(typeof ZerionAPI)['getPaymasterParams']>[0];
+  type Request = Parameters<ZerionApiClient['getPaymasterParams']>[0];
   const params: Request = {
     from: transaction.from,
     to: transaction.to,
@@ -76,13 +81,16 @@ async function getPaymasterParams(
     maxPriorityFee: valueToHex(transaction.maxPriorityFeePerGas),
     value: valueToHex(transaction.value),
   };
-  const { data } = await ZerionAPI.getPaymasterParams(params, { source });
+  const { data } = await apiClient.getPaymasterParams(params, { source });
   return data;
 }
 
 export async function fetchAndAssignPaymaster<T extends IncomingTransaction>(
   tx: T,
-  { source }: { source: 'testnet' | 'mainnet' }
+  {
+    source,
+    apiClient,
+  }: { source: 'testnet' | 'mainnet'; apiClient: ZerionApiClient }
 ) {
   const txCopy = { ...tx };
   const gas = getGas(txCopy);
@@ -93,6 +101,7 @@ export async function fetchAndAssignPaymaster<T extends IncomingTransaction>(
   const { eligible, paymasterParams } = await getPaymasterParams(txCopy, {
     gasPerPubdataByte,
     source,
+    apiClient,
   });
   if (eligible && paymasterParams) {
     txCopy.customData = { paymasterParams, gasPerPubdata: gasPerPubdataByte };
