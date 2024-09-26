@@ -21,10 +21,12 @@ export function base64ToUint8Array(base64: string) {
 }
 
 export function uint8ArrayToBase64(array: Uint8Array) {
-  // Explicit casting is needed to satisfy the typechecker
-  return globalThis.btoa(
-    String.fromCharCode.apply(null, array as unknown as number[])
-  );
+  let str = '';
+  const length = array.byteLength;
+  for (let i = 0; i < length; i++) {
+    str += String.fromCharCode(array[i]);
+  }
+  return globalThis.btoa(str);
 }
 
 export function arrayBufferToBase64(buffer: ArrayBuffer) {
