@@ -307,6 +307,11 @@ export class NotificationWindow extends PersistentStore<PendingState> {
     }
   }
 
+  private hasPendingSidepanelRequests() {
+    const state = this.getState();
+    return Object.values(state).some((v) => v.id.startsWith('sidepanel:'));
+  }
+
   /**
    * Several requests may share the same windowId
    */
@@ -391,7 +396,9 @@ export class NotificationWindow extends PersistentStore<PendingState> {
       tabWhereRequestComesFrom.id &&
       tabWhereRequestComesFrom.windowId &&
       browserWindow?.focused &&
-      sidepanelIsOpen
+      sidepanelIsOpen &&
+      // As a simplification for first iteration always skip sidepanel if any sidepanel already has a request
+      !this.hasPendingSidepanelRequests()
     ) {
       const sidepanelPath = getSidepanelUrl();
       const searchParams = new URLSearchParams(search);
