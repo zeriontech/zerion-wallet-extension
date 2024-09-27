@@ -377,13 +377,20 @@ export class NotificationWindow extends PersistentStore<PendingState> {
     const sidepanelIsOpen = await isSidepanelOpen({
       windowId: tabWhereRequestComesFrom?.windowId ?? null,
     });
+    const windowId = tabWhereRequestComesFrom?.windowId;
+    const browserWindow = windowId ? await browser.windows.get(windowId) : null;
     // NOTE: Only use sidepanel if request comes from the currently active tab
     // and this tab has a sidepanel opened
-    // NOTE: Tab may be active inside a non-active window. That's fine, let's use this tab
+    // NOTE: Tab may be active inside a non-active window. If we were able to show the request
+    // only in sidepanel related to that tab, it would be okay to use it. But because it seems that
+    // we cannot set options to sidepanel per-tab without leading to undesired behaviors (browser will keep
+    // automatically opening the sidepanel when that tab is activated), it seems that it's better to
+    // check that both window and tab where request comes from are active ("focused")
     if (
       tabWhereRequestComesFrom?.active &&
       tabWhereRequestComesFrom.id &&
       tabWhereRequestComesFrom.windowId &&
+      browserWindow?.focused &&
       sidepanelIsOpen
     ) {
       const sidepanelPath = getSidepanelUrl();
@@ -396,7 +403,7 @@ export class NotificationWindow extends PersistentStore<PendingState> {
       chrome.sidePanel.setOptions({
         path: sidepanelPath.toString(),
       });
-      const windowId = tabWhereRequestComesFrom.windowId; // special number for sidepanel?
+      const windowId = tabWhereRequestComesFrom.windowId;
       this.events.emit('open', { requestId, windowId, id, tabId });
       return id;
     } else {
