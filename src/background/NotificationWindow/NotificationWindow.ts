@@ -89,7 +89,7 @@ async function analyzeSidepanelEntries(state: PendingState) {
       for (const tab of tabs) {
         if (tab.id) {
           const { path, enabled } = await chrome.sidePanel.getOptions({
-            tabId: tab.id,
+            tabId: tab.id, // TODO: should not pass tabId?....
           });
           if (enabled && path) {
             const url = new URL(path);
@@ -260,7 +260,7 @@ export class NotificationWindow extends PersistentStore<PendingState> {
         const entry = Object.values(this.getState()).find(
           (entry) => entry.id === id
         );
-        if (entry && entry.tabId) {
+        if (entry) {
           try {
             const sidepanelPath = getSidepanelUrl();
             // reset sidepanel path so that when user re-opens it,
@@ -270,9 +270,7 @@ export class NotificationWindow extends PersistentStore<PendingState> {
             });
           } catch {
             // eslint-disable-next-line no-console
-            console.warn(
-              `could not reset sidepanel options after settle for tabId: ${entry.tabId}`
-            );
+            console.warn('could not reset sidepanel options after settle');
           }
         }
       }
