@@ -18,7 +18,6 @@ function getUrlContext(): UrlContext {
   return {
     appMode: (params.get(UrlContextParam.appMode) as AppMode) || 'wallet',
     windowType: getWindowType(params),
-    // (params.get(UrlContextParam.windowType) as WindowType) || 'popup',
     windowLayout:
       (params.get(UrlContextParam.windowLayout) as WindowLayout) || 'column',
   };

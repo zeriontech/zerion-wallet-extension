@@ -738,7 +738,6 @@ function SendTransactionContent({
     const windowId = params.get('windowId');
     invariant(windowId, 'windowId get-parameter is required');
     windowPort.reject(windowId);
-    // navigate(-1);
     if (next) {
       navigate(next);
     }
