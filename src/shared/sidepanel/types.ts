@@ -1,6 +1,6 @@
 import { isObj } from '../isObj';
 
-interface IsOpenRequest {
+interface IsSidepanelOpenRequest {
   method: 'is-sidepanel-open';
   params: { windowId: number | null };
 }
@@ -11,7 +11,7 @@ interface CloseSidepanelRequest {
 }
 
 export type SidepanelMessageRequest = {
-  payload: IsOpenRequest | CloseSidepanelRequest;
+  payload: IsSidepanelOpenRequest | CloseSidepanelRequest;
 };
 
 export function isSidepanelMessageRequest(

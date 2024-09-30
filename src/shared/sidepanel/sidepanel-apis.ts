@@ -30,10 +30,6 @@ export async function openSidePanel({
   openOptions?: chrome.sidePanel.OpenOptions;
 }) {
   const url = getSidepanelUrl();
-  // TODO: support templateType=sidepanel
-  // url.searchParams.append('templateType', 'dialog');
-  // const id = nanoid();
-  // searchParams.append('windowId', String(id));
   // We use HashRouter currently
   if (searchParams) {
     url.hash = `${pathname}?${searchParams.toString()}`;

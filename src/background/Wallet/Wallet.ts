@@ -1639,10 +1639,6 @@ class PublicController {
     origin: string,
     props: NotificationWindowProps<T>
   ) {
-    if (debugValue && process.env.NODE_ENV === 'development') {
-      // eslint-disable-next-line no-console
-      console.log('PublicController: safeOpenDialogWindow', debugValue);
-    }
     const id = await this.notificationWindow.open(props);
     phishingDefenceService
       .checkDapp(origin)
