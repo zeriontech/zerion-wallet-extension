@@ -108,6 +108,9 @@ export function isCancelTx(addressAction: AnyAddressAction) {
       return true;
     }
     if (value && data) {
+      // TODO:
+      // This logic falsely counts mint transaction on https://docs.zero.network/build-on-zero/claim-docs
+      // as "cancel". This isn't critical currently as it only affects some UI labels, but doesn't affect functionality
       return (
         Number(restoreValue(value)) === 0 && Number(restoreValue(data)) === 0
       );

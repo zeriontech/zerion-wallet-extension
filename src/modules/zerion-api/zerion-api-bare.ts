@@ -4,7 +4,7 @@ import { getWalletsMeta } from './requests/wallet-get-meta';
 import { getGasPrices } from './requests/get-gas-prices';
 import { registerChain } from './requests/register-chain';
 import {
-  checkPaymasterEligibility,
+  paymasterCheckEligibility,
   getPaymasterParams,
 } from './requests/paymaster-transactions';
 import { walletGetPositions } from './requests/wallet-get-positions';
@@ -22,7 +22,7 @@ export const ZerionApiBare = {
   registerChain,
   registerAddresses,
   getWalletsMeta,
-  checkPaymasterEligibility,
+  paymasterCheckEligibility,
   getPaymasterParams,
   walletGetPositions,
   walletGetPortfolio,

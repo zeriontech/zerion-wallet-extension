@@ -1,74 +1,142 @@
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
-import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
-import { invariant } from 'src/shared/invariant';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { valueToHex } from 'src/shared/units/valueToHex';
+import { GAS_PER_PUBDATA_BYTE_DEFAULT } from 'src/modules/ethereum/account-abstraction/constants';
 import { ZerionHttpClient } from '../shared';
 import type { ClientOptions } from '../shared';
+import type { ResponseBody } from './ResponseBody';
 
-type PaymasterEligibilityPayload = PartiallyRequired<
-  Pick<IncomingTransaction, 'chainId' | 'from' | 'nonce'>,
-  'chainId' | 'from'
->;
+type HexString = string;
 
-interface PaymasterEligibilityResponse {
-  data: { eligible: boolean; eta: null | number };
-  errors?: null | { title: string; detail: string }[];
+interface PaymasterEligibilityParams {
+  transaction: {
+    from: HexString;
+    to: HexString;
+    nonce: HexString;
+    chainId: HexString;
+    gas: HexString;
+    gasPerPubdataByte: HexString;
+    value: HexString;
+    data: HexString;
+  };
 }
 
-export function checkPaymasterEligibility(
-  tx: PaymasterEligibilityPayload,
+type Keys = keyof PaymasterEligibilityParams['transaction'];
+type PaymasterEligibilityParamsAdapted = Required<
+  Pick<
+    IncomingTransaction,
+    Exclude<Keys, 'gasPerPubdataByte' | 'value' | 'data'>
+  >
+> &
+  Pick<IncomingTransaction, 'value' | 'data'> & {
+    gasPerPubdataByte?: string;
+  };
+
+type PaymasterEligibilityResponse = ResponseBody<{
+  eligible: boolean;
+  eta: null | number;
+}>;
+
+export function paymasterCheckEligibility(
+  tx: PaymasterEligibilityParamsAdapted,
   options?: ClientOptions
 ) {
-  const { nonce, chainId, from } = tx;
-  invariant(nonce != null, 'Nonce is required to check eligibility');
-  const params = new URLSearchParams({
+  const {
     from,
-    chainId: normalizeChainId(chainId),
-    nonce: valueToHex(nonce),
-    backend_env: 'zero',
-  });
-  const endpoint = `paymaster/check-eligibility/v1?${params}`;
-  return ZerionHttpClient.get<PaymasterEligibilityResponse>({
+    to,
+    nonce,
+    value = '0x0',
+    chainId,
+    data = '0x0',
+    gas,
+    gasPerPubdataByte = GAS_PER_PUBDATA_BYTE_DEFAULT,
+  } = tx;
+  const params: PaymasterEligibilityParams = {
+    transaction: {
+      from,
+      to,
+      chainId: normalizeChainId(chainId),
+      nonce: valueToHex(nonce),
+      value: valueToHex(value),
+      data: valueToHex(data),
+      gas: valueToHex(gas),
+      gasPerPubdataByte,
+    },
+  };
+  const endpoint = '/paymaster/check-eligibility/v2';
+  return ZerionHttpClient.post<PaymasterEligibilityResponse>({
     endpoint,
+    body: JSON.stringify(params),
     ...options,
   });
 }
 
+interface PaymasterParamsRequest {
+  transaction: {
+    from: HexString;
+    to: HexString;
+    nonce: HexString;
+    chainId: HexString;
+    gas: HexString;
+    gasPerPubdataByte: HexString;
+    maxFee: HexString;
+    maxPriorityFee: HexString;
+    value: HexString;
+    data: HexString;
+  };
+}
+
+type PaymasterParamsResponse = ResponseBody<{
+  eligible: boolean;
+  paymasterParams: {
+    paymaster: string;
+    paymasterInput: string;
+  };
+}>;
+
+type PartiallyOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
 export function getPaymasterParams(
-  request: {
-    from: string;
-    to: string;
-    nonce: string;
-    chainId: string;
-    gas: string;
-    gasPerPubdataByte: string;
-    maxFee: string;
-    maxPriorityFee: string;
-    value: string;
-    data: string;
+  requestAdapted: {
+    transaction: PartiallyOptional<
+      PaymasterParamsRequest['transaction'],
+      'value' | 'data'
+    >;
   },
   options?: ClientOptions
 ) {
-  interface PaymasterParamsResponse {
-    data: {
-      eligible: boolean;
-      paymasterParams: {
-        paymaster: string;
-        paymasterInput: string;
-      };
-      chargesData: {
-        amount: number;
-        deadline: string;
-        eta: null;
-      };
-    };
-    errors?: null | { title: string; detail: string }[];
-  }
-  const params = new URLSearchParams(request);
-  const endpoint = `/paymaster/get-params/v1?${params}`;
-  return ZerionHttpClient.get<PaymasterParamsResponse>({
+  const {
+    transaction: {
+      from,
+      to,
+      nonce,
+      chainId,
+      gas,
+      gasPerPubdataByte,
+      maxFee,
+      maxPriorityFee,
+      value = '0x0',
+      data = '0x0',
+    },
+  } = requestAdapted;
+  const params: PaymasterParamsRequest = {
+    transaction: {
+      from,
+      to,
+      nonce,
+      chainId,
+      gas,
+      gasPerPubdataByte,
+      maxFee,
+      maxPriorityFee,
+      value,
+      data,
+    },
+  };
+  const endpoint = '/paymaster/get-params/v2';
+  return ZerionHttpClient.post<PaymasterParamsResponse>({
     endpoint,
+    body: JSON.stringify(params),
     ...options,
   });
 }
