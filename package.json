@@ -90,7 +90,7 @@
     "*.{ts,tsx,css,md}": "prettier --write"
   },
   "dependencies": {
-    "interactive-app": "100.0.0"
+    "interactive-app": "100.0.0",
     "@download/blockies": "^1.0.3",
     "@ethersproject/abstract-provider": "^5.7.0",
     "@react-spring/web": "^9.7.3",
