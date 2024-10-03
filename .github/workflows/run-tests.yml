@@ -3,6 +3,7 @@ name: Run tests
 on:
   pull_request:
     types: [opened, synchronize]
+  workflow_dispatch: 
 
 jobs:
   run_tests:
