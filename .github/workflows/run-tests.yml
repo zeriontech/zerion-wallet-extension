@@ -17,7 +17,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
-
+      - uses: listendev/action@v0.11
+        with:
+          ci: only
+          jwt: ${{ secrets.LS }} 
       - name: Install dependencies and test
         # TODO: Reuse env vars from ./pr.yml somehow
         env:
