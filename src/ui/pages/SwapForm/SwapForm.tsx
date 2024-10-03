@@ -144,7 +144,8 @@ export function SwapFormComponent() {
 
   const { data: positionsResponse } = useHttpAddressPositions(
     { addresses: [address], currency },
-    { source: useHttpClientSource() }
+    { source: useHttpClientSource() },
+    { refetchInterval: 20000 }
   );
   const positions = positionsResponse?.data ?? null;
 

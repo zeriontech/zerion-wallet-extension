@@ -23,6 +23,7 @@ export function useAddressBackendOrEvmPositions({
     {
       // we query positions for all chains, so we can do it even before the "supported" check is ready
       enabled: isSupportedByBackend == null || isSupportedByBackend,
+      refetchInterval: 20000,
     }
   );
   const addressPositions = data?.data;

@@ -37,7 +37,7 @@ export function AllowanceView({
   const { data, isLoading: positionsAreLoading } = useHttpAddressPositions(
     { addresses: [address], currency, assetIds },
     { source: useHttpClientSource() },
-    { enabled: Boolean(asset) }
+    { enabled: Boolean(asset), refetchInterval: 10000 }
   );
   const positions = data?.data;
 
