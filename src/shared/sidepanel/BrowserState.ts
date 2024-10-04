@@ -1,6 +1,7 @@
 import browser from 'webextension-polyfill';
 
 class BrowserState {
+  /** Synchronously available id of "current" window */
   currentWindowId?: number;
   initialWindowId?: number;
 

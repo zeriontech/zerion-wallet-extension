@@ -13,10 +13,9 @@ async function resolveOpenOptions(
   if (openOptions) {
     return openOptions;
   } else {
-    const tab = await getActiveTab();
-    invariant(tab, 'Active tab not found');
-    invariant(tab.id, 'Active tab id not set');
-    return { tabId: tab.id };
+    const currentWindow = await browser.windows.getCurrent();
+    invariant(currentWindow.id, 'Current windowId not found');
+    return { windowId: currentWindow.id };
   }
 }
 
@@ -43,6 +42,5 @@ export async function openSidePanel({
   await chrome.sidePanel.setOptions({
     path: url.toString(),
     enabled: true,
-    tabId: effectiveOpenOptions.tabId,
   });
 }
