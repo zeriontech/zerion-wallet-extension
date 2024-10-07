@@ -38,7 +38,7 @@ import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { invariant } from 'src/shared/invariant';
-import { ZerionAPI } from 'src/modules/zerion-api/zerion-api';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import type { XpDistribution } from 'defi-sdk';
 import { WalletList } from '../WalletSelect/WalletList';
 import { InviteLinkDialog } from './InviteLinkDialog';
