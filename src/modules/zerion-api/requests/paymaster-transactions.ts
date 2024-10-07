@@ -105,32 +105,19 @@ export function getPaymasterParams(
   },
   options?: ClientOptions
 ) {
-  const {
-    transaction: {
-      from,
-      to,
-      nonce,
-      chainId,
-      gas,
-      gasPerPubdataByte,
-      maxFee,
-      maxPriorityFee,
-      value = '0x0',
-      data = '0x0',
-    },
-  } = requestAdapted;
+  const { transaction } = requestAdapted;
   const params: PaymasterParamsRequest = {
     transaction: {
-      from,
-      to,
-      nonce,
-      chainId,
-      gas,
-      gasPerPubdataByte,
-      maxFee,
-      maxPriorityFee,
-      value,
-      data,
+      value: transaction.value ?? '0x0',
+      data: transaction.data ?? '0x0',
+      from: transaction.from,
+      to: transaction.to,
+      nonce: transaction.nonce,
+      chainId: transaction.chainId,
+      gas: transaction.gas,
+      gasPerPubdataByte: transaction.gasPerPubdataByte,
+      maxFee: transaction.maxFee,
+      maxPriorityFee: transaction.maxPriorityFee,
     },
   };
   const endpoint = '/paymaster/get-params/v2';
