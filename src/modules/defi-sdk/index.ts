@@ -51,3 +51,7 @@ export const configureUITestClient = memoizeOne(() => {
   });
   return client;
 });
+
+export function isTestClient(client: Client) {
+  return client.url === DEFI_SDK_TESTNET_API_URL;
+}

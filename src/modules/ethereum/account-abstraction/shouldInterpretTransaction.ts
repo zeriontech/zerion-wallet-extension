@@ -1,7 +1,7 @@
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 
 export interface EligibilityQuery {
-  data?: { data: { eligible: boolean } };
+  data?: null | { data: { eligible: boolean } };
   isError: boolean;
 }
 

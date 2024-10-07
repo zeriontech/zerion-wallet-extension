@@ -5,6 +5,25 @@ import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
 import { getGas } from '../transactions/getGas';
 import type { IncomingTransaction } from '../types/IncomingTransaction';
+import { GAS_PER_PUBDATA_BYTE_DEFAULT } from './constants';
+
+type NetworksSource = 'mainnet' | 'testnet';
+
+function adjustGas(value: ethers.BigNumberish): string {
+  return ethers.BigNumber.from(value).add(50000).toHexString();
+}
+
+export function adjustedCheckEligibility(
+  params: Parameters<ZerionApiClient['paymasterCheckEligibility']>[0],
+  { source, apiClient }: { source: NetworksSource; apiClient: ZerionApiClient }
+) {
+  const txCopy = { ...params };
+  const gas = getGas(txCopy);
+  invariant(gas, 'Tx param missing: {gas}');
+  const moreGas = adjustGas(gas);
+  txCopy.gas = moreGas;
+  return apiClient.paymasterCheckEligibility(txCopy, { source });
+}
 
 function assertTransactionProps(
   tx: IncomingTransaction
@@ -63,23 +82,25 @@ async function getPaymasterParams(
     apiClient,
   }: {
     gasPerPubdataByte: string;
-    source: 'testnet' | 'mainnet';
+    source: NetworksSource;
     apiClient: ZerionApiClient;
   }
 ) {
   const transaction = assertTransactionProps(incomingTransaction);
   type Request = Parameters<ZerionApiClient['getPaymasterParams']>[0];
   const params: Request = {
-    from: transaction.from,
-    to: transaction.to,
-    nonce: valueToHex(transaction.nonce),
-    chainId: normalizeChainId(transaction.chainId),
-    gas: valueToHex(transaction.gasLimit),
-    gasPerPubdataByte,
-    data: valueToHex(transaction.data),
-    maxFee: valueToHex(transaction.maxFeePerGas),
-    maxPriorityFee: valueToHex(transaction.maxPriorityFeePerGas),
-    value: valueToHex(transaction.value),
+    transaction: {
+      from: transaction.from,
+      to: transaction.to,
+      nonce: valueToHex(transaction.nonce),
+      chainId: normalizeChainId(transaction.chainId),
+      gas: valueToHex(transaction.gasLimit),
+      gasPerPubdataByte,
+      data: valueToHex(transaction.data),
+      maxFee: valueToHex(transaction.maxFeePerGas),
+      maxPriorityFee: valueToHex(transaction.maxPriorityFeePerGas),
+      value: valueToHex(transaction.value),
+    },
   };
   const { data } = await apiClient.getPaymasterParams(params, { source });
   return data;
@@ -87,17 +108,14 @@ async function getPaymasterParams(
 
 export async function fetchAndAssignPaymaster<T extends IncomingTransaction>(
   tx: T,
-  {
-    source,
-    apiClient,
-  }: { source: 'testnet' | 'mainnet'; apiClient: ZerionApiClient }
+  { source, apiClient }: { source: NetworksSource; apiClient: ZerionApiClient }
 ) {
   const txCopy = { ...tx };
   const gas = getGas(txCopy);
   invariant(gas, 'Tx param missing: {gas}');
-  const moreGas = ethers.BigNumber.from(gas).add(20000).toHexString();
+  const moreGas = adjustGas(gas);
   txCopy.gasLimit = moreGas;
-  const gasPerPubdataByte = valueToHex(50000);
+  const gasPerPubdataByte = GAS_PER_PUBDATA_BYTE_DEFAULT;
   const { eligible, paymasterParams } = await getPaymasterParams(txCopy, {
     gasPerPubdataByte,
     source,
