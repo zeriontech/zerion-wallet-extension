@@ -64,7 +64,7 @@ export function SuccessDialog({
   onDismiss: () => void;
 }) {
   return (
-    <VStack gap={24} className={styles.successDialog}>
+    <VStack gap={24}>
       <VStack gap={0}>
         <DialogTitle
           alignTitle="center"
