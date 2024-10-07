@@ -5,11 +5,12 @@ import CheckIcon from 'jsx:src/ui/assets/check_double.svg';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 
 interface Props {
-  address: string;
-  title?: string;
+  textToCopy: string;
+  title: string;
   className?: string;
   btnStyle?: React.CSSProperties;
   style?: React.CSSProperties;
+  tooltipContent?: React.ReactNode;
   tooltipPosition?: 'right' | 'center-bottom';
   size?: number;
   buttonRef?: React.RefObject<HTMLButtonElement>;
@@ -19,17 +20,18 @@ interface Props {
 const ICON_SIZE = 20;
 
 export function CopyButton({
-  address,
-  title = 'Copy Address',
+  textToCopy,
+  title,
   onClick,
   className,
   btnStyle,
   style,
   tooltipPosition = 'right',
+  tooltipContent,
   buttonRef,
   size = ICON_SIZE,
 }: Props) {
-  const { handleCopy, isSuccess } = useCopyToClipboard({ text: address });
+  const { handleCopy, isSuccess } = useCopyToClipboard({ text: textToCopy });
   return (
     <div
       className={className}
@@ -68,7 +70,7 @@ export function CopyButton({
           <CopyIcon style={{ display: 'block', width: size, height: size }} />
         )}
       </Button>
-      {isSuccess ? (
+      {isSuccess && tooltipContent ? (
         <div
           style={{
             pointerEvents: 'none',
@@ -89,7 +91,7 @@ export function CopyButton({
                 : 'translateX(100%)',
           }}
         >
-          Address Copied
+          {tooltipContent}
         </div>
       ) : null}
     </div>

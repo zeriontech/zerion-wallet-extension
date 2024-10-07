@@ -13,6 +13,7 @@ import { Toggle } from 'src/ui/ui-kit/Toggle';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import WalletIcon from 'jsx:src/ui/assets/wallet.svg';
+import GiftIcon from 'jsx:src/ui/assets/gift.svg';
 import LockIcon from 'jsx:src/ui/assets/lock-outline.svg';
 import GlobeIcon from 'jsx:src/ui/assets/globe.svg';
 import QuestionIcon from 'jsx:src/ui/assets/question-hint.svg';
@@ -134,6 +135,30 @@ function SettingsMain() {
         </Frame>
         <Frame>
           <VStack gap={0}>
+            <FrameListItemLink to="/invite">
+              <AngleRightRow>
+                <HStack gap={8} alignItems="center">
+                  <GiftIcon />
+                  <UIText kind="body/regular">Invite Friends</UIText>
+                </HStack>
+              </AngleRightRow>
+            </FrameListItemLink>
+            <FrameListItemAnchor
+              href="http://zerion.io/premium"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <AngleRightRow kind="link">
+                <HStack gap={8} alignItems="center">
+                  <PremiumIcon />
+                  <UIText kind="body/regular">Zerion Premium</UIText>
+                </HStack>
+              </AngleRightRow>
+            </FrameListItemAnchor>
+          </VStack>
+        </Frame>
+        <Frame>
+          <VStack gap={0}>
             <FrameListItemAnchor
               href="https://help.zerion.io/en/collections/5525626-zerion-extension"
               target="_blank"
@@ -147,18 +172,6 @@ function SettingsMain() {
               </AngleRightRow>
             </FrameListItemAnchor>
             <BugReportButton />
-            <FrameListItemAnchor
-              href="http://zerion.io/premium"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <AngleRightRow kind="link">
-                <HStack gap={8} alignItems="center">
-                  <PremiumIcon />
-                  <UIText kind="body/regular">Zerion Premium</UIText>
-                </HStack>
-              </AngleRightRow>
-            </FrameListItemAnchor>
             <FrameListItemAnchor
               href="https://app.getbeamer.com/zerion/en?category=extension"
               target="_blank"

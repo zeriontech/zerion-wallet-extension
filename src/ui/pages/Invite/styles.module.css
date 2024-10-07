@@ -1,0 +1,58 @@
+.heading {
+  position: relative;
+  background: linear-gradient(180deg, #ffbdff 0%, #ffffff 100%);
+}
+
+.panel {
+  min-width: 120px;
+  border-radius: 20px;
+}
+
+.panel.outer {
+  background: var(--neutral-100);
+}
+.panel.inner {
+  background: var(--white);
+}
+.panel.outline {
+  background: transparent;
+  border: 2px solid var(--neutral-200);
+}
+
+.noReferralActivity {
+  display: flex;
+  justify-content: center;
+}
+
+.backButton {
+  position: relative;
+  z-index: 2;
+  left: 8px;
+  top: 18px;
+}
+
+.titleContainer {
+  text-align: center;
+  margin: 0 85px;
+}
+
+.referralCode {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardsLeft,
+.cardsRight {
+  position: absolute;
+  z-index: 1;
+}
+.cardsLeft {
+  left: 0;
+  top: 0;
+}
+
+.cardsRight {
+  right: 0;
+  top: 56px;
+}

@@ -1,0 +1,29 @@
+.successDialog {
+}
+
+.premiumTrialBanner {
+  position: relative;
+  padding: 12px;
+  margin-bottom: 4px;
+}
+
+.gradientText {
+  background: linear-gradient(
+    80deg,
+    #cd657f 7.13%,
+    #8a6df1 34.59%,
+    #71a1f3 62.04%,
+    #3bb1ed 90.33%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.card {
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--neutral-100);
+  justify-content: center;
+  text-align: center;
+}
