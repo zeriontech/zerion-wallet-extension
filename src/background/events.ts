@@ -72,4 +72,5 @@ export const emitter = createNanoEvents<{
   ) => void;
   holdToSignPreferenceChange: (active: boolean) => void;
   eip6963SupportDetected: (data: { origin: string }) => void;
+  uiClosed: (data: { url: string | null }) => void;
 }>();

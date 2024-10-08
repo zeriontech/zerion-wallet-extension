@@ -39,6 +39,7 @@ body {
    */
   display: grid;
   --body-width: 425px;
+  --body-max-width: 800px;
   --body-height: 600px;
   width: var(--body-width);
   /** TODO: check that using min-height instead of height doesn't break popup dimensions in supported browsers */
@@ -69,6 +70,22 @@ body.isTab {
   min-height: 100vh;
   border-inline: 1px solid var(--neutral-300);
   margin-inline: auto;
+}
+
+body.isSidepanel {
+  --body-width: 100%;
+  --body-height: 100%;
+  --sidepanel-border-radius: 16px;
+}
+
+body.isSidepanel :global(#root) {
+  width: 100%;
+  max-width: var(--body-max-width);
+  margin-inline: auto;
+}
+
+:root:has(body.isSidepanel) {
+  height: 100%;
 }
 
 :global(body.isIframe) {

@@ -495,6 +495,7 @@ function PositionList({
                   style={{
                     paddingTop: subHeadingIndex > 0 ? 8 : 4,
                     paddingBottom: 4,
+                    overflowWrap: 'break-word',
                   }}
                 >
                   {name}
