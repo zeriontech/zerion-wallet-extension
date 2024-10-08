@@ -77,7 +77,7 @@ async function getZerionStats(addresses: string[]) {
 
     if (
       item.membership.premium?.plan &&
-      item.membership.premium.expiration_time == null
+      item.membership.premium.expirationTime == null
     ) {
       stats.og_dna_premium_holder = true;
     }
