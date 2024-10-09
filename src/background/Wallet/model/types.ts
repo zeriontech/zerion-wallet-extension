@@ -46,6 +46,7 @@ interface PublicPreferences {
   recentAddresses?: string[];
   mintDnaBannerDismissed?: boolean;
   upgradeDnaBannerDismissed?: boolean;
+  inviteFriendsBannerDismissed?: boolean;
   backupReminderDismissedTime?: number;
   /** @deprecated */
   enableTestnets?: boolean;

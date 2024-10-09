@@ -1,4 +1,7 @@
+import { useMutation } from '@tanstack/react-query';
 import React from 'react';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
+import { walletPort } from 'src/ui/shared/channels';
 import { collectData } from 'src/ui/shared/form-data';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -8,12 +11,42 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 
 export function InvitationCodeDialog({
+  myReferralCode,
+  onSuccess,
   onDismiss,
-  onSubmit,
 }: {
+  myReferralCode: string;
+  onSuccess: () => void;
   onDismiss: () => void;
-  onSubmit: (referralCode: string) => void;
 }) {
+  const { mutate: applyReferralCode } = useMutation({
+    mutationFn: async ({
+      referralCode: rawReferralCode,
+    }: {
+      referralCode: string;
+    }) => {
+      const referralCode = rawReferralCode.trim();
+      if (myReferralCode === referralCode) {
+        throw new Error('Can not apply your own referral code');
+      }
+
+      const response = await ZerionAPI.checkReferral({ referralCode });
+      const referrer = response.data;
+
+      if (referrer.address) {
+        await walletPort.request('uiAddReadonlyAddress', {
+          address: referrer.address,
+          name: referrer.handle,
+        });
+      }
+
+      // refer all accounts
+      //   |- await ZerionAPI.referWallet({  });
+
+      onSuccess();
+    },
+  });
+
   return (
     <VStack gap={24}>
       <DialogTitle
@@ -31,7 +64,8 @@ export function InvitationCodeDialog({
           }
           const formData = collectData(form, {});
           const referralCode = formData.referralCode as string;
-          onSubmit(referralCode);
+
+          applyReferralCode({ referralCode });
         }}
       >
         <VStack gap={32}>

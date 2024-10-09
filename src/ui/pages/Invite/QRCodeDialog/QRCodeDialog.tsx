@@ -7,7 +7,7 @@ import { UnorderedListItem } from '../shared/UnorderedListItem';
 import { Circle } from '../shared/Circle';
 import * as styles from './styles.module.css';
 
-export function QRCodeDialog({ inviteUrl }: { inviteUrl: string }) {
+export function QRCodeDialog({ referralLink }: { referralLink: string }) {
   return (
     <VStack gap={24}>
       <DialogTitle
@@ -26,7 +26,7 @@ export function QRCodeDialog({ inviteUrl }: { inviteUrl: string }) {
         />
       </VStack>
       <div className={styles.qrCode}>
-        <QRCode quietZone={0} size={245} value={inviteUrl} />
+        <QRCode quietZone={0} size={245} value={referralLink} />
       </div>
     </VStack>
   );

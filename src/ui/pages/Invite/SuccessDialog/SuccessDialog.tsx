@@ -14,9 +14,8 @@ import ChartIcon from 'jsx:src/ui/assets/chart.svg';
 import StarIcon from 'jsx:src/ui/assets/star.svg';
 import CsvIcon from 'jsx:src/ui/assets/csv.svg';
 import { focusNode } from 'src/ui/shared/focusNode';
-import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
-import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
-import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
+import type { ReferrerData } from 'src/modules/zerion-api/requests/check-referral';
+import { ReferrerLink } from '../shared/ReferrerLink';
 import { GradientBorder } from './GradientBorder';
 import * as styles from './styles.module.css';
 
@@ -32,7 +31,7 @@ function PremiumTrialBanner() {
       alignItems="center"
       justifyContent="center"
     >
-      <GradientBorder width={394} height={48} borderRadius={12} />
+      <GradientBorder width={425 - 4 * 2} height={48} borderRadius={12} />
       <GiftIcon />
       <GradientText>
         <UIText kind="headline/h3">You got Premium Trial</UIText>
@@ -57,32 +56,32 @@ function Card({
 }
 
 export function SuccessDialog({
-  referrerWallet,
+  referrer,
   onDismiss,
 }: {
-  referrerWallet: ExternallyOwnedAccount;
+  referrer: Pick<ReferrerData, 'handle' | 'address'>;
   onDismiss: () => void;
 }) {
   return (
-    <VStack gap={24}>
+    <VStack gap={24} className={styles.successDialog}>
       <VStack gap={0}>
         <DialogTitle
           alignTitle="center"
           title={<UIText kind="headline/h1">Congratulations!</UIText>}
           closeKind="icon"
         />
-        <UIText kind="small/accent" style={{ textAlign: 'center' }}>
-          <TextAnchor
-            href={`https://app.zerion.io/${referrerWallet.address}/overview`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <WalletDisplayName wallet={referrerWallet} />
-          </TextAnchor>{' '}
-          <UIText kind="small/regular" inline={true} color="var(--neutral-500)">
-            has invited you!
+        {referrer.address ? (
+          <UIText kind="small/accent" style={{ textAlign: 'center' }}>
+            <ReferrerLink handle={referrer.handle} address={referrer.address} />{' '}
+            <UIText
+              kind="small/regular"
+              inline={true}
+              color="var(--neutral-500)"
+            >
+              has invited you!
+            </UIText>
           </UIText>
-        </UIText>
+        ) : null}
       </VStack>
       <VStack gap={8}>
         <PremiumTrialBanner />

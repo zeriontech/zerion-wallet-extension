@@ -4,8 +4,14 @@ interface Params {
   referralCode: string;
 }
 
+export interface ReferrerData {
+  referralCode: string;
+  address: string | null;
+  handle: string | null;
+}
+
 interface Response {
-  data: null;
+  data: ReferrerData;
   errors?: { title: string; detail: string }[];
 }
 

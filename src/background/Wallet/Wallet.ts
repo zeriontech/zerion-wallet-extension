@@ -411,6 +411,13 @@ export class Wallet {
     return walletContainer.getFirstWallet();
   }
 
+  async uiAddReadonlyAddress(
+    params: WalletMethodParams<{ address: string; name: string | null }>
+  ) {
+    await this.uiImportReadonlyAddress(params);
+    await this.savePendingWallet();
+  }
+
   async getPendingRecoveryPhrase({ context }: WalletMethodParams) {
     this.verifyInternalOrigin(context);
     this.ensureActiveSession(this.userCredentials);

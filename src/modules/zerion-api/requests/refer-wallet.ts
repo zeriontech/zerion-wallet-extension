@@ -2,6 +2,8 @@ import { ZerionHttpClient } from '../shared';
 
 interface Params {
   address: string;
+  referralCode: string;
+  signature: string;
 }
 
 interface Response {

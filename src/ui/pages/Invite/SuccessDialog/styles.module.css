@@ -1,3 +1,7 @@
+.successDialog {
+  max-width: var(--body-width);
+}
+
 .premiumTrialBanner {
   position: relative;
   padding: 12px;
