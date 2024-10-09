@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { type AddressPosition, useAddressPositions } from 'defi-sdk';
+import { type AddressPosition } from 'defi-sdk';
 import type { Chain } from 'src/modules/networks/Chain';
 import { baseToCommon } from 'src/shared/units/convert';
 import BigNumber from 'bignumber.js';
@@ -7,6 +7,8 @@ import { getDecimals } from 'src/modules/networks/asset';
 import { isTruthy } from 'is-truthy-ts';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
+import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useEvmNativeAddressPosition } from './useEvmNativeAddressPosition';
 import { useNativeAssetId } from './useNativeAsset';
 
@@ -26,14 +28,19 @@ function useNativeAddressPosition({
   const id = useNativeAssetId(chain);
   const { currency } = useCurrency();
 
-  const { value, isLoading } = useAddressPositions(
-    { address, assets: [id].filter(isTruthy), currency },
+  const {
+    data: response,
+    isLoading,
+    isSuccess,
+  } = useHttpAddressPositions(
+    { addresses: [address], assetIds: [id].filter(isTruthy), currency },
+    { source: useHttpClientSource() },
     { enabled: enabled && Boolean(id) }
   );
 
   return useMemo(() => {
     const nativePositions =
-      value?.positions?.filter(
+      response?.data?.filter(
         (item) =>
           item.chain === chain.toString() &&
           item.type === 'asset' &&
@@ -47,9 +54,9 @@ function useNativeAddressPosition({
       // ternary expression to correctly type accessor as nullable
       data: nativePositions.length ? nativePositions[0] : null,
       isLoading,
-      isSuccess: Boolean(value?.positions),
+      isSuccess,
     };
-  }, [chain, isLoading, value?.positions]);
+  }, [chain, isLoading, isSuccess, response?.data]);
 }
 
 export function useNativeBalance({

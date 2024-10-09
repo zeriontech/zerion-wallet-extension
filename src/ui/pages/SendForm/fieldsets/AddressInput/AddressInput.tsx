@@ -167,12 +167,12 @@ const SuggestedItem = React.forwardRef(
           </HStack>
           <PortfolioValue
             address={item.address}
-            render={(entry) => (
+            render={(query) => (
               <UIText kind="body/accent">
-                {entry.value ? (
+                {query.data ? (
                   <NeutralDecimals
                     parts={formatCurrencyToParts(
-                      entry.value?.total_value || 0,
+                      query.data.data?.totalValue || 0,
                       'en',
                       currency
                     )}

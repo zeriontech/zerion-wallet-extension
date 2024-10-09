@@ -4,7 +4,8 @@ import omit from 'lodash/omit';
 import type { Networks } from 'src/modules/networks/Networks';
 import { sendRpcRequest } from 'src/shared/custom-rpc/rpc-request';
 import { createChain } from 'src/modules/networks/Chain';
-import type { NetworksSource } from 'src/modules/zerion-api/zerion-api';
+import type { NetworksSource } from 'src/modules/zerion-api/shared';
+import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
 import type { IncomingTransaction } from '../types/IncomingTransaction';
 import { assignGasPrice } from './gasPrices/assignGasPrice';
 import { hasNetworkFee } from './gasPrices/hasNetworkFee';
@@ -41,12 +42,12 @@ export async function estimateGas(
 async function fetchGasPriceForTransaction(
   transaction: IncomingTransaction,
   networks: Networks,
-  { source }: { source: NetworksSource }
+  { source, apiClient }: { source: NetworksSource; apiClient: ZerionApiClient }
 ): Promise<ChainGasPrice> {
   const chainId = resolveChainId(transaction);
   const network = wrappedGetNetworkById(networks, chainId);
   const chain = createChain(network.id);
-  return fetchGasPrice({ chain, networks, source });
+  return fetchGasPrice({ chain, networks, source, apiClient });
 }
 
 export function hasGasEstimation(transaction: IncomingTransaction) {
@@ -62,13 +63,16 @@ export function hasGasEstimation(transaction: IncomingTransaction) {
 export async function prepareGasAndNetworkFee<T extends IncomingTransaction>(
   transaction: T,
   networks: Networks,
-  { source }: { source: NetworksSource }
+  { source, apiClient }: { source: NetworksSource; apiClient: ZerionApiClient }
 ) {
   const [gas, networkFeeInfo] = await Promise.all([
     hasGasEstimation(transaction) ? null : estimateGas(transaction, networks),
     hasNetworkFee(transaction)
       ? null
-      : fetchGasPriceForTransaction(transaction, networks, { source }),
+      : fetchGasPriceForTransaction(transaction, networks, {
+          source,
+          apiClient,
+        }),
   ]);
   return produce(transaction, (draft) => {
     if (gas) {

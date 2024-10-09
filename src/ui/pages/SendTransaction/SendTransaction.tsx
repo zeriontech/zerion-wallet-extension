@@ -71,8 +71,8 @@ import { InterpretationState } from 'src/ui/components/InterpretationState';
 import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
 import { hasCriticalWarning } from 'src/ui/components/InterpretationState/InterpretationState';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
-import type { NetworksSource } from 'src/modules/zerion-api/zerion-api';
-import { ZerionAPI } from 'src/modules/zerion-api/zerion-api';
+import type { NetworksSource } from 'src/modules/zerion-api/shared';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
 import { hasNetworkFee } from 'src/modules/ethereum/transactions/gasPrices/hasNetworkFee';
@@ -81,12 +81,18 @@ import { resolveChainId } from 'src/modules/ethereum/transactions/resolveChainId
 import { normalizeTransactionChainId } from 'src/modules/ethereum/transactions/normalizeTransactionChainId';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
-import { fetchAndAssignPaymaster } from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
+import {
+  adjustedCheckEligibility,
+  fetchAndAssignPaymaster,
+} from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
 import { isDeviceAccount } from 'src/shared/types/validators';
 import { shouldInterpretTransaction } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { RenderArea } from 'react-area';
 import { wait } from 'src/shared/wait';
+import { assertProp } from 'src/shared/assert-property';
+import { getGas } from 'src/modules/ethereum/transactions/getGas';
+import { valueToHex } from 'src/shared/units/valueToHex';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -106,6 +112,7 @@ async function configureTransactionToSign<T extends IncomingTransaction>(
     from,
     configuration,
     chainGasPrices,
+    requireNonce,
   }: {
     transactionAction: TransactionAction;
     allowanceQuantityBase: string | null;
@@ -114,6 +121,7 @@ async function configureTransactionToSign<T extends IncomingTransaction>(
     from: string;
     configuration: CustomConfiguration;
     chainGasPrices: ChainGasPrice | null;
+    requireNonce: boolean;
   }
 ): Promise<PartiallyRequired<T, 'chainId' | 'from'>> {
   let tx = { ...transaction } as T | IncomingTransaction;
@@ -138,8 +146,7 @@ async function configureTransactionToSign<T extends IncomingTransaction>(
     tx.value = '0x0';
   }
 
-  if (FEATURE_PAYMASTER_ENABLED && tx.nonce == null) {
-    // if {FEATURE_PAYMASTER} is disabled, we don't require nonce at this point. It will be fetched later anyway
+  if (requireNonce && tx.nonce == null) {
     const { value: nonce } = await uiGetBestKnownTransactionCount({
       address: tx.from || from,
       chain,
@@ -179,7 +186,10 @@ async function resolveGasAndFee(
   const chainId = resolveChainId(transaction);
   const networksStore = await getNetworksStore();
   const networks = await networksStore.loadNetworksByChainId(chainId);
-  return await prepareGasAndNetworkFee(transaction, networks, { source });
+  return await prepareGasAndNetworkFee(transaction, networks, {
+    source,
+    apiClient: ZerionAPI,
+  });
 }
 
 function usePreparedTx(transaction: IncomingTransaction, origin: string) {
@@ -528,7 +538,10 @@ function SendTransactionContent({
   const [allowanceQuantityBase, setAllowanceQuantityBase] = useState('');
 
   const configureTransactionToBeSigned = useEvent(
-    async (transaction: IncomingTransaction) =>
+    async (
+      transaction: IncomingTransaction,
+      { requireNonce }: { requireNonce: boolean }
+    ) =>
       configureTransactionToSign(transaction, {
         chainGasPrices: chainGasPrices || null,
         configuration,
@@ -537,6 +550,7 @@ function SendTransactionContent({
         from: singleAddress,
         networks,
         transactionAction,
+        requireNonce,
       })
   );
 
@@ -550,14 +564,23 @@ function SendTransactionContent({
     enabled: USE_PAYMASTER_FEATURE && network?.supports_sponsored_transactions,
     suspense: false,
     staleTime: 120000,
-    queryKey: ['paymaster/check-eligibility', incomingTransaction, source],
+    queryKey: ['paymaster/check-eligibility', populatedTransaction, source],
     queryFn: async () => {
-      const tx = await configureTransactionToBeSigned(incomingTransaction);
-      return ZerionAPI.checkPaymasterEligibility(tx, { source });
+      const tx = await configureTransactionToBeSigned(populatedTransaction, {
+        requireNonce: true,
+      });
+      assertProp(tx, 'nonce');
+      assertProp(tx, 'to');
+      const gas = getGas(tx);
+      invariant(gas, 'gasLimit missing');
+      return adjustedCheckEligibility(
+        { ...tx, gas: valueToHex(gas) },
+        { source, apiClient: ZerionAPI }
+      );
     },
   });
 
-  const paymasterEligible = Boolean(eligibilityQuery.data?.data.eligible);
+  const paymasterEligible = Boolean(eligibilityQuery.data?.data?.eligible);
 
   const client = useDefiSdkClient();
 
@@ -603,9 +626,13 @@ function SendTransactionContent({
           from: singleAddress,
           networks,
           transactionAction,
+          requireNonce: true,
         }
       );
-      const toSign = await fetchAndAssignPaymaster(configuredTx, { source });
+      const toSign = await fetchAndAssignPaymaster(configuredTx, {
+        source,
+        apiClient: ZerionAPI,
+      });
       const typedData = await walletPort.request('uiGetEip712Transaction', {
         transaction: toSign,
       });
@@ -666,9 +693,14 @@ function SendTransactionContent({
   const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
     mutationFn: async () => {
       invariant(sendTxBtnRef.current, 'SignTransactionButton not found');
-      let tx = await configureTransactionToBeSigned(populatedTransaction);
+      let tx = await configureTransactionToBeSigned(populatedTransaction, {
+        requireNonce: paymasterEligible,
+      });
       if (paymasterEligible) {
-        tx = await fetchAndAssignPaymaster(tx, { source });
+        tx = await fetchAndAssignPaymaster(tx, {
+          source,
+          apiClient: ZerionAPI,
+        });
       }
       if (USE_PAYMASTER_FEATURE) {
         console.log('sending to wallet', { tx });

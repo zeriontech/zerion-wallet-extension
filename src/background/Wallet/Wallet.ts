@@ -89,6 +89,7 @@ import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import { decodeMasked } from 'src/shared/wallet/encode-locally';
 import type { RemoteConfig } from 'src/modules/remote-config';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -1145,6 +1146,7 @@ export class Wallet {
     const prepared = prepareTransaction(incomingTransaction);
     const txWithFee = await prepareGasAndNetworkFee(prepared, networks, {
       source: mode === 'testnet' ? 'testnet' : 'mainnet',
+      apiClient: ZerionAPI,
     });
     const transaction = await prepareNonce(txWithFee, networks, chain);
 

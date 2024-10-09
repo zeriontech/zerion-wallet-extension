@@ -3,7 +3,7 @@ import type { Account } from 'src/background/account/Account';
 import { getAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
 import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
 import { isReadonlyContainer } from 'src/shared/types/validators';
-import { ZerionAPI } from 'src/modules/zerion-api/zerion-api';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { backgroundQueryClient } from 'src/modules/query-client/query-client.background';
 import { getAddressesPortfolio } from './getTotalWalletsBalance';
 import {
@@ -77,7 +77,7 @@ async function getZerionStats(addresses: string[]) {
 
     if (
       item.membership.premium?.plan &&
-      item.membership.premium.expiration_time == null
+      item.membership.premium.expirationTime == null
     ) {
       stats.og_dna_premium_holder = true;
     }

@@ -12,6 +12,8 @@ import { setUninstallURL } from './uninstall';
 
 let didInitialize = false;
 
+export const ServiceLocator: { account?: Account } = {};
+
 export async function initialize() {
   if (didInitialize) {
     throw new Error('Initialize function should be run only once');
@@ -57,6 +59,7 @@ export async function initialize() {
     globalPreferences,
     notificationWindow,
   });
+  ServiceLocator.account = account;
   return {
     account,
     accountPublicRPC,

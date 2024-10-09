@@ -2,7 +2,8 @@ import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import browser from 'webextension-polyfill';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { setUrlContext } from 'src/shared/setUrlContext';
-import { ZerionAPI } from '../zerion-api/zerion-api';
+import { ZerionAPI as ZerionAPIBackground } from '../zerion-api/zerion-api.background';
+import type { ZerionApiClient } from '../zerion-api/zerion-api-bare';
 
 export type DappSecurityStatus =
   | 'loading'
@@ -11,9 +12,14 @@ export type DappSecurityStatus =
   | 'unknown'
   | 'error';
 
-export class PhishingDefence {
+class PhishingDefence {
   private whitelistedWebsites: Set<string> = new Set();
   private websiteStatus: Record<string, DappSecurityStatus> = {};
+  apiClient: ZerionApiClient;
+
+  constructor(apiClient: ZerionApiClient) {
+    this.apiClient = apiClient;
+  }
 
   private getSafeOrigin(url: string) {
     const safeUrl = url ? prepareForHref(url) : null;
@@ -71,7 +77,7 @@ export class PhishingDefence {
     }
     this.websiteStatus[origin] = 'loading';
     try {
-      const result = await ZerionAPI.securityCheckUrl({ url });
+      const result = await this.apiClient.securityCheckUrl({ url });
       const status = result.data?.flags.isMalicious ? 'phishing' : 'ok';
       this.websiteStatus[origin] = status;
       return { status, isWhitelisted };
@@ -99,4 +105,5 @@ export class PhishingDefence {
   }
 }
 
-export const phishingDefenceService = new PhishingDefence();
+/** TODO: should this be instantiated in Wallet/Wallet.ts? */
+export const phishingDefenceService = new PhishingDefence(ZerionAPIBackground);

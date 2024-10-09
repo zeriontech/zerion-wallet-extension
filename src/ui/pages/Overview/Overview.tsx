@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Route, Routes, useLocation, useSearchParams } from 'react-router-dom';
-import { useAddressPortfolioDecomposition } from 'defi-sdk';
 import { RenderArea } from 'react-area';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -49,7 +48,6 @@ import { useStore } from '@store-unit/react';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
 import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
 import { isReadonlyContainer } from 'src/shared/types/validators';
-import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { EmptyView2 } from 'src/ui/components/EmptyView';
 import {
@@ -60,6 +58,8 @@ import { createChain } from 'src/modules/networks/Chain';
 import { usePreferences } from 'src/ui/features/preferences';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { useEvent } from 'src/ui/shared/useEvent';
+import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
+import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -304,14 +304,12 @@ function OverviewComponent() {
     // setSearchParams is not a stable reference: https://github.com/remix-run/react-router/issues/9304
     setSearchParams(value ? [['chain', value]] : '');
   });
-  const { value, isLoading: isLoadingPortfolio } =
-    useAddressPortfolioDecomposition(
-      {
-        ...params,
-        currency,
-      },
-      { enabled: ready, client: useDefiSdkClient() }
-    );
+  const { data, isLoading: isLoadingPortfolio } = useWalletPortfolio(
+    { addresses: [params.address], currency },
+    { source: useHttpClientSource() },
+    { enabled: ready, refetchInterval: 40000 }
+  );
+  const walletPortfolio = data?.data;
 
   const offsetValuesState = useStore(offsetValues);
 
@@ -486,10 +484,10 @@ function OverviewComponent() {
           ) : null}
           <VStack gap={0}>
             <UIText kind="headline/h1">
-              {value?.total_value != null ? (
+              {walletPortfolio?.totalValue != null ? (
                 <NeutralDecimals
                   parts={formatCurrencyToParts(
-                    value.total_value,
+                    walletPortfolio.totalValue,
                     'en',
                     currency
                   )}
@@ -498,9 +496,9 @@ function OverviewComponent() {
                 NBSP
               )}
             </UIText>
-            {value?.change_24h.relative ? (
+            {walletPortfolio?.change24h.relative ? (
               <PercentChange
-                value={value.change_24h.relative}
+                value={walletPortfolio.change24h.relative}
                 locale="en"
                 render={(change) => {
                   const sign = change.isPositive ? '+' : '';
@@ -514,9 +512,9 @@ function OverviewComponent() {
                       }
                     >
                       {`${sign}${change.formatted}`}{' '}
-                      {value?.change_24h.absolute
+                      {walletPortfolio?.change24h.absolute
                         ? `(${formatCurrencyValue(
-                            Math.abs(value.change_24h.absolute),
+                            Math.abs(walletPortfolio.change24h.absolute),
                             'en',
                             currency
                           )})`

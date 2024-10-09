@@ -306,12 +306,12 @@ export function WalletGroup() {
                       detailText={
                         <PortfolioValue
                           address={wallet.address}
-                          render={(entry) => (
+                          render={(query) => (
                             <UIText kind="headline/h2">
-                              {entry.value ? (
+                              {query.data ? (
                                 <NeutralDecimals
                                   parts={formatCurrencyToParts(
-                                    entry.value.total_value || 0,
+                                    query.data.data?.totalValue || 0,
                                     'en',
                                     currency
                                   )}

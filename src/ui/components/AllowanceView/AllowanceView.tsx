@@ -1,13 +1,14 @@
 import React, { useMemo } from 'react';
 import { PageTop } from 'src/ui/components/PageTop';
 import type { Asset } from 'defi-sdk';
-import { useAddressPositions } from 'defi-sdk';
 import BigNumber from 'bignumber.js';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { invariant } from 'src/shared/invariant';
 import type { Chain } from 'src/modules/networks/Chain';
 import { getCommonQuantity } from 'src/modules/networks/asset';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
+import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { NavigationBar } from '../NavigationBar';
 import { AllowanceForm } from '../AllowanceForm';
 
@@ -32,22 +33,20 @@ export function AllowanceView({
     'requestedAllowanceQuantityBase is required to set custom allowance'
   );
 
-  const { value: positionsResponse, isLoading: arePositionsLoading } =
-    useAddressPositions(
-      {
-        address,
-        assets: asset ? [asset?.asset_code] : [],
-        currency,
-      },
-      { enabled: Boolean(asset) }
-    );
+  const assetIds = asset ? [asset?.asset_code] : [];
+  const { data, isLoading: positionsAreLoading } = useHttpAddressPositions(
+    { addresses: [address], currency, assetIds },
+    { source: useHttpClientSource() },
+    { enabled: Boolean(asset), refetchInterval: 10000 }
+  );
+  const positions = data?.data;
 
   const positionQuantity = useMemo(
     () =>
-      positionsResponse?.positions.find(
+      positions?.find(
         (position) => position.chain === chain.toString() && !position.dapp?.id
       )?.quantity,
-    [chain, positionsResponse?.positions]
+    [chain, positions]
   );
 
   const balance = useMemo(
@@ -62,7 +61,7 @@ export function AllowanceView({
     [asset, chain, positionQuantity]
   );
 
-  if (arePositionsLoading || !asset) {
+  if (positionsAreLoading || !asset) {
     return <ViewLoading kind="network" />;
   }
 

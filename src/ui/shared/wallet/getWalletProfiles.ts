@@ -2,7 +2,7 @@ import ky from 'ky';
 import { useQuery } from '@tanstack/react-query';
 import { SOCIAL_API_URL } from 'src/env/config';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import type { WalletMeta } from 'src/modules/zerion-api/requests/wallets-meta';
+import type { WalletMeta } from 'src/modules/zerion-api/requests/wallet-get-meta';
 import { persistentQuery } from '../requests/queryClientPersistence';
 
 // TODO: move to ZPI endpoint

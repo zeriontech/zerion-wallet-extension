@@ -10,7 +10,6 @@ import React, {
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import type { Store } from 'store-unit';
-import { useAddressPortfolioDecomposition } from 'defi-sdk';
 import { useSendForm } from '@zeriontech/transactions';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
@@ -53,14 +52,20 @@ import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { createSendAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
-import { ZerionAPI } from 'src/modules/zerion-api/zerion-api';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
 import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/uiGetBestKnownTransactionCount';
-import { fetchAndAssignPaymaster } from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
+import {
+  adjustedCheckEligibility,
+  fetchAndAssignPaymaster,
+} from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { DisableTestnetShortcuts } from 'src/ui/features/testnet-mode/DisableTestnetShortcuts';
 import { isDeviceAccount } from 'src/shared/types/validators';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
+import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
+import { assertProp } from 'src/shared/assert-property';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -90,6 +95,8 @@ function StoreWatcherByKeys<T extends Record<string, unknown>>({
   const state = useSelectorStore(store, keys);
   return render(state);
 }
+
+class SendFormParamsMissing extends Error {}
 
 const rootNode = getRootDomNode();
 
@@ -121,10 +128,13 @@ function SendFormComponent() {
       : null,
   });
 
-  const { value: portfolioDecomposition } = useAddressPortfolioDecomposition(
-    { address, currency },
-    { enabled: ready }
+  const { data } = useWalletPortfolio(
+    { addresses: [address], currency },
+    { source: useHttpClientSource() },
+    { enabled: ready, suspense: true }
   );
+  const portfolioDecomposition = data?.data;
+
   const addressChains = useMemo(
     () => Object.keys(portfolioDecomposition?.chains || {}),
     [portfolioDecomposition]
@@ -159,7 +169,7 @@ function SendFormComponent() {
   }, [store, tokenChain]);
 
   useEffect(() => {
-    store.on('change', () => {
+    return store.on('change', () => {
       // The easiest way support custom networks is to track the tokenChain value change
       // and pass positions based on it to `useSendForm` hook. The way the hook is agnostic about custom chain.
       // Other solutions are possible:
@@ -190,74 +200,76 @@ function SendFormComponent() {
   const { data: gasPrices } = useGasPrices(chain);
   const { preferences, setPreferences } = usePreferences();
 
-  const configureTransactionToBeSigned = useEvent(async () => {
-    const asset = tokenItem?.asset;
-    async function createTransaction() {
-      const { type, to, tokenChain, tokenValue, nftChain, nftAmount } =
-        store.getState();
-      if (type === 'token') {
-        invariant(
-          address && to && asset && tokenChain && tokenValue,
-          'Send Form parameters missing'
-        );
-        const result = await sendView.store.createSendTransaction({
-          from: address,
-          to,
-          asset,
-          tokenChain,
-          tokenValue,
-        });
-        result.transaction = applyConfiguration(
-          result.transaction,
-          sendView.store.configuration.getState(),
-          gasPrices
-        );
-        return result;
-      } else if (type === 'nft') {
-        invariant(
-          nftChain && nftItem && nftAmount && to,
-          'Missing sendForm/createSendNFTTransaction params'
-        );
-        const result = await store.createSendNFTTransaction({
-          from: address,
-          to,
-          nftChain,
-          nftAmount,
-          nftItem,
-        });
-        result.transaction = applyConfiguration(
-          result.transaction,
-          sendView.store.configuration.getState(),
-          gasPrices
-        );
-        return result;
-      } else {
-        throw new Error('Unexpected FormType (expected "token" | "nft")');
+  const configureTransactionToBeSigned = useEvent(
+    async ({ requireNonce }: { requireNonce: boolean }) => {
+      const asset = tokenItem?.asset;
+      async function createTransaction() {
+        const { type, to, tokenChain, tokenValue, nftChain, nftAmount } =
+          store.getState();
+        if (type === 'token') {
+          invariant(
+            address && to && asset && tokenChain && tokenValue,
+            () => new SendFormParamsMissing('type: token')
+          );
+          const result = await sendView.store.createSendTransaction({
+            from: address,
+            to,
+            asset,
+            tokenChain,
+            tokenValue,
+          });
+          result.transaction = applyConfiguration(
+            result.transaction,
+            sendView.store.configuration.getState(),
+            gasPrices
+          );
+          return result;
+        } else if (type === 'nft') {
+          invariant(
+            nftChain && nftItem && nftAmount && to,
+            () => new SendFormParamsMissing('type: nft')
+          );
+          const result = await store.createSendNFTTransaction({
+            from: address,
+            to,
+            nftChain,
+            nftAmount,
+            nftItem,
+          });
+          result.transaction = applyConfiguration(
+            result.transaction,
+            sendView.store.configuration.getState(),
+            gasPrices
+          );
+          return result;
+        } else {
+          throw new Error('Unexpected FormType (expected "token" | "nft")');
+        }
       }
-    }
-    const result = await createTransaction();
-    if (result.transaction.value == null) {
-      result.transaction = {
-        ...result.transaction,
-        value: '0x0',
-      };
-    }
-    if (USE_PAYMASTER_FEATURE && result.transaction.nonce == null) {
-      const { transaction } = result;
-      const chainStr = tokenChain || nftChain;
-      invariant(chainStr, 'chain value missing');
-      invariant(networks, 'networks value missing');
+      const result = await createTransaction();
+      if (result.transaction.value == null) {
+        result.transaction = {
+          ...result.transaction,
+          value: '0x0',
+        };
+      }
+      if (requireNonce && result.transaction.nonce == null) {
+        const { transaction } = result;
+        const chainStr = tokenChain || nftChain;
+        invariant(chainStr, 'chain value missing');
+        invariant(networks, 'networks value missing');
 
-      const { value: nonce } = await uiGetBestKnownTransactionCount({
-        address: transaction.from,
-        chain: createChain(chainStr),
-        networks,
-        defaultBlock: 'pending',
-      });
-      result.transaction = { ...transaction, nonce };
+        const { value: nonce } = await uiGetBestKnownTransactionCount({
+          address: transaction.from,
+          chain: createChain(chainStr),
+          networks,
+          defaultBlock: 'pending',
+        });
+        result.transaction = { ...transaction, nonce };
+      }
+      return result;
     }
-    return result;
-  });
+  );
 
   const signTxBtnRef = useRef<SendTxBtnHandle | null>(null);
 
@@ -275,6 +287,7 @@ function SendFormComponent() {
     ),
     suspense: false,
     staleTime: 120000,
+    useErrorBoundary: false,
     queryKey: [
       'paymaster/check-eligibility',
       chainId,
@@ -288,22 +301,35 @@ function SendFormComponent() {
       invariant(chainId, 'chainId not set');
       invariant(chain, 'chain not set');
       invariant(networks, 'networks not set');
-      let nonce = userNonce;
-      if (nonce == null) {
-        const { value } = await uiGetBestKnownTransactionCount({
-          address,
-          chain,
-          networks,
-          defaultBlock: 'pending',
+      try {
+        const { transaction: tx } = await configureTransactionToBeSigned({
+          requireNonce: true,
         });
-        nonce = value;
+        assertProp(tx, 'chainId');
+        assertProp(tx, 'nonce');
+        assertProp(tx, 'gas');
+        return adjustedCheckEligibility(tx, { source, apiClient: ZerionAPI });
+      } catch (error) {
+        if (error instanceof SendFormParamsMissing) {
+          return null; // All good
+        } else {
+          throw error;
+        }
       }
-      const from = address;
-      const params = { from, chainId, nonce };
-      return ZerionAPI.checkPaymasterEligibility(params, { source });
     },
   });
-  const paymasterEligible = Boolean(eligibilityQuery?.data?.data.eligible);
+  const paymasterEligible = Boolean(eligibilityQuery.data?.data.eligible);
+
+  const maybeRefetchEligibility = useEvent(() => {
+    if (eligibilityQuery.isFetched) {
+      eligibilityQuery.refetch();
+    }
+  });
+  useEffect(() => {
+    return sendView.store.on('change', () => {
+      maybeRefetchEligibility();
+    });
+  }, [maybeRefetchEligibility, sendView.store]);
 
   const {
     mutate: sendTransaction,
@@ -320,10 +346,15 @@ function SendFormComponent() {
         transaction: tx,
         amount,
         asset,
-      } = await configureTransactionToBeSigned();
+      } = await configureTransactionToBeSigned({
+        requireNonce: paymasterEligible,
+      });
       let transaction = tx;
       if (paymasterEligible) {
-        transaction = await fetchAndAssignPaymaster(transaction, { source });
+        transaction = await fetchAndAssignPaymaster(transaction, {
+          source,
+          apiClient: ZerionAPI,
+        });
       }
       const feeValueCommon = feeValueCommonRef.current || null;
 
@@ -557,6 +588,9 @@ function SendFormComponent() {
                       transaction={transaction}
                       from={address}
                       chain={chain}
+                      // TODO:
+                      // There's a possible flicker of network fee
+                      // before {paymasterEligible} becomes true
                       paymasterEligible={paymasterEligible}
                       onFeeValueCommonReady={handleFeeValueCommonReady}
                       configuration={configuration}
@@ -591,7 +625,9 @@ function SendFormComponent() {
                 <ViewLoadingSuspense>
                   <SendTransactionConfirmation
                     getTransaction={async () => {
-                      const result = await configureTransactionToBeSigned();
+                      const result = await configureTransactionToBeSigned({
+                        requireNonce: paymasterEligible,
+                      });
                       return result.transaction;
                     }}
                     chain={chain}
