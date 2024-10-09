@@ -10,6 +10,7 @@ import {
 } from './api-v4-zerion';
 import {
   getProviderForApiV4,
+  getProviderForMetabase,
   getProviderNameFromGroup,
 } from './shared/getProviderNameFromGroup';
 
@@ -31,7 +32,7 @@ function trackAppEvents({
     const wallet_provider = address
       ? await requestWithTimeout(() => getWalletProvider(address))
       : null;
-    return { wallet_address: address, wallet_provider } as const;
+    return { wallet_address: address?.toLowerCase(), wallet_provider } as const;
   }
   emitter.on('signingError', async (signatureType, message) => {
     const params = createParams({
@@ -89,12 +90,18 @@ function trackAppEvents({
 }
 
 export function initializeClientAnalytics() {
-  async function getWalletProvider(address: string) {
+  async function getWalletProviderForApiV4(address: string) {
     const group = await getWalletGroupByAddress(address);
     return getProviderForApiV4(getProviderNameFromGroup(group));
   }
+  async function getWalletProviderForMetabase(address: string) {
+    const group = await getWalletGroupByAddress(address);
+    return getProviderForMetabase(getProviderNameFromGroup(group));
+  }
   initializeApiV4Analytics({
-    willSendRequest: createAddProviderHook({ getWalletProvider }),
+    willSendRequest: createAddProviderHook({
+      getWalletProvider: getWalletProviderForApiV4,
+    }),
   });
-  return trackAppEvents({ getWalletProvider });
+  return trackAppEvents({ getWalletProvider: getWalletProviderForMetabase });
 }

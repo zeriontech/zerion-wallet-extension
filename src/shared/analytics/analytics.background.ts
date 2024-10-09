@@ -40,21 +40,36 @@ function trackAppEvents({ account }: { account: Account }) {
 
   const getProvider = (address: string) =>
     getProviderForMetabase(queryWalletProvider(account, address));
+  const getCurrentAddress = () =>
+    account.getCurrentWallet().readCurrentAddress();
 
-  const createParams: typeof createBaseParams = (params) => {
-    const getUserId = () => account.getUser()?.id;
-    return createBaseParams({ ...params, userId: getUserId() });
+  const createParams: typeof createBaseParams = (eventParams) => {
+    const params: typeof eventParams & {
+      wallet_address?: string | null;
+      wallet_provider?: string | null;
+    } = eventParams;
+
+    if (!params.wallet_address) {
+      params.wallet_address = getCurrentAddress();
+    }
+
+    if (params.wallet_address) {
+      params.wallet_address = params.wallet_address.toLowerCase();
+      if (!params.wallet_provider) {
+        params.wallet_provider = getProvider(params.wallet_address);
+      }
+    }
+    return createBaseParams(params);
   };
+
   emitter.on('requestAccountsResolved', ({ origin, address, explicitly }) => {
     if (!explicitly) {
       return;
     }
-    // We don't need user_id here
-    const params = createBaseParams({
+    const params = createParams({
       request_name: 'dapp_connection',
       dapp_domain: origin,
       wallet_address: address,
-      wallet_provider: getProvider(address),
       eip6963_supported: eip6963Dapps.has(origin),
     });
     sendToMetabase('dapp_connection', params);
@@ -63,11 +78,9 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   emitter.on('screenView', (data) => {
-    // We don't need user_id here
-    const params = createBaseParams({
+    const params = createParams({
       request_name: 'screen_view',
       wallet_address: data.address,
-      wallet_provider: data.address ? getProvider(data.address) : null,
       screen_name: data.pathname,
       previous_screen_name: data.previous,
       screen_size: data.screenSize,
@@ -78,8 +91,7 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   emitter.on('daylightAction', ({ event_name, ...data }) => {
-    // We don't need user_id here (analytics requirement)
-    const params = createBaseParams({
+    const params = createParams({
       request_name: 'daylight_action',
       wallet_address: data.address,
       event_name,
@@ -111,11 +123,10 @@ function trackAppEvents({ account }: { account: Account }) {
         .getCurrentWallet()
         .getPreferences({ context: INTERNAL_SYMBOL_CONTEXT });
 
-      const params = createBaseParams({
+      const params = createParams({
         request_name: 'signed_transaction',
         screen_name: origin === initiator ? 'Transaction Request' : pathname,
         wallet_address: transaction.from,
-        wallet_provider: getProvider(transaction.from),
         /* @deprecated */
         context: initiatorName,
         /* @deprecated */
@@ -181,7 +192,7 @@ function trackAppEvents({ account }: { account: Account }) {
       .getCurrentWallet()
       .getPreferences({ context: INTERNAL_SYMBOL_CONTEXT });
 
-    const params = createBaseParams({
+    const params = createParams({
       request_name: 'signed_message',
       /* @deprecated */
       type: eventToMethod[type] ?? 'unexpected type',
@@ -191,7 +202,6 @@ function trackAppEvents({ account }: { account: Account }) {
       action_type: eventToActionType[type] ?? 'unexpected type',
       wallet_address: address,
       address,
-      wallet_provider: getProvider(address),
       dapp_domain: isInternalOrigin ? null : origin,
       hold_sign_button: Boolean(preferences.enableHoldToSignButton),
     });
@@ -213,16 +223,18 @@ function trackAppEvents({ account }: { account: Account }) {
 
   // TODO: add networks-related analytics
   emitter.on('addEthereumChain', ({ values: [chainConfig], origin }) => {
+    const wallet_address = getCurrentAddress();
     const params = createParams({
-      request_name: 'add_custom_evm',
+      request_name: 'custom_evm_network_created',
       source: origin,
       network_external_id: chainConfig.chainId,
       network_rpc_url_internal: chainConfig.rpcUrls[0],
       network_name: chainConfig.chainName,
       network_native_asset_symbol: chainConfig.nativeCurrency.symbol,
       network_explorer_home_url: chainConfig.blockExplorerUrls?.[0],
+      wallet_address,
     });
-    sendToMetabase('add_custom_evm', params);
+    sendToMetabase('custom_evm_network_created', params);
   });
 
   emitter.on('globalPreferencesChange', (state, prevState) => {
@@ -250,11 +262,11 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   emitter.on('holdToSignPreferenceChange', (active) => {
-    const params = createBaseParams({
+    const params = createParams({
       request_name: 'hold_to_sign_prerefence',
       active,
     });
-    const mixpanelParams = omit(params, ['request_name']);
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
     mixpanelTrack(account, 'Experiments: Hold Sign Button', mixpanelParams);
   });
 
@@ -270,10 +282,9 @@ function trackAppEvents({ account }: { account: Account }) {
           : 'connected';
       const wallet_provider = getProvider(wallet.address);
 
-      const params = createBaseParams({
+      const params = createParams({
         request_name: 'add_wallet',
         wallet_address: wallet.address.toLowerCase(),
-        wallet_provider,
         type,
       });
       sendToMetabase('add_wallet', params);

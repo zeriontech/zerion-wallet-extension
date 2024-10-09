@@ -10,7 +10,7 @@ type MetabaseEvent =
   | 'signed_transaction'
   | 'client_error'
   | 'daylight_action'
-  | 'add_custom_evm'
+  | 'custom_evm_network_created'
   | 'network_search'
   | 'error_screen_view'
   | 'error_screen_view'
