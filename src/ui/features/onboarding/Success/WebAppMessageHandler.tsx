@@ -8,9 +8,7 @@ const ZERION_WEB_APP_URL = new URL(
     : 'https://app.zerion.io'
 );
 
-enum WebAppCallbackMethod {
-  SetReferralCode = 'set-referral-code',
-}
+type WebAppCallbackMethod = 'set-referral-code';
 
 interface WebAppMessage<T = unknown> {
   method: WebAppCallbackMethod;
@@ -48,7 +46,7 @@ async function handleMessage({
   if (!isWebAppMessage(event, { expectedSource })) return;
   const { method, params } = event.data;
 
-  if (method === WebAppCallbackMethod.SetReferralCode) {
+  if (method === 'set-referral-code') {
     invariant(
       isObj(params) && typeof params.referralCode === 'string',
       'Invalid payload for set-referral-code web app message'
@@ -58,9 +56,9 @@ async function handleMessage({
   }
 }
 
-export function WebAppMessageHandler({ path }: { path: string }) {
+export function WebAppMessageHandler({ pathname }: { pathname: string }) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const iframeUrl = new URL(path, ZERION_WEB_APP_URL);
+  const iframeUrl = new URL(pathname, ZERION_WEB_APP_URL);
 
   useEffect(() => {
     invariant(iframeRef.current, 'Iframe should be mounted');

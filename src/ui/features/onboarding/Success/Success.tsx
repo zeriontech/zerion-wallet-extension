@@ -17,7 +17,7 @@ import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigV
 import * as styles from './styles.module.css';
 import { WebAppMessageHandler } from './WebAppMessageHandler';
 
-const DEBUG_INVITEE_FLOW = true;
+const DEBUG_INVITEE_FLOW = false;
 
 export function Success() {
   const { isNarrowView } = useWindowSizeStore();
@@ -123,7 +123,7 @@ export function Success() {
   return (
     <>
       {referralProgramEnabled || DEBUG_INVITEE_FLOW ? (
-        <WebAppMessageHandler path="/get-referral-code" />
+        <WebAppMessageHandler pathname="/get-referral-code" />
       ) : null}
       <canvas
         ref={confettiRef}
