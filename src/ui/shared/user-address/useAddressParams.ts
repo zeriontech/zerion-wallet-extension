@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { walletPort } from 'src/ui/shared/channels';
+import { queryClient } from '../requests/queryClient';
 
 interface Result {
   params: { address: string };
@@ -13,15 +14,25 @@ interface Result {
   refetch: () => void;
 }
 
+const QUERY_KEY = ['wallet/getCurrentAddress'];
+
+const queryFn = () =>
+  walletPort.request('getCurrentAddress').then((result) => result || null);
+
+export function readCachedCurrentAddress() {
+  return queryClient.getQueryData<Awaited<ReturnType<typeof queryFn>>>(
+    QUERY_KEY
+  );
+}
+
 export function useAddressParams(): Result {
   const {
     data: addressResult,
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ['wallet/getCurrentAddress'],
-    queryFn: () =>
-      walletPort.request('getCurrentAddress').then((result) => result || null),
+    queryKey: QUERY_KEY,
+    queryFn,
     useErrorBoundary: true,
   });
   const address = addressResult || '';
