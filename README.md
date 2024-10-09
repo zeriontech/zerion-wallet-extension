@@ -19,7 +19,7 @@ You can also download the latest build of the Zerion Extension from [here](https
 ## Development
 
 ### Prerequisites
-
+ 
 - Install [npm](https://www.npmjs.com/get-npm)
 
 ### 1. Set up Node
