@@ -10,7 +10,7 @@ export function useRemoteConfigValue<K extends keyof RemoteConfig>(key: K) {
       return value as RemoteConfig[K];
     },
     useErrorBoundary: false,
-    cacheTime: 0,
+    staleTime: 10000,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   });
