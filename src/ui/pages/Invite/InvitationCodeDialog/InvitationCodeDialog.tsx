@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import { walletPort } from 'src/ui/shared/channels';
 import { collectData } from 'src/ui/shared/form-data';
@@ -9,43 +9,82 @@ import { Input } from 'src/ui/ui-kit/Input';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { useWalletsMeta } from '../shared/useWalletsMeta';
+import { saveReferrer } from '../shared/storage';
+
+async function referWallet({
+  address,
+  referralCode,
+}: {
+  address: string;
+  referralCode: string;
+}) {
+  const signature = await walletPort.request('uiSignReferrerMessage', {
+    address,
+    referralCode,
+  });
+  return ZerionAPI.referWallet({ address, referralCode, signature });
+}
 
 export function InvitationCodeDialog({
+  ownedAddresses,
   myReferralCode,
   onSuccess,
   onDismiss,
 }: {
-  myReferralCode: string;
+  ownedAddresses: string[];
+  myReferralCode: string | null;
   onSuccess: () => void;
   onDismiss: () => void;
 }) {
-  const { mutate: applyReferralCode } = useMutation({
-    mutationFn: async ({
-      referralCode: rawReferralCode,
-    }: {
-      referralCode: string;
-    }) => {
-      const referralCode = rawReferralCode.trim();
-      if (myReferralCode === referralCode) {
-        throw new Error('Can not apply your own referral code');
-      }
+  const { data: ownedAddressesMeta, isLoading: isLoadingWalletsMeta } =
+    useWalletsMeta({ addresses: ownedAddresses });
 
-      const response = await ZerionAPI.checkReferral({ referralCode });
-      const referrer = response.data;
+  const ownedAddressesWithoutReferrer = useMemo(
+    () =>
+      (ownedAddressesMeta ?? [])
+        .filter((meta) => meta.membership.referrer === null)
+        .map((meta) => meta.address),
+    [ownedAddressesMeta]
+  );
 
-      if (referrer.address) {
-        await walletPort.request('uiAddReadonlyAddress', {
-          address: referrer.address,
-          name: referrer.handle,
-        });
-      }
+  const { mutate: applyReferralCode, ...applyReferralCodeMutation } =
+    useMutation({
+      mutationFn: async ({
+        referralCode: rawReferralCode,
+      }: {
+        referralCode: string;
+      }) => {
+        const referralCode = rawReferralCode.trim();
+        if (myReferralCode === referralCode) {
+          throw new Error('Can not apply your own referral code');
+        }
 
-      // refer all accounts
-      //   |- await ZerionAPI.referWallet({  });
+        const response = await ZerionAPI.checkReferral({ referralCode });
+        const referrer = response.data;
 
-      onSuccess();
-    },
-  });
+        await saveReferrer(referrer);
+
+        if (referrer.address) {
+          await walletPort.request('uiAddReadonlyAddress', {
+            address: referrer.address,
+            name: referrer.handle,
+          });
+        }
+
+        await Promise.allSettled(
+          ownedAddressesWithoutReferrer.map((address) =>
+            referWallet({ address, referralCode: referrer.referralCode })
+          )
+        );
+
+        onSuccess();
+      },
+    });
+
+  if (isLoadingWalletsMeta) {
+    return null;
+  }
 
   return (
     <VStack gap={24}>
@@ -79,6 +118,7 @@ export function InvitationCodeDialog({
             <Button
               kind="regular"
               type="button"
+              disabled={applyReferralCodeMutation.isLoading}
               onClick={(event) => {
                 event?.currentTarget?.form?.reset();
                 onDismiss();
@@ -86,7 +126,12 @@ export function InvitationCodeDialog({
             >
               Back
             </Button>
-            <Button kind="primary">Apply</Button>
+            <Button
+              kind="primary"
+              disabled={applyReferralCodeMutation.isLoading}
+            >
+              {applyReferralCodeMutation.isLoading ? 'Applying...' : 'Apply'}
+            </Button>
           </HStack>
         </VStack>
       </form>

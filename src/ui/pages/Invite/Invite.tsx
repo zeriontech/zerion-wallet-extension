@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -38,16 +38,19 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { invariant } from 'src/shared/invariant';
 import type { XpDistribution } from 'defi-sdk';
+import { isReadonlyContainer } from 'src/shared/types/validators';
+import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { WalletList } from '../WalletSelect/WalletList';
 import { ReferralLinkDialog } from './ReferralLinkDialog';
 import { InvitationCodeDialog } from './InvitationCodeDialog';
 import { QRCodeDialog } from './QRCodeDialog';
 import * as styles from './styles.module.css';
 import { SuccessDialog } from './SuccessDialog';
-import { useWalletsMeta } from './useWalletsMeta';
+import { useWalletsMeta } from './shared/useWalletsMeta';
 import { ReferrerLink } from './shared/ReferrerLink';
+import { readReferrer } from './shared/storage';
 
-const DEBUG_SUCCESS_SCREEN = true;
+const SHOW_EXPLORE_REWARDS_BUTTON = process.env.NODE_ENV === 'development';
 
 function WalletSelectDialog({
   value,
@@ -279,20 +282,45 @@ function Heading({
 }
 
 export function Invite() {
-  const { data: walletGroups, isLoading: isLoadingWalletGroups } =
-    useWalletGroups();
+  useBackgroundKind({ kind: 'white' });
+  useEffect(() => window.scrollTo(0, 0), []);
 
   const { data: currentWallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
   });
-
   const [selectedWallet, setSelectedWallet] = useState(currentWallet);
 
+  const { data: walletGroups, ...walletGroupsQuery } = useWalletGroups();
+  const ownedWalletGroups = useMemo(
+    () =>
+      walletGroups?.filter(
+        (group) => !isReadonlyContainer(group.walletContainer)
+      ),
+    [walletGroups]
+  );
+  const ownedAddresses = useMemo(
+    () =>
+      ownedWalletGroups?.flatMap((group) =>
+        group.walletContainer.wallets.map((wallet) => wallet.address)
+      ),
+    [ownedWalletGroups]
+  );
   const { data: walletsMeta } = useWalletsMeta({
     addresses: selectedWallet?.address ? [selectedWallet.address] : [],
   });
   const walletMeta = walletsMeta?.[0];
+
+  const { data: storedReferrer, isLoading: isLoadingStoredReferrer } = useQuery(
+    {
+      queryKey: ['storedReferrer'],
+      queryFn: async () => {
+        const result = await readReferrer();
+        return result || null;
+      },
+      cacheTime: 0,
+    }
+  );
 
   const walletSelectDialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const referralLinkDialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -302,22 +330,21 @@ export function Invite() {
   );
   const successDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
-  useBackgroundKind({ kind: 'white' });
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
-  if (!walletMeta) {
+  if (!walletMeta || isLoadingStoredReferrer) {
     return null;
   }
-  const { xp, referrer, referralCode, referralLink } = walletMeta.membership;
+
+  const myReferrer = walletMeta.membership.referrer || storedReferrer || null;
+  const myReferralCode =
+    walletMeta.membership.referralCode || storedReferrer?.referralCode || null;
+
+  const myReferralLink = walletMeta.membership.referralLink;
 
   if (
     !selectedWallet ||
     !walletMeta ||
-    !referralCode ||
-    !referralLink ||
-    isLoadingWalletGroups
+    walletGroupsQuery.isLoading ||
+    !ownedAddresses
   ) {
     return null;
   }
@@ -336,26 +363,29 @@ export function Invite() {
               currentWallet={selectedWallet}
               onClick={() => walletSelectDialogRef.current?.showModal()}
             />
-            <ReferralCode value={referralCode} />
-            <ActionButtons
-              onShowInviteLink={() =>
-                referralLinkDialogRef.current?.showModal()
-              }
-              onShowQRCode={() => qrCodeDialogRef.current?.showModal()}
-            />
+            {myReferralCode ? <ReferralCode value={myReferralCode} /> : null}
+            {myReferralLink ? (
+              <ActionButtons
+                onShowInviteLink={() =>
+                  referralLinkDialogRef.current?.showModal()
+                }
+                onShowQRCode={() => qrCodeDialogRef.current?.showModal()}
+              />
+            ) : null}
           </VStack>
           <VStack gap={16}>
-            <Stats xp={xp} />
-            {/* TODO: Uncomment when this page is ready: */}
-            {/* <Button */}
-            {/*   kind="regular" */}
-            {/*   as={UnstyledAnchor} */}
-            {/*   href="https://app.zerion.io/rewards" */}
-            {/*   target="_blank" */}
-            {/* > */}
-            {/*   <UIText kind="body/accent">Explore Rewards</UIText> */}
-            {/* </Button> */}
-            {referrer?.address ? (
+            <Stats xp={walletMeta.membership.xp} />
+            {myReferralCode && SHOW_EXPLORE_REWARDS_BUTTON ? (
+              <Button
+                kind="regular"
+                as={UnstyledAnchor}
+                href="https://app.zerion.io/rewards"
+                target="_blank"
+              >
+                <UIText kind="body/accent">Explore Rewards</UIText>
+              </Button>
+            ) : null}
+            {myReferrer?.address ? (
               <UIText
                 kind="small/regular"
                 color="var(--neutral-500)"
@@ -367,8 +397,8 @@ export function Invite() {
               >
                 You were invited by{' '}
                 <ReferrerLink
-                  handle={referrer.handle}
-                  address={referrer.address}
+                  handle={myReferrer.handle}
+                  address={myReferrer.address}
                   style={{ color: 'var(--primary)' }}
                 />
               </UIText>
@@ -380,14 +410,6 @@ export function Invite() {
                 Enter Referral Code
               </Button>
             )}
-            {DEBUG_SUCCESS_SCREEN ? (
-              <Button
-                kind="regular"
-                onClick={() => successDialogRef.current?.showModal()}
-              >
-                Success
-              </Button>
-            ) : null}
           </VStack>
         </VStack>
         <BottomSheetDialog
@@ -395,7 +417,7 @@ export function Invite() {
           height="fit-content"
           renderWhenOpen={() => (
             <WalletSelectDialog
-              walletGroups={walletGroups}
+              walletGroups={ownedWalletGroups}
               value={normalizeAddress(selectedWallet.address)}
               onSelect={(wallet) => {
                 walletSelectDialogRef.current?.close();
@@ -404,28 +426,33 @@ export function Invite() {
             />
           )}
         />
-        <BottomSheetDialog
-          ref={referralLinkDialogRef}
-          height="fit-content"
-          renderWhenOpen={() => (
-            <ReferralLinkDialog referralLink={referralLink} />
-          )}
-        />
-        <BottomSheetDialog
-          ref={qrCodeDialogRef}
-          height="fit-content"
-          renderWhenOpen={() => <QRCodeDialog referralLink={referralLink} />}
-        />
+        {myReferralLink ? (
+          <BottomSheetDialog
+            ref={referralLinkDialogRef}
+            height="fit-content"
+            renderWhenOpen={() => (
+              <ReferralLinkDialog myReferralLink={myReferralLink} />
+            )}
+          />
+        ) : null}
+        {myReferralLink ? (
+          <BottomSheetDialog
+            ref={qrCodeDialogRef}
+            height="fit-content"
+            renderWhenOpen={() => (
+              <QRCodeDialog myReferralLink={myReferralLink} />
+            )}
+          />
+        ) : null}
         <BottomSheetDialog
           ref={invitationCodeDialogRef}
           height="fit-content"
           renderWhenOpen={() => (
             <InvitationCodeDialog
-              myReferralCode={referralCode}
+              ownedAddresses={ownedAddresses}
+              myReferralCode={myReferralCode}
               onDismiss={() => invitationCodeDialogRef.current?.close()}
-              onSuccess={() => {
-                invitationCodeDialogRef.current?.close();
-              }}
+              onSuccess={() => successDialogRef.current?.showModal()}
             />
           )}
         />
@@ -433,10 +460,10 @@ export function Invite() {
           style={{ maxWidth: 'var(--body-width)' }}
           ref={successDialogRef}
           renderWhenOpen={() => {
-            invariant(referrer, 'referrer must be defined');
+            invariant(myReferrer, 'myReferrer must be defined');
             return (
               <SuccessDialog
-                referrer={referrer}
+                referrer={myReferrer}
                 onDismiss={() => successDialogRef.current?.close()}
               />
             );

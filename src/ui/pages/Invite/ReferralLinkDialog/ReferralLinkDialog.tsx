@@ -34,7 +34,11 @@ function ReferralLink({ value }: { value: string }) {
   );
 }
 
-export function ReferralLinkDialog({ referralLink }: { referralLink: string }) {
+export function ReferralLinkDialog({
+  myReferralLink,
+}: {
+  myReferralLink: string;
+}) {
   return (
     <VStack gap={24}>
       <DialogTitle
@@ -52,7 +56,7 @@ export function ReferralLinkDialog({ referralLink }: { referralLink: string }) {
           text="You start receiving a 10% of the XP they earn in the Loyalty Program."
         />
       </VStack>
-      <ReferralLink value={referralLink} />
+      <ReferralLink value={myReferralLink} />
     </VStack>
   );
 }

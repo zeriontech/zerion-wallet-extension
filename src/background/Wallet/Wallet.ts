@@ -430,6 +430,19 @@ export class Wallet {
     );
   }
 
+  async uiSignReferrerMessage({
+    params: { address, referralCode },
+    context,
+  }: WalletMethodParams<{ address: string; referralCode: string }>) {
+    this.verifyInternalOrigin(context);
+
+    const signer = this.getOfflineSigner();
+    const message = `${address} -> ${referralCode}`;
+    const messageAsUtf8String = toUtf8String(message);
+
+    return signer.signMessage(messageAsUtf8String);
+  }
+
   async getPendingWallet({ context }: WalletMethodParams) {
     this.verifyInternalOrigin(context);
     const wallet = this.pendingWallet?.walletContainer.getFirstWallet();
