@@ -87,6 +87,8 @@ import { getDefiSdkClient } from 'src/modules/defi-sdk/background';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import { decodeMasked } from 'src/shared/wallet/encode-locally';
+import type { RemoteConfig } from 'src/modules/remote-config';
+import { getRemoteConfigValue } from 'src/modules/remote-config';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
@@ -852,6 +854,14 @@ export class Wallet {
     this.verifyInternalOrigin(context);
     await globalPreferences.ready();
     return globalPreferences.setPreferences(preferences);
+  }
+
+  async getRemoteConfigValue({
+    context,
+    params: { key },
+  }: WalletMethodParams<{ key: keyof RemoteConfig }>) {
+    this.verifyInternalOrigin(context);
+    return getRemoteConfigValue(key);
   }
 
   async getFeedInfo({

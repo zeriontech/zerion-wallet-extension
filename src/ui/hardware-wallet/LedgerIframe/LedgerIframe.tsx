@@ -26,7 +26,7 @@ export const LedgerIframe = React.forwardRef(function LedgerIframeComponent(
       id="iframe-component"
       {...props}
       // This is crucial: by lifting only "allow-scripts" restriction
-      // we restrict everything else, inluding "allow-same-origin" token.
+      // we restrict everything else, including "allow-same-origin" token.
       // By doing this, the iframe code will be treated by the background script
       // as a third-party origin.
       sandbox="allow-scripts"
