@@ -238,6 +238,26 @@ export class WalletRecordModel {
     return null;
   }
 
+  /** Currently only looks for matches among mnemonic groups, but can be updated */
+  static getMatchingExistingWalletGroup(
+    record: WalletRecord,
+    walletContainer: WalletContainer
+  ): WalletGroup | undefined {
+    if (isMnemonicContainer(walletContainer)) {
+      const mnemonic = walletContainer.getMnemonic();
+      invariant(mnemonic?.phrase, 'Mnemonic not found');
+      const { seedHash } = walletContainer;
+      return record.walletManager.groups.find((group) => {
+        return (
+          isSignerContainer(group.walletContainer) &&
+          (seedHash
+            ? seedHash === group.walletContainer.seedHash
+            : group.walletContainer.getMnemonic()?.phrase === mnemonic.phrase)
+        );
+      });
+    }
+  }
+
   static createOrUpdateRecord(
     record: WalletRecord | null,
     pendingWallet: PendingWallet
@@ -332,7 +352,7 @@ export class WalletRecordModel {
           );
         });
         if (existingGroup) {
-          return draft; // NOTE: private key already exists, should we update record or keep untouched?
+          return draft; // NOTE: private key group already exists, should we update record or keep untouched?
         } else {
           draft.walletManager.groups.push(
             createGroup({
@@ -347,14 +367,11 @@ export class WalletRecordModel {
         const mnemonic = walletContainer.getMnemonic();
         invariant(mnemonic?.phrase, 'Mnemonic not found');
         const { seedHash } = walletContainer;
-        const existingGroup = draft.walletManager.groups.find((group) => {
-          return (
-            isSignerContainer(group.walletContainer) &&
-            (seedHash
-              ? seedHash === group.walletContainer.seedHash
-              : group.walletContainer.getMnemonic()?.phrase === mnemonic.phrase)
-          );
-        });
+        const existingGroup = WalletRecordModel.getMatchingExistingWalletGroup(
+          draft,
+          walletContainer
+        );
+
         if (existingGroup && seedHash) {
           assertSignerContainer(existingGroup.walletContainer);
           for (const wallet of walletContainer.wallets) {
