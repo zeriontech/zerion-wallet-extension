@@ -411,6 +411,13 @@ export class Wallet {
     return walletContainer.getFirstWallet();
   }
 
+  async uiAddReadonlyAddress(
+    params: WalletMethodParams<{ address: string; name: string | null }>
+  ) {
+    await this.uiImportReadonlyAddress(params);
+    await this.savePendingWallet();
+  }
+
   async getPendingRecoveryPhrase({ context }: WalletMethodParams) {
     this.verifyInternalOrigin(context);
     this.ensureActiveSession(this.userCredentials);
@@ -421,6 +428,19 @@ export class Wallet {
       this.pendingWallet,
       this.userCredentials
     );
+  }
+
+  async uiSignReferrerMessage({
+    params: { address, referralCode },
+    context,
+  }: WalletMethodParams<{ address: string; referralCode: string }>) {
+    this.verifyInternalOrigin(context);
+
+    const signer = this.getOfflineSigner();
+    const message = `${address} -> ${referralCode}`;
+    const messageAsUtf8String = toUtf8String(message);
+
+    return signer.signMessage(messageAsUtf8String);
   }
 
   async getPendingWallet({ context }: WalletMethodParams) {

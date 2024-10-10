@@ -215,7 +215,11 @@ function CurrentAccountControls() {
           </UIText>
         </HStack>
       </Button>
-      <CopyButton address={addressToCopy} />
+      <CopyButton
+        title="Copy Address"
+        textToCopy={addressToCopy}
+        tooltipContent="Address Copied"
+      />
 
       <RenderArea name="wallet-name-end" />
     </HStack>
