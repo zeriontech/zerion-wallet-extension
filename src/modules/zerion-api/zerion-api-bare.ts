@@ -11,6 +11,7 @@ import { walletGetPositions } from './requests/wallet-get-positions';
 import { walletGetPortfolio } from './requests/wallet-get-portfolio';
 import { checkReferral } from './requests/check-referral';
 import { referWallet } from './requests/refer-wallet';
+import { walletGetGroupedPositions } from './requests/wallet-get-grouped-positions';
 
 export interface ZerionApiContext {
   getAddressProviderHeader(address: string): Promise<string>;
@@ -26,6 +27,7 @@ export const ZerionApiBare = {
   getPaymasterParams,
   walletGetPositions,
   walletGetPortfolio,
+  walletGetGroupedPositions,
   checkReferral,
   referWallet,
 };

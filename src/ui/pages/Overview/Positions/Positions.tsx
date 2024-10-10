@@ -1,5 +1,6 @@
 import type { AddressPosition, AddressPositionDappInfo } from 'defi-sdk';
 import React, { useCallback, useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   formatCurrencyToParts,
   formatCurrencyValue,
@@ -12,6 +13,7 @@ import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import WalletIcon from 'jsx:src/ui/assets/wallet-fancy.svg';
 import GasIcon from 'jsx:src/ui/assets/gas.svg';
+import PieChartIcon from 'jsx:src/ui/assets/pie-chart.svg';
 // import { VirtualizedSurfaceList } from 'src/ui/ui-kit/SurfaceList/VirtualizedSurfaceList';
 import type { Item } from 'src/ui/ui-kit/SurfaceList';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
@@ -57,10 +59,15 @@ import { useStore } from '@store-unit/react';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
-import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import type { WalletPortfolio } from 'src/modules/zerion-api/requests/wallet-get-portfolio';
+import type {
+  AppPortfolio,
+  GroupedFungiblePosition,
+} from 'src/modules/zerion-api/requests/wallet-get-grouped-positions';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
+import { persistentQuery } from 'src/ui/shared/requests/queryClientPersistence';
 import {
   TAB_SELECTOR_HEIGHT,
   TAB_TOP_PADDING,
@@ -68,8 +75,8 @@ import {
   getStickyOffset,
   offsetValues,
 } from '../getTabsOffset';
-import { DappLink } from './DappLink';
 import { NetworkBalance } from './NetworkBalance';
+import { DappLink } from './DappLink';
 
 function LineToParent({
   hasPreviosNestedPosition,
@@ -268,6 +275,130 @@ function AddressPositionItem({
                   position.asset.price.relative_change_24h > 0 ? '+' : minus
                 }${formatPercent(
                   Math.abs(position.asset.price.relative_change_24h),
+                  'en'
+                )}% (${formatCurrencyValue(absoluteChange, 'en', currency)})`}
+              </UIText>
+            ) : null}
+          </VStack>
+        ) : null}
+      </HStack>
+    </div>
+  );
+}
+
+function GroupedAddressPositionItem({
+  position,
+  hasNonEthereumItems,
+  showGasIcon,
+}: {
+  position: GroupedFungiblePosition;
+  hasNonEthereumItems: boolean;
+  showGasIcon?: boolean;
+}) {
+  const { currency } = useCurrency();
+  const { networks } = useNetworks();
+  const singleChainObj =
+    position.chains.length === 1 ? position.chains[0] : null;
+  const singleChain = singleChainObj?.id ?? null;
+  const network = singleChain
+    ? networks?.getNetworkByName(createChain(singleChain))
+    : null;
+
+  const absoluteChange = position.absoluteChange24h.toFixed(2);
+
+  return (
+    <div style={{ position: 'relative', paddingRight: 4 }}>
+      <HStack gap={2} justifyContent="space-between" style={{ flexGrow: 1 }}>
+        <Media
+          vGap={0}
+          gap={12}
+          image={
+            <TokenIcon
+              size={36}
+              symbol={position.asset.symbol}
+              src={position.asset.iconUrl}
+            />
+          }
+          text={
+            <HStack
+              gap={4}
+              alignItems="center"
+              style={{
+                gridTemplateColumns: showGasIcon ? '1fr auto' : '1fr',
+                justifySelf: 'start',
+              }}
+              title={position.asset.name}
+            >
+              <UIText kind="body/accent" style={textOverflowStyle}>
+                {position.asset.name}
+              </UIText>
+              {showGasIcon ? (
+                <div title="Token is used to cover gas fees">
+                  <GasIcon
+                    style={{ display: 'block', width: 20, height: 20 }}
+                  />
+                </div>
+              ) : null}
+            </HStack>
+          }
+          detailText={
+            <UIText
+              kind="small/regular"
+              style={{
+                color: 'var(--neutral-700)',
+                display: 'flex',
+                gap: 4,
+                alignItems: 'center',
+              }}
+            >
+              {singleChain && hasNonEthereumItems ? (
+                <NetworkIcon
+                  size={16}
+                  name={network?.name || null}
+                  src={network?.icon_url}
+                />
+              ) : position.chains.length > 1 ? (
+                <PieChartIcon
+                  style={{ display: 'block', width: 16, height: 16 }}
+                />
+              ) : null}
+              {position.type !== 'asset' ? (
+                <span
+                  key="position-type"
+                  color={
+                    position.type === 'loan'
+                      ? 'var(--negative-500)'
+                      : 'var(--neutral-500)'
+                  }
+                >
+                  {positionTypeToStringMap[position.type]}
+                </span>
+              ) : position.value ? (
+                <span key="position-quantity" style={textOverflowStyle}>
+                  {formatTokenValue(position.value, position.asset.symbol)}
+                </span>
+              ) : null}
+            </UIText>
+          }
+        />
+        {position.value != null ? (
+          <VStack gap={0} style={{ textAlign: 'right' }}>
+            <UIText kind="body/regular">
+              {formatCurrencyValue(position.value, 'en', currency)}
+            </UIText>
+            {position.relativeChange24h ? (
+              <UIText
+                kind="small/regular"
+                color={
+                  position.relativeChange24h < 0
+                    ? 'var(--negative-500)'
+                    : 'var(--positive-500)'
+                }
+              >
+                {`${
+                  position.relativeChange24h > 0 ? '+' : minus
+                }${formatPercent(
+                  Math.abs(position.relativeChange24h),
                   'en'
                 )}% (${formatCurrencyValue(absoluteChange, 'en', currency)})`}
               </UIText>
@@ -637,6 +768,239 @@ function PositionList({
   );
 }
 
+function GroupedPositionsList({
+  items: appPortfolios,
+  address,
+}: // moveGasPositionToFront,
+// dappChain,
+{
+  items: AppPortfolio[];
+  address: string | null;
+  // moveGasPositionToFront: boolean;
+  // dappChain: string | null;
+}) {
+  const COLLAPSED_COUNT = 5;
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
+  const showMore = useCallback(
+    (key: string) => setExpanded((expanded) => new Set(expanded).add(key)),
+    []
+  );
+  const showLess = useCallback(
+    (key: string) =>
+      setExpanded((expanded) => {
+        const set = new Set(expanded);
+        set.delete(key);
+        return set;
+      }),
+    []
+  );
+  const { preferences } = usePreferences();
+
+  // const groupType = PositionsGroupType.platform;
+  // const preparedPositions = usePreparedPositions({
+  //   items,
+  //   groupType,
+  //   moveGasPositionToFront,
+  //   dappChain,
+  // });
+  const prepared = useMemo(() => {
+    let hasNonEthereumItems = false;
+    const items = appPortfolios.map((item) => {
+      if (
+        item.groups.some((g) =>
+          g.fungiblePositions.some((p) =>
+            p.chains.some((c) => c.id !== 'ethereum')
+          )
+        )
+      ) {
+        hasNonEthereumItems = true;
+      }
+      return {
+        ...item,
+        itemCount: item.groups.reduce(
+          (sum, a) => sum + a.fungiblePositions.length,
+          0
+        ),
+      };
+    });
+    return { hasNonEthereumItems, items };
+  }, [appPortfolios]);
+  const offsetValuesState = useStore(offsetValues);
+  const { currency } = useCurrency();
+
+  return (
+    <VStack gap={24}>
+      {prepared.items.map((appPortfolio, index) => {
+        const listItems: Item[] = [];
+
+        const dappInfo = {
+          ...appPortfolio.app,
+          icon_url: appPortfolio.app.iconUrl,
+        };
+        const dappId = appPortfolio.app.id;
+
+        let subHeadingIndex = 0;
+        let dappPositionCounter = 0;
+
+        // do not hide if only one item is left
+        const stopAt =
+          appPortfolio.itemCount - COLLAPSED_COUNT > 1
+            ? COLLAPSED_COUNT
+            : appPortfolio.itemCount;
+        outerBlock: for (const group of appPortfolio.groups) {
+          if (group.name) {
+            listItems.push({
+              key: group.name,
+              separatorTop: false,
+              pad: false,
+              component: (
+                <UIText
+                  kind="small/regular"
+                  color="var(--black)"
+                  style={{
+                    paddingTop: subHeadingIndex > 0 ? 8 : 4,
+                    paddingBottom: 4,
+                    overflowWrap: 'break-word',
+                  }}
+                >
+                  {group.name}
+                </UIText>
+              ),
+            });
+            subHeadingIndex += 1;
+          }
+          for (const position of group.fungiblePositions) {
+            const showAsLink = !preferences?.testnetMode?.on;
+            // const itemContent = <div>{position.asset.symbol}</div>;
+            const itemContent = (
+              <GroupedAddressPositionItem
+                position={position}
+                hasNonEthereumItems={prepared.hasNonEthereumItems}
+                // groupType={groupType}
+                // hasPreviosNestedPosition={
+                //   namePositionCounter > 0 &&
+                //   Boolean(nameIndex[name][namePositionCounter - 1].parent_id)
+                // }
+                // showGasIcon={preparedPositions.gasPositionId === position.id}
+                showGasIcon={false}
+              />
+            );
+            listItems.push({
+              key: position.id,
+              // separatorLeadingInset: position.parent_id ? 26 : 0,
+              pad: !showAsLink,
+              style: showAsLink ? { padding: 0 } : undefined,
+              // NODE: Don't link to web in testnet mode
+              // TODO: remove this conditional when we have Asset Page in extension
+              component: showAsLink ? (
+                <SurfaceItemAnchor
+                  href={`https://app.zerion.io/tokens/${
+                    position.asset.symbol
+                  }-${position.asset.id}${
+                    address ? `?address=${address}` : ''
+                  }`}
+                  target="_blank"
+                  decorationStyle={{ borderRadius: 16 }}
+                >
+                  {itemContent}
+                </SurfaceItemAnchor>
+              ) : (
+                itemContent
+              ),
+            });
+            dappPositionCounter++;
+            if (dappPositionCounter >= stopAt && !expanded.has(dappId)) {
+              break outerBlock;
+            }
+          }
+        }
+        if (appPortfolio.itemCount > stopAt) {
+          listItems.push({
+            key: 'show-more-less',
+            onClick: () => {
+              if (expanded.has(dappId)) {
+                showLess(dappId);
+              } else {
+                showMore(dappId);
+              }
+            },
+            component: (
+              <UIText kind="body/accent" color="var(--primary)">
+                {expanded.has(dappId) ? 'Show Less Assets' : 'Show All Assets'}
+              </UIText>
+            ),
+          });
+        }
+
+        return (
+          <VStack gap={0} key={appPortfolio.app.id}>
+            {appPortfolios.length > 1 ? (
+              <>
+                <div
+                  style={{
+                    paddingBottom: 4,
+                    paddingInline: 16,
+                    position: 'sticky',
+                    top:
+                      getStickyOffset(offsetValuesState) +
+                      TAB_SELECTOR_HEIGHT +
+                      TAB_TOP_PADDING,
+                    zIndex: 1,
+                    backgroundColor: 'var(--white)',
+                  }}
+                >
+                  <ProtocolHeading
+                    dappInfo={dappInfo}
+                    value={appPortfolio.value}
+                    relativeValue={appPortfolio.percentageAllocation}
+                  />
+                </div>
+                <Spacer height={4} />
+                <UIText style={{ paddingInline: 16 }} kind="headline/h2">
+                  <NeutralDecimals
+                    parts={formatCurrencyToParts(
+                      appPortfolio.value,
+                      'en',
+                      currency
+                    )}
+                  />
+                </UIText>
+              </>
+            ) : null}
+            {appPortfolio.app.url ? (
+              <>
+                <Spacer height={16} />
+                <DappLink dappInfo={dappInfo} style={{ marginInline: 16 }} />
+                <Spacer height={16} />
+              </>
+            ) : (
+              <Spacer height={8} />
+            )}
+            <SurfaceList
+              style={{ position: 'relative', zIndex: 0 }}
+              // estimateSize={(index) => (index === 0 ? 52 : 60 + 1)}
+              // overscan={5} // the library detects window edge incorrectly, increasing overscan just visually hides the problem
+              items={listItems}
+            />
+            {index !== appPortfolios.length - 1 ? (
+              <>
+                <Spacer height={14} />
+                <div
+                  style={{
+                    height: 2,
+                    marginInline: 16,
+                    backgroundColor: 'var(--neutral-200)',
+                  }}
+                />
+              </>
+            ) : null}
+          </VStack>
+        );
+      })}
+    </VStack>
+  );
+}
+
 function MultiChainPositions({
   address,
   filterChain,
@@ -656,32 +1020,44 @@ function MultiChainPositions({
   portfolioDecomposition: WalletPortfolio | null;
 } & Omit<React.ComponentProps<typeof PositionList>, 'items'>) {
   const { currency } = useCurrency();
-  const { data, isLoading } = useHttpAddressPositions(
-    { addresses: [address], currency },
-    { source: useHttpClientSource() },
-    { refetchInterval: 40000 }
-  );
-  const positions = data?.data;
 
   const chainValue = filterChain || dappChain || NetworkSelectValue.All;
 
-  const items = useMemo(
-    () =>
-      positions?.filter(
-        (position) =>
-          (position.type === 'asset' ? position.is_displayable : true) &&
-          (chainValue === NetworkSelectValue.All ||
-            position.chain === chainValue)
-      ),
-    [chainValue, positions]
-  );
+  const chainParam =
+    chainValue === NetworkSelectValue.All ? null : createChain(chainValue);
 
-  const groupedPositions = groupPositionsByDapp(items);
+  const source = useHttpClientSource();
+  const walletGetPositionsQuery = useQuery({
+    queryKey: persistentQuery(
+      ['walletGetPositions', address, currency, source, chainParam],
+      {
+        /**
+         * Optimisation: Do not persist filtered requests. Since we currently we don't persist params and
+         * always open Overview with "all chains" by default, we don't need to persist filtered requests
+         */
+        persist: !chainParam,
+      }
+    ),
+    suspense: false,
+    refetchInterval: 40000,
+    queryFn: () => {
+      return ZerionAPI.walletGetGroupedPositions(
+        {
+          addresses: [address],
+          currency,
+          groupBy: 'by-app',
+          chainIds: chainParam ? [chainParam] : undefined,
+        },
+        { source }
+      );
+    },
+  });
+  const walletGroupedPositions = walletGetPositionsQuery.data?.data.apps;
 
-  if (isLoading) {
+  if (walletGetPositionsQuery.isLoading) {
     return renderLoadingView() as JSX.Element;
   }
-  if (!items || items.length === 0) {
+  if (!walletGroupedPositions || walletGroupedPositions.length === 0) {
     return renderEmptyView() as JSX.Element;
   }
 
@@ -691,7 +1067,7 @@ function MultiChainPositions({
       : portfolioDecomposition?.positionsChainsDistribution[chainValue];
 
   return (
-    <VStack gap={Object.keys(groupedPositions).length > 1 ? 16 : 8}>
+    <VStack gap={Object.keys(walletGroupedPositions).length > 1 ? 16 : 8}>
       <div style={{ paddingInline: 16 }}>
         <NetworkBalance
           dappChain={dappChain}
@@ -706,9 +1082,9 @@ function MultiChainPositions({
           }
         />
       </div>
-      <PositionList
-        items={items}
-        dappChain={dappChain}
+      <GroupedPositionsList
+        items={walletGroupedPositions}
+        // dappChain={dappChain}
         address={address}
         {...positionListProps}
       />

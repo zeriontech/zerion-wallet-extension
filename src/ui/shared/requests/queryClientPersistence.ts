@@ -63,8 +63,13 @@ async function restore({
 const queryKeysToPersist = new Set<string>();
 
 /** Marks queryKey as a candidate for persistence */
-export function persistentQuery<T extends QueryKey>(queryKey: T): T {
-  queryKeysToPersist.add(hashQueryKey(queryKey));
+export function persistentQuery<T extends QueryKey>(
+  queryKey: T,
+  { persist = true } = {}
+): T {
+  if (persist) {
+    queryKeysToPersist.add(hashQueryKey(queryKey));
+  }
   return queryKey;
 }
 
