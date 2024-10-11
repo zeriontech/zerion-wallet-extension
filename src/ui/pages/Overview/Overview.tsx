@@ -41,7 +41,6 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 import { useIsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
 import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOrigin';
-import { OverviewDnaBanners } from 'src/ui/DNA/components/DnaBanners';
 import { updateAddressDnaInfo } from 'src/modules/dna-service/dna.client';
 import { WalletSourceIcon } from 'src/ui/components/WalletSourceIcon';
 import { useStore } from '@store-unit/react';
@@ -79,6 +78,7 @@ import {
 } from './getTabsOffset';
 import { ConnectionHeader } from './ConnectionHeader';
 import { BackupReminder } from './BackupReminder';
+import { Banners } from './Banners';
 
 interface ChangeInfo {
   isPositive: boolean;
@@ -542,9 +542,7 @@ function OverviewComponent() {
         <RenderTimeMeasure />
       </DevelopmentOnly>
       <Spacer height={isReadonlyGroup ? 16 : 24} />
-      <div style={{ paddingInline: 'var(--column-padding-inline)' }}>
-        <OverviewDnaBanners address={singleAddressNormalized} />
-      </div>
+      <Banners address={singleAddressNormalized} />
       <div id={TABS_OFFSET_METER_ID} />
       <PageFullBleedColumn
         paddingInline={false}
