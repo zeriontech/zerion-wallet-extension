@@ -10,11 +10,17 @@ import HardWareIcon from 'jsx:../assets/option_secondary_hardware.svg';
 import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
 import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { Stack } from 'src/ui/ui-kit/Stack';
+import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
+import { invariant } from 'src/shared/invariant';
+import { isObj } from 'src/shared/isObj';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import CreateImg from '../assets/option_create.png';
 import ImportImg from '../assets/option_import.png';
 import HardwareImg from '../assets/option_hardware.png';
 import * as helpersStyles from '../shared/helperStyles.module.css';
 import { useOnboardingSession } from '../shared/useOnboardingSession';
+import { saveReferrer } from '../../referral-program/shared/storage';
+import { WebAppMessageHandler } from '../Success/WebAppMessageHandler';
 import * as styles from './styles.module.css';
 
 interface ImportOptionConfig {
@@ -200,12 +206,37 @@ function Banner() {
   );
 }
 
+async function setReferralCode(params: unknown) {
+  invariant(
+    isObj(params) && typeof params.referralCode === 'string',
+    'Got invalid payload from set-referral-code web app message'
+  );
+
+  const checkReferralResponse = await ZerionAPI.checkReferral({
+    referralCode: params.referralCode,
+  });
+  const checkedReferrer = checkReferralResponse.data;
+  saveReferrer(checkedReferrer);
+}
+
 export function Welcome() {
   const { isNarrowView } = useWindowSizeStore();
   useOnboardingSession({ navigateOnExistingUser: 'success' });
 
+  const {
+    data: referralProgramEnabled,
+    isFetched: isFetchedRemoteConfigValue,
+  } = useRemoteConfigValue('extension_referral_program');
+
   return (
     <VStack gap={isNarrowView ? 24 : 40}>
+      {isFetchedRemoteConfigValue && referralProgramEnabled ? (
+        <WebAppMessageHandler
+          pathname="/referral/get-code"
+          callbackName="set-referral-code"
+          callbackFn={setReferralCode}
+        />
+      ) : null}
       <Banner />
       <ImportOptions />
     </VStack>

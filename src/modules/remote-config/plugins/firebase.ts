@@ -1,5 +1,4 @@
 import throttle from 'lodash/throttle';
-import { useQuery } from '@tanstack/react-query';
 import ky from 'ky';
 import { PROXY_URL } from 'src/env/config';
 import type { ConfigPlugin } from '../ConfigPlugin';
@@ -9,11 +8,13 @@ import type { RemoteConfig } from '../types';
 const defaultConfig: RemoteConfig = {
   extension_wallet_name_flags: {},
   extension_uninstall_link: '',
+  extension_referral_program: false,
 };
 
 const knownKeys: (keyof RemoteConfig)[] = [
   'extension_wallet_name_flags',
   'extension_uninstall_link',
+  'extension_referral_program',
 ];
 
 async function fetchRemoteConfig<T extends keyof RemoteConfig>(keys: T[]) {
@@ -62,20 +63,3 @@ export const firebase: ConfigPlugin & { refresh(): void } = {
     return { value };
   },
 };
-
-export function useFirebaseConfig<T extends keyof RemoteConfig>(
-  keys: T[],
-  { suspense = false }: { suspense?: boolean } = {}
-) {
-  return useQuery({
-    // it's okay to put the `keys` array inside queryKey array without memoizing:
-    // it will be stringified anyway
-    // https://github.com/TanStack/query/blob/b18426da86e2b8990e8f4e7398baaf041f77ad19/packages/query-core/src/utils.ts#L269-L280
-    queryKey: ['fetchRemoteConfig', keys],
-    queryFn: () => fetchRemoteConfig(keys),
-    retry: 0,
-    refetchOnWindowFocus: false,
-    staleTime: 20000,
-    suspense,
-  });
-}

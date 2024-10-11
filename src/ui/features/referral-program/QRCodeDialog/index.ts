@@ -1,0 +1,1 @@
+export { QRCodeDialog } from './QRCodeDialog';

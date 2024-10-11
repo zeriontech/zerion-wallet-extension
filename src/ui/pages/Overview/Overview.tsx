@@ -41,10 +41,6 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 import { useIsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
 import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOrigin';
-import {
-  ENABLE_DNA_BANNERS,
-  OverviewDnaBanners,
-} from 'src/ui/DNA/components/DnaBanners';
 import { updateAddressDnaInfo } from 'src/modules/dna-service/dna.client';
 import { WalletSourceIcon } from 'src/ui/components/WalletSourceIcon';
 import { useStore } from '@store-unit/react';
@@ -83,6 +79,7 @@ import {
 } from './getTabsOffset';
 import { ConnectionHeader } from './ConnectionHeader';
 import { BackupReminder } from './BackupReminder';
+import { Banners } from './Banners';
 
 interface ChangeInfo {
   isPositive: boolean;
@@ -237,7 +234,11 @@ function CurrentAccountControls() {
           </UIText>
         </HStack>
       </Button>
-      <CopyButton address={addressToCopy} />
+      <CopyButton
+        title="Copy Address"
+        textToCopy={addressToCopy}
+        tooltipContent="Address Copied"
+      />
 
       <RenderArea name="wallet-name-end" />
     </HStack>
@@ -563,11 +564,7 @@ function OverviewComponent() {
         <RenderTimeMeasure />
       </DevelopmentOnly>
       <Spacer height={isReadonlyGroup ? 16 : 24} />
-      {ENABLE_DNA_BANNERS ? (
-        <div style={{ paddingInline: 'var(--column-padding-inline)' }}>
-          <OverviewDnaBanners address={singleAddressNormalized} />
-        </div>
-      ) : null}
+      <Banners address={singleAddressNormalized} />
       <div id={TABS_OFFSET_METER_ID} />
       <PageFullBleedColumn
         paddingInline={false}

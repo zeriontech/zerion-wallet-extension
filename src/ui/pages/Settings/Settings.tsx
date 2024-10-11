@@ -13,6 +13,7 @@ import { Toggle } from 'src/ui/ui-kit/Toggle';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import WalletIcon from 'jsx:src/ui/assets/wallet.svg';
+import GiftIcon from 'jsx:src/ui/assets/gift.svg';
 import LockIcon from 'jsx:src/ui/assets/lock-outline.svg';
 import GlobeIcon from 'jsx:src/ui/assets/globe.svg';
 import QuestionIcon from 'jsx:src/ui/assets/question-hint.svg';
@@ -47,6 +48,7 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { openHrefInTabIfSidepanel } from 'src/ui/shared/openInTabIfInSidepanel';
+import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import { Security } from '../Security';
 import { BackupFlowSettingsSection } from './BackupFlowSettingsSection';
 import { PreferencesPage } from './Preferences';
@@ -58,7 +60,17 @@ function SettingsMain() {
     mutationFn: () => accountPublicRPCPort.request('logout'),
   });
 
+  const {
+    data: referralProgramEnabled,
+    isLoading: isLoadingRemoteConfigValue,
+  } = useRemoteConfigValue('extension_referral_program');
+
   useBackgroundKind({ kind: 'white' });
+
+  if (isLoadingRemoteConfigValue) {
+    return null;
+  }
+
   return (
     <PageColumn>
       <PageTop />
@@ -98,6 +110,32 @@ function SettingsMain() {
                 </HStack>
               </AngleRightRow>
             </FrameListItemLink>
+          </VStack>
+        </Frame>
+        <Frame>
+          <VStack gap={0}>
+            {referralProgramEnabled ? (
+              <FrameListItemLink to="/invite">
+                <AngleRightRow>
+                  <HStack gap={8} alignItems="center">
+                    <GiftIcon />
+                    <UIText kind="body/regular">Invite Friends</UIText>
+                  </HStack>
+                </AngleRightRow>
+              </FrameListItemLink>
+            ) : null}
+            <FrameListItemAnchor
+              href="http://zerion.io/premium"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <AngleRightRow kind="link">
+                <HStack gap={8} alignItems="center">
+                  <PremiumIcon />
+                  <UIText kind="body/regular">Zerion Premium</UIText>
+                </HStack>
+              </AngleRightRow>
+            </FrameListItemAnchor>
           </VStack>
         </Frame>
         <Frame>
@@ -152,18 +190,6 @@ function SettingsMain() {
               </AngleRightRow>
             </FrameListItemAnchor>
             <BugReportButton />
-            <FrameListItemAnchor
-              href="http://zerion.io/premium"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <AngleRightRow kind="link">
-                <HStack gap={8} alignItems="center">
-                  <PremiumIcon />
-                  <UIText kind="body/regular">Zerion Premium</UIText>
-                </HStack>
-              </AngleRightRow>
-            </FrameListItemAnchor>
             <FrameListItemAnchor
               href="https://app.getbeamer.com/zerion/en?category=extension"
               target="_blank"

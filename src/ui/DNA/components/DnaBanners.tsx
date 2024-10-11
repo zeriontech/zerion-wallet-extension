@@ -1,6 +1,5 @@
 import React from 'react';
 import { usePreferences } from 'src/ui/features/preferences';
-import { Spacer } from 'src/ui/ui-kit/Spacer';
 import {
   useShowDnaMintBanner,
   useAddressHasDnaUpgradeBackgroundPerk,
@@ -12,39 +11,6 @@ import { UpgradeBanner } from './UpgradeBanner';
 // that's why we want to disable the minting flow for now
 // We may reenable it later with some changes
 export const ENABLE_DNA_BANNERS = false;
-
-export function OverviewDnaBanners({ address }: { address: string }) {
-  const { preferences, setPreferences } = usePreferences();
-  const showDnaMintBanner = useShowDnaMintBanner(address);
-  const showUpgradeBanner = useAddressHasDnaUpgradeBackgroundPerk(address);
-
-  return (
-    <>
-      {!preferences?.mintDnaBannerDismissed && showDnaMintBanner ? (
-        <>
-          <MintBanner
-            address={address}
-            onDismiss={() => setPreferences({ mintDnaBannerDismissed: true })}
-          />
-          <Spacer height={24} />
-        </>
-      ) : null}
-      {!preferences?.upgradeDnaBannerDismissed &&
-      !showDnaMintBanner &&
-      showUpgradeBanner ? (
-        <>
-          <UpgradeBanner
-            address={address}
-            onDismiss={() =>
-              setPreferences({ upgradeDnaBannerDismissed: true })
-            }
-          />
-          <Spacer height={24} />
-        </>
-      ) : null}
-    </>
-  );
-}
 
 export function NftTabDnaBanner({
   address,

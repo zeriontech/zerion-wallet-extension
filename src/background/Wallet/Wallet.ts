@@ -87,7 +87,10 @@ import { getDefiSdkClient } from 'src/modules/defi-sdk/background';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import { decodeMasked } from 'src/shared/wallet/encode-locally';
+import type { RemoteConfig } from 'src/modules/remote-config';
+import { getRemoteConfigValue } from 'src/modules/remote-config';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
+import { referralProgramService } from 'src/ui/features/referral-program/ReferralProgramService.background';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -412,6 +415,23 @@ export class Wallet {
       groupId: null,
     };
     return walletContainer.getFirstWallet();
+  }
+
+  async uiAddReadonlyAddress(
+    params: WalletMethodParams<{ address: string; name: string | null }>
+  ) {
+    await this.uiImportReadonlyAddress(params);
+    await this.savePendingWallet();
+  }
+
+  async uiApplyReferralCodeToAllWallets({
+    params: { referralCode },
+    context,
+  }: WalletMethodParams<{ referralCode: string }>) {
+    this.verifyInternalOrigin(context);
+    return referralProgramService.applyReferralCodeToAllWallets({
+      referralCode,
+    });
   }
 
   async getPendingRecoveryPhrase({ context }: WalletMethodParams) {
@@ -862,6 +882,14 @@ export class Wallet {
     return globalPreferences.setPreferences(preferences);
   }
 
+  async getRemoteConfigValue({
+    context,
+    params: { key },
+  }: WalletMethodParams<{ key: keyof RemoteConfig }>) {
+    this.verifyInternalOrigin(context);
+    return getRemoteConfigValue(key);
+  }
+
   async getFeedInfo({
     context,
   }: WalletMethodParams): Promise<ReturnType<typeof Model.getFeedInfo>> {
@@ -1054,7 +1082,7 @@ export class Wallet {
     }
   }
 
-  private getOfflineSigner() {
+  getOfflineSigner() {
     const currentAddress = this.readCurrentAddress();
     if (!this.record) {
       throw new RecordNotFound();
