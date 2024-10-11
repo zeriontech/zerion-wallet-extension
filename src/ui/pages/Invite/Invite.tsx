@@ -46,11 +46,10 @@ import { WalletList } from '../WalletSelect/WalletList';
 import { ReferralLinkDialog } from './ReferralLinkDialog';
 import { InvitationCodeDialog } from './InvitationCodeDialog';
 import { QRCodeDialog } from './QRCodeDialog';
-import * as styles from './styles.module.css';
 import { SuccessDialog } from './SuccessDialog';
 import { useWalletsMeta } from './shared/useWalletsMeta';
 import { ReferrerLink } from './shared/ReferrerLink';
-import { readReferrer } from './shared/storage';
+import * as styles from './styles.module.css';
 
 const SHOW_EXPLORE_REWARDS_BUTTON = process.env.NODE_ENV === 'development';
 
@@ -323,17 +322,6 @@ export function Invite() {
   });
   const walletMeta = walletsMeta?.[0];
 
-  const { data: storedReferrer, isLoading: isLoadingStoredReferrer } = useQuery(
-    {
-      queryKey: ['storedReferrer'],
-      queryFn: async () => {
-        const result = await readReferrer();
-        return result || null;
-      },
-      cacheTime: 0,
-    }
-  );
-
   const walletSelectDialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const referralLinkDialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const qrCodeDialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -342,13 +330,12 @@ export function Invite() {
   );
   const successDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
-  if (!walletMeta || isLoadingStoredReferrer) {
+  if (!walletMeta) {
     return null;
   }
 
-  const myReferrer = walletMeta.membership.referrer || storedReferrer || null;
-  const myReferralCode =
-    walletMeta.membership.referralCode || storedReferrer?.referralCode || null;
+  const referrer = walletMeta.membership.referrer || null;
+  const myReferralCode = walletMeta.membership.referralCode || null;
   const myReferralLink = walletMeta.membership.referralLink;
 
   if (
@@ -396,7 +383,7 @@ export function Invite() {
                 <UIText kind="body/accent">Explore Rewards</UIText>
               </Button>
             ) : null}
-            {myReferrer?.address ? (
+            {referrer?.address ? (
               <UIText
                 kind="small/regular"
                 color="var(--neutral-500)"
@@ -408,8 +395,8 @@ export function Invite() {
               >
                 You were invited by{' '}
                 <ReferrerLink
-                  handle={myReferrer.handle}
-                  address={myReferrer.address}
+                  handle={referrer.handle}
+                  address={referrer.address}
                   style={{ color: 'var(--primary)' }}
                 />
               </UIText>
@@ -471,10 +458,10 @@ export function Invite() {
           style={{ maxWidth: 'var(--body-width)' }}
           ref={successDialogRef}
           renderWhenOpen={() => {
-            invariant(myReferrer, 'myReferrer must be defined');
+            invariant(referrer, 'referrer must be defined');
             return (
               <SuccessDialog
-                referrer={myReferrer}
+                referrer={referrer}
                 onDismiss={() => successDialogRef.current?.close()}
               />
             );
