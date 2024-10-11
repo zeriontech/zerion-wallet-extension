@@ -1,18 +1,15 @@
 import React, { useEffect, useRef } from 'react';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import { invariant } from 'src/shared/invariant';
 import { isObj } from 'src/shared/isObj';
 
-const ZERION_WEB_APP_URL = new URL(
-  process.env.NODE_ENV === 'development'
-    ? 'http://localhost:3000'
-    : 'https://app.zerion.io'
-);
+const ZERION_WEB_APP_URL = new URL('https://app.zerion.io');
 
 type WebAppCallbackMethod = 'set-referral-code';
 
-interface WebAppMessage<T = unknown> {
+interface WebAppMessage {
   method: WebAppCallbackMethod;
-  params?: T;
+  params?: unknown;
 }
 
 export function isWebAppMessage(
@@ -31,9 +28,11 @@ export function isWebAppMessage(
   );
 }
 
-function setReferralCode(_referralCode: string) {
-  // save referralCode
-  // apply to owned wallets
+async function setReferralCode(referralCode: string) {
+  const response = await ZerionAPI.checkReferral({ referralCode });
+  // @ts-ignore
+  const checkedReferrer = response.data;
+  // await saveReferrer(checkedReferrer);
 }
 
 async function handleMessage({
@@ -52,7 +51,7 @@ async function handleMessage({
       'Invalid payload for set-referral-code web app message'
     );
 
-    setReferralCode(params.referralCode);
+    await setReferralCode(params.referralCode);
   }
 }
 
