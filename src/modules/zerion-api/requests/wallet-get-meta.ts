@@ -86,7 +86,7 @@ interface AddressMembership {
   referralCode: string | null;
   referralLink: string | null;
   referred: number;
-  referrer: Referrer;
+  referrer: Referrer | null;
   tokens: MigrationToken[] | null;
   parentTokens: ParentToken[] | null;
   xp: XpDistribution;

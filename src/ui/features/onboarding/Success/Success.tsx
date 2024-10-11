@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import cn from 'classnames';
 import confetti from 'canvas-confetti';
 import { useSpring, animated } from '@react-spring/web';
@@ -13,7 +13,14 @@ import JigsawIcon from 'jsx:./assets/jigsaw.svg';
 import coinImgSrc from 'src/ui/assets/zer_coin.png';
 import sparkImgSrc from 'src/ui/assets/zer_spark.png';
 import starImgSrc from 'src/ui/assets/zer_star.png';
+import { useQuery } from '@tanstack/react-query';
+import type { ReferrerData } from 'src/modules/zerion-api/requests/check-referral';
+import { readReferrer } from '../../referral-program/shared/storage';
+import { CongratulationsWidget } from './CongratulationsWidget';
 import * as styles from './styles.module.css';
+import { ReferralCodeWidget } from './ReferralCodeWidget';
+
+const DEBUG_REFERRAL_CODE_WIDGET = false;
 
 export function Success() {
   const { isNarrowView } = useWindowSizeStore();
@@ -94,6 +101,21 @@ export function Success() {
     };
   }, [fireConfetti]);
 
+  const { data: currentReferrer } = useQuery({
+    queryKey: ['currentReferrer'],
+    queryFn: async () => {
+      const result = await readReferrer();
+      return result || null;
+    },
+    suspense: true,
+  });
+
+  const [pendingReferrer, setPendingReferrer] = useState<ReferrerData | null>(
+    null
+  );
+
+  const referrer = currentReferrer || pendingReferrer;
+
   const pinnerStyle = useSpring({
     config: { mass: 1, tension: 150, friction: 8 },
     delay: 1000,
@@ -106,6 +128,8 @@ export function Success() {
       x: 0,
     },
   });
+
+  const referralCodeWidgetVisible = !referrer || DEBUG_REFERRAL_CODE_WIDGET;
 
   return (
     <>
@@ -134,6 +158,20 @@ export function Success() {
               You can close this tab to get started.
             </UIText>
           </VStack>
+          {referralCodeWidgetVisible ? (
+            <ReferralCodeWidget
+              onSuccess={(pendingReferrer) => {
+                setPendingReferrer(pendingReferrer);
+                fireConfetti();
+              }}
+            />
+          ) : isNarrowView ? null : (
+            <>
+              <Spacer height={32} />
+              <CongratulationsWidget referrer={referrer} />
+            </>
+          )}
+
           {isNarrowView ? null : (
             <>
               <UnstyledButton
@@ -152,6 +190,7 @@ export function Success() {
               </UnstyledButton>
               <UnstyledButton
                 className={cn(styles.decoration, styles.sparkDecoration)}
+                style={{ top: referralCodeWidgetVisible ? 500 : 700 }}
                 ref={sparkRef}
                 onClick={fireConfetti}
               >

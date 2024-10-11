@@ -1,0 +1,1 @@
+export { GradientBorder } from './GradientBorder';
