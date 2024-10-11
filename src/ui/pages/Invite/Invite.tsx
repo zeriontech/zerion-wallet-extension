@@ -7,8 +7,10 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { BackButton } from 'src/ui/components/BackButton';
 import { getBackOrHome } from 'src/ui/shared/navigation/getBackOrHome';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import CardsLeftIcon from 'jsx:src/ui/assets/cards-left.svg';
-import CardsRightIcon from 'jsx:src/ui/assets/cards-right.svg';
+import CardsLeftSrc from 'src/ui/assets/cards-left.png';
+import CardsLeft2xSrc from 'src/ui/assets/cards-left@2x.png';
+import CardsRightSrc from 'src/ui/assets/cards-right.png';
+import CardsRight2xSrc from 'src/ui/assets/cards-right@2x.png';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import AccountIcon from 'jsx:src/ui/assets/account.svg';
 import XpIcon from 'jsx:src/ui/assets/xp.svg';
@@ -271,8 +273,18 @@ function Heading({
         onKeyDown={() => navigate(-1)}
       />
       <NavigationTitle title={null} documentTitle="Invite Friends to Zerion" />
-      <CardsLeftIcon className={styles.cardsLeft} />
-      <CardsRightIcon className={styles.cardsRight} />
+      <img
+        alt=""
+        src={CardsLeftSrc}
+        srcSet={`${CardsLeftSrc}, ${CardsLeft2xSrc} 2x`}
+        className={styles.cardsLeft}
+      />
+      <img
+        alt=""
+        src={CardsRightSrc}
+        srcSet={`${CardsRightSrc}, ${CardsRight2xSrc} 2x`}
+        className={styles.cardsRight}
+      />
       <VStack gap={24} className={styles.titleContainer}>
         <UIText kind="headline/hero">{title}</UIText>
         <UIText kind="headline/h3">{subtitle}</UIText>
@@ -337,7 +349,6 @@ export function Invite() {
   const myReferrer = walletMeta.membership.referrer || storedReferrer || null;
   const myReferralCode =
     walletMeta.membership.referralCode || storedReferrer?.referralCode || null;
-
   const myReferralLink = walletMeta.membership.referralLink;
 
   if (
@@ -350,7 +361,7 @@ export function Invite() {
   }
 
   return (
-    <>
+    <VStack gap={16}>
       <Heading
         title="Invite Friends to Zerion"
         subtitle="Earn 10% of your invitee's XP and gift free Premium"
@@ -471,6 +482,6 @@ export function Invite() {
         />
         <PageBottom />
       </PageColumn>
-    </>
+    </VStack>
   );
 }
