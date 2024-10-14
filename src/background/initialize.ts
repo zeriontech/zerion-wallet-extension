@@ -33,7 +33,9 @@ export async function initialize() {
   const account = new Account({ notificationWindow });
   await account.initialize();
   const accountPublicRPC = new AccountPublicRPC(account);
-  const dnaService = new DnaService();
+  const dnaService = new DnaService({
+    getWallet: () => account.getCurrentWallet(),
+  });
   dnaService.initialize();
   await transactionService.initialize({
     getWallet: () => account.getCurrentWallet(),
