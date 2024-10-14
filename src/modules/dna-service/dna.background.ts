@@ -9,8 +9,11 @@ import * as browserStorage from 'src/background/webapis/storage';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { emitter } from 'src/background/events';
 import { isReadonlyContainer } from 'src/shared/types/validators';
+import type { Wallet } from 'src/shared/types/Wallet';
+import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
 import type { DnaAction } from './types';
 
+const REGISTER_ALL_WALLETS_INVOKED_KEY = 'registerAllWalletsInvoked-14-10-2024';
 const ACTION_QUEUE_KEY = 'actionDnaQueue-22-12-2021';
 const DNA_API_ENDPOINT = 'https://dna.zerion.io/api/v1';
 
@@ -24,9 +27,11 @@ const dnaServiceEmitter = createNanoEvents<{
 const ONE_DAY = 1000 * 60 * 60 * 24;
 
 export class DnaService {
+  private readonly getWallet: () => Wallet;
   private sendingInProgress: boolean;
 
-  constructor() {
+  constructor({ getWallet }: { getWallet: () => Wallet }) {
+    this.getWallet = getWallet;
     this.sendingInProgress = false;
   }
 
@@ -248,7 +253,45 @@ export class DnaService {
     return browserStorage.set(ACTION_QUEUE_KEY, []);
   }
 
+  async registerAllWallets() {
+    const isInvoked = await browserStorage.get<boolean>(
+      REGISTER_ALL_WALLETS_INVOKED_KEY
+    );
+    if (isInvoked) {
+      return;
+    }
+
+    const wallet = this.getWallet();
+    const walletGroups = await wallet.uiGetWalletGroups({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
+
+    const ownedAddresses =
+      walletGroups
+        ?.filter((group) => !isReadonlyContainer(group.walletContainer))
+        ?.flatMap((group) =>
+          group.walletContainer.wallets.map((wallet) => ({
+            address: wallet.address,
+            origin: group.origin || undefined,
+          }))
+        ) || [];
+
+    for (const { address, origin } of ownedAddresses) {
+      try {
+        await this.registerWallet({
+          params: { address, origin },
+        });
+      } catch (error) {
+        console.log('registerWallet error', error); // eslint-disable-line no-console
+      }
+    }
+
+    await browserStorage.set(REGISTER_ALL_WALLETS_INVOKED_KEY, true);
+  }
+
   initialize() {
+    this.registerAllWallets();
+
     emitter.on('walletCreated', async ({ walletContainer, origin }) => {
       if (isReadonlyContainer(walletContainer)) {
         return;
