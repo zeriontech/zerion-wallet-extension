@@ -276,17 +276,21 @@ export class DnaService {
           }))
         ) || [];
 
+    let didFail = false;
     for (const { address, origin } of ownedAddresses) {
       try {
         await this.registerWallet({
           params: { address, origin },
         });
       } catch (error) {
+        didFail = true;
         console.log('registerWallet error', error); // eslint-disable-line no-console
       }
     }
 
-    await browserStorage.set(REGISTER_ALL_WALLETS_INVOKED_KEY, true);
+    if (!didFail) {
+      await browserStorage.set(REGISTER_ALL_WALLETS_INVOKED_KEY, true);
+    }
   }
 
   initialize() {
