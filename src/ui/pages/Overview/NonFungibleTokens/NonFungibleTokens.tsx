@@ -294,7 +294,12 @@ export function NonFungibleTokens({
                   }}
                 />
               ) : null}
-              <div style={{ width: '100%', paddingTop: 164 }}>
+              <div
+                style={{
+                  width: '100%',
+                  paddingTop: ENABLE_DNA_BANNERS ? 164 : 0,
+                }}
+              >
                 <EmptyView>No NFTs yet</EmptyView>
               </div>
             </>
