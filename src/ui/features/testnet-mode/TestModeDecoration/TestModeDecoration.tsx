@@ -25,6 +25,7 @@ export function TestModeDecoration() {
   const { shortcutsDisabled } = useStore(testnetModeStore);
 
   const isDialog = urlContext.windowType === 'dialog';
+  const isSidepanel = urlContext.windowType === 'sidepanel';
   const shouldRenderSomething = !isDialog || on;
   useBodyStyle(
     useMemo(
@@ -53,6 +54,7 @@ export function TestModeDecoration() {
           pointerEvents: 'none',
           position: 'fixed',
           width: 'var(--body-width)',
+          maxWidth: 'var(--body-max-width)',
           top: 0,
           bottom: 0,
           zIndex: 'var(--over-layout-index)',
@@ -62,96 +64,119 @@ export function TestModeDecoration() {
       >
         <div
           style={{
+            display: on ? 'block' : 'none',
             position: 'absolute',
             inset: 0,
-            borderImage:
-              'linear-gradient(45deg, cyan, #003aff, #ff00e4, #00ffbc)',
-            borderImageSlice: 1,
-            borderWidth: on ? 4 : 0,
-            borderBottomWidth: on ? 2 : 0,
-            borderStyle: 'solid',
+            background:
+              'linear-gradient(45deg, cyan, rgb(0, 58, 255), rgb(255, 0, 228), rgb(0, 255, 188))',
+            WebkitMask:
+              'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+            maskComposite: 'exclude',
+            padding: on ? (isSidepanel ? 4 : '4px 4px 2px') : 0,
+            borderRadius: 'var(--sidepanel-border-radius)',
           }}
         />
         <div
-          style={{
-            pointerEvents: 'auto',
-            backgroundColor: on ? 'var(--primary-200)' : 'var(--neutral-100)',
-            padding: 4,
-            border: '2px solid var(--neutral-300)',
-            borderImage: on
-              ? 'linear-gradient(45deg, cyan, #003aff, #ff00e4, #00ffbc)'
-              : undefined,
-            borderImageSlice: on ? 1 : undefined,
-          }}
+          // this wrapper is a helper because the inner element's
+          // borderImageSlice trick doesn't work with border-radius.
+          style={
+            on
+              ? {
+                  borderBottomLeftRadius: 'var(--sidepanel-border-radius)',
+                  borderBottomRightRadius: 'var(--sidepanel-border-radius)',
+                  overflow: 'hidden',
+                }
+              : undefined
+          }
         >
-          <ZStack>
-            <HStack gap={8} style={{ placeSelf: 'center' }}>
-              <UIText
-                kind="small/accent"
-                color="var(--primary)"
-                as="label"
-                htmlFor={checkboxId}
-              >
-                {!isDialog ? 'Testnet Mode' : 'Testnets'}
-              </UIText>
+          <div
+            style={{
+              pointerEvents: 'auto',
+              backgroundColor: on ? 'var(--primary-200)' : 'var(--neutral-100)',
+              padding: 4,
+              // defining border as {border: '2px solid var(--neutral-300)'}
+              // led to bugs in browser devtools (I assume because of react),
+              // so we apply them explicitly instead
+              borderWidth: 2,
+              borderStyle: 'solid',
+              borderColor: 'var(--neutral-300)',
+              borderImage: on
+                ? 'linear-gradient(45deg, cyan, #003aff, #ff00e4, #00ffbc)'
+                : undefined,
+              borderImageSlice: on ? 1 : undefined,
+              borderBottomLeftRadius: 'var(--sidepanel-border-radius)',
+              borderBottomRightRadius: 'var(--sidepanel-border-radius)',
+            }}
+          >
+            <ZStack>
+              <HStack gap={8} style={{ placeSelf: 'center' }}>
+                <UIText
+                  kind="small/accent"
+                  color="var(--primary)"
+                  as="label"
+                  htmlFor={checkboxId}
+                >
+                  {!isDialog ? 'Testnet Mode' : 'Testnets'}
+                </UIText>
+                {!isDialog ? (
+                  <Toggle
+                    id={checkboxId}
+                    checked={Boolean(on)}
+                    onChange={(event) => {
+                      setPreferences({
+                        testnetMode: { on: event.currentTarget.checked },
+                      });
+                    }}
+                  />
+                ) : null}
+              </HStack>
               {!isDialog ? (
-                <Toggle
-                  id={checkboxId}
-                  checked={Boolean(on)}
-                  onChange={(event) => {
-                    setPreferences({
-                      testnetMode: { on: event.currentTarget.checked },
-                    });
-                  }}
-                />
-              ) : null}
-            </HStack>
-            {!isDialog ? (
-              <UnstyledButton
-                style={{ placeSelf: 'end' }}
-                title="What is Testnet Mode?"
-                onClick={() => {
-                  dialogRef.current?.showModal();
-                }}
-              >
-                <QuestionHintIcon style={{ color: 'var(--neutral-800)' }} />
-              </UnstyledButton>
-            ) : null}
-            <BottomSheetDialog
-              ref={dialogRef}
-              style={{ height: 'min-content' }}
-            >
-              <DialogTitle
-                alignTitle="start"
-                title={<UIText kind="headline/h3">Testnet Mode</UIText>}
-                closeKind="icon"
-              />
-              <Spacer height={16} />
-              <UIText kind="small/regular">
-                Testnet Mode allows you to access test networks. To disable the
-                Testnet Mode switch, go to{' '}
-                <TextLink
-                  to="/settings/developer-tools"
-                  style={{ color: 'var(--primary)' }}
-                  onClick={() => {
-                    dialogRef.current?.close();
-                  }}
-                >
-                  Settings → Developer Tools
-                </TextLink>
-                , or{' '}
                 <UnstyledButton
-                  className="hover:underline"
-                  style={{ color: 'var(--primary)' }}
+                  style={{ placeSelf: 'end' }}
+                  title="What is Testnet Mode?"
                   onClick={() => {
-                    setPreferences({ testnetMode: null });
+                    dialogRef.current?.showModal();
                   }}
                 >
-                  Disable it now completely.
+                  <QuestionHintIcon style={{ color: 'var(--neutral-800)' }} />
                 </UnstyledButton>
-              </UIText>
-            </BottomSheetDialog>
-          </ZStack>
+              ) : null}
+              <BottomSheetDialog
+                ref={dialogRef}
+                style={{ height: 'min-content' }}
+              >
+                <DialogTitle
+                  alignTitle="start"
+                  title={<UIText kind="headline/h3">Testnet Mode</UIText>}
+                  closeKind="icon"
+                />
+                <Spacer height={16} />
+                <UIText kind="small/regular">
+                  Testnet Mode allows you to access test networks. To disable
+                  the Testnet Mode switch, go to{' '}
+                  <TextLink
+                    to="/settings/developer-tools"
+                    style={{ color: 'var(--primary)' }}
+                    onClick={() => {
+                      dialogRef.current?.close();
+                    }}
+                  >
+                    Settings → Developer Tools
+                  </TextLink>
+                  , or{' '}
+                  <UnstyledButton
+                    className="hover:underline"
+                    style={{ color: 'var(--primary)' }}
+                    onClick={() => {
+                      setPreferences({ testnetMode: null });
+                    }}
+                  >
+                    Disable it now completely.
+                  </UnstyledButton>
+                </UIText>
+              </BottomSheetDialog>
+            </ZStack>
+          </div>
         </div>
       </div>
     </>

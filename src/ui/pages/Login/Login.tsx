@@ -153,7 +153,9 @@ export function Login() {
     return <Navigate to="/" replace={true} />;
   }
   return (
-    <PageColumn>
+    <PageColumn
+      style={{ width: 'clamp(320px, 100vw, 450px)', marginInline: 'auto' }}
+    >
       <PageFullBleedColumn
         paddingInline={false}
         style={{ position: 'relative' }}
