@@ -71,6 +71,16 @@ body.isTab {
   margin-inline: auto;
 }
 
+@media (min-width: 600px) {
+  :root:has(body.columnLayout) {
+    background-color: var(--neutral-200);
+  }
+  body.columnLayout {
+    border-inline: 1px solid var(--neutral-300);
+    margin-inline: auto;
+  }
+}
+
 :global(body.isIframe) {
   --body-height: initial;
   --body-width: initial;
