@@ -28,7 +28,10 @@ import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { EmptyView } from 'src/ui/components/EmptyView';
-import { NftTabDnaBanner } from 'src/ui/DNA/components/DnaBanners';
+import {
+  ENABLE_DNA_BANNERS,
+  NftTabDnaBanner,
+} from 'src/ui/DNA/components/DnaBanners';
 import { useStore } from '@store-unit/react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
@@ -279,16 +282,18 @@ export function NonFungibleTokens({
             </div>
           ) : (
             <>
-              <NftTabDnaBanner
-                address={singleAddressNormalized}
-                style={{
-                  paddingInline: 16,
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  top: 36,
-                }}
-              />
+              {ENABLE_DNA_BANNERS ? (
+                <NftTabDnaBanner
+                  address={singleAddressNormalized}
+                  style={{
+                    paddingInline: 16,
+                    position: 'absolute',
+                    left: 0,
+                    right: 0,
+                    top: 36,
+                  }}
+                />
+              ) : null}
               <div style={{ width: '100%', paddingTop: 164 }}>
                 <EmptyView>No NFTs yet</EmptyView>
               </div>
@@ -315,10 +320,12 @@ export function NonFungibleTokens({
           }
         />
       </div>
-      <NftTabDnaBanner
-        address={singleAddressNormalized}
-        style={{ paddingInline: 16 }}
-      />
+      {ENABLE_DNA_BANNERS ? (
+        <NftTabDnaBanner
+          address={singleAddressNormalized}
+          style={{ paddingInline: 16 }}
+        />
+      ) : null}
 
       <div
         style={{
