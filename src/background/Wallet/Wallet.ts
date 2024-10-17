@@ -370,8 +370,11 @@ export class Wallet {
       })),
       credentials: this.userCredentials,
     });
+    const existingGroup = this.record
+      ? Model.getMatchingExistingWalletGroup(this.record, walletContainer)
+      : null;
     this.pendingWallet = {
-      origin: WalletOrigin.imported,
+      origin: existingGroup?.origin ?? WalletOrigin.imported,
       groupId: null,
       walletContainer,
     };
