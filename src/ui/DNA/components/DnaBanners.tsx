@@ -8,6 +8,11 @@ import {
 import { MintBanner } from './MintBanner';
 import { UpgradeBanner } from './UpgradeBanner';
 
+// The DNA contract will stop working by the end of October 2024,
+// that's why we want to disable the minting flow for now
+// We may reenable it later with some changes
+export const ENABLE_DNA_BANNERS = false;
+
 export function OverviewDnaBanners({ address }: { address: string }) {
   const { preferences, setPreferences } = usePreferences();
   const showDnaMintBanner = useShowDnaMintBanner(address);

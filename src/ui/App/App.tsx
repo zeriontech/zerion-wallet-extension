@@ -182,6 +182,7 @@ function PageLayoutViews() {
           </RequireAuth>
         }
       />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }
