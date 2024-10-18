@@ -284,7 +284,7 @@ export class DnaService {
         });
       } catch (error) {
         didFail = true;
-        console.log('registerWallet error', error); // eslint-disable-line no-console
+        console.warn('registerWallet error', error); // eslint-disable-line no-console
       }
     }
 
