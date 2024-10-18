@@ -1,0 +1,7 @@
+.featureCard {
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--neutral-100);
+  justify-content: center;
+  text-align: center;
+}
