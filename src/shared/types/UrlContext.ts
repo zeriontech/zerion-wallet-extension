@@ -1,6 +1,6 @@
 export type AppMode = 'onboarding' | 'wallet';
 export type WindowLayout = 'column' | 'page';
-export type WindowType = 'popup' | 'tab' | 'dialog';
+export type WindowType = 'popup' | 'tab' | 'dialog' | 'sidepanel';
 
 export enum UrlContextParam {
   windowType = 'windowType',

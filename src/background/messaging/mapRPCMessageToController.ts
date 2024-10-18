@@ -32,6 +32,7 @@ export function mapRPCMessageToController<T>(
     const { method, params, id } = msg;
     // logging
     // console.debug({ method, params, id, port, context });
+    // console.table({ initiator: port.sender?.url, method, id });
     if (
       !isClassProperty(controller, method) ||
       typeof controller[method as keyof typeof controller] !== 'function'
@@ -69,6 +70,7 @@ export function mapRPCMessageToController<T>(
       .then((result: JsonRpcResponse) => {
         // logging
         // console.debug('controller result', result);
+        // console.table({ initiator: port.sender?.url, id: result.id });
         port.postMessage(result);
       });
   }

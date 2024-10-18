@@ -63,6 +63,7 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
+import { SidepanelOptionsButton } from 'src/shared/sidepanel/SidepanelOptionsButton';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -208,9 +209,27 @@ function CurrentAccountControls() {
         <HStack gap={4} alignItems="center">
           <UIText
             kind="headline/h3"
-            style={{ display: 'inline-flex', alignItems: 'center' }}
+            style={{
+              display: 'grid',
+              gridAutoFlow: 'column',
+              alignItems: 'center',
+            }}
           >
-            <WalletDisplayName wallet={wallet} maxCharacters={16} />
+            <WalletDisplayName
+              wallet={wallet}
+              maxCharacters={16}
+              render={(data) => (
+                <span
+                  style={{
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {data.value}
+                </span>
+              )}
+            />
             <ArrowDownIcon
               className="content-hover"
               style={{ width: 24, height: 24 }}
@@ -457,7 +476,10 @@ function OverviewComponent() {
             }}
           >
             <CurrentAccountControls />
-            <SettingsLinkIcon />
+            <HStack gap={0}>
+              <SettingsLinkIcon />
+              <SidepanelOptionsButton />
+            </HStack>
           </div>
           <Spacer height={16} />
         </div>
