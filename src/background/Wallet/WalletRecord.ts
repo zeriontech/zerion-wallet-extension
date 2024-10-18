@@ -793,6 +793,7 @@ export class WalletRecordModel {
       recentAddresses: [],
       mintDnaBannerDismissed: false,
       upgradeDnaBannerDismissed: false,
+      inviteFriendsBannerDismissed: false,
       backupReminderDismissedTime: 0,
       enableTestnets: false,
       testnetMode: null,
