@@ -254,7 +254,7 @@ function WalletGroups() {
                 {
                   key: 2,
                   to: '/connect-hardware-wallet',
-                  onClick: openHref,
+                  onClick: (event) => openHref(event, { windowType: 'tab' }),
                   component: (
                     <UIText kind="body/accent" color="var(--primary)">
                       Connect Ledger

@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { useId, useMemo } from 'react';
+import { useLocation, matchPath } from 'react-router-dom';
 import { useStore } from '@store-unit/react';
 import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
@@ -18,7 +19,9 @@ import { TextLink } from 'src/ui/ui-kit/TextLink';
 import { testnetModeStore } from '../store';
 import { usePreferences } from '../../preferences';
 
-export function TestModeDecoration() {
+const routesBlackList = ['/connect-hardware-wallet/*'];
+
+function TestModeDecorationComponent() {
   const { preferences, setPreferences } = usePreferences();
   const on = preferences?.testnetMode?.on;
   const checkboxId = useId();
@@ -156,4 +159,16 @@ export function TestModeDecoration() {
       </div>
     </>
   );
+}
+
+export function TestModeDecoration() {
+  const { pathname } = useLocation();
+  const matchesBlackList = useMemo(
+    () => routesBlackList.some((pattern) => matchPath(pattern, pathname)),
+    [pathname]
+  );
+  if (matchesBlackList) {
+    return null;
+  }
+  return <TestModeDecorationComponent />;
 }
