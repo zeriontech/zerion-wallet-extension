@@ -46,6 +46,7 @@ type ChainDescription = {
 export interface GroupedFungiblePosition {
   id: string;
   asset: Asset;
+  /** TODO: @deprecate, use "aggregatedQuantity" instead */
   quantity: string;
   // if it is for ByPositionResponse, it is always of "asset" type
   type: AddressPosition['type']; // asset, deposit, loan, staked, etc

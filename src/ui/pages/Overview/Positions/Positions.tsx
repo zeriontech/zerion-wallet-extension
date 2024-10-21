@@ -375,7 +375,11 @@ function GroupedAddressPositionItem({
                 </span>
               ) : position.value ? (
                 <span key="position-quantity" style={textOverflowStyle}>
-                  {formatTokenValue(position.value, position.asset.symbol)}
+                  {formatTokenValue(
+                    // NOTE!!!!!! Quantity should be CONVERTED by WHICH asset's decimals???
+                    position.quantity,
+                    position.asset.symbol
+                  )}
                 </span>
               ) : null}
             </UIText>
