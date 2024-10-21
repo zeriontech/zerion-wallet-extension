@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
 import { useId, useMemo } from 'react';
 import { useStore } from '@store-unit/react';
 import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
@@ -23,6 +23,13 @@ export function TestModeDecoration() {
   const on = preferences?.testnetMode?.on;
   const checkboxId = useId();
   const { shortcutsDisabled } = useStore(testnetModeStore);
+
+  useBodyStyle(
+    useMemo(
+      () => ({ ['--technical-panel-bottom-height' as string]: '40px' }),
+      []
+    )
+  );
 
   const isDialog = urlContext.windowType === 'dialog';
   const shouldRenderSomething = !isDialog || on;
