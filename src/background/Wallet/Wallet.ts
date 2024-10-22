@@ -1082,7 +1082,7 @@ export class Wallet {
     }
   }
 
-  getOfflineSigner() {
+  private getOfflineSigner() {
     const currentAddress = this.readCurrentAddress();
     if (!this.record) {
       throw new RecordNotFound();
@@ -1348,6 +1348,30 @@ export class Wallet {
     });
   }
 
+  async signMessage({
+    signer,
+    message,
+    messageContextParams,
+  }: {
+    signer: ethers.Wallet;
+    message: string;
+    messageContextParams: MessageContextParams;
+  }) {
+    const messageAsUtf8String = toUtf8String(message);
+
+    // Some dapps provide a hex message that doesn't parse as a utf string,
+    // but wallets sign it anyway
+    const messageToSign = ethers.utils.isHexString(messageAsUtf8String)
+      ? ethers.utils.arrayify(messageAsUtf8String)
+      : messageAsUtf8String;
+
+    const signature = await signer.signMessage(messageToSign);
+    this.registerPersonalSign({
+      params: { address: signer.address, message, ...messageContextParams },
+    });
+    return signature;
+  }
+
   async personalSign({
     params: {
       params: [message],
@@ -1364,19 +1388,7 @@ export class Wallet {
       throw new InvalidParams();
     }
     const signer = this.getOfflineSigner();
-    const messageAsUtf8String = toUtf8String(message);
-
-    // Some dapps provide a hex message that doesn't parse as a utf string,
-    // but wallets sign it anyway
-    const messageToSign = ethers.utils.isHexString(messageAsUtf8String)
-      ? ethers.utils.arrayify(messageAsUtf8String)
-      : messageAsUtf8String;
-
-    const signature = await signer.signMessage(messageToSign);
-    this.registerPersonalSign({
-      params: { address: signer.address, message, ...messageContextParams },
-    });
-    return signature;
+    return this.signMessage({ signer, message, messageContextParams });
   }
 
   async removeEthereumChain({
