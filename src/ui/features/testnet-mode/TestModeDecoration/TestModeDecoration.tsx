@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { useId, useMemo } from 'react';
 import { useStore } from '@store-unit/react';
 import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
