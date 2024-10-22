@@ -9,7 +9,7 @@ export enum DialogButtonValue {
 export function DialogTitle({
   title,
   alignTitle = 'center',
-  closeKind = 'text',
+  closeKind = 'icon',
 }: {
   title: React.ReactNode;
   alignTitle?: 'start' | 'center';
