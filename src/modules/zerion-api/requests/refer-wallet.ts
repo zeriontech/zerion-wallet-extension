@@ -1,4 +1,3 @@
-import type { ClientOptions } from '../shared';
 import { ZerionHttpClient } from '../shared';
 
 interface Params {
@@ -12,7 +11,7 @@ interface Response {
   errors?: { title: string; detail: string }[];
 }
 
-export function referWallet(params: Params, options?: ClientOptions) {
+export function referWallet(params: Params) {
   return ZerionHttpClient.post<Response>({
     endpoint: 'wallet/refer/v1',
     body: JSON.stringify({
@@ -20,6 +19,5 @@ export function referWallet(params: Params, options?: ClientOptions) {
       referralCode: params.referralCode,
       signature: params.signature,
     }),
-    ...options,
   });
 }
