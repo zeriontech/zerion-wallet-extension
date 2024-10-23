@@ -185,7 +185,11 @@ function Stats({ earned, referred }: { earned: number; referred: number }) {
                 Earned
               </UIText>
             }
-            value={<UIText kind="headline/h2">{earned}</UIText>}
+            value={
+              <UIText kind="headline/h2" style={{ wordBreak: 'break-all' }}>
+                {earned}
+              </UIText>
+            }
           />
           <StatsItem
             icon={<AccountIcon />}
@@ -194,7 +198,11 @@ function Stats({ earned, referred }: { earned: number; referred: number }) {
                 Users Invited
               </UIText>
             }
-            value={<UIText kind="headline/h2">{referred}</UIText>}
+            value={
+              <UIText kind="headline/h2" style={{ wordBreak: 'break-all' }}>
+                {referred}
+              </UIText>
+            }
           />
         </HStack>
       ) : (
