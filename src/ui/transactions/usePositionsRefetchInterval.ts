@@ -17,21 +17,24 @@ localTransactionsStore.on('change', (state) => {
   }
 });
 
+const TWO_MINUTES = 1000 * 60 * 2;
+const URGENT_REFETCH_INTERVAl = 4000; // 4 seconds
+
 function useNow(enabled: boolean) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (enabled) {
+      // doesn't really need to match URGENT_REFETCH_INTERVAl,
+      // but also we don't need to refresh more frequently than that
+      const refreshInterval = URGENT_REFETCH_INTERVAl;
       const id = setInterval(() => {
         setNow(Date.now());
-      }, 1000);
+      }, refreshInterval);
       return () => clearInterval(id);
     }
   }, [enabled]);
   return now;
 }
-
-const TWO_MINUTES = 1000 * 60 * 2;
-const URGENT_REFETCH_INTERVAl = 4000; // 4 seconds
 
 /** A flag for perf optimisation: we don't need to track "useNow()" after a tx has been handled */
 let handledTimestamp: number | null = null;
