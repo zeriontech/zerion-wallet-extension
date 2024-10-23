@@ -9,13 +9,17 @@ function GradientText({ children }: { children: React.ReactNode }) {
   return <div className={styles.gradientText}>{children}</div>;
 }
 
-export function PremiumTrialBanner() {
+export function PremiumTrialBanner({
+  backgroundColor,
+}: {
+  backgroundColor: string;
+}) {
   return (
     <GradientBorder
       borderColor="linear-gradient(80.56deg, #CD657F 7.13%, #8A6DF1 34.59%, #71A1F3 62.04%, #3BB1ED 90.33%)"
       borderWidth={2}
       borderRadius={12}
-      backgroundColor="var(--always-white)"
+      backgroundColor={backgroundColor}
     >
       <HStack
         gap={8}

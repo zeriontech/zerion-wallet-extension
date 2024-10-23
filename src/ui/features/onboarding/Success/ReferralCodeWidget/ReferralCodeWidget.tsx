@@ -93,16 +93,7 @@ function ReferralCodeForm({
           <UIText kind="body/accent" color="var(--always-white)">
             Referral Code
           </UIText>
-          <div
-            style={{
-              cursor: 'help',
-              display: 'flex',
-              color: 'var(--always-white)',
-            }}
-            title="Your Referral Code"
-          >
-            <QuestionIcon style={{ width: 24, height: 24 }} />
-          </div>
+          <QuestionIcon style={{ width: 24, height: 24 }} />
         </HStack>
 
         <form
