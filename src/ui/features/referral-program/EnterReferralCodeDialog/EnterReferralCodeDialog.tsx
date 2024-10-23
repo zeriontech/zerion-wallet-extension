@@ -30,14 +30,11 @@ export function EnterReferralCodeDialog({
         if (myReferralCode === referralCode) {
           throw new Error('Can not apply your own referral code');
         }
-        const referrer = await walletPort.request(
-          'uiApplyReferralCodeToAllWallets',
-          {
-            referralCode,
-          }
-        );
-        onSuccess(referrer);
+        return walletPort.request('uiApplyReferralCodeToAllWallets', {
+          referralCode,
+        });
       },
+      onSuccess,
     });
 
   return (
@@ -62,13 +59,21 @@ export function EnterReferralCodeDialog({
         }}
       >
         <VStack gap={32}>
-          <Input
-            autoFocus={true}
-            name="referralCode"
-            placeholder="Enter Code"
-            required={true}
-            disabled={applyReferralCodeMutation.isLoading}
-          />
+          <VStack gap={4}>
+            <Input
+              autoFocus={true}
+              name="referralCode"
+              placeholder="Enter Code"
+              required={true}
+              disabled={applyReferralCodeMutation.isLoading}
+            />
+
+            {applyReferralCodeMutation.isError ? (
+              <UIText kind="caption/regular" color="var(--negative-500)">
+                Invalid Referral Code
+              </UIText>
+            ) : null}
+          </VStack>
           <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
             <Button
               kind="regular"
