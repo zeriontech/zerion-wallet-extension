@@ -48,7 +48,7 @@ export function SuccessDialog({
         ) : null}
       </VStack>
       <VStack gap={8}>
-        <PremiumTrialBanner width={425} />
+        <PremiumTrialBanner />
         <HStack gap={8} style={{ gridAutoColumns: '1fr 2fr' }}>
           <FeatureCard
             icon={

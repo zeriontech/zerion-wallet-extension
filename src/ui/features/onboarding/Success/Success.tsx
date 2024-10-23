@@ -169,7 +169,6 @@ export function Success() {
               <CongratulationsWidget referrer={referrer} />
             </>
           )}
-
           {isNarrowView ? null : (
             <>
               <UnstyledButton
