@@ -1,6 +1,9 @@
 import { securityCheckUrl } from './requests/security-check-url';
 import { registerAddresses } from './requests/register-wallets';
-import { getWalletsMeta } from './requests/wallet-get-meta';
+import {
+  getWalletsMeta,
+  getWalletsMetaByChunks,
+} from './requests/wallet-get-meta';
 import { getGasPrices } from './requests/get-gas-prices';
 import { registerChain } from './requests/register-chain';
 import {
@@ -22,6 +25,7 @@ export const ZerionApiBare = {
   registerChain,
   registerAddresses,
   getWalletsMeta,
+  getWalletsMetaByChunks,
   paymasterCheckEligibility,
   getPaymasterParams,
   walletGetPositions,
