@@ -15,12 +15,10 @@ import sparkImgSrc from 'src/ui/assets/zer_spark.png';
 import starImgSrc from 'src/ui/assets/zer_star.png';
 import { useQuery } from '@tanstack/react-query';
 import type { ReferrerData } from 'src/modules/zerion-api/requests/check-referral';
-import { readReferrer } from '../../referral-program/shared/storage';
+import { readSavedReferrerData } from '../../referral-program/shared/storage';
 import { CongratulationsWidget } from './CongratulationsWidget';
 import * as styles from './styles.module.css';
 import { ReferralCodeWidget } from './ReferralCodeWidget';
-
-const DEBUG_REFERRAL_CODE_WIDGET = false;
 
 export function Success() {
   const { isNarrowView } = useWindowSizeStore();
@@ -102,9 +100,9 @@ export function Success() {
   }, [fireConfetti]);
 
   const { data: currentReferrer } = useQuery({
-    queryKey: ['currentReferrer'],
+    queryKey: ['readSavedReferrerData'],
     queryFn: async () => {
-      const result = await readReferrer();
+      const result = await readSavedReferrerData();
       return result || null;
     },
     suspense: true,
@@ -129,7 +127,7 @@ export function Success() {
     },
   });
 
-  const referralCodeWidgetVisible = !referrer || DEBUG_REFERRAL_CODE_WIDGET;
+  const referralCodeWidgetVisible = !referrer;
 
   return (
     <>
