@@ -17,17 +17,24 @@ localTransactionsStore.on('change', (state) => {
   }
 });
 
-function useNow() {
+function useNow(enabled: boolean) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
+    if (enabled) {
+      const id = setInterval(() => {
+        setNow(Date.now());
+      }, 1000);
+      return () => clearInterval(id);
+    }
+  }, [enabled]);
   return now;
 }
 
 const TWO_MINUTES = 1000 * 60 * 2;
 const URGENT_REFETCH_INTERVAl = 4000; // 4 seconds
+
+/** A flag for perf optimisation: we don't need to track "useNow()" after a tx has been handled */
+let handledTimestamp: number | null = null;
 
 /**
  * This hook returns a small refetchInterval value
@@ -36,7 +43,8 @@ const URGENT_REFETCH_INTERVAl = 4000; // 4 seconds
  */
 export function usePositionsRefetchInterval(fallback: number | false) {
   const latest = useStore(latestTxTimeStore);
-  const now = useNow();
+  const nowEnabled = Boolean(latest && latest !== handledTimestamp);
+  const now = useNow(nowEnabled);
   if (!latest) {
     return fallback;
   }
@@ -44,6 +52,7 @@ export function usePositionsRefetchInterval(fallback: number | false) {
   if (now - latest < TWO_MINUTES) {
     return URGENT_REFETCH_INTERVAl;
   } else {
+    handledTimestamp = latest;
     return fallback;
   }
 }
