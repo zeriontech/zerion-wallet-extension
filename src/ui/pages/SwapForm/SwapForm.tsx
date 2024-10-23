@@ -18,6 +18,7 @@ import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { getNativeAsset } from 'src/ui/shared/requests/useNativeAsset';
+import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { PageTop } from 'src/ui/components/PageTop';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -180,7 +181,8 @@ export function SwapFormComponent() {
     client,
     positions,
     asset_code: null,
-    getNativeAsset: ({ chain }) => getNativeAsset({ chain, currency }),
+    getNativeAsset: ({ chain }) =>
+      getNativeAsset({ chain: chain as Chain, currency }),
     supportedChains,
     DEFAULT_CONFIGURATION,
   });

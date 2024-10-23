@@ -7,13 +7,19 @@ export function getAssetImplementationInChain({
   asset,
   chain,
 }: {
-  asset?: Asset;
+  asset?: Pick<Asset, 'implementations'>;
   chain: Chain;
 }) {
   return asset?.implementations?.[String(chain)];
 }
 
-export function getDecimals({ asset, chain }: { asset: Asset; chain: Chain }) {
+export function getDecimals({
+  asset,
+  chain,
+}: {
+  asset: Pick<Asset, 'implementations' | 'decimals'>;
+  chain: Chain;
+}) {
   return (
     getAssetImplementationInChain({ asset, chain })?.decimals || asset.decimals
   );
@@ -23,7 +29,7 @@ export function getAddress({
   asset,
   chain,
 }: {
-  asset?: Asset;
+  asset?: Pick<Asset, 'implementations'>;
   chain: Chain;
 }): string | null | undefined {
   const chainImplementation = getAssetImplementationInChain({ asset, chain });
@@ -35,7 +41,7 @@ export function getCommonQuantity({
   chain,
   baseQuantity,
 }: {
-  asset: Asset;
+  asset: Pick<Asset, 'implementations' | 'decimals'>;
   chain: Chain;
   baseQuantity: BigNumber.Value;
 }) {
@@ -48,7 +54,7 @@ export function getBaseQuantity({
   chain,
   commonQuantity,
 }: {
-  asset: Asset;
+  asset: Pick<Asset, 'implementations' | 'decimals'>;
   chain: Chain;
   commonQuantity: BigNumber.Value;
 }) {
