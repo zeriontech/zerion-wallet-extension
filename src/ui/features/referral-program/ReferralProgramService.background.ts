@@ -114,6 +114,7 @@ class ReferralProgramService {
 
     await saveReferrerData(checkedReferrer);
 
+    // We need to start watching the referrer wallet
     if (checkedReferrer.address) {
       await walletFacade.uiAddReadonlyAddress({
         context: INTERNAL_SYMBOL_CONTEXT,
