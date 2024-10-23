@@ -5,16 +5,19 @@ import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfo
 
 export function PortfolioValue({
   address: addressStr,
+  enabled = true,
   render,
 }: {
   address: string;
+  enabled?: boolean;
   render: (value: ReturnType<typeof useWalletPortfolio>) => JSX.Element;
 }) {
   const address = useMemo(() => addressStr.toLowerCase(), [addressStr]);
   const { currency } = useCurrency();
   const query = useWalletPortfolio(
     { addresses: [address], currency },
-    { source: useHttpClientSource() }
+    { source: useHttpClientSource() },
+    { enabled }
   );
   return render(query);
 }
