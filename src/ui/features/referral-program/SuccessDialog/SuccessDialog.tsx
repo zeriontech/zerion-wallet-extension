@@ -4,10 +4,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
-import RocketSrc from 'src/ui/assets/rocket.png';
-import Rocket2xSrc from 'src/ui/assets/rocket@2x.png';
-import SuperheroSrc from 'src/ui/assets/superhero.png';
-import Superhero2xSrc from 'src/ui/assets/superhero@2x.png';
 import PremiumIcon from 'jsx:src/ui/assets/premium.svg';
 import ChartIcon from 'jsx:src/ui/assets/chart.svg';
 import StarIcon from 'jsx:src/ui/assets/star.svg';
@@ -51,14 +47,8 @@ export function SuccessDialog({
         <PremiumTrialBanner backgroundColor="var(--white)" />
         <HStack gap={8} style={{ gridAutoColumns: '1fr 2fr' }}>
           <FeatureCard
-            icon={
-              <img
-                alt=""
-                style={{ width: 36, height: 36 }}
-                src={RocketSrc}
-                srcSet={`${RocketSrc}, ${Rocket2xSrc} 2x`}
-              />
-            }
+            icon="🚀"
+            iconStyle={{ fontSize: '36px' }}
             text="Early Access"
           />
           <FeatureCard
@@ -72,14 +62,8 @@ export function SuccessDialog({
         </HStack>
         <HStack gap={8} style={{ gridAutoColumns: '1fr 2fr' }}>
           <FeatureCard
-            icon={
-              <img
-                alt=""
-                style={{ width: 36, height: 36 }}
-                src={RocketSrc}
-                srcSet={`${SuperheroSrc}, ${Superhero2xSrc} 2x`}
-              />
-            }
+            icon="🦸"
+            iconStyle={{ fontSize: '36px' }}
             text="Priority Support"
           />
           <FeatureCard icon={<CsvIcon />} text="Download History" />

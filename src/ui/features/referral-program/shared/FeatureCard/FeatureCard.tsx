@@ -6,12 +6,14 @@ import * as styles from './styles.module.css';
 
 export function FeatureCard({
   icon,
+  iconStyle,
   text,
   className,
   style,
   ...props
 }: {
   icon: React.ReactNode;
+  iconStyle?: React.CSSProperties;
   text: React.ReactNode;
 } & React.HTMLProps<HTMLDivElement>) {
   return (
@@ -21,7 +23,7 @@ export function FeatureCard({
       style={{ alignItems: 'center', ...style }}
       {...props}
     >
-      <div>{icon}</div>
+      <div style={iconStyle}>{icon}</div>
       <UIText kind="small/accent">{text}</UIText>
     </VStack>
   );

@@ -1,8 +1,4 @@
 import React from 'react';
-import RocketSrc from 'src/ui/assets/rocket.png';
-import Rocket2xSrc from 'src/ui/assets/rocket@2x.png';
-import SuperheroSrc from 'src/ui/assets/superhero.png';
-import Superhero2xSrc from 'src/ui/assets/superhero@2x.png';
 import PremiumIcon from 'jsx:src/ui/assets/premium.svg';
 import ChartIcon from 'jsx:src/ui/assets/chart.svg';
 import CsvIcon from 'jsx:src/ui/assets/csv.svg';
@@ -52,14 +48,8 @@ export function CongratulationsWidget({
           />
           <FeatureCard
             className={styles.featureCard}
-            icon={
-              <img
-                alt=""
-                style={{ width: 36, height: 36 }}
-                src={RocketSrc}
-                srcSet={`${RocketSrc}, ${Rocket2xSrc} 2x`}
-              />
-            }
+            icon="🚀"
+            iconStyle={{ fontSize: '36px' }}
             text="Early Access"
           />
         </VStack>
@@ -71,14 +61,8 @@ export function CongratulationsWidget({
         <VStack gap={8} style={{ alignItems: 'initial' }}>
           <FeatureCard
             className={styles.featureCard}
-            icon={
-              <img
-                alt=""
-                style={{ width: 36, height: 36 }}
-                src={RocketSrc}
-                srcSet={`${SuperheroSrc}, ${Superhero2xSrc} 2x`}
-              />
-            }
+            icon="🦸"
+            iconStyle={{ fontSize: '36px' }}
             text="Priority Support"
           />
           <FeatureCard
