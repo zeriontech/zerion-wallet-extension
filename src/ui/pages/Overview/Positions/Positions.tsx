@@ -229,11 +229,12 @@ function AddressPositionItem({
                   position.type !== 'asset' ? (
                     <span
                       key="position-type"
-                      color={
-                        position.type === 'loan'
-                          ? 'var(--negative-500)'
-                          : 'var(--neutral-500)'
-                      }
+                      style={{
+                        color:
+                          position.type === 'loan'
+                            ? 'var(--negative-500)'
+                            : 'var(--neutral-500)',
+                      }}
                     >
                       {positionTypeToStringMap[position.type]}
                     </span>
@@ -365,11 +366,12 @@ function GroupedAddressPositionItem({
               {position.type !== 'asset' ? (
                 <span
                   key="position-type"
-                  color={
-                    position.type === 'loan'
-                      ? 'var(--negative-500)'
-                      : 'var(--neutral-500)'
-                  }
+                  style={{
+                    color:
+                      position.type === 'loan'
+                        ? 'var(--negative-500)'
+                        : 'var(--neutral-500)',
+                  }}
                 >
                   {positionTypeToStringMap[position.type]}
                 </span>
