@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Content } from 'react-area';
 import type {
   InterpretResponse,
@@ -18,7 +19,14 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { TransactionWarning } from 'src/ui/pages/SendTransaction/TransactionWarnings/TransactionWarning';
 import { DialogCloseButton } from 'src/ui/ui-kit/ModalDialogs/DialogTitle/DialogCloseButton';
+import { getRootDomNode } from 'src/ui/shared/getRootDomNode';
 import { DelayedRender } from '../DelayedRender';
+
+const rootNode = getRootDomNode();
+
+function PortalToRootNode({ children }: React.PropsWithChildren) {
+  return createPortal(children, rootNode);
+}
 
 const WarningSeverityPriority: Record<WarningSeverity, number> = {
   Gray: 0,
@@ -273,49 +281,58 @@ export function InterpretationState({
           </HStack>
         </Button>
       ) : null}
-      <BottomSheetDialog ref={loadingDialogRef} height="fit-content">
-        <InterpretationDescritionDialog mode="loading" />
-      </BottomSheetDialog>
-      <BottomSheetDialog ref={errorDialogRef} height="fit-content">
-        <InterpretationDescritionDialog mode="error" />
-      </BottomSheetDialog>
-      <BottomSheetDialog ref={successDialogRef} height="fit-content">
-        <InterpretationDescritionDialog mode="success" />
-      </BottomSheetDialog>
-      <BottomSheetDialog
-        height="fit-content"
-        ref={warningDialogRef}
-        renderWhenOpen={() => (
-          <>
-            <DialogCloseButton
-              style={{ position: 'absolute', top: 8, right: 8 }}
-            />
-            <VStack gap={16}>
-              <UIText kind="headline/h3">Verification Details</UIText>
-              {interpretation?.warnings
-                .sort(warningComparator)
-                .map((warning, index) => (
-                  <VStack gap={0} key={index}>
-                    <UIText kind="body/accent">{warning.title}</UIText>
-                    <UIText kind="body/regular">{warning.details}</UIText>
-                  </VStack>
-                ))}
-              <form
-                method="dialog"
-                onSubmit={(event) => event.stopPropagation()}
-              >
-                <Button
-                  style={{ width: '100%' }}
-                  value={DialogButtonValue.cancel}
-                  aria-label="Close"
+
+      <PortalToRootNode>
+        <BottomSheetDialog ref={loadingDialogRef} height="fit-content">
+          <InterpretationDescritionDialog mode="loading" />
+        </BottomSheetDialog>
+      </PortalToRootNode>
+      <PortalToRootNode>
+        <BottomSheetDialog ref={errorDialogRef} height="fit-content">
+          <InterpretationDescritionDialog mode="error" />
+        </BottomSheetDialog>
+      </PortalToRootNode>
+      <PortalToRootNode>
+        <BottomSheetDialog ref={successDialogRef} height="fit-content">
+          <InterpretationDescritionDialog mode="success" />
+        </BottomSheetDialog>
+      </PortalToRootNode>
+      <PortalToRootNode>
+        <BottomSheetDialog
+          height="fit-content"
+          ref={warningDialogRef}
+          renderWhenOpen={() => (
+            <>
+              <DialogCloseButton
+                style={{ position: 'absolute', top: 8, right: 8 }}
+              />
+              <VStack gap={16}>
+                <UIText kind="headline/h3">Verification Details</UIText>
+                {interpretation?.warnings
+                  .sort(warningComparator)
+                  .map((warning, index) => (
+                    <VStack gap={0} key={index}>
+                      <UIText kind="body/accent">{warning.title}</UIText>
+                      <UIText kind="body/regular">{warning.details}</UIText>
+                    </VStack>
+                  ))}
+                <form
+                  method="dialog"
+                  onSubmit={(event) => event.stopPropagation()}
                 >
-                  Close
-                </Button>
-              </form>
-            </VStack>
-          </>
-        )}
-      />
+                  <Button
+                    style={{ width: '100%' }}
+                    value={DialogButtonValue.cancel}
+                    aria-label="Close"
+                  >
+                    Close
+                  </Button>
+                </form>
+              </VStack>
+            </>
+          )}
+        />
+      </PortalToRootNode>
       <Content name="transaction-warning-section">
         {mostSevereWarning ? (
           <TransactionWarning
