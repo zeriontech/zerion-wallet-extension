@@ -1,0 +1,1 @@
+export { CongratulationsWidget } from './CongratulationsWidget';

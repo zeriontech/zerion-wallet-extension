@@ -1,10 +1,9 @@
-import { isTruthy } from 'is-truthy-ts';
 import type { Account } from 'src/background/account/Account';
 import { getAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
 import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
 import { isReadonlyContainer } from 'src/shared/types/validators';
-import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { backgroundQueryClient } from 'src/modules/query-client/query-client.background';
+import { getWalletsMetaByChunks } from 'src/modules/zerion-api/requests/wallet-get-meta';
 import { getAddressesPortfolio } from './getTotalWalletsBalance';
 import {
   getProviderForMixpanel,
@@ -38,25 +37,6 @@ async function getPortfolioStats(addresses: string[]) {
       fundedCount: result2.status === 'fulfilled' ? result2.value : null,
     };
   });
-}
-
-function splitIntoChunks<T>(arr: T[], size: number) {
-  const chunks: T[][] = [];
-  for (let i = 0; i < arr.length; i += size) {
-    chunks.push(arr.slice(i, i + size));
-  }
-  return chunks;
-}
-
-async function getWalletsMetaByChunks(addresses: string[]) {
-  const chunks = splitIntoChunks(addresses, 10);
-  const results = await Promise.all(
-    chunks.map((chunk) => ZerionAPI.getWalletsMeta({ identifiers: chunk }))
-  );
-  return results
-    .map((response) => response.data)
-    .filter(isTruthy)
-    .flat();
 }
 
 async function getZerionStats(addresses: string[]) {

@@ -87,7 +87,10 @@ import { getDefiSdkClient } from 'src/modules/defi-sdk/background';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import { decodeMasked } from 'src/shared/wallet/encode-locally';
+import type { RemoteConfig } from 'src/modules/remote-config';
+import { getRemoteConfigValue } from 'src/modules/remote-config';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
+import { referralProgramService } from 'src/ui/features/referral-program/ReferralProgramService.background';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -412,6 +415,23 @@ export class Wallet {
       groupId: null,
     };
     return walletContainer.getFirstWallet();
+  }
+
+  async uiAddReadonlyAddress(
+    params: WalletMethodParams<{ address: string; name: string | null }>
+  ) {
+    await this.uiImportReadonlyAddress(params);
+    await this.savePendingWallet();
+  }
+
+  async uiApplyReferralCodeToAllWallets({
+    params: { referralCode },
+    context,
+  }: WalletMethodParams<{ referralCode: string }>) {
+    this.verifyInternalOrigin(context);
+    return referralProgramService.applyReferralCodeToAllWallets({
+      referralCode,
+    });
   }
 
   async getPendingRecoveryPhrase({ context }: WalletMethodParams) {
@@ -857,6 +877,14 @@ export class Wallet {
     return globalPreferences.setPreferences(preferences);
   }
 
+  async getRemoteConfigValue({
+    context,
+    params: { key },
+  }: WalletMethodParams<{ key: keyof RemoteConfig }>) {
+    this.verifyInternalOrigin(context);
+    return getRemoteConfigValue(key);
+  }
+
   async getFeedInfo({
     context,
   }: WalletMethodParams): Promise<ReturnType<typeof Model.getFeedInfo>> {
@@ -1049,10 +1077,25 @@ export class Wallet {
     }
   }
 
-  private getOfflineSigner() {
-    const currentAddress = this.readCurrentAddress();
+  private getOfflineSignerByAddress(address: string) {
     if (!this.record) {
       throw new RecordNotFound();
+    }
+    const wallet = Model.getSignerWalletByAddress(this.record, address);
+    if (!wallet) {
+      throw new Error('Signer wallet for this address is not found');
+    }
+
+    return toEthersWallet(wallet);
+  }
+
+  private getOfflineSigner() {
+    if (!this.record) {
+      throw new RecordNotFound();
+    }
+    const currentAddress = this.readCurrentAddress();
+    if (!currentAddress) {
+      throw new Error('Current address not set');
     }
     const currentWallet = currentAddress
       ? Model.getSignerWalletByAddress(this.record, currentAddress)
@@ -1315,6 +1358,31 @@ export class Wallet {
     });
   }
 
+  async signMessage({
+    signerAddress,
+    message,
+    messageContextParams,
+  }: {
+    signerAddress: string;
+    message: string;
+    messageContextParams: MessageContextParams;
+  }) {
+    const messageAsUtf8String = toUtf8String(message);
+
+    // Some dapps provide a hex message that doesn't parse as a utf string,
+    // but wallets sign it anyway
+    const messageToSign = ethers.utils.isHexString(messageAsUtf8String)
+      ? ethers.utils.arrayify(messageAsUtf8String)
+      : messageAsUtf8String;
+
+    const signer = this.getOfflineSignerByAddress(signerAddress);
+    const signature = await signer.signMessage(messageToSign);
+    this.registerPersonalSign({
+      params: { address: signer.address, message, ...messageContextParams },
+    });
+    return signature;
+  }
+
   async personalSign({
     params: {
       params: [message],
@@ -1330,20 +1398,15 @@ export class Wallet {
     if (message == null) {
       throw new InvalidParams();
     }
-    const signer = this.getOfflineSigner();
-    const messageAsUtf8String = toUtf8String(message);
-
-    // Some dapps provide a hex message that doesn't parse as a utf string,
-    // but wallets sign it anyway
-    const messageToSign = ethers.utils.isHexString(messageAsUtf8String)
-      ? ethers.utils.arrayify(messageAsUtf8String)
-      : messageAsUtf8String;
-
-    const signature = await signer.signMessage(messageToSign);
-    this.registerPersonalSign({
-      params: { address: signer.address, message, ...messageContextParams },
+    const currentAddress = this.readCurrentAddress();
+    if (!currentAddress) {
+      throw new Error('Current address not set');
+    }
+    return this.signMessage({
+      signerAddress: currentAddress,
+      message,
+      messageContextParams,
     });
-    return signature;
   }
 
   async removeEthereumChain({

@@ -45,7 +45,8 @@ function WalletListItem({
   const copyButtonRef = useRef<HTMLButtonElement | null>(null);
   const copyButton = (
     <CopyButton
-      address={wallet.address}
+      title="Copy Address"
+      textToCopy={wallet.address}
       onClick={(event) => {
         if (!useCssAnchors) {
           event.stopPropagation();
@@ -60,6 +61,7 @@ function WalletListItem({
           'var(--copy-button-text-color, var(--neutral-500))',
       }}
       tooltipPosition="center-bottom"
+      tooltipContent="Address Copied"
       style={{
         verticalAlign: 'middle',
         ...(useCssAnchors

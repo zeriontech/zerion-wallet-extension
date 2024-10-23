@@ -13,11 +13,12 @@
   background-image: url('~src/ui/assets/success_background.png');
   background-size: cover;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   border-radius: var(--card-border-radius);
   text-align: center;
-  padding: 82px 40px;
+  padding: 48px 40px;
   position: relative;
   animation: appear 500ms ease-in-out;
 }
@@ -62,7 +63,7 @@
 .sparkDecoration {
   position: absolute;
   left: 74px;
-  top: 400px;
+  top: 600px;
 }
 
 .starDecoration {
