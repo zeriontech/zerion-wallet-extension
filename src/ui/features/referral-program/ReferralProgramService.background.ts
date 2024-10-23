@@ -8,7 +8,6 @@ import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
-import { toEthersWallet } from 'src/background/Wallet/helpers/toEthersWallet';
 import { readReferrer, saveReferrer } from './shared/storage';
 
 interface Options {
@@ -24,22 +23,21 @@ class ReferralProgramService {
   }
 
   async signReferralMessage({
-    wallet,
+    address,
     referralCode,
   }: {
-    wallet: BareWallet;
+    address: string;
     referralCode: string;
   }) {
     invariant(this.options, "Options aren't expected to become null");
 
     const walletFacade = this.options.getWallet();
 
-    const signer = toEthersWallet(wallet);
-    const normalizedAddress = normalizeAddress(wallet.address);
+    const normalizedAddress = normalizeAddress(address);
     const message = `${normalizedAddress} -> ${referralCode}`;
 
-    await walletFacade.signMessage({
-      signer,
+    const signature = await walletFacade.signMessage({
+      signerAddress: address,
       message,
       messageContextParams: {
         initiator: INTERNAL_ORIGIN,
@@ -47,23 +45,22 @@ class ReferralProgramService {
       },
     });
 
-    const signature = await signer.signMessage(message);
     return signature;
   }
 
   async signAndSendReferWalletMessage({
-    wallet,
+    address,
     referralCode,
   }: {
-    wallet: BareWallet;
+    address: string;
     referralCode: string;
   }) {
     const signature = await this.signReferralMessage({
-      wallet,
+      address,
       referralCode,
     });
     return ZerionAPI.referWallet({
-      address: wallet.address,
+      address,
       referralCode,
       signature,
     });
@@ -101,7 +98,7 @@ class ReferralProgramService {
         : null;
     const walletsMeta = walletsMetaResponse?.data || [];
 
-    const eligibleWalletsAddresses = walletsMeta
+    const eligibleAddresses = walletsMeta
       .filter(
         (meta) =>
           meta.membership.referrer === null &&
@@ -109,20 +106,9 @@ class ReferralProgramService {
       )
       .map((meta) => meta.address);
 
-    const eligibleWallets = [];
-    for (const eligibleAddress of eligibleWalletsAddresses) {
-      const ownedWallet = ownedBareWallets.find(
-        (wallet) =>
-          normalizeAddress(wallet.address) === normalizeAddress(eligibleAddress)
-      );
-      if (ownedWallet) {
-        eligibleWallets.push(ownedWallet);
-      }
-    }
-
     await Promise.allSettled(
-      eligibleWallets.map((wallet) =>
-        this.signAndSendReferWalletMessage({ wallet, referralCode })
+      eligibleAddresses.map((address) =>
+        this.signAndSendReferWalletMessage({ address, referralCode })
       )
     );
 
@@ -155,7 +141,10 @@ class ReferralProgramService {
 
     await Promise.allSettled(
       walletContainer.wallets.map((wallet) =>
-        this.signAndSendReferWalletMessage({ wallet, referralCode })
+        this.signAndSendReferWalletMessage({
+          address: wallet.address,
+          referralCode,
+        })
       )
     );
   }

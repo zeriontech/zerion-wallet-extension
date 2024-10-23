@@ -1082,10 +1082,25 @@ export class Wallet {
     }
   }
 
-  private getOfflineSigner() {
-    const currentAddress = this.readCurrentAddress();
+  private getOfflineSignerByAddress(address: string) {
     if (!this.record) {
       throw new RecordNotFound();
+    }
+    const wallet = Model.getSignerWalletByAddress(this.record, address);
+    if (!wallet) {
+      throw new Error('Signer wallet for this address is not found');
+    }
+
+    return toEthersWallet(wallet);
+  }
+
+  private getOfflineSigner() {
+    if (!this.record) {
+      throw new RecordNotFound();
+    }
+    const currentAddress = this.readCurrentAddress();
+    if (!currentAddress) {
+      throw new Error('Current address not set');
     }
     const currentWallet = currentAddress
       ? Model.getSignerWalletByAddress(this.record, currentAddress)
@@ -1349,11 +1364,11 @@ export class Wallet {
   }
 
   async signMessage({
-    signer,
+    signerAddress,
     message,
     messageContextParams,
   }: {
-    signer: ethers.Wallet;
+    signerAddress: string;
     message: string;
     messageContextParams: MessageContextParams;
   }) {
@@ -1365,6 +1380,7 @@ export class Wallet {
       ? ethers.utils.arrayify(messageAsUtf8String)
       : messageAsUtf8String;
 
+    const signer = this.getOfflineSignerByAddress(signerAddress);
     const signature = await signer.signMessage(messageToSign);
     this.registerPersonalSign({
       params: { address: signer.address, message, ...messageContextParams },
@@ -1387,8 +1403,15 @@ export class Wallet {
     if (message == null) {
       throw new InvalidParams();
     }
-    const signer = this.getOfflineSigner();
-    return this.signMessage({ signer, message, messageContextParams });
+    const currentAddress = this.readCurrentAddress();
+    if (!currentAddress) {
+      throw new Error('Current address not set');
+    }
+    return this.signMessage({
+      signerAddress: currentAddress,
+      message,
+      messageContextParams,
+    });
   }
 
   async removeEthereumChain({
