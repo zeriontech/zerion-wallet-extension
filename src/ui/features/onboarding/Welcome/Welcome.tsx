@@ -19,7 +19,7 @@ import ImportImg from '../assets/option_import.png';
 import HardwareImg from '../assets/option_hardware.png';
 import * as helpersStyles from '../shared/helperStyles.module.css';
 import { useOnboardingSession } from '../shared/useOnboardingSession';
-import { saveReferrer } from '../../referral-program/shared/storage';
+import { saveReferrerData } from '../../referral-program/shared/storage';
 import { WebAppMessageHandler } from '../Success/WebAppMessageHandler';
 import * as styles from './styles.module.css';
 
@@ -216,7 +216,7 @@ async function setReferralCode(params: unknown) {
     referralCode: params.referralCode,
   });
   const checkedReferrer = checkReferralResponse.data;
-  saveReferrer(checkedReferrer);
+  saveReferrerData(checkedReferrer);
 }
 
 export function Welcome() {

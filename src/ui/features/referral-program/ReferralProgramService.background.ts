@@ -8,7 +8,7 @@ import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
-import { readReferrer, saveReferrer } from './shared/storage';
+import { readSavedReferrerData, saveReferrerData } from './shared/storage';
 
 interface Options {
   getWallet: () => Wallet;
@@ -112,7 +112,7 @@ class ReferralProgramService {
       )
     );
 
-    await saveReferrer(checkedReferrer);
+    await saveReferrerData(checkedReferrer);
 
     if (checkedReferrer.address) {
       await walletFacade.uiAddReadonlyAddress({
@@ -132,7 +132,7 @@ class ReferralProgramService {
   }: {
     walletContainer: WalletContainer;
   }) {
-    const currentReferrer = await readReferrer();
+    const currentReferrer = await readSavedReferrerData();
     const referralCode = currentReferrer?.referralCode;
 
     if (!isSignerContainer(walletContainer) || !referralCode) {
