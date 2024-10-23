@@ -41,7 +41,7 @@ export function CongratulationsWidget({
             </UIText>
           ) : null}
         </VStack>
-        <PremiumTrialBanner />
+        <PremiumTrialBanner backgroundColor="var(--always-white)" />
       </HStack>
       <HStack gap={8} style={{ gridAutoColumns: '1fr 1fr 1fr' }}>
         <VStack gap={8} style={{ alignItems: 'initial' }}>
