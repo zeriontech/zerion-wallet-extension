@@ -62,27 +62,16 @@ function ReferralCodeForm({
 
   const { mutate: applyReferralCode, ...applyReferralCodeMutation } =
     useMutation({
-      mutationFn: async ({
+      mutationFn: ({
         referralCode: rawReferralCode,
       }: {
         referralCode: string;
       }) => {
-        const referralCode = rawReferralCode.trim();
-
-        // TODO: Get my referral code & check if we're referring ourselves
-
-        // if (myReferralCode === referralCode) {
-        //   throw new Error('Can not apply your own referral code');
-        // }
-
-        const referrer = await walletPort.request(
-          'uiApplyReferralCodeToAllWallets',
-          {
-            referralCode,
-          }
-        );
-        onSuccess(referrer);
+        return walletPort.request('uiApplyReferralCodeToAllWallets', {
+          referralCode: rawReferralCode.trim(),
+        });
       },
+      onSuccess,
     });
 
   return (
@@ -95,7 +84,6 @@ function ReferralCodeForm({
           </UIText>
           <QuestionIcon style={{ width: 24, height: 24 }} />
         </HStack>
-
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -110,54 +98,68 @@ function ReferralCodeForm({
             applyReferralCode({ referralCode });
           }}
         >
-          <HStack gap={8} alignItems="center">
-            <ZStack>
-              <Input
-                className={styles.referralCodeInput}
-                name="referralCode"
-                autoFocus={true}
-                boxHeight={40}
-                placeholder="Enter code"
-                required={true}
-                value={referralCode}
-                onChange={(event) => setReferralCode(event.target.value)}
-                disabled={applyReferralCodeMutation.isLoading}
-              />
-              {referralCode.length > 0 ? (
-                <ClearSolidIcon
-                  style={{
-                    width: 20,
-                    height: 20,
-                    cursor: 'pointer',
-                    alignSelf: 'center',
-                    justifySelf: 'end',
-                    color: 'var(--neutral-500)',
-                    marginRight: 8,
-                  }}
-                  onClick={() => setReferralCode('')}
+          <VStack gap={4}>
+            <HStack gap={8} alignItems="center">
+              <ZStack>
+                <Input
+                  className={styles.referralCodeInput}
+                  name="referralCode"
+                  autoFocus={true}
+                  boxHeight={40}
+                  placeholder="Enter code"
+                  required={true}
+                  value={referralCode}
+                  onChange={(event) => setReferralCode(event.target.value)}
+                  disabled={applyReferralCodeMutation.isLoading}
                 />
-              ) : null}
-            </ZStack>
-            <Button
-              kind="regular"
-              style={{
-                padding: 8,
-                height: 40,
-                borderRadius: 8,
-                ['--button-background' as string]: 'var(--always-white)',
-                ['--button-background-hover' as string]: '#f0f0f2',
-              }}
-              disabled={applyReferralCodeMutation.isLoading}
-            >
-              <CheckIcon
+                {referralCode.length > 0 ? (
+                  <ClearSolidIcon
+                    style={{
+                      width: 20,
+                      height: 20,
+                      cursor: 'pointer',
+                      alignSelf: 'center',
+                      justifySelf: 'end',
+                      color: 'var(--neutral-500)',
+                      marginRight: 8,
+                    }}
+                    onClick={() => {
+                      setReferralCode('');
+                      applyReferralCodeMutation.reset();
+                    }}
+                  />
+                ) : null}
+              </ZStack>
+              <Button
+                kind="regular"
                 style={{
-                  color: 'var(--primary)',
-                  width: 24,
-                  height: 24,
+                  padding: 8,
+                  height: 40,
+                  borderRadius: 8,
+                  ['--button-background' as string]: 'var(--always-white)',
+                  ['--button-background-hover' as string]: '#f0f0f2',
                 }}
-              />
-            </Button>
-          </HStack>
+                disabled={applyReferralCodeMutation.isLoading}
+              >
+                <CheckIcon
+                  style={{
+                    color: 'var(--primary)',
+                    width: 24,
+                    height: 24,
+                  }}
+                />
+              </Button>
+            </HStack>
+            {applyReferralCodeMutation.isError ? (
+              <UIText
+                kind="caption/regular"
+                color="var(--negative-500)"
+                style={{ textAlign: 'left' }}
+              >
+                Invalid Referral Code
+              </UIText>
+            ) : null}
+          </VStack>
         </form>
       </VStack>
     </>
