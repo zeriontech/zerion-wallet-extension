@@ -4,6 +4,7 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
 import { useEvmAddressPositions } from 'src/ui/shared/requests/useEvmAddressPositions';
+import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
 
 export function useAddressBackendOrEvmPositions({
   address,
@@ -23,7 +24,7 @@ export function useAddressBackendOrEvmPositions({
     {
       // we query positions for all chains, so we can do it even before the "supported" check is ready
       enabled: isSupportedByBackend == null || isSupportedByBackend,
-      refetchInterval: 20000,
+      refetchInterval: usePositionsRefetchInterval(20000),
     }
   );
   const addressPositions = data?.data;

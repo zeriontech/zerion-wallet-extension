@@ -66,6 +66,7 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
+import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -145,7 +146,7 @@ export function SwapFormComponent() {
   const { data: positionsResponse } = useHttpAddressPositions(
     { addresses: [address], currency },
     { source: useHttpClientSource() },
-    { refetchInterval: 20000 }
+    { refetchInterval: usePositionsRefetchInterval(20000) }
   );
   const positions = positionsResponse?.data ?? null;
 

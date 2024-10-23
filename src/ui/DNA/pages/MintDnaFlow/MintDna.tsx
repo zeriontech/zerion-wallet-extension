@@ -34,6 +34,7 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import { SidePanel } from 'src/ui/features/onboarding/shared/SidePanel';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
+import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
 import * as helpersStyles from '../../shared/styles.module.css';
 import { Step } from '../../shared/Step';
 import { DNA_MINT_CONTRACT_ADDRESS } from '../../shared/constants';
@@ -70,7 +71,10 @@ function useDnaMintTransaction(address: string) {
   const { data, isLoading: positionsAreLoading } = useHttpAddressPositions(
     { addresses: [address], assetIds: ['eth'], currency },
     { source: useHttpClientSource() },
-    { enabled: Boolean(address) }
+    {
+      enabled: Boolean(address),
+      refetchInterval: usePositionsRefetchInterval(false),
+    }
   );
 
   const ethPosition = useMemo(() => {
