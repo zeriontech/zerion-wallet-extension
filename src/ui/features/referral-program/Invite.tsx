@@ -157,7 +157,11 @@ function StatsItem({
   return (
     <Frame style={{ padding: 16 }}>
       <VStack gap={8}>
-        <HStack gap={16} justifyContent="space-between">
+        <HStack
+          gap={16}
+          justifyContent="space-between"
+          style={{ gridAutoColumns: '1fr auto' }}
+        >
           {value}
           {icon}
         </HStack>
@@ -407,9 +411,8 @@ export function Invite() {
             )}
           </VStack>
         </VStack>
-        <BottomSheetDialog
+        <CenteredDialog
           ref={walletSelectDialogRef}
-          height="fit-content"
           renderWhenOpen={() => (
             <WalletSelectDialog
               walletGroups={ownedWalletGroups}
