@@ -1,13 +1,10 @@
 import React from 'react';
 import { getWalletDisplayName } from 'src/ui/shared/getWalletDisplayName';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
-import cx from 'classnames';
-import * as styles from './styles.module.css';
 
 export function ReferrerLink({
   handle,
   address,
-  className,
   ...props
 }: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
   handle: string | null;
@@ -23,7 +20,7 @@ export function ReferrerLink({
       href={`https://app.zerion.io/${address}/overview`}
       target="_blank"
       rel="noopener noreferrer"
-      className={cx(styles.referrerLink, className)}
+      style={{ wordBreak: 'break-all' }}
       {...props}
     >
       {displayName}

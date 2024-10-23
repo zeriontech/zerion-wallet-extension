@@ -10,12 +10,7 @@ export function useWalletsMeta({
 }) {
   return useQuery({
     enabled: enabled && addresses.length > 0,
-    queryKey: ['zpi/getWalletsMeta', addresses],
-    queryFn: async () => {
-      const response = await ZerionAPI.getWalletsMeta({
-        identifiers: addresses,
-      });
-      return response.data;
-    },
+    queryKey: ['ZerionAPI.getWalletsMetaByChunks', addresses],
+    queryFn: () => ZerionAPI.getWalletsMetaByChunks(addresses),
   });
 }

@@ -1,3 +1,4 @@
+import { isTruthy } from 'is-truthy-ts';
 import type { ClientOptions } from '../shared';
 import { CLIENT_DEFAULTS, ZerionHttpClient } from '../shared';
 
@@ -132,4 +133,23 @@ export function getWalletsMeta(
   const params = new URLSearchParams({ identifiers: identifiers.join(',') });
   const endpoint = `wallet/get-meta/v1?${params}`;
   return ZerionHttpClient.get<Response>({ endpoint, ...options });
+}
+
+function splitIntoChunks<T>(arr: T[], size: number) {
+  const chunks: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    chunks.push(arr.slice(i, i + size));
+  }
+  return chunks;
+}
+
+export async function getWalletsMetaByChunks(addresses: string[]) {
+  const chunks = splitIntoChunks(addresses, 10);
+  const results = await Promise.all(
+    chunks.map((chunk) => getWalletsMeta({ identifiers: chunk }))
+  );
+  return results
+    .map((response) => response.data)
+    .filter(isTruthy)
+    .flat();
 }
