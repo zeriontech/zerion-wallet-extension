@@ -21,7 +21,7 @@ export function EnterReferralCodeDialog({
 }) {
   const { mutate: applyReferralCode, ...applyReferralCodeMutation } =
     useMutation({
-      mutationFn: async ({
+      mutationFn: ({
         referralCode: rawReferralCode,
       }: {
         referralCode: string;
@@ -67,7 +67,6 @@ export function EnterReferralCodeDialog({
               required={true}
               disabled={applyReferralCodeMutation.isLoading}
             />
-
             {applyReferralCodeMutation.isError ? (
               <UIText kind="caption/regular" color="var(--negative-500)">
                 Invalid Referral Code
