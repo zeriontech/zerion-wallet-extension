@@ -175,7 +175,7 @@ function Stats({ earned, referred }: { earned: number; referred: number }) {
       {hasReferralActivity ? (
         <HStack gap={8} style={{ gridAutoColumns: '1fr 1fr' }}>
           <StatsItem
-            icon={<XpIcon />}
+            icon={<XpIcon style={{ color: 'var(--black)' }} />}
             text={
               <UIText kind="small/regular" color="var(--neutral-500)">
                 Earned
