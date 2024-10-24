@@ -24,7 +24,7 @@ export function formatCurrencyValueExtra(
     /**
      * Example: output near-zero values as <$0.01
      * When provided, this value will be used in the "less than"
-     * representation, e.g. if zeroRoundingFallback: 0.004,
+     * representation, e.g. if zeroRoundingFallback: 0.04,
      * output will be formatted as `<$0.04` (according to locale and currency options)
      * It will be used ONLY is the original value gets rounded to zero
      * If the original value is less than zeroRoundingFallback, but not rounded to zero,
