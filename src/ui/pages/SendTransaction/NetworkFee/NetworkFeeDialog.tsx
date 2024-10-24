@@ -68,7 +68,7 @@ function getCustomFeeDescription({
   return `${
     fiat
       ? `${formatCurrencyValueExtra(fiat, 'en', currency, {
-          minDisplayValue: 0.01,
+          zeroRoundingFallback: 0.01,
         })} (`
       : ''
   }${formatGasPrice(gasPrice)}${fiat ? ')' : ''}`;
@@ -507,7 +507,7 @@ function NetworkFeeButton({
           >
             {totalValueExceedsBalance ? 'Up to ' : null}
             {formatCurrencyValueExtra(feeValueFiat, 'en', currency, {
-              minDisplayValue: 0.01,
+              zeroRoundingFallback: 0.01,
             })}
           </UIText>
         ) : feeValueCommon && nativeAssetSymbol ? (
