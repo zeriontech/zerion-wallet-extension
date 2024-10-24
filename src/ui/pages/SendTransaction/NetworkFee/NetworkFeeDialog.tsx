@@ -26,7 +26,7 @@ import type {
   IncomingTransactionWithFrom,
 } from 'src/modules/ethereum/types/IncomingTransaction';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
-import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
+import { formatCurrencyValueExtra } from 'src/shared/units/formatCurrencyValue';
 import {
   formatGasPrice,
   gweiToWei,
@@ -66,7 +66,11 @@ function getCustomFeeDescription({
   currency: string;
 }) {
   return `${
-    fiat ? `${formatCurrencyValue(fiat, 'en', currency)} (` : ''
+    fiat
+      ? `${formatCurrencyValueExtra(fiat, 'en', currency, {
+          minDisplayValue: 0.01,
+        })} (`
+      : ''
   }${formatGasPrice(gasPrice)}${fiat ? ')' : ''}`;
 }
 
@@ -501,8 +505,10 @@ function NetworkFeeButton({
             kind="small/regular"
             color={selected ? 'var(--primary)' : 'var(--black)'}
           >
-            {totalValueExceedsBalance ? 'Up to ' : null}~
-            {formatCurrencyValue(feeValueFiat, 'en', currency)}
+            {totalValueExceedsBalance ? 'Up to ' : null}
+            {formatCurrencyValueExtra(feeValueFiat, 'en', currency, {
+              minDisplayValue: 0.01,
+            })}
           </UIText>
         ) : feeValueCommon && nativeAssetSymbol ? (
           <UIText
