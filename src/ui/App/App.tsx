@@ -78,6 +78,7 @@ import { Onboarding } from '../features/onboarding';
 import { RevealPrivateKey } from '../pages/RevealPrivateKey';
 import { urlContext } from '../../shared/UrlContext';
 import { BackupPage } from '../pages/Backup/Backup';
+import { XpDrop } from '../features/xp-drop';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -380,6 +381,14 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             element={
               <RequireAuth>
                 <SwapForm />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/xp-drop/*"
+            element={
+              <RequireAuth>
+                <XpDrop />
               </RequireAuth>
             }
           />

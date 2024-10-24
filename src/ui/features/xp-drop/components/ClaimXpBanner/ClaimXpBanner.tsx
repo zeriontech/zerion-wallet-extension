@@ -23,7 +23,7 @@ export function ClaimXpBanner() {
           kind="ghost"
           size={36}
           as={Link}
-          to="/claim-xp"
+          to="/xp-drop"
           style={{
             minWidth: 109,
             background: 'linear-gradient(90deg, #a024ef 0%, #fdbb6c 100%)',
