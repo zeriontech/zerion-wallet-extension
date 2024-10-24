@@ -79,7 +79,7 @@ export function NetworkFee({
   const feeValuePrefix = totalValueExceedsBalance ? 'Up to ' : '';
   const feeValueFormatted = feeValueFiat
     ? formatCurrencyValueExtra(feeValueFiat, 'en', currency, {
-        minDisplayValue: 0.01,
+        zeroRoundingFallback: 0.01,
       })
     : feeValueCommon
     ? formatTokenValue(feeValueCommon.toString(), nativeAssetSymbol)
