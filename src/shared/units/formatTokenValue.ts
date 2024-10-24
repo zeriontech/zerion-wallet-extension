@@ -10,14 +10,13 @@ const tokenValueFormatters = {
   '<0.1': new Intl.NumberFormat('en', { maximumSignificantDigits: 2 }),
 };
 
-export function roundTokenValue(rawValue: BigNumber.Value) {
-  const value =
-    rawValue instanceof BigNumber ? rawValue.toNumber() : Number(rawValue);
+export function roundTokenValue(value: BigNumber.Value) {
+  const number = value instanceof BigNumber ? value.toNumber() : Number(value);
   const formatter =
-    Math.abs(value) < 0.1
+    Math.abs(number) < 0.1
       ? tokenValueFormatters['<0.1']
       : tokenValueFormatters.default;
-  return formatter.format(value);
+  return formatter.format(number);
 }
 
 const getDefaultFormatter = memoize((notation?: 'compact') => {
