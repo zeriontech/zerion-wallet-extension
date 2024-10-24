@@ -51,7 +51,7 @@ describe('formatCurrencyValueExtra', () => {
     },
     {
       description:
-        'minDisplayValue should NOT be used because formatted output is not zero',
+        'minDisplayValue should NOT be used when formatted output is not zero',
       input: {
         value: 0.023,
         locale: 'en',
