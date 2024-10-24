@@ -4,7 +4,7 @@ export interface CurrencyConfig {
   symbol: string;
   modifyParts?: (parts: Intl.NumberFormatPart[]) => Intl.NumberFormatPart[];
   options:
-    | Intl.NumberFormatOptions
+    | (Intl.NumberFormatOptions & { default?: never; lessThanOnde?: never })
     | {
         default: null | Intl.NumberFormatOptions;
         lessThanOne: null | Intl.NumberFormatOptions;
@@ -49,7 +49,7 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
     symbol: 'Ξ',
     modifyParts: setCustomSymbol('Ξ'),
     options: {
-      maximumFractionDigits: 4,
+      default: { maximumFractionDigits: 4 },
       lessThanOne: { maximumFractionDigits: 6 },
     },
   },
@@ -59,7 +59,7 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
     symbol: '₿',
     modifyParts: setCustomSymbol('₿'),
     options: {
-      maximumFractionDigits: 4,
+      default: { maximumFractionDigits: 4 },
       lessThanOne: { maximumFractionDigits: 6 },
     },
   },
