@@ -1,11 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import type { To } from 'react-router-dom';
-import {
-  Link,
-  Route,
-  Routes,
-  unstable_useBlocker as useBlocker,
-} from 'react-router-dom';
+import { Link, Route, Routes } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -57,7 +52,7 @@ function ExitConfirmationDialog({
         title={<UIText kind="headline/h3">Do you want to exit?</UIText>}
         closeKind="icon"
       />
-      <UIText kind="body/regular" color="var(--neutral-400)">
+      <UIText kind="body/regular" color="var(--neutral-700)">
         You can resume claiming your XP whenever you're ready
       </UIText>
       <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
@@ -83,20 +78,10 @@ function OnboardingStep({
   buttonText: string;
   children: React.ReactNode;
 }) {
+  // TODO: Show confirmation dialog when the user attempts to navigate back
   const exitConfirmationDialogRef = useRef<HTMLDialogElementInterface | null>(
     null
   );
-
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      currentLocation.pathname !== nextLocation.pathname
-  );
-
-  useEffect(() => {
-    if (blocker.state === 'blocked') {
-      exitConfirmationDialogRef.current?.showModal();
-    }
-  }, [blocker.state]);
 
   return (
     <>
@@ -118,12 +103,12 @@ function OnboardingStep({
         renderWhenOpen={() => (
           <ExitConfirmationDialog
             onCancel={() => {
+              // TODO: Prevent route change
               exitConfirmationDialogRef.current?.close();
-              blocker.reset?.();
             }}
             onExit={() => {
+              // TODO: Allow route change
               exitConfirmationDialogRef.current?.close();
-              blocker.proceed?.();
             }}
           />
         )}
