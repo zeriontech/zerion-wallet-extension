@@ -1,7 +1,11 @@
 import ky from 'ky';
 import { platform } from 'src/shared/analytics/platform';
 import { version } from 'src/shared/packageVersion';
-import { ZERION_API_URL, ZERION_TESTNET_API_URL } from 'src/env/config';
+import {
+  BACKEND_ENV,
+  ZERION_API_URL,
+  ZERION_TESTNET_API_URL,
+} from 'src/env/config';
 import { invariant } from 'src/shared/invariant';
 
 export type NetworksSource = 'mainnet' | 'testnet';
@@ -47,15 +51,28 @@ const resolveUrl = (input: UrlInput): string | URL => {
   }
 };
 
+function addBackendEnvToURL(url: string | URL) {
+  if (!BACKEND_ENV) {
+    return url;
+  }
+  const urlObj = new URL(url);
+  urlObj.searchParams.set('backend_env', BACKEND_ENV);
+  return urlObj.toString();
+}
+
 export class ZerionHttpClient {
   static get<T>(options: GetOptions & Options) {
     const url = resolveUrl(options);
-    return ky.get(url, { headers: createHeaders(options) }).json<T>();
+    return ky
+      .get(addBackendEnvToURL(url), { headers: createHeaders(options) })
+      .json<T>();
   }
 
   static post<T>(options: PostOptions & Options) {
     const url = resolveUrl(options);
     const { body } = options;
-    return ky.post(url, { body, headers: createHeaders(options) }).json<T>();
+    return ky
+      .post(addBackendEnvToURL(url), { body, headers: createHeaders(options) })
+      .json<T>();
   }
 }
