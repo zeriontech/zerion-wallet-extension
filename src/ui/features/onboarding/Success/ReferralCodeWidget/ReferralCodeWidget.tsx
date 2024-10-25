@@ -4,7 +4,6 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import GiftIcon from 'jsx:src/ui/assets/gift.svg';
 import ClearSolidIcon from 'jsx:src/ui/assets/clear-solid.svg';
-import QuestionIcon from 'jsx:src/ui/assets/question-hint.svg';
 import CheckIcon from 'jsx:src/ui/assets/check.svg';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { collectData } from 'src/ui/shared/form-data';
@@ -78,12 +77,13 @@ function ReferralCodeForm({
     <>
       <Spacer height={28} />
       <VStack gap={16} className={styles.referralCodeForm}>
-        <HStack gap={8} alignItems="center">
-          <UIText kind="body/accent" color="var(--always-white)">
-            Referral Code
-          </UIText>
-          <QuestionIcon style={{ width: 24, height: 24 }} />
-        </HStack>
+        <UIText
+          kind="body/accent"
+          color="var(--always-white)"
+          style={{ textAlign: 'left' }}
+        >
+          Referral Code
+        </UIText>
         <form
           onSubmit={(event) => {
             event.preventDefault();
