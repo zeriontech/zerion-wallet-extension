@@ -27,5 +27,13 @@ export function initializeSidepanelEvents() {
   if (urlContext.windowType === 'sidepanel') {
     initializeSidepanelMessaging();
     handleActiveTabChange();
+
+    const params = new URL(window.location.href).searchParams;
+    if (params.get('openPanelOnActionClick') === 'true') {
+      // TODO: remove this param after we're done?
+      chrome.sidePanel.setPanelBehavior({
+        openPanelOnActionClick: true,
+      });
+    }
   }
 }

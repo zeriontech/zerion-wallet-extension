@@ -27,9 +27,7 @@ function SidepanelOptionsButtonComponent() {
             openSidePanel({
               pathname: '/',
               searchParams: null,
-            });
-            await chrome.sidePanel.setPanelBehavior({
-              openPanelOnActionClick: true,
+              openPanelOnActionClickParam: true,
             });
             closeIfNotInTab();
           } else {

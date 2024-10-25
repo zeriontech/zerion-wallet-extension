@@ -22,10 +22,13 @@ async function resolveOpenOptions(
 export async function openSidePanel({
   pathname,
   searchParams,
+  openPanelOnActionClickParam,
   openOptions,
 }: {
   pathname: string;
   searchParams: URLSearchParams | null;
+  /** Open sidepanel with a search param that will persist it after it opens */
+  openPanelOnActionClickParam?: boolean;
   openOptions?: chrome.sidePanel.OpenOptions;
 }) {
   const url = getSidepanelUrl();
@@ -34,6 +37,9 @@ export async function openSidePanel({
     url.hash = `${pathname}?${searchParams.toString()}`;
   } else {
     url.hash = pathname;
+  }
+  if (openPanelOnActionClickParam) {
+    url.searchParams.set('openPanelOnActionClick', 'true');
   }
 
   const effectiveOpenOptions = await resolveOpenOptions(openOptions);
