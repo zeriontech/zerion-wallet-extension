@@ -1,0 +1,17 @@
+.onboardingStep {
+  text-align: center;
+}
+
+.gradientText {
+  background: linear-gradient(90deg, #a024ef 0%, #fdbb6c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.coverImage {
+  position: relative;
+  left: -16px;
+  width: calc(100% + 32px);
+  objectfit: cover;
+}

@@ -6,8 +6,8 @@ import { XpDropClaim } from './XpDropClaim';
 export function XpDrop() {
   return (
     <Routes>
-      <Route path="/" element={<XpDropOnboarding />} />
-      <Route path="/claim" element={<XpDropClaim />} />
+      <Route path="/onboarding/*" element={<XpDropOnboarding />} />
+      <Route path="/claim/*" element={<XpDropClaim />} />
     </Routes>
   );
 }
