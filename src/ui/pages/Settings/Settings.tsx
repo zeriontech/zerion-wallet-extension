@@ -46,6 +46,7 @@ import { StickyBottomPanel } from 'src/ui/ui-kit/BottomPanel';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useBackgroundKind } from 'src/ui/components/Background';
+import { openHrefInTabIfSidepanel } from 'src/ui/shared/openInTabIfInSidepanel';
 import { Security } from '../Security';
 import { BackupFlowSettingsSection } from './BackupFlowSettingsSection';
 import { PreferencesPage } from './Preferences';
@@ -138,7 +139,8 @@ function SettingsMain() {
         <Frame>
           <VStack gap={0}>
             <FrameListItemAnchor
-              href="https://help.zerion.io/en/collections/5525626-zerion-extension"
+              onClick={openHrefInTabIfSidepanel}
+              href="https://help.zerion.io/"
               target="_blank"
               rel="noopener noreferrer"
             >
