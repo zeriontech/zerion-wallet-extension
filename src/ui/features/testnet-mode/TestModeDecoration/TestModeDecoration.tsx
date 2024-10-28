@@ -27,6 +27,13 @@ function TestModeDecorationComponent() {
   const checkboxId = useId();
   const { shortcutsDisabled } = useStore(testnetModeStore);
 
+  useBodyStyle(
+    useMemo(
+      () => ({ ['--technical-panel-bottom-height' as string]: '40px' }),
+      []
+    )
+  );
+
   const isDialog = urlContext.windowType === 'dialog';
   const isSidepanel = urlContext.windowType === 'sidepanel';
   const shouldRenderSomething = !isDialog || on;
