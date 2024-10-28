@@ -2,7 +2,7 @@ import { wait } from 'src/shared/wait';
 import type { Client } from 'defi-sdk';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 import { fetchChains, getNetworksBySearch } from '../ethereum/chains/requests';
-import { isTestClient } from '../defi-sdk';
+import { isTestClient } from '../defi-sdk/isTestClient';
 import type { NetworkConfig } from './NetworkConfig';
 import { networksFallbackInfo } from './networks-fallback';
 import { Networks } from './Networks';

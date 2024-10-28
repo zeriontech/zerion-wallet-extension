@@ -14,6 +14,10 @@ export const emitter = createNanoEvents<{
   errorScreenView: (data: { message: string; location: string }) => void;
   loaderScreenView: (data: { location: string; duration: number }) => void;
   reloadExtension: () => void;
+  navigationRequest: (params: { pathname: string }) => void;
+  // this event means that some dapp-related data is updated (e.g. current account, chain)
+  ethereumEvent: () => void;
+  'sidepanel/activeTabUpdated': () => void;
 }>();
 
 emitter.on('mutationError', (error, _variables, context) => {

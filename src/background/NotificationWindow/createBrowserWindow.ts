@@ -38,7 +38,7 @@ export async function createBrowserWindow({
 }: WindowProps) {
   const id = nanoid();
   const params = new URLSearchParams(search);
-  params.append('windowId', String(id));
+  params.append('windowId', id);
 
   const {
     top: currentWindowTop = 0,

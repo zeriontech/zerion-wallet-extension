@@ -25,6 +25,14 @@ emitter.on('uiAccountsChanged', () => {
   });
 });
 
+emitter.on('sidepanel/activeTabUpdated', () => {
+  queryClient.refetchQueries(['activeTab/origin']);
+});
+
+emitter.on('ethereumEvent', () => {
+  queryClient.refetchQueries(['requestChainForOrigin']);
+});
+
 emitter.on('sessionLogout', () => {
   queryClient.getMutationCache().clear();
   queryClient.removeQueries();
