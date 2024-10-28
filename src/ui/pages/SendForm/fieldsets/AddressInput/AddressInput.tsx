@@ -94,6 +94,7 @@ const SuggestedItem = React.forwardRef(
       domainNames,
       getTitle,
       highlighted,
+      visible,
       ...props // downshift props
     }: {
       item: Item;
@@ -102,6 +103,7 @@ const SuggestedItem = React.forwardRef(
       value: string | null;
       getTitle(item: Item): string;
       highlighted: boolean;
+      visible: boolean;
     },
     ref: React.Ref<HTMLButtonElement>
   ) => {
@@ -167,6 +169,7 @@ const SuggestedItem = React.forwardRef(
           </HStack>
           <PortfolioValue
             address={item.address}
+            enabled={visible}
             render={(query) => (
               <UIText kind="body/accent">
                 {query.data ? (
@@ -430,6 +433,7 @@ export function AddressInput({
                   item={item}
                   index={index}
                   highlighted={highlightedIndex === index}
+                  visible={showMenu}
                   domainNames={domainNames[item.address]}
                   getTitle={getTitle}
                 />
@@ -460,6 +464,7 @@ export function AddressInput({
                   item={item}
                   index={index}
                   highlighted={highlightedIndex === index}
+                  visible={showMenu}
                   domainNames={domainNames[item.address]}
                   getTitle={getTitle}
                 />
