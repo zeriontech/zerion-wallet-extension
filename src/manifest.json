@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "__MSG_appName__",
   "short_name": "__MSG_appName__",
-  "version": "1.14.0",
+  "version": "1.15.0",
   "default_locale": "en",
   "description": "__MSG_appDescription__",
   "icons": {
@@ -27,11 +27,15 @@
   },
   "commands": {
     "sidepanel_open_custom": {
-      "suggested_key": { "default": "Ctrl+Shift+S" },
+      "suggested_key": {
+        "default": "Ctrl+Shift+S"
+      },
       "description": "Toggle Sidepanel View"
     },
     "_execute_action": {
-      "suggested_key": { "default": "Ctrl+Shift+E" }
+      "suggested_key": {
+        "default": "Ctrl+Shift+E"
+      }
     }
   },
   "background": {
