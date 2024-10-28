@@ -18,13 +18,17 @@ function SidepanelOptionsButtonComponent() {
   return (
     <div style={{ position: 'relative' }}>
       <Button
-        title={isSidepanel ? 'Close Sidepanel' : 'Open Sidepanel'}
+        title={
+          isSidepanel
+            ? 'Close Sidepanel, open next time as popup'
+            : 'Open Sidepanel'
+        }
         kind="ghost"
         size={36}
         style={{ paddingInline: 8, ['anchorName' as string]: '--popover-1' }}
         onClick={async () => {
           if (!isSidepanel) {
-            openSidePanel({
+            await openSidePanel({
               pathname: '/',
               searchParams: null,
               openPanelOnActionClickParam: true,
