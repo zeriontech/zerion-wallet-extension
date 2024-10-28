@@ -49,14 +49,10 @@ export function ImportSuccess() {
           }}
         >
           {addresses.map((address) => (
-            <Surface padding={8}>
+            <Surface padding={8} key={address}>
               <WalletMedia
                 activeIndicator={false}
-                key={address}
-                wallet={{
-                  address,
-                  name: null,
-                }}
+                wallet={{ address, name: null }}
                 iconSize={32}
                 composition={Composition.nameAndPortfolio}
               />
