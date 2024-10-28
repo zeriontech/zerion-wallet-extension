@@ -2,7 +2,6 @@ import { isTruthy } from 'is-truthy-ts';
 import React, { useRef } from 'react';
 import type { NetworkFeeConfiguration } from '@zeriontech/transactions';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
-import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -15,6 +14,7 @@ import type { Chain } from 'src/modules/networks/Chain';
 import type { IncomingTransactionWithFrom } from 'src/modules/ethereum/types/IncomingTransaction';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { formatCurrencyValueExtra } from 'src/shared/units/formatCurrencyValue';
 import type { TransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import { NetworkFeeDialog } from './NetworkFeeDialog';
 import { NETWORK_SPEED_TO_TITLE } from './constants';
@@ -78,7 +78,9 @@ export function NetworkFee({
 
   const feeValuePrefix = totalValueExceedsBalance ? 'Up to ' : '';
   const feeValueFormatted = feeValueFiat
-    ? formatCurrencyValue(feeValueFiat, 'en', currency)
+    ? formatCurrencyValueExtra(feeValueFiat, 'en', currency, {
+        zeroRoundingFallback: 0.01,
+      })
     : feeValueCommon
     ? formatTokenValue(feeValueCommon.toString(), nativeAssetSymbol)
     : undefined;

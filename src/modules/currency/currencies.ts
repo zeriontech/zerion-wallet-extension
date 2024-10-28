@@ -12,7 +12,7 @@ export interface CurrencyConfig {
     | null;
 }
 
-export function resolveOptions(
+function resolveCurrencyOptions(
   value: number,
   config: CurrencyConfig | null
 ): Intl.NumberFormatOptions | null {
@@ -27,6 +27,17 @@ export function resolveOptions(
     return config.options;
   }
   return null;
+}
+
+export function resolveOptions(
+  value: number,
+  config: CurrencyConfig | null,
+  runtimeOptions: Intl.NumberFormatOptions | null
+): Intl.NumberFormatOptions | null {
+  const currencyOptions = resolveCurrencyOptions(value, config);
+  return runtimeOptions
+    ? { ...currencyOptions, ...runtimeOptions }
+    : currencyOptions;
 }
 
 const setCustomSymbol = (symbol: string) => (parts: Intl.NumberFormatPart[]) =>
