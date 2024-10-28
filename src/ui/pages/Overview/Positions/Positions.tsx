@@ -62,6 +62,7 @@ import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientS
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import type { WalletPortfolio } from 'src/modules/zerion-api/requests/wallet-get-portfolio';
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
+import { openHrefInTabIfSidepanel } from 'src/ui/shared/openInTabIfInSidepanel';
 import {
   TAB_SELECTOR_HEIGHT,
   TAB_TOP_PADDING,
@@ -528,6 +529,7 @@ function PositionList({
               // TODO: remove this conditional when we have Asset Page in extension
               component: showAsLink ? (
                 <SurfaceItemAnchor
+                  onClick={openHrefInTabIfSidepanel}
                   href={`https://app.zerion.io/tokens/${
                     position.asset.symbol
                   }-${position.asset.asset_code}${
