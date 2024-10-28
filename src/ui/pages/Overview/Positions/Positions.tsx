@@ -61,6 +61,7 @@ import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletP
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import type { WalletPortfolio } from 'src/modules/zerion-api/requests/wallet-get-portfolio';
+import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
 import {
   TAB_SELECTOR_HEIGHT,
   TAB_TOP_PADDING,
@@ -660,7 +661,7 @@ function MultiChainPositions({
   const { data, isLoading } = useHttpAddressPositions(
     { addresses: [address], currency },
     { source: useHttpClientSource() },
-    { refetchInterval: 40000 }
+    { refetchInterval: usePositionsRefetchInterval(40000) }
   );
   const positions = data?.data;
 

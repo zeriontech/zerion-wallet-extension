@@ -1,16 +1,17 @@
-import React, { useMemo } from 'react';
-import { PageTop } from 'src/ui/components/PageTop';
-import type { Asset } from 'defi-sdk';
 import BigNumber from 'bignumber.js';
-import { ViewLoading } from 'src/ui/components/ViewLoading';
-import { invariant } from 'src/shared/invariant';
+import type { Asset } from 'defi-sdk';
+import React, { useMemo } from 'react';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { Chain } from 'src/modules/networks/Chain';
 import { getCommonQuantity } from 'src/modules/networks/asset';
-import { useCurrency } from 'src/modules/currency/useCurrency';
-import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
-import { NavigationBar } from '../NavigationBar';
+import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
+import { invariant } from 'src/shared/invariant';
+import { PageTop } from 'src/ui/components/PageTop';
+import { ViewLoading } from 'src/ui/components/ViewLoading';
+import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
 import { AllowanceForm } from '../AllowanceForm';
+import { NavigationBar } from '../NavigationBar';
 
 export function AllowanceView({
   address,
@@ -37,7 +38,10 @@ export function AllowanceView({
   const { data, isLoading: positionsAreLoading } = useHttpAddressPositions(
     { addresses: [address], currency, assetIds },
     { source: useHttpClientSource() },
-    { enabled: Boolean(asset), refetchInterval: 10000 }
+    {
+      enabled: Boolean(asset),
+      refetchInterval: usePositionsRefetchInterval(10000),
+    }
   );
   const positions = data?.data;
 

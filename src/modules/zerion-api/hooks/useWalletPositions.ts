@@ -25,7 +25,7 @@ export function useHttpAddressPositions(
     suspense?: boolean;
     enabled?: boolean;
     keepPreviousData?: boolean;
-    refetchInterval?: number;
+    refetchInterval?: number | false;
   } = {}
 ) {
   return useQuery({

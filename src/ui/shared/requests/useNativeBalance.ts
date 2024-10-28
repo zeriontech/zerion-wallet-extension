@@ -9,6 +9,7 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
+import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
 import { useEvmNativeAddressPosition } from './useEvmNativeAddressPosition';
 import { useNativeAssetId } from './useNativeAsset';
 
@@ -35,7 +36,10 @@ function useNativeAddressPosition({
   } = useHttpAddressPositions(
     { addresses: [address], assetIds: [id].filter(isTruthy), currency },
     { source: useHttpClientSource() },
-    { enabled: enabled && Boolean(id) }
+    {
+      enabled: enabled && Boolean(id),
+      refetchInterval: usePositionsRefetchInterval(false),
+    }
   );
 
   return useMemo(() => {
