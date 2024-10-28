@@ -1,16 +1,33 @@
-import BigNumber from 'bignumber.js';
-import memoize from 'memoize-one';
-
 export interface CurrencyConfig {
   name: string;
   code: string;
   symbol: string;
   modifyParts?: (parts: Intl.NumberFormatPart[]) => Intl.NumberFormatPart[];
+  options:
+    | (Intl.NumberFormatOptions & { default?: never; lessThanOnde?: never })
+    | {
+        default: null | Intl.NumberFormatOptions;
+        lessThanOne: null | Intl.NumberFormatOptions;
+      }
+    | null;
 }
 
-const noDecimalsConfig = { minimumFractionDigits: 0, maximumFractionDigits: 0 };
-const sixFractionalDigitsConfig = { maximumFractionDigits: 6 };
-const fourFractionalDigitsConfig = { maximumFractionDigits: 4 };
+export function resolveOptions(
+  value: number,
+  config: CurrencyConfig | null
+): Intl.NumberFormatOptions | null {
+  if (config) {
+    if (config.options && 'lessThanOne' in config.options) {
+      const absValue = Math.abs(value);
+      if (config.options.lessThanOne && absValue < 1) {
+        return config.options.lessThanOne;
+      }
+      return config.options.default;
+    }
+    return config.options;
+  }
+  return null;
+}
 
 const setCustomSymbol = (symbol: string) => (parts: Intl.NumberFormatPart[]) =>
   parts
@@ -24,99 +41,98 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
     name: 'US Dollar',
     code: 'usd',
     symbol: '$',
+    options: null,
   },
   eth: {
     name: 'Ether',
     code: 'eth',
     symbol: 'Ξ',
     modifyParts: setCustomSymbol('Ξ'),
+    options: {
+      default: { maximumFractionDigits: 4 },
+      lessThanOne: { maximumFractionDigits: 6 },
+    },
   },
   btc: {
     name: 'Bitcoin',
     code: 'btc',
     symbol: '₿',
     modifyParts: setCustomSymbol('₿'),
+    options: {
+      default: { maximumFractionDigits: 4 },
+      lessThanOne: { maximumFractionDigits: 6 },
+    },
   },
   eur: {
     name: 'Euro',
     code: 'eur',
     symbol: '€',
+    options: null,
   },
   gbp: {
     name: 'British Pound',
     code: 'gbp',
     symbol: '£',
+    options: null,
   },
   cny: {
     name: 'Chinese Yuan',
     code: 'cny',
     symbol: '¥',
+    options: null,
   },
   rub: {
     name: 'Russian Ruble',
     code: 'rub',
     symbol: '₽',
-    modifyParts: setCustomSymbol('₽'),
+    options: { currencyDisplay: 'narrowSymbol' },
   },
   krw: {
     name: 'South Korean Won',
     code: 'krw',
     symbol: '₩',
+    options: { minimumFractionDigits: 0, maximumFractionDigits: 0 },
   },
   aud: {
     name: 'Australian Dollar',
     code: 'aud',
     symbol: '$',
+    options: null,
   },
   inr: {
     name: 'Indian Rupee',
     code: 'inr',
     symbol: '₹',
+    options: null,
   },
   jpy: {
     name: 'Japanese Yen',
     code: 'jpy',
     symbol: '¥',
+    options: null,
   },
   try: {
     name: 'Turkish Lira',
     code: 'try',
     symbol: '₺',
-    modifyParts: setCustomSymbol('₺'),
+    options: { currencyDisplay: 'narrowSymbol' },
   },
   cad: {
     name: 'Canadian Dollar',
     code: 'cad',
     symbol: '$',
+    options: null,
   },
   nzd: {
     name: 'New Zealand Dollar',
     code: 'nzd',
     symbol: '$',
+    options: null,
   },
   zar: {
     name: 'South African Rand',
     code: 'zar',
     symbol: 'R',
-    modifyParts: setCustomSymbol('R'),
+    options: { currencyDisplay: 'narrowSymbol' },
   },
-};
-
-export const FORMATTER_CONFIG: Record<
-  string,
-  (value: BigNumber.Value) => Partial<Intl.NumberFormatOptions>
-> = {
-  eth: memoize((value) => {
-    return {
-      ...(new BigNumber(value).isLessThan(1)
-        ? sixFractionalDigitsConfig
-        : fourFractionalDigitsConfig),
-    };
-  }),
-  btc: memoize((value) => {
-    return new BigNumber(value).isLessThan(1)
-      ? sixFractionalDigitsConfig
-      : fourFractionalDigitsConfig;
-  }),
-  krw: () => noDecimalsConfig,
 };

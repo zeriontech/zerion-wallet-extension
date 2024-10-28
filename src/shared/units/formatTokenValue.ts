@@ -2,22 +2,21 @@ import { BigNumber } from 'bignumber.js';
 import memoize from 'lodash/memoize';
 import { NBSP } from '../../ui/shared/typography';
 
-function countFractionalZeros(value: string) {
-  return value.match(/\.(0+)[1-9]/)?.[1].length ?? 0;
-}
+const tokenValueFormatters = {
+  default: new Intl.NumberFormat('en', {
+    useGrouping: false,
+    maximumFractionDigits: 3,
+  }),
+  '<0.1': new Intl.NumberFormat('en', { maximumSignificantDigits: 2 }),
+};
 
-export function roundTokenValue(rawValue: BigNumber.Value) {
-  const value = new BigNumber(rawValue);
-  const fractionalZerosCount = countFractionalZeros(value.toFixed());
-  return value
-    .decimalPlaces(
-      fractionalZerosCount > 6 && value.absoluteValue().isGreaterThan(1)
-        ? 0
-        : fractionalZerosCount > 0
-        ? fractionalZerosCount + 2
-        : 3
-    )
-    .toFixed();
+export function roundTokenValue(value: BigNumber.Value) {
+  const number = value instanceof BigNumber ? value.toNumber() : Number(value);
+  const formatter =
+    Math.abs(number) < 0.1
+      ? tokenValueFormatters['<0.1']
+      : tokenValueFormatters.default;
+  return formatter.format(number);
 }
 
 const getDefaultFormatter = memoize((notation?: 'compact') => {

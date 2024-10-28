@@ -1,7 +1,8 @@
 import BigNumber from 'bignumber.js';
 import memoize from 'memoize-one';
-import { CURRENCIES, FORMATTER_CONFIG } from 'src/modules/currency/currencies';
-import { minus } from 'src/ui/shared/typography';
+import type { CurrencyConfig } from 'src/modules/currency/currencies';
+import { CURRENCIES, resolveOptions } from 'src/modules/currency/currencies';
+import { minus as typographicMinus } from 'src/ui/shared/typography';
 
 const getCurrencyFormatter = memoize((locale, currency, config = {}) => {
   return new Intl.NumberFormat(locale, {
@@ -16,17 +17,15 @@ export function formatCurrencyValue(
   locale: string,
   currency: string
 ) {
-  const formatter = getCurrencyFormatter(
-    locale,
-    currency,
-    FORMATTER_CONFIG[currency]?.(value)
-  );
-  const valueAsNumber =
-    value instanceof BigNumber ? value.toNumber() : Number(value);
-  const sign = valueAsNumber < 0 ? minus : '';
-  const absValue = Math.abs(valueAsNumber);
+  const number = value instanceof BigNumber ? value.toNumber() : Number(value);
+  const sign = number < 0 ? typographicMinus : '';
+  const absValue = Math.abs(number);
 
-  const modifyParts = CURRENCIES[currency]?.modifyParts;
+  const config = CURRENCIES[currency] as CurrencyConfig | undefined;
+  const numberFormatOptions = resolveOptions(number, config || null);
+  const formatter = getCurrencyFormatter(locale, currency, numberFormatOptions);
+
+  const modifyParts = config?.modifyParts;
   if (modifyParts) {
     const parts = formatter.formatToParts(absValue);
     return `${sign}${modifyParts(parts)
@@ -41,14 +40,11 @@ export function formatCurrencyToParts(
   locale: string,
   currency: string
 ) {
-  const formatter = getCurrencyFormatter(
-    locale,
-    currency,
-    FORMATTER_CONFIG[currency]?.(value)
-  );
-  const parts = formatter.formatToParts(
-    value instanceof BigNumber ? value.toNumber() : Number(value)
-  );
+  const number = value instanceof BigNumber ? value.toNumber() : Number(value);
+  const config = CURRENCIES[currency] as CurrencyConfig | undefined;
+  const numberFormatOptions = resolveOptions(number, config || null);
+  const formatter = getCurrencyFormatter(locale, currency, numberFormatOptions);
+  const parts = formatter.formatToParts(number);
   const modifyParts = CURRENCIES[currency]?.modifyParts;
   return modifyParts ? modifyParts(parts) : parts;
 }

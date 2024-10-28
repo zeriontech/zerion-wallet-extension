@@ -2,7 +2,8 @@ import { roundTokenValue } from './formatTokenValue';
 
 const testCases = [
   ['19500.035', '19500.035'],
-  ['19500.00000035', '19500.00000035'],
+  ['19500.0035', '19500.004'],
+  ['19500.00000035', '19500'],
   ['19500.000000035', '19500'],
   ['19500.000000000035', '19500'],
   ['0.02035', '0.02'],
@@ -19,16 +20,14 @@ const testCases = [
   ['0.0000000123124124', '0.000000012'],
   ['0.00000000123124124', '0.0000000012'],
   ['0.000000000000000001', '0.000000000000000001'],
-  ['9.00075521', '9.00076'],
+  ['9.00075521', '9.001'],
   ['0.099992', '0.1'],
   ['0.99992', '1'],
-  // ['0.099992', '0.099'],
-  // ['0.99992', '0.099'],
   ['0.0123', '0.012'],
   ['0.0000123', '0.000012'],
   ['0.0000127', '0.000013'],
   ['0.123', '0.123'],
-  ['0.123', '0.123'],
+  ['0.0031', '0.0031'],
   ['0.126', '0.126'],
   ['0.1267', '0.127'],
   ['0.1', '0.1'],
@@ -50,8 +49,10 @@ const testCasesWithNegativeNumbers = testCases.map(([input, output]) => [
 
 const allTestCases = [...testCases, ...testCasesWithNegativeNumbers];
 
-allTestCases.forEach(([input, output]) => {
-  test(`roundTokenValue ${input}`, () => {
-    expect(roundTokenValue(input)).toBe(output);
+describe('roundTokenValue', () => {
+  allTestCases.forEach(([input, output]) => {
+    test(`roundTokenValue ${input}`, () => {
+      expect(roundTokenValue(input)).toBe(output);
+    });
   });
 });
