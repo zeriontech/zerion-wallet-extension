@@ -261,6 +261,16 @@ export class DnaService {
   }
 
   async registerAllWallets() {
+    // To make sure referral codes are generated for new wallets we need to call 'registerWallet' on the Zerion DNA Service.
+    // Existing "owned" wallets (wallets with provider) require to have referral codes as well,
+    // but the backend lacks sufficient data to assign them.
+    //
+    // Additionally, re-registration is crucial due to a previous backend error:
+    // Zerion DNA Service expected a version prefix 'v' for 'registerWallet' requests, which we were not including.
+    // This backend issue has since been resolved, but as a result,
+    // wallets previously registered without 'v' are effectively unregistered.
+    // To handle this, we have to re-register all existing wallets.
+
     const isInvoked = await browserStorage.get<boolean>(
       REGISTER_ALL_WALLETS_INVOKED_KEY
     );
@@ -273,7 +283,7 @@ export class DnaService {
       context: INTERNAL_SYMBOL_CONTEXT,
     });
 
-    const ownedAddresses =
+    const ownedAddressesWithGroupOrigins =
       walletGroups
         ?.filter((group) => !isReadonlyContainer(group.walletContainer))
         ?.flatMap((group) =>
@@ -283,19 +293,17 @@ export class DnaService {
           }))
         ) || [];
 
-    let didFail = false;
-    for (const { address, origin } of ownedAddresses) {
-      try {
-        await this.registerWallet({
-          params: { address, origin },
-        });
-      } catch (error) {
-        didFail = true;
-        console.warn('registerWallet error', error); // eslint-disable-line no-console
-      }
-    }
+    const walletRegistrationRequests = ownedAddressesWithGroupOrigins.map(
+      ({ address, origin }) =>
+        this.registerWallet({ params: { address, origin } })
+    );
 
-    if (!didFail) {
+    const results = await Promise.allSettled(walletRegistrationRequests);
+    const hasRejectedRequests = results.some(
+      (result) => result.status === 'rejected'
+    );
+
+    if (!hasRejectedRequests) {
       await browserStorage.set(REGISTER_ALL_WALLETS_INVOKED_KEY, true);
     }
   }
