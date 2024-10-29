@@ -28,7 +28,7 @@ import * as styles from './styles.module.css';
 function WelcomeTo({ title }: { title: string }) {
   return (
     <VStack gap={0}>
-      <UIText kind="headline/h3" color="var(--neutral-600)">
+      <UIText kind="headline/h3" color="var(--neutral-800)">
         Welcome to
       </UIText>
       <UIText kind="headline/hero" className={styles.gradientText}>
@@ -96,7 +96,6 @@ function OnboardingStep({
         </Button>
         <PageBottom />
       </PageStickyFooter>
-
       <BottomSheetDialog
         ref={exitConfirmationDialogRef}
         height="fit-content"
@@ -132,7 +131,7 @@ function Rewards() {
           srcSet={`${RewardsSrc}, ${Rewards2xSrc} 2x`}
           className={styles.coverImage}
         />
-        <UIText kind="headline/h3" style={{ marginTop: -20 }}>
+        <UIText kind="body/accent" color="var(--neutral-700)">
           Unlock exclusive rewards by completing quests using Zerion Wallet
         </UIText>
       </VStack>
@@ -155,7 +154,7 @@ function Quests() {
           srcSet={`${QuestsSrc}, ${Quests2xSrc} 2x`}
           className={styles.coverImage}
         />
-        <UIText kind="headline/h3">
+        <UIText kind="body/accent" color="var(--neutral-700)">
           Each quest brings you closer to more XP and higher Levels
         </UIText>
       </VStack>
@@ -179,7 +178,7 @@ function NewHomeForDna() {
             srcSet={`${NewHomeForDnaSrc}, ${NewHomeForDna2xSrc} 2x`}
           />
         </div>
-        <UIText kind="headline/h3" style={{ marginTop: -10 }}>
+        <UIText kind="body/accent" color="var(--neutral-700)">
           All DNA on the wallet will be merged, stats combined and moved to the
           Zero Network
         </UIText>
@@ -204,7 +203,7 @@ function Levels() {
             srcSet={`${LevelsSrc}, ${Levels2xSrc} 2x`}
           />
         </div>
-        <UIText kind="headline/h3" style={{ marginTop: -150 }}>
+        <UIText kind="body/accent" color="var(--neutral-700)">
           Higher levels unlock unique quests, perks and rewards
         </UIText>
       </VStack>

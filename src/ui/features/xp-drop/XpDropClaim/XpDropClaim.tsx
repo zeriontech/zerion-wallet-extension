@@ -7,7 +7,7 @@ import { Frame } from 'src/ui/ui-kit/Frame';
 export function XpDropClaim() {
   return (
     <PageColumn>
-      <NavigationTitle title="Claim Your XP" />
+      <NavigationTitle title="Claim Your XP" backTo="/overview" />
       <PageTop />
       <Frame>Claim Your XP</Frame>
     </PageColumn>

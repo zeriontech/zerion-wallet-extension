@@ -15,3 +15,32 @@
   width: calc(100% + 32px);
   objectfit: cover;
 }
+
+.progressCounter {
+  position: relative;
+}
+
+.progressCounterValue {
+  position: absolute;
+  top: 12px;
+  left: 22px;
+}
+
+.animatedList {
+}
+
+.criteriaItem {
+  padding: 12px;
+  background: var(--white);
+  box-shadow: var(--elevation-200);
+  border-radius: 16px;
+}
+
+.criteriaImage {
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+  background: var(--neutral-200);
+  border-radius: 8px;
+  text-align: center;
+}
