@@ -11,6 +11,7 @@ import { emitter } from 'src/background/events';
 import { isReadonlyContainer } from 'src/shared/types/validators';
 import type { Wallet } from 'src/shared/types/Wallet';
 import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
+import type { Account } from 'src/background/account/Account';
 import type { DnaAction } from './types';
 
 const REGISTER_ALL_WALLETS_INVOKED_KEY = 'registerAllWalletsInvoked-14-10-2024';
@@ -19,7 +20,7 @@ const DNA_API_ENDPOINT = 'https://dna.zerion.io/api/v1';
 
 type DnaActionWithTimestamp = DnaAction & { timestamp: number };
 
-const dnaServiceEmitter = createNanoEvents<{
+export const dnaServiceEmitter = createNanoEvents<{
   registerSuccess: (action: DnaAction) => void;
   registerError: (error: Error, action: DnaAction) => void;
 }>();
@@ -92,6 +93,12 @@ export class DnaService {
     this.sendingInProgress = true;
     return new Promise<{ success: boolean }>((resolve) => {
       ky.post(`${DNA_API_ENDPOINT}/actions`, {
+        retry: {
+          // increase retry attempt count
+          limit: 3,
+          // enable retry for POST
+          methods: ['post'],
+        },
         // random header for backend scheme validation
         headers: { 'Z-Proof': uuidv4() },
         body: JSON.stringify(action),
@@ -293,9 +300,8 @@ export class DnaService {
     }
   }
 
-  initialize() {
-    this.registerAllWallets();
-
+  initialize({ account }: { account: Account }) {
+    account.on('authenticated', this.registerAllWallets.bind(this));
     emitter.on('walletCreated', async ({ walletContainer, origin }) => {
       if (isReadonlyContainer(walletContainer)) {
         return;

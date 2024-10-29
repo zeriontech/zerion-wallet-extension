@@ -36,7 +36,7 @@ export async function initialize() {
   const dnaService = new DnaService({
     getWallet: () => account.getCurrentWallet(),
   });
-  dnaService.initialize();
+  dnaService.initialize({ account });
   await transactionService.initialize({
     getWallet: () => account.getCurrentWallet(),
   });

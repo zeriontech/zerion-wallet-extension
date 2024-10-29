@@ -9,6 +9,7 @@ type MetabaseEvent =
   | 'signed_message'
   | 'signed_transaction'
   | 'client_error'
+  | 'error_registering_dna_action'
   | 'daylight_action'
   | 'add_custom_evm'
   | 'network_search'

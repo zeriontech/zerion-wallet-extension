@@ -4,6 +4,7 @@ import { emitter } from 'src/background/events';
 import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { getWalletNameFlagsChange } from 'src/background/Wallet/GlobalPreferences';
+import { dnaServiceEmitter } from 'src/modules/dna-service/dna.background';
 import { WalletOrigin } from '../WalletOrigin';
 import {
   isMnemonicContainer,
@@ -287,6 +288,12 @@ function trackAppEvents({ account }: { account: Account }) {
 
   emitter.on('eip6963SupportDetected', ({ origin }) => {
     eip6963Dapps.add(origin);
+  });
+
+  dnaServiceEmitter.on('registerError', async (error, action) => {
+    const request_name = 'error_registering_dna_action';
+    const params = createParams({ request_name, error, action });
+    sendToMetabase(request_name, params);
   });
 }
 
