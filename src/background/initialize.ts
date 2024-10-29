@@ -37,10 +37,10 @@ export async function initialize() {
   const dnaService = new DnaService({
     getWallet: () => account.getCurrentWallet(),
   });
-  dnaService.initialize();
   referralProgramService.initialize({
     getWallet: () => account.getCurrentWallet(),
   });
+  dnaService.initialize({ account });
   await transactionService.initialize({
     getWallet: () => account.getCurrentWallet(),
   });
