@@ -99,7 +99,7 @@ export function XpDropScoring() {
             Lets check what your wallet is about
           </UIText>
         </VStack>
-        <VStack gap={12} className={styles.animatedList}>
+        <VStack gap={12}>
           {transitions((style, { item, key }) => (
             <animated.div style={style} key={key}>
               {item}
