@@ -11,9 +11,9 @@ import { createChain } from 'src/modules/networks/Chain';
 import { DEFI_SDK_TRANSACTIONS_API_URL } from 'src/env/config';
 import { isNumeric } from 'src/shared/isNumeric';
 import type { Quote, TransactionDescription } from 'src/shared/types/Quote';
+import { createUrl } from 'src/shared/createUrl';
+import { invariant } from 'src/shared/invariant';
 import { useEventSource } from './useEventSource';
-
-const apiUrl = `${DEFI_SDK_TRANSACTIONS_API_URL}/swap/quote/stream`;
 
 export interface QuotesData {
   quote: Quote | null;
@@ -101,7 +101,16 @@ export function useQuotes({
       } else {
         searchParams.append('input_amount', valueBase);
       }
-      return `${apiUrl}?${searchParams}`;
+
+      invariant(
+        DEFI_SDK_TRANSACTIONS_API_URL,
+        'DEFI_SDK_TRANSACTIONS_API_URL not found in env'
+      );
+      return createUrl({
+        base: DEFI_SDK_TRANSACTIONS_API_URL,
+        pathname: '/swap/quote/stream',
+        searchParams,
+      }).toString();
     }
   }, [
     primaryInput,
