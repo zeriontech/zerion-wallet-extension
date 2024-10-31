@@ -176,6 +176,7 @@ function NewHomeForDna() {
             alt=""
             src={NewHomeForDnaSrc}
             srcSet={`${NewHomeForDnaSrc}, ${NewHomeForDna2xSrc} 2x`}
+            className={styles.coverImage}
           />
         </div>
         <UIText kind="body/accent" color="var(--neutral-700)">
@@ -201,6 +202,7 @@ function Levels() {
             alt=""
             src={LevelsSrc}
             srcSet={`${LevelsSrc}, ${Levels2xSrc} 2x`}
+            className={styles.coverImage}
           />
         </div>
         <UIText kind="body/accent" color="var(--neutral-700)">
