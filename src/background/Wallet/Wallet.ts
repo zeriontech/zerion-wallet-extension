@@ -1049,10 +1049,25 @@ export class Wallet {
     }
   }
 
-  private getOfflineSigner() {
-    const currentAddress = this.readCurrentAddress();
+  private getOfflineSignerByAddress(address: string) {
     if (!this.record) {
       throw new RecordNotFound();
+    }
+    const wallet = Model.getSignerWalletByAddress(this.record, address);
+    if (!wallet) {
+      throw new Error('Signer wallet for this address is not found');
+    }
+
+    return toEthersWallet(wallet);
+  }
+
+  private getOfflineSigner() {
+    if (!this.record) {
+      throw new RecordNotFound();
+    }
+    const currentAddress = this.readCurrentAddress();
+    if (!currentAddress) {
+      throw new Error('Current address not set');
     }
     const currentWallet = currentAddress
       ? Model.getSignerWalletByAddress(this.record, currentAddress)
@@ -1315,6 +1330,31 @@ export class Wallet {
     });
   }
 
+  async signMessage({
+    signerAddress,
+    message,
+    messageContextParams,
+  }: {
+    signerAddress: string;
+    message: string;
+    messageContextParams: MessageContextParams;
+  }) {
+    const messageAsUtf8String = toUtf8String(message);
+
+    // Some dapps provide a hex message that doesn't parse as a utf string,
+    // but wallets sign it anyway
+    const messageToSign = ethers.utils.isHexString(messageAsUtf8String)
+      ? ethers.utils.arrayify(messageAsUtf8String)
+      : messageAsUtf8String;
+
+    const signer = this.getOfflineSignerByAddress(signerAddress);
+    const signature = await signer.signMessage(messageToSign);
+    this.registerPersonalSign({
+      params: { address: signer.address, message, ...messageContextParams },
+    });
+    return signature;
+  }
+
   async personalSign({
     params: {
       params: [message],
@@ -1330,20 +1370,15 @@ export class Wallet {
     if (message == null) {
       throw new InvalidParams();
     }
-    const signer = this.getOfflineSigner();
-    const messageAsUtf8String = toUtf8String(message);
-
-    // Some dapps provide a hex message that doesn't parse as a utf string,
-    // but wallets sign it anyway
-    const messageToSign = ethers.utils.isHexString(messageAsUtf8String)
-      ? ethers.utils.arrayify(messageAsUtf8String)
-      : messageAsUtf8String;
-
-    const signature = await signer.signMessage(messageToSign);
-    this.registerPersonalSign({
-      params: { address: signer.address, message, ...messageContextParams },
+    const currentAddress = this.readCurrentAddress();
+    if (!currentAddress) {
+      throw new Error('Current address not set');
+    }
+    return this.signMessage({
+      signerAddress: currentAddress,
+      message,
+      messageContextParams,
     });
-    return signature;
   }
 
   async removeEthereumChain({

@@ -2,7 +2,6 @@ import React, { useId, useRef } from 'react';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { DeviceAccount } from 'src/shared/types/Device';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
-import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { SurfaceList, type Item } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
@@ -198,16 +197,25 @@ function WalletListItem({
   );
 }
 
+type AnyWallet = ExternallyOwnedAccount | BareWallet | DeviceAccount;
+
+interface WalletGroupInfo {
+  id: string;
+  walletContainer: {
+    wallets: AnyWallet[];
+  };
+}
+
 export function WalletList({
   walletGroups,
   selectedAddress,
   showAddressValues,
   onSelect,
 }: {
-  walletGroups: WalletGroup[];
+  walletGroups: WalletGroupInfo[];
   selectedAddress: string;
   showAddressValues: boolean;
-  onSelect(wallet: ExternallyOwnedAccount | BareWallet | DeviceAccount): void;
+  onSelect(wallet: AnyWallet): void;
 }) {
   const items: Item[] = [];
   /**

@@ -11,6 +11,7 @@ import { walletGetPositions } from './requests/wallet-get-positions';
 import { walletGetPortfolio } from './requests/wallet-get-portfolio';
 import { checkReferral } from './requests/check-referral';
 import { referWallet } from './requests/refer-wallet';
+import { claimRetro } from './requests/claim-retro';
 
 export interface ZerionApiContext {
   getAddressProviderHeader(address: string): Promise<string>;
@@ -28,6 +29,7 @@ export const ZerionApiBare = {
   walletGetPortfolio,
   checkReferral,
   referWallet,
+  claimRetro,
 };
 
 export type ZerionApiClient = typeof ZerionApiBare;
