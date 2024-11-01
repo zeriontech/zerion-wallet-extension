@@ -9,7 +9,12 @@
         "arrowParens": "avoid",
         "proseWrap": "never"
       }
+    },
+    {
+      "files": "src/env/config.ts",
+      "options": {
+        "printWidth": 120
+      }
     }
   ]
 }
-

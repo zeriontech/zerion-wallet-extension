@@ -3,6 +3,7 @@ import { platform } from 'src/shared/analytics/platform';
 import { version } from 'src/shared/packageVersion';
 import { ZERION_API_URL, ZERION_TESTNET_API_URL } from 'src/env/config';
 import { invariant } from 'src/shared/invariant';
+import { createUrl } from 'src/shared/createUrl';
 
 export type NetworksSource = 'mainnet' | 'testnet';
 
@@ -43,7 +44,11 @@ const resolveUrl = (input: UrlInput): string | URL => {
     const { endpoint, source = 'mainnet' } = input;
     invariant(endpoint, 'endpoint param must be a string');
     const base = source === 'testnet' ? ZERION_TESTNET_API_URL : ZERION_API_URL;
-    return new URL(endpoint, base);
+    invariant(
+      base,
+      `One of API URLs not found in env: ${ZERION_TESTNET_API_URL}, ${ZERION_API_URL}`
+    );
+    return createUrl({ base, pathname: endpoint });
   }
 };
 
