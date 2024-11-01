@@ -1,10 +1,6 @@
 import type { BigNumberish, UnsignedTransaction } from 'ethers';
 import { ethers } from 'ethers';
-import {
-  EIP712Signer,
-  utils as zkSyncUtils,
-  Provider as ZksProvider,
-} from 'zksync-ethers';
+import { utils as zkSyncUtils, Provider as ZksProvider } from 'zksync-ethers';
 import type { Emitter } from 'nanoevents';
 import { createNanoEvents } from 'nanoevents';
 import { nanoid } from 'nanoid';
@@ -81,7 +77,6 @@ import { backgroundGetBestKnownTransactionCount } from 'src/modules/ethereum/tra
 import { toCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import { normalizeTransactionChainId } from 'src/modules/ethereum/transactions/normalizeTransactionChainId';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
-import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
 import { createTypedData } from 'src/modules/ethereum/account-abstraction/createTypedData';
 import { getDefiSdkClient } from 'src/modules/defi-sdk/background';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
@@ -111,10 +106,6 @@ import {
   DeviceAccountContainer,
   ReadonlyAccountContainer,
 } from './model/AccountContainer';
-
-if (FEATURE_PAYMASTER_ENABLED) {
-  Object.assign(globalThis, { EIP712Signer, zkSyncUtils });
-}
 
 async function prepareNonce<T extends { nonce?: BigNumberish; from?: string }>(
   transaction: T,
@@ -1047,11 +1038,8 @@ export class Wallet {
     const networksStore = getNetworksStore(Model.getPreferences(this.record));
     const networks = await networksStore.loadNetworksByChainId(chainId);
     const nodeUrl = networks.getRpcUrlInternal(networks.getChainById(chainId));
-    if (FEATURE_PAYMASTER_ENABLED) {
-      return new ZksProvider(nodeUrl);
-    } else {
-      return new ethers.providers.JsonRpcProvider(nodeUrl);
-    }
+    // TODO: should we conditionally use regular provider for non-paymaster txs?
+    return new ZksProvider(nodeUrl); // return new ethers.providers.JsonRpcProvider(nodeUrl);
   }
 
   private getOfflineSigner() {
@@ -1148,9 +1136,7 @@ export class Wallet {
     });
     const transaction = await prepareNonce(txWithFee, networks, chain);
 
-    const paymasterEligible =
-      FEATURE_PAYMASTER_ENABLED &&
-      Boolean(transaction.customData?.paymasterParams);
+    const paymasterEligible = Boolean(transaction.customData?.paymasterParams);
 
     if (paymasterEligible) {
       console.log('paymasterEligible', { transaction });

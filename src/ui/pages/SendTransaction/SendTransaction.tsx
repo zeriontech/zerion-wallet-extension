@@ -74,7 +74,6 @@ import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
-import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
 import { hasNetworkFee } from 'src/modules/ethereum/transactions/gasPrices/hasNetworkFee';
 import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/uiGetBestKnownTransactionCount';
 import { resolveChainId } from 'src/modules/ethereum/transactions/resolveChainId';
@@ -555,13 +554,15 @@ function SendTransactionContent({
   );
 
   const isDeviceWallet = isDeviceAccount(wallet);
-  const USE_PAYMASTER_FEATURE = FEATURE_PAYMASTER_ENABLED && !isDeviceWallet;
+  const USE_PAYMASTER_FEATURE = !isDeviceWallet;
 
   const network = networks.getNetworkByName(chain) || null;
   const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
 
   const eligibilityQuery = useQuery({
-    enabled: USE_PAYMASTER_FEATURE && network?.supports_sponsored_transactions,
+    enabled:
+      USE_PAYMASTER_FEATURE &&
+      Boolean(network?.supports_sponsored_transactions),
     suspense: false,
     staleTime: 120000,
     queryKey: ['paymaster/check-eligibility', populatedTransaction, source],
@@ -701,9 +702,6 @@ function SendTransactionContent({
           source,
           apiClient: ZerionAPI,
         });
-      }
-      if (USE_PAYMASTER_FEATURE) {
-        console.log('sending to wallet', { tx });
       }
       const feeValueCommon = feeValueCommonRef.current || null;
       return sendTxBtnRef.current.sendTransaction({

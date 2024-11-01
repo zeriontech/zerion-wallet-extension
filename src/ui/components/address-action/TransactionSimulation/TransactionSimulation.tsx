@@ -18,7 +18,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { fetchAndAssignPaymaster } from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
-import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
 import type { EligibilityQuery } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
 import { shouldInterpretTransaction } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
 import { useCurrency } from 'src/modules/currency/useCurrency';
@@ -106,9 +105,7 @@ export function TransactionSimulation({
 
   const network = chain ? networks?.getNetworkByName(chain) || null : null;
   const txInterpretQuery = useQuery({
-    enabled: FEATURE_PAYMASTER_ENABLED
-      ? shouldInterpretTransaction({ network, eligibilityQuery })
-      : Boolean(network?.supports_simulations),
+    enabled: shouldInterpretTransaction({ network, eligibilityQuery }),
     queryKey: ['interpretTransaction', transaction, currency, client],
     queryKeyHashFn: (queryKey) => {
       const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
