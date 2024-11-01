@@ -9,7 +9,7 @@ const src = path.join(__dirname, '../src');
 
 function toManifestVersion(version) {
   // turns value like "v1.0.1-alpha.23" to "1.0.0.23"
-  return version.replace(/[^\d.]+/g, '');
+  return version.replace(/^v|\D+\d+/g, '');
 }
 
 async function syncVersion() {
