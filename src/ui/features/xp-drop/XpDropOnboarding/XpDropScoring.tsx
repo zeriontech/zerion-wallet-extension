@@ -17,8 +17,8 @@ function ProgressCounter({ counter }: { counter: number }) {
       {counter > 5 ? (
         <CheckmarkCheckedIcon
           style={{
-            width: 56,
-            height: 56,
+            width: 51,
+            height: 51,
             color: 'var(--positive-500)',
           }}
         />
