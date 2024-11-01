@@ -3,7 +3,6 @@ import type { To } from 'react-router-dom';
 import { Link, Route, Routes } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
-import { PageTop } from 'src/ui/components/PageTop';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
