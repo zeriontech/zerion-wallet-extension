@@ -10,8 +10,6 @@ import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { Button } from 'src/ui/ui-kit/Button';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
-import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
-import { HStack } from 'src/ui/ui-kit/HStack';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import LevelsSrc from '../assets/levels.png';
 import Levels2xSrc from '../assets/levels@2x.png';
@@ -21,6 +19,7 @@ import QuestsSrc from '../assets/quests.png';
 import Quests2xSrc from '../assets/quests@2x.png';
 import Rewards2xSrc from '../assets/rewards@2x.png';
 import RewardsSrc from '../assets/rewards.png';
+import { ExitConfirmationDialog } from '../components/ExitConfirmationDialog';
 import { XpDropScoring } from './XpDropScoring';
 
 import * as styles from './styles.module.css';
@@ -38,45 +37,20 @@ function WelcomeTo({ title }: { title: string }) {
   );
 }
 
-function ExitConfirmationDialog({
-  onCancel,
-  onExit,
-}: {
-  onCancel: () => void;
-  onExit: () => void;
-}) {
-  return (
-    <VStack gap={24}>
-      <DialogTitle
-        alignTitle="start"
-        title={<UIText kind="headline/h3">Do you want to exit?</UIText>}
-        closeKind="icon"
-      />
-      <UIText kind="body/regular" color="var(--neutral-700)">
-        You can resume claiming your XP whenever you're ready
-      </UIText>
-      <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
-        <Button kind="regular" type="button" onClick={onCancel}>
-          Back
-        </Button>
-        <Button kind="primary" onClick={onExit}>
-          Exit
-        </Button>
-      </HStack>
-    </VStack>
-  );
-}
-
 function OnboardingStep({
   title,
+  text,
+  imageSrc,
+  image2xSrc,
   nextLocation,
   buttonText,
-  children,
 }: {
   title: string;
+  text: string;
+  imageSrc: string;
+  image2xSrc: string;
   nextLocation: To;
   buttonText: string;
-  children: React.ReactNode;
 }) {
   // TODO: Show confirmation dialog when the user attempts to navigate back
   const exitConfirmationDialogRef = useRef<HTMLDialogElementInterface | null>(
@@ -88,7 +62,22 @@ function OnboardingStep({
       <PageColumn>
         <NavigationTitle title={null} documentTitle={title} />
         <PageTop />
-        {children}
+        <VStack gap={32} className={styles.onboardingStep}>
+          <WelcomeTo title={title} />
+          <img
+            alt=""
+            src={imageSrc}
+            srcSet={`${imageSrc}, ${image2xSrc} 2x`}
+            className={styles.coverImage}
+          />
+          <UIText
+            kind="body/accent"
+            className={styles.onboardingText}
+            color="var(--neutral-700)"
+          >
+            {text}
+          </UIText>
+        </VStack>
       </PageColumn>
       <PageStickyFooter>
         <Button kind="primary" as={Link} to={nextLocation}>
@@ -116,110 +105,61 @@ function OnboardingStep({
   );
 }
 
-function Rewards() {
-  return (
-    <OnboardingStep
-      title="Rewards"
-      buttonText="Continue"
-      nextLocation="/xp-drop/onboarding/quests"
-    >
-      <VStack gap={32} className={styles.onboardingStep}>
-        <WelcomeTo title="Rewards" />
-        <img
-          alt=""
-          src={RewardsSrc}
-          srcSet={`${RewardsSrc}, ${Rewards2xSrc} 2x`}
-          className={styles.coverImage}
-        />
-        <UIText kind="body/accent" color="var(--neutral-700)">
-          Unlock exclusive rewards by completing quests using Zerion Wallet
-        </UIText>
-      </VStack>
-    </OnboardingStep>
-  );
-}
-
-function Quests() {
-  return (
-    <OnboardingStep
-      title="Quests"
-      buttonText="Continue"
-      nextLocation="/xp-drop/onboarding/new-home-for-dna"
-    >
-      <VStack gap={32} className={styles.onboardingStep}>
-        <WelcomeTo title="Quests" />
-        <img
-          alt=""
-          src={QuestsSrc}
-          srcSet={`${QuestsSrc}, ${Quests2xSrc} 2x`}
-          className={styles.coverImage}
-        />
-        <UIText kind="body/accent" color="var(--neutral-700)">
-          Each quest brings you closer to more XP and higher Levels
-        </UIText>
-      </VStack>
-    </OnboardingStep>
-  );
-}
-
-function NewHomeForDna() {
-  return (
-    <OnboardingStep
-      title="New Home for DNA"
-      buttonText="Continue"
-      nextLocation="/xp-drop/onboarding/levels"
-    >
-      <VStack gap={32} className={styles.onboardingStep}>
-        <WelcomeTo title="New Home for DNA" />
-        <div>
-          <img
-            alt=""
-            src={NewHomeForDnaSrc}
-            srcSet={`${NewHomeForDnaSrc}, ${NewHomeForDna2xSrc} 2x`}
-            className={styles.coverImage}
-          />
-        </div>
-        <UIText kind="body/accent" color="var(--neutral-700)">
-          All DNA on the wallet will be merged, stats combined and moved to the
-          Zero Network
-        </UIText>
-      </VStack>
-    </OnboardingStep>
-  );
-}
-
-function Levels() {
-  return (
-    <OnboardingStep
-      title="Levels"
-      buttonText="Check Your Level"
-      nextLocation="/xp-drop/onboarding/scoring"
-    >
-      <VStack gap={32} className={styles.onboardingStep}>
-        <WelcomeTo title="Levels" />
-        <div style={{ marginTop: -10 }}>
-          <img
-            alt=""
-            src={LevelsSrc}
-            srcSet={`${LevelsSrc}, ${Levels2xSrc} 2x`}
-            className={styles.coverImage}
-          />
-        </div>
-        <UIText kind="body/accent" color="var(--neutral-700)">
-          Higher levels unlock unique quests, perks and rewards
-        </UIText>
-      </VStack>
-    </OnboardingStep>
-  );
-}
-
 export function XpDropOnboarding() {
   return (
     <Routes>
-      <Route path="/" element={<Rewards />} />
-      <Route path="/quests" element={<Quests />} />
-      <Route path="/new-home-for-dna" element={<NewHomeForDna />} />
-      <Route path="/levels" element={<Levels />} />
+      <Route
+        path="/"
+        element={
+          <OnboardingStep
+            title="Rewards"
+            text="Unlock exclusive rewards by completing quests using Zerion Wallet"
+            imageSrc={RewardsSrc}
+            image2xSrc={Rewards2xSrc}
+            buttonText="Continue"
+            nextLocation="/xp-drop/onboarding/quests"
+          />
+        }
+      />
+      <Route
+        path="/quests"
+        element={
+          <OnboardingStep
+            title="Quests"
+            text="Each quest brings you closer to more XP and higher Levels"
+            imageSrc={QuestsSrc}
+            image2xSrc={Quests2xSrc}
+            buttonText="Continue"
+            nextLocation="/xp-drop/onboarding/new-home-for-dna"
+          />
+        }
+      />
+      <Route
+        path="/new-home-for-dna"
+        element={
+          <OnboardingStep
+            title="New Home for DNA"
+            text="All DNA on the wallet will be merged, stats combined and moved to the Zero Network"
+            imageSrc={NewHomeForDnaSrc}
+            image2xSrc={NewHomeForDna2xSrc}
+            buttonText="Continue"
+            nextLocation="/xp-drop/onboarding/levels"
+          />
+        }
+      />
+      <Route
+        path="/levels"
+        element={
+          <OnboardingStep
+            title="Levels"
+            text="Higher levels unlock unique quests, perks and rewards"
+            imageSrc={LevelsSrc}
+            image2xSrc={Levels2xSrc}
+            buttonText="Check Your Level"
+            nextLocation="/xp-drop/onboarding/scoring"
+          />
+        }
+      />
       <Route path="/scoring" element={<XpDropScoring />} />
     </Routes>
   );

@@ -1,0 +1,1 @@
+export { XpDropClaimBanner } from './XpDropClaimBanner';

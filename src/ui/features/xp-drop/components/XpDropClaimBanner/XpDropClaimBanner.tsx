@@ -6,7 +6,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Link } from 'react-router-dom';
 
-export function ClaimXpBanner() {
+export function XpDropClaimBanner() {
   return (
     <GradientBorder
       borderColor="linear-gradient(90deg, #a024ef 0%, #fdbb6c 100%)"
