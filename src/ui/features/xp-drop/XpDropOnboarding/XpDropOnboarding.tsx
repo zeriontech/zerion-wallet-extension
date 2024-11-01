@@ -61,7 +61,6 @@ function OnboardingStep({
     <>
       <PageColumn>
         <NavigationTitle title={null} documentTitle={title} />
-        <PageTop />
         <VStack gap={32} className={styles.onboardingStep}>
           <WelcomeTo title={title} />
           <img
