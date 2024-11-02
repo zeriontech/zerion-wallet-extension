@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { DeviceAccount } from 'src/shared/types/Device';
@@ -36,6 +36,8 @@ import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import { txErrorToMessage } from 'src/ui/pages/SendTransaction/shared/transactionErrorToMessage';
 import { FillView } from 'src/ui/components/FillView';
+import { useNavigate } from 'react-router-dom';
+import { wait } from 'src/shared/wait';
 import * as styles from './styles.module.css';
 
 const xpFormatter = new Intl.NumberFormat('en-US');
@@ -199,6 +201,7 @@ function XpLevel({ claimedXp, level }: { claimedXp: number; level: number }) {
 
 export function XpDropClaim() {
   useBackgroundKind({ kind: 'white' });
+  const navigate = useNavigate();
 
   const { data: currentWallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
@@ -207,34 +210,34 @@ export function XpDropClaim() {
   const [selectedWallet, setSelectedWallet] = useState(currentWallet);
 
   const { data: walletGroups, ...walletGroupsQuery } = useWalletGroups();
-  const signerWalletGroups = useMemo(
-    () =>
-      walletGroups?.filter((group) => isSignerContainer(group.walletContainer)),
-    [walletGroups]
-  );
-  const ownedAddresses = useMemo(() => {
-    return (
-      signerWalletGroups
-        ?.flatMap((group) => group.walletContainer.wallets)
-        ?.map((wallet) => wallet.address) ?? []
-    );
-  }, [signerWalletGroups]);
+  const { signerWalletGroups, signerWalletAddresses } = useMemo(() => {
+    const signerWalletGroups =
+      walletGroups?.filter((group) =>
+        isSignerContainer(group.walletContainer)
+      ) ?? [];
+    const signerWalletAddresses = signerWalletGroups
+      .flatMap((group) => group.walletContainer.wallets)
+      .map((wallet) => wallet.address);
+    return { signerWalletGroups, signerWalletAddresses };
+  }, [walletGroups]);
 
-  const { data: walletsMeta } = useQuery({
-    queryKey: ['ZerionAPI.getWalletsMeta', ownedAddresses],
-    queryFn: () => getWalletsMetaByChunks(ownedAddresses),
+  const { data: walletsMeta, ...walletsMetaQuery } = useQuery({
+    queryKey: ['ZerionAPI.getWalletsMeta', signerWalletAddresses],
+    queryFn: () => getWalletsMetaByChunks(signerWalletAddresses),
   });
+
   const { eligibleWalletGroups, eligibleAddresses } = useMemo(() => {
-    const eligibleAddresses = walletsMeta
-      ?.filter((meta) => Boolean(meta.membership.retro))
-      .map((meta) => normalizeAddress(meta.address));
+    const eligibleAddresses =
+      walletsMeta
+        ?.filter((meta) => Boolean(meta.membership.retro))
+        .map((meta) => normalizeAddress(meta.address)) ?? [];
 
     const eligibleWalletGroups = signerWalletGroups
       ?.map((group) => ({
         id: group.id,
         walletContainer: {
           wallets: group.walletContainer.wallets.filter((wallet) =>
-            eligibleAddresses?.includes(normalizeAddress(wallet.address))
+            eligibleAddresses.includes(normalizeAddress(wallet.address))
           ),
         },
       }))
@@ -261,25 +264,41 @@ export function XpDropClaim() {
         address: selectedWallet.address,
         signature,
       });
+      await wait(2000);
     },
   });
+
+  const selectedWalletMeta = useMemo(
+    () =>
+      selectedWallet
+        ? walletsMeta?.find(
+            (meta) =>
+              normalizeAddress(meta.address) ===
+              normalizeAddress(selectedWallet.address)
+          )
+        : null,
+    [selectedWallet, walletsMeta]
+  );
+
+  const membership = selectedWalletMeta?.membership;
+  const [retro, setRetro] = useState(selectedWalletMeta?.membership.retro);
+
+  useEffect(() => {
+    if (membership?.retro) {
+      setRetro(membership.retro);
+    }
+  }, [membership, retro]);
 
   if (
     walletGroupsQuery.isLoading ||
     !selectedWallet ||
     !walletsMeta ||
     !eligibleWalletGroups ||
-    !eligibleAddresses
+    !eligibleAddresses ||
+    !membership
   ) {
     return null;
   }
-
-  const selectedWalletMeta = walletsMeta.find(
-    (meta) =>
-      normalizeAddress(meta.address) ===
-      normalizeAddress(selectedWallet.address)
-  );
-  const retro = selectedWalletMeta?.membership.retro;
 
   if (!retro) {
     return (
@@ -320,21 +339,19 @@ export function XpDropClaim() {
               borderRadius={24}
             />
           </HCenter>
-          {eligibleAddresses.length > 1 ? (
-            <HCenter>
-              {personalSignMutation.isSuccess ? (
-                <WalletLabel wallet={selectedWallet} />
-              ) : (
-                <ChangeWalletButton
-                  disabled={personalSignMutation.isLoading}
-                  selectedWallet={selectedWallet}
-                  onClick={() => walletSelectDialogRef.current?.showModal()}
-                />
-              )}
-            </HCenter>
-          ) : null}
+          <HCenter>
+            {eligibleAddresses.length > 1 && !personalSignMutation.isSuccess ? (
+              <ChangeWalletButton
+                disabled={personalSignMutation.isLoading}
+                selectedWallet={selectedWallet}
+                onClick={() => walletSelectDialogRef.current?.showModal()}
+              />
+            ) : (
+              <WalletLabel wallet={selectedWallet} />
+            )}
+          </HCenter>
           {personalSignMutation.isSuccess ? (
-            <XpLevel level={retro.level} claimedXp={retro.zerion.total} />
+            <XpLevel level={membership.level} claimedXp={retro.zerion.total} />
           ) : (
             <>
               <Stats
@@ -359,9 +376,11 @@ export function XpDropClaim() {
             <WalletSelectDialog
               walletGroups={eligibleWalletGroups}
               value={normalizeAddress(selectedWallet.address)}
-              onSelect={(wallet) => {
-                walletSelectDialogRef.current?.close();
+              onSelect={async (wallet) => {
+                await walletsMetaQuery.refetch();
+                personalSignMutation.reset();
                 setSelectedWallet(wallet);
+                walletSelectDialogRef.current?.close();
               }}
             />
           )}
@@ -377,7 +396,17 @@ export function XpDropClaim() {
           <SignMessageButton
             ref={signMsgBtnRef}
             wallet={selectedWallet}
-            onClick={() => personalSign()}
+            onClick={async () => {
+              if (!personalSignMutation.isSuccess) {
+                personalSign();
+              } else {
+                if (eligibleAddresses.length > 0) {
+                  walletSelectDialogRef.current?.showModal();
+                } else {
+                  navigate('/overview');
+                }
+              }
+            }}
             buttonKind="primary"
             holdToSign={false}
           >
@@ -387,7 +416,9 @@ export function XpDropClaim() {
               </HCenter>
             ) : personalSignMutation.isSuccess ? (
               <HStack gap={8} alignItems="center" justifyContent="center">
-                <UIText kind="body/accent">Next Wallet</UIText>
+                <UIText kind="body/accent">
+                  {eligibleAddresses.length > 0 ? 'Next Wallet' : 'Done'}
+                </UIText>
                 <ArrowRightIcon style={{ width: 20, height: 20 }} />
               </HStack>
             ) : (
