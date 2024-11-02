@@ -266,6 +266,12 @@ export function XpDropClaim() {
       });
       await wait(2000);
     },
+    onSuccess: async () => {
+      await walletsMetaQuery.refetch();
+      if (eligibleAddresses.length === 0) {
+        navigate('/xp-drop/claim/success');
+      }
+    },
   });
 
   const selectedWalletMeta = useMemo(
@@ -377,7 +383,6 @@ export function XpDropClaim() {
               walletGroups={eligibleWalletGroups}
               value={normalizeAddress(selectedWallet.address)}
               onSelect={async (wallet) => {
-                await walletsMetaQuery.refetch();
                 personalSignMutation.reset();
                 setSelectedWallet(wallet);
                 walletSelectDialogRef.current?.close();
@@ -416,9 +421,7 @@ export function XpDropClaim() {
               </HCenter>
             ) : personalSignMutation.isSuccess ? (
               <HStack gap={8} alignItems="center" justifyContent="center">
-                <UIText kind="body/accent">
-                  {eligibleAddresses.length > 0 ? 'Next Wallet' : 'Done'}
-                </UIText>
+                <UIText kind="body/accent">Next Wallet</UIText>
                 <ArrowRightIcon style={{ width: 20, height: 20 }} />
               </HStack>
             ) : (
