@@ -1,10 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import React, { useMemo, useRef, useState } from 'react';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { DeviceAccount } from 'src/shared/types/Device';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
-import { isBareWallet, isSignerContainer } from 'src/shared/types/validators';
+import { isSignerContainer } from 'src/shared/types/validators';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
 import DownIcon from 'jsx:src/ui/assets/chevron-down.svg';
@@ -29,6 +29,13 @@ import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { GradientBorder } from 'src/ui/components/GradientBorder';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { getWalletsMetaByChunks } from 'src/modules/zerion-api/requests/wallet-get-meta';
+import type { SignMsgBtnHandle } from 'src/ui/components/SignMessageButton';
+import { SignMessageButton } from 'src/ui/components/SignMessageButton';
+import { invariant } from 'src/shared/invariant';
+import { INTERNAL_ORIGIN } from 'src/background/constants';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
+import { txErrorToMessage } from 'src/ui/pages/SendTransaction/shared/transactionErrorToMessage';
+import { FillView } from 'src/ui/components/FillView';
 import * as styles from './styles.module.css';
 
 const xpFormatter = new Intl.NumberFormat('en-US');
@@ -208,7 +215,7 @@ export function XpDropClaim() {
   const ownedAddresses = useMemo(() => {
     return (
       signerWalletGroups
-        ?.flatMap((group) => group.walletContainer.wallets.filter(isBareWallet))
+        ?.flatMap((group) => group.walletContainer.wallets)
         ?.map((wallet) => wallet.address) ?? []
     );
   }, [signerWalletGroups]);
@@ -217,12 +224,12 @@ export function XpDropClaim() {
     queryKey: ['ZerionAPI.getWalletsMeta', ownedAddresses],
     queryFn: () => getWalletsMetaByChunks(ownedAddresses),
   });
-  const eligibleWalletGroups = useMemo(() => {
+  const { eligibleWalletGroups, eligibleAddresses } = useMemo(() => {
     const eligibleAddresses = walletsMeta
       ?.filter((meta) => Boolean(meta.membership.retro))
       .map((meta) => normalizeAddress(meta.address));
 
-    return signerWalletGroups
+    const eligibleWalletGroups = signerWalletGroups
       ?.map((group) => ({
         id: group.id,
         walletContainer: {
@@ -231,26 +238,76 @@ export function XpDropClaim() {
           ),
         },
       }))
-      .filter((group) => Boolean(group.walletContainer.wallets));
+      .filter((group) => group.walletContainer.wallets.length > 0);
+
+    return { eligibleWalletGroups, eligibleAddresses };
   }, [signerWalletGroups, walletsMeta]);
 
+  const signMsgBtnRef = useRef<SignMsgBtnHandle | null>(null);
   const walletSelectDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
-  if (!selectedWallet || !eligibleWalletGroups || walletGroupsQuery.isLoading) {
+  const { mutate: personalSign, ...personalSignMutation } = useMutation({
+    mutationFn: async () => {
+      invariant(selectedWallet, 'selectedWallet is required');
+      invariant(signMsgBtnRef.current, 'SignMessageButton not found');
+
+      const message = 'I want to claim my Zerion Retro XP';
+      const signature = await signMsgBtnRef.current.personalSign({
+        params: [message],
+        initiator: INTERNAL_ORIGIN,
+        clientScope: null,
+      });
+      await ZerionAPI.claimRetro({
+        address: selectedWallet.address,
+        signature,
+      });
+    },
+  });
+
+  if (
+    walletGroupsQuery.isLoading ||
+    !selectedWallet ||
+    !walletsMeta ||
+    !eligibleWalletGroups ||
+    !eligibleAddresses
+  ) {
     return null;
   }
 
-  const zerionOg = 396123;
-  const activity = 224251;
+  const selectedWalletMeta = walletsMeta.find(
+    (meta) =>
+      normalizeAddress(meta.address) ===
+      normalizeAddress(selectedWallet.address)
+  );
+  const retro = selectedWalletMeta?.membership.retro;
 
-  const hasClaimed = false;
-  const isClaiming = false;
+  if (!retro) {
+    return (
+      <>
+        <NavigationTitle title="Not eligible" backTo="/overview" />
+        <FillView>
+          <UIText
+            kind="body/regular"
+            color="var(--neutral-500)"
+            style={{ textAlign: 'center' }}
+          >
+            The selected wallet is not eligible for XP drop. <br />
+            You can select another wallet and try again.
+          </UIText>
+        </FillView>
+      </>
+    );
+  }
 
   return (
     <>
       <PageColumn>
         <NavigationTitle
-          title={hasClaimed ? 'Congratulations!' : 'Claim Your XP'}
+          title={
+            personalSignMutation.isSuccess
+              ? 'Congratulations!'
+              : 'Claim Your XP'
+          }
           backTo="/overview"
         />
         <PageTop />
@@ -263,24 +320,27 @@ export function XpDropClaim() {
               borderRadius={24}
             />
           </HCenter>
-          {eligibleWalletGroups.length > 1 ? (
+          {eligibleAddresses.length > 1 ? (
             <HCenter>
-              {hasClaimed ? (
+              {personalSignMutation.isSuccess ? (
                 <WalletLabel wallet={selectedWallet} />
               ) : (
                 <ChangeWalletButton
-                  disabled={isClaiming}
+                  disabled={personalSignMutation.isLoading}
                   selectedWallet={selectedWallet}
                   onClick={() => walletSelectDialogRef.current?.showModal()}
                 />
               )}
             </HCenter>
           ) : null}
-          {hasClaimed ? (
-            <XpLevel level={10} claimedXp={zerionOg} />
+          {personalSignMutation.isSuccess ? (
+            <XpLevel level={retro.level} claimedXp={retro.zerion.total} />
           ) : (
             <>
-              <Stats zerionOg={zerionOg} activity={activity} />
+              <Stats
+                zerionOg={retro.zerion.total}
+                activity={retro.global.total}
+              />
               <HCenter>
                 <Button
                   kind="neutral"
@@ -308,22 +368,33 @@ export function XpDropClaim() {
         />
       </PageColumn>
       <PageStickyFooter>
-        {hasClaimed ? (
-          <Button kind="primary" disabled={isClaiming}>
-            {isClaiming ? (
+        <VStack gap={8}>
+          {personalSignMutation.isError ? (
+            <UIText kind="caption/regular" color="var(--negative-500)">
+              {txErrorToMessage(personalSignMutation.error)}
+            </UIText>
+          ) : null}
+          <SignMessageButton
+            ref={signMsgBtnRef}
+            wallet={selectedWallet}
+            onClick={() => personalSign()}
+            buttonKind="primary"
+            holdToSign={false}
+          >
+            {personalSignMutation.isLoading ? (
               <HCenter>
                 <CircleSpinner />
               </HCenter>
-            ) : (
+            ) : personalSignMutation.isSuccess ? (
               <HStack gap={8} alignItems="center" justifyContent="center">
                 <UIText kind="body/accent">Next Wallet</UIText>
                 <ArrowRightIcon style={{ width: 20, height: 20 }} />
               </HStack>
+            ) : (
+              `Claim ${formatXp(retro.zerion.total)} XP`
             )}
-          </Button>
-        ) : (
-          <Button kind="primary">Claim {formatXp(zerionOg)} XP</Button>
-        )}
+          </SignMessageButton>
+        </VStack>
         <PageBottom />
       </PageStickyFooter>
     </>
