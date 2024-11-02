@@ -11,29 +11,6 @@ import { useNavigate } from 'react-router-dom';
 import CheckmarkCheckedIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import * as styles from './styles.module.css';
 
-function ProgressCounter({ counter }: { counter: number }) {
-  return (
-    <div className={styles.progressCounter}>
-      {counter > 5 ? (
-        <CheckmarkCheckedIcon
-          style={{
-            width: 51,
-            height: 51,
-            color: 'var(--positive-500)',
-          }}
-        />
-      ) : (
-        <>
-          <CircleSpinner size="56px" trackColor="var(--always-white)" />
-          <UIText kind="headline/h2" className={styles.progressCounterValue}>
-            {counter}
-          </UIText>
-        </>
-      )}
-    </div>
-  );
-}
-
 function CriteriaListItem({
   image,
   text,
@@ -58,6 +35,29 @@ const criteriaItems = [
   <CriteriaListItem image="💸" text="Gas Spent" />,
 ];
 
+function ProgressCounter({ counter }: { counter: number }) {
+  return (
+    <div className={styles.progressCounter}>
+      {counter > criteriaItems.length - 1 ? (
+        <CheckmarkCheckedIcon
+          style={{
+            width: 51,
+            height: 51,
+            color: 'var(--positive-500)',
+          }}
+        />
+      ) : (
+        <>
+          <CircleSpinner size="56px" trackColor="var(--white)" />
+          <UIText kind="headline/h2" className={styles.progressCounterValue}>
+            {counter}
+          </UIText>
+        </>
+      )}
+    </div>
+  );
+}
+
 export function XpDropScoring() {
   const navigate = useNavigate();
   const [counter, setCounter] = useState(1);
@@ -71,10 +71,10 @@ export function XpDropScoring() {
   }, []);
 
   useEffect(() => {
-    if (counter > 6) {
+    if (counter > criteriaItems.length) {
       navigate('/xp-drop/claim');
     }
-  });
+  }, [counter, navigate]);
 
   const visibleItems = criteriaItems
     .slice(counter)
