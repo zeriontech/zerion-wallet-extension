@@ -28,6 +28,7 @@ import { Frame } from 'src/ui/ui-kit/Frame';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { GradientBorder } from 'src/ui/components/GradientBorder';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
+import type { RetrodropInfo } from 'src/modules/zerion-api/requests/wallet-get-meta';
 import { getWalletsMetaByChunks } from 'src/modules/zerion-api/requests/wallet-get-meta';
 import type { SignMsgBtnHandle } from 'src/ui/components/SignMessageButton';
 import { SignMessageButton } from 'src/ui/components/SignMessageButton';
@@ -110,6 +111,25 @@ function ChangeWalletButton({
         />
       </HStack>
     </Button>
+  );
+}
+
+function XpDropBreakdownDialog({ retro }: { retro: RetrodropInfo }) {
+  return (
+    <div style={{ ['--surface-background-color' as string]: 'none' }}>
+      <DialogTitle
+        title={<UIText kind="body/accent">XP Breakdown</UIText>}
+        closeKind="icon"
+      />
+      <VStack gap={24}>
+        <VStack gap={12}>
+          <UIText kind="headline/h3">Zerion OG</UIText>
+        </VStack>
+        <VStack gap={12}>
+          <UIText kind="headline/h3">Onchain Activity in the Past Year</UIText>
+        </VStack>
+      </VStack>
+    </div>
   );
 }
 
@@ -244,6 +264,7 @@ export function XpDropClaim() {
 
   const signMsgBtnRef = useRef<SignMsgBtnHandle | null>(null);
   const walletSelectDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const xpBreakdownDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   const { mutate: personalSign, ...personalSignMutation } = useMutation({
     mutationFn: async () => {
@@ -374,6 +395,7 @@ export function XpDropClaim() {
                   kind="neutral"
                   size={36}
                   style={{ paddingInline: '12px' }}
+                  onClick={() => xpBreakdownDialogRef.current?.showModal()}
                 >
                   XP Breakdown
                 </Button>
@@ -394,6 +416,10 @@ export function XpDropClaim() {
               }}
             />
           )}
+        />
+        <CenteredDialog
+          ref={xpBreakdownDialogRef}
+          renderWhenOpen={() => <XpDropBreakdownDialog retro={retro} />}
         />
       </PageColumn>
       <PageStickyFooter>

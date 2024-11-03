@@ -85,7 +85,7 @@ interface XpBreakdown {
   breakdown: XpBreakdownItem[];
 }
 
-interface RetrodropInfo {
+export interface RetrodropInfo {
   level: number;
   levelProgress: number;
   zerion: XpBreakdown;
