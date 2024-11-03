@@ -271,7 +271,7 @@ export function XpDropClaim() {
       // Refetch the wallet metadata to update the list of wallets eligible for the XP drop.
       await walletsMetaQuery.refetch();
       // If this is the last wallet, we want to display the success view.
-      if (eligibleAddresses.length === 1) {
+      if (eligibleAddresses.length <= 1) {
         navigate('/xp-drop/claim/success');
       }
     },
@@ -293,7 +293,8 @@ export function XpDropClaim() {
   const [retro, setRetro] = useState(selectedWalletMeta?.membership.retro);
 
   useEffect(() => {
-    // We never want to set current retrodrop info
+    // We should never set the current retrodrop info to null or undefined,
+    // so that we can always display the success state.
     if (membership?.retro) {
       setRetro(membership.retro);
     }
