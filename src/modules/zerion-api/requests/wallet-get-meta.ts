@@ -74,7 +74,7 @@ interface MigrationBalances {
   remained: number;
 }
 
-interface XpBreakdownItem {
+export interface XpBreakdownItem {
   title: string;
   subtitle: string;
   amount: number;
