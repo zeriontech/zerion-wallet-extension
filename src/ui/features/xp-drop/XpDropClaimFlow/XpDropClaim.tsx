@@ -181,11 +181,7 @@ function XpLevel({ claimedXp, level }: { claimedXp: number; level: number }) {
           borderRadius={16}
           backgroundColor="var(--white)"
         >
-          <UIText
-            kind="headline/hero"
-            className={styles.levelGradient}
-            style={{ paddingInline: 8 }}
-          >
+          <UIText kind="headline/hero" className={styles.levelGradient}>
             {level}
           </UIText>
         </GradientBorder>
@@ -264,11 +260,18 @@ export function XpDropClaim() {
         address: selectedWallet.address,
         signature,
       });
+      // Typically, after we call `/wallet/claim-retro/v1` it takes asecond or two
+      // before `membership.retro` becomes `null` (in response to `/wallet/get-meta/v1`).
+      // To account for this possible delay, we're adding a short wait here.
+      // Otherwise, we might still see the wallet for which we just claimed the XP drop in
+      // the wallet selector when we click on the "Next Wallet" button.
       await wait(2000);
     },
     onSuccess: async () => {
+      // Refetch the wallet metadata to update the list of wallets eligible for the XP drop.
       await walletsMetaQuery.refetch();
-      if (eligibleAddresses.length === 0) {
+      // If this is the last wallet, we want to display the success view.
+      if (eligibleAddresses.length === 1) {
         navigate('/xp-drop/claim/success');
       }
     },
@@ -290,6 +293,7 @@ export function XpDropClaim() {
   const [retro, setRetro] = useState(selectedWalletMeta?.membership.retro);
 
   useEffect(() => {
+    // We never want to set current retrodrop info
     if (membership?.retro) {
       setRetro(membership.retro);
     }
@@ -316,8 +320,8 @@ export function XpDropClaim() {
             color="var(--neutral-500)"
             style={{ textAlign: 'center' }}
           >
-            The selected wallet is not eligible for XP drop. <br />
-            You can select another wallet and try again.
+            The selected wallet is not eligible for an XP drop. <br />
+            Please select another wallet and try again.
           </UIText>
         </FillView>
       </>
@@ -401,15 +405,11 @@ export function XpDropClaim() {
           <SignMessageButton
             ref={signMsgBtnRef}
             wallet={selectedWallet}
-            onClick={async () => {
+            onClick={() => {
               if (!personalSignMutation.isSuccess) {
                 personalSign();
               } else {
-                if (eligibleAddresses.length > 0) {
-                  walletSelectDialogRef.current?.showModal();
-                } else {
-                  navigate('/overview');
-                }
+                walletSelectDialogRef.current?.showModal();
               }
             }}
             buttonKind="primary"

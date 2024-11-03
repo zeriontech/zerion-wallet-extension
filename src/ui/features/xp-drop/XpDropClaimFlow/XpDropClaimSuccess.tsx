@@ -5,7 +5,6 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
-import { PageTop } from 'src/ui/components/PageTop';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -13,6 +12,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { FillView } from 'src/ui/components/FillView';
 import RewardsIcon from 'jsx:src/ui/assets/rewards.svg';
 import CheckIcon from 'jsx:src/ui/assets/check-circle-thin-gradient.svg';
+import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 
 export function XpDropClaimSuccess() {
   useBackgroundKind({ kind: 'white' });
@@ -88,8 +88,6 @@ export function XpDropClaimSuccess() {
       ></canvas>
       <PageColumn>
         <NavigationTitle title={null} documentTitle="Claim Finished" />
-        <PageTop />
-
         <FillView>
           <VStack gap={21} style={{ justifyItems: 'center' }}>
             <CheckIcon />
@@ -98,7 +96,13 @@ export function XpDropClaimSuccess() {
         </FillView>
       </PageColumn>
       <PageStickyFooter>
-        <Button kind="primary">
+        <Button
+          kind="primary"
+          as={TextAnchor}
+          href="https://app.zerion.io/rewards"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <HStack gap={8} alignItems="center" justifyContent="center">
             <RewardsIcon
               style={{
