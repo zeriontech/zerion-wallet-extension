@@ -106,6 +106,9 @@ export const HardwareSignTransaction = React.forwardRef(
           'Iframe contentWindow is not available'
         );
         try {
+          // NOTE: Conditionally handle Paymaster Tx here? Query TypedData to sign from Wallet.ts,
+          // sign it via { id, method: 'signTypedData_v4' }, then? decide? maybe do a wallet request
+          // to zkSyncUtils.serialize() it, then return the result?... it'll proceed to Wallet
           const result =
             await hardwareMessageHandler.request<SignTransactionResult>(
               {
