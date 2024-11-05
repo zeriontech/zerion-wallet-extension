@@ -230,11 +230,19 @@ export class NotificationWindow extends PersistentStore<PendingState> {
         this.closeWindow(windowId);
       }
     });
-    globalEmitter.on('uiClosed', ({ url }) => {
-      if (!url) {
+    globalEmitter.on('uiClosed', ({ url: urlStr }) => {
+      if (!urlStr) {
         return;
       }
-      const idRaw = new URLSearchParams(new URL(url).hash).get('windowId');
+      const url = new URL(urlStr);
+      if (!url.pathname.startsWith('/sidepanel')) {
+        // We currently only want to handle sidepanel here. Otherwise dialog "page reloads"
+        // also get detected, affecting development experience
+        // TODO: Maybe we can detect sidepanel "reloads" somehow, too, and ignore them here.
+        return;
+      }
+
+      const idRaw = new URLSearchParams(url.hash).get('windowId');
       const id = idRaw as InternalRequestId;
       const status = 'rejected';
       const error = new UserRejected('Sidepanel Closed');
