@@ -65,6 +65,7 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { assertProp } from 'src/shared/assert-property';
+import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -319,6 +320,12 @@ function SendFormComponent() {
     },
   });
   const paymasterEligible = Boolean(eligibilityQuery.data?.data.eligible);
+
+  const { data: gasbackEstimation } = useGasbackEstimation({
+    paymasterEligible: eligibilityQuery.data?.data.eligible ?? null,
+    suppportsSimulations: network?.supports_simulations ?? false,
+    supportsSponsoredTransactions: network?.supports_sponsored_transactions,
+  });
 
   const maybeRefetchEligibility = useEvent(() => {
     if (eligibilityQuery.isFetched) {
@@ -598,6 +605,7 @@ function SendFormComponent() {
                       onConfigurationChange={(value) =>
                         sendView.store.configuration.setState(value)
                       }
+                      gasback={gasbackEstimation}
                     />
                   )}
                 />
@@ -636,6 +644,7 @@ function SendFormComponent() {
                     paymasterEligible={paymasterEligible}
                     paymasterPossible={paymasterPossible}
                     eligibilityQuery={eligibilityQuery}
+                    gasback={gasbackEstimation}
                   />
                 </ViewLoadingSuspense>
               </>

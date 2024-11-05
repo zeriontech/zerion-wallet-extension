@@ -54,3 +54,12 @@
 .dialog.slideUpNoFadeIn::backdrop {
   animation: fadeInFrom80Percent 150ms linear;
 }
+
+/**
+ * We can't simply set display: grid because it will break dialogs when they are closed,
+ * so we have to apply this conditionally. display: 'grid' is needed when you want children
+ * to grow with min-height's property of this element
+*/
+.dialog.displayGrid:modal {
+  display: grid;
+}

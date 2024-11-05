@@ -1,4 +1,5 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import type { CustomConfiguration } from '@zeriontech/transactions';
 import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import type {
@@ -15,8 +16,11 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
-import { NonceLine } from '../NonceLine';
+import { NBSP } from 'src/ui/shared/typography';
+import { AnimatedAppear } from 'src/ui/components/AnimatedAppear';
+import type { GasbackData } from 'src/modules/ethereum/account-abstraction/rewards';
 import { NetworkFee } from '../NetworkFee';
+import { NonceLine } from '../NonceLine';
 import { useTransactionFee } from './useTransactionFee';
 
 function NetworkFeeLine({
@@ -80,6 +84,11 @@ function NetworkFeeLine({
         chain={chain}
         chainGasPrices={chainGasPrices}
         networkFeeConfiguration={configuration.networkFee}
+        label={
+          <UIText kind="small/regular" color="var(--neutral-700)">
+            Network Fee
+          </UIText>
+        }
         displayValueEnd={
           paymasterPossible && !paymasterEligible ? (
             <>
@@ -104,6 +113,13 @@ function NetworkFeeLine({
     </>
   );
 }
+
+let id = 0;
+function usePlainId() {
+  const [value] = useState(() => id++);
+  return value;
+}
+
 export function TransactionConfiguration({
   transaction: incomingTransaction,
   from,
@@ -114,6 +130,8 @@ export function TransactionConfiguration({
   paymasterEligible,
   paymasterPossible,
   keepPreviousData = false,
+  gasback: gasbackData,
+  listViewTransitions = false,
 }: {
   transaction: IncomingTransaction;
   from: string;
@@ -124,16 +142,51 @@ export function TransactionConfiguration({
   paymasterEligible: boolean;
   paymasterPossible: boolean;
   keepPreviousData?: boolean;
+  gasback: GasbackData | null;
+  /** Hacky, experimental and only needed on SendTransaction View because list is stuck to the bottom */
+  listViewTransitions?: boolean;
 }) {
   const { preferences } = usePreferences();
   const transactionWithFrom = useMemo(
     () => ({ ...incomingTransaction, from }),
     [from, incomingTransaction]
   );
+  const gasbackValueOriginal = gasbackData?.value ?? gasbackData?.estimation;
+  const [gasback, setGasback] = useState(gasbackValueOriginal);
+  const hasGasbackOnFirstRenderRef = useRef(gasback);
+
+  useEffect(() => {
+    // EXPERIMENT:
+    // Setting state in useEffect is an anti-pattern but we need
+    // this update the "list" with startViewTransition
+    // Each item in the list must have a unique viewTransitionName
+    // It will be animated automatically but can be additionally animated with CSS
+    // We want to animate the moving list items because the `gasback` value appears later
+    // due to interpetation response.
+    if (document.startViewTransition && listViewTransitions) {
+      document.startViewTransition(() => {
+        flushSync(() => {
+          setGasback(gasbackValueOriginal);
+        });
+      });
+    } else {
+      setGasback(gasbackValueOriginal);
+    }
+  }, [gasbackValueOriginal, listViewTransitions]);
+
+  // viewTransitionNames need to be unique when this component is used more than once on the same view
+  const id = usePlainId();
+
   return (
     <VStack gap={8}>
       {paymasterEligible ? (
-        <HStack gap={8} justifyContent="space-between">
+        <HStack
+          style={{
+            ['viewTransitionName' as string]: `network-fee-free-line-${id}`,
+          }}
+          gap={8}
+          justifyContent="space-between"
+        >
           <UIText kind="small/regular" color="var(--neutral-700)">
             Network Fee
           </UIText>
@@ -149,29 +202,69 @@ export function TransactionConfiguration({
           </UIText>
         </HStack>
       ) : (
-        <NetworkFeeLine
-          configuration={configuration}
-          onConfigurationChange={onConfigurationChange}
-          transaction={transactionWithFrom}
-          chain={chain}
-          keepPreviousData={keepPreviousData}
-          onFeeValueCommonReady={onFeeValueCommonReady}
-          paymasterPossible={paymasterPossible}
-          paymasterEligible={paymasterEligible}
-        />
+        <div
+          style={{
+            ['viewTransitionName' as string]: `network-fee-default-line-${id}`,
+          }}
+        >
+          <NetworkFeeLine
+            configuration={configuration}
+            onConfigurationChange={onConfigurationChange}
+            transaction={transactionWithFrom}
+            chain={chain}
+            keepPreviousData={keepPreviousData}
+            onFeeValueCommonReady={onFeeValueCommonReady}
+            paymasterPossible={paymasterPossible}
+            paymasterEligible={paymasterEligible}
+          />
+        </div>
       )}
       {preferences?.configurableNonce ? (
-        <NonceLine
-          userNonce={configuration.nonce}
-          transaction={transactionWithFrom}
-          chain={chain}
-          onChange={
-            onConfigurationChange
-              ? (nonce) => onConfigurationChange({ ...configuration, nonce })
-              : null
-          }
-        />
+        <div style={{ ['viewTransitionName' as string]: `nonce-line-${id}` }}>
+          <NonceLine
+            userNonce={configuration.nonce}
+            transaction={transactionWithFrom}
+            chain={chain}
+            onChange={
+              onConfigurationChange
+                ? (nonce) => onConfigurationChange({ ...configuration, nonce })
+                : null
+            }
+          />
+        </div>
       ) : null}
+      <AnimatedAppear
+        display={Boolean(gasback)}
+        from={
+          !listViewTransitions || hasGasbackOnFirstRenderRef.current
+            ? /* no animation */ { y: 0 }
+            : { opacity: 0, y: 20 }
+        }
+        config={{ tension: 300, friction: 20 }}
+      >
+        <HStack
+          style={{ ['viewTransitionName' as string]: `gasback-line-${id}` }}
+          gap={8}
+          justifyContent="space-between"
+          aria-hidden={!gasback}
+        >
+          <UIText kind="small/regular" color="var(--neutral-700)">
+            Gasback
+          </UIText>
+          <UIText
+            kind="small/accent"
+            style={{
+              background: 'linear-gradient(90deg, #6C6CF9 0%, #FF7583 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            {gasbackData?.value == null ? 'Up to ' : null}
+            {new Intl.NumberFormat('en').format(gasback || 0)}
+            {NBSP}XP
+          </UIText>
+        </HStack>
+      </AnimatedAppear>
     </VStack>
   );
 }
