@@ -16,7 +16,7 @@ export function useGasbackEstimation({
   suppportsSimulations: boolean;
   supportsSponsoredTransactions: boolean | undefined;
 }) {
-  const { data, ...query } = useFirebaseConfig(['ios_loyalty_config'], {
+  const { data, ...query } = useFirebaseConfig(['loyalty_config'], {
     enabled:
       FEATURE_LOYALTY_FLOW === 'on' &&
       !paymasterEligible &&
@@ -25,7 +25,7 @@ export function useGasbackEstimation({
   const showGasback =
     suppportsSimulations &&
     (supportsSponsoredTransactions === false || paymasterEligible === false); // Important: explicit checks for `false`
-  const estimation = data?.ios_loyalty_config.gasbackValue;
+  const estimation = data?.loyalty_config.gasbackValue;
   return {
     data: estimation && showGasback ? ({ estimation } as GasbackData) : null,
     ...query,

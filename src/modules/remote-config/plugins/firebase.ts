@@ -8,13 +8,13 @@ import type { RemoteConfig } from '../types';
 const defaultConfig: RemoteConfig = {
   extension_wallet_name_flags: {},
   extension_uninstall_link: '',
-  ios_loyalty_config: {},
+  loyalty_config: {},
 };
 
 const knownKeys: (keyof RemoteConfig)[] = [
   'extension_wallet_name_flags',
   'extension_uninstall_link',
-  'ios_loyalty_config',
+  'loyalty_config',
 ];
 
 export async function fetchRemoteConfig<T extends keyof RemoteConfig>(
