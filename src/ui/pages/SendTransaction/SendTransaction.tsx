@@ -483,7 +483,7 @@ function TransactionDefaultView({
                     paymasterEligible={paymasterEligible}
                     paymasterPossible={paymasterPossible}
                     gasback={
-                      interpretation?.action.transaction.gasback != null
+                      interpretation?.action?.transaction.gasback != null
                         ? { value: interpretation.action.transaction.gasback }
                         : null
                     }

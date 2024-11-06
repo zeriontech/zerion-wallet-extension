@@ -192,7 +192,9 @@ function SendFormComponent() {
     snapshotRef.current = { state, tokenItem, nftItem };
   };
 
-  const feeValueCommonRef = useRef<string>(); /** for analytics only */
+  const feeValueCommonRef = useRef<string | null>(
+    null
+  ); /** for analytics only */
   const handleFeeValueCommonReady = useCallback((value: string) => {
     feeValueCommonRef.current = value;
   }, []);
@@ -409,6 +411,11 @@ function SendFormComponent() {
 
   const navigate = useNavigate();
 
+  const gasbackValueRef = useRef<number | null>(null);
+  const handleGasbackReady = useCallback((value: number) => {
+    gasbackValueRef.current = value;
+  }, []);
+
   if (isSuccess) {
     invariant(transactionHash, 'Missing Form State View values');
     invariant(
@@ -419,9 +426,12 @@ function SendFormComponent() {
       <SuccessState
         hash={transactionHash}
         sendFormSnapshot={snapshotRef.current}
+        gasbackValue={gasbackValueRef.current}
         onDone={() => {
           reset();
           snapshotRef.current = null;
+          feeValueCommonRef.current = null;
+          gasbackValueRef.current = null;
           navigate('/overview/history');
         }}
       />
@@ -645,6 +655,7 @@ function SendFormComponent() {
                     paymasterPossible={paymasterPossible}
                     eligibilityQuery={eligibilityQuery}
                     gasback={gasbackEstimation}
+                    onGasbackReady={handleGasbackReady}
                   />
                 </ViewLoadingSuspense>
               </>

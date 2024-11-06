@@ -1,3 +1,4 @@
+import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
 
 export interface GasbackData {
@@ -16,7 +17,10 @@ export function useGasbackEstimation({
   supportsSponsoredTransactions: boolean | undefined;
 }) {
   const { data, ...query } = useFirebaseConfig(['ios_loyalty_config'], {
-    enabled: !paymasterEligible && suppportsSimulations,
+    enabled:
+      FEATURE_LOYALTY_FLOW === 'on' &&
+      !paymasterEligible &&
+      suppportsSimulations,
   });
   const showGasback =
     suppportsSimulations &&

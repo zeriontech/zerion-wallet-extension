@@ -16,7 +16,36 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
+import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { TransferVisualization } from '../TransferVisualization';
+
+export function GasbackDecorated({ value }: { value: number }) {
+  return (
+    <HStack
+      gap={8}
+      justifyContent="space-between"
+      alignItems="center"
+      style={{
+        padding: '8px 12px',
+        borderRadius: 12,
+        background:
+          'linear-gradient(90deg, rgba(160, 36, 239, 0.20) 0%, rgba(253, 187, 108, 0.20) 100%)',
+      }}
+    >
+      <UIText kind="small/regular">Gasback</UIText>
+      <UIText
+        kind="small/accent"
+        style={{
+          background: 'linear-gradient(90deg, #6C6CF9 0%, #FF7583 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+        }}
+      >
+        {new Intl.NumberFormat('en').format(value)}
+      </UIText>
+    </HStack>
+  );
+}
 
 export interface SendFormSnapshot {
   state: SendFormState;
@@ -27,11 +56,13 @@ export interface SendFormSnapshot {
 export function SuccessState({
   paddingTop = 64,
   sendFormSnapshot,
+  gasbackValue,
   hash,
   onDone,
 }: {
   paddingTop?: number;
   sendFormSnapshot: SendFormSnapshot;
+  gasbackValue: number | null;
   hash: string | null;
   onDone: () => void;
 }) {
@@ -40,16 +71,10 @@ export function SuccessState({
   const { type, tokenChain, nftChain, to, tokenValue } = state;
   const currentChain = type === 'token' ? tokenChain : nftChain;
   invariant(to && currentChain, 'Required Form values are missing');
-  const trail = useTrail(3, {
+  const trail = useTrail(4, {
     config: { tension: 400 },
-    from: {
-      opacity: 0,
-      y: 40,
-    },
-    to: {
-      opacity: 1,
-      y: 0,
-    },
+    from: { opacity: 0, y: 40 },
+    to: { opacity: 1, y: 0 },
   });
   if (!networks) {
     return <ViewLoading />;
@@ -108,6 +133,14 @@ export function SuccessState({
             to={to}
             amount={tokenValue ?? '0'}
           />
+        </animated.div>
+      ) : null}
+      {gasbackValue && FEATURE_LOYALTY_FLOW === 'on' ? (
+        <animated.div style={trail[3]}>
+          <div style={{ paddingInline: 32 }}>
+            <Spacer height={32} />
+            <GasbackDecorated value={gasbackValue} />
+          </div>
         </animated.div>
       ) : null}
       <PageBottom />

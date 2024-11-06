@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import type { CustomConfiguration } from '@zeriontech/transactions';
 import type { IncomingTransactionWithChainId } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
@@ -35,6 +35,7 @@ export function TransactionConfirmationView({
   localAllowanceQuantityBase,
   onOpenAllowanceForm,
   gasback: gasbackEstimation,
+  onGasbackReady,
 }: {
   title: React.ReactNode;
   wallet: ExternallyOwnedAccount;
@@ -48,6 +49,7 @@ export function TransactionConfirmationView({
   localAllowanceQuantityBase?: string;
   onOpenAllowanceForm?: () => void;
   gasback: GasbackData | null;
+  onGasbackReady: null | ((value: number) => void);
 }) {
   const { preferences, query } = usePreferences();
 
@@ -55,6 +57,13 @@ export function TransactionConfirmationView({
     transaction,
     eligibilityQuery,
   });
+  const gasbackValue =
+    txInterpretQuery.data?.action?.transaction.gasback ?? null;
+  useEffect(() => {
+    if (gasbackValue != null) {
+      onGasbackReady?.(gasbackValue);
+    }
+  }, [gasbackValue, onGasbackReady]);
   if (query.isLoading) {
     return null;
   }
@@ -117,7 +126,7 @@ export function TransactionConfirmationView({
             paymasterEligible={paymasterEligible}
             paymasterPossible={paymasterPossible}
             gasback={
-              txInterpretQuery.data?.action.transaction.gasback
+              txInterpretQuery.data?.action?.transaction.gasback
                 ? { value: txInterpretQuery.data?.action.transaction.gasback }
                 : gasbackEstimation
             }

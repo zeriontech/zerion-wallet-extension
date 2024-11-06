@@ -261,7 +261,9 @@ export function SwapFormComponent() {
     snapshotRef.current = swapView.store.getState();
   };
 
-  const feeValueCommonRef = useRef<string>(); /** for analytics only */
+  const feeValueCommonRef = useRef<string | null>(
+    null
+  ); /** for analytics only */
   const handleFeeValueCommonReady = useCallback((value: string) => {
     feeValueCommonRef.current = value;
   }, []);
@@ -532,6 +534,11 @@ export function SwapFormComponent() {
 
   const navigate = useNavigate();
 
+  const gasbackValueRef = useRef<number | null>(null);
+  const handleGasbackReady = useCallback((value: number) => {
+    gasbackValueRef.current = value;
+  }, []);
+
   if (isSuccess) {
     invariant(
       spendPosition && receivePosition && transactionHash,
@@ -547,9 +554,12 @@ export function SwapFormComponent() {
         spendPosition={spendPosition}
         receivePosition={receivePosition}
         swapFormState={snapshotRef.current}
+        gasbackValue={gasbackValueRef.current}
         onDone={() => {
           reset();
           snapshotRef.current = null;
+          feeValueCommonRef.current = null;
+          gasbackValueRef.current = null;
           navigate('/overview/history');
         }}
       />
@@ -662,6 +672,7 @@ export function SwapFormComponent() {
                 paymasterPossible={paymasterPossible}
                 eligibilityQuery={eligibilityQuery}
                 gasback={gasbackEstimation}
+                onGasbackReady={handleGasbackReady}
               />
             </ViewLoadingSuspense>
           );
