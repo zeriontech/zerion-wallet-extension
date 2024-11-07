@@ -47,6 +47,7 @@ import {
 } from 'src/ui/DNA/components/DnaBanners';
 import { updateAddressDnaInfo } from 'src/modules/dna-service/dna.client';
 import { WalletSourceIcon } from 'src/ui/components/WalletSourceIcon';
+import RewardsIcon from 'jsx:src/ui/assets/rewards.svg';
 import { useStore } from '@store-unit/react';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
 import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
@@ -65,6 +66,7 @@ import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfo
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { XpDropClaimBanner } from 'src/ui/features/xp-drop/components/XpDropClaimBanner';
 import { getWalletsMetaByChunks } from 'src/modules/zerion-api/requests/wallet-get-meta';
+import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -224,6 +226,28 @@ function CurrentAccountControls() {
 
       <RenderArea name="wallet-name-end" />
     </HStack>
+  );
+}
+
+function RewardsLinkIcon() {
+  return (
+    <Button
+      kind="ghost"
+      as={UnstyledAnchor}
+      href="https://app.zerion.io/rewards"
+      target="_blank"
+      size={36}
+      title="Rewards"
+      style={{ paddingInline: 8 }}
+    >
+      <RewardsIcon
+        style={{
+          width: 20,
+          height: 20,
+          color: 'linear-gradient(90deg, #A024EF 0%, #FDBB6C 100%)',
+        }}
+      />
+    </Button>
   );
 }
 
@@ -468,7 +492,10 @@ function OverviewComponent() {
             }}
           >
             <CurrentAccountControls />
-            <SettingsLinkIcon />
+            <HStack gap={0} alignItems="center">
+              <RewardsLinkIcon />
+              <SettingsLinkIcon />
+            </HStack>
           </div>
           <Spacer height={16} />
         </div>
