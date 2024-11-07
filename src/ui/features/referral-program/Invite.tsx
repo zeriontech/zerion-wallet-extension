@@ -278,7 +278,7 @@ function Heading({
       />
       <KeyboardShortcut
         combination="backspace"
-        onKeyDown={() => navigate(-1)}
+        onKeyDown={() => navigate(getBackOrHome() as number)}
       />
       <NavigationTitle title={null} documentTitle="Invite Friends to Zerion" />
       <img
