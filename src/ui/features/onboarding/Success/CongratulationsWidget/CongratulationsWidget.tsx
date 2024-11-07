@@ -1,7 +1,7 @@
 import React from 'react';
 import PremiumIcon from 'jsx:src/ui/assets/premium.svg';
-import ChartIcon from 'jsx:src/ui/assets/chart.svg';
-import CsvIcon from 'jsx:src/ui/assets/csv.svg';
+import ChartPromoIcon from 'jsx:src/ui/assets/chart-promo.svg';
+import CsvPromoIcon from 'jsx:src/ui/assets/csv-promo.svg';
 import type { ReferrerData } from 'src/modules/zerion-api/requests/check-referral';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -55,7 +55,7 @@ export function CongratulationsWidget({
         </VStack>
         <FeatureCard
           className={styles.chartFeatureCard}
-          icon={<ChartIcon />}
+          icon={<ChartPromoIcon />}
           text="Multichain Profit/Loss"
         />
         <VStack gap={8} style={{ alignItems: 'initial' }}>
@@ -67,7 +67,7 @@ export function CongratulationsWidget({
           />
           <FeatureCard
             className={styles.featureCard}
-            icon={<CsvIcon />}
+            icon={<CsvPromoIcon />}
             text="Download History"
           />
         </VStack>

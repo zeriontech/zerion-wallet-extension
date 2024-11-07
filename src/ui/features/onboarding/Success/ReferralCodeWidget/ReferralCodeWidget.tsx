@@ -13,6 +13,7 @@ import { Input } from 'src/ui/ui-kit/Input';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import type { ReferrerData } from 'src/modules/zerion-api/requests/check-referral';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import * as styles from './styles.module.css';
 
 function EnterReferralCodeButton({ onClick }: { onClick: () => void }) {
@@ -109,21 +110,29 @@ function ReferralCodeForm({
                   disabled={applyReferralCodeMutation.isLoading}
                 />
                 {referralCode.length > 0 ? (
-                  <ClearSolidIcon
+                  <UnstyledButton
+                    type="button"
                     style={{
-                      width: 20,
-                      height: 20,
                       cursor: 'pointer',
                       alignSelf: 'center',
                       justifySelf: 'end',
-                      color: 'var(--neutral-500)',
-                      marginRight: 8,
+                      width: 20,
+                      height: 20,
+                      marginRight: 12,
                     }}
                     onClick={() => {
                       setReferralCode('');
                       applyReferralCodeMutation.reset();
                     }}
-                  />
+                  >
+                    <ClearSolidIcon
+                      style={{
+                        width: 20,
+                        height: 20,
+                        color: 'var(--neutral-500)',
+                      }}
+                    />
+                  </UnstyledButton>
                 ) : null}
               </ZStack>
               <Button
