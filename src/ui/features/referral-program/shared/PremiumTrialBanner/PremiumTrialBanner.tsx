@@ -28,9 +28,7 @@ export function PremiumTrialBanner({
         justifyContent="center"
       >
         <GiftIcon />
-        <GradientText>
-          <UIText kind="headline/h3">You got Premium Trial</UIText>
-        </GradientText>
+        <UIText kind="headline/h3" className={styles.gradientText}>You got Premium Trial</UIText>
       </HStack>
     </GradientBorder>
   );
