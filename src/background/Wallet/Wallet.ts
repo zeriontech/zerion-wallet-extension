@@ -1083,7 +1083,7 @@ export class Wallet {
   }
 
   private getOfflineSignerByAddress(address: string) {
-    this.ensureRecord();
+    this.ensureRecord(this.record);
     const wallet = Model.getSignerWalletByAddress(this.record, address);
     if (!wallet) {
       throw new Error('Signer wallet for this address is not found');
