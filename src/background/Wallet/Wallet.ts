@@ -1401,10 +1401,7 @@ export class Wallet {
     if (message == null) {
       throw new InvalidParams();
     }
-    const currentAddress = this.readCurrentAddress();
-    if (!currentAddress) {
-      throw new Error('Current address not set');
-    }
+    const currentAddress = this.ensureCurrentAddress();
     return this.signMessage({
       signerAddress: currentAddress,
       message,
