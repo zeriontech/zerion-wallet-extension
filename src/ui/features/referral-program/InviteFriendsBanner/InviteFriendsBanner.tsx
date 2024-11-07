@@ -6,8 +6,6 @@ import CloseIcon from 'jsx:src/ui/assets/close.svg';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
-import CardsSrc from './cards.png';
-import Cards2xSrc from './cards@2x.png';
 import * as styles from './styles.module.css';
 
 export function InviteFriendsBanner({ onDismiss }: { onDismiss?(): void }) {
@@ -16,8 +14,8 @@ export function InviteFriendsBanner({ onDismiss }: { onDismiss?(): void }) {
       <img
         className={styles.image}
         style={{ width: 160, height: 108 }}
-        src={CardsSrc}
-        srcSet={`${CardsSrc}, ${Cards2xSrc} 2x`}
+        src="https://s3.us-east-1.amazonaws.com/cdn.zerion.io/images/dna-assets/invite-banner-decoration.png"
+        srcSet="https://s3.us-east-1.amazonaws.com/cdn.zerion.io/images/dna-assets/invite-banner-decoration.png, https://s3.us-east-1.amazonaws.com/cdn.zerion.io/images/dna-assets/invite-banner-decoration_2x.png 2x"
         alt=""
       />
       <UnstyledLink className={styles.bannerLink} to="/invite">
