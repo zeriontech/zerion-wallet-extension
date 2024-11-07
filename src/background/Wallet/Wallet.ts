@@ -1356,15 +1356,16 @@ export class Wallet {
     });
   }
 
-  async signMessage({
+  async signMessage({ params: {
     signerAddress,
     message,
     messageContextParams,
-  }: {
+  }, context }: WalletMethodParams<{
     signerAddress: string;
     message: string;
     messageContextParams: MessageContextParams;
-  }) {
+  }>) {
+    this.verifyInternalOrigin(context);
     const messageAsUtf8String = toUtf8String(message);
 
     // Some dapps provide a hex message that doesn't parse as a utf string,
