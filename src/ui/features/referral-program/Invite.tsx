@@ -351,7 +351,7 @@ export function Invite() {
     <VStack gap={16}>
       <Heading
         title="Invite Friends to Zerion"
-        subtitle="Earn 10% of your invitee's XP and gift free Premium"
+        subtitle="Earn 10% of your invitee’s XP and gift free Premium"
       />
       <PageColumn>
         <PageTop />
