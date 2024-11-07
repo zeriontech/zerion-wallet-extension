@@ -43,12 +43,9 @@ import { ReferralLinkDialog } from './ReferralLinkDialog';
 import { EnterReferralCodeDialog } from './EnterReferralCodeDialog';
 import { QRCodeDialog } from './QRCodeDialog';
 import { SuccessDialog } from './SuccessDialog';
-import { useWalletsMeta } from './shared/useWalletsMeta';
+import { useWalletsMetaByChunks } from './shared/useWalletsMetaByChunks';
 import { ReferrerLink } from './shared/ReferrerLink';
 import * as styles from './styles.module.css';
-
-// TODO: Remove when explore rewards page is ready
-const SHOW_EXPLORE_REWARDS_BUTTON = process.env.NODE_ENV === 'development';
 
 function WalletSelectDialog({
   value,
@@ -61,10 +58,7 @@ function WalletSelectDialog({
 }) {
   return walletGroups?.length ? (
     <div style={{ ['--surface-background-color' as string]: 'none' }}>
-      <DialogTitle
-        title={<UIText kind="body/accent">Select Wallet</UIText>}
-        closeKind="icon"
-      />
+      <DialogTitle title={<UIText kind="body/accent">Select Wallet</UIText>} />
       <WalletList
         selectedAddress={value}
         walletGroups={walletGroups}
@@ -248,6 +242,7 @@ function ChangeWalletButton({
             style={{
               overflow: 'hidden',
               textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
             }}
           >
             <WalletDisplayName wallet={currentWallet} />
@@ -322,7 +317,7 @@ export function Invite() {
       ),
     [walletGroups]
   );
-  const { data: walletsMeta } = useWalletsMeta({
+  const { data: walletsMeta } = useWalletsMetaByChunks({
     addresses: selectedWallet?.address ? [selectedWallet.address] : [],
   });
   const walletMeta = walletsMeta?.[0];
@@ -378,7 +373,7 @@ export function Invite() {
               earned={walletMeta.membership.xp.earned}
               referred={walletMeta.membership.referred}
             />
-            {myReferralCode && SHOW_EXPLORE_REWARDS_BUTTON ? (
+            {myReferralCode ? (
               <Button
                 kind="regular"
                 as={UnstyledAnchor}

@@ -77,7 +77,6 @@ export function EnterReferralCodeDialog({
             <Button
               kind="regular"
               type="button"
-              disabled={applyReferralCodeMutation.isLoading}
               onClick={(event) => {
                 event?.currentTarget?.form?.reset();
                 onDismiss();

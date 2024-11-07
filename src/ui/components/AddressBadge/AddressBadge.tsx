@@ -27,7 +27,11 @@ export function AddressBadge({
       <WalletAvatar address={wallet.address} size={14} borderRadius={4} />
       <UIText
         kind="caption/regular"
-        style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
+        style={{
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
       >
         <WalletDisplayName wallet={wallet} maxCharacters={16} padding={4} />
       </UIText>

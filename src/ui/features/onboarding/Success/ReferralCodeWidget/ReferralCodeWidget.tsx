@@ -112,6 +112,7 @@ function ReferralCodeForm({
                 {referralCode.length > 0 ? (
                   <UnstyledButton
                     type="button"
+                    title="clear"
                     style={{
                       cursor: 'pointer',
                       alignSelf: 'center',
