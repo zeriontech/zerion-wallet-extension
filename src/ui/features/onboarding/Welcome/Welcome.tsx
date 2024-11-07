@@ -216,7 +216,7 @@ async function setReferralCode(params: unknown) {
     referralCode: params.referralCode,
   });
   const checkedReferrer = checkReferralResponse.data;
-  saveReferrerData(checkedReferrer);
+  await saveReferrerData(checkedReferrer);
 }
 
 export function Welcome() {
