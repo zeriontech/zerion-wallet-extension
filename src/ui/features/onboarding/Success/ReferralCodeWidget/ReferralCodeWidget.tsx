@@ -120,10 +120,7 @@ function ReferralCodeForm({
                       height: 20,
                       marginRight: 12,
                     }}
-                    onClick={() => {
-                      setReferralCode('');
-                      applyReferralCodeMutation.reset();
-                    }}
+                    onClick={() => setReferralCode('')}
                   >
                     <ClearSolidIcon
                       style={{
