@@ -7,10 +7,6 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { BackButton } from 'src/ui/components/BackButton';
 import { getBackOrHome } from 'src/ui/shared/navigation/getBackOrHome';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import CardsLeftSrc from 'src/ui/assets/cards-left.png';
-import CardsLeft2xSrc from 'src/ui/assets/cards-left@2x.png';
-import CardsRightSrc from 'src/ui/assets/cards-right.png';
-import CardsRight2xSrc from 'src/ui/assets/cards-right@2x.png';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import AccountIcon from 'jsx:src/ui/assets/account.svg';
 import XpIcon from 'jsx:src/ui/assets/xp.svg';
@@ -287,14 +283,14 @@ function Heading({
       <NavigationTitle title={null} documentTitle="Invite Friends to Zerion" />
       <img
         alt=""
-        src={CardsLeftSrc}
-        srcSet={`${CardsLeftSrc}, ${CardsLeft2xSrc} 2x`}
+        src="https://s3.us-east-1.amazonaws.com/cdn.zerion.io/images/dna-assets/invite-flow-decoration-left.png"
+        srcSet="https://s3.us-east-1.amazonaws.com/cdn.zerion.io/images/dna-assets/invite-flow-decoration-left.png, https://s3.us-east-1.amazonaws.com/cdn.zerion.io/images/dna-assets/invite-flow-decoration-left_2x.png 2x"
         className={styles.cardsLeft}
       />
       <img
         alt=""
-        src={CardsRightSrc}
-        srcSet={`${CardsRightSrc}, ${CardsRight2xSrc} 2x`}
+        src="https://s3.us-east-1.amazonaws.com/cdn.zerion.io/images/dna-assets/invite-flow-decoration-right.png"
+        srcSet="https://s3.us-east-1.amazonaws.com/cdn.zerion.io/images/dna-assets/invite-flow-decoration-right.png, https://s3.us-east-1.amazonaws.com/cdn.zerion.io/images/dna-assets/invite-flow-decoration-right_2x.png 2x"
         className={styles.cardsRight}
       />
       <VStack gap={24} className={styles.titleContainer}>

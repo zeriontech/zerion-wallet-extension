@@ -15,10 +15,6 @@ import { ZStack } from 'src/ui/ui-kit/ZStack';
 import type { ReferrerData } from 'src/modules/zerion-api/requests/check-referral';
 import * as styles from './styles.module.css';
 
-function GradientText({ children }: { children: React.ReactNode }) {
-  return <div className={styles.gradientText}>{children}</div>;
-}
-
 function EnterReferralCodeButton({ onClick }: { onClick: () => void }) {
   return (
     <>
@@ -35,9 +31,9 @@ function EnterReferralCodeButton({ onClick }: { onClick: () => void }) {
         >
           <HStack gap={8}>
             <GiftIcon />
-            <GradientText>
-              <UIText kind="body/accent">Enter Referral Code</UIText>
-            </GradientText>
+            <UIText kind="body/accent" className={styles.gradientText}>
+              Enter Referral Code
+            </UIText>
           </HStack>
         </Button>
         <UIText

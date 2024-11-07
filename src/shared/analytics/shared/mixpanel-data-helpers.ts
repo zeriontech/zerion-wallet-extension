@@ -3,7 +3,7 @@ import { getAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
 import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
 import { isReadonlyContainer } from 'src/shared/types/validators';
 import { backgroundQueryClient } from 'src/modules/query-client/query-client.background';
-import { getWalletsMetaByChunks } from 'src/modules/zerion-api/requests/wallet-get-meta';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { getAddressesPortfolio } from './getTotalWalletsBalance';
 import {
   getProviderForMixpanel,
@@ -42,7 +42,7 @@ async function getPortfolioStats(addresses: string[]) {
 async function getZerionStats(addresses: string[]) {
   const results = await backgroundQueryClient.fetchQuery({
     queryKey: ['ZerionAPI.getWalletsMeta', addresses],
-    queryFn: () => getWalletsMetaByChunks(addresses),
+    queryFn: () => ZerionAPI.getWalletsMetaByChunks(addresses),
     staleTime: 1000 * 60 * 60 * 12, // HALF A DAY
   });
   const stats = {

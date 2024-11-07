@@ -5,9 +5,9 @@ import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import PremiumIcon from 'jsx:src/ui/assets/premium.svg';
-import ChartIcon from 'jsx:src/ui/assets/chart.svg';
-import StarIcon from 'jsx:src/ui/assets/star.svg';
-import CsvIcon from 'jsx:src/ui/assets/csv.svg';
+import ChartPromoIcon from 'jsx:src/ui/assets/chart-promo.svg';
+import ReducedFeesPromoIcon from 'jsx:src/ui/assets/reduced-fees-promo.svg';
+import CsvPromoIcon from 'jsx:src/ui/assets/csv-promo.svg';
 import { focusNode } from 'src/ui/shared/focusNode';
 import type { ReferrerData } from 'src/modules/zerion-api/requests/check-referral';
 import { ReferrerLink } from '../shared/ReferrerLink';
@@ -57,8 +57,14 @@ export function SuccessDialog({
           />
         </HStack>
         <HStack gap={8} style={{ gridAutoColumns: 'auto 1fr' }}>
-          <FeatureCard icon={<ChartIcon />} text="Multichain Profit/Loss" />
-          <FeatureCard icon={<StarIcon />} text="Reduced Trading Fees" />
+          <FeatureCard
+            icon={<ChartPromoIcon />}
+            text="Multichain Profit/Loss"
+          />
+          <FeatureCard
+            icon={<ReducedFeesPromoIcon />}
+            text="Reduced Trading Fees"
+          />
         </HStack>
         <HStack gap={8} style={{ gridAutoColumns: '1fr 2fr' }}>
           <FeatureCard
@@ -66,7 +72,7 @@ export function SuccessDialog({
             iconStyle={{ fontSize: '36px' }}
             text="Priority Support"
           />
-          <FeatureCard icon={<CsvIcon />} text="Download History" />
+          <FeatureCard icon={<CsvPromoIcon />} text="Download History" />
         </HStack>
       </VStack>
       <Button ref={focusNode} kind="primary" onClick={onDismiss}>

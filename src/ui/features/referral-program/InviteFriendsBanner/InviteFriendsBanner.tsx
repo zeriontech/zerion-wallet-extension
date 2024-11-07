@@ -1,7 +1,7 @@
 import React from 'react';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import GiftOutlineIcon from 'jsx:src/ui/assets/gift-outline.svg';
+import GiftSolidIcon from 'jsx:src/ui/assets/gift-solid.svg';
 import CloseIcon from 'jsx:src/ui/assets/close.svg';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
@@ -22,7 +22,7 @@ export function InviteFriendsBanner({ onDismiss }: { onDismiss?(): void }) {
       />
       <UnstyledLink className={styles.bannerLink} to="/invite">
         <div className={styles.bannerContent}>
-          <GiftOutlineIcon color="var(--always-black)" />
+          <GiftSolidIcon color="var(--always-black)" />
           <Spacer height={4} />
           <VStack gap={4}>
             <UIText kind="headline/h3" color="var(--always-black)">
