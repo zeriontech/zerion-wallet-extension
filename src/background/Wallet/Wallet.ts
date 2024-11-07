@@ -1093,13 +1093,8 @@ export class Wallet {
   }
 
   private getOfflineSigner() {
-    if (!this.record) {
-      throw new RecordNotFound();
-    }
-    const currentAddress = this.readCurrentAddress();
-    if (!currentAddress) {
-      throw new Error('Current address not set');
-    }
+    this.ensureRecord(this.record);
+    const currentAddress = this.ensureCurrentAddress();
     const currentWallet = currentAddress
       ? Model.getSignerWalletByAddress(this.record, currentAddress)
       : null;
