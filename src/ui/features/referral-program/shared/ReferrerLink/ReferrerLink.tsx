@@ -20,7 +20,7 @@ export function ReferrerLink({
       href={`https://app.zerion.io/${address}/overview`}
       target="_blank"
       rel="noopener noreferrer"
-      style={{ wordBreak: 'break-all' }}
+      style={{ overflowWrap: 'anywhere' }}
       {...props}
     >
       {displayName}
