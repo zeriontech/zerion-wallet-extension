@@ -95,6 +95,7 @@ interface RetrodropInfo {
 interface AddressMembership {
   level: number;
   levelProgress: number;
+  newRewards: number;
   premium: MigrationToken['premium'] | null;
   migration: {
     balances: MigrationBalances[];

@@ -69,8 +69,10 @@ function WalletSelectDialog({
       <WalletList
         selectedAddress={value}
         walletGroups={walletGroups}
+        walletsMeta={null}
         onSelect={onSelect}
         showAddressValues={true}
+        showExploreRewards={false}
       />
     </div>
   );

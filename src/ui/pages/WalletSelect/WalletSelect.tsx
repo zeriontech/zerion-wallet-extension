@@ -27,6 +27,7 @@ import { Media } from 'src/ui/ui-kit/Media';
 import { ellipsis } from 'src/ui/shared/typography';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
+import { getWalletsMetaByChunks } from 'src/modules/zerion-api/requests/wallet-get-meta';
 import { WalletList } from './WalletList';
 import * as styles from './styles.module.css';
 
@@ -77,18 +78,40 @@ function PortfolioRow({ walletGroups }: { walletGroups: WalletGroup[] }) {
 
 export function WalletSelect() {
   const navigate = useNavigate();
-  const { data: walletGroups, isLoading } = useQuery({
+  const { data: walletGroups, isLoading: isLoadingWalletGroups } = useQuery({
     queryKey: ['wallet/uiGetWalletGroups'],
     queryFn: () => walletPort.request('uiGetWalletGroups'),
     useErrorBoundary: true,
   });
+  const ownedGroups = useMemo(
+    () =>
+      walletGroups?.filter(
+        (group) => !isReadonlyContainer(group.walletContainer)
+      ),
+    [walletGroups]
+  );
+  const ownedAddresses = useMemo(
+    () =>
+      ownedGroups?.flatMap((group) =>
+        group.walletContainer.wallets.map((wallet) => wallet.address)
+      ),
+    [ownedGroups]
+  );
+
+  const { data: walletsMeta, isLoading: isLoadingWalletsMeta } = useQuery({
+    queryKey: ['ZerionAPI.getWalletsMeta', ownedAddresses],
+    queryFn: () =>
+      ownedAddresses ? getWalletsMetaByChunks(ownedAddresses) : null,
+    enabled: Boolean(ownedAddresses),
+  });
 
   const ownedAddressesCount = useMemo(
     () =>
-      (walletGroups || [])
-        .filter((group) => !isReadonlyContainer(group.walletContainer))
-        .reduce((sum, group) => sum + group.walletContainer.wallets.length, 0),
-    [walletGroups]
+      (ownedGroups || []).reduce(
+        (sum, group) => sum + group.walletContainer.wallets.length,
+        0
+      ),
+    [ownedGroups]
   );
 
   const { singleAddress, refetch } = useAddressParams();
@@ -99,9 +122,13 @@ export function WalletSelect() {
       navigate(-1);
     },
   });
+
+  const isLoading = isLoadingWalletGroups || isLoadingWalletsMeta;
+
   if (isLoading) {
     return null;
   }
+
   const title = (
     <NavigationTitle
       title="Wallets"
@@ -165,11 +192,13 @@ export function WalletSelect() {
         >
           <WalletList
             walletGroups={walletGroups}
+            walletsMeta={walletsMeta || []}
             onSelect={(wallet) => {
               setCurrentAddressMutation.mutate(wallet.address);
             }}
             selectedAddress={singleAddress}
             showAddressValues={true}
+            showExploreRewards={true}
           />
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <Button
