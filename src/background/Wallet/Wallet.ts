@@ -1356,11 +1356,10 @@ export class Wallet {
     });
   }
 
-  async signMessage({ params: {
-    signerAddress,
-    message,
-    messageContextParams,
-  }, context }: WalletMethodParams<{
+  async signMessage({
+    params: { signerAddress, message, messageContextParams },
+    context,
+  }: WalletMethodParams<{
     signerAddress: string;
     message: string;
     messageContextParams: MessageContextParams;
@@ -1399,9 +1398,12 @@ export class Wallet {
     }
     const currentAddress = this.ensureCurrentAddress();
     return this.signMessage({
-      signerAddress: currentAddress,
-      message,
-      messageContextParams,
+      params: {
+        signerAddress: currentAddress,
+        message,
+        messageContextParams,
+      },
+      context,
     });
   }
 

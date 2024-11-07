@@ -37,12 +37,15 @@ class ReferralProgramService {
     const message = `${normalizedAddress} -> ${referralCode}`;
 
     const signature = await walletFacade.signMessage({
-      signerAddress: address,
-      message,
-      messageContextParams: {
-        initiator: INTERNAL_ORIGIN,
-        clientScope: null,
+      params: {
+        signerAddress: address,
+        message,
+        messageContextParams: {
+          initiator: INTERNAL_ORIGIN,
+          clientScope: null,
+        },
       },
+      context: { origin: INTERNAL_ORIGIN },
     });
 
     return signature;
