@@ -15,21 +15,14 @@ import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { NBSP } from 'src/ui/shared/typography';
 import CheckIcon from 'jsx:src/ui/assets/check.svg';
-import RewardsIcon from 'jsx:src/ui/assets/rewards.svg';
 import { WalletSourceIcon } from 'src/ui/components/WalletSourceIcon';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { WalletNameType } from 'src/ui/shared/useProfileName';
 import { CopyButton } from 'src/ui/components/CopyButton';
 import { useCurrency } from 'src/modules/currency/useCurrency';
-import type { WalletMeta } from 'src/modules/zerion-api/requests/wallet-get-meta';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
-import { Button } from 'src/ui/ui-kit/Button';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { getWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import * as styles from './styles.module.css';
-
-const ZERION_ORIGIN = 'https://app.zerion.io';
 
 function WalletListItem({
   wallet,
@@ -43,10 +36,9 @@ function WalletListItem({
   wallet: ExternallyOwnedAccount;
   groupId: string;
   showAddressValues: boolean;
-  exploreRewardsUrl: string | null;
   useCssAnchors: boolean;
   isSelected: boolean;
-  renderFooter: () => React.ReactNode;
+  renderFooter: (() => React.ReactNode) | null;
 }) {
   const id = useId();
   const { currency } = useCurrency();
@@ -229,18 +221,22 @@ interface WalletGroupInfo {
 
 export function WalletList({
   walletGroups,
-  walletsMeta,
   selectedAddress,
   showAddressValues,
-  showExploreRewards,
+  renderItemFooter,
   onSelect,
 }: {
   walletGroups: WalletGroupInfo[];
-  walletsMeta: WalletMeta[] | null;
   selectedAddress: string;
   showAddressValues: boolean;
-  showExploreRewards: boolean;
-  onSelect(wallet: ExternallyOwnedAccount | BareWallet | DeviceAccount): void;
+  renderItemFooter?: ({
+    group,
+    wallet,
+  }: {
+    group: WalletGroupInfo;
+    wallet: AnyWallet;
+  }) => React.ReactNode;
+  onSelect(wallet: AnyWallet): void;
 }) {
   const items: Item[] = [];
   /**
@@ -250,17 +246,6 @@ export function WalletList({
   const supportsCssAnchor = CSS.supports('anchor-name: --name');
   for (const group of walletGroups) {
     for (const wallet of group.walletContainer.wallets) {
-      const walletMeta = walletsMeta?.find(
-        (meta) =>
-          normalizeAddress(meta.address) === normalizeAddress(wallet.address)
-      );
-      const addWalletParams = getWalletParams(wallet);
-
-      const exploreRewardsUrl =
-        showExploreRewards && walletMeta?.membership.newRewards
-          ? `${ZERION_ORIGIN}/rewards?section=rewards&${addWalletParams}`
-          : null;
-
       const key = `${group.id}-${wallet.address}`;
       items.push({
         key,
@@ -268,45 +253,19 @@ export function WalletList({
         pad: false,
         component: (
           <WalletListItem
-            onClick={() => {
-              onSelect(wallet);
-            }}
+            onClick={() => onSelect(wallet)}
             wallet={wallet}
             groupId={group.id}
             useCssAnchors={supportsCssAnchor}
             showAddressValues={showAddressValues}
-            exploreRewardsUrl={exploreRewardsUrl}
             isSelected={
               normalizeAddress(wallet.address) ===
               normalizeAddress(selectedAddress)
             }
-            renderFooter={() =>
-              exploreRewardsUrl ? (
-                <Button
-                  kind="neutral"
-                  as={UnstyledAnchor}
-                  href={exploreRewardsUrl}
-                  target="_blank"
-                  size={36}
-                  style={{
-                    borderRadius: '0 0 18px 18px',
-                  }}
-                >
-                  <HStack gap={8} alignItems="center" justifyContent="center">
-                    <RewardsIcon
-                      style={{
-                        width: 20,
-                        height: 20,
-                        color:
-                          'linear-gradient(90deg, #A024EF 0%, #FDBB6C 100%)',
-                      }}
-                    />
-                    <UIText kind="small/accent" color="var(--primary-500)">
-                      Explore Rewards
-                    </UIText>
-                  </HStack>
-                </Button>
-              ) : null
+            renderFooter={
+              renderItemFooter
+                ? () => renderItemFooter({ group, wallet })
+                : null
             }
           />
         ),

@@ -28,8 +28,12 @@ import { ellipsis } from 'src/ui/shared/typography';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { getWalletsMetaByChunks } from 'src/modules/zerion-api/requests/wallet-get-meta';
-import { WalletList } from './WalletList';
+import RewardsIcon from 'jsx:src/ui/assets/rewards.svg';
+import { normalizeAddress } from 'src/shared/normalizeAddress';
+import { getWalletParams } from 'src/ui/shared/requests/useWalletParams';
+import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import * as styles from './styles.module.css';
+import { WalletList } from './WalletList';
 
 function PortfolioRow({ walletGroups }: { walletGroups: WalletGroup[] }) {
   const { currency } = useCurrency();
@@ -75,6 +79,8 @@ function PortfolioRow({ walletGroups }: { walletGroups: WalletGroup[] }) {
     </div>
   );
 }
+
+const ZERION_ORIGIN = 'https://app.zerion.io';
 
 export function WalletSelect() {
   const navigate = useNavigate();
@@ -185,13 +191,49 @@ export function WalletSelect() {
         >
           <WalletList
             walletGroups={walletGroups}
-            walletsMeta={walletsMeta || []}
             onSelect={(wallet) => {
               setCurrentAddressMutation.mutate(wallet.address);
             }}
             selectedAddress={singleAddress}
             showAddressValues={true}
-            showExploreRewards={true}
+            renderItemFooter={({ wallet }) => {
+              const walletMeta = walletsMeta?.find(
+                (meta) =>
+                  normalizeAddress(meta.address) ===
+                  normalizeAddress(wallet.address)
+              );
+              const addWalletParams = getWalletParams(wallet);
+
+              const exploreRewardsUrl = walletMeta?.membership.newRewards
+                ? `${ZERION_ORIGIN}/rewards?section=rewards&${addWalletParams}`
+                : null;
+              return exploreRewardsUrl ? (
+                <Button
+                  kind="neutral"
+                  as={UnstyledAnchor}
+                  href={exploreRewardsUrl}
+                  target="_blank"
+                  size={36}
+                  style={{
+                    borderRadius: '0 0 18px 18px',
+                  }}
+                >
+                  <HStack gap={8} alignItems="center" justifyContent="center">
+                    <RewardsIcon
+                      style={{
+                        width: 20,
+                        height: 20,
+                        color:
+                          'linear-gradient(90deg, #A024EF 0%, #FDBB6C 100%)',
+                      }}
+                    />
+                    <UIText kind="small/accent" color="var(--primary-500)">
+                      Explore Rewards
+                    </UIText>
+                  </HStack>
+                </Button>
+              ) : null;
+            }}
           />
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <Button
