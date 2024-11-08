@@ -12,16 +12,12 @@ import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
 import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { Stack } from 'src/ui/ui-kit/Stack';
 import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
-import { invariant } from 'src/shared/invariant';
-import { isObj } from 'src/shared/isObj';
-import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import CreateImg from '../assets/option_create.png';
 import ImportImg from '../assets/option_import.png';
 import HardwareImg from '../assets/option_hardware.png';
 import * as helpersStyles from '../shared/helperStyles.module.css';
 import { useOnboardingSession } from '../shared/useOnboardingSession';
-import { saveReferrerData } from '../../referral-program/shared/storage';
-import { WebAppMessageHandler } from '../Success/WebAppMessageHandler';
+import { ReferralProgramHandler } from '../../referral-program/WebAppMessageHandler';
 import * as styles from './styles.module.css';
 
 interface ImportOptionConfig {
@@ -207,19 +203,6 @@ function Banner() {
   );
 }
 
-async function setReferralCode(params: unknown) {
-  invariant(
-    isObj(params) && typeof params.referralCode === 'string',
-    'Got invalid payload from set-referral-code web app message'
-  );
-
-  const checkReferralResponse = await ZerionAPI.checkReferral({
-    referralCode: params.referralCode,
-  });
-  const checkedReferrer = checkReferralResponse.data;
-  await saveReferrerData(checkedReferrer);
-}
-
 export function Welcome() {
   const { isNarrowView } = useWindowSizeStore();
   useOnboardingSession({ navigateOnExistingUser: 'success' });
@@ -231,11 +214,7 @@ export function Welcome() {
   return (
     <VStack gap={isNarrowView ? 24 : 40}>
       {FEATURE_LOYALTY_FLOW && referralProgramEnabled ? (
-        <WebAppMessageHandler
-          pathname="/referral/get-code"
-          callbackName="set-referral-code"
-          callbackFn={setReferralCode}
-        />
+        <ReferralProgramHandler />
       ) : null}
       <Banner />
       <ImportOptions />

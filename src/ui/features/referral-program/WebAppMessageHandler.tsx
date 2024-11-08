@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { invariant } from 'src/shared/invariant';
 import { isObj } from 'src/shared/isObj';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
+import { saveReferrerData } from './shared/storage';
 
 const ZERION_WEB_APP_URL = new URL('https://app.zerion.io');
 
@@ -60,6 +62,29 @@ export function WebAppMessageHandler({
       ref={iframeRef}
       src={iframeUrl.toString()}
       hidden={true}
+    />
+  );
+}
+
+async function setReferralCode(params: unknown) {
+  invariant(
+    isObj(params) && typeof params.referralCode === 'string',
+    'Got invalid payload from set-referral-code web app message'
+  );
+
+  const checkReferralResponse = await ZerionAPI.checkReferral({
+    referralCode: params.referralCode,
+  });
+  const checkedReferrer = checkReferralResponse.data;
+  await saveReferrerData(checkedReferrer);
+}
+
+export function ReferralProgramHandler() {
+  return (
+    <WebAppMessageHandler
+      pathname="/referral/get-code"
+      callbackName="set-referral-code"
+      callbackFn={setReferralCode}
     />
   );
 }
