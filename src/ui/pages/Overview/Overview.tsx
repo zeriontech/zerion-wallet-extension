@@ -236,6 +236,7 @@ function RewardsLinkIcon() {
       as={UnstyledAnchor}
       href="https://app.zerion.io/rewards"
       target="_blank"
+      rel="noopener noreferrer"
       size={36}
       title="Rewards"
       style={{ paddingInline: 8 }}
