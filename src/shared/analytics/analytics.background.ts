@@ -311,8 +311,10 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   dnaServiceEmitter.on('registerError', async (error, action) => {
-    const request_name = 'error_registering_dna_action';
-    const params = createParams({ request_name, error, action });
+    const request_name = 'client_error';
+    const message = getError(error).message;
+    const type = 'dna action';
+    const params = createParams({ request_name, type, message, action });
     sendToMetabase(request_name, params);
   });
 }
