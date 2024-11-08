@@ -105,14 +105,7 @@ export function WalletSelect() {
     enabled: Boolean(ownedAddresses),
   });
 
-  const ownedAddressesCount = useMemo(
-    () =>
-      (ownedGroups || []).reduce(
-        (sum, group) => sum + group.walletContainer.wallets.length,
-        0
-      ),
-    [ownedGroups]
-  );
+  const ownedAddressesCount = ownedAddresses?.length ?? 0;
 
   const { singleAddress, refetch } = useAddressParams();
   const setCurrentAddressMutation = useMutation({
