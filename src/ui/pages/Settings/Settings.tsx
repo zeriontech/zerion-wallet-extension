@@ -24,6 +24,7 @@ import DarkModeLampIcon from 'jsx:src/ui/assets/dark-mode-lamp.svg';
 import NetworksIcon from 'jsx:src/ui/assets/network.svg';
 import SecurityIcon from 'jsx:src/ui/assets/security.svg';
 import SettingsIcon from 'jsx:src/ui/assets/settings.svg';
+import RewardsIcon from 'jsx:src/ui/assets/rewards.svg';
 import ToolsIcon from 'jsx:src/ui/assets/hammer.svg';
 import { version } from 'src/shared/packageVersion';
 import { apostrophe, middot } from 'src/ui/shared/typography';
@@ -121,6 +122,18 @@ function SettingsMain() {
               </FrameListItemLink>
             ) : null}
             <FrameListItemAnchor
+              href="http://app.zerion.io/rewards"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <AngleRightRow kind="link">
+                <HStack gap={8} alignItems="center">
+                  <RewardsIcon style={{ width: 24, height: 24 }} />
+                  <UIText kind="body/regular">Rewards</UIText>
+                </HStack>
+              </AngleRightRow>
+            </FrameListItemAnchor>
+            <FrameListItemAnchor
               href="http://zerion.io/premium"
               target="_blank"
               rel="noopener noreferrer"
@@ -170,6 +183,7 @@ function SettingsMain() {
             </FrameListItemLink>
           </VStack>
         </Frame>
+
         <Frame>
           <VStack gap={0}>
             <FrameListItemAnchor

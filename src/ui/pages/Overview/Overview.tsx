@@ -43,6 +43,7 @@ import { useIsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnected
 import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOrigin';
 import { updateAddressDnaInfo } from 'src/modules/dna-service/dna.client';
 import { WalletSourceIcon } from 'src/ui/components/WalletSourceIcon';
+import RewardsIcon from 'jsx:src/ui/assets/rewards.svg';
 import { useStore } from '@store-unit/react';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
 import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
@@ -62,6 +63,7 @@ import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientS
 import { SidepanelOptionsButton } from 'src/shared/sidepanel/SidepanelOptionsButton';
 import { XpDropClaimBanner } from 'src/ui/features/xp-drop/components/XpDropClaimBanner';
 import { getWalletsMetaByChunks } from 'src/modules/zerion-api/requests/wallet-get-meta';
+import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -244,6 +246,29 @@ function CurrentAccountControls() {
 
       <RenderArea name="wallet-name-end" />
     </HStack>
+  );
+}
+
+function RewardsLinkIcon() {
+  return (
+    <Button
+      kind="ghost"
+      as={UnstyledAnchor}
+      href="https://app.zerion.io/rewards"
+      target="_blank"
+      rel="noopener noreferrer"
+      size={36}
+      title="Rewards"
+      style={{ paddingInline: 8 }}
+    >
+      <RewardsIcon
+        style={{
+          width: 20,
+          height: 20,
+          color: 'linear-gradient(90deg, #A024EF 0%, #FDBB6C 100%)',
+        }}
+      />
+    </Button>
   );
 }
 
@@ -491,6 +516,11 @@ function OverviewComponent() {
             <HStack gap={0}>
               <SettingsLinkIcon />
               <SidepanelOptionsButton />
+            </HStack>
+            <SettingsLinkIcon />
+            <HStack gap={0} alignItems="center">
+              <RewardsLinkIcon />
+              <SettingsLinkIcon />
             </HStack>
           </div>
           <Spacer height={16} />

@@ -2,7 +2,6 @@ import React, { useId, useRef } from 'react';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { DeviceAccount } from 'src/shared/types/Device';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
-import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { SurfaceList, type Item } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
@@ -21,6 +20,8 @@ import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { WalletNameType } from 'src/ui/shared/useProfileName';
 import { CopyButton } from 'src/ui/components/CopyButton';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { normalizeAddress } from 'src/shared/normalizeAddress';
+import { VStack } from 'src/ui/ui-kit/VStack';
 import * as styles from './styles.module.css';
 
 function WalletListItem({
@@ -29,6 +30,7 @@ function WalletListItem({
   showAddressValues,
   useCssAnchors,
   isSelected,
+  renderFooter,
   ...buttonProps
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
   wallet: ExternallyOwnedAccount;
@@ -36,6 +38,7 @@ function WalletListItem({
   showAddressValues: boolean;
   useCssAnchors: boolean;
   isSelected: boolean;
+  renderFooter: (() => React.ReactNode) | null;
 }) {
   const id = useId();
   const { currency } = useCurrency();
@@ -79,137 +82,163 @@ function WalletListItem({
       <UnstyledButton
         className={styles.wallet}
         style={{
-          padding: 12,
           borderRadius: 20,
           width: '100%',
           marginBlock: 4,
         }}
         {...buttonProps}
       >
-        <HStack gap={4} justifyContent="space-between" alignItems="center">
-          <Media
-            vGap={0}
-            image={
-              <IsConnectedToActiveTab
-                address={wallet.address}
-                render={({ data: isConnected }) => (
-                  <WalletAvatar
-                    address={wallet.address}
-                    size={40}
-                    active={Boolean(isConnected)}
-                    borderRadius={4}
-                    icon={
-                      <WalletSourceIcon
-                        address={wallet.address}
-                        groupId={groupId}
-                        style={{ width: 16, height: 16 }}
-                      />
-                    }
-                  />
-                )}
-              />
-            }
-            text={
-              <UIText kind="small/regular">
-                <WalletDisplayName
-                  wallet={wallet}
-                  render={(data) => (
-                    <>
-                      <span
-                        style={{
-                          wordBreak: 'break-all',
-                          verticalAlign: 'middle',
-                        }}
-                      >
-                        {data.value}
-                      </span>
-                      {showAddressValues &&
-                      data.type !== WalletNameType.address ? (
-                        <>
-                          <span
-                            className={styles.addressHint}
-                            style={{
-                              color: 'var(--neutral-500)',
-                              verticalAlign: 'middle',
-                            }}
-                            onClick={(event) => {
-                              /**
-                               * This is only a helper to invoke click of the CopyButton
-                               * when the address value is clicked. Therefore it's okay to
-                               * put onClick on the span here as screenreader and keyboard users
-                               * will be able to interact with the actual copy button.
-                               * The reason not to put text inside the CopyButton is that when using
-                               * CSS Anchors we cannot make the anchored element wrap to the new line
-                               * when there's not enough space for it in the slot.
-                               */
-                              if (copyButtonRef.current) {
-                                event.stopPropagation();
-                                copyButtonRef.current.click();
-                              }
-                            }}
-                          >
-                            {` · ${truncateAddress(wallet.address, 5)}`}
-                          </span>
-                        </>
-                      ) : null}{' '}
-                      {useCssAnchors ? (
-                        <span
-                          // This is a "slot" where copyButton will visually appear
-                          style={{
-                            display: 'inline-block',
-                            width: COPY_BUTTON_SIZE,
-                            height: COPY_BUTTON_SIZE,
-                            ['anchorName' as string]: anchorName,
-                            verticalAlign: 'bottom',
-                          }}
-                        ></span>
-                      ) : (
-                        copyButton
-                      )}
-                    </>
+        <VStack gap={0}>
+          <HStack
+            gap={4}
+            justifyContent="space-between"
+            alignItems="center"
+            style={{ padding: 12 }}
+          >
+            <Media
+              vGap={0}
+              image={
+                <IsConnectedToActiveTab
+                  address={wallet.address}
+                  render={({ data: isConnected }) => (
+                    <WalletAvatar
+                      address={wallet.address}
+                      size={40}
+                      active={Boolean(isConnected)}
+                      borderRadius={4}
+                      icon={
+                        <WalletSourceIcon
+                          address={wallet.address}
+                          groupId={groupId}
+                          style={{ width: 16, height: 16 }}
+                        />
+                      }
+                    />
                   )}
                 />
-              </UIText>
-            }
-            detailText={
-              <PortfolioValue
-                address={wallet.address}
-                render={(query) => (
-                  <UIText kind="headline/h3">
-                    {query.data ? (
-                      <NeutralDecimals
-                        parts={formatCurrencyToParts(
-                          query.data.data?.totalValue || 0,
-                          'en',
-                          currency
+              }
+              text={
+                <UIText kind="small/regular">
+                  <WalletDisplayName
+                    wallet={wallet}
+                    render={(data) => (
+                      <>
+                        <span
+                          style={{
+                            wordBreak: 'break-all',
+                            verticalAlign: 'middle',
+                          }}
+                        >
+                          {data.value}
+                        </span>
+                        {showAddressValues &&
+                        data.type !== WalletNameType.address ? (
+                          <>
+                            <span
+                              className={styles.addressHint}
+                              style={{
+                                color: 'var(--neutral-500)',
+                                verticalAlign: 'middle',
+                              }}
+                              onClick={(event) => {
+                                /**
+                                 * This is only a helper to invoke click of the CopyButton
+                                 * when the address value is clicked. Therefore it's okay to
+                                 * put onClick on the span here as screenreader and keyboard users
+                                 * will be able to interact with the actual copy button.
+                                 * The reason not to put text inside the CopyButton is that when using
+                                 * CSS Anchors we cannot make the anchored element wrap to the new line
+                                 * when there's not enough space for it in the slot.
+                                 */
+                                if (copyButtonRef.current) {
+                                  event.stopPropagation();
+                                  copyButtonRef.current.click();
+                                }
+                              }}
+                            >
+                              {` · ${truncateAddress(wallet.address, 5)}`}
+                            </span>
+                          </>
+                        ) : null}{' '}
+                        {useCssAnchors ? (
+                          <span
+                            // This is a "slot" where copyButton will visually appear
+                            style={{
+                              display: 'inline-block',
+                              width: COPY_BUTTON_SIZE,
+                              height: COPY_BUTTON_SIZE,
+                              ['anchorName' as string]: anchorName,
+                              verticalAlign: 'bottom',
+                            }}
+                          ></span>
+                        ) : (
+                          copyButton
                         )}
-                      />
-                    ) : (
-                      NBSP
+                      </>
                     )}
-                  </UIText>
-                )}
-              />
-            }
-          />
-          {isSelected ? <CheckIcon style={{ width: 24, height: 24 }} /> : null}
-        </HStack>
+                  />
+                </UIText>
+              }
+              detailText={
+                <PortfolioValue
+                  address={wallet.address}
+                  render={(query) => (
+                    <UIText kind="headline/h3">
+                      {query.data ? (
+                        <NeutralDecimals
+                          parts={formatCurrencyToParts(
+                            query.data.data?.totalValue || 0,
+                            'en',
+                            currency
+                          )}
+                        />
+                      ) : (
+                        NBSP
+                      )}
+                    </UIText>
+                  )}
+                />
+              }
+            />
+            {isSelected ? (
+              <CheckIcon style={{ width: 24, height: 24 }} />
+            ) : null}
+          </HStack>
+          {renderFooter ? renderFooter() : null}
+        </VStack>
       </UnstyledButton>
       {useCssAnchors ? copyButton : null}
     </>
   );
 }
 
+type AnyWallet = ExternallyOwnedAccount | BareWallet | DeviceAccount;
+
+interface WalletGroupInfo {
+  id: string;
+  walletContainer: {
+    wallets: AnyWallet[];
+  };
+}
+
 export function WalletList({
   walletGroups,
   selectedAddress,
   showAddressValues,
+  renderItemFooter,
   onSelect,
 }: {
-  walletGroups: WalletGroup[];
+  walletGroups: WalletGroupInfo[];
   selectedAddress: string;
   showAddressValues: boolean;
-  onSelect(wallet: ExternallyOwnedAccount | BareWallet | DeviceAccount): void;
+  renderItemFooter?: ({
+    group,
+    wallet,
+  }: {
+    group: WalletGroupInfo;
+    wallet: AnyWallet;
+  }) => React.ReactNode;
+  onSelect(wallet: AnyWallet): void;
 }) {
   const items: Item[] = [];
   /**
@@ -226,15 +255,19 @@ export function WalletList({
         pad: false,
         component: (
           <WalletListItem
-            onClick={() => {
-              onSelect(wallet);
-            }}
+            onClick={() => onSelect(wallet)}
             wallet={wallet}
             groupId={group.id}
             useCssAnchors={supportsCssAnchor}
             showAddressValues={showAddressValues}
             isSelected={
-              wallet.address.toLowerCase() === selectedAddress.toLowerCase()
+              normalizeAddress(wallet.address) ===
+              normalizeAddress(selectedAddress)
+            }
+            renderFooter={
+              renderItemFooter
+                ? () => renderItemFooter({ group, wallet })
+                : null
             }
           />
         ),
