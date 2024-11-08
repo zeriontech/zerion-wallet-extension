@@ -6,6 +6,7 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import CreateIcon from 'jsx:../assets/option_secondary_create.svg';
 import ImportIcon from 'jsx:../assets/option_secondary_import.svg';
+import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import HardWareIcon from 'jsx:../assets/option_secondary_hardware.svg';
 import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
 import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
@@ -223,14 +224,13 @@ export function Welcome() {
   const { isNarrowView } = useWindowSizeStore();
   useOnboardingSession({ navigateOnExistingUser: 'success' });
 
-  const {
-    data: referralProgramEnabled,
-    isFetched: isFetchedRemoteConfigValue,
-  } = useRemoteConfigValue('extension_referral_program');
+  const { data: referralProgramEnabled } = useRemoteConfigValue(
+    'extension_referral_program'
+  );
 
   return (
     <VStack gap={isNarrowView ? 24 : 40}>
-      {isFetchedRemoteConfigValue && referralProgramEnabled ? (
+      {FEATURE_LOYALTY_FLOW && referralProgramEnabled ? (
         <WebAppMessageHandler
           pathname="/referral/get-code"
           callbackName="set-referral-code"

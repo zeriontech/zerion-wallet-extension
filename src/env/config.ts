@@ -9,6 +9,8 @@ export const DEFI_SDK_TRANSACTIONS_API_URL =
 export const SOCIAL_API_URL = process.env.SOCIAL_API_URL;
 export const BACKEND_ENV = process.env.BACKEND_ENV;
 export const MIXPANEL_TOKEN_PUBLIC = process.env.MIXPANEL_TOKEN_PUBLIC;
+export const FEATURE_LOYALTY_FLOW =
+  process.env.FEATURE_LOYALTY_FLOW === 'on' ? 'on' : null; // avoid accidental false-positives for truthy "off"
 export const SLOW_MODE = false;
 export const FEATURE_PAYMASTER_ENABLED = process.env.FEATURE_PAYMASTER === 'on';
 

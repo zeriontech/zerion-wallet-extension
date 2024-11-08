@@ -34,6 +34,7 @@ jobs:
           FEATURE_FOOTER_BUG_BUTTON: off
           FEATURE_PAYMASTER: on
           MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_PROD }}
+          FEATURE_LOYALTY_FLOW: on
         run: |
           npm install
           npm run build:production

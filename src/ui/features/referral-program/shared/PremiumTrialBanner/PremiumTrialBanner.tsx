@@ -5,10 +5,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { GradientBorder } from 'src/ui/components/GradientBorder';
 import * as styles from './styles.module.css';
 
-function GradientText({ children }: { children: React.ReactNode }) {
-  return <div className={styles.gradientText}>{children}</div>;
-}
-
 export function PremiumTrialBanner({
   backgroundColor,
 }: {
@@ -28,7 +24,9 @@ export function PremiumTrialBanner({
         justifyContent="center"
       >
         <GiftIcon />
-        <UIText kind="headline/h3" className={styles.gradientText}>You got Premium Trial</UIText>
+        <UIText kind="headline/h3" className={styles.gradientText}>
+          You got Premium Trial
+        </UIText>
       </HStack>
     </GradientBorder>
   );

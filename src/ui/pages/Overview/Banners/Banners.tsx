@@ -10,6 +10,7 @@ import { usePreferences } from 'src/ui/features/preferences';
 import { InviteFriendsBanner } from 'src/ui/features/referral-program/InviteFriendsBanner';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { ENABLE_DNA_BANNERS } from 'src/ui/DNA/components/DnaBanners';
+import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 
 export function Banners({ address }: { address: string }) {
   const {
@@ -27,7 +28,9 @@ export function Banners({ address }: { address: string }) {
   }
 
   const invitationBannerVisible =
-    referralProgramEnabled && !preferences?.invitationBannerDismissed;
+    FEATURE_LOYALTY_FLOW &&
+    referralProgramEnabled &&
+    !preferences?.invitationBannerDismissed;
 
   const mintBannerVisible =
     !invitationBannerVisible &&

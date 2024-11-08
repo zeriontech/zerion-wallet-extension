@@ -42,7 +42,6 @@ export function EnterReferralCodeDialog({
       <DialogTitle
         alignTitle="start"
         title={<UIText kind="headline/h3">Your Invitation Code</UIText>}
-        closeKind="icon"
       />
       <form
         onSubmit={(event) => {
@@ -74,14 +73,7 @@ export function EnterReferralCodeDialog({
             ) : null}
           </VStack>
           <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
-            <Button
-              kind="regular"
-              type="button"
-              onClick={(event) => {
-                event?.currentTarget?.form?.reset();
-                onDismiss();
-              }}
-            >
+            <Button kind="regular" type="button" onClick={() => onDismiss()}>
               Back
             </Button>
             <Button

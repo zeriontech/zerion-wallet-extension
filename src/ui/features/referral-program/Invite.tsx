@@ -14,9 +14,7 @@ import ConnectIcon from 'jsx:src/ui/assets/technology-connect.svg';
 import QrCodeIcon from 'jsx:src/ui/assets/qr-code.svg';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
-import type { BareWallet } from 'src/shared/types/BareWallet';
 import { FillView } from 'src/ui/components/FillView';
-import type { DeviceAccount } from 'src/shared/types/Device';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { useWalletGroups } from 'src/ui/shared/requests/useWalletGroups';
 import { walletPort } from 'src/ui/shared/channels';
@@ -54,7 +52,7 @@ function WalletSelectDialog({
 }: {
   value: string;
   walletGroups?: WalletGroup[] | null;
-  onSelect(wallet: ExternallyOwnedAccount | BareWallet | DeviceAccount): void;
+  onSelect: Parameters<typeof WalletList>[0]['onSelect'];
 }) {
   return walletGroups?.length ? (
     <div style={{ ['--surface-background-color' as string]: 'none' }}>

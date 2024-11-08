@@ -49,6 +49,7 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { openHrefInTabIfSidepanel } from 'src/ui/shared/openInTabIfInSidepanel';
 import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
+import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { Security } from '../Security';
 import { BackupFlowSettingsSection } from './BackupFlowSettingsSection';
 import { PreferencesPage } from './Preferences';
@@ -114,7 +115,7 @@ function SettingsMain() {
         </Frame>
         <Frame>
           <VStack gap={0}>
-            {referralProgramEnabled ? (
+            {FEATURE_LOYALTY_FLOW && referralProgramEnabled ? (
               <FrameListItemLink to="/invite">
                 <AngleRightRow>
                   <HStack gap={8} alignItems="center">
