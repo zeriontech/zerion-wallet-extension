@@ -513,14 +513,10 @@ function OverviewComponent() {
             }}
           >
             <CurrentAccountControls />
-            <HStack gap={0}>
-              <SettingsLinkIcon />
-              <SidepanelOptionsButton />
-            </HStack>
-            <SettingsLinkIcon />
             <HStack gap={0} alignItems="center">
               <RewardsLinkIcon />
               <SettingsLinkIcon />
+              <SidepanelOptionsButton />
             </HStack>
           </div>
           <Spacer height={16} />
