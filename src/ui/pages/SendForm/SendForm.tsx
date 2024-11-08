@@ -53,7 +53,6 @@ import { createSendAddressAction } from 'src/modules/ethereum/transactions/addre
 import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
-import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
 import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/uiGetBestKnownTransactionCount';
 import {
   adjustedCheckEligibility,
@@ -111,7 +110,7 @@ function SendFormComponent() {
     useErrorBoundary: true,
   });
   const isDeviceWallet = wallet && isDeviceAccount(wallet);
-  const USE_PAYMASTER_FEATURE = FEATURE_PAYMASTER_ENABLED && !isDeviceWallet;
+  const USE_PAYMASTER_FEATURE = !isDeviceWallet;
 
   useBackgroundKind({ kind: 'white' });
 

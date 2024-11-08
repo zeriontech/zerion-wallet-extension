@@ -5,6 +5,11 @@ export interface EligibilityQuery {
   isError: boolean;
 }
 
+/**
+ * Checks if a "regular" transaction should be interpreted.
+ * Returns `false` if paymaster is eligible. You're supposed to run a separate
+ * interpretation for paymaster TypedData in that case
+ */
 export function shouldInterpretTransaction({
   network,
   eligibilityQuery,

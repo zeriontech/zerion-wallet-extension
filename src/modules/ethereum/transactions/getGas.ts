@@ -1,6 +1,3 @@
-import type { IncomingTransaction } from '../types/IncomingTransaction';
-
-export function getGas(transaction: Partial<IncomingTransaction>) {
-  const { gas, gasLimit } = transaction;
-  return gas ?? gasLimit;
+export function getGas<A>(transaction: { gas?: A; gasLimit?: A }) {
+  return transaction.gas ?? transaction.gasLimit;
 }
