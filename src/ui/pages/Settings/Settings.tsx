@@ -109,7 +109,7 @@ function SettingsMain() {
             >
               <AngleRightRow kind="link">
                 <HStack gap={8} alignItems="center">
-                  <RewardsIcon />
+                  <RewardsIcon style={{ width: 24, height: 24 }} />
                   <UIText kind="body/regular">Rewards</UIText>
                 </HStack>
               </AngleRightRow>
