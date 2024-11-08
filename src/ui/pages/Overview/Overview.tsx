@@ -60,7 +60,7 @@ import { useEvent } from 'src/ui/shared/useEvent';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { SidepanelOptionsButton } from 'src/shared/sidepanel/SidepanelOptionsButton';
-import { ClaimXpBanner } from 'src/ui/features/xp-drop/components/ClaimXpBanner';
+import { XpDropClaimBanner } from 'src/ui/features/xp-drop/components/XpDropClaimBanner';
 import { getWalletsMetaByChunks } from 'src/modules/zerion-api/requests/wallet-get-meta';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
@@ -139,7 +139,7 @@ function TestnetworkGuard({
   const { preferences } = usePreferences();
   const dappChain = dappChainStr ? createChain(dappChainStr) : null;
   const { networks, isLoading } = useNetworks(
-    dappChainStr ? [dappChainStr] : undefined,
+    dappChainStr ? [dappChainStr] : undefined
   );
   const currentNetwork = dappChain
     ? networks?.getNetworkByName(dappChain)
@@ -310,7 +310,7 @@ function ReadonlyMode() {
 
 function OverviewComponent() {
   useBodyStyle(
-    useMemo(() => ({ ['--background' as string]: 'var(--z-index-0)' }), []),
+    useMemo(() => ({ ['--background' as string]: 'var(--z-index-0)' }), [])
   );
   const { currency } = useCurrency();
   const location = useLocation();
@@ -332,7 +332,7 @@ function OverviewComponent() {
   const { data, isLoading: isLoadingPortfolio } = useWalletPortfolio(
     { addresses: [params.address], currency },
     { source: useHttpClientSource() },
-    { enabled: ready, refetchInterval: 40000 },
+    { enabled: ready, refetchInterval: 40000 }
   );
   const walletPortfolio = data?.data;
 
@@ -377,7 +377,7 @@ function OverviewComponent() {
   }, [singleAddressNormalized]);
 
   const { data: isConnected } = useIsConnectedToActiveTab(
-    singleAddressNormalized,
+    singleAddressNormalized
   );
 
   const dappChain = isConnected ? siteChain?.toString() : null;
@@ -526,7 +526,7 @@ function OverviewComponent() {
                   parts={formatCurrencyToParts(
                     walletPortfolio.totalValue,
                     'en',
-                    currency,
+                    currency
                   )}
                 />
               ) : (
@@ -553,7 +553,7 @@ function OverviewComponent() {
                         ? `(${formatCurrencyValue(
                             Math.abs(walletPortfolio.change24h.absolute),
                             'en',
-                            currency,
+                            currency
                           )})`
                         : ''}{' '}
                       Today
@@ -675,7 +675,7 @@ function OverviewComponent() {
                     <>
                       {claimXpBannerVisible ? (
                         <div style={{ paddingInline: 16 }}>
-                          <ClaimXpBanner />
+                          <XpDropClaimBanner />
                           <Spacer height={20} />
                         </div>
                       ) : null}

@@ -80,6 +80,7 @@ import { urlContext } from '../../shared/UrlContext';
 import { BackupPage } from '../pages/Backup/Backup';
 import { ProgrammaticNavigationHelper } from '../shared/routing/ProgrammaticNavigationHelper';
 import { Invite } from '../features/referral-program';
+import { XpDrop } from '../features/xp-drop';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -390,6 +391,14 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             element={
               <RequireAuth>
                 <Invite />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/xp-drop/*"
+            element={
+              <RequireAuth>
+                <XpDrop />
               </RequireAuth>
             }
           />
