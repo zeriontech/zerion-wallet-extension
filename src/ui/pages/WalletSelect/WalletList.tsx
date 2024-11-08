@@ -26,6 +26,7 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { Button } from 'src/ui/ui-kit/Button';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { getWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import * as styles from './styles.module.css';
 
 const ZERION_ORIGIN = 'https://app.zerion.io';
@@ -34,9 +35,9 @@ function WalletListItem({
   wallet,
   groupId,
   showAddressValues,
-  exploreRewardsUrl,
   useCssAnchors,
   isSelected,
+  renderFooter,
   ...buttonProps
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
   wallet: ExternallyOwnedAccount;
@@ -45,6 +46,7 @@ function WalletListItem({
   exploreRewardsUrl: string | null;
   useCssAnchors: boolean;
   isSelected: boolean;
+  renderFooter: () => React.ReactNode;
 }) {
   const id = useId();
   const { currency } = useCurrency();
@@ -208,31 +210,7 @@ function WalletListItem({
               <CheckIcon style={{ width: 24, height: 24 }} />
             ) : null}
           </HStack>
-          {exploreRewardsUrl ? (
-            <Button
-              kind="neutral"
-              as={UnstyledAnchor}
-              href={exploreRewardsUrl}
-              target="_blank"
-              size={36}
-              style={{
-                borderRadius: '0 0 18px 18px',
-              }}
-            >
-              <HStack gap={8} alignItems="center" justifyContent="center">
-                <RewardsIcon
-                  style={{
-                    width: 20,
-                    height: 20,
-                    color: 'linear-gradient(90deg, #A024EF 0%, #FDBB6C 100%)',
-                  }}
-                />
-                <UIText kind="small/accent" color="var(--primary-500)">
-                  Explore Rewards
-                </UIText>
-              </HStack>
-            </Button>
-          ) : null}
+          {renderFooter ? renderFooter() : null}
         </VStack>
       </UnstyledButton>
       {useCssAnchors ? copyButton : null}
@@ -276,10 +254,13 @@ export function WalletList({
         (meta) =>
           normalizeAddress(meta.address) === normalizeAddress(wallet.address)
       );
+      const addWalletParams = getWalletParams(wallet);
+
       const exploreRewardsUrl =
         showExploreRewards && walletMeta?.membership.newRewards
-          ? `${ZERION_ORIGIN}/rewards?section=rewards&address=${wallet.address}`
+          ? `${ZERION_ORIGIN}/rewards?section=rewards&${addWalletParams}`
           : null;
+
       const key = `${group.id}-${wallet.address}`;
       items.push({
         key,
@@ -298,6 +279,34 @@ export function WalletList({
             isSelected={
               normalizeAddress(wallet.address) ===
               normalizeAddress(selectedAddress)
+            }
+            renderFooter={() =>
+              exploreRewardsUrl ? (
+                <Button
+                  kind="neutral"
+                  as={UnstyledAnchor}
+                  href={exploreRewardsUrl}
+                  target="_blank"
+                  size={36}
+                  style={{
+                    borderRadius: '0 0 18px 18px',
+                  }}
+                >
+                  <HStack gap={8} alignItems="center" justifyContent="center">
+                    <RewardsIcon
+                      style={{
+                        width: 20,
+                        height: 20,
+                        color:
+                          'linear-gradient(90deg, #A024EF 0%, #FDBB6C 100%)',
+                      }}
+                    />
+                    <UIText kind="small/accent" color="var(--primary-500)">
+                      Explore Rewards
+                    </UIText>
+                  </HStack>
+                </Button>
+              ) : null
             }
           />
         ),
