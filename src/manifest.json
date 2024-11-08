@@ -1,5 +1,6 @@
 {
   "manifest_version": 3,
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgkahGwTZdOxy3I6uS5N164fXacN9htdJqBB9fD9skK2+2Wvz+u2E6TG/xXxB0CbcP70LRYzPxR5YU76HIbAmLNfl9W2BKcnY0e1mMo2ehgYHoQRCwhfAE6w39j/FkUdbOoMGPiODysgnRnM+0Ae+wkVr3XGMyu0e5ZDeVP4sBRj6q2a+fApWr3KspgQutm/vCaW+4LhLwqU/j1DFo75xLbI2rfRPn2etQftu1xp8CBivYc4D6E4dwFumwr/WJt9EXcj/w1HwyOzJfZ8XOKdhF0VgQH6kJsvk8x/twTFlpqQOBmFzjyFBLZgq3CCPJhGQTumu8dNOlNMABEzPFJHgYwIDAQAB",
   "name": "__MSG_appName__",
   "short_name": "__MSG_appName__",
   "version": "1.15.1",
