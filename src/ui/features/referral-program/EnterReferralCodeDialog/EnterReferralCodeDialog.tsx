@@ -9,6 +9,15 @@ import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import type { ReferrerData } from 'src/modules/zerion-api/requests/check-referral';
+import { HTTPError } from 'ky';
+import { getError } from 'src/shared/errors/getError';
+
+function requestErrorToMessage(
+  error: unknown | Error,
+  fallbackMessage: string
+) {
+  return error instanceof HTTPError ? getError(error).message : fallbackMessage;
+}
 
 export function EnterReferralCodeDialog({
   myReferralCode,
@@ -68,7 +77,10 @@ export function EnterReferralCodeDialog({
             />
             {applyReferralCodeMutation.isError ? (
               <UIText kind="caption/regular" color="var(--negative-500)">
-                Invalid Referral Code
+                {requestErrorToMessage(
+                  applyReferralCodeMutation.error,
+                  'Invalid Referral Code'
+                )}
               </UIText>
             ) : null}
           </VStack>
