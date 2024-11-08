@@ -92,7 +92,7 @@ export function SuccessState({
     chainInput && spendInput && receiveInput,
     'Required Form values are missing'
   );
-  const trail = useTrail(3, {
+  const trail = useTrail(4, {
     config: { tension: 400 },
     from: {
       opacity: 0,

@@ -5,7 +5,6 @@ export interface RemoteConfig {
   extension_uninstall_link: string;
   loyalty_config: Partial<{
     referrerXpPercent: number;
-    isEnabled?: boolean;
     gasbackValue: number;
     rewardIconLevel: number;
   }>;
