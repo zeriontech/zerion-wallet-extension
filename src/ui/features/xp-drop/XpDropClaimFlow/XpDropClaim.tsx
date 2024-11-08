@@ -28,6 +28,10 @@ import { Frame } from 'src/ui/ui-kit/Frame';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { GradientBorder } from 'src/ui/components/GradientBorder';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
+import type {
+  RetrodropInfo,
+  XpBreakdownItem,
+} from 'src/modules/zerion-api/requests/wallet-get-meta';
 import { getWalletsMetaByChunks } from 'src/modules/zerion-api/requests/wallet-get-meta';
 import type { SignMsgBtnHandle } from 'src/ui/components/SignMessageButton';
 import { SignMessageButton } from 'src/ui/components/SignMessageButton';
@@ -38,6 +42,7 @@ import { txErrorToMessage } from 'src/ui/pages/SendTransaction/shared/transactio
 import { FillView } from 'src/ui/components/FillView';
 import { useNavigate } from 'react-router-dom';
 import { wait } from 'src/shared/wait';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 import * as styles from './styles.module.css';
 
 const xpFormatter = new Intl.NumberFormat('en-US');
@@ -110,6 +115,68 @@ function ChangeWalletButton({
         />
       </HStack>
     </Button>
+  );
+}
+
+function XpBreakdown({
+  heading,
+  items,
+}: {
+  heading: string;
+  items: XpBreakdownItem[];
+}) {
+  return (
+    <VStack gap={12}>
+      <UIText kind="headline/h3">{heading}</UIText>
+      <VStack gap={0}>
+        {items.map(({ title, subtitle, amount }) => (
+          <HStack
+            key={`${title}-${subtitle}-${amount}`}
+            gap={12}
+            justifyContent="space-between"
+            alignItems="center"
+            style={{ gridTemplateColumns: '1fr auto', padding: '12px 0' }}
+          >
+            <VStack gap={0}>
+              <UIText
+                kind="body/accent"
+                color={amount > 0 ? 'var(--black)' : 'var(--neutral-500)'}
+              >
+                {title}
+              </UIText>
+              <UIText kind="small/regular" color="var(--neutral-500)">
+                {subtitle}
+              </UIText>
+            </VStack>
+            <UIText
+              kind="body/regular"
+              color={amount > 0 ? 'var(--positive-500)' : 'var(--neutral-500)'}
+            >
+              {amount > 0 ? `+${formatXp(amount)} XP` : 0}
+            </UIText>
+          </HStack>
+        ))}
+      </VStack>
+    </VStack>
+  );
+}
+
+function XpDropBreakdownDialog({ retro }: { retro: RetrodropInfo }) {
+  return (
+    <div style={{ ['--surface-background-color' as string]: 'none' }}>
+      <DialogTitle
+        title={<UIText kind="body/accent">XP Breakdown</UIText>}
+        closeKind="icon"
+      />
+      <Spacer height={24} />
+      <VStack gap={24}>
+        <XpBreakdown heading="Zerion OG" items={retro.zerion.breakdown} />
+        <XpBreakdown
+          heading="Onchain Activity in the Past Year"
+          items={retro.global.breakdown}
+        />
+      </VStack>
+    </div>
   );
 }
 
@@ -244,6 +311,7 @@ export function XpDropClaim() {
 
   const signMsgBtnRef = useRef<SignMsgBtnHandle | null>(null);
   const walletSelectDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const xpBreakdownDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   const { mutate: personalSign, ...personalSignMutation } = useMutation({
     mutationFn: async () => {
@@ -374,6 +442,7 @@ export function XpDropClaim() {
                   kind="neutral"
                   size={36}
                   style={{ paddingInline: '12px' }}
+                  onClick={() => xpBreakdownDialogRef.current?.showModal()}
                 >
                   XP Breakdown
                 </Button>
@@ -394,6 +463,10 @@ export function XpDropClaim() {
               }}
             />
           )}
+        />
+        <CenteredDialog
+          ref={xpBreakdownDialogRef}
+          renderWhenOpen={() => <XpDropBreakdownDialog retro={retro} />}
         />
       </PageColumn>
       <PageStickyFooter>

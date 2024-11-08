@@ -1,1 +1,0 @@
-export { XpDropBreakdown } from './XpDropBreakdown';

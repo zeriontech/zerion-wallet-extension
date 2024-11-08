@@ -74,7 +74,7 @@ interface MigrationBalances {
   remained: number;
 }
 
-interface XpBreakdownItem {
+export interface XpBreakdownItem {
   title: string;
   subtitle: string;
   amount: number;
@@ -85,7 +85,7 @@ interface XpBreakdown {
   breakdown: XpBreakdownItem[];
 }
 
-interface RetrodropInfo {
+export interface RetrodropInfo {
   level: number;
   levelProgress: number;
   zerion: XpBreakdown;
