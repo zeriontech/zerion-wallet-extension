@@ -30,7 +30,6 @@ export function AddressBadge({
         style={{
           overflow: 'hidden',
           textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
         }}
       >
         <WalletDisplayName wallet={wallet} maxCharacters={16} padding={4} />
