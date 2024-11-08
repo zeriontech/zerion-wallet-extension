@@ -271,10 +271,10 @@ export class DnaService {
     // wallets previously registered without 'v' are effectively unregistered.
     // To handle this, we have to re-register all existing wallets.
 
-    const isInvoked = await browserStorage.get<boolean>(
+    const hasBeenFinished = await browserStorage.get<boolean>(
       REGISTER_ALL_WALLETS_INVOKED_KEY
     );
-    if (isInvoked) {
+    if (hasBeenFinished) {
       return;
     }
 
@@ -302,14 +302,18 @@ export class DnaService {
     const hasRejectedRequests = results.some(
       (result) => result.status === 'rejected'
     );
+    const hasFulfilledRequests = results.some(
+      (result) => result.status === 'fulfilled'
+    );
 
-    if (!hasRejectedRequests) {
+    if (hasFulfilledRequests && !hasRejectedRequests) {
       await browserStorage.set(REGISTER_ALL_WALLETS_INVOKED_KEY, true);
     }
   }
 
   initialize({ account }: { account: Account }) {
     account.on('authenticated', this.registerAllWallets.bind(this));
+    this.registerAllWallets();
     emitter.on('walletCreated', async ({ walletContainer, origin }) => {
       if (isReadonlyContainer(walletContainer)) {
         return;
