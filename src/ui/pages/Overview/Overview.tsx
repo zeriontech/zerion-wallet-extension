@@ -63,7 +63,7 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
-import { ClaimXpBanner } from 'src/ui/features/xp-drop/components/ClaimXpBanner';
+import { XpDropClaimBanner } from 'src/ui/features/xp-drop/components/XpDropClaimBanner';
 import { getWalletsMetaByChunks } from 'src/modules/zerion-api/requests/wallet-get-meta';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
@@ -656,7 +656,7 @@ function OverviewComponent() {
                     <>
                       {claimXpBannerVisible ? (
                         <div style={{ paddingInline: 16 }}>
-                          <ClaimXpBanner />
+                          <XpDropClaimBanner />
                           <Spacer height={20} />
                         </div>
                       ) : null}
