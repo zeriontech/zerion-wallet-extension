@@ -26,7 +26,17 @@ export function QRCodeDialog({ myReferralLink }: { myReferralLink: string }) {
         />
       </VStack>
       <div className={styles.qrCode}>
-        <QRCode quietZone={0} size={245} value={myReferralLink} />
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            padding: 16,
+            borderRadius: 20,
+            border: '1px solid var(--neutral-100)',
+          }}
+        >
+          <QRCode quietZone={0} size={245} value={myReferralLink} />
+        </div>
       </div>
     </VStack>
   );
