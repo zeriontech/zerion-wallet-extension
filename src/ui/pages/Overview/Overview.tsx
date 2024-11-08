@@ -60,6 +60,8 @@ import { useEvent } from 'src/ui/shared/useEvent';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { SidepanelOptionsButton } from 'src/shared/sidepanel/SidepanelOptionsButton';
+import { ClaimXpBanner } from 'src/ui/features/xp-drop/components/ClaimXpBanner';
+import { getWalletsMetaByChunks } from 'src/modules/zerion-api/requests/wallet-get-meta';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -119,7 +121,7 @@ function PendingTransactionsIndicator() {
 /**
  * Product requirement:
  * if we're in default mode (not testnet), but the current dapp chain
- * is a testnet, we want to hide positions and history to supposedy avoid
+ * is a testnet, we want to hide positions and history to supposedly avoid
  * confusion for the user
  */
 function TestnetworkGuard({
@@ -137,7 +139,7 @@ function TestnetworkGuard({
   const { preferences } = usePreferences();
   const dappChain = dappChainStr ? createChain(dappChainStr) : null;
   const { networks, isLoading } = useNetworks(
-    dappChainStr ? [dappChainStr] : undefined
+    dappChainStr ? [dappChainStr] : undefined,
   );
   const currentNetwork = dappChain
     ? networks?.getNetworkByName(dappChain)
@@ -308,7 +310,7 @@ function ReadonlyMode() {
 
 function OverviewComponent() {
   useBodyStyle(
-    useMemo(() => ({ ['--background' as string]: 'var(--z-index-0)' }), [])
+    useMemo(() => ({ ['--background' as string]: 'var(--z-index-0)' }), []),
   );
   const { currency } = useCurrency();
   const location = useLocation();
@@ -330,7 +332,7 @@ function OverviewComponent() {
   const { data, isLoading: isLoadingPortfolio } = useWalletPortfolio(
     { addresses: [params.address], currency },
     { source: useHttpClientSource() },
-    { enabled: ready, refetchInterval: 40000 }
+    { enabled: ready, refetchInterval: 40000 },
   );
   const walletPortfolio = data?.data;
 
@@ -358,6 +360,15 @@ function OverviewComponent() {
     suspense: false,
   });
 
+  const { data: walletsMeta } = useQuery({
+    queryKey: ['ZerionAPI.getWalletsMeta', params.address],
+    queryFn: () => getWalletsMetaByChunks([params.address]),
+    enabled: !isReadonlyGroup,
+  });
+
+  const walletMeta = walletsMeta?.[0];
+  const claimXpBannerVisible = Boolean(walletMeta?.membership.retro);
+
   // Update backend record with 'platform: extension'
   useEffect(() => {
     if (singleAddressNormalized) {
@@ -366,7 +377,7 @@ function OverviewComponent() {
   }, [singleAddressNormalized]);
 
   const { data: isConnected } = useIsConnectedToActiveTab(
-    singleAddressNormalized
+    singleAddressNormalized,
   );
 
   const dappChain = isConnected ? siteChain?.toString() : null;
@@ -515,7 +526,7 @@ function OverviewComponent() {
                   parts={formatCurrencyToParts(
                     walletPortfolio.totalValue,
                     'en',
-                    currency
+                    currency,
                   )}
                 />
               ) : (
@@ -542,7 +553,7 @@ function OverviewComponent() {
                         ? `(${formatCurrencyValue(
                             Math.abs(walletPortfolio.change24h.absolute),
                             'en',
-                            currency
+                            currency,
                           )})`
                         : ''}{' '}
                       Today
@@ -661,11 +672,19 @@ function OverviewComponent() {
                     dappChain={dappChain || null}
                     renderGuard={() => testnetGuardView}
                   >
-                    <Positions
-                      dappChain={dappChain || null}
-                      filterChain={filterChain}
-                      onChainChange={setFilterChain}
-                    />
+                    <>
+                      {claimXpBannerVisible ? (
+                        <div style={{ paddingInline: 16 }}>
+                          <ClaimXpBanner />
+                          <Spacer height={20} />
+                        </div>
+                      ) : null}
+                      <Positions
+                        dappChain={dappChain || null}
+                        filterChain={filterChain}
+                        onChainChange={setFilterChain}
+                      />
+                    </>
                   </TestnetworkGuard>
                 </ViewSuspense>
               }
