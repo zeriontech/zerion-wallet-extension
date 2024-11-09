@@ -66,14 +66,24 @@ export function WebAppMessageHandler({
   );
 }
 
+function sanitizeReferralCode(unsafeValue: string) {
+  const safeValue = unsafeValue.trim().replace(/[^A-Z0-9]/g, '');
+  return safeValue.length > 3 && safeValue.length < 24 ? safeValue : null;
+}
+
 async function setReferralCode(params: unknown) {
   invariant(
     isObj(params) && typeof params.referralCode === 'string',
     'Got invalid payload from set-referral-code web app message'
   );
 
+  const sanitizedReferralCode = sanitizeReferralCode(params.referralCode);
+  if (!sanitizedReferralCode) {
+    throw new Error('Invalid referral code format or length');
+  }
+
   const checkReferralResponse = await ZerionAPI.checkReferral({
-    referralCode: params.referralCode,
+    referralCode: sanitizedReferralCode,
   });
   const checkedReferrer = checkReferralResponse.data;
   await saveReferrerData(checkedReferrer);
