@@ -312,8 +312,8 @@ export class DnaService {
   }
 
   initialize({ account }: { account: Account }) {
-    account.on('authenticated', this.registerAllWallets.bind(this));
     this.registerAllWallets();
+    account.on('authenticated', this.registerAllWallets.bind(this));
     emitter.on('walletCreated', async ({ walletContainer, origin }) => {
       if (isReadonlyContainer(walletContainer)) {
         return;
