@@ -10,6 +10,7 @@ import {
   isMnemonicContainer,
   isPrivateKeyContainer,
 } from '../types/validators';
+import { getError } from '../errors/getError';
 import {
   createParams as createBaseParams,
   sendToMetabase,
