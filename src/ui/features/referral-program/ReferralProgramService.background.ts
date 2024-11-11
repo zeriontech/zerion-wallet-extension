@@ -8,6 +8,7 @@ import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
+import { getError } from 'src/shared/errors/getError';
 import { readSavedReferrerData, saveReferrerData } from './shared/storage';
 
 interface Options {
@@ -36,19 +37,24 @@ class ReferralProgramService {
     const normalizedAddress = normalizeAddress(address);
     const message = `${normalizedAddress} -> ${referralCode}`;
 
-    const signature = await walletFacade.signMessage({
-      params: {
-        signerAddress: address,
-        message,
-        messageContextParams: {
-          initiator: INTERNAL_ORIGIN,
-          clientScope: null,
+    try {
+      const signature = await walletFacade.signMessage({
+        params: {
+          signerAddress: address,
+          message,
+          messageContextParams: {
+            initiator: INTERNAL_ORIGIN,
+            clientScope: null,
+          },
         },
-      },
-      context: { origin: INTERNAL_ORIGIN },
-    });
+        context: { origin: INTERNAL_ORIGIN },
+      });
 
-    return signature;
+      return signature;
+    } catch (error) {
+      emitter.emit('signingError', getError(error).message);
+      throw error;
+    }
   }
 
   async signAndSendReferWalletMessage({
@@ -62,11 +68,17 @@ class ReferralProgramService {
       address,
       referralCode,
     });
-    return ZerionAPI.referWallet({
-      address,
-      referralCode,
-      signature,
-    });
+
+    try {
+      return ZerionAPI.referWallet({
+        address,
+        referralCode,
+        signature,
+      });
+    } catch (error) {
+      emitter.emit('networkError', getError(error).message);
+      throw error;
+    }
   }
 
   async applyReferralCodeToAllWallets({
