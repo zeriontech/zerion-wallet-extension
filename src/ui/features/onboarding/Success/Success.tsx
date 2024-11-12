@@ -130,7 +130,7 @@ export function Success() {
 
   const referralCodeWidgetVisible = !referrer;
 
-  const loyaltyProgramWidget = FEATURE_LOYALTY_FLOW ? (
+  const loyaltyProgramWidget = FEATURE_LOYALTY_FLOW  === 'on' ? (
     referralCodeWidgetVisible ? (
       <ReferralCodeWidget
         onSuccess={(pendingReferrer) => {
