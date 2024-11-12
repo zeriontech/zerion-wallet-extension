@@ -276,14 +276,14 @@ function Heading({
       <NavigationTitle title={null} documentTitle="Invite Friends to Zerion" />
       <img
         alt=""
-        src="https://s3.us-east-1.amazonaws.com/cdn.zerion.io/images/dna-assets/invite-flow-decoration-left.png"
-        srcSet="https://s3.us-east-1.amazonaws.com/cdn.zerion.io/images/dna-assets/invite-flow-decoration-left.png, https://s3.us-east-1.amazonaws.com/cdn.zerion.io/images/dna-assets/invite-flow-decoration-left_2x.png 2x"
+        src="https://cdn.zerion.io/images/dna-assets/invite-flow-decoration-left.png"
+        srcSet="https://cdn.zerion.io/images/dna-assets/invite-flow-decoration-left.png, https://cdn.zerion.io/images/dna-assets/invite-flow-decoration-left_2x.png 2x"
         className={styles.cardsLeft}
       />
       <img
         alt=""
-        src="https://s3.us-east-1.amazonaws.com/cdn.zerion.io/images/dna-assets/invite-flow-decoration-right.png"
-        srcSet="https://s3.us-east-1.amazonaws.com/cdn.zerion.io/images/dna-assets/invite-flow-decoration-right.png, https://s3.us-east-1.amazonaws.com/cdn.zerion.io/images/dna-assets/invite-flow-decoration-right_2x.png 2x"
+        src="https://cdn.zerion.io/images/dna-assets/invite-flow-decoration-right.png"
+        srcSet="https://cdn.zerion.io/images/dna-assets/invite-flow-decoration-right.png, https://cdn.zerion.io/images/dna-assets/invite-flow-decoration-right_2x.png 2x"
         className={styles.cardsRight}
       />
       <VStack gap={24} className={styles.titleContainer}>
