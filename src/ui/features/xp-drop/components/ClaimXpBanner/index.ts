@@ -1,1 +1,0 @@
-export { ClaimXpBanner } from './ClaimXpBanner';

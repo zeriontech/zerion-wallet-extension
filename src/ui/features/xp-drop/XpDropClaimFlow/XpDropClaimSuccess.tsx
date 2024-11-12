@@ -12,7 +12,12 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { FillView } from 'src/ui/components/FillView';
 import RewardsIcon from 'jsx:src/ui/assets/rewards.svg';
 import CheckIcon from 'jsx:src/ui/assets/check-circle-thin-gradient.svg';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { walletPort } from 'src/ui/shared/channels';
+import { invariant } from 'src/shared/invariant';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
+
+const ZERION_ORIGIN = 'https://app.zerion.io';
 
 export function XpDropClaimSuccess() {
   useBackgroundKind({ kind: 'white' });
@@ -64,6 +69,13 @@ export function XpDropClaimSuccess() {
     fire(customConfetti);
   }, []);
 
+  const { data: currentWallet } = useQuery({
+    queryKey: ['wallet/uiGetCurrentWallet'],
+    queryFn: () => {
+      return walletPort.request('uiGetCurrentWallet');
+    },
+  });
+
   useEffect(() => {
     const timerId = setTimeout(() => {
       fireConfetti();
@@ -72,6 +84,16 @@ export function XpDropClaimSuccess() {
       clearTimeout(timerId);
     };
   }, [fireConfetti]);
+
+  const { mutate: acceptZerionOrigin } = useMutation({
+    mutationFn: async () => {
+      invariant(currentWallet, 'Current wallet not found');
+      return walletPort.request('acceptOrigin', {
+        origin: ZERION_ORIGIN,
+        address: currentWallet.address,
+      });
+    },
+  });
 
   return (
     <>
@@ -101,18 +123,19 @@ export function XpDropClaimSuccess() {
       </PageColumn>
       <PageStickyFooter>
         <Button
-          kind="primary"
           as={TextAnchor}
-          href="https://app.zerion.io/rewards"
+          kind="primary"
+          href={`${ZERION_ORIGIN}/rewards`}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => acceptZerionOrigin()}
         >
           <HStack gap={8} alignItems="center" justifyContent="center">
             <RewardsIcon
               style={{
                 width: 20,
                 height: 20,
-                color: 'linear-gradient(90deg, #A024EF 0%, #FDBB6C 100%)',
+                color: 'linear-gradient(90deg, #a024ef 0%, #fdbb6c 100%)',
               }}
             />
             <UIText kind="body/accent">Explore Rewards</UIText>

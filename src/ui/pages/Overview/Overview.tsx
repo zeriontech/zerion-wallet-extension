@@ -22,7 +22,7 @@ import {
   SegmentedControlLink,
 } from 'src/ui/ui-kit/SegmentedControl';
 import { PageBottom } from 'src/ui/components/PageBottom';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { walletPort } from 'src/ui/shared/channels';
 import { NBSP } from 'src/ui/shared/typography';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
@@ -64,6 +64,8 @@ import { SidepanelOptionsButton } from 'src/shared/sidepanel/SidepanelOptionsBut
 import { XpDropClaimBanner } from 'src/ui/features/xp-drop/components/XpDropClaimBanner';
 import { getWalletsMetaByChunks } from 'src/modules/zerion-api/requests/wallet-get-meta';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
+import { invariant } from 'src/shared/invariant';
+import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -249,23 +251,45 @@ function CurrentAccountControls() {
   );
 }
 
+const ZERION_ORIGIN = 'https://app.zerion.io';
+
 function RewardsLinkIcon() {
+  const { data: currentWallet } = useQuery({
+    queryKey: ['wallet/uiGetCurrentWallet'],
+    queryFn: () => {
+      return walletPort.request('uiGetCurrentWallet');
+    },
+  });
+
+  const { mutate: acceptZerionOrigin } = useMutation({
+    mutationFn: async () => {
+      invariant(currentWallet, 'Current wallet not found');
+      return walletPort.request('acceptOrigin', {
+        origin: ZERION_ORIGIN,
+        address: currentWallet.address,
+      });
+    },
+  });
+
+  const addWalletParams = useWalletParams(currentWallet);
+
   return (
     <Button
       kind="ghost"
       as={UnstyledAnchor}
-      href="https://app.zerion.io/rewards"
+      href={`https://app.zerion.io/rewards&${addWalletParams}`}
       target="_blank"
       rel="noopener noreferrer"
       size={36}
       title="Rewards"
       style={{ paddingInline: 8 }}
+      onClick={() => acceptZerionOrigin()}
     >
       <RewardsIcon
         style={{
           width: 20,
           height: 20,
-          color: 'linear-gradient(90deg, #A024EF 0%, #FDBB6C 100%)',
+          color: 'linear-gradient(90deg, #a024ef 0%, #fdbb6c 100%)',
         }}
       />
     </Button>

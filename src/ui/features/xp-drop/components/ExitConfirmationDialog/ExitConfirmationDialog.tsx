@@ -26,7 +26,7 @@ export function ExitConfirmationDialog({
         <Button kind="regular" type="button" onClick={onCancel}>
           Back
         </Button>
-        <Button kind="primary" onClick={onExit}>
+        <Button kind="primary" onClick={onExit} value="cancel">
           Exit
         </Button>
       </HStack>

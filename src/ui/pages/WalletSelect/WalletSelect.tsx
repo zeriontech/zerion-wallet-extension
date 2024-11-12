@@ -122,6 +122,15 @@ export function WalletSelect() {
     },
   });
 
+  const { mutate: acceptZerionOrigin } = useMutation({
+    mutationFn: async ({ address }: { address: string }) => {
+      return walletPort.request('acceptOrigin', {
+        origin: ZERION_ORIGIN,
+        address,
+      });
+    },
+  });
+
   const isLoading = isLoadingWalletGroups || isLoadingWalletsMeta;
 
   if (isLoading) {
@@ -203,20 +212,24 @@ export function WalletSelect() {
                   normalizeAddress(wallet.address)
               );
               const addWalletParams = getWalletParams(wallet);
-
               const exploreRewardsUrl = walletMeta?.membership.newRewards
                 ? `${ZERION_ORIGIN}/rewards?section=rewards&${addWalletParams}`
                 : null;
+
               return exploreRewardsUrl ? (
                 <Button
                   kind="neutral"
                   as={UnstyledAnchor}
                   href={exploreRewardsUrl}
-                  target="_blank"
+                  onClick={() =>
+                    acceptZerionOrigin({ address: wallet.address })
+                  }
                   size={36}
                   style={{
                     borderRadius: '0 0 18px 18px',
                   }}
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <HStack gap={8} alignItems="center" justifyContent="center">
                     <RewardsIcon
@@ -224,7 +237,7 @@ export function WalletSelect() {
                         width: 20,
                         height: 20,
                         color:
-                          'linear-gradient(90deg, #A024EF 0%, #FDBB6C 100%)',
+                          'linear-gradient(90deg, #a024ef 0%, #fdbb6c 100%)',
                       }}
                     />
                     <UIText kind="small/accent" color="var(--primary-500)">

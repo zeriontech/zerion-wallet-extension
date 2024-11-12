@@ -6,10 +6,12 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Link } from 'react-router-dom';
 
+const bannerGradient = 'linear-gradient(90deg, #a024ef 0%, #fdbb6c 100%)';
+
 export function XpDropClaimBanner() {
   return (
     <GradientBorder
-      borderColor="linear-gradient(90deg, #a024ef 0%, #fdbb6c 100%)"
+      borderColor={bannerGradient}
       borderWidth={2}
       borderRadius={16}
       backgroundColor="var(--white)"
@@ -26,7 +28,7 @@ export function XpDropClaimBanner() {
           to="/xp-drop/onboarding"
           style={{
             minWidth: 109,
-            background: 'linear-gradient(90deg, #a024ef 0%, #fdbb6c 100%)',
+            background: bannerGradient,
             color: 'var(--always-white)',
           }}
         >
