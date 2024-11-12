@@ -100,19 +100,10 @@ function trackAppEvents({ account }: { account: Account }) {
     sendToMetabase('daylight_action', params);
   });
 
-  emitter.on('signingError', (message) => {
+  emitter.on('globalError', ({ type, message }) => {
     const params = createParams({
       request_name: 'client_error',
-      type: 'signMessage',
-      message,
-    });
-    sendToMetabase('client_error', params);
-  });
-
-  emitter.on('networkError', (message: string) => {
-    const params = createParams({
-      request_name: 'client_error',
-      type: 'network error',
+      type,
       message,
     });
     sendToMetabase('client_error', params);

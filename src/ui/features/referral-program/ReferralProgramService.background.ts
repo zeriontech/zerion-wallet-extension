@@ -52,7 +52,10 @@ class ReferralProgramService {
 
       return signature;
     } catch (error) {
-      emitter.emit('signingError', getError(error).message);
+      emitter.emit('globalError', {
+        type: 'signing_error',
+        message: getError(error).message,
+      });
       throw error;
     }
   }
@@ -76,7 +79,10 @@ class ReferralProgramService {
         signature,
       });
     } catch (error) {
-      emitter.emit('networkError', getError(error).message);
+      emitter.emit('globalError', {
+        type: 'network_error',
+        message: getError(error).message,
+      });
       throw error;
     }
   }
