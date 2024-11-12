@@ -499,7 +499,7 @@ export function XpDropClaim() {
                 <ArrowRightIcon style={{ width: 20, height: 20 }} />
               </HStack>
             ) : (
-              `Claim ${formatXp(retro.zerion.total)} XP`
+              `Claim ${formatXp(retro.total)} XP`
             )}
           </SignMessageButton>
         </VStack>
