@@ -61,16 +61,11 @@ function SettingsMain() {
     mutationFn: () => accountPublicRPCPort.request('logout'),
   });
 
-  const {
-    data: referralProgramEnabled,
-    isLoading: isLoadingRemoteConfigValue,
-  } = useRemoteConfigValue('extension_referral_program');
+  const { data: referralProgramEnabled } = useRemoteConfigValue(
+    'extension_referral_program'
+  );
 
   useBackgroundKind({ kind: 'white' });
-
-  if (isLoadingRemoteConfigValue) {
-    return null;
-  }
 
   return (
     <PageColumn>
