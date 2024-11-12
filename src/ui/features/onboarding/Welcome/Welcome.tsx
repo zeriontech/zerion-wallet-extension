@@ -213,7 +213,7 @@ export function Welcome() {
 
   return (
     <VStack gap={isNarrowView ? 24 : 40}>
-      {FEATURE_LOYALTY_FLOW && referralProgramEnabled ? (
+      {FEATURE_LOYALTY_FLOW === 'on' && referralProgramEnabled ? (
         <ReferralProgramHandler />
       ) : null}
       <Banner />
