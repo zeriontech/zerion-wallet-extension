@@ -53,7 +53,7 @@ class ReferralProgramService {
       return signature;
     } catch (error) {
       emitter.emit('globalError', {
-        type: 'signing_error',
+        name: 'signing_error',
         message: getError(error).message,
       });
       throw error;
@@ -80,7 +80,7 @@ class ReferralProgramService {
       });
     } catch (error) {
       emitter.emit('globalError', {
-        type: 'network_error',
+        name: 'network_error',
         message: getError(error).message,
       });
       throw error;

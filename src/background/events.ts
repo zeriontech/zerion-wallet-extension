@@ -33,7 +33,7 @@ export const emitter = createNanoEvents<{
   chainChanged: (chain: Chain, origin: string) => void;
   'ui:chainSelected': (chain: Chain) => void;
   globalError: (data: {
-    type: 'network_error' | 'signing_error';
+    name: 'network_error' | 'signing_error';
     message: string;
   }) => void;
   switchChainError: (chainId: ChainId, origin: string, error: unknown) => void;
