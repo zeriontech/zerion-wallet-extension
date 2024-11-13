@@ -1,5 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import type { CustomConfiguration } from '@zeriontech/transactions';
+import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import type {
   IncomingTransaction,
   IncomingTransactionWithFrom,
@@ -10,8 +11,12 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { NetworkFee } from '../NetworkFee';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
+import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { NonceLine } from '../NonceLine';
+import { NetworkFee } from '../NetworkFee';
 import { useTransactionFee } from './useTransactionFee';
 
 function NetworkFeeLine({
@@ -20,6 +25,8 @@ function NetworkFeeLine({
   onFeeValueCommonReady,
   configuration,
   onConfigurationChange,
+  paymasterPossible,
+  paymasterEligible,
   keepPreviousData = false,
 }: {
   transaction: IncomingTransactionWithFrom;
@@ -27,6 +34,8 @@ function NetworkFeeLine({
   onFeeValueCommonReady: null | ((value: string) => void);
   configuration: CustomConfiguration;
   onConfigurationChange: null | ((value: CustomConfiguration) => void);
+  paymasterPossible: boolean;
+  paymasterEligible: boolean;
   keepPreviousData?: boolean;
 }) {
   const { data: chainGasPrices = null } = useGasPrices(chain, {
@@ -42,20 +51,57 @@ function NetworkFeeLine({
     chainGasPrices,
   });
 
+  const dialogRef = useRef<HTMLDialogElementInterface>(null);
+
   return (
-    <NetworkFee
-      transaction={transaction}
-      transactionFee={transactionFee}
-      chain={chain}
-      chainGasPrices={chainGasPrices}
-      networkFeeConfiguration={configuration.networkFee}
-      onChange={
-        onConfigurationChange
-          ? (networkFee) =>
-              onConfigurationChange({ ...configuration, networkFee })
-          : null
-      }
-    />
+    <>
+      <BottomSheetDialog
+        ref={dialogRef}
+        height="min-content"
+        renderWhenOpen={() => (
+          <VStack gap={16}>
+            <UIText kind="headline/h3">
+              <DialogTitle
+                title="Why isn’t it free?"
+                alignTitle="start"
+                closeKind="icon"
+              />
+            </UIText>
+            <UIText kind="body/regular">
+              To fight spam, wallets must qualify for free transactions by
+              either depositing funds to Zero or waiting for automatic reloads
+            </UIText>
+          </VStack>
+        )}
+      />
+      <NetworkFee
+        transaction={transaction}
+        transactionFee={transactionFee}
+        chain={chain}
+        chainGasPrices={chainGasPrices}
+        networkFeeConfiguration={configuration.networkFee}
+        displayValueEnd={
+          paymasterPossible && !paymasterEligible ? (
+            <>
+              <UnstyledButton
+                title="Why isn’t it free?"
+                onClick={() => dialogRef.current?.showModal()}
+              >
+                <QuestionHintIcon
+                  style={{ display: 'block', color: 'var(--neutral-500)' }}
+                />
+              </UnstyledButton>
+            </>
+          ) : null
+        }
+        onChange={
+          onConfigurationChange
+            ? (networkFee) =>
+                onConfigurationChange({ ...configuration, networkFee })
+            : null
+        }
+      />
+    </>
   );
 }
 export function TransactionConfiguration({
@@ -66,6 +112,7 @@ export function TransactionConfiguration({
   configuration,
   onConfigurationChange,
   paymasterEligible,
+  paymasterPossible,
   keepPreviousData = false,
 }: {
   transaction: IncomingTransaction;
@@ -75,6 +122,7 @@ export function TransactionConfiguration({
   configuration: CustomConfiguration;
   onConfigurationChange: null | ((value: CustomConfiguration) => void);
   paymasterEligible: boolean;
+  paymasterPossible: boolean;
   keepPreviousData?: boolean;
 }) {
   const { preferences } = usePreferences();
@@ -108,6 +156,8 @@ export function TransactionConfiguration({
           chain={chain}
           keepPreviousData={keepPreviousData}
           onFeeValueCommonReady={onFeeValueCommonReady}
+          paymasterPossible={paymasterPossible}
+          paymasterEligible={paymasterEligible}
         />
       )}
       {preferences?.configurableNonce ? (

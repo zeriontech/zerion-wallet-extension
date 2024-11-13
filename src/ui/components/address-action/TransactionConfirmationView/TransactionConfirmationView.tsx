@@ -26,6 +26,7 @@ export function TransactionConfirmationView({
   chain,
   configuration,
   paymasterEligible,
+  paymasterPossible,
   eligibilityQuery,
   localAllowanceQuantityBase,
   onOpenAllowanceForm,
@@ -37,6 +38,7 @@ export function TransactionConfirmationView({
   chain: Chain;
   configuration: CustomConfiguration;
   paymasterEligible: boolean;
+  paymasterPossible: boolean;
   eligibilityQuery: EligibilityQuery;
   localAllowanceQuantityBase?: string;
   onOpenAllowanceForm?: () => void;
@@ -104,6 +106,7 @@ export function TransactionConfirmationView({
             onConfigurationChange={null}
             onFeeValueCommonReady={null}
             paymasterEligible={paymasterEligible}
+            paymasterPossible={paymasterPossible}
           />
         </React.Suspense>
         <Spacer height={20} />

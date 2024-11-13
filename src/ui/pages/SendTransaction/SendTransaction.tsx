@@ -330,6 +330,7 @@ function TransactionDefaultView({
   configuration,
   onConfigurationChange,
   paymasterEligible,
+  paymasterPossible,
   onOpenAdvancedView,
   onFeeValueCommonReady,
 }: {
@@ -349,6 +350,7 @@ function TransactionDefaultView({
   configuration: CustomConfiguration;
   onConfigurationChange: (value: CustomConfiguration) => void;
   paymasterEligible: boolean;
+  paymasterPossible: boolean;
   onOpenAdvancedView: () => void;
   onFeeValueCommonReady: (value: string) => void;
 }) {
@@ -447,7 +449,7 @@ function TransactionDefaultView({
                 transaction={populatedTransaction}
                 chain={chain}
                 networkFeeConfiguration={configuration.networkFee}
-                paymasterElibible={paymasterEligible}
+                paymasterEligible={paymasterEligible}
               />
               <Spacer height={16} />
             </React.Suspense>
@@ -479,6 +481,7 @@ function TransactionDefaultView({
                     configuration={configuration}
                     onConfigurationChange={onConfigurationChange}
                     paymasterEligible={paymasterEligible}
+                    paymasterPossible={paymasterPossible}
                   />
                 </React.Suspense>
               ) : null}
@@ -559,10 +562,11 @@ function SendTransactionContent({
   const network = networks.getNetworkByName(chain) || null;
   const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
 
+  const paymasterPossible =
+    USE_PAYMASTER_FEATURE && Boolean(network?.supports_sponsored_transactions);
+
   const eligibilityQuery = useQuery({
-    enabled:
-      USE_PAYMASTER_FEATURE &&
-      Boolean(network?.supports_sponsored_transactions),
+    enabled: paymasterPossible,
     suspense: false,
     staleTime: 120000,
     queryKey: ['paymaster/check-eligibility', populatedTransaction, source],
@@ -767,6 +771,7 @@ function SendTransactionContent({
             configuration={configuration}
             onConfigurationChange={setConfiguration}
             paymasterEligible={paymasterEligible}
+            paymasterPossible={paymasterPossible}
             onOpenAdvancedView={openAdvancedView}
             onFeeValueCommonReady={handleFeeValueCommonReady}
           />
