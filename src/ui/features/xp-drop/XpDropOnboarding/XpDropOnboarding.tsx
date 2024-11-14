@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import type { To } from 'react-router-dom';
 import { Link, Route, Routes } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -8,8 +8,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { Button } from 'src/ui/ui-kit/Button';
 import { PageBottom } from 'src/ui/components/PageBottom';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
-import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import LevelsSrc from '../assets/levels.png';
 import Levels2xSrc from '../assets/levels@2x.png';
 import NewHomeForDnaSrc from '../assets/new-home-for-dna.png';
@@ -18,7 +16,6 @@ import QuestsSrc from '../assets/quests.png';
 import Quests2xSrc from '../assets/quests@2x.png';
 import Rewards2xSrc from '../assets/rewards@2x.png';
 import RewardsSrc from '../assets/rewards.png';
-import { ExitConfirmationDialog } from '../components/ExitConfirmationDialog';
 import { XpDropScoring } from './XpDropScoring';
 
 import * as styles from './styles.module.css';
@@ -52,9 +49,6 @@ function OnboardingStep({
   buttonText: string;
 }) {
   // TODO: Show confirmation dialog when the user attempts to navigate back
-  const exitConfirmationDialogRef = useRef<HTMLDialogElementInterface | null>(
-    null
-  );
 
   return (
     <>
@@ -83,22 +77,6 @@ function OnboardingStep({
         </Button>
         <PageBottom />
       </PageStickyFooter>
-      <BottomSheetDialog
-        ref={exitConfirmationDialogRef}
-        height="fit-content"
-        renderWhenOpen={() => (
-          <ExitConfirmationDialog
-            onCancel={() => {
-              // TODO: Prevent route change
-              exitConfirmationDialogRef.current?.close();
-            }}
-            onExit={() => {
-              // TODO: Allow route change
-              exitConfirmationDialogRef.current?.close();
-            }}
-          />
-        )}
-      />
     </>
   );
 }

@@ -4,7 +4,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { GradientBorder } from 'src/ui/components/GradientBorder';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
-import { Link } from 'react-router-dom';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 
 const bannerGradient = 'linear-gradient(90deg, #a024ef 0%, #fdbb6c 100%)';
 
@@ -24,7 +24,7 @@ export function XpDropClaimBanner() {
         <Button
           kind="ghost"
           size={36}
-          as={Link}
+          as={UnstyledLink}
           to="/xp-drop/onboarding"
           style={{
             minWidth: 109,
