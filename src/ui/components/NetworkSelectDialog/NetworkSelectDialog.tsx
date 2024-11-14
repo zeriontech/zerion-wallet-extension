@@ -31,6 +31,7 @@ import { useNativeBalance } from 'src/ui/shared/requests/useNativeBalance';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { bringToFront } from 'src/shared/array-mutations';
 import { DelayedRender } from '../DelayedRender';
 import { NetworkIcon } from '../NetworkIcon';
 import { PageBottom } from '../PageBottom';
@@ -252,7 +253,10 @@ function SectionView({
       rawGroups.map((group) => {
         return {
           ...group,
-          items: group.items.filter((network) => !network.hidden),
+          items: bringToFront(
+            group.items.filter((network) => !network.hidden),
+            (item) => item.id === 'zero'
+          ),
         };
       }),
     [rawGroups]
