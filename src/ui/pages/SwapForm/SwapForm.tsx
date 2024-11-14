@@ -75,7 +75,6 @@ import {
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/uiGetBestKnownTransactionCount';
 import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
-import { isDeviceAccount } from 'src/shared/types/validators';
 import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
 import {
   DEFAULT_CONFIGURATION,
@@ -333,8 +332,7 @@ export function SwapFormComponent() {
 
   const txNonce = txToCheck && 'nonce' in txToCheck ? txToCheck.nonce : null;
 
-  const isDeviceWallet = wallet && isDeviceAccount(wallet);
-  const USE_PAYMASTER_FEATURE = !isDeviceWallet;
+  const USE_PAYMASTER_FEATURE = true;
 
   const configuration = useStore(swapView.store.configuration);
   const userNonce = configuration.nonce;

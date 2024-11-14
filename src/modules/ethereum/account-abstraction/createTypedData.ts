@@ -33,3 +33,21 @@ export function createTypedData(transaction: zkSyncTypes.TransactionRequest) {
     message: EIP712Signer.getSignInput(transaction),
   };
 }
+
+export function serializePaymasterTx({
+  transaction,
+  signature,
+}: {
+  transaction: zkSyncTypes.TransactionRequest;
+  signature: string;
+}) {
+  invariant(
+    transaction.customData,
+    'This method is intended for "paymaster" transactions (customData is expected)'
+  );
+  const rawTransaction = zkSyncUtils.serialize({
+    ...transaction,
+    customData: { ...transaction.customData, customSignature: signature },
+  });
+  return rawTransaction;
+}

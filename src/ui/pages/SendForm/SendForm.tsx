@@ -60,7 +60,6 @@ import {
 } from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { DisableTestnetShortcuts } from 'src/ui/features/testnet-mode/DisableTestnetShortcuts';
-import { isDeviceAccount } from 'src/shared/types/validators';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
@@ -110,8 +109,7 @@ function SendFormComponent() {
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
     useErrorBoundary: true,
   });
-  const isDeviceWallet = wallet && isDeviceAccount(wallet);
-  const USE_PAYMASTER_FEATURE = !isDeviceWallet;
+  const USE_PAYMASTER_FEATURE = true;
 
   useBackgroundKind({ kind: 'white' });
 

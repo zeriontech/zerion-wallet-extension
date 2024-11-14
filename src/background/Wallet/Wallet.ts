@@ -1,6 +1,6 @@
 import type { BigNumberish, UnsignedTransaction } from 'ethers';
 import { ethers } from 'ethers';
-import { utils as zkSyncUtils, Provider as ZksProvider } from 'zksync-ethers';
+import { Provider as ZksProvider } from 'zksync-ethers';
 import type { Emitter } from 'nanoevents';
 import { createNanoEvents } from 'nanoevents';
 import { nanoid } from 'nanoid';
@@ -77,7 +77,10 @@ import { backgroundGetBestKnownTransactionCount } from 'src/modules/ethereum/tra
 import { toCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import { normalizeTransactionChainId } from 'src/modules/ethereum/transactions/normalizeTransactionChainId';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
-import { createTypedData } from 'src/modules/ethereum/account-abstraction/createTypedData';
+import {
+  createTypedData,
+  serializePaymasterTx,
+} from 'src/modules/ethereum/account-abstraction/createTypedData';
 import { getDefiSdkClient } from 'src/modules/defi-sdk/background';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
@@ -1153,10 +1156,7 @@ export class Wallet {
           transaction,
           signature,
         });
-        const rawTransaction = zkSyncUtils.serialize({
-          ...transaction,
-          customData: { ...transaction.customData, customSignature: signature },
-        });
+        const rawTransaction = serializePaymasterTx({ transaction, signature });
 
         console.log({ rawTransaction, transactionContextParams });
         return await this.sendSignedTransaction({
