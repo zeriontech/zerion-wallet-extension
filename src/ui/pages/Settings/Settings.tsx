@@ -49,10 +49,10 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { openHrefInTabIfSidepanel } from 'src/ui/shared/openInTabIfInSidepanel';
-import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
-import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import { invariant } from 'src/shared/invariant';
+import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
+import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { Security } from '../Security';
 import { BackupFlowSettingsSection } from './BackupFlowSettingsSection';
 import { PreferencesPage } from './Preferences';
@@ -157,6 +157,21 @@ function SettingsMain() {
                 </HStack>
               </AngleRightRow>
             </FrameListItemAnchor>
+            {FEATURE_LOYALTY_FLOW && loyaltyEnabled && currentWallet ? (
+              <FrameListItemAnchor
+                href={`${ZERION_ORIGIN}/rewards?${addWalletParams}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => acceptZerionOrigin()}
+              >
+                <AngleRightRow kind="link">
+                  <HStack gap={8} alignItems="center">
+                    <RewardsIcon style={{ width: 24, height: 24 }} />
+                    <UIText kind="body/regular">Rewards</UIText>
+                  </HStack>
+                </AngleRightRow>
+              </FrameListItemAnchor>
+            ) : null}
             <FrameListItemAnchor
               href="http://zerion.io/premium"
               target="_blank"

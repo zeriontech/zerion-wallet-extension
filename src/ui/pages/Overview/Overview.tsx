@@ -64,10 +64,10 @@ import { SidepanelOptionsButton } from 'src/shared/sidepanel/SidepanelOptionsBut
 import { XpDropClaimBanner } from 'src/ui/features/xp-drop/components/XpDropClaimBanner';
 import { getWalletsMetaByChunks } from 'src/modules/zerion-api/requests/wallet-get-meta';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
-import { invariant } from 'src/shared/invariant';
 import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
+import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -255,17 +255,13 @@ function CurrentAccountControls() {
 
 const ZERION_ORIGIN = 'https://app.zerion.io';
 
-function RewardsLinkIcon() {
-  const { data: currentWallet } = useQuery({
-    queryKey: ['wallet/uiGetCurrentWallet'],
-    queryFn: () => {
-      return walletPort.request('uiGetCurrentWallet');
-    },
-  });
-
+function RewardsLinkIcon({
+  currentWallet,
+}: {
+  currentWallet: ExternallyOwnedAccount;
+}) {
   const { mutate: acceptZerionOrigin } = useMutation({
     mutationFn: async () => {
-      invariant(currentWallet, 'Current wallet not found');
       return walletPort.request('acceptOrigin', {
         origin: ZERION_ORIGIN,
         address: currentWallet.address,
@@ -279,7 +275,7 @@ function RewardsLinkIcon() {
     <Button
       kind="ghost"
       as={UnstyledAnchor}
-      href={`https://app.zerion.io/rewards&${addWalletParams}`}
+      href={`${ZERION_ORIGIN}/rewards?${addWalletParams}`}
       target="_blank"
       rel="noopener noreferrer"
       size={36}
@@ -514,6 +510,13 @@ function OverviewComponent() {
     }
   };
 
+  const { data: currentWallet } = useQuery({
+    queryKey: ['wallet/uiGetCurrentWallet'],
+    queryFn: () => {
+      return walletPort.request('uiGetCurrentWallet');
+    },
+  });
+
   return (
     <PageColumn
       style={{
@@ -545,7 +548,9 @@ function OverviewComponent() {
           >
             <CurrentAccountControls />
             <HStack gap={0} alignItems="center">
-              <RewardsLinkIcon />
+              {FEATURE_LOYALTY_FLOW && loyaltyEnabled && currentWallet ? (
+                <RewardsLinkIcon currentWallet={currentWallet} />
+              ) : null}
               <SettingsLinkIcon />
               <SidepanelOptionsButton />
             </HStack>

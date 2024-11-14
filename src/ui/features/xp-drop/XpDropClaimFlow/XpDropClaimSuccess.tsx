@@ -16,6 +16,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { walletPort } from 'src/ui/shared/channels';
 import { invariant } from 'src/shared/invariant';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
+import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
 
 const ZERION_ORIGIN = 'https://app.zerion.io';
 
@@ -95,6 +96,8 @@ export function XpDropClaimSuccess() {
     },
   });
 
+  const addWalletParams = useWalletParams(currentWallet);
+
   return (
     <>
       <canvas
@@ -121,28 +124,30 @@ export function XpDropClaimSuccess() {
           </VStack>
         </FillView>
       </PageColumn>
-      <PageStickyFooter>
-        <Button
-          as={TextAnchor}
-          kind="primary"
-          href={`${ZERION_ORIGIN}/rewards`}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => acceptZerionOrigin()}
-        >
-          <HStack gap={8} alignItems="center" justifyContent="center">
-            <RewardsIcon
-              style={{
-                width: 20,
-                height: 20,
-                color: 'linear-gradient(90deg, #a024ef 0%, #fdbb6c 100%)',
-              }}
-            />
-            <UIText kind="body/accent">Explore Rewards</UIText>
-          </HStack>
-        </Button>
-        <PageBottom />
-      </PageStickyFooter>
+      {currentWallet ? (
+        <PageStickyFooter>
+          <Button
+            as={TextAnchor}
+            kind="primary"
+            href={`${ZERION_ORIGIN}/rewards?${addWalletParams}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => acceptZerionOrigin()}
+          >
+            <HStack gap={8} alignItems="center" justifyContent="center">
+              <RewardsIcon
+                style={{
+                  width: 20,
+                  height: 20,
+                  color: 'linear-gradient(90deg, #a024ef 0%, #fdbb6c 100%)',
+                }}
+              />
+              <UIText kind="body/accent">Explore Rewards</UIText>
+            </HStack>
+          </Button>
+          <PageBottom />
+        </PageStickyFooter>
+      ) : null}
     </>
   );
 }
