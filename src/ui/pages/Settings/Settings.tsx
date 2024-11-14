@@ -61,8 +61,8 @@ function SettingsMain() {
     mutationFn: () => accountPublicRPCPort.request('logout'),
   });
 
-  const { data: referralProgramEnabled } = useRemoteConfigValue(
-    'extension_referral_program'
+  const { data: loyaltyEnabled } = useRemoteConfigValue(
+    'extension_loyalty_enabled'
   );
 
   useBackgroundKind({ kind: 'white' });
@@ -110,7 +110,7 @@ function SettingsMain() {
         </Frame>
         <Frame>
           <VStack gap={0}>
-            {FEATURE_LOYALTY_FLOW && referralProgramEnabled ? (
+            {FEATURE_LOYALTY_FLOW && loyaltyEnabled ? (
               <FrameListItemLink to="/invite">
                 <AngleRightRow>
                   <HStack gap={8} alignItems="center">

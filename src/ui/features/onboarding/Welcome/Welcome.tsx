@@ -207,13 +207,13 @@ export function Welcome() {
   const { isNarrowView } = useWindowSizeStore();
   useOnboardingSession({ navigateOnExistingUser: 'success' });
 
-  const { data: referralProgramEnabled } = useRemoteConfigValue(
-    'extension_referral_program'
+  const { data: loyaltyEnabled } = useRemoteConfigValue(
+    'extension_loyalty_enabled'
   );
 
   return (
     <VStack gap={isNarrowView ? 24 : 40}>
-      {FEATURE_LOYALTY_FLOW === 'on' && referralProgramEnabled ? (
+      {FEATURE_LOYALTY_FLOW === 'on' && loyaltyEnabled ? (
         <ReferralProgramHandler />
       ) : null}
       <Banner />
