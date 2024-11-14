@@ -21,7 +21,6 @@ export const DEFI_SDK_TRANSACTIONS_API_URL = backendUrl(process.env.DEFI_SDK_TRA
 export const PROXY_URL = process.env.PROXY_URL;
 export const SOCIAL_API_URL = process.env.SOCIAL_API_URL;
 export const MIXPANEL_TOKEN_PUBLIC = process.env.MIXPANEL_TOKEN_PUBLIC;
-
 export const FEATURE_LOYALTY_FLOW = process.env.FEATURE_LOYALTY_FLOW === 'on' ? 'on' : null; // avoid accidental false-positives for truthy "off"
 export const SLOW_MODE = false;
 

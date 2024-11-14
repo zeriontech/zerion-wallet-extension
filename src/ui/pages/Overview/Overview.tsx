@@ -66,6 +66,8 @@ import { getWalletsMetaByChunks } from 'src/modules/zerion-api/requests/wallet-g
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { invariant } from 'src/shared/invariant';
 import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
+import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
+import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -415,8 +417,13 @@ function OverviewComponent() {
     enabled: !isReadonlyGroup,
   });
 
+  const { data: loyaltyEnabled } = useRemoteConfigValue(
+    'extension_loyalty_enabled'
+  );
+
   const walletMeta = walletsMeta?.[0];
-  const claimXpBannerVisible = Boolean(walletMeta?.membership.retro);
+  const claimXpBannerVisible =
+    FEATURE_LOYALTY_FLOW && loyaltyEnabled && walletMeta?.membership.retro;
 
   // Update backend record with 'platform: extension'
   useEffect(() => {
