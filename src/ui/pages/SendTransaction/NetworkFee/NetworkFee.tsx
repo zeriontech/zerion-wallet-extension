@@ -42,6 +42,7 @@ export function NetworkFee({
   onChange,
   label,
   renderDisplayValue,
+  displayValueEnd,
 }: {
   transaction: IncomingTransactionWithFrom;
   transactionFee: TransactionFee;
@@ -55,6 +56,7 @@ export function NetworkFee({
     hintTitle: string;
     displayValue: string;
   }) => React.ReactNode;
+  displayValueEnd?: React.ReactNode;
 }) {
   const { networks } = useNetworks();
   const { currency } = useCurrency();
@@ -137,26 +139,30 @@ export function NetworkFee({
         {isLoading ? (
           <CircleSpinner />
         ) : displayValue ? (
-          <HStack gap={12} alignItems="center">
-            {feeEstimationQuery.isPreviousData ? <CircleSpinner /> : null}
-            <UnstyledButton
-              type="button"
-              className={disabled ? undefined : helperStyles.hoverUnderline}
-              style={{
-                color: disabled ? 'var(--black)' : 'var(--primary)',
-                cursor: !onChange ? 'auto' : undefined,
-              }}
-              onClick={() => {
-                dialogRef.current?.showModal();
-              }}
-              disabled={disabled}
-            >
-              {renderDisplayValue?.({ hintTitle, displayValue }) ?? (
-                <UIText kind="small/accent" title={hintTitle}>
-                  {displayValue}
-                </UIText>
-              )}
-            </UnstyledButton>
+          <HStack gap={0} alignItems="center">
+            <HStack gap={12} alignItems="center">
+              {feeEstimationQuery.isPreviousData ? <CircleSpinner /> : null}
+              <UnstyledButton
+                type="button"
+                className={disabled ? undefined : helperStyles.hoverUnderline}
+                style={{
+                  color: disabled ? 'var(--black)' : 'var(--primary)',
+                  cursor: !onChange ? 'auto' : undefined,
+                }}
+                onClick={() => {
+                  dialogRef.current?.showModal();
+                }}
+                disabled={disabled}
+              >
+                {renderDisplayValue?.({ hintTitle, displayValue }) ?? (
+                  <UIText kind="small/accent" title={hintTitle}>
+                    {displayValue}
+                    {displayValueEnd ? ' · ' : null}
+                  </UIText>
+                )}
+              </UnstyledButton>
+            </HStack>
+            {displayValueEnd}
           </HStack>
         ) : feeEstimationQuery.isSuccess ? (
           <UIText kind="small/regular" title="No fee data">

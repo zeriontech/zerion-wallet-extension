@@ -351,10 +351,10 @@ export function SwapFormComponent() {
           nonce,
         }
       : null;
+  const paymasterPossible =
+    USE_PAYMASTER_FEATURE && Boolean(network?.supports_sponsored_transactions);
   const eligibiliteQuery = useTxEligibility(eligibilityParams, {
-    enabled:
-      USE_PAYMASTER_FEATURE &&
-      Boolean(network?.supports_sponsored_transactions),
+    enabled: paymasterPossible,
   });
 
   const paymasterEligible = Boolean(eligibiliteQuery.data?.data.eligible);
@@ -650,6 +650,7 @@ export function SwapFormComponent() {
                   allowanceDialogRef.current?.showModal()
                 }
                 paymasterEligible={paymasterEligible}
+                paymasterPossible={paymasterPossible}
                 eligibilityQuery={eligibiliteQuery}
               />
             </ViewLoadingSuspense>
@@ -794,6 +795,7 @@ export function SwapFormComponent() {
                     from={address}
                     chain={chain}
                     paymasterEligible={paymasterEligible}
+                    paymasterPossible={paymasterPossible}
                     onFeeValueCommonReady={handleFeeValueCommonReady}
                     configuration={configuration}
                     onConfigurationChange={(value) =>

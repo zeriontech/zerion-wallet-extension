@@ -276,14 +276,15 @@ function SendFormComponent() {
   const network = chain ? networks?.getNetworkByName(chain) : null;
   const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
 
+  const paymasterPossible = Boolean(
+    USE_PAYMASTER_FEATURE &&
+      network?.supports_sponsored_transactions &&
+      chainId &&
+      chain &&
+      networks
+  );
   const eligibilityQuery = useQuery({
-    enabled: Boolean(
-      USE_PAYMASTER_FEATURE &&
-        network?.supports_sponsored_transactions &&
-        chainId &&
-        chain &&
-        networks
-    ),
+    enabled: paymasterPossible,
     suspense: false,
     staleTime: 120000,
     useErrorBoundary: false,
@@ -591,6 +592,7 @@ function SendFormComponent() {
                       // There's a possible flicker of network fee
                       // before {paymasterEligible} becomes true
                       paymasterEligible={paymasterEligible}
+                      paymasterPossible={paymasterPossible}
                       onFeeValueCommonReady={handleFeeValueCommonReady}
                       configuration={configuration}
                       onConfigurationChange={(value) =>
@@ -632,6 +634,7 @@ function SendFormComponent() {
                     chain={chain}
                     sendView={sendView}
                     paymasterEligible={paymasterEligible}
+                    paymasterPossible={paymasterPossible}
                     eligibilityQuery={eligibilityQuery}
                   />
                 </ViewLoadingSuspense>
