@@ -397,6 +397,8 @@ export function XpDropClaim() {
     );
   }
 
+  const totalXp = retro.zerion.total + retro.global.total;
+
   return (
     <>
       <PageColumn>
@@ -499,7 +501,7 @@ export function XpDropClaim() {
                 <ArrowRightIcon style={{ width: 20, height: 20 }} />
               </HStack>
             ) : (
-              `Claim ${formatXp(retro.total)} XP`
+              `Claim ${formatXp(totalXp)} XP`
             )}
           </SignMessageButton>
         </VStack>
