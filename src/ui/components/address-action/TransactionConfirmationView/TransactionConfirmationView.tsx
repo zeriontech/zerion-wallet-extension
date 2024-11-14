@@ -126,7 +126,7 @@ export function TransactionConfirmationView({
             paymasterEligible={paymasterEligible}
             paymasterPossible={paymasterPossible}
             gasback={
-              txInterpretQuery.data?.action?.transaction.gasback
+              txInterpretQuery.data?.action?.transaction.gasback != null
                 ? { value: txInterpretQuery.data?.action.transaction.gasback }
                 : gasbackEstimation
             }
