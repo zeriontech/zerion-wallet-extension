@@ -8,14 +8,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { Button } from 'src/ui/ui-kit/Button';
 import { PageBottom } from 'src/ui/components/PageBottom';
-import LevelsSrc from '../assets/levels.png';
-import Levels2xSrc from '../assets/levels@2x.png';
-import NewHomeForDnaSrc from '../assets/new-home-for-dna.png';
-import NewHomeForDna2xSrc from '../assets/new-home-for-dna@2x.png';
-import QuestsSrc from '../assets/quests.png';
-import Quests2xSrc from '../assets/quests@2x.png';
-import Rewards2xSrc from '../assets/rewards@2x.png';
-import RewardsSrc from '../assets/rewards.png';
 import { XpDropScoring } from './XpDropScoring';
 
 import * as styles from './styles.module.css';
@@ -90,8 +82,8 @@ export function XpDropOnboarding() {
           <OnboardingStep
             title="Rewards"
             text="Unlock exclusive rewards by completing quests using Zerion Wallet"
-            imageSrc={RewardsSrc}
-            image2xSrc={Rewards2xSrc}
+            imageSrc="https://cdn.zerion.io/images/dna-assets/extension-xp-drop-rewards.png"
+            image2xSrc="https://cdn.zerion.io/images/dna-assets/extension-xp-drop-rewards_2x.png"
             buttonText="Continue"
             nextLocation="/xp-drop/onboarding/quests"
           />
@@ -103,8 +95,8 @@ export function XpDropOnboarding() {
           <OnboardingStep
             title="Quests"
             text="Each quest brings you closer to more XP and higher Levels"
-            imageSrc={QuestsSrc}
-            image2xSrc={Quests2xSrc}
+            imageSrc="https://cdn.zerion.io/images/dna-assets/extension-xp-drop-quests.png"
+            image2xSrc="https://cdn.zerion.io/images/dna-assets/extension-xp-drop-quests_2x.png"
             buttonText="Continue"
             nextLocation="/xp-drop/onboarding/new-home-for-dna"
           />
@@ -116,8 +108,8 @@ export function XpDropOnboarding() {
           <OnboardingStep
             title="New Home for DNA"
             text="All DNA on the wallet will be merged, stats combined and moved to the Zero Network"
-            imageSrc={NewHomeForDnaSrc}
-            image2xSrc={NewHomeForDna2xSrc}
+            imageSrc="https://cdn.zerion.io/images/dna-assets/extension-xp-drop-dna.png"
+            image2xSrc="https://cdn.zerion.io/images/dna-assets/extension-xp-drop-dna_2x.png"
             buttonText="Continue"
             nextLocation="/xp-drop/onboarding/levels"
           />
@@ -129,8 +121,8 @@ export function XpDropOnboarding() {
           <OnboardingStep
             title="Levels"
             text="Higher levels unlock unique quests, perks and rewards"
-            imageSrc={LevelsSrc}
-            image2xSrc={Levels2xSrc}
+            imageSrc="https://cdn.zerion.io/images/dna-assets/extension-xp-drop-levels.png"
+            image2xSrc="https://cdn.zerion.io/images/dna-assets/extension-xp-drop-levels_2x.png"
             buttonText="Check Your Level"
             nextLocation="/xp-drop/onboarding/scoring"
           />

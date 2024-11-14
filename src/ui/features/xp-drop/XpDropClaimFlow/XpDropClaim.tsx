@@ -41,7 +41,6 @@ import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import { txErrorToMessage } from 'src/ui/pages/SendTransaction/shared/transactionErrorToMessage';
 import { FillView } from 'src/ui/components/FillView';
 import { useNavigate } from 'react-router-dom';
-import { wait } from 'src/shared/wait';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import * as styles from './styles.module.css';
 
@@ -271,6 +270,8 @@ export function XpDropClaim() {
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
   });
   const [selectedWallet, setSelectedWallet] = useState(currentWallet);
+  const [claimedWallet, setClaimedWallet] =
+    useState<ExternallyOwnedAccount | null>(null);
 
   const { data: walletGroups, ...walletGroupsQuery } = useWalletGroups();
   const { signerWalletGroups, signerWalletAddresses } = useMemo(() => {
@@ -299,15 +300,19 @@ export function XpDropClaim() {
       ?.map((group) => ({
         id: group.id,
         walletContainer: {
-          wallets: group.walletContainer.wallets.filter((wallet) =>
-            eligibleAddresses.includes(normalizeAddress(wallet.address))
-          ),
+          wallets: group.walletContainer.wallets.filter((wallet) => {
+            const normalizedAddress = normalizeAddress(wallet.address);
+            return (
+              eligibleAddresses.includes(normalizedAddress) &&
+              normalizedAddress !== claimedWallet?.address
+            );
+          }),
         },
       }))
       .filter((group) => group.walletContainer.wallets.length > 0);
 
     return { eligibleWalletGroups, eligibleAddresses };
-  }, [signerWalletGroups, walletsMeta]);
+  }, [signerWalletGroups, walletsMeta, claimedWallet]);
 
   const signMsgBtnRef = useRef<SignMsgBtnHandle | null>(null);
   const walletSelectDialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -328,12 +333,7 @@ export function XpDropClaim() {
         address: selectedWallet.address,
         signature,
       });
-      // Typically, after we call `/wallet/claim-retro/v1` it takes asecond or two
-      // before `membership.retro` becomes `null` (in response to `/wallet/get-meta/v1`).
-      // To account for this possible delay, we're adding a short wait here.
-      // Otherwise, we might still see the wallet for which we just claimed the XP drop in
-      // the wallet selector when we click on the "Next Wallet" button.
-      await wait(2000);
+      setClaimedWallet(selectedWallet);
     },
     onSuccess: async () => {
       // Refetch the wallet metadata to update the list of wallets eligible for the XP drop.
