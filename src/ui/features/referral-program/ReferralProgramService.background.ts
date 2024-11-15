@@ -20,6 +20,16 @@ class ReferralProgramService {
 
   initialize(options: Options) {
     this.options = options;
+
+    // TODO: Add extra referral code logic:
+    //
+    // When importing multiple wallets, if there's no referral code saved locally,
+    // check if any of the imported wallets have a referral code.
+    // Use the code that appears in the majority of the imported wallets.
+    //
+    // When importing a single wallet, if it has a referral code and
+    // there's no code already saved locally, save its referral code.
+
     emitter.on('walletCreated', this.applyReferralCodeToWallet.bind(this));
   }
 
