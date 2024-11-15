@@ -2,6 +2,7 @@ import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTra
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { valueToHex } from 'src/shared/units/valueToHex';
 import { GAS_PER_PUBDATA_BYTE_DEFAULT } from 'src/modules/ethereum/account-abstraction/constants';
+import type { PartiallyOptional } from 'src/shared/type-utils/PartiallyOptional';
 import { ZerionHttpClient } from '../shared';
 import type { ClientOptions } from '../shared';
 import type { ResponseBody } from './ResponseBody';
@@ -93,8 +94,6 @@ type PaymasterParamsResponse = ResponseBody<{
     paymasterInput: string;
   };
 }>;
-
-type PartiallyOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 export function getPaymasterParams(
   requestAdapted: {
