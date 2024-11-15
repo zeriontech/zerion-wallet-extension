@@ -671,7 +671,6 @@ export function SwapFormComponent() {
                 paymasterEligible={paymasterEligible}
                 paymasterPossible={paymasterPossible}
                 eligibilityQuery={eligibilityQuery}
-                gasback={gasbackEstimation}
                 onGasbackReady={handleGasbackReady}
               />
             </ViewLoadingSuspense>

@@ -8,7 +8,6 @@ import type { Chain } from 'src/modules/networks/Chain';
 import { invariant } from 'src/shared/invariant';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
 import type { EligibilityQuery } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
-import type { GasbackData } from 'src/modules/ethereum/account-abstraction/rewards';
 
 const QUERY_KEY = ['configureSendTransaction'];
 
@@ -19,7 +18,6 @@ export function SendTransactionConfirmation({
   paymasterEligible,
   paymasterPossible,
   eligibilityQuery,
-  gasback,
   onGasbackReady,
 }: {
   sendView: SendFormView;
@@ -28,7 +26,6 @@ export function SendTransactionConfirmation({
   paymasterEligible: boolean;
   paymasterPossible: boolean;
   eligibilityQuery: EligibilityQuery;
-  gasback: GasbackData | null;
   onGasbackReady: null | ((value: number) => void);
 }) {
   const { data: wallet } = useQuery({
@@ -66,7 +63,6 @@ export function SendTransactionConfirmation({
       configuration={sendView.store.configuration.getState()}
       paymasterEligible={paymasterEligible}
       paymasterPossible={paymasterPossible}
-      gasback={gasback}
       eligibilityQuery={eligibilityQuery}
       onGasbackReady={onGasbackReady}
     />

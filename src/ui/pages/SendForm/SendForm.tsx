@@ -654,7 +654,6 @@ function SendFormComponent() {
                     paymasterEligible={paymasterEligible}
                     paymasterPossible={paymasterPossible}
                     eligibilityQuery={eligibilityQuery}
-                    gasback={gasbackEstimation}
                     onGasbackReady={handleGasbackReady}
                   />
                 </ViewLoadingSuspense>

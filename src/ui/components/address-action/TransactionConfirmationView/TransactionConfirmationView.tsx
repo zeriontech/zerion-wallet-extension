@@ -14,7 +14,6 @@ import LedgerIcon from 'jsx:src/ui/assets/ledger-icon.svg';
 import { isDeviceAccount } from 'src/shared/types/validators';
 import type { EligibilityQuery } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
 import { usePreferences } from 'src/ui/features/preferences';
-import type { GasbackData } from 'src/modules/ethereum/account-abstraction/rewards';
 import { WalletAvatar } from '../../WalletAvatar';
 import { WalletDisplayName } from '../../WalletDisplayName';
 import {
@@ -34,7 +33,6 @@ export function TransactionConfirmationView({
   eligibilityQuery,
   localAllowanceQuantityBase,
   onOpenAllowanceForm,
-  gasback: gasbackEstimation,
   onGasbackReady,
 }: {
   title: React.ReactNode;
@@ -48,7 +46,6 @@ export function TransactionConfirmationView({
   eligibilityQuery: EligibilityQuery;
   localAllowanceQuantityBase?: string;
   onOpenAllowanceForm?: () => void;
-  gasback: GasbackData | null;
   onGasbackReady: null | ((value: number) => void);
 }) {
   const { preferences, query } = usePreferences();
@@ -128,7 +125,7 @@ export function TransactionConfirmationView({
             gasback={
               txInterpretQuery.data?.action?.transaction.gasback != null
                 ? { value: txInterpretQuery.data?.action.transaction.gasback }
-                : gasbackEstimation
+                : null
             }
           />
         </React.Suspense>
