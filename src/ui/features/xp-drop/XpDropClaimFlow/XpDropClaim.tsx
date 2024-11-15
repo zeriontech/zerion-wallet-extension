@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { DeviceAccount } from 'src/shared/types/Device';
@@ -30,6 +30,7 @@ import { GradientBorder } from 'src/ui/components/GradientBorder';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import type {
   RetrodropInfo,
+  WalletMeta,
   XpBreakdownItem,
 } from 'src/modules/zerion-api/requests/wallet-get-meta';
 import { getWalletsMetaByChunks } from 'src/modules/zerion-api/requests/wallet-get-meta';
@@ -270,7 +271,10 @@ export function XpDropClaim() {
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
   });
   const [selectedWallet, setSelectedWallet] = useState(currentWallet);
-  const [claimedAddress, setClaimedAddress] = useState<string | null>(null);
+  const [claimedInfo, setClaimedInfo] = useState<{
+    address: string;
+    meta: WalletMeta | null;
+  } | null>(null);
 
   const { data: walletGroups, ...walletGroupsQuery } = useWalletGroups();
   const { signerWalletGroups, signerWalletAddresses } = useMemo(() => {
@@ -303,7 +307,7 @@ export function XpDropClaim() {
             const normalizedAddress = normalizeAddress(wallet.address);
             return (
               eligibleAddresses.includes(normalizedAddress) &&
-              normalizedAddress !== claimedAddress
+              normalizedAddress !== claimedInfo?.address
             );
           }),
         },
@@ -311,11 +315,23 @@ export function XpDropClaim() {
       .filter((group) => group.walletContainer.wallets.length > 0);
 
     return { eligibleWalletGroups, eligibleAddresses };
-  }, [signerWalletGroups, walletsMeta, claimedAddress]);
+  }, [signerWalletGroups, walletsMeta, claimedInfo]);
 
   const signMsgBtnRef = useRef<SignMsgBtnHandle | null>(null);
   const walletSelectDialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const xpBreakdownDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+
+  const selectedWalletMeta = useMemo(
+    () =>
+      selectedWallet
+        ? walletsMeta?.find(
+            (meta) =>
+              normalizeAddress(meta.address) ===
+              normalizeAddress(selectedWallet.address)
+          )
+        : null,
+    [selectedWallet, walletsMeta]
+  );
 
   const { mutate: personalSign, ...personalSignMutation } = useMutation({
     mutationFn: async () => {
@@ -332,7 +348,10 @@ export function XpDropClaim() {
         address: selectedWallet.address,
         signature,
       });
-      setClaimedAddress(normalizeAddress(selectedWallet.address));
+      setClaimedInfo({
+        address: normalizeAddress(selectedWallet.address),
+        meta: selectedWalletMeta || null,
+      });
     },
     onSuccess: async () => {
       // Refetch the wallet metadata to update the list of wallets eligible for the XP drop.
@@ -344,28 +363,9 @@ export function XpDropClaim() {
     },
   });
 
-  const selectedWalletMeta = useMemo(
-    () =>
-      selectedWallet
-        ? walletsMeta?.find(
-            (meta) =>
-              normalizeAddress(meta.address) ===
-              normalizeAddress(selectedWallet.address)
-          )
-        : null,
-    [selectedWallet, walletsMeta]
-  );
-
-  const membership = selectedWalletMeta?.membership;
-  const [retro, setRetro] = useState(selectedWalletMeta?.membership.retro);
-
-  useEffect(() => {
-    // We should never set the current retrodrop info to null or undefined,
-    // so that we can always display the success state.
-    if (membership?.retro) {
-      setRetro(membership.retro);
-    }
-  }, [membership, retro]);
+  const retro = personalSignMutation.isSuccess
+    ? claimedInfo?.meta?.membership.retro
+    : selectedWalletMeta?.membership?.retro;
 
   if (
     walletGroupsQuery.isLoading ||
@@ -373,7 +373,7 @@ export function XpDropClaim() {
     !walletsMeta ||
     !eligibleWalletGroups ||
     !eligibleAddresses ||
-    !membership
+    !retro
   ) {
     return null;
   }
