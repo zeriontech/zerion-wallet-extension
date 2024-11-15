@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { Content } from 'react-area';
 import type {
   InterpretResponse,
@@ -19,14 +18,8 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { TransactionWarning } from 'src/ui/pages/SendTransaction/TransactionWarnings/TransactionWarning';
 import { DialogCloseButton } from 'src/ui/ui-kit/ModalDialogs/DialogTitle/DialogCloseButton';
-import { getRootDomNode } from 'src/ui/shared/getRootDomNode';
 import { DelayedRender } from '../DelayedRender';
-
-const rootNode = getRootDomNode();
-
-function PortalToRootNode({ children }: React.PropsWithChildren) {
-  return createPortal(children, rootNode);
-}
+import { PortalToRootNode } from '../PortalToRootNode';
 
 const WarningSeverityPriority: Record<WarningSeverity, number> = {
   Gray: 0,

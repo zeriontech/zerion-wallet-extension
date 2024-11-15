@@ -22,17 +22,24 @@ export const BottomSheetDialog = React.forwardRef(
       className,
       containerStyle,
       animationPreset = AnimationPreset.slideUp,
+      displayGrid = false,
       ...props
     }: BaseDialogProps & {
       height?: React.CSSProperties['height'];
       animationPreset?: AnimationPreset;
+      displayGrid?: boolean;
     },
     ref: React.Ref<HTMLDialogElement>
   ) => {
     return (
       <BaseDialog
         ref={ref}
-        className={cx(animationStyles[animationPreset], s.dialog, className)}
+        className={cx(
+          animationStyles[animationPreset],
+          s.dialog,
+          className,
+          displayGrid ? s.displayGrid : null
+        )}
         style={{
           border: 'none',
           bottom: 0,

@@ -16,13 +16,17 @@ export function SendTransactionConfirmation({
   getTransaction,
   chain,
   paymasterEligible,
+  paymasterPossible,
   eligibilityQuery,
+  onGasbackReady,
 }: {
   sendView: SendFormView;
   getTransaction: () => Promise<Partial<IncomingTransactionWithChainId>>;
   chain: Chain;
   paymasterEligible: boolean;
+  paymasterPossible: boolean;
   eligibilityQuery: EligibilityQuery;
+  onGasbackReady: null | ((value: number) => void);
 }) {
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
@@ -58,7 +62,9 @@ export function SendTransactionConfirmation({
       transaction={transaction as IncomingTransactionWithChainId}
       configuration={sendView.store.configuration.getState()}
       paymasterEligible={paymasterEligible}
+      paymasterPossible={paymasterPossible}
       eligibilityQuery={eligibilityQuery}
+      onGasbackReady={onGasbackReady}
     />
   );
 }

@@ -114,7 +114,9 @@ export function RateLine({
         visibility: !isLoading && !quote && !error ? 'hidden' : undefined,
       }}
     >
-      <UIText kind="small/regular">Rate</UIText>
+      <UIText kind="small/regular" color="var(--neutral-700)">
+        Rate
+      </UIText>
       <span>
         {isLoading && !quote ? (
           <span style={{ color: 'var(--neutral-500)' }}>

@@ -18,7 +18,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { fetchAndAssignPaymaster } from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
-import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
 import type { EligibilityQuery } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
 import { shouldInterpretTransaction } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
 import { useCurrency } from 'src/modules/currency/useCurrency';
@@ -27,12 +26,49 @@ import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import { AddressActionDetails } from '../AddressActionDetails';
 import { InterpretationState } from '../../InterpretationState';
 
+export function useTxInterpretQuery({
+  transaction,
+  eligibilityQuery,
+}: {
+  transaction: IncomingTransactionWithChainId;
+  eligibilityQuery: EligibilityQuery;
+}) {
+  const { networks } = useNetworks();
+  const chain = networks?.getChainById(normalizeChainId(transaction.chainId));
+  const network = chain ? networks?.getNetworkByName(chain) || null : null;
+  const { currency } = useCurrency();
+  const client = useDefiSdkClient();
+
+  return useQuery({
+    enabled: shouldInterpretTransaction({ network, eligibilityQuery }),
+    queryKey: ['interpretTransaction', transaction, currency, client],
+    queryKeyHashFn: (queryKey) => {
+      const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
+      return hashQueryKey(key);
+    },
+    queryFn: () => {
+      invariant(transaction.from, 'transaction must have a from value');
+      return interpretTransaction({
+        address: transaction.from,
+        transaction,
+        origin: 'https://app.zerion.io',
+        currency,
+        client,
+      });
+    },
+    keepPreviousData: true,
+    staleTime: 20000,
+    suspense: false,
+    retry: 1,
+  });
+}
+
 export function TransactionSimulation({
   vGap = 16,
   address,
   transaction,
   paymasterEligible,
-  eligibilityQuery,
+  txInterpretQuery,
   localAllowanceQuantityBase,
   showApplicationLine,
   onOpenAllowanceForm,
@@ -41,7 +77,7 @@ export function TransactionSimulation({
   address: string;
   transaction: IncomingTransactionWithChainId;
   paymasterEligible: boolean;
-  eligibilityQuery: EligibilityQuery;
+  txInterpretQuery: ReturnType<typeof useTxInterpretQuery>;
   localAllowanceQuantityBase?: string;
   showApplicationLine: boolean;
   onOpenAllowanceForm?: () => void;
@@ -105,30 +141,6 @@ export function TransactionSimulation({
   });
 
   const network = chain ? networks?.getNetworkByName(chain) || null : null;
-  const txInterpretQuery = useQuery({
-    enabled: FEATURE_PAYMASTER_ENABLED
-      ? shouldInterpretTransaction({ network, eligibilityQuery })
-      : Boolean(network?.supports_simulations),
-    queryKey: ['interpretTransaction', transaction, currency, client],
-    queryKeyHashFn: (queryKey) => {
-      const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
-      return hashQueryKey(key);
-    },
-    queryFn: () => {
-      invariant(transaction.from, 'transaction must have a from value');
-      return interpretTransaction({
-        address: transaction.from,
-        transaction,
-        origin: 'https://app.zerion.io',
-        currency,
-        client,
-      });
-    },
-    keepPreviousData: true,
-    staleTime: 20000,
-    suspense: false,
-    retry: 1,
-  });
 
   const { preferences } = usePreferences();
   const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';

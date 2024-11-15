@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import type { CustomConfiguration } from '@zeriontech/transactions';
 import type { IncomingTransactionWithChainId } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
@@ -16,7 +16,10 @@ import type { EligibilityQuery } from 'src/modules/ethereum/account-abstraction/
 import { usePreferences } from 'src/ui/features/preferences';
 import { WalletAvatar } from '../../WalletAvatar';
 import { WalletDisplayName } from '../../WalletDisplayName';
-import { TransactionSimulation } from '../TransactionSimulation';
+import {
+  TransactionSimulation,
+  useTxInterpretQuery,
+} from '../TransactionSimulation';
 
 export function TransactionConfirmationView({
   title,
@@ -26,9 +29,11 @@ export function TransactionConfirmationView({
   chain,
   configuration,
   paymasterEligible,
+  paymasterPossible,
   eligibilityQuery,
   localAllowanceQuantityBase,
   onOpenAllowanceForm,
+  onGasbackReady,
 }: {
   title: React.ReactNode;
   wallet: ExternallyOwnedAccount;
@@ -37,12 +42,25 @@ export function TransactionConfirmationView({
   chain: Chain;
   configuration: CustomConfiguration;
   paymasterEligible: boolean;
+  paymasterPossible: boolean;
   eligibilityQuery: EligibilityQuery;
   localAllowanceQuantityBase?: string;
   onOpenAllowanceForm?: () => void;
+  onGasbackReady: null | ((value: number) => void);
 }) {
   const { preferences, query } = usePreferences();
 
+  const txInterpretQuery = useTxInterpretQuery({
+    transaction,
+    eligibilityQuery,
+  });
+  const gasbackValue =
+    txInterpretQuery.data?.action?.transaction.gasback ?? null;
+  useEffect(() => {
+    if (gasbackValue != null) {
+      onGasbackReady?.(gasbackValue);
+    }
+  }, [gasbackValue, onGasbackReady]);
   if (query.isLoading) {
     return null;
   }
@@ -50,7 +68,7 @@ export function TransactionConfirmationView({
   return (
     <div
       style={{
-        ['--surface-background-color' as string]: 'var(--z-index-1-inverted)',
+        ['--surface-background-color' as string]: 'var(--neutral-100)',
         display: 'grid',
         gap: 24,
         gridTemplateRows: 'auto 1fr',
@@ -85,10 +103,9 @@ export function TransactionConfirmationView({
           address={wallet.address}
           transaction={transaction}
           paymasterEligible={paymasterEligible}
-          eligibilityQuery={eligibilityQuery}
+          txInterpretQuery={txInterpretQuery}
         />
         <Spacer height={20} />
-
         <React.Suspense
           fallback={
             <div style={{ display: 'flex', justifyContent: 'end' }}>
@@ -104,6 +121,12 @@ export function TransactionConfirmationView({
             onConfigurationChange={null}
             onFeeValueCommonReady={null}
             paymasterEligible={paymasterEligible}
+            paymasterPossible={paymasterPossible}
+            gasback={
+              txInterpretQuery.data?.action?.transaction.gasback != null
+                ? { value: txInterpretQuery.data?.action.transaction.gasback }
+                : null
+            }
           />
         </React.Suspense>
         <Spacer height={20} />

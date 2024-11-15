@@ -26,14 +26,18 @@ export function SlippageLine({ swapView }: { swapView: SwapFormView }) {
   return slippage >= HIGH_SLIPPAGE_THRESHOLD ? (
     <VStack gap={8}>
       <HStack gap={8} justifyContent="space-between">
-        <UIText kind="small/regular">Slippage</UIText>
+        <UIText kind="small/regular" color="var(--neutral-700)">
+          Slippage
+        </UIText>
         <UIText kind="small/accent" color="var(--notice-500)">
           {formatPercent(slippage * 100, 'en')}%
         </UIText>
       </HStack>
       {receiveInput && price ? (
         <HStack gap={8} justifyContent="space-between">
-          <UIText kind="small/regular">Minimum Received</UIText>
+          <UIText kind="small/regular" color="var(--neutral-700)">
+            Minimum Received
+          </UIText>
           <UIText kind="small/accent">
             {formatCurrencyValue(fiatValue, 'en', currency)}
           </UIText>

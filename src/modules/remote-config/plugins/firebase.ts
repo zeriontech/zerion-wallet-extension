@@ -9,15 +9,19 @@ const defaultConfig: RemoteConfig = {
   extension_wallet_name_flags: {},
   extension_uninstall_link: '',
   extension_loyalty_enabled: false,
+  loyalty_config: {},
 };
 
 const knownKeys: (keyof RemoteConfig)[] = [
   'extension_wallet_name_flags',
   'extension_uninstall_link',
   'extension_loyalty_enabled',
+  'loyalty_config',
 ];
 
-async function fetchRemoteConfig<T extends keyof RemoteConfig>(keys: T[]) {
+export async function fetchRemoteConfig<T extends keyof RemoteConfig>(
+  keys: T[]
+) {
   const params = new URLSearchParams(keys.map((key) => ['key', key]));
   return ky
     .get(new URL(`remote-config?${params.toString()}`, PROXY_URL), {

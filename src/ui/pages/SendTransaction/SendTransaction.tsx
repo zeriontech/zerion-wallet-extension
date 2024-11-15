@@ -74,7 +74,6 @@ import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
-import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
 import { hasNetworkFee } from 'src/modules/ethereum/transactions/gasPrices/hasNetworkFee';
 import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/uiGetBestKnownTransactionCount';
 import { resolveChainId } from 'src/modules/ethereum/transactions/resolveChainId';
@@ -85,7 +84,6 @@ import {
   adjustedCheckEligibility,
   fetchAndAssignPaymaster,
 } from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
-import { isDeviceAccount } from 'src/shared/types/validators';
 import { shouldInterpretTransaction } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { RenderArea } from 'react-area';
@@ -331,6 +329,7 @@ function TransactionDefaultView({
   configuration,
   onConfigurationChange,
   paymasterEligible,
+  paymasterPossible,
   onOpenAdvancedView,
   onFeeValueCommonReady,
 }: {
@@ -350,6 +349,7 @@ function TransactionDefaultView({
   configuration: CustomConfiguration;
   onConfigurationChange: (value: CustomConfiguration) => void;
   paymasterEligible: boolean;
+  paymasterPossible: boolean;
   onOpenAdvancedView: () => void;
   onFeeValueCommonReady: (value: string) => void;
 }) {
@@ -448,7 +448,7 @@ function TransactionDefaultView({
                 transaction={populatedTransaction}
                 chain={chain}
                 networkFeeConfiguration={configuration.networkFee}
-                paymasterElibible={paymasterEligible}
+                paymasterEligible={paymasterEligible}
               />
               <Spacer height={16} />
             </React.Suspense>
@@ -480,6 +480,13 @@ function TransactionDefaultView({
                     configuration={configuration}
                     onConfigurationChange={onConfigurationChange}
                     paymasterEligible={paymasterEligible}
+                    paymasterPossible={paymasterPossible}
+                    gasback={
+                      interpretation?.action?.transaction.gasback != null
+                        ? { value: interpretation.action.transaction.gasback }
+                        : null
+                    }
+                    listViewTransitions={true}
                   />
                 </React.Suspense>
               ) : null}
@@ -554,14 +561,16 @@ function SendTransactionContent({
       })
   );
 
-  const isDeviceWallet = isDeviceAccount(wallet);
-  const USE_PAYMASTER_FEATURE = FEATURE_PAYMASTER_ENABLED && !isDeviceWallet;
+  const USE_PAYMASTER_FEATURE = true;
 
   const network = networks.getNetworkByName(chain) || null;
   const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
 
+  const paymasterPossible =
+    USE_PAYMASTER_FEATURE && Boolean(network?.supports_sponsored_transactions);
+
   const eligibilityQuery = useQuery({
-    enabled: USE_PAYMASTER_FEATURE && network?.supports_sponsored_transactions,
+    enabled: paymasterPossible,
     suspense: false,
     staleTime: 120000,
     queryKey: ['paymaster/check-eligibility', populatedTransaction, source],
@@ -702,9 +711,6 @@ function SendTransactionContent({
           apiClient: ZerionAPI,
         });
       }
-      if (USE_PAYMASTER_FEATURE) {
-        console.log('sending to wallet', { tx });
-      }
       const feeValueCommon = feeValueCommonRef.current || null;
       return sendTxBtnRef.current.sendTransaction({
         transaction: tx,
@@ -769,6 +775,7 @@ function SendTransactionContent({
             configuration={configuration}
             onConfigurationChange={setConfiguration}
             paymasterEligible={paymasterEligible}
+            paymasterPossible={paymasterPossible}
             onOpenAdvancedView={openAdvancedView}
             onFeeValueCommonReady={handleFeeValueCommonReady}
           />

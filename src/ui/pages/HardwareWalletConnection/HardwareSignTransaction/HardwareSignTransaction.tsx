@@ -1,4 +1,6 @@
 import React, { useImperativeHandle, useRef } from 'react';
+import { ethers } from 'ethers';
+import type { TransactionRequest } from '@ethersproject/abstract-provider';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { Button, type Kind as ButtonKind } from 'src/ui/ui-kit/Button';
 import { useMutation } from '@tanstack/react-query';
@@ -16,7 +18,61 @@ import type { Chain } from 'src/modules/networks/Chain';
 import type { Networks } from 'src/modules/networks/Networks';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 import { TextPulse } from 'src/ui/components/TextPulse';
+import {
+  createTypedData,
+  serializePaymasterTx,
+} from 'src/modules/ethereum/account-abstraction/createTypedData';
 import { hardwareMessageHandler } from '../shared/messageHandler';
+
+async function signRegularOrPaymasterTx({
+  messageHandler,
+  transaction,
+  derivationPath,
+  contentWindow,
+}: {
+  messageHandler: typeof hardwareMessageHandler;
+  transaction: TransactionRequest;
+  derivationPath: string;
+  contentWindow: Window;
+}): Promise<SignTransactionResult> {
+  const paymasterEligible = Boolean(transaction.customData?.paymasterParams);
+  if (paymasterEligible) {
+    const typedData = createTypedData(transaction);
+
+    const ledgerSignature = await messageHandler.request<string>(
+      {
+        id: nanoid(),
+        method: 'signTypedData_v4',
+        params: { derivationPath, typedData },
+      },
+      contentWindow
+    );
+    /**
+     * Ethereum signature's `v` value can either be in range [0, 1] or [27, 28]
+     * Both signatures can be valid, so this historically allowed for double spends.
+     * Some systems decided to check this and accept only one kind.
+     * Currently our own ledger adapter code subtracts 27 (to conform to some dapp's expectations),
+     * but zkSync stack seems to expect [27, 28]
+     * Therefore we add this number for this particular case
+     */
+    const s = ethers.utils.splitSignature(ledgerSignature);
+    if (s.v === 0 || s.v === 1) {
+      s.v += 27;
+    }
+    const signature = ethers.utils.joinSignature(s);
+    const rawTransaction = serializePaymasterTx({ transaction, signature });
+    return { serialized: rawTransaction };
+  } else {
+    return await messageHandler.request<SignTransactionResult>(
+      {
+        id: nanoid(),
+        method: 'signTransaction',
+        params: { derivationPath, transaction },
+      },
+      contentWindow
+    );
+  }
+}
 
 interface SignTransactionParams {
   transaction: IncomingTransaction;
@@ -106,18 +162,12 @@ export const HardwareSignTransaction = React.forwardRef(
           'Iframe contentWindow is not available'
         );
         try {
-          const result =
-            await hardwareMessageHandler.request<SignTransactionResult>(
-              {
-                id: nanoid(),
-                method: 'signTransaction',
-                params: {
-                  derivationPath,
-                  transaction: normalizedTransaction,
-                },
-              },
-              iframeRef.current.contentWindow
-            );
+          const result = await signRegularOrPaymasterTx({
+            transaction: normalizedTransaction,
+            messageHandler: hardwareMessageHandler,
+            derivationPath,
+            contentWindow: iframeRef.current.contentWindow,
+          });
           return result.serialized;
         } catch (error) {
           const normalizedError = getError(error);

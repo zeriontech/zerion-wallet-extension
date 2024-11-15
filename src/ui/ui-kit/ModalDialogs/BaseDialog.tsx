@@ -99,7 +99,7 @@ export const BaseDialog = React.forwardRef(
         // "useCallback" deps are statically unknown, but only "ref" is potentially unstable
         ref={useCallback(composeRefs(ref, dialogRef), [ref])}
         style={{
-          overflow: 'visible',
+          overflow: 'visible', // TODO: why not "auto"? Is it for some "click outside" edge case?
           backgroundColor: 'transparent',
           ...style,
         }}

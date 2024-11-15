@@ -53,7 +53,6 @@ import { createSendAddressAction } from 'src/modules/ethereum/transactions/addre
 import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
-import { FEATURE_PAYMASTER_ENABLED } from 'src/env/config';
 import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/uiGetBestKnownTransactionCount';
 import {
   adjustedCheckEligibility,
@@ -61,11 +60,11 @@ import {
 } from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { DisableTestnetShortcuts } from 'src/ui/features/testnet-mode/DisableTestnetShortcuts';
-import { isDeviceAccount } from 'src/shared/types/validators';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { assertProp } from 'src/shared/assert-property';
+import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -110,8 +109,7 @@ function SendFormComponent() {
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
     useErrorBoundary: true,
   });
-  const isDeviceWallet = wallet && isDeviceAccount(wallet);
-  const USE_PAYMASTER_FEATURE = FEATURE_PAYMASTER_ENABLED && !isDeviceWallet;
+  const USE_PAYMASTER_FEATURE = true;
 
   useBackgroundKind({ kind: 'white' });
 
@@ -192,7 +190,9 @@ function SendFormComponent() {
     snapshotRef.current = { state, tokenItem, nftItem };
   };
 
-  const feeValueCommonRef = useRef<string>(); /** for analytics only */
+  const feeValueCommonRef = useRef<string | null>(
+    null
+  ); /** for analytics only */
   const handleFeeValueCommonReady = useCallback((value: string) => {
     feeValueCommonRef.current = value;
   }, []);
@@ -277,14 +277,15 @@ function SendFormComponent() {
   const network = chain ? networks?.getNetworkByName(chain) : null;
   const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
 
+  const paymasterPossible = Boolean(
+    USE_PAYMASTER_FEATURE &&
+      network?.supports_sponsored_transactions &&
+      chainId &&
+      chain &&
+      networks
+  );
   const eligibilityQuery = useQuery({
-    enabled: Boolean(
-      USE_PAYMASTER_FEATURE &&
-        network?.supports_sponsored_transactions &&
-        chainId &&
-        chain &&
-        networks
-    ),
+    enabled: paymasterPossible,
     suspense: false,
     staleTime: 120000,
     useErrorBoundary: false,
@@ -319,6 +320,12 @@ function SendFormComponent() {
     },
   });
   const paymasterEligible = Boolean(eligibilityQuery.data?.data.eligible);
+
+  const { data: gasbackEstimation } = useGasbackEstimation({
+    paymasterEligible: eligibilityQuery.data?.data.eligible ?? null,
+    suppportsSimulations: network?.supports_simulations ?? false,
+    supportsSponsoredTransactions: network?.supports_sponsored_transactions,
+  });
 
   const maybeRefetchEligibility = useEvent(() => {
     if (eligibilityQuery.isFetched) {
@@ -402,6 +409,11 @@ function SendFormComponent() {
 
   const navigate = useNavigate();
 
+  const gasbackValueRef = useRef<number | null>(null);
+  const handleGasbackReady = useCallback((value: number) => {
+    gasbackValueRef.current = value;
+  }, []);
+
   if (isSuccess) {
     invariant(transactionHash, 'Missing Form State View values');
     invariant(
@@ -412,9 +424,12 @@ function SendFormComponent() {
       <SuccessState
         hash={transactionHash}
         sendFormSnapshot={snapshotRef.current}
+        gasbackValue={gasbackValueRef.current}
         onDone={() => {
           reset();
           snapshotRef.current = null;
+          feeValueCommonRef.current = null;
+          gasbackValueRef.current = null;
           navigate('/overview/history');
         }}
       />
@@ -592,11 +607,13 @@ function SendFormComponent() {
                       // There's a possible flicker of network fee
                       // before {paymasterEligible} becomes true
                       paymasterEligible={paymasterEligible}
+                      paymasterPossible={paymasterPossible}
                       onFeeValueCommonReady={handleFeeValueCommonReady}
                       configuration={configuration}
                       onConfigurationChange={(value) =>
                         sendView.store.configuration.setState(value)
                       }
+                      gasback={gasbackEstimation}
                     />
                   )}
                 />
@@ -633,7 +650,9 @@ function SendFormComponent() {
                     chain={chain}
                     sendView={sendView}
                     paymasterEligible={paymasterEligible}
+                    paymasterPossible={paymasterPossible}
                     eligibilityQuery={eligibilityQuery}
+                    onGasbackReady={handleGasbackReady}
                   />
                 </ViewLoadingSuspense>
               </>

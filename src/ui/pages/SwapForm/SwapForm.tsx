@@ -1,4 +1,4 @@
-import { useSelectorStore } from '@store-unit/react';
+import { useSelectorStore, useStore } from '@store-unit/react';
 import { client, useAddressMembership } from 'defi-sdk';
 import type { SwapFormState, SwapFormView } from '@zeriontech/transactions';
 import { useSwapForm } from '@zeriontech/transactions';
@@ -34,7 +34,7 @@ import { invariant } from 'src/shared/invariant';
 import { walletPort } from 'src/ui/shared/channels';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
-import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
+import type { IncomingTransactionWithChainId } from 'src/modules/ethereum/types/IncomingTransaction';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { useTransactionStatus } from 'src/ui/transactions/useLocalTransactionStatus';
@@ -67,6 +67,15 @@ import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfo
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
+import {
+  adjustedCheckEligibility,
+  fetchAndAssignPaymaster,
+} from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
+import { getGas } from 'src/modules/ethereum/transactions/getGas';
+import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/uiGetBestKnownTransactionCount';
+import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
+import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -94,6 +103,26 @@ import { getQuotesErrorMessage } from './Quotes/getQuotesErrorMessage';
 import { SlippageLine } from './SlippageSettings/SlippageLine';
 
 const rootNode = getRootDomNode();
+
+function useTxEligibility(
+  tx: Parameters<ZerionApiClient['paymasterCheckEligibility']>[0] | null,
+  { enabled: enabledParam = true } = {}
+) {
+  const { preferences } = usePreferences();
+  const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
+  const enabled = !tx ? false : enabledParam;
+  return useQuery({
+    suspense: false,
+    queryKey: ['adjustedCheckEligibility', tx, source],
+    queryFn: async () => {
+      if (!tx) {
+        return null;
+      }
+      return adjustedCheckEligibility(tx, { source, apiClient: ZerionAPI });
+    },
+    enabled,
+  });
+}
 
 function FormHint({
   swapView,
@@ -193,6 +222,8 @@ export function SwapFormComponent() {
   const chain = chainInput ? createChain(chainInput) : null;
   const { spendPosition, receivePosition, handleChange } = swapView;
 
+  const network = chain ? networks?.getNetworkByName(chain) : null;
+
   const formRef = useRef<HTMLFormElement | null>(null);
   const quotesData = useQuotes({ address, swapView });
   const {
@@ -229,24 +260,14 @@ export function SwapFormComponent() {
     snapshotRef.current = swapView.store.getState();
   };
 
-  const feeValueCommonRef = useRef<string>(); /** for analytics only */
+  const feeValueCommonRef = useRef<string | null>(
+    null
+  ); /** for analytics only */
   const handleFeeValueCommonReady = useCallback((value: string) => {
     feeValueCommonRef.current = value;
   }, []);
 
   const { data: gasPrices } = useGasPrices(chain);
-
-  const configureTransactionToBeSigned = useEvent((tx: IncomingTransaction) => {
-    invariant(chain && networks, 'Not ready to prepare the transaction');
-    const chainId = networks.getChainId(chain);
-    invariant(
-      chainId,
-      'chainId should exist for creating an approve transaction'
-    );
-    const configuration = swapView.store.configuration.getState();
-    const txToSign = applyConfiguration(tx, configuration, gasPrices);
-    return { ...txToSign, from: address, chainId };
-  });
 
   const spendAmountBase = useMemo(
     () =>
@@ -287,6 +308,80 @@ export function SwapFormComponent() {
   const sendTxBtnRef = useRef<SendTxBtnHandle | null>(null);
   const approveTxBtnRef = useRef<SendTxBtnHandle | null>(null);
 
+  const txToCheck =
+    quotesData.done && !enough_allowance
+      ? approvalTransaction
+      : swapTransaction;
+
+  const { data: networkNonce } = useQuery({
+    suspense: false,
+    queryKey: ['uiGetBestKnownTransactionCount', address, chain, networks],
+    queryFn: async () => {
+      if (!chain || !networks) {
+        return null;
+      }
+      const result = await uiGetBestKnownTransactionCount({
+        address,
+        chain,
+        networks,
+        defaultBlock: 'pending',
+      });
+      return result.value;
+    },
+  });
+
+  const txNonce = txToCheck && 'nonce' in txToCheck ? txToCheck.nonce : null;
+
+  const USE_PAYMASTER_FEATURE = true;
+
+  const configuration = useStore(swapView.store.configuration);
+  const userNonce = configuration.nonce;
+  const nonce = userNonce ?? txNonce ?? networkNonce ?? undefined;
+  const gas = txToCheck ? getGas(txToCheck) : null;
+  const eligibilityParams:
+    | null
+    | Parameters<ZerionApiClient['paymasterCheckEligibility']>[0] =
+    USE_PAYMASTER_FEATURE && txToCheck && txToCheck.to && nonce != null && gas
+      ? {
+          chainId: txToCheck.chainId,
+          from: address,
+          to: txToCheck.to,
+          value: txToCheck.value,
+          data: txToCheck.data,
+          gas,
+          nonce,
+        }
+      : null;
+  const paymasterPossible =
+    USE_PAYMASTER_FEATURE && Boolean(network?.supports_sponsored_transactions);
+  const eligibilityQuery = useTxEligibility(eligibilityParams, {
+    enabled: paymasterPossible,
+  });
+
+  const paymasterEligible = Boolean(eligibilityQuery.data?.data.eligible);
+
+  const { data: gasbackEstimation } = useGasbackEstimation({
+    paymasterEligible: eligibilityQuery.data?.data.eligible ?? null,
+    suppportsSimulations: network?.supports_simulations ?? false,
+    supportsSponsoredTransactions: network?.supports_sponsored_transactions,
+  });
+
+  const configureTransactionToBeSigned = useEvent(
+    (tx: IncomingTransactionWithChainId) => {
+      invariant(chain && networks, 'Not ready to prepare the transaction');
+      const configuration = swapView.store.configuration.getState();
+      let txToSign = applyConfiguration(tx, configuration, gasPrices);
+      if (paymasterEligible && txToSign.nonce == null) {
+        txToSign = { ...txToSign, nonce };
+        invariant(txToSign.nonce, 'Nonce is required for a paymaster tx');
+      }
+      return { ...txToSign, from: address };
+    }
+  );
+
+  const { preferences } = usePreferences();
+  const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
+
   const {
     mutate: sendApproveTransaction,
     data: approveHash,
@@ -295,7 +390,13 @@ export function SwapFormComponent() {
   } = useMutation({
     mutationFn: async () => {
       invariant(approvalTransaction, 'approve transaction is not configured');
-      const transaction = configureTransactionToBeSigned(approvalTransaction);
+      let transaction = configureTransactionToBeSigned(approvalTransaction);
+      if (paymasterEligible) {
+        transaction = await fetchAndAssignPaymaster(transaction, {
+          source,
+          apiClient: ZerionAPI,
+        });
+      }
       const feeValueCommon = feeValueCommonRef.current || null;
 
       invariant(chain, 'Chain must be defined to sign the tx');
@@ -348,11 +449,15 @@ export function SwapFormComponent() {
       if (!gasPrices) {
         throw new Error('Unknown gas price');
       }
-      invariant(
-        quote?.transaction,
-        'Cannot submit transaction without a quote'
-      );
-      const transaction = configureTransactionToBeSigned(quote.transaction);
+      invariant(quote, 'Cannot submit transaction without a quote');
+      invariant(swapTransaction, 'No transaction in quote');
+      let transaction = configureTransactionToBeSigned(swapTransaction);
+      if (paymasterEligible) {
+        transaction = await fetchAndAssignPaymaster(transaction, {
+          source,
+          apiClient: ZerionAPI,
+        });
+      }
       const feeValueCommon = feeValueCommonRef.current || null;
       invariant(chain, 'Chain must be defined to sign the tx');
       invariant(
@@ -427,6 +532,11 @@ export function SwapFormComponent() {
 
   const navigate = useNavigate();
 
+  const gasbackValueRef = useRef<number | null>(null);
+  const handleGasbackReady = useCallback((value: number) => {
+    gasbackValueRef.current = value;
+  }, []);
+
   if (isSuccess) {
     invariant(
       spendPosition && receivePosition && transactionHash,
@@ -442,9 +552,12 @@ export function SwapFormComponent() {
         spendPosition={spendPosition}
         receivePosition={receivePosition}
         swapFormState={snapshotRef.current}
+        gasbackValue={gasbackValueRef.current}
         onDone={() => {
           reset();
           snapshotRef.current = null;
+          feeValueCommonRef.current = null;
+          gasbackValueRef.current = null;
           navigate('/overview/history');
         }}
       />
@@ -525,7 +638,9 @@ export function SwapFormComponent() {
       <BottomSheetDialog
         ref={confirmDialogRef}
         key={currentTransaction === approvalTransaction ? 'approve' : 'swap'}
-        height={innerHeight >= 750 ? '70vh' : '90vh'}
+        height="min-content"
+        displayGrid={true}
+        style={{ minHeight: innerHeight >= 750 ? '70vh' : '90vh' }}
         containerStyle={{ display: 'flex', flexDirection: 'column' }}
         renderWhenOpen={() => {
           invariant(
@@ -551,11 +666,10 @@ export function SwapFormComponent() {
                 onOpenAllowanceForm={() =>
                   allowanceDialogRef.current?.showModal()
                 }
-                paymasterEligible={false}
-                eligibilityQuery={{
-                  data: { data: { eligible: false } },
-                  isError: false,
-                }}
+                paymasterEligible={paymasterEligible}
+                paymasterPossible={paymasterPossible}
+                eligibilityQuery={eligibilityQuery}
+                onGasbackReady={handleGasbackReady}
               />
             </ViewLoadingSuspense>
           );
@@ -669,7 +783,7 @@ export function SwapFormComponent() {
       <Spacer height={16} />
       <VStack gap={8}>
         <VStack
-          gap={4}
+          gap={8}
           style={
             quotesData.quote || quotesData.isLoading || quotesData.error
               ? {
@@ -698,12 +812,14 @@ export function SwapFormComponent() {
                     transaction={currentTransaction}
                     from={address}
                     chain={chain}
-                    paymasterEligible={false}
+                    paymasterEligible={paymasterEligible}
+                    paymasterPossible={paymasterPossible}
                     onFeeValueCommonReady={handleFeeValueCommonReady}
                     configuration={configuration}
                     onConfigurationChange={(value) =>
                       swapView.store.configuration.setState(value)
                     }
+                    gasback={gasbackEstimation}
                   />
                 )}
               />
