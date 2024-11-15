@@ -56,8 +56,8 @@ export function GasbackHint() {
               </UIText>
               <Spacer height={16} />
               <UIText kind="small/regular">
-                Users get XP as compensation for the gas fees they spend on
-                other networks in the Zerion wallet.
+                Users earn XP to offset the gas they spend on transactions in
+                Zerion.
               </UIText>
             </div>
           )}
