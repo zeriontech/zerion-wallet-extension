@@ -144,20 +144,9 @@ function SettingsMain() {
                 </AngleRightRow>
               </FrameListItemLink>
             ) : null}
-            <FrameListItemAnchor
-              href={`https://app.zerion.io/rewards&${addWalletParams}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => acceptZerionOrigin()}
-            >
-              <AngleRightRow kind="link">
-                <HStack gap={8} alignItems="center">
-                  <RewardsIcon style={{ width: 24, height: 24 }} />
-                  <UIText kind="body/regular">Rewards</UIText>
-                </HStack>
-              </AngleRightRow>
-            </FrameListItemAnchor>
-            {FEATURE_LOYALTY_FLOW && loyaltyEnabled && currentWallet ? (
+            {FEATURE_LOYALTY_FLOW === 'on' &&
+            loyaltyEnabled &&
+            currentWallet ? (
               <FrameListItemAnchor
                 href={`${ZERION_ORIGIN}/rewards?${addWalletParams}`}
                 target="_blank"

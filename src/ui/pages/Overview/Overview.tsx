@@ -419,7 +419,9 @@ function OverviewComponent() {
 
   const walletMeta = walletsMeta?.[0];
   const claimXpBannerVisible =
-    FEATURE_LOYALTY_FLOW && loyaltyEnabled && walletMeta?.membership.retro;
+    FEATURE_LOYALTY_FLOW === 'on' &&
+    loyaltyEnabled &&
+    walletMeta?.membership.retro;
 
   // Update backend record with 'platform: extension'
   useEffect(() => {
@@ -548,7 +550,9 @@ function OverviewComponent() {
           >
             <CurrentAccountControls />
             <HStack gap={0} alignItems="center">
-              {FEATURE_LOYALTY_FLOW && loyaltyEnabled && currentWallet ? (
+              {FEATURE_LOYALTY_FLOW === 'on' &&
+              loyaltyEnabled &&
+              currentWallet ? (
                 <RewardsLinkIcon currentWallet={currentWallet} />
               ) : null}
               <SettingsLinkIcon />
