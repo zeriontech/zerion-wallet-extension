@@ -110,7 +110,7 @@ function SettingsMain() {
         </Frame>
         <Frame>
           <VStack gap={0}>
-            {FEATURE_LOYALTY_FLOW && loyaltyEnabled ? (
+            {FEATURE_LOYALTY_FLOW === 'on' && loyaltyEnabled ? (
               <FrameListItemLink to="/invite">
                 <AngleRightRow>
                   <HStack gap={8} alignItems="center">

@@ -53,17 +53,14 @@ function DnaBanners({ address }: { address: string }) {
 }
 
 export function Banners({ address }: { address: string }) {
-  const { data: loyaltyEnabled, isLoading: isLoadingRemoteConfigValue } =
-    useRemoteConfigValue('extension_loyalty_enabled');
+  const { data: loyaltyEnabled } = useRemoteConfigValue(
+    'extension_loyalty_enabled'
+  );
 
   const { preferences, setPreferences } = usePreferences();
 
-  if (isLoadingRemoteConfigValue) {
-    return null;
-  }
-
   const invitationBannerVisible =
-    FEATURE_LOYALTY_FLOW &&
+    FEATURE_LOYALTY_FLOW === 'on' &&
     loyaltyEnabled &&
     !preferences?.invitationBannerDismissed;
 
