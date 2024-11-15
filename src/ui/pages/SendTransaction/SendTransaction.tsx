@@ -84,7 +84,6 @@ import {
   adjustedCheckEligibility,
   fetchAndAssignPaymaster,
 } from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
-import { isDeviceAccount } from 'src/shared/types/validators';
 import { shouldInterpretTransaction } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { RenderArea } from 'react-area';
@@ -562,8 +561,7 @@ function SendTransactionContent({
       })
   );
 
-  const isDeviceWallet = isDeviceAccount(wallet);
-  const USE_PAYMASTER_FEATURE = !isDeviceWallet;
+  const USE_PAYMASTER_FEATURE = true;
 
   const network = networks.getNetworkByName(chain) || null;
   const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
