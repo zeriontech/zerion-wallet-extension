@@ -270,8 +270,7 @@ export function XpDropClaim() {
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
   });
   const [selectedWallet, setSelectedWallet] = useState(currentWallet);
-  const [claimedWallet, setClaimedWallet] =
-    useState<ExternallyOwnedAccount | null>(null);
+  const [claimedAddress, setClaimedAddress] = useState<string | null>(null);
 
   const { data: walletGroups, ...walletGroupsQuery } = useWalletGroups();
   const { signerWalletGroups, signerWalletAddresses } = useMemo(() => {
@@ -304,7 +303,7 @@ export function XpDropClaim() {
             const normalizedAddress = normalizeAddress(wallet.address);
             return (
               eligibleAddresses.includes(normalizedAddress) &&
-              normalizedAddress !== claimedWallet?.address
+              normalizedAddress !== claimedAddress
             );
           }),
         },
@@ -312,7 +311,7 @@ export function XpDropClaim() {
       .filter((group) => group.walletContainer.wallets.length > 0);
 
     return { eligibleWalletGroups, eligibleAddresses };
-  }, [signerWalletGroups, walletsMeta, claimedWallet]);
+  }, [signerWalletGroups, walletsMeta, claimedAddress]);
 
   const signMsgBtnRef = useRef<SignMsgBtnHandle | null>(null);
   const walletSelectDialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -333,7 +332,7 @@ export function XpDropClaim() {
         address: selectedWallet.address,
         signature,
       });
-      setClaimedWallet(selectedWallet);
+      setClaimedAddress(normalizeAddress(selectedWallet.address));
     },
     onSuccess: async () => {
       // Refetch the wallet metadata to update the list of wallets eligible for the XP drop.
@@ -432,7 +431,7 @@ export function XpDropClaim() {
             )}
           </HCenter>
           {personalSignMutation.isSuccess ? (
-            <XpLevel level={membership.level} claimedXp={retro.zerion.total} />
+            <XpLevel level={retro.level} claimedXp={totalXp} />
           ) : (
             <>
               <Stats
