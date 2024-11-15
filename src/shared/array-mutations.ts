@@ -10,3 +10,14 @@ export function removeFromArray<T>(arr: T[], item: T) {
     arr.splice(pos, 1);
   }
 }
+
+export function bringToFront<T>(arr: T[], cb: (item: T) => boolean) {
+  for (let i = 0; i < arr.length; i++) {
+    if (cb(arr[i])) {
+      const [item] = arr.splice(i, 1);
+      arr.unshift(item);
+      break;
+    }
+  }
+  return arr;
+}

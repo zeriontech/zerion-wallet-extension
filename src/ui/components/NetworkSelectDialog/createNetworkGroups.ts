@@ -1,6 +1,8 @@
 import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { Networks } from 'src/modules/networks/Networks';
+import { bringToFront } from 'src/shared/array-mutations';
 import type { ChainDistribution } from 'src/ui/shared/requests/PortfolioValue/ChainValue';
 
 type ListGroup<T> = {
@@ -48,24 +50,28 @@ export function createGroups({
     .filter(filterPredicate);
   const otherNetworkPredicate = (network: NetworkConfig) => {
     return (
-      !chainDistribution?.chains[network.id] || isCustomNetworkId(network.id)
+      network.id !== NetworkId.Zero &&
+      (!chainDistribution?.chains[network.id] || isCustomNetworkId(network.id))
     );
   };
   return [
     {
       key: 'main',
       name: null,
-      items: allNetworks
-        .filter((network) => !otherNetworkPredicate(network))
-        .sort((a, b) =>
-          compareNetworks(
-            a,
-            b,
-            sortMainNetworksType === 'by_distribution'
-              ? chainDistribution
-              : null
-          )
-        ),
+      items: bringToFront(
+        allNetworks
+          .filter((network) => !otherNetworkPredicate(network))
+          .sort((a, b) =>
+            compareNetworks(
+              a,
+              b,
+              sortMainNetworksType === 'by_distribution'
+                ? chainDistribution
+                : null
+            )
+          ),
+        (item) => item.id === NetworkId.Zero
+      ),
     },
     {
       key: 'other',
