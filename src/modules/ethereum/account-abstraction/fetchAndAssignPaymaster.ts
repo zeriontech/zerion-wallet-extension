@@ -3,6 +3,7 @@ import { invariant } from 'src/shared/invariant';
 import { valueToHex } from 'src/shared/units/valueToHex';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
+import { assertProp } from 'src/shared/assert-property';
 import { getGas } from '../transactions/getGas';
 import type { IncomingTransaction } from '../types/IncomingTransaction';
 import { GAS_PER_PUBDATA_BYTE_DEFAULT } from './constants';
@@ -25,52 +26,25 @@ export function adjustedCheckEligibility(
   return apiClient.paymasterCheckEligibility(txCopy, { source });
 }
 
-function assertTransactionProps(
-  tx: IncomingTransaction
-): Required<
-  Pick<
-    IncomingTransaction,
-    | 'from'
-    | 'to'
-    | 'nonce'
-    | 'chainId'
-    | 'gasLimit'
-    | 'maxFeePerGas'
-    | 'maxPriorityFeePerGas'
-    | 'value'
-    | 'data'
-  >
-> {
-  const {
-    from,
-    to,
-    nonce,
-    chainId,
-    maxFeePerGas,
-    maxPriorityFeePerGas,
-    data,
-    value,
-  } = tx;
+function normalizeTransactionProps(tx: IncomingTransaction) {
   const gasLimit = getGas(tx);
-  invariant(from, 'tx param missing: {from}');
-  invariant(to, 'tx param missing: {to}');
-  invariant(nonce != null, 'tx param missing: {nonce}');
-  invariant(chainId, 'tx param missing: {chainId}');
-  invariant(maxFeePerGas, 'tx param missing: {maxFeePerGas}');
-  invariant(maxPriorityFeePerGas, 'tx param missing: {maxPriorityFeePerGas}');
-  invariant(data, 'tx param missing: {data}');
-  invariant(value, 'tx param missing: {value}');
   invariant(gasLimit, 'tx param missing: {gasLimit}');
+  assertProp(tx, 'from');
+  assertProp(tx, 'to');
+  assertProp(tx, 'nonce');
+  assertProp(tx, 'chainId');
+  assertProp(tx, 'maxFeePerGas');
+  assertProp(tx, 'maxPriorityFeePerGas');
   return {
-    from,
-    to,
-    nonce,
-    chainId,
-    maxFeePerGas,
-    maxPriorityFeePerGas,
-    data,
-    value,
-    gasLimit,
+    from: tx.from,
+    to: tx.to,
+    nonce: tx.nonce,
+    chainId: tx.chainId,
+    maxFeePerGas: tx.maxFeePerGas,
+    maxPriorityFeePerGas: tx.maxPriorityFeePerGas,
+    data: tx.data,
+    value: tx.value,
+    gas: gasLimit,
   };
 }
 
@@ -86,7 +60,8 @@ async function getPaymasterParams(
     apiClient: ZerionApiClient;
   }
 ) {
-  const transaction = assertTransactionProps(incomingTransaction);
+  console.log({ incomingTransaction });
+  const transaction = normalizeTransactionProps(incomingTransaction);
   type Request = Parameters<ZerionApiClient['getPaymasterParams']>[0];
   const params: Request = {
     transaction: {
@@ -94,12 +69,12 @@ async function getPaymasterParams(
       to: transaction.to,
       nonce: valueToHex(transaction.nonce),
       chainId: normalizeChainId(transaction.chainId),
-      gas: valueToHex(transaction.gasLimit),
+      gas: valueToHex(transaction.gas),
       gasPerPubdataByte,
-      data: valueToHex(transaction.data),
+      data: valueToHex(transaction.data ?? '0x0'),
       maxFee: valueToHex(transaction.maxFeePerGas),
       maxPriorityFee: valueToHex(transaction.maxPriorityFeePerGas),
-      value: valueToHex(transaction.value),
+      value: valueToHex(transaction.value ?? '0x0'),
     },
   };
   const { data } = await apiClient.getPaymasterParams(params, { source });
