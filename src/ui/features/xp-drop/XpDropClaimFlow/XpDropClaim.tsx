@@ -43,6 +43,8 @@ import { txErrorToMessage } from 'src/ui/pages/SendTransaction/shared/transactio
 import { FillView } from 'src/ui/components/FillView';
 import { useNavigate } from 'react-router-dom';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
+import { wait } from 'src/shared/wait';
 import * as styles from './styles.module.css';
 
 const xpFormatter = new Intl.NumberFormat('en-US');
@@ -266,10 +268,18 @@ export function XpDropClaim() {
   useBackgroundKind({ kind: 'white' });
   const navigate = useNavigate();
 
-  const { data: currentWallet } = useQuery({
+  const { data: currentWallet, refetch: refetchCurrentWallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
   });
+
+  const setCurrentAddressMutation = useMutation({
+    mutationFn: (address: string) => setCurrentAddress({ address }),
+    onSuccess() {
+      refetchCurrentWallet();
+    },
+  });
+
   const [selectedWallet, setSelectedWallet] = useState(currentWallet);
   const [claimedInfo, setClaimedInfo] = useState<{
     address: string;
@@ -354,6 +364,10 @@ export function XpDropClaim() {
       });
     },
     onSuccess: async () => {
+      // To account for this possible delay, we're adding a short wait here.
+      // Otherwise, we might still see the wallet for which we just claimed the XP drop in
+      // the wallet selector when we click on the "Next Wallet" button.
+      await wait(1000);
       // Refetch the wallet metadata to update the list of wallets eligible for the XP drop.
       await walletsMetaQuery.refetch();
       // If this is the last wallet, we want to display the success view.
@@ -458,8 +472,9 @@ export function XpDropClaim() {
               walletGroups={eligibleWalletGroups}
               value={normalizeAddress(selectedWallet.address)}
               onSelect={async (wallet) => {
-                personalSignMutation.reset();
                 setSelectedWallet(wallet);
+                setCurrentAddressMutation.mutate(wallet.address);
+                personalSignMutation.reset();
                 walletSelectDialogRef.current?.close();
               }}
             />
