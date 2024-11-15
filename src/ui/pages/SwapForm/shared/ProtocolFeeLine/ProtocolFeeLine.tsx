@@ -18,7 +18,7 @@ export function ProtocolFeeLine({ quote }: { quote: Quote }) {
               quote.protocol_fee,
               'en'
             )}% Zerion fee`
-          : `No Zerion fees`}
+          : 'No Zerion fees'}
         <UnstyledAnchor
           title="Applies to all Multichain transactions. Zerion Premium DNA holders get discounts. Click to learn more."
           href={ZERION_FEES_ARTICLE}

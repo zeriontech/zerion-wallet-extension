@@ -33,6 +33,7 @@ jobs:
           FEATURE_SEND_FORM: on
           FEATURE_FOOTER_BUG_BUTTON: off
           MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_PROD }}
+          FEATURE_LOYALTY_FLOW: off
         run: |
           npm install
           npm run build:production

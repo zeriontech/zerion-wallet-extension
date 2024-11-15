@@ -482,6 +482,12 @@ function TransactionDefaultView({
                     onConfigurationChange={onConfigurationChange}
                     paymasterEligible={paymasterEligible}
                     paymasterPossible={paymasterPossible}
+                    gasback={
+                      interpretation?.action?.transaction.gasback != null
+                        ? { value: interpretation.action.transaction.gasback }
+                        : null
+                    }
+                    listViewTransitions={true}
                   />
                 </React.Suspense>
               ) : null}

@@ -1,5 +1,9 @@
 import React from 'react';
-import type { TransitionFrom, TransitionTo } from '@react-spring/web';
+import type {
+  SpringConfig,
+  TransitionFrom,
+  TransitionTo,
+} from '@react-spring/web';
 import { animated, useTransition } from '@react-spring/web';
 
 export function AnimatedAppear({
@@ -8,15 +12,17 @@ export function AnimatedAppear({
   from = { opacity: 0, y: 30 },
   enter = { opacity: 1, y: 0 },
   leave = { opacity: 0, y: 30 },
+  config = { tension: 400 },
 }: React.PropsWithChildren<{
   display: boolean;
   from?: TransitionFrom<number>;
   enter?: TransitionTo<number>;
   leave?: TransitionTo<number>;
+  config?: SpringConfig;
 }>) {
   const data = display ? [1] : [];
   const transitions = useTransition(data, {
-    config: { tension: 400 },
+    config,
     from,
     enter,
     leave,

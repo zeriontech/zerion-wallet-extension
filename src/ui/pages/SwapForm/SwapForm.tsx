@@ -76,6 +76,7 @@ import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/uiGetBestKnownTransactionCount';
 import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
 import { isDeviceAccount } from 'src/shared/types/validators';
+import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -260,7 +261,9 @@ export function SwapFormComponent() {
     snapshotRef.current = swapView.store.getState();
   };
 
-  const feeValueCommonRef = useRef<string>(); /** for analytics only */
+  const feeValueCommonRef = useRef<string | null>(
+    null
+  ); /** for analytics only */
   const handleFeeValueCommonReady = useCallback((value: string) => {
     feeValueCommonRef.current = value;
   }, []);
@@ -353,11 +356,17 @@ export function SwapFormComponent() {
       : null;
   const paymasterPossible =
     USE_PAYMASTER_FEATURE && Boolean(network?.supports_sponsored_transactions);
-  const eligibiliteQuery = useTxEligibility(eligibilityParams, {
+  const eligibilityQuery = useTxEligibility(eligibilityParams, {
     enabled: paymasterPossible,
   });
 
-  const paymasterEligible = Boolean(eligibiliteQuery.data?.data.eligible);
+  const paymasterEligible = Boolean(eligibilityQuery.data?.data.eligible);
+
+  const { data: gasbackEstimation } = useGasbackEstimation({
+    paymasterEligible: eligibilityQuery.data?.data.eligible ?? null,
+    suppportsSimulations: network?.supports_simulations ?? false,
+    supportsSponsoredTransactions: network?.supports_sponsored_transactions,
+  });
 
   const configureTransactionToBeSigned = useEvent(
     (tx: IncomingTransactionWithChainId) => {
@@ -525,6 +534,11 @@ export function SwapFormComponent() {
 
   const navigate = useNavigate();
 
+  const gasbackValueRef = useRef<number | null>(null);
+  const handleGasbackReady = useCallback((value: number) => {
+    gasbackValueRef.current = value;
+  }, []);
+
   if (isSuccess) {
     invariant(
       spendPosition && receivePosition && transactionHash,
@@ -540,9 +554,12 @@ export function SwapFormComponent() {
         spendPosition={spendPosition}
         receivePosition={receivePosition}
         swapFormState={snapshotRef.current}
+        gasbackValue={gasbackValueRef.current}
         onDone={() => {
           reset();
           snapshotRef.current = null;
+          feeValueCommonRef.current = null;
+          gasbackValueRef.current = null;
           navigate('/overview/history');
         }}
       />
@@ -623,7 +640,9 @@ export function SwapFormComponent() {
       <BottomSheetDialog
         ref={confirmDialogRef}
         key={currentTransaction === approvalTransaction ? 'approve' : 'swap'}
-        height={innerHeight >= 750 ? '70vh' : '90vh'}
+        height="min-content"
+        displayGrid={true}
+        style={{ minHeight: innerHeight >= 750 ? '70vh' : '90vh' }}
         containerStyle={{ display: 'flex', flexDirection: 'column' }}
         renderWhenOpen={() => {
           invariant(
@@ -651,7 +670,8 @@ export function SwapFormComponent() {
                 }
                 paymasterEligible={paymasterEligible}
                 paymasterPossible={paymasterPossible}
-                eligibilityQuery={eligibiliteQuery}
+                eligibilityQuery={eligibilityQuery}
+                onGasbackReady={handleGasbackReady}
               />
             </ViewLoadingSuspense>
           );
@@ -765,7 +785,7 @@ export function SwapFormComponent() {
       <Spacer height={16} />
       <VStack gap={8}>
         <VStack
-          gap={4}
+          gap={8}
           style={
             quotesData.quote || quotesData.isLoading || quotesData.error
               ? {
@@ -801,6 +821,7 @@ export function SwapFormComponent() {
                     onConfigurationChange={(value) =>
                       swapView.store.configuration.setState(value)
                     }
+                    gasback={gasbackEstimation}
                   />
                 )}
               />

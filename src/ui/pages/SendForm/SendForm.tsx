@@ -65,6 +65,7 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { assertProp } from 'src/shared/assert-property';
+import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -191,7 +192,9 @@ function SendFormComponent() {
     snapshotRef.current = { state, tokenItem, nftItem };
   };
 
-  const feeValueCommonRef = useRef<string>(); /** for analytics only */
+  const feeValueCommonRef = useRef<string | null>(
+    null
+  ); /** for analytics only */
   const handleFeeValueCommonReady = useCallback((value: string) => {
     feeValueCommonRef.current = value;
   }, []);
@@ -320,6 +323,12 @@ function SendFormComponent() {
   });
   const paymasterEligible = Boolean(eligibilityQuery.data?.data.eligible);
 
+  const { data: gasbackEstimation } = useGasbackEstimation({
+    paymasterEligible: eligibilityQuery.data?.data.eligible ?? null,
+    suppportsSimulations: network?.supports_simulations ?? false,
+    supportsSponsoredTransactions: network?.supports_sponsored_transactions,
+  });
+
   const maybeRefetchEligibility = useEvent(() => {
     if (eligibilityQuery.isFetched) {
       eligibilityQuery.refetch();
@@ -402,6 +411,11 @@ function SendFormComponent() {
 
   const navigate = useNavigate();
 
+  const gasbackValueRef = useRef<number | null>(null);
+  const handleGasbackReady = useCallback((value: number) => {
+    gasbackValueRef.current = value;
+  }, []);
+
   if (isSuccess) {
     invariant(transactionHash, 'Missing Form State View values');
     invariant(
@@ -412,9 +426,12 @@ function SendFormComponent() {
       <SuccessState
         hash={transactionHash}
         sendFormSnapshot={snapshotRef.current}
+        gasbackValue={gasbackValueRef.current}
         onDone={() => {
           reset();
           snapshotRef.current = null;
+          feeValueCommonRef.current = null;
+          gasbackValueRef.current = null;
           navigate('/overview/history');
         }}
       />
@@ -598,6 +615,7 @@ function SendFormComponent() {
                       onConfigurationChange={(value) =>
                         sendView.store.configuration.setState(value)
                       }
+                      gasback={gasbackEstimation}
                     />
                   )}
                 />
@@ -636,6 +654,7 @@ function SendFormComponent() {
                     paymasterEligible={paymasterEligible}
                     paymasterPossible={paymasterPossible}
                     eligibilityQuery={eligibilityQuery}
+                    onGasbackReady={handleGasbackReady}
                   />
                 </ViewLoadingSuspense>
               </>

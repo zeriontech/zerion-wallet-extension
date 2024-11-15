@@ -37,7 +37,7 @@ export interface InterpretInput {
 }
 
 export interface InterpretResponse {
-  action: AddressAction;
+  action: AddressAction | null;
   input?: InterpretInput;
   warnings: Warning[];
 }
