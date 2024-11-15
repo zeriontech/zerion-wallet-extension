@@ -1,5 +1,6 @@
 import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { Networks } from 'src/modules/networks/Networks';
 import { bringToFront } from 'src/shared/array-mutations';
 import type { ChainDistribution } from 'src/ui/shared/requests/PortfolioValue/ChainValue';
@@ -49,7 +50,7 @@ export function createGroups({
     .filter(filterPredicate);
   const otherNetworkPredicate = (network: NetworkConfig) => {
     return (
-      network.id !== 'zero' &&
+      network.id !== NetworkId.Zero &&
       (!chainDistribution?.chains[network.id] || isCustomNetworkId(network.id))
     );
   };
@@ -69,7 +70,7 @@ export function createGroups({
                 : null
             )
           ),
-        (item) => item.id === 'zero'
+        (item) => item.id === NetworkId.Zero
       ),
     },
     {

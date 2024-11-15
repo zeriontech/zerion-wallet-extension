@@ -32,6 +32,7 @@ import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { bringToFront } from 'src/shared/array-mutations';
+import { NetworkId } from 'src/modules/networks/NetworkId';
 import { DelayedRender } from '../DelayedRender';
 import { NetworkIcon } from '../NetworkIcon';
 import { PageBottom } from '../PageBottom';
@@ -255,7 +256,7 @@ function SectionView({
           ...group,
           items: bringToFront(
             group.items.filter((network) => !network.hidden),
-            (item) => item.id === 'zero'
+            (item) => item.id === NetworkId.Zero
           ),
         };
       }),
