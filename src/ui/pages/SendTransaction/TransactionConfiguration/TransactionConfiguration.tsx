@@ -19,13 +19,8 @@ import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTML
 import { NBSP } from 'src/ui/shared/typography';
 import { AnimatedAppear } from 'src/ui/components/AnimatedAppear';
 import type { GasbackData } from 'src/modules/ethereum/account-abstraction/rewards';
-import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import { PortalToRootNode } from 'src/ui/components/PortalToRootNode';
-import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
-import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { NonceLine } from '../NonceLine';
 import { NetworkFee } from '../NetworkFee';
