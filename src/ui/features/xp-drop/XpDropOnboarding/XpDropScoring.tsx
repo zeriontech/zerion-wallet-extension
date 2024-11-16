@@ -9,6 +9,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { useNavigate } from 'react-router-dom';
 import CheckmarkCheckedIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
+import { useBackgroundKind } from 'src/ui/components/Background';
 import * as styles from './styles.module.css';
 
 function CriteriaListItem({
@@ -59,6 +60,7 @@ function ProgressCounter({ counter }: { counter: number }) {
 }
 
 export function XpDropScoring() {
+  useBackgroundKind({ kind: 'white' });
   const navigate = useNavigate();
   const [counter, setCounter] = useState(1);
 
