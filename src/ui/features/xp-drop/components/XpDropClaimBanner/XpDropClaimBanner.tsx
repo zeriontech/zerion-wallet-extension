@@ -34,7 +34,7 @@ export function XpDropClaimBanner() {
             emitter.emit('buttonClicked', {
               buttonScope: 'Loaylty',
               buttonName: 'Claim XP',
-              location: pathname,
+              pathname,
             });
           }}
           style={{

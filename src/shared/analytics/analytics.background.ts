@@ -95,7 +95,7 @@ function trackAppEvents({ account }: { account: Account }) {
   emitter.on('buttonClicked', (data) => {
     const params = createParams({
       request_name: 'screen_view',
-      screen_name: data.location,
+      screen_name: data.pathname,
       button_name: data.buttonName,
     });
     const event_name = `${data.buttonScope}: Button Pressed`;

@@ -224,7 +224,7 @@ export function WalletSelect() {
                     emitter.emit('buttonClicked', {
                       buttonScope: 'Loaylty',
                       buttonName: 'Rewards',
-                      location: pathname,
+                      pathname,
                     });
                     acceptZerionOrigin({ address: wallet.address });
                   }}

@@ -143,7 +143,7 @@ function SettingsMain() {
                   emitter.emit('buttonClicked', {
                     buttonScope: 'Loaylty',
                     buttonName: 'Invite Friends',
-                    location: pathname,
+                    pathname,
                   });
                 }}
               >
@@ -166,7 +166,7 @@ function SettingsMain() {
                   emitter.emit('buttonClicked', {
                     buttonScope: 'Loaylty',
                     buttonName: 'Rewards',
-                    location: pathname,
+                    pathname,
                   });
                   acceptZerionOrigin();
                 }}

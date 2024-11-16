@@ -516,7 +516,7 @@ export function XpDropClaim() {
                 emitter.emit('buttonClicked', {
                   buttonScope: 'Loaylty',
                   buttonName: 'Claim XP',
-                  location: pathname,
+                  pathname,
                 });
                 personalSignAndClaim();
               } else {
