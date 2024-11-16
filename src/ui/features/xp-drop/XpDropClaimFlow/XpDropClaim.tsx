@@ -325,7 +325,7 @@ export function XpDropClaim() {
       const signature = await signMsgBtnRef.current.personalSign({
         params: [message],
         initiator: INTERNAL_ORIGIN,
-        clientScope: null,
+        clientScope: 'Claim XP',
       });
       await ZerionAPI.claimRetro({
         address: selectedWallet.address,
