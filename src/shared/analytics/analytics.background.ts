@@ -4,11 +4,13 @@ import { emitter } from 'src/background/events';
 import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { getWalletNameFlagsChange } from 'src/background/Wallet/GlobalPreferences';
+import { dnaServiceEmitter } from 'src/modules/dna-service/dna.background';
 import { WalletOrigin } from '../WalletOrigin';
 import {
   isMnemonicContainer,
   isPrivateKeyContainer,
 } from '../types/validators';
+import { getError } from '../errors/getError';
 import {
   createParams as createBaseParams,
   sendToMetabase,
@@ -307,6 +309,14 @@ function trackAppEvents({ account }: { account: Account }) {
 
   emitter.on('eip6963SupportDetected', ({ origin }) => {
     eip6963Dapps.add(origin);
+  });
+
+  dnaServiceEmitter.on('registerError', async (error, action) => {
+    const request_name = 'client_error';
+    const message = getError(error).message;
+    const type = 'dna action';
+    const params = createParams({ request_name, type, message, action });
+    sendToMetabase(request_name, params);
   });
 }
 

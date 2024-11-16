@@ -9,14 +9,18 @@ import * as browserStorage from 'src/background/webapis/storage';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { emitter } from 'src/background/events';
 import { isReadonlyContainer } from 'src/shared/types/validators';
+import type { Wallet } from 'src/shared/types/Wallet';
+import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
+import type { Account } from 'src/background/account/Account';
 import type { DnaAction } from './types';
 
+const REGISTER_ALL_WALLETS_INVOKED_KEY = 'registerAllWalletsInvoked-14-10-2024';
 const ACTION_QUEUE_KEY = 'actionDnaQueue-22-12-2021';
 const DNA_API_ENDPOINT = 'https://dna.zerion.io/api/v1';
 
 type DnaActionWithTimestamp = DnaAction & { timestamp: number };
 
-const dnaServiceEmitter = createNanoEvents<{
+export const dnaServiceEmitter = createNanoEvents<{
   registerSuccess: (action: DnaAction) => void;
   registerError: (error: Error, action: DnaAction) => void;
 }>();
@@ -24,9 +28,11 @@ const dnaServiceEmitter = createNanoEvents<{
 const ONE_DAY = 1000 * 60 * 60 * 24;
 
 export class DnaService {
+  private readonly getWallet: () => Wallet;
   private sendingInProgress: boolean;
 
-  constructor() {
+  constructor({ getWallet }: { getWallet: () => Wallet }) {
+    this.getWallet = getWallet;
     this.sendingInProgress = false;
   }
 
@@ -87,6 +93,12 @@ export class DnaService {
     this.sendingInProgress = true;
     return new Promise<{ success: boolean }>((resolve) => {
       ky.post(`${DNA_API_ENDPOINT}/actions`, {
+        retry: {
+          // increase retry attempt count
+          limit: 3,
+          // enable retry for POST
+          methods: ['post'],
+        },
         // random header for backend scheme validation
         headers: { 'Z-Proof': uuidv4() },
         body: JSON.stringify(action),
@@ -248,7 +260,60 @@ export class DnaService {
     return browserStorage.set(ACTION_QUEUE_KEY, []);
   }
 
-  initialize() {
+  async registerAllWallets() {
+    // To make sure referral codes are generated for new wallets we need to call 'registerWallet' on the Zerion DNA Service.
+    // Existing "owned" wallets (wallets with provider) require to have referral codes as well,
+    // but the backend lacks sufficient data to assign them.
+    //
+    // Additionally, re-registration is crucial due to a previous backend error:
+    // Zerion DNA Service expected a version prefix 'v' for 'registerWallet' requests, which we were not including.
+    // This backend issue has since been resolved, but as a result,
+    // wallets previously registered without 'v' are effectively unregistered.
+    // To handle this, we have to re-register all existing wallets.
+
+    const hasBeenFinished = await browserStorage.get<boolean>(
+      REGISTER_ALL_WALLETS_INVOKED_KEY
+    );
+    if (hasBeenFinished) {
+      return;
+    }
+
+    const wallet = this.getWallet();
+    const walletGroups = await wallet.uiGetWalletGroups({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
+
+    const ownedAddressesWithGroupOrigins =
+      walletGroups
+        ?.filter((group) => !isReadonlyContainer(group.walletContainer))
+        ?.flatMap((group) =>
+          group.walletContainer.wallets.map((wallet) => ({
+            address: wallet.address,
+            origin: group.origin || undefined,
+          }))
+        ) || [];
+
+    const walletRegistrationRequests = ownedAddressesWithGroupOrigins.map(
+      ({ address, origin }) =>
+        this.registerWallet({ params: { address, origin } })
+    );
+
+    const results = await Promise.allSettled(walletRegistrationRequests);
+    const hasRejectedRequests = results.some(
+      (result) => result.status === 'rejected'
+    );
+    const hasFulfilledRequests = results.some(
+      (result) => result.status === 'fulfilled'
+    );
+
+    if (hasFulfilledRequests && !hasRejectedRequests) {
+      await browserStorage.set(REGISTER_ALL_WALLETS_INVOKED_KEY, true);
+    }
+  }
+
+  initialize({ account }: { account: Account }) {
+    this.registerAllWallets();
+    account.on('authenticated', this.registerAllWallets.bind(this));
     emitter.on('walletCreated', async ({ walletContainer, origin }) => {
       if (isReadonlyContainer(walletContainer)) {
         return;
