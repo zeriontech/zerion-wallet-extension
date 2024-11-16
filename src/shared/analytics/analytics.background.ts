@@ -92,6 +92,17 @@ function trackAppEvents({ account }: { account: Account }) {
     mixpanelTrack(account, 'General: Screen Viewed', mixpanelParams);
   });
 
+  emitter.on('buttonClicked', (data) => {
+    const params = createParams({
+      request_name: 'screen_view',
+      screen_name: data.location,
+      button_name: data.buttonName,
+    });
+    const event_name = `${data.buttonScope}: Button Pressed`;
+    const mixpanelParams = omit(params, ['request_name']);
+    mixpanelTrack(account, event_name, mixpanelParams);
+  });
+
   emitter.on('daylightAction', ({ event_name, ...data }) => {
     const params = createParams({
       request_name: 'daylight_action',

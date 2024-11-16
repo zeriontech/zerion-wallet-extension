@@ -89,6 +89,7 @@ import type { RemoteConfig } from 'src/modules/remote-config';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { referralProgramService } from 'src/ui/features/referral-program/ReferralProgramService.background';
+import type { ButtonClickedParams } from 'src/shared/types/button-events';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -1478,6 +1479,14 @@ export class Wallet {
   async getPendingTransactions({ context }: PublicMethodParams) {
     this.verifyInternalOrigin(context);
     return this.record?.transactions || [];
+  }
+
+  async buttonClicked({
+    context,
+    params,
+  }: WalletMethodParams<ButtonClickedParams>) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('buttonClicked', params);
   }
 
   async screenView({ context, params }: WalletMethodParams<ScreenViewParams>) {

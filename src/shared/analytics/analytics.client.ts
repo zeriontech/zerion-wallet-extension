@@ -1,6 +1,7 @@
 import { emitter } from 'src/ui/shared/events';
 import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
 import { readCachedCurrentAddress } from 'src/ui/shared/user-address/useAddressParams';
+import { walletPort } from 'src/ui/shared/channels';
 import { HandshakeFailed } from '../errors/errors';
 import { rejectAfterDelay } from '../rejectAfterDelay';
 import { createParams, sendToMetabase } from './analytics';
@@ -64,6 +65,10 @@ function trackAppEvents({
       ...(await createWalletProperties()),
     });
     sendToMetabase('network_search', params);
+  });
+
+  emitter.on('buttonClicked', async (data) => {
+    return walletPort.request('buttonClicked', data);
   });
 
   emitter.on('errorScreenView', async (data) => {
