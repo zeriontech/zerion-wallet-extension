@@ -79,6 +79,7 @@ import { RevealPrivateKey } from '../pages/RevealPrivateKey';
 import { urlContext } from '../../shared/UrlContext';
 import { BackupPage } from '../pages/Backup/Backup';
 import { ProgrammaticNavigationHelper } from '../shared/routing/ProgrammaticNavigationHelper';
+import { Invite } from '../features/referral-program';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -381,6 +382,14 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             element={
               <RequireAuth>
                 <SwapForm />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/invite/*"
+            element={
+              <RequireAuth>
+                <Invite />
               </RequireAuth>
             }
           />

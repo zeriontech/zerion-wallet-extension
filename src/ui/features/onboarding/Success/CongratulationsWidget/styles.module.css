@@ -1,0 +1,15 @@
+.invitationBanner {
+  background: var(--always-white);
+  color: var(--always-black);
+  padding: 16px 24px;
+  border-radius: 20px;
+}
+
+.featureCard,
+.chartFeatureCard {
+  background: #f5f5f7;
+}
+
+.chartFeatureCard {
+  padding: 12px 0;
+}

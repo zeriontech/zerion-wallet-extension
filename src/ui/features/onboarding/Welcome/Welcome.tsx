@@ -6,15 +6,18 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import CreateIcon from 'jsx:../assets/option_secondary_create.svg';
 import ImportIcon from 'jsx:../assets/option_secondary_import.svg';
+import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import HardWareIcon from 'jsx:../assets/option_secondary_hardware.svg';
 import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
 import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { Stack } from 'src/ui/ui-kit/Stack';
+import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import CreateImg from '../assets/option_create.png';
 import ImportImg from '../assets/option_import.png';
 import HardwareImg from '../assets/option_hardware.png';
 import * as helpersStyles from '../shared/helperStyles.module.css';
 import { useOnboardingSession } from '../shared/useOnboardingSession';
+import { ReferralProgramHandler } from '../../referral-program/WebAppMessageHandler';
 import * as styles from './styles.module.css';
 
 interface ImportOptionConfig {
@@ -204,8 +207,15 @@ export function Welcome() {
   const { isNarrowView } = useWindowSizeStore();
   useOnboardingSession({ navigateOnExistingUser: 'success' });
 
+  const { data: loyaltyEnabled } = useRemoteConfigValue(
+    'extension_loyalty_enabled'
+  );
+
   return (
     <VStack gap={isNarrowView ? 24 : 40}>
+      {FEATURE_LOYALTY_FLOW === 'on' && loyaltyEnabled ? (
+        <ReferralProgramHandler />
+      ) : null}
       <Banner />
       <ImportOptions />
     </VStack>

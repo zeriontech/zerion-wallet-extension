@@ -1,0 +1,17 @@
+.referralCodeForm {
+  padding: 16px 24px;
+  border: 1px solid var(--always-white);
+  border-radius: 20px;
+}
+
+.gradientText {
+  background: linear-gradient(90deg, #6c6cf9 0%, #ff7583 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.referralCodeInput {
+  background-color: var(--always-white);
+  color: var(--always-black);
+}

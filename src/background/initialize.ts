@@ -2,6 +2,7 @@ import { prepareStorage } from 'src/shared/core/version';
 import { DnaService } from 'src/modules/dna-service/dna.background';
 import { initialize as initializeAnalytics } from 'src/shared/analytics/analytics.background';
 import { initialize as initializeRemoteConfig } from 'src/modules/remote-config';
+import { referralProgramService } from 'src/ui/features/referral-program/ReferralProgramService.background';
 import { initialize as initializeLiteweightChainSupport } from './requests/liteweight-chain-support';
 import { InDappNotificationService } from './in-dapp-notifications';
 import { Account, AccountPublicRPC } from './account/Account';
@@ -35,6 +36,9 @@ export async function initialize() {
   const accountPublicRPC = new AccountPublicRPC(account);
   const dnaService = new DnaService();
   dnaService.initialize();
+  referralProgramService.initialize({
+    getWallet: () => account.getCurrentWallet(),
+  });
   await transactionService.initialize({
     getWallet: () => account.getCurrentWallet(),
   });
@@ -56,6 +60,7 @@ export async function initialize() {
     accountPublicRPC,
     dnaService,
     transactionService,
+    referralProgramService,
     globalPreferences,
     notificationWindow,
   });

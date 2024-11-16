@@ -100,6 +100,15 @@ function trackAppEvents({ account }: { account: Account }) {
     sendToMetabase('daylight_action', params);
   });
 
+  emitter.on('globalError', ({ name, message }) => {
+    const params = createParams({
+      request_name: 'client_error',
+      type: name,
+      message,
+    });
+    sendToMetabase('client_error', params);
+  });
+
   emitter.on(
     'transactionSent',
     async ({
