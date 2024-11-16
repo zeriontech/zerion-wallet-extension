@@ -325,7 +325,7 @@ export function XpDropClaim() {
       const signature = await signMsgBtnRef.current.personalSign({
         params: [message],
         initiator: INTERNAL_ORIGIN,
-        clientScope: 'XP Drop',
+        clientScope: 'Claim XP',
       });
       await ZerionAPI.claimRetro({
         address: selectedWallet.address,
@@ -362,6 +362,8 @@ export function XpDropClaim() {
         ?.filter((meta) => Boolean(meta.membership.retro))
         .map((meta) => normalizeAddress(meta.address)) ?? [];
 
+    const eligibleAddressesSet = new Set(eligibleAddresses);
+
     const eligibleWalletGroups = signerWalletGroups
       ?.map((group) => ({
         id: group.id,
@@ -369,7 +371,7 @@ export function XpDropClaim() {
           wallets: group.walletContainer.wallets.filter((wallet) => {
             const normalizedAddress = normalizeAddress(wallet.address);
             return (
-              eligibleAddresses.includes(normalizedAddress) &&
+              eligibleAddressesSet.has(normalizedAddress) &&
               normalizedAddress !== claimedInfo?.address
             );
           }),
