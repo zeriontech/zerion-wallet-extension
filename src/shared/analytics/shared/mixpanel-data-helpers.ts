@@ -163,6 +163,7 @@ export async function getBaseMixpanelParams(account: Account) {
     zerion_premium_holder: zerionStats?.zerion_premium_holder ?? false,
     og_dna_premium_holder: zerionStats?.og_dna_premium_holder ?? false,
     dna_holder: zerionStats?.dna_holder ?? false,
+    was_invited: zerionStats?.was_invited ?? false,
     wallet_providers: Array.from(new Set(ownedWalletProviders)),
     num_zerion_wallets_eligible_for_xp_drop: eligibleOwnedAddresses.length,
     num_readonly_wallets_eligible_for_xp_drop: eligibleReadonlyAddresses.length,
