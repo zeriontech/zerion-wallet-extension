@@ -96,7 +96,7 @@ export function XpDropScoring() {
         <VStack gap={0}>
           <UIText kind="headline/hero">Checking Criteria</UIText>
           <UIText kind="headline/h3" color="var(--neutral-500)">
-            Lets check what your wallet is about
+            Let’s check what your wallet is about
           </UIText>
         </VStack>
         <VStack gap={12}>
