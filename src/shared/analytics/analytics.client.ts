@@ -54,6 +54,15 @@ function trackAppEvents({
         ...(await createWalletProperties()),
       });
       sendToMetabase('client_error', params);
+    } else {
+      const params = createParams({
+        request_name: 'client_error',
+        type: 'global error',
+        name: error.name,
+        message: error.message,
+        ...(await createWalletProperties()),
+      });
+      sendToMetabase('client_error', params);
     }
   });
 

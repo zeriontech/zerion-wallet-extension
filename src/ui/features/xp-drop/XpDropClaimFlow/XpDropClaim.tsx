@@ -45,6 +45,7 @@ import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { wait } from 'src/shared/wait';
 import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
 import { emitter } from 'src/ui/shared/events';
+import { getError } from 'src/shared/errors/getError';
 import * as styles from './styles.module.css';
 
 const xpFormatter = new Intl.NumberFormat('en-US');
@@ -329,10 +330,18 @@ export function XpDropClaim() {
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Claim XP',
       });
-      await ZerionAPI.claimRetro({
-        address: selectedWallet.address,
-        signature,
-      });
+      try {
+        await ZerionAPI.claimRetro({
+          address: selectedWallet.address,
+          signature,
+        });
+      } catch (error) {
+        emitter.emit('error', {
+          name: 'network_error',
+          message: getError(error).message,
+        });
+        throw error;
+      }
       return {
         address: normalizeAddress(selectedWallet.address),
         meta: selectedWalletMeta || null,
