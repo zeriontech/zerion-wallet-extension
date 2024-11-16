@@ -11,6 +11,7 @@ import { InviteFriendsBanner } from 'src/ui/features/referral-program/InviteFrie
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { ENABLE_DNA_BANNERS } from 'src/ui/DNA/components/DnaBanners';
 import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
+import { ExploreZeroBanner } from './ExploreZeroBanner';
 
 function DnaBanners({ address }: { address: string }) {
   const { preferences, setPreferences } = usePreferences();
@@ -75,8 +76,16 @@ export function Banners({ address }: { address: string }) {
           />
           <Spacer height={24} />
         </>
-      ) : null}
-      {ENABLE_DNA_BANNERS && !invitationBannerVisible ? (
+      ) : !preferences?.exploreZeroBannerDismissed ? (
+        <>
+          <ExploreZeroBanner
+            onDismiss={() =>
+              setPreferences({ exploreZeroBannerDismissed: true })
+            }
+          />
+          <Spacer height={24} />
+        </>
+      ) : ENABLE_DNA_BANNERS ? (
         <DnaBanners address={address} />
       ) : null}
     </div>
