@@ -99,7 +99,7 @@ function trackAppEvents({ account }: { account: Account }) {
       button_name: data.buttonName,
     });
     const event_name = `${data.buttonScope}: Button Pressed`;
-    const mixpanelParams = omit(params, ['request_name']);
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
     mixpanelTrack(account, event_name, mixpanelParams);
   });
 
