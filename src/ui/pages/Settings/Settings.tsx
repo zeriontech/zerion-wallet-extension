@@ -1,12 +1,12 @@
 import React from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { ViewSuspense } from 'src/ui/components/ViewSuspense';
-import { accountPublicRPCPort } from 'src/ui/shared/channels';
+import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Media } from 'src/ui/ui-kit/Media';
 import { Toggle } from 'src/ui/ui-kit/Toggle';
@@ -24,6 +24,7 @@ import DarkModeLampIcon from 'jsx:src/ui/assets/dark-mode-lamp.svg';
 import NetworksIcon from 'jsx:src/ui/assets/network.svg';
 import SecurityIcon from 'jsx:src/ui/assets/security.svg';
 import SettingsIcon from 'jsx:src/ui/assets/settings.svg';
+import RewardsIcon from 'jsx:src/ui/assets/rewards.svg';
 import ToolsIcon from 'jsx:src/ui/assets/hammer.svg';
 import { version } from 'src/shared/packageVersion';
 import { apostrophe, middot } from 'src/ui/shared/typography';
@@ -48,11 +49,15 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { openHrefInTabIfSidepanel } from 'src/ui/shared/openInTabIfInSidepanel';
+import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
+import { invariant } from 'src/shared/invariant';
 import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { Security } from '../Security';
 import { BackupFlowSettingsSection } from './BackupFlowSettingsSection';
 import { PreferencesPage } from './Preferences';
+
+const ZERION_ORIGIN = 'https://app.zerion.io';
 
 function SettingsMain() {
   const { singleAddressNormalized } = useAddressParams();
@@ -64,6 +69,25 @@ function SettingsMain() {
   const { data: loyaltyEnabled } = useRemoteConfigValue(
     'extension_loyalty_enabled'
   );
+
+  const { data: currentWallet } = useQuery({
+    queryKey: ['wallet/uiGetCurrentWallet'],
+    queryFn: () => {
+      return walletPort.request('uiGetCurrentWallet');
+    },
+  });
+
+  const { mutate: acceptZerionOrigin } = useMutation({
+    mutationFn: async () => {
+      invariant(currentWallet, 'Current wallet not found');
+      return walletPort.request('acceptOrigin', {
+        origin: ZERION_ORIGIN,
+        address: currentWallet.address,
+      });
+    },
+  });
+
+  const addWalletParams = useWalletParams(currentWallet);
 
   useBackgroundKind({ kind: 'white' });
 
@@ -120,6 +144,23 @@ function SettingsMain() {
                 </AngleRightRow>
               </FrameListItemLink>
             ) : null}
+            {FEATURE_LOYALTY_FLOW === 'on' &&
+            loyaltyEnabled &&
+            currentWallet ? (
+              <FrameListItemAnchor
+                href={`${ZERION_ORIGIN}/rewards?${addWalletParams}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => acceptZerionOrigin()}
+              >
+                <AngleRightRow kind="link">
+                  <HStack gap={8} alignItems="center">
+                    <RewardsIcon style={{ width: 24, height: 24 }} />
+                    <UIText kind="body/regular">Rewards</UIText>
+                  </HStack>
+                </AngleRightRow>
+              </FrameListItemAnchor>
+            ) : null}
             <FrameListItemAnchor
               href="http://zerion.io/premium"
               target="_blank"
@@ -170,6 +211,7 @@ function SettingsMain() {
             </FrameListItemLink>
           </VStack>
         </Frame>
+
         <Frame>
           <VStack gap={0}>
             <FrameListItemAnchor

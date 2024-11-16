@@ -74,9 +74,28 @@ interface MigrationBalances {
   remained: number;
 }
 
+export interface XpBreakdownItem {
+  title: string;
+  subtitle: string;
+  amount: number;
+}
+
+interface XpBreakdown {
+  total: number;
+  breakdown: XpBreakdownItem[];
+}
+
+export interface RetrodropInfo {
+  level: number;
+  levelProgress: number;
+  zerion: XpBreakdown;
+  global: XpBreakdown;
+}
+
 interface AddressMembership {
   level: number;
   levelProgress: number;
+  newRewards: number;
   premium: MigrationToken['premium'] | null;
   migration: {
     balances: MigrationBalances[];
@@ -88,6 +107,7 @@ interface AddressMembership {
   referralLink: string | null;
   referred: number;
   referrer: Referrer | null;
+  retro: RetrodropInfo | null;
   tokens: MigrationToken[] | null;
   parentTokens: ParentToken[] | null;
   xp: XpDistribution;

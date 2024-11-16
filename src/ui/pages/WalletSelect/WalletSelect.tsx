@@ -27,8 +27,13 @@ import { Media } from 'src/ui/ui-kit/Media';
 import { ellipsis } from 'src/ui/shared/typography';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
-import { WalletList } from './WalletList';
+import RewardsIcon from 'jsx:src/ui/assets/rewards.svg';
+import { normalizeAddress } from 'src/shared/normalizeAddress';
+import { getWalletParams } from 'src/ui/shared/requests/useWalletParams';
+import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
+import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
 import * as styles from './styles.module.css';
+import { WalletList } from './WalletList';
 
 function PortfolioRow({ walletGroups }: { walletGroups: WalletGroup[] }) {
   const { currency } = useCurrency();
@@ -75,21 +80,34 @@ function PortfolioRow({ walletGroups }: { walletGroups: WalletGroup[] }) {
   );
 }
 
+const ZERION_ORIGIN = 'https://app.zerion.io';
+
 export function WalletSelect() {
   const navigate = useNavigate();
-  const { data: walletGroups, isLoading } = useQuery({
+  const { data: walletGroups, isLoading: isLoadingWalletGroups } = useQuery({
     queryKey: ['wallet/uiGetWalletGroups'],
     queryFn: () => walletPort.request('uiGetWalletGroups'),
     useErrorBoundary: true,
   });
-
-  const ownedAddressesCount = useMemo(
+  const ownedGroups = useMemo(
     () =>
-      (walletGroups || [])
-        .filter((group) => !isReadonlyContainer(group.walletContainer))
-        .reduce((sum, group) => sum + group.walletContainer.wallets.length, 0),
+      walletGroups?.filter(
+        (group) => !isReadonlyContainer(group.walletContainer)
+      ),
     [walletGroups]
   );
+  const ownedAddresses = useMemo(
+    () =>
+      ownedGroups?.flatMap((group) =>
+        group.walletContainer.wallets.map((wallet) => wallet.address)
+      ) || [],
+    [ownedGroups]
+  );
+
+  const { data: walletsMeta, isLoading: isLoadingWalletsMeta } =
+    useWalletsMetaByChunks({ addresses: ownedAddresses });
+
+  const ownedAddressesCount = ownedAddresses.length;
 
   const { singleAddress, refetch } = useAddressParams();
   const setCurrentAddressMutation = useMutation({
@@ -99,9 +117,22 @@ export function WalletSelect() {
       navigate(-1);
     },
   });
+
+  const { mutate: acceptZerionOrigin } = useMutation({
+    mutationFn: async ({ address }: { address: string }) => {
+      return walletPort.request('acceptOrigin', {
+        origin: ZERION_ORIGIN,
+        address,
+      });
+    },
+  });
+
+  const isLoading = isLoadingWalletGroups || isLoadingWalletsMeta;
+
   if (isLoading) {
     return null;
   }
+
   const title = (
     <NavigationTitle
       title="Wallets"
@@ -170,6 +201,48 @@ export function WalletSelect() {
             }}
             selectedAddress={singleAddress}
             showAddressValues={true}
+            renderItemFooter={({ wallet }) => {
+              const walletMeta = walletsMeta?.find(
+                (meta) =>
+                  normalizeAddress(meta.address) ===
+                  normalizeAddress(wallet.address)
+              );
+              const addWalletParams = getWalletParams(wallet);
+              const exploreRewardsUrl = walletMeta?.membership.newRewards
+                ? `${ZERION_ORIGIN}/rewards?section=rewards&${addWalletParams}`
+                : null;
+
+              return exploreRewardsUrl ? (
+                <Button
+                  kind="neutral"
+                  as={UnstyledAnchor}
+                  href={exploreRewardsUrl}
+                  onClick={() =>
+                    acceptZerionOrigin({ address: wallet.address })
+                  }
+                  size={36}
+                  style={{
+                    borderRadius: '0 0 18px 18px',
+                  }}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <HStack gap={8} alignItems="center" justifyContent="center">
+                    <RewardsIcon
+                      style={{
+                        width: 20,
+                        height: 20,
+                        color:
+                          'linear-gradient(90deg, #a024ef 0%, #fdbb6c 100%)',
+                      }}
+                    />
+                    <UIText kind="small/accent" color="var(--primary-500)">
+                      Explore Rewards
+                    </UIText>
+                  </HStack>
+                </Button>
+              ) : null;
+            }}
           />
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <Button

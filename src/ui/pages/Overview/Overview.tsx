@@ -22,7 +22,7 @@ import {
   SegmentedControlLink,
 } from 'src/ui/ui-kit/SegmentedControl';
 import { PageBottom } from 'src/ui/components/PageBottom';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { walletPort } from 'src/ui/shared/channels';
 import { NBSP } from 'src/ui/shared/typography';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
@@ -43,6 +43,7 @@ import { useIsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnected
 import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOrigin';
 import { updateAddressDnaInfo } from 'src/modules/dna-service/dna.client';
 import { WalletSourceIcon } from 'src/ui/components/WalletSourceIcon';
+import RewardsIcon from 'jsx:src/ui/assets/rewards.svg';
 import { useStore } from '@store-unit/react';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
 import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
@@ -60,6 +61,13 @@ import { useEvent } from 'src/ui/shared/useEvent';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { SidepanelOptionsButton } from 'src/shared/sidepanel/SidepanelOptionsButton';
+import { XpDropClaimBanner } from 'src/ui/features/xp-drop/components/XpDropClaimBanner';
+import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
+import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
+import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
+import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
+import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
+import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -119,7 +127,7 @@ function PendingTransactionsIndicator() {
 /**
  * Product requirement:
  * if we're in default mode (not testnet), but the current dapp chain
- * is a testnet, we want to hide positions and history to supposedy avoid
+ * is a testnet, we want to hide positions and history to supposedly avoid
  * confusion for the user
  */
 function TestnetworkGuard({
@@ -245,6 +253,47 @@ function CurrentAccountControls() {
   );
 }
 
+const ZERION_ORIGIN = 'https://app.zerion.io';
+
+function RewardsLinkIcon({
+  currentWallet,
+}: {
+  currentWallet: ExternallyOwnedAccount;
+}) {
+  const { mutate: acceptZerionOrigin } = useMutation({
+    mutationFn: async () => {
+      return walletPort.request('acceptOrigin', {
+        origin: ZERION_ORIGIN,
+        address: currentWallet.address,
+      });
+    },
+  });
+
+  const addWalletParams = useWalletParams(currentWallet);
+
+  return (
+    <Button
+      kind="ghost"
+      as={UnstyledAnchor}
+      href={`${ZERION_ORIGIN}/rewards?${addWalletParams}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      size={36}
+      title="Rewards"
+      style={{ paddingInline: 8 }}
+      onClick={() => acceptZerionOrigin()}
+    >
+      <RewardsIcon
+        style={{
+          width: 20,
+          height: 20,
+          color: 'linear-gradient(90deg, #a024ef 0%, #fdbb6c 100%)',
+        }}
+      />
+    </Button>
+  );
+}
+
 function DevelopmentOnly({ children }: React.PropsWithChildren) {
   if (process.env.NODE_ENV === 'development') {
     return children as JSX.Element;
@@ -358,6 +407,21 @@ function OverviewComponent() {
     suspense: false,
   });
 
+  const { data: walletsMeta } = useWalletsMetaByChunks({
+    addresses: [params.address],
+    enabled: !isReadonlyGroup,
+  });
+
+  const { data: loyaltyEnabled } = useRemoteConfigValue(
+    'extension_loyalty_enabled'
+  );
+
+  const walletMeta = walletsMeta?.[0];
+  const claimXpBannerVisible =
+    FEATURE_LOYALTY_FLOW === 'on' &&
+    loyaltyEnabled &&
+    walletMeta?.membership.retro;
+
   // Update backend record with 'platform: extension'
   useEffect(() => {
     if (singleAddressNormalized) {
@@ -447,6 +511,13 @@ function OverviewComponent() {
     }
   };
 
+  const { data: currentWallet } = useQuery({
+    queryKey: ['wallet/uiGetCurrentWallet'],
+    queryFn: () => {
+      return walletPort.request('uiGetCurrentWallet');
+    },
+  });
+
   return (
     <PageColumn
       style={{
@@ -477,7 +548,12 @@ function OverviewComponent() {
             }}
           >
             <CurrentAccountControls />
-            <HStack gap={0}>
+            <HStack gap={0} alignItems="center">
+              {FEATURE_LOYALTY_FLOW === 'on' &&
+              loyaltyEnabled &&
+              currentWallet ? (
+                <RewardsLinkIcon currentWallet={currentWallet} />
+              ) : null}
               <SettingsLinkIcon />
               <SidepanelOptionsButton />
             </HStack>
@@ -661,11 +737,19 @@ function OverviewComponent() {
                     dappChain={dappChain || null}
                     renderGuard={() => testnetGuardView}
                   >
-                    <Positions
-                      dappChain={dappChain || null}
-                      filterChain={filterChain}
-                      onChainChange={setFilterChain}
-                    />
+                    <>
+                      {claimXpBannerVisible ? (
+                        <div style={{ paddingInline: 16 }}>
+                          <XpDropClaimBanner />
+                          <Spacer height={20} />
+                        </div>
+                      ) : null}
+                      <Positions
+                        dappChain={dappChain || null}
+                        filterChain={filterChain}
+                        onChainChange={setFilterChain}
+                      />
+                    </>
                   </TestnetworkGuard>
                 </ViewSuspense>
               }

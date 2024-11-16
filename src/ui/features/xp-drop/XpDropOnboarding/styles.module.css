@@ -1,0 +1,47 @@
+.onboardingStep {
+  text-align: center;
+}
+
+.onboardingText {
+  margin: 0 20px;
+}
+
+.gradientText {
+  background: linear-gradient(90deg, #a024ef 0%, #fdbb6c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.coverImage {
+  position: relative;
+  left: -16px;
+  width: calc(100% + 32px);
+  objectfit: cover;
+}
+
+.progressCounter {
+  position: relative;
+}
+
+.progressCounterValue {
+  position: absolute;
+  top: 13px;
+  left: 21px;
+}
+
+.criteriaItem {
+  padding: 12px;
+  background: var(--white);
+  box-shadow: var(--elevation-200);
+  border-radius: 16px;
+}
+
+.criteriaImage {
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+  background: var(--neutral-200);
+  border-radius: 8px;
+  text-align: center;
+}
