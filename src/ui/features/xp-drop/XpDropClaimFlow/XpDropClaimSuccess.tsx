@@ -17,11 +17,15 @@ import { walletPort } from 'src/ui/shared/channels';
 import { invariant } from 'src/shared/invariant';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
+import { emitter } from 'src/ui/shared/events';
+import { useLocation } from 'react-router-dom';
 
 const ZERION_ORIGIN = 'https://app.zerion.io';
 
 export function XpDropClaimSuccess() {
   useBackgroundKind({ kind: 'white' });
+
+  const { pathname } = useLocation();
 
   const confettiRef = useRef<HTMLCanvasElement | null>(null);
   const fireConfetti = useCallback(() => {
@@ -132,7 +136,14 @@ export function XpDropClaimSuccess() {
             href={`${ZERION_ORIGIN}/rewards?${addWalletParams}`}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => acceptZerionOrigin()}
+            onClick={() => {
+              emitter.emit('buttonClicked', {
+                buttonScope: 'Loaylty',
+                buttonName: 'Rewards',
+                location: pathname,
+              });
+              acceptZerionOrigin();
+            }}
           >
             <HStack gap={8} alignItems="center" justifyContent="center">
               <RewardsIcon

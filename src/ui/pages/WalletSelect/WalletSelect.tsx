@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { FillView } from 'src/ui/components/FillView';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { walletPort } from 'src/ui/shared/channels';
@@ -32,6 +32,7 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
+import { emitter } from 'src/ui/shared/events';
 import * as styles from './styles.module.css';
 import { WalletList } from './WalletList';
 
@@ -84,6 +85,8 @@ const ZERION_ORIGIN = 'https://app.zerion.io';
 
 export function WalletSelect() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+
   const { data: walletGroups, isLoading: isLoadingWalletGroups } = useQuery({
     queryKey: ['wallet/uiGetWalletGroups'],
     queryFn: () => walletPort.request('uiGetWalletGroups'),
@@ -217,9 +220,14 @@ export function WalletSelect() {
                   kind="neutral"
                   as={UnstyledAnchor}
                   href={exploreRewardsUrl}
-                  onClick={() =>
-                    acceptZerionOrigin({ address: wallet.address })
-                  }
+                  onClick={() => {
+                    emitter.emit('buttonClicked', {
+                      buttonScope: 'Loaylty',
+                      buttonName: 'Rewards',
+                      location: pathname,
+                    });
+                    acceptZerionOrigin({ address: wallet.address });
+                  }}
                   size={36}
                   style={{
                     borderRadius: '0 0 18px 18px',

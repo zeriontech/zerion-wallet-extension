@@ -39,11 +39,12 @@ import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import { txErrorToMessage } from 'src/ui/pages/SendTransaction/shared/transactionErrorToMessage';
 import { FillView } from 'src/ui/components/FillView';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { wait } from 'src/shared/wait';
 import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
+import { emitter } from 'src/ui/shared/events';
 import * as styles from './styles.module.css';
 
 const xpFormatter = new Intl.NumberFormat('en-US');
@@ -266,6 +267,7 @@ function XpLevel({ claimedXp, level }: { claimedXp: number; level: number }) {
 export function XpDropClaim() {
   useBackgroundKind({ kind: 'white' });
   const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   const signMsgBtnRef = useRef<SignMsgBtnHandle | null>(null);
   const walletSelectDialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -502,6 +504,11 @@ export function XpDropClaim() {
             wallet={selectedWallet}
             onClick={() => {
               if (!personalSignMutation.isSuccess) {
+                emitter.emit('buttonClicked', {
+                  buttonScope: 'Loaylty',
+                  buttonName: 'Claim XP',
+                  location: pathname,
+                });
                 personalSignAndClaim();
               } else {
                 walletSelectDialogRef.current?.showModal();

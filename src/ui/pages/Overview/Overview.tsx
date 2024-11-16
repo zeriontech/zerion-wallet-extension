@@ -68,6 +68,7 @@ import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
+import { emitter } from 'src/ui/shared/events';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -260,6 +261,7 @@ function RewardsLinkIcon({
 }: {
   currentWallet: ExternallyOwnedAccount;
 }) {
+  const { pathname } = useLocation();
   const { mutate: acceptZerionOrigin } = useMutation({
     mutationFn: async () => {
       return walletPort.request('acceptOrigin', {
@@ -281,7 +283,14 @@ function RewardsLinkIcon({
       size={36}
       title="Rewards"
       style={{ paddingInline: 8 }}
-      onClick={() => acceptZerionOrigin()}
+      onClick={() => {
+        emitter.emit('buttonClicked', {
+          buttonScope: 'Loaylty',
+          buttonName: 'Rewards',
+          location: pathname,
+        });
+        acceptZerionOrigin();
+      }}
     >
       <RewardsIcon
         style={{

@@ -5,10 +5,14 @@ import { GradientBorder } from 'src/ui/components/GradientBorder';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import { emitter } from 'src/ui/shared/events';
+import { useLocation } from 'react-router-dom';
 
 const bannerGradient = 'linear-gradient(90deg, #a024ef 0%, #fdbb6c 100%)';
 
 export function XpDropClaimBanner() {
+  const { pathname } = useLocation();
+
   return (
     <GradientBorder
       borderColor={bannerGradient}
@@ -26,6 +30,13 @@ export function XpDropClaimBanner() {
           size={36}
           as={UnstyledLink}
           to="/xp-drop/onboarding"
+          onClick={() => {
+            emitter.emit('buttonClicked', {
+              buttonScope: 'Loaylty',
+              buttonName: 'Claim XP',
+              location: pathname,
+            });
+          }}
           style={{
             minWidth: 109,
             background: bannerGradient,
