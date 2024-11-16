@@ -459,7 +459,7 @@ export function XpDropClaim() {
                 <Button
                   kind="neutral"
                   size={36}
-                  style={{ paddingInline: '12px' }}
+                  style={{ paddingInline: 12 }}
                   onClick={() => xpBreakdownDialogRef.current?.showModal()}
                 >
                   XP Breakdown

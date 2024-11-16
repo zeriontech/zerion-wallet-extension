@@ -23,11 +23,11 @@ class ReferralProgramService {
 
     // TODO: Add extra referral code logic:
     //
-    // When importing multiple wallets, if there's no referral code saved locally,
+    // 1. When importing multiple wallets, if there's no referral code saved locally,
     // check if any of the imported wallets have a referral code.
     // Use the code that appears in the majority of the imported wallets.
     //
-    // When importing a single wallet, if it has a referral code and
+    // 2. When importing a single wallet, if it has a referral code and
     // there's no code already saved locally, save its referral code.
 
     emitter.on('walletCreated', this.applyReferralCodeToWallet.bind(this));
@@ -54,7 +54,7 @@ class ReferralProgramService {
           message,
           messageContextParams: {
             initiator: INTERNAL_ORIGIN,
-            clientScope: null,
+            clientScope: 'Referral Program',
           },
         },
         context: { origin: INTERNAL_ORIGIN },

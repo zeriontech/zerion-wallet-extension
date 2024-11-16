@@ -9,7 +9,6 @@ import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { Button } from 'src/ui/ui-kit/Button';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { XpDropScoring } from './XpDropScoring';
-
 import * as styles from './styles.module.css';
 
 function WelcomeTo({ title }: { title: string }) {
