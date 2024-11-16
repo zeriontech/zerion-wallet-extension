@@ -1,6 +1,6 @@
 import React from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Route, Routes, useNavigate } from 'react-router-dom';
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -53,6 +53,7 @@ import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import { invariant } from 'src/shared/invariant';
 import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
+import { emitter } from 'src/ui/shared/events';
 import { Security } from '../Security';
 import { BackupFlowSettingsSection } from './BackupFlowSettingsSection';
 import { PreferencesPage } from './Preferences';
@@ -89,6 +90,7 @@ function SettingsMain() {
 
   const addWalletParams = useWalletParams(currentWallet);
 
+  const { pathname } = useLocation();
   useBackgroundKind({ kind: 'white' });
 
   return (
@@ -135,7 +137,16 @@ function SettingsMain() {
         <Frame>
           <VStack gap={0}>
             {FEATURE_LOYALTY_FLOW === 'on' && loyaltyEnabled ? (
-              <FrameListItemLink to="/invite">
+              <FrameListItemLink
+                to="/invite"
+                onClick={() => {
+                  emitter.emit('buttonClicked', {
+                    buttonScope: 'Loaylty',
+                    buttonName: 'Invite Friends',
+                    pathname,
+                  });
+                }}
+              >
                 <AngleRightRow>
                   <HStack gap={8} alignItems="center">
                     <GiftIcon />
@@ -151,7 +162,14 @@ function SettingsMain() {
                 href={`${ZERION_ORIGIN}/rewards?${addWalletParams}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => acceptZerionOrigin()}
+                onClick={() => {
+                  emitter.emit('buttonClicked', {
+                    buttonScope: 'Loaylty',
+                    buttonName: 'Rewards',
+                    pathname,
+                  });
+                  acceptZerionOrigin();
+                }}
               >
                 <AngleRightRow kind="link">
                   <HStack gap={8} alignItems="center">

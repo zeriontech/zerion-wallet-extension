@@ -8,6 +8,7 @@ import type {
 } from 'src/shared/types/SignatureContextParams';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
+import type { ButtonClickedParams } from 'src/shared/types/button-events';
 import type { State as GlobalPreferencesState } from './Wallet/GlobalPreferences';
 import type { WalletOrigin } from './Wallet/model/WalletOrigin';
 import type { WalletContainer } from './Wallet/model/types';
@@ -77,4 +78,5 @@ export const emitter = createNanoEvents<{
   holdToSignPreferenceChange: (active: boolean) => void;
   eip6963SupportDetected: (data: { origin: string }) => void;
   uiClosed: (data: { url: string | null }) => void;
+  buttonClicked: (data: ButtonClickedParams) => void;
 }>();

@@ -13,7 +13,6 @@ type MetabaseEvent =
   | 'custom_evm_network_created'
   | 'network_search'
   | 'error_screen_view'
-  | 'error_screen_view'
   | 'metamask_mode'
   | 'loader_screen_view'
   | 'eip_6963_support'
