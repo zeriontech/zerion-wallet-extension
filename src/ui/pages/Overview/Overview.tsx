@@ -62,12 +62,12 @@ import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfo
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { SidepanelOptionsButton } from 'src/shared/sidepanel/SidepanelOptionsButton';
 import { XpDropClaimBanner } from 'src/ui/features/xp-drop/components/XpDropClaimBanner';
-import { getWalletsMetaByChunks } from 'src/modules/zerion-api/requests/wallet-get-meta';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
+import { useWalletsMetaByChunks } from 'src/ui/features/referral-program/shared/useWalletsMetaByChunks';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -407,9 +407,8 @@ function OverviewComponent() {
     suspense: false,
   });
 
-  const { data: walletsMeta } = useQuery({
-    queryKey: ['ZerionAPI.getWalletsMeta', params.address],
-    queryFn: () => getWalletsMetaByChunks([params.address]),
+  const { data: walletsMeta } = useWalletsMetaByChunks({
+    addresses: [params.address],
     enabled: !isReadonlyGroup,
   });
 

@@ -27,11 +27,11 @@ import { Media } from 'src/ui/ui-kit/Media';
 import { ellipsis } from 'src/ui/shared/typography';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
-import { getWalletsMetaByChunks } from 'src/modules/zerion-api/requests/wallet-get-meta';
 import RewardsIcon from 'jsx:src/ui/assets/rewards.svg';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
+import { useWalletsMetaByChunks } from 'src/ui/features/referral-program/shared/useWalletsMetaByChunks';
 import * as styles from './styles.module.css';
 import { WalletList } from './WalletList';
 
@@ -100,18 +100,14 @@ export function WalletSelect() {
     () =>
       ownedGroups?.flatMap((group) =>
         group.walletContainer.wallets.map((wallet) => wallet.address)
-      ),
+      ) || [],
     [ownedGroups]
   );
 
-  const { data: walletsMeta, isLoading: isLoadingWalletsMeta } = useQuery({
-    queryKey: ['ZerionAPI.getWalletsMeta', ownedAddresses],
-    queryFn: () =>
-      ownedAddresses ? getWalletsMetaByChunks(ownedAddresses) : null,
-    enabled: Boolean(ownedAddresses),
-  });
+  const { data: walletsMeta, isLoading: isLoadingWalletsMeta } =
+    useWalletsMetaByChunks({ addresses: ownedAddresses });
 
-  const ownedAddressesCount = ownedAddresses?.length ?? 0;
+  const ownedAddressesCount = ownedAddresses.length ?? 0;
 
   const { singleAddress, refetch } = useAddressParams();
   const setCurrentAddressMutation = useMutation({

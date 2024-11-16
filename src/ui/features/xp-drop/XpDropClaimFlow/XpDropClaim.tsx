@@ -33,7 +33,6 @@ import type {
   WalletMeta,
   XpBreakdownItem,
 } from 'src/modules/zerion-api/requests/wallet-get-meta';
-import { getWalletsMetaByChunks } from 'src/modules/zerion-api/requests/wallet-get-meta';
 import type { SignMsgBtnHandle } from 'src/ui/components/SignMessageButton';
 import { SignMessageButton } from 'src/ui/components/SignMessageButton';
 import { invariant } from 'src/shared/invariant';
@@ -45,6 +44,7 @@ import { useNavigate } from 'react-router-dom';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { wait } from 'src/shared/wait';
+import { useWalletsMetaByChunks } from '../../referral-program/shared/useWalletsMetaByChunks';
 import * as styles from './styles.module.css';
 
 const xpFormatter = new Intl.NumberFormat('en-US');
@@ -298,9 +298,8 @@ export function XpDropClaim() {
     return { signerWalletGroups, signerWalletAddresses };
   }, [walletGroups]);
 
-  const { data: walletsMeta, ...walletsMetaQuery } = useQuery({
-    queryKey: ['ZerionAPI.getWalletsMeta', signerWalletAddresses],
-    queryFn: () => getWalletsMetaByChunks(signerWalletAddresses),
+  const { data: walletsMeta, ...walletsMetaQuery } = useWalletsMetaByChunks({
+    addresses: signerWalletAddresses,
   });
 
   const { eligibleWalletGroups, eligibleAddresses } = useMemo(() => {
