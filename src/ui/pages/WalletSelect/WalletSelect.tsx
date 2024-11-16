@@ -107,7 +107,7 @@ export function WalletSelect() {
   const { data: walletsMeta, isLoading: isLoadingWalletsMeta } =
     useWalletsMetaByChunks({ addresses: ownedAddresses });
 
-  const ownedAddressesCount = ownedAddresses.length ?? 0;
+  const ownedAddressesCount = ownedAddresses.length;
 
   const { singleAddress, refetch } = useAddressParams();
   const setCurrentAddressMutation = useMutation({
