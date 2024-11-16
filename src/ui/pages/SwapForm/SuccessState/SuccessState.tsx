@@ -20,6 +20,7 @@ import { Media } from 'src/ui/ui-kit/Media';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
+import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import type { BareAddressPosition } from '../BareAddressPosition';
 import { GasbackDecorated } from '../../SendForm/SuccessState/SuccessState';
 
@@ -103,6 +104,12 @@ export function SuccessState({
       y: 0,
     },
   });
+
+  const { data: loyaltyEnabled } = useRemoteConfigValue(
+    'extension_loyalty_enabled'
+  );
+  const FEATURE_GASBACK = loyaltyEnabled && FEATURE_LOYALTY_FLOW === 'on';
+
   if (!networks) {
     return <ViewLoading />;
   }
@@ -152,7 +159,7 @@ export function SuccessState({
           receivePosition={receivePosition}
         />
       </animated.div>
-      {gasbackValue && FEATURE_LOYALTY_FLOW === 'on' ? (
+      {gasbackValue && FEATURE_GASBACK ? (
         <animated.div style={trail[3]}>
           <div style={{ paddingInline: 32 }}>
             <Spacer height={32} />

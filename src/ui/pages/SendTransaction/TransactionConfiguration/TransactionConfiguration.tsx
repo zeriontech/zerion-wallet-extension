@@ -22,6 +22,7 @@ import type { GasbackData } from 'src/modules/ethereum/account-abstraction/rewar
 import { PortalToRootNode } from 'src/ui/components/PortalToRootNode';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
+import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import { NonceLine } from '../NonceLine';
 import { NetworkFee } from '../NetworkFee';
 import { useTransactionFee } from './useTransactionFee';
@@ -199,6 +200,11 @@ export function TransactionConfiguration({
   const [gasback, setGasback] = useState(gasbackValueOriginal);
   const hasGasbackOnFirstRenderRef = useRef(gasback);
 
+  const { data: loyaltyEnabled } = useRemoteConfigValue(
+    'extension_loyalty_enabled'
+  );
+  const FEATURE_GASBACK = loyaltyEnabled && FEATURE_LOYALTY_FLOW === 'on';
+
   useEffect(() => {
     // EXPERIMENT:
     // Setting state in useEffect is an anti-pattern but we need
@@ -277,7 +283,7 @@ export function TransactionConfiguration({
           />
         </div>
       ) : null}
-      {FEATURE_LOYALTY_FLOW === 'on' ? (
+      {FEATURE_GASBACK ? (
         <AnimatedAppear
           display={Boolean(gasback)}
           from={

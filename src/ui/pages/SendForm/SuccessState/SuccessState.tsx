@@ -17,6 +17,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
+import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import { TransferVisualization } from '../TransferVisualization';
 
 export function GasbackDecorated({ value }: { value: number }) {
@@ -76,6 +77,10 @@ export function SuccessState({
     from: { opacity: 0, y: 40 },
     to: { opacity: 1, y: 0 },
   });
+  const { data: loyaltyEnabled } = useRemoteConfigValue(
+    'extension_loyalty_enabled'
+  );
+  const FEATURE_GASBACK = loyaltyEnabled && FEATURE_LOYALTY_FLOW === 'on';
   if (!networks) {
     return <ViewLoading />;
   }
@@ -135,7 +140,7 @@ export function SuccessState({
           />
         </animated.div>
       ) : null}
-      {gasbackValue && FEATURE_LOYALTY_FLOW === 'on' ? (
+      {gasbackValue && FEATURE_GASBACK ? (
         <animated.div style={trail[3]}>
           <div style={{ paddingInline: 32 }}>
             <Spacer height={32} />
