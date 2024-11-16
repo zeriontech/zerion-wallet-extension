@@ -68,7 +68,7 @@ function trackAppEvents({
   });
 
   emitter.on('buttonClicked', async (data) => {
-    return walletPort.request('buttonClicked', data);
+    walletPort.request('buttonClicked', data);
   });
 
   emitter.on('errorScreenView', async (data) => {
