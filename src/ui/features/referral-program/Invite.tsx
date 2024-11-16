@@ -37,11 +37,11 @@ import { isReadonlyContainer } from 'src/shared/types/validators';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { WalletList } from 'src/ui/pages/WalletSelect/WalletList';
 import type { ReferrerData } from 'src/modules/zerion-api/requests/check-referral';
+import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
 import { ReferralLinkDialog } from './ReferralLinkDialog';
 import { EnterReferralCodeDialog } from './EnterReferralCodeDialog';
 import { QRCodeDialog } from './QRCodeDialog';
 import { SuccessDialog } from './SuccessDialog';
-import { useWalletsMetaByChunks } from './shared/useWalletsMetaByChunks';
 import { ReferrerLink } from './shared/ReferrerLink';
 import * as styles from './styles.module.css';
 

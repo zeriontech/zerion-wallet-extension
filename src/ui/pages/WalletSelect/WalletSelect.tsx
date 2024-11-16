@@ -31,7 +31,7 @@ import RewardsIcon from 'jsx:src/ui/assets/rewards.svg';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
-import { useWalletsMetaByChunks } from 'src/ui/features/referral-program/shared/useWalletsMetaByChunks';
+import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
 import * as styles from './styles.module.css';
 import { WalletList } from './WalletList';
 

@@ -30,7 +30,6 @@ import { GradientBorder } from 'src/ui/components/GradientBorder';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import type {
   RetrodropInfo,
-  WalletMeta,
   XpBreakdownItem,
 } from 'src/modules/zerion-api/requests/wallet-get-meta';
 import type { SignMsgBtnHandle } from 'src/ui/components/SignMessageButton';
@@ -44,7 +43,7 @@ import { useNavigate } from 'react-router-dom';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { wait } from 'src/shared/wait';
-import { useWalletsMetaByChunks } from '../../referral-program/shared/useWalletsMetaByChunks';
+import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
 import * as styles from './styles.module.css';
 
 const xpFormatter = new Intl.NumberFormat('en-US');
@@ -268,6 +267,10 @@ export function XpDropClaim() {
   useBackgroundKind({ kind: 'white' });
   const navigate = useNavigate();
 
+  const signMsgBtnRef = useRef<SignMsgBtnHandle | null>(null);
+  const walletSelectDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const xpBreakdownDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+
   const { data: currentWallet, refetch: refetchCurrentWallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
@@ -279,12 +282,6 @@ export function XpDropClaim() {
       refetchCurrentWallet();
     },
   });
-
-  const [selectedWallet, setSelectedWallet] = useState(currentWallet);
-  const [claimedInfo, setClaimedInfo] = useState<{
-    address: string;
-    meta: WalletMeta | null;
-  } | null>(null);
 
   const { data: walletGroups, ...walletGroupsQuery } = useWalletGroups();
   const { signerWalletGroups, signerWalletAddresses } = useMemo(() => {
@@ -300,6 +297,63 @@ export function XpDropClaim() {
 
   const { data: walletsMeta, ...walletsMetaQuery } = useWalletsMetaByChunks({
     addresses: signerWalletAddresses,
+  });
+
+  const [selectedWallet, setSelectedWallet] = useState(currentWallet);
+  const selectedWalletMeta = useMemo(
+    () =>
+      selectedWallet
+        ? walletsMeta?.find(
+            (meta) =>
+              normalizeAddress(meta.address) ===
+              normalizeAddress(selectedWallet.address)
+          )
+        : null,
+    [selectedWallet, walletsMeta]
+  );
+
+  const {
+    mutate: personalSignAndClaim,
+    data: claimedInfo,
+    ...personalSignMutation
+  } = useMutation({
+    mutationFn: async () => {
+      invariant(selectedWallet, 'selectedWallet is required');
+      invariant(signMsgBtnRef.current, 'SignMessageButton not found');
+
+      const message = 'I want to claim my Zerion Retro XP';
+      const signature = await signMsgBtnRef.current.personalSign({
+        params: [message],
+        initiator: INTERNAL_ORIGIN,
+        clientScope: null,
+      });
+      await ZerionAPI.claimRetro({
+        address: selectedWallet.address,
+        signature,
+      });
+      return {
+        address: normalizeAddress(selectedWallet.address),
+        meta: selectedWalletMeta || null,
+      };
+    },
+    onSuccess: async () => {
+      // To account for a possible delay of xp drop claim to take an effect, we're adding a short wait here.
+      // Otherwise, we might still see the wallet for which we just claimed the XP drop in
+      // the wallet selector when we click on the "Next Wallet" button.
+      await wait(1000);
+      // Refetch the wallet metadata to update the list of wallets eligible for the XP drop.
+      const { data: walletsMeta } = await walletsMetaQuery.refetch();
+
+      const eligibleAddresses =
+        walletsMeta
+          ?.filter((meta) => Boolean(meta.membership.retro))
+          .map((meta) => normalizeAddress(meta.address)) ?? [];
+
+      // If this is the last wallet, we want to display the success view.
+      if (eligibleAddresses.length === 0) {
+        navigate('/xp-drop/claim/success');
+      }
+    },
   });
 
   const { eligibleWalletGroups, eligibleAddresses } = useMemo(() => {
@@ -325,56 +379,6 @@ export function XpDropClaim() {
 
     return { eligibleWalletGroups, eligibleAddresses };
   }, [signerWalletGroups, walletsMeta, claimedInfo]);
-
-  const signMsgBtnRef = useRef<SignMsgBtnHandle | null>(null);
-  const walletSelectDialogRef = useRef<HTMLDialogElementInterface | null>(null);
-  const xpBreakdownDialogRef = useRef<HTMLDialogElementInterface | null>(null);
-
-  const selectedWalletMeta = useMemo(
-    () =>
-      selectedWallet
-        ? walletsMeta?.find(
-            (meta) =>
-              normalizeAddress(meta.address) ===
-              normalizeAddress(selectedWallet.address)
-          )
-        : null,
-    [selectedWallet, walletsMeta]
-  );
-
-  const { mutate: personalSign, ...personalSignMutation } = useMutation({
-    mutationFn: async () => {
-      invariant(selectedWallet, 'selectedWallet is required');
-      invariant(signMsgBtnRef.current, 'SignMessageButton not found');
-
-      const message = 'I want to claim my Zerion Retro XP';
-      const signature = await signMsgBtnRef.current.personalSign({
-        params: [message],
-        initiator: INTERNAL_ORIGIN,
-        clientScope: null,
-      });
-      await ZerionAPI.claimRetro({
-        address: selectedWallet.address,
-        signature,
-      });
-      setClaimedInfo({
-        address: normalizeAddress(selectedWallet.address),
-        meta: selectedWalletMeta || null,
-      });
-    },
-    onSuccess: async () => {
-      // To account for this possible delay, we're adding a short wait here.
-      // Otherwise, we might still see the wallet for which we just claimed the XP drop in
-      // the wallet selector when we click on the "Next Wallet" button.
-      await wait(1000);
-      // Refetch the wallet metadata to update the list of wallets eligible for the XP drop.
-      await walletsMetaQuery.refetch();
-      // If this is the last wallet, we want to display the success view.
-      if (eligibleAddresses.length <= 1) {
-        navigate('/xp-drop/claim/success');
-      }
-    },
-  });
 
   const retro = personalSignMutation.isSuccess
     ? claimedInfo?.meta?.membership.retro
@@ -496,7 +500,7 @@ export function XpDropClaim() {
             wallet={selectedWallet}
             onClick={() => {
               if (!personalSignMutation.isSuccess) {
-                personalSign();
+                personalSignAndClaim();
               } else {
                 walletSelectDialogRef.current?.showModal();
               }
