@@ -364,6 +364,27 @@ function ReadonlyMode() {
   );
 }
 
+function XpBannerComponent({ address }: { address: string }) {
+  const { data: walletsMeta } = useWalletsMetaByChunks({
+    addresses: [address],
+    suspense: false,
+  });
+
+  const walletMeta = walletsMeta?.[0];
+  const claimXpBannerVisible =
+    FEATURE_LOYALTY_FLOW === 'on' && Boolean(walletMeta?.membership.retro);
+
+  if (claimXpBannerVisible) {
+    return (
+      <div style={{ paddingInline: 16 }}>
+        <XpDropClaimBanner />
+      </div>
+    );
+  } else {
+    return null;
+  }
+}
+
 function OverviewComponent() {
   useBodyStyle(
     useMemo(() => ({ ['--background' as string]: 'var(--z-index-0)' }), [])
@@ -416,20 +437,9 @@ function OverviewComponent() {
     suspense: false,
   });
 
-  const { data: walletsMeta } = useWalletsMetaByChunks({
-    addresses: [params.address],
-    enabled: !isReadonlyGroup,
-  });
-
   const { data: loyaltyEnabled } = useRemoteConfigValue(
     'extension_loyalty_enabled'
   );
-
-  const walletMeta = walletsMeta?.[0];
-  const claimXpBannerVisible =
-    FEATURE_LOYALTY_FLOW === 'on' &&
-    loyaltyEnabled &&
-    walletMeta?.membership.retro;
 
   // Update backend record with 'platform: extension'
   useEffect(() => {
@@ -746,19 +756,16 @@ function OverviewComponent() {
                     dappChain={dappChain || null}
                     renderGuard={() => testnetGuardView}
                   >
-                    <>
-                      {claimXpBannerVisible ? (
-                        <div style={{ paddingInline: 16 }}>
-                          <XpDropClaimBanner />
-                          <Spacer height={20} />
-                        </div>
+                    <VStack gap={20}>
+                      {!isReadonlyGroup && loyaltyEnabled ? (
+                        <XpBannerComponent address={params.address} />
                       ) : null}
                       <Positions
                         dappChain={dappChain || null}
                         filterChain={filterChain}
                         onChainChange={setFilterChain}
                       />
-                    </>
+                    </VStack>
                   </TestnetworkGuard>
                 </ViewSuspense>
               }
