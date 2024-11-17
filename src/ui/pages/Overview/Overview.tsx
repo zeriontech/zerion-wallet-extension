@@ -370,15 +370,9 @@ function XpBannerComponent({ address }: { address: string }) {
     suspense: false,
   });
 
-  const { data: loyaltyEnabled } = useRemoteConfigValue(
-    'extension_loyalty_enabled'
-  );
-
   const walletMeta = walletsMeta?.[0];
   const claimXpBannerVisible =
-    FEATURE_LOYALTY_FLOW === 'on' &&
-    loyaltyEnabled &&
-    walletMeta?.membership.retro;
+    FEATURE_LOYALTY_FLOW === 'on' && Boolean(walletMeta?.membership.retro);
 
   if (claimXpBannerVisible) {
     return (
