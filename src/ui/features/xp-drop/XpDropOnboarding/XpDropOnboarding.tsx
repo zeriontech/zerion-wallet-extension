@@ -8,6 +8,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { Button } from 'src/ui/ui-kit/Button';
 import { PageBottom } from 'src/ui/components/PageBottom';
+import { useBackgroundKind } from 'src/ui/components/Background';
 import { XpDropScoring } from './XpDropScoring';
 import * as styles from './styles.module.css';
 
@@ -40,6 +41,8 @@ function OnboardingStep({
   buttonText: string;
 }) {
   // TODO: Show confirmation dialog when the user attempts to navigate back
+
+  useBackgroundKind({ kind: 'white' });
 
   return (
     <>

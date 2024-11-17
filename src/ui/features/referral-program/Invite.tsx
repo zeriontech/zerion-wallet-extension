@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -38,6 +38,8 @@ import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { WalletList } from 'src/ui/pages/WalletSelect/WalletList';
 import type { ReferrerData } from 'src/modules/zerion-api/requests/check-referral';
 import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
+import { emitter } from 'src/ui/shared/events';
+import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import { ReferralLinkDialog } from './ReferralLinkDialog';
 import { EnterReferralCodeDialog } from './EnterReferralCodeDialog';
 import { QRCodeDialog } from './QRCodeDialog';
@@ -294,9 +296,12 @@ function Heading({
   );
 }
 
+const ZERION_ORIGIN = 'https://app.zerion.io';
+
 export function Invite() {
   useBackgroundKind({ kind: 'white' });
   useEffect(() => window.scrollTo(0, 0), []);
+  const { pathname } = useLocation();
 
   const { data: currentWallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
@@ -327,6 +332,17 @@ export function Invite() {
     null
   );
   const successDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+
+  const addWalletParams = useWalletParams(currentWallet);
+  const { mutate: acceptZerionOrigin } = useMutation({
+    mutationFn: async () => {
+      invariant(currentWallet, 'Current wallet not found');
+      return walletPort.request('acceptOrigin', {
+        origin: ZERION_ORIGIN,
+        address: currentWallet.address,
+      });
+    },
+  });
 
   if (!walletMeta) {
     return null;
@@ -375,8 +391,16 @@ export function Invite() {
               <Button
                 kind="regular"
                 as={UnstyledAnchor}
-                href="https://app.zerion.io/rewards"
+                href={`${ZERION_ORIGIN}/rewards?${addWalletParams}`}
                 target="_blank"
+                onClick={() => {
+                  emitter.emit('buttonClicked', {
+                    buttonScope: 'Loaylty',
+                    buttonName: 'Rewards',
+                    pathname,
+                  });
+                  acceptZerionOrigin();
+                }}
               >
                 <UIText kind="body/accent">Explore Rewards</UIText>
               </Button>
