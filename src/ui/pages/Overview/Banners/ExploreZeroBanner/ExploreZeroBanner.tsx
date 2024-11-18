@@ -23,7 +23,7 @@ export function ExploreZeroBanner({ onDismiss }: { onDismiss?(): void }) {
         alt=""
       />
       <VStack gap={16}>
-        <UIText kind="headline/h3">
+        <UIText kind="headline/h3" color="var(--always-white)">
           Goodbye Gas Fees,
           <br /> Hello ZERϴ
         </UIText>
