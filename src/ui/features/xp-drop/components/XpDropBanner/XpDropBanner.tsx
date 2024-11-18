@@ -12,7 +12,7 @@ import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 
 const bannerGradient = 'linear-gradient(90deg, #a024ef 0%, #fdbb6c 100%)';
 
-export function XpDropClaimBanner({ address }: { address: string }) {
+export function XpDropBanner({ address }: { address: string }) {
   const { pathname } = useLocation();
   const { data: walletsMeta } = useWalletsMetaByChunks({
     addresses: [address],
