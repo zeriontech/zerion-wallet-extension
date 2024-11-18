@@ -20,10 +20,10 @@ export function XpDropClaimBanner({ address }: { address: string }) {
   });
 
   const walletMeta = walletsMeta?.[0];
-  const claimXpBannerVisible =
+  const isVisible =
     FEATURE_LOYALTY_FLOW === 'on' && Boolean(walletMeta?.membership.retro);
 
-  return claimXpBannerVisible ? (
+  return isVisible ? (
     <div style={{ paddingInline: 16 }}>
       <GradientBorder
         borderColor={bannerGradient}
