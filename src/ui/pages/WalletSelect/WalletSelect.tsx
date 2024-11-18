@@ -33,6 +33,8 @@ import { getWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
 import { emitter } from 'src/ui/shared/events';
+import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
+import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import * as styles from './styles.module.css';
 import { WalletList } from './WalletList';
 
@@ -109,6 +111,10 @@ export function WalletSelect() {
 
   const { data: walletsMeta, isLoading: isLoadingWalletsMeta } =
     useWalletsMetaByChunks({ addresses: ownedAddresses });
+
+  const { data: loyaltyEnabled } = useRemoteConfigValue(
+    'extension_loyalty_enabled'
+  );
 
   const ownedAddressesCount = ownedAddresses.length;
 
@@ -204,53 +210,64 @@ export function WalletSelect() {
             }}
             selectedAddress={singleAddress}
             showAddressValues={true}
-            renderItemFooter={({ wallet }) => {
-              const walletMeta = walletsMeta?.find(
-                (meta) =>
-                  normalizeAddress(meta.address) ===
-                  normalizeAddress(wallet.address)
-              );
-              const addWalletParams = getWalletParams(wallet);
-              const exploreRewardsUrl = walletMeta?.membership.newRewards
-                ? `${ZERION_ORIGIN}/rewards?section=rewards&${addWalletParams}`
-                : null;
+            renderItemFooter={
+              FEATURE_LOYALTY_FLOW === 'on' && loyaltyEnabled
+                ? ({ wallet }) => {
+                    const walletMeta = walletsMeta?.find(
+                      (meta) =>
+                        normalizeAddress(meta.address) ===
+                        normalizeAddress(wallet.address)
+                    );
+                    const addWalletParams = getWalletParams(wallet);
+                    const exploreRewardsUrl = walletMeta?.membership.newRewards
+                      ? `${ZERION_ORIGIN}/rewards?section=rewards&${addWalletParams}`
+                      : null;
 
-              return exploreRewardsUrl ? (
-                <Button
-                  kind="neutral"
-                  as={UnstyledAnchor}
-                  href={exploreRewardsUrl}
-                  onClick={() => {
-                    emitter.emit('buttonClicked', {
-                      buttonScope: 'Loaylty',
-                      buttonName: 'Rewards',
-                      pathname,
-                    });
-                    acceptZerionOrigin({ address: wallet.address });
-                  }}
-                  size={36}
-                  style={{
-                    borderRadius: '0 0 18px 18px',
-                  }}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <HStack gap={8} alignItems="center" justifyContent="center">
-                    <RewardsIcon
-                      style={{
-                        width: 20,
-                        height: 20,
-                        color:
-                          'linear-gradient(90deg, #a024ef 0%, #fdbb6c 100%)',
-                      }}
-                    />
-                    <UIText kind="small/accent" color="var(--primary-500)">
-                      Explore Rewards
-                    </UIText>
-                  </HStack>
-                </Button>
-              ) : null;
-            }}
+                    return exploreRewardsUrl ? (
+                      <Button
+                        kind="neutral"
+                        as={UnstyledAnchor}
+                        href={exploreRewardsUrl}
+                        onClick={() => {
+                          emitter.emit('buttonClicked', {
+                            buttonScope: 'Loaylty',
+                            buttonName: 'Rewards',
+                            pathname,
+                          });
+                          acceptZerionOrigin({ address: wallet.address });
+                        }}
+                        size={36}
+                        style={{
+                          borderRadius: '0 0 18px 18px',
+                        }}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <HStack
+                          gap={8}
+                          alignItems="center"
+                          justifyContent="center"
+                        >
+                          <RewardsIcon
+                            style={{
+                              width: 20,
+                              height: 20,
+                              color:
+                                'linear-gradient(90deg, #a024ef 0%, #fdbb6c 100%)',
+                            }}
+                          />
+                          <UIText
+                            kind="small/accent"
+                            color="var(--primary-500)"
+                          >
+                            Explore Rewards
+                          </UIText>
+                        </HStack>
+                      </Button>
+                    ) : null;
+                  }
+                : null
+            }
           />
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <Button

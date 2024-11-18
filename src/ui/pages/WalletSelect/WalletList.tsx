@@ -231,13 +231,15 @@ export function WalletList({
   walletGroups: WalletGroupInfo[];
   selectedAddress: string;
   showAddressValues: boolean;
-  renderItemFooter?: ({
-    group,
-    wallet,
-  }: {
-    group: WalletGroupInfo;
-    wallet: AnyWallet;
-  }) => React.ReactNode;
+  renderItemFooter?:
+    | (({
+        group,
+        wallet,
+      }: {
+        group: WalletGroupInfo;
+        wallet: AnyWallet;
+      }) => React.ReactNode)
+    | null;
   onSelect(wallet: AnyWallet): void;
 }) {
   const items: Item[] = [];
