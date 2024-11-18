@@ -135,22 +135,19 @@ export function Success() {
 
   const referralCodeWidgetVisible = !referrer;
 
-  const loyaltyProgramWidget =
-    FEATURE_LOYALTY_FLOW === 'on' && loyaltyEnabled ? (
-      referralCodeWidgetVisible ? (
-        <ReferralCodeWidget
-          onSuccess={(pendingReferrer) => {
-            setPendingReferrer(pendingReferrer);
-            fireConfetti();
-          }}
-        />
-      ) : isNarrowView ? null : (
-        <>
-          <Spacer height={32} />
-          <CongratulationsWidget referrer={referrer} />
-        </>
-      )
-    ) : null;
+  const loyaltyProgramWidget = referralCodeWidgetVisible ? (
+    <ReferralCodeWidget
+      onSuccess={(pendingReferrer) => {
+        setPendingReferrer(pendingReferrer);
+        fireConfetti();
+      }}
+    />
+  ) : isNarrowView ? null : (
+    <>
+      <Spacer height={32} />
+      <CongratulationsWidget referrer={referrer} />
+    </>
+  );
 
   return (
     <>
@@ -179,7 +176,9 @@ export function Success() {
               You can close this tab to get started.
             </UIText>
           </VStack>
-          {loyaltyProgramWidget}
+          {FEATURE_LOYALTY_FLOW === 'on' && loyaltyEnabled
+            ? loyaltyProgramWidget
+            : null}
           {isNarrowView ? null : (
             <>
               <UnstyledButton
