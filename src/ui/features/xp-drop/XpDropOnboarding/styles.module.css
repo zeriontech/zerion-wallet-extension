@@ -1,5 +1,8 @@
 .onboardingStep {
   text-align: center;
+  background: radial-gradient(#a024ef, #fdbb6c);
+  background-position: top;
+  filter: blur(138px);
 }
 
 .onboardingText {
