@@ -61,13 +61,12 @@ import { useEvent } from 'src/ui/shared/useEvent';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { SidepanelOptionsButton } from 'src/shared/sidepanel/SidepanelOptionsButton';
-import { XpDropClaimBanner } from 'src/ui/features/xp-drop/components/XpDropClaimBanner';
+import { XpDropBanner } from 'src/ui/features/xp-drop/components/XpDropBanner';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
-import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
 import { emitter } from 'src/ui/shared/events';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
@@ -362,27 +361,6 @@ function ReadonlyMode() {
       </UIText>
     </div>
   );
-}
-
-function XpBannerComponent({ address }: { address: string }) {
-  const { data: walletsMeta } = useWalletsMetaByChunks({
-    addresses: [address],
-    suspense: false,
-  });
-
-  const walletMeta = walletsMeta?.[0];
-  const claimXpBannerVisible =
-    FEATURE_LOYALTY_FLOW === 'on' && Boolean(walletMeta?.membership.retro);
-
-  if (claimXpBannerVisible) {
-    return (
-      <div style={{ paddingInline: 16 }}>
-        <XpDropClaimBanner />
-      </div>
-    );
-  } else {
-    return null;
-  }
 }
 
 function OverviewComponent() {
@@ -758,7 +736,7 @@ function OverviewComponent() {
                   >
                     <VStack gap={20}>
                       {!isReadonlyGroup && loyaltyEnabled ? (
-                        <XpBannerComponent address={params.address} />
+                        <XpDropBanner address={params.address} />
                       ) : null}
                       <Positions
                         dappChain={dappChain || null}
