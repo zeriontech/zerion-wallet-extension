@@ -5,8 +5,6 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import RotatingOSrc from './rotating_O.png';
-import RotatingO2xSrc from './rotating_O_2x.png';
 import * as styles from './styles.module.css';
 
 const EXPLORE_ZERO_URL =
@@ -18,8 +16,8 @@ export function ExploreZeroBanner({ onDismiss }: { onDismiss?(): void }) {
       <img
         className={styles.image}
         style={{ width: 178, height: 140 }}
-        src={RotatingOSrc}
-        srcSet={`${RotatingOSrc}, ${RotatingO2xSrc} 2x`}
+        src="https://cdn.zerion.io/images/dna-assets/rotating-zero.png"
+        srcSet="https://cdn.zerion.io/images/dna-assets/rotating-zero.png, https://cdn.zerion.io/images/dna-assets/rotating-zero_2x.png 2x"
         alt=""
       />
       <VStack gap={16}>
