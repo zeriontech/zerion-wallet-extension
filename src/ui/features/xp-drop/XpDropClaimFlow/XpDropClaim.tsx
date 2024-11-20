@@ -4,7 +4,7 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { DeviceAccount } from 'src/shared/types/Device';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
-import { isSignerContainer } from 'src/shared/types/validators';
+import { isReadonlyContainer } from 'src/shared/types/validators';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
 import DownIcon from 'jsx:src/ui/assets/chevron-down.svg';
@@ -287,19 +287,19 @@ export function XpDropClaim() {
   });
 
   const { data: walletGroups, ...walletGroupsQuery } = useWalletGroups();
-  const { signerWalletGroups, signerWalletAddresses } = useMemo(() => {
-    const signerWalletGroups =
-      walletGroups?.filter((group) =>
-        isSignerContainer(group.walletContainer)
+  const { ownedWalletGroups, ownedWalletAddresses } = useMemo(() => {
+    const ownedWalletGroups =
+      walletGroups?.filter(
+        (group) => !isReadonlyContainer(group.walletContainer)
       ) ?? [];
-    const signerWalletAddresses = signerWalletGroups
+    const ownedWalletAddresses = ownedWalletGroups
       .flatMap((group) => group.walletContainer.wallets)
       .map((wallet) => wallet.address);
-    return { signerWalletGroups, signerWalletAddresses };
+    return { ownedWalletGroups, ownedWalletAddresses };
   }, [walletGroups]);
 
   const { data: walletsMeta, ...walletsMetaQuery } = useWalletsMetaByChunks({
-    addresses: signerWalletAddresses,
+    addresses: ownedWalletAddresses,
   });
 
   const [selectedWallet, setSelectedWallet] = useState(currentWallet);
@@ -375,7 +375,7 @@ export function XpDropClaim() {
 
     const eligibleAddressesSet = new Set(eligibleAddresses);
 
-    const eligibleWalletGroups = signerWalletGroups
+    const eligibleWalletGroups = ownedWalletGroups
       ?.map((group) => ({
         id: group.id,
         walletContainer: {
@@ -391,7 +391,7 @@ export function XpDropClaim() {
       .filter((group) => group.walletContainer.wallets.length > 0);
 
     return { eligibleWalletGroups, eligibleAddresses };
-  }, [signerWalletGroups, walletsMeta, claimedInfo]);
+  }, [ownedWalletGroups, walletsMeta, claimedInfo]);
 
   const retro = personalSignMutation.isSuccess
     ? claimedInfo?.meta?.membership.retro
