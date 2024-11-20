@@ -144,9 +144,14 @@ export function TransactionSimulation({
 
   const { preferences } = usePreferences();
   const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
+  // TODO:
+  // Refactor:
+  // This must be called on the same level as `txInterpretQuery`
+  // in TransactionConfirmationView
   const paymasterTxInterpretQuery = useQuery({
     enabled: Boolean(network?.supports_simulations) && paymasterEligible,
     suspense: false,
+    keepPreviousData: true,
     queryKey: ['interpret/typedData', client, currency, transaction, source],
     queryKeyHashFn: (queryKey) => {
       const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
