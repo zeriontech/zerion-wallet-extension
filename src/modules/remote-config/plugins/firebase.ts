@@ -33,6 +33,18 @@ export async function fetchRemoteConfig<T extends keyof RemoteConfig>(
 
 let remoteConfig: RemoteConfig | undefined;
 
+function isEmptyConfig(maybeConfig: Partial<RemoteConfig>) {
+  if (!maybeConfig) {
+    return true;
+  }
+  for (const knownKey of knownKeys) {
+    if (knownKey in maybeConfig) {
+      return false;
+    }
+  }
+  return true;
+}
+
 const REFRESH_RATE = 1000 * 60 * 5;
 
 export const firebase: ConfigPlugin & { refresh(): void } = {
@@ -62,7 +74,10 @@ export const firebase: ConfigPlugin & { refresh(): void } = {
      * By doing this, we make the remoteConfig "eventually up-to-date"
      */
     firebase.refresh();
-    const config = remoteConfig ?? defaultConfig;
+    const config =
+      remoteConfig && !isEmptyConfig(remoteConfig)
+        ? remoteConfig
+        : defaultConfig;
     const value = config[key];
     return { value };
   },
