@@ -605,6 +605,10 @@ function SendTransactionContent({
 
   const paymasterTxInterpretQuery = useQuery({
     enabled: Boolean(network?.supports_simulations) && paymasterEligible,
+    // Both paymasterTxInterpretQuery and txInterpret query must behave the same
+    // and keepPreviousData. Failing to do this currently may break AllowanceView
+    // component because we will pass a nullish requestedAllowanceQuantityBase during refetch
+    keepPreviousData: true,
     suspense: false,
     queryKey: [
       'interpret/typedData',

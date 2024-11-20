@@ -50,6 +50,10 @@ export function TransactionConfirmationView({
 }) {
   const { preferences, query } = usePreferences();
 
+  // TODO:
+  // Refactor:
+  // refactor to a single hook that can interpret both regular
+  // and paymaster transactions
   const txInterpretQuery = useTxInterpretQuery({
     transaction,
     eligibilityQuery,
