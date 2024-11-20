@@ -245,7 +245,8 @@ export function WalletList({
    * If CSS anchor positioning is supported, we use it to avoid
    * nesting buttons, which is invalid per html spec, but still works ¯\_(ツ)_/¯
    */
-  const supportsCssAnchor = CSS.supports('anchor-name: --name');
+  // TODO: enable check when Chrome bug with CSS Anchors is fixed
+  const supportsCssAnchor = false; // CSS.supports('anchor-name: --name');
   for (const group of walletGroups) {
     for (const wallet of group.walletContainer.wallets) {
       const key = `${group.id}-${wallet.address}`;
