@@ -8,7 +8,7 @@ import type { RemoteConfig } from '../types';
 const defaultConfig: RemoteConfig = {
   extension_wallet_name_flags: {},
   extension_uninstall_link: '',
-  extension_loyalty_enabled: false,
+  extension_loyalty_enabled: true,
   loyalty_config: {},
 };
 
