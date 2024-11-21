@@ -89,6 +89,7 @@ export class TransactionService {
   }
 
   constructor() {
+    console.log('hello TS')
     this.transactionsStore = new TransactionsStore([], 'transactions');
     this.transactionsPoller = new TransactionsPoller();
     TransactionService.emitter.on('alarm', () => {
@@ -225,6 +226,10 @@ export class TransactionService {
           initiator,
           timestamp: Date.now(),
         };
+        if (addressAction && !isLocalAddressAction(addressAction)) {
+          newItem.addressAction = addressAction;
+          console.log('saving addressAction', { addressAction });
+        }
         if (
           addressAction &&
           isLocalAddressAction(addressAction) &&
