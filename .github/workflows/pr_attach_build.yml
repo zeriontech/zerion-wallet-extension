@@ -65,9 +65,11 @@ jobs:
       - name: Attach build artifacts to the PR thread
         if: ${{ github.event.workflow_run.conclusion == 'success' }}
         uses: actions/github-script@v3
+        env:
+          PR_NUMBER:  "${{ steps.get-build-artifacts.outputs.pr_number }}"
         with:
           script: |
-            const pr_number = "${{ steps.get-build-artifacts.outputs.pr_number }}";
+            const pr_number = process.env.PR_NUMBER;
             const build_download_url = "${{ steps.get-build-artifacts.outputs.build_download_url }}";
             const message = `:package: <a href='${build_download_url}'>build.zip</a>`;
 
