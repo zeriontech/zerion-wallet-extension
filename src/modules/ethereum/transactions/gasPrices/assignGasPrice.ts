@@ -22,8 +22,12 @@ export function assignGasPrice<
   transaction: T,
   gasPrice: GasPriceObject
 ): T & (ClassicGasPriceProps | EIP1559Props) {
+  // Prefer non-zero number for "classic", but prefer zero over nullish:
   const classicGasPrices =
-    gasPrice.classic || gasPrice.optimistic?.underlying.classic;
+    gasPrice.classic ||
+    gasPrice.optimistic?.underlying.classic ||
+    (gasPrice.classic ?? gasPrice.optimistic?.underlying.classic);
+
   const eip1559GasPrices =
     gasPrice.eip1559 || gasPrice.optimistic?.underlying.eip1559;
   if (eip1559GasPrices) {
