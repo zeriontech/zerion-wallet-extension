@@ -4,7 +4,6 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { DeviceAccount } from 'src/shared/types/Device';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
-import { isReadonlyContainer } from 'src/shared/types/validators';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
 import DownIcon from 'jsx:src/ui/assets/chevron-down.svg';
@@ -265,6 +264,50 @@ function XpLevel({ claimedXp, level }: { claimedXp: number; level: number }) {
   );
 }
 
+export function Congratulations({
+  selectedWallet,
+  retro,
+  totalXp,
+  onWalletSelect,
+}: {
+  selectedWallet: ExternallyOwnedAccount;
+  retro: RetrodropInfo;
+  totalXp: number;
+  onWalletSelect: () => void;
+}) {
+  return (
+    <>
+      <PageColumn>
+        <NavigationTitle title="Congratulations!" backTo="/overview" />
+        <PageTop />
+        <VStack gap={16}>
+          <HCenter>
+            <WalletAvatar
+              address={selectedWallet.address}
+              size={104}
+              active={false}
+              borderRadius={24}
+            />
+          </HCenter>
+          <HCenter>
+            <WalletLabel wallet={selectedWallet} />
+          </HCenter>
+          <XpLevel level={retro.level} claimedXp={totalXp} />
+        </VStack>
+      </PageColumn>
+      <PageStickyFooter>
+        <Button kind="primary" onClick={onWalletSelect}>
+          <HStack gap={8} alignItems="center" justifyContent="center">
+            <UIText kind="body/accent">Next Wallet</UIText>
+            <ArrowRightIcon style={{ width: 20, height: 20 }} />
+          </HStack>
+        </Button>
+        <PageBottom />
+      </PageStickyFooter>
+    </>
+  );
+}
+
 export function XpDropClaim() {
   useBackgroundKind({ kind: 'white' });
   const navigate = useNavigate();
@@ -287,19 +330,16 @@ export function XpDropClaim() {
   });
 
   const { data: walletGroups, ...walletGroupsQuery } = useWalletGroups();
-  const { ownedWalletGroups, ownedWalletAddresses } = useMemo(() => {
-    const ownedWalletGroups =
-      walletGroups?.filter(
-        (group) => !isReadonlyContainer(group.walletContainer)
-      ) ?? [];
-    const ownedWalletAddresses = ownedWalletGroups
-      .flatMap((group) => group.walletContainer.wallets)
-      .map((wallet) => wallet.address);
-    return { ownedWalletGroups, ownedWalletAddresses };
-  }, [walletGroups]);
+  const walletAddresses = useMemo(
+    () =>
+      walletGroups
+        ?.flatMap((group) => group.walletContainer.wallets)
+        .map((wallet) => wallet.address),
+    [walletGroups]
+  );
 
   const { data: walletsMeta, ...walletsMetaQuery } = useWalletsMetaByChunks({
-    addresses: ownedWalletAddresses,
+    addresses: walletAddresses ?? [],
   });
 
   const [selectedWallet, setSelectedWallet] = useState(currentWallet);
@@ -375,7 +415,7 @@ export function XpDropClaim() {
 
     const eligibleAddressesSet = new Set(eligibleAddresses);
 
-    const eligibleWalletGroups = ownedWalletGroups
+    const eligibleWalletGroups = walletGroups
       ?.map((group) => ({
         id: group.id,
         walletContainer: {
@@ -391,7 +431,7 @@ export function XpDropClaim() {
       .filter((group) => group.walletContainer.wallets.length > 0);
 
     return { eligibleWalletGroups, eligibleAddresses };
-  }, [ownedWalletGroups, walletsMeta, claimedInfo]);
+  }, [walletGroups, walletsMeta, claimedInfo]);
 
   const retro = personalSignMutation.isSuccess
     ? claimedInfo?.meta?.membership.retro
@@ -428,17 +468,17 @@ export function XpDropClaim() {
 
   const totalXp = retro.zerion.total + retro.global.total;
 
-  return (
+  return personalSignMutation.isSuccess ? (
+    <Congratulations
+      selectedWallet={selectedWallet}
+      retro={retro}
+      totalXp={totalXp}
+      onWalletSelect={() => walletSelectDialogRef.current?.showModal()}
+    />
+  ) : (
     <>
       <PageColumn>
-        <NavigationTitle
-          title={
-            personalSignMutation.isSuccess
-              ? 'Congratulations!'
-              : 'Claim Your XP'
-          }
-          backTo="/overview"
-        />
+        <NavigationTitle title="Claim Your XP" backTo="/overview" />
         <PageTop />
         <VStack gap={16}>
           <HCenter>
@@ -450,7 +490,7 @@ export function XpDropClaim() {
             />
           </HCenter>
           <HCenter>
-            {eligibleAddresses.length > 1 && !personalSignMutation.isSuccess ? (
+            {eligibleAddresses.length > 1 ? (
               <ChangeWalletButton
                 disabled={personalSignMutation.isLoading}
                 selectedWallet={selectedWallet}
@@ -460,26 +500,17 @@ export function XpDropClaim() {
               <WalletLabel wallet={selectedWallet} />
             )}
           </HCenter>
-          {personalSignMutation.isSuccess ? (
-            <XpLevel level={retro.level} claimedXp={totalXp} />
-          ) : (
-            <>
-              <Stats
-                zerionOg={retro.zerion.total}
-                activity={retro.global.total}
-              />
-              <HCenter>
-                <Button
-                  kind="neutral"
-                  size={36}
-                  style={{ paddingInline: 12 }}
-                  onClick={() => xpBreakdownDialogRef.current?.showModal()}
-                >
-                  XP Breakdown
-                </Button>
-              </HCenter>
-            </>
-          )}
+          <Stats zerionOg={retro.zerion.total} activity={retro.global.total} />
+          <HCenter>
+            <Button
+              kind="neutral"
+              size={36}
+              style={{ paddingInline: 12 }}
+              onClick={() => xpBreakdownDialogRef.current?.showModal()}
+            >
+              XP Breakdown
+            </Button>
+          </HCenter>
         </VStack>
         <CenteredDialog
           ref={walletSelectDialogRef}
@@ -512,16 +543,12 @@ export function XpDropClaim() {
             ref={signMsgBtnRef}
             wallet={selectedWallet}
             onClick={() => {
-              if (!personalSignMutation.isSuccess) {
-                emitter.emit('buttonClicked', {
-                  buttonScope: 'Loaylty',
-                  buttonName: 'Claim XP',
-                  pathname,
-                });
-                personalSignAndClaim();
-              } else {
-                walletSelectDialogRef.current?.showModal();
-              }
+              emitter.emit('buttonClicked', {
+                buttonScope: 'Loaylty',
+                buttonName: 'Claim XP',
+                pathname,
+              });
+              personalSignAndClaim();
             }}
             buttonKind="primary"
             holdToSign={false}
@@ -530,11 +557,6 @@ export function XpDropClaim() {
               <HCenter>
                 <CircleSpinner />
               </HCenter>
-            ) : personalSignMutation.isSuccess ? (
-              <HStack gap={8} alignItems="center" justifyContent="center">
-                <UIText kind="body/accent">Next Wallet</UIText>
-                <ArrowRightIcon style={{ width: 20, height: 20 }} />
-              </HStack>
             ) : (
               `Claim ${formatXp(totalXp)} XP`
             )}
