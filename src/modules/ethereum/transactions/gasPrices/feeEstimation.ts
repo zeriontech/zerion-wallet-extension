@@ -11,7 +11,7 @@ const fetchNonce = memoize(async (address: string, chainId: ChainId) => {
   const chain = chainId ? networks.getChainById(chainId) : null;
   invariant(chain, `Chain not found for ${chainId}`);
   const { value } = await getTransactionCount({ address, chain, networks });
-  return parseInt(value);
+  return value;
 });
 
 type EstimateNetworkFeeFn = typeof estimateNetworkFee;

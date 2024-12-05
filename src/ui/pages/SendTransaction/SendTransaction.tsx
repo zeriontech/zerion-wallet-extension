@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import type { ethers } from 'ethers';
 import { hashQueryKey, useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Client, type AddressAction } from 'defi-sdk';
@@ -10,6 +9,7 @@ import type {
   IncomingTransaction,
   IncomingTransactionWithChainId,
 } from 'src/modules/ethereum/types/IncomingTransaction';
+import type { TransactionResponsePlain } from 'src/modules/ethereum/types/TransactionResponsePlain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -700,9 +700,7 @@ function SendTransactionContent({
   }, []);
 
   const next = params.get('next');
-  async function handleSentTransaction(
-    tx: ethers.providers.TransactionResponse
-  ) {
+  async function handleSentTransaction(tx: TransactionResponsePlain) {
     if (preferences?.enableHoldToSignButton) {
       // small delay to show success state to the user before closing the popup
       await wait(500);

@@ -16,6 +16,6 @@ export function getLatestLocallyKnownNonce({
       tx.transaction.from === address &&
       normalizeChainId(tx.transaction.chainId) === chainId
   );
-  const nonces = transactions.map((tx) => tx.transaction.nonce);
+  const nonces = transactions.map((tx) => Number(tx.transaction.nonce));
   return Math.max(...nonces);
 }

@@ -1,4 +1,3 @@
-import { ethers } from 'ethers';
 import type { Chain } from 'src/modules/networks/Chain';
 import { sendRpcRequest } from 'src/shared/custom-rpc/rpc-request';
 import type { Networks } from 'src/modules/networks/Networks';
@@ -18,7 +17,7 @@ export async function fetchGasPriceFromNode(
     method: 'eth_gasPrice',
     params: null,
   });
-  const gasPrice = ethers.BigNumber.from(result).toNumber();
+  const gasPrice = Number(BigInt(result));
   return {
     average: {
       classic: gasPrice,

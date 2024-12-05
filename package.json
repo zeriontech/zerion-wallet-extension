@@ -19,6 +19,7 @@
   },
   "alias": {
     "src": "./src",
+    "zksync-ethers": "zksync-ethers/build",
     "ui-lab:src/ui/shared/channels": "./src/ui/shared/channels.mock.ts",
     "ui-lab:src/modules/networks/networks-store.client": "./src/modules/networks/networks-store.client.mock.ts",
     "ui-lab:src/background/constants": "./src/background/constants.mock.ts",
@@ -51,10 +52,11 @@
     "node": ">=20.10.0"
   },
   "devDependencies": {
-    "@parcel/config-webextension": "^2.9.3",
-    "@parcel/optimizer-data-url": "^2.9.3",
-    "@parcel/transformer-inline-string": "^2.9.3",
-    "@parcel/transformer-svg-react": "^2.9.3",
+    "@parcel/config-webextension": "^2.13.2",
+    "@parcel/optimizer-data-url": "^2.13.2",
+    "@parcel/optimizer-esbuild": "^2.13.2",
+    "@parcel/transformer-inline-string": "^2.13.2",
+    "@parcel/transformer-svg-react": "^2.13.2",
     "@tanstack/eslint-plugin-query": "^4.29.9",
     "@types/canvas-confetti": "^1.6.4",
     "@types/chrome": "^0.0.270",
@@ -79,9 +81,10 @@
     "jest": "^29.7.0",
     "lint-staged": "^13.2.3",
     "npm-run-all": "^4.1.5",
-    "parcel": "^2.9.3",
+    "parcel": "^2.13.2",
     "prettier": "^2.8.8",
     "process": "^0.11.10",
+    "svgo": "^3.3.2",
     "ts-jest": "^29.1.2",
     "typescript": "^5.4.3"
   },
@@ -92,6 +95,9 @@
   "dependencies": {
     "@download/blockies": "^1.0.3",
     "@ethersproject/abstract-provider": "^5.7.0",
+    "@ethersproject/bignumber": "^5.7.0",
+    "@ethersproject/hdnode": "^5.7.0",
+    "@ethersproject/wallet": "^5.7.0",
     "@react-spring/web": "^9.7.3",
     "@store-unit/react": "^1.0.4",
     "@tanstack/react-query": "^4.35.3",
@@ -100,7 +106,7 @@
     "@walletconnect/jsonrpc-utils": "^1.0.8",
     "@zeriontech/components": "^1.0.3",
     "@zeriontech/hardware-wallet-connection": "^1.0.11",
-    "@zeriontech/transactions": "^0.0.16",
+    "@zeriontech/transactions": "^0.2.0",
     "bignumber.js": "^9.1.1",
     "buffer": "^6.0.3",
     "canvas-confetti": "^1.6.0",
@@ -109,7 +115,7 @@
     "dayjs": "^1.11.9",
     "defi-sdk": "^0.1.9",
     "downshift": "^7.6.0",
-    "ethers": "^5.7.2",
+    "ethers": "^6.13.4",
     "events": "^3.3.0",
     "immer": "^10.0.2",
     "is-truthy-ts": "^1.0.1",
@@ -130,6 +136,6 @@
     "store-unit": "^1.0.3",
     "uuid": "^9.0.0",
     "webextension-polyfill": "^0.10.0",
-    "zksync-ethers": "^5.7.2"
+    "zksync-ethers": "^6.15.2"
   }
 }

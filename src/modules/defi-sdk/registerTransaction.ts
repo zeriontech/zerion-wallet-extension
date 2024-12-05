@@ -6,7 +6,7 @@ const namespace = 'transaction';
 const scope = 'register';
 
 export async function registerTransaction(
-  transaction: ethers.providers.TransactionResponse,
+  transaction: ethers.TransactionResponse,
   chain: string,
   mode: 'default' | 'testnet'
 ) {

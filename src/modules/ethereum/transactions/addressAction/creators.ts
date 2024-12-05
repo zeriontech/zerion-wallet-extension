@@ -7,10 +7,10 @@ import {
 } from 'src/modules/defi-sdk/queries';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { Chain } from 'src/modules/networks/Chain';
-import type { BigNumberish } from 'ethers';
 import { valueToHex } from 'src/shared/units/valueToHex';
 import { UnsupportedNetwork } from 'src/modules/networks/errors';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
+import { v5ToPlainTransactionResponse } from 'src/background/Wallet/model/ethers-v5-types';
 import type {
   IncomingTransaction,
   IncomingTransactionWithChainId,
@@ -27,7 +27,7 @@ import { ZERO_HASH, type LocalAddressAction } from './addressActionMain';
 export async function createActionContent(
   action: TransactionAction,
   currency: string,
-  client: Client,
+  client: Client
 ): Promise<AddressAction['content'] | null> {
   switch (action.type) {
     case 'execute':
@@ -66,7 +66,12 @@ export async function createActionContent(
     }
     case 'approve': {
       const asset = await fetchAssetFromCacheOrAPI(
-        { isNative: false, chain: action.chain, address: action.assetAddress, currency },
+        {
+          isNative: false,
+          chain: action.chain,
+          address: action.assetAddress,
+          currency,
+        },
         client
       );
       return asset
@@ -134,16 +139,22 @@ export async function pendingTransactionToAddressAction(
       throw error;
     }
   }
+  const normalizedTx = {
+    ...v5ToPlainTransactionResponse(transaction),
+    chainId,
+  };
   const action = chain
-    ? describeTransaction(transaction, { networks, chain })
+    ? describeTransaction(normalizedTx, { networks, chain })
     : null;
-  const label = action ? createActionLabel(transaction, action) : null;
-  const content = action ? await createActionContent(action, currency, client) : null;
+  const label = action ? createActionLabel(normalizedTx, action) : null;
+  const content = action
+    ? await createActionContent(action, currency, client)
+    : null;
   return {
     id: hash,
     address: transaction.from,
     transaction: {
-      ...transaction,
+      ...normalizedTx,
       hash,
       chain: chain
         ? chain.toString()
@@ -158,7 +169,7 @@ export async function pendingTransactionToAddressAction(
         ? 'dropped'
         : 'pending',
       fee: null,
-      nonce: transaction.nonce || 0,
+      nonce: Number(transaction.nonce) || 0,
       sponsored: false,
     },
     datetime: new Date(timestamp ?? Date.now()).toISOString(),
@@ -177,10 +188,7 @@ export async function pendingTransactionToAddressAction(
 
 export async function incomingTxToIncomingAddressAction(
   transactionObject: {
-    transaction: IncomingTransactionWithChainId & {
-      nonce?: BigNumberish;
-      from: string;
-    };
+    transaction: IncomingTransactionWithChainId & { from: string };
   } & Pick<TransactionObject, 'hash' | 'receipt' | 'timestamp' | 'dropped'>,
   transactionAction: TransactionAction,
   networks: Networks,
@@ -190,7 +198,11 @@ export async function incomingTxToIncomingAddressAction(
   const { transaction, timestamp } = transactionObject;
   const chain = networks.getChainById(normalizeChainId(transaction.chainId));
   const label = createActionLabel(transaction, transactionAction);
-  const content = await createActionContent(transactionAction, currency, client);
+  const content = await createActionContent(
+    transactionAction,
+    currency,
+    client
+  );
   return {
     id: nanoid(),
     local: true,
@@ -201,10 +213,7 @@ export async function incomingTxToIncomingAddressAction(
       status: 'pending',
       fee: null,
       sponsored: false,
-      // nonce can be "BigNumberish" due to
-      // ethers types: {import("@ethersproject/abstract-provider").TransactionRequest}
-      // Converting bignumber to number cannot be safe, but can nonce be really > MAX_SAFE_INTEGER?
-      nonce: (transaction.nonce as number) ?? -1,
+      nonce: transaction.nonce ?? -1,
     },
     datetime: new Date(timestamp ?? Date.now()).toISOString(),
     label,

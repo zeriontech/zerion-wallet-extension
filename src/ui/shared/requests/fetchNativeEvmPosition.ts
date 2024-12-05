@@ -1,4 +1,3 @@
-import { ethers } from 'ethers';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import { httpConnectionPort } from 'src/ui/shared/channels';
@@ -18,6 +17,6 @@ export async function fetchNativeEvmPosition({
     context: { chainId },
   });
   const network = networks.getNetworkById(chainId);
-  const balance = ethers.BigNumber.from(balanceInHex).toString();
+  const balance = BigInt(balanceInHex).toString();
   return createAddressPosition({ balance, network });
 }

@@ -91,6 +91,20 @@ const MISSING_MNEMONIC =
 
 type BareMnemonicWallet = PartiallyRequired<BareWallet, 'mnemonic'>;
 
+function isMnemonicBareWallet(
+  x: BareWallet | BareMnemonicWallet
+): x is BareMnemonicWallet {
+  return Boolean(x.mnemonic?.path && x.mnemonic.phrase);
+}
+
+function assertMnemonicWallets(
+  x: BareWallet[] | BareMnemonicWallet[] | (BareMnemonicWallet | BareWallet)[]
+): asserts x is BareMnemonicWallet[] {
+  if (x.some((w) => !isMnemonicBareWallet(w))) {
+    throw new Error('Only mnemonic wallets are expected');
+  }
+}
+
 export class MnemonicWalletContainer extends WalletContainerImpl {
   wallets: BareWallet[];
   seedType = SeedType.mnemonic;
@@ -103,7 +117,9 @@ export class MnemonicWalletContainer extends WalletContainerImpl {
     wallets?: BareMnemonicWallet[];
     credentials: SessionCredentials;
   }): Promise<MnemonicWalletContainer> {
-    const initial = wallets?.length ? wallets : [restoreBareWallet({})];
+    const initial = wallets?.length
+      ? wallets
+      : [restoreBareWallet({}) as BareMnemonicWallet];
     const phrase = initial[0].mnemonic?.phrase;
     invariant(phrase, MISSING_MNEMONIC);
     const seedHash = await seedPhraseToHash(phrase);
@@ -165,6 +181,7 @@ export class MnemonicWalletContainer extends WalletContainerImpl {
       seedType === SeedType.mnemonic,
       'Must be a MnemonicWalletContainer'
     );
+    assertMnemonicWallets(wallets);
     if (seedHash) {
       return new MnemonicWalletContainer(wallets, seedHash);
     } else if (isSessionCredentials(credentials)) {

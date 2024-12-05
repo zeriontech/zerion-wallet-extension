@@ -1,6 +1,5 @@
 import React, { useImperativeHandle, useRef } from 'react';
 import { ethers } from 'ethers';
-import type { TransactionRequest } from '@ethersproject/abstract-provider';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { Button, type Kind as ButtonKind } from 'src/ui/ui-kit/Button';
 import { useMutation } from '@tanstack/react-query';
@@ -26,16 +25,17 @@ import { hardwareMessageHandler } from '../shared/messageHandler';
 
 async function signRegularOrPaymasterTx({
   messageHandler,
-  transaction,
+  transaction: incomingTx,
   derivationPath,
   contentWindow,
 }: {
   messageHandler: typeof hardwareMessageHandler;
-  transaction: TransactionRequest;
+  transaction: IncomingTransaction;
   derivationPath: string;
   contentWindow: Window;
 }): Promise<SignTransactionResult> {
-  const paymasterEligible = Boolean(transaction.customData?.paymasterParams);
+  const paymasterEligible = Boolean(incomingTx.customData?.paymasterParams);
+  const transaction = prepareTransaction(incomingTx);
   if (paymasterEligible) {
     const typedData = createTypedData(transaction);
 
@@ -55,11 +55,11 @@ async function signRegularOrPaymasterTx({
      * but zkSync stack seems to expect [27, 28]
      * Therefore we add this number for this particular case
      */
-    const s = ethers.utils.splitSignature(ledgerSignature);
-    if (s.v === 0 || s.v === 1) {
+    const s = ethers.Signature.from(ledgerSignature);
+    if ((s.v as number) === 0 || (s.v as number) === 1) {
       s.v += 27;
     }
-    const signature = ethers.utils.joinSignature(s);
+    const signature = ethers.Signature.from(s).serialized;
     const rawTransaction = serializePaymasterTx({ transaction, signature });
     return { serialized: rawTransaction };
   } else {
@@ -107,7 +107,7 @@ async function prepareForSignByLedger({
       networks,
       defaultBlock: 'pending',
     });
-    value.nonce = parseInt(nonce);
+    value.nonce = nonce;
   }
   if (!value.chainId) {
     const chainId = networks.getChainId(chain);

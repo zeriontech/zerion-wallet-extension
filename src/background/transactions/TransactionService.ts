@@ -21,7 +21,10 @@ import { invariant } from 'src/shared/invariant';
 import { getDefiSdkClient } from 'src/modules/defi-sdk/background';
 import { emitter } from '../events';
 import { INTERNAL_SYMBOL_CONTEXT } from '../Wallet/Wallet';
-import { createMockTxResponse } from './mocks';
+import {
+  toEthersV5Receipt,
+  toEthersV5TransactionResponse,
+} from '../Wallet/model/ethers-v5-types';
 import type { PollingTx } from './TransactionPoller';
 import { TransactionsPoller } from './TransactionPoller';
 
@@ -220,7 +223,7 @@ export class TransactionService {
       'transactionSent',
       ({ transaction, initiator, addressAction }) => {
         const newItem: TransactionObject = {
-          transaction,
+          transaction: toEthersV5TransactionResponse(transaction),
           hash: transaction.hash,
           initiator,
           timestamp: Date.now(),
@@ -249,9 +252,12 @@ export class TransactionService {
     });
 
     this.transactionsPoller.emitter.on('mined', (receipt) => {
-      const item = this.transactionsStore.getByHash(receipt.transactionHash);
+      const item = this.transactionsStore.getByHash(receipt.hash);
       if (item) {
-        this.transactionsStore.upsertTransaction({ ...item, receipt });
+        this.transactionsStore.upsertTransaction({
+          ...item,
+          receipt: toEthersV5Receipt(receipt),
+        });
         if (item.relatedTransactionHash) {
           const relatedItem = this.transactionsStore.getByHash(
             item.relatedTransactionHash
@@ -270,17 +276,4 @@ export class TransactionService {
   }
 }
 
-function testAddTransaction() {
-  emitter.emit('transactionSent', {
-    transaction: createMockTxResponse(),
-    initiator: 'https://app.zerion.io',
-    feeValueCommon: '0.123',
-    addressAction: null,
-    clientScope: 'Local Testing',
-    chain: 'ethereum',
-    mode: 'default',
-  });
-}
-
 export const transactionService = new TransactionService();
-Object.assign(globalThis, { testAddTransaction });
