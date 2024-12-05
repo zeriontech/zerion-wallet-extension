@@ -1,16 +1,18 @@
-import { ethers } from 'ethers';
+import { Wallet as EthersV5Wallet } from '@ethersproject/wallet';
 import type { BareWallet } from '../types/BareWallet';
 
-export function walletToObject(wallet: ethers.Wallet | BareWallet): BareWallet {
+export function walletToObject(
+  wallet: EthersV5Wallet | BareWallet
+): BareWallet {
   return {
     mnemonic: wallet.mnemonic,
     privateKey: wallet.privateKey,
     address: wallet.address,
-    name: wallet instanceof ethers.Wallet ? null : wallet.name,
+    name: wallet instanceof EthersV5Wallet ? null : wallet.name,
   };
 }
 
-export function fromEthersWallet(wallet: ethers.Wallet): BareWallet {
+export function fromEthersWallet(wallet: EthersV5Wallet): BareWallet {
   return {
     mnemonic: wallet.mnemonic,
     privateKey: wallet.privateKey,
@@ -29,11 +31,11 @@ export function restoreBareWallet(wallet: Partial<BareWallet>): BareWallet {
       name: name || null,
     };
   } else if (privateKey) {
-    return fromEthersWallet(new ethers.Wallet(privateKey));
+    return fromEthersWallet(new EthersV5Wallet(privateKey));
   } else if (mnemonic) {
-    const wallet = ethers.Wallet.fromMnemonic(mnemonic.phrase, mnemonic.path);
+    const wallet = EthersV5Wallet.fromMnemonic(mnemonic.phrase, mnemonic.path);
     return fromEthersWallet(wallet);
   } else {
-    return fromEthersWallet(ethers.Wallet.createRandom());
+    return fromEthersWallet(EthersV5Wallet.createRandom());
   }
 }

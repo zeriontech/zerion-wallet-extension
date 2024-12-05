@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import type { ethers } from 'ethers';
+import type { TransactionResponse } from 'ethers';
 import { hashQueryKey, useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Client, type AddressAction } from 'defi-sdk';
@@ -686,9 +686,7 @@ function SendTransactionContent({
   }, []);
 
   const next = params.get('next');
-  async function handleSentTransaction(
-    tx: ethers.providers.TransactionResponse
-  ) {
+  async function handleSentTransaction(tx: TransactionResponse) {
     if (preferences?.enableHoldToSignButton) {
       // small delay to show success state to the user before closing the popup
       await wait(500);

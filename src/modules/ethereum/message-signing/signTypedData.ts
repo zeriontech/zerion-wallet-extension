@@ -16,7 +16,7 @@ export async function signTypedData(
     typedData.primaryType
   );
 
-  const signature = await signer._signTypedData(
+  const signature = await signer.signTypedData(
     typedData.domain,
     filteredTypes,
     typedData.message

@@ -1,9 +1,11 @@
+import type { Signature } from 'ethers';
 import { produce } from 'immer';
 
 interface MaybeWithSignature {
   r?: string;
   s?: string;
   v?: number;
+  signature?: Signature;
   customData?: {
     customSignature?: string;
     paymasterParams?: { paymaster?: string; paymasterInput?: Uint8Array };
@@ -22,6 +24,7 @@ export function removeSignature<T extends MaybeWithSignature>(tx: T) {
     delete draft.r;
     delete draft.s;
     delete draft.v;
+    delete draft.signature;
     delete draft.customData?.customSignature;
     delete draft.customData?.paymasterParams?.paymasterInput;
   });

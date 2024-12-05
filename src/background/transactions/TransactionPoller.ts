@@ -3,7 +3,6 @@ import memoize from 'lodash/memoize';
 import { createNanoEvents } from 'nanoevents';
 import { RequestCache } from 'src/modules/request-cache/request-cache';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
-import { createMockReceipt, DEBUGGING_TX_HASH } from './mocks';
 
 class Interval {
   private cb: () => void;
@@ -28,25 +27,12 @@ class Interval {
 }
 
 const getProviderMemoized = memoize(
-  (url: string) => new ethers.providers.JsonRpcProvider(url)
+  (url: string) => new ethers.JsonRpcProvider(url)
 );
 
 class ReceiptGetter {
-  private count = 0;
-
-  async get(provider: ethers.providers.BaseProvider, hash: string) {
-    if (hash === DEBUGGING_TX_HASH) {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      if (this.count === 2) {
-        this.count = 0;
-        return createMockReceipt();
-      } else {
-        this.count++;
-        return null;
-      }
-    } else {
-      return provider.getTransactionReceipt(hash);
-    }
+  async get(provider: ethers.Provider, hash: string) {
+    return provider.getTransactionReceipt(hash);
   }
 }
 
@@ -70,7 +56,7 @@ export class TransactionsPoller {
   private options: Options | null = null;
 
   emitter = createNanoEvents<{
-    mined: (receipt: ethers.providers.TransactionReceipt) => void;
+    mined: (receipt: ethers.TransactionReceipt) => void;
     dropped: (hash: string) => void;
   }>();
 
@@ -153,11 +139,11 @@ export class TransactionsPoller {
     }
   }
 
-  private handleReceipt(receipt: null | ethers.providers.TransactionReceipt) {
+  private handleReceipt(receipt: null | ethers.TransactionReceipt) {
     if (!receipt) {
       return;
     }
-    const { transactionHash: hash } = receipt;
+    const { hash } = receipt;
     const item = this.hashes.get(hash);
     if (!item) {
       return;

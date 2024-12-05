@@ -22,8 +22,12 @@ interface PaymasterEligibilityParams {
   };
 }
 
+type NonNullableRequiredKeys<T> = {
+  [P in keyof T]-?: NonNullable<T[P]>;
+};
+
 type Keys = keyof PaymasterEligibilityParams['transaction'];
-type PaymasterEligibilityParamsAdapted = Required<
+type PaymasterEligibilityParamsAdapted = NonNullableRequiredKeys<
   Pick<
     IncomingTransaction,
     Exclude<Keys, 'gasPerPubdataByte' | 'value' | 'data'>
@@ -58,8 +62,8 @@ export function paymasterCheckEligibility(
       to,
       chainId: normalizeChainId(chainId),
       nonce: valueToHex(nonce),
-      value: valueToHex(value),
-      data: valueToHex(data),
+      value: valueToHex(value ?? '0x0'),
+      data: valueToHex(data ?? '0x0'),
       gas: valueToHex(gas),
       gasPerPubdataByte,
     },

@@ -38,14 +38,14 @@ export function serializePaymasterTx({
   transaction,
   signature,
 }: {
-  transaction: zkSyncTypes.TransactionRequest;
+  transaction: zkSyncTypes.TransactionLike;
   signature: string;
 }) {
   invariant(
     transaction.customData,
     'This method is intended for "paymaster" transactions (customData is expected)'
   );
-  const rawTransaction = zkSyncUtils.serialize({
+  const rawTransaction = zkSyncUtils.serializeEip712({
     ...transaction,
     customData: { ...transaction.customData, customSignature: signature },
   });

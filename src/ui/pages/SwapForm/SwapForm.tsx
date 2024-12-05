@@ -349,7 +349,7 @@ export function SwapFormComponent() {
           value: txToCheck.value,
           data: txToCheck.data,
           gas,
-          nonce,
+          nonce: Number(nonce),
         }
       : null;
   const paymasterPossible =
@@ -372,7 +372,10 @@ export function SwapFormComponent() {
       const configuration = swapView.store.configuration.getState();
       let txToSign = applyConfiguration(tx, configuration, gasPrices);
       if (paymasterEligible && txToSign.nonce == null) {
-        txToSign = { ...txToSign, nonce };
+        txToSign = {
+          ...txToSign,
+          nonce: nonce != null ? Number(nonce) : undefined,
+        };
         invariant(txToSign.nonce, 'Nonce is required for a paymaster tx');
       }
       return { ...txToSign, from: address };

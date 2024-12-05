@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import type { ethers } from 'ethers';
+import type { TransactionResponse } from 'ethers';
 import React, { useImperativeHandle, useRef } from 'react';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { createChain } from 'src/modules/networks/Chain';
@@ -26,9 +26,7 @@ type SendTxParams = TransactionContextParams & {
 };
 
 export interface SendTxBtnHandle {
-  sendTransaction(
-    params: SendTxParams
-  ): Promise<ethers.providers.TransactionResponse>;
+  sendTransaction(params: SendTxParams): Promise<TransactionResponse>;
 }
 
 export const SignTransactionButton = React.forwardRef(
