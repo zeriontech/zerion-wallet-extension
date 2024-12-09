@@ -5,6 +5,9 @@
 import { BigNumber as EthersV5BigNumber } from '@ethersproject/bignumber';
 import type { ethers } from 'ethers';
 import type { TransactionResponsePlain } from 'src/modules/ethereum/types/TransactionResponsePlain';
+import { invariant } from 'src/shared/invariant';
+import type { PartiallyOptional } from 'src/shared/type-utils/PartiallyOptional';
+import { valueToHex } from 'src/shared/units/valueToHex';
 
 // type EthersV5AccessList = Array<{
 //   address: string;
@@ -75,38 +78,70 @@ export function v5ToPlainTransactionResponse(
   return {
     blockHash: value.blockHash ?? null,
     blockNumber: value.blockNumber ?? null,
-    chainId: BigInt(value.chainId),
+    chainId: valueToHex(BigInt(value.chainId)),
     data: value.data,
     from: value.from,
-    gasLimit: fromEthersBigNumber(value.gasLimit) ?? 0n,
-    gasPrice: fromEthersBigNumber(value.gasPrice) ?? 0n,
+    gasLimit: (fromEthersBigNumber(value.gasLimit) ?? 0n).toString(),
+    gasPrice: (fromEthersBigNumber(value.gasPrice) ?? 0n).toString(),
     hash: value.hash,
     index: 0 /** Not sure? */,
     maxFeePerBlobGas: null,
-    maxFeePerGas: fromEthersBigNumber(value.maxFeePerGas),
-    maxPriorityFeePerGas: fromEthersBigNumber(value.maxPriorityFeePerGas),
+    maxFeePerGas: fromEthersBigNumber(value.maxFeePerGas)?.toString() ?? null,
+    maxPriorityFeePerGas:
+      fromEthersBigNumber(value.maxPriorityFeePerGas)?.toString() ?? null,
     nonce: value.nonce,
     to: value.to ?? null,
     type: value.type ?? 0,
-    value: fromEthersBigNumber(value.value) ?? 0n,
+    value: (fromEthersBigNumber(value.value) ?? 0n).toString(),
+  };
+}
+
+export function toPlainTransactionResponse(
+  value: PartiallyOptional<ethers.TransactionResponse, 'gasPrice' | 'signature'>
+): TransactionResponsePlain {
+  return {
+    blockHash: value.blockHash,
+    blockNumber: value.blockNumber,
+    chainId: valueToHex(value.chainId),
+    data: value.data,
+    from: value.from,
+    gasLimit: value.gasLimit.toString(),
+    gasPrice: value.gasPrice?.toString() ?? null,
+    hash: value.hash,
+    index: value.index,
+    maxFeePerBlobGas: value.maxFeePerBlobGas?.toString() ?? null,
+    maxFeePerGas: value.maxFeePerGas?.toString() ?? null,
+    maxPriorityFeePerGas: value.maxPriorityFeePerGas?.toString() ?? null,
+    nonce: value.nonce,
+    to: value.to,
+    type: value.type,
+    value: value.value.toString(),
   };
 }
 
 export function toEthersV5TransactionResponse(
-  value: ethers.TransactionResponse
+  /**
+   * Can't trust TransactionResponse type because zksync-ethers is buggy:
+   * https://github.com/zksync-sdk/zksync-ethers/issues/224
+   */
+  value: Partial<ethers.TransactionResponse>
 ): EthersV5TransactionResponse {
+  invariant(value.chainId, 'chainId is required');
+  invariant(value.from, 'from is required');
+  invariant(value.hash, 'hash is required');
+  invariant(value.nonce, 'nonce is required');
   return {
     chainId: Number(value.chainId),
-    data: value.data,
+    data: value.data || '',
     from: value.from,
     to: value.to ?? undefined,
-    gasLimit: value.gasLimit.toString(),
+    gasLimit: value.gasLimit?.toString() ?? '0',
     hash: value.hash,
     nonce: value.nonce,
-    value: value.value.toString(),
+    value: value.value?.toString() ?? '0',
     blockHash: value.blockHash ?? undefined,
     blockNumber: value.blockNumber ?? undefined,
-    gasPrice: value.gasPrice.toString(),
+    gasPrice: value.gasPrice?.toString(),
     maxFeePerGas: value.maxFeePerGas?.toString(),
     maxPriorityFeePerGas: value.maxPriorityFeePerGas?.toString(),
     type: value.type,

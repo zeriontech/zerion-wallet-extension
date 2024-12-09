@@ -45,9 +45,12 @@ export function serializePaymasterTx({
     transaction.customData,
     'This method is intended for "paymaster" transactions (customData is expected)'
   );
-  const rawTransaction = zkSyncUtils.serializeEip712({
-    ...transaction,
-    customData: { ...transaction.customData, customSignature: signature },
-  });
+  const rawTransaction = zkSyncUtils.serializeEip712(
+    {
+      ...transaction,
+      customData: { ...transaction.customData, customSignature: signature },
+    },
+    signature
+  );
   return rawTransaction;
 }

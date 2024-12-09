@@ -1,8 +1,5 @@
 {
   "extends": "@parcel/config-webextension",
-  "optimizers": {
-    "*.ts": ["@parcel/optimizer-esbuild"]
-  },
   "transformers": {
     "jsx:*.svg": ["@parcel/transformer-svg-react"],
     "jsx:*": ["..."]

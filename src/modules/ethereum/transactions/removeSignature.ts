@@ -19,7 +19,9 @@ function toPlainObject<T extends object>(x: T): T {
   return Object.fromEntries(entries) as T;
 }
 
-export function removeSignature<T extends MaybeWithSignature>(tx: T) {
+export function removeSignature<T extends MaybeWithSignature>(
+  tx: T
+): Omit<T, 'r' | 's' | 'v' | 'signature'> {
   const value = produce(toPlainObject(tx), (draft) => {
     delete draft.r;
     delete draft.s;

@@ -100,7 +100,7 @@ function isMnemonicBareWallet(
 function assertMnemonicWallets(
   x: BareWallet[] | BareMnemonicWallet[] | (BareMnemonicWallet | BareWallet)[]
 ): asserts x is BareMnemonicWallet[] {
-  if (x.every((w) => isMnemonicBareWallet(w))) {
+  if (x.some((w) => !isMnemonicBareWallet(w))) {
     throw new Error('Only mnemonic wallets are expected');
   }
 }

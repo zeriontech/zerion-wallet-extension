@@ -88,6 +88,7 @@ import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { referralProgramService } from 'src/ui/features/referral-program/ReferralProgramService.background';
 import type { ButtonClickedParams } from 'src/shared/types/button-events';
 import { signTypedData } from 'src/modules/ethereum/message-signing/signTypedData';
+import type { TransactionResponsePlain } from 'src/modules/ethereum/types/TransactionResponsePlain';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -111,6 +112,7 @@ import {
   DeviceAccountContainer,
   ReadonlyAccountContainer,
 } from './model/AccountContainer';
+import { toPlainTransactionResponse } from './model/ethers-v5-types';
 console.log('ethers v6');
 
 async function prepareNonce<
@@ -1139,7 +1141,7 @@ export class Wallet {
   }: {
     transaction: IncomingTransactionAA;
     context: Partial<ChannelContext> | undefined;
-  } & TransactionContextParams): Promise<ethers.TransactionResponse> {
+  } & TransactionContextParams): Promise<TransactionResponsePlain> {
     this.verifyInternalOrigin(context);
     if (!incomingTransaction.from) {
       throw new Error(
@@ -1221,14 +1223,16 @@ export class Wallet {
           type: txWithType.type || undefined, // to exclude null
         });
         console.log({ transactionResponse });
+        // throw new Error('testing');
         const safeTx = removeSignature(transactionResponse);
 
+        const safeTxPlain = toPlainTransactionResponse(safeTx);
         emitter.emit('transactionSent', {
-          transaction: safeTx,
+          transaction: transactionResponse,
           mode,
           ...transactionContextParams,
         });
-        return safeTx;
+        return safeTxPlain;
       } catch (error) {
         console.log({ error });
         throw getEthersError(error);
@@ -1258,7 +1262,7 @@ export class Wallet {
     context,
   }: WalletMethodParams<
     { serialized: string } & TransactionContextParams
-  >): Promise<ethers.TransactionResponse> {
+  >): Promise<TransactionResponsePlain> {
     this.verifyInternalOrigin(context);
     this.ensureStringOrigin(context);
     const { serialized, ...transactionContextParams } = params;
@@ -1274,12 +1278,13 @@ export class Wallet {
         serialized
       );
       const safeTx = removeSignature(transactionResponse);
+      const safeTxPlain = toPlainTransactionResponse(safeTx);
       emitter.emit('transactionSent', {
-        transaction: safeTx,
+        transaction: transactionResponse,
         mode,
         ...transactionContextParams,
       });
-      return safeTx;
+      return safeTxPlain;
     } catch (error) {
       throw getEthersError(error);
     }

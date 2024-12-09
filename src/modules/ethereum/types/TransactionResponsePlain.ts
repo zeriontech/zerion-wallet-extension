@@ -1,4 +1,6 @@
-/** Subset of public props of {ethers.TransactionResponse} */
+import type { HexString } from 'ethers/lib.esm/utils/data';
+
+/** Serializable subset of public props of {ethers.TransactionResponse} */
 export interface TransactionResponsePlain {
   /**
    *  The block number of the block that this transaction was included in.
@@ -62,7 +64,7 @@ export interface TransactionResponsePlain {
    *  exceeds this, the entries transaction is reverted and the sender
    *  is charged for the full amount, despite not state changes being made.
    */
-  gasLimit: bigint;
+  gasLimit: string;
 
   /**
    *  The gas price can have various values, depending on the network.
@@ -76,39 +78,29 @@ export interface TransactionResponsePlain {
    *  is the fee that will be charged per unit of gas the transaction
    *  consumes.
    */
-  gasPrice: bigint;
+  gasPrice: null | string;
 
   /**
    *  The maximum priority fee (per unit of gas) to allow a
    *  validator to charge the sender. This is inclusive of the
    *  [[maxFeeFeePerGas]].
    */
-  maxPriorityFeePerGas: null | bigint;
+  maxPriorityFeePerGas: null | string;
 
   /**
    *  The maximum fee (per unit of gas) to allow this transaction
    *  to charge the sender.
    */
-  maxFeePerGas: null | bigint;
+  maxFeePerGas: null | string;
 
   /**
    *  The [[link-eip-4844]] max fee per BLOb gas.
    */
-  maxFeePerBlobGas: null | bigint;
+  maxFeePerBlobGas: null | string;
 
-  /**
-   *  The data.
-   */
   data: string;
 
-  /**
-   *  The value, in wei. Use [[formatEther]] to format this value
-   *  as ether.
-   */
-  value: bigint;
+  value: string;
 
-  /**
-   *  The chain ID.
-   */
-  chainId: bigint;
+  chainId: HexString;
 }
