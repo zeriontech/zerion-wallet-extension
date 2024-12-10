@@ -13,6 +13,7 @@ import { FrameListItemLink } from 'src/ui/ui-kit/FrameList';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { AUTO_LOCK_TIMER_OPTIONS_TITLES, AutoLockTimer } from './AutoLockTimer';
+import { ChangePasswordRoutes } from './ChangePassword';
 
 function SecurityMain() {
   const { globalPreferences } = useGlobalPreferences();
@@ -21,32 +22,54 @@ function SecurityMain() {
   return (
     <PageColumn>
       <PageTop />
-      <Frame>
-        <VStack gap={0}>
-          <FrameListItemLink to="auto-lock-timer">
-            <AngleRightRow>
-              <HStack
-                gap={24}
-                alignItems="center"
-                justifyContent="space-between"
-              >
-                <UIText kind="body/accent">Auto-Lock Timer</UIText>
-                {globalPreferences ? (
-                  <UIText kind="small/regular" color="var(--neutral-500)">
-                    {
-                      AUTO_LOCK_TIMER_OPTIONS_TITLES[
-                        globalPreferences.autoLockTimeout
-                      ]
-                    }
-                  </UIText>
-                ) : (
-                  <CircleSpinner />
-                )}
-              </HStack>
-            </AngleRightRow>
-          </FrameListItemLink>
-        </VStack>
-      </Frame>
+      <VStack gap={8}>
+        <Frame>
+          <VStack gap={0}>
+            <FrameListItemLink to="auto-lock-timer">
+              <AngleRightRow>
+                <HStack
+                  gap={24}
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
+                  <UIText kind="body/accent">Auto-Lock Timer</UIText>
+                  {globalPreferences ? (
+                    <UIText kind="small/regular" color="var(--neutral-500)">
+                      {
+                        AUTO_LOCK_TIMER_OPTIONS_TITLES[
+                          globalPreferences.autoLockTimeout
+                        ]
+                      }
+                    </UIText>
+                  ) : (
+                    <CircleSpinner />
+                  )}
+                </HStack>
+              </AngleRightRow>
+            </FrameListItemLink>
+          </VStack>
+        </Frame>
+        <Frame>
+          <VStack gap={0}>
+            <FrameListItemLink to="change-password">
+              <AngleRightRow>
+                <HStack
+                  gap={24}
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
+                  <VStack gap={0}>
+                    <UIText kind="body/accent">Change Password</UIText>
+                    <UIText kind="small/regular" color="var(--neutral-500)">
+                      Or verify that you remember your existing one
+                    </UIText>
+                  </VStack>
+                </HStack>
+              </AngleRightRow>
+            </FrameListItemLink>
+          </VStack>
+        </Frame>
+      </VStack>
     </PageColumn>
   );
 }
@@ -67,6 +90,14 @@ export function Security() {
         element={
           <ViewSuspense>
             <AutoLockTimer />
+          </ViewSuspense>
+        }
+      />
+      <Route
+        path="/change-password/*"
+        element={
+          <ViewSuspense>
+            <ChangePasswordRoutes />
           </ViewSuspense>
         }
       />

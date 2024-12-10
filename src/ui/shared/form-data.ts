@@ -4,7 +4,8 @@ export function naiveFormDataToObject<T>(
   formData: FormData,
   modifier: (key: keyof T | string, value: unknown) => unknown
 ) {
-  const result: Partial<{ [K in keyof T]: T[K] } & Record<string, string>> = {};
+  const result: Partial<{ [K in keyof T]: T[K] } & Record<string, unknown>> =
+    {};
   for (const key of new Set(formData.keys())) {
     if (key.endsWith('[]')) {
       const value = modifier(key, formData.getAll(key));
