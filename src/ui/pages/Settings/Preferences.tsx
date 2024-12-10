@@ -20,6 +20,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import CheckIcon from 'jsx:src/ui/assets/check.svg';
 import { preferenceStore } from 'src/ui/features/appearance';
 import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
+import { HideBalancesPage } from './HideBalancesPage';
 
 function CurrencyPage() {
   const { currency } = useCurrency();
@@ -86,24 +87,44 @@ function PreferencesMain() {
     <PageColumn>
       <NavigationTitle title="Preferences" />
       <PageTop />
-      <Frame>
-        <VStack gap={0}>
-          <FrameListItemLink to="currency">
-            <AngleRightRow>
-              <HStack
-                gap={24}
-                alignItems="center"
-                justifyContent="space-between"
-              >
-                <UIText kind="body/accent">Currency</UIText>
-                <UIText kind="small/regular" color="var(--neutral-500)">
-                  {CURRENCIES[currency].code.toUpperCase()}
-                </UIText>
-              </HStack>
-            </AngleRightRow>
-          </FrameListItemLink>
-        </VStack>
-      </Frame>
+      <VStack gap={12}>
+        <Frame>
+          <VStack gap={0}>
+            <FrameListItemLink to="currency">
+              <AngleRightRow>
+                <HStack
+                  gap={24}
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
+                  <UIText kind="body/accent">Currency</UIText>
+                  <UIText kind="small/regular" color="var(--neutral-500)">
+                    {CURRENCIES[currency].code.toUpperCase()}
+                  </UIText>
+                </HStack>
+              </AngleRightRow>
+            </FrameListItemLink>
+          </VStack>
+        </Frame>
+        <Frame>
+          <VStack gap={0}>
+            <FrameListItemLink to="hide-balances">
+              <AngleRightRow>
+                <HStack
+                  gap={24}
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
+                  <UIText kind="body/accent">Hide Balances</UIText>
+                  <UIText kind="small/regular" color="var(--neutral-500)">
+                    Shift+H
+                  </UIText>
+                </HStack>
+              </AngleRightRow>
+            </FrameListItemLink>
+          </VStack>
+        </Frame>
+      </VStack>
       <PageBottom />
     </PageColumn>
   );
@@ -125,6 +146,14 @@ export function PreferencesPage() {
         element={
           <ViewSuspense>
             <CurrencyPage />
+          </ViewSuspense>
+        }
+      />
+      <Route
+        path="/hide-balances"
+        element={
+          <ViewSuspense>
+            <HideBalancesPage />
           </ViewSuspense>
         }
       />

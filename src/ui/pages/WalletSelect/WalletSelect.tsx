@@ -33,6 +33,7 @@ import { getWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
 import { emitter } from 'src/ui/shared/events';
+import { HideBalance } from 'src/ui/components/HideBalance';
 import * as styles from './styles.module.css';
 import { WalletList } from './WalletList';
 
@@ -65,13 +66,20 @@ function PortfolioRow({ walletGroups }: { walletGroups: WalletGroup[] }) {
               {isLoading || !walletPortfolio ? (
                 ellipsis
               ) : (
-                <NeutralDecimals
-                  parts={formatCurrencyToParts(
-                    walletPortfolio.totalValue || 0,
-                    'en',
-                    currency
-                  )}
-                />
+                <HideBalance
+                  kind="NeutralDecimals"
+                  value={walletPortfolio.totalValue || 0}
+                  locale="en"
+                  currency={currency}
+                >
+                  <NeutralDecimals
+                    parts={formatCurrencyToParts(
+                      walletPortfolio.totalValue || 0,
+                      'en',
+                      currency
+                    )}
+                  />
+                </HideBalance>
               )}
             </UIText>
           }

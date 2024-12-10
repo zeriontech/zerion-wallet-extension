@@ -1,8 +1,9 @@
-import type React from 'react';
+import React from 'react';
 import type { Chain } from 'src/modules/networks/Chain';
 import type { WalletPortfolio } from 'src/modules/zerion-api/requests/wallet-get-portfolio';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
+import { HideBalance } from 'src/ui/components/HideBalance';
 
 export type ChainDistribution = Pick<
   WalletPortfolio,
@@ -18,14 +19,16 @@ export function ChainValue({
   chainDistribution: ChainDistribution | null;
   currency: string;
 }) {
-  const value =
+  const maybeValue =
     chain === NetworkSelectValue.All
       ? chainDistribution?.totalValue
       : chainDistribution?.positionsChainsDistribution[chain.toString()];
 
-  return formatCurrencyValue(
-    value || 0,
-    'en',
-    currency
-  ) as React.ReactNode as JSX.Element;
+  const value = maybeValue || 0;
+
+  return (
+    <HideBalance value={value} locale="en" currency={currency}>
+      {formatCurrencyValue(value, 'en', currency)}
+    </HideBalance>
+  );
 }

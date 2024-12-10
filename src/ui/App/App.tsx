@@ -81,6 +81,7 @@ import { BackupPage } from '../pages/Backup/Backup';
 import { ProgrammaticNavigationHelper } from '../shared/routing/ProgrammaticNavigationHelper';
 import { Invite } from '../features/referral-program';
 import { XpDrop } from '../features/xp-drop';
+import { hideBalancesStore } from '../features/hide-balances/store';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -445,6 +446,12 @@ function GlobalKeyboardShortcuts() {
         />
       ) : null}
 
+      <KeyboardShortcut
+        combination="shift+h"
+        onKeyDown={() => {
+          hideBalancesStore.nextMode();
+        }}
+      />
       <KeyboardShortcut
         combination="ctrl+alt+0"
         onKeyDown={() => {

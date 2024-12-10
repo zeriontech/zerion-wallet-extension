@@ -22,6 +22,7 @@ import { NetworkId } from 'src/modules/networks/NetworkId';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { AssetLink } from 'src/ui/components/AssetLink';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { HideBalance } from 'src/ui/components/HideBalance';
 import { isUnlimitedApproval } from '../../isUnlimitedApproval';
 
 type Direction = 'incoming' | 'outgoing';
@@ -165,7 +166,9 @@ function FungibleTransfer({
               title={formatTokenValue(balance, fungible.symbol)}
             >
               {direction === 'incoming' ? '+' : minus}
-              {formatTokenValue(balance, '')}
+              <HideBalance value={balance} kind="tokenValue" locale="en">
+                {formatTokenValue(balance, '')}
+              </HideBalance>
             </span>
             <AssetLink asset={fungible} address={address} />
           </HStack>
@@ -174,11 +177,18 @@ function FungibleTransfer({
       detailText={
         <UIText kind="small/regular" color="var(--neutral-500)">
           {almostEqual}
-          {formatCurrencyValue(
-            balance.times(transfer.price || 0),
-            'en',
-            currency
-          )}
+          <HideBalance
+            kind="currencyValue"
+            value={balance.times(transfer.price || 0)}
+            locale="en"
+            currency={currency}
+          >
+            {formatCurrencyValue(
+              balance.times(transfer.price || 0),
+              'en',
+              currency
+            )}
+          </HideBalance>
         </UIText>
       }
     />

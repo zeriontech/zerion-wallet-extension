@@ -19,6 +19,7 @@ import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { AssetQuantity } from 'src/ui/components/AssetQuantity';
 import { AssetLink } from 'src/ui/components/AssetLink';
 import { NFTLink } from 'src/ui/components/NFTLink';
+import { HideBalance } from 'src/ui/components/HideBalance';
 
 function getSign(
   decimaledValue?: number | BigNumber | string,
@@ -74,7 +75,13 @@ function HistoryTokenValue({
       title={commonQuantity?.toFixed()}
     >
       {commonQuantity ? (
-        <AssetQuantity sign={sign} commonQuantity={commonQuantity} />
+        <HideBalance
+          kind="tokenValue"
+          value={sign === minus ? commonQuantity.times(-1) : commonQuantity}
+          locale="en"
+        >
+          <AssetQuantity sign={sign} commonQuantity={commonQuantity} />
+        </HideBalance>
       ) : null}
       {withLink ? (
         <AssetLink asset={asset} address={address} />
@@ -200,10 +207,15 @@ export function TransactionCurrencyValue({
     chain,
     baseQuantity: transfer.quantity,
   });
-  const value = formatCurrencyValue(
-    commonQuantity.times(transfer.price || 0),
-    'en',
-    currency
+  const value = commonQuantity.times(transfer.price || 0);
+  return (
+    <HideBalance
+      value={value}
+      kind="currencyValue"
+      locale="en"
+      currency={currency}
+    >
+      {formatCurrencyValue(value, 'en', currency)}
+    </HideBalance>
   );
-  return <>{value}</>;
 }

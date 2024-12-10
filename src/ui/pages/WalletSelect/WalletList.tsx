@@ -22,6 +22,7 @@ import { CopyButton } from 'src/ui/components/CopyButton';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { HideBalance } from 'src/ui/components/HideBalance';
 import * as styles from './styles.module.css';
 
 function WalletListItem({
@@ -185,13 +186,20 @@ function WalletListItem({
                   render={(query) => (
                     <UIText kind="headline/h3">
                       {query.data ? (
-                        <NeutralDecimals
-                          parts={formatCurrencyToParts(
-                            query.data.data?.totalValue || 0,
-                            'en',
-                            currency
-                          )}
-                        />
+                        <HideBalance
+                          kind="NeutralDecimals"
+                          value={query.data.data?.totalValue || 0}
+                          locale="en"
+                          currency={currency}
+                        >
+                          <NeutralDecimals
+                            parts={formatCurrencyToParts(
+                              query.data.data?.totalValue || 0,
+                              'en',
+                              currency
+                            )}
+                          />
+                        </HideBalance>
                       ) : (
                         NBSP
                       )}
